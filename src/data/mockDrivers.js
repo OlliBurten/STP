@@ -1,0 +1,140 @@
+/**
+ * Mock drivers for company search.
+ * In production these come from backend; current user's profile is merged when visibleToCompanies=true.
+ */
+export const mockDrivers = [
+  {
+    id: "driver-1",
+    name: "Erik Lindström",
+    email: "erik.lindstrom@example.com",
+    phone: "070-123 45 67",
+    showEmailToCompanies: true,
+    showPhoneToCompanies: false,
+    location: "Malmö",
+    region: "Skåne",
+    regionsWilling: ["Skåne", "Halland", "Danmark"],
+    licenses: ["CE"],
+    certificates: ["YKB"],
+    availability: "open",
+    primarySegment: "FULLTIME",
+    secondarySegments: ["FLEX"],
+    yearsExperience: 8,
+    summary:
+      "Erfaren CE-chaufför med 8 års erfarenhet av fjärrkörning inom Norden. Van vid tunga drag och modern utrustning.",
+    experience: [
+      { company: "Nordic Transport AB", role: "CE-chaufför", startYear: 2019, endYear: null, current: true },
+      { company: "Transport Syd", role: "Lokalchaufför", startYear: 2016, endYear: 2019, current: false },
+    ],
+    visibleToCompanies: true,
+  },
+  {
+    id: "driver-2",
+    name: "Anna Bergström",
+    email: "anna.bergstrom@example.com",
+    phone: "070-234 56 78",
+    showEmailToCompanies: true,
+    showPhoneToCompanies: true,
+    location: "Stockholm",
+    region: "Stockholm",
+    regionsWilling: ["Stockholm", "Uppsala", "Södermanland"],
+    licenses: ["C"],
+    certificates: ["YKB"],
+    availability: "vikariat",
+    primarySegment: "FLEX",
+    secondarySegments: ["FULLTIME"],
+    yearsExperience: 3,
+    summary:
+      "Lokalchaufför med fokus på distribution. Tidigare erfarenhet från budbil och matdistribution.",
+    experience: [
+      { company: "City Distribution", role: "Lokalchaufför", startYear: 2022, endYear: null, current: true },
+      { company: "Stockholm Logistik", role: "Lärling", startYear: 2020, endYear: 2022, current: false },
+    ],
+    visibleToCompanies: true,
+  },
+  {
+    id: "driver-3",
+    name: "Johan Nilsson",
+    location: "Göteborg",
+    region: "Västra Götaland",
+    regionsWilling: ["Västra Götaland", "Norge", "Skåne"],
+    licenses: ["CE"],
+    certificates: ["YKB", "ADR"],
+    availability: "fast",
+    primarySegment: "FULLTIME",
+    secondarySegments: [],
+    yearsExperience: 12,
+    summary:
+      "Senior CE-chaufför med ADR. Specialiserad på farligt gods och tanktransporter. Körningar i Norden.",
+    experience: [
+      { company: "PetrolTrans Nordic", role: "CE-chaufför", startYear: 2018, endYear: null, current: true },
+      { company: "Scandinavian Tank", role: "Tankchaufför", startYear: 2012, endYear: 2018, current: false },
+    ],
+    visibleToCompanies: true,
+  },
+  {
+    id: "driver-4",
+    name: "Maria Eriksson",
+    location: "Helsingborg",
+    region: "Skåne",
+    regionsWilling: ["Skåne", "Halland", "Danmark", "Kontinenten"],
+    licenses: ["CE"],
+    certificates: ["YKB"],
+    availability: "open",
+    primarySegment: "FULLTIME",
+    secondarySegments: ["FLEX"],
+    yearsExperience: 5,
+    summary:
+      "CE-chaufför med erfarenhet av fjärrkörning på kontinenten. Vill gärna fortsätta med internationella körningar.",
+    experience: [
+      { company: "Transport Syd", role: "CE-chaufför", startYear: 2020, endYear: null, current: true },
+      { company: "Nordic Haulage", role: "Vikarie", startYear: 2019, endYear: 2020, current: false },
+    ],
+    visibleToCompanies: true,
+  },
+  {
+    id: "driver-5",
+    name: "Lars Andersson",
+    location: "Varberg",
+    region: "Halland",
+    regionsWilling: ["Halland", "Skåne", "Västra Götaland"],
+    licenses: ["CE"],
+    certificates: ["YKB"],
+    availability: "tim",
+    primarySegment: "FLEX",
+    secondarySegments: [],
+    yearsExperience: 15,
+    summary:
+      "Erfaren chaufför som söker flexibla timjobb. Kan starta snabbt vid behov.",
+    experience: [
+      { company: "FlexiDriv", role: "Timanställd", startYear: 2022, endYear: null, current: true },
+      { company: "Trans Nordic", role: "CE-chaufför", startYear: 2009, endYear: 2022, current: false },
+    ],
+    visibleToCompanies: true,
+  },
+  {
+    id: "driver-6",
+    name: "Sofia Lind",
+    location: "Malmö",
+    region: "Skåne",
+    regionsWilling: ["Skåne", "Danmark"],
+    licenses: ["C"],
+    certificates: ["YKB"],
+    availability: "vikariat",
+    primarySegment: "INTERNSHIP",
+    secondarySegments: ["FLEX"],
+    yearsExperience: 1,
+    summary:
+      "Nyligen YKB-certifierad. Söker vikariat eller timjobb för att bygga erfarenhet.",
+    experience: [
+      { company: "Praktik", role: "Praktikant", startYear: 2024, endYear: 2024, current: false },
+    ],
+    visibleToCompanies: true,
+  },
+];
+
+export const experienceLevels = [
+  { value: "0-2", label: "0–2 år", min: 0, max: 2 },
+  { value: "2-5", label: "2–5 år", min: 2, max: 5 },
+  { value: "5-10", label: "5–10 år", min: 5, max: 10 },
+  { value: "10+", label: "10+ år", min: 10, max: 999 },
+];

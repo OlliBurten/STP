@@ -1,0 +1,200 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  emailVerifiedAt DateTime?
+  emailVerificationTokenHash String?
+  emailVerificationExpiresAt DateTime?
+  passwordResetTokenHash String?
+  passwordResetExpiresAt DateTime?
+  role         String   // DRIVER | COMPANY
+  name         String
+  companyName  String?  // for companies
+  companyOrgNumber String? @unique // for companies
+  companyDescription String?
+  companyWebsite String?
+  companyLocation String?
+  companySegmentDefaults String[] @default([])
+  companyBransch    String[]  @default([])  // t.ex. ["tank", "distribution"] – för sök åkerier
+  companyRegion     String?                 // t.ex. Stockholm, Skåne – för sök åkerier
+  companyStatus String @default("VERIFIED") // PENDING | VERIFIED | REJECTED
+  suspendedAt DateTime?
+  suspensionReason String?
+  warningCount Int @default(0)
+  lastWarningReason String?
+  lastWarnedAt DateTime?
+  createdAt    DateTime @default(now())
+
+  driverProfile   DriverProfile?
+  jobs            Job[]             @relation("JobOwner")
+  conversationsAsDriver  Conversation[] @relation("Driver")
+  conversationsAsCompany Conversation[] @relation("Company")
+  messages        Message[]
+  reportsCreated  Report[] @relation("ReportCreator")
+  reportsReceived Report[] @relation("ReportTarget")
+  reviewsWritten CompanyReview[] @relation("ReviewAuthor")
+  reviewsReceived CompanyReview[] @relation("ReviewCompany")
+  savedJobs       SavedJob[]
+  notifications   Notification[] @relation("NotificationRecipient")
+  lastMatchJobEmailAt    DateTime?  // driver: last time we sent "matching jobs" email
+  lastMatchDriverEmailAt DateTime?  // company: last time we sent "matching driver" email
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation("NotificationRecipient", fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // MESSAGE | APPLICATION | SELECTED | MATCH_JOBS | MATCH_DRIVERS
+  title     String
+  body      String?
+  link      String?
+  relatedConversationId String?
+  relatedJobId          String?
+  actorName String?   // who triggered (e.g. sender name, company name)
+  readAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId, readAt, createdAt])
+}
+
+model DriverProfile {
+  id                  String   @id @default(cuid())
+  userId               String   @unique
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  location            String?
+  region              String?
+  email               String?  // can override user email for display
+  phone               String?
+  summary             String?
+  licenses            String[] // ["CE", "C"]
+  certificates        String[] // ["YKB", "ADR"]
+  availability        String?  // open, vikariat, tim, fast, inactive
+  primarySegment      String?  // FULLTIME | FLEX | INTERNSHIP
+  secondarySegments   String[] @default([])
+  visibleToCompanies  Boolean  @default(false)
+  regionsWilling      String[] // ["Skåne", "Halland"]
+  showEmailToCompanies Boolean @default(false)
+  showPhoneToCompanies Boolean @default(false)
+  experience          Json?    // [{ id, company, role, startYear, endYear, current, description }]
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model Job {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation("JobOwner", fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  company     String   // company name
+  description String
+  location    String
+  region      String
+  license     String[] // ["CE", "C"]
+  certificates String[]
+  jobType     String   // fjärrkörning, lokalt, distribution, timjobb
+  bransch     String?  // t.ex. tank, soppor – för filter "bransch"
+  employment  String   // fast, vikariat, tim
+  segment     String   @default("FULLTIME") // FULLTIME | FLEX | INTERNSHIP
+  schedule    String?  // dag, kväll, natt, blandat, flex
+  experience  String?  // 0-1, 1-2, 2-5, 5-10, 10+
+  salary      String?
+  requirements String? // JSON or text
+  extraRequirements String?
+  contact     String   // email
+  status      String   @default("ACTIVE") // ACTIVE | HIDDEN | REMOVED
+  moderatedAt DateTime?
+  moderationReason String?
+  published   DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  conversations Conversation[]
+  reports Report[]
+  savedBy SavedJob[]
+}
+
+model SavedJob {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobId String
+  job Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, jobId])
+}
+
+model Conversation {
+  id        String   @id @default(cuid())
+  driverId  String
+  driver    User     @relation("Driver", fields: [driverId], references: [id], onDelete: Cascade)
+  companyId String
+  company   User     @relation("Company", fields: [companyId], references: [id], onDelete: Cascade)
+  jobId     String?
+  job       Job?     @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  jobTitle  String?
+  selectedByCompanyAt DateTime?  // company marked driver as "utvald"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages Message[]
+  reports Report[]
+  reviews CompanyReview[]
+}
+
+model Message {
+  id             String   @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String
+  sender         User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  senderRole     String   // driver | company
+  content        String
+  createdAt      DateTime @default(now())
+}
+
+model Report {
+  id String @id @default(cuid())
+  reporterId String
+  reporter User @relation("ReportCreator", fields: [reporterId], references: [id], onDelete: Cascade)
+  reportedUserId String?
+  reportedUser User? @relation("ReportTarget", fields: [reportedUserId], references: [id], onDelete: SetNull)
+  jobId String?
+  job Job? @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  conversationId String?
+  conversation Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  category String // PAYMENT | BEHAVIOR | SCAM | SPAM | OTHER
+  description String
+  status String @default("OPEN") // OPEN | IN_REVIEW | RESOLVED | DISMISSED
+  resolutionNote String?
+  reviewedAt DateTime?
+  reviewedByAdminEmail String?
+  createdAt DateTime @default(now())
+}
+
+model CompanyReview {
+  id String @id @default(cuid())
+  companyId String
+  company User @relation("ReviewCompany", fields: [companyId], references: [id], onDelete: Cascade)
+  authorId String
+  author User @relation("ReviewAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  conversationId String
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  rating Int
+  comment String?
+  status String @default("PUBLISHED") // PUBLISHED | HIDDEN
+  moderationReason String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([authorId, conversationId])
+}

@@ -1,0 +1,87 @@
+@import "tailwindcss";
+
+:root {
+  --color-primary: #0d4f4f;
+  --color-primary-light: #0f6b6b;
+  --color-accent: #e8a317;
+  --color-accent-dark: #c98a0f;
+  --color-surface: #f8faf9;
+  --color-text: #1a2f2f;
+  --color-text-muted: #5a7272;
+  --font-sans: "DM Sans", system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  background: var(--color-surface);
+  overflow-x: hidden;
+}
+
+.dm-desktop-nav {
+  display: none;
+}
+
+.dm-mobile-menu-button {
+  display: inline-flex;
+}
+
+.dm-header-primary-cta,
+.dm-header-logout {
+  display: none;
+}
+
+.dm-mobile-menu-panel {
+  display: block;
+}
+
+.dm-hero-actions,
+.dm-company-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.dm-company-actions > * {
+  flex: 1 1 220px;
+}
+
+@media (min-width: 1024px) {
+  .dm-desktop-nav {
+    display: flex !important;
+  }
+
+  .dm-mobile-menu-button {
+    display: none !important;
+  }
+
+  .dm-mobile-menu-panel {
+    display: none !important;
+  }
+
+  .dm-header-primary-cta,
+  .dm-header-logout {
+    display: inline-flex !important;
+  }
+}
+
+@media (max-width: 1023px) {
+  .dm-brand-text {
+    font-size: 1.125rem;
+    line-height: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .dm-hero-actions,
+  .dm-company-actions {
+    flex-direction: column;
+  }
+
+  .dm-company-actions > * {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+}
