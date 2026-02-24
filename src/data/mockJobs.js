@@ -105,10 +105,8 @@ export const employmentTypes = [
   { value: "tim", label: "Timanställning" },
 ];
 
-export const licenseTypes = [
-  { value: "CE", label: "CE" },
-  { value: "C", label: "C" },
-];
+// Re-export från competencies (B, C, CE)
+export { licenseTypes, scheduleTypes, experienceLevels } from "./competencies.js";
 
 export const regions = [
   "Stockholm",
@@ -139,21 +137,4 @@ export const jobTitles = [
   { value: "lokalchaufför", label: "Lokalchaufför" },
 ];
 
-/** Schematyp – chaufförer vill veta */
-export const scheduleTypes = [
-  { value: "dag", label: "Dagtid" },
-  { value: "kväll", label: "Kväll" },
-  { value: "natt", label: "Natt" },
-  { value: "blandat", label: "Blandat (dag/kväll/natt)" },
-  { value: "flex", label: "Flexibelt" },
-];
-
-/** Erfarenhetskrav – strukturerat */
-export const experienceLevels = [
-  { value: "", label: "Inget krav" },
-  { value: "0-1", label: "0–1 år" },
-  { value: "1-2", label: "1–2 år" },
-  { value: "2-5", label: "2–5 år" },
-  { value: "5-10", label: "5–10 år" },
-  { value: "10+", label: "10+ år" },
-];
+// scheduleTypes och experienceLevels exporteras från competencies.js

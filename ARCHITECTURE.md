@@ -1,7 +1,7 @@
-# DriverMatch – Architecture & Design Direction
+# Sveriges Transportplattform – Architecture & Design Direction
 
 ## Vision Statement
-**DriverMatch** är en marknadsplats för yrkesförare i Sverige. Företag publicerar jobbannonser, chaufförer hittar arbete. Enkel, snabb, gjord för branschen.
+**Sveriges Transportplattform** (transportplattformen.se) är en marknadsplats för yrkesförare i Sverige. Företag publicerar jobbannonser, chaufförer hittar arbete. Enkel, snabb, gjord för branschen.
 
 ---
 
@@ -9,7 +9,7 @@
 
 **Simplex Bemanning AB** är ett etablerat bemanningsföretag (1300+ medarbetare, 400+ MSEK). Vi måste vara tydligt bättre.
 
-| Område | Simplex | DriverMatch (mål) |
+| Område | Simplex | Sveriges Transportplattform (mål) |
 |-------|---------|-------------------|
 | **Modell** | Bemanning – Simplex är arbetsgivare, chaufförer är "utlånade" | Direkt – företag och chaufförer träffas utan mellanhand |
 | **Chauffören** | Inventory – placeras av Simplex | Användare – driver sitt eget läge, synlighet, ansökningar |
@@ -35,7 +35,7 @@
 
 ## 1. Problem We Solve
 
-| Nuvarande (Facebook m.fl.) | DriverMatch |
+| Nuvarande (Facebook m.fl.) | Sveriges Transportplattform |
 |---------------------------|-------------|
 | Ostrukturerad sökning | Filtrerbar efter körkort, plats, typ |
 | Inga standardiserade fält | Specifika fält för transportbranschen |
@@ -126,7 +126,7 @@ FÖRETAG-SIDA (Publicera jobb)
 /foretag/annonsera         → Publicera jobb (formulär)
 /foretag/chaufforer        → Sök chaufförer (two-way marketplace)
 /foretag/chaufforer/:id    → Chaufförprofil + kontakta
-/om-oss                    → Om DriverMatch
+/om-oss                    → Om Sveriges Transportplattform
 /login                     → Inloggning (placeholder)
 ```
 

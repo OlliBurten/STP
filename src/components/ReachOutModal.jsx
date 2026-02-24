@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useChat } from "../context/ChatContext";
 import { useProfile } from "../context/ProfileContext";
+import { CloseIcon, CheckIcon } from "./Icons";
 
 export default function ReachOutModal({ driver, jobs, onClose, onSuccess }) {
   const { user } = useAuth();
@@ -56,12 +57,12 @@ export default function ReachOutModal({ driver, jobs, onClose, onSuccess }) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
         <div className="bg-white rounded-xl p-8 max-w-md w-full text-center">
-          <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
-            <span className="text-2xl">✓</span>
+          <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4 text-green-700">
+            <CheckIcon className="w-6 h-6" />
           </div>
           <h2 className="text-xl font-bold text-slate-900">Förfrågan skickad</h2>
           <p className="mt-2 text-slate-600">
-            Din förfrågan har skickats till {driver.name}. Chauffören får ett meddelande via DriverMatch.
+            Din förfrågan har skickats till {driver.name}. Chauffören får ett meddelande via Sveriges Transportplattform.
           </p>
           <Link
             to={`/foretag/meddelanden/${conversationId}`}
@@ -92,12 +93,12 @@ export default function ReachOutModal({ driver, jobs, onClose, onSuccess }) {
             className="text-slate-400 hover:text-slate-600 p-1"
             aria-label="Stäng"
           >
-            ✕
+            <CloseIcon className="w-5 h-5" />
           </button>
         </div>
 
         <p className="text-slate-600 mb-4 text-sm">
-          All kommunikation sker via DriverMatch. Chauffören behöver inte dela kontaktuppgifter.
+          All kommunikation sker via Sveriges Transportplattform. Chauffören behöver inte dela kontaktuppgifter.
         </p>
 
         <div className="flex gap-2 mb-6">

@@ -10,7 +10,7 @@ function ConversationItem({ conversation, isDriver, isActive, onClick, basePath 
   const other = isDriver ? conversation.companyName : conversation.driverName;
   const lastMsg = conversation.messages[conversation.messages.length - 1];
   const time = lastMsg
-    ? new Date(lastMsg.timestamp).toLocaleDateString("sv-SE", {
+    ? new Date(lastMsg.timestamp).toLocaleString("sv-SE", {
         day: "numeric",
         month: "short",
         hour: "2-digit",
@@ -95,6 +95,18 @@ function ChatWindow({ conversation, isDriver, onBack, onReport, onReview, canRev
         </div>
       )}
 
+      {isDriver && conversation.selectedByCompanyAt && conversation.jobId && (
+        <div className="mx-4 mt-3 p-3 rounded-lg bg-green-50 border border-green-200">
+          <p className="text-sm font-medium text-green-900">Företaget har valt dig för detta jobb</p>
+          <Link
+            to={`/jobb/${conversation.jobId}`}
+            className="inline-flex items-center gap-1 mt-2 text-sm text-[var(--color-primary)] font-medium hover:underline"
+          >
+            Öppna jobbannonsen →
+          </Link>
+        </div>
+      )}
+
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {conversation.messages.map((msg) => {
           const isOwn = msg.sender === (isDriver ? "driver" : "company");
@@ -137,7 +149,7 @@ function ChatWindow({ conversation, isDriver, onBack, onReport, onReview, canRev
           </button>
         </div>
         <p className="mt-2 text-xs text-slate-500">
-          All kommunikation sker via DriverMatch. Du behöver inte dela dina kontaktuppgifter.
+          All kommunikation sker via Sveriges Transportplattform. Du behöver inte dela dina kontaktuppgifter.
         </p>
       </form>
     </div>
@@ -244,7 +256,7 @@ export default function Messages() {
     if (conversation && !isDriver) {
       setCompanyFilter(conversation.companyName);
     }
-  }, [conversation?.id, isDriver]);
+  }, [conversation?.id, conversation?.companyName, isDriver]);
 
   useEffect(() => {
     if (!isDriver || !conversation?.id) {

@@ -1,4 +1,5 @@
 import { useProfile } from "../context/ProfileContext";
+import { LocationIcon } from "./Icons";
 
 export default function ProfilePreview({ compact = false }) {
   const { profile } = useProfile();
@@ -25,7 +26,7 @@ export default function ProfilePreview({ compact = false }) {
       <div className="p-6 space-y-4">
         <div>
           <h2 className="text-lg font-semibold text-slate-900">{profile.name}</h2>
-          <p className="text-slate-600">📍 {profile.location}, {profile.region}</p>
+          <p className="text-slate-600 flex items-center gap-1"><LocationIcon className="w-4 h-4 shrink-0" /> {profile.location}, {profile.region}</p>
                 <p className="text-slate-600">{profile.email}</p>
         </div>
 

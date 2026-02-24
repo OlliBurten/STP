@@ -1,6 +1,6 @@
 import { jobTypes, employmentTypes, licenseTypes, regions } from "../data/mockJobs";
 import { segmentOptions } from "../data/segments";
-import { branschOptions, getBranschLabel } from "../data/bransch.js";
+import { transportSegmentGroups, getBranschLabel } from "../data/bransch.js";
 
 export default function JobFilters({ filters, setFilters }) {
   const handleChange = (key, value) => {
@@ -163,10 +163,14 @@ export default function JobFilters({ filters, setFilters }) {
             className="w-full min-h-[48px] px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none bg-white"
           >
             <option value="">Alla branscher</option>
-            {branschOptions.map((b) => (
-              <option key={b.value} value={b.value}>
-                {b.label}
-              </option>
+            {transportSegmentGroups.map((g) => (
+              <optgroup key={g.id} label={g.label}>
+                {g.options.map((b) => (
+                  <option key={b.value} value={b.value}>
+                    {b.label}
+                  </option>
+                ))}
+              </optgroup>
             ))}
           </select>
         </div>

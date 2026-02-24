@@ -13,7 +13,7 @@ export default function Privacy() {
         <section>
           <h2 className="text-xl font-semibold text-slate-900">1. Personuppgiftsansvarig</h2>
           <p>
-            DriverMatch är personuppgiftsansvarig för den behandling av personuppgifter som sker
+            Sveriges Transportplattform är personuppgiftsansvarig för den behandling av personuppgifter som sker
             inom ramen för tjänsten. Kontaktuppgifter finns på webbplatsen.
           </p>
         </section>

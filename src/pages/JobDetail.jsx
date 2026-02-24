@@ -11,6 +11,9 @@ import { selectConversation } from "../api/conversations.js";
 import { getCompanyReviewSummary } from "../api/reviews.js";
 import { mapEmploymentToSegment, segmentLabel } from "../data/segments";
 import { getBranschLabel } from "../data/bransch.js";
+import { getCertificateLabel } from "../data/profileData";
+import { scheduleTypes } from "../data/mockJobs";
+import { StarFilledIcon, StarOutlineIcon, LocationIcon } from "../components/Icons";
 
 export default function JobDetail() {
   const { id } = useParams();
@@ -183,20 +186,22 @@ export default function JobDetail() {
                   key={c}
                   className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-slate-100 text-slate-700"
                 >
-                  {c}
+                  {getCertificateLabel(c)}
                 </span>
               ))}
             {job.schedule && (
               <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-slate-100 text-slate-700">
-                {job.schedule === "dag"
-                  ? "Dagtid"
-                  : job.schedule === "kväll"
-                    ? "Kväll"
-                    : job.schedule === "natt"
-                      ? "Natt"
-                      : job.schedule === "blandat"
-                        ? "Blandat"
-                        : "Flexibelt"}
+                {scheduleTypes.find((s) => s.value === job.schedule)?.label ?? job.schedule}
+              </span>
+            )}
+            {job.physicalWorkRequired && (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-amber-100 text-amber-800">
+                Fysiskt krävande
+              </span>
+            )}
+            {job.soloWorkOk && (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-slate-100 text-slate-700">
+                Ensamarbete
               </span>
             )}
           </div>
@@ -217,7 +222,7 @@ export default function JobDetail() {
                 : "Inga omdömen ännu"}
             </p>
           )}
-          <p className="mt-1 text-slate-500">📍 {job.location}, {job.region}</p>
+          <p className="mt-1 text-slate-500 flex items-center gap-1"><LocationIcon className="w-4 h-4 shrink-0" /> {job.location}, {job.region}</p>
           <p className="mt-4 text-sm text-slate-500">Publicerad {formatDate(job.published)}</p>
 
           <div className="mt-8 pt-8 border-t border-slate-200 space-y-6">
@@ -357,7 +362,7 @@ export default function JobDetail() {
                         : "bg-white border-slate-300 text-slate-700 hover:border-slate-400"
                     }`}
                   >
-                    {isSaved ? "★ Sparat jobb" : "☆ Spara jobb"}
+                    {isSaved ? <><StarFilledIcon className="w-4 h-4 mr-1.5 inline" /> Sparat jobb</> : <><StarOutlineIcon className="w-4 h-4 mr-1.5 inline" /> Spara jobb</>}
                   </button>
                 </div>
                 <button

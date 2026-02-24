@@ -1,14 +1,58 @@
 import { z } from "zod";
 
+/** Transportsegment – måste matcha src/data/bransch.js branschValues */
 const BRANSCH_VALUES = [
-  "tank",
-  "soppor",
+  "tankbil-drivmedel",
+  "tankbil-kemikalier",
+  "tankbil-livsmedel",
+  "gastransport",
+  "adr-styckegods",
+  "adr-tank",
+  "timmerbil",
+  "flisbil",
+  "anlaggningstransporter",
+  "massor-grus",
+  "berg-kross",
+  "maskintransport",
+  "tippbil",
+  "kranbil",
+  "betongbil",
+  "schakt",
+  "bygglogistik",
+  "modultransporter",
+  "dagdistribution",
+  "nattdistribution",
+  "terminaltrafik",
+  "paket-citylogistik",
+  "styckegods-fjarr",
+  "fjarrbil",
+  "kyltransporter",
+  "frys",
+  "livsmedelsdistribution",
+  "mejeri",
+  "slakteri",
+  "sopbil",
   "atervinning",
-  "distribution",
-  "fjarrkorning",
-  "specialtransport",
-  "kyl",
-  "ovrigt",
+  "slam-spol",
+  "sugbil",
+  "slamsugning",
+  "miljotransporter",
+  "bargning",
+  "tungbargning",
+  "biltransport",
+  "specialtransporter-bred",
+  "modul-eskort",
+  "levande-djur",
+  "hasttransport",
+  "inrikes-fjarr",
+  "norden",
+  "eu-trafik",
+  "container",
+  "hamntransporter",
+  "terminalkorning",
+  "industriintern",
+  "lager-truck-ce",
+  "kombitjanster",
 ];
 
 export const registerSchema = z
@@ -70,7 +114,15 @@ export const createJobSchema = z.object({
   salary: z.string().max(100).optional().nullable(),
   requirements: z.array(z.string()).optional(),
   extraRequirements: z.string().max(2000).optional().nullable(),
-  bransch: z.string().max(50).optional().nullable().transform((v) => (v && v.trim() ? v.trim() : null)),
+  bransch: z
+    .string()
+    .max(80)
+    .optional()
+    .nullable()
+    .refine((v) => !v || v.trim() === "" || BRANSCH_VALUES.includes(v.trim()), "Ogiltig bransch (välj från listan)")
+    .transform((v) => (v && v.trim() ? v.trim() : null)),
+  physicalWorkRequired: z.boolean().optional().nullable(),
+  soloWorkOk: z.boolean().optional().nullable(),
 });
 
 export const companyProfileSchema = z.object({
@@ -103,10 +155,11 @@ export const sendMessageSchema = z.object({
   content: z.string().min(1, "Meddelande krävs").max(5000),
 });
 
-/** Query: bransch for companies search (optional) */
+/** Query: bransch, region, segment for companies search (optional). segment=INTERNSHIP => endast åkerier som erbjuder praktik. */
 export const companiesSearchQuerySchema = z.object({
   bransch: z.string().max(50).optional(),
   region: z.string().max(100).optional(),
+  segment: z.enum(["FULLTIME", "FLEX", "INTERNSHIP"]).optional(),
 });
 
 /** Query: bransch for jobs list (optional) */

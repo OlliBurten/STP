@@ -159,6 +159,10 @@ profileRouter.get("/", async (req, res, next) => {
       showEmailToCompanies: profile.showEmailToCompanies,
       showPhoneToCompanies: profile.showPhoneToCompanies,
       experience,
+      isGymnasieelev: profile.isGymnasieelev ?? false,
+      schoolName: profile.schoolName ?? null,
+      physicalWorkOk: profile.physicalWorkOk ?? null,
+      soloWorkOk: profile.soloWorkOk ?? null,
     });
   } catch (e) {
     next(e);
@@ -205,6 +209,14 @@ profileRouter.put("/", async (req, res, next) => {
       showPhoneToCompanies: body.showPhoneToCompanies,
     };
     if (experience !== undefined) data.experience = experience;
+    if (body.isGymnasieelev !== undefined) data.isGymnasieelev = Boolean(body.isGymnasieelev);
+    if (body.schoolName !== undefined) data.schoolName = body.schoolName ? String(body.schoolName).trim() : null;
+    if (body.physicalWorkOk !== undefined) data.physicalWorkOk = body.physicalWorkOk === true ? true : body.physicalWorkOk === false ? false : null;
+    if (body.soloWorkOk !== undefined) data.soloWorkOk = body.soloWorkOk === true ? true : body.soloWorkOk === false ? false : null;
+    if (data.isGymnasieelev) {
+      data.primarySegment = "INTERNSHIP";
+      data.secondarySegments = [];
+    }
     const profile = await prisma.driverProfile.update({
       where: { userId: req.userId },
       data,
@@ -242,6 +254,10 @@ profileRouter.put("/", async (req, res, next) => {
       showEmailToCompanies: profile.showEmailToCompanies,
       showPhoneToCompanies: profile.showPhoneToCompanies,
       experience: exp,
+      isGymnasieelev: profile.isGymnasieelev ?? false,
+      schoolName: profile.schoolName ?? null,
+      physicalWorkOk: profile.physicalWorkOk ?? null,
+      soloWorkOk: profile.soloWorkOk ?? null,
     });
     const shouldSendMatchAlerts =
       profile.visibleToCompanies &&

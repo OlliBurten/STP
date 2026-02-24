@@ -18,8 +18,25 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 app.set("trust proxy", 1);
 const allowedOrigins = process.env.FRONTEND_URL
-  ? process.env.FRONTEND_URL.split(",").map((o) => o.trim())
+  ? process.env.FRONTEND_URL.split(",").map((o) => o.trim()).filter(Boolean)
   : true;
+const corsOriginList = Array.isArray(allowedOrigins) && allowedOrigins.length > 0 ? allowedOrigins : [];
+
+function corsOrigin(origin, cb) {
+  if (!origin) return cb(null, true);
+  if (corsOriginList.length === 0) return cb(null, true);
+  if (corsOriginList.includes(origin)) return cb(null, true);
+  if (origin.endsWith(".vercel.app")) return cb(null, true);
+  return cb(null, false);
+}
+
+if (corsOriginList.length > 0) {
+  console.log("CORS: listed origins + *.vercel.app (preview)");
+} else if (!process.env.FRONTEND_URL) {
+  console.log("CORS: all origins allowed (FRONTEND_URL not set)");
+} else {
+  console.warn("CORS: FRONTEND_URL empty/invalid – allowing all origins");
+}
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -43,7 +60,7 @@ const apiWriteLimiter = rateLimit({
 });
 
 app.use(requestIdMiddleware);
-app.use(cors({ origin: allowedOrigins, credentials: true }));
+app.use(cors({ origin: corsOrigin, credentials: true }));
 app.use(express.json({ limit: "1mb" }));
 
 app.use("/api/auth/login", authLimiter);

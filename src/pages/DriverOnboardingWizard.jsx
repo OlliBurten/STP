@@ -17,6 +17,8 @@ export default function DriverOnboardingWizard() {
   const [draft, setDraft] = useState(() => ({
     primarySegment: profile.primarySegment || "",
     secondarySegments: profile.secondarySegments || [],
+    isGymnasieelev: profile.isGymnasieelev ?? false,
+    schoolName: profile.schoolName || "",
     licenses: profile.licenses || [],
     region: profile.region || "",
     location: profile.location || "",
@@ -51,25 +53,39 @@ export default function DriverOnboardingWizard() {
   };
 
   const canContinue = () => {
-    if (step === 0) return Boolean(draft.primarySegment);
+    if (step === 0) {
+      if (draft.isGymnasieelev) return (draft.schoolName || "").trim().length > 0;
+      return Boolean(draft.primarySegment);
+    }
     if (step === 2) return Boolean(draft.region) && (draft.licenses || []).length > 0;
     return true;
   };
 
+  const goNext = () => {
+    if (step === 0 && draft.isGymnasieelev) {
+      setStep(2);
+      return;
+    }
+    setStep((prev) => prev + 1);
+  };
+
   const saveAndFinish = () => {
-    const cleanSecondary = (draft.secondarySegments || []).filter(
-      (s) => s && s !== draft.primarySegment
-    );
+    const primarySegment = draft.isGymnasieelev ? "INTERNSHIP" : draft.primarySegment;
+    const cleanSecondary = draft.isGymnasieelev
+      ? []
+      : (draft.secondarySegments || []).filter((s) => s && s !== primarySegment);
     updateProfile({
-      primarySegment: draft.primarySegment,
+      primarySegment,
       secondarySegments: cleanSecondary,
+      isGymnasieelev: draft.isGymnasieelev,
+      schoolName: draft.isGymnasieelev ? (draft.schoolName || "").trim() : "",
       licenses: draft.licenses,
       region: draft.region,
       location: draft.location,
       availability: draft.availability,
       visibleToCompanies: draft.visibleToCompanies,
     });
-    trackDriverOnboardingComplete(draft.primarySegment);
+    trackDriverOnboardingComplete(primarySegment);
     navigate("/profil", { replace: true });
   };
 
@@ -97,27 +113,89 @@ export default function DriverOnboardingWizard() {
         <div className="mt-8">
           {step === 0 && (
             <div>
-              <h2 className="font-semibold text-slate-900">Vad är ditt primära mål?</h2>
+              <h2 className="font-semibold text-slate-900">Är du gymnasieelev som söker praktik/LIA?</h2>
               <p className="mt-1 text-sm text-slate-600">
-                Det här styr vilka jobb du syns mest för.
+                Om ja visas bara åkerier och jobb som erbjuder praktik. Du kan söka i olika regioner och branscher.
               </p>
-              <div className="mt-4 grid gap-3">
-                {segmentOptions.map((segment) => (
-                  <button
-                    key={segment.value}
-                    type="button"
-                    onClick={() => setDraft((prev) => ({ ...prev, primarySegment: segment.value }))}
-                    className={`text-left rounded-xl border p-4 ${
-                      draft.primarySegment === segment.value
-                        ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5"
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setDraft((prev) => ({
+                      ...prev,
+                      isGymnasieelev: true,
+                      primarySegment: "INTERNSHIP",
+                      secondarySegments: [],
+                    }))
+                  }
+                  className={`text-left rounded-xl border p-4 ${
+                    draft.isGymnasieelev
+                      ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5"
+                      : "border-slate-200 hover:bg-slate-50"
+                  }`}
+                >
+                  <p className="font-semibold text-slate-900">Ja, jag söker praktik/LIA</p>
+                  <p className="text-sm text-slate-600">Jag är elev och vill hitta praktikplats hos ett åkeri.</p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setDraft((prev) => ({
+                      ...prev,
+                      isGymnasieelev: false,
+                      schoolName: "",
+                      primarySegment: prev.primarySegment || "",
+                    }))
+                  }
+                  className={`text-left rounded-xl border p-4 ${
+                    !draft.isGymnasieelev && draft.primarySegment
+                      ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5"
+                      : !draft.isGymnasieelev
+                        ? "border-slate-200 hover:bg-slate-50"
                         : "border-slate-200 hover:bg-slate-50"
-                    }`}
-                  >
-                    <p className="font-semibold text-slate-900">{segment.label}</p>
-                    <p className="text-sm text-slate-600">{segment.description}</p>
-                  </button>
-                ))}
+                  }`}
+                >
+                  <p className="font-semibold text-slate-900">Nej, jag är yrkesförare eller söker annat</p>
+                  <p className="text-sm text-slate-600">Jag söker heltid, vikariat eller annat – välj mål nedan.</p>
+                </button>
               </div>
+              {draft.isGymnasieelev && (
+                <div className="mt-6">
+                  <label htmlFor="school-name" className="block text-sm font-medium text-slate-700 mb-1">
+                    Vilken skola går du i?
+                  </label>
+                  <input
+                    id="school-name"
+                    type="text"
+                    value={draft.schoolName}
+                    onChange={(e) => setDraft((prev) => ({ ...prev, schoolName: e.target.value }))}
+                    placeholder="t.ex. Transportgymnasiet Stockholm"
+                    className="w-full px-4 py-2 rounded-lg border border-slate-300 bg-white"
+                  />
+                </div>
+              )}
+              {!draft.isGymnasieelev && (
+                <>
+                  <p className="mt-6 font-medium text-slate-900">Vad är ditt primära mål?</p>
+                  <div className="mt-3 grid gap-3">
+                    {segmentOptions.map((segment) => (
+                      <button
+                        key={segment.value}
+                        type="button"
+                        onClick={() => setDraft((prev) => ({ ...prev, primarySegment: segment.value }))}
+                        className={`text-left rounded-xl border p-4 ${
+                          draft.primarySegment === segment.value
+                            ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5"
+                            : "border-slate-200 hover:bg-slate-50"
+                        }`}
+                      >
+                        <p className="font-semibold text-slate-900">{segment.label}</p>
+                        <p className="text-sm text-slate-600">{segment.description}</p>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
           )}
 
@@ -241,7 +319,9 @@ export default function DriverOnboardingWizard() {
         <div className="mt-8 flex items-center justify-between">
           <button
             type="button"
-            onClick={() => setStep((prev) => Math.max(0, prev - 1))}
+            onClick={() =>
+              setStep((prev) => (prev === 2 && draft.isGymnasieelev ? 0 : Math.max(0, prev - 1)))
+            }
             disabled={step === 0}
             className="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 disabled:opacity-50"
           >
@@ -250,11 +330,11 @@ export default function DriverOnboardingWizard() {
           {step < steps.length - 1 ? (
             <button
               type="button"
-              onClick={() => setStep((prev) => prev + 1)}
+              onClick={goNext}
               disabled={!canContinue()}
               className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white disabled:opacity-50"
             >
-              Nästa: {steps[step + 1]}
+              Nästa: {step === 0 && draft.isGymnasieelev ? steps[2] : steps[step + 1]}
             </button>
           ) : (
             <button

@@ -5,6 +5,7 @@ import { useChat } from "../context/ChatContext";
 import { fetchMyJobs } from "../api/jobs.js";
 import { getCompanyReviewSummary } from "../api/reviews.js";
 import { fetchMyCompanyProfile } from "../api/companies.js";
+import { CheckIcon, CircleOutlineIcon } from "../components/Icons";
 
 export default function ForCompanies() {
   const { user, isCompany, hasApi } = useAuth();
@@ -118,7 +119,7 @@ export default function ForCompanies() {
           <div className="mt-6 pt-6 border-t border-slate-200">
             {companyProfile.companyBransch?.length > 0 && companyProfile.companyRegion ? (
               <p className="text-sm text-slate-600">
-                ✓ Ni syns i <Link to="/akerier" className="text-[var(--color-primary)] font-medium hover:underline">Hitta åkerier</Link> i regionen{" "}
+                <CheckIcon className="w-4 h-4 inline-block mr-1 align-middle text-green-600" /> Ni syns i <Link to="/akerier" className="text-[var(--color-primary)] font-medium hover:underline">Hitta åkerier</Link> i regionen{" "}
                 <strong>{companyProfile.companyRegion}</strong> – förare kan hitta er även utan aktiv annons.
               </p>
             ) : (
@@ -160,7 +161,7 @@ export default function ForCompanies() {
             <ul className="mt-3 space-y-1.5 text-sm">
               {onboardingSteps.map((step) => (
                 <li key={step.label} className={step.done ? "text-green-700" : "text-indigo-900"}>
-                  {step.done ? "✓" : "○"} {step.label}
+                  {step.done ? <CheckIcon className="w-4 h-4 inline-block mr-1 align-middle text-green-600" /> : <CircleOutlineIcon className="w-4 h-4 inline-block mr-1 align-middle text-slate-400" />} {step.label}
                 </li>
               ))}
             </ul>

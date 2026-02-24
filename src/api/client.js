@@ -21,7 +21,18 @@ export async function api(method, path, body, options = {}) {
   const token = getToken();
   if (token) opts.headers.Authorization = `Bearer ${token}`;
   if (body != null) opts.body = JSON.stringify(body);
-  const res = await fetch(url, opts);
+
+  let res;
+  try {
+    res = await fetch(url, opts);
+  } catch (networkErr) {
+    const msg =
+      networkErr?.message && networkErr.message.toLowerCase().includes("fetch")
+        ? "Kunde inte nå servern. Kontrollera att backend är igång och att adressen (VITE_API_URL) är rätt – eller att CORS tillåter din frontend-URL."
+        : (networkErr?.message || "Nätverksfel");
+    throw new Error(msg);
+  }
+
   const text = await res.text();
   let data;
   try {

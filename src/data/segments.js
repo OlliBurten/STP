@@ -1,18 +1,18 @@
 export const segmentOptions = [
   {
     value: "FULLTIME",
-    label: "Heltid",
-    description: "Långsiktig anställning",
+    label: "Heltidssökande",
+    description: "Långsiktig anställning, fast anställning",
   },
   {
     value: "FLEX",
     label: "Vikariepool",
-    description: "Extra pass, pensionärer, deltidsförare",
+    description: "Extra pass, vikarier, pensionärer, deltidsförare",
   },
   {
     value: "INTERNSHIP",
-    label: "Praktik",
-    description: "Elever och lärlingar",
+    label: "Praktikanter",
+    description: "Elever, LIA, lärlingar – t.ex. från gymnasiet",
   },
 ];
 

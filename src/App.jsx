@@ -1,9 +1,10 @@
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { ProfileProvider } from "./context/ProfileContext";
 import { ChatProvider } from "./context/ChatContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Header from "./components/Header";
+import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import JobList from "./pages/JobList";
 import JobDetail from "./pages/JobDetail";
@@ -28,17 +29,18 @@ import CompanyPublicProfile from "./pages/CompanyPublicProfile";
 import DriverOnboardingWizard from "./pages/DriverOnboardingWizard";
 import CompanyOnboardingWizard from "./pages/CompanyOnboardingWizard";
 import AkerierSearch from "./pages/AkerierSearch";
+import Branschinsikter from "./pages/Branschinsikter";
+import Kompetenslaget2025 from "./pages/Kompetenslaget2025";
+import Kontakt from "./pages/Kontakt";
+import { useAuth } from "./context/AuthContext";
 
-function App() {
+function AppLayout() {
+  const { user } = useAuth();
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <ProfileProvider>
-          <ChatProvider>
-            <div className="min-h-screen flex flex-col overflow-x-hidden">
-              <Header />
-              <div className="flex-1">
-                <Routes>
+    <div className="min-h-screen flex flex-col overflow-x-hidden">
+      <Header />
+      <div className="flex-1 pt-16">
+        <Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/jobb" element={<JobList />} />
                   <Route path="/jobb/:id" element={<JobDetail />} />
@@ -46,6 +48,9 @@ function App() {
                   <Route path="/foretag" element={<ForCompanies />} />
                   <Route path="/foretag/:id" element={<CompanyPublicProfile />} />
                   <Route path="/om-oss" element={<About />} />
+                  <Route path="/branschinsikter" element={<Branschinsikter />} />
+                  <Route path="/branschinsikter/kompetenslaget-2025" element={<Kompetenslaget2025 />} />
+                  <Route path="/kontakt" element={<Kontakt />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/verifiera-email" element={<VerifyEmail />} />
                   <Route path="/aterstall-losenord" element={<ResetPassword />} />
@@ -170,21 +175,18 @@ function App() {
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </div>
-              <footer className="mt-auto py-8 border-t border-slate-200 bg-white">
-                <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center text-sm text-slate-500">
-                  <p>DriverMatch – Jobb för yrkesförare och rekrytering av chaufförer i Sverige</p>
-                  <p className="mt-3 flex flex-wrap justify-center gap-x-4 gap-y-1">
-                    <Link to="/" className="hover:text-[var(--color-primary)]">Startsida</Link>
-                    <Link to="/jobb" className="hover:text-[var(--color-primary)]">Jobb</Link>
-                    <Link to="/akerier" className="hover:text-[var(--color-primary)]">Åkerier</Link>
-                    <Link to="/#sa-fungerar-det" className="hover:text-[var(--color-primary)]">Så fungerar det</Link>
-                    <a href="mailto:info@drivermatch.se" className="hover:text-[var(--color-primary)]">Kontakta oss</a>
-                    <Link to="/anvandarvillkor" className="hover:text-[var(--color-primary)]">Användarvillkor</Link>
-                    <Link to="/integritet" className="hover:text-[var(--color-primary)]">Integritetspolicy</Link>
-                  </p>
-                </div>
-              </footer>
+              {!user && <Footer />}
             </div>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <ProfileProvider>
+          <ChatProvider>
+            <AppLayout />
           </ChatProvider>
         </ProfileProvider>
       </AuthProvider>

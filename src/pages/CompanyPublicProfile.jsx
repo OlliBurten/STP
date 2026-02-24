@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { fetchCompanyPublicProfile } from "../api/companies.js";
 import { mapEmploymentToSegment, segmentLabel } from "../data/segments";
 import { getBranschLabel } from "../data/bransch.js";
+import { StarFilledIcon, LocationIcon } from "../components/Icons";
 
 export default function CompanyPublicProfile() {
   const { id } = useParams();
@@ -48,8 +49,8 @@ export default function CompanyPublicProfile() {
       <section className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8">
         <h1 className="text-3xl font-bold text-slate-900">{company.name}</h1>
         <div className="mt-3 flex flex-wrap gap-3 text-sm text-slate-600">
-          {company.location ? <span>📍 {company.location}</span> : null}
-          {company.region ? <span>📍 {company.region}</span> : null}
+          {company.location ? <span className="inline-flex items-center gap-1"><LocationIcon className="w-4 h-4 shrink-0" /> {company.location}</span> : null}
+          {company.region ? <span className="inline-flex items-center gap-1"><LocationIcon className="w-4 h-4 shrink-0" /> {company.region}</span> : null}
           {company.bransch?.length > 0 ? (
             <span className="flex flex-wrap gap-1">
               {company.bransch.map((b) => (
@@ -60,7 +61,7 @@ export default function CompanyPublicProfile() {
             </span>
           ) : null}
           {company.reviewCount > 0 ? (
-            <span>⭐ {company.reviewAverage}/5 ({company.reviewCount})</span>
+            <span className="inline-flex items-center gap-1"><StarFilledIcon className="w-4 h-4 text-amber-500" /> {company.reviewAverage}/5 ({company.reviewCount})</span>
           ) : (
             <span>Nytt konto</span>
           )}
@@ -86,8 +87,8 @@ export default function CompanyPublicProfile() {
                 <Link to={`/jobb/${job.id}`} className="font-medium text-slate-900 hover:text-[var(--color-primary)]">
                   {job.title}
                 </Link>
-                <p className="mt-1 text-sm text-slate-600">
-                  📍 {job.location}, {job.region}
+                <p className="mt-1 text-sm text-slate-600 flex items-center gap-1">
+                  <LocationIcon className="w-4 h-4 shrink-0" /> {job.location}, {job.region}
                 </p>
                 {(job.segment || job.employment) && (
                   <p className="mt-1 text-xs text-slate-500">

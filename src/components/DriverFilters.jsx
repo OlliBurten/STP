@@ -1,6 +1,5 @@
-import { licenseTypes, regions } from "../data/mockJobs";
-import { availabilityTypes } from "../data/profileData";
-import { experienceLevels } from "../data/mockDrivers";
+import { licenseTypes, regions, experienceLevels } from "../data/mockJobs";
+import { availabilityTypes, certificateTypes } from "../data/profileData";
 import { segmentOptions } from "../data/segments";
 
 export default function DriverFilters({ filters, setFilters }) {
@@ -94,11 +93,12 @@ export default function DriverFilters({ filters, setFilters }) {
             onChange={(e) => handleChange("certificate", e.target.value)}
             className="w-full min-h-[48px] px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none bg-white"
           >
-            <option value="">Alla</option>
-            <option value="YKB">YKB</option>
-            <option value="ADR">ADR</option>
-            <option value="Tank">Tank</option>
-            <option value="Kyl">Kyl</option>
+            <option value="">Alla certifikat</option>
+            {certificateTypes.map((c) => (
+              <option key={c.value} value={c.value}>
+                {c.label}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -151,7 +151,7 @@ export default function DriverFilters({ filters, setFilters }) {
             className="w-full min-h-[48px] px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none bg-white"
           >
             <option value="">Alla</option>
-            {experienceLevels.map((e) => (
+            {experienceLevels.filter((e) => e.value !== "").map((e) => (
               <option key={e.value} value={e.value}>
                 {e.label}
               </option>

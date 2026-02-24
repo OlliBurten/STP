@@ -61,12 +61,19 @@ driversRouter.get("/", authMiddleware, requireCompany, requireVerifiedCompany, a
         experience: exp,
         showEmailToCompanies: p.showEmailToCompanies,
         showPhoneToCompanies: p.showPhoneToCompanies,
+        isGymnasieelev: p.isGymnasieelev ?? false,
+        schoolName: p.schoolName ?? null,
+        physicalWorkOk: p.physicalWorkOk ?? null,
+        soloWorkOk: p.soloWorkOk ?? null,
       };
     });
     if (experience) {
-      const [min, max] = experience === "10+" ? [10, 999] : experience.split("-").map(Number);
+      const [min, max] =
+        experience === "10+" ? [10, 999]
+        : experience === "5+" ? [5, 999]
+        : experience.split("-").map(Number);
       list = list.filter(
-        (d) => d.yearsExperience >= min && (max === undefined || d.yearsExperience < max)
+        (d) => d.yearsExperience >= min && (max === undefined || d.yearsExperience <= max)
       );
     }
     res.json(list);
@@ -78,7 +85,7 @@ driversRouter.get("/", authMiddleware, requireCompany, requireVerifiedCompany, a
 driversRouter.get("/:id", authMiddleware, requireCompany, requireVerifiedCompany, async (req, res, next) => {
   try {
     const profile = await prisma.driverProfile.findFirst({
-      where: { userId: req.params.id },
+      where: { userId: req.params.id, visibleToCompanies: true },
       include: { user: { select: { id: true, name: true, email: true } } },
     });
     if (!profile) return res.status(404).json({ error: "Chaufför hittades inte" });
@@ -112,6 +119,10 @@ driversRouter.get("/:id", authMiddleware, requireCompany, requireVerifiedCompany
       experience: exp,
       showEmailToCompanies: profile.showEmailToCompanies,
       showPhoneToCompanies: profile.showPhoneToCompanies,
+      isGymnasieelev: profile.isGymnasieelev ?? false,
+      schoolName: profile.schoolName ?? null,
+      physicalWorkOk: profile.physicalWorkOk ?? null,
+      soloWorkOk: profile.soloWorkOk ?? null,
     });
   } catch (e) {
     next(e);

@@ -175,6 +175,8 @@ jobsRouter.get("/", validateQuery(jobsListQuerySchema), async (req, res, next) =
       status: j.status,
       published: j.published.toISOString().slice(0, 10),
       contact: j.contact,
+      physicalWorkRequired: j.physicalWorkRequired ?? null,
+      soloWorkOk: j.soloWorkOk ?? null,
       companyReviewAverage: reviewByCompany.get(j.userId)?.avg
         ? Number(reviewByCompany.get(j.userId).avg.toFixed(2))
         : null,
@@ -213,6 +215,8 @@ jobsRouter.get("/saved", authMiddleware, requireDriver, async (req, res, next) =
       status: s.job.status,
       published: s.job.published.toISOString().slice(0, 10),
       contact: s.job.contact,
+      physicalWorkRequired: s.job.physicalWorkRequired ?? null,
+      soloWorkOk: s.job.soloWorkOk ?? null,
       savedAt: s.createdAt.toISOString(),
     }));
     res.json(list);
@@ -308,6 +312,8 @@ jobsRouter.get("/:id", async (req, res, next) => {
       published: job.published.toISOString().slice(0, 10),
       contact: job.contact,
       userId: job.userId,
+      physicalWorkRequired: job.physicalWorkRequired ?? null,
+      soloWorkOk: job.soloWorkOk ?? null,
       companyReviewAverage: reviewAggregate._avg.rating
         ? Number(reviewAggregate._avg.rating.toFixed(2))
         : null,
@@ -384,6 +390,8 @@ jobsRouter.post("/", authMiddleware, requireCompany, requireVerifiedCompany, val
         requirements,
         extraRequirements: body.extraRequirements || null,
         contact: body.contact,
+        physicalWorkRequired: body.physicalWorkRequired === true ? true : body.physicalWorkRequired === false ? false : null,
+        soloWorkOk: body.soloWorkOk === true ? true : body.soloWorkOk === false ? false : null,
       },
     });
     res.status(201).json({

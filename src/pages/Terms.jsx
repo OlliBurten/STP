@@ -13,14 +13,14 @@ export default function Terms() {
         <section>
           <h2 className="text-xl font-semibold text-slate-900">1. Tillämpning</h2>
           <p>
-            Dessa villkor gäller för användning av DriverMatch (&quot;tjänsten&quot;). Genom att
+            Dessa villkor gäller för användning av Sveriges Transportplattform (&quot;tjänsten&quot;). Genom att
             registrera dig eller använda tjänsten godkänner du dessa villkor.
           </p>
         </section>
         <section>
           <h2 className="text-xl font-semibold text-slate-900">2. Tjänstens innehåll</h2>
           <p>
-            DriverMatch är en plattform som kopplar yrkesförare (chaufförer) och transportföretag.
+            Sveriges Transportplattform är en plattform som kopplar yrkesförare (chaufförer) och transportföretag.
             Vi tillhandahåller verktyg för att söka jobb, publicera annonser, hantera profiler och
             kommunicera mellan parter. Vi är inte arbetsgivare eller bemanningsföretag – användare
             ansvarar själva för anställningsavtal och uppdrag.

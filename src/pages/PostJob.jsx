@@ -10,7 +10,7 @@ import {
   experienceLevels,
 } from "../data/mockJobs";
 import { certificateTypes } from "../data/profileData";
-import { branschOptions } from "../data/bransch.js";
+import { transportSegmentGroups } from "../data/bransch.js";
 import { useAuth } from "../context/AuthContext";
 import { createJob } from "../api/jobs.js";
 import { fetchMyCompanyProfile } from "../api/companies.js";
@@ -39,6 +39,8 @@ export default function PostJob() {
     salary: "",
     extraRequirements: "",
     contact: "",
+    physicalWorkRequired: false,
+    soloWorkOk: false,
   });
 
   const toggleLicense = (lic) => {
@@ -82,6 +84,8 @@ export default function PostJob() {
           requirements: [],
           extraRequirements: form.extraRequirements || null,
           contact: form.contact,
+          physicalWorkRequired: form.physicalWorkRequired || null,
+          soloWorkOk: form.soloWorkOk || null,
         });
         trackJobPosted(form.segment);
         setSubmitted(true);
@@ -192,7 +196,7 @@ export default function PostJob() {
 
       <h1 className="text-3xl font-bold text-slate-900 mb-2">Publicera jobb</h1>
       <p className="text-slate-600 mb-8">
-        DriverMatch guidar dig till en komplett annons. Chaufförer får alltid samma tydliga
+        Sveriges Transportplattform guidar dig till en komplett annons. Chaufförer får alltid samma tydliga
         information – inga oklarheter, mindre behov av att kontakta er.
       </p>
 
@@ -423,7 +427,7 @@ export default function PostJob() {
             </div>
             <div>
               <label htmlFor="bransch" className="block text-sm font-medium text-slate-700 mb-1">
-                Bransch (valfritt)
+                Transportsegment (valfritt)
               </label>
               <select
                 id="bransch"
@@ -431,15 +435,19 @@ export default function PostJob() {
                 onChange={(e) => handleChange("bransch", e.target.value)}
                 className="w-full min-h-[48px] px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none bg-white"
               >
-                <option value="">Välj bransch</option>
-                {branschOptions.map((b) => (
-                  <option key={b.value} value={b.value}>
-                    {b.label}
-                  </option>
+                <option value="">Välj segment</option>
+                {transportSegmentGroups.map((g) => (
+                  <optgroup key={g.id} label={g.label}>
+                    {g.options.map((b) => (
+                      <option key={b.value} value={b.value}>
+                        {b.label}
+                      </option>
+                    ))}
+                  </optgroup>
                 ))}
               </select>
               <p className="mt-1 text-xs text-slate-500">
-                T.ex. tankbil, soppor – hjälper förare att filtrera jobb på bransch.
+                T.ex. tankbil, dagdistribution – hjälper förare att filtrera på bransch.
               </p>
             </div>
             <div>
@@ -460,6 +468,29 @@ export default function PostJob() {
                   </option>
                 ))}
               </select>
+            </div>
+            <div>
+              <p className="block text-sm font-medium text-slate-700 mb-2">Arbetsprofil (valfritt)</p>
+              <div className="flex flex-wrap gap-6">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={form.physicalWorkRequired === true}
+                    onChange={(e) => setForm((p) => ({ ...p, physicalWorkRequired: e.target.checked }))}
+                    className="rounded"
+                  />
+                  <span className="text-sm text-slate-700">Fysiskt krävande arbete</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={form.soloWorkOk === true}
+                    onChange={(e) => setForm((p) => ({ ...p, soloWorkOk: e.target.checked }))}
+                    className="rounded"
+                  />
+                  <span className="text-sm text-slate-700">Ensamarbete (t.ex. ensam i lastbil)</span>
+                </label>
+              </div>
             </div>
           </div>
         </section>

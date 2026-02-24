@@ -1,4 +1,4 @@
-# DriverMatch
+# Sveriges Transportplattform
 
 Marknadsplats för yrkesförare i Sverige. Chaufförer söker jobb och företag publicerar annonser – direktkontakt utan bemanning.
 
@@ -80,9 +80,116 @@ curl -X PATCH -H "Content-Type: application/json" \
 ### 4. Produktion
 
 - Sätt `DATABASE_URL`, `JWT_SECRET` och `ADMIN_EMAILS` i backend-miljön.
-- Sätt `FRONTEND_URL` i backend till din frontend-URL (för CORS).
+- Sätt `FRONTEND_URL` i backend till din frontend-URL (för CORS). För flera domäner (t.ex. preview + prod): `https://transportplattformen.se,https://drivermatch-xxx.vercel.app`.
 - Bygg frontend med `VITE_API_URL` satt till din API-URL: `npm run build`.
 - Hosta frontend (t.ex. Vercel, Netlify) och backend (t.ex. Railway, Render).
+
+**Om inloggning ger "Kunde inte nå servern" / "Failed to fetch":**
+
+- **Vercel:** Lägg till miljövariabeln `VITE_API_URL` med din backend-URL (t.ex. `https://din-app.railway.app`). Bygg om (ny deploy) så att frontend använder rätt API.
+- **Backend (Railway etc.):** Sätt `FRONTEND_URL` till alla domäner som ska kunna anropa API:et, komma-separerade (t.ex. `https://transportplattformen.se,https://drivermatch-20260212-xxx.vercel.app`). Utan detta blockar CORS anrop från frontend.
+
+## Testmiljö och deploy (Vercel)
+
+Du kan bygga och se uppdateringar **utan att påverka live** – live-sajten pausas inte.
+
+### Snabb test-URL (preview)
+
+Kör i projektroten:
+
+```bash
+npx vercel
+```
+
+- Du får en **preview-URL** (t.ex. `drivermatch-20260212-xxx.vercel.app`).
+- Den är **separat från produktion** – live (transportplattformen.se) är orörd.
+- Testa där tills du är nöjd, sedan pushar du till live med:
+
+```bash
+npx vercel --prod
+```
+
+### Översikt
+
+| Kommando | Effekt |
+|----------|--------|
+| `npx vercel` | Deploy till **preview** (test-URL). Live påverkas inte. |
+| `npx vercel --prod` | Deploy till **produktion** (transportplattformen.se m.fl.). |
+
+Preview-använder samma bygg som produktion men har egen URL. Backend (Railway) är gemensam – preview-frontend anropar samma API som live.
+
+## Demo-miljö (presentation för TYA, Transportföretagen m.fl.)
+
+**Rekommendation:** Ha **ingen** demo-data på live. Använd en **separat demo-miljö** med egen databas och egen URL.
+
+### Snabbsetup (redan skapat via CLI)
+
+- **Demo-frontend:** https://transportplattform-demo.vercel.app (Vercel-projektet `transportplattform-demo`)
+- **Demo-backend:** https://drivermatch-demo-production.up.railway.app (Railway-projektet `drivermatch-demo`)
+
+**Det du behöver göra (en gång):**
+
+1. **Neon:** Skapa en **ny branch** eller **nytt projekt** för demo (t.ex. "demo") i [Neon Console](https://console.neon.tech). Kopiera **connection string** (PostgreSQL-URL).
+2. **Lokal terminal:** Kör från projektroten (ersätt med din URL):
+   ```bash
+   ./scripts/demo-db-setup.sh "postgresql://user:pass@ep-xxx.region.aws.neon.tech/neondb?sslmode=require"
+   ```
+   Detta kör `prisma db push` och `db:seed:demo` mot demo-databasen.
+3. **Sätt DATABASE_URL i Railway** så att demo-backend använder samma databas:
+   ```bash
+   cd server && railway link
+   # Välj drivermatch-demo
+   railway variables --set "DATABASE_URL=postgresql://user:pass@ep-xxx...?sslmode=require"
+   ```
+   Backend kommer att starta om automatiskt. Därefter är demo-miljön klar.
+
+**Inloggning på demo:** alla användare har lösenord **`demo123`**. T.ex. `rekrytering@nordiclogistics.se` (företag) eller `erik.lindstrom@example.com` (förare).
+
+### Varför separat demo?
+
+- **Live** förblir ren (inga falska åkerier/förare) och redo för riktiga användare.
+- **Demo** har rik, realistisk data så du kan visa hela flödet: jobb, ansökningar, konversationer, notiser.
+- Ingen “kodlås” eller feature flag på produktion – mindre risk och enklare underhåll.
+
+### Så här sätter du upp demo-miljön
+
+1. **Ny databas** (t.ex. nytt Neon-/Supabase-projekt eller ny PostgreSQL på Railway) – använd **inte** produktionsdatabasen.
+2. **Ny backend-instans** (valfritt):
+   - Antingen: nytt Railway-projekt med samma kod men `DATABASE_URL` pekande på demo-databasen, **eller**
+   - Kör backend lokalt mot demo-databasen när du ska presentera (t.ex. `cd server && DATABASE_URL=postgresql://... npm run dev`).
+3. **Frontend mot demo-backend:**
+   - Antingen: ny Vercel-projekt (t.ex. `stp-demo`) med `VITE_API_URL` = demo-backend-URL, **eller**
+   - Subdomän (t.ex. `demo.transportplattformen.se`) som pekar på samma frontend men med `VITE_API_URL` för demo-backend.
+4. **Fyll demo-databasen med demo-data:**
+   ```bash
+   cd server
+   cp .env.example .env
+   # Sätt .env: DATABASE_URL till demo-databasen, JWT_SECRET, FRONTEND_URL (demo-frontend-URL)
+   npx prisma generate
+   npx prisma db push
+   npm run db:seed:demo
+   ```
+5. **Presentera** från demo-URL:en. Alla inloggningar använder lösenordet **`demo123`** (samma för alla demo-användare).
+
+### Vad demo-seed innehåller
+
+- **4 åkerier** (verifierade) i olika regioner med jobb.
+- **8 förare** med profiler, körkort, erfarenhet.
+- **12 jobb** (fjärr, lokalt, distribution, tank, vikariat, tim).
+- **Ansökningar och konversationer** mellan förare och åkerier, inkl. några “utvalda” kandidater.
+- **Sparade jobb** och **notiser** så att flödet syns tydligt.
+
+Exempel-inloggning efter seed: **`rekrytering@nordiclogistics.se`** (företag) eller **`erik.lindstrom@example.com`** (förare), lösenord **`demo123`**.
+
+**OBS:** Kör `db:seed:demo` **endast** mot demo-databasen. I production krävs `DEMO_SEED=true` i miljön (avsiktligt så att man inte råkar överskriva live-data).
+
+### Alternativ: Git-branch för test
+
+Om repot är kopplat till Vercel via Git:
+
+- Push till t.ex. `staging` eller `develop` → Vercel skapar automatiskt en **preview-URL** för den branchen.
+- `main` = produktion (eller den branch du satt som Production Branch i Vercel).
+- Du kan alltså ha en permanent test-URL genom att jobba på en staging-branch och bara merga till main när du vill gå live.
 
 ## E2E-tester (Playwright)
 

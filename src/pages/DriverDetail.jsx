@@ -1,20 +1,42 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { mockDrivers } from "../data/mockDrivers";
-import { useProfile } from "../context/ProfileContext";
-import { calcYearsExperience } from "../utils/profileUtils";
-import { availabilityTypes } from "../data/profileData";
 import { mockJobs } from "../data/mockJobs";
+import { useProfile } from "../context/ProfileContext";
+import { useAuth } from "../context/AuthContext";
+import { calcYearsExperience } from "../utils/profileUtils";
+import { availabilityTypes, getCertificateLabel } from "../data/profileData";
 import ReachOutModal from "../components/ReachOutModal";
 import { segmentLabel } from "../data/segments";
+import { LocationIcon } from "../components/Icons";
+import { fetchDriver } from "../api/drivers.js";
+import { fetchMyJobs } from "../api/jobs.js";
 
 export default function DriverDetail() {
   const { id } = useParams();
+  const { hasApi } = useAuth();
   const { profile } = useProfile();
   const [showReachOut, setShowReachOut] = useState(false);
+  const [apiDriver, setApiDriver] = useState(null);
+  const [apiJobs, setApiJobs] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState(false);
+
+  useEffect(() => {
+    if (!hasApi || !id) return;
+    setLoading(true);
+    setLoadError(false);
+    Promise.all([fetchDriver(id), fetchMyJobs()])
+      .then(([driverData, jobsData]) => {
+        setApiDriver(driverData);
+        setApiJobs(Array.isArray(jobsData) ? jobsData : []);
+      })
+      .catch(() => setLoadError(true))
+      .finally(() => setLoading(false));
+  }, [hasApi, id]);
 
   const currentUserAsDriver =
-    profile.visibleToCompanies && profile.id === id
+    !hasApi && profile.visibleToCompanies && profile.id === id
       ? {
           ...profile,
           yearsExperience: calcYearsExperience(profile.experience),
@@ -23,10 +45,22 @@ export default function DriverDetail() {
       : null;
 
   const driver =
+    apiDriver ||
     currentUserAsDriver ||
-    mockDrivers.find((d) => d.id === id);
+    (!hasApi && mockDrivers.find((d) => d.id === id)) ||
+    null;
 
-  if (!driver) {
+  const jobsForModal = hasApi ? apiJobs : mockJobs;
+
+  if (loading) {
+    return (
+      <main className="max-w-3xl mx-auto px-4 py-16 text-center">
+        <p className="text-slate-600">Laddar profil...</p>
+      </main>
+    );
+  }
+
+  if (loadError || (!driver && !loading)) {
     return (
       <main className="max-w-3xl mx-auto px-4 py-16 text-center">
         <h1 className="text-2xl font-bold text-slate-900">Chauffören hittades inte</h1>
@@ -62,8 +96,8 @@ export default function DriverDetail() {
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div>
               <h1 className="text-2xl font-bold text-slate-900">{driver.name}</h1>
-              <p className="mt-1 text-slate-600">
-                📍 {driver.location}, {driver.region}
+              <p className="mt-1 text-slate-600 flex items-center gap-1">
+                <LocationIcon className="w-4 h-4 shrink-0" /> {driver.location}, {driver.region}
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {driver.licenses?.map((l) => (
@@ -79,7 +113,7 @@ export default function DriverDetail() {
                     key={c}
                     className="px-3 py-1 rounded-full text-sm font-medium bg-slate-100 text-slate-700"
                   >
-                    {c}
+                    {getCertificateLabel(c)}
                   </span>
                 ))}
                 <span className="px-3 py-1 rounded-full text-sm font-medium bg-amber-50 text-amber-800">
@@ -152,7 +186,7 @@ export default function DriverDetail() {
       {showReachOut && (
         <ReachOutModal
           driver={driver}
-          jobs={mockJobs}
+          jobs={jobsForModal}
           onClose={() => setShowReachOut(false)}
           onSuccess={() => setShowReachOut(false)}
         />

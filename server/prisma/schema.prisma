@@ -85,6 +85,10 @@ model DriverProfile {
   showEmailToCompanies Boolean @default(false)
   showPhoneToCompanies Boolean @default(false)
   experience          Json?    // [{ id, company, role, startYear, endYear, current, description }]
+  isGymnasieelev      Boolean  @default(false)
+  schoolName          String?
+  physicalWorkOk      Boolean? // fysiskt tungt arbete ok
+  soloWorkOk          Boolean? // ensamarbete ok
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 }
@@ -104,9 +108,11 @@ model Job {
   bransch     String?  // t.ex. tank, soppor – för filter "bransch"
   employment  String   // fast, vikariat, tim
   segment     String   @default("FULLTIME") // FULLTIME | FLEX | INTERNSHIP
-  schedule    String?  // dag, kväll, natt, blandat, flex
-  experience  String?  // 0-1, 1-2, 2-5, 5-10, 10+
+  schedule    String?  // dag, kväll, natt, blandat, flex, skift, veckopendling
+  experience  String?  // 0-1, 1-3, 3-5, 5+, 1-2, 2-5, 5-10, 10+
   salary      String?
+  physicalWorkRequired Boolean? // fysiskt krävande arbete
+  soloWorkOk  Boolean? // ensamarbete ok för rollen
   requirements String? // JSON or text
   extraRequirements String?
   contact     String   // email

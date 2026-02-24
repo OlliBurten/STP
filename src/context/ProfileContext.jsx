@@ -72,6 +72,10 @@ export function ProfileProvider({ children }) {
           secondarySegments: Array.isArray(data?.secondarySegments) ? data.secondarySegments : [],
           regionsWilling: Array.isArray(data?.regionsWilling) ? data.regionsWilling : [],
           experience: Array.isArray(data?.experience) ? data.experience : [],
+          isGymnasieelev: Boolean(data?.isGymnasieelev),
+          schoolName: data?.schoolName || "",
+          physicalWorkOk: data?.physicalWorkOk ?? null,
+          soloWorkOk: data?.soloWorkOk ?? null,
         });
       })
       .catch(() => {
@@ -106,6 +110,10 @@ export function ProfileProvider({ children }) {
             ? saved.regionsWilling
             : prev.regionsWilling || [],
           experience: Array.isArray(saved?.experience) ? saved.experience : prev.experience || [],
+          isGymnasieelev: Boolean(saved?.isGymnasieelev),
+          schoolName: saved?.schoolName || "",
+          physicalWorkOk: saved?.physicalWorkOk ?? null,
+          soloWorkOk: saved?.soloWorkOk ?? null,
         }));
       })
       .catch(() => {});

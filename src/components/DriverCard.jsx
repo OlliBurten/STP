@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
-import { availabilityTypes } from "../data/profileData";
+import { availabilityTypes, getCertificateLabel } from "../data/profileData";
 import { segmentLabel } from "../data/segments";
+import { LocationIcon } from "./Icons";
 
 export default function DriverCard({ driver }) {
   const availabilityLabel = availabilityTypes.find((a) => a.value === driver.availability)?.label || driver.availability;
@@ -15,8 +16,8 @@ export default function DriverCard({ driver }) {
           <h3 className="font-semibold text-slate-900 group-hover:text-[var(--color-primary)] transition-colors">
             {driver.name}
           </h3>
-          <p className="mt-1 text-sm text-slate-600">
-            📍 {driver.location}, {driver.region}
+          <p className="mt-1 text-sm text-slate-600 flex items-center gap-1">
+            <LocationIcon className="w-4 h-4 shrink-0" /> {driver.location}, {driver.region}
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             {driver.licenses?.map((lic) => (
@@ -32,7 +33,7 @@ export default function DriverCard({ driver }) {
                 key={c}
                 className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700"
               >
-                {c}
+                {getCertificateLabel(c)}
               </span>
             ))}
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-800">

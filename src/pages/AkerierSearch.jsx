@@ -2,15 +2,18 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { fetchCompaniesSearch } from "../api/companies.js";
 import { useAuth } from "../context/AuthContext";
-import { branschOptions, getBranschLabel } from "../data/bransch.js";
+import { useProfile } from "../context/ProfileContext";
+import { transportSegmentGroups, getBranschLabel } from "../data/bransch.js";
 import { regions } from "../data/mockJobs.js";
 
 export default function AkerierSearch() {
   const { hasApi } = useAuth();
+  const { profile } = useProfile();
   const [bransch, setBransch] = useState("");
   const [region, setRegion] = useState("");
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(false);
+  const isGymnasieelev = Boolean(profile?.isGymnasieelev);
 
   useEffect(() => {
     if (!hasApi) {
@@ -18,19 +21,29 @@ export default function AkerierSearch() {
       return;
     }
     setLoading(true);
-    fetchCompaniesSearch({ bransch: bransch || undefined, region: region || undefined })
+    fetchCompaniesSearch({
+      bransch: bransch || undefined,
+      region: region || undefined,
+      segment: isGymnasieelev ? "INTERNSHIP" : undefined,
+    })
       .then(setList)
       .catch(() => setList([]))
       .finally(() => setLoading(false));
-  }, [hasApi, bransch, region]);
+  }, [hasApi, bransch, region, isGymnasieelev]);
 
   return (
     <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
       <div className="mb-8">
+        {isGymnasieelev && (
+          <div className="mb-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-900">
+            Du är registrerad som gymnasieelev. Endast åkerier som erbjuder <strong>praktik/LIA</strong> visas. Sök gärna i din region och bransch.
+          </div>
+        )}
         <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Hitta åkerier</h1>
         <p className="mt-2 text-slate-600">
-          Sök efter transportföretag efter bransch och område – som gula sidorna. Hitta åkerier att kontakta även när
-          det inte finns en aktiv jobbannons.
+          {isGymnasieelev
+            ? "Åkerier som tar emot praktikanter – filtrera på region och bransch."
+            : "Sök efter transportföretag efter bransch och område – som gula sidorna. Hitta åkerier att kontakta även när det inte finns en aktiv jobbannons."}
         </p>
       </div>
 
@@ -49,10 +62,14 @@ export default function AkerierSearch() {
                 className="w-full min-h-[48px] px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none bg-white"
               >
                 <option value="">Alla branscher</option>
-                {branschOptions.map((b) => (
-                  <option key={b.value} value={b.value}>
-                    {b.label}
-                  </option>
+                {transportSegmentGroups.map((g) => (
+                  <optgroup key={g.id} label={g.label}>
+                    {g.options.map((b) => (
+                      <option key={b.value} value={b.value}>
+                        {b.label}
+                      </option>
+                    ))}
+                  </optgroup>
                 ))}
               </select>
             </div>

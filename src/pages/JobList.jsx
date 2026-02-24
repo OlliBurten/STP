@@ -65,8 +65,12 @@ export default function JobList() {
     }
   };
 
+  const isGymnasieelev = Boolean(profile?.isGymnasieelev);
+
   const filteredJobs = useMemo(() => {
     return jobs.filter((job) => {
+      const jobSegment = job.segment || mapEmploymentToSegment(job.employment);
+      if (isGymnasieelev && jobSegment !== "INTERNSHIP") return false;
       const searchLower = filters.search.toLowerCase();
       const matchesSearch =
         !filters.search ||
@@ -76,7 +80,6 @@ export default function JobList() {
       const matchesRegion = !filters.region || job.region === filters.region;
       const matchesLicense =
         !filters.license || job.license.some((l) => l === filters.license);
-      const jobSegment = job.segment || mapEmploymentToSegment(job.employment);
       const matchesSegment = !filters.segment || jobSegment === filters.segment;
       const matchesJobType = !filters.jobType || job.jobType === filters.jobType;
       const matchesEmployment = !filters.employment || job.employment === filters.employment;
@@ -92,7 +95,7 @@ export default function JobList() {
         matchesBransch
       );
     });
-  }, [jobs, filters]);
+  }, [jobs, filters, isGymnasieelev]);
 
   const driverForMatch = useMemo(
     () =>
@@ -104,6 +107,8 @@ export default function JobList() {
             regionsWilling: profile.regionsWilling || [profile.region].filter(Boolean),
             availability: profile.availability || "open",
             yearsExperience: calcYearsExperience(profile.experience),
+            primarySegment: profile.primarySegment || "",
+            secondarySegments: Array.isArray(profile.secondarySegments) ? profile.secondarySegments : [],
           }
         : null,
     [isDriver, profile]
@@ -126,9 +131,14 @@ export default function JobList() {
   return (
     <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
       <div className="mb-8">
+        {isGymnasieelev && (
+          <div className="mb-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-900">
+            Du är registrerad som gymnasieelev. Endast jobb som erbjuder <strong>praktik/LIA</strong> visas. Du kan filtrera på region och bransch.
+          </div>
+        )}
         <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Lediga jobb</h1>
         <p className="mt-2 text-slate-600">
-          {jobsLoading ? "Laddar..." : `${filteredJobs.length} jobb för yrkesförare`}
+          {jobsLoading ? "Laddar..." : isGymnasieelev ? `${filteredJobs.length} praktikannonser` : `${filteredJobs.length} jobb för yrkesförare`}
         </p>
       </div>
 

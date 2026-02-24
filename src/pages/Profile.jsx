@@ -11,6 +11,7 @@ import {
   availabilityTypes,
 } from "../data/profileData";
 import { segmentOptions, segmentLabel } from "../data/segments";
+import { CheckIcon, CircleOutlineIcon, LocationIcon } from "../components/Icons";
 
 export default function Profile() {
   const { user, hasApi } = useAuth();
@@ -171,7 +172,7 @@ export default function Profile() {
           <ul className="mt-4 space-y-1.5 text-sm">
             {onboardingSteps.map((step) => (
               <li key={step.label} className={step.done ? "text-green-700" : "text-indigo-900"}>
-                {step.done ? "✓" : "○"} {step.label}
+                {step.done ? <CheckIcon className="w-4 h-4 inline-block mr-1 align-middle text-green-600" /> : <CircleOutlineIcon className="w-4 h-4 inline-block mr-1 align-middle text-slate-400" />} {step.label}
               </li>
             ))}
           </ul>
@@ -225,7 +226,7 @@ export default function Profile() {
       ) : null}
       {profile?.visibleToCompanies && (profile?.regionsWilling || []).length > 0 && (
         <p className="mb-4 text-sm text-slate-600">
-          ✓ Du syns för företag i <strong>{(profile.regionsWilling || []).length} regioner</strong> (Kan jobba i) när de söker chaufförer.
+          <CheckIcon className="w-4 h-4 inline-block mr-1 align-middle text-green-600" /> Du syns för företag i <strong>{(profile.regionsWilling || []).length} regioner</strong> (Kan jobba i) när de söker chaufförer.
         </p>
       )}
 
@@ -295,7 +296,7 @@ export default function Profile() {
             ) : (
               <div className="space-y-2">
                 <p className="text-lg font-medium text-slate-900">{current.name || "—"}</p>
-                <p className="text-slate-600">📍 {current.location || "—"}, {current.region || "—"}</p>
+                <p className="text-slate-600 flex items-center gap-1"><LocationIcon className="w-4 h-4 shrink-0" /> {current.location || "—"}, {current.region || "—"}</p>
                 <p className="text-slate-600">{current.email || "—"}</p>
                 <p className="text-slate-600">{current.phone || "—"}</p>
               </div>
@@ -309,56 +310,70 @@ export default function Profile() {
             </h2>
             {editing ? (
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Primärt segment</label>
-                  <div className="flex flex-wrap gap-2">
-                    {segmentOptions.map((segment) => (
-                      <button
-                        key={segment.value}
-                        type="button"
-                        onClick={() => updateDraft({ primarySegment: segment.value })}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                          current.primarySegment === segment.value
-                            ? "bg-[var(--color-primary)] text-white"
-                            : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                        }`}
-                      >
-                        {segment.label}
-                      </button>
-                    ))}
+                {current.isGymnasieelev ? (
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                    <p className="text-sm font-medium text-slate-700">Du är registrerad som gymnasieelev</p>
+                    <p className="mt-1 text-sm text-slate-600">
+                      Primärt segment: <strong>Praktikanter</strong> – endast praktikannonser och åkerier som erbjuder praktik visas.
+                    </p>
+                    {current.schoolName && (
+                      <p className="mt-2 text-sm text-slate-600">Skola: {current.schoolName}</p>
+                    )}
                   </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Sekundära segment (valfritt)
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {segmentOptions
-                      .filter((segment) => segment.value !== current.primarySegment)
-                      .map((segment) => {
-                        const active = (current.secondarySegments || []).includes(segment.value);
-                        return (
+                ) : (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">Primärt segment</label>
+                      <div className="flex flex-wrap gap-2">
+                        {segmentOptions.map((segment) => (
                           <button
                             key={segment.value}
                             type="button"
-                            onClick={() => {
-                              const next = active
-                                ? (current.secondarySegments || []).filter((s) => s !== segment.value)
-                                : [...(current.secondarySegments || []), segment.value];
-                              updateDraft({ secondarySegments: next });
-                            }}
-                            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                              active
+                            onClick={() => updateDraft({ primarySegment: segment.value })}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                              current.primarySegment === segment.value
                                 ? "bg-[var(--color-primary)] text-white"
                                 : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                             }`}
                           >
                             {segment.label}
                           </button>
-                        );
-                      })}
-                  </div>
-                </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        Sekundära segment (valfritt)
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {segmentOptions
+                          .filter((segment) => segment.value !== current.primarySegment)
+                          .map((segment) => {
+                            const active = (current.secondarySegments || []).includes(segment.value);
+                            return (
+                              <button
+                                key={segment.value}
+                                type="button"
+                                onClick={() => {
+                                  const next = active
+                                    ? (current.secondarySegments || []).filter((s) => s !== segment.value)
+                                    : [...(current.secondarySegments || []), segment.value];
+                                  updateDraft({ secondarySegments: next });
+                                }}
+                                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                                  active
+                                    ? "bg-[var(--color-primary)] text-white"
+                                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                                }`}
+                              >
+                                {segment.label}
+                              </button>
+                            );
+                          })}
+                      </div>
+                    </div>
+                  </>
+                )}
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">Körkort</label>
                   <div className="flex flex-wrap gap-2">
@@ -408,6 +423,29 @@ export default function Profile() {
                       <option key={a.value} value={a.value}>{a.label}</option>
                     ))}
                   </select>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-slate-700 mb-2">Arbetsprofil (valfritt)</p>
+                  <div className="flex flex-wrap gap-6">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={current.physicalWorkOk === true}
+                        onChange={(e) => updateDraft({ physicalWorkOk: e.target.checked ? true : null })}
+                        className="rounded"
+                      />
+                      <span className="text-sm text-slate-700">Fysiskt tungt arbete ok</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={current.soloWorkOk === true}
+                        onChange={(e) => updateDraft({ soloWorkOk: e.target.checked ? true : null })}
+                        className="rounded"
+                      />
+                      <span className="text-sm text-slate-700">Ensamarbete ok</span>
+                    </label>
+                  </div>
                 </div>
                 <div>
                   <div className="flex items-center gap-3">
@@ -485,6 +523,11 @@ export default function Profile() {
               </div>
             ) : (
               <div className="flex flex-wrap gap-2">
+                {current.isGymnasieelev && current.schoolName && (
+                  <span className="px-3 py-1 rounded-full text-sm font-medium bg-amber-50 text-amber-800">
+                    Skola: {current.schoolName}
+                  </span>
+                )}
                 {current.primarySegment && (
                   <span className="px-3 py-1 rounded-full text-sm font-medium bg-[var(--color-primary)]/10 text-[var(--color-primary)]">
                     Primärt: {segmentLabel(current.primarySegment)}
@@ -517,6 +560,16 @@ export default function Profile() {
                 <span className="text-slate-600 text-sm">
                   • {availabilityTypes.find((a) => a.value === current.availability)?.label}
                 </span>
+                {current.physicalWorkOk && (
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
+                    Fysiskt arbete ok
+                  </span>
+                )}
+                {current.soloWorkOk && (
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
+                    Ensamarbete ok
+                  </span>
+                )}
                 {current.visibleToCompanies && (
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                     Synlig i företagssökning

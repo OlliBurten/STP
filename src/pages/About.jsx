@@ -3,9 +3,9 @@ import { Link } from "react-router-dom";
 export default function About() {
   return (
     <main className="max-w-3xl mx-auto px-4 sm:px-6 py-16">
-      <h1 className="text-3xl font-bold text-slate-900">Om DriverMatch</h1>
+      <h1 className="text-3xl font-bold text-slate-900">Om Sveriges Transportplattform</h1>
       <p className="mt-6 text-lg text-slate-600">
-        DriverMatch är en marknadsplats för yrkesförare i Sverige. Vi vill göra det enklare att
+        Sveriges Transportplattform är en marknadsplats för yrkesförare i Sverige. Vi vill göra det enklare att
         hitta jobb och att hitta chaufförer – utan att förlita sig på ostrukturerade Facebook-grupper
         eller generiska jobbsajter.
       </p>

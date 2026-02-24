@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { requestPasswordReset, resendVerification } from "../api/auth";
+import { TruckIcon, BuildingIcon } from "../components/Icons";
 
 export default function Login() {
   const {
@@ -146,7 +147,7 @@ export default function Login() {
             className="w-full p-6 rounded-xl border-2 border-slate-200 hover:border-[var(--color-primary)] hover:bg-[var(--color-primary)]/5 transition-colors text-left group"
           >
             <div className="flex items-center gap-4">
-              <span className="text-4xl">🚛</span>
+              <TruckIcon className="w-10 h-10 text-[var(--color-primary)]" />
               <div>
                 <h2 className="font-semibold text-slate-900 group-hover:text-[var(--color-primary)]">
                   Chaufför
@@ -161,7 +162,7 @@ export default function Login() {
             className="w-full p-6 rounded-xl border-2 border-slate-200 hover:border-[var(--color-primary)] hover:bg-[var(--color-primary)]/5 transition-colors text-left group"
           >
             <div className="flex items-center gap-4">
-              <span className="text-4xl">🏢</span>
+              <BuildingIcon className="w-10 h-10 text-[var(--color-primary)]" />
               <div>
                 <h2 className="font-semibold text-slate-900 group-hover:text-[var(--color-primary)]">
                   Företag

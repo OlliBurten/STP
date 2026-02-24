@@ -16,14 +16,14 @@ export const defaultProfile = {
   showEmailToCompanies: false,
   showPhoneToCompanies: false,
   experience: [],
+  isGymnasieelev: false,
+  schoolName: "",
+  physicalWorkOk: null,
+  soloWorkOk: null,
 };
 
-export const certificateTypes = [
-  { value: "YKB", label: "YKB (Yrkesförarkompetens)" },
-  { value: "ADR", label: "ADR" },
-  { value: "Tank", label: "Tankbehörighet" },
-  { value: "Kyl", label: "Kylskåpsbehörighet" },
-];
+// Re-export från competencies (YKB, ADR, APV, Truck, Kran, övriga)
+export { certificateTypes, certificateGroups, getCertificateLabel } from "./competencies.js";
 
 export const availabilityTypes = [
   { value: "open", label: "Öppen för förfrågningar" },

@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { mapEmploymentToSegment, segmentLabel } from "../data/segments";
+import { StarFilledIcon, StarOutlineIcon, LocationIcon } from "./Icons";
 
 export default function JobCard({ job, matchScore = null, showSave = false, isSaved = false, onToggleSave }) {
   const formatDate = (dateStr) => {
@@ -18,14 +19,19 @@ export default function JobCard({ job, matchScore = null, showSave = false, isSa
             {job.title}
           </h3>
           <p className="mt-1 text-sm text-slate-600">{job.company}</p>
-          <p className="mt-1 text-xs text-slate-500">
-            {job.companyReviewCount > 0
-              ? `⭐ ${job.companyReviewAverage}/5 (${job.companyReviewCount})`
-              : "Nytt konto"}
+          <p className="mt-1 text-xs text-slate-500 flex items-center gap-1">
+            {job.companyReviewCount > 0 ? (
+              <>
+                <StarFilledIcon className="w-3.5 h-3.5 text-amber-500" />
+                <span>{job.companyReviewAverage}/5 ({job.companyReviewCount})</span>
+              </>
+            ) : (
+              "Nytt konto"
+            )}
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
-              📍 {job.location}
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
+              <LocationIcon className="w-3.5 h-3.5" /> {job.location}
             </span>
             {job.license.map((lic) => (
               <span
@@ -61,7 +67,7 @@ export default function JobCard({ job, matchScore = null, showSave = false, isSa
               aria-label={isSaved ? "Ta bort från favoriter" : "Spara jobb"}
               title={isSaved ? "Ta bort från favoriter" : "Spara jobb"}
             >
-              {isSaved ? "★ Sparat" : "☆ Spara"}
+              {isSaved ? <><StarFilledIcon className="w-3.5 h-3.5 mr-1 inline" /> Sparat</> : <><StarOutlineIcon className="w-3.5 h-3.5 mr-1 inline" /> Spara</>}
             </button>
           )}
           {matchScore != null && (

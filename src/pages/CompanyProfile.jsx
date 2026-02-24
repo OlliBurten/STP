@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { fetchMyCompanyProfile, updateMyCompanyProfile } from "../api/companies.js";
 import { useAuth } from "../context/AuthContext";
 import { segmentOptions } from "../data/segments";
-import { branschOptions } from "../data/bransch.js";
+import { transportSegmentGroups, branschValues } from "../data/bransch.js";
 import { regions } from "../data/mockJobs.js";
 
 export default function CompanyProfile() {
@@ -47,7 +47,7 @@ export default function CompanyProfile() {
         companySegmentDefaults: Array.isArray(draft.companySegmentDefaults)
           ? draft.companySegmentDefaults
           : [],
-        companyBransch: Array.isArray(draft.companyBransch) ? draft.companyBransch : [],
+        companyBransch: (Array.isArray(draft.companyBransch) ? draft.companyBransch : []).filter((b) => branschValues.includes(b)),
         companyRegion: draft.companyRegion !== undefined ? draft.companyRegion : "",
       });
       setProfile(updated);
@@ -134,36 +134,43 @@ export default function CompanyProfile() {
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-2">Bransch (för sök "Hitta åkerier")</label>
-          <p className="text-xs text-slate-500 mb-3">
-            Välj de branscher ert åkeri verkar inom. Förare kan då hitta er under Åkerier.
+          <label className="block text-sm font-medium text-slate-700 mb-2">Transportsegment (för sök &quot;Hitta åkerier&quot;)</label>
+          <p className="text-xs text-slate-500 mb-1">
+            Välj <strong>1–2 primära segment</strong> (viktigast), sedan valfria tillägg. Förare hittar er under Åkerier.
           </p>
-          <div className="flex flex-wrap gap-2">
-            {branschOptions.map((b) => {
-              const active = (draft?.companyBransch || []).includes(b.value);
-              return (
-                <button
-                  key={b.value}
-                  type="button"
-                  onClick={() =>
-                    setDraft((prev) => {
-                      const current = prev?.companyBransch || [];
-                      const next = current.includes(b.value)
-                        ? current.filter((x) => x !== b.value)
-                        : [...current, b.value];
-                      return { ...prev, companyBransch: next };
-                    })
-                  }
-                  className={`px-3 py-2 rounded-lg text-sm border transition-colors ${
-                    active
-                      ? "bg-[var(--color-primary)] text-white border-[var(--color-primary)]"
-                      : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"
-                  }`}
-                >
-                  {b.label}
-                </button>
-              );
-            })}
+          <div className="space-y-4">
+            {transportSegmentGroups.map((group) => (
+              <div key={group.id}>
+                <p className="text-xs font-medium text-slate-500 mb-2">{group.label}</p>
+                <div className="flex flex-wrap gap-2">
+                  {group.options.map((b) => {
+                    const active = (draft?.companyBransch || []).includes(b.value);
+                    return (
+                      <button
+                        key={b.value}
+                        type="button"
+                        onClick={() =>
+                          setDraft((prev) => {
+                            const current = prev?.companyBransch || [];
+                            const next = current.includes(b.value)
+                              ? current.filter((x) => x !== b.value)
+                              : [...current, b.value];
+                            return { ...prev, companyBransch: next };
+                          })
+                        }
+                        className={`px-3 py-2 rounded-lg text-sm border transition-colors ${
+                          active
+                            ? "bg-[var(--color-primary)] text-white border-[var(--color-primary)]"
+                            : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"
+                        }`}
+                      >
+                        {b.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
         <div>

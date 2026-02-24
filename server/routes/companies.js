@@ -18,6 +18,7 @@ companiesRouter.get("/search", validateQuery(companiesSearchQuerySchema), async 
   try {
     const bransch = req.query.bransch && String(req.query.bransch).trim() ? req.query.bransch.trim() : null;
     const region = req.query.region && String(req.query.region).trim() ? req.query.region.trim() : null;
+    const segment = req.query.segment && String(req.query.segment).trim() ? req.query.segment.trim() : null;
 
     const where = {
       role: "COMPANY",
@@ -32,6 +33,16 @@ companiesRouter.get("/search", validateQuery(companiesSearchQuerySchema), async 
       where.OR = [
         { companyRegion: region },
         { jobs: { some: { status: "ACTIVE", region } } },
+      ];
+    }
+    if (segment === "INTERNSHIP") {
+      where.AND = [
+        {
+          OR: [
+            { companySegmentDefaults: { has: "INTERNSHIP" } },
+            { jobs: { some: { status: "ACTIVE", segment: "INTERNSHIP" } } },
+          ],
+        },
       ];
     }
 
