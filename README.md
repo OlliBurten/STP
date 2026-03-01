@@ -173,15 +173,27 @@ Preview-använder samma bygg som produktion men har egen URL. Backend (Railway) 
 
 ### Vad demo-seed innehåller
 
-- **4 åkerier** (verifierade) i olika regioner med jobb.
-- **8 förare** med profiler, körkort, erfarenhet.
-- **12 jobb** (fjärr, lokalt, distribution, tank, vikariat, tim).
-- **Ansökningar och konversationer** mellan förare och åkerier, inkl. några “utvalda” kandidater.
-- **Sparade jobb** och **notiser** så att flödet syns tydligt.
+- **10 åkerier** (verifierade) i olika regioner med jobb.
+- **18 förare** med profiler, körkort, certifikat (inkl. 3 gymnasieelever/LIA).
+- **28 jobb** (fjärr, lokalt, distribution, tank, vikariat, tim, LIA).
+- **Konversationer** mellan förare och åkerier, inkl. “utvalda” kandidater.
+- **Sparade jobb** och **notiser**.
 
 Exempel-inloggning efter seed: **`rekrytering@nordiclogistics.se`** (företag) eller **`erik.lindstrom@example.com`** (förare), lösenord **`demo123`**.
 
-**OBS:** Kör `db:seed:demo` **endast** mot demo-databasen. I production krävs `DEMO_SEED=true` i miljön (avsiktligt så att man inte råkar överskriva live-data).
+**OBS:** Kör `db:seed:demo` **endast** mot demo-databasen. I production krävs `DEMO_SEED=true` i miljön.
+
+### Efter ny deploy – syns inte fler åkerier/förare?
+
+Deploy uppdaterar bara **koden**; den kör inte seed. Databasen innehåller det som fanns när den senast seedades. För att demo ska visa **10 åkerier, 18 förare, 28 jobb** måste du köra demo-seed **en gång** mot demo-databasen:
+
+1. Hämta **DATABASE_URL** från Railway: projektet **drivermatch-demo** → Variables → kopiera `DATABASE_URL`.
+2. Kör lokalt (ersätt med din URL):
+   ```bash
+   cd server
+   DATABASE_URL="postgresql://..." DEMO_SEED=true npm run db:seed:demo
+   ```
+   Detta **rensar** demo-DB och fyller den med 10 åkerier, 18 förare, 28 jobb m.m. Ladda om demo-sajten – då syns den nya datan.
 
 ### Alternativ: Git-branch för test
 
