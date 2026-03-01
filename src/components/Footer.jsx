@@ -35,20 +35,21 @@ export default function Footer() {
               Om STP
             </h3>
             <ul className="space-y-3">
-              <li><Link to="/branschinsikter" className="text-white/85 hover:text-white text-sm transition-colors">Branschinsikter</Link></li>
               <li><Link to="/om-oss" className="text-white/85 hover:text-white text-sm transition-colors">Om oss</Link></li>
               <li><Link to="/kontakt" className="text-white/85 hover:text-white text-sm transition-colors">Kontakt</Link></li>
             </ul>
           </div>
 
-          {/* Juridik */}
+          {/* Juridik & bransch */}
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-wider text-white/90 mb-4">
-              Juridik
+              Juridik & bransch
             </h3>
             <ul className="space-y-3">
               <li><Link to="/anvandarvillkor" className="text-white/85 hover:text-white text-sm transition-colors">Användarvillkor</Link></li>
               <li><Link to="/integritet" className="text-white/85 hover:text-white text-sm transition-colors">Integritetspolicy</Link></li>
+              <li><Link to="/integritet#cookies" className="text-white/85 hover:text-white text-sm transition-colors">Cookies</Link></li>
+              <li><Link to="/branschinsikter" className="text-white/85 hover:text-white text-sm transition-colors">Branschinsikter</Link></li>
             </ul>
           </div>
         </div>

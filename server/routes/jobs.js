@@ -1,11 +1,11 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
-import { authMiddleware, requireCompany, requireDriver, requireVerifiedCompany } from "../middleware/auth.js";
+import { authMiddleware, optionalAuthMiddleware, requireCompany, requireDriver, requireVerifiedCompany } from "../middleware/auth.js";
 import { matchScore, driverYearsFromExperience } from "../utils/matchScore.js";
 import { notifyRecommendedJobMatch } from "../lib/email.js";
 import { createNotification } from "../lib/notifications.js";
 import { validateBody, validateQuery } from "../middleware/validate.js";
-import { createJobSchema, jobsListQuerySchema } from "../lib/validators.js";
+import { createJobSchema, jobsListQuerySchema, patchJobSchema } from "../lib/validators.js";
 
 export const jobsRouter = Router();
 const MATCH_ALERTS_ENABLED = process.env.MATCH_ALERTS_ENABLED !== "false";
@@ -72,7 +72,7 @@ async function sendDriverMatchAlertsForJob(job) {
         type: "MATCH_JOBS",
         title: "Nytt jobb som matchar dig",
         body: `${job.company}: ${job.title} (${job.region})`,
-        link: "/jobb",
+        link: `/jobb/${job.id}`,
         relatedJobId: job.id,
       }).catch((e) => console.error("Create notification match job:", e));
     }
@@ -117,6 +117,7 @@ jobsRouter.get("/mine", authMiddleware, requireCompany, requireVerifiedCompany, 
       location: j.location,
       region: j.region,
       status: j.status,
+      filledAt: j.filledAt?.toISOString() ?? null,
       segment: resolveSegment(j.segment, j.employment),
       moderationReason: j.moderationReason || null,
       published: j.published.toISOString().slice(0, 10),
@@ -174,9 +175,12 @@ jobsRouter.get("/", validateQuery(jobsListQuerySchema), async (req, res, next) =
       requirements: j.requirements ? JSON.parse(j.requirements || "[]") : [],
       status: j.status,
       published: j.published.toISOString().slice(0, 10),
+      updatedAt: j.updatedAt.toISOString(),
       contact: j.contact,
       physicalWorkRequired: j.physicalWorkRequired ?? null,
       soloWorkOk: j.soloWorkOk ?? null,
+      kollektivavtal: j.kollektivavtal ?? null,
+      filledAt: j.filledAt?.toISOString() ?? null,
       companyReviewAverage: reviewByCompany.get(j.userId)?.avg
         ? Number(reviewByCompany.get(j.userId).avg.toFixed(2))
         : null,
@@ -214,9 +218,12 @@ jobsRouter.get("/saved", authMiddleware, requireDriver, async (req, res, next) =
       requirements: s.job.requirements ? JSON.parse(s.job.requirements || "[]") : [],
       status: s.job.status,
       published: s.job.published.toISOString().slice(0, 10),
+      updatedAt: s.job.updatedAt.toISOString(),
       contact: s.job.contact,
       physicalWorkRequired: s.job.physicalWorkRequired ?? null,
       soloWorkOk: s.job.soloWorkOk ?? null,
+      kollektivavtal: s.job.kollektivavtal ?? null,
+      filledAt: s.job.filledAt?.toISOString() ?? null,
       savedAt: s.createdAt.toISOString(),
     }));
     res.json(list);
@@ -264,6 +271,7 @@ jobsRouter.get("/:id/applicants", authMiddleware, requireCompany, requireVerifie
         driverId: c.driverId,
         driverName: c.driver.name,
         selectedByCompanyAt: c.selectedByCompanyAt?.toISOString() ?? null,
+        rejectedByCompanyAt: c.rejectedByCompanyAt?.toISOString() ?? null,
         appliedAt: c.createdAt.toISOString(),
         matchScore: score,
         licenses: driver.licenses,
@@ -279,13 +287,34 @@ jobsRouter.get("/:id/applicants", authMiddleware, requireCompany, requireVerifie
   }
 });
 
-jobsRouter.get("/:id", async (req, res, next) => {
+jobsRouter.get("/:id", optionalAuthMiddleware, async (req, res, next) => {
   try {
     const job = await prisma.job.findFirst({
-      where: { id: req.params.id, status: "ACTIVE" },
-      include: { user: { select: { id: true, companyName: true } } },
+      where: {
+        id: req.params.id,
+        OR: [
+          { status: "ACTIVE" },
+          ...(req.userId ? [{ status: { in: ["HIDDEN", "REMOVED"] }, userId: req.userId }] : []),
+        ],
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            companyName: true,
+            companyDescription: true,
+            companyWebsite: true,
+            companyLocation: true,
+          },
+        },
+      },
     });
     if (!job) return res.status(404).json({ error: "Jobbet hittades inte" });
+    const rawDesc = job.user?.companyDescription && typeof job.user.companyDescription === "string"
+      ? job.user.companyDescription.trim()
+      : "";
+    const companyDescriptionShort =
+      rawDesc.length > 320 ? rawDesc.slice(0, 320).trim() + "…" : rawDesc || null;
     const reviewAggregate = await prisma.companyReview.aggregate({
       where: { companyId: job.userId, status: "PUBLISHED" },
       _avg: { rating: true },
@@ -310,10 +339,16 @@ jobsRouter.get("/:id", async (req, res, next) => {
       requirements: job.requirements ? JSON.parse(job.requirements) : [],
       extraRequirements: job.extraRequirements,
       published: job.published.toISOString().slice(0, 10),
+      updatedAt: job.updatedAt.toISOString(),
       contact: job.contact,
       userId: job.userId,
       physicalWorkRequired: job.physicalWorkRequired ?? null,
       soloWorkOk: job.soloWorkOk ?? null,
+      kollektivavtal: job.kollektivavtal ?? null,
+      filledAt: job.filledAt?.toISOString() ?? null,
+      companyDescriptionShort,
+      companyWebsite: job.user?.companyWebsite ?? null,
+      companyLocation: job.user?.companyLocation ?? null,
       companyReviewAverage: reviewAggregate._avg.rating
         ? Number(reviewAggregate._avg.rating.toFixed(2))
         : null,
@@ -392,6 +427,7 @@ jobsRouter.post("/", authMiddleware, requireCompany, requireVerifiedCompany, val
         contact: body.contact,
         physicalWorkRequired: body.physicalWorkRequired === true ? true : body.physicalWorkRequired === false ? false : null,
         soloWorkOk: body.soloWorkOk === true ? true : body.soloWorkOk === false ? false : null,
+        kollektivavtal: body.kollektivavtal === true ? true : body.kollektivavtal === false ? false : null,
       },
     });
     res.status(201).json({
@@ -402,6 +438,53 @@ jobsRouter.post("/", authMiddleware, requireCompany, requireVerifiedCompany, val
       published: job.published.toISOString().slice(0, 10),
     });
     sendDriverMatchAlertsForJob(job);
+  } catch (e) {
+    next(e);
+  }
+});
+
+jobsRouter.patch("/:id", authMiddleware, requireCompany, requireVerifiedCompany, validateBody(patchJobSchema), async (req, res, next) => {
+  try {
+    const job = await prisma.job.findUnique({
+      where: { id: req.params.id },
+    });
+    if (!job) return res.status(404).json({ error: "Jobbet hittades inte" });
+    if (job.userId !== req.userId) return res.status(403).json({ error: "Ingen åtkomst" });
+    const body = req.body;
+    const data = {};
+    if (body.status !== undefined) data.status = body.status;
+    if (body.filledAt !== undefined) data.filledAt = body.filledAt;
+    if (body.kollektivavtal !== undefined) data.kollektivavtal = body.kollektivavtal;
+    if (body.status === "HIDDEN" && !body.filledAt && !job.filledAt) data.filledAt = new Date();
+    const updated = await prisma.job.update({
+      where: { id: job.id },
+      data,
+    });
+    // Så att förare kommer tillbaka: notifiera alla som sparat jobbet
+    try {
+      const savers = await prisma.savedJob.findMany({
+        where: { jobId: job.id },
+        select: { userId: true },
+      });
+      for (const s of savers) {
+        await createNotification({
+          userId: s.userId,
+          type: "JOB_UPDATED",
+          title: "Ett sparade jobb har uppdaterats",
+          body: `${job.company}: ${job.title}`,
+          link: `/jobb/${job.id}`,
+          relatedJobId: job.id,
+        }).catch((e) => console.error("Create notification job updated:", e));
+      }
+    } catch (e) {
+      console.error("Notify savers on job update:", e);
+    }
+    res.json({
+      id: updated.id,
+      status: updated.status,
+      filledAt: updated.filledAt?.toISOString() ?? null,
+      kollektivavtal: updated.kollektivavtal ?? null,
+    });
   } catch (e) {
     next(e);
   }

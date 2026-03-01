@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import JobCard from "../components/JobCard";
+import PageHeader from "../components/PageHeader";
+import LoadingBlock from "../components/LoadingBlock";
 import { fetchSavedJobs, saveJob, unsaveJob } from "../api/jobs.js";
 import { useAuth } from "../context/AuthContext";
 
@@ -42,30 +44,40 @@ export default function SavedJobs() {
 
   return (
     <main className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
-      <div className="mb-8">
-        <Link
-          to="/jobb"
-          className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-[var(--color-primary)]"
-        >
-          ← Tillbaka till jobb
-        </Link>
-        <h1 className="mt-4 text-3xl font-bold text-slate-900">Sparade jobb</h1>
-        <p className="mt-2 text-slate-600">Dina bevakade jobbannonser på ett ställe.</p>
-      </div>
+      <PageHeader
+        breadcrumbs={[{ label: "Jobb", to: "/jobb" }, { label: "Sparade jobb" }]}
+        backTo="/jobb"
+        backLabel="Tillbaka till jobb"
+        title="Sparade jobb"
+        description={
+          jobs.length === 0 && !loading && !error
+            ? "Spara jobb du är intresserad av – då hittar du dem här och får notis om uppdateringar."
+            : "Dina bevakade annonser på ett ställe. Du får notis när något uppdateras."
+        }
+      />
 
-      {loading ? <p className="text-slate-500">Laddar...</p> : null}
+      {loading ? <LoadingBlock message="Hämtar sparade jobb..." /> : null}
       {!loading && error ? <p className="text-red-600">{error}</p> : null}
       {!loading && !error && jobs.length === 0 ? (
-        <div className="p-8 bg-white rounded-xl border border-slate-200">
-          <p className="text-slate-700">Du har inga sparade jobb ännu.</p>
-          <Link to="/jobb" className="mt-3 inline-block text-[var(--color-primary)] font-medium hover:underline">
-            Utforska lediga jobb →
+        <div className="p-8 sm:p-10 bg-white rounded-xl border border-slate-200 text-center">
+          <p className="text-slate-700 font-medium">Inga sparade jobb ännu</p>
+          <p className="mt-2 text-slate-600 text-sm max-w-md mx-auto">
+            Klicka på hjärtat på en annons så hamnar den här. Perfekt när du vill jämföra eller återkomma senare.
+          </p>
+          <Link
+            to="/jobb"
+            className="mt-6 inline-flex items-center gap-2 rounded-lg bg-[var(--color-primary)] text-white px-5 py-2.5 font-medium hover:opacity-90 transition-opacity"
+          >
+            Utforska lediga jobb
           </Link>
         </div>
       ) : null}
 
       {!loading && !error && jobs.length > 0 ? (
         <div className="space-y-4">
+          <p className="text-sm text-slate-500">
+            {jobs.length} {jobs.length === 1 ? "annons" : "annonser"} sparade. Öppna när du vill – vi påminner dig om uppdateringar.
+          </p>
           {jobs.map((job) => (
             <JobCard
               key={job.id}

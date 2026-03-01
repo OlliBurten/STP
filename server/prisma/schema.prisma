@@ -53,7 +53,7 @@ model Notification {
   id        String   @id @default(cuid())
   userId    String
   user      User     @relation("NotificationRecipient", fields: [userId], references: [id], onDelete: Cascade)
-  type      String   // MESSAGE | APPLICATION | SELECTED | MATCH_JOBS | MATCH_DRIVERS
+  type      String   // MESSAGE | APPLICATION | SELECTED | MATCH_JOBS | MATCH_DRIVERS | JOB_UPDATED
   title     String
   body      String?
   link      String?
@@ -120,6 +120,8 @@ model Job {
   moderatedAt DateTime?
   moderationReason String?
   published   DateTime @default(now())
+  filledAt    DateTime? // när annonsen stängdes (tillsatt)
+  kollektivavtal Boolean? // kollektivavtal ja/nej
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -149,6 +151,8 @@ model Conversation {
   job       Job?     @relation(fields: [jobId], references: [id], onDelete: SetNull)
   jobTitle  String?
   selectedByCompanyAt DateTime?  // company marked driver as "utvald"
+  readByCompanyAt   DateTime?    // företag har öppnat konversationen
+  rejectedByCompanyAt DateTime?  // företag avvisade
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

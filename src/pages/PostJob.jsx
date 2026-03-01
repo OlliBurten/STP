@@ -41,6 +41,7 @@ export default function PostJob() {
     contact: "",
     physicalWorkRequired: false,
     soloWorkOk: false,
+    kollektivavtal: null,
   });
 
   const toggleLicense = (lic) => {
@@ -86,6 +87,7 @@ export default function PostJob() {
           contact: form.contact,
           physicalWorkRequired: form.physicalWorkRequired || null,
           soloWorkOk: form.soloWorkOk || null,
+          kollektivavtal: form.kollektivavtal === true ? true : form.kollektivavtal === false ? false : null,
         });
         trackJobPosted(form.segment);
         setSubmitted(true);
@@ -500,6 +502,18 @@ export default function PostJob() {
           <h2 className="text-lg font-semibold text-slate-900 border-b border-slate-200 pb-2">
             Ersättning
           </h2>
+          <div>
+            <label className="flex items-center gap-2 cursor-pointer mb-3">
+              <input
+                type="checkbox"
+                checked={form.kollektivavtal === true}
+                onChange={(e) => setForm((p) => ({ ...p, kollektivavtal: e.target.checked ? true : null }))}
+                className="rounded"
+              />
+              <span className="text-sm font-medium text-slate-700">Kollektivavtal</span>
+            </label>
+            <p className="text-xs text-slate-500 mb-2">Kryssa i om tjänsten omfattas av kollektivavtal – många förare söker efter detta.</p>
+          </div>
           <div>
             <label htmlFor="salary" className="block text-sm font-medium text-slate-700 mb-1">
               Lön / ersättning (valfritt men uppskattas)

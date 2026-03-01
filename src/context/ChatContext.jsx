@@ -37,7 +37,7 @@ function saveSeenSelectedMap(map) {
 const ChatContext = createContext(null);
 
 export function ChatProvider({ children }) {
-  const { hasApi, token, isDriver } = useAuth();
+  const { hasApi, token, isDriver, isCompany } = useAuth();
   const [conversations, setConversations] = useState(loadConversations);
   const [apiConversations, setApiConversations] = useState([]);
   const [conversationsLoading, setConversationsLoading] = useState(false);
@@ -85,6 +85,9 @@ export function ChatProvider({ children }) {
     ? list.filter(
         (c) => c.selectedByCompanyAt && seenSelectedMap[c.id] !== c.selectedByCompanyAt
       ).length
+    : 0;
+  const companyUnreadConversationCount = isCompany
+    ? list.filter((c) => !c.readByCompanyAt).length
     : 0;
 
   const createConversation = useCallback(
@@ -204,6 +207,7 @@ export function ChatProvider({ children }) {
         getConversation,
         unreadCount,
         selectedNotificationCount,
+        companyUnreadConversationCount,
         markSelectedNotificationsSeen,
         conversationsLoading,
       }}

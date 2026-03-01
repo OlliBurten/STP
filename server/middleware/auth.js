@@ -15,14 +15,28 @@ function isAdminEmail(email) {
   return parseAdminEmails().includes(String(email).trim().toLowerCase());
 }
 
+/** Sätter req.userId/req.role om giltig token, annars 401 */
 export function authMiddleware(req, res, next) {
   const authHeader = req.headers.authorization;
   const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
   if (!token) {
     return res.status(401).json({ error: "Ej inloggad" });
   }
+  verifyToken(req, res, next, token);
+}
+
+/** Sätter req.userId/req.role om giltig token, annars bara next() (för publika routes med optional auth) */
+export function optionalAuthMiddleware(req, res, next) {
+  const authHeader = req.headers.authorization;
+  const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
+  if (!token) return next();
+  verifyToken(req, res, next, token, true);
+}
+
+function verifyToken(req, res, next, token, optional = false) {
   jwt.verify(token, JWT_SECRET, async (err, payload) => {
     if (err || !payload?.userId) {
+      if (optional) return next();
       return res.status(401).json({ error: "Ogiltig eller utgången session" });
     }
     try {

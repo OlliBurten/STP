@@ -4,8 +4,8 @@ import { test, expect } from "@playwright/test";
 test.describe("Startsida (gäst)", () => {
   test("visar rubrik och CTA", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("heading", { name: /Hitta förare\. Hitta jobb/i })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Skapa konto" }).first()).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Rätt/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Jag är förare" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Logga in" }).first()).toBeVisible();
   });
 
@@ -13,19 +13,19 @@ test.describe("Startsida (gäst)", () => {
     await page.goto("/");
     await page.getByRole("link", { name: "Logga in" }).first().click();
     await expect(page).toHaveURL(/\/login/);
-    await expect(page.getByRole("heading", { name: /Logga in|Skapa konto/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Logga in|Registrera/i })).toBeVisible();
   });
 
   test("navigerar till Jobb", async ({ page }) => {
     await page.goto("/");
-    await page.getByRole("link", { name: "Jobb" }).first().click();
+    await page.getByRole("link", { name: "För förare" }).first().click();
     await expect(page).toHaveURL(/\/jobb/);
     await expect(page.getByRole("heading", { name: /Lediga jobb/i })).toBeVisible();
   });
 
   test("navigerar till Åkerier", async ({ page }) => {
     await page.goto("/");
-    await page.getByRole("link", { name: "Åkerier" }).first().click();
+    await page.getByRole("link", { name: "För åkerier" }).first().click();
     await expect(page).toHaveURL(/\/akerier/);
     await expect(page.getByRole("heading", { name: /Hitta åkerier/i })).toBeVisible();
   });
@@ -76,11 +76,12 @@ test.describe("Skyddade routes (gäst)", () => {
 });
 
 test.describe("Header och navigation", () => {
-  test("header innehåller DriverMatch-logo och nav-länkar", async ({ page }) => {
+  test("header innehåller STP och nav-länkar", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("link", { name: /DriverMatch/i })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Jobb" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Åkerier" })).toBeVisible();
+    const header = page.locator("header").first();
+    await expect(header.getByRole("link", { name: /STP|Sveriges Transportplattform/i })).toBeVisible();
+    await expect(header.getByRole("link", { name: "För förare" })).toBeVisible();
+    await expect(header.getByRole("link", { name: "För åkerier" })).toBeVisible();
   });
 
   test("footer innehåller användarvillkor", async ({ page }) => {

@@ -33,7 +33,7 @@ test.describe("Inloggad förare", () => {
     await page.getByRole("button", { name: /Logga ut/i }).click();
     await expect(page.getByRole("link", { name: "Logga in" }).first()).toBeVisible();
     await page.goto("/");
-    await expect(page.getByRole("link", { name: "Skapa konto" }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: "Jag är förare" })).toBeVisible();
   });
 });
 

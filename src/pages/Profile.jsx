@@ -230,6 +230,30 @@ export default function Profile() {
         </p>
       )}
 
+      {profile != null && (() => {
+        const hasSummary = String(profile.summary || "").trim().length >= 20;
+        const hasLicense = Array.isArray(profile.licenses) && profile.licenses.length > 0;
+        const hasRegion = Boolean(profile.region?.trim());
+        const isVisible = Boolean(profile.visibleToCompanies);
+        const allDone = hasSummary && hasLicense && hasRegion;
+        if (allDone && isVisible) return null;
+        return (
+          <div className="mb-6 rounded-xl border border-slate-200 bg-slate-50 p-4" role="region" aria-label="Tips för att nå fler företag">
+            <p className="text-sm font-semibold text-slate-900">Saker som lätt glöms – så når fler företag dig</p>
+            <ul className="mt-2 space-y-1.5 text-sm text-slate-700">
+              {!hasSummary && <li><span className="text-slate-500" aria-hidden>○</span> Lägg till en kort profiltext (minst 20 tecken) så företag förstår vem du är.</li>}
+              {hasSummary && <li><CheckIcon className="w-4 h-4 inline-block mr-1 align-middle text-green-600" aria-hidden /> Profiltext ifylld</li>}
+              {!hasLicense && <li><span className="text-slate-500" aria-hidden>○</span> Välj minst ett körkort (t.ex. CE, C) – annars matchar du inte jobben.</li>}
+              {hasLicense && <li><CheckIcon className="w-4 h-4 inline-block mr-1 align-middle text-green-600" aria-hidden /> Körkort angivet</li>}
+              {!hasRegion && <li><span className="text-slate-500" aria-hidden>○</span> Välj region – då syns du i rätt sökningar.</li>}
+              {hasRegion && <li><CheckIcon className="w-4 h-4 inline-block mr-1 align-middle text-green-600" aria-hidden /> Region vald</li>}
+              {!isVisible && hasRegion && <li><span className="text-slate-500" aria-hidden>○</span> Bli synlig för företag så att de kan hitta dig i chaufförsökningen.</li>}
+              {isVisible && <li><CheckIcon className="w-4 h-4 inline-block mr-1 align-middle text-green-600" aria-hidden /> Synlig för företag</li>}
+            </ul>
+          </div>
+        );
+      })()}
+
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
         <div className="p-6 sm:p-8 space-y-8">
           {/* Basic info */}

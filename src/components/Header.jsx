@@ -7,7 +7,7 @@ import { BellIcon, MenuIcon, CloseIcon, ChevronDownIcon } from "./Icons";
 
 export default function Header() {
   const { user, isDriver, isCompany, isAdmin, logout } = useAuth();
-  const { selectedNotificationCount } = useChat();
+  const { selectedNotificationCount, companyUnreadConversationCount = 0 } = useChat();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -199,8 +199,13 @@ export default function Header() {
             </Link>
           </li>
           <li>
-            <Link to="/foretag/meddelanden" onClick={closeMobile} className="hover:text-[var(--color-primary)] transition-colors">
+            <Link to="/foretag/meddelanden" onClick={closeMobile} className="hover:text-[var(--color-primary)] transition-colors flex items-center gap-1">
               Meddelanden
+              {companyUnreadConversationCount > 0 && (
+                <span className="inline-flex min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold items-center justify-center">
+                  {companyUnreadConversationCount > 99 ? "99+" : companyUnreadConversationCount}
+                </span>
+              )}
             </Link>
           </li>
         </>

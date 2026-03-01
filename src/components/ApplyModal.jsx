@@ -70,6 +70,10 @@ export default function ApplyModal({ job, onClose, onSuccess }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
       <div className="bg-white rounded-xl p-6 sm:p-8 max-w-lg w-full max-h-[90vh] overflow-y-auto">
+        <div className="mb-4 p-3 rounded-lg bg-slate-50 border border-slate-200 text-sm text-slate-600">
+          <p className="font-medium text-slate-800">Vad händer efter ansökan?</p>
+          <p className="mt-1">Företaget får din profil och meddelande. De kan markera dig som &quot;Utvald&quot; eller svara i chatten. Du får notiser här i plattformen.</p>
+        </div>
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-slate-900">Ansök med din profil</h2>
           <button

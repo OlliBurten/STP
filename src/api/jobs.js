@@ -1,4 +1,4 @@
-import { apiDelete, apiGet, apiPost } from "./client.js";
+import { apiDelete, apiGet, apiPatch, apiPost } from "./client.js";
 
 export function fetchJobs(params = {}) {
   const q = new URLSearchParams();
@@ -33,4 +33,9 @@ export async function saveJob(jobId) {
 
 export async function unsaveJob(jobId) {
   return apiDelete(`/api/jobs/${jobId}/save`);
+}
+
+/** Stäng annons (tillsatt) eller uppdatera status/kollektivavtal */
+export async function updateJob(jobId, data) {
+  return apiPatch(`/api/jobs/${jobId}`, data);
 }

@@ -32,6 +32,7 @@ export default function Login() {
   const [info, setInfo] = useState("");
   const [showResendVerification, setShowResendVerification] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [acceptTerms, setAcceptTerms] = useState(false);
 
   const handleMockDriver = () => {
     loginAsDriver();
@@ -66,6 +67,10 @@ export default function Login() {
         }
         if (role === "company" && !companyOrgNumber.trim()) {
           setError("Organisationsnummer krävs");
+          return;
+        }
+        if (!acceptTerms) {
+          setError("Du måste godkänna användarvillkoren och integritetspolicyn.");
           return;
         }
         await registerWithApi({
@@ -300,6 +305,26 @@ export default function Login() {
             />
           )}
         </div>
+        {mode === "register" && (
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={acceptTerms}
+              onChange={(e) => setAcceptTerms(e.target.checked)}
+              className="mt-1 rounded border-slate-300 text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
+            />
+            <span className="text-sm text-slate-700">
+              Jag godkänner{" "}
+              <a href="/anvandarvillkor" target="_blank" rel="noopener noreferrer" className="text-[var(--color-primary)] font-medium hover:underline">
+                användarvillkoren
+              </a>{" "}
+              och{" "}
+              <a href="/integritet" target="_blank" rel="noopener noreferrer" className="text-[var(--color-primary)] font-medium hover:underline">
+                integritetspolicyn
+              </a>.
+            </span>
+          </label>
+        )}
         <button
           type="submit"
           disabled={loading}

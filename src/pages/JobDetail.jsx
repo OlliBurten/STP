@@ -7,13 +7,16 @@ import DriverCard from "../components/DriverCard";
 import { useAuth } from "../context/AuthContext";
 import { getMatchingDriversForJob } from "../utils/matchUtils";
 import { fetchJob, fetchJobApplicants, fetchSavedJobs, saveJob, unsaveJob } from "../api/jobs.js";
-import { selectConversation } from "../api/conversations.js";
+import { selectConversation, rejectConversation } from "../api/conversations.js";
 import { getCompanyReviewSummary } from "../api/reviews.js";
 import { mapEmploymentToSegment, segmentLabel } from "../data/segments";
 import { getBranschLabel } from "../data/bransch.js";
 import { getCertificateLabel } from "../data/profileData";
 import { scheduleTypes } from "../data/mockJobs";
+import { isJobOlderThan30Days } from "../utils/jobUtils.js";
 import { StarFilledIcon, StarOutlineIcon, LocationIcon } from "../components/Icons";
+import Breadcrumbs from "../components/Breadcrumbs";
+import LoadingBlock from "../components/LoadingBlock";
 
 export default function JobDetail() {
   const { id } = useParams();
@@ -75,6 +78,20 @@ export default function JobDetail() {
     } catch (_) {}
   };
 
+  const handleReject = async (conversationId) => {
+    if (!window.confirm("Avvisa denna sökande? De ser statusen i sina meddelanden.")) return;
+    try {
+      await rejectConversation(conversationId);
+      setApplicants((prev) =>
+        prev.map((a) =>
+          a.conversationId === conversationId
+            ? { ...a, rejectedByCompanyAt: new Date().toISOString() }
+            : a
+        )
+      );
+    } catch (_) {}
+  };
+
   const formatDate = (dateStr) => {
     return new Date(dateStr).toLocaleDateString("sv-SE", {
       day: "numeric",
@@ -82,6 +99,11 @@ export default function JobDetail() {
       year: "numeric",
     });
   };
+
+  const publishedDate = job ? new Date(job.published).toDateString() : "";
+  const updatedDate = job?.updatedAt ? new Date(job.updatedAt).toDateString() : "";
+  const showUpdatedSeparately = job?.updatedAt && updatedDate !== publishedDate;
+  const jobIsOld = job ? isJobOlderThan30Days(job) : false;
 
   const handleToggleSave = async () => {
     if (!isDriver || !hasApi || !job?.id) return;
@@ -111,12 +133,17 @@ export default function JobDetail() {
     [isCompany, job, driverList]
   );
 
-  if (jobLoading || !job) {
+  if (jobLoading) {
+    return (
+      <main className="max-w-3xl mx-auto px-4 py-16">
+        <LoadingBlock message="Hämtar jobb..." />
+      </main>
+    );
+  }
+  if (!job) {
     return (
       <main className="max-w-3xl mx-auto px-4 py-16 text-center">
-        <h1 className="text-2xl font-bold text-slate-900">
-          {jobLoading ? "Laddar..." : "Jobbet hittades inte"}
-        </h1>
+        <h1 className="text-2xl font-bold text-slate-900">Jobbet hittades inte</h1>
         <Link to="/jobb" className="mt-4 inline-block text-[var(--color-primary)] font-medium hover:underline">
           Tillbaka till jobblistan
         </Link>
@@ -124,9 +151,14 @@ export default function JobDetail() {
     );
   }
 
+  const breadcrumbs = isCompany
+    ? [{ label: "Företag", to: "/foretag" }, { label: "Mina jobb", to: "/foretag/mina-jobb" }, { label: job.title }]
+    : [{ label: "Jobb", to: "/jobb" }, { label: job.title }];
+
   return (
     <main className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+      <Breadcrumbs items={breadcrumbs} className="mb-4" />
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <Link
           to={isCompany ? "/foretag/mina-jobb" : "/jobb"}
           className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-[var(--color-primary)]"
@@ -223,7 +255,70 @@ export default function JobDetail() {
             </p>
           )}
           <p className="mt-1 text-slate-500 flex items-center gap-1"><LocationIcon className="w-4 h-4 shrink-0" /> {job.location}, {job.region}</p>
-          <p className="mt-4 text-sm text-slate-500">Publicerad {formatDate(job.published)}</p>
+
+          {/* Tydlighet & förtroende: publiceringsdatum och senast uppdaterad */}
+          <div className="mt-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
+            <p className="text-sm font-medium text-slate-700">
+              Publicerad {formatDate(job.published)}
+              {showUpdatedSeparately && (
+                <span className="text-slate-500 font-normal ml-2">
+                  · Senast uppdaterad {formatDate(job.updatedAt)}
+                </span>
+              )}
+            </p>
+            {job.kollektivavtal === true && (
+              <p className="mt-1 text-sm text-green-700 font-medium">Kollektivavtal</p>
+            )}
+          </div>
+
+          {jobIsOld && (
+            <div className="mt-4 p-4 rounded-xl border border-amber-300 bg-amber-50 text-amber-900" role="alert">
+              <p className="text-sm font-medium">Denna annons är äldre än 30 dagar</p>
+              <p className="mt-1 text-sm text-amber-800">
+                Kontakta företaget för att höra om tjänsten fortfarande är ledig.
+              </p>
+            </div>
+          )}
+
+          {/* Kort om företaget – ger förtroende och kontext */}
+          <div className="mt-6 p-5 rounded-xl border border-slate-200 bg-white">
+            <h2 className="text-base font-semibold text-slate-900 mb-2">
+              Om {job.company}
+            </h2>
+            {job.companyDescriptionShort ? (
+              <p className="text-slate-700 text-sm leading-relaxed">{job.companyDescriptionShort}</p>
+            ) : (
+              <p className="text-slate-600 text-sm">Företagets profil innehåller mer information.</p>
+            )}
+            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-600">
+              {job.companyLocation && (
+                <span className="flex items-center gap-1">
+                  <LocationIcon className="w-4 h-4 shrink-0" /> {job.companyLocation}
+                </span>
+              )}
+              {job.companyWebsite && (
+                <a
+                  href={job.companyWebsite.startsWith("http") ? job.companyWebsite : `https://${job.companyWebsite}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[var(--color-primary)] hover:underline"
+                >
+                  Webbplats
+                </a>
+              )}
+              {job.kollektivavtal === true && (
+                <span className="text-green-700 font-medium">Kollektivavtal</span>
+              )}
+            </div>
+            {job.userId && (
+              <Link
+                to={`/foretag/${job.userId}`}
+                className="mt-3 inline-block text-sm font-medium text-[var(--color-primary)] hover:underline"
+              >
+                Läs mer om företaget →
+              </Link>
+            )}
+          </div>
 
           <div className="mt-8 pt-8 border-t border-slate-200 space-y-6">
             <div>
@@ -285,7 +380,12 @@ export default function JobDetail() {
                           <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[var(--color-primary)]/10 text-[var(--color-primary)]">
                             {a.matchScore} match
                           </span>
-                          {a.selectedByCompanyAt && (
+                          {a.rejectedByCompanyAt && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                              Avvisad
+                            </span>
+                          )}
+                          {a.selectedByCompanyAt && !a.rejectedByCompanyAt && (
                             <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
                               Utvald
                             </span>
@@ -304,14 +404,23 @@ export default function JobDetail() {
                         >
                           Visa profil
                         </Link>
-                        {!a.selectedByCompanyAt && (
-                          <button
-                            type="button"
-                            onClick={() => handleMarkSelected(a.conversationId)}
-                            className="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-light)]"
-                          >
-                            Markera som utvald
-                          </button>
+                        {!a.selectedByCompanyAt && !a.rejectedByCompanyAt && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => handleMarkSelected(a.conversationId)}
+                              className="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-light)]"
+                            >
+                              Markera som utvald
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleReject(a.conversationId)}
+                              className="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium text-slate-600 border border-slate-300 hover:bg-slate-50"
+                            >
+                              Avvisa
+                            </button>
+                          </>
                         )}
                       </div>
                     </li>

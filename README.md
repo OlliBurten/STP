@@ -48,6 +48,18 @@ npm run dev
 
 Öppna http://localhost:5173. Du kan nu registrera konto, logga in, publicera jobb och använda API:et.
 
+## E2E-tester
+
+Playwright-tester i `e2e/`. **Starta frontend (och vid behov backend) innan du kör testerna.**
+
+```bash
+npm run dev          # terminal 1
+cd server && npm run dev   # terminal 2 (för auth-tester)
+npm run e2e          # terminal 3
+```
+
+Endast Chromium: `npx playwright test --project=chromium`. Se [docs/E2E.md](docs/E2E.md) för manuell E2E-checklista och flöden.
+
 ## Företagsverifiering (grundskydd)
 
 - Företag måste registrera `organisationsnummer`.

@@ -1,14 +1,39 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { fetchMyJobs } from "../api/jobs.js";
+import { fetchMyJobs, updateJob } from "../api/jobs.js";
 import { useAuth } from "../context/AuthContext";
+import { useChat } from "../context/ChatContext";
 import { segmentLabel } from "../data/segments";
+import { isJobOlderThan30Days, countOldActiveJobs } from "../utils/jobUtils.js";
+import PageHeader from "../components/PageHeader";
+import LoadingBlock from "../components/LoadingBlock";
 
 export default function MinaJobb() {
   const { user, hasApi } = useAuth();
+  const { companyUnreadConversationCount = 0 } = useChat();
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [closingId, setClosingId] = useState(null);
+  const [successMessage, setSuccessMessage] = useState("");
+
+  const handleCloseJob = async (e, jobId) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!window.confirm("Stäng annonsen som tillsatt? Den visas då inte längre i jobblistan.")) return;
+    setClosingId(jobId);
+    setSuccessMessage("");
+    try {
+      await updateJob(jobId, { status: "HIDDEN" });
+      setJobs((prev) => prev.map((j) => (j.id === jobId ? { ...j, status: "HIDDEN", filledAt: new Date().toISOString() } : j)));
+      setSuccessMessage("Annonsen är stängd.");
+      setTimeout(() => setSuccessMessage(""), 3000);
+    } catch (err) {
+      alert(err.message || "Kunde inte stänga annonsen");
+    } finally {
+      setClosingId(null);
+    }
+  };
 
   useEffect(() => {
     if (!hasApi) {
@@ -26,6 +51,8 @@ export default function MinaJobb() {
       })
       .finally(() => setLoading(false));
   }, [hasApi]);
+
+  const oldActiveCount = useMemo(() => countOldActiveJobs(jobs), [jobs]);
 
   if (!hasApi) {
     return (
@@ -54,20 +81,32 @@ export default function MinaJobb() {
 
   return (
     <main className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
-      <Link
-        to="/foretag"
-        className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-[var(--color-primary)] mb-8"
-      >
-        ← Tillbaka till företag
-      </Link>
+      <PageHeader
+        breadcrumbs={[{ label: "Företag", to: "/foretag" }, { label: "Mina jobb" }]}
+        backTo="/foretag"
+        backLabel="Tillbaka till företagsöversikten"
+        title="Mina jobb"
+        description="Här ser du dina publicerade jobb och antal sökande. Klicka på ett jobb för att se sökande sorterade efter match."
+      />
 
-      <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Mina jobb</h1>
-      <p className="mt-2 text-slate-600">
-        Här ser du dina publicerade jobb och antal sökande. Klicka på ett jobb för att se sökande sorterade efter match.
-      </p>
+      {successMessage && (
+        <div className="mb-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800 font-medium" role="status">
+          {successMessage}
+        </div>
+      )}
+
+      {companyUnreadConversationCount > 0 && (
+        <Link
+          to="/foretag/meddelanden"
+          className="mb-4 flex items-center justify-between gap-3 rounded-lg border border-[var(--color-primary)] bg-[var(--color-primary)]/5 px-4 py-3 text-sm font-medium text-slate-800 hover:bg-[var(--color-primary)]/10"
+        >
+          <span>Du har {companyUnreadConversationCount} nya ansökningar att granska</span>
+          <span className="text-[var(--color-primary)]">Gå till Meddelanden →</span>
+        </Link>
+      )}
 
       {loading ? (
-        <p className="mt-8 text-slate-500">Laddar...</p>
+        <LoadingBlock message="Hämtar dina jobb..." />
       ) : error ? (
         <p className="mt-8 text-red-600">{error}</p>
       ) : jobs.length === 0 ? (
@@ -84,38 +123,66 @@ export default function MinaJobb() {
           </Link>
         </div>
       ) : (
+        <>
+          {oldActiveCount > 0 && (
+            <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+              <p className="font-medium">Saker som lätt glöms</p>
+              <p className="mt-1 text-amber-800">
+                {oldActiveCount} annons{oldActiveCount === 1 ? " har" : "er har"} varit öppna över 30 dagar. Stäng dem under respektive annons om tjänsterna är tillsatta.
+              </p>
+            </div>
+          )}
         <ul className="mt-8 space-y-4">
           {jobs.map((job) => (
             <li key={job.id}>
-              <Link
-                to={`/jobb/${job.id}`}
-                className="block p-4 sm:p-5 bg-white rounded-xl border border-slate-200 hover:border-[var(--color-primary)] hover:shadow-md transition-all"
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                  <div>
+              <div className="p-4 sm:p-5 bg-white rounded-xl border border-slate-200 hover:border-slate-300 transition-all flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <Link to={`/jobb/${job.id}`} className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <h2 className="font-semibold text-slate-900">{job.title}</h2>
-                    <p className="text-sm text-slate-500 mt-0.5">
-                      {job.company} · {job.region}
-                    </p>
-                    {job.segment && (
-                      <p className="text-xs text-slate-500 mt-1">Segment: {segmentLabel(job.segment)}</p>
+                    {job.status === "HIDDEN" ? (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-200 text-slate-700">
+                        Stängd
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        Aktiv
+                      </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-3 sm:justify-end">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-[var(--color-primary)]/10 text-[var(--color-primary)]">
-                      {job.applicantCount === 0
-                        ? "Inga sökande"
-                        : job.applicantCount === 1
-                          ? "1 sökande"
-                          : `${job.applicantCount} sökande`}
+                  <p className="text-sm text-slate-500 mt-0.5">
+                    {job.company} · {job.region}
+                  </p>
+                  {job.segment && (
+                    <p className="text-xs text-slate-500 mt-1">Segment: {segmentLabel(job.segment)}</p>
+                  )}
+                </Link>
+                <div className="flex items-center gap-3 sm:shrink-0">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-[var(--color-primary)]/10 text-[var(--color-primary)]">
+                    {job.applicantCount === 0 ? "Inga sökande" : job.applicantCount === 1 ? "1 sökande" : `${job.applicantCount} sökande`}
+                  </span>
+                  {job.status === "ACTIVE" && isJobOlderThan30Days(job) && (
+                    <span className="text-xs text-amber-700 font-medium" title="Stäng annonsen om tjänsten är tillsatt">
+                      Öppen över 30 dagar
                     </span>
-                    <span className="text-slate-400">→</span>
-                  </div>
+                  )}
+                  {job.status === "ACTIVE" && (
+                    <button
+                      type="button"
+                      onClick={(e) => handleCloseJob(e, job.id)}
+                      disabled={closingId === job.id}
+                      className="text-sm text-slate-600 hover:text-slate-900 underline disabled:opacity-50"
+                      aria-label={`Stäng annons: ${job.title}`}
+                    >
+                      {closingId === job.id ? "Stänger..." : "Stäng annons"}
+                    </button>
+                  )}
+                  <Link to={`/jobb/${job.id}`} className="text-slate-400 hover:text-[var(--color-primary)]" aria-label={`Öppna ${job.title}`}>→</Link>
                 </div>
-              </Link>
+              </div>
             </li>
           ))}
         </ul>
+        </>
       )}
 
       <div className="mt-8">

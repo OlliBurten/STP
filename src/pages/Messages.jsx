@@ -5,6 +5,14 @@ import { useProfile } from "../context/ProfileContext";
 import { useChat } from "../context/ChatContext";
 import { createReport } from "../api/reports.js";
 import { getMyConversationReview, submitCompanyReview } from "../api/reviews.js";
+import LoadingBlock from "../components/LoadingBlock";
+
+function getApplicationStatusLabel(conversation) {
+  if (conversation.rejectedByCompanyAt) return { label: "Avvisad", className: "bg-red-100 text-red-800" };
+  if (conversation.selectedByCompanyAt) return { label: "Utvald", className: "bg-green-100 text-green-800" };
+  if (conversation.readByCompanyAt) return { label: "Läst", className: "bg-blue-100 text-blue-800" };
+  return { label: "Skickad", className: "bg-slate-100 text-slate-700" };
+}
 
 function ConversationItem({ conversation, isDriver, isActive, onClick, basePath }) {
   const other = isDriver ? conversation.companyName : conversation.driverName;
@@ -17,6 +25,7 @@ function ConversationItem({ conversation, isDriver, isActive, onClick, basePath 
         minute: "2-digit",
       })
     : "";
+  const status = isDriver && conversation.jobId ? getApplicationStatusLabel(conversation) : null;
 
   return (
     <Link
@@ -26,9 +35,9 @@ function ConversationItem({ conversation, isDriver, isActive, onClick, basePath 
       }`}
     >
       <p className="font-medium text-slate-900 truncate">{other}</p>
-      {isDriver && conversation.selectedByCompanyAt && (
-        <p className="text-[11px] mt-0.5 inline-flex items-center px-2 py-0.5 rounded bg-green-100 text-green-800 w-fit">
-          Utvald av företag
+      {status && (
+        <p className={`text-[11px] mt-0.5 inline-flex items-center px-2 py-0.5 rounded w-fit ${status.className}`}>
+          {status.label}
         </p>
       )}
       {conversation.jobTitle && (
@@ -166,6 +175,7 @@ export default function Messages() {
     getConversation,
     markSelectedNotificationsSeen,
     conversationsLoading,
+    companyUnreadConversationCount = 0,
   } = useChat();
 
   const { pathname } = useLocation();
@@ -277,13 +287,19 @@ export default function Messages() {
   const selectedConversations = isDriver
     ? conversations.filter((c) => c.selectedByCompanyAt)
     : [];
-
   return (
     <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 min-h-[calc(100dvh-8rem)] lg:h-[calc(100vh-8rem)]">
+      {!isDriver && companyUnreadConversationCount > 0 && (
+        <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800">
+          <p className="font-medium">Saker som lätt glöms</p>
+          <p className="mt-1 text-slate-700">Svarar ni inom 24–48 timmar ökar chansen att hitta rätt kandidat. Ni har {companyUnreadConversationCount} nya ansökningar att granska.</p>
+        </div>
+      )}
       {isDriver && selectedConversations.length > 0 && (
         <div className="mb-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-900">
           <p className="font-medium">Du har blivit utvald i {selectedConversations.length} ansökan{selectedConversations.length > 1 ? "er" : ""}.</p>
-          <p className="mt-1 text-green-800">Öppna konversationen för att svara företaget snabbt.</p>
+          <p className="mt-1 text-green-800">Saker som lätt glöms: svara snabbt – det visar intresse och ökar chansen till nästa steg.</p>
+          <p className="mt-1 text-green-700">Öppna konversationen nedan för att svara företaget.</p>
         </div>
       )}
       {reportError ? (
@@ -332,8 +348,8 @@ export default function Messages() {
           </div>
           <div className="flex-1 overflow-y-auto">
             {conversationsLoading ? (
-              <div className="p-6 text-center text-slate-500 text-sm">
-                Laddar konversationer...
+              <div className="p-6">
+                <LoadingBlock message="Hämtar meddelanden..." className="py-8" />
               </div>
             ) : conversations.length === 0 ? (
               <div className="p-6 text-center text-slate-500 text-sm">

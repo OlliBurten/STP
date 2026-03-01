@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { segmentOptions } from "../data/segments";
 import { transportSegmentGroups, branschValues } from "../data/bransch.js";
 import { regions } from "../data/mockJobs.js";
+import LoadingBlock from "../components/LoadingBlock";
 
 export default function CompanyProfile() {
   const { hasApi } = useAuth();
@@ -62,7 +63,7 @@ export default function CompanyProfile() {
   if (loading) {
     return (
       <main className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
-        <p className="text-slate-500">Laddar företagsprofil...</p>
+        <LoadingBlock message="Hämtar företagsprofil..." />
       </main>
     );
   }

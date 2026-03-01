@@ -123,6 +123,14 @@ export const createJobSchema = z.object({
     .transform((v) => (v && v.trim() ? v.trim() : null)),
   physicalWorkRequired: z.boolean().optional().nullable(),
   soloWorkOk: z.boolean().optional().nullable(),
+  kollektivavtal: z.boolean().optional().nullable(),
+});
+
+/** Company can close job (set filled) or update limited fields */
+export const patchJobSchema = z.object({
+  status: z.enum(["ACTIVE", "HIDDEN", "REMOVED"]).optional(),
+  filledAt: z.string().datetime().optional().nullable().transform((v) => (v ? new Date(v) : null)),
+  kollektivavtal: z.boolean().optional().nullable(),
 });
 
 export const companyProfileSchema = z.object({

@@ -19,3 +19,7 @@ export async function sendMessage(conversationId, content) {
 export async function selectConversation(conversationId) {
   return apiPatch(`/api/conversations/${conversationId}/select`);
 }
+
+export async function rejectConversation(conversationId) {
+  return apiPatch(`/api/conversations/${conversationId}/reject`);
+}

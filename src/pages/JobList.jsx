@@ -1,7 +1,9 @@
 import { useState, useMemo, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { mockJobs } from "../data/mockJobs";
 import JobCard from "../components/JobCard";
 import JobFilters from "../components/JobFilters";
+import LoadingBlock from "../components/LoadingBlock";
 import { useAuth } from "../context/AuthContext";
 import { useProfile } from "../context/ProfileContext";
 import { calcYearsExperience } from "../utils/profileUtils";
@@ -138,8 +140,16 @@ export default function JobList() {
         )}
         <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Lediga jobb</h1>
         <p className="mt-2 text-slate-600">
-          {jobsLoading ? "Laddar..." : isGymnasieelev ? `${filteredJobs.length} praktikannonser` : `${filteredJobs.length} jobb för yrkesförare`}
+          {!jobsLoading && (isGymnasieelev ? `${filteredJobs.length} praktikannonser` : `${filteredJobs.length} jobb för yrkesförare`)}
+          {jobsLoading && "Hämtar jobb..."}
         </p>
+        {isDriver && savedJobIds.size > 0 && (
+          <p className="mt-2 text-sm">
+            <Link to="/favoriter" className="text-[var(--color-primary)] font-medium hover:underline">
+              Du har {savedJobIds.size} sparade jobb – visa dem →
+            </Link>
+          </p>
+        )}
       </div>
 
       <div className="grid lg:grid-cols-[280px_1fr] gap-6 lg:gap-10">
@@ -185,6 +195,10 @@ export default function JobList() {
             </div>
           )}
           <div>
+            {jobsLoading ? (
+              <LoadingBlock message="Hämtar lediga jobb..." />
+            ) : (
+              <>
             {isDriver && recommendedJobs.length > 0 && (
               <h2 className="text-lg font-semibold text-slate-900 mb-4">Alla lediga jobb</h2>
             )}
@@ -207,6 +221,8 @@ export default function JobList() {
                   Prova att ändra eller rensa filtren.
                 </p>
               </div>
+            )}
+              </>
             )}
           </div>
         </div>

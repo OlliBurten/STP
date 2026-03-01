@@ -9,7 +9,7 @@ import { CheckIcon, CircleOutlineIcon } from "../components/Icons";
 
 export default function ForCompanies() {
   const { user, isCompany, hasApi } = useAuth();
-  const { conversations } = useChat();
+  const { conversations, companyUnreadConversationCount = 0 } = useChat();
   const isVerifiedCompany = !isCompany || user?.companyStatus === "VERIFIED";
   const [jobCount, setJobCount] = useState(0);
   const [reviewSummary, setReviewSummary] = useState(null);
@@ -99,14 +99,39 @@ export default function ForCompanies() {
             Redigera företagsprofil
           </Link>
         </div>
+        {companyUnreadConversationCount > 0 && (
+          <Link
+            to="/foretag/meddelanden"
+            className="mt-6 flex items-center justify-between gap-4 rounded-xl border border-[var(--color-primary)] bg-[var(--color-primary)]/5 p-4 text-left hover:bg-[var(--color-primary)]/10 transition-colors"
+          >
+            <div>
+              <p className="font-semibold text-slate-900">
+                Du har {companyUnreadConversationCount} nya ansökningar att granska
+              </p>
+              <p className="mt-1 text-sm text-slate-600">
+                Svara på förfrågningar så håller ni rekryteringen i rörelse.
+              </p>
+              <p className="mt-1 text-xs text-slate-500">
+                Saker som lätt glöms: svar inom 24–48 timmar ökar chansen att hitta rätt kandidat.
+              </p>
+            </div>
+            <span className="shrink-0 rounded-lg bg-[var(--color-primary)] text-white px-4 py-2 font-medium">
+              Gå till Meddelanden →
+            </span>
+          </Link>
+        )}
         <div className="mt-6 grid sm:grid-cols-3 gap-3">
           <div className="rounded-lg border border-slate-200 p-4">
             <p className="text-xs text-slate-500">Aktiva jobb</p>
             <p className="mt-1 text-2xl font-bold text-slate-900">{jobCount}</p>
           </div>
           <div className="rounded-lg border border-slate-200 p-4">
-            <p className="text-xs text-slate-500">Dialoger</p>
-            <p className="mt-1 text-2xl font-bold text-slate-900">{companyConversationCount}</p>
+            <p className="text-xs text-slate-500">
+              {companyUnreadConversationCount > 0 ? "Nya ansökningar" : "Dialoger"}
+            </p>
+            <p className="mt-1 text-2xl font-bold text-slate-900">
+              {companyUnreadConversationCount > 0 ? companyUnreadConversationCount : companyConversationCount}
+            </p>
           </div>
           <div className="rounded-lg border border-slate-200 p-4">
             <p className="text-xs text-slate-500">Trust score</p>
@@ -201,9 +226,18 @@ export default function ForCompanies() {
           )}
           <Link
             to="/foretag/meddelanden"
-            className="inline-flex items-center justify-center px-8 py-4 rounded-xl border-2 border-[var(--color-primary)] text-[var(--color-primary)] font-semibold hover:bg-[var(--color-primary)]/5 transition-colors"
+            className={`inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-semibold transition-colors ${
+              companyUnreadConversationCount > 0
+                ? "bg-[var(--color-primary)] text-white hover:opacity-90"
+                : "border-2 border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-primary)]/5"
+            }`}
           >
             Meddelanden
+            {companyUnreadConversationCount > 0 && (
+              <span className="inline-flex min-w-[22px] h-[22px] items-center justify-center rounded-full bg-white/20 text-sm">
+                {companyUnreadConversationCount}
+              </span>
+            )}
           </Link>
           <Link
             to="/foretag/profil"

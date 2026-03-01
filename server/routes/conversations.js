@@ -25,6 +25,8 @@ function toConversation(c) {
     jobId: c.jobId,
     jobTitle: c.jobTitle,
     selectedByCompanyAt: c.selectedByCompanyAt?.toISOString() ?? null,
+    readByCompanyAt: c.readByCompanyAt?.toISOString() ?? null,
+    rejectedByCompanyAt: c.rejectedByCompanyAt?.toISOString() ?? null,
     messages: (c.messages || []).map((m) => ({
       id: m.id,
       sender: m.senderRole,
@@ -66,6 +68,13 @@ conversationsRouter.get("/:id", requireVerifiedIfCompany, async (req, res, next)
     if (!c) return res.status(404).json({ error: "Konversation hittades inte" });
     if (c.driverId !== req.userId && c.companyId !== req.userId) {
       return res.status(403).json({ error: "Ingen åtkomst" });
+    }
+    if (req.role === "COMPANY" && c.companyId === req.userId && !c.readByCompanyAt) {
+      await prisma.conversation.update({
+        where: { id: c.id },
+        data: { readByCompanyAt: new Date() },
+      });
+      c.readByCompanyAt = new Date();
     }
     res.json(toConversation(c));
   } catch (e) {
@@ -159,6 +168,30 @@ conversationsRouter.post("/", requireVerifiedIfCompany, validateBody(createConve
       },
     });
     res.status(201).json(toConversation(updated));
+  } catch (e) {
+    next(e);
+  }
+});
+
+conversationsRouter.patch("/:id/reject", requireCompany, requireVerifiedCompany, async (req, res, next) => {
+  try {
+    const conv = await prisma.conversation.findUnique({
+      where: { id: req.params.id },
+      include: { driver: { select: { name: true } }, company: { select: { companyName: true, name: true } } },
+    });
+    if (!conv) return res.status(404).json({ error: "Konversation hittades inte" });
+    if (conv.companyId !== req.userId) return res.status(403).json({ error: "Ingen åtkomst" });
+    if (conv.rejectedByCompanyAt) return res.status(400).json({ error: "Redan avvisad" });
+    const updated = await prisma.conversation.update({
+      where: { id: conv.id },
+      data: { rejectedByCompanyAt: new Date() },
+      include: {
+        driver: { select: { name: true } },
+        company: { select: { name: true, companyName: true } },
+        messages: { orderBy: { createdAt: "asc" } },
+      },
+    });
+    res.json(toConversation(updated));
   } catch (e) {
     next(e);
   }
