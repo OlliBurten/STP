@@ -3,16 +3,19 @@
  * Använd height för att styra storlek; bredd skalar automatiskt.
  * variant="light" för ljus logotyp på mörk bakgrund (t.ex. footer).
  */
+const LOGO_ASPECT = 1220 / 600; // viewBox width / height
+
 export default function Logo({ className = "", height = 40, variant = "default" }) {
   const isLight = variant === "light";
   const textFill = isLight ? "#ffffff" : "#1F5F5C";
+  const width = height * LOGO_ASPECT;
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 1200 520"
+      viewBox="0 0 1220 600"
       role="img"
       aria-label="STP Sveriges Transportplattform"
-      style={{ height: `${height}px`, width: "auto" }}
+      style={{ height: `${height}px`, width: `${width}px`, minWidth: `${width}px`, overflow: "visible", display: "block" }}
       className={className}
     >
       <g transform="translate(90,95)">

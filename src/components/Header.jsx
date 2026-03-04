@@ -231,8 +231,8 @@ export default function Header() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm">
       <nav className="dm-header-nav max-w-6xl mx-auto px-4 sm:px-6 flex items-center h-16 relative">
-        <div className="flex items-center shrink-0">
-          <Link to="/" className="flex items-center focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 rounded">
+        <div className="flex items-center shrink-0 overflow-visible">
+          <Link to="/" className="flex items-center focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 rounded overflow-visible">
             <Logo height={36} />
           </Link>
         </div>
