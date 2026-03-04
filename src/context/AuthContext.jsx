@@ -59,6 +59,8 @@ export function AuthProvider({ children }) {
 
   const registerWithApi = useCallback(
     async ({ email, password, role, name, companyName, companyOrgNumber }) => {
+      const verificationBaseUrl =
+        typeof window !== "undefined" && window.location?.origin ? window.location.origin : undefined;
       const data = await apiPost("/api/auth/register", {
         email,
         password,
@@ -66,11 +68,12 @@ export function AuthProvider({ children }) {
         name,
         companyName: role === "company" ? companyName : undefined,
         companyOrgNumber: role === "company" ? companyOrgNumber : undefined,
+        verificationBaseUrl,
       });
       const u = normalizeUser(data.user);
       setUser(u);
       setToken(data.token);
-      return u;
+      return { user: u, emailVerificationSent: data.emailVerificationSent === true };
     },
     []
   );

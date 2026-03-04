@@ -137,6 +137,31 @@ adminRouter.get("/users", async (req, res, next) => {
   }
 });
 
+adminRouter.patch("/users/:id/verify-email", async (req, res, next) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.params.id },
+      select: { id: true, email: true, emailVerifiedAt: true },
+    });
+    if (!user) return res.status(404).json({ error: "Användaren hittades inte" });
+    if (user.emailVerifiedAt) {
+      return res.json({ ...user, emailVerifiedAt: user.emailVerifiedAt.toISOString(), message: "E-post var redan verifierad" });
+    }
+    const updated = await prisma.user.update({
+      where: { id: user.id },
+      data: { emailVerifiedAt: new Date() },
+      select: { id: true, email: true, emailVerifiedAt: true },
+    });
+    res.json({
+      ...updated,
+      emailVerifiedAt: updated.emailVerifiedAt?.toISOString() ?? null,
+      message: "E-post markerad som verifierad",
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
 adminRouter.patch("/users/:id/suspend", async (req, res, next) => {
   try {
     const suspended = Boolean(req.body?.suspended);
@@ -390,7 +415,7 @@ adminRouter.patch("/reports/:id", async (req, res, next) => {
       where: { id: req.userId },
       select: { email: true },
     });
-    const adminEmail = adminUser?.email || "admin@drivermatch.se";
+    const adminEmail = adminUser?.email || "admin@transportplattformen.se";
 
     await prisma.$transaction(async (tx) => {
       await tx.report.update({

@@ -10,7 +10,9 @@
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
     "db:seed": "node prisma/seed.js",
-    "db:seed:demo": "DEMO_SEED=true node prisma/seed-demo.js"
+    "db:seed:demo": "DEMO_SEED=true node prisma/seed-demo.js",
+    "db:verify-user": "node scripts/verify-user-email.js",
+    "db:remove-demo-from-prod": "node scripts/remove-demo-users-from-prod.js"
   },
   "dependencies": {
     "@prisma/client": "^6.0.0",

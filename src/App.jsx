@@ -22,6 +22,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Admin from "./pages/Admin";
+import Status from "./pages/Status";
 import NotFound from "./pages/NotFound";
 import SavedJobs from "./pages/SavedJobs";
 import CompanyProfile from "./pages/CompanyProfile";
@@ -61,6 +62,14 @@ function AppLayout() {
                     element={
                       <ProtectedRoute requiredRole="admin">
                         <Admin />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/status"
+                    element={
+                      <ProtectedRoute requiredRole="admin">
+                        <Status />
                       </ProtectedRoute>
                     }
                   />

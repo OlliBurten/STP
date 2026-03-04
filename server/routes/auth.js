@@ -38,14 +38,28 @@ function createRawToken() {
   return crypto.randomBytes(32).toString("hex");
 }
 
+const allowedFrontendOrigins = () =>
+  (process.env.FRONTEND_URL || "")
+    .split(",")
+    .map((o) => o.trim().replace(/\/$/, ""))
+    .filter(Boolean);
+
 function frontendBaseUrl() {
-  const configured = process.env.FRONTEND_URL
-    ? process.env.FRONTEND_URL.split(",").map((o) => o.trim()).find(Boolean)
-    : "";
-  return configured || "http://localhost:5173";
+  const list = allowedFrontendOrigins();
+  return list[0] || "http://localhost:5173";
 }
 
-async function issueEmailVerification(userId, email) {
+function resolveVerificationBaseUrl(provided) {
+  if (!provided || typeof provided !== "string") return frontendBaseUrl();
+  const base = provided.trim().replace(/\/$/, "");
+  const allowed = allowedFrontendOrigins();
+  if (allowed.length === 0) return base;
+  const match = allowed.find((o) => base === o || base.startsWith(o + "/"));
+  return match ? base : frontendBaseUrl();
+}
+
+async function issueEmailVerification(userId, email, baseUrlOverride) {
+  const baseUrl = baseUrlOverride ? resolveVerificationBaseUrl(baseUrlOverride) : frontendBaseUrl();
   const raw = createRawToken();
   const expiresAt = new Date(Date.now() + EMAIL_VERIFY_TTL_MS);
   await prisma.user.update({
@@ -55,18 +69,18 @@ async function issueEmailVerification(userId, email) {
       emailVerificationExpiresAt: expiresAt,
     },
   });
-  const verifyUrl = `${frontendBaseUrl()}/verifiera-email?token=${raw}`;
-  await sendEmail({
+  const verifyUrl = `${baseUrl}/verifiera-email?token=${raw}`;
+  const sent = await sendEmail({
     to: email,
-    subject: "Verifiera din e-post – DriverMatch",
-    text: `Hej!\n\nVerifiera din e-post genom att öppna länken nedan:\n${verifyUrl}\n\nLänken är giltig i 24 timmar.\n\nOm du inte skapade kontot kan du ignorera detta mail.\n\n/DriverMatch`,
+    subject: "Verifiera din e-post – Sveriges Transportplattform",
+    text: `Hej!\n\nVerifiera din e-post genom att öppna länken nedan:\n${verifyUrl}\n\nLänken är giltig i 24 timmar.\n\nOm du inte skapade kontot kan du ignorera detta mail.\n\nSveriges Transportplattform`,
   });
-  return true;
+  return sent;
 }
 
 authRouter.post("/register", validateBody(registerSchema), async (req, res, next) => {
   try {
-    const { email, password, role, name, companyName, companyOrgNumber } = req.body;
+    const { email, password, role, name, companyName, companyOrgNumber, verificationBaseUrl } = req.body;
     const normalizedOrgNumber = normalizeOrgNumber(companyOrgNumber);
     if (role === "COMPANY") {
       const existingOrg = await prisma.user.findFirst({
@@ -114,7 +128,7 @@ authRouter.post("/register", validateBody(registerSchema), async (req, res, next
     }
     let emailVerificationSent = false;
     try {
-      emailVerificationSent = await issueEmailVerification(user.id, user.email);
+      emailVerificationSent = await issueEmailVerification(user.id, user.email, verificationBaseUrl);
     } catch (mailError) {
       console.error("Email verification send failed:", mailError);
     }
@@ -124,6 +138,7 @@ authRouter.post("/register", validateBody(registerSchema), async (req, res, next
       { expiresIn: "7d" }
     );
     res.status(201).json({
+      emailVerificationSent: !!emailVerificationSent,
       user: {
         id: user.id,
         email: user.email,
@@ -172,10 +187,26 @@ authRouter.post("/login", validateBody(loginSchema), async (req, res, next) => {
         error: "Kontot är tillfälligt avstängt. Kontakta support om du tror att detta är ett misstag.",
       });
     }
+    const isAdmin = isAdminEmail(user.email);
     if (!user.emailVerifiedAt) {
-      return res.status(403).json({
-        error: "Verifiera din e-post först. Kolla inkorgen och försök igen.",
-      });
+      if (isAdmin) {
+        try {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { emailVerifiedAt: new Date() },
+          });
+          user.emailVerifiedAt = new Date();
+        } catch (dbErr) {
+          console.error("Admin auto-verify: DB update failed", dbErr?.message);
+          return res.status(503).json({
+            error: "Kunde inte slutföra inloggningen. Försök igen om en stund.",
+          });
+        }
+      } else {
+        return res.status(403).json({
+          error: "Verifiera din e-post först. Kolla inkorgen och försök igen.",
+        });
+      }
     }
     const token = jwt.sign(
       { userId: user.id, role: user.role },
@@ -193,7 +224,7 @@ authRouter.post("/login", validateBody(loginSchema), async (req, res, next) => {
         companyStatus: user.companyStatus,
         companySegmentDefaults: user.companySegmentDefaults || [],
         emailVerifiedAt: user.emailVerifiedAt,
-        isAdmin: isAdminEmail(user.email),
+        isAdmin,
       },
       token,
     });
@@ -229,17 +260,23 @@ authRouter.get("/verify-email", async (req, res, next) => {
 authRouter.post("/resend-verification", validateBody(resendVerificationSchema), async (req, res, next) => {
   try {
     const email = String(req.body?.email || "").trim().toLowerCase();
+    const verificationBaseUrl = req.body?.verificationBaseUrl;
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) return res.json({ ok: true });
     if (user.emailVerifiedAt) {
       return res.json({ ok: true, message: "E-post är redan verifierad" });
     }
     try {
-      await issueEmailVerification(user.id, user.email);
+      const sent = await issueEmailVerification(user.id, user.email, verificationBaseUrl);
+      if (!sent) {
+        return res.status(502).json({
+          error: "E-posttjänsten är inte konfigurerad. Kontakta support så kan vi verifiera din e-post manuellt.",
+        });
+      }
       res.json({ ok: true, message: "Ny verifieringslänk skickad" });
     } catch (mailError) {
       console.error("Resend verification failed:", mailError);
-      res.status(502).json({ error: "Kunde inte skicka verifieringsmail just nu" });
+      res.status(502).json({ error: "Kunde inte skicka verifieringsmail just nu. Försök igen eller kontakta support." });
     }
   } catch (e) {
     next(e);

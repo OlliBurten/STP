@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import Logo from "./Logo";
 
 export default function Footer() {
   return (
@@ -8,8 +9,7 @@ export default function Footer() {
           {/* Logga och tagline */}
           <div className="sm:col-span-2 lg:col-span-1">
             <Link to="/" className="inline-block focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-[var(--color-primary)] rounded-lg">
-              <span className="block text-xl font-bold tracking-tight text-white">STP</span>
-              <span className="block text-xs text-white/80 mt-0.5 tracking-wide">Sveriges Transportplattform</span>
+              <Logo height={44} variant="light" />
             </Link>
             <p className="mt-4 text-sm text-white/80 max-w-xs">
               Rätt förare. Rätt åkeri. Rätt matchning.

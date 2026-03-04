@@ -18,9 +18,15 @@ const DEMO_PASSWORD = "demo123";
 const hash = await bcrypt.hash(DEMO_PASSWORD, 10);
 
 async function main() {
+  // Enterprise-guard: kör ALDRIG demo-seed mot produktion. Prod sätter DEPLOYMENT=production.
+  if (process.env.DEPLOYMENT === "production") {
+    throw new Error(
+      "Demo seed får ALDRIG köras mot produktion. Denna databas är markerad som production (DEPLOYMENT=production)."
+    );
+  }
   if (process.env.NODE_ENV === "production" && process.env.DEMO_SEED !== "true") {
     throw new Error(
-      "Demo seed är avstängd i production. Sätt DEMO_SEED=true och använd en separat demo-databas."
+      "Demo seed är avstängd i production. Sätt DEMO_SEED=true och använd en separat demo-databas (och DEPLOYMENT=demo)."
     );
   }
   if (!process.env.DEMO_SEED) {

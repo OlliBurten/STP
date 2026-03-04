@@ -63,6 +63,7 @@ export const registerSchema = z
     name: z.string().min(1, "Namn krävs").max(200).transform((s) => s.trim()),
     companyName: z.string().max(200).optional(),
     companyOrgNumber: z.string().max(20).optional(),
+    verificationBaseUrl: z.string().url().max(500).optional(),
   })
   .refine(
     (data) => {
@@ -91,6 +92,7 @@ export const resetPasswordSchema = z.object({
 
 export const resendVerificationSchema = z.object({
   email: z.string().min(1, "E-post krävs").email("Ogiltig e-postadress").max(255),
+  verificationBaseUrl: z.string().url().max(500).optional(),
 });
 
 export const createJobSchema = z.object({

@@ -1,5 +1,20 @@
 import "dotenv/config";
 import express from "express";
+
+// Deployment-tydlighet: prod ska ha DEPLOYMENT=production, demo DEPLOYMENT=demo (används för guards och loggning).
+const DEPLOYMENT = (process.env.DEPLOYMENT || "").trim().toLowerCase() || "unknown";
+const IS_PRODUCTION = process.env.NODE_ENV === "production";
+if (IS_PRODUCTION) {
+  if (!process.env.DATABASE_URL) {
+    console.error("KRITISKT: DATABASE_URL saknas. Servern kan inte starta.");
+    process.exit(1);
+  }
+  if (!process.env.JWT_SECRET || process.env.JWT_SECRET === "dev-secret-change-in-production") {
+    console.error("KRITISKT: Sätt JWT_SECRET till en stark hemlighet i produktion.");
+    process.exit(1);
+  }
+  console.log(`[Deployment] ${DEPLOYMENT} | NODE_ENV=production`);
+}
 import cors from "cors";
 import rateLimit from "express-rate-limit";
 import { requestIdMiddleware, errorLogMiddleware } from "./middleware/requestId.js";
@@ -27,6 +42,16 @@ function corsOrigin(origin, cb) {
   if (corsOriginList.length === 0) return cb(null, true);
   if (corsOriginList.includes(origin)) return cb(null, true);
   if (origin.endsWith(".vercel.app")) return cb(null, true);
+  // Tillåt www-subdomän om utan-www finns (t.ex. www.transportplattformen.se när transportplattformen.se är tillåten)
+  try {
+    const u = new URL(origin);
+    const host = u.hostname.toLowerCase();
+    if (host.startsWith("www.")) {
+      const withoutWww = host.slice(4);
+      if (corsOriginList.some((o) => new URL(o).hostname.toLowerCase() === withoutWww))
+        return cb(null, true);
+    }
+  } catch (_) {}
   return cb(null, false);
 }
 
@@ -84,18 +109,59 @@ app.get("/", (_, res) => {
   });
 });
 
-app.get("/api/health", (_, res) => res.json({ ok: true }));
+app.get("/api/health", async (_, res) => {
+  let db = "unknown";
+  try {
+    const { prisma } = await import("./lib/prisma.js");
+    await prisma.$queryRaw`SELECT 1`;
+    db = "ok";
+  } catch (e) {
+    db = "error";
+  }
+  const emailConfigured = Boolean(process.env.RESEND_API_KEY);
+  const ok = db === "ok";
+  res.status(ok ? 200 : 503).json({
+    ok,
+    db,
+    emailConfigured,
+    service: "drivermatch-api",
+    deployment: DEPLOYMENT,
+  });
+});
+
+const statusCheckUrls = (process.env.STATUS_CHECK_URLS || "https://transportplattformen.se,https://transportplattform-demo.vercel.app")
+  .split(",")
+  .map((u) => u.trim())
+  .filter(Boolean);
+app.get("/api/health/check", async (req, res) => {
+  const url = req.query.url;
+  if (!url || !statusCheckUrls.includes(url)) {
+    return res.status(400).json({ error: "Ogiltig eller ej tillåten URL" });
+  }
+  try {
+    const r = await fetch(url, { method: "HEAD", signal: AbortSignal.timeout(10000) });
+    res.json({ ok: r.ok, status: r.status });
+  } catch (e) {
+    res.status(200).json({ ok: false, status: 0, message: e.message || "Nådde inte servern" });
+  }
+});
 
 app.use(errorLogMiddleware);
 app.use((err, req, res, next) => {
   const status = err.status || err.statusCode || 500;
   const message = status < 500 ? (err.message || "Bad request") : "Ett fel uppstod. Försök igen senare.";
+  if (status >= 500) console.error("[server error]", err.message, err.stack);
   res.status(status).json({ error: message });
 });
 
 export { app };
 
 if (process.env.APP_LISTEN !== "false") {
+  if (process.env.NODE_ENV === "production" && !process.env.RESEND_API_KEY) {
+    console.error(
+      "\n*** KRITISKT: RESEND_API_KEY är inte satt. Verifieringsmail och andra e-postmeddelanden skickas INTE. Sätt RESEND_API_KEY och EMAIL_FROM i Railway (eller annan miljö). Se docs/EPOST-VERIFIERING.md ***\n"
+    );
+  }
   app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
   });

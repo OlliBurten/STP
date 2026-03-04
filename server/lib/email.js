@@ -2,10 +2,11 @@
  * Email notifications.
  * - Uses Resend when RESEND_API_KEY exists.
  * - Falls back to console logging when provider is not configured.
+ * @returns {Promise<boolean>} true if email was sent via provider, false if only logged (not sent).
  */
 export async function sendEmail({ to, subject, text }) {
   const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.EMAIL_FROM || "noreply@drivermatch.se";
+  const from = process.env.EMAIL_FROM || "noreply@transportplattformen.se";
 
   if (apiKey) {
     const res = await fetch("https://api.resend.com/emails", {
@@ -26,12 +27,18 @@ export async function sendEmail({ to, subject, text }) {
       const body = await res.text();
       throw new Error(`Email provider error (${res.status}): ${body}`);
     }
-    return;
+    return true;
   }
 
+  if (process.env.NODE_ENV === "production") {
+    console.error(
+      "[Email:CRITICAL] RESEND_API_KEY is not set. Verification and other emails are NOT sent. Set RESEND_API_KEY and EMAIL_FROM in your backend environment."
+    );
+  }
   if (process.env.NODE_ENV !== "test") {
     console.log("[Email:FALLBACK_LOG]", { to, subject, text: text?.slice(0, 120) + "..." });
   }
+  return false;
 }
 
 export async function notifyNewApplication({ companyEmail, driverName, jobTitle }) {

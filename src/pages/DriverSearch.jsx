@@ -110,8 +110,9 @@ export default function DriverSearch() {
         if (!filters.experience) return true;
         const y = driver.yearsExperience || 0;
         if (filters.experience === "10+") return y >= 10;
+        if (filters.experience === "5+") return y >= 5;
         const [min, max] = filters.experience.split("-").map(Number);
-        return y >= min && y < max;
+        return y >= min && (max === undefined || Number.isNaN(max) || y <= max);
       })();
 
       return (

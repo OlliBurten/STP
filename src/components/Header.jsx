@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { useChat } from "../context/ChatContext";
 import { fetchNotifications, markNotificationRead, markAllNotificationsRead } from "../api/notifications.js";
 import { BellIcon, MenuIcon, CloseIcon, ChevronDownIcon } from "./Icons";
+import Logo from "./Logo";
 
 export default function Header() {
   const { user, isDriver, isCompany, isAdmin, logout } = useAuth();
@@ -211,11 +212,18 @@ export default function Header() {
         </>
       )}
       {isAdmin && (
-        <li>
-          <Link to="/admin" onClick={closeMobile} className="hover:text-[var(--color-primary)] transition-colors">
-            Admin
-          </Link>
-        </li>
+        <>
+          <li>
+            <Link to="/admin" onClick={closeMobile} className="hover:text-[var(--color-primary)] transition-colors">
+              Admin
+            </Link>
+          </li>
+          <li>
+            <Link to="/admin/status" onClick={closeMobile} className="hover:text-[var(--color-primary)] transition-colors">
+              Status
+            </Link>
+          </li>
+        </>
       )}
     </>
   );
@@ -224,9 +232,8 @@ export default function Header() {
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm">
       <nav className="dm-header-nav max-w-6xl mx-auto px-4 sm:px-6 flex items-center h-16 relative">
         <div className="flex items-center shrink-0">
-          <Link to="/" className="flex flex-col font-semibold text-[var(--color-primary)]">
-            <span className="dm-brand-text text-lg sm:text-xl tracking-tight leading-tight">STP</span>
-            <span className="text-[10px] sm:text-xs font-normal text-slate-500 tracking-wide mt-0.5">Sveriges Transportplattform</span>
+          <Link to="/" className="flex items-center focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 rounded">
+            <Logo height={36} />
           </Link>
         </div>
 

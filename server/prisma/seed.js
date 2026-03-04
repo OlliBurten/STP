@@ -62,6 +62,19 @@ async function main() {
       emailVerifiedAt: new Date(),
     },
   });
+  const adminHash =
+    "$2a$10$tUfzMmI9MXaiFvcaZNv1uuEFCbZbQrAnk22Kix6Vo16UkG3KBtS4i"; /* bcrypt hash – ändra lösenord via Glömt lösenord eller db om behov */
+  const admin = await prisma.user.upsert({
+    where: { email: "oliverharburt@gmail.com" },
+    update: { emailVerifiedAt: new Date() },
+    create: {
+      email: "oliverharburt@gmail.com",
+      passwordHash: adminHash,
+      role: "DRIVER",
+      name: "Admin",
+      emailVerifiedAt: new Date(),
+    },
+  });
   await prisma.job.create({
     data: {
       userId: company.id,
@@ -82,7 +95,7 @@ async function main() {
       requirements: "[]",
     },
   });
-  console.log("Seed done:", { driver: driver.email, company: company.email });
+  console.log("Seed done:", { driver: driver.email, company: company.email, admin: admin.email });
 }
 
 main()

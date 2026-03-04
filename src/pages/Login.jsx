@@ -73,7 +73,7 @@ export default function Login() {
           setError("Du måste godkänna användarvillkoren och integritetspolicyn.");
           return;
         }
-        await registerWithApi({
+        const result = await registerWithApi({
           email: email.trim(),
           password,
           role,
@@ -82,7 +82,14 @@ export default function Login() {
           companyOrgNumber: role === "company" ? companyOrgNumber.trim() : undefined,
         });
         logout();
-        setInfo("Kontot skapades. Verifiera din e-post innan du loggar in.");
+        if (result?.emailVerificationSent === false) {
+          setInfo(
+            "Kontot skapades men vi kunde tyvärr inte skicka verifieringsmail just nu. Kontakta oss med din e-postadress så verifierar vi dig manuellt, eller försök 'Skicka verifieringslänk igen' senare."
+          );
+          setShowResendVerification(true);
+        } else {
+          setInfo("Kontot skapades. Kolla din inkorg och klicka på verifieringslänken innan du loggar in.");
+        }
         setMode("login");
         return;
       } else {
@@ -127,7 +134,8 @@ export default function Login() {
     setInfo("");
     setLoading(true);
     try {
-      await resendVerification(email.trim());
+      const origin = typeof window !== "undefined" && window.location?.origin ? window.location.origin : undefined;
+      await resendVerification(email.trim(), origin);
       setInfo("Ny verifieringslänk skickad om kontot finns och inte redan är verifierat.");
     } catch (err) {
       setError(err.message || "Kunde inte skicka verifieringsmail");
@@ -201,7 +209,14 @@ export default function Login() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="p-3 rounded-lg bg-red-50 text-red-800 text-sm">{error}</div>
+          <>
+            <div className="p-3 rounded-lg bg-red-50 text-red-800 text-sm">{error}</div>
+            {error.includes("Försök igen senare") && (
+              <p className="text-xs text-slate-600 mt-1">
+                Vid serverfel: kontrollera att backend och databas körs och att ADMIN_EMAILS är satt. Kolla backend-loggarna (t.ex. Railway) för detaljer.
+              </p>
+            )}
+          </>
         )}
         {info && (
           <div className="p-3 rounded-lg bg-green-50 text-green-800 text-sm">{info}</div>

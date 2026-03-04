@@ -20,6 +20,10 @@ export function listUsers(filters) {
   return apiGet(`/api/admin/users${toQuery(filters)}`);
 }
 
+export function verifyUserEmail(id) {
+  return apiPatch(`/api/admin/users/${id}/verify-email`, {});
+}
+
 export function setUserSuspended(id, suspended, reason) {
   return apiPatch(`/api/admin/users/${id}/suspend`, { suspended, reason: reason || null });
 }

@@ -1,5 +1,10 @@
 const API_URL = (import.meta.env.VITE_API_URL || "").trim().replace(/\/$/, "");
 
+/** Används för felmeddelanden (visar vilken backend som anropas). */
+export function getApiBaseUrl() {
+  return API_URL;
+}
+
 function getToken() {
   try {
     const stored = localStorage.getItem("drivermatch-auth");
@@ -26,10 +31,14 @@ export async function api(method, path, body, options = {}) {
   try {
     res = await fetch(url, opts);
   } catch (networkErr) {
-    const msg =
-      networkErr?.message && networkErr.message.toLowerCase().includes("fetch")
-        ? "Kunde inte nå servern. Kontrollera att backend är igång och att adressen (VITE_API_URL) är rätt – eller att CORS tillåter din frontend-URL."
-        : (networkErr?.message || "Nätverksfel");
+    const isFetchErr =
+      networkErr?.message && networkErr.message.toLowerCase().includes("fetch");
+    const hint = API_URL
+      ? ` Anropad adress: ${API_URL}`
+      : " VITE_API_URL är inte satt – sätt den vid build (t.ex. i Vercel) och bygg om.";
+    const msg = isFetchErr
+      ? `Kunde inte nå servern. Kontrollera att backend är igång och att VITE_API_URL är rätt, och att FRONTEND_URL på backend inkluderar din sajt-URL (CORS).${hint}`
+      : (networkErr?.message || "Nätverksfel");
     throw new Error(msg);
   }
 

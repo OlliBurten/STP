@@ -66,6 +66,10 @@ Endast Chromium: `npx playwright test --project=chromium`. Se [docs/E2E.md](docs
 - Nya företagskonton får status `PENDING`.
 - Endast `VERIFIED`-konton kan publicera jobb och kontakta förare.
 
+### Status (live/demo/backend)
+
+Som inloggad admin kan du öppna **Status** i headern (eller `/admin/status`) för att se om backend, live-sajt och demo-sajt svarar. För automatiska aviseringar vid driftstörning, sätt upp extern övervakning (t.ex. [UptimeRobot](https://uptimerobot.com)) mot `https://<backend>/api/health` och live-URL. Se [docs/STATUS-OCH-OVERVAKNING.md](docs/STATUS-OCH-OVERVAKNING.md).
+
 ### Admin: verifiera företag
 
 Admin-endpoints kräver att du är inloggad med ett konto vars e-post finns i `ADMIN_EMAILS`.
@@ -84,7 +88,8 @@ curl -X PATCH -H "Content-Type: application/json" \
 
 ## E-postverifiering och lösenordsreset
 
-- Vid registrering skickas verifieringsmail automatiskt.
+- Vid registrering skickas verifieringsmail **om backend har `RESEND_API_KEY` och `EMAIL_FROM` satta**. Annars skickas inget mail – se [docs/EPOST-VERIFIERING.md](docs/EPOST-VERIFIERING.md).
+- Verifieringslänken pekar på samma sajt som användaren registrerade sig från (prod/demo).
 - Verifieringslänk landar på: `/verifiera-email?token=...`
 - Glömt lösenord finns i login-flödet och skickar återställningslänk till: `/aterstall-losenord?token=...`
 - I utvecklingsläge loggas mailinnehåll i server-konsolen om ingen e-postleverantör är kopplad.
@@ -100,6 +105,13 @@ curl -X PATCH -H "Content-Type: application/json" \
 
 - **Vercel:** Lägg till miljövariabeln `VITE_API_URL` med din backend-URL (t.ex. `https://din-app.railway.app`). Bygg om (ny deploy) så att frontend använder rätt API.
 - **Backend (Railway etc.):** Sätt `FRONTEND_URL` till alla domäner som ska kunna anropa API:et, komma-separerade (t.ex. `https://transportplattformen.se,https://drivermatch-20260212-xxx.vercel.app`). Utan detta blockar CORS anrop från frontend.
+
+**Admin-inloggning på produktion fungerar inte – checklista:**
+
+1. **Backend-miljö (Railway/Render/etc.):** Sätt `ADMIN_EMAILS` till din admin-e-post, komma-separerat vid flera (t.ex. `oliverharburt@gmail.com`). Detta styr vem som får `isAdmin` efter inloggning.
+2. **Användaren finns i prod-databasen:** Kontot måste skapas/registrerat mot **produktionens** databas (inte lokalt). Registrera dig på live-sidan eller kör seed/migration mot prod-DB om ni har ett admin-konto i seed.
+3. **E-post verifierad:** Inloggning kräver `emailVerifiedAt`. Om kontot skapades manuellt eller via seed mot prod: kör mot prod-databasen `npm run db:verify-user -- din@epost.se` i `server/` (sätt `DATABASE_URL` till prod innan), eller sätt fältet i Prisma Studio.
+4. **Lösenord:** Samma lösenord som du registrerade med på prod (eller som sattes i seed). Vid behov: använd "Glömt lösenord" på live-sidan om e-post är konfigurerad.
 
 ## Testmiljö och deploy (Vercel)
 

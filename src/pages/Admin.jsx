@@ -9,6 +9,7 @@ import {
   updateJobStatus,
   updateReport,
   updateUserWarnings,
+  verifyUserEmail,
 } from "../api/admin";
 import { listReviewsForAdmin, moderateReview } from "../api/reviews.js";
 
@@ -96,6 +97,20 @@ export default function Admin() {
       setSuccess(`Företaget uppdaterades till ${status}.`);
     } catch (e) {
       setError(e.message || "Kunde inte uppdatera företag");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyEmail = async (id) => {
+    setLoading(true);
+    clearFlash();
+    try {
+      await verifyUserEmail(id);
+      await loadUsers();
+      setSuccess("E-post markerad som verifierad. Användaren kan nu logga in.");
+    } catch (e) {
+      setError(e.message || "Kunde inte verifiera e-post");
     } finally {
       setLoading(false);
     }
@@ -336,7 +351,13 @@ export default function Admin() {
                     {u.companyName || "-"} • {u.companyStatus}
                   </p>
                 ) : null}
-                <p className="text-xs text-slate-500">Skapad: {fmtDate(u.createdAt)}</p>
+                <p className="text-xs text-slate-500">
+                  E-post: {u.emailVerifiedAt ? (
+                    <span className="text-green-700">Verifierad ({fmtDate(u.emailVerifiedAt)})</span>
+                  ) : (
+                    <span className="text-amber-700">Ej verifierad</span>
+                  )} • Skapad: {fmtDate(u.createdAt)}
+                </p>
                 {u.suspendedAt ? (
                   <p className="text-xs text-red-700">Orsak: {u.suspensionReason || "-"}</p>
                 ) : null}
@@ -346,6 +367,15 @@ export default function Admin() {
                   </p>
                 ) : null}
                 <div className="mt-3 flex flex-wrap gap-2">
+                  {!u.emailVerifiedAt ? (
+                    <button
+                      type="button"
+                      onClick={() => handleVerifyEmail(u.id)}
+                      className="px-3 py-2 rounded-md bg-blue-600 text-white text-sm"
+                    >
+                      Verifiera e-post
+                    </button>
+                  ) : null}
                   {u.suspendedAt ? (
                     <button
                       type="button"

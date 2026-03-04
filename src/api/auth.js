@@ -4,8 +4,11 @@ export async function verifyEmail(token) {
   return apiGet(`/api/auth/verify-email?token=${encodeURIComponent(token)}`);
 }
 
-export async function resendVerification(email) {
-  return apiPost("/api/auth/resend-verification", { email });
+export async function resendVerification(email, verificationBaseUrl) {
+  return apiPost("/api/auth/resend-verification", {
+    email,
+    ...(verificationBaseUrl && { verificationBaseUrl }),
+  });
 }
 
 export async function requestPasswordReset(email) {
