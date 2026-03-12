@@ -92,3 +92,51 @@ export async function notifyRecommendedDriverMatch({
     text: `Hej ${companyName || ""},\n\nEn förare som matchar era jobb är nu aktiv:\n\nFörare: ${driverName}\nRegion: ${driverRegion || "Ej angiven"}\n\nMatchar bland annat:\n${lines || "- Era aktiva jobb"}\n\nLogga in på DriverMatch för att se profiler och kontakta föraren.\n\nMed vänliga hälsningar,\nDriverMatch`,
   });
 }
+
+/** Skickas till åkeriet när admin har godkänt företaget (companyStatus → VERIFIED). */
+export async function notifyCompanyApproved({ to, companyName }) {
+  await sendEmail({
+    to,
+    subject: "Ert företag är godkänt – Sveriges Transportplattform",
+    text: `Hej${companyName ? ` ${companyName}` : ""},\n\nErt företagskonto är nu godkänt. Ni kan logga in och publicera jobb samt kontakta förare.\n\nLogga in på plattformen för att komma igång.\n\nMed vänliga hälsningar,\nSveriges Transportplattform`,
+  });
+}
+
+/** Skickas till admin-adresser när någon ny registrerar sig (förare eller åkeri). */
+export async function notifyAdminNewRegistration({ role, name, email, companyName }) {
+  const adminEmails = String(process.env.ADMIN_EMAILS || "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+  if (adminEmails.length === 0) return;
+  const roleLabel = role === "COMPANY" ? "Företag" : "Förare";
+  const subject = `Ny registrering: ${roleLabel} – ${name || email}`;
+  const body = companyName
+    ? `Ny företagsregistrering.\n\nNamn: ${name}\nE-post: ${email}\nFöretag: ${companyName}\n\nLogga in i Admin för att godkänna företaget.`
+    : `Ny förarregistrering.\n\nNamn: ${name}\nE-post: ${email}\n\nLogga in i Admin för att se användarlistan.`;
+  for (const to of adminEmails) {
+    try {
+      await sendEmail({ to, subject, text: body });
+    } catch (e) {
+      console.error("[Email] notifyAdminNewRegistration failed for", to, e?.message);
+    }
+  }
+}
+
+/** Skickar användarfeedback till admin (för in-app feedback-formulär). */
+export async function sendFeedbackToAdmin({ message, senderEmail }) {
+  const adminEmails = String(process.env.ADMIN_EMAILS || "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+  if (adminEmails.length === 0) return;
+  const subject = "Feedback från plattformen";
+  const text = `Feedback:\n\n${message}\n\n${senderEmail ? `Avsändare: ${senderEmail}` : "Avsändare: ej angiven"}`;
+  for (const to of adminEmails) {
+    try {
+      await sendEmail({ to, subject, text });
+    } catch (e) {
+      console.error("[Email] sendFeedbackToAdmin failed for", to, e?.message);
+    }
+  }
+}

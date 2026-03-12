@@ -3,7 +3,7 @@ import crypto from "node:crypto";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { prisma } from "../lib/prisma.js";
-import { sendEmail } from "../lib/email.js";
+import { sendEmail, notifyAdminNewRegistration } from "../lib/email.js";
 import { validateBody } from "../middleware/validate.js";
 import { registerSchema, loginSchema, requestPasswordResetSchema, resetPasswordSchema, resendVerificationSchema } from "../lib/validators.js";
 
@@ -105,7 +105,12 @@ authRouter.post("/register", validateBody(registerSchema), async (req, res, next
         name: name.trim(),
         companyName: role === "COMPANY" ? companyName?.trim() : null,
         companyOrgNumber: role === "COMPANY" ? normalizedOrgNumber : null,
-        companyStatus: role === "COMPANY" ? "PENDING" : "VERIFIED",
+        companyStatus:
+          role === "COMPANY"
+            ? process.env.AUTO_VERIFY_COMPANIES === "true"
+              ? "VERIFIED"
+              : "PENDING"
+            : "VERIFIED",
       },
       select: {
         id: true,
@@ -131,6 +136,16 @@ authRouter.post("/register", validateBody(registerSchema), async (req, res, next
       emailVerificationSent = await issueEmailVerification(user.id, user.email, verificationBaseUrl);
     } catch (mailError) {
       console.error("Email verification send failed:", mailError);
+    }
+    try {
+      await notifyAdminNewRegistration({
+        role: user.role,
+        name: user.name,
+        email: user.email,
+        companyName: user.companyName ?? undefined,
+      });
+    } catch (notifyErr) {
+      console.error("Admin new-registration notify failed:", notifyErr);
     }
     const token = jwt.sign(
       { userId: user.id, role: user.role },

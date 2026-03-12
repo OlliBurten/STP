@@ -28,6 +28,7 @@ import { reportsRouter } from "./routes/reports.js";
 import { reviewsRouter } from "./routes/reviews.js";
 import { companiesRouter } from "./routes/companies.js";
 import { notificationsRouter } from "./routes/notifications.js";
+import { feedbackRouter } from "./routes/feedback.js";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -100,6 +101,7 @@ app.use("/api/reports", reportsRouter);
 app.use("/api/reviews", reviewsRouter);
 app.use("/api/companies", apiPublicLimiter, companiesRouter);
 app.use("/api/notifications", notificationsRouter);
+app.use("/api/feedback", apiWriteLimiter, feedbackRouter);
 
 app.get("/", (_, res) => {
   res.json({

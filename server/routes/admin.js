@@ -1,6 +1,8 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
 import { authMiddleware, requireAdmin } from "../middleware/auth.js";
+import { createNotification } from "../lib/notifications.js";
+import { notifyCompanyApproved } from "../lib/email.js";
 
 export const adminRouter = Router();
 
@@ -67,6 +69,29 @@ adminRouter.patch("/companies/:id/status", async (req, res, next) => {
         emailVerifiedAt: true,
       },
     });
+
+    if (status === "VERIFIED") {
+      try {
+        await createNotification({
+          userId: updated.id,
+          type: "COMPANY_APPROVED",
+          title: "Ert företag är godkänt",
+          body: "Ni kan nu publicera jobb och kontakta förare. Logga in för att komma igång.",
+          link: "/min-profil",
+        });
+      } catch (e) {
+        console.error("[Admin] createNotification COMPANY_APPROVED failed:", e?.message);
+      }
+      try {
+        await notifyCompanyApproved({
+          to: updated.email,
+          companyName: updated.companyName ?? undefined,
+        });
+      } catch (e) {
+        console.error("[Admin] notifyCompanyApproved email failed:", e?.message);
+      }
+    }
+
     res.json(updated);
   } catch (e) {
     next(e);

@@ -36,6 +36,7 @@ Varje projekt ska ha **sin egen** Postgres-databas. Kopiera aldrig prod `DATABAS
 | `DEPLOYMENT` | **Ja** | Sätt till **`production`**. Detta förhindrar att demo-seed någonsin körs mot denna backend. |
 | `RESEND_API_KEY` | Rekommenderat | För e-post (verifiering, återställning). |
 | `EMAIL_FROM` | Valfritt | T.ex. `noreply@transportplattformen.se`. |
+| `AUTO_VERIFY_COMPANIES` | Valfritt | Sätt till `true` om nya företag ska godkännas direkt (ingen manuell admin-godkännande). Standard: manuellt (PENDING tills admin sätter VERIFIED). |
 | `NODE_ENV` | Sätt av Railway | Ska vara `production` i deploy. |
 
 ### Demo-backend (Railway, demo-projekt)
