@@ -2,8 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 import PageHeader from "../components/PageHeader";
 
 const API_URL = (import.meta.env.VITE_API_URL || "").trim().replace(/\/$/, "");
-const LIVE_URL = (import.meta.env.VITE_LIVE_URL || "https://transportplattformen.se").trim().replace(/\/$/, "");
-const DEMO_URL = (import.meta.env.VITE_DEMO_URL || "https://transportplattform-demo.vercel.app").trim().replace(/\/$/, "");
 
 function CheckRow({ label, url, check, lastAt, refreshTrigger }) {
   const [status, setStatus] = useState(null);
@@ -138,9 +136,8 @@ export default function Status() {
         description="Översikt över live, demo och backend. Uppdateras automatiskt var 60:e sekund."
       />
       <p className="mb-6 text-sm text-slate-600">
-        Backend och e-post kontrolleras via API. Live och demo kontrolleras från din webbläsare mot
-        webbadresserna (så du ser om sajterna svarar från din plats). Om demo visar fel när du är på
-        live kan det bero på CORS – öppna då statussidan från demo-URL:en för att kontrollera demo.
+        Backend och e-post kontrolleras via API:t. För bevakning av live- och demo-webbplatser, sätt upp
+        extern övervakning enligt <code className="bg-slate-100 px-1 rounded">docs/STATUS-OCH-OVERVAKNING.md</code>.
       </p>
       <div className="mb-4 flex justify-end">
         <button
@@ -177,22 +174,6 @@ export default function Status() {
               url={API_URL ? "Resend (RESEND_API_KEY)" : "–"}
               check={checkEmailConfig}
               lastAt={lastChecks.email}
-              refreshTrigger={refreshTrigger}
-            />
-            <CheckRow
-              key="live"
-              label="Live (webbplats)"
-              url={LIVE_URL}
-              check={checkUrl(LIVE_URL)}
-              lastAt={lastChecks[LIVE_URL]}
-              refreshTrigger={refreshTrigger}
-            />
-            <CheckRow
-              key="demo"
-              label="Demo (webbplats)"
-              url={DEMO_URL}
-              check={checkUrl(DEMO_URL)}
-              lastAt={lastChecks[DEMO_URL]}
               refreshTrigger={refreshTrigger}
             />
           </tbody>
