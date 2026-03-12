@@ -2,6 +2,8 @@ import { createContext, useContext, useState, useEffect, useCallback } from "rea
 import { apiPost, apiGet } from "../api/client.js";
 
 const AUTH_STORAGE_KEY = "drivermatch-auth";
+const SESSION_MAX_MS = 24 * 60 * 60 * 1000; // 24h
+const SESSION_INACTIVITY_MS = 60 * 60 * 1000; // 60 min
 const API_URL = (import.meta.env.VITE_API_URL || "").trim().replace(/\/$/, "");
 
 function normalizeUser(u) {
@@ -40,20 +42,64 @@ export function AuthProvider({ children }) {
     } catch (_) {}
     return null;
   });
+  const [issuedAt, setIssuedAt] = useState(() => {
+    try {
+      const stored = localStorage.getItem(AUTH_STORAGE_KEY);
+      if (stored) return JSON.parse(stored).issuedAt || null;
+    } catch (_) {}
+    return null;
+  });
+  const [lastActivity, setLastActivity] = useState(() => {
+    try {
+      const stored = localStorage.getItem(AUTH_STORAGE_KEY);
+      if (stored) return JSON.parse(stored).lastActivity || null;
+    } catch (_) {}
+    return null;
+  });
 
+  // Persistera auth + tidsstämplar
   useEffect(() => {
     if (user && token) {
-      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({ user, token }));
+      const now = Date.now();
+      const payload = {
+        user,
+        token,
+        issuedAt: issuedAt || now,
+        lastActivity: lastActivity || now,
+      };
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(payload));
     } else {
       localStorage.removeItem(AUTH_STORAGE_KEY);
     }
-  }, [user, token]);
+  }, [user, token, issuedAt, lastActivity]);
+
+  // Vid mount: logga ut om sessionen redan är för gammal
+  useEffect(() => {
+    if (!user || !token) return;
+    const now = Date.now();
+    if (issuedAt && now - issuedAt > SESSION_MAX_MS) {
+      setUser(null);
+      setToken(null);
+      setIssuedAt(null);
+      setLastActivity(null);
+      return;
+    }
+    if (lastActivity && now - lastActivity > SESSION_INACTIVITY_MS) {
+      setUser(null);
+      setToken(null);
+      setIssuedAt(null);
+      setLastActivity(null);
+    }
+  }, []); // körs bara vid första render
 
   const loginWithApi = useCallback(async (email, password) => {
     const data = await apiPost("/api/auth/login", { email, password });
     const u = normalizeUser(data.user);
     setUser(u);
     setToken(data.token);
+    const now = Date.now();
+    setIssuedAt(now);
+    setLastActivity(now);
     return u;
   }, []);
 
@@ -73,6 +119,9 @@ export function AuthProvider({ children }) {
       const u = normalizeUser(data.user);
       setUser(u);
       setToken(data.token);
+      const now = Date.now();
+      setIssuedAt(now);
+      setLastActivity(now);
       return { user: u, emailVerificationSent: data.emailVerificationSent === true };
     },
     []
@@ -81,6 +130,8 @@ export function AuthProvider({ children }) {
   const loginAsDriver = useCallback(() => {
     setUser({ role: "driver", name: "Chaufför" });
     setToken(null);
+    setIssuedAt(null);
+    setLastActivity(null);
   }, []);
 
   const loginAsCompany = useCallback(() => {
@@ -91,12 +142,51 @@ export function AuthProvider({ children }) {
       companySegmentDefaults: ["FULLTIME"],
     });
     setToken(null);
+    setIssuedAt(null);
+    setLastActivity(null);
   }, []);
 
   const logout = useCallback(() => {
     setUser(null);
     setToken(null);
+    setIssuedAt(null);
+    setLastActivity(null);
   }, []);
+
+  // Uppdatera senaste aktivitet vid interaktion
+  useEffect(() => {
+    if (!user || !token) return;
+    const handleActivity = () => {
+      setLastActivity(Date.now());
+    };
+    const events = ["click", "keydown", "mousemove", "scroll", "visibilitychange"];
+    events.forEach((ev) => window.addEventListener(ev, handleActivity));
+    return () => {
+      events.forEach((ev) => window.removeEventListener(ev, handleActivity));
+    };
+  }, [user, token]);
+
+  // Auto-logout vid inaktivitet
+  useEffect(() => {
+    if (!user || !token || !lastActivity) return;
+    const now = Date.now();
+    const elapsed = now - lastActivity;
+    const remaining = SESSION_INACTIVITY_MS - elapsed;
+    if (remaining <= 0) {
+      setUser(null);
+      setToken(null);
+      setIssuedAt(null);
+      setLastActivity(null);
+      return;
+    }
+    const id = window.setTimeout(() => {
+      setUser(null);
+      setToken(null);
+      setIssuedAt(null);
+      setLastActivity(null);
+    }, remaining);
+    return () => window.clearTimeout(id);
+  }, [user, token, lastActivity]);
 
   const isDriver = user?.role === "driver";
   const isCompany = user?.role === "company";

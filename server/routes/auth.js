@@ -147,11 +147,9 @@ authRouter.post("/register", validateBody(registerSchema), async (req, res, next
     } catch (notifyErr) {
       console.error("Admin new-registration notify failed:", notifyErr);
     }
-    const token = jwt.sign(
-      { userId: user.id, role: user.role },
-      JWT_SECRET,
-      { expiresIn: "7d" }
-    );
+    const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, {
+      expiresIn: "24h",
+    });
     res.status(201).json({
       emailVerificationSent: !!emailVerificationSent,
       user: {
@@ -223,11 +221,9 @@ authRouter.post("/login", validateBody(loginSchema), async (req, res, next) => {
         });
       }
     }
-    const token = jwt.sign(
-      { userId: user.id, role: user.role },
-      JWT_SECRET,
-      { expiresIn: "7d" }
-    );
+    const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, {
+      expiresIn: "24h",
+    });
     res.json({
       user: {
         id: user.id,
