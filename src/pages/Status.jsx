@@ -107,18 +107,17 @@ export default function Status() {
     }
   }, []);
 
+  // Kontrollera webbadress från webbläsaren (så vi ser om användaren når sajten)
   const checkUrl = useCallback((url) => async () => {
-    if (!API_URL) return { ok: false, message: "API ej konfigurerad" };
+    if (!url) return { ok: false, message: "URL saknas" };
     try {
-      const r = await fetch(`${API_URL}/api/health/check?url=${encodeURIComponent(url)}`, {
-        signal: AbortSignal.timeout(10000),
-      });
-      const data = await r.json().catch(() => ({}));
+      const r = await fetch(url, { method: "GET", signal: AbortSignal.timeout(8000) });
       setLast(url);
-      return { ok: data?.ok === true, status: data?.status, message: data?.message };
+      return { ok: r.ok, status: r.status, message: r.ok ? "Uppe" : `HTTP ${r.status}` };
     } catch (e) {
       setLast(url);
-      return { ok: false, message: e.message || "Kunde inte kontrollera" };
+      const msg = e.name === "AbortError" ? "Timeout" : (e.message || "Nådde inte webbplatsen");
+      return { ok: false, message: msg };
     }
   }, []);
 
@@ -139,9 +138,9 @@ export default function Status() {
         description="Översikt över live, demo och backend. Uppdateras automatiskt var 60:e sekund."
       />
       <p className="mb-6 text-sm text-slate-600">
-        Du ser denna sida som admin. Säkerställ att <strong>VITE_LIVE_URL</strong> och{" "}
-        <strong>VITE_DEMO_URL</strong> är satta i bygget om du vill kontrollera webbadresserna. Backend
-        kräver <strong>VITE_API_URL</strong>.
+        Backend och e-post kontrolleras via API. Live och demo kontrolleras från din webbläsare mot
+        webbadresserna (så du ser om sajterna svarar från din plats). Om demo visar fel när du är på
+        live kan det bero på CORS – öppna då statussidan från demo-URL:en för att kontrollera demo.
       </p>
       <div className="mb-4 flex justify-end">
         <button
