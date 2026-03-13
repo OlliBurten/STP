@@ -1,19 +1,6 @@
 import "dotenv/config";
 import express from "express";
 
-// Kör saknade DB-kolumner vid startup (nödfix för prod).
-try {
-  const { prisma } = await import("./lib/prisma.js");
-  await prisma.$executeRawUnsafe(
-    'ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "companyBransch" TEXT[] DEFAULT \'{}\''
-  );
-  await prisma.$executeRawUnsafe('ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "companyRegion" TEXT');
-  await prisma.$executeRawUnsafe('ALTER TABLE "Job" ADD COLUMN IF NOT EXISTS "bransch" TEXT');
-  console.log("[migrate] DB-kolumner synkade");
-} catch (e) {
-  console.warn("[migrate]", e?.message || e);
-}
-
 // Deployment-tydlighet: prod ska ha DEPLOYMENT=production, demo DEPLOYMENT=demo (används för guards och loggning).
 const DEPLOYMENT = (process.env.DEPLOYMENT || "").trim().toLowerCase() || "unknown";
 const IS_PRODUCTION = process.env.NODE_ENV === "production";
@@ -125,27 +112,6 @@ app.get("/", (_, res) => {
     service: "drivermatch-api",
     health: "/api/health",
   });
-});
-
-// Nödfix: kör DB-migration via API (kräver ADMIN_API_KEY). Används när prisma db push inte kan köras externt.
-app.post("/api/internal/migrate", express.json(), async (req, res) => {
-  const key = req.headers["x-admin-api-key"] || req.body?.adminApiKey;
-  const expected = process.env.ADMIN_API_KEY;
-  if (!expected || key !== expected) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
-  try {
-    const { prisma } = await import("./lib/prisma.js");
-    await prisma.$executeRawUnsafe(
-      'ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "companyBransch" TEXT[] DEFAULT \'{}\''
-    );
-    await prisma.$executeRawUnsafe('ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "companyRegion" TEXT');
-    await prisma.$executeRawUnsafe('ALTER TABLE "Job" ADD COLUMN IF NOT EXISTS "bransch" TEXT');
-    res.json({ ok: true, message: "Migration complete" });
-  } catch (e) {
-    console.error("[migrate]", e);
-    res.status(500).json({ error: e.message });
-  }
 });
 
 app.get("/api/health", async (_, res) => {

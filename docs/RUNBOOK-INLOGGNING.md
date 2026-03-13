@@ -60,10 +60,10 @@ Det här är **inte** något som "bara började strula" – det brukar koppla ti
 
 Felet betyder att webbläsaren inte får svar från backend (fel URL, backend nere eller CORS).
 
-### Prod (transportplattformen.se)
+### Prod (transportplattformen.se, drivermatch.se)
 
-1. **Vercel (frontend):** Sätt miljövariabeln **`VITE_API_URL`** till prod-backend-URL (utan avslutande `/`), t.ex.  
-   `https://nodejs-production-f3b9.up.railway.app`  
+1. **Vercel (frontend):** Miljövariabeln **`VITE_API_URL`** ska vara:
+   `https://nodejs-production-f3b9.up.railway.app`
    Kör **ny deploy** efter att du lagt till eller ändrat variabeln (Vite bakar in värdet vid build).
 2. **Railway (backend):** Sätt **`FRONTEND_URL`** så att den inkluderar den URL användaren besöker:  
    `https://transportplattformen.se,https://www.transportplattformen.se,https://drivermatch.se`  

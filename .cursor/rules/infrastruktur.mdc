@@ -1,0 +1,20 @@
+---
+description: Enterprise-struktur – Railway, Vercel, prod vs demo
+alwaysApply: true
+---
+
+# Infrastruktur (Enterprise)
+
+## Stack
+
+- **Live:** Vercel drivermatch-20260212 → transportplattformen.se, drivermatch.se. Backend: Railway drivermatch (nodejs) → nodejs-production-f3b9.up.railway.app
+- **Demo:** Vercel transportplattform-demo → transportplattform-demo.vercel.app. Backend: Railway drivermatch-demo
+- **drivermatch-clean:** Avvecklat. Prod använder drivermatch (nodejs).
+
+## Dokumentation
+
+- [docs/STACK.md](docs/STACK.md) – Arkitekturdiagram, nyckel-URL:er
+- [docs/INFRASTRUKTUR.md](docs/INFRASTRUKTUR.md) – Miljövariabler, Railway, Vercel
+- [docs/RAILWAY-OVERSIKT.md](docs/RAILWAY-OVERSIKT.md) – Aktiva vs avvecklade projekt
+
+Vid infrastrukturfrågor: referera till dessa och bibehåll strukturen.

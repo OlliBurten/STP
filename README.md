@@ -96,16 +96,18 @@ curl -X PATCH -H "Content-Type: application/json" \
 - Glömt lösenord finns i login-flödet och skickar återställningslänk till: `/aterstall-losenord?token=...`
 - I utvecklingsläge loggas mailinnehåll i server-konsolen om ingen e-postleverantör är kopplad.
 
-### 4. Produktion
+### 4. Produktion (Enterprise-struktur)
 
-- Sätt `DATABASE_URL`, `JWT_SECRET` och `ADMIN_EMAILS` i backend-miljön.
-- Sätt `FRONTEND_URL` i backend till din frontend-URL (för CORS). För flera domäner (t.ex. preview + prod): `https://transportplattformen.se,https://drivermatch-xxx.vercel.app`.
-- Bygg frontend med `VITE_API_URL` satt till din API-URL: `npm run build`.
-- Hosta frontend (t.ex. Vercel, Netlify) och backend (t.ex. Railway, Render).
+**Live:** Vercel (drivermatch-20260212) → transportplattformen.se, drivermatch.se. Backend: Railway drivermatch (nodejs).  
+**Demo:** Vercel (transportplattform-demo) → transportplattform-demo.vercel.app. Backend: Railway drivermatch-demo.
+
+Se [docs/STACK.md](docs/STACK.md) och [docs/INFRASTRUKTUR.md](docs/INFRASTRUKTUR.md) för fullständig översikt.
 
 **Om inloggning ger "Kunde inte nå servern" / "Failed to fetch":**
 
 - **Vercel:** Lägg till miljövariabeln `VITE_API_URL` med din backend-URL (t.ex. `https://din-app.railway.app`). Bygg om (ny deploy) så att frontend använder rätt API.
+
+**Om Google/Microsoft-inloggning saknas på prod:** Se [docs/VERCEL-SSO.md](docs/VERCEL-SSO.md) – sätt `VITE_GOOGLE_CLIENT_ID` (och `VITE_AZURE_CLIENT_ID`) i Vercel → Settings → Environment Variables och gör Redeploy.
 - **Backend (Railway etc.):** Sätt `FRONTEND_URL` till alla domäner som ska kunna anropa API:et, komma-separerade (t.ex. `https://transportplattformen.se,https://drivermatch-20260212-xxx.vercel.app`). Utan detta blockar CORS anrop från frontend.
 
 **Admin-inloggning på produktion fungerar inte – checklista:**
