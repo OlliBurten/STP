@@ -1,6 +1,19 @@
 import "dotenv/config";
 import express from "express";
 
+// Kör saknade DB-kolumner vid startup (nödfix för prod).
+try {
+  const { prisma } = await import("./lib/prisma.js");
+  await prisma.$executeRawUnsafe(
+    'ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "companyBransch" TEXT[] DEFAULT \'{}\''
+  );
+  await prisma.$executeRawUnsafe('ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "companyRegion" TEXT');
+  await prisma.$executeRawUnsafe('ALTER TABLE "Job" ADD COLUMN IF NOT EXISTS "bransch" TEXT');
+  console.log("[migrate] DB-kolumner synkade");
+} catch (e) {
+  console.warn("[migrate]", e?.message || e);
+}
+
 // Deployment-tydlighet: prod ska ha DEPLOYMENT=production, demo DEPLOYMENT=demo (används för guards och loggning).
 const DEPLOYMENT = (process.env.DEPLOYMENT || "").trim().toLowerCase() || "unknown";
 const IS_PRODUCTION = process.env.NODE_ENV === "production";
