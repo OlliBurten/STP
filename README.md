@@ -48,6 +48,8 @@ npm run dev
 
 Öppna http://localhost:5173. Du kan nu registrera konto, logga in, publicera jobb och använda API:et.
 
+**"Kunde inte nå servern":** Starta backend först (`cd server && npm run dev`). Sätt `FRONTEND_URL=http://localhost:5173` i `server/.env` (CORS).
+
 ## E2E-tester
 
 Playwright-tester i `e2e/`. **Starta frontend (och vid behov backend) innan du kör testerna.**

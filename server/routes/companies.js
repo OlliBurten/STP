@@ -3,7 +3,6 @@ import { prisma } from "../lib/prisma.js";
 import { authMiddleware, requireCompany } from "../middleware/auth.js";
 import { validateBody, validateQuery } from "../middleware/validate.js";
 import { companyProfileSchema, companiesSearchQuerySchema } from "../lib/validators.js";
-
 export const companiesRouter = Router();
 
 function resolveSegment(segment, employment) {

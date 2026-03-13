@@ -1,9 +1,11 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import OAuthProviders from "./components/OAuthProviders";
+import ErrorBoundary from "./components/ErrorBoundary";
 import { ProfileProvider } from "./context/ProfileContext";
 import { ChatProvider } from "./context/ChatContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+import OnboardingGate, { useOnboardingRequired } from "./components/OnboardingGate";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
@@ -38,10 +40,12 @@ import { useAuth } from "./context/AuthContext";
 
 function AppLayout() {
   const { user } = useAuth();
+  const onboarding = useOnboardingRequired();
   return (
     <div className="min-h-screen flex flex-col overflow-x-hidden">
-      <Header />
+      <Header onboarding={onboarding} />
       <div className="flex-1 pt-16">
+        <OnboardingGate>
         <Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/jobb" element={<JobList />} />
@@ -184,6 +188,7 @@ function AppLayout() {
                   />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
+        </OnboardingGate>
               </div>
               {!user && <Footer />}
             </div>
@@ -193,15 +198,17 @@ function AppLayout() {
 function App() {
   return (
     <BrowserRouter>
-      <OAuthProviders>
-        <AuthProvider>
-          <ProfileProvider>
-            <ChatProvider>
-              <AppLayout />
-            </ChatProvider>
-          </ProfileProvider>
-        </AuthProvider>
-      </OAuthProviders>
+      <ErrorBoundary>
+        <OAuthProviders>
+          <AuthProvider>
+            <ProfileProvider>
+              <ChatProvider>
+                <AppLayout />
+              </ChatProvider>
+            </ProfileProvider>
+          </AuthProvider>
+        </OAuthProviders>
+      </ErrorBoundary>
     </BrowserRouter>
   );
 }

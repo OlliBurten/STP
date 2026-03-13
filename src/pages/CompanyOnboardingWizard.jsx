@@ -71,10 +71,8 @@ export default function CompanyOnboardingWizard() {
     <main className="max-w-2xl mx-auto px-4 sm:px-6 py-10">
       <section className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8">
         <p className="text-sm text-slate-500">Företags-onboarding</p>
-        <h1 className="mt-1 text-2xl font-bold text-slate-900">Vilka segment rekryterar ni oftast för?</h1>
-        <p className="mt-2 text-slate-600">
-          Dessa val används som standard när ni publicerar jobb. Segment väljs alltid per annons.
-        </p>
+        <h1 className="mt-1 text-2xl font-bold text-slate-900">Vilka segment rekryterar ni för?</h1>
+        <p className="mt-2 text-slate-600">Standardval när ni publicerar jobb. Går att ändra per annons.</p>
         <div className="mt-6 grid gap-3">
           {segmentOptions.map((segment) => {
             const active = defaults.includes(segment.value);

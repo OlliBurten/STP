@@ -103,22 +103,42 @@ export async function notifyCompanyApproved({ to, companyName }) {
 }
 
 /** Skickas till admin-adresser när någon ny registrerar sig (förare eller åkeri). */
-export async function notifyAdminNewRegistration({ role, name, email, companyName }) {
+export async function notifyAdminNewRegistration({ role, name, email, companyName, companyOrgNumber }) {
   const adminEmails = String(process.env.ADMIN_EMAILS || "")
     .split(",")
     .map((e) => e.trim().toLowerCase())
     .filter(Boolean);
   if (adminEmails.length === 0) return;
-  const roleLabel = role === "COMPANY" ? "Företag" : "Förare";
-  const subject = `Ny registrering: ${roleLabel} – ${name || email}`;
-  const body = companyName
-    ? `Ny företagsregistrering.\n\nNamn: ${name}\nE-post: ${email}\nFöretag: ${companyName}\n\nLogga in i Admin för att godkänna företaget.`
-    : `Ny förarregistrering.\n\nNamn: ${name}\nE-post: ${email}\n\nLogga in i Admin för att se användarlistan.`;
-  for (const to of adminEmails) {
-    try {
-      await sendEmail({ to, subject, text: body });
-    } catch (e) {
-      console.error("[Email] notifyAdminNewRegistration failed for", to, e?.message);
+  const frontendUrl = (process.env.FRONTEND_URL || "").split(",")[0]?.trim().replace(/\/$/, "") || "";
+  const adminLink = frontendUrl ? `${frontendUrl}/admin` : "";
+
+  if (role === "COMPANY") {
+    const subject = `Åtgärda: Nytt åkeri väntar verifiering – ${companyName || name || email}`;
+    const orgLine = companyOrgNumber ? `Org.nr: ${companyOrgNumber}\n` : "";
+    const body = `Ett nytt åkeri har registrerat sig och väntar på manuell verifiering.\n\n`
+      + `Företag: ${companyName || "(ej angivet)"}\n`
+      + `Namn: ${name}\n`
+      + `E-post: ${email}\n`
+      + orgLine
+      + `\nGå in i Admin och godkänn företaget för att låta dem publicera jobb och kontakta förare.`
+      + (adminLink ? `\n\n${adminLink}` : "");
+    for (const to of adminEmails) {
+      try {
+        await sendEmail({ to, subject, text: body });
+      } catch (e) {
+        console.error("[Email] notifyAdminNewRegistration failed for", to, e?.message);
+      }
+    }
+  } else {
+    const subject = `Ny registrering: Förare – ${name || email}`;
+    const body = `Ny förarregistrering.\n\nNamn: ${name}\nE-post: ${email}\n\n`
+      + (adminLink ? `Admin: ${adminLink}` : "Logga in i Admin för att se användarlistan.");
+    for (const to of adminEmails) {
+      try {
+        await sendEmail({ to, subject, text: body });
+      } catch (e) {
+        console.error("[Email] notifyAdminNewRegistration failed for", to, e?.message);
+      }
     }
   }
 }

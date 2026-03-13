@@ -62,3 +62,14 @@ export const apiDelete = (path, options) => api("DELETE", path, null, options);
 export function useApi() {
   return !!API_URL;
 }
+
+/** Kontrollerar om backend svarar. Returnerar true/false. */
+export async function checkBackendHealth() {
+  if (!API_URL) return false;
+  try {
+    const res = await fetch(`${API_URL}/api/health`, { signal: AbortSignal.timeout(5000) });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}

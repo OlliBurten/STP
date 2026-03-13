@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { requestPasswordReset, resendVerification } from "../api/auth";
 import { TruckIcon, BuildingIcon } from "../components/Icons";
 import OAuthButtons from "../components/OAuthButtons";
+import ErrorBoundary from "../components/ErrorBoundary";
 
 export default function Login() {
   const {
@@ -35,9 +36,7 @@ export default function Login() {
   const [showResendVerification, setShowResendVerification] = useState(false);
   const [loading, setLoading] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
-  const [oauthRole, setOauthRole] = useState(
-    requiredRole === "company" ? "company" : from?.includes("foretag") ? "company" : "driver"
-  );
+  const [oauthPickingRole, setOauthPickingRole] = useState(false);
 
   const handleMockDriver = () => {
     loginAsDriver();
@@ -201,14 +200,16 @@ export default function Login() {
     <main className="max-w-md mx-auto px-4 py-16">
       <div className="text-center mb-10">
         <h1 className="text-3xl font-bold text-slate-900">
-          {mode === "login" ? "Logga in" : mode === "register" ? "Registrera" : "Glömt lösenord"}
+          {oauthPickingRole ? "Välj roll" : mode === "login" ? "Logga in" : mode === "register" ? "Registrera" : "Glömt lösenord"}
         </h1>
         <p className="mt-3 text-slate-600">
-          {mode === "login"
-            ? "Ange e-post och lösenord."
-            : mode === "register"
-              ? "Skapa konto som chaufför eller företag."
-              : "Ange e-post så skickar vi en återställningslänk."}
+          {oauthPickingRole
+            ? "Chaufför eller företag"
+            : mode === "login"
+              ? "Ange e-post och lösenord."
+              : mode === "register"
+                ? "Skapa konto som chaufför eller företag."
+                : "Ange e-post så skickar vi en återställningslänk."}
         </p>
       </div>
 
@@ -226,6 +227,8 @@ export default function Login() {
         {info && (
           <div className="p-3 rounded-lg bg-green-50 text-green-800 text-sm">{info}</div>
         )}
+        {!oauthPickingRole && (
+          <>
         {mode === "register" && (
           <>
             <div>
@@ -358,48 +361,44 @@ export default function Login() {
                 ? "Registrera"
                 : "Skicka återställningslänk"}
         </button>
+          </>
+        )}
         {mode === "login" && hasApi && (
-          <div className="pt-4 border-t border-slate-200">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-sm text-slate-600">Logga in som:</span>
-              <button
-                type="button"
-                onClick={() => setOauthRole("driver")}
-                className={`px-3 py-1 text-sm rounded-lg ${oauthRole === "driver" ? "bg-[var(--color-primary)] text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
-              >
-                Chaufför
-              </button>
-              <button
-                type="button"
-                onClick={() => setOauthRole("company")}
-                className={`px-3 py-1 text-sm rounded-lg ${oauthRole === "company" ? "bg-[var(--color-primary)] text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
-              >
-                Företag
-              </button>
-            </div>
-            <OAuthButtons
-              role={oauthRole}
+          <div className={oauthPickingRole ? "" : "pt-4 border-t border-slate-200"}>
+            <ErrorBoundary
+              fallback={
+                <p className="text-sm text-slate-500 py-2">
+                  Inloggning med Google/Microsoft kunde inte laddas. Använd e-post och lösenord ovan.
+                </p>
+              }
+            >
+              <OAuthButtons
               onSuccess={(data) => {
                 setError("");
+                setOauthPickingRole(false);
                 loginWithOAuthResponse(data);
                 const u = data.user;
                 const isCompany = String(u?.role || "").toUpperCase() === "COMPANY";
-                if (isCompany) {
-                  const segs = u?.companySegmentDefaults;
-                  if (!Array.isArray(segs) || segs.length === 0) {
-                    navigate("/foretag/onboarding", { replace: true });
-                  } else {
-                    navigate("/foretag", { replace: true });
-                  }
-                } else {
-                  navigate(from || "/", { replace: true });
-                }
+                const target = isCompany
+                  ? (!Array.isArray(u?.companySegmentDefaults) || u?.companySegmentDefaults?.length === 0)
+                    ? "/foretag/onboarding"
+                    : "/foretag"
+                  : from || "/";
+                // Vänta på att auth-state och localStorage hinner sparas innan navigation (undviker race).
+                setTimeout(() => navigate(target, { replace: true }), 0);
               }}
-              onError={(msg) => setError(msg)}
+              onError={(msg) => {
+                setError(msg);
+                setOauthPickingRole(false);
+              }}
+              onRolePickerVisible={setOauthPickingRole}
+              requiredRole={requiredRole}
+              fromPath={from}
             />
+            </ErrorBoundary>
           </div>
         )}
-        {mode === "login" && showResendVerification && (
+        {!oauthPickingRole && mode === "login" && showResendVerification && (
           <button
             type="button"
             onClick={handleResendVerification}

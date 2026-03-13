@@ -36,13 +36,13 @@ export default function AkerierSearch() {
       <div className="mb-8">
         {isGymnasieelev && (
           <div className="mb-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-900">
-            Du är registrerad som gymnasieelev. Endast åkerier som erbjuder <strong>praktik/LIA</strong> visas. Sök gärna i din region och bransch.
+            Du är registrerad som gymnasieelev. Endast åkerier som erbjuder <strong>praktik</strong> visas.
           </div>
         )}
         <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Hitta åkerier</h1>
         <p className="mt-2 text-slate-600">
           {isGymnasieelev
-            ? "Åkerier som tar emot praktikanter – filtrera på region och bransch."
+            ? "Åkerier som tar emot praktikanter."
             : "Sök efter transportföretag efter bransch och område – som gula sidorna. Hitta åkerier att kontakta även när det inte finns en aktiv jobbannons."}
         </p>
       </div>

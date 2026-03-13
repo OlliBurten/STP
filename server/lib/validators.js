@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isValidSwedishOrgNumber } from "./companyVerify.js";
 
 /** Transportsegment – måste matcha src/data/bransch.js branschValues */
 const BRANSCH_VALUES = [
@@ -69,11 +70,10 @@ export const registerSchema = z
     (data) => {
       if (data.role !== "COMPANY") return true;
       const name = (data.companyName || "").trim();
-      const org = String(data.companyOrgNumber || "").replace(/\D/g, "");
-      const normalized = org.length === 12 ? org.slice(2) : org;
-      return name.length > 0 && normalized.length === 10;
+      const org = data.companyOrgNumber;
+      return name.length > 0 && isValidSwedishOrgNumber(org);
     },
-    { message: "Företagsnamn och giltigt organisationsnummer (10 siffror) krävs för företag", path: ["companyOrgNumber"] }
+    { message: "Företagsnamn och giltigt organisationsnummer krävs för företag", path: ["companyOrgNumber"] }
   );
 
 export const loginSchema = z.object({
@@ -97,11 +97,16 @@ export const resendVerificationSchema = z.object({
 
 export const oauthGoogleSchema = z.object({
   credential: z.string().min(1, "Credential krävs"),
-  role: z.enum(["DRIVER", "COMPANY"], { errorMap: () => ({ message: "Roll måste vara DRIVER eller COMPANY" }) }),
+  role: z.enum(["DRIVER", "COMPANY"]).optional(),
 });
 
 export const oauthMicrosoftSchema = z.object({
   credential: z.string().min(1, "Credential krävs"),
+  role: z.enum(["DRIVER", "COMPANY"]).optional(),
+});
+
+export const oauthCompleteSchema = z.object({
+  oauthCompleteToken: z.string().min(1, "Token krävs"),
   role: z.enum(["DRIVER", "COMPANY"], { errorMap: () => ({ message: "Roll måste vara DRIVER eller COMPANY" }) }),
 });
 
@@ -175,7 +180,7 @@ export const sendMessageSchema = z.object({
   content: z.string().min(1, "Meddelande krävs").max(5000),
 });
 
-/** Query: bransch, region, segment for companies search (optional). segment=INTERNSHIP => endast åkerier som erbjuder praktik. */
+/** Query: bransch, region, segment. segment=INTERNSHIP => åkerier som erbjuder praktik. */
 export const companiesSearchQuerySchema = z.object({
   bransch: z.string().max(50).optional(),
   region: z.string().max(100).optional(),

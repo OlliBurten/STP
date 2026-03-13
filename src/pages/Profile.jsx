@@ -338,7 +338,7 @@ export default function Profile() {
                   <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
                     <p className="text-sm font-medium text-slate-700">Du är registrerad som gymnasieelev</p>
                     <p className="mt-1 text-sm text-slate-600">
-                      Primärt segment: <strong>Praktikanter</strong> – endast praktikannonser och åkerier som erbjuder praktik visas.
+                      Primärt segment: <strong>Praktik</strong> – endast praktikannonser och åkerier visas.
                     </p>
                     {current.schoolName && (
                       <p className="mt-2 text-sm text-slate-600">Skola: {current.schoolName}</p>

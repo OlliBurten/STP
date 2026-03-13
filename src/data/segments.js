@@ -1,19 +1,7 @@
 export const segmentOptions = [
-  {
-    value: "FULLTIME",
-    label: "Heltidssökande",
-    description: "Långsiktig anställning, fast anställning",
-  },
-  {
-    value: "FLEX",
-    label: "Vikariepool",
-    description: "Extra pass, vikarier, pensionärer, deltidsförare",
-  },
-  {
-    value: "INTERNSHIP",
-    label: "Praktikanter",
-    description: "Elever, LIA, lärlingar – t.ex. från gymnasiet",
-  },
+  { value: "FULLTIME", label: "Heltid", description: "Fast anställning" },
+  { value: "FLEX", label: "Vikariepool", description: "Vikariat, deltid, extra pass" },
+  { value: "INTERNSHIP", label: "Praktik", description: "Praktik, APV m.fl." },
 ];
 
 export function segmentLabel(segment) {

@@ -12,20 +12,20 @@ Plattformen har **tre segment** som används både för **förare** och **åkeri
 |--------|-------------|--------------------|
 | **Heltidssökande** | Långsiktig/fast anställning | Förare som söker fast jobb; åkerier som rekryterar till fasta tjänster |
 | **Vikariepool** | Vikarier, extra pass, deltid, pensionärer | Förare som vill ha vikariat/tim; åkerier som söker vikarier eller flex |
-| **Praktikanter** | Elever, LIA, lärlingar | T.ex. gymnasieelever som ska ut i LIA; åkerier som tar emot praktikanter |
+| **Praktik** | Elever, praktik, APV | Gymnasieelever, YH-elever; åkerier som tar emot praktikanter |
 
 ### Var segmenten syns i plattformen
 
-- **Förare (registrering/profil):** Föraren väljer **primärt segment** (t.ex. Praktikanter) och kan lägga till **sekundära segment** (t.ex. även Vikariepool). Detta styr vilka jobb som matchar och hur åkerier söker.
-- **Åkerier (registrering/profil):** Åkeriet väljer **standardsegment** för sina annonser (Heltidssökande, Vikariepool, Praktikanter – en eller flera). Vid ny jobbannons föreslås dessa.
-- **Jobbannonser:** Varje jobb har ett **segment** (Heltidssökande / Vikariepool / Praktikanter). Förare kan filtrera jobb på segment; åkerier kan filtrera chaufförsökningen på segment.
-- **Chaufförsökning (åkeri):** Åkeriet kan filtrera på segment för att hitta t.ex. enbart **Praktikanter** eller **Vikariepool**.
+- **Förare (registrering/profil):** Föraren väljer **primärt segment** (t.ex. Praktik) och kan lägga till **sekundära segment** (t.ex. Vikariepool). Styr vilka jobb som matchar.
+- **Åkerier (registrering/profil):** Åkeriet väljer **standardsegment** (Heltid, Vikariepool, Praktik – en eller flera). Vid ny jobbannons föreslås dessa.
+- **Jobbannonser:** Varje jobb har ett **segment**. Förare filtrerar; åkerier filtrerar chaufförsökning på segment.
+- **Chaufförsökning (åkeri):** Åkeriet kan filtrera t.ex. enbart **Praktik** eller **Vikariepool**.
 
-### För gymnasieskolor och elever (Praktikanter)
+### För gymnasieskolor och elever (Praktik)
 
-- Elever kan **registrera sig som förare** och välja **Praktikanter** som primärt (eller sekundärt) segment.
-- Åkerier som vill ta emot **praktikanter/LIA** väljer segment **Praktikanter** för relevanta jobb och kan söka chaufförer med segment Praktikanter.
-- Så fungerar det idag: Elever skapar konto → fyller i profil (körkort, skola, etc.) → sätter segment till Praktikanter → söker jobb/annonser som är märkta Praktikanter, och åkerier kan hitta dem via chaufförsökningen.
+- Elever kan **registrera sig som förare** och välja **Praktik** som primärt (eller sekundärt) segment.
+- Åkerier som vill ta emot **praktikanter** väljer segment **Praktik** för relevanta jobb och kan söka chaufförer med segment Praktik.
+- Så fungerar det: Elever skapar konto → fyller i profil (körkort, skola, etc.) → sätter segment till Praktik → söker jobb märkta Praktik, och åkerier hittar dem via chaufförsökningen.
 
 ---
 

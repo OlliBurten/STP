@@ -6,7 +6,7 @@ import { fetchNotifications, markNotificationRead, markAllNotificationsRead } fr
 import { BellIcon, MenuIcon, CloseIcon, ChevronDownIcon } from "./Icons";
 import Logo from "./Logo";
 
-export default function Header() {
+export default function Header({ onboarding = false }) {
   const { user, isDriver, isCompany, isAdmin, logout } = useAuth();
   const { selectedNotificationCount, companyUnreadConversationCount = 0 } = useChat();
   const navigate = useNavigate();
@@ -227,6 +227,25 @@ export default function Header() {
       )}
     </>
   );
+
+  if (onboarding && user) {
+    return (
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur border-b border-slate-200">
+        <nav className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-14">
+          <Link to="/" className="flex items-center" aria-label="Startsida">
+            <Logo height={32} />
+          </Link>
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="text-sm font-medium text-slate-600 hover:text-[var(--color-primary)] py-2 px-3"
+          >
+            Logga ut
+          </button>
+        </nav>
+      </header>
+    );
+  }
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm">

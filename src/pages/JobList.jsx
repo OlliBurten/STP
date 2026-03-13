@@ -135,7 +135,7 @@ export default function JobList() {
       <div className="mb-8">
         {isGymnasieelev && (
           <div className="mb-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-900">
-            Du är registrerad som gymnasieelev. Endast jobb som erbjuder <strong>praktik/LIA</strong> visas. Du kan filtrera på region och bransch.
+            Du är registrerad som gymnasieelev. Endast jobb som erbjuder <strong>praktik</strong> visas.
           </div>
         )}
         <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Lediga jobb</h1>

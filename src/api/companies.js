@@ -8,7 +8,7 @@ export function updateMyCompanyProfile(payload) {
   return apiPut("/api/companies/me/profile", payload);
 }
 
-/** Public: sök åkerier på bransch, region och/eller segment. segment=INTERNSHIP => endast åkerier som erbjuder praktik. */
+/** Public: sök åkerier. segment=INTERNSHIP => åkerier som erbjuder praktik. */
 export function fetchCompaniesSearch(params = {}) {
   const q = new URLSearchParams();
   if (params.bransch) q.set("bransch", params.bransch);

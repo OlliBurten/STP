@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useProfile } from "../context/ProfileContext";
 import { useAuth } from "../context/AuthContext";
@@ -25,8 +25,6 @@ export default function DriverOnboardingWizard() {
     availability: profile.availability || "open",
     visibleToCompanies: profile.visibleToCompanies ?? true,
   }));
-
-  const currentStepLabel = useMemo(() => steps[step], [step]);
 
   if (profile.primarySegment) {
     return <Navigate to="/profil" replace />;
@@ -94,9 +92,7 @@ export default function DriverOnboardingWizard() {
       <section className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8">
         <p className="text-sm text-slate-500">Förar-onboarding · Steg {step + 1} av {steps.length}</p>
         <h1 className="mt-1 text-2xl font-bold text-slate-900">Välkommen {user?.name || ""}</h1>
-        <p className="mt-2 text-slate-600">
-          Ställ in vad du söker just nu. Du kan alltid ändra detta senare utan att skapa nytt konto.
-        </p>
+        <p className="mt-2 text-slate-600">Ställ in vad du söker. Går att ändra senare.</p>
         <div className="mt-4 flex flex-wrap gap-2 text-xs">
           {steps.map((s, idx) => (
             <span
@@ -113,10 +109,8 @@ export default function DriverOnboardingWizard() {
         <div className="mt-8">
           {step === 0 && (
             <div>
-              <h2 className="font-semibold text-slate-900">Är du gymnasieelev som söker praktik/LIA?</h2>
-              <p className="mt-1 text-sm text-slate-600">
-                Om ja visas bara åkerier och jobb som erbjuder praktik. Du kan söka i olika regioner och branscher.
-              </p>
+              <h2 className="font-semibold text-slate-900">Söker du praktik eller anställning?</h2>
+              <p className="mt-1 text-sm text-slate-600">Praktik: gymnasium, YH, APV. Annars: heltid eller vikarie.</p>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 <button
                   type="button"
@@ -134,8 +128,8 @@ export default function DriverOnboardingWizard() {
                       : "border-slate-200 hover:bg-slate-50"
                   }`}
                 >
-                  <p className="font-semibold text-slate-900">Ja, jag söker praktik/LIA</p>
-                  <p className="text-sm text-slate-600">Jag är elev och vill hitta praktikplats hos ett åkeri.</p>
+                  <p className="font-semibold text-slate-900">Praktik</p>
+                  <p className="text-sm text-slate-600">Elev, söker praktikplats.</p>
                 </button>
                 <button
                   type="button"
@@ -150,19 +144,17 @@ export default function DriverOnboardingWizard() {
                   className={`text-left rounded-xl border p-4 ${
                     !draft.isGymnasieelev && draft.primarySegment
                       ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5"
-                      : !draft.isGymnasieelev
-                        ? "border-slate-200 hover:bg-slate-50"
-                        : "border-slate-200 hover:bg-slate-50"
+                      : "border-slate-200 hover:bg-slate-50"
                   }`}
                 >
-                  <p className="font-semibold text-slate-900">Nej, jag är yrkesförare eller söker annat</p>
-                  <p className="text-sm text-slate-600">Jag söker heltid, vikariat eller annat – välj mål nedan.</p>
+                  <p className="font-semibold text-slate-900">Heltid eller vikarie</p>
+                  <p className="text-sm text-slate-600">Yrkesförare eller söker anställning.</p>
                 </button>
               </div>
               {draft.isGymnasieelev && (
                 <div className="mt-6">
                   <label htmlFor="school-name" className="block text-sm font-medium text-slate-700 mb-1">
-                    Vilken skola går du i?
+                    Skola / utbildning
                   </label>
                   <input
                     id="school-name"
@@ -176,7 +168,7 @@ export default function DriverOnboardingWizard() {
               )}
               {!draft.isGymnasieelev && (
                 <>
-                  <p className="mt-6 font-medium text-slate-900">Vad är ditt primära mål?</p>
+                  <p className="mt-6 font-medium text-slate-900">Vad söker du?</p>
                   <div className="mt-3 grid gap-3">
                     {segmentOptions.map((segment) => (
                       <button
@@ -201,10 +193,8 @@ export default function DriverOnboardingWizard() {
 
           {step === 1 && (
             <div>
-              <h2 className="font-semibold text-slate-900">Har du sekundära mål?</h2>
-              <p className="mt-1 text-sm text-slate-600">
-                Valfritt. Bra om du vill synas för flera typer av uppdrag.
-              </p>
+              <h2 className="font-semibold text-slate-900">Andra mål? (valfritt)</h2>
+              <p className="mt-1 text-sm text-slate-600">Synlig för fler typer av jobb.</p>
               <div className="mt-4 flex flex-wrap gap-2">
                 {segmentOptions
                   .filter((s) => s.value !== draft.primarySegment)
@@ -232,7 +222,7 @@ export default function DriverOnboardingWizard() {
           {step === 2 && (
             <div className="space-y-4">
               <h2 className="font-semibold text-slate-900">Kärnprofil</h2>
-              <p className="text-sm text-slate-600">Detta hjälper företag att hitta rätt förare.</p>
+              <p className="text-sm text-slate-600">Region, körkort och tillgänglighet.</p>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Region</label>
                 <select
@@ -299,9 +289,7 @@ export default function DriverOnboardingWizard() {
           {step === 3 && (
             <div>
               <h2 className="font-semibold text-slate-900">Synlighet</h2>
-              <p className="mt-1 text-sm text-slate-600">
-                Företag kan bara hitta dig i sök om du är synlig.
-              </p>
+              <p className="mt-1 text-sm text-slate-600">Synlig = företag hittar dig i sök.</p>
               <label className="mt-4 inline-flex items-center gap-3 text-sm text-slate-700">
                 <input
                   type="checkbox"
@@ -346,7 +334,6 @@ export default function DriverOnboardingWizard() {
             </button>
           )}
         </div>
-        <p className="mt-3 text-xs text-slate-500">Nuvarande steg: {currentStepLabel}</p>
       </section>
     </main>
   );
