@@ -91,6 +91,8 @@ app.use(express.json({ limit: "1mb" }));
 
 app.use("/api/auth/login", authLimiter);
 app.use("/api/auth/register", authLimiter);
+app.use("/api/auth/google", authLimiter);
+app.use("/api/auth/microsoft", authLimiter);
 app.use("/api/auth", authRouter);
 app.use("/api/jobs", apiPublicLimiter, jobsRouter);
 app.use("/api/profile", profileRouter);

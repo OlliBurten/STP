@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
+import OAuthProviders from "./components/OAuthProviders";
 import { ProfileProvider } from "./context/ProfileContext";
 import { ChatProvider } from "./context/ChatContext";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -192,13 +193,15 @@ function AppLayout() {
 function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <ProfileProvider>
-          <ChatProvider>
-            <AppLayout />
-          </ChatProvider>
-        </ProfileProvider>
-      </AuthProvider>
+      <OAuthProviders>
+        <AuthProvider>
+          <ProfileProvider>
+            <ChatProvider>
+              <AppLayout />
+            </ChatProvider>
+          </ProfileProvider>
+        </AuthProvider>
+      </OAuthProviders>
     </BrowserRouter>
   );
 }

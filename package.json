@@ -12,6 +12,9 @@
     "e2e:ui": "playwright test --ui"
   },
   "dependencies": {
+    "@azure/msal-browser": "^4.29.1",
+    "@azure/msal-react": "^3.0.28",
+    "@react-oauth/google": "^0.13.4",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.13.0"

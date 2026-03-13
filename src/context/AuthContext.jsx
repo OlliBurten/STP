@@ -153,6 +153,16 @@ export function AuthProvider({ children }) {
     setLastActivity(null);
   }, []);
 
+  const loginWithOAuthResponse = useCallback(({ user: u, token: t }) => {
+    const normalized = normalizeUser(u);
+    setUser(normalized);
+    setToken(t);
+    const now = Date.now();
+    setIssuedAt(now);
+    setLastActivity(now);
+    return normalized;
+  }, []);
+
   // Uppdatera senaste aktivitet vid interaktion
   useEffect(() => {
     if (!user || !token) return;
@@ -205,6 +215,7 @@ export function AuthProvider({ children }) {
         loginAsDriver,
         loginAsCompany,
         loginWithApi,
+        loginWithOAuthResponse,
         registerWithApi,
         logout,
       }}

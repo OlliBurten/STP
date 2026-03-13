@@ -95,6 +95,16 @@ export const resendVerificationSchema = z.object({
   verificationBaseUrl: z.string().url().max(500).optional(),
 });
 
+export const oauthGoogleSchema = z.object({
+  credential: z.string().min(1, "Credential krävs"),
+  role: z.enum(["DRIVER", "COMPANY"], { errorMap: () => ({ message: "Roll måste vara DRIVER eller COMPANY" }) }),
+});
+
+export const oauthMicrosoftSchema = z.object({
+  credential: z.string().min(1, "Credential krävs"),
+  role: z.enum(["DRIVER", "COMPANY"], { errorMap: () => ({ message: "Roll måste vara DRIVER eller COMPANY" }) }),
+});
+
 export const createJobSchema = z.object({
   title: z.string().min(1, "Jobbtitel krävs").max(300),
   company: z.string().min(1, "Företagsnamn krävs").max(200),

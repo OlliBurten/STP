@@ -5,7 +5,21 @@ import jwt from "jsonwebtoken";
 import { prisma } from "../lib/prisma.js";
 import { sendEmail, notifyAdminNewRegistration } from "../lib/email.js";
 import { validateBody } from "../middleware/validate.js";
-import { registerSchema, loginSchema, requestPasswordResetSchema, resetPasswordSchema, resendVerificationSchema } from "../lib/validators.js";
+import {
+  registerSchema,
+  loginSchema,
+  requestPasswordResetSchema,
+  resetPasswordSchema,
+  resendVerificationSchema,
+  oauthGoogleSchema,
+  oauthMicrosoftSchema,
+} from "../lib/validators.js";
+import {
+  verifyGoogleToken,
+  verifyMicrosoftToken,
+  isGoogleConfigured,
+  isMicrosoftConfigured,
+} from "../lib/oauth.js";
 
 export const authRouter = Router();
 const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-in-production";
@@ -192,7 +206,11 @@ authRouter.post("/login", validateBody(loginSchema), async (req, res, next) => {
     const user = await prisma.user.findUnique({
       where: { email: email.trim().toLowerCase() },
     });
-    if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
+    if (!user) return res.status(401).json({ error: "Fel e-post eller lösenord" });
+    if (!user.passwordHash) {
+      return res.status(401).json({ error: "Det här kontot använder Google eller Microsoft för inloggning. Använd den knappen istället." });
+    }
+    if (!(await bcrypt.compare(password, user.passwordHash))) {
       return res.status(401).json({ error: "Fel e-post eller lösenord" });
     }
     if (user.suspendedAt) {
@@ -242,6 +260,124 @@ authRouter.post("/login", validateBody(loginSchema), async (req, res, next) => {
   } catch (e) {
     next(e);
   }
+});
+
+async function findOrCreateOAuthUser(claims, role) {
+  const email = claims.email.toLowerCase().trim();
+  const name = (claims.name || email.split("@")[0] || "Användare").trim().slice(0, 200);
+  let user = await prisma.user.findUnique({ where: { email } });
+  if (user) {
+    if (user.suspendedAt) throw new Error("Kontot är tillfälligt avstängt. Kontakta support.");
+    return user;
+  }
+  const isCompany = role === "COMPANY";
+  user = await prisma.user.create({
+    data: {
+      email,
+      passwordHash: null,
+      emailVerifiedAt: new Date(),
+      role,
+      name,
+      companyName: isCompany ? null : undefined,
+      companyOrgNumber: isCompany ? null : undefined,
+      companyStatus: isCompany ? "PENDING" : "VERIFIED",
+    },
+    select: {
+      id: true,
+      email: true,
+      role: true,
+      name: true,
+      companyName: true,
+      companyOrgNumber: true,
+      companyStatus: true,
+      companySegmentDefaults: true,
+      emailVerifiedAt: true,
+    },
+  });
+  if (role === "DRIVER") {
+    await prisma.driverProfile.create({
+      data: { userId: user.id, email: user.email },
+    });
+  }
+  try {
+    await notifyAdminNewRegistration({
+      role: user.role,
+      name: user.name,
+      email: user.email,
+      companyName: user.companyName ?? undefined,
+    });
+  } catch (notifyErr) {
+    console.error("Admin new-registration notify failed:", notifyErr);
+  }
+  return user;
+}
+
+authRouter.post("/google", validateBody(oauthGoogleSchema), async (req, res, next) => {
+  try {
+    if (!isGoogleConfigured()) {
+      return res.status(503).json({ error: "Inloggning med Google är inte konfigurerad ännu." });
+    }
+    const { credential, role } = req.body;
+    const claims = await verifyGoogleToken(credential);
+    const user = await findOrCreateOAuthUser(claims, role);
+    const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: "24h" });
+    res.json({
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        name: user.name,
+        companyName: user.companyName,
+        companyOrgNumber: user.companyOrgNumber,
+        companyStatus: user.companyStatus,
+        companySegmentDefaults: user.companySegmentDefaults || [],
+        emailVerifiedAt: user.emailVerifiedAt,
+        isAdmin: isAdminEmail(user.email),
+      },
+      token,
+    });
+  } catch (e) {
+    if (e.message?.includes("Token")) {
+      return res.status(401).json({ error: "Ogiltig eller utgången inloggning. Försök igen." });
+    }
+    next(e);
+  }
+});
+
+authRouter.post("/microsoft", validateBody(oauthMicrosoftSchema), async (req, res, next) => {
+  try {
+    if (!isMicrosoftConfigured()) {
+      return res.status(503).json({ error: "Inloggning med Microsoft är inte konfigurerad ännu." });
+    }
+    const { credential, role } = req.body;
+    const claims = await verifyMicrosoftToken(credential);
+    const user = await findOrCreateOAuthUser(claims, role);
+    const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: "24h" });
+    res.json({
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        name: user.name,
+        companyName: user.companyName,
+        companyOrgNumber: user.companyOrgNumber,
+        companyStatus: user.companyStatus,
+        companySegmentDefaults: user.companySegmentDefaults || [],
+        emailVerifiedAt: user.emailVerifiedAt,
+        isAdmin: isAdminEmail(user.email),
+      },
+      token,
+    });
+  } catch (e) {
+    if (e.message?.includes("Token") || e.message?.includes("jwt")) {
+      return res.status(401).json({ error: "Ogiltig eller utgången inloggning. Försök igen." });
+    }
+    next(e);
+  }
+});
+
+authRouter.get("/oauth-status", (req, res) => {
+  res.json({ google: isGoogleConfigured(), microsoft: isMicrosoftConfigured() });
 });
 
 authRouter.get("/verify-email", async (req, res, next) => {

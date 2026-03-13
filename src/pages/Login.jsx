@@ -3,12 +3,14 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { requestPasswordReset, resendVerification } from "../api/auth";
 import { TruckIcon, BuildingIcon } from "../components/Icons";
+import OAuthButtons from "../components/OAuthButtons";
 
 export default function Login() {
   const {
     loginAsDriver,
     loginAsCompany,
     loginWithApi,
+    loginWithOAuthResponse,
     registerWithApi,
     hasApi,
     logout,
@@ -33,6 +35,9 @@ export default function Login() {
   const [showResendVerification, setShowResendVerification] = useState(false);
   const [loading, setLoading] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
+  const [oauthRole, setOauthRole] = useState(
+    requiredRole === "company" ? "company" : from?.includes("foretag") ? "company" : "driver"
+  );
 
   const handleMockDriver = () => {
     loginAsDriver();
@@ -353,6 +358,47 @@ export default function Login() {
                 ? "Registrera"
                 : "Skicka återställningslänk"}
         </button>
+        {mode === "login" && hasApi && (
+          <div className="pt-4 border-t border-slate-200">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-sm text-slate-600">Logga in som:</span>
+              <button
+                type="button"
+                onClick={() => setOauthRole("driver")}
+                className={`px-3 py-1 text-sm rounded-lg ${oauthRole === "driver" ? "bg-[var(--color-primary)] text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
+              >
+                Chaufför
+              </button>
+              <button
+                type="button"
+                onClick={() => setOauthRole("company")}
+                className={`px-3 py-1 text-sm rounded-lg ${oauthRole === "company" ? "bg-[var(--color-primary)] text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
+              >
+                Företag
+              </button>
+            </div>
+            <OAuthButtons
+              role={oauthRole}
+              onSuccess={(data) => {
+                setError("");
+                loginWithOAuthResponse(data);
+                const u = data.user;
+                const isCompany = String(u?.role || "").toUpperCase() === "COMPANY";
+                if (isCompany) {
+                  const segs = u?.companySegmentDefaults;
+                  if (!Array.isArray(segs) || segs.length === 0) {
+                    navigate("/foretag/onboarding", { replace: true });
+                  } else {
+                    navigate("/foretag", { replace: true });
+                  }
+                } else {
+                  navigate(from || "/", { replace: true });
+                }
+              }}
+              onError={(msg) => setError(msg)}
+            />
+          </div>
+        )}
         {mode === "login" && showResendVerification && (
           <button
             type="button"
