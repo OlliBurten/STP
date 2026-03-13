@@ -114,6 +114,27 @@ app.get("/", (_, res) => {
   });
 });
 
+// Nödfix: kör DB-migration via API (kräver ADMIN_API_KEY). Används när prisma db push inte kan köras externt.
+app.post("/api/internal/migrate", express.json(), async (req, res) => {
+  const key = req.headers["x-admin-api-key"] || req.body?.adminApiKey;
+  const expected = process.env.ADMIN_API_KEY;
+  if (!expected || key !== expected) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  try {
+    const { prisma } = await import("./lib/prisma.js");
+    await prisma.$executeRawUnsafe(
+      'ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "companyBransch" TEXT[] DEFAULT \'{}\''
+    );
+    await prisma.$executeRawUnsafe('ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "companyRegion" TEXT');
+    await prisma.$executeRawUnsafe('ALTER TABLE "Job" ADD COLUMN IF NOT EXISTS "bransch" TEXT');
+    res.json({ ok: true, message: "Migration complete" });
+  } catch (e) {
+    console.error("[migrate]", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.get("/api/health", async (_, res) => {
   let db = "unknown";
   try {
