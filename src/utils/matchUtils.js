@@ -74,10 +74,13 @@ export function matchScore(driver, job) {
     details.license = true;
   }
 
-  // Certificates: driver must have all job requires
+  // Certificates: driver must have all job requires (hard constraint, like license)
   const driverCerts = driver.certificates || [];
   const jobCerts = job.certificates || [];
   const hasAllCerts = jobCerts.every((c) => driverCerts.includes(c));
+  if (jobCerts.length > 0 && !hasAllCerts) {
+    return { score: 0, details }; // Missing required cert = no recommendation
+  }
   if (hasAllCerts) {
     score += jobCerts.length || 1; // +1 per cert, or +1 if no certs required
     details.certificates = true;

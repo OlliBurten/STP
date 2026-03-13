@@ -73,7 +73,9 @@ driversRouter.get("/", authMiddleware, requireCompany, requireVerifiedCompany, a
         : experience === "5+" ? [5, 999]
         : experience.split("-").map(Number);
       list = list.filter(
-        (d) => d.yearsExperience >= min && (max === undefined || d.yearsExperience <= max)
+        (d) =>
+          d.yearsExperience >= min &&
+          (max === undefined || Number.isNaN(max) || d.yearsExperience <= max)
       );
     }
     res.json(list);
