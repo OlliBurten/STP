@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
 import { useMsal } from "@azure/msal-react";
 import { apiPost, checkBackendHealth, getApiBaseUrl } from "../api/client.js";
+import { fetchOAuthStatus } from "../api/auth.js";
 import { TruckIcon, BuildingIcon } from "./Icons";
 
 const API_URL = (import.meta.env.VITE_API_URL || "").trim().replace(/\/$/, "");
@@ -34,7 +35,7 @@ function MicrosoftButton({ onSuccess, onError }) {
     <button
       type="button"
       onClick={handleClick}
-      className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-colors text-slate-800 font-medium"
+      className="flex-1 h-12 min-h-[48px] inline-flex items-center justify-center gap-2 px-4 rounded-xl border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-colors text-slate-800 font-medium"
     >
       <svg className="w-5 h-5" viewBox="0 0 24 24">
         <path fill="#F25022" d="M1 1h10v10H1z" />
@@ -98,7 +99,7 @@ function RolePicker({ oauthCompleteToken, onComplete, onError, onCancel, default
             <span className={`shrink-0 w-10 h-10 rounded-xl flex items-center justify-center ${role === "company" ? "bg-[var(--color-accent)]/20 text-[var(--color-accent)]" : "bg-white/20 text-[var(--color-accent)]"}`}>
               <BuildingIcon className="w-5 h-5" />
             </span>
-            <span className="font-semibold">Företag</span>
+            <span className="font-semibold">Rekryterare</span>
           </button>
         </div>
         <div className="flex gap-2">
@@ -129,10 +130,19 @@ function RolePicker({ oauthCompleteToken, onComplete, onError, onCancel, default
 export default function OAuthButtons({ onSuccess, onError, onRolePickerVisible, requiredRole, fromPath }) {
   const [needRole, setNeedRole] = useState(null);
   const [backendReachable, setBackendReachable] = useState(null);
+  const [oauthStatus, setOAuthStatus] = useState({ google: false, microsoft: false });
 
   useEffect(() => {
     if (!API_URL) return;
     checkBackendHealth().then(setBackendReachable);
+    fetchOAuthStatus()
+      .then((status) =>
+        setOAuthStatus({
+          google: status?.google === true,
+          microsoft: status?.microsoft === true,
+        })
+      )
+      .catch(() => setOAuthStatus({ google: false, microsoft: false }));
   }, []);
 
   useEffect(() => {
@@ -166,8 +176,8 @@ export default function OAuthButtons({ onSuccess, onError, onRolePickerVisible, 
     }
   };
 
-  const showGoogle = GOOGLE_CLIENT_ID && API_URL;
-  const showMicrosoft = AZURE_CLIENT_ID && API_URL;
+  const showGoogle = Boolean(GOOGLE_CLIENT_ID && API_URL && oauthStatus.google);
+  const showMicrosoft = Boolean(AZURE_CLIENT_ID && API_URL && oauthStatus.microsoft);
 
   if (!showGoogle && !showMicrosoft) return null;
 
@@ -199,8 +209,27 @@ export default function OAuthButtons({ onSuccess, onError, onRolePickerVisible, 
       <div className="flex flex-col gap-3">
         {showGoogle && (
           <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-            <div className="flex-1 relative min-h-[48px] rounded-xl border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-colors overflow-hidden">
-              <div className="absolute inset-0 flex items-center justify-center gap-2 pointer-events-none text-slate-800 font-medium">
+            <div className="flex-1 h-12 min-h-[48px] relative rounded-xl border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-colors flex items-center justify-center overflow-hidden">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={(e) => {
+                    if (e?.error === "popup_closed_by_user") return;
+                    onError?.("Kunde inte hämta inloggning från Google.");
+                  }}
+                  useOneTap={false}
+                  theme="outline"
+                  size="large"
+                  type="standard"
+                  shape="rectangular"
+                  text="continue_with"
+                  width={400}
+                />
+              </div>
+              <div
+                className="absolute inset-0 flex items-center justify-center gap-2 pointer-events-none text-slate-800 font-medium bg-white rounded-[10px]"
+                aria-hidden="true"
+              >
                 <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                   <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
@@ -209,20 +238,6 @@ export default function OAuthButtons({ onSuccess, onError, onRolePickerVisible, 
                 </svg>
                 Google
               </div>
-              <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={() => onError?.("Kunde inte hämta inloggning från Google.")}
-                useOneTap={false}
-                theme="outline"
-                size="large"
-                type="standard"
-                shape="rectangular"
-                text="continue_with"
-                width="100%"
-                containerProps={{
-                  className: "!absolute !inset-0 !opacity-0 !w-full !min-h-[48px]",
-                }}
-              />
             </div>
           </GoogleOAuthProvider>
         )}

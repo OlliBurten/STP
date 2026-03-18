@@ -2,8 +2,8 @@
 
 **Prod använder nu drivermatch (nodejs).** Om login fortfarande ger fel:
 
-1. **Kontrollera Vercel:** `VITE_API_URL` ska vara `https://nodejs-production-f3b9.up.railway.app`. Redeploy efter ändring.
-2. **Kontrollera Railway:** Projekt **drivermatch**, service **nodejs**. `FRONTEND_URL` ska inkludera transportplattformen.se och drivermatch.se.
+1. **Kontrollera Vercel:** `VITE_API_URL` ska vara `https://expressjs-postgres-production-605b.up.railway.app`. Redeploy efter ändring.
+2. **Kontrollera Railway:** Projekt **drivermatch-clean**, service **expressjs-postgres**. `FRONTEND_URL` ska inkludera transportplattformen.se.
 3. **Databasfel (500):** Om backend returnerar 500 pga. saknade kolumner, kör SQL i Railway → drivermatch → Postgres → Data → Query:
 
 ```sql

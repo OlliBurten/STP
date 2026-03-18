@@ -17,10 +17,10 @@ En enda källa till sanning för hur live och demo ska vara uppsatta. Backend ä
 | Lager | Live | Demo |
 |-------|------|------|
 | **Frontend** | Vercel: drivermatch-20260212 | Vercel: transportplattform-demo |
-| **Domäner** | transportplattformen.se, drivermatch.se | transportplattform-demo.vercel.app |
+| **Domäner** | transportplattformen.se | transportplattform-demo.vercel.app |
 | **Backend** | Railway: drivermatch (nodejs) | Railway: drivermatch-demo |
 | **Backend-URL** | nodejs-production-f3b9.up.railway.app | drivermatch-demo-production.up.railway.app |
-| **Databas** | Postgres i drivermatch-projektet | Postgres i drivermatch-demo-projektet |
+| **Databas** | postgres-yjbv (drivermatch) | Postgres i drivermatch-demo-projektet |
 
 ---
 
@@ -28,10 +28,10 @@ En enda källa till sanning för hur live och demo ska vara uppsatta. Backend ä
 
 | Miljö | Railway-projekt | Service | Postgres |
 |--------|------------------|--------|----------|
-| **Live** | `drivermatch` | `nodejs` | Egen Postgres i samma projekt |
+| **Live** | `drivermatch` | `nodejs` | postgres-yjbv |
 | **Demo** | `drivermatch-demo` | (backend-service) | Egen Postgres i demo-projektet |
 
-**OBS:** Projektet `drivermatch-clean` är **avvecklat**. Prod använder `drivermatch` (nodejs). Se [RAILWAY-OVERSIKT.md](RAILWAY-OVERSIKT.md) vid behov.
+**OBS:** Prod använder **drivermatch** (nodejs) med **postgres-yjbv**. Deploya backend: `cd server && railway link -p drivermatch -s nodejs && railway up`. Se [RAILWAY-OVERSIKT.md](RAILWAY-OVERSIKT.md).
 
 Varje projekt ska ha **sin egen** Postgres-databas. Kopiera aldrig prod `DATABASE_URL` till demo eller tvärtom.
 
@@ -43,14 +43,18 @@ Varje projekt ska ha **sin egen** Postgres-databas. Kopiera aldrig prod `DATABAS
 
 | Variabel | Obligatorisk | Beskrivning |
 |----------|--------------|-------------|
-| `DATABASE_URL` | Ja | Postgres-URL från drivermatch-projektets Postgres. |
+| `DATABASE_URL` | Ja | Postgres-URL. För riktig prod-data: aktivera public networking på postgres-yjbv (drivermatch) och använd dess publik URL. |
 | `JWT_SECRET` | Ja | Lång slumpsträng. Dela aldrig med demo. |
 | `ADMIN_EMAILS` | Ja | Kommaseparerade e-postadresser med admin-rättigheter. |
-| `FRONTEND_URL` | Ja | `https://transportplattformen.se,https://www.transportplattformen.se,https://drivermatch.se` (+ andra domäner om behov). |
+| `FRONTEND_URL` | Ja | `https://transportplattformen.se,https://www.transportplattformen.se`. |
 | `DEPLOYMENT` | Ja | `production`. |
 | `RESEND_API_KEY` | Rekommenderat | För e-post (verifiering, återställning, admin-notiser). |
-| `EMAIL_FROM` | Valfritt | T.ex. `noreply@transportplattformen.se`. |
+| `EMAIL_FROM` | Rekommenderat | T.ex. `noreply@transportplattformen.se`. Status-sidan visar varning om `RESEND_API_KEY` finns men `EMAIL_FROM` saknas. |
 | `AUTO_VERIFY_COMPANIES` | Valfritt | `true` = automatisk företagsverifiering. |
+| `GOOGLE_CLIENT_ID` | Valfritt | Krävs för Google SSO på backend. |
+| `AZURE_CLIENT_ID` | Valfritt | Krävs för Microsoft SSO på backend. |
+| `AZURE_TENANT_ID` | Valfritt | Standard `common`. |
+| `ADMIN_API_KEY` | Rekommenderat | Krävs för interna reminders-endpoints och Vercel cron. |
 | `NODE_ENV` | Sätt av Railway | `production`. |
 
 ### Demo-backend (Railway: drivermatch-demo)
@@ -71,10 +75,12 @@ Varje projekt ska ha **sin egen** Postgres-databas. Kopiera aldrig prod `DATABAS
 
 | App | Vercel-projekt | Domäner | Obligatoriska variabler |
 |-----|----------------|---------|-------------------------|
-| **Live** | drivermatch-20260212 | transportplattformen.se, drivermatch.se | `VITE_API_URL` = `https://nodejs-production-f3b9.up.railway.app` |
+| **Live** | drivermatch-20260212 | transportplattformen.se | `VITE_API_URL` = `https://nodejs-production-f3b9.up.railway.app` |
 | **Demo** | transportplattform-demo | transportplattform-demo.vercel.app | `VITE_API_URL` = demo-backend-URL |
 
-SSO (valfritt): `VITE_GOOGLE_CLIENT_ID`, `VITE_AZURE_CLIENT_ID`. Se [VERCEL-SSO.md](VERCEL-SSO.md).
+SSO (valfritt): `VITE_GOOGLE_CLIENT_ID`, `VITE_AZURE_CLIENT_ID`, `VITE_AZURE_TENANT_ID`. Se [VERCEL-SSO.md](VERCEL-SSO.md).
+
+**Automatiska påminnelser:** Vercel Cron kör `/api/cron-reminders` dagligen kl 08:00 UTC (09:00 svensk vintertid). Kräver `ADMIN_API_KEY` i Vercel (samma som Railway) för att anropa backend.
 
 Varje frontend byggs med sin `VITE_API_URL`. Bygg om (Redeploy) efter ändring.
 
@@ -82,7 +88,7 @@ Varje frontend byggs med sin `VITE_API_URL`. Bygg om (Redeploy) efter ändring.
 
 ## Kontrollera att allt stämmer
 
-1. **Live:** `https://nodejs-production-f3b9.up.railway.app/api/health` → `"deployment": "production"`.
+1. **Live:** `https://nodejs-production-f3b9.up.railway.app/api/health` → `"ok": true`, `"db": "ok"`, `"oauth"` och `"reminders"` visar readiness.
 2. **Demo:** `https://drivermatch-demo-production.up.railway.app/api/health` → `"deployment": "demo"`.
 3. **Databaser:** Prod- och demo-`DATABASE_URL` ska **inte** vara identiska.
 
@@ -98,6 +104,6 @@ Varje frontend byggs med sin `VITE_API_URL`. Bygg om (Redeploy) efter ändring.
 
 ## Snabbreferens
 
-- **Prod:** drivermatch (nodejs), DEPLOYMENT=production, transportplattformen.se/drivermatch.se.
+- **Prod:** drivermatch (nodejs) + postgres-yjbv.
 - **Demo:** drivermatch-demo, DEPLOYMENT=demo, transportplattform-demo.vercel.app.
 - **Health:** `GET /api/health` returnerar `deployment` för verifiering.

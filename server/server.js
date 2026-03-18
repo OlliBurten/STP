@@ -27,8 +27,11 @@ import { adminRouter } from "./routes/admin.js";
 import { reportsRouter } from "./routes/reports.js";
 import { reviewsRouter } from "./routes/reviews.js";
 import { companiesRouter } from "./routes/companies.js";
+import { organizationsRouter } from "./routes/organizations.js";
+import { invitesRouter } from "./routes/invites.js";
 import { notificationsRouter } from "./routes/notifications.js";
 import { feedbackRouter } from "./routes/feedback.js";
+import { isGoogleConfigured, isMicrosoftConfigured } from "./lib/oauth.js";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -103,6 +106,8 @@ app.use("/api/admin", adminRouter);
 app.use("/api/reports", reportsRouter);
 app.use("/api/reviews", reviewsRouter);
 app.use("/api/companies", apiPublicLimiter, companiesRouter);
+app.use("/api/organizations", apiPublicLimiter, organizationsRouter);
+app.use("/api/invites", apiPublicLimiter, invitesRouter);
 app.use("/api/notifications", notificationsRouter);
 app.use("/api/feedback", apiWriteLimiter, feedbackRouter);
 
@@ -127,6 +132,8 @@ app.post("/api/internal/migrate", express.json(), async (req, res) => {
       'ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "companyBransch" TEXT[] DEFAULT \'{}\''
     );
     await prisma.$executeRawUnsafe('ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "companyRegion" TEXT');
+    await prisma.$executeRawUnsafe('ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "lastLoginAt" TIMESTAMPTZ');
+    await prisma.$executeRawUnsafe('ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "lastVerificationReminderAt" TIMESTAMPTZ');
     await prisma.$executeRawUnsafe('ALTER TABLE "Job" ADD COLUMN IF NOT EXISTS "bransch" TEXT');
     res.json({ ok: true, message: "Migration complete" });
   } catch (e) {
@@ -135,23 +142,62 @@ app.post("/api/internal/migrate", express.json(), async (req, res) => {
   }
 });
 
+// Automatiska påminnelser – anropas av Vercel Cron (kräver ADMIN_API_KEY)
+app.post("/api/internal/send-verification-reminders", express.json(), async (req, res) => {
+  const key = req.headers["x-admin-api-key"] || req.body?.adminApiKey;
+  const expected = process.env.ADMIN_API_KEY;
+  if (!expected || key !== expected) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  try {
+    const { runVerificationReminders } = await import("./lib/verificationReminders.js");
+    const { sent, total } = await runVerificationReminders();
+    res.json({ ok: true, sent, total, message: `Skickade ${sent} påminnelser.` });
+  } catch (e) {
+    console.error("[internal/send-verification-reminders]", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.get("/api/health", async (_, res) => {
   let db = "unknown";
+  let dbLatencyMs = null;
   try {
     const { prisma } = await import("./lib/prisma.js");
+    const startedAt = Date.now();
     await prisma.$queryRaw`SELECT 1`;
     db = "ok";
+    dbLatencyMs = Date.now() - startedAt;
   } catch (e) {
     db = "error";
   }
   const emailConfigured = Boolean(process.env.RESEND_API_KEY);
+  const emailFromConfigured = Boolean(process.env.EMAIL_FROM);
   const ok = db === "ok";
   res.status(ok ? 200 : 503).json({
     ok,
     db,
+    dbLatencyMs,
     emailConfigured,
+    emailFromConfigured,
+    oauth: {
+      google: isGoogleConfigured(),
+      microsoft: isMicrosoftConfigured(),
+    },
+    reminders: {
+      ready: Boolean(process.env.ADMIN_API_KEY && process.env.FRONTEND_URL),
+      adminApiKeyConfigured: Boolean(process.env.ADMIN_API_KEY),
+      cooldownHours: 24,
+    },
+    frontend: {
+      configured: corsOriginList.length > 0,
+      allowedOrigins: corsOriginList,
+    },
+    statusCheckUrls,
+    uptimeSec: Math.round(process.uptime()),
     service: "drivermatch-api",
     deployment: DEPLOYMENT,
+    timestamp: new Date().toISOString(),
   });
 });
 

@@ -4,19 +4,46 @@ import { authMiddleware } from "../middleware/auth.js";
 
 export const reviewsRouter = Router();
 
+async function resolveReviewTarget(companyId) {
+  const organization = await prisma.organization.findUnique({
+    where: { id: companyId },
+    select: { id: true, name: true },
+  });
+  if (organization) {
+    return { organizationId: organization.id };
+  }
+
+  const ownerMembership = await prisma.userOrganization.findFirst({
+    where: { userId: companyId, role: "OWNER" },
+    select: { organizationId: true },
+  });
+  if (ownerMembership?.organizationId) {
+    return { organizationId: ownerMembership.organizationId, companyId };
+  }
+
+  return { companyId };
+}
+
 reviewsRouter.get("/company/:companyId/summary", async (req, res, next) => {
   try {
     const companyId = String(req.params.companyId || "");
     if (!companyId) return res.status(400).json({ error: "companyId krävs" });
+    const target = await resolveReviewTarget(companyId);
 
     const [aggregate, recent] = await Promise.all([
       prisma.companyReview.aggregate({
-        where: { companyId, status: "PUBLISHED" },
+        where: {
+          status: "PUBLISHED",
+          ...(target.organizationId ? { organizationId: target.organizationId } : { companyId: target.companyId }),
+        },
         _avg: { rating: true },
         _count: { _all: true },
       }),
       prisma.companyReview.findMany({
-        where: { companyId, status: "PUBLISHED" },
+        where: {
+          status: "PUBLISHED",
+          ...(target.organizationId ? { organizationId: target.organizationId } : { companyId: target.companyId }),
+        },
         orderBy: { createdAt: "desc" },
         take: 5,
         select: {
@@ -112,6 +139,7 @@ reviewsRouter.post("/company", async (req, res, next) => {
     const created = await prisma.companyReview.create({
       data: {
         companyId: conversation.companyId,
+        organizationId: conversation.organizationId || null,
         authorId: req.userId,
         conversationId,
         rating,

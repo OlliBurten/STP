@@ -4,6 +4,7 @@ import {
   listPendingCompanies,
   listReports,
   listUsers,
+  sendVerificationReminders,
   setUserSuspended,
   updateCompanyStatus,
   updateJobStatus,
@@ -97,6 +98,20 @@ export default function Admin() {
       setSuccess(`Företaget uppdaterades till ${status}.`);
     } catch (e) {
       setError(e.message || "Kunde inte uppdatera företag");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSendReminders = async () => {
+    setLoading(true);
+    clearFlash();
+    try {
+      const data = await sendVerificationReminders();
+      await loadUsers();
+      setSuccess(data.message || `Skickade ${data.sent} påminnelser.`);
+    } catch (e) {
+      setError(e.message || "Kunde inte skicka påminnelser");
     } finally {
       setLoading(false);
     }
@@ -330,6 +345,15 @@ export default function Admin() {
           >
             Filtrera användare
           </button>
+          <button
+            type="button"
+            onClick={handleSendReminders}
+            disabled={loading}
+            className="px-4 py-2 rounded-lg bg-amber-600 text-white text-sm disabled:opacity-50 hover:bg-amber-700"
+            title="Skickar verifieringslänk till användare som inte verifierat e-post (max 1 per 24 h per användare)"
+          >
+            Skicka e-postpåminnelser
+          </button>
           <div className="space-y-3">
             {users.map((u) => (
               <div key={u.id} className="border border-slate-200 rounded-lg p-4">
@@ -357,6 +381,7 @@ export default function Admin() {
                   ) : (
                     <span className="text-amber-700">Ej verifierad</span>
                   )} • Skapad: {fmtDate(u.createdAt)}
+                  {u.lastLoginAt ? ` • Senast inloggad: ${fmtDate(u.lastLoginAt)}` : " • Aldrig inloggad"}
                 </p>
                 {u.suspendedAt ? (
                   <p className="text-xs text-red-700">Orsak: {u.suspensionReason || "-"}</p>

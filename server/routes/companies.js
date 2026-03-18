@@ -1,8 +1,13 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
-import { authMiddleware, requireCompany } from "../middleware/auth.js";
+import { authMiddleware, requireCompany, requireCompanyOwner, attachCompanyContext } from "../middleware/auth.js";
 import { validateBody, validateQuery } from "../middleware/validate.js";
-import { companyProfileSchema, companiesSearchQuerySchema } from "../lib/validators.js";
+import {
+  companyProfileSchema,
+  companiesSearchQuerySchema,
+  inviteCreateSchema,
+} from "../lib/validators.js";
+import { createInvite, listInvites, revokeInvite, resolveCompanyOwner } from "../lib/invites.js";
 export const companiesRouter = Router();
 
 function resolveSegment(segment, employment) {
@@ -162,12 +167,47 @@ companiesRouter.get("/:id/public", async (req, res, next) => {
   }
 });
 
-companiesRouter.use(authMiddleware, requireCompany);
+companiesRouter.use(authMiddleware, requireCompany, attachCompanyContext);
 
 companiesRouter.get("/me/profile", async (req, res, next) => {
   try {
+    const resolved = await resolveCompanyOwner(req.userId);
+    if (!resolved) return res.status(404).json({ error: "Företaget hittades inte" });
+
+    if (resolved.organizationId) {
+      const org = await prisma.organization.findUnique({
+        where: { id: resolved.organizationId },
+        select: {
+          id: true,
+          name: true,
+          orgNumber: true,
+          description: true,
+          website: true,
+          location: true,
+          segmentDefaults: true,
+          bransch: true,
+          region: true,
+          status: true,
+        },
+      });
+      if (!org) return res.status(404).json({ error: "Företaget hittades inte" });
+      return res.json({
+        id: org.id,
+        name: org.name,
+        companyName: org.name,
+        companyOrgNumber: org.orgNumber,
+        companyDescription: org.description,
+        companyWebsite: org.website,
+        companyLocation: org.location,
+        companySegmentDefaults: org.segmentDefaults,
+        companyBransch: org.bransch,
+        companyRegion: org.region,
+        companyStatus: org.status,
+      });
+    }
+
     const company = await prisma.user.findUnique({
-      where: { id: req.userId },
+      where: { id: resolved.ownerId },
       select: {
         id: true,
         name: true,
@@ -189,11 +229,112 @@ companiesRouter.get("/me/profile", async (req, res, next) => {
   }
 });
 
-companiesRouter.put("/me/profile", validateBody(companyProfileSchema), async (req, res, next) => {
+/** Team invites – endast ägare */
+companiesRouter.get(
+  "/me/invites",
+  requireCompanyOwner,
+  async (req, res, next) => {
+    try {
+      const ownerId = req.companyOwnerId ?? req.userId;
+      const invites = await listInvites(ownerId);
+      res.json(invites);
+    } catch (e) {
+      next(e);
+    }
+  }
+);
+
+companiesRouter.post(
+  "/me/invites",
+  requireCompanyOwner,
+  validateBody(inviteCreateSchema),
+  async (req, res, next) => {
+    try {
+      const ownerId = req.companyOwnerId ?? req.userId;
+      const owner = await prisma.user.findUnique({
+        where: { id: ownerId },
+        select: { companyName: true, name: true },
+      });
+      const frontendBaseUrl = (process.env.FRONTEND_URL || "").split(",")[0]?.trim().replace(/\/$/, "");
+      const { invite } = await createInvite({
+        email: req.body.email,
+        companyOwnerId: ownerId,
+        invitedById: req.userId,
+        companyName: owner?.companyName || owner?.name || "Företaget",
+        frontendBaseUrl,
+      });
+      res.status(201).json(invite);
+    } catch (e) {
+      if (e.status) return res.status(e.status).json({ error: e.message });
+      next(e);
+    }
+  }
+);
+
+companiesRouter.delete(
+  "/me/invites/:id",
+  requireCompanyOwner,
+  async (req, res, next) => {
+    try {
+      const ownerId = req.companyOwnerId ?? req.userId;
+      await revokeInvite(req.params.id, ownerId);
+      res.status(204).send();
+    } catch (e) {
+      if (e.status) return res.status(e.status).json({ error: e.message });
+      next(e);
+    }
+  }
+);
+
+companiesRouter.put("/me/profile", requireCompanyOwner, validateBody(companyProfileSchema), async (req, res, next) => {
   try {
     const body = req.body;
+
+    if (req.organizationId) {
+      const updated = await prisma.organization.update({
+        where: { id: req.organizationId },
+        data: {
+          name: body.companyName !== undefined ? body.companyName : undefined,
+          description: body.companyDescription !== undefined ? body.companyDescription : undefined,
+          website: body.companyWebsite !== undefined ? body.companyWebsite : undefined,
+          location: body.companyLocation !== undefined ? body.companyLocation : undefined,
+          segmentDefaults: Array.isArray(body.companySegmentDefaults)
+            ? body.companySegmentDefaults
+            : undefined,
+          bransch: Array.isArray(body.companyBransch) ? body.companyBransch : undefined,
+          region: body.companyRegion !== undefined ? body.companyRegion : undefined,
+        },
+        select: {
+          id: true,
+          name: true,
+          orgNumber: true,
+          description: true,
+          website: true,
+          location: true,
+          segmentDefaults: true,
+          bransch: true,
+          region: true,
+          status: true,
+        },
+      });
+      return res.json({
+        id: updated.id,
+        name: updated.name,
+        companyName: updated.name,
+        companyOrgNumber: updated.orgNumber,
+        companyDescription: updated.description,
+        companyWebsite: updated.website,
+        companyLocation: updated.location,
+        companySegmentDefaults: updated.segmentDefaults,
+        companyBransch: updated.bransch,
+        companyRegion: updated.region,
+        companyStatus: updated.status,
+      });
+    }
+
+    const ownerId = req.companyOwnerId ?? req.userId;
     const updated = await prisma.user.update({
-      where: { id: req.userId },
+      where: { id: ownerId },
       data: {
         companyName: body.companyName !== undefined ? body.companyName : undefined,
         companyDescription: body.companyDescription !== undefined ? body.companyDescription : undefined,

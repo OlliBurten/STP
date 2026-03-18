@@ -7,9 +7,9 @@ alwaysApply: true
 
 ## Stack
 
-- **Live:** Vercel drivermatch-20260212 → transportplattformen.se, drivermatch.se. Backend: Railway drivermatch (nodejs) → nodejs-production-f3b9.up.railway.app
+- **Live:** Vercel drivermatch-20260212 → transportplattformen.se. Backend: Railway drivermatch-clean (expressjs-postgres) → expressjs-postgres-production-605b.up.railway.app
 - **Demo:** Vercel transportplattform-demo → transportplattform-demo.vercel.app. Backend: Railway drivermatch-demo
-- **drivermatch-clean:** Avvecklat. Prod använder drivermatch (nodejs).
+- **drivermatch (nodejs):** Servar alphasec, inte vår app. Prod = drivermatch-clean.
 
 ## Dokumentation
 

@@ -98,7 +98,7 @@ curl -X PATCH -H "Content-Type: application/json" \
 
 ### 4. Produktion (Enterprise-struktur)
 
-**Live:** Vercel (drivermatch-20260212) → transportplattformen.se, drivermatch.se. Backend: Railway drivermatch (nodejs).  
+**Live:** Vercel (drivermatch-20260212) → transportplattformen.se. Backend: Railway drivermatch-clean (expressjs-postgres).  
 **Demo:** Vercel (transportplattform-demo) → transportplattform-demo.vercel.app. Backend: Railway drivermatch-demo.
 
 Se [docs/STACK.md](docs/STACK.md) och [docs/INFRASTRUKTUR.md](docs/INFRASTRUKTUR.md) för fullständig översikt.

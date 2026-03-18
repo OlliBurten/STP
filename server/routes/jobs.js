@@ -1,6 +1,13 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
-import { authMiddleware, optionalAuthMiddleware, requireCompany, requireDriver, requireVerifiedCompany } from "../middleware/auth.js";
+import {
+  authMiddleware,
+  optionalAuthMiddleware,
+  requireCompany,
+  requireDriver,
+  requireVerifiedCompany,
+  attachCompanyContext,
+} from "../middleware/auth.js";
 import { matchScore, driverYearsFromExperience } from "../utils/matchScore.js";
 import { notifyRecommendedJobMatch } from "../lib/email.js";
 import { createNotification } from "../lib/notifications.js";
@@ -101,10 +108,11 @@ async function sendDriverMatchAlertsForJob(job) {
   }
 }
 
-jobsRouter.get("/mine", authMiddleware, requireCompany, requireVerifiedCompany, async (req, res, next) => {
+jobsRouter.get("/mine", authMiddleware, requireCompany, attachCompanyContext, requireVerifiedCompany, async (req, res, next) => {
   try {
+    const filter = effectiveJobFilter(req);
     const jobs = await prisma.job.findMany({
-      where: { userId: req.userId },
+      where: filter,
       orderBy: { published: "desc" },
       include: {
         _count: { select: { conversations: true } },
@@ -232,13 +240,28 @@ jobsRouter.get("/saved", authMiddleware, requireDriver, async (req, res, next) =
   }
 });
 
-jobsRouter.get("/:id/applicants", authMiddleware, requireCompany, requireVerifiedCompany, async (req, res, next) => {
+function effectiveCompanyId(req) {
+  return req.companyOwnerId ?? req.userId;
+}
+
+function effectiveJobFilter(req) {
+  const cid = effectiveCompanyId(req);
+  if (req.organizationId) {
+    return { OR: [{ organizationId: req.organizationId }, { userId: cid }] };
+  }
+  return { userId: cid };
+}
+
+jobsRouter.get("/:id/applicants", authMiddleware, requireCompany, attachCompanyContext, requireVerifiedCompany, async (req, res, next) => {
   try {
     const job = await prisma.job.findUnique({
       where: { id: req.params.id },
     });
     if (!job) return res.status(404).json({ error: "Jobbet hittades inte" });
-    if (job.userId !== req.userId) return res.status(403).json({ error: "Ingen åtkomst" });
+    const hasAccess =
+      (job.organizationId && job.organizationId === req.organizationId) ||
+      job.userId === effectiveCompanyId(req);
+    if (!hasAccess) return res.status(403).json({ error: "Ingen åtkomst" });
     const convos = await prisma.conversation.findMany({
       where: { jobId: job.id },
       include: {
@@ -287,14 +310,24 @@ jobsRouter.get("/:id/applicants", authMiddleware, requireCompany, requireVerifie
   }
 });
 
-jobsRouter.get("/:id", optionalAuthMiddleware, async (req, res, next) => {
+jobsRouter.get("/:id", optionalAuthMiddleware, attachCompanyContext, async (req, res, next) => {
   try {
     const job = await prisma.job.findFirst({
       where: {
         id: req.params.id,
         OR: [
           { status: "ACTIVE" },
-          ...(req.userId ? [{ status: { in: ["HIDDEN", "REMOVED"] }, userId: req.userId }] : []),
+          ...(req.userId
+            ? [
+                {
+                  status: { in: ["HIDDEN", "REMOVED"] },
+                  OR: [
+                    { userId: effectiveCompanyId(req) },
+                    ...(req.organizationId ? [{ organizationId: req.organizationId }] : []),
+                  ],
+                },
+              ]
+            : []),
         ],
       },
       include: {
@@ -307,16 +340,31 @@ jobsRouter.get("/:id", optionalAuthMiddleware, async (req, res, next) => {
             companyLocation: true,
           },
         },
+        organization: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            website: true,
+            location: true,
+          },
+        },
       },
     });
     if (!job) return res.status(404).json({ error: "Jobbet hittades inte" });
-    const rawDesc = job.user?.companyDescription && typeof job.user.companyDescription === "string"
-      ? job.user.companyDescription.trim()
-      : "";
+    const companySource = job.organization ?? job.user;
+    const rawDesc = companySource?.description && typeof companySource.description === "string"
+      ? companySource.description.trim()
+      : companySource?.companyDescription && typeof companySource.companyDescription === "string"
+        ? companySource.companyDescription.trim()
+        : "";
     const companyDescriptionShort =
       rawDesc.length > 320 ? rawDesc.slice(0, 320).trim() + "…" : rawDesc || null;
+    const reviewWhere = job.organizationId
+      ? { organizationId: job.organizationId, status: "PUBLISHED" }
+      : { companyId: job.userId, status: "PUBLISHED" };
     const reviewAggregate = await prisma.companyReview.aggregate({
-      where: { companyId: job.userId, status: "PUBLISHED" },
+      where: reviewWhere,
       _avg: { rating: true },
       _count: { _all: true },
     });
@@ -347,8 +395,8 @@ jobsRouter.get("/:id", optionalAuthMiddleware, async (req, res, next) => {
       kollektivavtal: job.kollektivavtal ?? null,
       filledAt: job.filledAt?.toISOString() ?? null,
       companyDescriptionShort,
-      companyWebsite: job.user?.companyWebsite ?? null,
-      companyLocation: job.user?.companyLocation ?? null,
+      companyWebsite: companySource?.website ?? companySource?.companyWebsite ?? null,
+      companyLocation: companySource?.location ?? companySource?.companyLocation ?? null,
       companyReviewAverage: reviewAggregate._avg.rating
         ? Number(reviewAggregate._avg.rating.toFixed(2))
         : null,
@@ -399,7 +447,7 @@ jobsRouter.delete("/:id/save", authMiddleware, requireDriver, async (req, res, n
   }
 });
 
-jobsRouter.post("/", authMiddleware, requireCompany, requireVerifiedCompany, validateBody(createJobSchema), async (req, res, next) => {
+jobsRouter.post("/", authMiddleware, requireCompany, attachCompanyContext, requireVerifiedCompany, validateBody(createJobSchema), async (req, res, next) => {
   try {
     const body = req.body;
     const requirements = Array.isArray(body.requirements)
@@ -408,6 +456,7 @@ jobsRouter.post("/", authMiddleware, requireCompany, requireVerifiedCompany, val
     const job = await prisma.job.create({
       data: {
         userId: req.userId,
+        organizationId: req.organizationId ?? undefined,
         title: body.title,
         company: body.company,
         description: body.description,
@@ -443,13 +492,16 @@ jobsRouter.post("/", authMiddleware, requireCompany, requireVerifiedCompany, val
   }
 });
 
-jobsRouter.patch("/:id", authMiddleware, requireCompany, requireVerifiedCompany, validateBody(patchJobSchema), async (req, res, next) => {
+jobsRouter.patch("/:id", authMiddleware, requireCompany, attachCompanyContext, requireVerifiedCompany, validateBody(patchJobSchema), async (req, res, next) => {
   try {
     const job = await prisma.job.findUnique({
       where: { id: req.params.id },
     });
     if (!job) return res.status(404).json({ error: "Jobbet hittades inte" });
-    if (job.userId !== req.userId) return res.status(403).json({ error: "Ingen åtkomst" });
+    const hasAccess =
+      (job.organizationId && job.organizationId === req.organizationId) ||
+      job.userId === effectiveCompanyId(req);
+    if (!hasAccess) return res.status(403).json({ error: "Ingen åtkomst" });
     const body = req.body;
     const data = {};
     if (body.status !== undefined) data.status = body.status;

@@ -78,21 +78,71 @@ export function requireCompany(req, res, next) {
   next();
 }
 
+/** Attach company context for COMPANY/RECRUITER. Sets req.companyOwnerId, req.organizationId. */
+export async function attachCompanyContext(req, res, next) {
+  if (req.role !== "COMPANY") return next(); // RECRUITER later
+  try {
+    const { resolveCompanyOwner } = await import("../lib/invites.js");
+    const resolved = await resolveCompanyOwner(req.userId);
+    if (resolved) {
+      req.companyOwnerId = resolved.ownerId;
+      if (resolved.organizationId) req.organizationId = resolved.organizationId;
+    }
+    next();
+  } catch (e) {
+    next(e);
+  }
+}
+
+/** Only company owners can invite (not members). Must be used after requireCompany. */
+export async function requireCompanyOwner(req, res, next) {
+  try {
+    const { resolveCompanyOwner } = await import("../lib/invites.js");
+    const resolved = await resolveCompanyOwner(req.userId);
+    if (!resolved?.isOwner) {
+      return res.status(403).json({ error: "Endast företagets ägare kan bjuda in teammedlemmar." });
+    }
+    req.companyOwnerId = resolved.ownerId;
+    if (resolved.organizationId) req.organizationId = resolved.organizationId;
+    next();
+  } catch (e) {
+    next(e);
+  }
+}
+
 export async function requireVerifiedCompany(req, res, next) {
   if (req.role !== "COMPANY") {
     return res.status(403).json({ error: "Endast för företag" });
   }
   try {
-    const user = await prisma.user.findUnique({
-      where: { id: req.userId },
-      select: { companyStatus: true },
-    });
-    if (!user) return res.status(401).json({ error: "Användaren hittades inte" });
-    if (user.companyStatus !== "VERIFIED") {
-      return res.status(403).json({
-        error:
-          "Företagskontot är inte verifierat ännu. Verifiering krävs för att publicera jobb och kontakta förare.",
+    const { resolveCompanyOwner } = await import("../lib/invites.js");
+    const resolved = await resolveCompanyOwner(req.userId);
+    if (!resolved) return res.status(401).json({ error: "Användaren hittades inte" });
+
+    if (resolved.organizationId) {
+      const org = await prisma.organization.findUnique({
+        where: { id: resolved.organizationId },
+        select: { status: true },
       });
+      if (!org) return res.status(401).json({ error: "Företaget hittades inte" });
+      if (org.status !== "VERIFIED") {
+        return res.status(403).json({
+          error:
+            "Företagskontot är inte verifierat ännu. Verifiering krävs för att publicera jobb och kontakta förare.",
+        });
+      }
+    } else {
+      const companyUser = await prisma.user.findUnique({
+        where: { id: resolved.ownerId },
+        select: { companyStatus: true },
+      });
+      if (!companyUser) return res.status(401).json({ error: "Företaget hittades inte" });
+      if (companyUser.companyStatus !== "VERIFIED") {
+        return res.status(403).json({
+          error:
+            "Företagskontot är inte verifierat ännu. Verifiering krävs för att publicera jobb och kontakta förare.",
+        });
+      }
     }
     return next();
   } catch (e) {

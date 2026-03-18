@@ -16,7 +16,7 @@ model User {
   emailVerificationExpiresAt DateTime?
   passwordResetTokenHash String?
   passwordResetExpiresAt DateTime?
-  role         String   // DRIVER | COMPANY
+  role         String   // DRIVER | COMPANY | RECRUITER (COMPANY deprecated, migreras till RECRUITER)
   name         String
   companyName  String?  // for companies
   companyOrgNumber String? @unique // for companies
@@ -47,6 +47,70 @@ model User {
   notifications   Notification[] @relation("NotificationRecipient")
   lastMatchJobEmailAt    DateTime?  // driver: last time we sent "matching jobs" email
   lastMatchDriverEmailAt DateTime?  // company: last time we sent "matching driver" email
+  lastLoginAt            DateTime?  // senaste inloggning (alla metoder)
+  lastVerificationReminderAt DateTime?  // senaste påminnelse om e-postverifiering
+
+  // Team invites (deprecated - använd OrganizationInvite)
+  companyInvites         CompanyInvite[]  @relation("CompanyInvites")
+  companyInvitesSent     CompanyInvite[]  @relation("InviterInvites")
+  companyMembersLed     CompanyMember[]  @relation("CompanyMembersLed")
+  companyMembership     CompanyMember?   @relation("CompanyMembership")
+
+  // Multi-org: rekryterare kan ha flera åkerier
+  userOrganizations     UserOrganization[]
+  organizationInvitesSent OrganizationInvite[] @relation("OrganizationInviter")
+}
+
+model Organization {
+  id               String   @id @default(cuid())
+  name             String
+  orgNumber        String   @unique
+  description      String?
+  website          String?
+  location         String?
+  segmentDefaults  String[] @default([])
+  bransch          String[] @default([])
+  region           String?
+  status           String   @default("PENDING") // PENDING | VERIFIED | REJECTED
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  userOrganizations UserOrganization[]
+  jobs             Job[]
+  conversations    Conversation[]
+  reviews          CompanyReview[] @relation("ReviewOrganization")
+  invites          OrganizationInvite[]
+}
+
+model UserOrganization {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  role           String   @default("MEMBER") // OWNER | ADMIN | MEMBER
+  joinedAt       DateTime @default(now())
+
+  @@unique([userId, organizationId])
+  @@index([organizationId])
+  @@index([userId])
+}
+
+model OrganizationInvite {
+  id             String   @id @default(cuid())
+  email          String
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  invitedById    String
+  inviter        User     @relation("OrganizationInviter", fields: [invitedById], references: [id], onDelete: Cascade)
+  tokenHash      String   @unique
+  expiresAt      DateTime
+  status         String   @default("PENDING")
+  createdAt      DateTime @default(now())
+
+  @@unique([email, organizationId])
+  @@index([tokenHash])
+  @@index([organizationId])
 }
 
 model Notification {
@@ -97,6 +161,8 @@ model Job {
   id          String   @id @default(cuid())
   userId      String
   user        User     @relation("JobOwner", fields: [userId], references: [id], onDelete: Cascade)
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
   title       String
   company     String   // company name
   description String
@@ -147,6 +213,8 @@ model Conversation {
   driver    User     @relation("Driver", fields: [driverId], references: [id], onDelete: Cascade)
   companyId String
   company   User     @relation("Company", fields: [companyId], references: [id], onDelete: Cascade)
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
   jobId     String?
   job       Job?     @relation(fields: [jobId], references: [id], onDelete: SetNull)
   jobTitle  String?
@@ -191,10 +259,42 @@ model Report {
   createdAt DateTime @default(now())
 }
 
+model CompanyInvite {
+  id             String   @id @default(cuid())
+  email          String
+  companyOwnerId String
+  company        User     @relation("CompanyInvites", fields: [companyOwnerId], references: [id], onDelete: Cascade)
+  invitedById    String
+  inviter        User     @relation("InviterInvites", fields: [invitedById], references: [id], onDelete: Cascade)
+  tokenHash      String   @unique
+  expiresAt      DateTime
+  status         String   @default("PENDING") // PENDING | ACCEPTED | EXPIRED
+  createdAt      DateTime @default(now())
+
+  @@unique([email, companyOwnerId])
+  @@index([tokenHash])
+  @@index([companyOwnerId])
+}
+
+model CompanyMember {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation("CompanyMembership", fields: [userId], references: [id], onDelete: Cascade)
+  companyOwnerId String
+  company        User     @relation("CompanyMembersLed", fields: [companyOwnerId], references: [id], onDelete: Cascade)
+  role           String   @default("MEMBER")
+  joinedAt       DateTime @default(now())
+
+  @@unique([userId, companyOwnerId])
+  @@index([companyOwnerId])
+}
+
 model CompanyReview {
   id String @id @default(cuid())
   companyId String
   company User @relation("ReviewCompany", fields: [companyId], references: [id], onDelete: Cascade)
+  organizationId String?
+  organization Organization? @relation("ReviewOrganization", fields: [organizationId], references: [id], onDelete: SetNull)
   authorId String
   author User @relation("ReviewAuthor", fields: [authorId], references: [id], onDelete: Cascade)
   conversationId String

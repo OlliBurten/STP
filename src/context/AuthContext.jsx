@@ -1,23 +1,41 @@
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { apiPost, apiGet } from "../api/client.js";
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
+import { apiPost, AUTH_INVALID_EVENT } from "../api/client.js";
+import { fetchMe } from "../api/auth.js";
 
 const AUTH_STORAGE_KEY = "drivermatch-auth";
 const SESSION_MAX_MS = 24 * 60 * 60 * 1000; // 24h
-const SESSION_INACTIVITY_MS = 60 * 60 * 1000; // 60 min
+const SESSION_INACTIVITY_MS = 15 * 60 * 1000; // 15 min
 const API_URL = (import.meta.env.VITE_API_URL || "").trim().replace(/\/$/, "");
+
+function readStoredAuth() {
+  try {
+    const stored = localStorage.getItem(AUTH_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : null;
+  } catch (_) {
+    return null;
+  }
+}
 
 function normalizeUser(u) {
   if (!u) return null;
+  const rawRole = String(u.role || "").trim().toUpperCase();
+  const normalizedRole =
+    rawRole === "COMPANY" || rawRole === "RECRUITER"
+      ? "recruiter"
+      : "driver";
   return {
     id: u.id,
     email: u.email,
-    role: u.role?.toLowerCase() === "company" ? "company" : "driver",
+    role: normalizedRole,
+    rawRole,
     isAdmin: Boolean(u.isAdmin),
     name: u.name,
     companyName: u.companyName,
     companyOrgNumber: u.companyOrgNumber || null,
     companyStatus: u.companyStatus || "VERIFIED",
     companySegmentDefaults: Array.isArray(u.companySegmentDefaults) ? u.companySegmentDefaults : [],
+    companyOwnerId: u.companyOwnerId || null,
+    organizationId: u.organizationId || null,
     emailVerifiedAt: u.emailVerifiedAt || null,
   };
 }
@@ -25,40 +43,47 @@ function normalizeUser(u) {
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
+  const syncingFromStorageRef = useRef(false);
   const [user, setUser] = useState(() => {
-    try {
-      const stored = localStorage.getItem(AUTH_STORAGE_KEY);
-      if (stored) {
-        const data = JSON.parse(stored);
-        if (data.user) return normalizeUser(data.user);
-      }
-    } catch (_) {}
+    const data = readStoredAuth();
+    if (data?.user) return normalizeUser(data.user);
     return null;
   });
   const [token, setToken] = useState(() => {
-    try {
-      const stored = localStorage.getItem(AUTH_STORAGE_KEY);
-      if (stored) return JSON.parse(stored).token || null;
-    } catch (_) {}
-    return null;
+    return readStoredAuth()?.token || null;
   });
   const [issuedAt, setIssuedAt] = useState(() => {
-    try {
-      const stored = localStorage.getItem(AUTH_STORAGE_KEY);
-      if (stored) return JSON.parse(stored).issuedAt || null;
-    } catch (_) {}
-    return null;
+    return readStoredAuth()?.issuedAt || null;
   });
   const [lastActivity, setLastActivity] = useState(() => {
-    try {
-      const stored = localStorage.getItem(AUTH_STORAGE_KEY);
-      if (stored) return JSON.parse(stored).lastActivity || null;
-    } catch (_) {}
-    return null;
+    return readStoredAuth()?.lastActivity || null;
   });
+
+  const clearAuthState = useCallback(() => {
+    setUser(null);
+    setToken(null);
+    setIssuedAt(null);
+    setLastActivity(null);
+  }, []);
+
+  const applyStoredAuth = useCallback((raw) => {
+    syncingFromStorageRef.current = true;
+    if (!raw?.user || !raw?.token) {
+      clearAuthState();
+      return;
+    }
+    setUser(normalizeUser(raw.user));
+    setToken(raw.token || null);
+    setIssuedAt(raw.issuedAt || null);
+    setLastActivity(raw.lastActivity || null);
+  }, [clearAuthState]);
 
   // Persistera auth + tidsstämplar
   useEffect(() => {
+    if (syncingFromStorageRef.current) {
+      syncingFromStorageRef.current = false;
+      return;
+    }
     if (user && token) {
       const now = Date.now();
       const payload = {
@@ -73,24 +98,51 @@ export function AuthProvider({ children }) {
     }
   }, [user, token, issuedAt, lastActivity]);
 
-  // Vid mount: logga ut om sessionen redan är för gammal
+  // Synka login/logout/activity mellan flera flikar.
+  useEffect(() => {
+    const handleStorage = (event) => {
+      if (event.key !== AUTH_STORAGE_KEY) return;
+      if (!event.newValue) {
+        applyStoredAuth(null);
+        return;
+      }
+      try {
+        applyStoredAuth(JSON.parse(event.newValue));
+      } catch {
+        applyStoredAuth(null);
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, [applyStoredAuth]);
+
+  // Central logout när API markerar sessionen som ogiltig.
+  useEffect(() => {
+    const handleAuthInvalid = () => {
+      clearAuthState();
+    };
+    window.addEventListener(AUTH_INVALID_EVENT, handleAuthInvalid);
+    return () => window.removeEventListener(AUTH_INVALID_EVENT, handleAuthInvalid);
+  }, [clearAuthState]);
+
+  // Delad session-timeout: absolut max 24h och 15 min inaktivitet.
   useEffect(() => {
     if (!user || !token) return;
     const now = Date.now();
-    if (issuedAt && now - issuedAt > SESSION_MAX_MS) {
-      setUser(null);
-      setToken(null);
-      setIssuedAt(null);
-      setLastActivity(null);
+    const absoluteRemaining = issuedAt ? SESSION_MAX_MS - (now - issuedAt) : SESSION_MAX_MS;
+    const inactivityRemaining = lastActivity
+      ? SESSION_INACTIVITY_MS - (now - lastActivity)
+      : SESSION_INACTIVITY_MS;
+    const remaining = Math.min(absoluteRemaining, inactivityRemaining);
+    if (remaining <= 0) {
+      clearAuthState();
       return;
     }
-    if (lastActivity && now - lastActivity > SESSION_INACTIVITY_MS) {
-      setUser(null);
-      setToken(null);
-      setIssuedAt(null);
-      setLastActivity(null);
-    }
-  }, []); // körs bara vid första render
+    const id = window.setTimeout(() => {
+      clearAuthState();
+    }, remaining);
+    return () => window.clearTimeout(id);
+  }, [user, token, issuedAt, lastActivity, clearAuthState]);
 
   const loginWithApi = useCallback(async (email, password) => {
     const data = await apiPost("/api/auth/login", { email, password });
@@ -136,8 +188,9 @@ export function AuthProvider({ children }) {
 
   const loginAsCompany = useCallback(() => {
     setUser({
-      role: "company",
-      name: "Företag",
+      role: "recruiter",
+      rawRole: "COMPANY",
+      name: "Rekryterare",
       companyStatus: "VERIFIED",
       companySegmentDefaults: ["FULLTIME"],
     });
@@ -147,11 +200,8 @@ export function AuthProvider({ children }) {
   }, []);
 
   const logout = useCallback(() => {
-    setUser(null);
-    setToken(null);
-    setIssuedAt(null);
-    setLastActivity(null);
-  }, []);
+    clearAuthState();
+  }, [clearAuthState]);
 
   const loginWithOAuthResponse = useCallback(({ user: u, token: t }) => {
     const normalized = normalizeUser(u);
@@ -163,11 +213,28 @@ export function AuthProvider({ children }) {
     return normalized;
   }, []);
 
-  // Uppdatera senaste aktivitet vid interaktion
+  /** Uppdatera användardata (t.ex. efter createOrganization). */
+  const refreshUser = useCallback(async () => {
+    if (!token) return null;
+    try {
+      const u = await fetchMe();
+      const normalized = normalizeUser(u);
+      setUser(normalized);
+      return normalized;
+    } catch {
+      return null;
+    }
+  }, [token]);
+
+  // Uppdatera senaste aktivitet vid interaktion. Skriv inte på varje pixelrörelse.
   useEffect(() => {
     if (!user || !token) return;
+    let lastMarkedAt = 0;
     const handleActivity = () => {
-      setLastActivity(Date.now());
+      const now = Date.now();
+      if (now - lastMarkedAt < 15000) return;
+      lastMarkedAt = now;
+      setLastActivity(now);
     };
     const events = ["click", "keydown", "mousemove", "scroll", "visibilitychange"];
     events.forEach((ev) => window.addEventListener(ev, handleActivity));
@@ -176,30 +243,9 @@ export function AuthProvider({ children }) {
     };
   }, [user, token]);
 
-  // Auto-logout vid inaktivitet
-  useEffect(() => {
-    if (!user || !token || !lastActivity) return;
-    const now = Date.now();
-    const elapsed = now - lastActivity;
-    const remaining = SESSION_INACTIVITY_MS - elapsed;
-    if (remaining <= 0) {
-      setUser(null);
-      setToken(null);
-      setIssuedAt(null);
-      setLastActivity(null);
-      return;
-    }
-    const id = window.setTimeout(() => {
-      setUser(null);
-      setToken(null);
-      setIssuedAt(null);
-      setLastActivity(null);
-    }, remaining);
-    return () => window.clearTimeout(id);
-  }, [user, token, lastActivity]);
-
   const isDriver = user?.role === "driver";
-  const isCompany = user?.role === "company";
+  const isRecruiter = user?.role === "recruiter";
+  const isCompany = isRecruiter;
   const isAdmin = Boolean(user?.isAdmin);
   const hasApi = !!API_URL;
 
@@ -209,6 +255,7 @@ export function AuthProvider({ children }) {
         user,
         token,
         isDriver,
+        isRecruiter,
         isCompany,
         isAdmin,
         hasApi,
@@ -218,6 +265,7 @@ export function AuthProvider({ children }) {
         loginWithOAuthResponse,
         registerWithApi,
         logout,
+        refreshUser,
       }}
     >
       {children}

@@ -32,6 +32,7 @@ import CompanyProfile from "./pages/CompanyProfile";
 import CompanyPublicProfile from "./pages/CompanyPublicProfile";
 import DriverOnboardingWizard from "./pages/DriverOnboardingWizard";
 import CompanyOnboardingWizard from "./pages/CompanyOnboardingWizard";
+import InviteAccept from "./pages/InviteAccept";
 import AkerierSearch from "./pages/AkerierSearch";
 import Branschinsikter from "./pages/Branschinsikter";
 import Kompetenslaget2025 from "./pages/Kompetenslaget2025";
@@ -58,6 +59,7 @@ function AppLayout() {
                   <Route path="/branschinsikter/kompetenslaget-2025" element={<Kompetenslaget2025 />} />
                   <Route path="/kontakt" element={<Kontakt />} />
                   <Route path="/login" element={<Login />} />
+                  <Route path="/invite/accept" element={<InviteAccept />} />
                   <Route path="/verifiera-email" element={<VerifyEmail />} />
                   <Route path="/aterstall-losenord" element={<ResetPassword />} />
                   <Route path="/anvandarvillkor" element={<Terms />} />

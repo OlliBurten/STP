@@ -8,9 +8,10 @@ import { fetchMyCompanyProfile } from "../api/companies.js";
 import { CheckIcon, CircleOutlineIcon } from "../components/Icons";
 
 export default function ForCompanies() {
-  const { user, isCompany, hasApi } = useAuth();
+  const { user, isCompany, hasApi, isAdmin } = useAuth();
   const { conversations, companyUnreadConversationCount = 0 } = useChat();
   const isVerifiedCompany = !isCompany || user?.companyStatus === "VERIFIED";
+  const isTeamMember = Boolean(user?.companyOwnerId && user.companyOwnerId !== user?.id);
   const [jobCount, setJobCount] = useState(0);
   const [reviewSummary, setReviewSummary] = useState(null);
   const [companyProfile, setCompanyProfile] = useState(null);
@@ -69,12 +70,19 @@ export default function ForCompanies() {
     setHideOnboarding(true);
   };
 
+  const userHasSegments = Array.isArray(user?.companySegmentDefaults) && user.companySegmentDefaults.length > 0;
+  const profileHasSegments =
+    companyProfile &&
+    Array.isArray(companyProfile.companySegmentDefaults) &&
+    companyProfile.companySegmentDefaults.length > 0;
   if (
     hasApi &&
     isCompany &&
+    !isTeamMember &&
+    !isAdmin &&
+    !userHasSegments &&
     companyProfile &&
-    (!Array.isArray(companyProfile.companySegmentDefaults) ||
-      companyProfile.companySegmentDefaults.length === 0)
+    !profileHasSegments
   ) {
     return <Navigate to="/foretag/onboarding" replace />;
   }
@@ -84,9 +92,9 @@ export default function ForCompanies() {
       <section className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-sm text-slate-500">Företagsdashboard</p>
+            <p className="text-sm text-slate-500">Rekryterardashboard</p>
             <h1 className="mt-1 text-2xl sm:text-3xl font-bold text-slate-900">
-              {companyProfile?.companyName || user?.companyName || "Företagskonto"}
+              {companyProfile?.companyName || user?.companyName || "Rekryterarkonto"}
             </h1>
             <p className="mt-2 text-slate-600">
               Hantera jobb, kandidater, meddelanden och företagsprofil på ett ställe.
@@ -170,7 +178,7 @@ export default function ForCompanies() {
           <div className="mb-6 rounded-xl border border-indigo-200 bg-indigo-50 p-5">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <p className="text-base font-semibold text-indigo-900">Kom igång som åkeri</p>
+                <p className="text-base font-semibold text-indigo-900">Kom igång som rekryterare</p>
                 <p className="mt-1 text-sm text-indigo-800">
                   Följ stegen nedan för att snabbt komma igång med rekrytering.
                 </p>

@@ -1,4 +1,6 @@
 const API_URL = (import.meta.env.VITE_API_URL || "").trim().replace(/\/$/, "");
+const AUTH_STORAGE_KEY = "drivermatch-auth";
+export const AUTH_INVALID_EVENT = "drivermatch:auth-invalid";
 
 /** Används för felmeddelanden (visar vilken backend som anropas). */
 export function getApiBaseUrl() {
@@ -14,6 +16,15 @@ function getToken() {
     }
   } catch (_) {}
   return null;
+}
+
+export function clearStoredAuth() {
+  try {
+    localStorage.removeItem(AUTH_STORAGE_KEY);
+  } catch (_) {}
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent(AUTH_INVALID_EVENT));
+  }
 }
 
 export async function api(method, path, body, options = {}) {
@@ -49,7 +60,13 @@ export async function api(method, path, body, options = {}) {
   } catch {
     throw new Error(res.status === 502 ? "Servern svarar inte" : text || "Något gick fel");
   }
-  if (!res.ok) throw new Error(data?.error || data?.message || `HTTP ${res.status}`);
+  if (!res.ok) {
+    const message = data?.error || data?.message || `HTTP ${res.status}`;
+    if (res.status === 401) {
+      clearStoredAuth();
+    }
+    throw new Error(message);
+  }
   return data;
 }
 

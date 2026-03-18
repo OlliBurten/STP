@@ -1,0 +1,25 @@
+---
+description: Vercel CLI-access, deploy och miljövariabler
+alwaysApply: true
+---
+
+# Vercel och deploy (DriverMatch)
+
+## Du har tillgång till Vercel
+
+Projektet är kopplat till Vercel och du kan köra `vercel` / `npx vercel` i terminalen. Använd dessa kommandon vid behov – behöver inte be användaren göra det manuellt.
+
+## När miljövariabler behöver sättas
+
+Använd `vercel env add <NAMN> <miljö>` för Production/Preview:
+
+```bash
+vercel env add VITE_GOOGLE_CLIENT_ID production
+vercel env ls   # lista befintliga
+```
+
+Värden kan hämtas från `.env` (lokalt): `grep VITE_GOOGLE_CLIENT_ID .env | cut -d= -f2-`
+
+## Efter env-ändring
+
+Kör `vercel --prod` för att deploya till produktion med nya variabler.

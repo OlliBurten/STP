@@ -1,18 +1,29 @@
 import { useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { fetchMyCompanyProfile, updateMyCompanyProfile } from "../api/companies.js";
+import { fetchMyOrganizations, createOrganization } from "../api/organizations.js";
 import { segmentOptions } from "../data/segments";
+import { transportSegmentGroups } from "../data/bransch.js";
+import { regions } from "../data/mockJobs.js";
 import { useAuth } from "../context/AuthContext";
 import { trackCompanyOnboardingComplete } from "../utils/segmentMetrics";
 
 export default function CompanyOnboardingWizard() {
-  const { hasApi } = useAuth();
+  const { hasApi, refreshUser } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [profile, setProfile] = useState(null);
   const [defaults, setDefaults] = useState([]);
+  const [needsFirstCompany, setNeedsFirstCompany] = useState(false);
+  const [firstCompany, setFirstCompany] = useState({
+    name: "",
+    orgNumber: "",
+    region: "",
+    segmentDefaults: [],
+    bransch: [],
+  });
 
   useEffect(() => {
     if (!hasApi) {
@@ -20,25 +31,70 @@ export default function CompanyOnboardingWizard() {
       return;
     }
     setLoading(true);
-    fetchMyCompanyProfile()
-      .then((data) => {
-        setProfile(data);
-        setDefaults(Array.isArray(data?.companySegmentDefaults) ? data.companySegmentDefaults : []);
+    Promise.all([fetchMyCompanyProfile().catch(() => null), fetchMyOrganizations().catch(() => [])])
+      .then(([profileData, orgs]) => {
+        setProfile(profileData);
+        if (profileData) {
+          setDefaults(Array.isArray(profileData?.companySegmentDefaults) ? profileData.companySegmentDefaults : []);
+        }
+        setNeedsFirstCompany(!profileData && (!orgs || orgs.length === 0));
       })
       .catch(() => setProfile(null))
       .finally(() => setLoading(false));
   }, [hasApi]);
 
   if (!hasApi) return <Navigate to="/foretag" replace />;
-  if (!loading && !profile) return <Navigate to="/foretag" replace />;
   if (!loading && profile && (profile.companySegmentDefaults || []).length > 0) {
     return <Navigate to="/foretag" replace />;
   }
+  if (!loading && !needsFirstCompany && !profile) return <Navigate to="/foretag" replace />;
 
   const toggleDefault = (segment) => {
     setDefaults((prev) =>
       prev.includes(segment) ? prev.filter((s) => s !== segment) : [...prev, segment]
     );
+  };
+
+  const toggleFirstCompanySegment = (segment) => {
+    setFirstCompany((prev) => ({
+      ...prev,
+      segmentDefaults: prev.segmentDefaults.includes(segment)
+        ? prev.segmentDefaults.filter((s) => s !== segment)
+        : [...prev.segmentDefaults, segment],
+    }));
+  };
+
+  const saveFirstCompany = async () => {
+    if (!firstCompany.name.trim()) {
+      setError("Företagsnamn krävs");
+      return;
+    }
+    if (!firstCompany.orgNumber.trim()) {
+      setError("Organisationsnummer krävs");
+      return;
+    }
+    if (firstCompany.segmentDefaults.length === 0) {
+      setError("Välj minst ett transportsegment.");
+      return;
+    }
+    setError("");
+    setSaving(true);
+    try {
+      await createOrganization({
+        name: firstCompany.name.trim(),
+        orgNumber: firstCompany.orgNumber.trim(),
+        region: firstCompany.region || undefined,
+        segmentDefaults: firstCompany.segmentDefaults,
+        bransch: firstCompany.bransch.length > 0 ? firstCompany.bransch : undefined,
+      });
+      await refreshUser?.();
+      trackCompanyOnboardingComplete(firstCompany.segmentDefaults);
+      navigate("/foretag", { replace: true });
+    } catch (e) {
+      setError(e.message || "Kunde inte lägga till företag.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const save = async () => {
@@ -67,10 +123,90 @@ export default function CompanyOnboardingWizard() {
     }
   };
 
+  if (needsFirstCompany) {
+    return (
+      <main className="max-w-2xl mx-auto px-4 sm:px-6 py-10">
+        <section className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8 space-y-6">
+          <p className="text-sm text-slate-500">Rekryterar-onboarding</p>
+          <h1 className="text-2xl font-bold text-slate-900">Lägg till ditt första åkeri</h1>
+          <p className="text-slate-600">
+            Skapa ditt första åkeri för att kunna publicera jobb och söka förare.
+          </p>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Företagsnamn *</label>
+            <input
+              value={firstCompany.name}
+              onChange={(e) => setFirstCompany((p) => ({ ...p, name: e.target.value }))}
+              placeholder="Nordic Transport AB"
+              className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)]"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Organisationsnummer *</label>
+            <input
+              value={firstCompany.orgNumber}
+              onChange={(e) => setFirstCompany((p) => ({ ...p, orgNumber: e.target.value }))}
+              placeholder="556123-4567"
+              className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)]"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Region</label>
+            <select
+              value={firstCompany.region}
+              onChange={(e) => setFirstCompany((p) => ({ ...p, region: e.target.value }))}
+              className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)]"
+            >
+              <option value="">Välj region</option>
+              {regions.map((r) => (
+                <option key={r} value={r}>{r}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">Transportsegment *</label>
+            <p className="text-xs text-slate-500 mb-2">Välj minst ett. Standardval för nya jobb.</p>
+            <div className="space-y-3">
+              {segmentOptions.map((segment) => {
+                const active = firstCompany.segmentDefaults.includes(segment.value);
+                return (
+                  <button
+                    key={segment.value}
+                    type="button"
+                    onClick={() => toggleFirstCompanySegment(segment.value)}
+                    className={`w-full text-left rounded-xl border p-4 ${
+                      active
+                        ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5"
+                        : "border-slate-200 hover:bg-slate-50"
+                    }`}
+                  >
+                    <p className="font-semibold text-slate-900">{segment.label}</p>
+                    <p className="text-sm text-slate-600">{segment.description}</p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          {error ? <p className="text-sm text-red-600">{error}</p> : null}
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={saveFirstCompany}
+              disabled={saving}
+              className="px-5 py-2 rounded-lg bg-[var(--color-primary)] text-white font-medium disabled:opacity-50"
+            >
+              {saving ? "Sparar..." : "Lägg till och fortsätt"}
+            </button>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main className="max-w-2xl mx-auto px-4 sm:px-6 py-10">
       <section className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8">
-        <p className="text-sm text-slate-500">Företags-onboarding</p>
+        <p className="text-sm text-slate-500">Rekryterar-onboarding</p>
         <h1 className="mt-1 text-2xl font-bold text-slate-900">Vilka segment rekryterar ni för?</h1>
         <p className="mt-2 text-slate-600">Standardval när ni publicerar jobb. Går att ändra per annons.</p>
         <div className="mt-6 grid gap-3">

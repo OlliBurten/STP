@@ -541,6 +541,8 @@ async function main() {
         primarySegment: d.primarySegment,
         secondarySegments: d.secondarySegments,
         visibleToCompanies: true,
+        showEmailToCompanies: false,
+        showPhoneToCompanies: false,
         regionsWilling: d.regionsWilling,
         experience: d.experience.length ? d.experience : undefined,
         isGymnasieelev: d.isGymnasieelev ?? false,

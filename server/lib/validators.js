@@ -71,9 +71,10 @@ export const registerSchema = z
       if (data.role !== "COMPANY") return true;
       const name = (data.companyName || "").trim();
       const org = data.companyOrgNumber;
+      if (name.length === 0 && !org) return true; // Rekryterare utan företag – lägger till i onboarding
       return name.length > 0 && isValidSwedishOrgNumber(org);
     },
-    { message: "Företagsnamn och giltigt organisationsnummer krävs för företag", path: ["companyOrgNumber"] }
+    { message: "Företagsnamn och giltigt organisationsnummer krävs (eller lämna tomt och lägg till i nästa steg)", path: ["companyOrgNumber"] }
   );
 
 export const loginSchema = z.object({
@@ -150,6 +151,26 @@ export const patchJobSchema = z.object({
   kollektivavtal: z.boolean().optional().nullable(),
 });
 
+export const createOrganizationSchema = z
+  .object({
+    name: z.string().min(1, "Företagsnamn krävs").max(200),
+    orgNumber: z.string().min(1, "Organisationsnummer krävs").max(20),
+    description: z.string().max(10000).optional(),
+    website: z
+      .string()
+      .max(500)
+      .optional()
+      .refine((v) => !v || v === "" || /^https?:\/\//i.test(v), "Ogiltig webbadress"),
+    location: z.string().max(200).optional(),
+    segmentDefaults: z.array(z.string().max(50)).optional(),
+    bransch: z.array(z.enum(BRANSCH_VALUES)).optional(),
+    region: z.string().max(100).optional().nullable(),
+  })
+  .refine((data) => isValidSwedishOrgNumber(data.orgNumber), {
+    message: "Ogiltigt organisationsnummer",
+    path: ["orgNumber"],
+  });
+
 export const companyProfileSchema = z.object({
   name: z.string().max(200).optional(),
   companyName: z.string().max(200).optional(),
@@ -191,3 +212,32 @@ export const companiesSearchQuerySchema = z.object({
 export const jobsListQuerySchema = z.object({
   bransch: z.string().max(50).optional(),
 });
+
+/** Create company invite */
+export const inviteCreateSchema = z.object({
+  email: z.string().min(1, "E-post krävs").email("Ogiltig e-postadress").max(255),
+});
+
+/** Validate invite token (query param) */
+export const inviteValidateQuerySchema = z.object({
+  token: z.string().min(1, "Token krävs").max(500),
+});
+
+/** Accept invite – login existing user or register new */
+export const inviteAcceptSchema = z
+  .object({
+    token: z.string().min(1, "Token krävs").max(500),
+    action: z.enum(["login", "register"]),
+    email: z.string().email("Ogiltig e-post").max(255).optional(),
+    password: z.string().min(1).max(200).optional(),
+    name: z.string().min(1, "Namn krävs").max(200).optional(),
+    verificationBaseUrl: z.string().url().max(500).optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.action === "login") return data.email && data.password;
+      if (data.action === "register") return data.email && data.password && data.name;
+      return false;
+    },
+    { message: "E-post, lösenord och (vid registrering) namn krävs", path: ["email"] }
+  );

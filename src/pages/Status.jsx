@@ -72,46 +72,132 @@ function CheckRow({ label, url, check, lastAt, refreshTrigger }) {
 export default function Status() {
   const [lastChecks, setLastChecks] = useState({});
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [statusTargets, setStatusTargets] = useState([]);
 
   const setLast = (key) => setLastChecks((p) => ({ ...p, [key]: Date.now() }));
+
+  const fetchHealth = useCallback(async () => {
+    if (!API_URL) return null;
+    const response = await fetch(`${API_URL}/api/health`, { signal: AbortSignal.timeout(10000) });
+    const data = await response.json().catch(() => ({}));
+    if (Array.isArray(data?.statusCheckUrls)) {
+      setStatusTargets(data.statusCheckUrls);
+    }
+    return { response, data };
+  }, []);
 
   const checkBackend = useCallback(async () => {
     if (!API_URL) return { ok: false, message: "VITE_API_URL inte satt" };
     try {
-      const r = await fetch(`${API_URL}/api/health`, { signal: AbortSignal.timeout(10000) });
-      const data = await r.json().catch(() => ({}));
+      const result = await fetchHealth();
+      const r = result?.response;
+      const data = result?.data || {};
       setLast("backend");
-      return { ok: r.ok && data?.ok, db: data?.db, emailConfigured: data?.emailConfigured, status: r.status };
+      return {
+        ok: r?.ok && data?.ok,
+        status: r?.status,
+        message: data?.ok
+          ? `Uppe (${data?.deployment || "okänd miljö"}, uptime ${Math.round((data?.uptimeSec || 0) / 60)} min)`
+          : "API eller databas svarar inte korrekt",
+      };
     } catch (e) {
       setLast("backend");
       return { ok: false, message: e.message || "Nådde inte API" };
     }
-  }, []);
+  }, [fetchHealth]);
+
+  const checkDatabase = useCallback(async () => {
+    if (!API_URL) return { ok: false, message: "API ej konfigurerad" };
+    try {
+      const result = await fetchHealth();
+      const data = result?.data || {};
+      setLast("database");
+      return {
+        ok: data?.db === "ok",
+        message:
+          data?.db === "ok"
+            ? `Ansluten (${data?.dbLatencyMs ?? "?"} ms)`
+            : "Databasen svarar inte",
+      };
+    } catch (e) {
+      setLast("database");
+      return { ok: false, message: e.message || "Kunde inte kontrollera DB" };
+    }
+  }, [fetchHealth]);
 
   const checkEmailConfig = useCallback(async () => {
     if (!API_URL) return { ok: false, message: "API ej konfigurerad" };
     try {
-      const r = await fetch(`${API_URL}/api/health`, { signal: AbortSignal.timeout(10000) });
-      const data = await r.json().catch(() => ({}));
+      const result = await fetchHealth();
+      const data = result?.data || {};
       setLast("email");
       const configured = data?.emailConfigured === true;
       return {
         ok: configured,
-        message: configured ? "Konfigurerad (verifieringsmail skickas)" : "Ej konfigurerad – användare får inga verifieringsmail. Sätt RESEND_API_KEY på backend.",
+        message: configured
+          ? data?.emailFromConfigured
+            ? "Konfigurerad och redo"
+            : "RESEND_API_KEY finns, men EMAIL_FROM saknas"
+          : "Ej konfigurerad – användare får inga verifieringsmail. Sätt RESEND_API_KEY på backend.",
       };
     } catch (e) {
       setLast("email");
       return { ok: false, message: e.message || "Kunde inte kontrollera" };
     }
-  }, []);
+  }, [fetchHealth]);
 
-  // Kontrollera webbadress från webbläsaren (så vi ser om användaren når sajten)
+  const checkOAuthProvider = useCallback(
+    (provider) => async () => {
+      if (!API_URL) return { ok: false, message: "API ej konfigurerad" };
+      try {
+        const result = await fetchHealth();
+        const data = result?.data || {};
+        const enabled = data?.oauth?.[provider] === true;
+        setLast(`oauth-${provider}`);
+        return {
+          ok: enabled,
+          message: enabled ? "Konfigurerad" : "Saknar miljövariabler",
+        };
+      } catch (e) {
+        setLast(`oauth-${provider}`);
+        return { ok: false, message: e.message || "Kunde inte kontrollera" };
+      }
+    },
+    [fetchHealth]
+  );
+
+  const checkReminders = useCallback(async () => {
+    if (!API_URL) return { ok: false, message: "API ej konfigurerad" };
+    try {
+      const result = await fetchHealth();
+      const data = result?.data || {};
+      setLast("reminders");
+      const ready = data?.reminders?.ready === true;
+      return {
+        ok: ready,
+        message: ready
+          ? `Redo (${data?.reminders?.cooldownHours || 24}h cooldown)`
+          : "ADMIN_API_KEY eller FRONTEND_URL saknas för reminder-flödet",
+      };
+    } catch (e) {
+      setLast("reminders");
+      return { ok: false, message: e.message || "Kunde inte kontrollera" };
+    }
+  }, [fetchHealth]);
+
   const checkUrl = useCallback((url) => async () => {
     if (!url) return { ok: false, message: "URL saknas" };
     try {
-      const r = await fetch(url, { method: "GET", signal: AbortSignal.timeout(8000) });
+      const r = await fetch(`${API_URL}/api/health/check?url=${encodeURIComponent(url)}`, {
+        signal: AbortSignal.timeout(10000),
+      });
+      const data = await r.json().catch(() => ({}));
       setLast(url);
-      return { ok: r.ok, status: r.status, message: r.ok ? "Uppe" : `HTTP ${r.status}` };
+      return {
+        ok: data?.ok === true,
+        status: data?.status,
+        message: data?.ok ? "Uppe" : data?.message || `HTTP ${data?.status || 0}`,
+      };
     } catch (e) {
       setLast(url);
       const msg = e.name === "AbortError" ? "Timeout" : (e.message || "Nådde inte webbplatsen");
@@ -133,7 +219,7 @@ export default function Status() {
     <div className="max-w-4xl mx-auto px-4 py-8">
       <PageHeader
         title="Status tjänster"
-        description="Översikt över live, demo och backend. Uppdateras automatiskt var 60:e sekund."
+        description="Operativ översikt över API, databas, e-post, SSO, reminders och publika miljöer."
       />
       <p className="mb-6 text-sm text-slate-600">
         Backend och e-post kontrolleras via API:t. För bevakning av live- och demo-webbplatser, sätt upp
@@ -169,6 +255,14 @@ export default function Status() {
               refreshTrigger={refreshTrigger}
             />
             <CheckRow
+              key="database"
+              label="Databas"
+              url={API_URL ? `${API_URL}/api/health` : "–"}
+              check={checkDatabase}
+              lastAt={lastChecks.database}
+              refreshTrigger={refreshTrigger}
+            />
+            <CheckRow
               key="email"
               label="E-post (verifiering)"
               url={API_URL ? "Resend (RESEND_API_KEY)" : "–"}
@@ -176,6 +270,40 @@ export default function Status() {
               lastAt={lastChecks.email}
               refreshTrigger={refreshTrigger}
             />
+            <CheckRow
+              key="oauth-google"
+              label="Google SSO"
+              url={API_URL ? `${API_URL}/api/auth/oauth-status` : "–"}
+              check={checkOAuthProvider("google")}
+              lastAt={lastChecks["oauth-google"]}
+              refreshTrigger={refreshTrigger}
+            />
+            <CheckRow
+              key="oauth-microsoft"
+              label="Microsoft SSO"
+              url={API_URL ? `${API_URL}/api/auth/oauth-status` : "–"}
+              check={checkOAuthProvider("microsoft")}
+              lastAt={lastChecks["oauth-microsoft"]}
+              refreshTrigger={refreshTrigger}
+            />
+            <CheckRow
+              key="reminders"
+              label="Verifieringspåminnelser"
+              url={API_URL ? `${API_URL}/api/internal/send-verification-reminders` : "–"}
+              check={checkReminders}
+              lastAt={lastChecks.reminders}
+              refreshTrigger={refreshTrigger}
+            />
+            {statusTargets.map((url) => (
+              <CheckRow
+                key={url}
+                label={url.includes("demo") ? "Demo-webb" : "Live-webb"}
+                url={url}
+                check={checkUrl(url)}
+                lastAt={lastChecks[url]}
+                refreshTrigger={refreshTrigger}
+              />
+            ))}
           </tbody>
         </table>
       </div>

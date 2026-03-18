@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchMyCompanyProfile, updateMyCompanyProfile } from "../api/companies.js";
+import { listCompanyInvites, createCompanyInvite, revokeCompanyInvite } from "../api/invites.js";
 import { useAuth } from "../context/AuthContext";
 import { segmentOptions } from "../data/segments";
 import { transportSegmentGroups, branschValues } from "../data/bransch.js";
@@ -8,12 +9,19 @@ import { regions } from "../data/mockJobs.js";
 import LoadingBlock from "../components/LoadingBlock";
 
 export default function CompanyProfile() {
-  const { hasApi } = useAuth();
+  const { hasApi, user } = useAuth();
   const [profile, setProfile] = useState(null);
   const [draft, setDraft] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const isOwner = !user?.companyOwnerId;
+
+  // Team invites (owners only)
+  const [invites, setInvites] = useState([]);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [inviteError, setInviteError] = useState("");
 
   useEffect(() => {
     if (!hasApi) {
@@ -28,6 +36,13 @@ export default function CompanyProfile() {
       })
       .finally(() => setLoading(false));
   }, [hasApi]);
+
+  useEffect(() => {
+    if (!hasApi || !isOwner) return;
+    listCompanyInvites()
+      .then(setInvites)
+      .catch(() => setInvites([]));
+  }, [hasApi, isOwner]);
 
   const changed = useMemo(
     () => JSON.stringify(profile || {}) !== JSON.stringify(draft || {}),
@@ -239,6 +254,90 @@ export default function CompanyProfile() {
           </button>
         </div>
       </section>
+
+      {isOwner && (
+        <section className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8 space-y-5">
+          <h2 className="text-xl font-bold text-slate-900">Bjud in teammedlemmar</h2>
+          <p className="text-sm text-slate-600">
+            Bjud in kollegor som ska kunna logga in, publicera jobb och söka förare tillsammans med er. De behöver bara skapa ett konto – ingen företags-onboarding krävs.
+          </p>
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              if (!inviteEmail.trim()) return;
+              setInviteError("");
+              setInviteLoading(true);
+              try {
+                await createCompanyInvite(inviteEmail.trim());
+                setInviteEmail("");
+                setInvites(await listCompanyInvites());
+                setMessage("Inbjudan skickad.");
+                setTimeout(() => setMessage(""), 2500);
+              } catch (err) {
+                setInviteError(err.message || "Kunde inte skicka inbjudan");
+              } finally {
+                setInviteLoading(false);
+              }
+            }}
+            className="flex flex-col sm:flex-row gap-3"
+          >
+            <input
+              type="email"
+              value={inviteEmail}
+              onChange={(e) => setInviteEmail(e.target.value)}
+              placeholder="kollega@foretag.se"
+              className="flex-1 px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none"
+              disabled={inviteLoading}
+            />
+            <button
+              type="submit"
+              disabled={inviteLoading || !inviteEmail.trim()}
+              className="px-6 py-2 rounded-xl bg-[var(--color-primary)] text-white font-semibold hover:bg-[var(--color-primary-light)] disabled:opacity-50 whitespace-nowrap"
+            >
+              {inviteLoading ? "Skickar..." : "Skicka inbjudan"}
+            </button>
+          </form>
+          {inviteError && (
+            <div className="p-3 rounded-lg bg-red-50 text-red-800 text-sm">{inviteError}</div>
+          )}
+          {invites.length > 0 && (
+            <div className="mt-4">
+              <h3 className="text-sm font-medium text-slate-700 mb-2">Skickade inbjudan</h3>
+              <ul className="space-y-2">
+                {invites.map((inv) => (
+                  <li
+                    key={inv.id}
+                    className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0"
+                  >
+                    <span className="text-slate-700">
+                      {inv.email}
+                      <span className="ml-2 text-xs text-slate-500">
+                        {inv.status === "PENDING" ? "Väntar" : inv.status === "ACCEPTED" ? "Accepterad" : "Återkallad"}
+                      </span>
+                    </span>
+                    {inv.status === "PENDING" && (
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          try {
+                            await revokeCompanyInvite(inv.id);
+                            setInvites(await listCompanyInvites());
+                          } catch (err) {
+                            setInviteError(err.message);
+                          }
+                        }}
+                        className="text-sm text-red-600 hover:underline"
+                      >
+                        Återkalla
+                      </button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </section>
+      )}
     </main>
   );
 }

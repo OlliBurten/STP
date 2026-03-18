@@ -8,9 +8,11 @@ const ProfileContext = createContext(null);
 export function ProfileProvider({ children }) {
   const { hasApi, isDriver, token, user } = useAuth();
   const [profile, setProfile] = useState(defaultProfile);
+  const [profileLoaded, setProfileLoaded] = useState(!hasApi);
 
   useEffect(() => {
     if (hasApi) return;
+    setProfileLoaded(true);
     try {
       const stored = localStorage.getItem(PROFILE_STORAGE_KEY);
       if (stored) {
@@ -56,6 +58,7 @@ export function ProfileProvider({ children }) {
 
   useEffect(() => {
     if (!hasApi || !isDriver || !token) return;
+    setProfileLoaded(false);
     let active = true;
     apiFetchProfile()
       .then((data) => {
@@ -77,9 +80,11 @@ export function ProfileProvider({ children }) {
           physicalWorkOk: data?.physicalWorkOk ?? null,
           soloWorkOk: data?.soloWorkOk ?? null,
         });
+        setProfileLoaded(true);
       })
       .catch(() => {
         if (!active) return;
+        setProfileLoaded(true);
         setProfile((prev) => ({
           ...defaultProfile,
           ...prev,
@@ -165,6 +170,7 @@ export function ProfileProvider({ children }) {
     <ProfileContext.Provider
       value={{
         profile,
+        profileLoaded,
         updateProfile,
         addExperience,
         updateExperience,

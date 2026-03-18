@@ -3,6 +3,7 @@ import { prisma } from "../lib/prisma.js";
 import { authMiddleware, requireAdmin } from "../middleware/auth.js";
 import { createNotification } from "../lib/notifications.js";
 import { notifyCompanyApproved } from "../lib/email.js";
+import { runVerificationReminders } from "../lib/verificationReminders.js";
 
 export const adminRouter = Router();
 
@@ -10,19 +11,59 @@ adminRouter.use(authMiddleware, requireAdmin);
 
 adminRouter.get("/companies/pending", async (req, res, next) => {
   try {
-    const list = await prisma.user.findMany({
-      where: { role: "COMPANY", companyStatus: "PENDING" },
-      orderBy: { createdAt: "asc" },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        companyName: true,
-        companyOrgNumber: true,
-        companyStatus: true,
-        createdAt: true,
-      },
-    });
+    const [legacyUsers, organizations] = await Promise.all([
+      prisma.user.findMany({
+        where: { role: "COMPANY", companyStatus: "PENDING" },
+        orderBy: { createdAt: "asc" },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          companyName: true,
+          companyOrgNumber: true,
+          companyStatus: true,
+          createdAt: true,
+        },
+      }),
+      prisma.organization.findMany({
+        where: { status: "PENDING" },
+        orderBy: { createdAt: "asc" },
+        select: {
+          id: true,
+          name: true,
+          orgNumber: true,
+          status: true,
+          createdAt: true,
+          members: {
+            where: { role: "OWNER" },
+            take: 1,
+            select: {
+              user: {
+                select: {
+                  id: true,
+                  email: true,
+                  name: true,
+                  emailVerifiedAt: true,
+                },
+              },
+            },
+          },
+        },
+      }),
+    ]);
+
+    const list = [
+      ...legacyUsers,
+      ...organizations.map((org) => ({
+        id: org.id,
+        email: org.members[0]?.user?.email || null,
+        name: org.members[0]?.user?.name || null,
+        companyName: org.name,
+        companyOrgNumber: org.orgNumber,
+        companyStatus: org.status,
+        createdAt: org.createdAt,
+      })),
+    ].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
     res.json(
       list.map((c) => ({
         ...c,
@@ -40,40 +81,109 @@ adminRouter.patch("/companies/:id/status", async (req, res, next) => {
     if (!["PENDING", "VERIFIED", "REJECTED"].includes(status)) {
       return res.status(400).json({ error: "status måste vara PENDING, VERIFIED eller REJECTED" });
     }
-    const company = await prisma.user.findUnique({
+    const organization = await prisma.organization.findUnique({
       where: { id: req.params.id },
-      select: { id: true, role: true },
-    });
-    if (!company || company.role !== "COMPANY") {
-      return res.status(404).json({ error: "Företaget hittades inte" });
-    }
-    const current = await prisma.user.findUnique({
-      where: { id: company.id },
-      select: { emailVerifiedAt: true },
-    });
-    if (status === "VERIFIED" && !current?.emailVerifiedAt) {
-      return res.status(400).json({
-        error: "Företaget kan inte verifieras innan e-postadressen är verifierad",
-      });
-    }
-    const updated = await prisma.user.update({
-      where: { id: company.id },
-      data: { companyStatus: status },
       select: {
         id: true,
-        email: true,
         name: true,
-        companyName: true,
-        companyOrgNumber: true,
-        companyStatus: true,
-        emailVerifiedAt: true,
+        orgNumber: true,
+        status: true,
+        members: {
+          where: { role: "OWNER" },
+          take: 1,
+          select: {
+            user: {
+              select: {
+                id: true,
+                email: true,
+                name: true,
+                emailVerifiedAt: true,
+              },
+            },
+          },
+        },
       },
     });
 
+    let updated;
+    if (organization) {
+      const owner = organization.members[0]?.user;
+      if (status === "VERIFIED" && !owner?.emailVerifiedAt) {
+        return res.status(400).json({
+          error: "Företaget kan inte verifieras innan ägarens e-postadress är verifierad",
+        });
+      }
+      const orgUpdated = await prisma.organization.update({
+        where: { id: organization.id },
+        data: { status },
+        select: {
+          id: true,
+          name: true,
+          orgNumber: true,
+          status: true,
+          members: {
+            where: { role: "OWNER" },
+            take: 1,
+            select: {
+              user: {
+                select: {
+                  id: true,
+                  email: true,
+                  name: true,
+                  emailVerifiedAt: true,
+                },
+              },
+            },
+          },
+        },
+      });
+      updated = {
+        id: orgUpdated.id,
+        email: orgUpdated.members[0]?.user?.email || null,
+        name: orgUpdated.members[0]?.user?.name || null,
+        companyName: orgUpdated.name,
+        companyOrgNumber: orgUpdated.orgNumber,
+        companyStatus: orgUpdated.status,
+        emailVerifiedAt: orgUpdated.members[0]?.user?.emailVerifiedAt ?? null,
+      };
+    } else {
+      const company = await prisma.user.findUnique({
+        where: { id: req.params.id },
+        select: { id: true, role: true },
+      });
+      if (!company || company.role !== "COMPANY") {
+        return res.status(404).json({ error: "Företaget hittades inte" });
+      }
+      const current = await prisma.user.findUnique({
+        where: { id: company.id },
+        select: { emailVerifiedAt: true },
+      });
+      if (status === "VERIFIED" && !current?.emailVerifiedAt) {
+        return res.status(400).json({
+          error: "Företaget kan inte verifieras innan e-postadressen är verifierad",
+        });
+      }
+      updated = await prisma.user.update({
+        where: { id: company.id },
+        data: { companyStatus: status },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          companyName: true,
+          companyOrgNumber: true,
+          companyStatus: true,
+          emailVerifiedAt: true,
+        },
+      });
+    }
+
     if (status === "VERIFIED") {
       try {
+        const notificationRecipientId =
+          organization?.members[0]?.user?.id || updated.id;
         await createNotification({
-          userId: updated.id,
+          userId: notificationRecipientId,
           type: "COMPANY_APPROVED",
           title: "Ert företag är godkänt",
           body: "Ni kan nu publicera jobb och kontakta förare. Logga in för att komma igång.",
@@ -144,6 +254,7 @@ adminRouter.get("/users", async (req, res, next) => {
         warningCount: true,
         lastWarningReason: true,
         lastWarnedAt: true,
+        lastLoginAt: true,
         createdAt: true,
       },
     });
@@ -154,6 +265,7 @@ adminRouter.get("/users", async (req, res, next) => {
         emailVerifiedAt: u.emailVerifiedAt?.toISOString() ?? null,
         suspendedAt: u.suspendedAt?.toISOString() ?? null,
         lastWarnedAt: u.lastWarnedAt?.toISOString() ?? null,
+        lastLoginAt: u.lastLoginAt?.toISOString() ?? null,
         createdAt: u.createdAt.toISOString(),
       }))
     );
@@ -182,6 +294,15 @@ adminRouter.patch("/users/:id/verify-email", async (req, res, next) => {
       emailVerifiedAt: updated.emailVerifiedAt?.toISOString() ?? null,
       message: "E-post markerad som verifierad",
     });
+  } catch (e) {
+    next(e);
+  }
+});
+
+adminRouter.post("/users/send-verification-reminders", async (req, res, next) => {
+  try {
+    const { sent, total } = await runVerificationReminders();
+    res.json({ sent, total, message: `Skickade ${sent} påminnelser till användare som inte verifierat e-post.` });
   } catch (e) {
     next(e);
   }

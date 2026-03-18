@@ -1,4 +1,4 @@
-import { apiGet, apiPatch } from "./client.js";
+import { apiGet, apiPatch, apiPost } from "./client.js";
 
 function toQuery(params = {}) {
   const entries = Object.entries(params).filter(([, v]) => v != null && String(v).trim() !== "");
@@ -22,6 +22,11 @@ export function listUsers(filters) {
 
 export function verifyUserEmail(id) {
   return apiPatch(`/api/admin/users/${id}/verify-email`, {});
+}
+
+/** Skickar verifieringspåminnelser till användare utan verifierad e-post. */
+export function sendVerificationReminders() {
+  return apiPost("/api/admin/users/send-verification-reminders", {});
 }
 
 export function setUserSuspended(id, suspended, reason) {

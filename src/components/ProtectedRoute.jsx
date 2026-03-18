@@ -2,20 +2,26 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function ProtectedRoute({ children, requiredRole }) {
-  const { user, isDriver, isCompany, isAdmin } = useAuth();
+  const { user, isDriver, isCompany, isRecruiter, isAdmin } = useAuth();
   const location = useLocation();
 
   const hasAccess =
     requiredRole === "driver"
       ? isDriver
-      : requiredRole === "company"
-        ? isCompany
+      : requiredRole === "company" || requiredRole === "recruiter"
+        ? (requiredRole === "recruiter" ? isRecruiter : isCompany)
         : requiredRole === "admin"
           ? isAdmin
           : false;
 
   if (!hasAccess) {
-    return <Navigate to="/login" state={{ from: location.pathname, requiredRole }} replace />;
+    return (
+      <Navigate
+        to="/login"
+        state={{ from: `${location.pathname}${location.search}${location.hash}`, requiredRole }}
+        replace
+      />
+    );
   }
 
   return children;

@@ -83,7 +83,7 @@ const FAQ_ITEMS = [
 const HERO_ROTATING_WORDS = ["Förare", "Åkeri", "Matchning"];
 
 export default function Home() {
-  const { user, isDriver, isCompany } = useAuth();
+  const { user, isDriver, isCompany, isAdmin } = useAuth();
   const [faqOpen, setFaqOpen] = useState(null);
   const [heroWordIndex, setHeroWordIndex] = useState(0);
 
@@ -109,7 +109,7 @@ export default function Home() {
 
   if (user) {
     if (isCompany) {
-      if (!Array.isArray(user.companySegmentDefaults) || user.companySegmentDefaults.length === 0) {
+      if (!isAdmin && (!Array.isArray(user.companySegmentDefaults) || user.companySegmentDefaults.length === 0)) {
         return <Navigate to="/foretag/onboarding" replace />;
       }
       return <Navigate to="/foretag" replace />;

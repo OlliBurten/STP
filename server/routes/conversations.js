@@ -1,6 +1,11 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
-import { authMiddleware, requireCompany, requireVerifiedCompany } from "../middleware/auth.js";
+import {
+  authMiddleware,
+  requireCompany,
+  requireVerifiedCompany,
+  attachCompanyContext,
+} from "../middleware/auth.js";
 import { notifyDriverSelected, notifyNewApplication, notifyNewMessage } from "../lib/email.js";
 import { createNotification } from "../lib/notifications.js";
 import { validateBody } from "../middleware/validate.js";
@@ -8,7 +13,34 @@ import { createConversationSchema, sendMessageSchema } from "../lib/validators.j
 
 export const conversationsRouter = Router();
 
-conversationsRouter.use(authMiddleware);
+conversationsRouter.use(authMiddleware, attachCompanyContext);
+
+function effectiveCompanyId(req) {
+  return req.companyOwnerId ?? req.userId;
+}
+
+function effectiveConversationWhere(req) {
+  return req.organizationId
+    ? { organizationId: req.organizationId }
+    : { companyId: effectiveCompanyId(req), organizationId: null };
+}
+
+async function listCompanyRecipientIds({ companyId, organizationId }) {
+  if (organizationId) {
+    const members = await prisma.userOrganization.findMany({
+      where: { organizationId },
+      select: { userId: true },
+    });
+    return [...new Set(members.map((member) => member.userId).filter(Boolean))];
+  }
+
+  const members = await prisma.companyMember.findMany({
+    where: { companyOwnerId: companyId },
+    select: { userId: true },
+  });
+
+  return [...new Set([companyId, ...members.map((member) => member.userId)].filter(Boolean))];
+}
 
 async function requireVerifiedIfCompany(req, res, next) {
   if (req.role !== "COMPANY") return next();
@@ -21,6 +53,7 @@ function toConversation(c) {
     driverId: c.driverId,
     driverName: c.driver.name,
     companyId: c.companyId,
+    organizationId: c.organizationId ?? null,
     companyName: c.company.companyName || c.company.name,
     jobId: c.jobId,
     jobTitle: c.jobTitle,
@@ -41,7 +74,7 @@ conversationsRouter.get("/", requireVerifiedIfCompany, async (req, res, next) =>
   try {
     const isDriver = req.role === "DRIVER";
     const conversations = await prisma.conversation.findMany({
-      where: isDriver ? { driverId: req.userId } : { companyId: req.userId },
+      where: isDriver ? { driverId: req.userId } : effectiveConversationWhere(req),
       orderBy: { updatedAt: "desc" },
       include: {
         driver: { select: { name: true } },
@@ -66,10 +99,13 @@ conversationsRouter.get("/:id", requireVerifiedIfCompany, async (req, res, next)
       },
     });
     if (!c) return res.status(404).json({ error: "Konversation hittades inte" });
-    if (c.driverId !== req.userId && c.companyId !== req.userId) {
+    const hasCompanyAccess = req.organizationId
+      ? c.organizationId === req.organizationId
+      : c.companyId === effectiveCompanyId(req) && !c.organizationId;
+    if (c.driverId !== req.userId && !hasCompanyAccess) {
       return res.status(403).json({ error: "Ingen åtkomst" });
     }
-    if (req.role === "COMPANY" && c.companyId === req.userId && !c.readByCompanyAt) {
+    if (req.role === "COMPANY" && hasCompanyAccess && !c.readByCompanyAt) {
       await prisma.conversation.update({
         where: { id: c.id },
         data: { readByCompanyAt: new Date() },
@@ -87,23 +123,27 @@ conversationsRouter.post("/", requireVerifiedIfCompany, validateBody(createConve
     const { driverId, companyId, jobId, jobTitle, initialMessage } = req.body;
     const isDriver = req.role === "DRIVER";
     const actualDriverId = isDriver ? req.userId : driverId;
-    const actualCompanyId = isDriver ? companyId : req.userId;
+    let actualCompanyId = isDriver ? companyId : effectiveCompanyId(req);
+    let actualOrganizationId = isDriver ? null : req.organizationId ?? null;
     if (!actualDriverId || !actualCompanyId) {
       return res.status(400).json({ error: "driverId och companyId krävs" });
     }
     if (isDriver && jobId) {
       const job = await prisma.job.findUnique({
         where: { id: jobId },
-        select: { id: true, status: true },
+        select: { id: true, status: true, userId: true, organizationId: true },
       });
       if (!job || job.status !== "ACTIVE") {
         return res.status(400).json({ error: "Jobbet är inte tillgängligt för ansökan" });
       }
+      actualCompanyId = job.userId;
+      actualOrganizationId = job.organizationId ?? null;
     }
     let conv = await prisma.conversation.findFirst({
       where: {
         driverId: actualDriverId,
         companyId: actualCompanyId,
+        organizationId: actualOrganizationId,
         jobId: jobId || null,
       },
     });
@@ -112,6 +152,7 @@ conversationsRouter.post("/", requireVerifiedIfCompany, validateBody(createConve
         data: {
           driverId: actualDriverId,
           companyId: actualCompanyId,
+          organizationId: actualOrganizationId,
           jobId: jobId || null,
           jobTitle: jobTitle || null,
         },
@@ -130,7 +171,7 @@ conversationsRouter.post("/", requireVerifiedIfCompany, validateBody(createConve
       try {
         const job = await prisma.job.findUnique({
           where: { id: jobId },
-          select: { contact: true, userId: true },
+          select: { contact: true, userId: true, organizationId: true },
         });
         const driver = await prisma.user.findUnique({
           where: { id: req.userId },
@@ -143,18 +184,24 @@ conversationsRouter.post("/", requireVerifiedIfCompany, validateBody(createConve
             jobTitle,
           });
         }
-        if (job?.userId) {
-          await createNotification({
-            userId: job.userId,
-            type: "APPLICATION",
-            title: "Ny ansökan",
-            body: `${driver?.name || "En förare"} har ansökt till "${jobTitle}".`,
-            link: `/foretag/meddelanden/${conv.id}`,
-            relatedConversationId: conv.id,
-            relatedJobId: jobId,
-            actorName: driver?.name || null,
-          }).catch((e) => console.error("Create notification application:", e));
-        }
+        const recipientIds = await listCompanyRecipientIds({
+          companyId: job?.userId || actualCompanyId,
+          organizationId: job?.organizationId || actualOrganizationId,
+        });
+        await Promise.all(
+          recipientIds.map((recipientId) =>
+            createNotification({
+              userId: recipientId,
+              type: "APPLICATION",
+              title: "Ny ansökan",
+              body: `${driver?.name || "En förare"} har ansökt till "${jobTitle}".`,
+              link: `/foretag/meddelanden/${conv.id}`,
+              relatedConversationId: conv.id,
+              relatedJobId: jobId,
+              actorName: driver?.name || null,
+            }).catch((e) => console.error("Create notification application:", e))
+          )
+        );
       } catch (e) {
         console.error("Notify new application:", e);
       }
@@ -180,7 +227,10 @@ conversationsRouter.patch("/:id/reject", requireCompany, requireVerifiedCompany,
       include: { driver: { select: { name: true } }, company: { select: { companyName: true, name: true } } },
     });
     if (!conv) return res.status(404).json({ error: "Konversation hittades inte" });
-    if (conv.companyId !== req.userId) return res.status(403).json({ error: "Ingen åtkomst" });
+    const hasCompanyAccess = req.organizationId
+      ? conv.organizationId === req.organizationId
+      : conv.companyId === effectiveCompanyId(req) && !conv.organizationId;
+    if (!hasCompanyAccess) return res.status(403).json({ error: "Ingen åtkomst" });
     if (conv.rejectedByCompanyAt) return res.status(400).json({ error: "Redan avvisad" });
     const updated = await prisma.conversation.update({
       where: { id: conv.id },
@@ -203,7 +253,10 @@ conversationsRouter.patch("/:id/select", requireCompany, requireVerifiedCompany,
       where: { id: req.params.id },
     });
     if (!conv) return res.status(404).json({ error: "Konversation hittades inte" });
-    if (conv.companyId !== req.userId) return res.status(403).json({ error: "Ingen åtkomst" });
+    const hasCompanyAccess = req.organizationId
+      ? conv.organizationId === req.organizationId
+      : conv.companyId === effectiveCompanyId(req) && !conv.organizationId;
+    if (!hasCompanyAccess) return res.status(403).json({ error: "Ingen åtkomst" });
     const updated = await prisma.conversation.update({
       where: { id: conv.id },
       data: { selectedByCompanyAt: new Date() },
@@ -247,7 +300,10 @@ conversationsRouter.post("/:id/messages", requireVerifiedIfCompany, validateBody
       },
     });
     if (!conv) return res.status(404).json({ error: "Konversation hittades inte" });
-    if (conv.driverId !== req.userId && conv.companyId !== req.userId) {
+    const hasCompanyAccess = req.organizationId
+      ? conv.organizationId === req.organizationId
+      : conv.companyId === effectiveCompanyId(req) && !conv.organizationId;
+    if (conv.driverId !== req.userId && !hasCompanyAccess) {
       return res.status(403).json({ error: "Ingen åtkomst" });
     }
     const senderRole = req.role === "DRIVER" ? "driver" : "company";
@@ -265,24 +321,34 @@ conversationsRouter.post("/:id/messages", requireVerifiedIfCompany, validateBody
         ? conv.driver?.name || "Chaufför"
         : conv.company?.companyName || conv.company?.name || "Företag";
     const recipientEmail = req.role === "DRIVER" ? conv.company?.email : conv.driver?.email;
-    const recipientId = req.role === "DRIVER" ? conv.companyId : conv.driverId;
+    const recipientIds =
+      req.role === "DRIVER"
+        ? await listCompanyRecipientIds({
+            companyId: conv.companyId,
+            organizationId: conv.organizationId ?? null,
+          })
+        : [conv.driverId];
     const messagesPath = req.role === "DRIVER" ? "/foretag/meddelanden" : "/meddelanden";
     if (recipientEmail && preview) {
       notifyNewMessage({ toEmail: recipientEmail, fromName, preview }).catch((e) =>
         console.error("Notify new message:", e)
       );
     }
-    if (recipientId) {
-      await createNotification({
-        userId: recipientId,
-        type: "MESSAGE",
-        title: "Nytt meddelande",
-        body: preview || "Nytt meddelande",
-        link: `${messagesPath}/${conv.id}`,
-        relatedConversationId: conv.id,
-        actorName: fromName,
-      }).catch((e) => console.error("Create notification message:", e));
-    }
+    await Promise.all(
+      recipientIds
+        .filter(Boolean)
+        .map((recipientId) =>
+          createNotification({
+            userId: recipientId,
+            type: "MESSAGE",
+            title: "Nytt meddelande",
+            body: preview || "Nytt meddelande",
+            link: `${messagesPath}/${conv.id}`,
+            relatedConversationId: conv.id,
+            actorName: fromName,
+          }).catch((e) => console.error("Create notification message:", e))
+        )
+    );
     res.status(201).json({
       id: message.id,
       sender: message.senderRole,

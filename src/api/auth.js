@@ -1,5 +1,14 @@
 import { apiGet, apiPost } from "./client.js";
 
+/** Hämta aktuell inloggad användare (augmenterad med org/segmentDefaults). */
+export async function fetchMe() {
+  return apiGet("/api/auth/me");
+}
+
+export async function fetchOAuthStatus() {
+  return apiGet("/api/auth/oauth-status");
+}
+
 export async function verifyEmail(token) {
   return apiGet(`/api/auth/verify-email?token=${encodeURIComponent(token)}`);
 }

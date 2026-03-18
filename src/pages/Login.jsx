@@ -65,14 +65,6 @@ export default function Login() {
           setError("Namn krävs");
           return;
         }
-        if (role === "company" && !companyName.trim()) {
-          setError("Företagsnamn krävs");
-          return;
-        }
-        if (role === "company" && !companyOrgNumber.trim()) {
-          setError("Organisationsnummer krävs");
-          return;
-        }
         if (!acceptTerms) {
           setError("Du måste godkänna användarvillkoren och integritetspolicyn.");
           return;
@@ -82,8 +74,8 @@ export default function Login() {
           password,
           role,
           name: name.trim(),
-          companyName: companyName.trim() || undefined,
-          companyOrgNumber: role === "company" ? companyOrgNumber.trim() : undefined,
+          companyName: role === "company" && companyName?.trim() ? companyName.trim() : undefined,
+          companyOrgNumber: role === "company" && companyOrgNumber?.trim() ? companyOrgNumber.trim() : undefined,
         });
         logout();
         if (result?.emailVerificationSent === false) {
@@ -98,7 +90,12 @@ export default function Login() {
         return;
       } else {
         const loggedInUser = await loginWithApi(email.trim(), password);
-        if (loggedInUser.role === "company") {
+        if (loggedInUser.isAdmin) {
+          // Admin ska inte behöva gå igenom onboardingvillkor.
+          navigate(from, { replace: true });
+          return;
+        }
+        if (loggedInUser.role === "recruiter") {
           if (
             !Array.isArray(loggedInUser.companySegmentDefaults) ||
             loggedInUser.companySegmentDefaults.length === 0
@@ -182,7 +179,7 @@ export default function Login() {
               <BuildingIcon className="w-10 h-10 text-[var(--color-primary)]" />
               <div>
                 <h2 className="font-semibold text-slate-900 group-hover:text-[var(--color-primary)]">
-                  Företag
+                  Rekryterare
                 </h2>
                 <p className="text-sm text-slate-600">Publicera jobb, sök chaufförer</p>
               </div>
@@ -204,11 +201,11 @@ export default function Login() {
         </h1>
         <p className="mt-3 text-slate-600">
           {oauthPickingRole
-            ? "Chaufför eller företag"
+            ? "Chaufför eller rekryterare"
             : mode === "login"
               ? "Ange e-post och lösenord."
               : mode === "register"
-                ? "Skapa konto som chaufför eller företag."
+                ? "Skapa konto som chaufför eller rekryterare."
                 : "Ange e-post så skickar vi en återställningslänk."}
         </p>
       </div>
@@ -242,7 +239,7 @@ export default function Login() {
                 className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none bg-white"
               >
                 <option value="driver">Chaufför</option>
-                <option value="company">Företag</option>
+                <option value="company">Rekryterare</option>
               </select>
             </div>
             <div>
@@ -260,36 +257,9 @@ export default function Login() {
               />
             </div>
             {role === "company" && (
-              <>
-                <div>
-                  <label htmlFor="companyName" className="block text-sm font-medium text-slate-700 mb-1">
-                    Företagsnamn *
-                  </label>
-                  <input
-                    id="companyName"
-                    type="text"
-                    required
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
-                    className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none"
-                    placeholder="Nordic Transport AB"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="companyOrgNumber" className="block text-sm font-medium text-slate-700 mb-1">
-                    Organisationsnummer *
-                  </label>
-                  <input
-                    id="companyOrgNumber"
-                    type="text"
-                    required
-                    value={companyOrgNumber}
-                    onChange={(e) => setCompanyOrgNumber(e.target.value)}
-                    className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none"
-                    placeholder="556123-4567"
-                  />
-                </div>
-              </>
+              <p className="text-sm text-slate-600">
+                Du lägger till åkeri/företag i nästa steg efter registrering.
+              </p>
             )}
           </>
         )}
@@ -378,13 +348,19 @@ export default function Login() {
                 setOauthPickingRole(false);
                 loginWithOAuthResponse(data);
                 const u = data.user;
-                const isCompany = String(u?.role || "").toUpperCase() === "COMPANY";
-                const target = isCompany
+                const isAdmin = Boolean(u?.isAdmin);
+                if (isAdmin && (from === "/admin" || from?.startsWith("/admin"))) {
+                  setTimeout(() => navigate("/admin", { replace: true }), 0);
+                  return;
+                }
+                const isRecruiter =
+                  String(u?.role || "").toUpperCase() === "COMPANY" ||
+                  String(u?.role || "").toUpperCase() === "RECRUITER";
+                const target = isRecruiter
                   ? (!Array.isArray(u?.companySegmentDefaults) || u?.companySegmentDefaults?.length === 0)
                     ? "/foretag/onboarding"
                     : "/foretag"
                   : from || "/";
-                // Vänta på att auth-state och localStorage hinner sparas innan navigation (undviker race).
                 setTimeout(() => navigate(target, { replace: true }), 0);
               }}
               onError={(msg) => {

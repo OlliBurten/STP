@@ -143,6 +143,34 @@ export async function notifyAdminNewRegistration({ role, name, email, companyNam
   }
 }
 
+/**
+ * Skickar inbjudan till teammedlem.
+ * @param {object} params
+ * @param {string} params.to - Mottagarens e-post
+ * @param {string} params.companyName - Företagets namn
+ * @param {string} params.inviteToken - Raw token (för länk)
+ * @param {string} [params.frontendBaseUrl] - Base URL (t.ex. https://transportplattformen.se)
+ */
+export async function sendInviteEmail({ to, companyName, inviteToken, frontendBaseUrl }) {
+  const base = (frontendBaseUrl || process.env.FRONTEND_URL?.split(",")[0]?.trim().replace(/\/$/, "") || "").trim();
+  const inviteLink = base ? `${base}/invite/accept?token=${encodeURIComponent(inviteToken)}` : "";
+
+  const text =
+    `Hej,\n\n` +
+    `Du är inbjuden till ${companyName} på Sveriges Transportplattform.\n\n` +
+    (inviteLink
+      ? `Klicka på länken för att acceptera och skapa ett konto (eller logga in om du redan har ett):\n\n${inviteLink}\n\n`
+      : "Logga in på plattformen och använd inbjudningslänken du fått.\n\n") +
+    `Länken gäller i 7 dagar.\n\n` +
+    `Med vänliga hälsningar,\nSveriges Transportplattform`;
+
+  await sendEmail({
+    to,
+    subject: `Inbjudan till ${companyName} – Sveriges Transportplattform`,
+    text,
+  });
+}
+
 /** Skickar användarfeedback till admin (för in-app feedback-formulär). */
 export async function sendFeedbackToAdmin({ message, senderEmail }) {
   const adminEmails = String(process.env.ADMIN_EMAILS || "")

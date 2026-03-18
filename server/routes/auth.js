@@ -22,8 +22,68 @@ import {
   isMicrosoftConfigured,
 } from "../lib/oauth.js";
 import { shouldAutoVerifyCompany } from "../lib/companyVerify.js";
+import { authMiddleware } from "../middleware/auth.js";
 
 export const authRouter = Router();
+
+/** Augment user object for company/recruiter (Organization or legacy). */
+async function augmentCompanyMemberUser(user) {
+  if (!user || user.role !== "COMPANY") return user;
+  const uo = await prisma.userOrganization.findFirst({
+    where: { userId: user.id },
+    include: { organization: true },
+  });
+  if (uo) {
+    const org = uo.organization;
+    return {
+      ...user,
+      companyName: org.name ?? user.companyName,
+      companyOrgNumber: org.orgNumber ?? user.companyOrgNumber,
+      companyStatus: org.status ?? user.companyStatus,
+      companySegmentDefaults: org.segmentDefaults ?? user.companySegmentDefaults ?? [],
+      organizationId: org.id,
+    };
+  }
+  const membership = await prisma.companyMember.findUnique({
+    where: { userId: user.id },
+    select: { companyOwnerId: true },
+  });
+  if (!membership) return user;
+  const ownerUo = await prisma.userOrganization.findFirst({
+    where: { userId: membership.companyOwnerId, role: "OWNER" },
+    include: { organization: true },
+  });
+  if (ownerUo) {
+    const org = ownerUo.organization;
+    return {
+      ...user,
+      companyName: org.name ?? user.companyName,
+      companyOrgNumber: org.orgNumber ?? user.companyOrgNumber,
+      companyStatus: org.status ?? user.companyStatus,
+      companySegmentDefaults: org.segmentDefaults ?? user.companySegmentDefaults ?? [],
+      companyOwnerId: membership.companyOwnerId,
+      organizationId: org.id,
+    };
+  }
+  const owner = await prisma.user.findUnique({
+    where: { id: membership.companyOwnerId },
+    select: {
+      companyName: true,
+      companyOrgNumber: true,
+      companyStatus: true,
+      companySegmentDefaults: true,
+    },
+  });
+  if (!owner) return user;
+  return {
+    ...user,
+    companyName: owner.companyName ?? user.companyName,
+    companyOrgNumber: owner.companyOrgNumber ?? user.companyOrgNumber,
+    companyStatus: owner.companyStatus ?? user.companyStatus,
+    companySegmentDefaults: owner.companySegmentDefaults ?? user.companySegmentDefaults ?? [],
+    companyOwnerId: membership.companyOwnerId,
+  };
+}
 const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-in-production";
 const OAUTH_COMPLETE_PURPOSE = "oauth-complete";
 const EMAIL_VERIFY_TTL_MS = 24 * 60 * 60 * 1000; // 24h
@@ -75,7 +135,7 @@ function resolveVerificationBaseUrl(provided) {
   return match ? base : frontendBaseUrl();
 }
 
-async function issueEmailVerification(userId, email, baseUrlOverride) {
+export async function issueEmailVerification(userId, email, baseUrlOverride) {
   const baseUrl = baseUrlOverride ? resolveVerificationBaseUrl(baseUrlOverride) : frontendBaseUrl();
   const raw = createRawToken();
   const expiresAt = new Date(Date.now() + EMAIL_VERIFY_TTL_MS);
@@ -99,12 +159,16 @@ authRouter.post("/register", validateBody(registerSchema), async (req, res, next
   try {
     const { email, password, role, name, companyName, companyOrgNumber, verificationBaseUrl } = req.body;
     const normalizedOrgNumber = normalizeOrgNumber(companyOrgNumber);
-    if (role === "COMPANY") {
-      const existingOrg = await prisma.user.findFirst({
+    if (role === "COMPANY" && normalizedOrgNumber) {
+      const existingUser = await prisma.user.findFirst({
         where: { companyOrgNumber: normalizedOrgNumber },
         select: { id: true },
       });
-      if (existingOrg) {
+      const existingOrg = await prisma.organization.findFirst({
+        where: { orgNumber: normalizedOrgNumber },
+        select: { id: true },
+      });
+      if (existingUser || existingOrg) {
         return res.status(409).json({ error: "Organisationsnumret används redan" });
       }
     }
@@ -114,8 +178,8 @@ authRouter.post("/register", validateBody(registerSchema), async (req, res, next
     }
     const passwordHash = await bcrypt.hash(password, 10);
     const autoVerify = process.env.AUTO_VERIFY_COMPANIES === "true" || process.env.AUTO_VERIFY_COMPANIES === "1";
-    const canAutoVerify =
-      role === "COMPANY" && autoVerify && shouldAutoVerifyCompany(email, normalizedOrgNumber);
+    const hasCompanyAtReg = role === "COMPANY" && companyName?.trim() && normalizedOrgNumber;
+    const canAutoVerify = hasCompanyAtReg && autoVerify && shouldAutoVerifyCompany(email, normalizedOrgNumber);
     const companyStatus = role === "COMPANY" ? (canAutoVerify ? "VERIFIED" : "PENDING") : "VERIFIED";
 
     const user = await prisma.user.create({
@@ -204,6 +268,44 @@ authRouter.post("/register", validateBody(registerSchema), async (req, res, next
   }
 });
 
+/** Returnera aktuell inloggad användare (augmenterad). Används t.ex. efter createOrganization. */
+authRouter.get("/me", authMiddleware, async (req, res, next) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        name: true,
+        companyName: true,
+        companyOrgNumber: true,
+        companyStatus: true,
+        companySegmentDefaults: true,
+        emailVerifiedAt: true,
+      },
+    });
+    if (!user) return res.status(404).json({ error: "Användaren hittades inte" });
+    const augmented = await augmentCompanyMemberUser(user);
+    res.json({
+      id: augmented.id,
+      email: augmented.email,
+      role: augmented.role,
+      name: augmented.name,
+      companyName: augmented.companyName,
+      companyOrgNumber: augmented.companyOrgNumber,
+      companyStatus: augmented.companyStatus,
+      companySegmentDefaults: augmented.companySegmentDefaults || [],
+      companyOwnerId: augmented.companyOwnerId ?? undefined,
+      organizationId: augmented.organizationId ?? undefined,
+      emailVerifiedAt: augmented.emailVerifiedAt,
+      isAdmin: isAdminEmail(user.email),
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
 authRouter.post("/login", validateBody(loginSchema), async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -243,20 +345,32 @@ authRouter.post("/login", validateBody(loginSchema), async (req, res, next) => {
         });
       }
     }
-    const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, {
-      expiresIn: "24h",
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { lastLoginAt: new Date() },
     });
+    const augmented = await augmentCompanyMemberUser(user);
+    const token = jwt.sign(
+      {
+        userId: user.id,
+        role: user.role,
+        ...(augmented.companyOwnerId && { companyOwnerId: augmented.companyOwnerId }),
+      },
+      JWT_SECRET,
+      { expiresIn: "24h" }
+    );
     res.json({
       user: {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-        name: user.name,
-        companyName: user.companyName,
-        companyOrgNumber: user.companyOrgNumber,
-        companyStatus: user.companyStatus,
-        companySegmentDefaults: user.companySegmentDefaults || [],
-        emailVerifiedAt: user.emailVerifiedAt,
+        id: augmented.id,
+        email: augmented.email,
+        role: augmented.role,
+        name: augmented.name,
+        companyName: augmented.companyName,
+        companyOrgNumber: augmented.companyOrgNumber,
+        companyStatus: augmented.companyStatus,
+        companySegmentDefaults: augmented.companySegmentDefaults || [],
+        companyOwnerId: augmented.companyOwnerId ?? undefined,
+        emailVerifiedAt: augmented.emailVerifiedAt,
         isAdmin,
       },
       token,
@@ -319,21 +433,31 @@ async function findOrCreateOAuthUser(claims, role) {
   return { user };
 }
 
-function formatOAuthUser(user) {
+async function formatOAuthUser(user) {
+  const augmented = await augmentCompanyMemberUser(user);
   return {
     user: {
-      id: user.id,
-      email: user.email,
-      role: user.role,
-      name: user.name,
-      companyName: user.companyName,
-      companyOrgNumber: user.companyOrgNumber,
-      companyStatus: user.companyStatus,
-      companySegmentDefaults: user.companySegmentDefaults || [],
-      emailVerifiedAt: user.emailVerifiedAt,
-      isAdmin: isAdminEmail(user.email),
+      id: augmented.id,
+      email: augmented.email,
+      role: augmented.role,
+      name: augmented.name,
+      companyName: augmented.companyName,
+      companyOrgNumber: augmented.companyOrgNumber,
+      companyStatus: augmented.companyStatus,
+      companySegmentDefaults: augmented.companySegmentDefaults || [],
+      companyOwnerId: augmented.companyOwnerId ?? undefined,
+      emailVerifiedAt: augmented.emailVerifiedAt,
+      isAdmin: isAdminEmail(augmented.email),
     },
-    token: jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: "24h" }),
+    token: jwt.sign(
+      {
+        userId: augmented.id,
+        role: augmented.role,
+        ...(augmented.companyOwnerId && { companyOwnerId: augmented.companyOwnerId }),
+      },
+      JWT_SECRET,
+      { expiresIn: "24h" }
+    ),
   };
 }
 
@@ -354,7 +478,8 @@ authRouter.post("/google", validateBody(oauthGoogleSchema), async (req, res, nex
       return res.json({ needRole: true, oauthCompleteToken });
     }
     const { user } = result;
-    res.json(formatOAuthUser(user));
+    await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
+    res.json(await formatOAuthUser(user));
   } catch (e) {
     if (e.message?.includes("Token")) {
       return res.status(401).json({ error: "Ogiltig eller utgången inloggning. Försök igen." });
@@ -380,7 +505,8 @@ authRouter.post("/microsoft", validateBody(oauthMicrosoftSchema), async (req, re
       return res.json({ needRole: true, oauthCompleteToken });
     }
     const { user } = result;
-    res.json(formatOAuthUser(user));
+    await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
+    res.json(await formatOAuthUser(user));
   } catch (e) {
     if (e.message?.includes("Token") || e.message?.includes("jwt")) {
       return res.status(401).json({ error: "Ogiltig eller utgången inloggning. Försök igen." });
@@ -403,14 +529,16 @@ authRouter.post("/oauth-complete", validateBody(oauthCompleteSchema), async (req
     }
     const existing = await prisma.user.findUnique({ where: { email: payload.email.toLowerCase().trim() } });
     if (existing) {
-      return res.json(formatOAuthUser(existing));
+      await prisma.user.update({ where: { id: existing.id }, data: { lastLoginAt: new Date() } });
+      return res.json(await formatOAuthUser(existing));
     }
     const result = await findOrCreateOAuthUser(
       { email: payload.email, name: payload.name || payload.email.split("@")[0] },
       role
     );
     const { user } = result;
-    res.json(formatOAuthUser(user));
+    await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
+    res.json(await formatOAuthUser(user));
   } catch (e) {
     next(e);
   }
