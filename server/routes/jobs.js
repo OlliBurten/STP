@@ -55,6 +55,7 @@ async function sendDriverMatchAlertsForJob(job) {
           availability: p.availability || "open",
           primarySegment: p.primarySegment || null,
           secondarySegments: p.secondarySegments || [],
+          privateMatchNotes: p.privateMatchNotes || "",
           yearsExperience: driverYearsFromExperience(experience),
         };
         const score = matchScore(driver, job);
@@ -286,6 +287,7 @@ jobsRouter.get("/:id/applicants", authMiddleware, requireCompany, attachCompanyC
         region: p?.region,
         regionsWilling: p?.regionsWilling || [],
         availability: p?.availability,
+        privateMatchNotes: p?.privateMatchNotes || "",
         yearsExperience,
       };
       const score = matchScore(driver, job);
@@ -455,7 +457,7 @@ jobsRouter.post("/", authMiddleware, requireCompany, attachCompanyContext, requi
       : "[]";
     const job = await prisma.job.create({
       data: {
-        userId: req.userId,
+        userId: effectiveCompanyId(req),
         organizationId: req.organizationId ?? undefined,
         title: body.title,
         company: body.company,

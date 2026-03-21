@@ -69,6 +69,7 @@ export function ProfileProvider({ children }) {
           id: data?.id || user?.id || "",
           name: data?.name || user?.name || "",
           email: data?.email || user?.email || "",
+          privateMatchNotes: data?.privateMatchNotes || "",
           licenses: Array.isArray(data?.licenses) ? data.licenses : [],
           certificates: Array.isArray(data?.certificates) ? data.certificates : [],
           primarySegment: data?.primarySegment || "",
@@ -105,6 +106,7 @@ export function ProfileProvider({ children }) {
         setProfile((prev) => ({
           ...prev,
           ...saved,
+          privateMatchNotes: saved?.privateMatchNotes || "",
           licenses: Array.isArray(saved?.licenses) ? saved.licenses : prev.licenses || [],
           certificates: Array.isArray(saved?.certificates) ? saved.certificates : prev.certificates || [],
           primarySegment: saved?.primarySegment || "",

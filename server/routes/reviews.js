@@ -118,7 +118,7 @@ reviewsRouter.post("/company", async (req, res, next) => {
 
     const conversation = await prisma.conversation.findUnique({
       where: { id: conversationId },
-      select: { id: true, driverId: true, companyId: true },
+      select: { id: true, driverId: true, companyId: true, organizationId: true },
     });
     if (!conversation) return res.status(404).json({ error: "Konversation hittades inte" });
     if (conversation.driverId !== req.userId) {

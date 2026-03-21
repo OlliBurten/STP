@@ -114,6 +114,7 @@ export default function CompanyOnboardingWizard() {
         companyLocation: profile.companyLocation || "",
         companySegmentDefaults: defaults,
       });
+      await refreshUser?.();
       trackCompanyOnboardingComplete(defaults);
       navigate("/foretag", { replace: true });
     } catch (e) {

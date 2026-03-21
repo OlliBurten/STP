@@ -10,19 +10,25 @@ driversRouter.get("/", authMiddleware, requireCompany, requireVerifiedCompany, a
     const profiles = await prisma.driverProfile.findMany({
       where: {
         visibleToCompanies: true,
-        ...(region && {
-          OR: [
-            { region },
-            { regionsWilling: { has: region } },
-          ],
-        }),
         ...(license && { licenses: { has: license } }),
         ...(certificate && { certificates: { has: certificate } }),
         ...(availability && { availability }),
-        ...(segment && {
-          OR: [
-            { primarySegment: segment },
-            { secondarySegments: { has: segment } },
+        ...((region || segment) && {
+          AND: [
+            ...(region
+              ? [
+                  {
+                    OR: [{ region }, { regionsWilling: { has: region } }],
+                  },
+                ]
+              : []),
+            ...(segment
+              ? [
+                  {
+                    OR: [{ primarySegment: segment }, { secondarySegments: { has: segment } }],
+                  },
+                ]
+              : []),
           ],
         }),
       },

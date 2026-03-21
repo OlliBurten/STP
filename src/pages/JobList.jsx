@@ -111,6 +111,7 @@ export default function JobList() {
             yearsExperience: calcYearsExperience(profile.experience),
             primarySegment: profile.primarySegment || "",
             secondarySegments: Array.isArray(profile.secondarySegments) ? profile.secondarySegments : [],
+            privateMatchNotes: profile.privateMatchNotes || "",
           }
         : null,
     [isDriver, profile]

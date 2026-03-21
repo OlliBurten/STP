@@ -250,7 +250,7 @@ export default function Admin() {
       <section className="bg-white rounded-xl border border-slate-200 p-4">
         <div className="flex flex-wrap gap-2">
           {[
-            { id: "companies", label: "Väntande åkerier" },
+            { id: "companies", label: "Väntande företag" },
             { id: "users", label: "Användare" },
             { id: "jobs", label: "Jobbmoderering" },
             { id: "reports", label: "Rapporter & Trust" },
@@ -274,7 +274,7 @@ export default function Admin() {
 
       {activeTab === "companies" && (
         <section className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
-          <h2 className="text-lg font-semibold text-slate-900">Väntande åkerier</h2>
+          <h2 className="text-lg font-semibold text-slate-900">Väntande företag</h2>
           {companies.length === 0 ? (
             <p className="text-slate-600">Inga väntande företag just nu.</p>
           ) : (

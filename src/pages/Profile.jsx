@@ -12,6 +12,15 @@ import {
 } from "../data/profileData";
 import { segmentOptions, segmentLabel } from "../data/segments";
 import { CheckIcon, CircleOutlineIcon, LocationIcon } from "../components/Icons";
+import {
+  getDriverMinimumChecklist,
+  hasDriverMinimumAvailability,
+  hasDriverMinimumLicense,
+  hasDriverMinimumRegion,
+  hasDriverMinimumSummary,
+  isDriverMinimumProfileComplete,
+  SUMMARY_MIN_LENGTH,
+} from "../utils/driverProfileRequirements";
 
 export default function Profile() {
   const { user, hasApi } = useAuth();
@@ -64,16 +73,7 @@ export default function Profile() {
   );
   const hasUnsavedChanges = editing && profileComparable !== draftComparable;
 
-  const onboardingSteps = useMemo(
-    () => [
-      { label: "Välj primärt segment", done: Boolean(profile.primarySegment) },
-      { label: "Lägg till namn", done: Boolean(profile.name?.trim()) },
-      { label: "Välj ort och region", done: Boolean(profile.location?.trim() && profile.region?.trim()) },
-      { label: "Lägg till minst ett körkort", done: Array.isArray(profile.licenses) && profile.licenses.length > 0 },
-      { label: "Skriv en kort profiltext", done: String(profile.summary || "").trim().length >= 20 },
-    ],
-    [profile]
-  );
+  const onboardingSteps = useMemo(() => getDriverMinimumChecklist(profile), [profile]);
   const onboardingDone = onboardingSteps.every((s) => s.done);
 
   const dismissOnboarding = () => {
@@ -146,7 +146,7 @@ export default function Profile() {
     return `${exp.startYear || "?"} – ${exp.endYear || "?"}`;
   };
 
-  if (hasApi && profile.id === user?.id && !profile.primarySegment) {
+  if (hasApi && profile.id === user?.id && !isDriverMinimumProfileComplete(profile)) {
     return <Navigate to="/onboarding/forare" replace />;
   }
 
@@ -231,22 +231,25 @@ export default function Profile() {
       )}
 
       {profile != null && (() => {
-        const hasSummary = String(profile.summary || "").trim().length >= 20;
-        const hasLicense = Array.isArray(profile.licenses) && profile.licenses.length > 0;
-        const hasRegion = Boolean(profile.region?.trim());
+        const hasSummary = hasDriverMinimumSummary(profile);
+        const hasLicense = hasDriverMinimumLicense(profile);
+        const hasRegion = hasDriverMinimumRegion(profile);
+        const hasAvailability = hasDriverMinimumAvailability(profile);
         const isVisible = Boolean(profile.visibleToCompanies);
-        const allDone = hasSummary && hasLicense && hasRegion;
+        const allDone = hasSummary && hasLicense && hasRegion && hasAvailability;
         if (allDone && isVisible) return null;
         return (
           <div className="mb-6 rounded-xl border border-slate-200 bg-slate-50 p-4" role="region" aria-label="Tips för att nå fler företag">
             <p className="text-sm font-semibold text-slate-900">Saker som lätt glöms – så når fler företag dig</p>
             <ul className="mt-2 space-y-1.5 text-sm text-slate-700">
-              {!hasSummary && <li><span className="text-slate-500" aria-hidden>○</span> Lägg till en kort profiltext (minst 20 tecken) så företag förstår vem du är.</li>}
+              {!hasSummary && <li><span className="text-slate-500" aria-hidden>○</span> Lägg till en kort profiltext (minst {SUMMARY_MIN_LENGTH} tecken) så företag förstår vem du är.</li>}
               {hasSummary && <li><CheckIcon className="w-4 h-4 inline-block mr-1 align-middle text-green-600" aria-hidden /> Profiltext ifylld</li>}
               {!hasLicense && <li><span className="text-slate-500" aria-hidden>○</span> Välj minst ett körkort (t.ex. CE, C) – annars matchar du inte jobben.</li>}
               {hasLicense && <li><CheckIcon className="w-4 h-4 inline-block mr-1 align-middle text-green-600" aria-hidden /> Körkort angivet</li>}
               {!hasRegion && <li><span className="text-slate-500" aria-hidden>○</span> Välj region – då syns du i rätt sökningar.</li>}
               {hasRegion && <li><CheckIcon className="w-4 h-4 inline-block mr-1 align-middle text-green-600" aria-hidden /> Region vald</li>}
+              {!hasAvailability && <li><span className="text-slate-500" aria-hidden>○</span> Välj tillgänglighet så att vi kan matcha dig mot rätt typ av jobb.</li>}
+              {hasAvailability && <li><CheckIcon className="w-4 h-4 inline-block mr-1 align-middle text-green-600" aria-hidden /> Tillgänglighet vald</li>}
               {!isVisible && hasRegion && <li><span className="text-slate-500" aria-hidden>○</span> Bli synlig för företag så att de kan hitta dig i chaufförsökningen.</li>}
               {isVisible && <li><CheckIcon className="w-4 h-4 inline-block mr-1 align-middle text-green-600" aria-hidden /> Synlig för företag</li>}
             </ul>
@@ -616,18 +619,52 @@ export default function Profile() {
           {/* Summary */}
           <section>
             <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">
-              Kort om mig
+              Publik profiltext
             </h2>
             {editing ? (
-              <textarea
-                value={current.summary || ""}
-                onChange={(e) => updateDraft({ summary: e.target.value })}
-                rows={4}
-                placeholder="Beskriv din erfarenhet och vad du söker..."
-                className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
-              />
+              <div>
+                <textarea
+                  value={current.summary || ""}
+                  onChange={(e) => updateDraft({ summary: e.target.value })}
+                  rows={4}
+                  placeholder="Beskriv kort din erfarenhet och vad du söker. Denna text visas för företag."
+                  className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
+                />
+                <p className="mt-2 text-xs text-slate-500">
+                  Minimikrav för onboarding: minst {SUMMARY_MIN_LENGTH} tecken.
+                </p>
+              </div>
             ) : (
               <p className="text-slate-700 whitespace-pre-line">{current.summary || "—"}</p>
+            )}
+          </section>
+
+          <section>
+            <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">
+              Privat matchningstext
+            </h2>
+            {editing ? (
+              <div>
+                <textarea
+                  value={current.privateMatchNotes || ""}
+                  onChange={(e) => updateDraft({ privateMatchNotes: e.target.value })}
+                  rows={4}
+                  placeholder="Skriv fritt vad du helst vill ha eller undvika. Exempel: vill helst köra distribution dagtid, undviker natt, kan veckopendla."
+                  className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
+                />
+                <p className="mt-2 text-xs text-slate-500">
+                  Visas inte publikt. Texten används bara som en extra signal i jobbrekommendationer.
+                </p>
+              </div>
+            ) : (
+              <div className="rounded-lg bg-slate-50 p-4">
+                <p className="text-sm text-slate-700 whitespace-pre-line">
+                  {current.privateMatchNotes || "Ingen privat matchningstext sparad ännu."}
+                </p>
+                <p className="mt-2 text-xs text-slate-500">
+                  Endast systemet använder denna text vid matchning. Företag ser den inte.
+                </p>
+              </div>
             )}
           </section>
 

@@ -29,8 +29,6 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [companyName, setCompanyName] = useState("");
-  const [companyOrgNumber, setCompanyOrgNumber] = useState("");
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
   const [showResendVerification, setShowResendVerification] = useState(false);
@@ -46,6 +44,31 @@ export default function Login() {
   const handleMockCompany = () => {
     loginAsCompany();
     navigate(from.startsWith("/foretag") ? from : "/foretag", { replace: true });
+  };
+
+  const handleOAuthAuthSuccess = (data) => {
+    setError("");
+    setInfo("");
+    setOauthPickingRole(false);
+    loginWithOAuthResponse(data);
+    const u = data.user;
+    const isAdmin = Boolean(u?.isAdmin);
+    if (isAdmin) {
+      const adminTarget =
+        from === "/admin" || from?.startsWith("/admin") ? "/admin" : from === "/login" ? "/" : from || "/";
+      setTimeout(() => navigate(adminTarget, { replace: true }), 0);
+      return;
+    }
+    const isRecruiter =
+      String(u?.role || "").toUpperCase() === "COMPANY" || String(u?.role || "").toUpperCase() === "RECRUITER";
+    const target = isRecruiter
+      ? u?.shouldShowOnboarding
+        ? "/foretag/onboarding"
+        : "/foretag"
+      : u?.shouldShowOnboarding
+        ? "/onboarding/forare"
+        : from || "/";
+    setTimeout(() => navigate(target, { replace: true }), 0);
   };
 
   const handleSubmit = async (e) => {
@@ -74,8 +97,6 @@ export default function Login() {
           password,
           role,
           name: name.trim(),
-          companyName: role === "company" && companyName?.trim() ? companyName.trim() : undefined,
-          companyOrgNumber: role === "company" && companyOrgNumber?.trim() ? companyOrgNumber.trim() : undefined,
         });
         logout();
         if (result?.emailVerificationSent === false) {
@@ -91,15 +112,11 @@ export default function Login() {
       } else {
         const loggedInUser = await loginWithApi(email.trim(), password);
         if (loggedInUser.isAdmin) {
-          // Admin ska inte behöva gå igenom onboardingvillkor.
-          navigate(from, { replace: true });
+          navigate(from === "/login" ? "/" : from, { replace: true });
           return;
         }
         if (loggedInUser.role === "recruiter") {
-          if (
-            !Array.isArray(loggedInUser.companySegmentDefaults) ||
-            loggedInUser.companySegmentDefaults.length === 0
-          ) {
+          if (loggedInUser.shouldShowOnboarding) {
             navigate("/foretag/onboarding", { replace: true });
             return;
           }
@@ -144,6 +161,9 @@ export default function Login() {
       setLoading(false);
     }
   };
+
+  const showPasswordFields =
+    !oauthPickingRole && (mode === "login" || mode === "forgot" || mode === "register");
 
   if (!hasApi) {
     return (
@@ -224,7 +244,7 @@ export default function Login() {
         {info && (
           <div className="p-3 rounded-lg bg-green-50 text-green-800 text-sm">{info}</div>
         )}
-        {!oauthPickingRole && (
+        {showPasswordFields && (
           <>
         {mode === "register" && (
           <>
@@ -333,43 +353,27 @@ export default function Login() {
         </button>
           </>
         )}
-        {mode === "login" && hasApi && (
+        {(mode === "login" || mode === "register") && hasApi && (
           <div className={oauthPickingRole ? "" : "pt-4 border-t border-slate-200"}>
             <ErrorBoundary
               fallback={
                 <p className="text-sm text-slate-500 py-2">
-                  Inloggning med Google/Microsoft kunde inte laddas. Använd e-post och lösenord ovan.
+                  Google/Microsoft kunde inte laddas just nu. Använd e-post och lösenord i stället.
                 </p>
               }
             >
               <OAuthButtons
-              onSuccess={(data) => {
-                setError("");
-                setOauthPickingRole(false);
-                loginWithOAuthResponse(data);
-                const u = data.user;
-                const isAdmin = Boolean(u?.isAdmin);
-                if (isAdmin && (from === "/admin" || from?.startsWith("/admin"))) {
-                  setTimeout(() => navigate("/admin", { replace: true }), 0);
-                  return;
-                }
-                const isRecruiter =
-                  String(u?.role || "").toUpperCase() === "COMPANY" ||
-                  String(u?.role || "").toUpperCase() === "RECRUITER";
-                const target = isRecruiter
-                  ? (!Array.isArray(u?.companySegmentDefaults) || u?.companySegmentDefaults?.length === 0)
-                    ? "/foretag/onboarding"
-                    : "/foretag"
-                  : from || "/";
-                setTimeout(() => navigate(target, { replace: true }), 0);
-              }}
+              onSuccess={handleOAuthAuthSuccess}
               onError={(msg) => {
                 setError(msg);
+                setInfo("");
                 setOauthPickingRole(false);
               }}
               onRolePickerVisible={setOauthPickingRole}
               requiredRole={requiredRole}
               fromPath={from}
+              authMode={mode === "register" ? "register" : "login"}
+              promptText={mode === "register" ? "Eller registrera med" : "Eller logga in med"}
             />
             </ErrorBoundary>
           </div>
@@ -394,6 +398,8 @@ export default function Login() {
               type="button"
               onClick={() => {
                 setShowResendVerification(false);
+                setError("");
+                setInfo("");
                 setMode("register");
               }}
               className="text-[var(--color-primary)] font-medium hover:underline"
@@ -419,6 +425,8 @@ export default function Login() {
               type="button"
               onClick={() => {
                 setShowResendVerification(false);
+                setError("");
+                setInfo("");
                 setMode("login");
               }}
               className="text-[var(--color-primary)] font-medium hover:underline"
@@ -433,6 +441,8 @@ export default function Login() {
               type="button"
               onClick={() => {
                 setShowResendVerification(false);
+                setError("");
+                setInfo("");
                 setMode("login");
               }}
               className="text-[var(--color-primary)] font-medium hover:underline"

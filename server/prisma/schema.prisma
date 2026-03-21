@@ -49,6 +49,8 @@ model User {
   lastMatchDriverEmailAt DateTime?  // company: last time we sent "matching driver" email
   lastLoginAt            DateTime?  // senaste inloggning (alla metoder)
   lastVerificationReminderAt DateTime?  // senaste påminnelse om e-postverifiering
+  needsDriverOnboarding    Boolean  @default(false)
+  needsRecruiterOnboarding Boolean  @default(false)
 
   // Team invites (deprecated - använd OrganizationInvite)
   companyInvites         CompanyInvite[]  @relation("CompanyInvites")
@@ -139,6 +141,7 @@ model DriverProfile {
   email               String?  // can override user email for display
   phone               String?
   summary             String?
+  privateMatchNotes   String?
   licenses            String[] // ["CE", "C"]
   certificates        String[] // ["YKB", "ADR"]
   availability        String?  // open, vikariat, tim, fast, inactive

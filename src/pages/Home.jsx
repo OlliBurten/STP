@@ -109,7 +109,7 @@ export default function Home() {
 
   if (user) {
     if (isCompany) {
-      if (!isAdmin && (!Array.isArray(user.companySegmentDefaults) || user.companySegmentDefaults.length === 0)) {
+      if (user.shouldShowOnboarding && !isAdmin && (!Array.isArray(user.companySegmentDefaults) || user.companySegmentDefaults.length === 0)) {
         return <Navigate to="/foretag/onboarding" replace />;
       }
       return <Navigate to="/foretag" replace />;

@@ -48,7 +48,12 @@ async function augmentCompanyMemberUser(user) {
     where: { userId: user.id },
     select: { companyOwnerId: true },
   });
-  if (!membership) return user;
+  if (!membership) {
+    return {
+      ...user,
+      companyStatus: user.companyOrgNumber ? user.companyStatus : "VERIFIED",
+    };
+  }
   const ownerUo = await prisma.userOrganization.findFirst({
     where: { userId: membership.companyOwnerId, role: "OWNER" },
     include: { organization: true },
@@ -126,6 +131,17 @@ function frontendBaseUrl() {
   return list[0] || "http://localhost:5173";
 }
 
+function getShouldShowOnboarding(user, augmented = user) {
+  const rawRole = String(augmented?.role || user?.role || "").trim().toUpperCase();
+  if (rawRole === "DRIVER") return Boolean(user?.needsDriverOnboarding);
+  if (rawRole === "COMPANY" || rawRole === "RECRUITER") {
+    const isCompanyMember = Boolean(augmented?.companyOwnerId && augmented.companyOwnerId !== augmented?.id);
+    if (isCompanyMember) return false;
+    return Boolean(user?.needsRecruiterOnboarding);
+  }
+  return false;
+}
+
 function resolveVerificationBaseUrl(provided) {
   if (!provided || typeof provided !== "string") return frontendBaseUrl();
   const base = provided.trim().replace(/\/$/, "");
@@ -180,7 +196,8 @@ authRouter.post("/register", validateBody(registerSchema), async (req, res, next
     const autoVerify = process.env.AUTO_VERIFY_COMPANIES === "true" || process.env.AUTO_VERIFY_COMPANIES === "1";
     const hasCompanyAtReg = role === "COMPANY" && companyName?.trim() && normalizedOrgNumber;
     const canAutoVerify = hasCompanyAtReg && autoVerify && shouldAutoVerifyCompany(email, normalizedOrgNumber);
-    const companyStatus = role === "COMPANY" ? (canAutoVerify ? "VERIFIED" : "PENDING") : "VERIFIED";
+  const companyStatus =
+    role === "COMPANY" ? (hasCompanyAtReg ? (canAutoVerify ? "VERIFIED" : "PENDING") : "VERIFIED") : "VERIFIED";
 
     const user = await prisma.user.create({
       data: {
@@ -189,6 +206,8 @@ authRouter.post("/register", validateBody(registerSchema), async (req, res, next
         emailVerifiedAt: null,
         role,
         name: name.trim(),
+        needsDriverOnboarding: role === "DRIVER",
+        needsRecruiterOnboarding: role === "COMPANY",
         companyName: role === "COMPANY" ? companyName?.trim() : null,
         companyOrgNumber: role === "COMPANY" ? normalizedOrgNumber : null,
         companyStatus,
@@ -202,6 +221,8 @@ authRouter.post("/register", validateBody(registerSchema), async (req, res, next
         companyOrgNumber: true,
         companyStatus: true,
         companySegmentDefaults: true,
+        needsDriverOnboarding: true,
+        needsRecruiterOnboarding: true,
       },
     });
     if (role === "DRIVER") {
@@ -244,11 +265,13 @@ authRouter.post("/register", validateBody(registerSchema), async (req, res, next
         companyStatus: user.companyStatus,
         companySegmentDefaults: user.companySegmentDefaults || [],
         emailVerifiedAt: null,
+        hadLoggedInBefore: false,
+        shouldShowOnboarding: getShouldShowOnboarding(user),
         isAdmin: isAdminEmail(user.email),
       },
       token,
       verification:
-        role === "COMPANY"
+        hasCompanyAtReg
           ? {
               required: true,
               status: user.companyStatus,
@@ -283,6 +306,9 @@ authRouter.get("/me", authMiddleware, async (req, res, next) => {
         companyStatus: true,
         companySegmentDefaults: true,
         emailVerifiedAt: true,
+        lastLoginAt: true,
+        needsDriverOnboarding: true,
+        needsRecruiterOnboarding: true,
       },
     });
     if (!user) return res.status(404).json({ error: "Användaren hittades inte" });
@@ -299,6 +325,8 @@ authRouter.get("/me", authMiddleware, async (req, res, next) => {
       companyOwnerId: augmented.companyOwnerId ?? undefined,
       organizationId: augmented.organizationId ?? undefined,
       emailVerifiedAt: augmented.emailVerifiedAt,
+      hadLoggedInBefore: Boolean(user.lastLoginAt),
+      shouldShowOnboarding: getShouldShowOnboarding(user, augmented),
       isAdmin: isAdminEmail(user.email),
     });
   } catch (e) {
@@ -345,6 +373,7 @@ authRouter.post("/login", validateBody(loginSchema), async (req, res, next) => {
         });
       }
     }
+    const hadLoggedInBefore = Boolean(user.lastLoginAt);
     await prisma.user.update({
       where: { id: user.id },
       data: { lastLoginAt: new Date() },
@@ -371,6 +400,8 @@ authRouter.post("/login", validateBody(loginSchema), async (req, res, next) => {
         companySegmentDefaults: augmented.companySegmentDefaults || [],
         companyOwnerId: augmented.companyOwnerId ?? undefined,
         emailVerifiedAt: augmented.emailVerifiedAt,
+        hadLoggedInBefore,
+        shouldShowOnboarding: getShouldShowOnboarding(user, augmented),
         isAdmin,
       },
       token,
@@ -399,9 +430,11 @@ async function findOrCreateOAuthUser(claims, role) {
       emailVerifiedAt: new Date(),
       role,
       name,
+      needsDriverOnboarding: role === "DRIVER",
+      needsRecruiterOnboarding: role === "COMPANY",
       companyName: isCompany ? null : undefined,
       companyOrgNumber: isCompany ? null : undefined,
-      companyStatus: isCompany ? "PENDING" : "VERIFIED",
+      companyStatus: "VERIFIED",
     },
     select: {
       id: true,
@@ -413,6 +446,8 @@ async function findOrCreateOAuthUser(claims, role) {
       companyStatus: true,
       companySegmentDefaults: true,
       emailVerifiedAt: true,
+      needsDriverOnboarding: true,
+      needsRecruiterOnboarding: true,
     },
   });
   if (role === "DRIVER") {
@@ -433,8 +468,9 @@ async function findOrCreateOAuthUser(claims, role) {
   return { user };
 }
 
-async function formatOAuthUser(user) {
+async function formatOAuthUser(user, options = {}) {
   const augmented = await augmentCompanyMemberUser(user);
+  const hadLoggedInBefore = Boolean(options.hadLoggedInBefore ?? user?.lastLoginAt);
   return {
     user: {
       id: augmented.id,
@@ -447,6 +483,8 @@ async function formatOAuthUser(user) {
       companySegmentDefaults: augmented.companySegmentDefaults || [],
       companyOwnerId: augmented.companyOwnerId ?? undefined,
       emailVerifiedAt: augmented.emailVerifiedAt,
+      hadLoggedInBefore,
+      shouldShowOnboarding: getShouldShowOnboarding(user, augmented),
       isAdmin: isAdminEmail(augmented.email),
     },
     token: jwt.sign(
@@ -478,8 +516,9 @@ authRouter.post("/google", validateBody(oauthGoogleSchema), async (req, res, nex
       return res.json({ needRole: true, oauthCompleteToken });
     }
     const { user } = result;
+    const hadLoggedInBefore = Boolean(user.lastLoginAt);
     await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
-    res.json(await formatOAuthUser(user));
+    res.json(await formatOAuthUser(user, { hadLoggedInBefore }));
   } catch (e) {
     if (e.message?.includes("Token")) {
       return res.status(401).json({ error: "Ogiltig eller utgången inloggning. Försök igen." });
@@ -505,8 +544,9 @@ authRouter.post("/microsoft", validateBody(oauthMicrosoftSchema), async (req, re
       return res.json({ needRole: true, oauthCompleteToken });
     }
     const { user } = result;
+    const hadLoggedInBefore = Boolean(user.lastLoginAt);
     await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
-    res.json(await formatOAuthUser(user));
+    res.json(await formatOAuthUser(user, { hadLoggedInBefore }));
   } catch (e) {
     if (e.message?.includes("Token") || e.message?.includes("jwt")) {
       return res.status(401).json({ error: "Ogiltig eller utgången inloggning. Försök igen." });
@@ -529,16 +569,18 @@ authRouter.post("/oauth-complete", validateBody(oauthCompleteSchema), async (req
     }
     const existing = await prisma.user.findUnique({ where: { email: payload.email.toLowerCase().trim() } });
     if (existing) {
+      const hadLoggedInBefore = Boolean(existing.lastLoginAt);
       await prisma.user.update({ where: { id: existing.id }, data: { lastLoginAt: new Date() } });
-      return res.json(await formatOAuthUser(existing));
+      return res.json(await formatOAuthUser(existing, { hadLoggedInBefore }));
     }
     const result = await findOrCreateOAuthUser(
       { email: payload.email, name: payload.name || payload.email.split("@")[0] },
       role
     );
     const { user } = result;
+    const hadLoggedInBefore = Boolean(user.lastLoginAt);
     await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
-    res.json(await formatOAuthUser(user));
+    res.json(await formatOAuthUser(user, { hadLoggedInBefore }));
   } catch (e) {
     next(e);
   }

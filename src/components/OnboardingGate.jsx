@@ -1,6 +1,7 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useProfile } from "../context/ProfileContext";
+import { isDriverMinimumProfileComplete } from "../utils/driverProfileRequirements";
 
 /** Returnerar true om användaren är inloggad men inte slutfört onboarding. */
 export function useOnboardingRequired() {
@@ -13,7 +14,8 @@ export function useOnboardingRequired() {
 
   if (!user) return false;
   if (isAdmin) return false;
-  if (isDriver) return profileLoaded && !Boolean(profile?.primarySegment?.trim());
+  if (isDriver) return profileLoaded && !isDriverMinimumProfileComplete(profile);
+  if (!user.shouldShowOnboarding) return false;
   if (isCompany) {
     if (isCompanyMember) return false;
     return !hasOrganizationContext || !hasSegments;
@@ -51,11 +53,12 @@ export default function OnboardingGate({ children }) {
 
   if (isDriver) {
     if (!profileLoaded) return children;
-    const hasPrimarySegment = Boolean(profile?.primarySegment?.trim());
-    if (!hasPrimarySegment && path !== "/onboarding/forare") {
+    if (!isDriverMinimumProfileComplete(profile) && path !== "/onboarding/forare") {
       return <Navigate to="/onboarding/forare" state={{ from: path }} replace />;
     }
   }
+
+  if (!user.shouldShowOnboarding) return children;
 
   if (isCompany) {
     if (!isCompanyMember && (!hasOrganizationContext || !hasSegments) && path !== "/foretag/onboarding" && !path.startsWith("/foretag/onboarding")) {

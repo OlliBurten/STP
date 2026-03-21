@@ -80,6 +80,11 @@ organizationsRouter.post("/", validateBody(createOrganizationSchema), async (req
       },
     });
 
+    await prisma.user.update({
+      where: { id: req.userId },
+      data: { needsRecruiterOnboarding: false },
+    });
+
     res.status(201).json({
       id: org.id,
       name: org.name,

@@ -16,6 +16,16 @@ function readStoredAuth() {
   }
 }
 
+function writeStoredAuth(payload) {
+  try {
+    if (!payload?.user || !payload?.token) {
+      localStorage.removeItem(AUTH_STORAGE_KEY);
+      return;
+    }
+    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(payload));
+  } catch (_) {}
+}
+
 function normalizeUser(u) {
   if (!u) return null;
   const rawRole = String(u.role || "").trim().toUpperCase();
@@ -29,6 +39,8 @@ function normalizeUser(u) {
     role: normalizedRole,
     rawRole,
     isAdmin: Boolean(u.isAdmin),
+    hadLoggedInBefore: Boolean(u.hadLoggedInBefore),
+    shouldShowOnboarding: Boolean(u.shouldShowOnboarding),
     name: u.name,
     companyName: u.companyName,
     companyOrgNumber: u.companyOrgNumber || null,
@@ -60,6 +72,7 @@ export function AuthProvider({ children }) {
   });
 
   const clearAuthState = useCallback(() => {
+    writeStoredAuth(null);
     setUser(null);
     setToken(null);
     setIssuedAt(null);
@@ -77,6 +90,22 @@ export function AuthProvider({ children }) {
     setIssuedAt(raw.issuedAt || null);
     setLastActivity(raw.lastActivity || null);
   }, [clearAuthState]);
+
+  const commitAuthState = useCallback((nextUser, nextToken) => {
+    const now = Date.now();
+    const payload = {
+      user: nextUser,
+      token: nextToken,
+      issuedAt: now,
+      lastActivity: now,
+    };
+    writeStoredAuth(payload);
+    setUser(nextUser);
+    setToken(nextToken);
+    setIssuedAt(now);
+    setLastActivity(now);
+    return payload;
+  }, []);
 
   // Persistera auth + tidsstämplar
   useEffect(() => {
@@ -147,13 +176,9 @@ export function AuthProvider({ children }) {
   const loginWithApi = useCallback(async (email, password) => {
     const data = await apiPost("/api/auth/login", { email, password });
     const u = normalizeUser(data.user);
-    setUser(u);
-    setToken(data.token);
-    const now = Date.now();
-    setIssuedAt(now);
-    setLastActivity(now);
+    commitAuthState(u, data.token);
     return u;
-  }, []);
+  }, [commitAuthState]);
 
   const registerWithApi = useCallback(
     async ({ email, password, role, name, companyName, companyOrgNumber }) => {
@@ -169,14 +194,10 @@ export function AuthProvider({ children }) {
         verificationBaseUrl,
       });
       const u = normalizeUser(data.user);
-      setUser(u);
-      setToken(data.token);
-      const now = Date.now();
-      setIssuedAt(now);
-      setLastActivity(now);
+      commitAuthState(u, data.token);
       return { user: u, emailVerificationSent: data.emailVerificationSent === true };
     },
-    []
+    [commitAuthState]
   );
 
   const loginAsDriver = useCallback(() => {
@@ -205,13 +226,9 @@ export function AuthProvider({ children }) {
 
   const loginWithOAuthResponse = useCallback(({ user: u, token: t }) => {
     const normalized = normalizeUser(u);
-    setUser(normalized);
-    setToken(t);
-    const now = Date.now();
-    setIssuedAt(now);
-    setLastActivity(now);
+    commitAuthState(normalized, t);
     return normalized;
-  }, []);
+  }, [commitAuthState]);
 
   /** Uppdatera användardata (t.ex. efter createOrganization). */
   const refreshUser = useCallback(async () => {

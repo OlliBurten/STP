@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import Logo from "./Logo";
+import { CURRENT_VERSION } from "../lib/releaseNotes";
 
 export default function Footer() {
   return (
@@ -37,6 +38,7 @@ export default function Footer() {
             <ul className="space-y-3">
               <li><Link to="/om-oss" className="text-white/85 hover:text-white text-sm transition-colors">Om oss</Link></li>
               <li><Link to="/kontakt" className="text-white/85 hover:text-white text-sm transition-colors">Kontakt</Link></li>
+              <li><Link to="/uppdateringar" className="text-white/85 hover:text-white text-sm transition-colors">Vad är nytt</Link></li>
             </ul>
           </div>
 
@@ -62,6 +64,9 @@ export default function Footer() {
           <p className="mt-2 text-xs text-white/60">
             © {new Date().getFullYear()} Sveriges Transportplattform – matchning och kompetens inom svensk transport
           </p>
+          <Link to="/uppdateringar" className="mt-3 inline-flex text-xs text-white/80 hover:text-white transition-colors">
+            Version {CURRENT_VERSION}
+          </Link>
         </div>
       </div>
     </footer>

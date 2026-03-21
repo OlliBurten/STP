@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import PageHeader from "../components/PageHeader";
 
 const API_URL = (import.meta.env.VITE_API_URL || "").trim().replace(/\/$/, "");
@@ -6,24 +6,30 @@ const API_URL = (import.meta.env.VITE_API_URL || "").trim().replace(/\/$/, "");
 function CheckRow({ label, url, check, lastAt, refreshTrigger }) {
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(false);
+  const checkRef = useRef(check);
+
+  useEffect(() => {
+    checkRef.current = check;
+  }, [check]);
 
   const run = useCallback(async () => {
-    if (!check) return;
+    if (!checkRef.current) return;
     setLoading(true);
     setStatus(null);
     try {
-      const result = await check();
+      const result = await checkRef.current();
       setStatus(result);
     } finally {
       setLoading(false);
     }
-  }, [check]);
+  }, []);
 
   useEffect(() => {
     run();
   }, [run, refreshTrigger]);
 
   const ok = status?.ok === true;
+  const tone = loading ? "loading" : status?.tone || (ok ? "success" : "error");
   const text = loading
     ? "Kontrollerar…"
     : status == null
@@ -34,28 +40,36 @@ function CheckRow({ label, url, check, lastAt, refreshTrigger }) {
 
   return (
     <tr className="border-b border-slate-200">
-      <td className="py-3 pr-4 font-medium text-slate-800">{label}</td>
-      <td className="py-3 pr-4 text-slate-600 text-sm break-all">{url || "–"}</td>
-      <td className="py-3 pr-4">
+      <td className="py-3 pr-4 pl-4 align-top font-medium text-slate-800 w-44">{label}</td>
+      <td className="py-3 pr-4 align-top text-slate-600 text-sm break-all w-72">{url || "–"}</td>
+      <td className="py-3 pr-4 align-top">
         <span
-          className={`inline-flex items-center gap-1.5 text-sm font-medium ${
-            loading ? "text-slate-500" : ok ? "text-green-700" : "text-red-700"
+          className={`inline-flex items-start gap-1.5 text-sm font-medium whitespace-normal ${
+            tone === "loading"
+              ? "text-slate-500"
+              : tone === "warn"
+                ? "text-amber-700"
+                : ok
+                  ? "text-green-700"
+                  : "text-red-700"
           }`}
         >
-          {loading ? (
+          {tone === "loading" ? (
             <span className="inline-block w-3 h-3 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />
+          ) : tone === "warn" ? (
+            <span className="text-amber-600" aria-hidden>●</span>
           ) : ok ? (
             <span className="text-green-600" aria-hidden>●</span>
           ) : (
             <span className="text-red-600" aria-hidden>●</span>
           )}
-          {text}
+          <span className="break-words">{text}</span>
         </span>
       </td>
-      <td className="py-3 text-slate-500 text-sm">
+      <td className="py-3 pr-4 align-top text-slate-500 text-sm whitespace-nowrap">
         {lastAt ? new Date(lastAt).toLocaleTimeString("sv-SE") : "–"}
       </td>
-      <td className="py-3 pl-2">
+      <td className="py-3 pl-2 pr-4 align-top whitespace-nowrap">
         <button
           type="button"
           onClick={run}
@@ -150,13 +164,28 @@ export default function Status() {
     (provider) => async () => {
       if (!API_URL) return { ok: false, message: "API ej konfigurerad" };
       try {
-        const result = await fetchHealth();
-        const data = result?.data || {};
-        const enabled = data?.oauth?.[provider] === true;
+        const r = await fetch(`${API_URL}/api/auth/oauth-status`, { signal: AbortSignal.timeout(10000) });
+        const data = await r.json().catch(() => ({}));
         setLast(`oauth-${provider}`);
+        if (typeof data?.[provider] === "boolean") {
+          return {
+            ok: data[provider] === true,
+            message: data[provider] === true ? "Konfigurerad" : "Saknar miljövariabler",
+          };
+        }
+        const result = await fetchHealth();
+        const fallback = result?.data || {};
+        if (typeof fallback?.oauth?.[provider] === "boolean") {
+          const enabled = fallback.oauth[provider] === true;
+          return {
+            ok: enabled,
+            message: enabled ? "Konfigurerad" : "Saknar miljövariabler",
+          };
+        }
         return {
-          ok: enabled,
-          message: enabled ? "Konfigurerad" : "Saknar miljövariabler",
+          ok: false,
+          tone: "warn",
+          message: "Statusdata för SSO saknas i denna backend",
         };
       } catch (e) {
         setLast(`oauth-${provider}`);
@@ -172,6 +201,13 @@ export default function Status() {
       const result = await fetchHealth();
       const data = result?.data || {};
       setLast("reminders");
+      if (!data?.reminders || typeof data.reminders !== "object") {
+        return {
+          ok: false,
+          tone: "warn",
+          message: "Statusdata för påminnelser saknas i denna backend",
+        };
+      }
       const ready = data?.reminders?.ready === true;
       return {
         ok: ready,
@@ -216,7 +252,7 @@ export default function Status() {
   }, [refreshAll]);
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="max-w-6xl mx-auto px-4 py-8">
       <PageHeader
         title="Status tjänster"
         description="Operativ översikt över API, databas, e-post, SSO, reminders och publika miljöer."
@@ -235,7 +271,7 @@ export default function Status() {
         </button>
       </div>
       <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
-        <table className="w-full text-left">
+        <table className="w-full min-w-[980px] table-fixed text-left">
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50">
               <th className="py-3 pr-4 pl-4 font-semibold text-slate-800">Tjänst</th>

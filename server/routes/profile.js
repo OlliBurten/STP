@@ -2,6 +2,7 @@ import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
 import { authMiddleware, requireDriver } from "../middleware/auth.js";
 import { matchScore, driverYearsFromExperience } from "../utils/matchScore.js";
+import { isDriverMinimumProfileComplete } from "../utils/driverProfileRequirements.js";
 import { notifyRecommendedDriverMatch } from "../lib/email.js";
 import { createNotification } from "../lib/notifications.js";
 
@@ -49,6 +50,7 @@ async function sendCompanyMatchAlertsForDriver(userId) {
       availability: profile.availability || "open",
       primarySegment: profile.primarySegment || null,
       secondarySegments: profile.secondarySegments || [],
+      privateMatchNotes: profile.privateMatchNotes || "",
       yearsExperience: driverYearsFromExperience(experience),
     };
 
@@ -128,14 +130,21 @@ async function sendCompanyMatchAlertsForDriver(userId) {
 
 profileRouter.get("/", async (req, res, next) => {
   try {
-    const profile = await prisma.driverProfile.findUnique({
-      where: { userId: req.userId },
-    });
-    if (!profile) return res.status(404).json({ error: "Profil hittades inte" });
     const user = await prisma.user.findUnique({
       where: { id: req.userId },
       select: { name: true, email: true },
     });
+    let profile = await prisma.driverProfile.findUnique({
+      where: { userId: req.userId },
+    });
+    if (!profile) {
+      profile = await prisma.driverProfile.create({
+        data: {
+          userId: req.userId,
+          email: user?.email || undefined,
+        },
+      });
+    }
     const experience = (profile.experience && typeof profile.experience === "object")
       ? profile.experience
       : typeof profile.experience === "string"
@@ -149,6 +158,7 @@ profileRouter.get("/", async (req, res, next) => {
       location: profile.location,
       region: profile.region,
       summary: profile.summary,
+      privateMatchNotes: profile.privateMatchNotes ?? "",
       licenses: profile.licenses,
       certificates: profile.certificates,
       availability: profile.availability,
@@ -181,6 +191,7 @@ profileRouter.put("/", async (req, res, next) => {
         availability: true,
         primarySegment: true,
         secondarySegments: true,
+        privateMatchNotes: true,
         visibleToCompanies: true,
         regionsWilling: true,
         experience: true,
@@ -198,6 +209,10 @@ profileRouter.put("/", async (req, res, next) => {
       email: body.email,
       phone: body.phone,
       summary: body.summary,
+      privateMatchNotes:
+        body.privateMatchNotes !== undefined
+          ? String(body.privateMatchNotes || "").trim() || null
+          : undefined,
       licenses: body.licenses,
       certificates: body.certificates,
       availability: body.availability,
@@ -217,14 +232,42 @@ profileRouter.put("/", async (req, res, next) => {
       data.primarySegment = "INTERNSHIP";
       data.secondarySegments = [];
     }
-    const profile = await prisma.driverProfile.update({
+    const profile = await prisma.driverProfile.upsert({
       where: { userId: req.userId },
-      data,
+      update: data,
+      create: {
+        userId: req.userId,
+        email: body.email,
+        ...data,
+      },
     });
+    const currentUser = await prisma.user.findUnique({
+      where: { id: req.userId },
+      select: { name: true },
+    });
+    const normalizedProfile = {
+      name: body.name !== undefined ? String(body.name || "") : currentUser?.name || "",
+      phone: profile.phone,
+      location: profile.location,
+      region: profile.region,
+      primarySegment: profile.primarySegment,
+      licenses: profile.licenses,
+      availability: profile.availability,
+      summary: profile.summary,
+    };
+    const minimumComplete = isDriverMinimumProfileComplete(normalizedProfile);
     if (body.name !== undefined) {
       await prisma.user.update({
         where: { id: req.userId },
-        data: { name: String(body.name) },
+        data: {
+          name: String(body.name),
+          needsDriverOnboarding: !minimumComplete,
+        },
+      });
+    } else {
+      await prisma.user.update({
+        where: { id: req.userId },
+        data: { needsDriverOnboarding: !minimumComplete },
       });
     }
     const user = await prisma.user.findUnique({
@@ -244,6 +287,7 @@ profileRouter.put("/", async (req, res, next) => {
       location: profile.location,
       region: profile.region,
       summary: profile.summary,
+      privateMatchNotes: profile.privateMatchNotes ?? "",
       licenses: profile.licenses,
       certificates: profile.certificates,
       availability: profile.availability,
@@ -268,6 +312,7 @@ profileRouter.put("/", async (req, res, next) => {
         availability: previous?.availability || null,
         primarySegment: previous?.primarySegment || null,
         secondarySegments: previous?.secondarySegments || [],
+        privateMatchNotes: previous?.privateMatchNotes || "",
         visibleToCompanies: previous?.visibleToCompanies || false,
         regionsWilling: previous?.regionsWilling || [],
         experience: previous?.experience || [],
@@ -279,6 +324,7 @@ profileRouter.put("/", async (req, res, next) => {
           availability: profile.availability || null,
           primarySegment: profile.primarySegment || null,
           secondarySegments: profile.secondarySegments || [],
+          privateMatchNotes: profile.privateMatchNotes || "",
           visibleToCompanies: profile.visibleToCompanies || false,
           regionsWilling: profile.regionsWilling || [],
           experience: profile.experience || [],

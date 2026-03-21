@@ -6,6 +6,7 @@ export const defaultProfile = {
   email: "",
   phone: "",
   summary: "",
+  privateMatchNotes: "",
   licenses: [],
   certificates: [],
   availability: "open",

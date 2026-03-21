@@ -37,6 +37,8 @@ import AkerierSearch from "./pages/AkerierSearch";
 import Branschinsikter from "./pages/Branschinsikter";
 import Kompetenslaget2025 from "./pages/Kompetenslaget2025";
 import Kontakt from "./pages/Kontakt";
+import PatchNotes from "./pages/PatchNotes";
+import VisionPresentation from "./pages/VisionPresentation";
 import { useAuth } from "./context/AuthContext";
 
 function AppLayout() {
@@ -58,6 +60,8 @@ function AppLayout() {
                   <Route path="/branschinsikter" element={<Branschinsikter />} />
                   <Route path="/branschinsikter/kompetenslaget-2025" element={<Kompetenslaget2025 />} />
                   <Route path="/kontakt" element={<Kontakt />} />
+                  <Route path="/uppdateringar" element={<PatchNotes />} />
+                  <Route path="/vision" element={<VisionPresentation />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/invite/accept" element={<InviteAccept />} />
                   <Route path="/verifiera-email" element={<VerifyEmail />} />

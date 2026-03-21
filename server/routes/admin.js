@@ -13,7 +13,11 @@ adminRouter.get("/companies/pending", async (req, res, next) => {
   try {
     const [legacyUsers, organizations] = await Promise.all([
       prisma.user.findMany({
-        where: { role: "COMPANY", companyStatus: "PENDING" },
+        where: {
+          role: "COMPANY",
+          companyStatus: "PENDING",
+          companyOrgNumber: { not: null },
+        },
         orderBy: { createdAt: "asc" },
         select: {
           id: true,
@@ -34,7 +38,7 @@ adminRouter.get("/companies/pending", async (req, res, next) => {
           orgNumber: true,
           status: true,
           createdAt: true,
-          members: {
+          userOrganizations: {
             where: { role: "OWNER" },
             take: 1,
             select: {
@@ -56,8 +60,8 @@ adminRouter.get("/companies/pending", async (req, res, next) => {
       ...legacyUsers,
       ...organizations.map((org) => ({
         id: org.id,
-        email: org.members[0]?.user?.email || null,
-        name: org.members[0]?.user?.name || null,
+        email: org.userOrganizations[0]?.user?.email || null,
+        name: org.userOrganizations[0]?.user?.name || null,
         companyName: org.name,
         companyOrgNumber: org.orgNumber,
         companyStatus: org.status,
@@ -88,7 +92,7 @@ adminRouter.patch("/companies/:id/status", async (req, res, next) => {
         name: true,
         orgNumber: true,
         status: true,
-        members: {
+        userOrganizations: {
           where: { role: "OWNER" },
           take: 1,
           select: {
@@ -107,7 +111,7 @@ adminRouter.patch("/companies/:id/status", async (req, res, next) => {
 
     let updated;
     if (organization) {
-      const owner = organization.members[0]?.user;
+      const owner = organization.userOrganizations[0]?.user;
       if (status === "VERIFIED" && !owner?.emailVerifiedAt) {
         return res.status(400).json({
           error: "Företaget kan inte verifieras innan ägarens e-postadress är verifierad",
@@ -121,7 +125,7 @@ adminRouter.patch("/companies/:id/status", async (req, res, next) => {
           name: true,
           orgNumber: true,
           status: true,
-          members: {
+          userOrganizations: {
             where: { role: "OWNER" },
             take: 1,
             select: {
@@ -139,12 +143,12 @@ adminRouter.patch("/companies/:id/status", async (req, res, next) => {
       });
       updated = {
         id: orgUpdated.id,
-        email: orgUpdated.members[0]?.user?.email || null,
-        name: orgUpdated.members[0]?.user?.name || null,
+        email: orgUpdated.userOrganizations[0]?.user?.email || null,
+        name: orgUpdated.userOrganizations[0]?.user?.name || null,
         companyName: orgUpdated.name,
         companyOrgNumber: orgUpdated.orgNumber,
         companyStatus: orgUpdated.status,
-        emailVerifiedAt: orgUpdated.members[0]?.user?.emailVerifiedAt ?? null,
+        emailVerifiedAt: orgUpdated.userOrganizations[0]?.user?.emailVerifiedAt ?? null,
       };
     } else {
       const company = await prisma.user.findUnique({
@@ -181,7 +185,7 @@ adminRouter.patch("/companies/:id/status", async (req, res, next) => {
     if (status === "VERIFIED") {
       try {
         const notificationRecipientId =
-          organization?.members[0]?.user?.id || updated.id;
+          organization?.userOrganizations[0]?.user?.id || updated.id;
         await createNotification({
           userId: notificationRecipientId,
           type: "COMPANY_APPROVED",

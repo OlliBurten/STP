@@ -127,7 +127,15 @@ function RolePicker({ oauthCompleteToken, onComplete, onError, onCancel, default
   );
 }
 
-export default function OAuthButtons({ onSuccess, onError, onRolePickerVisible, requiredRole, fromPath }) {
+export default function OAuthButtons({
+  onSuccess,
+  onError,
+  onRolePickerVisible,
+  requiredRole,
+  fromPath,
+  authMode = "login",
+  promptText,
+}) {
   const [needRole, setNeedRole] = useState(null);
   const [backendReachable, setBackendReachable] = useState(null);
   const [oauthStatus, setOAuthStatus] = useState({ google: false, microsoft: false });
@@ -151,6 +159,11 @@ export default function OAuthButtons({ onSuccess, onError, onRolePickerVisible, 
 
   const handleOAuthResult = (data) => {
     if (data.needRole && data.oauthCompleteToken) {
+      if (authMode === "login") {
+        onError?.("Det finns inget konto med den e-posten ännu. Gå till Registrera om du vill skapa ett konto.");
+        setNeedRole(null);
+        return;
+      }
       setNeedRole(data.oauthCompleteToken);
       return;
     }
@@ -205,7 +218,7 @@ export default function OAuthButtons({ onSuccess, onError, onRolePickerVisible, 
           backend inkluderar din sajt-URL (CORS).
         </div>
       )}
-      <p className="text-sm text-slate-600">Eller logga in med</p>
+      <p className="text-sm text-slate-600">{promptText || (authMode === "register" ? "Eller skapa konto med" : "Eller logga in med")}</p>
       <div className="flex flex-col gap-3">
         {showGoogle && (
           <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>

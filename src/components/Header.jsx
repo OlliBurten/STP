@@ -6,6 +6,20 @@ import { fetchNotifications, markNotificationRead, markAllNotificationsRead } fr
 import { BellIcon, MenuIcon, CloseIcon, ChevronDownIcon } from "./Icons";
 import Logo from "./Logo";
 
+const PUBLIC_NAV_LINKS = [
+  { to: "/", label: "Hem" },
+  { to: "/jobb", label: "Förare" },
+  { to: "/akerier", label: "Åkerier" },
+];
+
+const PUBLIC_EXTRA_LINKS = [
+  { to: "/#sa-fungerar-det", label: "Så fungerar STP" },
+  { to: "/branschinsikter", label: "Branschinsikter" },
+  { to: "/uppdateringar", label: "Patch notes" },
+  { to: "/om-oss", label: "Om STP" },
+  { to: "/kontakt", label: "Kontakt" },
+];
+
 export default function Header({ onboarding = false }) {
   const { user, isDriver, isCompany, isAdmin, logout } = useAuth();
   const { selectedNotificationCount, companyUnreadConversationCount = 0 } = useChat();
@@ -87,21 +101,13 @@ export default function Header({ onboarding = false }) {
     <>
       {!user && (
         <>
-          <li>
-            <Link to="/" onClick={closeMobile} className="hover:text-[var(--color-primary)] transition-colors">
-              Hem
-            </Link>
-          </li>
-          <li>
-            <Link to="/jobb" onClick={closeMobile} className="hover:text-[var(--color-primary)] transition-colors">
-              För förare
-            </Link>
-          </li>
-          <li>
-            <Link to="/akerier" onClick={closeMobile} className="hover:text-[var(--color-primary)] transition-colors">
-              För åkerier
-            </Link>
-          </li>
+          {PUBLIC_NAV_LINKS.map((item) => (
+            <li key={item.label}>
+              <Link to={item.to} onClick={closeMobile} className="hover:text-[var(--color-primary)] transition-colors">
+                {item.label}
+              </Link>
+            </li>
+          ))}
           <li className="relative" ref={navDropdownRef}>
             <button
               type="button"
@@ -128,6 +134,9 @@ export default function Header({ onboarding = false }) {
                   </Link>
                   <Link to="/branschinsikter" role="menuitem" onClick={closeNavDropdown} className="block px-5 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[var(--color-primary)]">
                     Branschinsikter
+                  </Link>
+                  <Link to="/uppdateringar" role="menuitem" onClick={closeNavDropdown} className="block px-5 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[var(--color-primary)]">
+                    Patch notes
                   </Link>
                   <Link to="/om-oss" role="menuitem" onClick={closeNavDropdown} className="block px-5 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[var(--color-primary)]">
                     Om STP
@@ -372,8 +381,22 @@ export default function Header({ onboarding = false }) {
       {/* Mobile menu panel */}
       {mobileOpen && (
         <div className="dm-mobile-menu-panel border-t border-slate-200 bg-white shadow-lg">
-          <ul className="py-2 [&>li]:border-b [&>li]:border-slate-100 [&>li_a]:block [&>li_a]:py-3 [&>li_a]:px-4 text-sm font-medium text-slate-600">
-            {navLinks}
+          <ul className="py-2 text-sm font-medium text-slate-600 [&>li]:border-b [&>li]:border-slate-100 [&>li]:last:border-b-0 [&>li>a]:block [&>li>a]:py-3 [&>li>a]:px-4">
+            {!user ? (
+              [...PUBLIC_NAV_LINKS, ...PUBLIC_EXTRA_LINKS].map((item) => (
+                <li key={item.label} className="border-b border-slate-100 last:border-b-0">
+                  <Link
+                    to={item.to}
+                    onClick={closeMobile}
+                    className="block py-3 px-4 hover:bg-slate-50 hover:text-[var(--color-primary)] transition-colors"
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))
+            ) : (
+              navLinks
+            )}
           </ul>
           <div className="px-4 py-3 border-t border-slate-100">
             {user ? (

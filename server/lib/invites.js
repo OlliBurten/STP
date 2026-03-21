@@ -11,6 +11,11 @@ import { issueEmailVerification } from "../routes/auth.js";
 const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 const MAX_INVITES_PER_COMPANY = 50;
 
+function isCompanyRole(role) {
+  const normalized = String(role || "").trim().toUpperCase();
+  return normalized === "COMPANY" || normalized === "RECRUITER";
+}
+
 /** @returns {string} Raw token (for email). Store only hash in DB. */
 function createToken() {
   return crypto.randomBytes(32).toString("hex");
@@ -61,7 +66,7 @@ export async function resolveCompanyOwner(userId) {
     where: { id: userId },
     select: { id: true, role: true, companyOrgNumber: true },
   });
-  if (!user || user.role !== "COMPANY") return null;
+  if (!user || !isCompanyRole(user.role)) return null;
   if (user.companyOrgNumber) {
     return { ownerId: user.id, isOwner: true };
   }

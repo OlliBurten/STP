@@ -317,6 +317,12 @@ companiesRouter.put("/me/profile", requireCompanyOwner, validateBody(companyProf
           status: true,
         },
       });
+      if (Array.isArray(updated.segmentDefaults) && updated.segmentDefaults.length > 0) {
+        await prisma.user.update({
+          where: { id: req.companyOwnerId ?? req.userId },
+          data: { needsRecruiterOnboarding: false },
+        });
+      }
       return res.json({
         id: updated.id,
         name: updated.name,
@@ -361,6 +367,12 @@ companiesRouter.put("/me/profile", requireCompanyOwner, validateBody(companyProf
         companyStatus: true,
       },
     });
+    if (Array.isArray(updated.companySegmentDefaults) && updated.companySegmentDefaults.length > 0) {
+      await prisma.user.update({
+        where: { id: ownerId },
+        data: { needsRecruiterOnboarding: false },
+      });
+    }
     res.json(updated);
   } catch (e) {
     next(e);

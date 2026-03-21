@@ -78,6 +78,7 @@ export default function ForCompanies() {
   if (
     hasApi &&
     isCompany &&
+    user?.shouldShowOnboarding &&
     !isTeamMember &&
     !isAdmin &&
     !userHasSegments &&

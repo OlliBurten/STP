@@ -3,6 +3,11 @@ import { prisma } from "../lib/prisma.js";
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-in-production";
 
+function isCompanyRole(role) {
+  const normalized = String(role || "").trim().toUpperCase();
+  return normalized === "COMPANY" || normalized === "RECRUITER";
+}
+
 function parseAdminEmails() {
   return String(process.env.ADMIN_EMAILS || "")
     .split(",")
@@ -72,7 +77,7 @@ export function requireDriver(req, res, next) {
 }
 
 export function requireCompany(req, res, next) {
-  if (req.role !== "COMPANY") {
+  if (!isCompanyRole(req.role)) {
     return res.status(403).json({ error: "Endast för företag" });
   }
   next();
@@ -80,7 +85,7 @@ export function requireCompany(req, res, next) {
 
 /** Attach company context for COMPANY/RECRUITER. Sets req.companyOwnerId, req.organizationId. */
 export async function attachCompanyContext(req, res, next) {
-  if (req.role !== "COMPANY") return next(); // RECRUITER later
+  if (!isCompanyRole(req.role)) return next();
   try {
     const { resolveCompanyOwner } = await import("../lib/invites.js");
     const resolved = await resolveCompanyOwner(req.userId);
@@ -111,20 +116,31 @@ export async function requireCompanyOwner(req, res, next) {
 }
 
 export async function requireVerifiedCompany(req, res, next) {
-  if (req.role !== "COMPANY") {
+  if (!isCompanyRole(req.role)) {
     return res.status(403).json({ error: "Endast för företag" });
   }
   try {
     const { resolveCompanyOwner } = await import("../lib/invites.js");
     const resolved = await resolveCompanyOwner(req.userId);
-    if (!resolved) return res.status(401).json({ error: "Användaren hittades inte" });
+    if (!resolved) {
+      console.warn("[auth] company context missing", { userId: req.userId, role: req.role });
+      return res.status(403).json({
+        error: "Lägg till ditt första företag först innan du använder företagsfunktioner.",
+      });
+    }
 
     if (resolved.organizationId) {
       const org = await prisma.organization.findUnique({
         where: { id: resolved.organizationId },
         select: { status: true },
       });
-      if (!org) return res.status(401).json({ error: "Företaget hittades inte" });
+      if (!org) {
+        console.warn("[auth] organization context missing", {
+          userId: req.userId,
+          organizationId: resolved.organizationId,
+        });
+        return res.status(403).json({ error: "Företaget hittades inte" });
+      }
       if (org.status !== "VERIFIED") {
         return res.status(403).json({
           error:
@@ -134,9 +150,18 @@ export async function requireVerifiedCompany(req, res, next) {
     } else {
       const companyUser = await prisma.user.findUnique({
         where: { id: resolved.ownerId },
-        select: { companyStatus: true },
+        select: { companyStatus: true, companyOrgNumber: true },
       });
-      if (!companyUser) return res.status(401).json({ error: "Företaget hittades inte" });
+      if (!companyUser) {
+        console.warn("[auth] legacy company context missing", {
+          userId: req.userId,
+          ownerId: resolved.ownerId,
+        });
+        return res.status(403).json({ error: "Företaget hittades inte" });
+      }
+      if (!companyUser.companyOrgNumber) {
+        return next();
+      }
       if (companyUser.companyStatus !== "VERIFIED") {
         return res.status(403).json({
           error:

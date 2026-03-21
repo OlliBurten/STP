@@ -26,6 +26,89 @@ function normalizeDriverSegments(driver) {
   return [...new Set(list)];
 }
 
+const PRIVATE_NOTE_STOPWORDS = new Set([
+  "och",
+  "att",
+  "som",
+  "med",
+  "för",
+  "vill",
+  "helst",
+  "gillar",
+  "soker",
+  "söker",
+  "jobb",
+  "arbete",
+  "tjanst",
+  "tjänst",
+  "kora",
+  "köra",
+  "kan",
+  "inte",
+  "ej",
+  "men",
+  "eller",
+  "jag",
+  "mig",
+  "min",
+  "mitt",
+  "mina",
+  "har",
+  "fran",
+  "från",
+  "inom",
+  "mest",
+  "bara",
+]);
+
+function normalizeText(value) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+function uniqueTokens(value) {
+  return [...new Set(
+    normalizeText(value)
+      .split(/[^a-z0-9]+/i)
+      .map((token) => token.trim())
+      .filter((token) => token.length >= 4 && !PRIVATE_NOTE_STOPWORDS.has(token))
+  )];
+}
+
+function privateMatchNotesAdjustment(notes, job) {
+  const normalizedNotes = normalizeText(notes);
+  if (!normalizedNotes) return 0;
+
+  const haystack = normalizeText([
+    job.title,
+    job.company,
+    job.description,
+    job.region,
+    job.jobType,
+    job.bransch,
+    job.schedule,
+    job.employment,
+    job.requirements,
+    job.extraRequirements,
+  ].filter(Boolean).join(" "));
+
+  if (!haystack) return 0;
+
+  const negativeMatches = [...normalizedNotes.matchAll(/\b(?:inte|ej|undvik|undvika|slippa)\s+([a-z0-9]+)/g)]
+    .map((match) => match[1])
+    .filter((token) => token.length >= 4 && haystack.includes(token));
+
+  const positiveMatches = uniqueTokens(normalizedNotes)
+    .filter((token) => !negativeMatches.includes(token))
+    .filter((token) => haystack.includes(token));
+
+  const boost = Math.min(2, positiveMatches.length);
+  const penalty = negativeMatches.length > 0 ? 2 : 0;
+  return boost - penalty;
+}
+
 export function matchScore(driver, job) {
   let score = 0;
   const driverSegments = normalizeDriverSegments(driver);
@@ -56,7 +139,9 @@ export function matchScore(driver, job) {
   if (driverYears >= jobMinYears) score += 1;
 
   if (availabilityMatches(driver.availability, job.employment)) score += 1;
-  return score;
+
+  score += privateMatchNotesAdjustment(driver.privateMatchNotes, job);
+  return Math.max(0, score);
 }
 
 export function driverYearsFromExperience(experience) {
