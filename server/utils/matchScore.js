@@ -125,6 +125,7 @@ export function matchScore(driver, job) {
   const driverCerts = driver.certificates || [];
   const jobCerts = job.certificates || [];
   const hasAllCerts = jobCerts.every((c) => driverCerts.includes(c));
+  if (jobCerts.length > 0 && !hasAllCerts) return 0;
   if (hasAllCerts) score += jobCerts.length || 1;
   else if (jobCerts.length === 0) score += 1;
 

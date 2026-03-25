@@ -5,7 +5,7 @@ import { mockDrivers } from "../data/mockDrivers";
 import ApplyModal from "../components/ApplyModal";
 import DriverCard from "../components/DriverCard";
 import { useAuth } from "../context/AuthContext";
-import { getMatchingDriversForJob } from "../utils/matchUtils";
+import { getDriverMatchHighlights, getMatchingDriversForJob } from "../utils/matchUtils";
 import { fetchJob, fetchJobApplicants, fetchSavedJobs, saveJob, unsaveJob } from "../api/jobs.js";
 import { selectConversation, rejectConversation } from "../api/conversations.js";
 import { getCompanyReviewSummary } from "../api/reviews.js";
@@ -246,14 +246,20 @@ export default function JobDetail() {
           ) : (
             <p className="mt-2 text-lg text-slate-600">{job.company}</p>
           )}
-          {reviewSummary && (
-            <p className="mt-1 text-sm text-slate-600">
-              Omdömen:{" "}
-              {reviewSummary.reviewCount > 0
-                ? `${reviewSummary.averageRating}/5 (${reviewSummary.reviewCount} st)`
-                : "Inga omdömen ännu"}
-            </p>
-          )}
+          <div className="mt-3 flex flex-wrap gap-2 text-sm">
+            {job.companyVerified && (
+              <span className="inline-flex items-center rounded-full bg-green-100 px-3 py-1 font-medium text-green-800">
+                Verifierat företag
+              </span>
+            )}
+            {reviewSummary && (
+              <span className="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 font-medium text-amber-800">
+                Omdömen: {reviewSummary.reviewCount > 0
+                  ? `${reviewSummary.averageRating}/5 (${reviewSummary.reviewCount} st)`
+                  : "Inga omdömen ännu"}
+              </span>
+            )}
+          </div>
           <p className="mt-1 text-slate-500 flex items-center gap-1"><LocationIcon className="w-4 h-4 shrink-0" /> {job.location}, {job.region}</p>
 
           {/* Tydlighet & förtroende: publiceringsdatum och senast uppdaterad */}
@@ -291,6 +297,9 @@ export default function JobDetail() {
               <p className="text-slate-600 text-sm">Företagets profil innehåller mer information.</p>
             )}
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-600">
+              {job.companyVerified && (
+                <span className="text-green-700 font-medium">Verifierat företag</span>
+              )}
               {job.companyLocation && (
                 <span className="flex items-center gap-1">
                   <LocationIcon className="w-4 h-4 shrink-0" /> {job.companyLocation}
@@ -433,18 +442,19 @@ export default function JobDetail() {
           {isCompany && !isMyJob && matchingDrivers.length > 0 && (
             <div className="mt-10 pt-8 border-t border-slate-200">
               <h2 className="font-semibold text-slate-900 mb-2">
-                Chaufförer som matchar detta jobb
+                Förare som matchar detta jobb
               </h2>
               <p className="text-sm text-slate-600 mb-4">
                 Baserat på körkort, certifikat, region och erfarenhet.
               </p>
               <div className="space-y-4">
-                {matchingDrivers.map(({ driver, score }) => (
+                {matchingDrivers.map(({ driver, score, details }) => (
                   <div key={driver.id} className="relative">
-                    <div className="absolute top-3 right-3 z-10 px-2 py-1 rounded text-xs font-medium bg-[var(--color-accent)] text-slate-900">
-                      {score} match
-                    </div>
-                    <DriverCard driver={driver} />
+                    <DriverCard
+                      driver={driver}
+                      matchScore={score}
+                      matchHighlights={getDriverMatchHighlights(driver, details)}
+                    />
                   </div>
                 ))}
               </div>
@@ -453,7 +463,7 @@ export default function JobDetail() {
                 state={{ forJobId: job.id, forJobTitle: job.title }}
                 className="mt-4 inline-block text-sm font-medium text-[var(--color-primary)] hover:underline"
               >
-                Sök fler chaufförer →
+                Hitta fler förare →
               </Link>
             </div>
           )}

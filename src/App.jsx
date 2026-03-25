@@ -9,6 +9,8 @@ import OnboardingGate, { useOnboardingRequired } from "./components/OnboardingGa
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
+import ForDrivers from "./pages/ForDrivers";
+import ForCompaniesLanding from "./pages/ForCompaniesLanding";
 import JobList from "./pages/JobList";
 import JobDetail from "./pages/JobDetail";
 import ForCompanies from "./pages/ForCompanies";
@@ -42,7 +44,7 @@ import VisionPresentation from "./pages/VisionPresentation";
 import { useAuth } from "./context/AuthContext";
 
 function AppLayout() {
-  const { user } = useAuth();
+  const { user, isCompany } = useAuth();
   const onboarding = useOnboardingRequired();
   return (
     <div className="min-h-screen flex flex-col overflow-x-hidden">
@@ -51,10 +53,12 @@ function AppLayout() {
         <OnboardingGate>
         <Routes>
                   <Route path="/" element={<Home />} />
+                  <Route path="/forare" element={<ForDrivers />} />
+                  <Route path="/for-akerier" element={<ForCompaniesLanding />} />
                   <Route path="/jobb" element={<JobList />} />
                   <Route path="/jobb/:id" element={<JobDetail />} />
                   <Route path="/akerier" element={<AkerierSearch />} />
-                  <Route path="/foretag" element={<ForCompanies />} />
+                  <Route path="/foretag" element={isCompany ? <ForCompanies /> : <ForCompaniesLanding />} />
                   <Route path="/foretag/:id" element={<CompanyPublicProfile />} />
                   <Route path="/om-oss" element={<About />} />
                   <Route path="/branschinsikter" element={<Branschinsikter />} />

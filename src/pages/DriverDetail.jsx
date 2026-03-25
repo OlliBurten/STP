@@ -8,9 +8,10 @@ import { calcYearsExperience } from "../utils/profileUtils";
 import { availabilityTypes, getCertificateLabel } from "../data/profileData";
 import ReachOutModal from "../components/ReachOutModal";
 import { segmentLabel } from "../data/segments";
-import { LocationIcon } from "../components/Icons";
+import { LocationIcon, CheckIcon } from "../components/Icons";
 import { fetchDriver } from "../api/drivers.js";
 import { fetchMyJobs } from "../api/jobs.js";
+import { isDriverMinimumProfileComplete } from "../utils/driverProfileRequirements.js";
 
 export default function DriverDetail() {
   const { id } = useParams();
@@ -63,7 +64,7 @@ export default function DriverDetail() {
   if (loadError || (!driver && !loading)) {
     return (
       <main className="max-w-3xl mx-auto px-4 py-16 text-center">
-        <h1 className="text-2xl font-bold text-slate-900">Chauffören hittades inte</h1>
+        <h1 className="text-2xl font-bold text-slate-900">Föraren hittades inte</h1>
         <Link
           to="/foretag/chaufforer"
           className="mt-4 inline-block text-[var(--color-primary)] font-medium hover:underline"
@@ -81,6 +82,13 @@ export default function DriverDetail() {
 
   const availabilityLabel =
     availabilityTypes.find((a) => a.value === driver.availability)?.label || driver.availability;
+  const hasMinimumProfile = isDriverMinimumProfileComplete(driver);
+  const quickSignals = [
+    hasMinimumProfile ? "Minimumprofil klar" : "Profil under uppbyggnad",
+    driver.primarySegment ? `Primärt segment: ${segmentLabel(driver.primarySegment)}` : null,
+    availabilityLabel ? `Tillgänglighet: ${availabilityLabel}` : null,
+    driver.yearsExperience || driver.yearsExperience === 0 ? `${driver.yearsExperience} års erfarenhet` : null,
+  ].filter(Boolean);
 
   return (
     <main className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
@@ -134,7 +142,7 @@ export default function DriverDetail() {
               onClick={() => setShowReachOut(true)}
               className="shrink-0 px-6 py-3 rounded-xl bg-[var(--color-primary)] text-white font-semibold hover:bg-[var(--color-primary-light)] transition-colors"
             >
-              Kontakta chaufför
+              Kontakta förare
             </button>
           </div>
 
@@ -144,9 +152,36 @@ export default function DriverDetail() {
             </p>
           )}
 
+          <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <h2 className="text-sm font-semibold text-slate-900">Snabb bedömning</h2>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {quickSignals.map((item) => (
+                <span
+                  key={item}
+                  className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium ${
+                    item === "Minimumprofil klar"
+                      ? "bg-green-100 text-green-800"
+                      : "bg-white text-slate-700 border border-slate-200"
+                  }`}
+                >
+                  {item === "Minimumprofil klar" ? <CheckIcon className="w-3.5 h-3.5" /> : null}
+                  {item}
+                </span>
+              ))}
+              {driver.secondarySegments?.length > 0 && (
+                <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-white text-slate-700 border border-slate-200">
+                  Fler segment: {driver.secondarySegments.map((segment) => segmentLabel(segment)).join(", ")}
+                </span>
+              )}
+            </div>
+            <p className="mt-3 text-sm text-slate-600">
+              Tanken med STP är att ni ska kunna förstå en förare snabbare än i ett vanligt fritextflöde.
+            </p>
+          </div>
+
           {driver.summary && (
             <div className="mt-6 pt-6 border-t border-slate-200">
-              <h2 className="font-semibold text-slate-900 mb-2">Om chauffören</h2>
+              <h2 className="font-semibold text-slate-900 mb-2">Om föraren</h2>
               <p className="text-slate-700 whitespace-pre-line">{driver.summary}</p>
             </div>
           )}

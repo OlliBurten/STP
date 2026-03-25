@@ -8,6 +8,12 @@ import { regions } from "../data/mockJobs.js";
 import { useAuth } from "../context/AuthContext";
 import { trackCompanyOnboardingComplete } from "../utils/segmentMetrics";
 
+const onboardingReasons = [
+  "Segmenten hjälper STP att visa rätt förare snabbare.",
+  "Region och bransch gör att ni syns tydligare i Hitta åkerier och i relevanta filter.",
+  "Mer komplett grunddata skapar ett mer seriöst första intryck direkt.",
+];
+
 export default function CompanyOnboardingWizard() {
   const { hasApi, refreshUser } = useAuth();
   const navigate = useNavigate();
@@ -131,8 +137,16 @@ export default function CompanyOnboardingWizard() {
           <p className="text-sm text-slate-500">Rekryterar-onboarding</p>
           <h1 className="text-2xl font-bold text-slate-900">Lägg till ditt första åkeri</h1>
           <p className="text-slate-600">
-            Skapa ditt första åkeri för att kunna publicera jobb och söka förare.
+            Lägg grunden en gång så kan ni börja hitta förare och publicera jobb direkt efteråt.
           </p>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <p className="text-sm font-semibold text-slate-900">Varför vi börjar här</p>
+            <ul className="mt-2 space-y-1.5 text-sm text-slate-600">
+              {onboardingReasons.map((reason) => (
+                <li key={reason}>{reason}</li>
+              ))}
+            </ul>
+          </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Företagsnamn *</label>
             <input
@@ -163,6 +177,43 @@ export default function CompanyOnboardingWizard() {
                 <option key={r} value={r}>{r}</option>
               ))}
             </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">Bransch (rekommenderat)</label>
+            <p className="text-xs text-slate-500 mb-2">Hjälper förare att förstå vilken typ av verksamhet ni har.</p>
+            <div className="space-y-3 max-h-64 overflow-auto rounded-xl border border-slate-200 p-3">
+              {transportSegmentGroups.map((group) => (
+                <div key={group.id}>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{group.label}</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {group.options.map((option) => {
+                      const active = firstCompany.bransch.includes(option.value);
+                      return (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() =>
+                            setFirstCompany((prev) => ({
+                              ...prev,
+                              bransch: active
+                                ? prev.bransch.filter((item) => item !== option.value)
+                                : [...prev.bransch, option.value],
+                            }))
+                          }
+                          className={`px-3 py-2 rounded-lg text-sm border ${
+                            active
+                              ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5 text-[var(--color-primary)]"
+                              : "border-slate-300 text-slate-700 hover:bg-slate-50"
+                          }`}
+                        >
+                          {option.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">Transportsegment *</label>
@@ -209,7 +260,13 @@ export default function CompanyOnboardingWizard() {
       <section className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8">
         <p className="text-sm text-slate-500">Rekryterar-onboarding</p>
         <h1 className="mt-1 text-2xl font-bold text-slate-900">Vilka segment rekryterar ni för?</h1>
-        <p className="mt-2 text-slate-600">Standardval när ni publicerar jobb. Går att ändra per annons.</p>
+        <p className="mt-2 text-slate-600">Standardval när ni publicerar jobb och söker förare. Går att ändra per annons.</p>
+        <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <p className="text-sm font-semibold text-slate-900">Detta hjälper er direkt</p>
+          <p className="mt-1 text-sm text-slate-600">
+            När segmenten är tydliga blir matchningen mer träffsäker och era annonser lättare att förstå för rätt förare.
+          </p>
+        </div>
         <div className="mt-6 grid gap-3">
           {segmentOptions.map((segment) => {
             const active = defaults.includes(segment.value);

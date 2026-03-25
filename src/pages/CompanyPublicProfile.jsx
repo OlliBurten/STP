@@ -3,7 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { fetchCompanyPublicProfile } from "../api/companies.js";
 import { mapEmploymentToSegment, segmentLabel } from "../data/segments";
 import { getBranschLabel } from "../data/bransch.js";
-import { StarFilledIcon, LocationIcon } from "../components/Icons";
+import { StarFilledIcon, LocationIcon, CheckIcon } from "../components/Icons";
 
 export default function CompanyPublicProfile() {
   const { id } = useParams();
@@ -38,6 +38,14 @@ export default function CompanyPublicProfile() {
     );
   }
 
+  const hasStrongProfile = Boolean(
+    company.description &&
+    company.website &&
+    company.region &&
+    Array.isArray(company.bransch) &&
+    company.bransch.length > 0
+  );
+
   return (
     <main className="max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-6">
       <Link to="/jobb" className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-[var(--color-primary)]">
@@ -49,6 +57,20 @@ export default function CompanyPublicProfile() {
       <section className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8">
         <h1 className="text-3xl font-bold text-slate-900">{company.name}</h1>
         <div className="mt-3 flex flex-wrap gap-3 text-sm text-slate-600">
+          {company.verified ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-green-800">
+              <CheckIcon className="w-4 h-4" />
+              Verifierat företag
+            </span>
+          ) : null}
+          {hasStrongProfile ? (
+            <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-slate-700">
+              Utfylld företagsprofil
+            </span>
+          ) : null}
+          <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-slate-700">
+            {company.jobs.length} aktiva jobb
+          </span>
           {company.location ? <span className="inline-flex items-center gap-1"><LocationIcon className="w-4 h-4 shrink-0" /> {company.location}</span> : null}
           {company.region ? <span className="inline-flex items-center gap-1"><LocationIcon className="w-4 h-4 shrink-0" /> {company.region}</span> : null}
           {company.bransch?.length > 0 ? (
@@ -74,6 +96,12 @@ export default function CompanyPublicProfile() {
         <p className="mt-5 text-slate-700 whitespace-pre-line">
           {company.description || "Företaget har inte lagt till någon presentation ännu."}
         </p>
+        <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <p className="text-sm font-medium text-slate-900">Varför detta spelar roll</p>
+          <p className="mt-1 text-sm text-slate-600">
+            På STP försöker vi göra det enklare att snabbt bedöma hur seriöst och relevant ett företag är genom tydligare profilinformation, verifiering och omdömen.
+          </p>
+        </div>
       </section>
 
       <section className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8">

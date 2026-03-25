@@ -32,7 +32,7 @@ export default function DriverFilters({ filters, setFilters }) {
     <div className="space-y-4">
       <div>
         <label htmlFor="driver-search" className="sr-only">
-          Sök chaufförer
+          Sök förare
         </label>
         <input
           id="driver-search"

@@ -10,8 +10,9 @@ export default function Kontakt() {
           href="mailto:info@transportplattformen.se"
           className="inline-flex items-center justify-center min-h-[44px] px-6 py-3 rounded-xl bg-[var(--color-primary)] text-white font-semibold hover:bg-[var(--color-primary-light)] transition-colors"
         >
-          Skicka e-post till info@transportplattformen.se
+          Mejla oss
         </a>
+        <p className="text-sm text-slate-600">info@transportplattformen.se</p>
       </div>
     </main>
   );

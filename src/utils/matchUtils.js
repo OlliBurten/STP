@@ -1,3 +1,6 @@
+import { segmentLabel } from "../data/segments";
+import { getCertificateLabel } from "../data/profileData";
+
 /**
  * Match scoring for driver-job compatibility.
  * Structured fields enable consistent matching across the platform.
@@ -205,6 +208,52 @@ export function matchScore(driver, job) {
   score += privateMatchNotesAdjustment(driver.privateMatchNotes, job);
 
   return { score: Math.max(0, score), details };
+}
+
+export function getJobMatchHighlights(job, details = {}) {
+  const highlights = [];
+  if (details.license && Array.isArray(job?.license) && job.license.length > 0) {
+    highlights.push(`Körkort: ${job.license.join(", ")}`);
+  }
+  if (details.certificates && Array.isArray(job?.certificates) && job.certificates.length > 0) {
+    highlights.push(`Certifikat: ${job.certificates.map(getCertificateLabel).join(", ")}`);
+  }
+  if (details.region && job?.region) {
+    highlights.push(`Region: ${job.region}`);
+  }
+  if (details.segment && job?.segment) {
+    highlights.push(`Segment: ${segmentLabel(job.segment)}`);
+  }
+  if (details.availability) {
+    highlights.push("Tillgänglighet matchar");
+  }
+  if (details.experience) {
+    highlights.push("Erfarenhet matchar");
+  }
+  return highlights.slice(0, 3);
+}
+
+export function getDriverMatchHighlights(driver, details = {}) {
+  const highlights = [];
+  if (details.license && Array.isArray(driver?.licenses) && driver.licenses.length > 0) {
+    highlights.push(`Körkort: ${driver.licenses.join(", ")}`);
+  }
+  if (details.certificates && Array.isArray(driver?.certificates) && driver.certificates.length > 0) {
+    highlights.push(`Certifikat: ${driver.certificates.map(getCertificateLabel).join(", ")}`);
+  }
+  if (details.region && driver?.region) {
+    highlights.push(`Region: ${driver.region}`);
+  }
+  if (details.segment && driver?.primarySegment) {
+    highlights.push(`Segment: ${segmentLabel(driver.primarySegment)}`);
+  }
+  if (details.availability) {
+    highlights.push("Tillgänglig för upplägget");
+  }
+  if (details.experience) {
+    highlights.push("Rimlig erfarenhetsnivå");
+  }
+  return highlights.slice(0, 3);
 }
 
 /**

@@ -111,6 +111,7 @@ companiesRouter.get("/:id/public", async (req, res, next) => {
       select: {
         id: true,
         role: true,
+        companyStatus: true,
         companyName: true,
         name: true,
         companyDescription: true,
@@ -152,6 +153,7 @@ companiesRouter.get("/:id/public", async (req, res, next) => {
       location: company.companyLocation || "",
       bransch: company.companyBransch || [],
       region: company.companyRegion || "",
+      verified: company.companyStatus === "VERIFIED",
       reviewAverage: reviewAggregate._avg.rating
         ? Number(reviewAggregate._avg.rating.toFixed(2))
         : null,

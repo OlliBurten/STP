@@ -45,6 +45,12 @@ export default function AkerierSearch() {
             ? "Åkerier som tar emot praktikanter."
             : "Sök efter transportföretag efter bransch och område – som gula sidorna. Hitta åkerier att kontakta även när det inte finns en aktiv jobbannons."}
         </p>
+        <div className="mt-5 rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
+          <p className="text-sm font-semibold text-slate-900">Mer seriöst än ett vanligt katalogsök</p>
+          <p className="mt-1 text-sm text-slate-600">
+            Här visar vi företag som redan har verifierats och fyllt i grunddata som bransch och region, så att du snabbare kan förstå om de är relevanta för dig.
+          </p>
+        </div>
       </div>
 
       <div className="grid lg:grid-cols-[260px_1fr] gap-6 lg:gap-10">
@@ -163,6 +169,9 @@ export default function AkerierSearch() {
                           )}
                         </div>
                         <div className="flex flex-wrap items-center gap-2 sm:flex-shrink-0">
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            Verifierat företag
+                          </span>
                           {c.activeJobCount > 0 && (
                             <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                               {c.activeJobCount} aktiva jobb

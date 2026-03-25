@@ -41,6 +41,22 @@ function pickUserCreateData(u) {
 
 function pickDriverProfileCreateData(p, userId) {
   if (!p) return null;
+  const hasProfileSignal = Boolean(
+    p.location ||
+    p.region ||
+    p.phone ||
+    p.summary ||
+    p.availability ||
+    p.primarySegment ||
+    (Array.isArray(p.licenses) && p.licenses.length > 0) ||
+    (Array.isArray(p.certificates) && p.certificates.length > 0) ||
+    (Array.isArray(p.secondarySegments) && p.secondarySegments.length > 0) ||
+    (Array.isArray(p.regionsWilling) && p.regionsWilling.length > 0)
+  );
+  const visibleToCompanies =
+    typeof p.visibleToCompanies === "boolean"
+      ? p.visibleToCompanies
+      : hasProfileSignal;
   // Viktigt: skapa ny profil kopplad till nya userId.
   return {
     userId,
@@ -54,7 +70,7 @@ function pickDriverProfileCreateData(p, userId) {
     availability: p.availability,
     primarySegment: p.primarySegment,
     secondarySegments: Array.isArray(p.secondarySegments) ? p.secondarySegments : [],
-    visibleToCompanies: Boolean(p.visibleToCompanies),
+    visibleToCompanies,
     regionsWilling: Array.isArray(p.regionsWilling) ? p.regionsWilling : [],
     showEmailToCompanies: Boolean(p.showEmailToCompanies),
     showPhoneToCompanies: Boolean(p.showPhoneToCompanies),

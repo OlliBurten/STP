@@ -24,9 +24,8 @@ import {
 
 export default function Profile() {
   const { user, hasApi } = useAuth();
-  const { profile, updateProfile } = useProfile();
+  const { profile, updateProfile, profileSaving, profileSaveError } = useProfile();
   const [editing, setEditing] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
   const [draft, setDraft] = useState(profile);
   const [newExp, setNewExp] = useState({ company: "", role: "", startYear: "", endYear: "", current: false, description: "" });
@@ -93,14 +92,16 @@ export default function Profile() {
     setEditing(false);
   };
 
-  const saveProfile = () => {
-    setSaving(true);
+  const saveProfile = async () => {
     setSaveMessage("");
-    updateProfile(draft);
-    setEditing(false);
-    setSaving(false);
-    setSaveMessage("Profilen sparad.");
-    setTimeout(() => setSaveMessage(""), 2500);
+    try {
+      await updateProfile(draft);
+      setEditing(false);
+      setSaveMessage("Profilen sparad.");
+      setTimeout(() => setSaveMessage(""), 2500);
+    } catch (_) {
+      // profileSaveError is shown in the header area.
+    }
   };
 
   const toggleLicense = (value) => {
@@ -191,6 +192,7 @@ export default function Profile() {
         <h1 className="text-2xl font-bold text-slate-900">Min profil</h1>
         <div className="flex flex-wrap items-center gap-2">
           {saveMessage ? <span className="text-sm text-green-700">{saveMessage}</span> : null}
+          {profileSaveError ? <span className="text-sm text-red-700">{profileSaveError}</span> : null}
           {editing ? (
             <>
               <button
@@ -203,11 +205,11 @@ export default function Profile() {
               <button
                 type="button"
                 onClick={saveProfile}
-                disabled={saving || !hasUnsavedChanges}
+                disabled={profileSaving || !hasUnsavedChanges}
                 className="px-4 py-2 rounded-lg text-sm font-medium bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-light)] disabled:opacity-50 inline-flex items-center gap-2 min-h-[44px]"
               >
                 {hasUnsavedChanges ? <span className="inline-block w-2 h-2 rounded-full bg-amber-300" /> : null}
-                {saving ? "Sparar..." : "Spara"}
+                {profileSaving ? "Sparar..." : "Spara"}
               </button>
             </>
           ) : (
@@ -226,7 +228,7 @@ export default function Profile() {
       ) : null}
       {profile?.visibleToCompanies && (profile?.regionsWilling || []).length > 0 && (
         <p className="mb-4 text-sm text-slate-600">
-          <CheckIcon className="w-4 h-4 inline-block mr-1 align-middle text-green-600" /> Du syns för företag i <strong>{(profile.regionsWilling || []).length} regioner</strong> (Kan jobba i) när de söker chaufförer.
+          <CheckIcon className="w-4 h-4 inline-block mr-1 align-middle text-green-600" /> Du syns för företag i <strong>{(profile.regionsWilling || []).length} regioner</strong> (Kan jobba i) när de söker förare.
         </p>
       )}
 
@@ -250,7 +252,7 @@ export default function Profile() {
               {hasRegion && <li><CheckIcon className="w-4 h-4 inline-block mr-1 align-middle text-green-600" aria-hidden /> Region vald</li>}
               {!hasAvailability && <li><span className="text-slate-500" aria-hidden>○</span> Välj tillgänglighet så att vi kan matcha dig mot rätt typ av jobb.</li>}
               {hasAvailability && <li><CheckIcon className="w-4 h-4 inline-block mr-1 align-middle text-green-600" aria-hidden /> Tillgänglighet vald</li>}
-              {!isVisible && hasRegion && <li><span className="text-slate-500" aria-hidden>○</span> Bli synlig för företag så att de kan hitta dig i chaufförsökningen.</li>}
+              {!isVisible && hasRegion && <li><span className="text-slate-500" aria-hidden>○</span> Bli synlig för företag så att de kan hitta dig i förarsökningen.</li>}
               {isVisible && <li><CheckIcon className="w-4 h-4 inline-block mr-1 align-middle text-green-600" aria-hidden /> Synlig för företag</li>}
             </ul>
           </div>
@@ -763,7 +765,7 @@ export default function Profile() {
       <p className="mt-6 text-sm text-slate-500 text-center">
         Din profil är ditt CV. Den delas när du ansöker till jobb.{" "}
         <Link to="/jobb" className="text-[var(--color-primary)] hover:underline">
-          Sök jobb
+          Se lediga jobb
         </Link>
         {" · "}
         <Link to="/meddelanden" className="text-[var(--color-primary)] hover:underline">

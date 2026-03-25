@@ -58,8 +58,8 @@ export default function ForCompanies() {
   const onboardingSteps = useMemo(
     () => [
       { label: "Verifiera företagskonto", done: isVerifiedCompany },
+      { label: "Hitta era första relevanta förare", done: companyConversationCount > 0 },
       { label: "Publicera första jobbet", done: jobCount > 0 },
-      { label: "Starta första dialogen med en förare", done: companyConversationCount > 0 },
     ],
     [isVerifiedCompany, jobCount, companyConversationCount]
   );
@@ -98,7 +98,7 @@ export default function ForCompanies() {
               {companyProfile?.companyName || user?.companyName || "Rekryterarkonto"}
             </h1>
             <p className="mt-2 text-slate-600">
-              Hantera jobb, kandidater, meddelanden och företagsprofil på ett ställe.
+              Börja med att hitta förare, följ upp dialoger och publicera jobb när ni vill bredda inflödet.
             </p>
           </div>
           <Link
@@ -143,7 +143,7 @@ export default function ForCompanies() {
             </p>
           </div>
           <div className="rounded-lg border border-slate-200 p-4">
-            <p className="text-xs text-slate-500">Trust score</p>
+            <p className="text-xs text-slate-500">Omdömen</p>
             <p className="mt-1 text-2xl font-bold text-slate-900">
               {reviewSummary?.reviewCount ? `${reviewSummary.averageRating}/5` : "-"}
             </p>
@@ -179,9 +179,9 @@ export default function ForCompanies() {
           <div className="mb-6 rounded-xl border border-indigo-200 bg-indigo-50 p-5">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <p className="text-base font-semibold text-indigo-900">Kom igång som rekryterare</p>
+                <p className="text-base font-semibold text-indigo-900">Nästa steg för att komma igång</p>
                 <p className="mt-1 text-sm text-indigo-800">
-                  Följ stegen nedan för att snabbt komma igång med rekrytering.
+                  Fokusera på första värdet: bli verifierade, hitta relevanta förare och publicera jobb när ni behöver bredda sökningen.
                 </p>
               </div>
               <button
@@ -204,7 +204,7 @@ export default function ForCompanies() {
 
         <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Snabbåtgärder</h2>
         <p className="mt-2 text-slate-600">
-          Gå direkt till de viktigaste funktionerna för ert företag.
+          Gå direkt till de funktioner som snabbast tar er från behov till relevant kandidat.
         </p>
         {isCompany && !isVerifiedCompany && (
           <div className="mt-6 rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-900">
@@ -215,24 +215,24 @@ export default function ForCompanies() {
           </div>
         )}
         <div className="dm-company-actions mt-8">
-          <Link
-            to="/foretag/mina-jobb"
-            className="inline-flex items-center justify-center px-8 py-4 rounded-xl bg-[var(--color-primary)] text-white font-semibold hover:bg-[var(--color-primary-light)] transition-colors"
-          >
-            Mina jobb
-          </Link>
           {isVerifiedCompany ? (
             <Link
               to="/foretag/chaufforer"
-              className="inline-flex items-center justify-center px-8 py-4 rounded-xl border-2 border-[var(--color-primary)] text-[var(--color-primary)] font-semibold hover:bg-[var(--color-primary)]/5 transition-colors"
+              className="inline-flex items-center justify-center px-8 py-4 rounded-xl bg-[var(--color-primary)] text-white font-semibold hover:bg-[var(--color-primary-light)] transition-colors"
             >
-              Sök chaufförer
+              Hitta förare
             </Link>
           ) : (
             <span className="inline-flex items-center justify-center px-8 py-4 rounded-xl border-2 border-slate-300 text-slate-400 font-semibold cursor-not-allowed">
-              Sök chaufförer (väntar verifiering)
+              Hitta förare (väntar verifiering)
             </span>
           )}
+          <Link
+            to="/foretag/mina-jobb"
+            className="inline-flex items-center justify-center px-8 py-4 rounded-xl border-2 border-[var(--color-primary)] text-[var(--color-primary)] font-semibold hover:bg-[var(--color-primary)]/5 transition-colors"
+          >
+            Mina jobb
+          </Link>
           <Link
             to="/foretag/meddelanden"
             className={`inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-semibold transition-colors ${
@@ -269,9 +269,9 @@ export default function ForCompanies() {
         </div>
 
         <div className="mt-8 rounded-xl border border-slate-200 bg-slate-50 p-5">
-          <h2 className="text-base font-semibold text-slate-900">Trust score</h2>
+          <h2 className="text-base font-semibold text-slate-900">Förtroendeprofil</h2>
           <p className="mt-1 text-sm text-slate-600">
-            Transparent feedback från verifierade förarinteraktioner.
+            Omdömen och tydliga signaler hjälper er att bygga ett seriöst första intryck över tid.
           </p>
           <div className="mt-4 grid sm:grid-cols-3 gap-3">
             <div className="rounded-lg bg-white p-3 border border-slate-200">

@@ -1,8 +1,15 @@
 import { Link } from "react-router-dom";
 import { mapEmploymentToSegment, segmentLabel } from "../data/segments";
-import { StarFilledIcon, StarOutlineIcon, LocationIcon } from "./Icons";
+import { StarFilledIcon, StarOutlineIcon, LocationIcon, CheckIcon } from "./Icons";
 
-export default function JobCard({ job, matchScore = null, showSave = false, isSaved = false, onToggleSave }) {
+export default function JobCard({
+  job,
+  matchScore = null,
+  matchHighlights = [],
+  showSave = false,
+  isSaved = false,
+  onToggleSave,
+}) {
   const formatDate = (dateStr) => {
     const d = new Date(dateStr);
     return d.toLocaleDateString("sv-SE", { day: "numeric", month: "short" });
@@ -19,17 +26,28 @@ export default function JobCard({ job, matchScore = null, showSave = false, isSa
             {job.title}
           </h3>
           <p className="mt-1 text-sm text-slate-600">{job.company}</p>
-          <p className="mt-1 text-xs text-slate-500 flex items-center gap-1">
-            {job.companyReviewCount > 0 ? (
-              <>
-                <StarFilledIcon className="w-3.5 h-3.5 text-amber-500" />
-                <span>{job.companyReviewAverage}/5 ({job.companyReviewCount})</span>
-              </>
-            ) : (
-              "Nytt konto"
-            )}
-          </p>
           <div className="mt-3 flex flex-wrap gap-2">
+            {job.companyVerified && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                <CheckIcon className="w-3.5 h-3.5" />
+                Verifierat företag
+              </span>
+            )}
+            {job.companyReviewCount > 0 ? (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-800">
+                <StarFilledIcon className="w-3.5 h-3.5 text-amber-500" />
+                {job.companyReviewAverage}/5 ({job.companyReviewCount})
+              </span>
+            ) : (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+                Nytt konto
+              </span>
+            )}
+            {job.kollektivavtal === true && (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700">
+                Kollektivavtal
+              </span>
+            )}
             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
               <LocationIcon className="w-3.5 h-3.5" /> {job.location}
             </span>
@@ -79,6 +97,18 @@ export default function JobCard({ job, matchScore = null, showSave = false, isSa
           <span className="w-full text-xs text-slate-500 sm:w-auto sm:text-right">Publicerad {formatDate(job.published)}</span>
         </div>
       </div>
+      {matchHighlights.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {matchHighlights.map((highlight) => (
+            <span
+              key={highlight}
+              className="inline-flex items-center rounded-full bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600"
+            >
+              {highlight}
+            </span>
+          ))}
+        </div>
+      )}
     </Link>
   );
 }

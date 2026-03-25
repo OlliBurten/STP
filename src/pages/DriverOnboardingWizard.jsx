@@ -17,12 +17,36 @@ import {
 } from "../utils/driverProfileRequirements";
 
 const steps = ["Mål", "Kontakt", "Kärnprofil", "Presentation", "Synlighet"];
+const stepGuidance = [
+  {
+    title: "Rätt segment från början",
+    text: "När du väljer rätt segment blir det lättare att matcha dig mot relevanta företag i stället för att du hamnar i fel flöde.",
+  },
+  {
+    title: "Samma grund för alla förare",
+    text: "STP blir starkare när alla profiler börjar med samma minimum. Då kan företag fatta snabbare och tryggare beslut.",
+  },
+  {
+    title: "Det här styr matchningen direkt",
+    text: "Ort, region, körkort och tillgänglighet är sådant företag letar efter först. Därför samlar vi in det tidigt.",
+  },
+  {
+    title: "Kort, tydlig och relevant",
+    text: "En bra profiltext gör det lättare att förstå vem du är utan att företag behöver gissa eller skriva först för att fråga.",
+  },
+  {
+    title: "Synlighet när du är redo",
+    text: "Du väljer själv om du ska vara synlig direkt. Poängen är att seriösa företag ska kunna hitta dig när profilen känns rätt.",
+  },
+];
 
 export default function DriverOnboardingWizard() {
   const { user } = useAuth();
   const { profile, updateProfile } = useProfile();
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
   const [draft, setDraft] = useState(() => ({
     name: profile.name || user?.name || "",
     phone: profile.phone || "",
@@ -69,24 +93,32 @@ export default function DriverOnboardingWizard() {
     return true;
   };
 
-  const saveAndFinish = () => {
+  const saveAndFinish = async () => {
     const primarySegment = draft.isGymnasieelev ? "INTERNSHIP" : draft.primarySegment;
-    updateProfile({
-      name: draft.name.trim(),
-      phone: draft.phone,
-      summary: draft.summary.trim(),
-      primarySegment,
-      secondarySegments: [],
-      isGymnasieelev: draft.isGymnasieelev,
-      schoolName: draft.isGymnasieelev ? (draft.schoolName || "").trim() : "",
-      licenses: draft.licenses,
-      region: draft.region,
-      location: draft.location.trim(),
-      availability: draft.availability,
-      visibleToCompanies: draft.visibleToCompanies,
-    });
-    trackDriverOnboardingComplete(primarySegment);
-    navigate("/profil", { replace: true });
+    setSaving(true);
+    setError("");
+    try {
+      await updateProfile({
+        name: draft.name.trim(),
+        phone: draft.phone,
+        summary: draft.summary.trim(),
+        primarySegment,
+        secondarySegments: [],
+        isGymnasieelev: draft.isGymnasieelev,
+        schoolName: draft.isGymnasieelev ? (draft.schoolName || "").trim() : "",
+        licenses: draft.licenses,
+        region: draft.region,
+        location: draft.location.trim(),
+        availability: draft.availability,
+        visibleToCompanies: draft.visibleToCompanies,
+      });
+      trackDriverOnboardingComplete(primarySegment);
+      navigate("/profil", { replace: true });
+    } catch (saveError) {
+      setError(saveError?.message || "Kunde inte spara din profil. Försök igen.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -97,6 +129,17 @@ export default function DriverOnboardingWizard() {
         <p className="mt-2 text-slate-600">
           Vi samlar först in samma minimum för alla förare. Du kan fylla på resten senare i profilen.
         </p>
+        {error ? (
+          <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+            {error}
+          </div>
+        ) : null}
+        <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <p className="text-sm font-semibold text-slate-900">Varför STP gör så här</p>
+          <p className="mt-1 text-sm text-slate-600">
+            Målet är att du ska kunna bli bedömd snabbare och mer rättvist än i vanliga fritextflöden. Därför börjar alla förare med samma tydliga grund.
+          </p>
+        </div>
         <div className="mt-4 flex flex-wrap gap-2 text-xs">
           {steps.map((label, index) => (
             <span
@@ -111,6 +154,10 @@ export default function DriverOnboardingWizard() {
         </div>
 
         <div className="mt-8">
+          <div className="mb-6 rounded-xl border border-[var(--color-primary)]/20 bg-[var(--color-primary)]/5 p-4">
+            <p className="text-sm font-semibold text-slate-900">{stepGuidance[step].title}</p>
+            <p className="mt-1 text-sm text-slate-600">{stepGuidance[step].text}</p>
+          </div>
           {step === 0 && (
             <div>
               <h2 className="font-semibold text-slate-900">Söker du praktik eller anställning?</h2>
@@ -216,6 +263,9 @@ export default function DriverOnboardingWizard() {
                   placeholder="t.ex. 0701234567"
                   className="w-full px-4 py-2 rounded-lg border border-slate-300 bg-white"
                 />
+                <p className="mt-1 text-xs text-slate-500">
+                  Ett tydligt telefonnummer gör att företag kan ta kontakt snabbt när matchningen känns rätt.
+                </p>
               </div>
             </div>
           )}
@@ -283,6 +333,9 @@ export default function DriverOnboardingWizard() {
                     </option>
                   ))}
                 </select>
+                <p className="mt-1 text-xs text-slate-500">
+                  När tillgängligheten är tydlig blir det enklare att matcha dig mot rätt typ av uppdrag direkt.
+                </p>
               </div>
             </div>
           )}
@@ -303,6 +356,9 @@ export default function DriverOnboardingWizard() {
               <p className="text-xs text-slate-500">
                 Minst {SUMMARY_MIN_LENGTH} tecken krävs för att profilen ska räknas som komplett.
               </p>
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600">
+                Skriv det en trafikledare eller rekryterare vill förstå på 10 sekunder: vad du har kört, vad du söker och vad du föredrar.
+              </div>
             </div>
           )}
 
@@ -322,6 +378,9 @@ export default function DriverOnboardingWizard() {
                 />
                 Synlig för företag i sökning
               </label>
+              <p className="mt-3 text-xs text-slate-500">
+                Du kan alltid ändra detta senare i profilen om du vill pausa eller öppna upp synligheten igen.
+              </p>
             </div>
           )}
         </div>
@@ -330,7 +389,7 @@ export default function DriverOnboardingWizard() {
           <button
             type="button"
             onClick={() => setStep((prev) => Math.max(0, prev - 1))}
-            disabled={step === 0}
+            disabled={step === 0 || saving}
             className="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 disabled:opacity-50"
           >
             Tillbaka
@@ -339,7 +398,7 @@ export default function DriverOnboardingWizard() {
             <button
               type="button"
               onClick={() => setStep((prev) => prev + 1)}
-              disabled={!canContinue()}
+              disabled={!canContinue() || saving}
               className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white disabled:opacity-50"
             >
               Nästa: {steps[step + 1]}
@@ -348,9 +407,10 @@ export default function DriverOnboardingWizard() {
             <button
               type="button"
               onClick={saveAndFinish}
-              className="px-5 py-2 rounded-lg bg-[var(--color-primary)] text-white font-medium"
+              disabled={saving}
+              className="px-5 py-2 rounded-lg bg-[var(--color-primary)] text-white font-medium disabled:opacity-50"
             >
-              Spara och fortsätt
+              {saving ? "Sparar..." : "Spara och fortsätt"}
             </button>
           )}
         </div>

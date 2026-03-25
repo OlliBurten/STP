@@ -5,30 +5,29 @@ export default function About() {
     <main className="max-w-3xl mx-auto px-4 sm:px-6 py-16">
       <h1 className="text-3xl font-bold text-slate-900">Om Sveriges Transportplattform</h1>
       <p className="mt-6 text-lg text-slate-600">
-        Sveriges Transportplattform är en marknadsplats för yrkesförare i Sverige. Vi vill göra det enklare att
-        hitta jobb och att hitta chaufförer – utan att förlita sig på ostrukturerade Facebook-grupper
-        eller generiska jobbsajter.
+        Sveriges Transportplattform finns för att göra matchningen mellan förare och åkerier snabbare,
+        tydligare och mer relevant.
       </p>
       <p className="mt-4 text-slate-600">
-        Plattformen är byggd med fokus på transportbranschens behov: körkort (CE, C), YKB,
-        fjärrkörning, lokalt, timjobb. Allt på svenska.
+        I stället för ostrukturerade Facebook-trådar och generiska jobbsajter samlar vi jobb,
+        kompetens, behörigheter och tillgänglighet i ett format som passar transportbranschen.
       </p>
       <p className="mt-4 text-slate-600">
-        Vi är i utveckling. Design och funktion först – backend kommer när vi är nöjda med
-        upplevelsen.
+        Vårt fokus i launchfasen är enkelt: hjälpa seriösa åkerier att hitta rätt förare och hjälpa
+        förare att hitta relevanta jobb med mindre brus och bättre träffsäkerhet.
       </p>
       <div className="mt-10 flex gap-4">
         <Link
           to="/jobb"
           className="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-[var(--color-primary)] text-white font-medium hover:bg-[var(--color-primary-light)] transition-colors"
         >
-          Sök jobb
+          Se lediga jobb
         </Link>
         <Link
-          to="/foretag"
+          to="/for-akerier"
           className="inline-flex items-center justify-center px-6 py-3 rounded-lg border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 transition-colors"
         >
-          För företag
+          För åkerier
         </Link>
       </div>
     </main>

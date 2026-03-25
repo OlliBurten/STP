@@ -12,6 +12,56 @@ const MATCH_EMAIL_COOLDOWN_MS = 24 * 60 * 60 * 1000;
 
 profileRouter.use(authMiddleware, requireDriver);
 
+function normalizeProfileForMinimumCheck(profile, name) {
+  return {
+    name: String(name || "").trim(),
+    phone: profile?.phone,
+    location: profile?.location,
+    region: profile?.region,
+    primarySegment: profile?.primarySegment,
+    licenses: profile?.licenses,
+    availability: profile?.availability,
+    summary: profile?.summary,
+  };
+}
+
+function formatProfileResponse(profile, user) {
+  const experience = (profile.experience && typeof profile.experience === "object")
+    ? profile.experience
+    : typeof profile.experience === "string"
+      ? JSON.parse(profile.experience || "[]")
+      : [];
+  const minimumProfileComplete = isDriverMinimumProfileComplete(
+    normalizeProfileForMinimumCheck(profile, user?.name || profile.email || "")
+  );
+  return {
+    id: profile.userId,
+    name: user?.name || profile.email || "",
+    email: profile.email || user?.email,
+    phone: profile.phone,
+    location: profile.location,
+    region: profile.region,
+    summary: profile.summary,
+    privateMatchNotes: profile.privateMatchNotes ?? "",
+    licenses: profile.licenses,
+    certificates: profile.certificates,
+    availability: profile.availability,
+    primarySegment: profile.primarySegment,
+    secondarySegments: profile.secondarySegments,
+    visibleToCompanies: profile.visibleToCompanies,
+    searchableByCompanies: Boolean(profile.visibleToCompanies && minimumProfileComplete),
+    minimumProfileComplete,
+    regionsWilling: profile.regionsWilling,
+    showEmailToCompanies: profile.showEmailToCompanies,
+    showPhoneToCompanies: profile.showPhoneToCompanies,
+    experience,
+    isGymnasieelev: profile.isGymnasieelev ?? false,
+    schoolName: profile.schoolName ?? null,
+    physicalWorkOk: profile.physicalWorkOk ?? null,
+    soloWorkOk: profile.soloWorkOk ?? null,
+  };
+}
+
 async function sendCompanyMatchAlertsForDriver(userId) {
   if (!MATCH_ALERTS_ENABLED) return;
   try {
@@ -145,35 +195,7 @@ profileRouter.get("/", async (req, res, next) => {
         },
       });
     }
-    const experience = (profile.experience && typeof profile.experience === "object")
-      ? profile.experience
-      : typeof profile.experience === "string"
-        ? JSON.parse(profile.experience || "[]")
-        : [];
-    res.json({
-      id: profile.userId,
-      name: user?.name || profile.email || "",
-      email: profile.email || user?.email,
-      phone: profile.phone,
-      location: profile.location,
-      region: profile.region,
-      summary: profile.summary,
-      privateMatchNotes: profile.privateMatchNotes ?? "",
-      licenses: profile.licenses,
-      certificates: profile.certificates,
-      availability: profile.availability,
-      primarySegment: profile.primarySegment,
-      secondarySegments: profile.secondarySegments,
-      visibleToCompanies: profile.visibleToCompanies,
-      regionsWilling: profile.regionsWilling,
-      showEmailToCompanies: profile.showEmailToCompanies,
-      showPhoneToCompanies: profile.showPhoneToCompanies,
-      experience,
-      isGymnasieelev: profile.isGymnasieelev ?? false,
-      schoolName: profile.schoolName ?? null,
-      physicalWorkOk: profile.physicalWorkOk ?? null,
-      soloWorkOk: profile.soloWorkOk ?? null,
-    });
+    res.json(formatProfileResponse(profile, user));
   } catch (e) {
     next(e);
   }
@@ -245,16 +267,8 @@ profileRouter.put("/", async (req, res, next) => {
       where: { id: req.userId },
       select: { name: true },
     });
-    const normalizedProfile = {
-      name: body.name !== undefined ? String(body.name || "") : currentUser?.name || "",
-      phone: profile.phone,
-      location: profile.location,
-      region: profile.region,
-      primarySegment: profile.primarySegment,
-      licenses: profile.licenses,
-      availability: profile.availability,
-      summary: profile.summary,
-    };
+    const effectiveName = body.name !== undefined ? String(body.name || "") : currentUser?.name || "";
+    const normalizedProfile = normalizeProfileForMinimumCheck(profile, effectiveName);
     const minimumComplete = isDriverMinimumProfileComplete(normalizedProfile);
     if (body.name !== undefined) {
       await prisma.user.update({
@@ -274,35 +288,7 @@ profileRouter.put("/", async (req, res, next) => {
       where: { id: req.userId },
       select: { name: true, email: true },
     });
-    const exp = (profile.experience && typeof profile.experience === "object")
-      ? profile.experience
-      : typeof profile.experience === "string"
-        ? JSON.parse(profile.experience || "[]")
-        : [];
-    res.json({
-      id: profile.userId,
-      name: user?.name || profile.email || "",
-      email: profile.email || user?.email,
-      phone: profile.phone,
-      location: profile.location,
-      region: profile.region,
-      summary: profile.summary,
-      privateMatchNotes: profile.privateMatchNotes ?? "",
-      licenses: profile.licenses,
-      certificates: profile.certificates,
-      availability: profile.availability,
-      primarySegment: profile.primarySegment,
-      secondarySegments: profile.secondarySegments,
-      visibleToCompanies: profile.visibleToCompanies,
-      regionsWilling: profile.regionsWilling,
-      showEmailToCompanies: profile.showEmailToCompanies,
-      showPhoneToCompanies: profile.showPhoneToCompanies,
-      experience: exp,
-      isGymnasieelev: profile.isGymnasieelev ?? false,
-      schoolName: profile.schoolName ?? null,
-      physicalWorkOk: profile.physicalWorkOk ?? null,
-      soloWorkOk: profile.soloWorkOk ?? null,
-    });
+    res.json(formatProfileResponse(profile, user));
     const shouldSendMatchAlerts =
       profile.visibleToCompanies &&
       JSON.stringify({

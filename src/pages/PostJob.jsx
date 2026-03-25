@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   jobTypes,
@@ -43,6 +43,22 @@ export default function PostJob() {
     soloWorkOk: false,
     kollektivavtal: null,
   });
+
+  const publishChecklist = useMemo(
+    () => [
+      { label: "Jobbtitel vald", done: Boolean(form.title) },
+      { label: "Företagsnamn ifyllt", done: Boolean(form.company.trim()) },
+      { label: "Ort och region ifyllda", done: Boolean(form.location.trim()) && Boolean(form.region) },
+      { label: "Minst ett körkort valt", done: form.license.length > 0 },
+      { label: "Segment valt", done: Boolean(form.segment) },
+      { label: "Kontaktadress ifylld", done: Boolean(form.contact.trim()) },
+      { label: "Tydlig jobbtext", done: form.description.trim().length >= 80 },
+      { label: "Lön eller ersättning angiven", done: Boolean(form.salary.trim()) },
+      { label: "Kollektivavtal markerat", done: form.kollektivavtal === true },
+    ],
+    [form]
+  );
+  const completedChecklist = publishChecklist.filter((item) => item.done).length;
 
   const toggleLicense = (lic) => {
     setForm((prev) => ({
@@ -198,9 +214,15 @@ export default function PostJob() {
 
       <h1 className="text-3xl font-bold text-slate-900 mb-2">Publicera jobb</h1>
       <p className="text-slate-600 mb-8">
-        Sveriges Transportplattform guidar dig till en komplett annons. Chaufförer får alltid samma tydliga
+        Sveriges Transportplattform guidar dig till en komplett annons. Förare får alltid samma tydliga
         information – inga oklarheter, mindre behov av att kontakta er.
       </p>
+      <div className="mb-8 rounded-xl border border-slate-200 bg-slate-50 p-5">
+        <p className="text-sm font-semibold text-slate-900">Varför STP:s annonser fungerar bättre</p>
+        <p className="mt-1 text-sm text-slate-600">
+          Målet är att en förare snabbt ska kunna förstå om jobbet passar. Därför trycker vi på tydliga krav, rätt segment, struktur och trust-signaler som kollektivavtal och komplett information.
+        </p>
+      </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Grundläggande */}
@@ -239,6 +261,9 @@ export default function PostJob() {
               onChange={(e) => handleChange("company", e.target.value)}
               className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none"
             />
+            <p className="mt-1 text-xs text-slate-500">
+              Ett tydligt företagsnamn gör annonsen lättare att lita på och lättare att komma ihåg.
+            </p>
           </div>
         </section>
 
@@ -542,11 +567,14 @@ export default function PostJob() {
               id="description"
               rows={4}
               required
-              placeholder="Beskriv arbetsuppgifterna, fordon, rutiner, team, förmåner. Chaufförer vill veta exakt vad som väntar."
+              placeholder="Beskriv arbetsuppgifterna, fordon, rutiner, team, förmåner. Förare vill veta exakt vad som väntar."
               value={form.description}
               onChange={(e) => handleChange("description", e.target.value)}
               className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none"
             />
+            <p className="mt-1 text-xs text-slate-500">
+              Tydliga annonser får bättre respons. Beskriv vardagen, fordonet, upplägget och vad ni faktiskt behöver hjälp med.
+            </p>
           </div>
         </section>
 
@@ -568,6 +596,34 @@ export default function PostJob() {
               className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none"
             />
           </div>
+        </section>
+
+        <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-5">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-semibold text-slate-900">Kvalitetscheck innan publicering</h2>
+              <p className="mt-1 text-sm text-slate-600">
+                Ju fler punkter som är klara, desto tydligare och mer trovärdig blir annonsen för rätt förare.
+              </p>
+            </div>
+            <span className="shrink-0 rounded-full bg-[var(--color-primary)]/10 px-3 py-1 text-sm font-semibold text-[var(--color-primary)]">
+              {completedChecklist}/{publishChecklist.length}
+            </span>
+          </div>
+          <ul className="grid gap-2 sm:grid-cols-2">
+            {publishChecklist.map((item) => (
+              <li
+                key={item.label}
+                className={`rounded-lg border px-3 py-2 text-sm ${
+                  item.done
+                    ? "border-green-200 bg-green-50 text-green-800"
+                    : "border-slate-200 bg-slate-50 text-slate-600"
+                }`}
+              >
+                {item.done ? "Klar" : "Saknas"} · {item.label}
+              </li>
+            ))}
+          </ul>
         </section>
 
         {submitError && (

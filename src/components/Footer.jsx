@@ -24,8 +24,9 @@ export default function Footer() {
             </h3>
             <ul className="space-y-3">
               <li><Link to="/" className="text-white/85 hover:text-white text-sm transition-colors">Hem</Link></li>
-              <li><Link to="/jobb" className="text-white/85 hover:text-white text-sm transition-colors">För förare</Link></li>
-              <li><Link to="/akerier" className="text-white/85 hover:text-white text-sm transition-colors">För åkerier</Link></li>
+              <li><Link to="/jobb" className="text-white/85 hover:text-white text-sm transition-colors">Jobb</Link></li>
+              <li><Link to="/forare" className="text-white/85 hover:text-white text-sm transition-colors">För förare</Link></li>
+              <li><Link to="/for-akerier" className="text-white/85 hover:text-white text-sm transition-colors">För åkerier</Link></li>
               <li><Link to="/#sa-fungerar-det" className="text-white/85 hover:text-white text-sm transition-colors">Så fungerar STP</Link></li>
             </ul>
           </div>
@@ -36,7 +37,7 @@ export default function Footer() {
               Om STP
             </h3>
             <ul className="space-y-3">
-              <li><Link to="/om-oss" className="text-white/85 hover:text-white text-sm transition-colors">Om oss</Link></li>
+              <li><Link to="/om-oss" className="text-white/85 hover:text-white text-sm transition-colors">Om STP</Link></li>
               <li><Link to="/kontakt" className="text-white/85 hover:text-white text-sm transition-colors">Kontakt</Link></li>
               <li><Link to="/uppdateringar" className="text-white/85 hover:text-white text-sm transition-colors">Vad är nytt</Link></li>
             </ul>
@@ -51,7 +52,6 @@ export default function Footer() {
               <li><Link to="/anvandarvillkor" className="text-white/85 hover:text-white text-sm transition-colors">Användarvillkor</Link></li>
               <li><Link to="/integritet" className="text-white/85 hover:text-white text-sm transition-colors">Integritetspolicy</Link></li>
               <li><Link to="/integritet#cookies" className="text-white/85 hover:text-white text-sm transition-colors">Cookies</Link></li>
-              <li><Link to="/branschinsikter" className="text-white/85 hover:text-white text-sm transition-colors">Branschinsikter</Link></li>
             </ul>
           </div>
         </div>

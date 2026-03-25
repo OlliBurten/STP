@@ -1,10 +1,12 @@
 import { Link } from "react-router-dom";
 import { availabilityTypes, getCertificateLabel } from "../data/profileData";
 import { segmentLabel } from "../data/segments";
-import { LocationIcon } from "./Icons";
+import { LocationIcon, CheckIcon } from "./Icons";
+import { isDriverMinimumProfileComplete } from "../utils/driverProfileRequirements.js";
 
-export default function DriverCard({ driver }) {
+export default function DriverCard({ driver, matchScore = null, matchHighlights = [] }) {
   const availabilityLabel = availabilityTypes.find((a) => a.value === driver.availability)?.label || driver.availability;
+  const hasMinimumProfile = isDriverMinimumProfileComplete(driver);
 
   return (
     <Link
@@ -20,6 +22,12 @@ export default function DriverCard({ driver }) {
             <LocationIcon className="w-4 h-4 shrink-0" /> {driver.location}, {driver.region}
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
+            {hasMinimumProfile && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                <CheckIcon className="w-3.5 h-3.5" />
+                Minimumprofil klar
+              </span>
+            )}
             {driver.licenses?.map((lic) => (
               <span
                 key={lic}
@@ -47,6 +55,11 @@ export default function DriverCard({ driver }) {
                 {segmentLabel(driver.primarySegment)}
               </span>
             )}
+            {driver.isGymnasieelev && (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-800">
+                Praktik/skola
+              </span>
+            )}
           </div>
           {driver.regionsWilling?.length > 0 && (
             <p className="mt-2 text-xs text-slate-500">
@@ -56,9 +69,21 @@ export default function DriverCard({ driver }) {
           )}
         </div>
         <span className="text-sm text-[var(--color-primary)] font-medium shrink-0 group-hover:underline">
-          Se profil →
+          {matchScore != null ? `Match ${matchScore} · ` : ""}Se profil →
         </span>
       </div>
+      {matchHighlights.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {matchHighlights.map((highlight) => (
+            <span
+              key={highlight}
+              className="inline-flex items-center rounded-full bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600"
+            >
+              {highlight}
+            </span>
+          ))}
+        </div>
+      )}
     </Link>
   );
 }

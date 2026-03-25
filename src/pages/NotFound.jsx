@@ -9,7 +9,7 @@ export default function NotFound() {
           Sidan kunde inte hittas
         </h1>
         <p className="text-slate-600">
-          Lanken du oppnade finns inte eller har flyttats.
+          Länken du öppnade finns inte eller har flyttats.
         </p>
         <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
           <Link

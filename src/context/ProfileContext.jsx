@@ -9,6 +9,8 @@ export function ProfileProvider({ children }) {
   const { hasApi, isDriver, token, user } = useAuth();
   const [profile, setProfile] = useState(defaultProfile);
   const [profileLoaded, setProfileLoaded] = useState(!hasApi);
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileSaveError, setProfileSaveError] = useState("");
 
   useEffect(() => {
     if (hasApi) return;
@@ -59,6 +61,7 @@ export function ProfileProvider({ children }) {
   useEffect(() => {
     if (!hasApi || !isDriver || !token) return;
     setProfileLoaded(false);
+    setProfileSaveError("");
     let active = true;
     apiFetchProfile()
       .then((data) => {
@@ -99,39 +102,47 @@ export function ProfileProvider({ children }) {
     };
   }, [hasApi, isDriver, token, user?.id, user?.name, user?.email]);
 
-  const syncProfileIfApi = (nextProfile) => {
-    if (!hasApi || !isDriver || !token) return;
-    apiUpdateProfile(nextProfile)
-      .then((saved) => {
-        setProfile((prev) => ({
-          ...prev,
-          ...saved,
-          privateMatchNotes: saved?.privateMatchNotes || "",
-          licenses: Array.isArray(saved?.licenses) ? saved.licenses : prev.licenses || [],
-          certificates: Array.isArray(saved?.certificates) ? saved.certificates : prev.certificates || [],
-          primarySegment: saved?.primarySegment || "",
-          secondarySegments: Array.isArray(saved?.secondarySegments)
-            ? saved.secondarySegments
-            : prev.secondarySegments || [],
-          regionsWilling: Array.isArray(saved?.regionsWilling)
-            ? saved.regionsWilling
-            : prev.regionsWilling || [],
-          experience: Array.isArray(saved?.experience) ? saved.experience : prev.experience || [],
-          isGymnasieelev: Boolean(saved?.isGymnasieelev),
-          schoolName: saved?.schoolName || "",
-          physicalWorkOk: saved?.physicalWorkOk ?? null,
-          soloWorkOk: saved?.soloWorkOk ?? null,
-        }));
-      })
-      .catch(() => {});
+  const mergeSavedProfile = (saved) => {
+    setProfile((prev) => ({
+      ...prev,
+      ...saved,
+      privateMatchNotes: saved?.privateMatchNotes || "",
+      licenses: Array.isArray(saved?.licenses) ? saved.licenses : prev.licenses || [],
+      certificates: Array.isArray(saved?.certificates) ? saved.certificates : prev.certificates || [],
+      primarySegment: saved?.primarySegment || "",
+      secondarySegments: Array.isArray(saved?.secondarySegments)
+        ? saved.secondarySegments
+        : prev.secondarySegments || [],
+      regionsWilling: Array.isArray(saved?.regionsWilling)
+        ? saved.regionsWilling
+        : prev.regionsWilling || [],
+      experience: Array.isArray(saved?.experience) ? saved.experience : prev.experience || [],
+      isGymnasieelev: Boolean(saved?.isGymnasieelev),
+      schoolName: saved?.schoolName || "",
+      physicalWorkOk: saved?.physicalWorkOk ?? null,
+      soloWorkOk: saved?.soloWorkOk ?? null,
+    }));
   };
 
-  const updateProfile = (updates) => {
-    setProfile((prev) => {
-      const next = { ...prev, ...updates };
-      syncProfileIfApi(next);
-      return next;
-    });
+  const updateProfile = async (updates) => {
+    const nextProfile = { ...profile, ...updates };
+    if (!hasApi || !isDriver || !token) {
+      setProfile(nextProfile);
+      setProfileSaveError("");
+      return nextProfile;
+    }
+    setProfileSaving(true);
+    setProfileSaveError("");
+    try {
+      const saved = await apiUpdateProfile(nextProfile);
+      mergeSavedProfile(saved);
+      return saved;
+    } catch (error) {
+      setProfileSaveError(error?.message || "Kunde inte spara profilen.");
+      throw error;
+    } finally {
+      setProfileSaving(false);
+    }
   };
 
   const addExperience = (exp) => {
@@ -173,6 +184,8 @@ export function ProfileProvider({ children }) {
       value={{
         profile,
         profileLoaded,
+        profileSaving,
+        profileSaveError,
         updateProfile,
         addExperience,
         updateExperience,

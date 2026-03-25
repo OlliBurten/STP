@@ -26,9 +26,14 @@ import { authMiddleware } from "../middleware/auth.js";
 
 export const authRouter = Router();
 
+function isCompanyLikeRole(role) {
+  const normalized = String(role || "").trim().toUpperCase();
+  return normalized === "COMPANY" || normalized === "RECRUITER";
+}
+
 /** Augment user object for company/recruiter (Organization or legacy). */
 async function augmentCompanyMemberUser(user) {
-  if (!user || user.role !== "COMPANY") return user;
+  if (!user || !isCompanyLikeRole(user.role)) return user;
   const uo = await prisma.userOrganization.findFirst({
     where: { userId: user.id },
     include: { organization: true },
@@ -142,6 +147,24 @@ function getShouldShowOnboarding(user, augmented = user) {
   return false;
 }
 
+function formatClientAuthUser(user, augmented = user, extra = {}) {
+  return {
+    id: augmented.id,
+    email: augmented.email,
+    role: augmented.role,
+    name: augmented.name,
+    companyName: augmented.companyName,
+    companyOrgNumber: augmented.companyOrgNumber,
+    companyStatus: augmented.companyStatus,
+    companySegmentDefaults: augmented.companySegmentDefaults || [],
+    companyOwnerId: augmented.companyOwnerId ?? undefined,
+    organizationId: augmented.organizationId ?? undefined,
+    emailVerifiedAt: augmented.emailVerifiedAt ?? null,
+    shouldShowOnboarding: getShouldShowOnboarding(user, augmented),
+    ...extra,
+  };
+}
+
 function resolveVerificationBaseUrl(provided) {
   if (!provided || typeof provided !== "string") return frontendBaseUrl();
   const base = provided.trim().replace(/\/$/, "");
@@ -250,25 +273,16 @@ authRouter.post("/register", validateBody(registerSchema), async (req, res, next
     } catch (notifyErr) {
       console.error("Admin new-registration notify failed:", notifyErr);
     }
+    const augmentedUser = await augmentCompanyMemberUser(user);
     const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, {
       expiresIn: "24h",
     });
     res.status(201).json({
       emailVerificationSent: !!emailVerificationSent,
-      user: {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-        name: user.name,
-        companyName: user.companyName,
-        companyOrgNumber: user.companyOrgNumber,
-        companyStatus: user.companyStatus,
-        companySegmentDefaults: user.companySegmentDefaults || [],
-        emailVerifiedAt: null,
+      user: formatClientAuthUser(user, augmentedUser, {
         hadLoggedInBefore: false,
-        shouldShowOnboarding: getShouldShowOnboarding(user),
         isAdmin: isAdminEmail(user.email),
-      },
+      }),
       token,
       verification:
         hasCompanyAtReg
@@ -313,22 +327,12 @@ authRouter.get("/me", authMiddleware, async (req, res, next) => {
     });
     if (!user) return res.status(404).json({ error: "Användaren hittades inte" });
     const augmented = await augmentCompanyMemberUser(user);
-    res.json({
-      id: augmented.id,
-      email: augmented.email,
-      role: augmented.role,
-      name: augmented.name,
-      companyName: augmented.companyName,
-      companyOrgNumber: augmented.companyOrgNumber,
-      companyStatus: augmented.companyStatus,
-      companySegmentDefaults: augmented.companySegmentDefaults || [],
-      companyOwnerId: augmented.companyOwnerId ?? undefined,
-      organizationId: augmented.organizationId ?? undefined,
-      emailVerifiedAt: augmented.emailVerifiedAt,
-      hadLoggedInBefore: Boolean(user.lastLoginAt),
-      shouldShowOnboarding: getShouldShowOnboarding(user, augmented),
-      isAdmin: isAdminEmail(user.email),
-    });
+    res.json(
+      formatClientAuthUser(user, augmented, {
+        hadLoggedInBefore: Boolean(user.lastLoginAt),
+        isAdmin: isAdminEmail(user.email),
+      })
+    );
   } catch (e) {
     next(e);
   }
@@ -389,21 +393,10 @@ authRouter.post("/login", validateBody(loginSchema), async (req, res, next) => {
       { expiresIn: "24h" }
     );
     res.json({
-      user: {
-        id: augmented.id,
-        email: augmented.email,
-        role: augmented.role,
-        name: augmented.name,
-        companyName: augmented.companyName,
-        companyOrgNumber: augmented.companyOrgNumber,
-        companyStatus: augmented.companyStatus,
-        companySegmentDefaults: augmented.companySegmentDefaults || [],
-        companyOwnerId: augmented.companyOwnerId ?? undefined,
-        emailVerifiedAt: augmented.emailVerifiedAt,
+      user: formatClientAuthUser(user, augmented, {
         hadLoggedInBefore,
-        shouldShowOnboarding: getShouldShowOnboarding(user, augmented),
         isAdmin,
-      },
+      }),
       token,
     });
   } catch (e) {
@@ -472,21 +465,10 @@ async function formatOAuthUser(user, options = {}) {
   const augmented = await augmentCompanyMemberUser(user);
   const hadLoggedInBefore = Boolean(options.hadLoggedInBefore ?? user?.lastLoginAt);
   return {
-    user: {
-      id: augmented.id,
-      email: augmented.email,
-      role: augmented.role,
-      name: augmented.name,
-      companyName: augmented.companyName,
-      companyOrgNumber: augmented.companyOrgNumber,
-      companyStatus: augmented.companyStatus,
-      companySegmentDefaults: augmented.companySegmentDefaults || [],
-      companyOwnerId: augmented.companyOwnerId ?? undefined,
-      emailVerifiedAt: augmented.emailVerifiedAt,
+    user: formatClientAuthUser(user, augmented, {
       hadLoggedInBefore,
-      shouldShowOnboarding: getShouldShowOnboarding(user, augmented),
       isAdmin: isAdminEmail(augmented.email),
-    },
+    }),
     token: jwt.sign(
       {
         userId: augmented.id,

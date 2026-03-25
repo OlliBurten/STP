@@ -85,7 +85,7 @@ function RolePicker({ oauthCompleteToken, onComplete, onError, onCancel, default
             <span className={`shrink-0 w-10 h-10 rounded-xl flex items-center justify-center ${role === "driver" ? "bg-[var(--color-accent)]/20 text-[var(--color-accent)]" : "bg-white/20 text-[var(--color-accent)]"}`}>
               <TruckIcon className="w-5 h-5" />
             </span>
-            <span className="font-semibold">Chaufför</span>
+            <span className="font-semibold">Förare</span>
           </button>
           <button
             type="button"

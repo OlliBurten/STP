@@ -8,14 +8,14 @@ import Logo from "./Logo";
 
 const PUBLIC_NAV_LINKS = [
   { to: "/", label: "Hem" },
-  { to: "/jobb", label: "Förare" },
-  { to: "/akerier", label: "Åkerier" },
+  { to: "/jobb", label: "Jobb" },
+  { to: "/forare", label: "För förare" },
+  { to: "/for-akerier", label: "För åkerier" },
 ];
 
 const PUBLIC_EXTRA_LINKS = [
   { to: "/#sa-fungerar-det", label: "Så fungerar STP" },
-  { to: "/branschinsikter", label: "Branschinsikter" },
-  { to: "/uppdateringar", label: "Patch notes" },
+  { to: "/uppdateringar", label: "Vad är nytt" },
   { to: "/om-oss", label: "Om STP" },
   { to: "/kontakt", label: "Kontakt" },
 ];
@@ -132,11 +132,8 @@ export default function Header({ onboarding = false }) {
                   <Link to="/#sa-fungerar-det" role="menuitem" onClick={closeNavDropdown} className="block px-5 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[var(--color-primary)]">
                     Så fungerar STP
                   </Link>
-                  <Link to="/branschinsikter" role="menuitem" onClick={closeNavDropdown} className="block px-5 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[var(--color-primary)]">
-                    Branschinsikter
-                  </Link>
                   <Link to="/uppdateringar" role="menuitem" onClick={closeNavDropdown} className="block px-5 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[var(--color-primary)]">
-                    Patch notes
+                    Vad är nytt
                   </Link>
                   <Link to="/om-oss" role="menuitem" onClick={closeNavDropdown} className="block px-5 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[var(--color-primary)]">
                     Om STP
@@ -200,7 +197,7 @@ export default function Header({ onboarding = false }) {
           </li>
           <li>
             <Link to="/foretag/chaufforer" onClick={closeMobile} className="hover:text-[var(--color-primary)] transition-colors">
-              Sök chaufförer
+              Hitta förare
             </Link>
           </li>
           <li>
@@ -345,10 +342,10 @@ export default function Header({ onboarding = false }) {
               {isCompany && (
                 isVerifiedCompany ? (
                   <Link
-                    to="/foretag/annonsera"
+                    to="/foretag/chaufforer"
                     className="dm-header-primary-cta px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white text-sm font-medium hover:bg-[var(--color-primary-light)] transition-colors"
                   >
-                    Publicera jobb
+                    Hitta förare
                   </Link>
                 ) : (
                   <span
@@ -409,11 +406,11 @@ export default function Header({ onboarding = false }) {
                 {isCompany && (
                   isVerifiedCompany ? (
                     <Link
-                      to="/foretag/annonsera"
+                      to="/foretag/chaufforer"
                       onClick={closeMobile}
                       className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white text-sm font-medium"
                     >
-                      Publicera jobb
+                      Hitta förare
                     </Link>
                   ) : (
                     <span className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-amber-100 text-amber-900 text-sm font-medium">

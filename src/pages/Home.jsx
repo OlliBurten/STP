@@ -147,11 +147,10 @@ export default function Home() {
               </p>
               <div className="flex flex-wrap gap-3 pt-2">
                 <Link
-                  to="/login"
-                  state={{ initialMode: "register", requiredRole: "driver" }}
+                  to="/jobb"
                   className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] px-6 py-3.5 rounded-xl bg-[var(--color-accent)] text-slate-900 font-semibold shadow-sm hover:bg-[var(--color-accent-dark)] hover:text-white transition-colors text-base"
                 >
-                  Jag är förare
+                  Se lediga jobb
                 </Link>
                 <Link
                   to="/login"
@@ -161,9 +160,6 @@ export default function Home() {
                   Jag representerar ett åkeri
                 </Link>
               </div>
-              <p className="pt-2 text-sm text-white/85">
-                STP är inte bemanning. STP är en neutral branschplattform.
-              </p>
               <a
                 href="#problem-heading"
                 className="inline-flex items-center gap-1.5 mt-4 text-sm text-white/80 hover:text-white transition-colors"
@@ -410,14 +406,14 @@ export default function Home() {
               state={{ initialMode: "register", requiredRole: "driver" }}
               className="inline-flex items-center justify-center min-h-[44px] px-8 py-3.5 rounded-xl bg-[var(--color-accent)] text-slate-900 font-semibold shadow-sm hover:bg-[var(--color-accent-dark)] hover:text-white transition-colors"
             >
-              Skapa profil som förare
+              Skapa förarkonto
             </Link>
             <Link
               to="/login"
               state={{ initialMode: "register", requiredRole: "company" }}
               className="inline-flex items-center justify-center min-h-[44px] px-8 py-3.5 rounded-xl border-2 border-[var(--color-primary)] text-[var(--color-primary)] font-semibold hover:bg-[var(--color-primary)] hover:text-white transition-colors"
             >
-              Registrera åkeri
+              Skapa rekryterarkonto
             </Link>
           </div>
         </div>

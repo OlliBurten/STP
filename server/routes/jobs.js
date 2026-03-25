@@ -147,7 +147,10 @@ jobsRouter.get("/", validateQuery(jobsListQuerySchema), async (req, res, next) =
         ...(bransch ? { bransch } : {}),
       },
       orderBy: { published: "desc" },
-      include: { user: { select: { companyName: true } } },
+      include: {
+        user: { select: { companyName: true, companyStatus: true } },
+        organization: { select: { status: true } },
+      },
     });
     const companyIds = [...new Set(jobs.map((j) => j.userId))];
     const reviewAggregates = companyIds.length
@@ -190,6 +193,7 @@ jobsRouter.get("/", validateQuery(jobsListQuerySchema), async (req, res, next) =
       soloWorkOk: j.soloWorkOk ?? null,
       kollektivavtal: j.kollektivavtal ?? null,
       filledAt: j.filledAt?.toISOString() ?? null,
+      companyVerified: (j.organization?.status || j.user?.companyStatus) === "VERIFIED",
       companyReviewAverage: reviewByCompany.get(j.userId)?.avg
         ? Number(reviewByCompany.get(j.userId).avg.toFixed(2))
         : null,
@@ -205,7 +209,14 @@ jobsRouter.get("/saved", authMiddleware, requireDriver, async (req, res, next) =
   try {
     const saved = await prisma.savedJob.findMany({
       where: { userId: req.userId, job: { status: "ACTIVE" } },
-      include: { job: true },
+      include: {
+        job: {
+          include: {
+            user: { select: { companyStatus: true } },
+            organization: { select: { status: true } },
+          },
+        },
+      },
       orderBy: { createdAt: "desc" },
     });
     const list = saved.map((s) => ({
@@ -233,6 +244,7 @@ jobsRouter.get("/saved", authMiddleware, requireDriver, async (req, res, next) =
       soloWorkOk: s.job.soloWorkOk ?? null,
       kollektivavtal: s.job.kollektivavtal ?? null,
       filledAt: s.job.filledAt?.toISOString() ?? null,
+      companyVerified: (s.job.organization?.status || s.job.user?.companyStatus) === "VERIFIED",
       savedAt: s.createdAt.toISOString(),
     }));
     res.json(list);
@@ -336,6 +348,7 @@ jobsRouter.get("/:id", optionalAuthMiddleware, attachCompanyContext, async (req,
         user: {
           select: {
             id: true,
+            companyStatus: true,
             companyName: true,
             companyDescription: true,
             companyWebsite: true,
@@ -345,6 +358,7 @@ jobsRouter.get("/:id", optionalAuthMiddleware, attachCompanyContext, async (req,
         organization: {
           select: {
             id: true,
+            status: true,
             name: true,
             description: true,
             website: true,
@@ -399,6 +413,7 @@ jobsRouter.get("/:id", optionalAuthMiddleware, attachCompanyContext, async (req,
       companyDescriptionShort,
       companyWebsite: companySource?.website ?? companySource?.companyWebsite ?? null,
       companyLocation: companySource?.location ?? companySource?.companyLocation ?? null,
+      companyVerified: (job.organization?.status || job.user?.companyStatus) === "VERIFIED",
       companyReviewAverage: reviewAggregate._avg.rating
         ? Number(reviewAggregate._avg.rating.toFixed(2))
         : null,

@@ -355,7 +355,7 @@ export default function Messages() {
               <div className="p-6 text-center text-slate-500 text-sm">
                 {isDriver
                   ? "Inga konversationer ännu. Ansök till jobb eller vänta på att företag kontaktar dig."
-                  : "Inga konversationer för detta företag. Kontakta chaufförer från chaufförsökningen."}
+                  : "Inga konversationer för detta företag. Kontakta förare från Hitta förare."}
               </div>
             ) : (
               <div className="divide-y divide-slate-100">
@@ -397,7 +397,7 @@ export default function Messages() {
                 <p>
                   {conversations.length > 0
                     ? "Välj en konversation"
-                    : "Starta en konversation genom att ansöka till ett jobb eller kontakta en chaufför"}
+                    : "Starta en konversation genom att ansöka till ett jobb eller kontakta en förare"}
                 </p>
               )}
             </div>

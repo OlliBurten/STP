@@ -14,7 +14,6 @@ export default function Login() {
     loginWithOAuthResponse,
     registerWithApi,
     hasApi,
-    logout,
   } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -98,7 +97,6 @@ export default function Login() {
           role,
           name: name.trim(),
         });
-        logout();
         if (result?.emailVerificationSent === false) {
           setInfo(
             "Kontot skapades men vi kunde tyvärr inte skicka verifieringsmail just nu. Kontakta oss med din e-postadress så verifierar vi dig manuellt, eller försök 'Skicka verifieringslänk igen' senare."
@@ -121,6 +119,10 @@ export default function Login() {
             return;
           }
           navigate("/foretag", { replace: true });
+          return;
+        }
+        if (loggedInUser.shouldShowOnboarding) {
+          navigate("/onboarding/forare", { replace: true });
           return;
         }
       }
@@ -171,7 +173,7 @@ export default function Login() {
         <div className="text-center mb-10">
           <h1 className="text-3xl font-bold text-slate-900">Logga in</h1>
           <p className="mt-3 text-slate-600">
-            Demo – klicka för att logga in som chaufför eller företag.
+            Demo – klicka för att logga in som förare eller rekryterare.
           </p>
         </div>
         <div className="space-y-4">
@@ -184,7 +186,7 @@ export default function Login() {
               <TruckIcon className="w-10 h-10 text-[var(--color-primary)]" />
               <div>
                 <h2 className="font-semibold text-slate-900 group-hover:text-[var(--color-primary)]">
-                  Chaufför
+                  Förare
                 </h2>
                 <p className="text-sm text-slate-600">Sök jobb, ansök med din profil</p>
               </div>
@@ -201,7 +203,7 @@ export default function Login() {
                 <h2 className="font-semibold text-slate-900 group-hover:text-[var(--color-primary)]">
                   Rekryterare
                 </h2>
-                <p className="text-sm text-slate-600">Publicera jobb, sök chaufförer</p>
+                <p className="text-sm text-slate-600">Publicera jobb, hitta förare</p>
               </div>
             </div>
           </button>
@@ -221,11 +223,11 @@ export default function Login() {
         </h1>
         <p className="mt-3 text-slate-600">
           {oauthPickingRole
-            ? "Chaufför eller rekryterare"
+            ? "Förare eller rekryterare"
             : mode === "login"
               ? "Ange e-post och lösenord."
               : mode === "register"
-                ? "Skapa konto som chaufför eller rekryterare."
+                ? "Skapa konto som förare eller rekryterare."
                 : "Ange e-post så skickar vi en återställningslänk."}
         </p>
       </div>
@@ -258,7 +260,7 @@ export default function Login() {
                 onChange={(e) => setRole(e.target.value)}
                 className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none bg-white"
               >
-                <option value="driver">Chaufför</option>
+                <option value="driver">Förare</option>
                 <option value="company">Rekryterare</option>
               </select>
             </div>

@@ -10,6 +10,10 @@ driversRouter.get("/", authMiddleware, requireCompany, requireVerifiedCompany, a
     const profiles = await prisma.driverProfile.findMany({
       where: {
         visibleToCompanies: true,
+        user: {
+          needsDriverOnboarding: false,
+          suspendedAt: null,
+        },
         ...(license && { licenses: { has: license } }),
         ...(certificate && { certificates: { has: certificate } }),
         ...(availability && { availability }),
@@ -93,7 +97,14 @@ driversRouter.get("/", authMiddleware, requireCompany, requireVerifiedCompany, a
 driversRouter.get("/:id", authMiddleware, requireCompany, requireVerifiedCompany, async (req, res, next) => {
   try {
     const profile = await prisma.driverProfile.findFirst({
-      where: { userId: req.params.id, visibleToCompanies: true },
+      where: {
+        userId: req.params.id,
+        visibleToCompanies: true,
+        user: {
+          needsDriverOnboarding: false,
+          suspendedAt: null,
+        },
+      },
       include: { user: { select: { id: true, name: true, email: true } } },
     });
     if (!profile) return res.status(404).json({ error: "Chaufför hittades inte" });

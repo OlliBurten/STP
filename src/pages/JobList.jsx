@@ -7,7 +7,7 @@ import LoadingBlock from "../components/LoadingBlock";
 import { useAuth } from "../context/AuthContext";
 import { useProfile } from "../context/ProfileContext";
 import { calcYearsExperience } from "../utils/profileUtils";
-import { getRecommendedJobsForDriver } from "../utils/matchUtils";
+import { getJobMatchHighlights, getRecommendedJobsForDriver } from "../utils/matchUtils";
 import { fetchJobs, fetchSavedJobs, saveJob, unsaveJob } from "../api/jobs.js";
 import { mapEmploymentToSegment } from "../data/segments";
 
@@ -151,6 +151,12 @@ export default function JobList() {
             </Link>
           </p>
         )}
+        <div className="mt-5 rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
+          <p className="text-sm font-semibold text-slate-900">Varför STP känns annorlunda</p>
+          <p className="mt-1 text-sm text-slate-600">
+            Här lyfter vi fram sådant som gör det lättare att bedöma en annons snabbt: verifierade företag, omdömen, kollektivavtal och tydligare struktur i varje jobb.
+          </p>
+        </div>
       </div>
 
       <div className="grid lg:grid-cols-[280px_1fr] gap-6 lg:gap-10">
@@ -179,14 +185,15 @@ export default function JobList() {
                 Rekommenderade för dig
               </h2>
               <p className="text-sm text-slate-600 mb-4">
-                Baserat på din profil – körkort, certifikat, region och erfarenhet.
+                Baserat på din profil, ditt segment och din matchning i plattformen.
               </p>
               <div className="space-y-4">
-                {recommendedJobs.map(({ job, score }) => (
+                {recommendedJobs.map(({ job, score, details }) => (
                   <JobCard
                     key={job.id}
                     job={job}
                     matchScore={score}
+                    matchHighlights={getJobMatchHighlights(job, details)}
                     showSave={isDriver && hasApi}
                     isSaved={savedJobIds.has(job.id)}
                     onToggleSave={handleToggleSave}

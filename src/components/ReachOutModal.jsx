@@ -62,7 +62,7 @@ export default function ReachOutModal({ driver, jobs, onClose, onSuccess }) {
           </div>
           <h2 className="text-xl font-bold text-slate-900">Förfrågan skickad</h2>
           <p className="mt-2 text-slate-600">
-            Din förfrågan har skickats till {driver.name}. Chauffören får ett meddelande via Sveriges Transportplattform.
+            Din förfrågan har skickats till {driver.name}. Föraren får ett meddelande via Sveriges Transportplattform.
           </p>
           <Link
             to={`/foretag/meddelanden/${conversationId}`}
@@ -98,7 +98,7 @@ export default function ReachOutModal({ driver, jobs, onClose, onSuccess }) {
         </div>
 
         <p className="text-slate-600 mb-4 text-sm">
-          All kommunikation sker via Sveriges Transportplattform. Chauffören behöver inte dela kontaktuppgifter.
+          All kommunikation sker via Sveriges Transportplattform. Föraren behöver inte dela kontaktuppgifter.
         </p>
 
         <div className="flex gap-2 mb-6">
@@ -179,7 +179,7 @@ export default function ReachOutModal({ driver, jobs, onClose, onSuccess }) {
               required
               placeholder={
                 mode === "invite"
-                  ? "Skriv ett kort meddelande till chauffören om jobbet..."
+                  ? "Skriv ett kort meddelande till föraren om jobbet..."
                   : "Skriv vad du vill diskutera..."
               }
               value={message}

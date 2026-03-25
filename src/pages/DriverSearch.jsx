@@ -5,7 +5,7 @@ import { mockJobs } from "../data/mockJobs";
 import { useProfile } from "../context/ProfileContext";
 import { useAuth } from "../context/AuthContext";
 import { calcYearsExperience } from "../utils/profileUtils";
-import { getMatchingDriversForJob } from "../utils/matchUtils";
+import { getDriverMatchHighlights, getMatchingDriversForJob } from "../utils/matchUtils";
 import DriverCard from "../components/DriverCard";
 import DriverFilters from "../components/DriverFilters";
 import { fetchDrivers } from "../api/drivers.js";
@@ -20,6 +20,8 @@ export default function DriverSearch() {
   const forJobTitle = locationState?.forJobTitle;
   const [apiDrivers, setApiDrivers] = useState([]);
   const [apiJobs, setApiJobs] = useState([]);
+  const [loadingDrivers, setLoadingDrivers] = useState(false);
+  const [driversError, setDriversError] = useState("");
   const [matchJobId, setMatchJobId] = useState(forJobId ?? "");
   const effectiveJobId =
     matchJobId === "__none__" ? null : matchJobId || forJobId || null;
@@ -34,20 +36,45 @@ export default function DriverSearch() {
     region: "",
     license: "",
     certificate: "",
-      segment: "",
+    segment: "",
     availability: "",
     experience: "",
   });
 
+  const driverQueryParams = useMemo(
+    () => ({
+      region: filters.region || undefined,
+      license: filters.license || undefined,
+      certificate: filters.certificate || undefined,
+      segment: filters.segment || undefined,
+      availability: filters.availability || undefined,
+      experience: filters.experience || undefined,
+    }),
+    [
+      filters.region,
+      filters.license,
+      filters.certificate,
+      filters.segment,
+      filters.availability,
+      filters.experience,
+    ]
+  );
+
   useEffect(() => {
     if (!hasApi) return;
-    fetchDrivers()
+    setLoadingDrivers(true);
+    setDriversError("");
+    fetchDrivers(driverQueryParams)
       .then((data) => setApiDrivers(Array.isArray(data) ? data : []))
-      .catch(() => setApiDrivers([]));
+      .catch((err) => {
+        setApiDrivers([]);
+        setDriversError(err.message || "Kunde inte hämta förare.");
+      })
+      .finally(() => setLoadingDrivers(false));
     fetchMyJobs()
       .then((data) => setApiJobs(Array.isArray(data) ? data : []))
       .catch(() => setApiJobs([]));
-  }, [hasApi]);
+  }, [hasApi, driverQueryParams]);
 
   const currentUserAsDriver = useMemo(() => {
     if (hasApi) return null;
@@ -93,20 +120,23 @@ export default function DriverSearch() {
         (driver.summary || "").toLowerCase().includes(searchLower) ||
         (driver.regionsWilling || []).some((r) => r.toLowerCase().includes(searchLower));
       const matchesRegion =
+        hasApi ||
         !filters.region ||
         driver.region === filters.region ||
         (driver.regionsWilling || []).includes(filters.region);
       const matchesLicense =
-        !filters.license || (driver.licenses || []).includes(filters.license);
+        hasApi || !filters.license || (driver.licenses || []).includes(filters.license);
       const matchesCertificate =
-        !filters.certificate || (driver.certificates || []).includes(filters.certificate);
+        hasApi || !filters.certificate || (driver.certificates || []).includes(filters.certificate);
       const matchesSegment =
+        hasApi ||
         !filters.segment ||
         driver.primarySegment === filters.segment ||
         (driver.secondarySegments || []).includes(filters.segment);
       const matchesAvailability =
-        !filters.availability || driver.availability === filters.availability;
+        hasApi || !filters.availability || driver.availability === filters.availability;
       const matchesExperience = (() => {
+        if (hasApi) return true;
         if (!filters.experience) return true;
         const y = driver.yearsExperience || 0;
         if (filters.experience === "10+") return y >= 10;
@@ -125,7 +155,7 @@ export default function DriverSearch() {
         matchesExperience
       );
     });
-  }, [allDrivers, filters]);
+  }, [allDrivers, filters, hasApi]);
 
   const sortedDrivers = useMemo(() => {
     if (!matchJob) return filteredDrivers.map((d) => ({ driver: d, score: 0 }));
@@ -140,7 +170,13 @@ export default function DriverSearch() {
   return (
     <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
       <div className="mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Sök chaufförer</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Hitta förare</h1>
+        <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
+          <p className="text-sm font-semibold text-slate-900">Snabbare beslut med bättre struktur</p>
+          <p className="mt-1 text-sm text-slate-600">
+            Förarna här visas med tydliga signaler som minimumprofil, segment, behörigheter och tillgänglighet så att ni slipper gissa utifrån lös fritext.
+          </p>
+        </div>
         <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-4">
           <label htmlFor="match-job" className="text-sm font-medium text-slate-700 shrink-0">
             Matcha mot jobb:
@@ -166,7 +202,9 @@ export default function DriverSearch() {
           </p>
         ) : (
           <p className="mt-2 text-slate-600">
-            {filteredDrivers.length} chaufförer matchar – hitta rätt yrkesförare och kontakta direkt
+            {loadingDrivers
+              ? "Hämtar förare..."
+              : `${filteredDrivers.length} förare matchar - hitta rätt yrkesförare och kontakta direkt`}
           </p>
         )}
         {filters.segment && (
@@ -196,22 +234,30 @@ export default function DriverSearch() {
         </aside>
 
         <div className="space-y-4">
-          {sortedDrivers.length > 0 ? (
-            sortedDrivers.map(({ driver, score }) => (
+          {driversError ? (
+            <div className="p-8 bg-amber-50 border border-amber-300 rounded-xl">
+              <p className="text-amber-900 font-medium">Det gick inte att visa förarna</p>
+              <p className="mt-2 text-sm text-amber-800">{driversError}</p>
+            </div>
+          ) : loadingDrivers ? (
+            <div className="p-12 text-center bg-white rounded-xl border border-slate-200">
+              <p className="text-slate-600">Laddar förare...</p>
+            </div>
+          ) : sortedDrivers.length > 0 ? (
+            sortedDrivers.map(({ driver, score, details }) => (
               <div key={driver.id} className="relative">
-                {matchJob && score > 0 && (
-                  <div className="absolute top-3 right-3 z-10 px-2 py-1 rounded text-xs font-medium bg-[var(--color-accent)] text-slate-900">
-                    {score} match
-                  </div>
-                )}
-                <DriverCard driver={driver} />
+                <DriverCard
+                  driver={driver}
+                  matchScore={matchJob && score > 0 ? score : null}
+                  matchHighlights={matchJob && score > 0 ? getDriverMatchHighlights(driver, details) : []}
+                />
               </div>
             ))
           ) : (
             <div className="p-12 text-center bg-white rounded-xl border border-slate-200">
-              <p className="text-slate-600">Inga chaufförer matchar dina filter.</p>
+              <p className="text-slate-600">Inga förare matchar dina filter.</p>
               <p className="mt-2 text-sm text-slate-500">
-                Prova att ändra eller rensa filtren.
+                Prova att ändra eller rensa filtren. Endast profiler som är synliga för företag visas här.
               </p>
             </div>
           )}

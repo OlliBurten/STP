@@ -194,14 +194,13 @@ export function AuthProvider({ children }) {
         verificationBaseUrl,
       });
       const u = normalizeUser(data.user);
-      commitAuthState(u, data.token);
       return { user: u, emailVerificationSent: data.emailVerificationSent === true };
     },
-    [commitAuthState]
+    []
   );
 
   const loginAsDriver = useCallback(() => {
-    setUser({ role: "driver", name: "Chaufför" });
+    setUser({ role: "driver", name: "Förare" });
     setToken(null);
     setIssuedAt(null);
     setLastActivity(null);
