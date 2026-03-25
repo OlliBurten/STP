@@ -2,20 +2,26 @@ const API_URL = (import.meta.env.VITE_API_URL || "").trim().replace(/\/$/, "");
 const AUTH_STORAGE_KEY = "drivermatch-auth";
 export const AUTH_INVALID_EVENT = "drivermatch:auth-invalid";
 
+function readStoredAuth() {
+  try {
+    const stored = localStorage.getItem(AUTH_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : null;
+  } catch (_) {
+    return null;
+  }
+}
+
 /** Används för felmeddelanden (visar vilken backend som anropas). */
 export function getApiBaseUrl() {
   return API_URL;
 }
 
 function getToken() {
-  try {
-    const stored = localStorage.getItem("drivermatch-auth");
-    if (stored) {
-      const data = JSON.parse(stored);
-      return data.token || null;
-    }
-  } catch (_) {}
-  return null;
+  return readStoredAuth()?.token || null;
+}
+
+function isReadOnlyViewActive() {
+  return Boolean(readStoredAuth()?.impersonation?.active);
 }
 
 export function clearStoredAuth() {
@@ -30,6 +36,13 @@ export function clearStoredAuth() {
 export async function api(method, path, body, options = {}) {
   const extraHeaders = options?.headers || {};
   const url = `${API_URL}${path}`;
+  if (
+    ["POST", "PUT", "PATCH", "DELETE"].includes(method) &&
+    isReadOnlyViewActive() &&
+    options?.allowReadOnlyWrite !== true
+  ) {
+    throw new Error("View as är read-only. Avsluta view as-läget för att göra ändringar.");
+  }
   const opts = {
     method,
     headers: { "Content-Type": "application/json", ...extraHeaders },

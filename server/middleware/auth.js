@@ -1,23 +1,12 @@
 import jwt from "jsonwebtoken";
 import { prisma } from "../lib/prisma.js";
+import { isAdminEmail } from "../lib/adminAccess.js";
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-in-production";
 
 function isCompanyRole(role) {
   const normalized = String(role || "").trim().toUpperCase();
   return normalized === "COMPANY" || normalized === "RECRUITER";
-}
-
-function parseAdminEmails() {
-  return String(process.env.ADMIN_EMAILS || "")
-    .split(",")
-    .map((v) => v.trim().toLowerCase())
-    .filter(Boolean);
-}
-
-function isAdminEmail(email) {
-  if (!email) return false;
-  return parseAdminEmails().includes(String(email).trim().toLowerCase());
 }
 
 /** Sätter req.userId/req.role om giltig token, annars 401 */
@@ -45,11 +34,78 @@ function verifyToken(req, res, next, token, optional = false) {
       return res.status(401).json({ error: "Ogiltig eller utgången session" });
     }
     try {
-      const user = await prisma.user.findUnique({
-        where: { id: payload.userId },
-        select: { id: true, role: true, suspendedAt: true, emailVerifiedAt: true },
-      });
+      const isImpersonating = Boolean(payload?.actorUserId && payload?.impersonationSessionId);
+      const targetUserId = payload.userId;
+      const actorUserId = isImpersonating ? payload.actorUserId : payload.userId;
+
+      const [actorUser, user] = await Promise.all([
+        prisma.user.findUnique({
+          where: { id: actorUserId },
+          select: {
+            id: true,
+            email: true,
+            role: true,
+            suspendedAt: true,
+            emailVerifiedAt: true,
+          },
+        }),
+        prisma.user.findUnique({
+          where: { id: targetUserId },
+          select: {
+            id: true,
+            email: true,
+            role: true,
+            suspendedAt: true,
+            emailVerifiedAt: true,
+          },
+        }),
+      ]);
+
       if (!user) return res.status(401).json({ error: "Användaren hittades inte" });
+      if (!actorUser) return res.status(401).json({ error: "Admin-användaren hittades inte" });
+
+      if (isImpersonating) {
+        const session = await prisma.adminImpersonationSession.findUnique({
+          where: { id: payload.impersonationSessionId },
+          select: {
+            id: true,
+            adminUserId: true,
+            targetUserId: true,
+            endedAt: true,
+            expiresAt: true,
+          },
+        });
+        if (
+          !session ||
+          session.adminUserId !== actorUser.id ||
+          session.targetUserId !== user.id ||
+          session.endedAt ||
+          session.expiresAt <= new Date() ||
+          !isAdminEmail(actorUser.email)
+        ) {
+          if (optional) return next();
+          return res.status(401).json({ error: "View as-sessionen är ogiltig eller har gått ut" });
+        }
+        req.isImpersonating = true;
+        req.impersonationSessionId = session.id;
+        req.actorUserId = actorUser.id;
+        req.actorRole = actorUser.role;
+        req.actorEmail = actorUser.email;
+        req.adminUserId = actorUser.id;
+        req.adminEmail = actorUser.email;
+        req.actorIsAdmin = true;
+      } else {
+        req.isImpersonating = false;
+        req.actorUserId = actorUser.id;
+        req.actorRole = actorUser.role;
+        req.actorEmail = actorUser.email;
+        req.actorIsAdmin = isAdminEmail(actorUser.email);
+        if (req.actorIsAdmin) {
+          req.adminUserId = actorUser.id;
+          req.adminEmail = actorUser.email;
+        }
+      }
+
       if (user.suspendedAt) {
         return res.status(403).json({
           error: "Kontot är tillfälligt avstängt. Kontakta support om du tror att detta är ett misstag.",
@@ -177,15 +233,19 @@ export async function requireVerifiedCompany(req, res, next) {
 
 export async function requireAdmin(req, res, next) {
   try {
-    if (!req.userId) return res.status(401).json({ error: "Ej inloggad" });
+    const adminUserId = req.actorUserId || req.userId;
+    if (!adminUserId) return res.status(401).json({ error: "Ej inloggad" });
     const user = await prisma.user.findUnique({
-      where: { id: req.userId },
-      select: { email: true },
+      where: { id: adminUserId },
+      select: { id: true, email: true },
     });
     if (!user) return res.status(401).json({ error: "Användaren hittades inte" });
     if (!isAdminEmail(user.email)) {
       return res.status(403).json({ error: "Endast admin har åtkomst" });
     }
+    req.adminUserId = user.id;
+    req.adminEmail = user.email;
+    req.actorIsAdmin = true;
     return next();
   } catch (e) {
     return next(e);

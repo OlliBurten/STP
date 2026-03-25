@@ -23,6 +23,7 @@ import {
 } from "../lib/oauth.js";
 import { shouldAutoVerifyCompany } from "../lib/companyVerify.js";
 import { authMiddleware } from "../middleware/auth.js";
+import { isAdminEmail } from "../lib/adminAccess.js";
 
 export const authRouter = Router();
 
@@ -98,18 +99,6 @@ const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-in-production";
 const OAUTH_COMPLETE_PURPOSE = "oauth-complete";
 const EMAIL_VERIFY_TTL_MS = 24 * 60 * 60 * 1000; // 24h
 const RESET_TTL_MS = 60 * 60 * 1000; // 1h
-
-function parseAdminEmails() {
-  return String(process.env.ADMIN_EMAILS || "")
-    .split(",")
-    .map((v) => v.trim().toLowerCase())
-    .filter(Boolean);
-}
-
-function isAdminEmail(email) {
-  if (!email) return false;
-  return parseAdminEmails().includes(String(email).trim().toLowerCase());
-}
 
 function normalizeOrgNumber(value) {
   const digits = String(value || "").replace(/\D/g, "");
@@ -327,12 +316,58 @@ authRouter.get("/me", authMiddleware, async (req, res, next) => {
     });
     if (!user) return res.status(404).json({ error: "Användaren hittades inte" });
     const augmented = await augmentCompanyMemberUser(user);
-    res.json(
-      formatClientAuthUser(user, augmented, {
+    let actorUser = null;
+    if (req.actorUserId && req.actorUserId !== req.userId) {
+      actorUser = await prisma.user.findUnique({
+        where: { id: req.actorUserId },
+        select: {
+          id: true,
+          email: true,
+          role: true,
+          name: true,
+          companyName: true,
+          companyOrgNumber: true,
+          companyStatus: true,
+          companySegmentDefaults: true,
+          emailVerifiedAt: true,
+          lastLoginAt: true,
+          needsDriverOnboarding: true,
+          needsRecruiterOnboarding: true,
+        },
+      });
+    }
+    const impersonation =
+      req.isImpersonating && req.impersonationSessionId
+        ? await prisma.adminImpersonationSession.findUnique({
+            where: { id: req.impersonationSessionId },
+            select: {
+              id: true,
+              startedAt: true,
+              expiresAt: true,
+            },
+          })
+        : null;
+    const isAdmin = Boolean(req.actorIsAdmin || isAdminEmail(user.email));
+    return res.json({
+      ...formatClientAuthUser(user, augmented, {
         hadLoggedInBefore: Boolean(user.lastLoginAt),
-        isAdmin: isAdminEmail(user.email),
-      })
-    );
+        isAdmin,
+      }),
+      adminUser: actorUser
+        ? formatClientAuthUser(actorUser, actorUser, {
+            hadLoggedInBefore: Boolean(actorUser.lastLoginAt),
+            isAdmin: isAdminEmail(actorUser.email),
+          })
+        : null,
+      impersonation: impersonation
+        ? {
+            active: true,
+            sessionId: impersonation.id,
+            startedAt: impersonation.startedAt.toISOString(),
+            expiresAt: impersonation.expiresAt.toISOString(),
+          }
+        : null,
+    });
   } catch (e) {
     next(e);
   }

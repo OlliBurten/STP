@@ -21,7 +21,7 @@ const PUBLIC_EXTRA_LINKS = [
 ];
 
 export default function Header({ onboarding = false }) {
-  const { user, isDriver, isCompany, isAdmin, logout } = useAuth();
+  const { user, adminUser, impersonation, isDriver, isCompany, isAdmin, isImpersonating, logout, stopViewAs } = useAuth();
   const { selectedNotificationCount, companyUnreadConversationCount = 0 } = useChat();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -60,6 +60,17 @@ export default function Header({ onboarding = false }) {
   const handleLogout = () => {
     closeMobile();
     logout();
+  };
+  const handleStopViewAs = async () => {
+    try {
+      await stopViewAs();
+      if (typeof window !== "undefined") {
+        window.location.assign("/admin");
+        return;
+      }
+      navigate("/admin", { replace: true });
+      closeMobile();
+    } catch (_) {}
   };
 
   const handleNotificationClick = (item) => {
@@ -236,25 +247,62 @@ export default function Header({ onboarding = false }) {
 
   if (onboarding && user) {
     return (
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur border-b border-slate-200">
-        <nav className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-14">
-          <Link to="/" className="flex items-center" aria-label="Startsida">
-            <Logo height={32} />
-          </Link>
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="text-sm font-medium text-slate-600 hover:text-[var(--color-primary)] py-2 px-3"
-          >
-            Logga ut
-          </button>
-        </nav>
-      </header>
+      <>
+        {isImpersonating && (
+          <div className="fixed top-0 left-0 right-0 z-[60] bg-amber-100 text-amber-950 border-b border-amber-300">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 py-2 flex flex-wrap items-center justify-between gap-2 text-sm">
+              <p>
+                View as aktivt: du ser plattformen som <strong>{user?.name || user?.email}</strong>. Alla ändringar är blockerade.
+              </p>
+              <button
+                type="button"
+                onClick={handleStopViewAs}
+                className="px-3 py-1.5 rounded-lg bg-amber-900 text-white font-medium hover:opacity-90"
+              >
+                Avsluta view as
+              </button>
+            </div>
+          </div>
+        )}
+        <header className={`fixed left-0 right-0 z-50 bg-white/95 backdrop-blur border-b border-slate-200 ${isImpersonating ? "top-10" : "top-0"}`}>
+          <nav className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-14">
+            <Link to="/" className="flex items-center" aria-label="Startsida">
+              <Logo height={32} />
+            </Link>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="text-sm font-medium text-slate-600 hover:text-[var(--color-primary)] py-2 px-3"
+            >
+              Logga ut
+            </button>
+          </nav>
+        </header>
+      </>
     );
   }
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm">
+    <>
+      {isImpersonating && (
+        <div className="fixed top-0 left-0 right-0 z-[60] bg-amber-100 text-amber-950 border-b border-amber-300">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-2 flex flex-wrap items-center justify-between gap-2 text-sm">
+            <p>
+              View as aktivt: du ser plattformen som <strong>{user?.name || user?.email}</strong> via{" "}
+              <strong>{adminUser?.email || "admin"}</strong>. Alla ändringar är blockerade.
+              {impersonation?.expiresAt ? ` Sessionen slutar ${new Date(impersonation.expiresAt).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" })}.` : ""}
+            </p>
+            <button
+              type="button"
+              onClick={handleStopViewAs}
+              className="px-3 py-1.5 rounded-lg bg-amber-900 text-white font-medium hover:opacity-90"
+            >
+              Avsluta view as
+            </button>
+          </div>
+        </div>
+      )}
+    <header className={`fixed left-0 right-0 z-50 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm ${isImpersonating ? "top-10" : "top-0"}`}>
       <nav className="dm-header-nav max-w-6xl mx-auto px-4 sm:px-6 flex items-center h-16 relative">
         <div className="flex items-center shrink-0 overflow-visible">
           <Link to="/" className="flex items-center focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 rounded overflow-visible">
@@ -322,9 +370,9 @@ export default function Header({ onboarding = false }) {
           {user && isAdmin && (
             <span
               className="hidden sm:inline-flex items-center px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-800 text-xs font-semibold"
-              title="Du är inloggad som admin"
+              title={isImpersonating ? "Du är admin i view as-läge" : "Du är inloggad som admin"}
             >
-              Admin
+              {isImpersonating ? "Admin view as" : "Admin"}
             </span>
           )}
           {/* Mobile menu button */}
@@ -439,5 +487,6 @@ export default function Header({ onboarding = false }) {
         </div>
       )}
     </header>
+    </>
   );
 }

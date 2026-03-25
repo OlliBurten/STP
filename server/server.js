@@ -1,5 +1,6 @@
 import "dotenv/config";
 import express from "express";
+import jwt from "jsonwebtoken";
 
 // Deployment-tydlighet: prod ska ha DEPLOYMENT=production, demo DEPLOYMENT=demo (används för guards och loggning).
 const DEPLOYMENT = (process.env.DEPLOYMENT || "").trim().toLowerCase() || "unknown";
@@ -35,6 +36,7 @@ import { isGoogleConfigured, isMicrosoftConfigured } from "./lib/oauth.js";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-in-production";
 app.set("trust proxy", 1);
 const allowedOrigins = process.env.FRONTEND_URL
   ? process.env.FRONTEND_URL.split(",").map((o) => o.trim()).filter(Boolean)
@@ -91,6 +93,22 @@ const apiWriteLimiter = rateLimit({
 app.use(requestIdMiddleware);
 app.use(cors({ origin: corsOrigin, credentials: true }));
 app.use(express.json({ limit: "1mb" }));
+app.use((req, res, next) => {
+  if (!["POST", "PUT", "PATCH", "DELETE"].includes(req.method)) return next();
+  if (req.path === "/api/admin/impersonation/stop") return next();
+  const authHeader = req.headers.authorization;
+  const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
+  if (!token) return next();
+  try {
+    const payload = jwt.verify(token, JWT_SECRET);
+    if (payload?.impersonationSessionId && payload?.actorUserId) {
+      return res.status(403).json({
+        error: "View as är read-only. Avsluta view as-läget för att göra ändringar.",
+      });
+    }
+  } catch (_) {}
+  return next();
+});
 
 app.use("/api/auth/login", authLimiter);
 app.use("/api/auth/register", authLimiter);

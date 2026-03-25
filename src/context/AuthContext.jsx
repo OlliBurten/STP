@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { apiPost, AUTH_INVALID_EVENT } from "../api/client.js";
 import { fetchMe } from "../api/auth.js";
+import { startViewAs as apiStartViewAs, stopViewAs as apiStopViewAs } from "../api/admin.js";
 
 const AUTH_STORAGE_KEY = "drivermatch-auth";
 const SESSION_MAX_MS = 24 * 60 * 60 * 1000; // 24h
@@ -24,6 +25,16 @@ function writeStoredAuth(payload) {
     }
     localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(payload));
   } catch (_) {}
+}
+
+function normalizeImpersonation(data) {
+  if (!data?.active) return null;
+  return {
+    active: true,
+    sessionId: data.sessionId || null,
+    startedAt: data.startedAt || null,
+    expiresAt: data.expiresAt || null,
+  };
 }
 
 function normalizeUser(u) {
@@ -61,6 +72,12 @@ export function AuthProvider({ children }) {
     if (data?.user) return normalizeUser(data.user);
     return null;
   });
+  const [adminUser, setAdminUser] = useState(() => {
+    const data = readStoredAuth();
+    if (data?.adminUser) return normalizeUser(data.adminUser);
+    return null;
+  });
+  const [impersonation, setImpersonation] = useState(() => normalizeImpersonation(readStoredAuth()?.impersonation));
   const [token, setToken] = useState(() => {
     return readStoredAuth()?.token || null;
   });
@@ -74,6 +91,8 @@ export function AuthProvider({ children }) {
   const clearAuthState = useCallback(() => {
     writeStoredAuth(null);
     setUser(null);
+    setAdminUser(null);
+    setImpersonation(null);
     setToken(null);
     setIssuedAt(null);
     setLastActivity(null);
@@ -86,21 +105,27 @@ export function AuthProvider({ children }) {
       return;
     }
     setUser(normalizeUser(raw.user));
+    setAdminUser(raw.adminUser ? normalizeUser(raw.adminUser) : null);
+    setImpersonation(normalizeImpersonation(raw.impersonation));
     setToken(raw.token || null);
     setIssuedAt(raw.issuedAt || null);
     setLastActivity(raw.lastActivity || null);
   }, [clearAuthState]);
 
-  const commitAuthState = useCallback((nextUser, nextToken) => {
+  const commitAuthState = useCallback((nextUser, nextToken, extra = {}) => {
     const now = Date.now();
     const payload = {
       user: nextUser,
+      adminUser: extra.adminUser || null,
+      impersonation: extra.impersonation || null,
       token: nextToken,
       issuedAt: now,
       lastActivity: now,
     };
     writeStoredAuth(payload);
     setUser(nextUser);
+    setAdminUser(extra.adminUser || null);
+    setImpersonation(extra.impersonation || null);
     setToken(nextToken);
     setIssuedAt(now);
     setLastActivity(now);
@@ -117,6 +142,8 @@ export function AuthProvider({ children }) {
       const now = Date.now();
       const payload = {
         user,
+        adminUser,
+        impersonation,
         token,
         issuedAt: issuedAt || now,
         lastActivity: lastActivity || now,
@@ -125,7 +152,7 @@ export function AuthProvider({ children }) {
     } else {
       localStorage.removeItem(AUTH_STORAGE_KEY);
     }
-  }, [user, token, issuedAt, lastActivity]);
+  }, [user, adminUser, impersonation, token, issuedAt, lastActivity]);
 
   // Synka login/logout/activity mellan flera flikar.
   useEffect(() => {
@@ -176,7 +203,10 @@ export function AuthProvider({ children }) {
   const loginWithApi = useCallback(async (email, password) => {
     const data = await apiPost("/api/auth/login", { email, password });
     const u = normalizeUser(data.user);
-    commitAuthState(u, data.token);
+    commitAuthState(u, data.token, {
+      adminUser: data.adminUser ? normalizeUser(data.adminUser) : null,
+      impersonation: normalizeImpersonation(data.impersonation),
+    });
     return u;
   }, [commitAuthState]);
 
@@ -201,6 +231,8 @@ export function AuthProvider({ children }) {
 
   const loginAsDriver = useCallback(() => {
     setUser({ role: "driver", name: "Förare" });
+    setAdminUser(null);
+    setImpersonation(null);
     setToken(null);
     setIssuedAt(null);
     setLastActivity(null);
@@ -214,6 +246,8 @@ export function AuthProvider({ children }) {
       companyStatus: "VERIFIED",
       companySegmentDefaults: ["FULLTIME"],
     });
+    setAdminUser(null);
+    setImpersonation(null);
     setToken(null);
     setIssuedAt(null);
     setLastActivity(null);
@@ -225,7 +259,10 @@ export function AuthProvider({ children }) {
 
   const loginWithOAuthResponse = useCallback(({ user: u, token: t }) => {
     const normalized = normalizeUser(u);
-    commitAuthState(normalized, t);
+    commitAuthState(normalized, t, {
+      adminUser: u?.adminUser ? normalizeUser(u.adminUser) : null,
+      impersonation: normalizeImpersonation(u?.impersonation),
+    });
     return normalized;
   }, [commitAuthState]);
 
@@ -236,11 +273,33 @@ export function AuthProvider({ children }) {
       const u = await fetchMe();
       const normalized = normalizeUser(u);
       setUser(normalized);
+      setAdminUser(u?.adminUser ? normalizeUser(u.adminUser) : null);
+      setImpersonation(normalizeImpersonation(u?.impersonation));
       return normalized;
     } catch {
       return null;
     }
   }, [token]);
+
+  const startViewAs = useCallback(async (userId) => {
+    const data = await apiStartViewAs(userId);
+    const normalized = normalizeUser(data.user);
+    commitAuthState(normalized, data.token, {
+      adminUser: data.adminUser ? normalizeUser(data.adminUser) : null,
+      impersonation: normalizeImpersonation(data.impersonation),
+    });
+    return normalized;
+  }, [commitAuthState]);
+
+  const stopViewAs = useCallback(async () => {
+    const data = await apiStopViewAs();
+    const normalized = normalizeUser(data.user);
+    commitAuthState(normalized, data.token, {
+      adminUser: null,
+      impersonation: null,
+    });
+    return normalized;
+  }, [commitAuthState]);
 
   // Uppdatera senaste aktivitet vid interaktion. Skriv inte på varje pixelrörelse.
   useEffect(() => {
@@ -262,7 +321,10 @@ export function AuthProvider({ children }) {
   const isDriver = user?.role === "driver";
   const isRecruiter = user?.role === "recruiter";
   const isCompany = isRecruiter;
-  const isAdmin = Boolean(user?.isAdmin);
+  const isImpersonating = Boolean(impersonation?.active);
+  const isReadOnlyView = isImpersonating;
+  const effectiveAdminUser = adminUser || (user?.isAdmin ? user : null);
+  const isAdmin = Boolean(effectiveAdminUser?.isAdmin);
   const hasApi = !!API_URL;
 
   return (
@@ -274,6 +336,10 @@ export function AuthProvider({ children }) {
         isRecruiter,
         isCompany,
         isAdmin,
+        adminUser: effectiveAdminUser,
+        impersonation,
+        isImpersonating,
+        isReadOnlyView,
         hasApi,
         loginAsDriver,
         loginAsCompany,
@@ -282,6 +348,8 @@ export function AuthProvider({ children }) {
         registerWithApi,
         logout,
         refreshUser,
+        startViewAs,
+        stopViewAs,
       }}
     >
       {children}

@@ -44,12 +44,12 @@ import VisionPresentation from "./pages/VisionPresentation";
 import { useAuth } from "./context/AuthContext";
 
 function AppLayout() {
-  const { user, isCompany } = useAuth();
+  const { user, isCompany, isImpersonating } = useAuth();
   const onboarding = useOnboardingRequired();
   return (
     <div className="min-h-screen flex flex-col overflow-x-hidden">
       <Header onboarding={onboarding} />
-      <div className="flex-1 pt-16">
+      <div className={`flex-1 ${isImpersonating ? "pt-[104px]" : "pt-16"}`}>
         <OnboardingGate>
         <Routes>
                   <Route path="/" element={<Home />} />

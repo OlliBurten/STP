@@ -23,7 +23,7 @@ import {
 } from "../utils/driverProfileRequirements";
 
 export default function Profile() {
-  const { user, hasApi } = useAuth();
+  const { user, hasApi, isAdmin } = useAuth();
   const { profile, updateProfile, profileSaving, profileSaveError } = useProfile();
   const [editing, setEditing] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
@@ -147,7 +147,7 @@ export default function Profile() {
     return `${exp.startYear || "?"} – ${exp.endYear || "?"}`;
   };
 
-  if (hasApi && profile.id === user?.id && !isDriverMinimumProfileComplete(profile)) {
+  if (hasApi && profile.id === user?.id && !isAdmin && !isDriverMinimumProfileComplete(profile)) {
     return <Navigate to="/onboarding/forare" replace />;
   }
 

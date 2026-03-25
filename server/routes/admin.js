@@ -1,13 +1,62 @@
 import { Router } from "express";
+import jwt from "jsonwebtoken";
 import { prisma } from "../lib/prisma.js";
 import { authMiddleware, requireAdmin } from "../middleware/auth.js";
 import { createNotification } from "../lib/notifications.js";
 import { notifyCompanyApproved } from "../lib/email.js";
 import { runVerificationReminders } from "../lib/verificationReminders.js";
+import { createAdminAuditLog, getAdminActorId, isAdminEmail } from "../lib/adminAccess.js";
 
 export const adminRouter = Router();
+const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-in-production";
+const IMPERSONATION_TTL_SECONDS = 60 * 60 * 2;
 
 adminRouter.use(authMiddleware, requireAdmin);
+
+function toIso(value) {
+  return value ? new Date(value).toISOString() : null;
+}
+
+function serializeAuthUser(user, extra = {}) {
+  if (!user) return null;
+  return {
+    id: user.id,
+    email: user.email,
+    role: user.role,
+    name: user.name,
+    companyName: user.companyName ?? null,
+    companyOrgNumber: user.companyOrgNumber ?? null,
+    companyStatus: user.companyStatus ?? "VERIFIED",
+    companySegmentDefaults: Array.isArray(user.companySegmentDefaults) ? user.companySegmentDefaults : [],
+    companyOwnerId: user.companyOwnerId ?? null,
+    organizationId: user.organizationId ?? null,
+    emailVerifiedAt: user.emailVerifiedAt ? new Date(user.emailVerifiedAt).toISOString() : null,
+    shouldShowOnboarding: Boolean(user.needsDriverOnboarding || user.needsRecruiterOnboarding),
+    isAdmin: Boolean(extra.isAdmin),
+  };
+}
+
+async function augmentAuthUser(user) {
+  if (!user) return user;
+  const rawRole = String(user.role || "").toUpperCase();
+  if (!["COMPANY", "RECRUITER"].includes(rawRole)) return user;
+
+  const membership = await prisma.userOrganization.findFirst({
+    where: { userId: user.id },
+    include: { organization: true },
+  });
+  if (membership?.organization) {
+    return {
+      ...user,
+      companyName: membership.organization.name ?? user.companyName,
+      companyOrgNumber: membership.organization.orgNumber ?? user.companyOrgNumber,
+      companyStatus: membership.organization.status ?? user.companyStatus,
+      companySegmentDefaults: membership.organization.segmentDefaults ?? user.companySegmentDefaults ?? [],
+      organizationId: membership.organization.id,
+    };
+  }
+  return user;
+}
 
 adminRouter.get("/companies/pending", async (req, res, next) => {
   try {
@@ -206,7 +255,134 @@ adminRouter.patch("/companies/:id/status", async (req, res, next) => {
       }
     }
 
+    await createAdminAuditLog({
+      req,
+      action: "COMPANY_STATUS_UPDATED",
+      targetUserId: organization?.userOrganizations[0]?.user?.id || updated.id || null,
+      targetType: organization ? "ORGANIZATION" : "USER",
+      metadata: {
+        status,
+        companyId: req.params.id,
+        companyName: updated.companyName || null,
+      },
+    });
+
     res.json(updated);
+  } catch (e) {
+    next(e);
+  }
+});
+
+adminRouter.get("/summary", async (req, res, next) => {
+  try {
+    const now = new Date();
+    const since7d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const since30d = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const since365d = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+
+    const [
+      users7d,
+      users30d,
+      users365d,
+      driversTotal,
+      recruitersTotal,
+      totalJobs,
+      activeJobs,
+      totalConversations,
+      totalMessages,
+      verifiedLegacyCompanies,
+      verifiedOrganizations,
+      latestUsers,
+      latestJobs,
+      driversWithMinimumProfile,
+      driversTotalForProfile,
+      jobsWithConversationsRaw,
+    ] = await Promise.all([
+      prisma.user.count({ where: { createdAt: { gte: since7d } } }),
+      prisma.user.count({ where: { createdAt: { gte: since30d } } }),
+      prisma.user.count({ where: { createdAt: { gte: since365d } } }),
+      prisma.user.count({ where: { role: "DRIVER" } }),
+      prisma.user.count({ where: { role: { in: ["COMPANY", "RECRUITER"] } } }),
+      prisma.job.count(),
+      prisma.job.count({ where: { status: "ACTIVE" } }),
+      prisma.conversation.count(),
+      prisma.message.count(),
+      prisma.user.count({
+        where: { role: "COMPANY", companyStatus: "VERIFIED", companyOrgNumber: { not: null } },
+      }),
+      prisma.organization.count({ where: { status: "VERIFIED" } }),
+      prisma.user.findMany({
+        orderBy: { createdAt: "desc" },
+        take: 5,
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          createdAt: true,
+          companyName: true,
+        },
+      }),
+      prisma.job.findMany({
+        orderBy: { published: "desc" },
+        take: 5,
+        select: {
+          id: true,
+          title: true,
+          company: true,
+          status: true,
+          published: true,
+        },
+      }),
+      prisma.driverProfile.count({
+        where: {
+          visibleToCompanies: true,
+          summary: { not: null },
+          region: { not: null },
+          availability: { not: null },
+        },
+      }),
+      prisma.driverProfile.count(),
+      prisma.conversation.findMany({
+        where: { jobId: { not: null } },
+        distinct: ["jobId"],
+        select: { jobId: true },
+      }),
+    ]);
+
+    res.json({
+      users: {
+        new7d: users7d,
+        new30d: users30d,
+        new365d: users365d,
+        driversTotal,
+        recruitersTotal,
+      },
+      jobs: {
+        total: totalJobs,
+        active: activeJobs,
+        withConversation: jobsWithConversationsRaw.length,
+      },
+      activity: {
+        conversations: totalConversations,
+        messages: totalMessages,
+      },
+      verification: {
+        verifiedCompanies: verifiedLegacyCompanies + verifiedOrganizations,
+      },
+      driverProfiles: {
+        completeMinimum: driversWithMinimumProfile,
+        total: driversTotalForProfile,
+      },
+      latestUsers: latestUsers.map((user) => ({
+        ...user,
+        createdAt: toIso(user.createdAt),
+      })),
+      latestJobs: latestJobs.map((job) => ({
+        ...job,
+        published: toIso(job.published),
+      })),
+    });
   } catch (e) {
     next(e);
   }
@@ -229,7 +405,7 @@ adminRouter.get("/users", async (req, res, next) => {
             ],
           }
         : {}),
-      ...(role === "DRIVER" || role === "COMPANY" ? { role } : {}),
+      ...(role && ["DRIVER", "COMPANY", "RECRUITER"].includes(role) ? { role } : {}),
       ...(companyStatus && ["PENDING", "VERIFIED", "REJECTED"].includes(companyStatus)
         ? { companyStatus }
         : {}),
@@ -266,6 +442,7 @@ adminRouter.get("/users", async (req, res, next) => {
     res.json(
       users.map((u) => ({
         ...u,
+        isAdmin: isAdminEmail(u.email),
         emailVerifiedAt: u.emailVerifiedAt?.toISOString() ?? null,
         suspendedAt: u.suspendedAt?.toISOString() ?? null,
         lastWarnedAt: u.lastWarnedAt?.toISOString() ?? null,
@@ -273,6 +450,343 @@ adminRouter.get("/users", async (req, res, next) => {
         createdAt: u.createdAt.toISOString(),
       }))
     );
+  } catch (e) {
+    next(e);
+  }
+});
+
+adminRouter.get("/users/:id", async (req, res, next) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.params.id },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        name: true,
+        companyName: true,
+        companyOrgNumber: true,
+        companyStatus: true,
+        companySegmentDefaults: true,
+        companyRegion: true,
+        companyBransch: true,
+        emailVerifiedAt: true,
+        suspendedAt: true,
+        suspensionReason: true,
+        warningCount: true,
+        lastWarningReason: true,
+        lastWarnedAt: true,
+        lastLoginAt: true,
+        createdAt: true,
+        needsDriverOnboarding: true,
+        needsRecruiterOnboarding: true,
+        driverProfile: {
+          select: {
+            region: true,
+            location: true,
+            summary: true,
+            licenses: true,
+            certificates: true,
+            availability: true,
+            primarySegment: true,
+            secondarySegments: true,
+            visibleToCompanies: true,
+            regionsWilling: true,
+            updatedAt: true,
+          },
+        },
+        userOrganizations: {
+          include: {
+            organization: {
+              select: {
+                id: true,
+                name: true,
+                orgNumber: true,
+                status: true,
+                region: true,
+              },
+            },
+          },
+        },
+        companyMembership: {
+          select: {
+            companyOwnerId: true,
+          },
+        },
+        _count: {
+          select: {
+            jobs: true,
+            conversationsAsDriver: true,
+            conversationsAsCompany: true,
+            messages: true,
+            reportsCreated: true,
+            reportsReceived: true,
+          },
+        },
+      },
+    });
+    if (!user) return res.status(404).json({ error: "Användaren hittades inte" });
+
+    const latestJobs = await prisma.job.findMany({
+      where: { userId: user.id },
+      orderBy: { published: "desc" },
+      take: 5,
+      select: {
+        id: true,
+        title: true,
+        status: true,
+        company: true,
+        published: true,
+      },
+    });
+
+    const latestConversations = await prisma.conversation.findMany({
+      where:
+        user.role === "DRIVER"
+          ? { driverId: user.id }
+          : { companyId: user.companyMembership?.companyOwnerId || user.id },
+      orderBy: { updatedAt: "desc" },
+      take: 5,
+      select: {
+        id: true,
+        jobTitle: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    res.json({
+      ...user,
+      isAdmin: isAdminEmail(user.email),
+      emailVerifiedAt: toIso(user.emailVerifiedAt),
+      suspendedAt: toIso(user.suspendedAt),
+      lastWarnedAt: toIso(user.lastWarnedAt),
+      lastLoginAt: toIso(user.lastLoginAt),
+      createdAt: toIso(user.createdAt),
+      driverProfile: user.driverProfile
+        ? {
+            ...user.driverProfile,
+            updatedAt: toIso(user.driverProfile.updatedAt),
+          }
+        : null,
+      organizations: user.userOrganizations.map((membership) => ({
+        id: membership.organization.id,
+        role: membership.role,
+        name: membership.organization.name,
+        orgNumber: membership.organization.orgNumber,
+        status: membership.organization.status,
+        region: membership.organization.region,
+      })),
+      latestJobs: latestJobs.map((job) => ({
+        ...job,
+        published: toIso(job.published),
+      })),
+      latestConversations: latestConversations.map((conversation) => ({
+        ...conversation,
+        createdAt: toIso(conversation.createdAt),
+        updatedAt: toIso(conversation.updatedAt),
+      })),
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
+adminRouter.get("/impersonation/status", async (req, res, next) => {
+  try {
+    if (!req.isImpersonating || !req.impersonationSessionId) {
+      return res.json({ active: false });
+    }
+    const session = await prisma.adminImpersonationSession.findUnique({
+      where: { id: req.impersonationSessionId },
+      select: {
+        id: true,
+        targetUserId: true,
+        startedAt: true,
+        expiresAt: true,
+        endedAt: true,
+      },
+    });
+    if (!session || session.endedAt) {
+      return res.json({ active: false });
+    }
+    return res.json({
+      active: true,
+      sessionId: session.id,
+      targetUserId: session.targetUserId,
+      startedAt: toIso(session.startedAt),
+      expiresAt: toIso(session.expiresAt),
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
+adminRouter.post("/impersonation/start", async (req, res, next) => {
+  try {
+    const targetUserId = String(req.body?.userId || "").trim();
+    const adminUserId = getAdminActorId(req);
+    if (!targetUserId) {
+      return res.status(400).json({ error: "userId krävs" });
+    }
+    if (!adminUserId) {
+      return res.status(401).json({ error: "Ej inloggad" });
+    }
+    if (targetUserId === adminUserId) {
+      return res.status(400).json({ error: "Du är redan inloggad som den användaren" });
+    }
+    const [adminUser, targetUser] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: adminUserId },
+        select: {
+          id: true,
+          email: true,
+          role: true,
+          name: true,
+          companyName: true,
+          companyOrgNumber: true,
+          companyStatus: true,
+          companySegmentDefaults: true,
+          emailVerifiedAt: true,
+        },
+      }),
+      prisma.user.findUnique({
+        where: { id: targetUserId },
+        select: {
+          id: true,
+          email: true,
+          role: true,
+          name: true,
+          companyName: true,
+          companyOrgNumber: true,
+          companyStatus: true,
+          companySegmentDefaults: true,
+          emailVerifiedAt: true,
+          needsDriverOnboarding: true,
+          needsRecruiterOnboarding: true,
+        },
+      }),
+    ]);
+    if (!adminUser || !isAdminEmail(adminUser.email)) {
+      return res.status(403).json({ error: "Endast admin har åtkomst" });
+    }
+    if (!targetUser) {
+      return res.status(404).json({ error: "Användaren hittades inte" });
+    }
+
+    const [augmentedAdminUser, augmentedTargetUser] = await Promise.all([
+      augmentAuthUser(adminUser),
+      augmentAuthUser(targetUser),
+    ]);
+
+    const session = await prisma.adminImpersonationSession.create({
+      data: {
+        adminUserId,
+        targetUserId,
+        expiresAt: new Date(Date.now() + IMPERSONATION_TTL_SECONDS * 1000),
+        ipAddress: req.ip || null,
+        userAgent: req.get("user-agent") || null,
+      },
+    });
+    await createAdminAuditLog({
+      req,
+      action: "IMPERSONATION_STARTED",
+      targetUserId,
+      targetType: "USER",
+      impersonationSessionId: session.id,
+      metadata: {
+        targetRole: targetUser.role,
+      },
+    });
+
+    const token = jwt.sign(
+      {
+        userId: targetUser.id,
+        role: targetUser.role,
+        actorUserId: adminUser.id,
+        impersonationSessionId: session.id,
+      },
+      JWT_SECRET,
+      { expiresIn: IMPERSONATION_TTL_SECONDS }
+    );
+
+    return res.json({
+      token,
+      user: serializeAuthUser(augmentedTargetUser, { isAdmin: true }),
+      adminUser: serializeAuthUser(augmentedAdminUser, { isAdmin: true }),
+      impersonation: {
+        active: true,
+        sessionId: session.id,
+        startedAt: toIso(session.startedAt),
+        expiresAt: toIso(session.expiresAt),
+      },
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
+adminRouter.post("/impersonation/stop", async (req, res, next) => {
+  try {
+    const adminUserId = getAdminActorId(req);
+    if (!req.impersonationSessionId || !req.isImpersonating || !adminUserId) {
+      return res.status(400).json({ error: "Ingen aktiv view as-session att avsluta" });
+    }
+    const [session, adminUser] = await Promise.all([
+      prisma.adminImpersonationSession.findUnique({
+        where: { id: req.impersonationSessionId },
+        select: {
+          id: true,
+          targetUserId: true,
+          endedAt: true,
+        },
+      }),
+      prisma.user.findUnique({
+        where: { id: adminUserId },
+        select: {
+          id: true,
+          email: true,
+          role: true,
+          name: true,
+          companyName: true,
+          companyOrgNumber: true,
+          companyStatus: true,
+          companySegmentDefaults: true,
+          emailVerifiedAt: true,
+        },
+      }),
+    ]);
+    if (!session || session.endedAt || !adminUser) {
+      return res.status(400).json({ error: "View as-sessionen är redan avslutad" });
+    }
+    const augmentedAdminUser = await augmentAuthUser(adminUser);
+    await prisma.adminImpersonationSession.update({
+      where: { id: session.id },
+      data: { endedAt: new Date() },
+    });
+    await createAdminAuditLog({
+      req,
+      action: "IMPERSONATION_STOPPED",
+      targetUserId: session.targetUserId,
+      targetType: "USER",
+      impersonationSessionId: session.id,
+    });
+
+    const token = jwt.sign(
+      {
+        userId: adminUser.id,
+        role: adminUser.role,
+      },
+      JWT_SECRET,
+      { expiresIn: "24h" }
+    );
+
+    return res.json({
+      token,
+      user: serializeAuthUser(augmentedAdminUser, { isAdmin: true }),
+      adminUser: null,
+      impersonation: null,
+    });
   } catch (e) {
     next(e);
   }
@@ -297,6 +811,12 @@ adminRouter.patch("/users/:id/verify-email", async (req, res, next) => {
       ...updated,
       emailVerifiedAt: updated.emailVerifiedAt?.toISOString() ?? null,
       message: "E-post markerad som verifierad",
+    });
+    await createAdminAuditLog({
+      req,
+      action: "USER_EMAIL_VERIFIED",
+      targetUserId: updated.id,
+      targetType: "USER",
     });
   } catch (e) {
     next(e);
@@ -350,6 +870,15 @@ adminRouter.patch("/users/:id/suspend", async (req, res, next) => {
       ...updated,
       suspendedAt: updated.suspendedAt?.toISOString() ?? null,
       lastWarnedAt: updated.lastWarnedAt?.toISOString() ?? null,
+    });
+    await createAdminAuditLog({
+      req,
+      action: suspended ? "USER_SUSPENDED" : "USER_REACTIVATED",
+      targetUserId: updated.id,
+      targetType: "USER",
+      metadata: {
+        reason: updated.suspensionReason || null,
+      },
     });
   } catch (e) {
     next(e);
@@ -409,6 +938,15 @@ adminRouter.patch("/users/:id/warnings", async (req, res, next) => {
       ...updated,
       lastWarnedAt: updated.lastWarnedAt?.toISOString() ?? null,
       suspendedAt: updated.suspendedAt?.toISOString() ?? null,
+    });
+    await createAdminAuditLog({
+      req,
+      action: action === "ADD" ? "USER_WARNING_ADDED" : "USER_WARNINGS_RESET",
+      targetUserId: updated.id,
+      targetType: "USER",
+      metadata: {
+        warningCount: updated.warningCount,
+      },
     });
   } catch (e) {
     next(e);
@@ -505,6 +1043,16 @@ adminRouter.patch("/jobs/:id/status", async (req, res, next) => {
     res.json({
       ...updated,
       moderatedAt: updated.moderatedAt?.toISOString() ?? null,
+    });
+    await createAdminAuditLog({
+      req,
+      action: "JOB_STATUS_UPDATED",
+      targetType: "JOB",
+      metadata: {
+        jobId: updated.id,
+        status,
+        moderationReason: updated.moderationReason || null,
+      },
     });
   } catch (e) {
     next(e);
@@ -605,6 +1153,17 @@ adminRouter.patch("/reports/:id", async (req, res, next) => {
     });
 
     res.json({ ok: true });
+    await createAdminAuditLog({
+      req,
+      action: "REPORT_UPDATED",
+      targetUserId: report.reportedUserId || null,
+      targetType: "REPORT",
+      metadata: {
+        reportId: report.id,
+        status,
+        addWarning,
+      },
+    });
   } catch (e) {
     next(e);
   }
@@ -673,6 +1232,15 @@ adminRouter.patch("/reviews/:id", async (req, res, next) => {
       },
     });
     res.json(updated);
+    await createAdminAuditLog({
+      req,
+      action: "REVIEW_UPDATED",
+      targetType: "REVIEW",
+      metadata: {
+        reviewId: updated.id,
+        status: updated.status,
+      },
+    });
   } catch (e) {
     next(e);
   }

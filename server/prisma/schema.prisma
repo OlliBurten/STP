@@ -61,6 +61,50 @@ model User {
   // Multi-org: rekryterare kan ha flera åkerier
   userOrganizations     UserOrganization[]
   organizationInvitesSent OrganizationInvite[] @relation("OrganizationInviter")
+  adminAuditLogs        AdminAuditLog[] @relation("AdminAuditActor")
+  adminAuditTargets     AdminAuditLog[] @relation("AdminAuditTarget")
+  adminImpersonationSessions AdminImpersonationSession[] @relation("AdminImpersonationActor")
+  impersonatedBySessions     AdminImpersonationSession[] @relation("AdminImpersonationTarget")
+}
+
+model AdminImpersonationSession {
+  id           String   @id @default(cuid())
+  adminUserId  String
+  adminUser    User     @relation("AdminImpersonationActor", fields: [adminUserId], references: [id], onDelete: Cascade)
+  targetUserId String
+  targetUser   User     @relation("AdminImpersonationTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
+  startedAt    DateTime @default(now())
+  endedAt      DateTime?
+  expiresAt    DateTime
+  ipAddress    String?
+  userAgent    String?
+  auditLogs    AdminAuditLog[]
+
+  @@index([adminUserId, startedAt])
+  @@index([targetUserId, startedAt])
+  @@index([endedAt, expiresAt])
+}
+
+model AdminAuditLog {
+  id                     String   @id @default(cuid())
+  adminUserId            String
+  adminUser              User     @relation("AdminAuditActor", fields: [adminUserId], references: [id], onDelete: Cascade)
+  adminEmail             String?
+  action                 String
+  targetUserId           String?
+  targetUser             User?    @relation("AdminAuditTarget", fields: [targetUserId], references: [id], onDelete: SetNull)
+  targetType             String?
+  impersonationSessionId String?
+  impersonationSession   AdminImpersonationSession? @relation(fields: [impersonationSessionId], references: [id], onDelete: SetNull)
+  metadata               Json?
+  ipAddress              String?
+  userAgent              String?
+  createdAt              DateTime @default(now())
+
+  @@index([adminUserId, createdAt])
+  @@index([targetUserId, createdAt])
+  @@index([action, createdAt])
+  @@index([impersonationSessionId])
 }
 
 model Organization {

@@ -20,6 +20,14 @@ export function listUsers(filters) {
   return apiGet(`/api/admin/users${toQuery(filters)}`);
 }
 
+export function getAdminSummary() {
+  return apiGet("/api/admin/summary");
+}
+
+export function getUserAdminDetail(id) {
+  return apiGet(`/api/admin/users/${id}`);
+}
+
 export function verifyUserEmail(id) {
   return apiPatch(`/api/admin/users/${id}/verify-email`, {});
 }
@@ -54,4 +62,16 @@ export function listReports(filters) {
 
 export function updateReport(id, payload) {
   return apiPatch(`/api/admin/reports/${id}`, payload);
+}
+
+export function startViewAs(userId) {
+  return apiPost("/api/admin/impersonation/start", { userId });
+}
+
+export function stopViewAs() {
+  return apiPost("/api/admin/impersonation/stop", {}, { allowReadOnlyWrite: true });
+}
+
+export function getViewAsStatus() {
+  return apiGet("/api/admin/impersonation/status");
 }

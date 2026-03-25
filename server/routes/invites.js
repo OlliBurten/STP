@@ -9,21 +9,10 @@ import jwt from "jsonwebtoken";
 import { validateBody, validateQuery } from "../middleware/validate.js";
 import { inviteAcceptSchema, inviteValidateQuerySchema } from "../lib/validators.js";
 import { validateInviteToken, acceptInvite } from "../lib/invites.js";
+import { isAdminEmail } from "../lib/adminAccess.js";
 
 export const invitesRouter = Router();
 const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-in-production";
-
-function parseAdminEmails() {
-  return String(process.env.ADMIN_EMAILS || "")
-    .split(",")
-    .map((v) => v.trim().toLowerCase())
-    .filter(Boolean);
-}
-
-function isAdminEmail(email) {
-  if (!email) return false;
-  return parseAdminEmails().includes(String(email).trim().toLowerCase());
-}
 
 /** Public: validate token, return company info for accept UI */
 invitesRouter.get("/validate", validateQuery(inviteValidateQuerySchema), async (req, res, next) => {

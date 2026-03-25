@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
+  getAdminSummary,
+  getUserAdminDetail,
   listJobsForAdmin,
   listPendingCompanies,
   listReports,
@@ -13,6 +16,7 @@ import {
   verifyUserEmail,
 } from "../api/admin";
 import { listReviewsForAdmin, moderateReview } from "../api/reviews.js";
+import { useAuth } from "../context/AuthContext.jsx";
 
 function fmtDate(value) {
   if (!value) return "-";
@@ -22,10 +26,17 @@ function fmtDate(value) {
 }
 
 export default function Admin() {
+  const navigate = useNavigate();
+  const { startViewAs } = useAuth();
+  const [summary, setSummary] = useState(null);
   const [activeTab, setActiveTab] = useState("companies");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [selectedUserId, setSelectedUserId] = useState("");
+  const [selectedUserDetail, setSelectedUserDetail] = useState(null);
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [viewAsLoading, setViewAsLoading] = useState("");
 
   const [companies, setCompanies] = useState([]);
   const [users, setUsers] = useState([]);
@@ -51,6 +62,22 @@ export default function Admin() {
   async function loadUsers() {
     const data = await listUsers(userFilters);
     setUsers(Array.isArray(data) ? data : []);
+  }
+
+  async function loadSummary() {
+    const data = await getAdminSummary();
+    setSummary(data || null);
+  }
+
+  async function loadUserDetail(userId) {
+    if (!userId) {
+      setSelectedUserId("");
+      setSelectedUserDetail(null);
+      return;
+    }
+    const data = await getUserAdminDetail(userId);
+    setSelectedUserId(userId);
+    setSelectedUserDetail(data);
   }
 
   async function loadJobs() {
@@ -88,6 +115,13 @@ export default function Admin() {
     refreshCurrentTab();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
+
+  useEffect(() => {
+    setSummaryLoading(true);
+    loadSummary()
+      .catch(() => setSummary(null))
+      .finally(() => setSummaryLoading(false));
+  }, []);
 
   const handleCompanyStatus = async (id, status) => {
     setLoading(true);
@@ -226,6 +260,20 @@ export default function Admin() {
     }
   };
 
+  const handleViewAs = async (userId) => {
+    setViewAsLoading(userId);
+    clearFlash();
+    try {
+      const targetUser = await startViewAs(userId);
+      setSuccess("View as startad. Du ser nu plattformen som vald användare i read-only-läge.");
+      navigate(targetUser?.role === "recruiter" ? "/foretag" : "/profil");
+    } catch (e) {
+      setError(e.message || "Kunde inte starta view as");
+    } finally {
+      setViewAsLoading("");
+    }
+  };
+
   return (
     <main className="max-w-6xl mx-auto px-4 sm:px-6 py-10 space-y-8">
       <section className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
@@ -245,6 +293,100 @@ export default function Admin() {
         </div>
         {error ? <p className="text-sm text-red-700">{error}</p> : null}
         {success ? <p className="text-sm text-green-700">{success}</p> : null}
+      </section>
+
+      <section className="bg-white rounded-xl border border-slate-200 p-6 space-y-5">
+        <div>
+          <h2 className="text-lg font-semibold text-slate-900">Plattformsöversikt</h2>
+          <p className="text-sm text-slate-600">
+            Snabb överblick över tillväxt, aktivitet och kvalitetssignaler.
+          </p>
+        </div>
+        {summaryLoading ? (
+          <p className="text-slate-600">Laddar översikt...</p>
+        ) : summary ? (
+          <>
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="rounded-xl border border-slate-200 p-4">
+                <p className="text-xs uppercase tracking-wide text-slate-500">Nya användare</p>
+                <p className="mt-2 text-2xl font-bold text-slate-900">{summary.users?.new7d ?? 0}</p>
+                <p className="text-sm text-slate-500">7 dagar</p>
+              </div>
+              <div className="rounded-xl border border-slate-200 p-4">
+                <p className="text-xs uppercase tracking-wide text-slate-500">Aktiva jobb</p>
+                <p className="mt-2 text-2xl font-bold text-slate-900">{summary.jobs?.active ?? 0}</p>
+                <p className="text-sm text-slate-500">av {summary.jobs?.total ?? 0} publicerade</p>
+              </div>
+              <div className="rounded-xl border border-slate-200 p-4">
+                <p className="text-xs uppercase tracking-wide text-slate-500">Dialoger</p>
+                <p className="mt-2 text-2xl font-bold text-slate-900">{summary.activity?.conversations ?? 0}</p>
+                <p className="text-sm text-slate-500">{summary.activity?.messages ?? 0} meddelanden totalt</p>
+              </div>
+              <div className="rounded-xl border border-slate-200 p-4">
+                <p className="text-xs uppercase tracking-wide text-slate-500">Verifierade företag</p>
+                <p className="mt-2 text-2xl font-bold text-slate-900">{summary.verification?.verifiedCompanies ?? 0}</p>
+                <p className="text-sm text-slate-500">
+                  Förare med minimumprofil: {summary.driverProfiles?.completeMinimum ?? 0}/{summary.driverProfiles?.total ?? 0}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid gap-4 lg:grid-cols-2">
+              <div className="rounded-xl border border-slate-200 p-4">
+                <h3 className="font-semibold text-slate-900">Registreringar</h3>
+                <p className="mt-1 text-sm text-slate-600">
+                  30 dagar: {summary.users?.new30d ?? 0} • 365 dagar: {summary.users?.new365d ?? 0}
+                </p>
+                <p className="mt-1 text-sm text-slate-600">
+                  Förare: {summary.users?.driversTotal ?? 0} • Rekryterare/företag: {summary.users?.recruitersTotal ?? 0}
+                </p>
+              </div>
+              <div className="rounded-xl border border-slate-200 p-4">
+                <h3 className="font-semibold text-slate-900">Match- och jobbaktivitet</h3>
+                <p className="mt-1 text-sm text-slate-600">
+                  Jobb med minst en dialog: {summary.jobs?.withConversation ?? 0}
+                </p>
+                <p className="mt-1 text-sm text-slate-600">
+                  Senaste 5 jobb och registreringar visas nedan för snabb manuell uppföljning.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid gap-4 lg:grid-cols-2">
+              <div className="rounded-xl border border-slate-200 p-4">
+                <h3 className="font-semibold text-slate-900">Senaste användare</h3>
+                <div className="mt-3 space-y-2">
+                  {(summary.latestUsers || []).map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => loadUserDetail(item.id).catch((e) => setError(e.message || "Kunde inte öppna användare"))}
+                      className="w-full text-left rounded-lg border border-slate-200 px-3 py-2 hover:bg-slate-50"
+                    >
+                      <p className="font-medium text-slate-900">{item.name || item.email}</p>
+                      <p className="text-sm text-slate-600">{item.email} • {item.role}</p>
+                      <p className="text-xs text-slate-500">Skapad {fmtDate(item.createdAt)}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-xl border border-slate-200 p-4">
+                <h3 className="font-semibold text-slate-900">Senaste jobb</h3>
+                <div className="mt-3 space-y-2">
+                  {(summary.latestJobs || []).map((item) => (
+                    <div key={item.id} className="rounded-lg border border-slate-200 px-3 py-2">
+                      <p className="font-medium text-slate-900">{item.title}</p>
+                      <p className="text-sm text-slate-600">{item.company} • {item.status}</p>
+                      <p className="text-xs text-slate-500">Publicerat {fmtDate(item.published)}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </>
+        ) : (
+          <p className="text-slate-600">Kunde inte ladda översikten just nu.</p>
+        )}
       </section>
 
       <section className="bg-white rounded-xl border border-slate-200 p-4">
@@ -326,6 +468,7 @@ export default function Admin() {
               <option value="">Alla roller</option>
               <option value="DRIVER">Förare</option>
               <option value="COMPANY">Åkeri</option>
+              <option value="RECRUITER">Rekryterare</option>
             </select>
             <select
               value={userFilters.suspended}
@@ -354,12 +497,16 @@ export default function Admin() {
           >
             Skicka e-postpåminnelser
           </button>
-          <div className="space-y-3">
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.9fr)]">
+            <div className="space-y-3">
             {users.map((u) => (
               <div key={u.id} className="border border-slate-200 rounded-lg p-4">
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="font-semibold text-slate-900">{u.name}</p>
                   <span className="text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-700">{u.role}</span>
+                  {u.isAdmin ? (
+                    <span className="text-xs px-2 py-1 rounded-full bg-indigo-100 text-indigo-800">Admin</span>
+                  ) : null}
                   {u.warningCount > 0 ? (
                     <span className="text-xs px-2 py-1 rounded-full bg-amber-100 text-amber-800">
                       {u.warningCount} varning{u.warningCount > 1 ? "ar" : ""}
@@ -392,6 +539,25 @@ export default function Admin() {
                   </p>
                 ) : null}
                 <div className="mt-3 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => loadUserDetail(u.id).catch((e) => setError(e.message || "Kunde inte öppna användardetaljer"))}
+                    className={`px-3 py-2 rounded-md border text-sm ${
+                      selectedUserId === u.id
+                        ? "border-[var(--color-primary)] text-[var(--color-primary)]"
+                        : "border-slate-300 text-slate-700"
+                    }`}
+                  >
+                    Visa detaljer
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleViewAs(u.id)}
+                    disabled={loading || viewAsLoading === u.id}
+                    className="px-3 py-2 rounded-md bg-slate-900 text-white text-sm disabled:opacity-50"
+                  >
+                    {viewAsLoading === u.id ? "Startar..." : "View as"}
+                  </button>
                   {!u.emailVerifiedAt ? (
                     <button
                       type="button"
@@ -438,6 +604,82 @@ export default function Admin() {
               </div>
             ))}
             {users.length === 0 ? <p className="text-slate-600">Inga användare för filtret.</p> : null}
+            </div>
+            <aside className="rounded-xl border border-slate-200 p-4 bg-slate-50">
+              <h3 className="text-base font-semibold text-slate-900">Användardetalj</h3>
+              {!selectedUserDetail ? (
+                <p className="mt-2 text-sm text-slate-600">
+                  Välj en användare för att se kontoöversikt, senaste aktivitet och om profilen är redo för support/view as.
+                </p>
+              ) : (
+                <div className="mt-4 space-y-4">
+                  <div>
+                    <p className="font-semibold text-slate-900">{selectedUserDetail.name || selectedUserDetail.email}</p>
+                    <p className="text-sm text-slate-600">{selectedUserDetail.email}</p>
+                    <p className="text-sm text-slate-600">
+                      {selectedUserDetail.role}
+                      {selectedUserDetail.companyName ? ` • ${selectedUserDetail.companyName}` : ""}
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div className="rounded-lg bg-white border border-slate-200 p-3">
+                      <p className="text-slate-500">Skapad</p>
+                      <p className="font-medium text-slate-900">{fmtDate(selectedUserDetail.createdAt)}</p>
+                    </div>
+                    <div className="rounded-lg bg-white border border-slate-200 p-3">
+                      <p className="text-slate-500">Senast inloggad</p>
+                      <p className="font-medium text-slate-900">{fmtDate(selectedUserDetail.lastLoginAt)}</p>
+                    </div>
+                    <div className="rounded-lg bg-white border border-slate-200 p-3">
+                      <p className="text-slate-500">Jobb</p>
+                      <p className="font-medium text-slate-900">{selectedUserDetail._count?.jobs ?? 0}</p>
+                    </div>
+                    <div className="rounded-lg bg-white border border-slate-200 p-3">
+                      <p className="text-slate-500">Meddelanden</p>
+                      <p className="font-medium text-slate-900">{selectedUserDetail._count?.messages ?? 0}</p>
+                    </div>
+                  </div>
+                  {selectedUserDetail.driverProfile ? (
+                    <div className="rounded-lg bg-white border border-slate-200 p-3 text-sm space-y-1">
+                      <p className="font-medium text-slate-900">Förarprofil</p>
+                      <p className="text-slate-600">
+                        Synlig för företag: {selectedUserDetail.driverProfile.visibleToCompanies ? "Ja" : "Nej"}
+                      </p>
+                      <p className="text-slate-600">
+                        Körkort: {(selectedUserDetail.driverProfile.licenses || []).join(", ") || "-"}
+                      </p>
+                      <p className="text-slate-600">
+                        Region: {selectedUserDetail.driverProfile.region || "-"}
+                      </p>
+                    </div>
+                  ) : null}
+                  {selectedUserDetail.organizations?.length > 0 ? (
+                    <div className="rounded-lg bg-white border border-slate-200 p-3 text-sm space-y-2">
+                      <p className="font-medium text-slate-900">Organisationer</p>
+                      {selectedUserDetail.organizations.map((org) => (
+                        <div key={org.id} className="rounded border border-slate-200 px-2 py-1.5">
+                          <p className="text-slate-900">{org.name}</p>
+                          <p className="text-slate-500">{org.role} • {org.status}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                  <div className="rounded-lg bg-white border border-slate-200 p-3 text-sm space-y-2">
+                    <p className="font-medium text-slate-900">Senaste konversationer</p>
+                    {(selectedUserDetail.latestConversations || []).length === 0 ? (
+                      <p className="text-slate-600">Inga konversationer ännu.</p>
+                    ) : (
+                      selectedUserDetail.latestConversations.map((item) => (
+                        <div key={item.id} className="rounded border border-slate-200 px-2 py-1.5">
+                          <p className="text-slate-900">{item.jobTitle || "Utan jobbkoppling"}</p>
+                          <p className="text-slate-500">Uppdaterad {fmtDate(item.updatedAt)}</p>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </aside>
           </div>
         </section>
       )}
