@@ -276,11 +276,13 @@ adminRouter.patch("/companies/:id/status", async (req, res, next) => {
 adminRouter.get("/summary", async (req, res, next) => {
   try {
     const now = new Date();
+    const since24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
     const since7d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const since30d = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
     const since365d = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
 
     const [
+      users24h,
       users7d,
       users30d,
       users365d,
@@ -288,6 +290,8 @@ adminRouter.get("/summary", async (req, res, next) => {
       recruitersTotal,
       totalJobs,
       activeJobs,
+      jobsHidden,
+      jobsRemoved,
       totalConversations,
       totalMessages,
       verifiedLegacyCompanies,
@@ -298,6 +302,7 @@ adminRouter.get("/summary", async (req, res, next) => {
       driversTotalForProfile,
       jobsWithConversationsRaw,
     ] = await Promise.all([
+      prisma.user.count({ where: { createdAt: { gte: since24h } } }),
       prisma.user.count({ where: { createdAt: { gte: since7d } } }),
       prisma.user.count({ where: { createdAt: { gte: since30d } } }),
       prisma.user.count({ where: { createdAt: { gte: since365d } } }),
@@ -305,6 +310,8 @@ adminRouter.get("/summary", async (req, res, next) => {
       prisma.user.count({ where: { role: { in: ["COMPANY", "RECRUITER"] } } }),
       prisma.job.count(),
       prisma.job.count({ where: { status: "ACTIVE" } }),
+      prisma.job.count({ where: { status: "HIDDEN" } }),
+      prisma.job.count({ where: { status: "REMOVED" } }),
       prisma.conversation.count(),
       prisma.message.count(),
       prisma.user.count({
@@ -352,6 +359,7 @@ adminRouter.get("/summary", async (req, res, next) => {
 
     res.json({
       users: {
+        new24h: users24h,
         new7d: users7d,
         new30d: users30d,
         new365d: users365d,
@@ -361,6 +369,8 @@ adminRouter.get("/summary", async (req, res, next) => {
       jobs: {
         total: totalJobs,
         active: activeJobs,
+        hidden: jobsHidden,
+        removed: jobsRemoved,
         withConversation: jobsWithConversationsRaw.length,
       },
       activity: {

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   getAdminSummary,
   getUserAdminDetail,
@@ -17,6 +17,7 @@ import {
 } from "../api/admin";
 import { listReviewsForAdmin, moderateReview } from "../api/reviews.js";
 import { useAuth } from "../context/AuthContext.jsx";
+import { EyeIcon } from "../components/Icons.jsx";
 
 function fmtDate(value) {
   if (!value) return "-";
@@ -29,7 +30,7 @@ export default function Admin() {
   const navigate = useNavigate();
   const { startViewAs } = useAuth();
   const [summary, setSummary] = useState(null);
-  const [activeTab, setActiveTab] = useState("companies");
+  const [activeTab, setActiveTab] = useState("overview");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -99,6 +100,18 @@ export default function Admin() {
     setLoading(true);
     clearFlash();
     try {
+      if (activeTab === "overview") {
+        setSummaryLoading(true);
+        try {
+          await loadSummary();
+        } catch (e) {
+          setError(e.message || "Kunde inte hämta översikt");
+          setSummary(null);
+        } finally {
+          setSummaryLoading(false);
+        }
+        return;
+      }
       if (activeTab === "companies") await loadCompanies();
       if (activeTab === "users") await loadUsers();
       if (activeTab === "jobs") await loadJobs();
@@ -276,126 +289,39 @@ export default function Admin() {
 
   return (
     <main className="max-w-6xl mx-auto px-4 sm:px-6 py-10 space-y-8">
-      <section className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
-        <h1 className="text-2xl font-bold text-slate-900">Admin & moderation</h1>
-        <p className="text-slate-600">
-          Hantera företag, användare och jobbmoderering. Endast tillgängligt för inloggad admin.
-        </p>
-        <div className="flex">
+      <section className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 flex flex-col sm:flex-row sm:flex-wrap sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Admin</h1>
+          <p className="text-sm text-slate-600 mt-1">Översikt, användare och moderering.</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            to="/admin/status"
+            className="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-50"
+          >
+            Systemstatus
+          </Link>
           <button
             type="button"
             onClick={refreshCurrentTab}
-            disabled={loading}
-            className="px-5 py-3 rounded-lg border border-slate-300 text-slate-700 font-medium disabled:opacity-50"
+            disabled={activeTab === "overview" ? summaryLoading : loading}
+            className="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 text-sm font-medium disabled:opacity-50 hover:bg-slate-50"
           >
             Uppdatera
           </button>
         </div>
-        {error ? <p className="text-sm text-red-700">{error}</p> : null}
-        {success ? <p className="text-sm text-green-700">{success}</p> : null}
-      </section>
-
-      <section className="bg-white rounded-xl border border-slate-200 p-6 space-y-5">
-        <div>
-          <h2 className="text-lg font-semibold text-slate-900">Plattformsöversikt</h2>
-          <p className="text-sm text-slate-600">
-            Snabb överblick över tillväxt, aktivitet och kvalitetssignaler.
-          </p>
-        </div>
-        {summaryLoading ? (
-          <p className="text-slate-600">Laddar översikt...</p>
-        ) : summary ? (
-          <>
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              <div className="rounded-xl border border-slate-200 p-4">
-                <p className="text-xs uppercase tracking-wide text-slate-500">Nya användare</p>
-                <p className="mt-2 text-2xl font-bold text-slate-900">{summary.users?.new7d ?? 0}</p>
-                <p className="text-sm text-slate-500">7 dagar</p>
-              </div>
-              <div className="rounded-xl border border-slate-200 p-4">
-                <p className="text-xs uppercase tracking-wide text-slate-500">Aktiva jobb</p>
-                <p className="mt-2 text-2xl font-bold text-slate-900">{summary.jobs?.active ?? 0}</p>
-                <p className="text-sm text-slate-500">av {summary.jobs?.total ?? 0} publicerade</p>
-              </div>
-              <div className="rounded-xl border border-slate-200 p-4">
-                <p className="text-xs uppercase tracking-wide text-slate-500">Dialoger</p>
-                <p className="mt-2 text-2xl font-bold text-slate-900">{summary.activity?.conversations ?? 0}</p>
-                <p className="text-sm text-slate-500">{summary.activity?.messages ?? 0} meddelanden totalt</p>
-              </div>
-              <div className="rounded-xl border border-slate-200 p-4">
-                <p className="text-xs uppercase tracking-wide text-slate-500">Verifierade företag</p>
-                <p className="mt-2 text-2xl font-bold text-slate-900">{summary.verification?.verifiedCompanies ?? 0}</p>
-                <p className="text-sm text-slate-500">
-                  Förare med minimumprofil: {summary.driverProfiles?.completeMinimum ?? 0}/{summary.driverProfiles?.total ?? 0}
-                </p>
-              </div>
-            </div>
-
-            <div className="grid gap-4 lg:grid-cols-2">
-              <div className="rounded-xl border border-slate-200 p-4">
-                <h3 className="font-semibold text-slate-900">Registreringar</h3>
-                <p className="mt-1 text-sm text-slate-600">
-                  30 dagar: {summary.users?.new30d ?? 0} • 365 dagar: {summary.users?.new365d ?? 0}
-                </p>
-                <p className="mt-1 text-sm text-slate-600">
-                  Förare: {summary.users?.driversTotal ?? 0} • Rekryterare/företag: {summary.users?.recruitersTotal ?? 0}
-                </p>
-              </div>
-              <div className="rounded-xl border border-slate-200 p-4">
-                <h3 className="font-semibold text-slate-900">Match- och jobbaktivitet</h3>
-                <p className="mt-1 text-sm text-slate-600">
-                  Jobb med minst en dialog: {summary.jobs?.withConversation ?? 0}
-                </p>
-                <p className="mt-1 text-sm text-slate-600">
-                  Senaste 5 jobb och registreringar visas nedan för snabb manuell uppföljning.
-                </p>
-              </div>
-            </div>
-
-            <div className="grid gap-4 lg:grid-cols-2">
-              <div className="rounded-xl border border-slate-200 p-4">
-                <h3 className="font-semibold text-slate-900">Senaste användare</h3>
-                <div className="mt-3 space-y-2">
-                  {(summary.latestUsers || []).map((item) => (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => loadUserDetail(item.id).catch((e) => setError(e.message || "Kunde inte öppna användare"))}
-                      className="w-full text-left rounded-lg border border-slate-200 px-3 py-2 hover:bg-slate-50"
-                    >
-                      <p className="font-medium text-slate-900">{item.name || item.email}</p>
-                      <p className="text-sm text-slate-600">{item.email} • {item.role}</p>
-                      <p className="text-xs text-slate-500">Skapad {fmtDate(item.createdAt)}</p>
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="rounded-xl border border-slate-200 p-4">
-                <h3 className="font-semibold text-slate-900">Senaste jobb</h3>
-                <div className="mt-3 space-y-2">
-                  {(summary.latestJobs || []).map((item) => (
-                    <div key={item.id} className="rounded-lg border border-slate-200 px-3 py-2">
-                      <p className="font-medium text-slate-900">{item.title}</p>
-                      <p className="text-sm text-slate-600">{item.company} • {item.status}</p>
-                      <p className="text-xs text-slate-500">Publicerat {fmtDate(item.published)}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </>
-        ) : (
-          <p className="text-slate-600">Kunde inte ladda översikten just nu.</p>
-        )}
+        {error ? <p className="text-sm text-red-700 basis-full">{error}</p> : null}
+        {success ? <p className="text-sm text-green-700 basis-full">{success}</p> : null}
       </section>
 
       <section className="bg-white rounded-xl border border-slate-200 p-4">
         <div className="flex flex-wrap gap-2">
           {[
-            { id: "companies", label: "Väntande företag" },
+            { id: "overview", label: "Översikt" },
             { id: "users", label: "Användare" },
-            { id: "jobs", label: "Jobbmoderering" },
-            { id: "reports", label: "Rapporter & Trust" },
+            { id: "companies", label: "Väntande företag" },
+            { id: "jobs", label: "Jobb" },
+            { id: "reports", label: "Rapporter" },
             { id: "reviews", label: "Omdömen" },
           ].map((tab) => (
             <button
@@ -413,6 +339,120 @@ export default function Admin() {
           ))}
         </div>
       </section>
+
+      {activeTab === "overview" && (
+        <section className="bg-white rounded-xl border border-slate-200 p-6 space-y-6">
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900">Plattformsöversikt</h2>
+            <p className="text-sm text-slate-600 mt-1">
+              Nyckeltal och senaste aktivitet. Använd fliken Användare för att öppna konto i read-only med öga-ikonen.
+            </p>
+          </div>
+          {summaryLoading ? (
+            <p className="text-slate-600">Laddar översikt...</p>
+          ) : summary ? (
+            <>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+                <div className="rounded-xl border border-slate-200 p-4">
+                  <p className="text-xs uppercase tracking-wide text-slate-500">Nya konton</p>
+                  <p className="mt-2 text-2xl font-bold text-slate-900">{summary.users?.new24h ?? 0}</p>
+                  <p className="text-sm text-slate-500">24 timmar</p>
+                </div>
+                <div className="rounded-xl border border-slate-200 p-4">
+                  <p className="text-xs uppercase tracking-wide text-slate-500">Nya konton</p>
+                  <p className="mt-2 text-2xl font-bold text-slate-900">{summary.users?.new7d ?? 0}</p>
+                  <p className="text-sm text-slate-500">7 dagar</p>
+                </div>
+                <div className="rounded-xl border border-slate-200 p-4">
+                  <p className="text-xs uppercase tracking-wide text-slate-500">Nya konton</p>
+                  <p className="mt-2 text-2xl font-bold text-slate-900">{summary.users?.new30d ?? 0}</p>
+                  <p className="text-sm text-slate-500">30 dagar</p>
+                </div>
+                <div className="rounded-xl border border-slate-200 p-4">
+                  <p className="text-xs uppercase tracking-wide text-slate-500">Jobb aktiva</p>
+                  <p className="mt-2 text-2xl font-bold text-slate-900">{summary.jobs?.active ?? 0}</p>
+                  <p className="text-sm text-slate-500">av {summary.jobs?.total ?? 0} totalt</p>
+                </div>
+                <div className="rounded-xl border border-slate-200 p-4">
+                  <p className="text-xs uppercase tracking-wide text-slate-500">Jobb dolda / borttagna</p>
+                  <p className="mt-2 text-xl font-bold text-slate-900">
+                    {summary.jobs?.hidden ?? 0} / {summary.jobs?.removed ?? 0}
+                  </p>
+                  <p className="text-sm text-slate-500">HIDDEN / REMOVED</p>
+                </div>
+                <div className="rounded-xl border border-slate-200 p-4">
+                  <p className="text-xs uppercase tracking-wide text-slate-500">Jobb med dialog</p>
+                  <p className="mt-2 text-2xl font-bold text-slate-900">{summary.jobs?.withConversation ?? 0}</p>
+                  <p className="text-sm text-slate-500">minst en konversation</p>
+                </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="rounded-xl border border-slate-200 p-4 text-sm text-slate-600">
+                  <p className="font-semibold text-slate-900">Konton totalt</p>
+                  <p className="mt-2">
+                    Förare: {summary.users?.driversTotal ?? 0} • Rekryterare/åkeri: {summary.users?.recruitersTotal ?? 0}
+                  </p>
+                  <p className="mt-1">Registreringar 365 dagar: {summary.users?.new365d ?? 0}</p>
+                </div>
+                <div className="rounded-xl border border-slate-200 p-4 text-sm text-slate-600">
+                  <p className="font-semibold text-slate-900">Aktivitet & kvalitet</p>
+                  <p className="mt-2">
+                    Dialoger: {summary.activity?.conversations ?? 0} • Meddelanden: {summary.activity?.messages ?? 0}
+                  </p>
+                  <p className="mt-1">
+                    Verifierade företag: {summary.verification?.verifiedCompanies ?? 0} • Förare med minimumprofil:{" "}
+                    {summary.driverProfiles?.completeMinimum ?? 0}/{summary.driverProfiles?.total ?? 0}
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid gap-4 lg:grid-cols-2">
+                <div className="rounded-xl border border-slate-200 p-4">
+                  <h3 className="font-semibold text-slate-900">Senaste användare</h3>
+                  <div className="mt-3 space-y-2">
+                    {(summary.latestUsers || []).map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => {
+                          setActiveTab("users");
+                          loadUserDetail(item.id).catch((e) => setError(e.message || "Kunde inte öppna användare"));
+                        }}
+                        className="w-full text-left rounded-lg border border-slate-200 px-3 py-2 hover:bg-slate-50"
+                      >
+                        <p className="font-medium text-slate-900">{item.name || item.email}</p>
+                        <p className="text-sm text-slate-600">
+                          {item.email} • {item.role}
+                        </p>
+                        <p className="text-xs text-slate-500">Skapad {fmtDate(item.createdAt)}</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="rounded-xl border border-slate-200 p-4">
+                  <h3 className="font-semibold text-slate-900">Senaste jobb</h3>
+                  <div className="mt-3 space-y-2">
+                    {(summary.latestJobs || []).map((item) => (
+                      <div key={item.id} className="rounded-lg border border-slate-200 px-3 py-2">
+                        <p className="font-medium text-slate-900">{item.title}</p>
+                        <p className="text-sm text-slate-600">
+                          {item.company} • {item.status}
+                        </p>
+                        <p className="text-xs text-slate-500">Publicerat {fmtDate(item.published)}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <p className="text-slate-600">
+              Kunde inte ladda översikten. Om felet kvarstår: deploya senaste backend till Railway och kör prisma db push mot produktionsdatabasen.
+            </p>
+          )}
+        </section>
+      )}
 
       {activeTab === "companies" && (
         <section className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
@@ -452,7 +492,12 @@ export default function Admin() {
 
       {activeTab === "users" && (
         <section className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
-          <h2 className="text-lg font-semibold text-slate-900">Användare</h2>
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900">Användare</h2>
+            <p className="text-sm text-slate-600 mt-1">
+              Sök och filtrera. Öga-ikonen startar <strong>view as</strong> (read-only). Panelen till höger visar en snabb supportvy när du klickar &quot;Visa detaljer&quot;.
+            </p>
+          </div>
           <div className="grid sm:grid-cols-4 gap-3">
             <input
               value={userFilters.q}
@@ -480,64 +525,88 @@ export default function Admin() {
               <option value="yes">Avstängda</option>
             </select>
           </div>
-          <button
-            type="button"
-            onClick={loadUsers}
-            disabled={loading}
-            className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white text-sm disabled:opacity-50"
-          >
-            Filtrera användare
-          </button>
-          <button
-            type="button"
-            onClick={handleSendReminders}
-            disabled={loading}
-            className="px-4 py-2 rounded-lg bg-amber-600 text-white text-sm disabled:opacity-50 hover:bg-amber-700"
-            title="Skickar verifieringslänk till användare som inte verifierat e-post (max 1 per 24 h per användare)"
-          >
-            Skicka e-postpåminnelser
-          </button>
+          <div className="flex flex-wrap gap-3 items-center">
+            <button
+              type="button"
+              onClick={loadUsers}
+              disabled={loading}
+              className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white text-sm font-medium disabled:opacity-50"
+            >
+              Filtrera användare
+            </button>
+            <button
+              type="button"
+              onClick={handleSendReminders}
+              disabled={loading}
+              className="px-4 py-2 rounded-lg bg-amber-600 text-white text-sm font-medium disabled:opacity-50 hover:bg-amber-700"
+              title="Skickar verifieringslänk till användare som inte verifierat e-post (max 1 per 24 h per användare)"
+            >
+              Skicka e-postpåminnelser
+            </button>
+          </div>
           <div className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.9fr)]">
             <div className="space-y-3">
             {users.map((u) => (
               <div key={u.id} className="border border-slate-200 rounded-lg p-4">
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="font-semibold text-slate-900">{u.name}</p>
-                  <span className="text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-700">{u.role}</span>
-                  {u.isAdmin ? (
-                    <span className="text-xs px-2 py-1 rounded-full bg-indigo-100 text-indigo-800">Admin</span>
-                  ) : null}
-                  {u.warningCount > 0 ? (
-                    <span className="text-xs px-2 py-1 rounded-full bg-amber-100 text-amber-800">
-                      {u.warningCount} varning{u.warningCount > 1 ? "ar" : ""}
-                    </span>
-                  ) : null}
-                  {u.suspendedAt ? (
-                    <span className="text-xs px-2 py-1 rounded-full bg-red-100 text-red-800">Avstängd</span>
-                  ) : null}
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="font-semibold text-slate-900">{u.name}</p>
+                      <span className="text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-700">{u.role}</span>
+                      {u.isAdmin ? (
+                        <span className="text-xs px-2 py-1 rounded-full bg-indigo-100 text-indigo-800">Admin</span>
+                      ) : null}
+                      {u.warningCount > 0 ? (
+                        <span className="text-xs px-2 py-1 rounded-full bg-amber-100 text-amber-800">
+                          {u.warningCount} varning{u.warningCount > 1 ? "ar" : ""}
+                        </span>
+                      ) : null}
+                      {u.suspendedAt ? (
+                        <span className="text-xs px-2 py-1 rounded-full bg-red-100 text-red-800">Avstängd</span>
+                      ) : null}
+                    </div>
+                    <p className="text-sm text-slate-600 mt-1 break-all">{u.email}</p>
+                    {u.role === "COMPANY" || u.role === "RECRUITER" ? (
+                      <p className="text-sm text-slate-600">
+                        {u.companyName || "-"} • {u.companyStatus}
+                      </p>
+                    ) : null}
+                    <p className="text-xs text-slate-500 mt-1">
+                      E-post: {u.emailVerifiedAt ? (
+                        <span className="text-green-700">Verifierad ({fmtDate(u.emailVerifiedAt)})</span>
+                      ) : (
+                        <span className="text-amber-700">Ej verifierad</span>
+                      )} • Skapad: {fmtDate(u.createdAt)}
+                      {u.lastLoginAt ? ` • Senast inloggad: ${fmtDate(u.lastLoginAt)}` : " • Aldrig inloggad"}
+                    </p>
+                    {u.suspendedAt ? (
+                      <p className="text-xs text-red-700">Orsak: {u.suspensionReason || "-"}</p>
+                    ) : null}
+                    {u.lastWarnedAt ? (
+                      <p className="text-xs text-amber-700">
+                        Senaste varning: {fmtDate(u.lastWarnedAt)} • {u.lastWarningReason || "-"}
+                      </p>
+                    ) : null}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleViewAs(u.id)}
+                    disabled={loading || viewAsLoading === u.id || u.isAdmin}
+                    className="shrink-0 inline-flex items-center justify-center w-11 h-11 rounded-full border-2 border-slate-800 bg-slate-900 text-white hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed"
+                    title={
+                      u.isAdmin
+                        ? "View as är avstängt för admin-konton"
+                        : "Visa plattformen som den här användaren (read-only)"
+                    }
+                    aria-label={viewAsLoading === u.id ? "Startar view as" : "View as"}
+                  >
+                    {viewAsLoading === u.id ? (
+                      <span className="text-xs font-medium">…</span>
+                    ) : (
+                      <EyeIcon className="w-5 h-5" />
+                    )}
+                  </button>
                 </div>
-                <p className="text-sm text-slate-600">{u.email}</p>
-                {u.role === "COMPANY" ? (
-                  <p className="text-sm text-slate-600">
-                    {u.companyName || "-"} • {u.companyStatus}
-                  </p>
-                ) : null}
-                <p className="text-xs text-slate-500">
-                  E-post: {u.emailVerifiedAt ? (
-                    <span className="text-green-700">Verifierad ({fmtDate(u.emailVerifiedAt)})</span>
-                  ) : (
-                    <span className="text-amber-700">Ej verifierad</span>
-                  )} • Skapad: {fmtDate(u.createdAt)}
-                  {u.lastLoginAt ? ` • Senast inloggad: ${fmtDate(u.lastLoginAt)}` : " • Aldrig inloggad"}
-                </p>
-                {u.suspendedAt ? (
-                  <p className="text-xs text-red-700">Orsak: {u.suspensionReason || "-"}</p>
-                ) : null}
-                {u.lastWarnedAt ? (
-                  <p className="text-xs text-amber-700">
-                    Senaste varning: {fmtDate(u.lastWarnedAt)} • {u.lastWarningReason || "-"}
-                  </p>
-                ) : null}
                 <div className="mt-3 flex flex-wrap gap-2">
                   <button
                     type="button"
@@ -550,66 +619,65 @@ export default function Admin() {
                   >
                     Visa detaljer
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => handleViewAs(u.id)}
-                    disabled={loading || viewAsLoading === u.id}
-                    className="px-3 py-2 rounded-md bg-slate-900 text-white text-sm disabled:opacity-50"
-                  >
-                    {viewAsLoading === u.id ? "Startar..." : "View as"}
-                  </button>
-                  {!u.emailVerifiedAt ? (
-                    <button
-                      type="button"
-                      onClick={() => handleVerifyEmail(u.id)}
-                      className="px-3 py-2 rounded-md bg-blue-600 text-white text-sm"
-                    >
-                      Verifiera e-post
-                    </button>
-                  ) : null}
-                  {u.suspendedAt ? (
-                    <button
-                      type="button"
-                      onClick={() => handleSuspendUser(u.id, false)}
-                      className="px-3 py-2 rounded-md bg-green-600 text-white text-sm"
-                    >
-                      Återaktivera konto
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => handleSuspendUser(u.id, true)}
-                      className="px-3 py-2 rounded-md bg-red-600 text-white text-sm"
-                    >
-                      Stäng av konto
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => handleWarningAction(u.id, "ADD")}
-                    className="px-3 py-2 rounded-md bg-amber-600 text-white text-sm"
-                  >
-                    Ge varning
-                  </button>
-                  {u.warningCount > 0 ? (
-                    <button
-                      type="button"
-                      onClick={() => handleWarningAction(u.id, "RESET")}
-                      className="px-3 py-2 rounded-md border border-slate-300 text-slate-700 text-sm"
-                    >
-                      Nollställ varningar
-                    </button>
-                  ) : null}
                 </div>
+                <details className="mt-3 rounded-lg border border-slate-200 bg-slate-50/80 px-3 py-2">
+                  <summary className="text-sm font-medium text-slate-800 cursor-pointer select-none">
+                    Moderering och åtgärder
+                  </summary>
+                  <div className="mt-3 flex flex-wrap gap-2 pb-1">
+                    {!u.emailVerifiedAt ? (
+                      <button
+                        type="button"
+                        onClick={() => handleVerifyEmail(u.id)}
+                        className="px-3 py-2 rounded-md bg-blue-600 text-white text-sm"
+                      >
+                        Verifiera e-post
+                      </button>
+                    ) : null}
+                    {u.suspendedAt ? (
+                      <button
+                        type="button"
+                        onClick={() => handleSuspendUser(u.id, false)}
+                        className="px-3 py-2 rounded-md bg-green-600 text-white text-sm"
+                      >
+                        Återaktivera konto
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleSuspendUser(u.id, true)}
+                        className="px-3 py-2 rounded-md bg-red-600 text-white text-sm"
+                      >
+                        Stäng av konto
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => handleWarningAction(u.id, "ADD")}
+                      className="px-3 py-2 rounded-md bg-amber-600 text-white text-sm"
+                    >
+                      Ge varning
+                    </button>
+                    {u.warningCount > 0 ? (
+                      <button
+                        type="button"
+                        onClick={() => handleWarningAction(u.id, "RESET")}
+                        className="px-3 py-2 rounded-md border border-slate-300 text-slate-700 text-sm bg-white"
+                      >
+                        Nollställ varningar
+                      </button>
+                    ) : null}
+                  </div>
+                </details>
               </div>
             ))}
             {users.length === 0 ? <p className="text-slate-600">Inga användare för filtret.</p> : null}
             </div>
-            <aside className="rounded-xl border border-slate-200 p-4 bg-slate-50">
-              <h3 className="text-base font-semibold text-slate-900">Användardetalj</h3>
+            <aside className="rounded-xl border border-slate-200 p-4 bg-slate-50 xl:sticky xl:top-24 self-start">
+              <h3 className="text-base font-semibold text-slate-900">Supportvy</h3>
               {!selectedUserDetail ? (
                 <p className="mt-2 text-sm text-slate-600">
-                  Välj en användare för att se kontoöversikt, senaste aktivitet och om profilen är redo för support/view as.
+                  Klicka på <strong>Visa detaljer</strong> på en användare för att se sammanfattning, räknare och senaste aktivitet här. För att se exakt samma skärmar som användaren använder du <strong>öga-knappen</strong> (view as, read-only).
                 </p>
               ) : (
                 <div className="mt-4 space-y-4">

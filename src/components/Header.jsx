@@ -6,6 +6,21 @@ import { fetchNotifications, markNotificationRead, markAllNotificationsRead } fr
 import { BellIcon, MenuIcon, CloseIcon, ChevronDownIcon } from "./Icons";
 import Logo from "./Logo";
 
+function initialsFromUser(user) {
+  if (!user) return "?";
+  const name = String(user.name || "").trim();
+  const email = String(user.email || "").trim();
+  if (name) {
+    const parts = name.split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return name.slice(0, 2).toUpperCase();
+  }
+  if (email) return email.slice(0, 2).toUpperCase();
+  return "?";
+}
+
 const PUBLIC_NAV_LINKS = [
   { to: "/", label: "Hem" },
   { to: "/jobb", label: "Jobb" },
@@ -27,9 +42,13 @@ export default function Header({ onboarding = false }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [navDropdownOpen, setNavDropdownOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState({ list: [], unreadCount: 0 });
   const notifRef = useRef(null);
   const navDropdownRef = useRef(null);
+  const userMenuRef = useRef(null);
+
+  const platformAdminSession = isAdmin && !isImpersonating;
 
   const isVerifiedCompany = !isCompany || user?.companyStatus === "VERIFIED";
 
@@ -51,10 +70,11 @@ export default function Header({ onboarding = false }) {
     function handleClickOutside(e) {
       if (notifRef.current && !notifRef.current.contains(e.target)) setNotifOpen(false);
       if (navDropdownRef.current && !navDropdownRef.current.contains(e.target)) setNavDropdownOpen(false);
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) setUserMenuOpen(false);
     }
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
-  }, [notifOpen, navDropdownOpen]);
+  }, [notifOpen, navDropdownOpen, userMenuOpen]);
 
   const closeMobile = () => setMobileOpen(false);
   const handleLogout = () => {
@@ -160,7 +180,7 @@ export default function Header({ onboarding = false }) {
           </li>
         </>
       )}
-      {user && isDriver && (
+      {user && isDriver && !platformAdminSession && (
         <>
           <li>
             <Link to="/jobb" onClick={closeMobile} className="hover:text-[var(--color-primary)] transition-colors">
@@ -180,11 +200,6 @@ export default function Header({ onboarding = false }) {
                   {selectedNotificationCount}
                 </span>
               )}
-            </Link>
-          </li>
-          <li>
-            <Link to="/profil" onClick={closeMobile} className="hover:text-[var(--color-primary)] transition-colors">
-              Min profil
             </Link>
           </li>
           <li>
@@ -212,11 +227,6 @@ export default function Header({ onboarding = false }) {
             </Link>
           </li>
           <li>
-            <Link to="/foretag/profil" onClick={closeMobile} className="hover:text-[var(--color-primary)] transition-colors">
-              Företagsprofil
-            </Link>
-          </li>
-          <li>
             <Link to="/foretag/meddelanden" onClick={closeMobile} className="hover:text-[var(--color-primary)] transition-colors flex items-center gap-1">
               Meddelanden
               {companyUnreadConversationCount > 0 && (
@@ -224,20 +234,6 @@ export default function Header({ onboarding = false }) {
                   {companyUnreadConversationCount > 99 ? "99+" : companyUnreadConversationCount}
                 </span>
               )}
-            </Link>
-          </li>
-        </>
-      )}
-      {isAdmin && (
-        <>
-          <li>
-            <Link to="/admin" onClick={closeMobile} className="hover:text-[var(--color-primary)] transition-colors">
-              Admin
-            </Link>
-          </li>
-          <li>
-            <Link to="/admin/status" onClick={closeMobile} className="hover:text-[var(--color-primary)] transition-colors">
-              Status
             </Link>
           </li>
         </>
@@ -315,7 +311,7 @@ export default function Header({ onboarding = false }) {
         </ul>
 
         <div className="flex items-center gap-2 sm:gap-3 ml-auto shrink-0">
-          {user && (
+          {user && !platformAdminSession && (
             <div className="relative" ref={notifRef}>
               <button
                 type="button"
@@ -367,12 +363,113 @@ export default function Header({ onboarding = false }) {
               )}
             </div>
           )}
+          {user && (
+            <div className="relative" ref={userMenuRef}>
+              <button
+                type="button"
+                onClick={() => setUserMenuOpen((o) => !o)}
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-[var(--color-primary)] text-white text-sm font-semibold shadow-sm ring-2 ring-white hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2"
+                aria-haspopup="menu"
+                aria-expanded={userMenuOpen}
+                aria-label="Konto och inställningar"
+              >
+                {initialsFromUser(user)}
+              </button>
+              {userMenuOpen && (
+                <div
+                  className="absolute right-0 top-full mt-2 w-56 rounded-xl border border-slate-200 bg-white shadow-lg py-1 z-[110]"
+                  role="menu"
+                >
+                  <div className="px-3 py-2 border-b border-slate-100">
+                    <p className="text-sm font-medium text-slate-900 truncate">{user?.name || "Konto"}</p>
+                    <p className="text-xs text-slate-500 truncate">{user?.email}</p>
+                  </div>
+                  {!platformAdminSession && isDriver ? (
+                    <Link
+                      to="/profil"
+                      role="menuitem"
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        closeMobile();
+                      }}
+                      className="block px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50"
+                    >
+                      Min profil
+                    </Link>
+                  ) : null}
+                  {!platformAdminSession && isCompany ? (
+                    <Link
+                      to="/foretag/profil"
+                      role="menuitem"
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        closeMobile();
+                      }}
+                      className="block px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50"
+                    >
+                      Företagsprofil
+                    </Link>
+                  ) : null}
+                  {!platformAdminSession && isDriver ? (
+                    <Link
+                      to="/favoriter"
+                      role="menuitem"
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        closeMobile();
+                      }}
+                      className="block px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50"
+                    >
+                      Favoriter
+                    </Link>
+                  ) : null}
+                  {isAdmin ? (
+                    <>
+                      <Link
+                        to="/admin"
+                        role="menuitem"
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          closeMobile();
+                        }}
+                        className="block px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50"
+                      >
+                        Admin
+                      </Link>
+                      <Link
+                        to="/admin/status"
+                        role="menuitem"
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          closeMobile();
+                        }}
+                        className="block px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50"
+                      >
+                        Systemstatus
+                      </Link>
+                    </>
+                  ) : null}
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setUserMenuOpen(false);
+                      handleLogout();
+                    }}
+                    className="w-full text-left px-3 py-2.5 text-sm text-red-700 hover:bg-red-50"
+                  >
+                    Logga ut
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
           {user && isAdmin && (
             <span
-              className="hidden sm:inline-flex items-center px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-800 text-xs font-semibold"
+              className="hidden lg:inline-flex items-center px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-800 text-xs font-semibold"
               title={isImpersonating ? "Du är admin i view as-läge" : "Du är inloggad som admin"}
             >
-              {isImpersonating ? "Admin view as" : "Admin"}
+              {isImpersonating ? "View as" : "Admin"}
             </span>
           )}
           {/* Mobile menu button */}
@@ -404,13 +501,6 @@ export default function Header({ onboarding = false }) {
                   </span>
                 )
               )}
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="dm-header-logout text-sm font-medium text-slate-600 hover:text-[var(--color-primary)]"
-              >
-                Logga ut
-              </button>
             </>
           ) : (
             <Link
@@ -468,8 +558,11 @@ export default function Header({ onboarding = false }) {
                 )}
                 <button
                   type="button"
-                  onClick={handleLogout}
-                  className="inline-flex items-center justify-center px-4 py-2 rounded-lg border border-slate-300 text-slate-700 text-sm font-medium"
+                  onClick={() => {
+                    closeMobile();
+                    handleLogout();
+                  }}
+                  className="inline-flex items-center justify-center w-full px-4 py-2 rounded-lg border border-slate-300 text-slate-700 text-sm font-medium"
                 >
                   Logga ut
                 </button>

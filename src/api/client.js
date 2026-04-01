@@ -71,7 +71,16 @@ export async function api(method, path, body, options = {}) {
   try {
     data = text ? JSON.parse(text) : null;
   } catch {
-    throw new Error(res.status === 502 ? "Servern svarar inte" : text || "Något gick fel");
+    const looksHtml = /<!DOCTYPE/i.test(text) || /<html[\s>]/i.test(text);
+    if (looksHtml) {
+      const is404 = /Cannot GET|404/i.test(text);
+      throw new Error(
+        is404
+          ? "API-routen finns inte på denna server (oftast gammal backend-deploy). Deploya senaste versionen till Railway och kör databas-sync (prisma db push). Kontrollera också att VITE_API_URL i Vercel pekar på rätt backend."
+          : "API svarade med en webbsida i stället för JSON. Kontrollera VITE_API_URL och att backend är uppdaterad."
+      );
+    }
+    throw new Error(res.status === 502 ? "Servern svarar inte" : text?.slice(0, 240) || "Något gick fel");
   }
   if (!res.ok) {
     const message = data?.error || data?.message || `HTTP ${res.status}`;
