@@ -95,7 +95,7 @@ async function augmentCompanyMemberUser(user) {
     companyOwnerId: membership.companyOwnerId,
   };
 }
-const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-in-production";
+import { JWT_SECRET } from "../lib/config.js";
 const OAUTH_COMPLETE_PURPOSE = "oauth-complete";
 const EMAIL_VERIFY_TTL_MS = 24 * 60 * 60 * 1000; // 24h
 const RESET_TTL_MS = 60 * 60 * 1000; // 1h
@@ -393,24 +393,9 @@ authRouter.post("/login", validateBody(loginSchema), async (req, res, next) => {
     }
     const isAdmin = isAdminEmail(user.email);
     if (!user.emailVerifiedAt) {
-      if (isAdmin) {
-        try {
-          await prisma.user.update({
-            where: { id: user.id },
-            data: { emailVerifiedAt: new Date() },
-          });
-          user.emailVerifiedAt = new Date();
-        } catch (dbErr) {
-          console.error("Admin auto-verify: DB update failed", dbErr?.message);
-          return res.status(503).json({
-            error: "Kunde inte slutföra inloggningen. Försök igen om en stund.",
-          });
-        }
-      } else {
-        return res.status(403).json({
-          error: "Verifiera din e-post först. Kolla inkorgen och försök igen.",
-        });
-      }
+      return res.status(403).json({
+        error: "Verifiera din e-post först. Kolla inkorgen och försök igen.",
+      });
     }
     const hadLoggedInBefore = Boolean(user.lastLoginAt);
     await prisma.user.update({
@@ -636,10 +621,7 @@ authRouter.post("/resend-verification", validateBody(resendVerificationSchema), 
     const email = String(req.body?.email || "").trim().toLowerCase();
     const verificationBaseUrl = req.body?.verificationBaseUrl;
     const user = await prisma.user.findUnique({ where: { email } });
-    if (!user) return res.json({ ok: true });
-    if (user.emailVerifiedAt) {
-      return res.json({ ok: true, message: "E-post är redan verifierad" });
-    }
+    if (!user || user.emailVerifiedAt) return res.json({ ok: true });
     try {
       const sent = await issueEmailVerification(user.id, user.email, verificationBaseUrl);
       if (!sent) {

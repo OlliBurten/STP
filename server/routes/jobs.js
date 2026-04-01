@@ -17,6 +17,7 @@ import { createJobSchema, jobsListQuerySchema, patchJobSchema } from "../lib/val
 export const jobsRouter = Router();
 const MATCH_ALERTS_ENABLED = process.env.MATCH_ALERTS_ENABLED !== "false";
 const MATCH_EMAIL_COOLDOWN_MS = 24 * 60 * 60 * 1000;
+const MATCH_ALERT_MAX_RECIPIENTS = 40;
 
 function mapEmploymentToSegment(employment) {
   if (employment === "fast") return "FULLTIME";
@@ -34,8 +35,18 @@ function resolveSegment(segment, employment) {
 async function sendDriverMatchAlertsForJob(job) {
   if (!MATCH_ALERTS_ENABLED) return;
   try {
+    // Pre-filter in the database to avoid loading every driver into memory.
+    // License is a hard disqualifier (score → 0), so filter it at DB level.
+    // Segment and certificate checks are complex (optional fields, array overlap)
+    // so they remain in the JS scoring step below.
+    const jobLicenses = job.license || [];
+    const profileWhere = {
+      visibleToCompanies: true,
+      ...(jobLicenses.length > 0 && { licenses: { hasSome: jobLicenses } }),
+    };
     const profiles = await prisma.driverProfile.findMany({
-      where: { visibleToCompanies: true },
+      where: profileWhere,
+      take: 500, // Safety cap — score in JS, then pick top MATCH_ALERT_MAX_RECIPIENTS
       include: {
         user: { select: { id: true, name: true, email: true, lastMatchJobEmailAt: true } },
       },
@@ -72,7 +83,7 @@ async function sendDriverMatchAlertsForJob(job) {
     for (const m of matches) {
       if (!uniqueByUserId.has(m.userId)) uniqueByUserId.set(m.userId, m);
     }
-    const allRecipients = [...uniqueByUserId.values()].slice(0, 40);
+    const allRecipients = [...uniqueByUserId.values()].slice(0, MATCH_ALERT_MAX_RECIPIENTS);
     const now = new Date();
     for (const r of allRecipients) {
       await createNotification({

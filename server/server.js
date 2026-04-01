@@ -33,10 +33,11 @@ import { invitesRouter } from "./routes/invites.js";
 import { notificationsRouter } from "./routes/notifications.js";
 import { feedbackRouter } from "./routes/feedback.js";
 import { isGoogleConfigured, isMicrosoftConfigured } from "./lib/oauth.js";
+import { JWT_SECRET } from "./lib/config.js";
+import * as Sentry from "@sentry/node";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-in-production";
 app.set("trust proxy", 1);
 const allowedOrigins = process.env.FRONTEND_URL
   ? process.env.FRONTEND_URL.split(",").map((o) => o.trim()).filter(Boolean)
@@ -47,6 +48,14 @@ function corsOrigin(origin, cb) {
   if (!origin) return cb(null, true);
   if (corsOriginList.length === 0) return cb(null, true);
   if (corsOriginList.includes(origin)) return cb(null, true);
+  // Lokal utveckling: Vite på localhost/127.0.0.1 (valfri port) även om FRONTEND_URL bara listar prod-URL:er
+  if (!IS_PRODUCTION) {
+    try {
+      const u = new URL(origin);
+      const h = u.hostname.toLowerCase();
+      if ((h === "localhost" || h === "127.0.0.1") && u.protocol === "http:") return cb(null, true);
+    } catch (_) {}
+  }
   if (origin.endsWith(".vercel.app")) return cb(null, true);
   // Tillåt www-subdomän om utan-www finns (t.ex. www.transportplattformen.se när transportplattformen.se är tillåten)
   try {
@@ -62,7 +71,9 @@ function corsOrigin(origin, cb) {
 }
 
 if (corsOriginList.length > 0) {
-  console.log("CORS: listed origins + *.vercel.app (preview)");
+  console.log(
+    `CORS: listed origins + *.vercel.app (preview)${!IS_PRODUCTION ? " + http localhost (dev)" : ""}`
+  );
 } else if (!process.env.FRONTEND_URL) {
   console.log("CORS: all origins allowed (FRONTEND_URL not set)");
 } else {
@@ -88,6 +99,14 @@ const apiWriteLimiter = rateLimit({
   max: 60,
   standardHeaders: true,
   legacyHeaders: false,
+});
+
+const internalLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many requests to internal endpoint" },
 });
 
 app.use(requestIdMiddleware);
@@ -138,7 +157,7 @@ app.get("/", (_, res) => {
 });
 
 // Nödmigration: lägg till saknade DB-kolumner (kräver ADMIN_API_KEY)
-app.post("/api/internal/migrate", express.json(), async (req, res) => {
+app.post("/api/internal/migrate", internalLimiter, express.json(), async (req, res) => {
   const key = req.headers["x-admin-api-key"] || req.body?.adminApiKey;
   const expected = process.env.ADMIN_API_KEY;
   if (!expected || key !== expected) {
@@ -164,7 +183,7 @@ app.post("/api/internal/migrate", express.json(), async (req, res) => {
 });
 
 // Automatiska påminnelser – anropas av Vercel Cron (kräver ADMIN_API_KEY)
-app.post("/api/internal/send-verification-reminders", express.json(), async (req, res) => {
+app.post("/api/internal/send-verification-reminders", internalLimiter, express.json(), async (req, res) => {
   const key = req.headers["x-admin-api-key"] || req.body?.adminApiKey;
   const expected = process.env.ADMIN_API_KEY;
   if (!expected || key !== expected) {
@@ -240,10 +259,14 @@ app.get("/api/health/check", async (req, res) => {
 });
 
 app.use(errorLogMiddleware);
+Sentry.setupExpressErrorHandler(app);
 app.use((err, req, res, next) => {
   const status = err.status || err.statusCode || 500;
   const message = status < 500 ? (err.message || "Bad request") : "Ett fel uppstod. Försök igen senare.";
-  if (status >= 500) console.error("[server error]", err.message, err.stack);
+  if (status >= 500) {
+    console.error("[server error]", req.headers["x-request-id"] || "-", err.message, err.stack);
+    Sentry.captureException(err);
+  }
   res.status(status).json({ error: message });
 });
 

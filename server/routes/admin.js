@@ -6,9 +6,9 @@ import { createNotification } from "../lib/notifications.js";
 import { notifyCompanyApproved } from "../lib/email.js";
 import { runVerificationReminders } from "../lib/verificationReminders.js";
 import { createAdminAuditLog, getAdminActorId, isAdminEmail } from "../lib/adminAccess.js";
+import { JWT_SECRET } from "../lib/config.js";
 
 export const adminRouter = Router();
-const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-in-production";
 const IMPERSONATION_TTL_SECONDS = 60 * 60 * 2;
 
 adminRouter.use(authMiddleware, requireAdmin);
@@ -68,6 +68,7 @@ adminRouter.get("/companies/pending", async (req, res, next) => {
           companyOrgNumber: { not: null },
         },
         orderBy: { createdAt: "asc" },
+        take: 100,
         select: {
           id: true,
           email: true,
@@ -81,6 +82,7 @@ adminRouter.get("/companies/pending", async (req, res, next) => {
       prisma.organization.findMany({
         where: { status: "PENDING" },
         orderBy: { createdAt: "asc" },
+        take: 100,
         select: {
           id: true,
           name: true,

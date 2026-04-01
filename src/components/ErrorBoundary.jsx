@@ -1,5 +1,6 @@
 import { Component } from "react";
 import { Link } from "react-router-dom";
+import * as Sentry from "@sentry/react";
 
 /** Fångar render-fel så att appen inte visar helt blank sida. */
 export default class ErrorBoundary extends Component {
@@ -14,6 +15,7 @@ export default class ErrorBoundary extends Component {
 
   componentDidCatch(error, errorInfo) {
     console.error("[ErrorBoundary]", error, errorInfo);
+    Sentry.captureException(error, { extra: errorInfo });
   }
 
   render() {

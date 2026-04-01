@@ -157,9 +157,9 @@ export default function Profile() {
         <section className="mb-6 rounded-xl border border-indigo-200 bg-indigo-50 p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h2 className="text-base font-semibold text-indigo-900">Kom igang med din profil</h2>
+              <h2 className="text-base font-semibold text-indigo-900">Kom igång med din profil</h2>
               <p className="mt-1 text-sm text-indigo-800">
-                Fyll i dessa steg for att oka chanserna att matchas med jobb.
+                Fyll i dessa steg för att öka chanserna att matchas med jobb.
               </p>
             </div>
             <button
@@ -167,7 +167,7 @@ export default function Profile() {
               onClick={dismissOnboarding}
               className="text-xs font-medium text-indigo-700 hover:text-indigo-900"
             >
-              Dolj guide
+              Dölj guide
             </button>
           </div>
           <ul className="mt-4 space-y-1.5 text-sm">

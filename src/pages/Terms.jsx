@@ -70,7 +70,7 @@ export default function Terms() {
           </p>
         </section>
         <section>
-          <h2 className="text-xl font-semibold text-slate-900">7. Kontakt</h2>
+          <h2 className="text-xl font-semibold text-slate-900">8. Kontakt</h2>
           <p>
             Vid frågor om användarvillkoren, kontakta oss via informationen på webbplatsen.
           </p>

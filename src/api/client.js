@@ -57,9 +57,9 @@ export async function api(method, path, body, options = {}) {
   } catch (networkErr) {
     const isFetchErr =
       networkErr?.message && networkErr.message.toLowerCase().includes("fetch");
-    const hint = API_URL
-      ? ` Anropad adress: ${API_URL}`
-      : " VITE_API_URL är inte satt – sätt den vid build (t.ex. i Vercel) och bygg om.";
+    const localBackendHint =
+      /localhost|127\.0\.0\.1/.test(API_URL) ? " — Starta backend: cd server && npm run dev." : "";
+    const hint = API_URL ? ` Anropad adress: ${API_URL}${localBackendHint}` : " VITE_API_URL är inte satt – sätt den vid build (t.ex. i Vercel) och bygg om.";
     const msg = isFetchErr
       ? `Kunde inte nå servern. Kontrollera att backend är igång och att VITE_API_URL är rätt, och att FRONTEND_URL på backend inkluderar din sajt-URL (CORS).${hint}`
       : (networkErr?.message || "Nätverksfel");

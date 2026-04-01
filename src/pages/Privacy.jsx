@@ -61,7 +61,7 @@ export default function Privacy() {
           </p>
         </section>
         <section>
-          <h2 className="text-xl font-semibold text-slate-900" id="cookies">8. Cookies</h2>
+          <h2 className="text-xl font-semibold text-slate-900" id="cookies">7. Cookies</h2>
           <p>
             Vi använder nödvändiga cookies för att tjänsten ska fungera, t.ex. för inloggning och
             sessionshantering. Dessa behövs för att du ska kunna använda plattformen och lagras
@@ -71,7 +71,7 @@ export default function Privacy() {
           </p>
         </section>
         <section>
-          <h2 className="text-xl font-semibold text-slate-900">9. Säkerhet och ändringar</h2>
+          <h2 className="text-xl font-semibold text-slate-900">8. Säkerhet och ändringar</h2>
           <p>
             Vi arbetar för att skydda dina uppgifter med lämpliga tekniska och organisatoriska
             åtgärder. Denna policy kan uppdateras; senaste versionen finns på denna sida.
