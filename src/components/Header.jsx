@@ -288,7 +288,7 @@ export default function Header({ onboarding = false }) {
                 </span>
               </button>
               {notifOpen && (
-                <div className="absolute right-0 top-full mt-1 w-[320px] max-w-[calc(100vw-1rem)] max-h-[400px] overflow-auto rounded-xl border border-slate-200 bg-white shadow-lg z-[100]">
+                <div className="fixed right-2 top-[4.25rem] sm:absolute sm:right-0 sm:top-full sm:mt-1 w-[320px] max-w-[calc(100vw-1rem)] max-h-[400px] overflow-auto rounded-xl border border-slate-200 bg-white shadow-lg z-[100]">
                   <div className="p-2 border-b border-slate-100 flex items-center justify-between">
                     <span className="text-sm font-semibold text-slate-800">Notiser</span>
                     {notifications.unreadCount > 0 && (
