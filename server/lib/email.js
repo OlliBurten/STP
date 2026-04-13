@@ -2,9 +2,10 @@
  * Email notifications.
  * - Uses Resend when RESEND_API_KEY exists.
  * - Falls back to console logging when provider is not configured.
+ * @param {string} [params.devInviteUrl] – Om satt och e-post inte skickas: loggas hela URL:en (för teaminbjudan i dev).
  * @returns {Promise<boolean>} true if email was sent via provider, false if only logged (not sent).
  */
-export async function sendEmail({ to, subject, text }) {
+export async function sendEmail({ to, subject, text, devInviteUrl }) {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.EMAIL_FROM || "noreply@transportplattformen.se";
 
@@ -36,32 +37,40 @@ export async function sendEmail({ to, subject, text }) {
     );
   }
   if (process.env.NODE_ENV !== "test") {
-    console.log("[Email:FALLBACK_LOG]", { to, subject, text: text?.slice(0, 120) + "..." });
+    console.log("[Email:FALLBACK_LOG]", { to, subject, emailSent: false });
+    if (devInviteUrl) {
+      console.log("[Email:INVITE_ACCEPT_URL]", devInviteUrl);
+    } else if (text) {
+      console.log("[Email:FALLBACK_BODY_PREVIEW]", `${text.slice(0, 200)}${text.length > 200 ? "…" : ""}`);
+    }
   }
   return false;
 }
 
-export async function notifyNewApplication({ companyEmail, driverName, jobTitle }) {
+export async function notifyNewApplication({ companyEmail, driverName, jobTitle, conversationUrl }) {
+  const linkLine = conversationUrl ? `\nGå till konversationen direkt:\n${conversationUrl}\n` : "";
   await sendEmail({
     to: companyEmail,
     subject: `Ny ansökan: ${driverName} – ${jobTitle}`,
-    text: `Hej,\n\n${driverName} har ansökt till jobbet "${jobTitle}". Logga in på DriverMatch för att se profilen och svara.\n\nMed vänliga hälsningar,\nDriverMatch`,
+    text: `Hej,\n\n${driverName} har skickat en ansökan till "${jobTitle}" på Sveriges Transportplattform.\n${linkLine}\nMed vänliga hälsningar,\nSveriges Transportplattform`,
   });
 }
 
-export async function notifyNewMessage({ toEmail, fromName, preview }) {
+export async function notifyNewMessage({ toEmail, fromName, preview, conversationUrl }) {
+  const linkLine = conversationUrl ? `\nSvara direkt:\n${conversationUrl}\n` : "";
   await sendEmail({
     to: toEmail,
     subject: `Nytt meddelande från ${fromName}`,
-    text: `Hej,\n\nDu har fått ett nytt meddelande från ${fromName} på DriverMatch.\n\n"${preview}"\n\nLogga in för att läsa och svara.\n\nMed vänliga hälsningar,\nDriverMatch`,
+    text: `Hej,\n\nDu har fått ett nytt meddelande från ${fromName}.\n\n"${preview}"\n${linkLine}\nMed vänliga hälsningar,\nSveriges Transportplattform`,
   });
 }
 
-export async function notifyDriverSelected({ driverEmail, companyName, jobTitle }) {
+export async function notifyDriverSelected({ driverEmail, companyName, jobTitle, conversationUrl }) {
+  const linkLine = conversationUrl ? `\nGå till konversationen:\n${conversationUrl}\n` : "";
   await sendEmail({
     to: driverEmail,
-    subject: `Du är utvald: ${jobTitle}`,
-    text: `Hej,\n\n${companyName} har markerat dig som utvald för jobbet "${jobTitle}".\n\nLogga in på DriverMatch och svara i meddelanden för att ta nästa steg.\n\nMed vänliga hälsningar,\nDriverMatch`,
+    subject: `Du är utvald – ${jobTitle}`,
+    text: `Hej,\n\n${companyName} har markerat dig som utvald för jobbet "${jobTitle}".${linkLine}\nMed vänliga hälsningar,\nSveriges Transportplattform`,
   });
 }
 
@@ -164,11 +173,13 @@ export async function sendInviteEmail({ to, companyName, inviteToken, frontendBa
     `Länken gäller i 7 dagar.\n\n` +
     `Med vänliga hälsningar,\nSveriges Transportplattform`;
 
-  await sendEmail({
+  const emailSent = await sendEmail({
     to,
     subject: `Inbjudan till ${companyName} – Sveriges Transportplattform`,
     text,
+    devInviteUrl: inviteLink || undefined,
   });
+  return { emailSent, inviteLink };
 }
 
 /** Skickar användarfeedback till admin (för in-app feedback-formulär). */

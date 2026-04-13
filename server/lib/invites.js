@@ -41,9 +41,9 @@ function normalizeEmail(email) {
  * @param {string} userId
  * @returns {Promise<{ownerId: string, isOwner: boolean, organizationId?: string} | null>}
  */
-export async function resolveCompanyOwner(userId) {
+export async function resolveCompanyOwner(userId, requestedOrgId = null) {
   const { resolveEffectiveOrganization } = await import("./organizations.js");
-  const orgRes = await resolveEffectiveOrganization(userId);
+  const orgRes = await resolveEffectiveOrganization(userId, requestedOrgId);
   if (orgRes) {
     const ownerUo = await prisma.userOrganization.findFirst({
       where: { organizationId: orgRes.organizationId, role: "OWNER" },
@@ -115,7 +115,7 @@ async function resolveInviteScopeByOwner(companyOwnerId) {
  * @param {string} params.invitedById - Inviter user ID (must be owner for now)
  * @param {string} params.companyName - For email
  * @param {string} [params.frontendBaseUrl] - Base URL for invite link
- * @returns {Promise<{invite: object, token: string}>} Created invite + raw token (token only returned for testing; email contains link)
+ * @returns {Promise<{invite: object, token: string, emailSent: boolean, devInviteLink?: string}>}
  */
 export async function createInvite({ email, companyOwnerId, invitedById, companyName, frontendBaseUrl }) {
   const normalizedEmail = normalizeEmail(email);
@@ -259,14 +259,18 @@ export async function createInvite({ email, companyOwnerId, invitedById, company
         },
       }));
 
-  await sendInviteEmail({
+  const { emailSent, inviteLink } = await sendInviteEmail({
     to: normalizedEmail,
     companyName: companyName || scope.companyName || "Företaget",
     inviteToken: token,
     frontendBaseUrl,
   });
 
-  return { invite, token };
+  const out = { invite, token, emailSent };
+  if (process.env.NODE_ENV !== "production" && !emailSent && inviteLink) {
+    out.devInviteLink = inviteLink;
+  }
+  return out;
 }
 
 /**

@@ -417,6 +417,7 @@ jobsRouter.get("/:id", optionalAuthMiddleware, attachCompanyContext, async (req,
       updatedAt: job.updatedAt.toISOString(),
       contact: job.contact,
       userId: job.userId,
+      organizationId: job.organizationId ?? null,
       physicalWorkRequired: job.physicalWorkRequired ?? null,
       soloWorkOk: job.soloWorkOk ?? null,
       kollektivavtal: job.kollektivavtal ?? null,
@@ -430,6 +431,89 @@ jobsRouter.get("/:id", optionalAuthMiddleware, attachCompanyContext, async (req,
         : null,
       companyReviewCount: reviewAggregate._count._all || 0,
     });
+  } catch (e) {
+    next(e);
+  }
+});
+
+jobsRouter.post("/:id/view", optionalAuthMiddleware, async (req, res, next) => {
+  try {
+    const jobId = req.params.id;
+    const userId = req.userId ?? null;
+    const ip = (req.headers["x-forwarded-for"]?.split(",")[0] ?? req.socket?.remoteAddress ?? "").trim() || null;
+    if (userId) {
+      // Authenticated: upsert so they count once per job
+      await prisma.jobView.upsert({
+        where: { userId_jobId: { userId, jobId } },
+        update: {},
+        create: { jobId, userId, ipAddress: ip },
+      });
+    } else {
+      // Anonymous: check if same IP viewed today to avoid basic inflation
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (ip) {
+        const existing = await prisma.jobView.findFirst({
+          where: { jobId, userId: null, ipAddress: ip, createdAt: { gte: today } },
+          select: { id: true },
+        });
+        if (!existing) {
+          await prisma.jobView.create({ data: { jobId, userId: null, ipAddress: ip } });
+        }
+      }
+    }
+    res.json({ ok: true });
+  } catch (e) {
+    next(e);
+  }
+});
+
+jobsRouter.get("/:id/stats", authMiddleware, requireCompany, attachCompanyContext, requireVerifiedCompany, async (req, res, next) => {
+  try {
+    const job = await prisma.job.findUnique({ where: { id: req.params.id } });
+    if (!job) return res.status(404).json({ error: "Jobbet hittades inte" });
+    const hasAccess =
+      (job.organizationId && job.organizationId === req.organizationId) ||
+      job.userId === effectiveCompanyId(req);
+    if (!hasAccess) return res.status(403).json({ error: "Ingen åtkomst" });
+
+    const [viewCount, savedCount, conversationCount] = await Promise.all([
+      prisma.jobView.count({ where: { jobId: job.id } }),
+      prisma.savedJob.count({ where: { jobId: job.id } }),
+      prisma.conversation.count({ where: { jobId: job.id } }),
+    ]);
+
+    // Rule-based recommendations
+    const recommendations = [];
+    const daysSincePublished = job.published
+      ? Math.floor((Date.now() - new Date(job.published).getTime()) / 86400000)
+      : 0;
+
+    if (!job.salary) {
+      recommendations.push({ type: "tip", text: "Lägg till löneinformation – annonser med lön får fler ansökningar." });
+    }
+    if (!job.schedule) {
+      recommendations.push({ type: "tip", text: "Specificera arbetstider (dag/kväll/natt) för bättre matchning." });
+    }
+    if (job.description && job.description.length < 200) {
+      recommendations.push({ type: "tip", text: "Jobbbeskrivningen är kort. En mer detaljerad beskrivning ger bättre kandidater." });
+    }
+    if (job.kollektivavtal === null) {
+      recommendations.push({ type: "tip", text: "Ange om kollektivavtal finns – det är viktigt för många förare." });
+    }
+    if (viewCount > 20 && conversationCount === 0) {
+      recommendations.push({ type: "insight", text: "Förare tittar men söker inte. Kontrollera att kraven och lönen är konkurrenskraftiga." });
+    } else if (viewCount > 10 && conversationCount === 0) {
+      recommendations.push({ type: "insight", text: "Hittills inga ansökningar. Prova att förtydliga vad tjänsten erbjuder." });
+    }
+    if (savedCount > conversationCount * 2 && savedCount > 3) {
+      recommendations.push({ type: "insight", text: "Förare sparar annonsen men söker inte. Kontakta dem direkt via Hitta förare." });
+    }
+    if (daysSincePublished > 30 && job.status === "ACTIVE") {
+      recommendations.push({ type: "warning", text: "Annonsen har varit öppen över 30 dagar. Stäng den om tjänsten är tillsatt." });
+    }
+
+    res.json({ viewCount, savedCount, conversationCount, recommendations });
   } catch (e) {
     next(e);
   }

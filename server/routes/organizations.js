@@ -95,3 +95,67 @@ organizationsRouter.post("/", validateBody(createOrganizationSchema), async (req
     next(e);
   }
 });
+
+/** Hämta en specifik organisation (måste vara medlem) */
+organizationsRouter.get("/:id", async (req, res, next) => {
+  try {
+    const uo = await prisma.userOrganization.findFirst({
+      where: { userId: req.userId, organizationId: req.params.id },
+      include: { organization: true },
+    });
+    if (!uo) return res.status(404).json({ error: "Organisationen hittades inte" });
+    const org = uo.organization;
+    res.json({
+      id: org.id,
+      name: org.name,
+      orgNumber: org.orgNumber,
+      description: org.description,
+      website: org.website,
+      location: org.location,
+      region: org.region,
+      segmentDefaults: org.segmentDefaults,
+      bransch: org.bransch,
+      status: org.status,
+      role: uo.role,
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
+/** Uppdatera organisation (endast ägare) */
+organizationsRouter.put("/:id", async (req, res, next) => {
+  try {
+    const uo = await prisma.userOrganization.findFirst({
+      where: { userId: req.userId, organizationId: req.params.id, role: "OWNER" },
+    });
+    if (!uo) return res.status(403).json({ error: "Endast ägaren kan uppdatera organisationsprofilen" });
+    const body = req.body;
+    const updated = await prisma.organization.update({
+      where: { id: req.params.id },
+      data: {
+        ...(body.name !== undefined && { name: body.name.trim() }),
+        ...(body.description !== undefined && { description: body.description?.trim() || null }),
+        ...(body.website !== undefined && { website: body.website?.trim() || null }),
+        ...(body.location !== undefined && { location: body.location?.trim() || null }),
+        ...(body.region !== undefined && { region: body.region?.trim() || null }),
+        ...(Array.isArray(body.segmentDefaults) && { segmentDefaults: body.segmentDefaults }),
+        ...(Array.isArray(body.bransch) && { bransch: body.bransch }),
+      },
+    });
+    res.json({
+      id: updated.id,
+      name: updated.name,
+      orgNumber: updated.orgNumber,
+      description: updated.description,
+      website: updated.website,
+      location: updated.location,
+      region: updated.region,
+      segmentDefaults: updated.segmentDefaults,
+      bransch: updated.bransch,
+      status: updated.status,
+    });
+  } catch (e) {
+    next(e);
+  }
+});

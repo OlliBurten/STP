@@ -17,6 +17,8 @@ const footerLinks = {
     heading: "Om STP",
     links: [
       { to: "/om-oss", label: "Om oss" },
+      { to: "/vision", label: "Vision & roadmap" },
+      { to: "/branschinsikter", label: "Branschinsikter" },
       { to: "/kontakt", label: "Kontakt" },
     ],
   },

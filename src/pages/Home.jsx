@@ -123,9 +123,9 @@ export default function Home() {
   const reveal = (inView) =>
     `transition-all duration-700 ease-out ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`;
 
-  if (user) {
+  if (user && !isAdmin) {
     if (isCompany) {
-      if (user.shouldShowOnboarding && !isAdmin && (!Array.isArray(user.companySegmentDefaults) || user.companySegmentDefaults.length === 0)) {
+      if (user.shouldShowOnboarding && (!Array.isArray(user.companySegmentDefaults) || user.companySegmentDefaults.length === 0)) {
         return <Navigate to="/foretag/onboarding" replace />;
       }
       return <Navigate to="/foretag" replace />;
@@ -158,11 +158,11 @@ export default function Home() {
                 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1]"
               >
                 <span className="block">Rätt</span>
-                <span className="relative block h-[1.2em] overflow-hidden">
+                <span className="relative block h-[1.45em] overflow-hidden">
                   {HERO_ROTATING_WORDS.map((word, i) => (
                     <span
                       key={word}
-                      className="absolute inset-0 text-[var(--color-accent)] transition-all duration-500 ease-in-out"
+                      className="absolute inset-x-0 bottom-0 text-[var(--color-accent)] transition-all duration-500 ease-in-out"
                       style={{
                         opacity: i === heroWordIndex ? 1 : 0,
                         transform: i === heroWordIndex ? "translateY(0)" : "translateY(0.4em)",

@@ -257,15 +257,23 @@ companiesRouter.post(
         where: { id: ownerId },
         select: { companyName: true, name: true },
       });
-      const frontendBaseUrl = (process.env.FRONTEND_URL || "").split(",")[0]?.trim().replace(/\/$/, "");
-      const { invite } = await createInvite({
+      let frontendBaseUrl = (process.env.FRONTEND_URL || "").split(",")[0]?.trim().replace(/\/$/, "");
+      if (!frontendBaseUrl && process.env.NODE_ENV !== "production") {
+        const origin = typeof req.headers.origin === "string" ? req.headers.origin.trim().replace(/\/$/, "") : "";
+        if (origin) frontendBaseUrl = origin;
+      }
+      const { invite, emailSent, devInviteLink } = await createInvite({
         email: req.body.email,
         companyOwnerId: ownerId,
         invitedById: req.userId,
         companyName: owner?.companyName || owner?.name || "Företaget",
         frontendBaseUrl,
       });
-      res.status(201).json(invite);
+      res.status(201).json({
+        invite,
+        emailSent,
+        ...(devInviteLink ? { devInviteLink } : {}),
+      });
     } catch (e) {
       if (e.status) return res.status(e.status).json({ error: e.message });
       next(e);

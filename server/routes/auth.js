@@ -698,3 +698,12 @@ authRouter.post("/reset-password", validateBody(resetPasswordSchema), async (req
     next(e);
   }
 });
+
+authRouter.delete("/me", authMiddleware, async (req, res, next) => {
+  try {
+    await prisma.user.delete({ where: { id: req.userId } });
+    res.json({ ok: true, message: "Kontot och all tillhörande data har raderats." });
+  } catch (e) {
+    next(e);
+  }
+});

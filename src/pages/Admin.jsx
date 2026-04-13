@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   getAdminSummary,
@@ -50,9 +50,31 @@ export default function Admin() {
   const [reportFilters, setReportFilters] = useState({ status: "" });
   const [reviewFilters, setReviewFilters] = useState({ status: "" });
 
+  const [reasonModal, setReasonModal] = useState(null);
+  const [reasonInput, setReasonInput] = useState("");
+  const [warningChecked, setWarningChecked] = useState(false);
+
   const clearFlash = () => {
     setError("");
     setSuccess("");
+  };
+
+  const showReasonModal = (label, defaultValue = "", withWarning = false) => {
+    setReasonInput(defaultValue);
+    setWarningChecked(false);
+    return new Promise((resolve) => {
+      setReasonModal({ label, withWarning, resolve });
+    });
+  };
+
+  const confirmReasonModal = () => {
+    if (reasonModal) reasonModal.resolve({ reason: reasonInput, addWarning: warningChecked });
+    setReasonModal(null);
+  };
+
+  const cancelReasonModal = () => {
+    if (reasonModal) reasonModal.resolve(null);
+    setReasonModal(null);
   };
 
   async function loadCompanies() {
@@ -179,8 +201,12 @@ export default function Admin() {
   };
 
   const handleSuspendUser = async (id, shouldSuspend) => {
-    const reason = shouldSuspend ? prompt("Anledning till avstängning:", "Policyöverträdelse") : "";
-    if (shouldSuspend && !reason) return;
+    let reason = "";
+    if (shouldSuspend) {
+      const result = await showReasonModal("Anledning till avstängning:", "Policyöverträdelse");
+      if (!result) return;
+      reason = result.reason;
+    }
     setLoading(true);
     clearFlash();
     try {
@@ -195,11 +221,12 @@ export default function Admin() {
   };
 
   const handleWarningAction = async (id, action) => {
-    const reason =
-      action === "ADD"
-        ? prompt("Anledning till varning:", "Brott mot plattformens regler")
-        : "Reset av varningar";
-    if (action === "ADD" && !reason) return;
+    let reason = "Reset av varningar";
+    if (action === "ADD") {
+      const result = await showReasonModal("Anledning till varning:", "Brott mot plattformens regler");
+      if (!result || !result.reason) return;
+      reason = result.reason;
+    }
     setLoading(true);
     clearFlash();
     try {
@@ -214,11 +241,15 @@ export default function Admin() {
   };
 
   const handleJobStatus = async (id, status) => {
-    const reason =
-      status === "ACTIVE"
-        ? ""
-        : prompt("Anledning till moderering:", status === "HIDDEN" ? "Kräver uppdatering" : "Bröt mot policy");
-    if (status !== "ACTIVE" && !reason) return;
+    let reason = "";
+    if (status !== "ACTIVE") {
+      const result = await showReasonModal(
+        "Anledning till moderering:",
+        status === "HIDDEN" ? "Kräver uppdatering" : "Bröt mot policy"
+      );
+      if (!result || !result.reason) return;
+      reason = result.reason;
+    }
     setLoading(true);
     clearFlash();
     try {
@@ -233,19 +264,15 @@ export default function Admin() {
   };
 
   const handleReportDecision = async (reportId, status) => {
-    const resolutionNote = prompt("Beskriv beslut / notering:", "");
-    if (resolutionNote == null) return;
-    const addWarning =
-      status === "RESOLVED"
-        ? window.confirm("Vill du också ge varning till det rapporterade kontot?")
-        : false;
+    const result = await showReasonModal("Beskriv beslut / notering:", "", status === "RESOLVED");
+    if (result == null) return;
     setLoading(true);
     clearFlash();
     try {
       await updateReport(reportId, {
         status,
-        resolutionNote: resolutionNote || null,
-        addWarning,
+        resolutionNote: result.reason || null,
+        addWarning: result.addWarning || false,
       });
       await loadReports();
       setSuccess("Rapport uppdaterad.");
@@ -257,9 +284,12 @@ export default function Admin() {
   };
 
   const handleReviewModeration = async (id, status) => {
-    const moderationReason =
-      status === "HIDDEN" ? prompt("Anledning till att dölja omdömet:", "Bryter mot riktlinjer") : "";
-    if (status === "HIDDEN" && !moderationReason) return;
+    let moderationReason = "";
+    if (status === "HIDDEN") {
+      const result = await showReasonModal("Anledning till att dölja omdömet:", "Bryter mot riktlinjer");
+      if (!result || !result.reason) return;
+      moderationReason = result.reason;
+    }
     setLoading(true);
     clearFlash();
     try {
@@ -513,6 +543,7 @@ export default function Admin() {
             <input
               value={userFilters.q}
               onChange={(e) => setUserFilters((p) => ({ ...p, q: e.target.value }))}
+              onKeyDown={(e) => { if (e.key === "Enter") loadUsers(); }}
               placeholder="Sök namn/e-post/företag"
               className="sm:col-span-2 px-3 py-2 rounded-lg border border-slate-300"
             />
@@ -577,9 +608,8 @@ export default function Admin() {
                     const isSelected = selectedUserId === u.id;
                     const detail = isSelected ? selectedUserDetail : null;
                     return (
-                      <>
+                      <React.Fragment key={u.id}>
                         <tr
-                          key={u.id}
                           onClick={() => loadUserDetail(u.id).catch((e) => setError(e.message || "Kunde inte öppna användardetaljer"))}
                           className={`cursor-pointer transition-colors hover:bg-slate-50 ${isSelected ? "bg-indigo-50 hover:bg-indigo-50" : ""}`}
                         >
@@ -705,7 +735,7 @@ export default function Admin() {
                             </td>
                           </tr>
                         ) : null}
-                      </>
+                      </React.Fragment>
                     );
                   })}
                 </tbody>
@@ -1056,6 +1086,43 @@ export default function Admin() {
             </table>
           </div>
         </section>
+      )}
+
+      {reasonModal && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/40">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-xl w-full max-w-sm p-6 space-y-4">
+            <p className="font-semibold text-slate-900">{reasonModal.label}</p>
+            <textarea
+              autoFocus
+              value={reasonInput}
+              onChange={(e) => setReasonInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); confirmReasonModal(); } }}
+              rows={3}
+              className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+            />
+            {reasonModal.withWarning && (
+              <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={warningChecked}
+                  onChange={(e) => setWarningChecked(e.target.checked)}
+                  className="rounded"
+                />
+                Ge varning till det rapporterade kontot
+              </label>
+            )}
+            <div className="flex justify-end gap-2">
+              <button type="button" onClick={cancelReasonModal}
+                className="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-50">
+                Avbryt
+              </button>
+              <button type="button" onClick={confirmReasonModal}
+                className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white text-sm font-medium hover:opacity-90">
+                Bekräfta
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </main>
   );
