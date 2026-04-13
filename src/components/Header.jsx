@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useChat } from "../context/ChatContext";
 import { fetchNotifications, markNotificationRead, markAllNotificationsRead } from "../api/notifications.js";
@@ -21,6 +21,11 @@ function initialsFromUser(user) {
   return "?";
 }
 
+const navClass = ({ isActive }) =>
+  isActive
+    ? "text-[var(--color-primary)] font-semibold relative after:absolute after:-bottom-1 after:left-0 after:right-0 after:h-0.5 after:rounded-full after:bg-[var(--color-primary)]"
+    : "text-slate-600 hover:text-[var(--color-primary)] transition-colors";
+
 const PUBLIC_NAV_LINKS = [
   { to: "/", label: "Hem" },
   { to: "/jobb", label: "Jobb" },
@@ -37,7 +42,7 @@ const PUBLIC_EXTRA_LINKS = [
 
 export default function Header({ onboarding = false }) {
   const { user, adminUser, impersonation, isDriver, isCompany, isAdmin, isImpersonating, logout, stopViewAs } = useAuth();
-  const { selectedNotificationCount, companyUnreadConversationCount = 0 } = useChat();
+  const { selectedNotificationCount, unreadCount = 0, companyUnreadConversationCount = 0 } = useChat();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -134,9 +139,9 @@ export default function Header({ onboarding = false }) {
         <>
           {PUBLIC_NAV_LINKS.map((item) => (
             <li key={item.label}>
-              <Link to={item.to} onClick={closeMobile} className="hover:text-[var(--color-primary)] transition-colors">
+              <NavLink to={item.to} onClick={closeMobile} className={navClass} end={item.to === "/"}>
                 {item.label}
-              </Link>
+              </NavLink>
             </li>
           ))}
           <li className="relative" ref={navDropdownRef}>
@@ -149,7 +154,7 @@ export default function Header({ onboarding = false }) {
               aria-haspopup="true"
               aria-controls="nav-mer-dropdown"
             >
-              Mer
+              Om STP
               <ChevronDownIcon className={`w-4 h-4 ml-0.5 transition-transform ${navDropdownOpen ? "rotate-180" : ""}`} />
             </button>
             {navDropdownOpen && (
@@ -183,58 +188,46 @@ export default function Header({ onboarding = false }) {
       {user && isDriver && !platformAdminSession && (
         <>
           <li>
-            <Link to="/jobb" onClick={closeMobile} className="hover:text-[var(--color-primary)] transition-colors">
-              Jobb
-            </Link>
+            <NavLink to="/jobb" onClick={closeMobile} className={navClass}>Jobb</NavLink>
           </li>
           <li>
-            <Link to="/akerier" onClick={closeMobile} className="hover:text-[var(--color-primary)] transition-colors">
-              Åkerier
-            </Link>
+            <NavLink to="/akerier" onClick={closeMobile} className={navClass}>Åkerier</NavLink>
           </li>
           <li>
-            <Link to="/meddelanden" onClick={closeMobile} className="hover:text-[var(--color-primary)] transition-colors">
+            <NavLink to="/meddelanden" onClick={closeMobile} className={({ isActive }) => `inline-flex items-center gap-1.5 ${navClass({ isActive })}`}>
               Meddelanden
-              {selectedNotificationCount > 0 && (
-                <span className="ml-2 inline-flex items-center justify-center min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold">
-                  {selectedNotificationCount}
+              {(unreadCount > 0 || selectedNotificationCount > 0) && (
+                <span className="inline-flex items-center justify-center min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold">
+                  {unreadCount + selectedNotificationCount > 99 ? "99+" : unreadCount + selectedNotificationCount}
                 </span>
               )}
-            </Link>
+            </NavLink>
           </li>
           <li>
-            <Link to="/favoriter" onClick={closeMobile} className="hover:text-[var(--color-primary)] transition-colors">
-              Favoriter
-            </Link>
+            <NavLink to="/favoriter" onClick={closeMobile} className={navClass}>Favoriter</NavLink>
           </li>
         </>
       )}
       {isCompany && (
         <>
           <li>
-            <Link to="/foretag" onClick={closeMobile} className="hover:text-[var(--color-primary)] transition-colors">
-              Översikt
-            </Link>
+            <NavLink to="/foretag" onClick={closeMobile} className={navClass} end>Översikt</NavLink>
           </li>
           <li>
-            <Link to="/foretag/mina-jobb" onClick={closeMobile} className="hover:text-[var(--color-primary)] transition-colors">
-              Mina jobb
-            </Link>
+            <NavLink to="/foretag/mina-jobb" onClick={closeMobile} className={navClass}>Mina jobb</NavLink>
           </li>
           <li>
-            <Link to="/foretag/chaufforer" onClick={closeMobile} className="hover:text-[var(--color-primary)] transition-colors">
-              Hitta förare
-            </Link>
+            <NavLink to="/foretag/chaufforer" onClick={closeMobile} className={navClass}>Hitta förare</NavLink>
           </li>
           <li>
-            <Link to="/foretag/meddelanden" onClick={closeMobile} className="hover:text-[var(--color-primary)] transition-colors flex items-center gap-1">
+            <NavLink to="/foretag/meddelanden" onClick={closeMobile} className={({ isActive }) => `inline-flex items-center gap-1.5 ${navClass({ isActive })}`}>
               Meddelanden
               {companyUnreadConversationCount > 0 && (
                 <span className="inline-flex min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold items-center justify-center">
                   {companyUnreadConversationCount > 99 ? "99+" : companyUnreadConversationCount}
                 </span>
               )}
-            </Link>
+            </NavLink>
           </li>
         </>
       )}
@@ -244,23 +237,7 @@ export default function Header({ onboarding = false }) {
   if (onboarding && user) {
     return (
       <>
-        {isImpersonating && (
-          <div className="fixed top-0 left-0 right-0 z-[60] bg-amber-100 text-amber-950 border-b border-amber-300">
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 py-2 flex flex-wrap items-center justify-between gap-2 text-sm">
-              <p>
-                View as aktivt: du ser plattformen som <strong>{user?.name || user?.email}</strong>. Alla ändringar är blockerade.
-              </p>
-              <button
-                type="button"
-                onClick={handleStopViewAs}
-                className="px-3 py-1.5 rounded-lg bg-amber-900 text-white font-medium hover:opacity-90"
-              >
-                Avsluta view as
-              </button>
-            </div>
-          </div>
-        )}
-        <header className={`fixed left-0 right-0 z-50 bg-white/95 backdrop-blur border-b border-slate-200 ${isImpersonating ? "top-10" : "top-0"}`}>
+        <header className="fixed left-0 right-0 top-0 z-50 bg-white/95 backdrop-blur border-b border-slate-200">
           <nav className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-14">
             <Link to="/" className="flex items-center" aria-label="Startsida">
               <Logo height={32} />
@@ -280,25 +257,7 @@ export default function Header({ onboarding = false }) {
 
   return (
     <>
-      {isImpersonating && (
-        <div className="fixed top-0 left-0 right-0 z-[60] bg-amber-100 text-amber-950 border-b border-amber-300">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-2 flex flex-wrap items-center justify-between gap-2 text-sm">
-            <p>
-              View as aktivt: du ser plattformen som <strong>{user?.name || user?.email}</strong> via{" "}
-              <strong>{adminUser?.email || "admin"}</strong>. Alla ändringar är blockerade.
-              {impersonation?.expiresAt ? ` Sessionen slutar ${new Date(impersonation.expiresAt).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" })}.` : ""}
-            </p>
-            <button
-              type="button"
-              onClick={handleStopViewAs}
-              className="px-3 py-1.5 rounded-lg bg-amber-900 text-white font-medium hover:opacity-90"
-            >
-              Avsluta view as
-            </button>
-          </div>
-        </div>
-      )}
-    <header className={`fixed left-0 right-0 z-50 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm ${isImpersonating ? "top-10" : "top-0"}`}>
+    <header className={`fixed left-0 right-0 top-0 z-50 bg-white/95 backdrop-blur border-b shadow-sm ${isImpersonating ? "border-amber-300" : "border-slate-200"}`}>
       <nav className="dm-header-nav max-w-6xl mx-auto px-4 sm:px-6 flex items-center h-16 relative">
         <div className="flex items-center shrink-0 overflow-visible">
           <Link to="/" className="flex items-center focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 rounded overflow-visible">
@@ -316,18 +275,20 @@ export default function Header({ onboarding = false }) {
               <button
                 type="button"
                 onClick={() => setNotifOpen((o) => !o)}
-                className="p-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-[var(--color-primary)] relative"
+                className="p-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-[var(--color-primary)] relative flex items-center justify-center"
                 aria-label={notifications.unreadCount ? `${notifications.unreadCount} olästa notiser` : "Notiser"}
               >
-                <BellIcon className="w-5 h-5" />
-                {notifications.unreadCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-semibold">
-                    {notifications.unreadCount > 99 ? "99+" : notifications.unreadCount}
-                  </span>
-                )}
+                <span className="relative inline-flex">
+                  <BellIcon className="w-5 h-5" />
+                  {notifications.unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-semibold leading-none px-0.5">
+                      {notifications.unreadCount > 99 ? "99+" : notifications.unreadCount}
+                    </span>
+                  )}
+                </span>
               </button>
               {notifOpen && (
-                <div className="absolute right-0 top-full mt-1 w-[320px] max-h-[400px] overflow-auto rounded-xl border border-slate-200 bg-white shadow-lg z-[100]">
+                <div className="absolute right-0 top-full mt-1 w-[320px] max-w-[calc(100vw-1rem)] max-h-[400px] overflow-auto rounded-xl border border-slate-200 bg-white shadow-lg z-[100]">
                   <div className="p-2 border-b border-slate-100 flex items-center justify-between">
                     <span className="text-sm font-semibold text-slate-800">Notiser</span>
                     {notifications.unreadCount > 0 && (
@@ -377,7 +338,7 @@ export default function Header({ onboarding = false }) {
               </button>
               {userMenuOpen && (
                 <div
-                  className="absolute right-0 top-full mt-2 w-56 rounded-xl border border-slate-200 bg-white shadow-lg py-1 z-[110]"
+                  className="absolute right-0 top-full mt-2 w-56 max-w-[calc(100vw-1rem)] rounded-xl border border-slate-200 bg-white shadow-lg py-1 z-[110]"
                   role="menu"
                 >
                   <div className="px-3 py-2 border-b border-slate-100">
@@ -465,12 +426,21 @@ export default function Header({ onboarding = false }) {
             </div>
           )}
           {user && isAdmin && (
-            <span
-              className="hidden lg:inline-flex items-center px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-800 text-xs font-semibold"
-              title={isImpersonating ? "Du är admin i view as-läge" : "Du är inloggad som admin"}
-            >
-              {isImpersonating ? "View as" : "Admin"}
-            </span>
+            isImpersonating ? (
+              <button
+                type="button"
+                onClick={handleStopViewAs}
+                className="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-semibold hover:bg-amber-200 transition-colors"
+                title={`Visar som: ${user?.name || user?.email}`}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
+                Avsluta view as
+              </button>
+            ) : (
+              <span className="hidden lg:inline-flex items-center px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-800 text-xs font-semibold">
+                Admin
+              </span>
+            )
           )}
           {/* Mobile menu button */}
           <button
@@ -482,27 +452,7 @@ export default function Header({ onboarding = false }) {
           >
             {mobileOpen ? <CloseIcon className="w-5 h-5" /> : <MenuIcon className="w-5 h-5" />}
           </button>
-          {user ? (
-            <>
-              {isCompany && (
-                isVerifiedCompany ? (
-                  <Link
-                    to="/foretag/chaufforer"
-                    className="dm-header-primary-cta px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white text-sm font-medium hover:bg-[var(--color-primary-light)] transition-colors"
-                  >
-                    Hitta förare
-                  </Link>
-                ) : (
-                  <span
-                    className="dm-header-primary-cta px-4 py-2 rounded-lg bg-amber-100 text-amber-900 text-sm font-medium"
-                    title="Verifiering krävs innan ni kan publicera jobb"
-                  >
-                    Väntar verifiering
-                  </span>
-                )
-              )}
-            </>
-          ) : (
+          {!user && (
             <Link
               to="/login"
               className="dm-header-primary-cta px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white text-sm font-medium hover:bg-[var(--color-primary-light)] transition-colors"
@@ -536,25 +486,15 @@ export default function Header({ onboarding = false }) {
           <div className="px-4 py-3 border-t border-slate-100">
             {user ? (
               <div className="flex flex-col gap-2">
-                {isAdmin && (
-                  <span className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg bg-indigo-100 text-indigo-800 text-xs font-semibold">
-                    Inloggad som admin
-                  </span>
-                )}
-                {isCompany && (
-                  isVerifiedCompany ? (
-                    <Link
-                      to="/foretag/chaufforer"
-                      onClick={closeMobile}
-                      className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white text-sm font-medium"
-                    >
-                      Hitta förare
-                    </Link>
-                  ) : (
-                    <span className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-amber-100 text-amber-900 text-sm font-medium">
-                      Väntar verifiering
-                    </span>
-                  )
+                {isAdmin && isImpersonating && (
+                  <button
+                    type="button"
+                    onClick={() => { closeMobile(); handleStopViewAs(); }}
+                    className="inline-flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg bg-amber-100 text-amber-800 text-sm font-medium hover:bg-amber-200 transition-colors"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
+                    Avsluta view as
+                  </button>
                 )}
                 <button
                   type="button"

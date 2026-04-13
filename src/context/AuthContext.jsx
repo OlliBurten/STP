@@ -1,7 +1,8 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
-import { apiPost, AUTH_INVALID_EVENT } from "../api/client.js";
+import { apiPost, AUTH_INVALID_EVENT, getActiveOrgId, setActiveOrgId } from "../api/client.js";
 import { fetchMe } from "../api/auth.js";
 import { startViewAs as apiStartViewAs, stopViewAs as apiStopViewAs } from "../api/admin.js";
+import { fetchMyOrganizations } from "../api/organizations.js";
 
 const AUTH_STORAGE_KEY = "drivermatch-auth";
 const SESSION_MAX_MS = 24 * 60 * 60 * 1000; // 24h
@@ -318,6 +319,41 @@ export function AuthProvider({ children }) {
     };
   }, [user, token]);
 
+  const [userOrgs, setUserOrgs] = useState([]);
+  const [activeOrgId, setActiveOrgIdState] = useState(() => getActiveOrgId());
+
+  const refreshOrgs = useCallback(async () => {
+    try {
+      const orgs = await fetchMyOrganizations();
+      const list = Array.isArray(orgs) ? orgs : [];
+      setUserOrgs(list);
+      const currentActiveId = getActiveOrgId();
+      if (!currentActiveId || !list.find((o) => o.id === currentActiveId)) {
+        const firstId = list[0]?.id || null;
+        setActiveOrgId(firstId);
+        setActiveOrgIdState(firstId);
+      }
+    } catch {
+      setUserOrgs([]);
+    }
+  }, []);
+
+  const switchOrg = useCallback((orgId) => {
+    setActiveOrgId(orgId);
+    setActiveOrgIdState(orgId);
+  }, []);
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => {
+    if (user && (user.role === "recruiter") && token) {
+      refreshOrgs();
+    } else {
+      setUserOrgs([]);
+    }
+  }, [user?.id, token]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const activeOrg = userOrgs.find((o) => o.id === activeOrgId) || userOrgs[0] || null;
+
   const isDriver = user?.role === "driver";
   const isRecruiter = user?.role === "recruiter";
   const isCompany = isRecruiter;
@@ -350,6 +386,10 @@ export function AuthProvider({ children }) {
         refreshUser,
         startViewAs,
         stopViewAs,
+        userOrgs,
+        activeOrg,
+        switchOrg,
+        refreshOrgs,
       }}
     >
       {children}

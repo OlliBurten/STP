@@ -1,12 +1,24 @@
 const API_URL = (import.meta.env.VITE_API_URL || "").trim().replace(/\/$/, "");
 const AUTH_STORAGE_KEY = "drivermatch-auth";
+const ACTIVE_ORG_KEY = "stp-active-org";
 export const AUTH_INVALID_EVENT = "drivermatch:auth-invalid";
+
+export function getActiveOrgId() {
+  try { return localStorage.getItem(ACTIVE_ORG_KEY) || null; } catch { return null; }
+}
+
+export function setActiveOrgId(id) {
+  try {
+    if (id) localStorage.setItem(ACTIVE_ORG_KEY, id);
+    else localStorage.removeItem(ACTIVE_ORG_KEY);
+  } catch { /* ignore */ }
+}
 
 function readStoredAuth() {
   try {
     const stored = localStorage.getItem(AUTH_STORAGE_KEY);
     return stored ? JSON.parse(stored) : null;
-  } catch (_) {
+  } catch {
     return null;
   }
 }
@@ -27,7 +39,7 @@ function isReadOnlyViewActive() {
 export function clearStoredAuth() {
   try {
     localStorage.removeItem(AUTH_STORAGE_KEY);
-  } catch (_) {}
+  } catch { /* ignore */ }
   if (typeof window !== "undefined") {
     window.dispatchEvent(new CustomEvent(AUTH_INVALID_EVENT));
   }
@@ -49,6 +61,8 @@ export async function api(method, path, body, options = {}) {
   };
   const token = getToken();
   if (token) opts.headers.Authorization = `Bearer ${token}`;
+  const activeOrgId = getActiveOrgId();
+  if (activeOrgId) opts.headers["X-Active-Org"] = activeOrgId;
   if (body != null) opts.body = JSON.stringify(body);
 
   let res;

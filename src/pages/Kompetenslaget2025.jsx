@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
+import { usePageTitle } from "../hooks/usePageTitle";
 
 export default function Kompetenslaget2025() {
+  usePageTitle("Kompetensläget 2025 – Transportbranschen");
   return (
     <main className="max-w-3xl mx-auto px-4 sm:px-6 py-16">
       <nav className="text-sm text-slate-600 mb-8">

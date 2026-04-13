@@ -1,0 +1,18 @@
+User-agent: *
+Disallow: /admin
+Disallow: /profil
+Disallow: /meddelanden
+Disallow: /favoriter
+Disallow: /foretag/mina-jobb
+Disallow: /foretag/chaufforer
+Disallow: /foretag/annonsera
+Disallow: /foretag/profil
+Disallow: /foretag/meddelanden
+Disallow: /foretag/lagg-till-akeri
+Disallow: /foretag/onboarding
+Disallow: /onboarding
+Disallow: /verifiera-email
+Disallow: /aterstall-losenord
+Disallow: /invite
+
+Sitemap: https://transportplattformen.se/sitemap.xml

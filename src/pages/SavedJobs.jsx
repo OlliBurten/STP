@@ -1,16 +1,40 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { usePageTitle } from "../hooks/usePageTitle";
 import JobCard from "../components/JobCard";
 import PageHeader from "../components/PageHeader";
 import LoadingBlock from "../components/LoadingBlock";
 import { fetchSavedJobs, saveJob, unsaveJob } from "../api/jobs.js";
 import { useAuth } from "../context/AuthContext";
+import { useProfile } from "../context/ProfileContext";
+import { matchScore, getJobMatchHighlights } from "../utils/matchUtils";
+import { calcYearsExperience } from "../utils/profileUtils";
 
 export default function SavedJobs() {
+  usePageTitle("Sparade jobb");
   const { hasApi, isDriver } = useAuth();
+  const { profile } = useProfile();
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const driverForMatch = useMemo(
+    () =>
+      isDriver && profile
+        ? {
+            licenses: profile.licenses || [],
+            certificates: profile.certificates || [],
+            region: profile.region || "",
+            regionsWilling: profile.regionsWilling || [profile.region].filter(Boolean),
+            availability: profile.availability || "open",
+            yearsExperience: calcYearsExperience(profile.experience),
+            primarySegment: profile.primarySegment || "",
+            secondarySegments: Array.isArray(profile.secondarySegments) ? profile.secondarySegments : [],
+            privateMatchNotes: profile.privateMatchNotes || "",
+          }
+        : null,
+    [isDriver, profile]
+  );
 
   useEffect(() => {
     if (!hasApi || !isDriver) {
@@ -78,15 +102,20 @@ export default function SavedJobs() {
           <p className="text-sm text-slate-500">
             {jobs.length} {jobs.length === 1 ? "annons" : "annonser"} sparade. Öppna när du vill – vi påminner dig om uppdateringar.
           </p>
-          {jobs.map((job) => (
-            <JobCard
-              key={job.id}
-              job={job}
-              showSave
-              isSaved
-              onToggleSave={handleToggleSave}
-            />
-          ))}
+          {jobs.map((job) => {
+            const data = driverForMatch ? matchScore(driverForMatch, job) : null;
+            return (
+              <JobCard
+                key={job.id}
+                job={job}
+                matchScore={data?.score ?? null}
+                matchHighlights={data?.score > 0 ? getJobMatchHighlights(job, data?.details) : []}
+                showSave
+                isSaved
+                onToggleSave={handleToggleSave}
+              />
+            );
+          })}
         </div>
       ) : null}
     </main>

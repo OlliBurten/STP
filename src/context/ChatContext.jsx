@@ -1,9 +1,10 @@
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "./AuthContext";
 import { fetchConversations, createConversation as apiCreateConversation, sendMessage as apiSendMessage } from "../api/conversations.js";
 
 const CHAT_STORAGE_KEY = "drivermatch-conversations";
 const SELECTED_SEEN_STORAGE_KEY = "drivermatch-selected-seen";
+const CONV_SEEN_STORAGE_KEY = "drivermatch-conv-seen";
 function loadConversations() {
   try {
     const stored = localStorage.getItem(CHAT_STORAGE_KEY);
@@ -34,6 +35,21 @@ function saveSeenSelectedMap(map) {
   } catch (_) {}
 }
 
+function loadConvSeenMap() {
+  try {
+    const stored = localStorage.getItem(CONV_SEEN_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveConvSeenMap(map) {
+  try {
+    localStorage.setItem(CONV_SEEN_STORAGE_KEY, JSON.stringify(map));
+  } catch (_) {}
+}
+
 const ChatContext = createContext(null);
 
 export function ChatProvider({ children }) {
@@ -42,6 +58,9 @@ export function ChatProvider({ children }) {
   const [apiConversations, setApiConversations] = useState([]);
   const [conversationsLoading, setConversationsLoading] = useState(false);
   const [seenSelectedMap, setSeenSelectedMap] = useState(loadSeenSelectedMap);
+  const [convSeenMap, setConvSeenMap] = useState(loadConvSeenMap);
+
+  const refreshRef = useRef(null);
 
   useEffect(() => {
     if (!hasApi || !token) {
@@ -64,13 +83,19 @@ export function ChatProvider({ children }) {
         });
     };
 
+    refreshRef.current = refresh;
     refresh();
     const interval = setInterval(refresh, 20000);
     return () => {
       active = false;
+      refreshRef.current = null;
       clearInterval(interval);
     };
   }, [hasApi, token]);
+
+  const refreshConversations = useCallback(() => {
+    refreshRef.current?.();
+  }, []);
 
   useEffect(() => {
     if (!hasApi) saveConversations(conversations);
@@ -79,6 +104,10 @@ export function ChatProvider({ children }) {
   useEffect(() => {
     saveSeenSelectedMap(seenSelectedMap);
   }, [seenSelectedMap]);
+
+  useEffect(() => {
+    saveConvSeenMap(convSeenMap);
+  }, [convSeenMap]);
 
   const list = hasApi ? apiConversations : conversations;
   const selectedNotificationCount = isDriver
@@ -181,7 +210,22 @@ export function ChatProvider({ children }) {
     [list]
   );
 
-  const unreadCount = 0; // Could add later
+  // Driver unread: conversations where last message is from company and newer than last seen
+  const driverUnreadCount = isDriver
+    ? list.filter((c) => {
+        const lastMsg = c.messages?.[c.messages.length - 1];
+        if (!lastMsg || lastMsg.sender !== "company") return false;
+        const lastSeen = convSeenMap[c.id];
+        return !lastSeen || new Date(lastMsg.timestamp) > new Date(lastSeen);
+      }).length
+    : 0;
+
+  const unreadCount = isDriver ? driverUnreadCount : companyUnreadConversationCount;
+
+  const markConversationSeen = useCallback((conversationId) => {
+    setConvSeenMap((prev) => ({ ...prev, [conversationId]: new Date().toISOString() }));
+  }, []);
+
   const markSelectedNotificationsSeen = useCallback(() => {
     if (!isDriver) return;
     setSeenSelectedMap((prev) => {
@@ -208,7 +252,9 @@ export function ChatProvider({ children }) {
         unreadCount,
         selectedNotificationCount,
         companyUnreadConversationCount,
+        markConversationSeen,
         markSelectedNotificationsSeen,
+        refreshConversations,
         conversationsLoading,
       }}
     >

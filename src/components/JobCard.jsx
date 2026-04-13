@@ -15,10 +15,16 @@ export default function JobCard({
     return d.toLocaleDateString("sv-SE", { day: "numeric", month: "short" });
   };
 
+  const isMatch = matchScore != null && matchScore > 0;
+
   return (
     <Link
       to={`/jobb/${job.id}`}
-      className="block p-4 sm:p-5 bg-white rounded-xl border border-slate-200 hover:border-[var(--color-primary)] hover:shadow-md transition-all group"
+      className={`block p-4 sm:p-5 bg-white rounded-xl border hover:shadow-md transition-all group ${
+        isMatch
+          ? "border-green-200 hover:border-green-300"
+          : "border-slate-200 hover:border-[var(--color-primary)]"
+      }`}
     >
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div className="flex-1 min-w-0">
@@ -27,30 +33,26 @@ export default function JobCard({
           </h3>
           <p className="mt-1 text-sm text-slate-600">{job.company}</p>
           <div className="mt-3 flex flex-wrap gap-2">
+            {/* Trust signals — green */}
             {job.companyVerified && (
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                 <CheckIcon className="w-3.5 h-3.5" />
-                Verifierat företag
-              </span>
-            )}
-            {job.companyReviewCount > 0 ? (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-800">
-                <StarFilledIcon className="w-3.5 h-3.5 text-amber-500" />
-                {job.companyReviewAverage}/5 ({job.companyReviewCount})
-              </span>
-            ) : (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
-                Nytt konto
+                Verifierat
               </span>
             )}
             {job.kollektivavtal === true && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                 Kollektivavtal
               </span>
             )}
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
-              <LocationIcon className="w-3.5 h-3.5" /> {job.location}
-            </span>
+            {/* Rating — amber, only when exists */}
+            {job.companyReviewCount > 0 && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-800">
+                <StarFilledIcon className="w-3.5 h-3.5 text-amber-500" />
+                {job.companyReviewAverage}/5
+              </span>
+            )}
+            {/* Key qualifications — primary teal */}
             {job.license.map((lic) => (
               <span
                 key={lic}
@@ -59,14 +61,13 @@ export default function JobCard({
                 {lic}
               </span>
             ))}
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-800">
-              {job.employment === "fast" ? "Fast" : job.employment === "vikariat" ? "Vikariat" : "Tim"}
+            {/* Neutral info — slate */}
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+              <LocationIcon className="w-3.5 h-3.5" /> {job.location}
             </span>
-            {(job.segment || job.employment) && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
-                {segmentLabel(job.segment || mapEmploymentToSegment(job.employment))}
-              </span>
-            )}
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+              {job.employment === "fast" ? "Fast anst." : job.employment === "vikariat" ? "Vikariat" : "Timanst."}
+            </span>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2 sm:flex-col sm:items-end sm:gap-1 shrink-0">
@@ -88,9 +89,10 @@ export default function JobCard({
               {isSaved ? <><StarFilledIcon className="w-3.5 h-3.5 mr-1 inline" /> Sparat</> : <><StarOutlineIcon className="w-3.5 h-3.5 mr-1 inline" /> Spara</>}
             </button>
           )}
-          {matchScore != null && (
-            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border border-slate-200 bg-slate-100 text-slate-700">
-              Match {matchScore}
+          {isMatch && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-200">
+              <CheckIcon className="w-3 h-3 shrink-0" />
+              Matchar din profil
             </span>
           )}
           <span className="text-sm font-medium text-slate-900 sm:text-right">{job.salary}</span>
@@ -98,12 +100,13 @@ export default function JobCard({
         </div>
       </div>
       {matchHighlights.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className="mt-3 pt-3 border-t border-green-100 flex flex-wrap gap-1.5">
           {matchHighlights.map((highlight) => (
             <span
               key={highlight}
-              className="inline-flex items-center rounded-full bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600"
+              className="inline-flex items-center gap-1 rounded-full bg-green-50 border border-green-200 px-2.5 py-0.5 text-xs font-medium text-green-800"
             >
+              <CheckIcon className="w-3 h-3 shrink-0" />
               {highlight}
             </span>
           ))}

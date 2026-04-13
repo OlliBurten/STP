@@ -1,12 +1,13 @@
 import { useState, useMemo, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
+import { usePageTitle } from "../hooks/usePageTitle";
 import { mockJobs } from "../data/mockJobs";
 import { mockDrivers } from "../data/mockDrivers";
 import ApplyModal from "../components/ApplyModal";
 import DriverCard from "../components/DriverCard";
 import { useAuth } from "../context/AuthContext";
 import { getDriverMatchHighlights, getMatchingDriversForJob } from "../utils/matchUtils";
-import { fetchJob, fetchJobApplicants, fetchSavedJobs, saveJob, unsaveJob } from "../api/jobs.js";
+import { fetchJob, fetchJobApplicants, fetchSavedJobs, saveJob, unsaveJob, trackJobView, fetchJobStats } from "../api/jobs.js";
 import { selectConversation, rejectConversation } from "../api/conversations.js";
 import { getCompanyReviewSummary } from "../api/reviews.js";
 import { mapEmploymentToSegment, segmentLabel } from "../data/segments";
@@ -17,18 +18,26 @@ import { isJobOlderThan30Days } from "../utils/jobUtils.js";
 import { StarFilledIcon, StarOutlineIcon, LocationIcon } from "../components/Icons";
 import Breadcrumbs from "../components/Breadcrumbs";
 import LoadingBlock from "../components/LoadingBlock";
+import { useToast } from "../context/ToastContext";
 
 export default function JobDetail() {
   const { id } = useParams();
-  const { user, isDriver, isCompany, hasApi } = useAuth();
+  const { user, isDriver, isCompany, hasApi, activeOrg } = useAuth();
+  const toast = useToast();
   const [job, setJob] = useState(() => (!hasApi ? mockJobs.find((j) => j.id === id) : null));
+  usePageTitle(job ? `${job.title} – ${job.companyName}` : "Jobbannonser");
   const [jobLoading, setJobLoading] = useState(hasApi);
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [reviewSummary, setReviewSummary] = useState(null);
   const [applicants, setApplicants] = useState([]);
   const [applicantsLoading, setApplicantsLoading] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
-  const isMyJob = hasApi && isCompany && user?.id && job?.userId === user.id;
+  const [jobStats, setJobStats] = useState(null);
+  const isMyJob =
+    hasApi &&
+    isCompany &&
+    job != null &&
+    (job.userId === user?.id || (activeOrg?.id && job.organizationId === activeOrg.id));
 
   useEffect(() => {
     if (!hasApi || !id) return;
@@ -64,6 +73,20 @@ export default function JobDetail() {
       .then((saved) => setIsSaved((saved || []).some((j) => j.id === id)))
       .catch(() => setIsSaved(false));
   }, [hasApi, isDriver, id]);
+
+  // Registrera visning när jobbet laddats (inte för företag som ser sin egen annons)
+  useEffect(() => {
+    if (!hasApi || !job?.id || isMyJob) return;
+    trackJobView(job.id).catch(() => {});
+  }, [hasApi, job?.id, isMyJob]);
+
+  // Ladda statistik för annonsens ägare
+  useEffect(() => {
+    if (!isMyJob || !job?.id) return;
+    fetchJobStats(job.id)
+      .then(setJobStats)
+      .catch(() => setJobStats(null));
+  }, [isMyJob, job?.id]);
 
   const handleMarkSelected = async (conversationId) => {
     try {
@@ -110,10 +133,16 @@ export default function JobDetail() {
     const next = !isSaved;
     setIsSaved(next);
     try {
-      if (next) await saveJob(job.id);
-      else await unsaveJob(job.id);
+      if (next) {
+        await saveJob(job.id);
+        toast.success("Jobb sparat till dina favoriter!");
+      } else {
+        await unsaveJob(job.id);
+        toast.info("Jobb borttaget från favoriter.");
+      }
     } catch (_) {
       setIsSaved(!next);
+      toast.error("Kunde inte uppdatera favoriter.");
     }
   };
 
@@ -177,64 +206,60 @@ export default function JobDetail() {
 
       <article className="bg-white rounded-xl border border-slate-200 overflow-hidden">
         <div className="p-6 sm:p-8">
-          <div className="flex flex-wrap gap-2 mb-4">
-            {(job.license || []).map((lic) => (
-              <span
-                key={lic}
-                className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-[var(--color-primary)]/10 text-[var(--color-primary)]"
-              >
-                {lic}
-              </span>
-            ))}
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-slate-100 text-slate-700">
-              {job.jobType === "fjärrkörning"
-                ? "Fjärrkörning"
-                : job.jobType === "lokalt"
-                  ? "Lokalt"
-                  : job.jobType === "distribution"
-                    ? "Distribution"
-                    : "Timjobb"}
-            </span>
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-amber-50 text-amber-800">
-              {job.employment === "fast"
-                ? "Fast anställning"
-                : job.employment === "vikariat"
-                  ? "Vikariat"
-                  : "Timanställning"}
-            </span>
-            {(job.segment || job.employment) && (
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-slate-100 text-slate-700">
-                {segmentLabel(job.segment || mapEmploymentToSegment(job.employment))}
-              </span>
+          {/* Grouped tag sections */}
+          <div className="mb-5 space-y-2">
+            {/* Behörighet: licenses + certificates */}
+            {((job.license?.length > 0) || (job.certificates?.length > 0)) && (
+              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1.5">
+                <span className="text-xs font-semibold uppercase tracking-wide text-slate-400 shrink-0 w-24">Behörighet</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {(job.license || []).map((lic) => (
+                    <span key={lic} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[var(--color-primary)]/10 text-[var(--color-primary)]">{lic}</span>
+                  ))}
+                  {(job.certificates || []).map((c) => (
+                    <span key={c} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">{getCertificateLabel(c)}</span>
+                  ))}
+                </div>
+              </div>
             )}
-            {job.bransch && (
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-slate-100 text-slate-700">
-                {getBranschLabel(job.bransch)}
-              </span>
-            )}
-            {job.certificates?.length > 0 &&
-              job.certificates.map((c) => (
-                <span
-                  key={c}
-                  className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-slate-100 text-slate-700"
-                >
-                  {getCertificateLabel(c)}
+            {/* Tjänst: employment, job type, segment, schedule */}
+            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1.5">
+              <span className="text-xs font-semibold uppercase tracking-wide text-slate-400 shrink-0 w-24">Tjänst</span>
+              <div className="flex flex-wrap gap-1.5">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-800">
+                  {job.employment === "fast" ? "Fast anställning" : job.employment === "vikariat" ? "Vikariat" : "Timanställning"}
                 </span>
-              ))}
-            {job.schedule && (
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-slate-100 text-slate-700">
-                {scheduleTypes.find((s) => s.value === job.schedule)?.label ?? job.schedule}
-              </span>
-            )}
-            {job.physicalWorkRequired && (
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-amber-100 text-amber-800">
-                Fysiskt krävande
-              </span>
-            )}
-            {job.soloWorkOk && (
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-slate-100 text-slate-700">
-                Ensamarbete
-              </span>
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
+                  {job.jobType === "fjärrkörning" ? "Fjärrkörning" : job.jobType === "lokalt" ? "Lokalt" : job.jobType === "distribution" ? "Distribution" : "Timjobb"}
+                </span>
+                {(job.segment || job.employment) && (
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
+                    {segmentLabel(job.segment || mapEmploymentToSegment(job.employment))}
+                  </span>
+                )}
+                {job.schedule && (
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
+                    {scheduleTypes.find((s) => s.value === job.schedule)?.label ?? job.schedule}
+                  </span>
+                )}
+              </div>
+            </div>
+            {/* Övrigt: bransch, physical, solo */}
+            {(job.bransch || job.physicalWorkRequired || job.soloWorkOk) && (
+              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1.5">
+                <span className="text-xs font-semibold uppercase tracking-wide text-slate-400 shrink-0 w-24">Övrigt</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {job.bransch && (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">{getBranschLabel(job.bransch)}</span>
+                  )}
+                  {job.physicalWorkRequired && (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">Fysiskt krävande</span>
+                  )}
+                  {job.soloWorkOk && (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">Ensamarbete ok</span>
+                  )}
+                </div>
+              </div>
             )}
           </div>
 
@@ -366,8 +391,49 @@ export default function JobDetail() {
             </div>
           </div>
 
-          {isMyJob && (
+          {isMyJob && jobStats && (
             <div className="mt-10 pt-8 border-t border-slate-200">
+              <h2 className="font-semibold text-slate-900 mb-4">Annonsstatistik</h2>
+              <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-4">
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 sm:p-4 text-center">
+                  <p className="text-xl sm:text-2xl font-bold text-slate-900">{jobStats.viewCount}</p>
+                  <p className="text-xs text-slate-500 mt-1">Visningar</p>
+                </div>
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 sm:p-4 text-center">
+                  <p className="text-xl sm:text-2xl font-bold text-slate-900">{jobStats.savedCount}</p>
+                  <p className="text-xs text-slate-500 mt-1">Sparade</p>
+                </div>
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 sm:p-4 text-center">
+                  <p className="text-xl sm:text-2xl font-bold text-slate-900">{jobStats.conversationCount}</p>
+                  <p className="text-xs text-slate-500 mt-1">Ansökningar</p>
+                </div>
+              </div>
+              {jobStats.recommendations?.length > 0 && (
+                <ul className="space-y-2 mb-6">
+                  {jobStats.recommendations.map((r, i) => (
+                    <li
+                      key={i}
+                      className={`flex items-start gap-2 rounded-lg px-4 py-3 text-sm ${
+                        r.type === "warning"
+                          ? "bg-amber-50 border border-amber-200 text-amber-900"
+                          : r.type === "insight"
+                          ? "bg-blue-50 border border-blue-200 text-blue-900"
+                          : "bg-slate-50 border border-slate-200 text-slate-700"
+                      }`}
+                    >
+                      <span className="shrink-0 mt-0.5">
+                        {r.type === "warning" ? "⚠️" : r.type === "insight" ? "💡" : "✏️"}
+                      </span>
+                      {r.text}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+
+          {isMyJob && (
+            <div className="mt-6 pt-6 border-t border-slate-200">
               <h2 className="font-semibold text-slate-900 mb-2">Sökande till detta jobb</h2>
               <p className="text-sm text-slate-600 mb-4">
                 Sorterade efter match (bäst match först). Markera som utvald när ni vill boka in föraren.
@@ -487,7 +553,7 @@ export default function JobDetail() {
                 <button
                   type="button"
                   onClick={() => setShowApplyModal(true)}
-                  className="inline-flex items-center justify-center w-full sm:w-auto px-8 py-4 rounded-xl bg-[var(--color-primary)] text-white font-semibold hover:bg-[var(--color-primary-light)] transition-colors"
+                  className="inline-flex items-center justify-center w-full sm:w-auto px-6 py-3.5 rounded-xl bg-[var(--color-primary)] text-white font-semibold hover:bg-[var(--color-primary-light)] transition-colors"
                 >
                   Ansök med din profil
                 </button>
@@ -505,7 +571,7 @@ export default function JobDetail() {
               <Link
                 to="/login"
                 state={{ from: `/jobb/${id}`, requiredRole: "driver" }}
-                className="inline-flex items-center justify-center w-full sm:w-auto px-8 py-4 rounded-xl bg-[var(--color-primary)] text-white font-semibold hover:bg-[var(--color-primary-light)] transition-colors"
+                className="inline-flex items-center justify-center w-full sm:w-auto px-6 py-3.5 rounded-xl bg-[var(--color-primary)] text-white font-semibold hover:bg-[var(--color-primary-light)] transition-colors"
               >
                 Logga in för att ansöka
               </Link>

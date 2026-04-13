@@ -1,4 +1,4 @@
-import { apiGet } from "./client.js";
+import { apiGet, apiPost } from "./client.js";
 
 export async function fetchDrivers(params = {}) {
   const q = new URLSearchParams(params).toString();
@@ -7,4 +7,14 @@ export async function fetchDrivers(params = {}) {
 
 export async function fetchDriver(id) {
   return apiGet(`/api/drivers/${id}`);
+}
+
+/** Registrera profilvisning (fire-and-forget) */
+export function trackDriverProfileView(driverId) {
+  return apiPost(`/api/drivers/${driverId}/view`, {});
+}
+
+/** Förarens egna profilstatistik */
+export async function fetchDriverProfileStats() {
+  return apiGet("/api/drivers/me/stats");
 }

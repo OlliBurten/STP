@@ -1,6 +1,8 @@
 import { releaseNotes } from "../lib/releaseNotes";
+import { usePageTitle } from "../hooks/usePageTitle";
 
 export default function PatchNotes() {
+  usePageTitle("Uppdateringar & nyheter");
   return (
     <main className="bg-slate-50 min-h-screen">
       <section className="max-w-4xl mx-auto px-4 sm:px-6 py-12 sm:py-16">

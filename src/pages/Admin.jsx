@@ -456,37 +456,48 @@ export default function Admin() {
 
       {activeTab === "companies" && (
         <section className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
-          <h2 className="text-lg font-semibold text-slate-900">Väntande företag</h2>
-          {companies.length === 0 ? (
-            <p className="text-slate-600">Inga väntande företag just nu.</p>
-          ) : (
-            <div className="space-y-3">
-              {companies.map((c) => (
-                <div key={c.id} className="border border-slate-200 rounded-lg p-4">
-                  <p className="font-semibold text-slate-900">{c.companyName || c.name}</p>
-                  <p className="text-sm text-slate-600">{c.email}</p>
-                  <p className="text-sm text-slate-600">Org: {c.companyOrgNumber || "-"}</p>
-                  <p className="text-sm text-slate-500">Skapad: {fmtDate(c.createdAt)}</p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleCompanyStatus(c.id, "VERIFIED")}
-                      className="px-3 py-2 rounded-md bg-green-600 text-white text-sm"
-                    >
-                      Godkänn
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleCompanyStatus(c.id, "REJECTED")}
-                      className="px-3 py-2 rounded-md bg-red-600 text-white text-sm"
-                    >
-                      Avslå
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900">Väntande företag</h2>
+            <p className="text-sm text-slate-500 mt-1">Företag väntar på verifiering innan de kan publicera jobb.</p>
+          </div>
+          <div className="overflow-x-auto rounded-lg border border-slate-200">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  <th className="px-3 py-2.5">Företag</th>
+                  <th className="px-3 py-2.5 hidden sm:table-cell">Org.nr</th>
+                  <th className="px-3 py-2.5 hidden md:table-cell">Skapad</th>
+                  <th className="px-3 py-2.5 text-right">Åtgärd</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {companies.length === 0 ? (
+                  <tr><td colSpan={4} className="px-3 py-6 text-center text-slate-500">Inga väntande företag just nu.</td></tr>
+                ) : companies.map((c) => (
+                  <tr key={c.id} className="hover:bg-slate-50">
+                    <td className="px-3 py-2.5">
+                      <p className="font-medium text-slate-900 truncate max-w-[200px]">{c.companyName || c.name}</p>
+                      <p className="text-xs text-slate-500 truncate max-w-[200px]">{c.email}</p>
+                    </td>
+                    <td className="px-3 py-2.5 hidden sm:table-cell text-xs text-slate-600">{c.companyOrgNumber || "–"}</td>
+                    <td className="px-3 py-2.5 hidden md:table-cell text-xs text-slate-500 whitespace-nowrap">{fmtDate(c.createdAt)}</td>
+                    <td className="px-3 py-2.5 text-right">
+                      <div className="flex justify-end gap-2">
+                        <button type="button" onClick={() => handleCompanyStatus(c.id, "VERIFIED")} disabled={loading}
+                          className="px-3 py-1.5 rounded-lg bg-green-600 text-white text-xs font-medium disabled:opacity-50">
+                          Godkänn
+                        </button>
+                        <button type="button" onClick={() => handleCompanyStatus(c.id, "REJECTED")} disabled={loading}
+                          className="px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-medium disabled:opacity-50">
+                          Avslå
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
       )}
 
@@ -544,208 +555,265 @@ export default function Admin() {
               Skicka e-postpåminnelser
             </button>
           </div>
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.9fr)]">
-            <div className="space-y-3">
-            {users.map((u) => (
-              <div key={u.id} className="border border-slate-200 rounded-lg p-4">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-semibold text-slate-900">{u.name}</p>
-                      <span className="text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-700">{u.role}</span>
-                      {u.isAdmin ? (
-                        <span className="text-xs px-2 py-1 rounded-full bg-indigo-100 text-indigo-800">Admin</span>
-                      ) : null}
-                      {u.warningCount > 0 ? (
-                        <span className="text-xs px-2 py-1 rounded-full bg-amber-100 text-amber-800">
-                          {u.warningCount} varning{u.warningCount > 1 ? "ar" : ""}
-                        </span>
-                      ) : null}
-                      {u.suspendedAt ? (
-                        <span className="text-xs px-2 py-1 rounded-full bg-red-100 text-red-800">Avstängd</span>
-                      ) : null}
-                    </div>
-                    <p className="text-sm text-slate-600 mt-1 break-all">{u.email}</p>
-                    {u.role === "COMPANY" || u.role === "RECRUITER" ? (
-                      <p className="text-sm text-slate-600">
-                        {u.companyName || "-"} • {u.companyStatus}
-                      </p>
-                    ) : null}
-                    <p className="text-xs text-slate-500 mt-1">
-                      E-post: {u.emailVerifiedAt ? (
-                        <span className="text-green-700">Verifierad ({fmtDate(u.emailVerifiedAt)})</span>
-                      ) : (
-                        <span className="text-amber-700">Ej verifierad</span>
-                      )} • Skapad: {fmtDate(u.createdAt)}
-                      {u.lastLoginAt ? ` • Senast inloggad: ${fmtDate(u.lastLoginAt)}` : " • Aldrig inloggad"}
-                    </p>
-                    {u.suspendedAt ? (
-                      <p className="text-xs text-red-700">Orsak: {u.suspensionReason || "-"}</p>
-                    ) : null}
-                    {u.lastWarnedAt ? (
-                      <p className="text-xs text-amber-700">
-                        Senaste varning: {fmtDate(u.lastWarnedAt)} • {u.lastWarningReason || "-"}
-                      </p>
-                    ) : null}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => handleViewAs(u.id)}
-                    disabled={loading || viewAsLoading === u.id || u.isAdmin}
-                    className="shrink-0 inline-flex items-center justify-center w-11 h-11 rounded-full border-2 border-slate-800 bg-slate-900 text-white hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed"
-                    title={
-                      u.isAdmin
-                        ? "View as är avstängt för admin-konton"
-                        : "Visa plattformen som den här användaren (read-only)"
-                    }
-                    aria-label={viewAsLoading === u.id ? "Startar view as" : "View as"}
-                  >
-                    {viewAsLoading === u.id ? (
-                      <span className="text-xs font-medium">…</span>
-                    ) : (
-                      <EyeIcon className="w-5 h-5" />
-                    )}
-                  </button>
-                </div>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => loadUserDetail(u.id).catch((e) => setError(e.message || "Kunde inte öppna användardetaljer"))}
-                    className={`px-3 py-2 rounded-md border text-sm ${
-                      selectedUserId === u.id
-                        ? "border-[var(--color-primary)] text-[var(--color-primary)]"
-                        : "border-slate-300 text-slate-700"
-                    }`}
-                  >
-                    Visa detaljer
-                  </button>
-                </div>
-                <details className="mt-3 rounded-lg border border-slate-200 bg-slate-50/80 px-3 py-2">
-                  <summary className="text-sm font-medium text-slate-800 cursor-pointer select-none">
-                    Moderering och åtgärder
-                  </summary>
-                  <div className="mt-3 flex flex-wrap gap-2 pb-1">
-                    {!u.emailVerifiedAt ? (
-                      <button
-                        type="button"
-                        onClick={() => handleVerifyEmail(u.id)}
-                        className="px-3 py-2 rounded-md bg-blue-600 text-white text-sm"
-                      >
-                        Verifiera e-post
-                      </button>
-                    ) : null}
-                    {u.suspendedAt ? (
-                      <button
-                        type="button"
-                        onClick={() => handleSuspendUser(u.id, false)}
-                        className="px-3 py-2 rounded-md bg-green-600 text-white text-sm"
-                      >
-                        Återaktivera konto
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => handleSuspendUser(u.id, true)}
-                        className="px-3 py-2 rounded-md bg-red-600 text-white text-sm"
-                      >
-                        Stäng av konto
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => handleWarningAction(u.id, "ADD")}
-                      className="px-3 py-2 rounded-md bg-amber-600 text-white text-sm"
-                    >
-                      Ge varning
-                    </button>
-                    {u.warningCount > 0 ? (
-                      <button
-                        type="button"
-                        onClick={() => handleWarningAction(u.id, "RESET")}
-                        className="px-3 py-2 rounded-md border border-slate-300 text-slate-700 text-sm bg-white"
-                      >
-                        Nollställ varningar
-                      </button>
-                    ) : null}
-                  </div>
-                </details>
-              </div>
-            ))}
-            {users.length === 0 ? <p className="text-slate-600">Inga användare för filtret.</p> : null}
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
+            {/* Compact user table */}
+            <div className="overflow-x-auto rounded-lg border border-slate-200">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">
+                    <th className="px-3 py-2.5">Användare</th>
+                    <th className="px-3 py-2.5 hidden sm:table-cell">Roll</th>
+                    <th className="px-3 py-2.5 hidden md:table-cell">Status</th>
+                    <th className="px-3 py-2.5 hidden lg:table-cell">Senast inloggad</th>
+                    <th className="px-3 py-2.5 w-10"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {users.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="px-3 py-6 text-center text-slate-500">Inga användare för filtret.</td>
+                    </tr>
+                  ) : users.map((u) => {
+                    const isSelected = selectedUserId === u.id;
+                    const detail = isSelected ? selectedUserDetail : null;
+                    return (
+                      <>
+                        <tr
+                          key={u.id}
+                          onClick={() => loadUserDetail(u.id).catch((e) => setError(e.message || "Kunde inte öppna användardetaljer"))}
+                          className={`cursor-pointer transition-colors hover:bg-slate-50 ${isSelected ? "bg-indigo-50 hover:bg-indigo-50" : ""}`}
+                        >
+                          {/* Name + email */}
+                          <td className="px-3 py-2.5 min-w-0">
+                            <p className="font-medium text-slate-900 truncate max-w-[180px]">{u.name || "–"}</p>
+                            <p className="text-xs text-slate-500 truncate max-w-[180px]">{u.email}</p>
+                            <p className="text-xs text-slate-400 truncate max-w-[180px]">
+                              {(u.role === "COMPANY" || u.role === "RECRUITER") && u.companyName ? u.companyName : "\u00A0"}
+                            </p>
+                          </td>
+                          {/* Role */}
+                          <td className="px-3 py-2.5 hidden sm:table-cell">
+                            <span className={`inline-block text-xs px-2 py-0.5 rounded-full font-medium ${
+                              u.isAdmin ? "bg-indigo-100 text-indigo-800" :
+                              u.role === "DRIVER" ? "bg-sky-100 text-sky-800" :
+                              "bg-violet-100 text-violet-800"
+                            }`}>
+                              {u.isAdmin ? "Admin" : u.role === "DRIVER" ? "Förare" : "Åkeri"}
+                            </span>
+                          </td>
+                          {/* Status badges */}
+                          <td className="px-3 py-2.5 hidden md:table-cell">
+                            <div className="flex flex-wrap gap-1">
+                              {u.emailVerifiedAt ? (
+                                <span className="text-xs text-green-700">✓ Verifierad</span>
+                              ) : (
+                                <span className="text-xs text-amber-600">⚠ Ej verifierad</span>
+                              )}
+                              {u.suspendedAt ? (
+                                <span className="text-xs px-1.5 py-0.5 rounded bg-red-100 text-red-700">Avstängd</span>
+                              ) : null}
+                              {u.warningCount > 0 ? (
+                                <span className="text-xs px-1.5 py-0.5 rounded bg-amber-100 text-amber-700">{u.warningCount}⚠</span>
+                              ) : null}
+                            </div>
+                          </td>
+                          {/* Last login */}
+                          <td className="px-3 py-2.5 hidden lg:table-cell text-xs text-slate-500 whitespace-nowrap">
+                            {u.lastLoginAt ? fmtDate(u.lastLoginAt) : "Aldrig"}
+                          </td>
+                          {/* View As */}
+                          <td className="px-2 py-2.5 text-right" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              type="button"
+                              onClick={() => handleViewAs(u.id)}
+                              disabled={loading || viewAsLoading === u.id || u.isAdmin}
+                              className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-900 text-white hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                              title={u.isAdmin ? "View as är avstängt för admin-konton" : "Visa plattformen som den här användaren (read-only)"}
+                            >
+                              {viewAsLoading === u.id ? (
+                                <span className="text-xs">…</span>
+                              ) : (
+                                <EyeIcon className="w-4 h-4" />
+                              )}
+                            </button>
+                          </td>
+                        </tr>
+                        {/* Inline expand — only on < xl, shows when row is selected */}
+                        {isSelected ? (
+                          <tr key={`${u.id}-expand`} className="xl:hidden bg-indigo-50">
+                            <td colSpan={5} className="px-3 pb-3">
+                              {!detail ? (
+                                <p className="text-xs text-slate-500 pt-2">Laddar...</p>
+                              ) : (
+                                <div className="rounded-lg border border-slate-200 bg-white overflow-hidden mt-1">
+                                  {/* Stats row */}
+                                  <div className="grid grid-cols-4 divide-x divide-slate-100 border-b border-slate-100">
+                                    {[
+                                      { label: "Skapad", value: fmtDate(detail.createdAt) },
+                                      { label: "Inloggad", value: detail.lastLoginAt ? fmtDate(detail.lastLoginAt) : "Aldrig" },
+                                      { label: "Jobb", value: detail._count?.jobs ?? 0 },
+                                      { label: "Msg", value: detail._count?.messages ?? 0 },
+                                    ].map(({ label, value }) => (
+                                      <div key={label} className="px-3 py-2 text-center">
+                                        <p className="text-xs text-slate-500">{label}</p>
+                                        <p className="text-xs font-semibold text-slate-900 truncate">{value}</p>
+                                      </div>
+                                    ))}
+                                  </div>
+                                  {/* Driver profile */}
+                                  {detail.driverProfile ? (
+                                    <div className="px-3 py-2 border-b border-slate-100 text-xs text-slate-600">
+                                      <span className="font-medium text-slate-700">Körkort: </span>{(detail.driverProfile.licenses || []).join(", ") || "–"}
+                                      {" · "}
+                                      <span className="font-medium text-slate-700">Region: </span>{detail.driverProfile.region || "–"}
+                                      {" · "}
+                                      <span className="font-medium text-slate-700">Synlig: </span>{detail.driverProfile.visibleToCompanies ? "Ja" : "Nej"}
+                                    </div>
+                                  ) : null}
+                                  {/* Actions */}
+                                  <div className="px-3 py-2 flex flex-wrap gap-2">
+                                    {!u.emailVerifiedAt ? (
+                                      <button type="button" onClick={() => handleVerifyEmail(u.id)}
+                                        className="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-medium">
+                                        Verifiera e-post
+                                      </button>
+                                    ) : null}
+                                    {u.suspendedAt ? (
+                                      <button type="button" onClick={() => handleSuspendUser(u.id, false)}
+                                        className="px-3 py-1.5 rounded-lg bg-green-600 text-white text-xs font-medium">
+                                        Återaktivera
+                                      </button>
+                                    ) : (
+                                      <button type="button" onClick={() => handleSuspendUser(u.id, true)}
+                                        className="px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-medium">
+                                        Stäng av
+                                      </button>
+                                    )}
+                                    <button type="button" onClick={() => handleWarningAction(u.id, "ADD")}
+                                      className="px-3 py-1.5 rounded-lg bg-amber-500 text-white text-xs font-medium">
+                                      Ge varning
+                                    </button>
+                                    {u.warningCount > 0 ? (
+                                      <button type="button" onClick={() => handleWarningAction(u.id, "RESET")}
+                                        className="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 text-xs font-medium">
+                                        Nollställ ({u.warningCount})
+                                      </button>
+                                    ) : null}
+                                  </div>
+                                </div>
+                              )}
+                            </td>
+                          </tr>
+                        ) : null}
+                      </>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
-            <aside className="rounded-xl border border-slate-200 p-4 bg-slate-50 xl:sticky xl:top-24 self-start">
-              <h3 className="text-base font-semibold text-slate-900">Supportvy</h3>
+
+            {/* Detail + actions panel — desktop only, mobile uses inline expand */}
+            <aside className="hidden xl:block rounded-xl border border-slate-200 bg-slate-50 xl:sticky xl:top-24 self-start overflow-hidden">
               {!selectedUserDetail ? (
-                <p className="mt-2 text-sm text-slate-600">
-                  Klicka på <strong>Visa detaljer</strong> på en användare för att se sammanfattning, räknare och senaste aktivitet här. För att se exakt samma skärmar som användaren använder du <strong>öga-knappen</strong> (view as, read-only).
-                </p>
+                <div className="p-4">
+                  <p className="text-sm font-medium text-slate-700">Ingen vald</p>
+                  <p className="mt-1 text-xs text-slate-500">Klicka på en rad för att se detaljer och åtgärder.</p>
+                </div>
               ) : (
-                <div className="mt-4 space-y-4">
-                  <div>
-                    <p className="font-semibold text-slate-900">{selectedUserDetail.name || selectedUserDetail.email}</p>
-                    <p className="text-sm text-slate-600">{selectedUserDetail.email}</p>
-                    <p className="text-sm text-slate-600">
-                      {selectedUserDetail.role}
-                      {selectedUserDetail.companyName ? ` • ${selectedUserDetail.companyName}` : ""}
-                    </p>
+                <>
+                  {/* Header */}
+                  <div className="px-4 py-3 border-b border-slate-200 bg-white">
+                    <p className="font-semibold text-slate-900 truncate">{selectedUserDetail.name || selectedUserDetail.email}</p>
+                    <p className="text-xs text-slate-500 truncate">{selectedUserDetail.email}</p>
+                    {selectedUserDetail.companyName ? (
+                      <p className="text-xs text-slate-400 truncate">{selectedUserDetail.companyName}</p>
+                    ) : null}
                   </div>
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div className="rounded-lg bg-white border border-slate-200 p-3">
-                      <p className="text-slate-500">Skapad</p>
-                      <p className="font-medium text-slate-900">{fmtDate(selectedUserDetail.createdAt)}</p>
-                    </div>
-                    <div className="rounded-lg bg-white border border-slate-200 p-3">
-                      <p className="text-slate-500">Senast inloggad</p>
-                      <p className="font-medium text-slate-900">{fmtDate(selectedUserDetail.lastLoginAt)}</p>
-                    </div>
-                    <div className="rounded-lg bg-white border border-slate-200 p-3">
-                      <p className="text-slate-500">Jobb</p>
-                      <p className="font-medium text-slate-900">{selectedUserDetail._count?.jobs ?? 0}</p>
-                    </div>
-                    <div className="rounded-lg bg-white border border-slate-200 p-3">
-                      <p className="text-slate-500">Meddelanden</p>
-                      <p className="font-medium text-slate-900">{selectedUserDetail._count?.messages ?? 0}</p>
-                    </div>
+
+                  {/* Stats */}
+                  <div className="grid grid-cols-2 gap-px bg-slate-200 border-b border-slate-200">
+                    {[
+                      { label: "Skapad", value: fmtDate(selectedUserDetail.createdAt) },
+                      { label: "Senast inloggad", value: fmtDate(selectedUserDetail.lastLoginAt) },
+                      { label: "Jobb", value: selectedUserDetail._count?.jobs ?? 0 },
+                      { label: "Meddelanden", value: selectedUserDetail._count?.messages ?? 0 },
+                    ].map(({ label, value }) => (
+                      <div key={label} className="bg-white px-3 py-2">
+                        <p className="text-xs text-slate-500">{label}</p>
+                        <p className="text-sm font-medium text-slate-900 truncate">{value}</p>
+                      </div>
+                    ))}
                   </div>
+
+                  {/* Driver profile */}
                   {selectedUserDetail.driverProfile ? (
-                    <div className="rounded-lg bg-white border border-slate-200 p-3 text-sm space-y-1">
-                      <p className="font-medium text-slate-900">Förarprofil</p>
-                      <p className="text-slate-600">
-                        Synlig för företag: {selectedUserDetail.driverProfile.visibleToCompanies ? "Ja" : "Nej"}
-                      </p>
-                      <p className="text-slate-600">
-                        Körkort: {(selectedUserDetail.driverProfile.licenses || []).join(", ") || "-"}
-                      </p>
-                      <p className="text-slate-600">
-                        Region: {selectedUserDetail.driverProfile.region || "-"}
-                      </p>
+                    <div className="px-4 py-3 border-b border-slate-200 text-xs space-y-1">
+                      <p className="font-medium text-slate-700 mb-1">Förarprofil</p>
+                      <p className="text-slate-600">Synlig: {selectedUserDetail.driverProfile.visibleToCompanies ? "Ja" : "Nej"}</p>
+                      <p className="text-slate-600">Körkort: {(selectedUserDetail.driverProfile.licenses || []).join(", ") || "–"}</p>
+                      <p className="text-slate-600">Region: {selectedUserDetail.driverProfile.region || "–"}</p>
                     </div>
                   ) : null}
+
+                  {/* Orgs */}
                   {selectedUserDetail.organizations?.length > 0 ? (
-                    <div className="rounded-lg bg-white border border-slate-200 p-3 text-sm space-y-2">
-                      <p className="font-medium text-slate-900">Organisationer</p>
+                    <div className="px-4 py-3 border-b border-slate-200 text-xs space-y-1">
+                      <p className="font-medium text-slate-700 mb-1">Organisationer</p>
                       {selectedUserDetail.organizations.map((org) => (
-                        <div key={org.id} className="rounded border border-slate-200 px-2 py-1.5">
-                          <p className="text-slate-900">{org.name}</p>
-                          <p className="text-slate-500">{org.role} • {org.status}</p>
-                        </div>
+                        <p key={org.id} className="text-slate-600 truncate">{org.name} · {org.role} · {org.status}</p>
                       ))}
                     </div>
                   ) : null}
-                  <div className="rounded-lg bg-white border border-slate-200 p-3 text-sm space-y-2">
-                    <p className="font-medium text-slate-900">Senaste konversationer</p>
+
+                  {/* Conversations */}
+                  <div className="px-4 py-3 border-b border-slate-200 text-xs space-y-1">
+                    <p className="font-medium text-slate-700 mb-1">Senaste konversationer</p>
                     {(selectedUserDetail.latestConversations || []).length === 0 ? (
-                      <p className="text-slate-600">Inga konversationer ännu.</p>
-                    ) : (
-                      selectedUserDetail.latestConversations.map((item) => (
-                        <div key={item.id} className="rounded border border-slate-200 px-2 py-1.5">
-                          <p className="text-slate-900">{item.jobTitle || "Utan jobbkoppling"}</p>
-                          <p className="text-slate-500">Uppdaterad {fmtDate(item.updatedAt)}</p>
-                        </div>
-                      ))
-                    )}
+                      <p className="text-slate-500">Inga ännu.</p>
+                    ) : selectedUserDetail.latestConversations.map((item) => (
+                      <p key={item.id} className="text-slate-600 truncate">{item.jobTitle || "Utan jobbkoppling"} · {fmtDate(item.updatedAt)}</p>
+                    ))}
                   </div>
-                </div>
+
+                  {/* Actions */}
+                  <div className="px-4 py-3 space-y-2">
+                    <p className="text-xs font-medium text-slate-700 mb-2">Åtgärder</p>
+                    {(() => {
+                      const u = users.find((x) => x.id === selectedUserDetail.id) || selectedUserDetail;
+                      return (
+                        <div className="flex flex-col gap-2">
+                          {!u.emailVerifiedAt ? (
+                            <button type="button" onClick={() => handleVerifyEmail(u.id)}
+                              className="w-full px-3 py-2 rounded-lg bg-blue-600 text-white text-xs font-medium text-left">
+                              Verifiera e-post
+                            </button>
+                          ) : null}
+                          {u.suspendedAt ? (
+                            <button type="button" onClick={() => handleSuspendUser(u.id, false)}
+                              className="w-full px-3 py-2 rounded-lg bg-green-600 text-white text-xs font-medium text-left">
+                              Återaktivera konto
+                            </button>
+                          ) : (
+                            <button type="button" onClick={() => handleSuspendUser(u.id, true)}
+                              className="w-full px-3 py-2 rounded-lg bg-red-600 text-white text-xs font-medium text-left">
+                              Stäng av konto
+                            </button>
+                          )}
+                          <button type="button" onClick={() => handleWarningAction(u.id, "ADD")}
+                            className="w-full px-3 py-2 rounded-lg bg-amber-500 text-white text-xs font-medium text-left">
+                            Ge varning
+                          </button>
+                          {u.warningCount > 0 ? (
+                            <button type="button" onClick={() => handleWarningAction(u.id, "RESET")}
+                              className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-xs font-medium text-left">
+                              Nollställ varningar ({u.warningCount})
+                            </button>
+                          ) : null}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </>
               )}
             </aside>
           </div>
@@ -755,74 +823,80 @@ export default function Admin() {
       {activeTab === "jobs" && (
         <section className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
           <h2 className="text-lg font-semibold text-slate-900">Jobbmoderering</h2>
-          <div className="grid sm:grid-cols-3 gap-3">
+          <div className="flex flex-wrap gap-3">
             <input
               value={jobFilters.q}
               onChange={(e) => setJobFilters((p) => ({ ...p, q: e.target.value }))}
               placeholder="Sök titel/företag/plats"
-              className="sm:col-span-2 px-3 py-2 rounded-lg border border-slate-300"
+              className="flex-1 min-w-[160px] px-3 py-2 rounded-lg border border-slate-300 text-sm"
             />
             <select
               value={jobFilters.status}
               onChange={(e) => setJobFilters((p) => ({ ...p, status: e.target.value }))}
-              className="px-3 py-2 rounded-lg border border-slate-300 bg-white"
+              className="px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm"
             >
               <option value="">Alla statusar</option>
-              <option value="ACTIVE">ACTIVE</option>
-              <option value="HIDDEN">HIDDEN</option>
-              <option value="REMOVED">REMOVED</option>
+              <option value="ACTIVE">Aktiva</option>
+              <option value="HIDDEN">Dolda</option>
+              <option value="REMOVED">Borttagna</option>
             </select>
+            <button type="button" onClick={loadJobs} disabled={loading}
+              className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white text-sm font-medium disabled:opacity-50">
+              Filtrera
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={loadJobs}
-            disabled={loading}
-            className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white text-sm disabled:opacity-50"
-          >
-            Filtrera jobb
-          </button>
-          <div className="space-y-3">
-            {jobs.map((j) => (
-              <div key={j.id} className="border border-slate-200 rounded-lg p-4">
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="font-semibold text-slate-900">{j.title}</p>
-                  <span className="text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-700">{j.status}</span>
-                </div>
-                <p className="text-sm text-slate-600">
-                  {j.company} • {j.location}, {j.region}
-                </p>
-                <p className="text-xs text-slate-500">Publicerad: {fmtDate(j.published)}</p>
-                {j.moderatedAt ? (
-                  <p className="text-xs text-amber-700">
-                    Modererad {fmtDate(j.moderatedAt)} • {j.moderationReason || "-"}
-                  </p>
-                ) : null}
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleJobStatus(j.id, "ACTIVE")}
-                    className="px-3 py-2 rounded-md bg-green-600 text-white text-sm"
-                  >
-                    Sätt ACTIVE
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleJobStatus(j.id, "HIDDEN")}
-                    className="px-3 py-2 rounded-md bg-amber-600 text-white text-sm"
-                  >
-                    Dölj (HIDDEN)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleJobStatus(j.id, "REMOVED")}
-                    className="px-3 py-2 rounded-md bg-red-600 text-white text-sm"
-                  >
-                    Ta bort (REMOVED)
-                  </button>
-                </div>
-              </div>
-            ))}
-            {jobs.length === 0 ? <p className="text-slate-600">Inga jobb för filtret.</p> : null}
+          <div className="overflow-x-auto rounded-lg border border-slate-200">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  <th className="px-3 py-2.5">Jobb</th>
+                  <th className="px-3 py-2.5 hidden sm:table-cell">Plats</th>
+                  <th className="px-3 py-2.5 hidden md:table-cell">Status</th>
+                  <th className="px-3 py-2.5 hidden lg:table-cell">Publicerad</th>
+                  <th className="px-3 py-2.5 text-right">Åtgärd</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {jobs.length === 0 ? (
+                  <tr><td colSpan={5} className="px-3 py-6 text-center text-slate-500">Inga jobb för filtret.</td></tr>
+                ) : jobs.map((j) => (
+                  <tr key={j.id} className="hover:bg-slate-50">
+                    <td className="px-3 py-2.5">
+                      <p className="font-medium text-slate-900 truncate max-w-[180px]">{j.title}</p>
+                      <p className="text-xs text-slate-500 truncate max-w-[180px]">{j.company}</p>
+                      {j.moderatedAt ? (
+                        <p className="text-xs text-amber-600 truncate max-w-[180px]">Mod: {j.moderationReason || "–"}</p>
+                      ) : null}
+                    </td>
+                    <td className="px-3 py-2.5 hidden sm:table-cell text-xs text-slate-600 whitespace-nowrap">{j.location}, {j.region}</td>
+                    <td className="px-3 py-2.5 hidden md:table-cell">
+                      <span className={`inline-block text-xs px-2 py-0.5 rounded-full font-medium ${
+                        j.status === "ACTIVE" ? "bg-green-100 text-green-800" :
+                        j.status === "HIDDEN" ? "bg-amber-100 text-amber-800" :
+                        "bg-red-100 text-red-800"
+                      }`}>{j.status}</span>
+                    </td>
+                    <td className="px-3 py-2.5 hidden lg:table-cell text-xs text-slate-500 whitespace-nowrap">{fmtDate(j.published)}</td>
+                    <td className="px-3 py-2.5 text-right">
+                      <div className="flex justify-end gap-1.5">
+                        <button type="button" onClick={() => handleJobStatus(j.id, "ACTIVE")} disabled={loading}
+                          className="px-2.5 py-1.5 rounded-lg bg-green-600 text-white text-xs font-medium disabled:opacity-50" title="Sätt aktiv">
+                          Aktiv
+                        </button>
+                        <button type="button" onClick={() => handleJobStatus(j.id, "HIDDEN")} disabled={loading}
+                          className="px-2.5 py-1.5 rounded-lg bg-amber-500 text-white text-xs font-medium disabled:opacity-50" title="Dölj">
+                          Dölj
+                        </button>
+                        <button type="button" onClick={() => handleJobStatus(j.id, "REMOVED")} disabled={loading}
+                          className="px-2.5 py-1.5 rounded-lg bg-red-600 text-white text-xs font-medium disabled:opacity-50" title="Ta bort">
+                          Ta bort
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </section>
       )}
@@ -830,72 +904,83 @@ export default function Admin() {
       {activeTab === "reports" && (
         <section className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
           <h2 className="text-lg font-semibold text-slate-900">Rapporter & trust</h2>
-          <div className="grid sm:grid-cols-3 gap-3">
+          <div className="flex flex-wrap gap-3">
             <select
               value={reportFilters.status}
               onChange={(e) => setReportFilters((p) => ({ ...p, status: e.target.value }))}
-              className="px-3 py-2 rounded-lg border border-slate-300 bg-white"
+              className="px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm"
             >
               <option value="">Alla statusar</option>
-              <option value="OPEN">OPEN</option>
-              <option value="IN_REVIEW">IN_REVIEW</option>
-              <option value="RESOLVED">RESOLVED</option>
-              <option value="DISMISSED">DISMISSED</option>
+              <option value="OPEN">Öppna</option>
+              <option value="IN_REVIEW">Granskas</option>
+              <option value="RESOLVED">Lösta</option>
+              <option value="DISMISSED">Avfärdade</option>
             </select>
-            <button
-              type="button"
-              onClick={loadReports}
-              disabled={loading}
-              className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white text-sm disabled:opacity-50"
-            >
-              Filtrera rapporter
+            <button type="button" onClick={loadReports} disabled={loading}
+              className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white text-sm font-medium disabled:opacity-50">
+              Filtrera
             </button>
           </div>
-          <div className="space-y-3">
-            {reports.map((r) => (
-              <div key={r.id} className="border border-slate-200 rounded-lg p-4">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-700">{r.status}</span>
-                  <span className="text-xs px-2 py-1 rounded-full bg-amber-100 text-amber-800">{r.category}</span>
-                </div>
-                <p className="mt-2 text-sm text-slate-900">{r.description}</p>
-                <p className="text-xs text-slate-500 mt-1">
-                  Rapporterad: {fmtDate(r.createdAt)} av {r.reporter?.name || r.reporter?.email}
-                </p>
-                {r.reportedUser ? (
-                  <p className="text-xs text-slate-600 mt-1">
-                    Mål: {r.reportedUser.name || "-"} ({r.reportedUser.email}) • varningar: {r.reportedUser.warningCount}
-                  </p>
-                ) : null}
-                {r.resolutionNote ? (
-                  <p className="text-xs text-slate-600 mt-1">Beslut: {r.resolutionNote}</p>
-                ) : null}
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleReportDecision(r.id, "IN_REVIEW")}
-                    className="px-3 py-2 rounded-md border border-slate-300 text-slate-700 text-sm"
-                  >
-                    Markera IN_REVIEW
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleReportDecision(r.id, "RESOLVED")}
-                    className="px-3 py-2 rounded-md bg-green-600 text-white text-sm"
-                  >
-                    Resolva
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleReportDecision(r.id, "DISMISSED")}
-                    className="px-3 py-2 rounded-md bg-slate-600 text-white text-sm"
-                  >
-                    Avfärda
-                  </button>
-                </div>
-              </div>
-            ))}
-            {reports.length === 0 ? <p className="text-slate-600">Inga rapporter för filtret.</p> : null}
+          <div className="overflow-x-auto rounded-lg border border-slate-200">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  <th className="px-3 py-2.5">Rapport</th>
+                  <th className="px-3 py-2.5 hidden sm:table-cell">Mål</th>
+                  <th className="px-3 py-2.5 hidden md:table-cell">Datum</th>
+                  <th className="px-3 py-2.5 text-right">Åtgärd</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {reports.length === 0 ? (
+                  <tr><td colSpan={4} className="px-3 py-6 text-center text-slate-500">Inga rapporter för filtret.</td></tr>
+                ) : reports.map((r) => (
+                  <tr key={r.id} className="hover:bg-slate-50">
+                    <td className="px-3 py-2.5">
+                      <div className="flex flex-wrap gap-1 mb-1">
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                          r.status === "OPEN" ? "bg-red-100 text-red-800" :
+                          r.status === "IN_REVIEW" ? "bg-amber-100 text-amber-800" :
+                          r.status === "RESOLVED" ? "bg-green-100 text-green-800" :
+                          "bg-slate-100 text-slate-600"
+                        }`}>{r.status}</span>
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">{r.category}</span>
+                      </div>
+                      <p className="text-xs text-slate-600 line-clamp-2 max-w-[220px]">{r.description}</p>
+                      <p className="text-xs text-slate-400 mt-0.5">av {r.reporter?.name || r.reporter?.email}</p>
+                      {r.resolutionNote ? (
+                        <p className="text-xs text-slate-500 mt-0.5 italic">Beslut: {r.resolutionNote}</p>
+                      ) : null}
+                    </td>
+                    <td className="px-3 py-2.5 hidden sm:table-cell text-xs text-slate-600">
+                      {r.reportedUser ? (
+                        <>
+                          <p className="font-medium truncate max-w-[140px]">{r.reportedUser.name || r.reportedUser.email}</p>
+                          <p className="text-slate-400">{r.reportedUser.warningCount} varning{r.reportedUser.warningCount !== 1 ? "ar" : ""}</p>
+                        </>
+                      ) : "–"}
+                    </td>
+                    <td className="px-3 py-2.5 hidden md:table-cell text-xs text-slate-500 whitespace-nowrap">{fmtDate(r.createdAt)}</td>
+                    <td className="px-3 py-2.5 text-right">
+                      <div className="flex justify-end gap-1.5">
+                        <button type="button" onClick={() => handleReportDecision(r.id, "IN_REVIEW")} disabled={loading}
+                          className="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 text-xs font-medium disabled:opacity-50">
+                          Granska
+                        </button>
+                        <button type="button" onClick={() => handleReportDecision(r.id, "RESOLVED")} disabled={loading}
+                          className="px-2.5 py-1.5 rounded-lg bg-green-600 text-white text-xs font-medium disabled:opacity-50">
+                          Lös
+                        </button>
+                        <button type="button" onClick={() => handleReportDecision(r.id, "DISMISSED")} disabled={loading}
+                          className="px-2.5 py-1.5 rounded-lg bg-slate-500 text-white text-xs font-medium disabled:opacity-50">
+                          Avfärda
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </section>
       )}
@@ -903,61 +988,72 @@ export default function Admin() {
       {activeTab === "reviews" && (
         <section className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
           <h2 className="text-lg font-semibold text-slate-900">Omdömen</h2>
-          <div className="grid sm:grid-cols-3 gap-3">
+          <div className="flex flex-wrap gap-3">
             <select
               value={reviewFilters.status}
               onChange={(e) => setReviewFilters((p) => ({ ...p, status: e.target.value }))}
-              className="px-3 py-2 rounded-lg border border-slate-300 bg-white"
+              className="px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm"
             >
               <option value="">Alla statusar</option>
-              <option value="PUBLISHED">PUBLISHED</option>
-              <option value="HIDDEN">HIDDEN</option>
+              <option value="PUBLISHED">Publicerade</option>
+              <option value="HIDDEN">Dolda</option>
             </select>
-            <button
-              type="button"
-              onClick={loadReviews}
-              disabled={loading}
-              className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white text-sm disabled:opacity-50"
-            >
-              Filtrera omdömen
+            <button type="button" onClick={loadReviews} disabled={loading}
+              className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white text-sm font-medium disabled:opacity-50">
+              Filtrera
             </button>
           </div>
-          <div className="space-y-3">
-            {reviews.map((r) => (
-              <div key={r.id} className="border border-slate-200 rounded-lg p-4">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-700">{r.status}</span>
-                  <span className="text-xs px-2 py-1 rounded-full bg-amber-100 text-amber-800">
-                    {r.rating}/5
-                  </span>
-                </div>
-                <p className="mt-2 text-sm text-slate-900">{r.comment || "Ingen kommentar"}</p>
-                <p className="text-xs text-slate-500 mt-1">
-                  Företag: {r.company?.name} • Förare: {r.author?.name || r.author?.email}
-                </p>
-                <p className="text-xs text-slate-500 mt-1">Skapad: {fmtDate(r.createdAt)}</p>
-                {r.moderationReason ? (
-                  <p className="text-xs text-red-700 mt-1">Moderation: {r.moderationReason}</p>
-                ) : null}
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleReviewModeration(r.id, "PUBLISHED")}
-                    className="px-3 py-2 rounded-md bg-green-600 text-white text-sm"
-                  >
-                    Publicera
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleReviewModeration(r.id, "HIDDEN")}
-                    className="px-3 py-2 rounded-md bg-red-600 text-white text-sm"
-                  >
-                    Dölj
-                  </button>
-                </div>
-              </div>
-            ))}
-            {reviews.length === 0 ? <p className="text-slate-600">Inga omdömen för filtret.</p> : null}
+          <div className="overflow-x-auto rounded-lg border border-slate-200">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  <th className="px-3 py-2.5">Omdöme</th>
+                  <th className="px-3 py-2.5 hidden sm:table-cell">Parter</th>
+                  <th className="px-3 py-2.5 hidden md:table-cell">Status</th>
+                  <th className="px-3 py-2.5 text-right">Åtgärd</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {reviews.length === 0 ? (
+                  <tr><td colSpan={4} className="px-3 py-6 text-center text-slate-500">Inga omdömen för filtret.</td></tr>
+                ) : reviews.map((r) => (
+                  <tr key={r.id} className="hover:bg-slate-50">
+                    <td className="px-3 py-2.5">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <span className="text-xs font-bold text-amber-700">{r.rating}/5</span>
+                        {"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}
+                      </div>
+                      <p className="text-xs text-slate-600 line-clamp-2 max-w-[220px]">{r.comment || "Ingen kommentar"}</p>
+                      {r.moderationReason ? (
+                        <p className="text-xs text-red-600 mt-0.5 italic">{r.moderationReason}</p>
+                      ) : null}
+                    </td>
+                    <td className="px-3 py-2.5 hidden sm:table-cell text-xs text-slate-600">
+                      <p className="font-medium truncate max-w-[140px]">{r.company?.name || "–"}</p>
+                      <p className="text-slate-400 truncate max-w-[140px]">{r.author?.name || r.author?.email}</p>
+                      <p className="text-slate-400 whitespace-nowrap">{fmtDate(r.createdAt)}</p>
+                    </td>
+                    <td className="px-3 py-2.5 hidden md:table-cell">
+                      <span className={`inline-block text-xs px-2 py-0.5 rounded-full font-medium ${
+                        r.status === "PUBLISHED" ? "bg-green-100 text-green-800" : "bg-slate-100 text-slate-600"
+                      }`}>{r.status === "PUBLISHED" ? "Publicerat" : "Dolt"}</span>
+                    </td>
+                    <td className="px-3 py-2.5 text-right">
+                      <div className="flex justify-end gap-1.5">
+                        <button type="button" onClick={() => handleReviewModeration(r.id, "PUBLISHED")} disabled={loading}
+                          className="px-2.5 py-1.5 rounded-lg bg-green-600 text-white text-xs font-medium disabled:opacity-50">
+                          Publicera
+                        </button>
+                        <button type="button" onClick={() => handleReviewModeration(r.id, "HIDDEN")} disabled={loading}
+                          className="px-2.5 py-1.5 rounded-lg bg-red-600 text-white text-xs font-medium disabled:opacity-50">
+                          Dölj
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </section>
       )}

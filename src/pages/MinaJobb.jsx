@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
+import { usePageTitle } from "../hooks/usePageTitle";
 import { fetchMyJobs, updateJob } from "../api/jobs.js";
 import { useAuth } from "../context/AuthContext";
 import { useChat } from "../context/ChatContext";
@@ -9,6 +10,7 @@ import PageHeader from "../components/PageHeader";
 import LoadingBlock from "../components/LoadingBlock";
 
 export default function MinaJobb() {
+  usePageTitle("Mina annonser");
   const { user, hasApi } = useAuth();
   const { companyUnreadConversationCount = 0 } = useChat();
   const [jobs, setJobs] = useState([]);
@@ -135,7 +137,7 @@ export default function MinaJobb() {
         <ul className="mt-8 space-y-4">
           {jobs.map((job) => (
             <li key={job.id}>
-              <div className="p-4 sm:p-5 bg-white rounded-xl border border-slate-200 hover:border-slate-300 transition-all flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="p-4 sm:p-5 bg-white rounded-xl border border-slate-200 hover:border-[var(--color-primary)] hover:shadow-sm transition-all flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <Link to={`/jobb/${job.id}`} className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h2 className="font-semibold text-slate-900">{job.title}</h2>

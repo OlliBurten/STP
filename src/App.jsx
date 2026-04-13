@@ -4,6 +4,7 @@ import OAuthProviders from "./components/OAuthProviders";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ProfileProvider } from "./context/ProfileContext";
 import { ChatProvider } from "./context/ChatContext";
+import { ToastProvider } from "./context/ToastContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import OnboardingGate, { useOnboardingRequired } from "./components/OnboardingGate";
 import Header from "./components/Header";
@@ -34,6 +35,7 @@ import CompanyProfile from "./pages/CompanyProfile";
 import CompanyPublicProfile from "./pages/CompanyPublicProfile";
 import DriverOnboardingWizard from "./pages/DriverOnboardingWizard";
 import CompanyOnboardingWizard from "./pages/CompanyOnboardingWizard";
+import AddCompany from "./pages/AddCompany";
 import InviteAccept from "./pages/InviteAccept";
 import AkerierSearch from "./pages/AkerierSearch";
 import Branschinsikter from "./pages/Branschinsikter";
@@ -42,6 +44,7 @@ import Kontakt from "./pages/Kontakt";
 import PatchNotes from "./pages/PatchNotes";
 import VisionPresentation from "./pages/VisionPresentation";
 import { useAuth } from "./context/AuthContext";
+import FeedbackButton from "./components/FeedbackButton";
 
 function AppLayout() {
   const { user, isCompany, isImpersonating } = useAuth();
@@ -181,6 +184,14 @@ function AppLayout() {
                     }
                   />
                   <Route
+                    path="/foretag/lagg-till-akeri"
+                    element={
+                      <ProtectedRoute requiredRole="company">
+                        <AddCompany />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
                     path="/foretag/meddelanden"
                     element={
                       <ProtectedRoute requiredRole="company">
@@ -200,7 +211,8 @@ function AppLayout() {
                 </Routes>
         </OnboardingGate>
               </div>
-              {!user && <Footer />}
+              <Footer />
+              <FeedbackButton />
             </div>
   );
 }
@@ -213,7 +225,9 @@ function App() {
           <AuthProvider>
             <ProfileProvider>
               <ChatProvider>
-                <AppLayout />
+                <ToastProvider>
+                  <AppLayout />
+                </ToastProvider>
               </ChatProvider>
             </ProfileProvider>
           </AuthProvider>

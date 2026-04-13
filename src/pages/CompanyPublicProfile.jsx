@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { usePageTitle } from "../hooks/usePageTitle";
 import { fetchCompanyPublicProfile } from "../api/companies.js";
 import { mapEmploymentToSegment, segmentLabel } from "../data/segments";
 import { getBranschLabel } from "../data/bransch.js";
@@ -9,6 +10,7 @@ export default function CompanyPublicProfile() {
   const { id } = useParams();
   const [company, setCompany] = useState(null);
   const [loading, setLoading] = useState(true);
+  usePageTitle(company ? company.name : "Åkeri");
 
   useEffect(() => {
     if (!id) return;

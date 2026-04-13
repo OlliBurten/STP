@@ -213,15 +213,47 @@ export default function PostJob() {
       </Link>
 
       <h1 className="text-3xl font-bold text-slate-900 mb-2">Publicera jobb</h1>
-      <p className="text-slate-600 mb-8">
-        Sveriges Transportplattform guidar dig till en komplett annons. Förare får alltid samma tydliga
-        information – inga oklarheter, mindre behov av att kontakta er.
+      <p className="text-slate-600 mb-6">
+        Fyll i nedanstående fält – ju mer komplett annonsen är, desto lättare för rätt förare att hitta den.
       </p>
-      <div className="mb-8 rounded-xl border border-slate-200 bg-slate-50 p-5">
-        <p className="text-sm font-semibold text-slate-900">Varför STP:s annonser fungerar bättre</p>
-        <p className="mt-1 text-sm text-slate-600">
-          Målet är att en förare snabbt ska kunna förstå om jobbet passar. Därför trycker vi på tydliga krav, rätt segment, struktur och trust-signaler som kollektivavtal och komplett information.
-        </p>
+
+      {/* Checklist – live progress, visas överst */}
+      <div className="mb-8 rounded-xl border border-slate-200 bg-white p-5">
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <h2 className="text-sm font-semibold text-slate-900">Annonsens status</h2>
+          <span className={`shrink-0 rounded-full px-3 py-0.5 text-sm font-semibold ${
+            completedChecklist === publishChecklist.length
+              ? "bg-green-100 text-green-800"
+              : "bg-[var(--color-primary)]/10 text-[var(--color-primary)]"
+          }`}>
+            {completedChecklist}/{publishChecklist.length} klara
+          </span>
+        </div>
+        <div className="h-1.5 rounded-full bg-slate-100 mb-4">
+          <div
+            className="h-1.5 rounded-full bg-[var(--color-primary)] transition-all duration-300"
+            style={{ width: `${Math.round((completedChecklist / publishChecklist.length) * 100)}%` }}
+          />
+        </div>
+        <ul className="grid gap-1.5 sm:grid-cols-2">
+          {publishChecklist.map((item) => (
+            <li
+              key={item.label}
+              className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm ${
+                item.done
+                  ? "bg-green-50 text-green-800"
+                  : "bg-slate-50 text-slate-500"
+              }`}
+            >
+              <span className={`shrink-0 w-4 h-4 rounded-full flex items-center justify-center text-xs font-bold ${
+                item.done ? "bg-green-500 text-white" : "border-2 border-slate-300"
+              }`}>
+                {item.done ? "✓" : ""}
+              </span>
+              {item.label}
+            </li>
+          ))}
+        </ul>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
@@ -598,40 +630,12 @@ export default function PostJob() {
           </div>
         </section>
 
-        <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-5">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <h2 className="text-lg font-semibold text-slate-900">Kvalitetscheck innan publicering</h2>
-              <p className="mt-1 text-sm text-slate-600">
-                Ju fler punkter som är klara, desto tydligare och mer trovärdig blir annonsen för rätt förare.
-              </p>
-            </div>
-            <span className="shrink-0 rounded-full bg-[var(--color-primary)]/10 px-3 py-1 text-sm font-semibold text-[var(--color-primary)]">
-              {completedChecklist}/{publishChecklist.length}
-            </span>
-          </div>
-          <ul className="grid gap-2 sm:grid-cols-2">
-            {publishChecklist.map((item) => (
-              <li
-                key={item.label}
-                className={`rounded-lg border px-3 py-2 text-sm ${
-                  item.done
-                    ? "border-green-200 bg-green-50 text-green-800"
-                    : "border-slate-200 bg-slate-50 text-slate-600"
-                }`}
-              >
-                {item.done ? "Klar" : "Saknas"} · {item.label}
-              </li>
-            ))}
-          </ul>
-        </section>
-
         {submitError && (
           <p className="text-red-600 text-sm">{submitError}</p>
         )}
         <button
           type="submit"
-          className="w-full sm:w-auto px-8 py-4 rounded-xl bg-[var(--color-primary)] text-white font-semibold hover:bg-[var(--color-primary-light)] transition-colors"
+          className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-[var(--color-primary)] text-white font-semibold hover:bg-[var(--color-primary-light)] transition-colors"
         >
           Publicera annons
         </button>
