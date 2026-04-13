@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import OAuthProviders from "./components/OAuthProviders";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -45,6 +45,17 @@ import PatchNotes from "./pages/PatchNotes";
 import VisionPresentation from "./pages/VisionPresentation";
 import { useAuth } from "./context/AuthContext";
 import FeedbackButton from "./components/FeedbackButton";
+import { useEffect } from "react";
+
+function Analytics() {
+  const location = useLocation();
+  useEffect(() => {
+    if (typeof window.plausible === "function") {
+      window.plausible("pageview");
+    }
+  }, [location.pathname]);
+  return null;
+}
 
 function AppLayout() {
   const { user, isCompany, isImpersonating } = useAuth();
@@ -220,6 +231,7 @@ function AppLayout() {
 function App() {
   return (
     <BrowserRouter>
+      <Analytics />
       <ErrorBoundary>
         <OAuthProviders>
           <AuthProvider>
