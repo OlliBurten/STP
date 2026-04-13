@@ -106,7 +106,7 @@ export default function ForDrivers() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/20 bg-black/40 p-6 backdrop-blur-sm">
+          <div className="hidden lg:block rounded-2xl border border-white/20 bg-black/40 p-6 backdrop-blur-sm">
             <h2 className="text-lg font-semibold">Det här får du som förare</h2>
             <ul className="mt-5 space-y-4">
               {DRIVER_POINTS.map((point) => (

@@ -10,7 +10,7 @@ const COMPANY_POINTS = [
 ];
 
 const COMPANY_STEPS = [
-  "Registrera konto som rekryterare.",
+  "Registrera ett företagskonto.",
   "Gå igenom onboarding och lägg till ert företag.",
   "Börja med Hitta förare och publicera jobb när ni vill bredda inflödet.",
 ];
@@ -83,7 +83,7 @@ export default function ForCompaniesLanding() {
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/80">För åkerier</p>
             <h1 className="mt-3 text-4xl sm:text-5xl font-bold tracking-tight">Ett mer strukturerat sätt att hitta rätt förare.</h1>
             <p className="mt-5 max-w-2xl text-lg text-white/90 leading-relaxed">
-              STP är byggt för åkerier och rekryterare som vill jobba mer långsiktigt med matchning, tydligare krav och bättre överblick.
+              STP är byggt för åkerier och transportföretag som vill jobba mer långsiktigt med matchning, tydligare krav och bättre överblick.
             </p>
             <p className="mt-4 max-w-2xl text-base text-white/80 leading-relaxed">
               Målet är inte att vara ännu en jobbsajt, utan en branschplattform där seriösa företag får bättre förutsättningar att hitta rätt personer och bygga förtroende över tid.
@@ -94,13 +94,13 @@ export default function ForCompaniesLanding() {
                 state={{ initialMode: "register", requiredRole: "company" }}
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--color-accent)] px-6 py-3.5 font-semibold text-slate-900 hover:bg-[var(--color-accent-dark)] hover:text-white transition-colors"
               >
-                Skapa rekryterarkonto
+                Skapa företagskonto
                 <ArrowRightIcon className="w-4 h-4" />
               </Link>
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/20 bg-black/50 p-6 backdrop-blur-sm">
+          <div className="hidden lg:block rounded-2xl border border-white/20 bg-black/50 p-6 backdrop-blur-sm">
             <h2 className="text-lg font-semibold">Det här får ni som åkeri</h2>
             <ul className="mt-5 space-y-4">
               {COMPANY_POINTS.map((point) => (
@@ -226,7 +226,7 @@ export default function ForCompaniesLanding() {
         <div className="mt-10 rounded-2xl bg-[var(--color-primary)] p-8 text-white">
           <h2 className="text-2xl font-bold tracking-tight">Vill ni börja bygga er närvaro på STP?</h2>
           <p className="mt-3 max-w-2xl text-white/85">
-            Skapa ett rekryterarkonto, gå igenom onboardingen och fyll i ert företags sammanhang. När grunden finns på plats kan ni börja med Hitta förare direkt och sedan publicera jobb vid behov.
+            Skapa ett företagskonto, gå igenom onboardingen och lägg till ert åkeri. När grunden finns på plats kan ni börja med Hitta förare direkt och sedan publicera jobb vid behov.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
@@ -234,7 +234,7 @@ export default function ForCompaniesLanding() {
               state={{ initialMode: "register", requiredRole: "company" }}
               className="inline-flex items-center justify-center rounded-xl bg-[var(--color-accent)] px-6 py-3.5 font-semibold text-slate-900 hover:bg-[var(--color-accent-dark)] hover:text-white transition-colors"
             >
-              Skapa rekryterarkonto
+              Skapa företagskonto
             </Link>
             <Link
               to="/#sa-fungerar-det"

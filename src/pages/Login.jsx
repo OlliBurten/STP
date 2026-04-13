@@ -251,7 +251,7 @@ export default function Login() {
             <div className="flex items-center gap-4">
               <BuildingIcon className="w-9 h-9 text-[var(--color-primary)] shrink-0" />
               <div>
-                <p className="font-semibold text-slate-900 group-hover:text-[var(--color-primary)]">Åkeri & rekryterare</p>
+                <p className="font-semibold text-slate-900 group-hover:text-[var(--color-primary)]">Åkeri / Transportföretag</p>
                 <p className="text-sm text-slate-500 mt-0.5">Publicera jobb och hitta rätt förare</p>
               </div>
             </div>
@@ -282,7 +282,7 @@ export default function Login() {
         </h1>
         <p className="mt-3 text-slate-600">
           {oauthPickingRole
-            ? "Förare eller rekryterare"
+            ? "Välj om du är förare eller åkeri"
             : mode === "login"
               ? "Ange e-post och lösenord."
               : mode === "register"
@@ -315,7 +315,7 @@ export default function Login() {
                 ? <TruckIcon className="w-5 h-5 text-[var(--color-primary)] shrink-0" />
                 : <BuildingIcon className="w-5 h-5 text-[var(--color-primary)] shrink-0" />}
               <span className="text-sm font-medium text-slate-800 flex-1">
-                {role === "driver" ? "Förare" : "Åkeri & rekryterare"}
+                {role === "driver" ? "Förare" : "Åkeri / Transportföretag"}
               </span>
               {!requiredRole && (
                 <button
