@@ -11,7 +11,7 @@ async function main() {
   const hash = await bcrypt.hash("password123", 10);
   const driver = await prisma.user.upsert({
     where: { email: "driver@example.com" },
-    update: { emailVerifiedAt: new Date() },
+    update: { emailVerifiedAt: new Date(), needsDriverOnboarding: false },
     create: {
       email: "driver@example.com",
       passwordHash: hash,

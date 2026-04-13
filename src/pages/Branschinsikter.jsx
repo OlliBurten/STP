@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
+import { usePageTitle } from "../hooks/usePageTitle";
 
 export default function Branschinsikter() {
+  usePageTitle("Branschinsikter för transport");
   return (
     <main className="max-w-4xl mx-auto px-4 sm:px-6 py-16">
       <h1 className="text-3xl font-bold text-slate-900">Branschinsikter</h1>

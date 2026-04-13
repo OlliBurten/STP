@@ -1,12 +1,19 @@
 import { Link } from "react-router-dom";
 import { availabilityTypes, getCertificateLabel } from "../data/profileData";
-import { segmentLabel } from "../data/segments";
+import { segmentLabel, internshipTypeLabel, parseSchoolName } from "../data/segments";
 import { LocationIcon, CheckIcon } from "./Icons";
 import { isDriverMinimumProfileComplete } from "../utils/driverProfileRequirements.js";
 
-export default function DriverCard({ driver, matchScore = null, matchHighlights = [] }) {
+function matchQuality(score) {
+  if (score >= 70) return { label: "Stark match", className: "bg-green-100 text-green-800" };
+  if (score >= 40) return { label: "God match", className: "bg-amber-50 text-amber-800" };
+  return { label: "Möjlig match", className: "bg-slate-100 text-slate-600" };
+}
+
+export default function DriverCard({ driver, matchScore = null, matchHighlights = [], isContacted = false }) {
   const availabilityLabel = availabilityTypes.find((a) => a.value === driver.availability)?.label || driver.availability;
   const hasMinimumProfile = isDriverMinimumProfileComplete(driver);
+  const quality = matchScore != null && matchScore > 0 ? matchQuality(matchScore) : null;
 
   return (
     <Link
@@ -15,9 +22,21 @@ export default function DriverCard({ driver, matchScore = null, matchHighlights 
     >
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-slate-900 group-hover:text-[var(--color-primary)] transition-colors">
-            {driver.name}
-          </h3>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h3 className="font-semibold text-slate-900 group-hover:text-[var(--color-primary)] transition-colors">
+              {driver.name}
+            </h3>
+            {quality && (
+              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${quality.className}`}>
+                {quality.label}
+              </span>
+            )}
+            {isContacted && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                <CheckIcon className="w-3 h-3" /> Kontaktad
+              </span>
+            )}
+          </div>
           <p className="mt-1 text-sm text-slate-600 flex items-center gap-1">
             <LocationIcon className="w-4 h-4 shrink-0" /> {driver.location}, {driver.region}
           </p>
@@ -39,25 +58,28 @@ export default function DriverCard({ driver, matchScore = null, matchHighlights 
             {driver.certificates?.map((c) => (
               <span
                 key={c}
-                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700"
+                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[var(--color-primary)]/10 text-[var(--color-primary)]"
               >
                 {getCertificateLabel(c)}
               </span>
             ))}
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-800">
-              {driver.yearsExperience} år
-            </span>
+            {driver.isGymnasieelev ? (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[var(--color-primary)]/10 text-[var(--color-primary)]">
+                {internshipTypeLabel(parseSchoolName(driver.schoolName).type)}
+              </span>
+            ) : (
+              driver.primarySegment && (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+                  {segmentLabel(driver.primarySegment)}
+                </span>
+              )
+            )}
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
               {availabilityLabel}
             </span>
-            {driver.primarySegment && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
-                {segmentLabel(driver.primarySegment)}
-              </span>
-            )}
-            {driver.isGymnasieelev && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-800">
-                Praktik/skola
+            {(driver.yearsExperience ?? 0) > 0 && (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+                {driver.yearsExperience} år
               </span>
             )}
           </div>
@@ -69,7 +91,7 @@ export default function DriverCard({ driver, matchScore = null, matchHighlights 
           )}
         </div>
         <span className="text-sm text-[var(--color-primary)] font-medium shrink-0 group-hover:underline">
-          {matchScore != null ? `Match ${matchScore} · ` : ""}Se profil →
+          Se profil →
         </span>
       </div>
       {matchHighlights.length > 0 && (

@@ -25,9 +25,11 @@ export function listCompanyInvites() {
   return apiGet("/api/companies/me/invites");
 }
 
-/** Create invite (requires auth, owner only). */
-export function createCompanyInvite(email) {
-  return apiPost("/api/companies/me/invites", { email: email?.trim?.() });
+/** Create invite (requires auth, owner only). Returns { invite, emailSent, devInviteLink? }. */
+export async function createCompanyInvite(email) {
+  const data = await apiPost("/api/companies/me/invites", { email: email?.trim?.() });
+  if (data && typeof data.invite === "object") return data;
+  return { invite: data, emailSent: true };
 }
 
 /** Revoke invite (requires auth, owner only). */

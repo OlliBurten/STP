@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useProfile } from "../context/ProfileContext";
 import { useAuth } from "../context/AuthContext";
+import { usePageTitle } from "../hooks/usePageTitle";
+import { fetchDriverProfileStats } from "../api/drivers.js";
+import { deleteMyAccount } from "../api/auth.js";
 import {
   licenseTypes,
   regions,
@@ -10,8 +13,9 @@ import {
   certificateTypes,
   availabilityTypes,
 } from "../data/profileData";
-import { segmentOptions, segmentLabel } from "../data/segments";
-import { CheckIcon, CircleOutlineIcon, LocationIcon } from "../components/Icons";
+import { segmentOptions, segmentLabel, internshipTypeLabel, parseSchoolName } from "../data/segments";
+import { CheckIcon, CircleOutlineIcon, LocationIcon, ChevronDownIcon } from "../components/Icons";
+import { useToast } from "../context/ToastContext";
 import {
   getDriverMinimumChecklist,
   hasDriverMinimumAvailability,
@@ -23,12 +27,16 @@ import {
 } from "../utils/driverProfileRequirements";
 
 export default function Profile() {
-  const { user, hasApi, isAdmin } = useAuth();
-  const { profile, updateProfile, profileSaving, profileSaveError } = useProfile();
+  usePageTitle("Min profil");
+  const { user, hasApi, isAdmin, logout } = useAuth();
+  const navigate = useNavigate();
+  const [deletingAccount, setDeletingAccount] = useState(false);
+  const { profile, profileLoaded, updateProfile, profileSaving, profileSaveError } = useProfile();
+  const toast = useToast();
   const [editing, setEditing] = useState(false);
-  const [saveMessage, setSaveMessage] = useState("");
   const [draft, setDraft] = useState(profile);
   const [newExp, setNewExp] = useState({ company: "", role: "", startYear: "", endYear: "", current: false, description: "" });
+  const [profileStats, setProfileStats] = useState(null);
   const onboardingKey = user?.id ? `drivermatch-onboarding-dismissed:${user.id}:driver` : "";
   const [hideOnboarding, setHideOnboarding] = useState(() => {
     if (!onboardingKey) return false;
@@ -45,6 +53,13 @@ export default function Profile() {
   useEffect(() => {
     if (!editing) setDraft(profile);
   }, [profile, editing]);
+
+  useEffect(() => {
+    if (!hasApi) return;
+    fetchDriverProfileStats()
+      .then(setProfileStats)
+      .catch(() => setProfileStats(null));
+  }, [hasApi]);
 
   const current = editing ? draft : profile;
   const updateDraft = (updates) => setDraft((prev) => ({ ...prev, ...updates }));
@@ -81,26 +96,22 @@ export default function Profile() {
   };
 
   const startEditing = () => {
-    setSaveMessage("");
     setDraft(profile);
     setEditing(true);
   };
 
   const cancelEditing = () => {
-    setSaveMessage("");
     setDraft(profile);
     setEditing(false);
   };
 
   const saveProfile = async () => {
-    setSaveMessage("");
     try {
       await updateProfile(draft);
       setEditing(false);
-      setSaveMessage("Profilen sparad.");
-      setTimeout(() => setSaveMessage(""), 2500);
+      toast.success("Profilen sparad!");
     } catch (_) {
-      // profileSaveError is shown in the header area.
+      toast.error(profileSaveError || "Kunde inte spara profilen. Försök igen.");
     }
   };
 
@@ -147,12 +158,33 @@ export default function Profile() {
     return `${exp.startYear || "?"} – ${exp.endYear || "?"}`;
   };
 
-  if (hasApi && profile.id === user?.id && !isAdmin && !isDriverMinimumProfileComplete(profile)) {
+  if (hasApi && profileLoaded && profile.id === user?.id && !isAdmin && !isDriverMinimumProfileComplete(profile)) {
     return <Navigate to="/onboarding/forare" replace />;
   }
 
+  const completedSteps = onboardingSteps.filter((s) => s.done).length;
+  const totalSteps = onboardingSteps.length;
+  const progressPct = totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0;
+
   return (
-    <main className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
+    <main className="max-w-3xl mx-auto px-4 sm:px-6 py-10 pb-28">
+      {/* Floating save bar */}
+      {editing && hasUnsavedChanges && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-200 px-4 py-3 flex items-center justify-between gap-4 shadow-lg">
+          <p className="text-sm text-amber-700 font-medium">Osparade ändringar</p>
+          <div className="flex gap-2">
+            <button type="button" onClick={cancelEditing}
+              className="px-4 py-2 rounded-lg text-sm font-medium border border-slate-300 text-slate-700 hover:bg-slate-50">
+              Avbryt
+            </button>
+            <button type="button" onClick={saveProfile} disabled={profileSaving}
+              className="px-4 py-2 rounded-lg text-sm font-medium bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-light)] disabled:opacity-50 inline-flex items-center gap-2">
+              {profileSaving ? "Sparar..." : "Spara ändringar"}
+            </button>
+          </div>
+        </div>
+      )}
+
       {!hideOnboarding && !onboardingDone && (
         <section className="mb-6 rounded-xl border border-indigo-200 bg-indigo-50 p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
@@ -188,44 +220,53 @@ export default function Profile() {
           )}
         </section>
       )}
-      <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-bold text-slate-900">Min profil</h1>
-        <div className="flex flex-wrap items-center gap-2">
-          {saveMessage ? <span className="text-sm text-green-700">{saveMessage}</span> : null}
-          {profileSaveError ? <span className="text-sm text-red-700">{profileSaveError}</span> : null}
-          {editing ? (
-            <>
+      <div className="mb-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h1 className="text-2xl font-bold text-slate-900">Min profil</h1>
+          <div className="flex flex-wrap items-center gap-2">
+            {profileSaveError ? <span className="text-sm text-red-700">{profileSaveError}</span> : null}
+            {editing ? (
+              <>
+                <button
+                  type="button"
+                  onClick={cancelEditing}
+                  className="px-4 py-2 rounded-lg text-sm font-medium border border-slate-300 text-slate-700 hover:bg-slate-50 min-h-[44px]"
+                >
+                  Avbryt
+                </button>
+                <button
+                  type="button"
+                  onClick={saveProfile}
+                  disabled={profileSaving || !hasUnsavedChanges}
+                  className="px-4 py-2 rounded-lg text-sm font-medium bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-light)] disabled:opacity-50 inline-flex items-center gap-2 min-h-[44px]"
+                >
+                  {hasUnsavedChanges ? <span className="inline-block w-2 h-2 rounded-full bg-amber-300" /> : null}
+                  {profileSaving ? "Sparar..." : "Spara"}
+                </button>
+              </>
+            ) : (
               <button
                 type="button"
-                onClick={cancelEditing}
+                onClick={startEditing}
                 className="px-4 py-2 rounded-lg text-sm font-medium border border-slate-300 text-slate-700 hover:bg-slate-50 min-h-[44px]"
               >
-                Avbryt
+                Redigera
               </button>
-              <button
-                type="button"
-                onClick={saveProfile}
-                disabled={profileSaving || !hasUnsavedChanges}
-                className="px-4 py-2 rounded-lg text-sm font-medium bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-light)] disabled:opacity-50 inline-flex items-center gap-2 min-h-[44px]"
-              >
-                {hasUnsavedChanges ? <span className="inline-block w-2 h-2 rounded-full bg-amber-300" /> : null}
-                {profileSaving ? "Sparar..." : "Spara"}
-              </button>
-            </>
-          ) : (
-            <button
-              type="button"
-              onClick={startEditing}
-              className="px-4 py-2 rounded-lg text-sm font-medium border border-slate-300 text-slate-700 hover:bg-slate-50 min-h-[44px]"
-            >
-              Redigera
-            </button>
-          )}
+            )}
+          </div>
         </div>
+        {!onboardingDone && (
+          <div className="mt-3 flex items-center gap-3">
+            <div className="flex-1 h-1.5 rounded-full bg-slate-200">
+              <div
+                className="h-1.5 rounded-full bg-[var(--color-primary)] transition-all"
+                style={{ width: `${progressPct}%` }}
+              />
+            </div>
+            <span className="text-xs text-slate-500 shrink-0">{completedSteps}/{totalSteps} steg klara</span>
+          </div>
+        )}
       </div>
-      {editing && hasUnsavedChanges ? (
-        <p className="mb-4 text-sm text-amber-700">Du har osparade ändringar.</p>
-      ) : null}
       {profile?.visibleToCompanies && (profile?.regionsWilling || []).length > 0 && (
         <p className="mb-4 text-sm text-slate-600">
           <CheckIcon className="w-4 h-4 inline-block mr-1 align-middle text-green-600" /> Du syns för företag i <strong>{(profile.regionsWilling || []).length} regioner</strong> (Kan jobba i) när de söker förare.
@@ -259,8 +300,49 @@ export default function Profile() {
         );
       })()}
 
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        <div className="p-6 sm:p-8 space-y-8">
+      {profileStats && (
+        <div className="mb-6 bg-white rounded-xl border border-slate-200 p-6">
+          <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">Din statistik</h2>
+          <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-4">
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 sm:p-4 text-center">
+              <p className="text-xl sm:text-2xl font-bold text-slate-900">{profileStats.views7}</p>
+              <p className="text-xs text-slate-500 mt-1">Vy 7 dagar</p>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 sm:p-4 text-center">
+              <p className="text-xl sm:text-2xl font-bold text-slate-900">{profileStats.views30}</p>
+              <p className="text-xs text-slate-500 mt-1">Vy 30 dagar</p>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 sm:p-4 text-center">
+              <p className="text-xl sm:text-2xl font-bold text-slate-900">{profileStats.conversationCount}</p>
+              <p className="text-xs text-slate-500 mt-1">Kontakter</p>
+            </div>
+          </div>
+          {profileStats.recommendations?.length > 0 && (
+            <ul className="space-y-2">
+              {profileStats.recommendations.map((r, i) => (
+                <li
+                  key={i}
+                  className={`flex items-start gap-2 rounded-lg px-4 py-3 text-sm ${
+                    r.type === "warning"
+                      ? "bg-amber-50 border border-amber-200 text-amber-900"
+                      : r.type === "insight"
+                      ? "bg-blue-50 border border-blue-200 text-blue-900"
+                      : "bg-slate-50 border border-slate-200 text-slate-700"
+                  }`}
+                >
+                  <span className="shrink-0 mt-0.5">
+                    {r.type === "warning" ? "⚠️" : r.type === "insight" ? "💡" : "✏️"}
+                  </span>
+                  {r.text}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
+      <div className="space-y-4">
+        <div className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8">
           {/* Basic info */}
           <section>
             <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">
@@ -274,7 +356,7 @@ export default function Profile() {
                     type="text"
                     value={current.name || ""}
                     onChange={(e) => updateDraft({ name: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
+                    className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                   />
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4">
@@ -284,21 +366,26 @@ export default function Profile() {
                       type="text"
                       value={current.location || ""}
                       onChange={(e) => updateDraft({ location: e.target.value })}
-                      className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
+                      className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Region</label>
-                    <select
-                      value={current.region || ""}
-                      onChange={(e) => updateDraft({ region: e.target.value })}
-                      className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent bg-white"
-                    >
-                      <option value="">Välj</option>
-                      {regions.map((r) => (
-                        <option key={r} value={r}>{r}</option>
-                      ))}
-                    </select>
+                    <div className="relative">
+                      <select
+                        value={current.region || ""}
+                        onChange={(e) => updateDraft({ region: e.target.value })}
+                        className="w-full appearance-none px-3 pr-9 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent bg-white text-sm"
+                      >
+                        <option value="">Välj</option>
+                        {regions.map((r) => (
+                          <option key={r} value={r}>{r}</option>
+                        ))}
+                      </select>
+                      <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-400">
+                        <ChevronDownIcon className="w-4 h-4" />
+                      </span>
+                    </div>
                   </div>
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4">
@@ -308,7 +395,7 @@ export default function Profile() {
                       type="email"
                       value={current.email || ""}
                       onChange={(e) => updateDraft({ email: e.target.value })}
-                      className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
+                      className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                     />
                   </div>
                   <div>
@@ -317,7 +404,7 @@ export default function Profile() {
                       type="tel"
                       value={current.phone || ""}
                       onChange={(e) => updateDraft({ phone: e.target.value })}
-                      className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
+                      className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                     />
                   </div>
                 </div>
@@ -331,7 +418,9 @@ export default function Profile() {
               </div>
             )}
           </section>
+        </div>
 
+        <div className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8">
           {/* Licenses & Certificates */}
           <section>
             <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">
@@ -341,13 +430,18 @@ export default function Profile() {
               <div className="space-y-4">
                 {current.isGymnasieelev ? (
                   <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-                    <p className="text-sm font-medium text-slate-700">Du är registrerad som gymnasieelev</p>
+                    <p className="text-sm font-medium text-slate-700">Du är registrerad som praktikant</p>
                     <p className="mt-1 text-sm text-slate-600">
                       Primärt segment: <strong>Praktik</strong> – endast praktikannonser och åkerier visas.
                     </p>
-                    {current.schoolName && (
-                      <p className="mt-2 text-sm text-slate-600">Skola: {current.schoolName}</p>
-                    )}
+                    {current.schoolName && (() => {
+                      const { type, school } = parseSchoolName(current.schoolName);
+                      return (
+                        <p className="mt-2 text-sm text-slate-600">
+                          {type ? <><strong>{internshipTypeLabel(type)}</strong>{school ? ` – ${school}` : ""}</> : current.schoolName}
+                        </p>
+                      );
+                    })()}
                   </div>
                 ) : (
                   <>
@@ -443,15 +537,20 @@ export default function Profile() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">Tillgänglighet</label>
-                  <select
-                    value={current.availability || "open"}
-                    onChange={(e) => updateDraft({ availability: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent bg-white"
-                  >
-                    {availabilityTypes.map((a) => (
-                      <option key={a.value} value={a.value}>{a.label}</option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <select
+                      value={current.availability || "open"}
+                      onChange={(e) => updateDraft({ availability: e.target.value })}
+                      className="w-full appearance-none px-3 pr-9 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent bg-white text-sm"
+                    >
+                      {availabilityTypes.map((a) => (
+                        <option key={a.value} value={a.value}>{a.label}</option>
+                      ))}
+                    </select>
+                    <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-400">
+                      <ChevronDownIcon className="w-4 h-4" />
+                    </span>
+                  </div>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-slate-700 mb-2">Arbetsprofil (valfritt)</p>
@@ -552,11 +651,14 @@ export default function Profile() {
               </div>
             ) : (
               <div className="flex flex-wrap gap-2">
-                {current.isGymnasieelev && current.schoolName && (
-                  <span className="px-3 py-1 rounded-full text-sm font-medium bg-amber-50 text-amber-800">
-                    Skola: {current.schoolName}
-                  </span>
-                )}
+                {current.isGymnasieelev && current.schoolName && (() => {
+                  const { type, school } = parseSchoolName(current.schoolName);
+                  return (
+                    <span className="px-3 py-1 rounded-full text-sm font-medium bg-blue-50 text-blue-800">
+                      {type ? internshipTypeLabel(type) : "Praktik"}{school ? ` – ${school}` : ""}
+                    </span>
+                  );
+                })()}
                 {current.primarySegment && (
                   <span className="px-3 py-1 rounded-full text-sm font-medium bg-[var(--color-primary)]/10 text-[var(--color-primary)]">
                     Primärt: {segmentLabel(current.primarySegment)}
@@ -617,7 +719,9 @@ export default function Profile() {
               </div>
             )}
           </section>
+        </div>
 
+        <div className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8">
           {/* Summary */}
           <section>
             <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">
@@ -630,7 +734,7 @@ export default function Profile() {
                   onChange={(e) => updateDraft({ summary: e.target.value })}
                   rows={4}
                   placeholder="Beskriv kort din erfarenhet och vad du söker. Denna text visas för företag."
-                  className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
+                  className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                 />
                 <p className="mt-2 text-xs text-slate-500">
                   Minimikrav för onboarding: minst {SUMMARY_MIN_LENGTH} tecken.
@@ -640,7 +744,9 @@ export default function Profile() {
               <p className="text-slate-700 whitespace-pre-line">{current.summary || "—"}</p>
             )}
           </section>
+        </div>
 
+        <div className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8">
           <section>
             <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">
               Privat matchningstext
@@ -652,7 +758,7 @@ export default function Profile() {
                   onChange={(e) => updateDraft({ privateMatchNotes: e.target.value })}
                   rows={4}
                   placeholder="Skriv fritt vad du helst vill ha eller undvika. Exempel: vill helst köra distribution dagtid, undviker natt, kan veckopendla."
-                  className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
+                  className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                 />
                 <p className="mt-2 text-xs text-slate-500">
                   Visas inte publikt. Texten används bara som en extra signal i jobbrekommendationer.
@@ -669,7 +775,9 @@ export default function Profile() {
               </div>
             )}
           </section>
+        </div>
 
+        <div className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8">
           {/* Experience */}
           <section>
             <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">
@@ -708,28 +816,28 @@ export default function Profile() {
                     placeholder="Företag"
                     value={newExp.company}
                     onChange={(e) => setNewExp((p) => ({ ...p, company: e.target.value }))}
-                    className="px-3 py-2 rounded-lg border border-slate-300 text-sm"
+                    className="px-3 py-2 rounded-lg border border-slate-200 text-sm"
                   />
                   <input
                     type="text"
                     placeholder="Roll"
                     value={newExp.role}
                     onChange={(e) => setNewExp((p) => ({ ...p, role: e.target.value }))}
-                    className="px-3 py-2 rounded-lg border border-slate-300 text-sm"
+                    className="px-3 py-2 rounded-lg border border-slate-200 text-sm"
                   />
                   <input
                     type="number"
                     placeholder="Startår"
                     value={newExp.startYear || ""}
                     onChange={(e) => setNewExp((p) => ({ ...p, startYear: e.target.value }))}
-                    className="px-3 py-2 rounded-lg border border-slate-300 text-sm"
+                    className="px-3 py-2 rounded-lg border border-slate-200 text-sm"
                   />
                   <input
                     type="number"
                     placeholder="Slutår"
                     value={newExp.endYear || ""}
                     onChange={(e) => setNewExp((p) => ({ ...p, endYear: e.target.value }))}
-                    className="px-3 py-2 rounded-lg border border-slate-300 text-sm"
+                    className="px-3 py-2 rounded-lg border border-slate-200 text-sm"
                     disabled={newExp.current}
                   />
                 </div>
@@ -762,7 +870,7 @@ export default function Profile() {
         </div>
       </div>
 
-      <p className="mt-6 text-sm text-slate-500 text-center">
+      <p className="mt-6 text-xs text-slate-400 text-center">
         Din profil är ditt CV. Den delas när du ansöker till jobb.{" "}
         <Link to="/jobb" className="text-[var(--color-primary)] hover:underline">
           Se lediga jobb
@@ -772,6 +880,36 @@ export default function Profile() {
           Meddelanden
         </Link>
       </p>
+
+      {/* Danger zone */}
+      {hasApi && (
+        <div className="mt-10 rounded-xl border border-red-200 bg-red-50 p-6">
+          <h2 className="text-sm font-semibold text-red-900 uppercase tracking-wide mb-1">Farlig zon</h2>
+          <p className="text-sm text-red-800 mb-4">
+            Radering av ditt konto tar bort all din data permanent — profil, ansökningar, meddelanden och sparade jobb. Detta kan inte ångras.
+          </p>
+          <button
+            type="button"
+            disabled={deletingAccount}
+            onClick={async () => {
+              if (!window.confirm("Är du säker? All din data raderas permanent och kan inte återställas.")) return;
+              if (!window.confirm("Sista chansen — klicka OK för att radera ditt konto för alltid.")) return;
+              setDeletingAccount(true);
+              try {
+                await deleteMyAccount();
+                logout();
+                navigate("/", { replace: true });
+              } catch {
+                alert("Något gick fel. Kontakta oss på hej@transportplattformen.se om problemet kvarstår.");
+                setDeletingAccount(false);
+              }
+            }}
+            className="inline-flex items-center px-4 py-2 rounded-lg border border-red-300 text-red-700 text-sm font-medium hover:bg-red-100 disabled:opacity-50 transition-colors"
+          >
+            {deletingAccount ? "Raderar…" : "Radera mitt konto"}
+          </button>
+        </div>
+      )}
     </main>
   );
 }

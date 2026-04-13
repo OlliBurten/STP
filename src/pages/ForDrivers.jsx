@@ -1,6 +1,7 @@
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { CheckIcon, TruckIcon, ShieldCheckIcon, ArrowRightIcon } from "../components/Icons";
+import { CheckIcon, TruckIcon, ShieldCheckIcon, ArrowRightIcon, ClockIcon, BuildingIcon } from "../components/Icons";
+import { usePageTitle } from "../hooks/usePageTitle";
 
 const DRIVER_POINTS = [
   "Skapa en strukturerad profil som visar behörigheter, erfarenhet, tillgänglighet och vad du faktiskt söker.",
@@ -18,14 +19,35 @@ const DRIVER_SEGMENTS = [
   {
     title: "Heltid",
     text: "För dig som söker en långsiktig roll och vill vara tydlig med erfarenhet, behörigheter och vilken typ av tjänst som passar dig.",
+    icon: TruckIcon,
+    bg: "bg-green-50",
+    border: "border-green-200",
+    iconBg: "bg-green-100",
+    iconColor: "text-green-700",
+    label: "Fast anställning",
+    labelColor: "bg-green-100 text-green-800",
   },
   {
-    title: "Vikariepool",
-    text: "För dig som vill vara flexibel, hoppa in snabbt och matchas mot kortare behov eller tillfälliga uppdrag.",
+    title: "Vikarie / Deltid",
+    text: "För dig som vill vara flexibel, hoppa in snabbt och matchas mot kortare behov, vikariat, extrapass eller deltid.",
+    icon: ClockIcon,
+    bg: "bg-amber-50",
+    border: "border-amber-200",
+    iconBg: "bg-amber-100",
+    iconColor: "text-amber-700",
+    label: "Flexibelt",
+    labelColor: "bg-amber-100 text-amber-800",
   },
   {
-    title: "Praktik/skola",
-    text: "För elever och förare i början av resan som vill hitta seriösa företag att växa tillsammans med.",
+    title: "Praktik",
+    text: "För elever och förare i början av resan — gymnasieskola, Arbetsförmedlingen eller Komvux — som vill hitta seriösa företag att växa med.",
+    icon: BuildingIcon,
+    bg: "bg-[var(--color-primary)]/5",
+    border: "border-[var(--color-primary)]/20",
+    iconBg: "bg-[var(--color-primary)]/10",
+    iconColor: "text-[var(--color-primary)]",
+    label: "Utbildning",
+    labelColor: "bg-[var(--color-primary)]/10 text-[var(--color-primary)]",
   },
 ];
 
@@ -36,6 +58,7 @@ const DRIVER_PROMISES = [
 ];
 
 export default function ForDrivers() {
+  usePageTitle("För yrkesförare – Hitta lastbilsjobb");
   const { user, isDriver, isCompany } = useAuth();
 
   if (user) {
@@ -45,8 +68,17 @@ export default function ForDrivers() {
 
   return (
     <main className="bg-slate-50">
-      <section className="bg-gradient-to-b from-[var(--color-primary)] to-[var(--color-primary-light)] text-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16 lg:py-20 grid gap-10 lg:grid-cols-2 items-center">
+      <section
+        className="relative text-white overflow-hidden"
+        style={{
+          backgroundImage: "url('/hero-driver.png')",
+          backgroundSize: "cover",
+          backgroundPosition: "center 30%",
+        }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/60 to-black/30" />
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-20 lg:py-28 min-h-[80vh] flex items-center">
+          <div className="grid gap-10 lg:grid-cols-2 items-center w-full">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/80">För förare</p>
             <h1 className="mt-3 text-4xl sm:text-5xl font-bold tracking-tight">En tryggare väg till rätt jobb i transportbranschen.</h1>
@@ -74,7 +106,7 @@ export default function ForDrivers() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/20 bg-white/10 p-6 backdrop-blur">
+          <div className="hidden lg:block rounded-2xl border border-white/20 bg-black/40 p-6 backdrop-blur-sm">
             <h2 className="text-lg font-semibold">Det här får du som förare</h2>
             <ul className="mt-5 space-y-4">
               {DRIVER_POINTS.map((point) => (
@@ -88,9 +120,10 @@ export default function ForDrivers() {
             </ul>
           </div>
         </div>
+        </div>
       </section>
 
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-14 lg:py-16">
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-16 lg:py-20">
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--color-primary)]/10 text-[var(--color-primary)]">
@@ -123,7 +156,7 @@ export default function ForDrivers() {
       </section>
 
       <section className="border-t border-slate-200 bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-14 lg:py-16">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16 lg:py-20">
           <div className="max-w-3xl">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--color-primary)]">Tre vägar in</p>
             <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900">Alla förare söker inte samma sak.</h2>
@@ -132,10 +165,16 @@ export default function ForDrivers() {
             </p>
           </div>
           <div className="mt-8 grid gap-5 md:grid-cols-3">
-            {DRIVER_SEGMENTS.map((segment) => (
-              <div key={segment.title} className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
-                <h3 className="text-xl font-semibold text-slate-900">{segment.title}</h3>
-                <p className="mt-3 text-slate-600 leading-relaxed">{segment.text}</p>
+            {DRIVER_SEGMENTS.map(({ title, text, icon: Icon, bg, border, iconBg, iconColor, label, labelColor }) => (
+              <div key={title} className={`rounded-2xl border ${border} ${bg} p-6`}>
+                <div className="flex items-start justify-between gap-3 mb-4">
+                  <span className={`inline-flex h-10 w-10 items-center justify-center rounded-xl ${iconBg} ${iconColor}`}>
+                    <Icon className="w-5 h-5" />
+                  </span>
+                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${labelColor}`}>{label}</span>
+                </div>
+                <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
+                <p className="mt-2 text-sm text-slate-600 leading-relaxed">{text}</p>
               </div>
             ))}
           </div>
@@ -143,7 +182,7 @@ export default function ForDrivers() {
       </section>
 
       <section className="border-y border-slate-200 bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-14 lg:py-16 grid gap-10 lg:grid-cols-[1.2fr_0.8fr]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16 lg:py-20 grid gap-10 lg:grid-cols-[1.2fr_0.8fr]">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--color-primary)]">Så fungerar det</p>
             <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900">Du kommer igång snabbt, men med rätt grund.</h2>
@@ -162,7 +201,7 @@ export default function ForDrivers() {
         </div>
       </section>
 
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-14 lg:py-16">
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-16 lg:py-20">
         <div className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr] items-start">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--color-primary)]">Varför STP</p>

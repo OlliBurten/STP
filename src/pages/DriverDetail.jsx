@@ -9,7 +9,7 @@ import { availabilityTypes, getCertificateLabel } from "../data/profileData";
 import ReachOutModal from "../components/ReachOutModal";
 import { segmentLabel } from "../data/segments";
 import { LocationIcon, CheckIcon } from "../components/Icons";
-import { fetchDriver } from "../api/drivers.js";
+import { fetchDriver, trackDriverProfileView } from "../api/drivers.js";
 import { fetchMyJobs } from "../api/jobs.js";
 import { isDriverMinimumProfileComplete } from "../utils/driverProfileRequirements.js";
 
@@ -34,6 +34,12 @@ export default function DriverDetail() {
       })
       .catch(() => setLoadError(true))
       .finally(() => setLoading(false));
+  }, [hasApi, id]);
+
+  // Registrera profilvisning när en förares profil laddas av ett företag
+  useEffect(() => {
+    if (!hasApi || !id) return;
+    trackDriverProfileView(id).catch(() => {});
   }, [hasApi, id]);
 
   const currentUserAsDriver =

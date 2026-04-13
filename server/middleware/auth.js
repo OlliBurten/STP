@@ -143,7 +143,8 @@ export async function attachCompanyContext(req, res, next) {
   if (!isCompanyRole(req.role)) return next();
   try {
     const { resolveCompanyOwner } = await import("../lib/invites.js");
-    const resolved = await resolveCompanyOwner(req.userId);
+    const requestedOrgId = req.headers["x-active-org"] || null;
+    const resolved = await resolveCompanyOwner(req.userId, requestedOrgId);
     if (resolved) {
       req.companyOwnerId = resolved.ownerId;
       if (resolved.organizationId) req.organizationId = resolved.organizationId;
@@ -158,7 +159,8 @@ export async function attachCompanyContext(req, res, next) {
 export async function requireCompanyOwner(req, res, next) {
   try {
     const { resolveCompanyOwner } = await import("../lib/invites.js");
-    const resolved = await resolveCompanyOwner(req.userId);
+    const requestedOrgId = req.headers["x-active-org"] || null;
+    const resolved = await resolveCompanyOwner(req.userId, requestedOrgId);
     if (!resolved?.isOwner) {
       return res.status(403).json({ error: "Endast företagets ägare kan bjuda in teammedlemmar." });
     }
@@ -176,7 +178,8 @@ export async function requireVerifiedCompany(req, res, next) {
   }
   try {
     const { resolveCompanyOwner } = await import("../lib/invites.js");
-    const resolved = await resolveCompanyOwner(req.userId);
+    const requestedOrgId = req.headers["x-active-org"] || null;
+    const resolved = await resolveCompanyOwner(req.userId, requestedOrgId);
     if (!resolved) {
       console.warn("[auth] company context missing", { userId: req.userId, role: req.role });
       return res.status(403).json({

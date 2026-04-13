@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useProfile } from "../context/ProfileContext";
 import { useAuth } from "../context/AuthContext";
-import { segmentOptions } from "../data/segments";
+import { segmentOptions, internshipTypeOptions, encodeSchoolName } from "../data/segments";
 import { licenseTypes, regions } from "../data/mockJobs";
 import { availabilityTypes } from "../data/profileData";
 import { trackDriverOnboardingComplete } from "../utils/segmentMetrics";
@@ -16,7 +16,7 @@ import {
   isDriverMinimumProfileComplete,
 } from "../utils/driverProfileRequirements";
 
-const steps = ["Mål", "Kontakt", "Kärnprofil", "Presentation", "Synlighet"];
+const steps = ["Mål", "Kontakt", "Kärnprofil", "Avsluta"];
 const stepGuidance = [
   {
     title: "Rätt segment från början",
@@ -31,38 +31,42 @@ const stepGuidance = [
     text: "Ort, region, körkort och tillgänglighet är sådant företag letar efter först. Därför samlar vi in det tidigt.",
   },
   {
-    title: "Kort, tydlig och relevant",
-    text: "En bra profiltext gör det lättare att förstå vem du är utan att företag behöver gissa eller skriva först för att fråga.",
-  },
-  {
-    title: "Synlighet när du är redo",
-    text: "Du väljer själv om du ska vara synlig direkt. Poängen är att seriösa företag ska kunna hitta dig när profilen känns rätt.",
+    title: "Nästan klar",
+    text: "En kort profiltext och ditt synlighetsval är allt som återstår. Du kan alltid fylla på mer i profilen efteråt.",
   },
 ];
 
 export default function DriverOnboardingWizard() {
   const { user } = useAuth();
-  const { profile, updateProfile } = useProfile();
+  const { profile, profileLoaded, updateProfile } = useProfile();
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [draft, setDraft] = useState(() => ({
-    name: profile.name || user?.name || "",
-    phone: profile.phone || "",
-    summary: profile.summary || "",
-    primarySegment: profile.primarySegment || "",
-    secondarySegments: profile.secondarySegments || [],
-    isGymnasieelev: profile.isGymnasieelev ?? false,
-    schoolName: profile.schoolName || "",
-    licenses: profile.licenses || [],
-    region: profile.region || "",
-    location: profile.location || "",
-    availability: profile.availability || "open",
-    visibleToCompanies: profile.visibleToCompanies ?? true,
-  }));
+  const [draft, setDraft] = useState(() => {
+    // Parse stored schoolName back to type + school for editing
+    const storedSchool = profile.schoolName || "";
+    const pipeIdx = storedSchool.indexOf("|");
+    const internshipType = pipeIdx !== -1 ? storedSchool.slice(0, pipeIdx) : "";
+    const schoolNameOnly = pipeIdx !== -1 ? storedSchool.slice(pipeIdx + 1) : storedSchool;
+    return {
+      name: profile.name || user?.name || "",
+      phone: profile.phone || "",
+      summary: profile.summary || "",
+      primarySegment: profile.primarySegment || "",
+      secondarySegments: profile.secondarySegments || [],
+      isGymnasieelev: profile.isGymnasieelev ?? false,
+      internshipType,
+      schoolName: schoolNameOnly,
+      licenses: profile.licenses || [],
+      region: profile.region || "",
+      location: profile.location || "",
+      availability: profile.availability || "open",
+      visibleToCompanies: profile.visibleToCompanies ?? true,
+    };
+  });
 
-  if (isDriverMinimumProfileComplete(profile)) {
+  if (profileLoaded && isDriverMinimumProfileComplete(profile)) {
     return <Navigate to="/profil" replace />;
   }
 
@@ -78,7 +82,7 @@ export default function DriverOnboardingWizard() {
 
   const canContinue = () => {
     if (step === 0) {
-      if (draft.isGymnasieelev) return (draft.schoolName || "").trim().length > 0;
+      if (draft.isGymnasieelev) return Boolean(draft.internshipType);
       return Boolean(draft.primarySegment);
     }
     if (step === 1) {
@@ -105,7 +109,9 @@ export default function DriverOnboardingWizard() {
         primarySegment,
         secondarySegments: [],
         isGymnasieelev: draft.isGymnasieelev,
-        schoolName: draft.isGymnasieelev ? (draft.schoolName || "").trim() : "",
+        schoolName: draft.isGymnasieelev
+          ? encodeSchoolName(draft.internshipType, draft.schoolName.trim())
+          : "",
         licenses: draft.licenses,
         region: draft.region,
         location: draft.location.trim(),
@@ -203,18 +209,46 @@ export default function DriverOnboardingWizard() {
               </div>
 
               {draft.isGymnasieelev ? (
-                <div className="mt-6">
-                  <label htmlFor="school-name" className="block text-sm font-medium text-slate-700 mb-1">
-                    Skola / utbildning
-                  </label>
-                  <input
-                    id="school-name"
-                    type="text"
-                    value={draft.schoolName}
-                    onChange={(e) => setDraft((prev) => ({ ...prev, schoolName: e.target.value }))}
-                    placeholder="t.ex. Transportgymnasiet Stockholm"
-                    className="w-full px-4 py-2 rounded-lg border border-slate-300 bg-white"
-                  />
+                <div className="mt-6 space-y-4">
+                  <p className="font-medium text-slate-900">Vilken typ av utbildning?</p>
+                  <div className="grid gap-3">
+                    {internshipTypeOptions.map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => setDraft((prev) => ({ ...prev, internshipType: opt.value }))}
+                        className={`text-left rounded-xl border p-4 ${
+                          draft.internshipType === opt.value
+                            ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5"
+                            : "border-slate-200 hover:bg-slate-50"
+                        }`}
+                      >
+                        <p className="font-semibold text-slate-900">{opt.label}</p>
+                        <p className="text-sm text-slate-600">{opt.description}</p>
+                      </button>
+                    ))}
+                  </div>
+                  {draft.internshipType && (
+                    <div>
+                      <label htmlFor="school-name" className="block text-sm font-medium text-slate-700 mb-1">
+                        Skola / program (valfritt)
+                      </label>
+                      <input
+                        id="school-name"
+                        type="text"
+                        value={draft.schoolName}
+                        onChange={(e) => setDraft((prev) => ({ ...prev, schoolName: e.target.value }))}
+                        placeholder={
+                          draft.internshipType === "AF"
+                            ? "t.ex. Arbetsförmedlingen Luleå"
+                            : draft.internshipType === "KOMVUX"
+                            ? "t.ex. Komvux Stockholm"
+                            : "t.ex. Transportgymnasiet Stockholm"
+                        }
+                        className="w-full px-4 py-2 rounded-lg border border-slate-300 bg-white"
+                      />
+                    </div>
+                  )}
                 </div>
               ) : (
                 <>
@@ -341,46 +375,47 @@ export default function DriverOnboardingWizard() {
           )}
 
           {step === 3 && (
-            <div className="space-y-4">
-              <h2 className="font-semibold text-slate-900">Publik profiltext</h2>
-              <p className="text-sm text-slate-600">
-                Denna text visas för företag. Håll den kort och tydlig: vad du kan och vad du söker.
-              </p>
-              <textarea
-                value={draft.summary}
-                onChange={(e) => setDraft((prev) => ({ ...prev, summary: e.target.value }))}
-                rows={5}
-                placeholder="Exempel: CE-chaufför med erfarenhet av distribution. Söker helst dagtid i Skåne."
-                className="w-full px-4 py-3 rounded-lg border border-slate-300 bg-white"
-              />
-              <p className="text-xs text-slate-500">
-                Minst {SUMMARY_MIN_LENGTH} tecken krävs för att profilen ska räknas som komplett.
-              </p>
-              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600">
-                Skriv det en trafikledare eller rekryterare vill förstå på 10 sekunder: vad du har kört, vad du söker och vad du föredrar.
-              </div>
-            </div>
-          )}
-
-          {step === 4 && (
-            <div>
-              <h2 className="font-semibold text-slate-900">Synlighet</h2>
-              <p className="mt-1 text-sm text-slate-600">
-                När du är synlig kan företag hitta dig i sökningen direkt. Du kan ändra detta senare.
-              </p>
-              <label className="mt-4 inline-flex items-center gap-3 text-sm text-slate-700">
-                <input
-                  type="checkbox"
-                  checked={draft.visibleToCompanies}
-                  onChange={(e) =>
-                    setDraft((prev) => ({ ...prev, visibleToCompanies: e.target.checked }))
-                  }
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <h2 className="font-semibold text-slate-900">Publik profiltext</h2>
+                <p className="text-sm text-slate-600">
+                  Denna text visas för företag. Håll den kort och tydlig: vad du kan och vad du söker.
+                </p>
+                <textarea
+                  value={draft.summary}
+                  onChange={(e) => setDraft((prev) => ({ ...prev, summary: e.target.value }))}
+                  rows={5}
+                  placeholder="Exempel: CE-chaufför med erfarenhet av distribution. Söker helst dagtid i Skåne."
+                  className="w-full px-4 py-3 rounded-lg border border-slate-300 bg-white"
                 />
-                Synlig för företag i sökning
-              </label>
-              <p className="mt-3 text-xs text-slate-500">
-                Du kan alltid ändra detta senare i profilen om du vill pausa eller öppna upp synligheten igen.
-              </p>
+                <p className="text-xs text-slate-500">
+                  Minst {SUMMARY_MIN_LENGTH} tecken krävs för att profilen ska räknas som komplett.
+                </p>
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600">
+                  Skriv det en trafikledare eller rekryterare vill förstå på 10 sekunder: vad du har kört, vad du söker och vad du föredrar.
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-slate-200">
+                <h2 className="font-semibold text-slate-900">Synlighet</h2>
+                <p className="mt-1 text-sm text-slate-600">
+                  När du är synlig kan företag hitta dig i sökningen direkt. Du kan ändra detta senare.
+                </p>
+                <label className="mt-4 flex items-center gap-3 cursor-pointer min-h-[44px]">
+                  <input
+                    type="checkbox"
+                    checked={draft.visibleToCompanies}
+                    onChange={(e) =>
+                      setDraft((prev) => ({ ...prev, visibleToCompanies: e.target.checked }))
+                    }
+                    className="w-5 h-5 rounded accent-[var(--color-primary)] cursor-pointer"
+                  />
+                  <span className="text-sm text-slate-700">Synlig för företag i sökning</span>
+                </label>
+                <p className="mt-2 text-xs text-slate-500">
+                  Du kan alltid ändra detta senare i profilen.
+                </p>
+              </div>
             </div>
           )}
         </div>
@@ -390,7 +425,7 @@ export default function DriverOnboardingWizard() {
             type="button"
             onClick={() => setStep((prev) => Math.max(0, prev - 1))}
             disabled={step === 0 || saving}
-            className="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 disabled:opacity-50"
+            className="px-4 py-3 rounded-lg border border-slate-300 text-slate-700 disabled:opacity-50 min-h-[44px]"
           >
             Tillbaka
           </button>
@@ -399,7 +434,7 @@ export default function DriverOnboardingWizard() {
               type="button"
               onClick={() => setStep((prev) => prev + 1)}
               disabled={!canContinue() || saving}
-              className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white disabled:opacity-50"
+              className="px-5 py-3 rounded-lg bg-[var(--color-primary)] text-white font-medium disabled:opacity-50 min-h-[44px]"
             >
               Nästa: {steps[step + 1]}
             </button>
@@ -408,7 +443,7 @@ export default function DriverOnboardingWizard() {
               type="button"
               onClick={saveAndFinish}
               disabled={saving}
-              className="px-5 py-2 rounded-lg bg-[var(--color-primary)] text-white font-medium disabled:opacity-50"
+              className="px-5 py-3 rounded-lg bg-[var(--color-primary)] text-white font-medium disabled:opacity-50 min-h-[44px]"
             >
               {saving ? "Sparar..." : "Spara och fortsätt"}
             </button>

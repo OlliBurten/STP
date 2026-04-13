@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
-import { authMiddleware, requireCompany, requireVerifiedCompany } from "../middleware/auth.js";
+import { authMiddleware, requireCompany, requireDriver, requireVerifiedCompany } from "../middleware/auth.js";
 
 export const driversRouter = Router();
 
@@ -89,6 +89,74 @@ driversRouter.get("/", authMiddleware, requireCompany, requireVerifiedCompany, a
       );
     }
     res.json(list);
+  } catch (e) {
+    next(e);
+  }
+});
+
+/** Registrera profilvisning – en gång per företag per dag */
+driversRouter.post("/:id/view", authMiddleware, requireCompany, requireVerifiedCompany, async (req, res, next) => {
+  try {
+    const driverUserId = req.params.id;
+    const viewerUserId = req.userId;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const existing = await prisma.driverProfileView.findFirst({
+      where: { driverUserId, viewerUserId, createdAt: { gte: today } },
+      select: { id: true },
+    });
+    if (!existing) {
+      await prisma.driverProfileView.create({ data: { driverUserId, viewerUserId } });
+    }
+    res.json({ ok: true });
+  } catch (e) {
+    next(e);
+  }
+});
+
+/** Förarens egna profilstatistik */
+driversRouter.get("/me/stats", authMiddleware, requireDriver, async (req, res, next) => {
+  try {
+    const driverUserId = req.userId;
+    const now = new Date();
+    const day7 = new Date(now - 7 * 86400000);
+    const day30 = new Date(now - 30 * 86400000);
+
+    const [views7, views30, viewsTotal, conversationCount, profile] = await Promise.all([
+      prisma.driverProfileView.count({ where: { driverUserId, createdAt: { gte: day7 } } }),
+      prisma.driverProfileView.count({ where: { driverUserId, createdAt: { gte: day30 } } }),
+      prisma.driverProfileView.count({ where: { driverUserId } }),
+      prisma.conversation.count({ where: { driverId: driverUserId } }),
+      prisma.driverProfile.findUnique({ where: { userId: driverUserId } }),
+    ]);
+
+    // Regelbaserade rekommendationer
+    const recommendations = [];
+    if (profile) {
+      if (!profile.visibleToCompanies) {
+        recommendations.push({ type: "warning", text: "Din profil är dold – aktivera synligheten för att synas för företag." });
+      }
+      if (!profile.summary || profile.summary.length < 50) {
+        recommendations.push({ type: "tip", text: "Lägg till en kort presentation om dig själv – det ökar chansen att företag kontaktar dig." });
+      }
+      if (!profile.licenses?.length) {
+        recommendations.push({ type: "tip", text: "Ange dina körkortsbehörigheter (CE, C m.fl.) så att du matchas med rätt jobb." });
+      }
+      if (!profile.certificates?.length) {
+        recommendations.push({ type: "tip", text: "Har du YKB eller ADR? Lägg till dina certifikat för bättre matchning." });
+      }
+      if (!profile.region) {
+        recommendations.push({ type: "tip", text: "Ange din hemregion – det hjälper företag att hitta dig." });
+      }
+      if (!profile.regionsWilling?.length || profile.regionsWilling.length < 2) {
+        recommendations.push({ type: "tip", text: "Lägg till fler regioner du är villig att jobba i för att öka antalet matchningar." });
+      }
+      if (profile.visibleToCompanies && views30 === 0) {
+        recommendations.push({ type: "insight", text: "Ingen har tittat på din profil den senaste månaden. Kontrollera att dina uppgifter är fullständiga och uppdaterade." });
+      }
+    }
+
+    res.json({ views7, views30, viewsTotal, conversationCount, recommendations });
   } catch (e) {
     next(e);
   }

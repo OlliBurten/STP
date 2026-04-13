@@ -127,23 +127,9 @@ export default function ReachOutModal({ driver, jobs, onClose, onSuccess }) {
         </div>
 
         <form onSubmit={handleSubmit}>
-          {mode === "general" && (
-            <div className="mb-4">
-              <label htmlFor="reach-company" className="block text-sm font-medium text-slate-700 mb-2">
-                Ditt företag
-              </label>
-              <select
-                id="reach-company"
-                required
-                value={companyName}
-                onChange={(e) => setCompanyName(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent bg-white"
-              >
-                <option value="">Välj företag</option>
-                {user?.companyName ? (
-                  <option value={user.companyName}>{user.companyName}</option>
-                ) : null}
-              </select>
+          {mode === "general" && companyName && (
+            <div className="mb-4 px-4 py-3 rounded-lg bg-slate-50 border border-slate-200 text-sm text-slate-700">
+              Från: <span className="font-medium">{companyName}</span>
             </div>
           )}
 

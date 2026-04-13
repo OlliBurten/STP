@@ -1,18 +1,53 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { usePageTitle } from "../hooks/usePageTitle";
 import { useChat } from "../context/ChatContext";
 import { fetchMyJobs } from "../api/jobs.js";
 import { getCompanyReviewSummary } from "../api/reviews.js";
 import { fetchMyCompanyProfile } from "../api/companies.js";
-import { CheckIcon, CircleOutlineIcon } from "../components/Icons";
+import { CheckIcon, CircleOutlineIcon, TruckIcon, BellIcon, ArrowRightIcon } from "../components/Icons";
+import OrgSwitcher from "../components/OrgSwitcher";
+
+function ActionCard({ to, title, description, badge, disabled, primary }) {
+  const base =
+    "group relative flex flex-col justify-between rounded-xl border p-5 transition-all min-h-[120px]";
+  const style = disabled
+    ? `${base} border-slate-200 bg-slate-50 opacity-60 cursor-not-allowed`
+    : primary
+    ? `${base} border-[var(--color-primary)] bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-light)] hover:border-[var(--color-primary-light)] shadow-sm`
+    : `${base} border-slate-200 bg-white hover:border-[var(--color-primary)] hover:shadow-sm`;
+
+  const content = (
+    <>
+      <div className="flex items-start justify-between gap-2">
+        <p className={`font-semibold text-base ${primary ? "text-white" : "text-slate-900"}`}>
+          {title}
+          {badge > 0 && (
+            <span className="ml-2 inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-red-500 text-white text-[10px] font-bold">
+              {badge > 99 ? "99+" : badge}
+            </span>
+          )}
+        </p>
+        <ArrowRightIcon className={`w-4 h-4 shrink-0 mt-0.5 transition-transform group-hover:translate-x-0.5 ${primary ? "text-white/70" : "text-slate-400 group-hover:text-[var(--color-primary)]"}`} />
+      </div>
+      <p className={`mt-2 text-sm leading-snug ${primary ? "text-white/80" : "text-slate-500"}`}>
+        {description}
+      </p>
+    </>
+  );
+
+  if (disabled) return <div className={style}>{content}</div>;
+  return <Link to={to} className={style}>{content}</Link>;
+}
 
 export default function ForCompanies() {
-  const { user, isCompany, hasApi, isAdmin } = useAuth();
+  usePageTitle("Översikt");
+  const { user, isCompany, hasApi, isAdmin, activeOrg, userOrgs } = useAuth();
   const { conversations, companyUnreadConversationCount = 0 } = useChat();
   const isVerifiedCompany = !isCompany || user?.companyStatus === "VERIFIED";
   const isTeamMember = Boolean(user?.companyOwnerId && user.companyOwnerId !== user?.id);
-  const [jobCount, setJobCount] = useState(0);
+  const [myJobs, setMyJobs] = useState([]);
   const [reviewSummary, setReviewSummary] = useState(null);
   const [companyProfile, setCompanyProfile] = useState(null);
   const onboardingKey = user?.id ? `drivermatch-onboarding-dismissed:${user.id}:company` : "";
@@ -22,46 +57,41 @@ export default function ForCompanies() {
   });
 
   useEffect(() => {
-    if (!onboardingKey) {
-      setHideOnboarding(false);
-      return;
-    }
+    if (!onboardingKey) { setHideOnboarding(false); return; } // eslint-disable-line react-hooks/set-state-in-effect
     setHideOnboarding(localStorage.getItem(onboardingKey) === "1");
   }, [onboardingKey]);
 
   useEffect(() => {
     if (!hasApi || !isCompany) return;
     fetchMyJobs()
-      .then((rows) => setJobCount(Array.isArray(rows) ? rows.length : 0))
-      .catch(() => setJobCount(0));
+      .then((rows) => setMyJobs(Array.isArray(rows) ? rows : []))
+      .catch(() => setMyJobs([]));
   }, [hasApi, isCompany]);
 
   useEffect(() => {
     if (!hasApi || !isCompany || !user?.id) return;
-    getCompanyReviewSummary(user.id)
-      .then(setReviewSummary)
-      .catch(() => setReviewSummary(null));
+    getCompanyReviewSummary(user.id).then(setReviewSummary).catch(() => setReviewSummary(null));
   }, [hasApi, isCompany, user?.id]);
 
   useEffect(() => {
     if (!hasApi || !isCompany) return;
-    fetchMyCompanyProfile()
-      .then(setCompanyProfile)
-      .catch(() => setCompanyProfile(null));
+    fetchMyCompanyProfile().then(setCompanyProfile).catch(() => setCompanyProfile(null));
   }, [hasApi, isCompany]);
+
+  const activeJobCount = myJobs.filter((j) => j.status === "ACTIVE").length;
 
   const companyConversationCount = useMemo(() => {
     if (!user?.companyName) return 0;
     return conversations.filter((c) => c.companyName === user.companyName).length;
-  }, [conversations, user?.companyName]);
+  }, [conversations, user]);
 
   const onboardingSteps = useMemo(
     () => [
       { label: "Verifiera företagskonto", done: isVerifiedCompany },
-      { label: "Hitta era första relevanta förare", done: companyConversationCount > 0 },
-      { label: "Publicera första jobbet", done: jobCount > 0 },
+      { label: "Hitta och kontakta en förare", done: companyConversationCount > 0 },
+      { label: "Publicera första jobbet", done: myJobs.length > 0 },
     ],
-    [isVerifiedCompany, jobCount, companyConversationCount]
+    [isVerifiedCompany, myJobs.length, companyConversationCount]
   );
   const onboardingDone = onboardingSteps.every((s) => s.done);
 
@@ -75,224 +105,170 @@ export default function ForCompanies() {
     companyProfile &&
     Array.isArray(companyProfile.companySegmentDefaults) &&
     companyProfile.companySegmentDefaults.length > 0;
+
   if (
-    hasApi &&
-    isCompany &&
-    user?.shouldShowOnboarding &&
-    !isTeamMember &&
-    !isAdmin &&
-    !userHasSegments &&
-    companyProfile &&
-    !profileHasSegments
+    hasApi && isCompany && user?.shouldShowOnboarding && !isTeamMember && !isAdmin &&
+    !userHasSegments && companyProfile && !profileHasSegments
   ) {
     return <Navigate to="/foretag/onboarding" replace />;
   }
 
+  const companyName = activeOrg?.name || companyProfile?.companyName || user?.companyName || "Rekryterarkonto";
+
   return (
-    <main className="max-w-6xl mx-auto px-4 sm:px-6 py-10 space-y-8">
-      <section className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="text-sm text-slate-500">Rekryterardashboard</p>
-            <h1 className="mt-1 text-2xl sm:text-3xl font-bold text-slate-900">
-              {companyProfile?.companyName || user?.companyName || "Rekryterarkonto"}
-            </h1>
-            <p className="mt-2 text-slate-600">
-              Börja med att hitta förare, följ upp dialoger och publicera jobb när ni vill bredda inflödet.
-            </p>
+    <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10 space-y-6">
+
+      {/* Page header */}
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div>
+          <div className="flex flex-wrap items-center gap-2 mb-1">
+            <p className="text-sm text-slate-500">Översikt</p>
+            {userOrgs.length > 0 && <OrgSwitcher />}
           </div>
-          <Link
-            to="/foretag/profil"
-            className="inline-flex w-full sm:w-auto items-center justify-center px-4 py-2 rounded-lg border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 min-h-[44px]"
-          >
-            Redigera företagsprofil
-          </Link>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">{companyName}</h1>
+          {!isVerifiedCompany ? (
+            <p className="mt-1 text-sm text-amber-700 font-medium">Väntar på verifiering</p>
+          ) : (
+            <p className="mt-1 text-sm text-slate-500">Rekryterardashboard</p>
+          )}
         </div>
-        {companyUnreadConversationCount > 0 && (
-          <Link
-            to="/foretag/meddelanden"
-            className="mt-6 flex items-center justify-between gap-4 rounded-xl border border-[var(--color-primary)] bg-[var(--color-primary)]/5 p-4 text-left hover:bg-[var(--color-primary)]/10 transition-colors"
-          >
+        <Link
+          to="/foretag/profil"
+          className="inline-flex w-full sm:w-auto items-center justify-center px-4 py-2.5 rounded-lg border border-slate-200 text-slate-700 text-sm font-medium hover:bg-slate-50 shrink-0"
+        >
+          Redigera profil
+        </Link>
+      </div>
+
+      {/* Verification warning */}
+      {!isVerifiedCompany && (
+        <div className="rounded-xl border border-amber-300 bg-amber-50 p-4">
+          <p className="font-semibold text-amber-900">Kontot väntar på verifiering</p>
+          <p className="mt-1 text-sm text-amber-800">
+            Du kan se plattformen, men behöver bli verifierad innan du kan publicera jobb eller kontakta förare. Vi återkommer inom kort.
+          </p>
+        </div>
+      )}
+
+      {/* Unread messages alert */}
+      {companyUnreadConversationCount > 0 && (
+        <Link
+          to="/foretag/meddelanden"
+          className="flex items-center justify-between gap-4 rounded-xl border border-[var(--color-primary)] bg-[var(--color-primary)]/5 p-4 hover:bg-[var(--color-primary)]/10 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <BellIcon className="w-5 h-5 text-[var(--color-primary)] shrink-0" />
             <div>
               <p className="font-semibold text-slate-900">
-                Du har {companyUnreadConversationCount} nya ansökningar att granska
+                {companyUnreadConversationCount} nya ansökningar att granska
               </p>
-              <p className="mt-1 text-sm text-slate-600">
-                Svara på förfrågningar så håller ni rekryteringen i rörelse.
-              </p>
-              <p className="mt-1 text-xs text-slate-500">
-                Saker som lätt glöms: svar inom 24–48 timmar ökar chansen att hitta rätt kandidat.
-              </p>
+              <p className="text-sm text-slate-600">Svar inom 24–48 timmar ökar chansen att hitta rätt kandidat.</p>
             </div>
-            <span className="shrink-0 rounded-lg bg-[var(--color-primary)] text-white px-4 py-2 font-medium">
-              Gå till Meddelanden →
-            </span>
-          </Link>
-        )}
-        <div className="mt-6 grid sm:grid-cols-3 gap-3">
-          <div className="rounded-lg border border-slate-200 p-4">
-            <p className="text-xs text-slate-500">Aktiva jobb</p>
-            <p className="mt-1 text-2xl font-bold text-slate-900">{jobCount}</p>
           </div>
-          <div className="rounded-lg border border-slate-200 p-4">
-            <p className="text-xs text-slate-500">
-              {companyUnreadConversationCount > 0 ? "Nya ansökningar" : "Dialoger"}
-            </p>
-            <p className="mt-1 text-2xl font-bold text-slate-900">
-              {companyUnreadConversationCount > 0 ? companyUnreadConversationCount : companyConversationCount}
-            </p>
-          </div>
-          <div className="rounded-lg border border-slate-200 p-4">
-            <p className="text-xs text-slate-500">Omdömen</p>
-            <p className="mt-1 text-2xl font-bold text-slate-900">
-              {reviewSummary?.reviewCount ? `${reviewSummary.averageRating}/5` : "-"}
-            </p>
-          </div>
+          <ArrowRightIcon className="w-5 h-5 text-[var(--color-primary)] shrink-0" />
+        </Link>
+      )}
+
+      {/* Primary action cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <ActionCard
+          to="/foretag/chaufforer"
+          title="Hitta förare"
+          description="Sök bland tillgängliga yrkesförare och kontakta direkt."
+          disabled={!isVerifiedCompany}
+          primary
+        />
+        <ActionCard
+          to="/foretag/mina-jobb"
+          title="Mina jobb"
+          description={activeJobCount > 0 ? `${activeJobCount} aktiva annonser` : "Inga aktiva annonser"}
+        />
+        <ActionCard
+          to="/foretag/meddelanden"
+          title="Meddelanden"
+          description="Pågående dialoger med förare."
+          badge={companyUnreadConversationCount}
+        />
+        <ActionCard
+          to="/foretag/annonsera"
+          title="Publicera jobb"
+          description="Lägg upp en ny annons och nå fler förare."
+          disabled={!isVerifiedCompany}
+        />
+      </div>
+
+      {/* Stats strip */}
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
+        <div className="rounded-xl border border-slate-200 bg-white p-3 sm:p-4 text-center">
+          <p className="text-xl sm:text-2xl font-bold text-slate-900">{activeJobCount}</p>
+          <p className="mt-0.5 text-xs text-slate-500">Aktiva jobb</p>
         </div>
-        {isCompany && companyProfile && (
-          <div className="mt-6 pt-6 border-t border-slate-200">
-            {companyProfile.companyBransch?.length > 0 && companyProfile.companyRegion ? (
-              <p className="text-sm text-slate-600">
-                <CheckIcon className="w-4 h-4 inline-block mr-1 align-middle text-green-600" /> Ni syns i <Link to="/akerier" className="text-[var(--color-primary)] font-medium hover:underline">Hitta åkerier</Link> i regionen{" "}
-                <strong>{companyProfile.companyRegion}</strong> – förare kan hitta er även utan aktiv annons.
-              </p>
-            ) : (
-              <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-900">
-                <p className="text-sm font-medium">Syns inte i Hitta åkerier ännu</p>
-                <p className="mt-1 text-sm">
-                  Fyll i <strong>bransch</strong> och <strong>region</strong> i företagsprofilen så att förare kan hitta er när de söker efter åkerier i ert område.
-                </p>
-                <Link
-                  to="/foretag/profil"
-                  className="mt-3 inline-block text-sm font-medium text-amber-800 hover:text-amber-900 underline"
-                >
-                  Gå till företagsprofil →
-                </Link>
-              </div>
-            )}
-          </div>
-        )}
-      </section>
-
-      <section className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8">
-        {isCompany && !hideOnboarding && !onboardingDone && (
-          <div className="mb-6 rounded-xl border border-indigo-200 bg-indigo-50 p-5">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <p className="text-base font-semibold text-indigo-900">Nästa steg för att komma igång</p>
-                <p className="mt-1 text-sm text-indigo-800">
-                  Fokusera på första värdet: bli verifierade, hitta relevanta förare och publicera jobb när ni behöver bredda sökningen.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={dismissOnboarding}
-                className="text-xs font-medium text-indigo-700 hover:text-indigo-900"
-              >
-                Dölj guide
-              </button>
-            </div>
-            <ul className="mt-3 space-y-1.5 text-sm">
-              {onboardingSteps.map((step) => (
-                <li key={step.label} className={step.done ? "text-green-700" : "text-indigo-900"}>
-                  {step.done ? <CheckIcon className="w-4 h-4 inline-block mr-1 align-middle text-green-600" /> : <CircleOutlineIcon className="w-4 h-4 inline-block mr-1 align-middle text-slate-400" />} {step.label}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Snabbåtgärder</h2>
-        <p className="mt-2 text-slate-600">
-          Gå direkt till de funktioner som snabbast tar er från behov till relevant kandidat.
-        </p>
-        {isCompany && !isVerifiedCompany && (
-          <div className="mt-6 rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-900">
-            <p className="font-semibold">Företagskontot väntar på verifiering</p>
-            <p className="mt-1 text-sm">
-              Ni kan logga in och se plattformen, men behöver verifiering innan ni kan publicera jobb eller kontakta förare.
-            </p>
-          </div>
-        )}
-        <div className="dm-company-actions mt-8">
-          {isVerifiedCompany ? (
-            <Link
-              to="/foretag/chaufforer"
-              className="inline-flex items-center justify-center px-8 py-4 rounded-xl bg-[var(--color-primary)] text-white font-semibold hover:bg-[var(--color-primary-light)] transition-colors"
-            >
-              Hitta förare
-            </Link>
-          ) : (
-            <span className="inline-flex items-center justify-center px-8 py-4 rounded-xl border-2 border-slate-300 text-slate-400 font-semibold cursor-not-allowed">
-              Hitta förare (väntar verifiering)
-            </span>
-          )}
-          <Link
-            to="/foretag/mina-jobb"
-            className="inline-flex items-center justify-center px-8 py-4 rounded-xl border-2 border-[var(--color-primary)] text-[var(--color-primary)] font-semibold hover:bg-[var(--color-primary)]/5 transition-colors"
-          >
-            Mina jobb
-          </Link>
-          <Link
-            to="/foretag/meddelanden"
-            className={`inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-semibold transition-colors ${
-              companyUnreadConversationCount > 0
-                ? "bg-[var(--color-primary)] text-white hover:opacity-90"
-                : "border-2 border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-primary)]/5"
-            }`}
-          >
-            Meddelanden
-            {companyUnreadConversationCount > 0 && (
-              <span className="inline-flex min-w-[22px] h-[22px] items-center justify-center rounded-full bg-white/20 text-sm">
-                {companyUnreadConversationCount}
-              </span>
-            )}
-          </Link>
-          <Link
-            to="/foretag/profil"
-            className="inline-flex items-center justify-center px-8 py-4 rounded-xl border-2 border-[var(--color-primary)] text-[var(--color-primary)] font-semibold hover:bg-[var(--color-primary)]/5 transition-colors"
-          >
-            Företagsprofil
-          </Link>
-          {isVerifiedCompany ? (
-            <Link
-              to="/foretag/annonsera"
-              className="inline-flex items-center justify-center px-8 py-4 rounded-xl border-2 border-[var(--color-primary)] text-[var(--color-primary)] font-semibold hover:bg-[var(--color-primary)]/5 transition-colors"
-            >
-              Publicera jobb
-            </Link>
-          ) : (
-            <span className="inline-flex items-center justify-center px-8 py-4 rounded-xl border-2 border-slate-300 text-slate-400 font-semibold cursor-not-allowed">
-              Publicera jobb (väntar verifiering)
-            </span>
-          )}
+        <div className="rounded-xl border border-slate-200 bg-white p-3 sm:p-4 text-center">
+          <p className="text-xl sm:text-2xl font-bold text-slate-900">{companyConversationCount}</p>
+          <p className="mt-0.5 text-xs text-slate-500">Dialoger</p>
         </div>
-
-        <div className="mt-8 rounded-xl border border-slate-200 bg-slate-50 p-5">
-          <h2 className="text-base font-semibold text-slate-900">Förtroendeprofil</h2>
-          <p className="mt-1 text-sm text-slate-600">
-            Omdömen och tydliga signaler hjälper er att bygga ett seriöst första intryck över tid.
+        <div className="rounded-xl border border-slate-200 bg-white p-3 sm:p-4 text-center">
+          <p className="text-xl sm:text-2xl font-bold text-slate-900">
+            {reviewSummary?.reviewCount ? `${reviewSummary.averageRating}/5` : "–"}
           </p>
-          <div className="mt-4 grid sm:grid-cols-3 gap-3">
-            <div className="rounded-lg bg-white p-3 border border-slate-200">
-              <p className="text-xs text-slate-500">Snittbetyg</p>
-              <p className="mt-1 text-2xl font-bold text-slate-900">
-                {reviewSummary?.reviewCount ? `${reviewSummary.averageRating}/5` : "-"}
-              </p>
-            </div>
-            <div className="rounded-lg bg-white p-3 border border-slate-200">
-              <p className="text-xs text-slate-500">Antal omdömen</p>
-              <p className="mt-1 text-2xl font-bold text-slate-900">{reviewSummary?.reviewCount || 0}</p>
-            </div>
-            <div className="rounded-lg bg-white p-3 border border-slate-200">
-              <p className="text-xs text-slate-500">Status</p>
-              <p className="mt-1 text-sm font-semibold text-slate-900">
-                {reviewSummary?.reviewCount ? "Aktiv trust-profil" : "Nytt konto"}
-              </p>
-            </div>
-          </div>
+          <p className="mt-0.5 text-xs text-slate-500">
+            {reviewSummary?.reviewCount ? `${reviewSummary.reviewCount} omdömen` : "Omdömen"}
+          </p>
         </div>
-      </section>
+      </div>
+
+      {/* Onboarding checklist */}
+      {isCompany && !hideOnboarding && !onboardingDone && (
+        <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-5">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="font-semibold text-indigo-900">Kom igång – 3 steg</p>
+              <p className="mt-0.5 text-sm text-indigo-700">
+                Slutför dessa för att få ut mesta möjliga av plattformen.
+              </p>
+            </div>
+            <button type="button" onClick={dismissOnboarding} className="text-xs text-indigo-600 hover:text-indigo-800">
+              Dölj
+            </button>
+          </div>
+          <ul className="mt-4 space-y-2">
+            {onboardingSteps.map((step) => (
+              <li key={step.label} className={`flex items-center gap-2 text-sm ${step.done ? "text-green-700" : "text-indigo-900"}`}>
+                {step.done
+                  ? <CheckIcon className="w-4 h-4 text-green-600 shrink-0" />
+                  : <CircleOutlineIcon className="w-4 h-4 text-slate-400 shrink-0" />}
+                {step.label}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Profile visibility in Hitta åkerier */}
+      {isCompany && companyProfile && (
+        companyProfile.companyBransch?.length > 0 && companyProfile.companyRegion ? (
+          <div className="flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+            <CheckIcon className="w-4 h-4 shrink-0 text-green-600" />
+            <span>
+              Ni syns i{" "}
+              <Link to="/akerier" className="font-medium underline hover:text-green-900">
+                Hitta åkerier
+              </Link>{" "}
+              under <strong>{companyProfile.companyRegion}</strong> – förare kan hitta er utan aktiv annons.
+            </span>
+          </div>
+        ) : (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+            <p className="text-sm font-medium text-amber-900">Syns inte i Hitta åkerier</p>
+            <p className="mt-1 text-sm text-amber-800">
+              Lägg till <strong>bransch</strong> och <strong>region</strong> i företagsprofilen så att förare kan hitta er direkt.
+            </p>
+            <Link to="/foretag/profil" className="mt-2 inline-block text-sm font-medium text-amber-800 underline hover:text-amber-900">
+              Uppdatera profil →
+            </Link>
+          </div>
+        )
+      )}
     </main>
   );
 }

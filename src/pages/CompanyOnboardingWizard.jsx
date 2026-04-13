@@ -3,7 +3,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { fetchMyCompanyProfile, updateMyCompanyProfile } from "../api/companies.js";
 import { fetchMyOrganizations, createOrganization } from "../api/organizations.js";
 import { segmentOptions } from "../data/segments";
-import { transportSegmentGroups } from "../data/bransch.js";
+import BranschSearch from "../components/BranschSearch.jsx";
 import { regions } from "../data/mockJobs.js";
 import { useAuth } from "../context/AuthContext";
 import { trackCompanyOnboardingComplete } from "../utils/segmentMetrics";
@@ -15,7 +15,7 @@ const onboardingReasons = [
 ];
 
 export default function CompanyOnboardingWizard() {
-  const { hasApi, refreshUser } = useAuth();
+  const { hasApi, refreshUser, refreshOrgs, switchOrg } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -86,7 +86,7 @@ export default function CompanyOnboardingWizard() {
     setError("");
     setSaving(true);
     try {
-      await createOrganization({
+      const org = await createOrganization({
         name: firstCompany.name.trim(),
         orgNumber: firstCompany.orgNumber.trim(),
         region: firstCompany.region || undefined,
@@ -94,6 +94,8 @@ export default function CompanyOnboardingWizard() {
         bransch: firstCompany.bransch.length > 0 ? firstCompany.bransch : undefined,
       });
       await refreshUser?.();
+      await refreshOrgs?.();
+      if (org?.id) switchOrg?.(org.id);
       trackCompanyOnboardingComplete(firstCompany.segmentDefaults);
       navigate("/foretag", { replace: true });
     } catch (e) {
@@ -181,39 +183,11 @@ export default function CompanyOnboardingWizard() {
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">Bransch (rekommenderat)</label>
             <p className="text-xs text-slate-500 mb-2">Hjälper förare att förstå vilken typ av verksamhet ni har.</p>
-            <div className="space-y-3 max-h-64 overflow-auto rounded-xl border border-slate-200 p-3">
-              {transportSegmentGroups.map((group) => (
-                <div key={group.id}>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{group.label}</p>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {group.options.map((option) => {
-                      const active = firstCompany.bransch.includes(option.value);
-                      return (
-                        <button
-                          key={option.value}
-                          type="button"
-                          onClick={() =>
-                            setFirstCompany((prev) => ({
-                              ...prev,
-                              bransch: active
-                                ? prev.bransch.filter((item) => item !== option.value)
-                                : [...prev.bransch, option.value],
-                            }))
-                          }
-                          className={`px-3 py-2 rounded-lg text-sm border ${
-                            active
-                              ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5 text-[var(--color-primary)]"
-                              : "border-slate-300 text-slate-700 hover:bg-slate-50"
-                          }`}
-                        >
-                          {option.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
+            <BranschSearch
+              value={firstCompany.bransch}
+              onChange={(v) => setFirstCompany((prev) => ({ ...prev, bransch: v }))}
+              placeholder="Sök bransch, t.ex. tankbil, timmerbil..."
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">Transportsegment *</label>

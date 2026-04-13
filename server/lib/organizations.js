@@ -9,12 +9,27 @@ import { prisma } from "./prisma.js";
  * Resolve effective organization for a user (recruiter/company).
  * Supports: UserOrganization (new) + CompanyMember (legacy invite).
  * @param {string} userId
+ * @param {string|null} requestedOrgId - If provided, use this org (validated against user membership)
  * @returns {Promise<{organizationId: string, organization: object, isOwner: boolean} | null>}
  */
-export async function resolveEffectiveOrganization(userId) {
+export async function resolveEffectiveOrganization(userId, requestedOrgId = null) {
+  if (requestedOrgId) {
+    const uo = await prisma.userOrganization.findFirst({
+      where: { userId, organizationId: requestedOrgId },
+      include: { organization: true },
+    });
+    if (uo) {
+      return {
+        organizationId: uo.organizationId,
+        organization: uo.organization,
+        isOwner: uo.role === "OWNER",
+      };
+    }
+  }
   const uo = await prisma.userOrganization.findFirst({
     where: { userId },
     include: { organization: true },
+    orderBy: { joinedAt: "asc" },
   });
   if (uo) {
     return {
@@ -58,6 +73,8 @@ export async function getUserOrganizations(userId) {
   return rows.map((r) => ({
     id: r.organizationId,
     name: r.organization.name,
+    orgNumber: r.organization.orgNumber,
+    status: r.organization.status,
     role: r.role,
   }));
 }

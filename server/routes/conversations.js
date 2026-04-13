@@ -178,10 +178,12 @@ conversationsRouter.post("/", requireVerifiedIfCompany, validateBody(createConve
           select: { name: true },
         });
         if (job?.contact && driver?.name) {
+          const fb = (process.env.FRONTEND_URL || "").split(",")[0]?.trim().replace(/\/$/, "");
           await notifyNewApplication({
             companyEmail: job.contact,
             driverName: driver.name,
             jobTitle,
+            conversationUrl: fb ? `${fb}/foretag/meddelanden/${conversation.id}` : null,
           });
         }
         const recipientIds = await listCompanyRecipientIds({
@@ -267,10 +269,12 @@ conversationsRouter.patch("/:id/select", requireCompany, requireVerifiedCompany,
       },
     });
     if (updated.driver?.email) {
+      const fb = (process.env.FRONTEND_URL || "").split(",")[0]?.trim().replace(/\/$/, "");
       notifyDriverSelected({
         driverEmail: updated.driver.email,
         companyName: updated.company?.companyName || updated.company?.name || "Ett företag",
         jobTitle: updated.jobTitle || "jobb",
+        conversationUrl: fb ? `${fb}/meddelanden/${updated.id}` : null,
       }).catch((e) => console.error("Notify selected driver:", e));
     }
     if (updated.driverId) {
@@ -329,8 +333,10 @@ conversationsRouter.post("/:id/messages", requireVerifiedIfCompany, validateBody
           })
         : [conv.driverId];
     const messagesPath = req.role === "DRIVER" ? "/foretag/meddelanden" : "/meddelanden";
+    const frontendBase = (process.env.FRONTEND_URL || "").split(",")[0]?.trim().replace(/\/$/, "");
+    const conversationUrl = frontendBase ? `${frontendBase}${messagesPath}/${conv.id}` : null;
     if (recipientEmail && preview) {
-      notifyNewMessage({ toEmail: recipientEmail, fromName, preview }).catch((e) =>
+      notifyNewMessage({ toEmail: recipientEmail, fromName, preview, conversationUrl }).catch((e) =>
         console.error("Notify new message:", e)
       );
     }

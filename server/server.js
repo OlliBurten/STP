@@ -17,6 +17,8 @@ if (IS_PRODUCTION) {
   console.log(`[Deployment] ${DEPLOYMENT} | NODE_ENV=production`);
 }
 import cors from "cors";
+import helmet from "helmet";
+import compression from "compression";
 import rateLimit from "express-rate-limit";
 import { requestIdMiddleware, errorLogMiddleware } from "./middleware/requestId.js";
 import { authRouter } from "./routes/auth.js";
@@ -39,6 +41,13 @@ import * as Sentry from "@sentry/node";
 const app = express();
 const PORT = process.env.PORT || 3001;
 app.set("trust proxy", 1);
+
+// Security headers — API doesn't serve HTML so CSP lives in Vercel/frontend config
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false, // needed for OAuth token flows
+}));
+app.use(compression());
 const allowedOrigins = process.env.FRONTEND_URL
   ? process.env.FRONTEND_URL.split(",").map((o) => o.trim()).filter(Boolean)
   : true;
@@ -272,11 +281,26 @@ app.use((err, req, res, next) => {
 
 export { app };
 
+async function shutdown(signal) {
+  console.log(`[shutdown] ${signal} — stänger ned...`);
+  try {
+    const { prisma } = await import("./lib/prisma.js");
+    await prisma.$disconnect();
+  } catch (_) {}
+  try {
+    await Sentry.flush(2000);
+  } catch (_) {}
+  process.exit(0);
+}
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+process.on("SIGINT", () => shutdown("SIGINT"));
+
 if (process.env.APP_LISTEN !== "false") {
-  if (process.env.NODE_ENV === "production" && !process.env.RESEND_API_KEY) {
+  if (IS_PRODUCTION && !process.env.RESEND_API_KEY) {
     console.error(
-      "\n*** KRITISKT: RESEND_API_KEY är inte satt. Verifieringsmail och andra e-postmeddelanden skickas INTE. Sätt RESEND_API_KEY och EMAIL_FROM i Railway (eller annan miljö). Se docs/EPOST-VERIFIERING.md ***\n"
+      "\nKRITISKT: RESEND_API_KEY saknas i produktion. Verifieringsmail kan inte skickas. Sätt RESEND_API_KEY och EMAIL_FROM i Railway.\n"
     );
+    process.exit(1);
   }
   app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);

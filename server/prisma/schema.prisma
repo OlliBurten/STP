@@ -241,6 +241,7 @@ model Job {
   conversations Conversation[]
   reports Report[]
   savedBy SavedJob[]
+  views   JobView[]
 }
 
 model SavedJob {
@@ -252,6 +253,28 @@ model SavedJob {
   createdAt DateTime @default(now())
 
   @@unique([userId, jobId])
+}
+
+model JobView {
+  id        String   @id @default(cuid())
+  jobId     String
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  userId    String?  // null for anonymous viewers
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  @@unique([userId, jobId]) // logged-in users count once
+  @@index([jobId, createdAt])
+}
+
+model DriverProfileView {
+  id           String   @id @default(cuid())
+  driverUserId String
+  viewerUserId String   // the company/recruiter who viewed
+  createdAt    DateTime @default(now())
+
+  @@index([driverUserId, createdAt])
+  @@index([viewerUserId])
 }
 
 model Conversation {

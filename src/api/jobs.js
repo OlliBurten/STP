@@ -39,3 +39,13 @@ export async function unsaveJob(jobId) {
 export async function updateJob(jobId, data) {
   return apiPatch(`/api/jobs/${jobId}`, data);
 }
+
+/** Registrera en visning av ett jobb (fire-and-forget) */
+export function trackJobView(jobId) {
+  return apiPost(`/api/jobs/${jobId}/view`, {});
+}
+
+/** Hämta statistik för ett jobb (endast för annonsens ägare) */
+export async function fetchJobStats(jobId) {
+  return apiGet(`/api/jobs/${jobId}/stats`);
+}

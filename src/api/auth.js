@@ -1,4 +1,4 @@
-import { apiGet, apiPost } from "./client.js";
+import { apiGet, apiPost, apiDelete } from "./client.js";
 
 /** Hämta aktuell inloggad användare (augmenterad med org/segmentDefaults). */
 export async function fetchMe() {
@@ -26,4 +26,9 @@ export async function requestPasswordReset(email) {
 
 export async function resetPassword(token, password) {
   return apiPost("/api/auth/reset-password", { token, password });
+}
+
+/** Raderar kontot och all tillhörande data (GDPR rätt till radering) */
+export async function deleteMyAccount() {
+  return apiDelete("/api/auth/me");
 }

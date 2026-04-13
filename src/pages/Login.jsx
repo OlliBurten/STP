@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { usePageTitle } from "../hooks/usePageTitle";
 import { useAuth } from "../context/AuthContext";
 import { requestPasswordReset, resendVerification } from "../api/auth";
 import { TruckIcon, BuildingIcon } from "../components/Icons";
@@ -7,6 +8,7 @@ import OAuthButtons from "../components/OAuthButtons";
 import ErrorBoundary from "../components/ErrorBoundary";
 
 export default function Login() {
+  usePageTitle("Logga in");
   const {
     loginAsDriver,
     loginAsCompany,
@@ -25,6 +27,10 @@ export default function Login() {
     requestedMode === "register" || requestedMode === "forgot" ? requestedMode : "login"
   ); // login | register | forgot
   const [role, setRole] = useState(requiredRole === "company" ? "company" : "driver");
+  // roleChosen: false = show role picker before form; true = show the registration form
+  const [roleChosen, setRoleChosen] = useState(
+    requestedMode !== "register" || !!requiredRole
+  );
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -53,8 +59,7 @@ export default function Login() {
     const u = data.user;
     const isAdmin = Boolean(u?.isAdmin);
     if (isAdmin) {
-      const adminTarget =
-        from === "/admin" || from?.startsWith("/admin") ? "/admin" : from === "/login" ? "/" : from || "/";
+      const adminTarget = from?.startsWith("/admin") ? from : "/admin";
       setTimeout(() => navigate(adminTarget, { replace: true }), 0);
       return;
     }
@@ -110,7 +115,7 @@ export default function Login() {
       } else {
         const loggedInUser = await loginWithApi(email.trim(), password);
         if (loggedInUser.isAdmin) {
-          navigate(from === "/login" ? "/" : from, { replace: true });
+          navigate(from?.startsWith("/admin") ? from : "/admin", { replace: true });
           return;
         }
         if (loggedInUser.role === "recruiter") {
@@ -215,19 +220,72 @@ export default function Login() {
     );
   }
 
+  // Role picker — shown when entering register mode before the form
+  if (mode === "register" && !roleChosen) {
+    return (
+      <main className="max-w-md mx-auto px-4 py-16">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-slate-900">Skapa konto</h1>
+          <p className="mt-3 text-slate-600">Vad stämmer bäst in på dig?</p>
+        </div>
+        <div className="space-y-3">
+          <button
+            type="button"
+            onClick={() => { setRole("driver"); setRoleChosen(true); setError(""); setInfo(""); }}
+            className="w-full p-5 rounded-xl border-2 border-slate-200 hover:border-[var(--color-primary)] hover:bg-[var(--color-primary)]/5 transition-colors text-left group"
+          >
+            <div className="flex items-center gap-4">
+              <TruckIcon className="w-9 h-9 text-[var(--color-primary)] shrink-0" />
+              <div>
+                <p className="font-semibold text-slate-900 group-hover:text-[var(--color-primary)]">Förare</p>
+                <p className="text-sm text-slate-500 mt-0.5">Sök och ansök till jobb med din profil</p>
+              </div>
+            </div>
+          </button>
+          <button
+            type="button"
+            onClick={() => { setRole("company"); setRoleChosen(true); setError(""); setInfo(""); }}
+            className="w-full p-5 rounded-xl border-2 border-slate-200 hover:border-[var(--color-primary)] hover:bg-[var(--color-primary)]/5 transition-colors text-left group"
+          >
+            <div className="flex items-center gap-4">
+              <BuildingIcon className="w-9 h-9 text-[var(--color-primary)] shrink-0" />
+              <div>
+                <p className="font-semibold text-slate-900 group-hover:text-[var(--color-primary)]">Åkeri / Transportföretag</p>
+                <p className="text-sm text-slate-500 mt-0.5">Publicera jobb och hitta rätt förare</p>
+              </div>
+            </div>
+          </button>
+        </div>
+        <p className="mt-8 text-center text-sm text-slate-600">
+          Har du konto?{" "}
+          <button
+            type="button"
+            onClick={() => { setError(""); setInfo(""); setMode("login"); }}
+            className="text-[var(--color-primary)] font-medium hover:underline"
+          >
+            Logga in
+          </button>
+        </p>
+        <Link to="/" className="mt-4 block text-center text-sm text-slate-500 hover:text-[var(--color-primary)]">
+          ← Tillbaka till startsidan
+        </Link>
+      </main>
+    );
+  }
+
   return (
     <main className="max-w-md mx-auto px-4 py-16">
       <div className="text-center mb-10">
         <h1 className="text-3xl font-bold text-slate-900">
-          {oauthPickingRole ? "Välj roll" : mode === "login" ? "Logga in" : mode === "register" ? "Registrera" : "Glömt lösenord"}
+          {oauthPickingRole ? "Välj roll" : mode === "login" ? "Logga in" : mode === "register" ? "Skapa konto" : "Glömt lösenord"}
         </h1>
         <p className="mt-3 text-slate-600">
           {oauthPickingRole
-            ? "Förare eller rekryterare"
+            ? "Välj om du är förare eller åkeri"
             : mode === "login"
               ? "Ange e-post och lösenord."
               : mode === "register"
-                ? "Skapa konto som förare eller rekryterare."
+                ? role === "driver" ? "Välkommen som förare." : "Välkommen som åkeri."
                 : "Ange e-post så skickar vi en återställningslänk."}
         </p>
       </div>
@@ -250,19 +308,23 @@ export default function Login() {
           <>
         {mode === "register" && (
           <>
-            <div>
-              <label htmlFor="role" className="block text-sm font-medium text-slate-700 mb-1">
-                Jag är
-              </label>
-              <select
-                id="role"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none bg-white"
-              >
-                <option value="driver">Förare</option>
-                <option value="company">Rekryterare</option>
-              </select>
+            {/* Role indicator — clearly shows chosen role with option to change */}
+            <div className="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-slate-50 border border-slate-200">
+              {role === "driver"
+                ? <TruckIcon className="w-5 h-5 text-[var(--color-primary)] shrink-0" />
+                : <BuildingIcon className="w-5 h-5 text-[var(--color-primary)] shrink-0" />}
+              <span className="text-sm font-medium text-slate-800 flex-1">
+                {role === "driver" ? "Förare" : "Åkeri / Transportföretag"}
+              </span>
+              {!requiredRole && (
+                <button
+                  type="button"
+                  onClick={() => setRoleChosen(false)}
+                  className="text-xs text-[var(--color-primary)] hover:underline shrink-0"
+                >
+                  Ändra
+                </button>
+              )}
             </div>
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-slate-700 mb-1">
@@ -280,7 +342,7 @@ export default function Login() {
             </div>
             {role === "company" && (
               <p className="text-sm text-slate-600">
-                Du lägger till åkeri/företag i nästa steg efter registrering.
+                Du lägger till ditt åkeri/företag i nästa steg efter registrering.
               </p>
             )}
           </>
@@ -403,6 +465,7 @@ export default function Login() {
                 setError("");
                 setInfo("");
                 setMode("register");
+                setRoleChosen(false);
               }}
               className="text-[var(--color-primary)] font-medium hover:underline"
             >

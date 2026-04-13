@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { usePageTitle } from "../hooks/usePageTitle";
 import { CheckIcon, ChartBarIcon, ShieldCheckIcon, ClockIcon, TruckIcon, BuildingIcon, ArrowRightIcon } from "../components/Icons";
 
 /** När elementet syns i viewport sätts inView till true (stannar true). Respekterar prefers-reduced-motion. */
@@ -61,28 +62,42 @@ const FAQ_ITEMS = [
   {
     id: "faq-1",
     question: "Är STP bemanning?",
-    answer: "Nej. STP möjliggör direktkontakt mellan förare och åkerier utan mellanhänder.",
+    answer: "Nej. STP är inte ett bemanningsbolag. Vi möjliggör direktkontakt mellan förare och åkerier — inga mellanhänder tar en del av lönen.",
   },
   {
     id: "faq-2",
     question: "Hur fungerar verifiering?",
-    answer: "Vi bygger stegvis verifiering av uppgifter som behörigheter och erfarenhet.",
+    answer: "Åkerier verifieras mot Bolagsverket innan de kan kontakta förare. Stegvis verifiering av körkort och certifikat byggs ut löpande i samarbete med branschen.",
   },
   {
     id: "faq-3",
     question: "Vem äger profilen?",
-    answer: "Föraren äger sin profil och styr synligheten.",
+    answer: "Du äger din profil och styr vad som är synligt. Du kan när som helst stänga av synligheten, uppdatera uppgifter eller radera kontot.",
   },
   {
     id: "faq-4",
-    question: "Kostar det?",
-    answer: "STP är under uppbyggnad och testas tillsammans med branschen.",
+    question: "Kostar det något?",
+    answer: "STP är gratis under betafasen för alla förare och åkerier. Vi meddelar tydligt i god tid innan vi introducerar betalda funktioner.",
   },
 ];
 
-const HERO_ROTATING_WORDS = ["Förare", "Åkeri", "Matchning"];
+const HOW_IT_WORKS = {
+  driver: [
+    { step: "1", text: "Skapa konto och fyll i din profil — körkort, region och tillgänglighet." },
+    { step: "2", text: "Välj om du vill vara synlig för åkerier direkt eller bara söka jobb." },
+    { step: "3", text: "Bli hittad eller ansök — all kontakt sker via plattformen." },
+  ],
+  company: [
+    { step: "1", text: "Registrera ditt åkeri och verifiera kontot." },
+    { step: "2", text: "Publicera en annons eller sök direkt bland förare med rätt behörigheter." },
+    { step: "3", text: "Kontakta förare direkt — inga mellanhänder, ingen provision." },
+  ],
+};
+
+const HERO_ROTATING_WORDS = ["Förare.", "Åkeri.", "Match."];
 
 export default function Home() {
+  usePageTitle();
   const { user, isDriver, isCompany, isAdmin } = useAuth();
   const [faqOpen, setFaqOpen] = useState(null);
   const [heroWordIndex, setHeroWordIndex] = useState(0);
@@ -94,9 +109,10 @@ export default function Home() {
     return () => clearInterval(id);
   }, []);
 
-  const snapshotCount1 = useCountUp(4080, 1600, true);
-  const snapshotCount2 = useCountUp(5662, 1600, true);
-  const snapshotCount3 = useCountUp(36, 1400, true);
+  const [heroRef, heroInView] = useInView();
+  const snapshotCount1 = useCountUp(4080, 1600, heroInView);
+  const snapshotCount2 = useCountUp(5662, 1600, heroInView);
+  const snapshotCount3 = useCountUp(36, 1400, heroInView);
 
   const [problemRef, problemInView] = useInView();
   const [solutionRef, solutionInView] = useInView();
@@ -107,9 +123,9 @@ export default function Home() {
   const reveal = (inView) =>
     `transition-all duration-700 ease-out ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`;
 
-  if (user) {
+  if (user && !isAdmin) {
     if (isCompany) {
-      if (user.shouldShowOnboarding && !isAdmin && (!Array.isArray(user.companySegmentDefaults) || user.companySegmentDefaults.length === 0)) {
+      if (user.shouldShowOnboarding && (!Array.isArray(user.companySegmentDefaults) || user.companySegmentDefaults.length === 0)) {
         return <Navigate to="/foretag/onboarding" replace />;
       }
       return <Navigate to="/foretag" replace />;
@@ -119,27 +135,42 @@ export default function Home() {
 
   return (
     <main>
-      {/* Hero – två kolumner: vänster copy, höger STP Snapshot */}
+      {/* Hero – truck image background, vänster copy, höger STP Snapshot */}
       <section
-        className="relative bg-gradient-to-b from-[var(--color-primary)] to-[var(--color-primary-light)] text-white overflow-hidden"
+        ref={heroRef}
+        className="relative text-white overflow-hidden"
         aria-labelledby="hero-heading"
+        style={{
+          backgroundImage: "url('/hero.png')",
+          backgroundSize: "cover",
+          backgroundPosition: "center 40%",
+        }}
       >
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 left-0 w-96 h-96 bg-white rounded-full -translate-x-1/2 -translate-y-1/2" />
-          <div className="absolute bottom-0 right-0 w-64 h-64 bg-[var(--color-accent)] rounded-full translate-x-1/2 translate-y-1/2" />
-        </div>
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-14 sm:py-16 lg:py-20 min-h-[70vh] flex items-center">
+        {/* Gradient overlay: teal brand color vänster → mörk transparent höger */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0d4f4f]/95 via-[#0d4f4f]/75 to-black/50" />
+        {/* Subtil mörkare botten för bättre textläsbarhet på mobil */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-20 lg:py-28 min-h-[80vh] flex items-center">
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-12 w-full items-center">
             <div className="space-y-5 sm:space-y-6">
               <h1
                 id="hero-heading"
                 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1]"
               >
-                <span className="whitespace-nowrap">
-                  Rätt{" "}
-                  <span key={heroWordIndex} className="inline-block min-w-[10ch] text-[var(--color-accent)] animate-fade-in">
-                    {HERO_ROTATING_WORDS[heroWordIndex]}.
-                  </span>
+                <span className="block">Rätt</span>
+                <span className="relative block h-[1.45em] overflow-hidden">
+                  {HERO_ROTATING_WORDS.map((word, i) => (
+                    <span
+                      key={word}
+                      className="absolute inset-x-0 bottom-0 text-[var(--color-accent)] transition-all duration-500 ease-in-out"
+                      style={{
+                        opacity: i === heroWordIndex ? 1 : 0,
+                        transform: i === heroWordIndex ? "translateY(0)" : "translateY(0.4em)",
+                      }}
+                    >
+                      {word}
+                    </span>
+                  ))}
                 </span>
               </h1>
               <p className="max-w-xl text-lg sm:text-xl text-white/90 leading-relaxed">
@@ -169,8 +200,8 @@ export default function Home() {
                 <span className="text-lg leading-none" aria-hidden>↓</span>
               </a>
             </div>
-            {/* STP Snapshot – stat-cards + källa, vertikalt centrerad i hero */}
-            <div className="bg-white/10 backdrop-blur rounded-2xl border border-white/20 p-6 lg:p-8 shadow-xl self-center">
+            {/* STP Snapshot – stat-cards + källa, vertikalt centrerad i hero. Dold på mobil för att hålla CTAs i fokus. */}
+            <div className="hidden lg:block bg-white/10 backdrop-blur rounded-2xl border border-white/20 p-6 lg:p-8 shadow-xl self-center">
               <p className="text-sm font-semibold text-white/90 uppercase tracking-wide mb-4">STP Snapshot</p>
               <div className="space-y-4">
                 <div>
@@ -200,56 +231,57 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Utmaningen – vänsterjusterad, två kolumner, problemboxar */}
+      {/* Utmaningen – vänsterjusterad, två kolumner, lätta kort */}
       <section
         ref={problemRef}
-        className={`bg-slate-100/80 border-b border-slate-200 py-16 lg:py-24 ${reveal(problemInView)}`}
+        className={`bg-white border-b border-slate-200 py-16 lg:py-20 ${reveal(problemInView)}`}
         aria-labelledby="problem-heading"
       >
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="grid lg:grid-cols-5 gap-10 lg:gap-12 items-start">
             <div className="lg:col-span-2">
+              <p className="text-xs font-semibold uppercase tracking-widest text-[var(--color-primary)] mb-3">Bakgrund</p>
               <h2 id="problem-heading" className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">
                 Utmaningen i dagens transportbransch
               </h2>
-              <p className="mt-5 text-lg text-slate-700 leading-relaxed">
+              <p className="mt-5 text-lg text-slate-600 leading-relaxed">
                 Svensk transport saknar en samlad och kvalitetssäkrad digital struktur för kompetens och matchning.
               </p>
-              <p className="mt-4 text-slate-700 leading-relaxed">
-                Samtidigt finns både kompetenta förare och seriösa åkerier – men strukturen som för dem samman på ett tryggt och kvalitetssäkrat sätt saknas.
+              <p className="mt-4 text-slate-500 leading-relaxed">
+                Kompetenta förare och seriösa åkerier finns — men strukturen som för dem samman på ett tryggt sätt saknas.
               </p>
             </div>
-            <div className="lg:col-span-3 space-y-6">
-              <div className="bg-[var(--color-primary)] rounded-xl border border-[var(--color-primary)] p-6 shadow-lg hover:shadow-xl hover:bg-[var(--color-primary-light)] transition-all duration-300 flex gap-4">
-                <span className="shrink-0 w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-[var(--color-accent)]">
+            <div className="lg:col-span-3 space-y-4">
+              <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex gap-4">
+                <span className="shrink-0 w-10 h-10 rounded-xl bg-[var(--color-primary)]/10 flex items-center justify-center text-[var(--color-primary)]">
                   <ChartBarIcon className="w-5 h-5" />
                 </span>
                 <div>
-                  <h3 className="text-lg font-semibold text-white">Brist på samlad kompetensöversikt</h3>
-                  <p className="mt-3 text-white/90 leading-relaxed">
-                    Förare och åkerier möts idag genom splittrade och informella kanaler. Det saknas en gemensam struktur där kompetens, tillgänglighet och behov tydligt framgår.
+                  <h3 className="text-base font-semibold text-slate-900">Brist på samlad kompetensöversikt</h3>
+                  <p className="mt-1.5 text-slate-600 leading-relaxed text-sm">
+                    Förare och åkerier möts idag via Facebook-grupper och generiska jobbsajter. Det saknas en gemensam struktur för körkort, tillgänglighet och behov.
                   </p>
                 </div>
               </div>
-              <div className="bg-[var(--color-primary)] rounded-xl border border-[var(--color-primary)] p-6 shadow-lg hover:shadow-xl hover:bg-[var(--color-primary-light)] transition-all duration-300 flex gap-4">
-                <span className="shrink-0 w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-[var(--color-accent)]">
+              <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex gap-4">
+                <span className="shrink-0 w-10 h-10 rounded-xl bg-[var(--color-primary)]/10 flex items-center justify-center text-[var(--color-primary)]">
                   <ShieldCheckIcon className="w-5 h-5" />
                 </span>
                 <div>
-                  <h3 className="text-lg font-semibold text-white">Otydlig kvalitet och verifiering</h3>
-                  <p className="mt-3 text-white/90 leading-relaxed">
-                    Rekrytering sker ofta utan transparent information om behörigheter och erfarenhet, vilket skapar osäkerhet för båda parter.
+                  <h3 className="text-base font-semibold text-slate-900">Ingen kvalitetssäkring</h3>
+                  <p className="mt-1.5 text-slate-600 leading-relaxed text-sm">
+                    Rekrytering sker utan transparent information om behörigheter och erfarenhet. Bemanningsbolag tjänar på osäkerheten — förare och åkerier betalar priset.
                   </p>
                 </div>
               </div>
-              <div className="bg-[var(--color-primary)] rounded-xl border border-[var(--color-primary)] p-6 shadow-lg hover:shadow-xl hover:bg-[var(--color-primary-light)] transition-all duration-300 flex gap-4">
-                <span className="shrink-0 w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-[var(--color-accent)]">
+              <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex gap-4">
+                <span className="shrink-0 w-10 h-10 rounded-xl bg-[var(--color-primary)]/10 flex items-center justify-center text-[var(--color-primary)]">
                   <ClockIcon className="w-5 h-5" />
                 </span>
                 <div>
-                  <h3 className="text-lg font-semibold text-white">Tidskrävande och ineffektiva processer</h3>
-                  <p className="mt-3 text-white/90 leading-relaxed">
-                    Matchning sker manuellt och utan en gemensam standard, vilket förlänger rekryteringstiden och ökar risken för felrekrytering.
+                  <h3 className="text-base font-semibold text-slate-900">Tidskrävande och ineffektivt</h3>
+                  <p className="mt-1.5 text-slate-600 leading-relaxed text-sm">
+                    Matchning sker manuellt och utan struktur. Bra annonser försvinner i bruset inom 24 timmar och bra kandidater hittas aldrig.
                   </p>
                 </div>
               </div>
@@ -259,129 +291,162 @@ export default function Home() {
       </section>
 
       {/* Vår lösning – 2x2-kort med ikoner */}
-      <section ref={solutionRef} className={`bg-slate-50 py-16 lg:py-20 ${reveal(solutionInView)}`} aria-labelledby="solution-heading">
+      <section ref={solutionRef} className={`bg-slate-50 border-b border-slate-200 py-16 lg:py-20 ${reveal(solutionInView)}`} aria-labelledby="solution-heading">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="text-center">
+          <div className="text-center mb-10">
+            <p className="text-xs font-semibold uppercase tracking-widest text-[var(--color-primary)] mb-3">Lösningen</p>
             <h2 id="solution-heading" className="text-2xl sm:text-3xl font-bold text-slate-900">
-              Vår lösning
-            </h2>
-            <p className="mt-4 text-xl text-slate-700 font-medium">
               En samlande digital struktur för svensk transport
-            </p>
-            <p className="mt-4 text-slate-700 leading-relaxed max-w-2xl mx-auto">
-              STP samlar branschen i en transparent och kvalitetssäkrad struktur där:
+            </h2>
+            <p className="mt-4 text-slate-600 leading-relaxed max-w-2xl mx-auto">
+              STP samlar branschen i en transparent och kvalitetssäkrad plattform — utan mellanhänder.
             </p>
           </div>
-          <ul className="mt-10 grid sm:grid-cols-2 gap-6 list-none p-0 m-0">
-            <li className="bg-white rounded-xl border border-slate-200 p-6 lg:p-8 shadow-sm hover:shadow-md transition-all duration-300 flex gap-4">
-              <span className="shrink-0 w-12 h-12 rounded-xl bg-[var(--color-primary)] flex items-center justify-center text-white">
-                <TruckIcon className="w-6 h-6" />
+          <ul className="grid sm:grid-cols-2 gap-5 list-none p-0 m-0">
+            <li className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-shadow duration-200 flex gap-4">
+              <span className="shrink-0 w-10 h-10 rounded-xl bg-[var(--color-primary)]/10 flex items-center justify-center text-[var(--color-primary)]">
+                <TruckIcon className="w-5 h-5" />
               </span>
               <div>
-                <h3 className="font-semibold text-slate-900 text-lg">Förare bygger professionella och verifierade profiler</h3>
-                <p className="mt-2 text-slate-600 text-sm leading-relaxed">Din yrkesidentitet samlad – behörigheter, erfarenhet och tillgänglighet i en plats.</p>
+                <h3 className="font-semibold text-slate-900">Förare bygger professionella profiler</h3>
+                <p className="mt-1.5 text-slate-500 text-sm leading-relaxed">Behörigheter, erfarenhet och tillgänglighet samlat på ett ställe.</p>
               </div>
             </li>
-            <li className="bg-white rounded-xl border border-slate-200 p-6 lg:p-8 shadow-sm hover:shadow-md transition-all duration-300 flex gap-4">
-              <span className="shrink-0 w-12 h-12 rounded-xl bg-[var(--color-primary)] flex items-center justify-center text-white">
-                <BuildingIcon className="w-6 h-6" />
+            <li className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-shadow duration-200 flex gap-4">
+              <span className="shrink-0 w-10 h-10 rounded-xl bg-[var(--color-primary)]/10 flex items-center justify-center text-[var(--color-primary)]">
+                <BuildingIcon className="w-5 h-5" />
               </span>
               <div>
-                <h3 className="font-semibold text-slate-900 text-lg">Åkerier får tydlig överblick över kompetens och tillgänglighet</h3>
-                <p className="mt-2 text-slate-600 text-sm leading-relaxed">Rätt kompetens när ni behöver den – utan mellanhänder.</p>
+                <h3 className="font-semibold text-slate-900">Åkerier får tydlig kompetensöversikt</h3>
+                <p className="mt-1.5 text-slate-500 text-sm leading-relaxed">Rätt kompetens när ni behöver den — utan mellanhänder.</p>
               </div>
             </li>
-            <li className="bg-white rounded-xl border border-slate-200 p-6 lg:p-8 shadow-sm hover:shadow-md transition-all duration-300 flex gap-4">
-              <span className="shrink-0 w-12 h-12 rounded-xl bg-[var(--color-primary)] flex items-center justify-center text-white">
-                <ArrowRightIcon className="w-6 h-6" />
+            <li className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-shadow duration-200 flex gap-4">
+              <span className="shrink-0 w-10 h-10 rounded-xl bg-[var(--color-primary)]/10 flex items-center justify-center text-[var(--color-primary)]">
+                <ArrowRightIcon className="w-5 h-5" />
               </span>
               <div>
-                <h3 className="font-semibold text-slate-900 text-lg">Matchning sker direkt mellan parter</h3>
-                <p className="mt-2 text-slate-600 text-sm leading-relaxed">Förare och åkerier tar kontakt direkt – enkel och transparent.</p>
+                <h3 className="font-semibold text-slate-900">Matchning direkt mellan parter</h3>
+                <p className="mt-1.5 text-slate-500 text-sm leading-relaxed">Förare och åkerier tar kontakt direkt — enkelt och transparent.</p>
               </div>
             </li>
-            <li className="bg-white rounded-xl border border-slate-200 p-6 lg:p-8 shadow-sm hover:shadow-md transition-all duration-300 flex gap-4">
-              <span className="shrink-0 w-12 h-12 rounded-xl bg-[var(--color-primary)] flex items-center justify-center text-white">
-                <ShieldCheckIcon className="w-6 h-6" />
+            <li className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-shadow duration-200 flex gap-4">
+              <span className="shrink-0 w-10 h-10 rounded-xl bg-[var(--color-primary)]/10 flex items-center justify-center text-[var(--color-primary)]">
+                <ShieldCheckIcon className="w-5 h-5" />
               </span>
               <div>
-                <h3 className="font-semibold text-slate-900 text-lg">Kvalitet och seriositet står i centrum</h3>
-                <p className="mt-2 text-slate-600 text-sm leading-relaxed">Verifierade uppgifter och tydliga villkor – tryggare för alla.</p>
+                <h3 className="font-semibold text-slate-900">Kvalitet och seriositet i centrum</h3>
+                <p className="mt-1.5 text-slate-500 text-sm leading-relaxed">Verifierade uppgifter och tydliga villkor — tryggare för alla parter.</p>
               </div>
             </li>
           </ul>
         </div>
       </section>
 
-      {/* En branschplattform – inte en jobbsite: hela sektionen grön */}
-      <section ref={calloutRef} id="vad-ar-stp" className={`bg-[var(--color-primary)] py-16 lg:py-20 ${reveal(calloutInView)}`} aria-labelledby="callout-heading">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6">
-          <h2 id="callout-heading" className="text-2xl sm:text-3xl font-bold text-white">
-            En branschplattform – inte en jobbsite
-          </h2>
-          <ul className="mt-6 space-y-3 text-white/95">
-            <li className="flex items-start gap-3">
-              <span className="text-[var(--color-accent)] shrink-0 mt-0.5" aria-hidden><CheckIcon className="w-5 h-5" /></span>
-              STP är en neutral digital struktur för förare och åkerier.
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="text-[var(--color-accent)] shrink-0 mt-0.5" aria-hidden><CheckIcon className="w-5 h-5" /></span>
-              STP möjliggör direktkontakt mellan parter – utan mellanhänder.
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="text-[var(--color-accent)] shrink-0 mt-0.5" aria-hidden><CheckIcon className="w-5 h-5" /></span>
-              STP fokuserar på kvalitet, transparens och långsiktig kompetensförsörjning.
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="text-[var(--color-accent)] shrink-0 mt-0.5" aria-hidden><CheckIcon className="w-5 h-5" /></span>
-              STP utvecklas i dialog med branschens aktörer.
-            </li>
-          </ul>
-          <p className="mt-6 pt-6 border-t border-white/20 text-sm text-white/80">
-            Inte bemanning · Inte social grupp · Inte otydlig matchning
-          </p>
+      {/* Så funkar det – två kolumner förare / åkeri */}
+      <section ref={calloutRef} id="sa-fungerar-det-steg" className={`bg-white border-t border-slate-200 py-16 lg:py-20 ${reveal(calloutInView)}`}>
+        <div className="max-w-5xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-12">
+            <p className="text-xs font-semibold uppercase tracking-widest text-[var(--color-primary)] mb-3">Kom igång</p>
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">Så funkar det</h2>
+            <p className="mt-3 text-slate-600 max-w-xl mx-auto">Kom igång på tre steg — oavsett om du är förare eller åkeri.</p>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-8">
+            <div className="rounded-2xl border border-slate-200 p-6 lg:p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--color-primary)] text-white">
+                  <TruckIcon className="w-4 h-4" />
+                </span>
+                <h3 className="font-bold text-slate-900 text-lg">För förare</h3>
+              </div>
+              <ol className="space-y-5">
+                {HOW_IT_WORKS.driver.map(({ step, text }) => (
+                  <li key={step} className="flex gap-4">
+                    <span className="shrink-0 flex h-7 w-7 items-center justify-center rounded-full bg-[var(--color-primary)]/10 text-[var(--color-primary)] text-sm font-bold">{step}</span>
+                    <p className="text-slate-700 text-sm leading-relaxed pt-0.5">{text}</p>
+                  </li>
+                ))}
+              </ol>
+              <Link to="/login" state={{ initialMode: "register", requiredRole: "driver" }}
+                className="mt-8 inline-flex items-center gap-2 rounded-xl bg-[var(--color-primary)] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[var(--color-primary-light)] transition-colors min-h-[44px]">
+                Skapa förarkonto <ArrowRightIcon className="w-4 h-4" />
+              </Link>
+            </div>
+            <div className="rounded-2xl border border-slate-200 p-6 lg:p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--color-accent)] text-slate-900">
+                  <BuildingIcon className="w-4 h-4" />
+                </span>
+                <h3 className="font-bold text-slate-900 text-lg">För åkerier</h3>
+              </div>
+              <ol className="space-y-5">
+                {HOW_IT_WORKS.company.map(({ step, text }) => (
+                  <li key={step} className="flex gap-4">
+                    <span className="shrink-0 flex h-7 w-7 items-center justify-center rounded-full bg-[var(--color-primary)]/10 text-[var(--color-primary)] text-sm font-bold">{step}</span>
+                    <p className="text-slate-700 text-sm leading-relaxed pt-0.5">{text}</p>
+                  </li>
+                ))}
+              </ol>
+              <Link to="/login" state={{ initialMode: "register", requiredRole: "company" }}
+                className="mt-8 inline-flex items-center gap-2 rounded-xl border-2 border-[var(--color-primary)] px-5 py-2.5 text-sm font-semibold text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white transition-colors min-h-[44px]">
+                Registrera åkeri <ArrowRightIcon className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+          {/* Social proof */}
+          <div className="mt-12 pt-8 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-center gap-3 text-sm text-slate-600">
+            <span className="font-medium text-slate-500 uppercase tracking-wide text-xs">Välkomnades av</span>
+            <div className="flex flex-wrap justify-center gap-4">
+              <span className="inline-flex items-center gap-1.5 font-medium text-slate-700">
+                <CheckIcon className="w-4 h-4 text-green-600" /> Transportföretagen
+              </span>
+              <span className="inline-flex items-center gap-1.5 font-medium text-slate-700">
+                <CheckIcon className="w-4 h-4 text-green-600" /> Sveriges Åkeriföretag (SÅ)
+              </span>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* FAQ – två kolumner: vänster rubrik + intro, höger gröna kort */}
+      {/* FAQ – två kolumner: vänster rubrik + intro, höger ren accordion */}
       <section ref={faqRef} id="sa-fungerar-det" className={`bg-slate-50 py-16 lg:py-20 border-t border-slate-200 ${reveal(faqInView)}`} aria-labelledby="faq-heading">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="grid lg:grid-cols-5 gap-10 lg:gap-12 items-start">
             <div className="lg:col-span-2">
+              <p className="text-xs font-semibold uppercase tracking-widest text-[var(--color-primary)] mb-3">FAQ</p>
               <h2 id="faq-heading" className="text-2xl sm:text-3xl font-bold text-slate-900">
                 Vanliga frågor
               </h2>
-              <p className="mt-4 text-slate-700 leading-relaxed">
-                Här finns korta svar på det vi får frågor om oftast. Saknar du något – hör av dig till oss.
+              <p className="mt-4 text-slate-500 leading-relaxed">
+                Korta svar på det vi får frågor om oftast. Saknar du något — hör av dig.
               </p>
             </div>
-            <ul className="lg:col-span-3 space-y-4 list-none p-0 m-0" role="list">
+            <ul className="lg:col-span-3 divide-y divide-slate-200 border border-slate-200 rounded-2xl overflow-hidden list-none p-0 m-0" role="list">
               {FAQ_ITEMS.map((item) => {
                 const isOpen = faqOpen === item.id;
                 return (
-                  <li key={item.id} className="rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow">
-                    <div className="bg-[var(--color-primary)]">
-                      <button
-                        type="button"
-                        onClick={() => setFaqOpen(isOpen ? null : item.id)}
-                        className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left font-semibold text-white hover:bg-[var(--color-primary-light)]/80 transition-colors"
-                        aria-expanded={isOpen}
-                        aria-controls={`${item.id}-answer`}
-                        id={`${item.id}-q`}
-                      >
-                        {item.question}
-                        <span className="shrink-0 flex h-8 w-8 items-center justify-center rounded-lg bg-white/20 text-white font-mono text-lg" aria-hidden>
-                          {isOpen ? "−" : "+"}
-                        </span>
-                      </button>
-                      <div
-                        id={`${item.id}-answer`}
-                        role="region"
-                        aria-labelledby={`${item.id}-q`}
-                        className={isOpen ? "block" : "hidden"}
-                      >
-                        <p className="px-5 pb-4 pt-0 text-white/95 text-sm leading-relaxed border-t border-white/20 mt-0 pt-4 mx-5">{item.answer}</p>
-                      </div>
+                  <li key={item.id}>
+                    <button
+                      type="button"
+                      onClick={() => setFaqOpen(isOpen ? null : item.id)}
+                      className={`w-full flex items-center justify-between gap-4 px-5 py-4 text-left font-semibold text-sm transition-colors ${isOpen ? "bg-[var(--color-primary)]/5 text-[var(--color-primary)]" : "bg-white text-slate-900 hover:bg-slate-50"}`}
+                      aria-expanded={isOpen}
+                      aria-controls={`${item.id}-answer`}
+                      id={`${item.id}-q`}
+                    >
+                      {item.question}
+                      <span className={`shrink-0 flex h-7 w-7 items-center justify-center rounded-lg border font-mono text-base transition-colors ${isOpen ? "border-[var(--color-primary)]/30 text-[var(--color-primary)]" : "border-slate-200 text-slate-400"}`} aria-hidden>
+                        {isOpen ? "−" : "+"}
+                      </span>
+                    </button>
+                    <div
+                      id={`${item.id}-answer`}
+                      role="region"
+                      aria-labelledby={`${item.id}-q`}
+                      className="overflow-hidden transition-all duration-300 ease-in-out"
+                      style={{ maxHeight: isOpen ? "200px" : "0px" }}
+                    >
+                      <p className="px-5 pb-5 pt-1 text-slate-600 text-sm leading-relaxed">{item.answer}</p>
                     </div>
                   </li>
                 );
@@ -391,14 +456,15 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Avslutande CTA – ljus bakgrund i linje med FAQ */}
-      <section ref={ctaRef} className={`bg-slate-50 py-14 lg:py-16 border-t border-slate-200 ${reveal(ctaInView)}`} aria-labelledby="cta-heading">
+      {/* Avslutande CTA – teal-bakgrund för tydlig avslutning */}
+      <section ref={ctaRef} className={`bg-[var(--color-primary)] py-20 lg:py-24 ${reveal(ctaInView)}`} aria-labelledby="cta-heading">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
-          <h2 id="cta-heading" className="text-2xl sm:text-3xl font-bold text-slate-900">
+          <p className="text-xs font-semibold uppercase tracking-widest text-white/60 mb-4">Kom igång idag</p>
+          <h2 id="cta-heading" className="text-2xl sm:text-3xl font-bold text-white">
             Bygg framtidens transport tillsammans
           </h2>
-          <p className="mt-4 text-slate-700 text-lg leading-relaxed">
-            Sveriges Transportplattform är öppen för förare och åkerier som vill bidra till en mer strukturerad, transparent och kvalitetssäkrad transportnäring.
+          <p className="mt-4 text-white/80 text-lg leading-relaxed">
+            Sveriges Transportplattform är öppen för förare och åkerier som vill bidra till en mer strukturerad och transparent transportnäring.
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-4">
             <Link
@@ -411,9 +477,9 @@ export default function Home() {
             <Link
               to="/login"
               state={{ initialMode: "register", requiredRole: "company" }}
-              className="inline-flex items-center justify-center min-h-[44px] px-8 py-3.5 rounded-xl border-2 border-[var(--color-primary)] text-[var(--color-primary)] font-semibold hover:bg-[var(--color-primary)] hover:text-white transition-colors"
+              className="inline-flex items-center justify-center min-h-[44px] px-8 py-3.5 rounded-xl bg-white/15 text-white font-semibold border border-white/30 hover:bg-white/25 transition-colors"
             >
-              Skapa rekryterarkonto
+              Registrera åkeri
             </Link>
           </div>
         </div>
