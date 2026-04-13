@@ -244,7 +244,7 @@ export default function VisionPresentation() {
             </Link>
           </div>
           <p className="mt-6 text-sm text-white/50">
-            hej@transportplattformen.se
+            partner@transportplattformen.se
           </p>
         </section>
 

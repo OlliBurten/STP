@@ -900,7 +900,7 @@ export default function Profile() {
                 logout();
                 navigate("/", { replace: true });
               } catch {
-                alert("Något gick fel. Kontakta oss på hej@transportplattformen.se om problemet kvarstår.");
+                alert("Något gick fel. Kontakta oss på support@transportplattformen.se om problemet kvarstår.");
                 setDeletingAccount(false);
               }
             }}

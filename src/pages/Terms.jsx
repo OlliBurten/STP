@@ -32,8 +32,8 @@ export default function Terms() {
             Du måste vara minst 18 år och ange korrekta uppgifter vid registrering. Du ansvarar för
             att hålla ditt lösenord konfidentiellt och för all aktivitet som sker via ditt konto.
             Vid misstänkt obehörig åtkomst ska du omedelbart kontakta oss på{" "}
-            <a href="mailto:hej@transportplattformen.se" className="text-[var(--color-primary)] hover:underline">
-              hej@transportplattformen.se
+            <a href="mailto:support@transportplattformen.se" className="text-[var(--color-primary)] hover:underline">
+              support@transportplattformen.se
             </a>
             .
           </p>
@@ -136,8 +136,8 @@ export default function Terms() {
           <h2 className="text-xl font-semibold text-slate-900 mb-3">12. Kontakt</h2>
           <p>
             Frågor om användarvillkoren:{" "}
-            <a href="mailto:hej@transportplattformen.se" className="text-[var(--color-primary)] hover:underline">
-              hej@transportplattformen.se
+            <a href="mailto:support@transportplattformen.se" className="text-[var(--color-primary)] hover:underline">
+              support@transportplattformen.se
             </a>
           </p>
         </section>

@@ -20,8 +20,8 @@ export default function Privacy() {
           </p>
           <p className="mt-2">
             <strong>Kontakt:</strong>{" "}
-            <a href="mailto:hej@transportplattformen.se" className="text-[var(--color-primary)] hover:underline">
-              hej@transportplattformen.se
+            <a href="mailto:support@transportplattformen.se" className="text-[var(--color-primary)] hover:underline">
+              support@transportplattformen.se
             </a>
           </p>
         </section>
@@ -95,8 +95,8 @@ export default function Privacy() {
           </ul>
           <p className="mt-3">
             För att utöva dina rättigheter, kontakta oss på{" "}
-            <a href="mailto:hej@transportplattformen.se" className="text-[var(--color-primary)] hover:underline">
-              hej@transportplattformen.se
+            <a href="mailto:support@transportplattformen.se" className="text-[var(--color-primary)] hover:underline">
+              support@transportplattformen.se
             </a>
             . Vi svarar inom 30 dagar. Du har även rätt att lämna klagomål till{" "}
             <a href="https://www.imy.se" target="_blank" rel="noopener noreferrer" className="text-[var(--color-primary)] hover:underline">
