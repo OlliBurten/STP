@@ -59,8 +59,7 @@ export default function Login() {
     const u = data.user;
     const isAdmin = Boolean(u?.isAdmin);
     if (isAdmin) {
-      const adminTarget =
-        from && from !== "/login" ? from : "/admin";
+      const adminTarget = from?.startsWith("/admin") ? from : "/admin";
       setTimeout(() => navigate(adminTarget, { replace: true }), 0);
       return;
     }
@@ -116,7 +115,7 @@ export default function Login() {
       } else {
         const loggedInUser = await loginWithApi(email.trim(), password);
         if (loggedInUser.isAdmin) {
-          navigate(from && from !== "/login" ? from : "/admin", { replace: true });
+          navigate(from?.startsWith("/admin") ? from : "/admin", { replace: true });
           return;
         }
         if (loggedInUser.role === "recruiter") {
