@@ -181,7 +181,7 @@ app.get("/api/sitemap-dynamic.xml", async (req, res) => {
         take: 2000,
       }),
       prisma.organization.findMany({
-        where: { owner: { status: "VERIFIED" } },
+        where: { status: "VERIFIED" },
         select: { id: true, updatedAt: true },
         orderBy: { updatedAt: "desc" },
         take: 500,
