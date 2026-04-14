@@ -8,6 +8,7 @@ import { getCompanyReviewSummary } from "../api/reviews.js";
 import { fetchMyCompanyProfile } from "../api/companies.js";
 import { CheckIcon, CircleOutlineIcon, TruckIcon, BellIcon, ArrowRightIcon } from "../components/Icons";
 import OrgSwitcher from "../components/OrgSwitcher";
+import ProfileCompletionBanner from "../components/ProfileCompletionBanner";
 
 function ActionCard({ to, title, description, badge, disabled, primary }) {
   const base =
@@ -115,8 +116,36 @@ export default function ForCompanies() {
 
   const companyName = activeOrg?.name || companyProfile?.companyName || user?.companyName || "Rekryterarkonto";
 
+  // Company profile completion nudge
+  const companyCompletionItems = companyProfile ? (() => {
+    const cp = companyProfile;
+    const u = user || {};
+    const t = (v) => String(v || "").trim();
+    return [
+      { label: "Företagsnamn",       done: t(u.companyName).length > 0 || t(u.name).length > 0 },
+      { label: "Organisationsnummer", done: t(u.companyOrgNumber).length > 0 },
+      { label: "Segment",            done: Array.isArray(u.companySegmentDefaults) && u.companySegmentDefaults.length > 0 },
+      { label: "Företagsbeskrivning", done: t(cp.description || cp.companyDescription).length > 0 },
+      { label: "Webbplats",          done: t(cp.website || cp.companyWebsite).length > 0 },
+      { label: "Ort",                done: t(cp.location || cp.companyLocation).length > 0 },
+      { label: "Bransch",            done: Array.isArray(cp.bransch || cp.companyBransch) && (cp.bransch || cp.companyBransch || []).length > 0 },
+      { label: "Region",             done: t(cp.region || cp.companyRegion).length > 0 },
+    ];
+  })() : null;
+  const companyCompletionPct = companyCompletionItems
+    ? Math.round((companyCompletionItems.filter((i) => i.done).length / companyCompletionItems.length) * 100)
+    : null;
+
   return (
     <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10 space-y-6">
+      {companyCompletionItems && companyCompletionPct !== null && user?.id && (
+        <ProfileCompletionBanner
+          pct={companyCompletionPct}
+          missing={companyCompletionItems.filter((i) => !i.done)}
+          profileUrl="/foretag/profil"
+          storageKey={`stp-profile-banner:${user.id}`}
+        />
+      )}
 
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">

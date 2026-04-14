@@ -44,6 +44,8 @@ import Kontakt from "./pages/Kontakt";
 import PatchNotes from "./pages/PatchNotes";
 import VisionPresentation from "./pages/VisionPresentation";
 import { useAuth } from "./context/AuthContext";
+import { useProfile } from "./context/ProfileContext";
+import ProfileCompletionBanner from "./components/ProfileCompletionBanner";
 import FeedbackButton from "./components/FeedbackButton";
 import { useEffect } from "react";
 
@@ -57,6 +59,39 @@ function Analytics() {
   return null;
 }
 
+const DRIVER_ITEMS = [
+  { key: "name",             label: "Namn",                   fn: (p) => String(p.name || "").trim().length >= 2 },
+  { key: "phone",            label: "Telefonnummer",           fn: (p) => String(p.phone || "").replace(/\D/g, "").length >= 7 },
+  { key: "primarySegment",   label: "Primärt segment",         fn: (p) => String(p.primarySegment || "").trim().length > 0 },
+  { key: "location",         label: "Ort",                    fn: (p) => String(p.location || "").trim().length > 0 },
+  { key: "region",           label: "Region",                  fn: (p) => String(p.region || "").trim().length > 0 },
+  { key: "licenses",         label: "Körkort",                 fn: (p) => Array.isArray(p.licenses) && p.licenses.length > 0 },
+  { key: "availability",     label: "Tillgänglighet",          fn: (p) => String(p.availability || "").trim().length > 0 },
+  { key: "summary",          label: "Profiltext (20+ tecken)", fn: (p) => String(p.summary || "").trim().length >= 20 },
+  { key: "visibleToCompanies", label: "Synlig för åkerier",   fn: (p) => p.visibleToCompanies === true },
+  { key: "experience",       label: "Erfarenhet",              fn: (p) => Array.isArray(p.experience) && p.experience.length > 0 },
+  { key: "certificates",     label: "Certifikat (YKB/ADR)",   fn: (p) => Array.isArray(p.certificates) && p.certificates.length > 0 },
+  { key: "regionsWilling",   label: "Körregioner",             fn: (p) => Array.isArray(p.regionsWilling) && p.regionsWilling.length > 0 },
+];
+
+function DriverCompletionNudge() {
+  const { user, isDriver } = useAuth();
+  const { profile, profileLoaded } = useProfile();
+  if (!isDriver || !profileLoaded || !user || user.isAdmin) return null;
+  const p = { ...profile, name: profile?.name || user.name };
+  const items = DRIVER_ITEMS.map((item) => ({ label: item.label, done: item.fn(p) }));
+  const pct = Math.round((items.filter((i) => i.done).length / items.length) * 100);
+  const missing = items.filter((i) => !i.done);
+  return (
+    <ProfileCompletionBanner
+      pct={pct}
+      missing={missing}
+      profileUrl="/profil"
+      storageKey={`stp-profile-banner:${user.id}`}
+    />
+  );
+}
+
 function AppLayout() {
   const { user, isCompany, isImpersonating } = useAuth();
   const onboarding = useOnboardingRequired();
@@ -64,6 +99,7 @@ function AppLayout() {
     <div className="min-h-screen flex flex-col overflow-x-hidden">
       <Header onboarding={onboarding} />
       <div className={`flex-1 ${isImpersonating ? "pt-[104px]" : "pt-16"}`}>
+        <DriverCompletionNudge />
         <OnboardingGate>
         <Routes>
                   <Route path="/" element={<Home />} />
