@@ -193,6 +193,10 @@ companiesRouter.get("/me/profile", async (req, res, next) => {
         },
       });
       if (!org) return res.status(404).json({ error: "Företaget hittades inte" });
+      const owner = await prisma.user.findUnique({
+        where: { id: resolved.ownerId },
+        select: { emailNotificationSettings: true },
+      });
       return res.json({
         id: org.id,
         name: org.name,
@@ -205,6 +209,7 @@ companiesRouter.get("/me/profile", async (req, res, next) => {
         companyBransch: org.bransch,
         companyRegion: org.region,
         companyStatus: org.status,
+        emailNotificationSettings: owner?.emailNotificationSettings || {},
       });
     }
 
@@ -222,6 +227,7 @@ companiesRouter.get("/me/profile", async (req, res, next) => {
         companyBransch: true,
         companyRegion: true,
         companyStatus: true,
+        emailNotificationSettings: true,
       },
     });
     if (!company) return res.status(404).json({ error: "Företaget hittades inte" });
@@ -384,6 +390,26 @@ companiesRouter.put("/me/profile", requireCompanyOwner, validateBody(companyProf
       });
     }
     res.json(updated);
+  } catch (e) {
+    next(e);
+  }
+});
+
+// PATCH /api/companies/notification-settings
+companiesRouter.patch("/notification-settings", authMiddleware, requireCompany, async (req, res, next) => {
+  try {
+    const allowed = ["profileReminder", "jobMatch", "messageReminder", "inactivity"];
+    const incoming = req.body || {};
+    const settings = {};
+    for (const key of allowed) {
+      if (key in incoming) settings[key] = Boolean(incoming[key]);
+    }
+    const user = await prisma.user.update({
+      where: { id: req.userId },
+      data: { emailNotificationSettings: settings },
+      select: { emailNotificationSettings: true },
+    });
+    res.json({ emailNotificationSettings: user.emailNotificationSettings });
   } catch (e) {
     next(e);
   }

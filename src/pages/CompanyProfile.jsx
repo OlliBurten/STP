@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { fetchMyCompanyProfile, updateMyCompanyProfile } from "../api/companies.js";
+import { fetchMyCompanyProfile, updateMyCompanyProfile, updateCompanyNotificationSettings } from "../api/companies.js";
 import { listCompanyInvites, createCompanyInvite, revokeCompanyInvite } from "../api/invites.js";
 import { useAuth } from "../context/AuthContext";
 import { segmentOptions } from "../data/segments";
@@ -26,6 +26,8 @@ export default function CompanyProfile() {
   const [inviteLoading, setInviteLoading] = useState(false);
   const [inviteError, setInviteError] = useState("");
   const [lastDevInviteLink, setLastDevInviteLink] = useState("");
+  const [notifSettings, setNotifSettings] = useState(null);
+  const [notifSaving, setNotifSaving] = useState(false);
 
   useEffect(() => {
     if (!hasApi) {
@@ -37,6 +39,7 @@ export default function CompanyProfile() {
       .then((data) => {
         setProfile(data);
         setDraft(data);
+        if (data?.emailNotificationSettings) setNotifSettings(data.emailNotificationSettings);
       })
       .finally(() => setLoading(false));
   }, [hasApi]);
@@ -349,6 +352,48 @@ export default function CompanyProfile() {
           )}
         </section>
       )}
+
+      {/* Email notification preferences */}
+      <section className="mt-6 bg-white rounded-xl border border-slate-200 p-6 sm:p-8">
+        <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-1">E-postnotiser</h2>
+        <p className="text-sm text-slate-500 mb-5">Välj vilka påminnelser ni vill få via e-post. Allt är aktiverat som standard.</p>
+        {[
+          { key: "profileReminder", label: "Profilpåminnelser", desc: "Påminnelse när er företagsprofil inte är komplett." },
+          { key: "jobMatch", label: "Förarrekommendationer", desc: "När nya förare matchar era krav publiceras." },
+          { key: "messageReminder", label: "Obesvarade meddelanden", desc: "Påminnelse när ett meddelande väntar på svar." },
+          { key: "inactivity", label: "Inaktivitetspåminnelse", desc: "Om ni inte loggat in på 30 dagar." },
+        ].map(({ key, label, desc }) => {
+          const enabled = notifSettings ? notifSettings[key] !== false : true;
+          return (
+            <label key={key} className="flex items-start gap-3 py-3 border-b border-slate-100 last:border-0 cursor-pointer">
+              <div className="mt-0.5">
+                <input
+                  type="checkbox"
+                  checked={enabled}
+                  disabled={notifSaving}
+                  onChange={async (e) => {
+                    const next = { ...(notifSettings || {}), [key]: e.target.checked };
+                    setNotifSettings(next);
+                    setNotifSaving(true);
+                    try {
+                      await updateCompanyNotificationSettings(next);
+                    } catch {
+                      setNotifSettings((prev) => ({ ...prev, [key]: !e.target.checked }));
+                    } finally {
+                      setNotifSaving(false);
+                    }
+                  }}
+                  className="w-4 h-4 rounded accent-[var(--color-primary)]"
+                />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-slate-800">{label}</p>
+                <p className="text-xs text-slate-500">{desc}</p>
+              </div>
+            </label>
+          );
+        })}
+      </section>
     </main>
   );
 }

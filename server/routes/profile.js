@@ -182,7 +182,7 @@ profileRouter.get("/", async (req, res, next) => {
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.userId },
-      select: { name: true, email: true },
+      select: { name: true, email: true, emailNotificationSettings: true },
     });
     let profile = await prisma.driverProfile.findUnique({
       where: { userId: req.userId },
@@ -195,7 +195,10 @@ profileRouter.get("/", async (req, res, next) => {
         },
       });
     }
-    res.json(formatProfileResponse(profile, user));
+    res.json({
+      ...formatProfileResponse(profile, user),
+      emailNotificationSettings: user?.emailNotificationSettings || {},
+    });
   } catch (e) {
     next(e);
   }
@@ -318,6 +321,26 @@ profileRouter.put("/", async (req, res, next) => {
     if (shouldSendMatchAlerts) {
       sendCompanyMatchAlertsForDriver(req.userId);
     }
+  } catch (e) {
+    next(e);
+  }
+});
+
+// PATCH /api/profile/notification-settings
+profileRouter.patch("/notification-settings", async (req, res, next) => {
+  try {
+    const allowed = ["profileReminder", "jobMatch", "messageReminder", "inactivity"];
+    const incoming = req.body || {};
+    const settings = {};
+    for (const key of allowed) {
+      if (key in incoming) settings[key] = Boolean(incoming[key]);
+    }
+    const user = await prisma.user.update({
+      where: { id: req.userId },
+      data: { emailNotificationSettings: settings },
+      select: { emailNotificationSettings: true },
+    });
+    res.json({ emailNotificationSettings: user.emailNotificationSettings });
   } catch (e) {
     next(e);
   }

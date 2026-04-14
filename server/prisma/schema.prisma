@@ -52,6 +52,14 @@ model User {
   needsDriverOnboarding    Boolean  @default(false)
   needsRecruiterOnboarding Boolean  @default(false)
 
+  // Email notification preferences — all on by default, user can opt out
+  emailNotificationSettings Json     @default("{}")
+  // Reminder tracking (to enforce cooldowns and max-send limits)
+  profileReminderSentAt     DateTime?
+  profileReminderCount      Int      @default(0)
+  messageReminderSentAt     DateTime?
+  inactivityReminderSentAt  DateTime?
+
   // Team invites (deprecated - använd OrganizationInvite)
   companyInvites         CompanyInvite[]  @relation("CompanyInvites")
   companyInvitesSent     CompanyInvite[]  @relation("InviterInvites")

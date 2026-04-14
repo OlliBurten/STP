@@ -36,6 +36,7 @@ import { notificationsRouter } from "./routes/notifications.js";
 import { feedbackRouter } from "./routes/feedback.js";
 import { isGoogleConfigured, isMicrosoftConfigured } from "./lib/oauth.js";
 import { JWT_SECRET } from "./lib/config.js";
+import { startReminderScheduler } from "./lib/reminderScheduler.js";
 import * as Sentry from "@sentry/node";
 
 const app = express();
@@ -184,9 +185,37 @@ app.post("/api/internal/migrate", internalLimiter, express.json(), async (req, r
     await prisma.$executeRawUnsafe('ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "needsRecruiterOnboarding" BOOLEAN NOT NULL DEFAULT false');
     await prisma.$executeRawUnsafe('ALTER TABLE "DriverProfile" ADD COLUMN IF NOT EXISTS "privateMatchNotes" TEXT');
     await prisma.$executeRawUnsafe('ALTER TABLE "Job" ADD COLUMN IF NOT EXISTS "bransch" TEXT');
+    await prisma.$executeRawUnsafe('ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "emailNotificationSettings" JSONB NOT NULL DEFAULT \'{}\'');
+    await prisma.$executeRawUnsafe('ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "profileReminderSentAt" TIMESTAMPTZ');
+    await prisma.$executeRawUnsafe('ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "profileReminderCount" INTEGER NOT NULL DEFAULT 0');
+    await prisma.$executeRawUnsafe('ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "messageReminderSentAt" TIMESTAMPTZ');
+    await prisma.$executeRawUnsafe('ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "inactivityReminderSentAt" TIMESTAMPTZ');
     res.json({ ok: true, message: "Migration complete" });
   } catch (e) {
     console.error("[migrate]", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Manual trigger for all reminders (kräver ADMIN_API_KEY)
+app.post("/api/internal/send-reminders", internalLimiter, express.json(), async (req, res) => {
+  const key = req.headers["x-admin-api-key"] || req.body?.adminApiKey;
+  const expected = process.env.ADMIN_API_KEY;
+  if (!expected || key !== expected) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  const type = req.query.type || req.body?.type || "all";
+  try {
+    const { runAllReminders, runProfileReminders, runJobMatchReminders, runMessageReminders, runInactivityReminders } = await import("./lib/reminders.js");
+    let result;
+    if (type === "profile") result = await runProfileReminders();
+    else if (type === "jobMatch") result = await runJobMatchReminders();
+    else if (type === "message") result = await runMessageReminders();
+    else if (type === "inactivity") result = await runInactivityReminders();
+    else result = await runAllReminders();
+    res.json({ ok: true, type, result });
+  } catch (e) {
+    console.error("[internal/send-reminders]", e);
     res.status(500).json({ error: e.message });
   }
 });
@@ -304,5 +333,6 @@ if (process.env.APP_LISTEN !== "false") {
   }
   app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
+    startReminderScheduler();
   });
 }

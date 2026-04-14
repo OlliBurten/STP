@@ -1,4 +1,8 @@
-import { apiGet, apiPut } from "./client.js";
+import { apiGet, apiPut, apiPatch } from "./client.js";
+
+export function updateCompanyNotificationSettings(settings) {
+  return apiPatch("/api/companies/notification-settings", settings);
+}
 
 export function fetchMyCompanyProfile() {
   return apiGet("/api/companies/me/profile");
