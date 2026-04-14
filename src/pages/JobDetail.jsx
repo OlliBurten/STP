@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { usePageTitle } from "../hooks/usePageTitle";
+import PageMeta from "../components/PageMeta";
 import { mockJobs } from "../data/mockJobs";
 import { mockDrivers } from "../data/mockDrivers";
 import ApplyModal from "../components/ApplyModal";
@@ -25,7 +25,6 @@ export default function JobDetail() {
   const { user, isDriver, isCompany, hasApi, activeOrg } = useAuth();
   const toast = useToast();
   const [job, setJob] = useState(() => (!hasApi ? mockJobs.find((j) => j.id === id) : null));
-  usePageTitle(job ? `${job.title} – ${job.companyName}` : "Jobbannonser");
   const [jobLoading, setJobLoading] = useState(hasApi);
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [reviewSummary, setReviewSummary] = useState(null);
@@ -184,8 +183,55 @@ export default function JobDetail() {
     ? [{ label: "Företag", to: "/foretag" }, { label: "Mina jobb", to: "/foretag/mina-jobb" }, { label: job.title }]
     : [{ label: "Jobb", to: "/jobb" }, { label: job.title }];
 
+  const EMPLOYMENT_TYPE_MAP = {
+    fast: "FULL_TIME",
+    vikariat: "TEMPORARY",
+    tim: "PART_TIME",
+    deltid: "PART_TIME",
+  };
+
+  const metaDescription = [
+    `${job.title} hos ${job.companyName}`,
+    job.location ? `i ${job.location}` : null,
+    job.description ? `– ${job.description.replace(/\n+/g, " ")}` : null,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .slice(0, 160);
+
+  const jobLd = {
+    "@context": "https://schema.org",
+    "@type": "JobPosting",
+    title: job.title,
+    description: job.description || metaDescription,
+    datePosted: job.published || job.createdAt,
+    employmentType: EMPLOYMENT_TYPE_MAP[job.employment] || "FULL_TIME",
+    hiringOrganization: {
+      "@type": "Organization",
+      name: job.companyName,
+      ...(job.companyWebsite ? { sameAs: job.companyWebsite } : {}),
+    },
+    jobLocation: {
+      "@type": "Place",
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: job.location || job.companyLocation || undefined,
+        addressRegion: job.region || undefined,
+        addressCountry: "SE",
+      },
+    },
+    directApply: true,
+    jobLocationType: "TELECOMMUTE" === job.jobType ? "TELECOMMUTE" : undefined,
+  };
+
   return (
     <main className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
+      <PageMeta
+        title={`${job.title} – ${job.companyName}`}
+        description={metaDescription}
+        canonical={`/jobb/${job.id}`}
+        jsonLd={jobLd}
+      />
       <Breadcrumbs items={breadcrumbs} className="mb-4" />
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <Link

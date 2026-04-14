@@ -166,6 +166,50 @@ app.get("/", (_, res) => {
   });
 });
 
+// Dynamic sitemap — active jobs + verified companies (no auth required, public)
+app.get("/api/sitemap-dynamic.xml", async (req, res) => {
+  try {
+    const { prisma } = await import("./lib/prisma.js");
+    const FRONTEND = (process.env.FRONTEND_URL || "https://transportplattformen.se")
+      .split(",")[0].trim();
+
+    const [jobs, orgs] = await Promise.all([
+      prisma.job.findMany({
+        where: { status: "ACTIVE" },
+        select: { id: true, updatedAt: true },
+        orderBy: { updatedAt: "desc" },
+        take: 2000,
+      }),
+      prisma.organization.findMany({
+        where: { owner: { status: "VERIFIED" } },
+        select: { id: true, updatedAt: true },
+        orderBy: { updatedAt: "desc" },
+        take: 500,
+      }),
+    ]);
+
+    const esc = (s) => String(s).replace(/&/g, "&amp;");
+    const urlEntry = (loc, lastmod, priority = "0.7") =>
+      `  <url>\n    <loc>${esc(loc)}</loc>\n    <lastmod>${lastmod.toISOString().slice(0, 10)}</lastmod>\n    <priority>${priority}</priority>\n  </url>`;
+
+    const entries = [
+      ...jobs.map((j) => urlEntry(`${FRONTEND}/jobb/${j.id}`, j.updatedAt, "0.8")),
+      ...orgs.map((o) => urlEntry(`${FRONTEND}/foretag/${o.id}`, o.updatedAt, "0.6")),
+    ];
+
+    res.set("Content-Type", "application/xml; charset=utf-8");
+    res.set("Cache-Control", "public, max-age=3600");
+    res.send(
+      `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${entries.join("\n")}\n</urlset>`
+    );
+  } catch (e) {
+    console.error("[sitemap-dynamic]", e);
+    res.status(500).set("Content-Type", "application/xml").send(
+      `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>`
+    );
+  }
+});
+
 // Nödmigration: lägg till saknade DB-kolumner (kräver ADMIN_API_KEY)
 app.post("/api/internal/migrate", internalLimiter, express.json(), async (req, res) => {
   const key = req.headers["x-admin-api-key"] || req.body?.adminApiKey;

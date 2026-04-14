@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { usePageTitle } from "../hooks/usePageTitle";
+import PageMeta from "../components/PageMeta";
 import { fetchCompanyPublicProfile } from "../api/companies.js";
 import { mapEmploymentToSegment, segmentLabel } from "../data/segments";
 import { getBranschLabel } from "../data/bransch.js";
@@ -10,7 +10,6 @@ export default function CompanyPublicProfile() {
   const { id } = useParams();
   const [company, setCompany] = useState(null);
   const [loading, setLoading] = useState(true);
-  usePageTitle(company ? company.name : "Åkeri");
 
   useEffect(() => {
     if (!id) return;
@@ -48,8 +47,22 @@ export default function CompanyPublicProfile() {
     company.bransch.length > 0
   );
 
+  const companyDescription = [
+    company.name,
+    company.location || company.region ? `i ${company.location || company.region}` : null,
+    company.description ? `– ${company.description.replace(/\n+/g, " ")}` : `– åkeri på Sveriges Transportplattform`,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .slice(0, 160);
+
   return (
     <main className="max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-6">
+      <PageMeta
+        title={company.name}
+        description={companyDescription}
+        canonical={`/foretag/${company.id}`}
+      />
       <Link to="/jobb" className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-[var(--color-primary)]">
         ← Tillbaka till jobb
       </Link>
