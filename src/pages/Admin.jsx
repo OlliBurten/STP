@@ -18,6 +18,7 @@ import {
 import { listReviewsForAdmin, moderateReview } from "../api/reviews.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import { EyeIcon } from "../components/Icons.jsx";
+import { getProfileCompletion } from "../utils/driverProfileRequirements.js";
 
 function fmtDate(value) {
   if (!value) return "-";
@@ -645,6 +646,15 @@ export default function Admin() {
                               {u.warningCount > 0 ? (
                                 <span className="text-xs px-1.5 py-0.5 rounded bg-amber-100 text-amber-700">{u.warningCount}⚠</span>
                               ) : null}
+                              {(() => {
+                                const c = getProfileCompletion(u);
+                                if (!c) return null;
+                                return (
+                                  <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${c.colorClass}`}>
+                                    {c.pct}%
+                                  </span>
+                                );
+                              })()}
                             </div>
                           </td>
                           {/* Last login */}
@@ -753,11 +763,25 @@ export default function Admin() {
                 <>
                   {/* Header */}
                   <div className="px-4 py-3 border-b border-slate-200 bg-white">
-                    <p className="font-semibold text-slate-900 truncate">{selectedUserDetail.name || selectedUserDetail.email}</p>
-                    <p className="text-xs text-slate-500 truncate">{selectedUserDetail.email}</p>
-                    {selectedUserDetail.companyName ? (
-                      <p className="text-xs text-slate-400 truncate">{selectedUserDetail.companyName}</p>
-                    ) : null}
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="font-semibold text-slate-900 truncate">{selectedUserDetail.name || selectedUserDetail.email}</p>
+                        <p className="text-xs text-slate-500 truncate">{selectedUserDetail.email}</p>
+                        {selectedUserDetail.companyName ? (
+                          <p className="text-xs text-slate-400 truncate">{selectedUserDetail.companyName}</p>
+                        ) : null}
+                      </div>
+                      {(() => {
+                        const u = users.find((x) => x.id === selectedUserDetail.id) || selectedUserDetail;
+                        const c = getProfileCompletion(u);
+                        if (!c) return null;
+                        return (
+                          <span className={`shrink-0 text-xs px-2 py-0.5 rounded-full font-semibold ${c.colorClass}`}>
+                            {c.pct}%
+                          </span>
+                        );
+                      })()}
+                    </div>
                   </div>
 
                   {/* Stats */}

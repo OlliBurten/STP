@@ -19,20 +19,20 @@ import {
 const steps = ["Mål", "Kontakt", "Kärnprofil", "Avsluta"];
 const stepGuidance = [
   {
-    title: "Rätt segment från början",
-    text: "När du väljer rätt segment blir det lättare att matcha dig mot relevanta företag i stället för att du hamnar i fel flöde.",
+    title: "Välj rätt segment",
+    text: "Rätt segment gör att rätt jobb och företag hittar dig direkt — du slipper sållas bort i fel flöde.",
   },
   {
-    title: "Samma grund för alla förare",
-    text: "STP blir starkare när alla profiler börjar med samma minimum. Då kan företag fatta snabbare och tryggare beslut.",
+    title: "Så kan företag nå dig",
+    text: "Med ett tydligt telefonnummer kan ett företag ringa dig direkt när de sett din profil och tyckt det verkar lovande.",
   },
   {
     title: "Det här styr matchningen direkt",
-    text: "Ort, region, körkort och tillgänglighet är sådant företag letar efter först. Därför samlar vi in det tidigt.",
+    text: "Ort, region, körkort och tillgänglighet är det företag letar efter först. Ju tydligare du är, desto snabbare hittar rätt uppdrag dig.",
   },
   {
-    title: "Nästan klar",
-    text: "En kort profiltext och ditt synlighetsval är allt som återstår. Du kan alltid fylla på mer i profilen efteråt.",
+    title: "Sista steget",
+    text: "En kort presentation gör att ett företag förstår vem du är på 10 sekunder — det ökar chansen att de hör av sig.",
   },
 ];
 
@@ -42,6 +42,7 @@ export default function DriverOnboardingWizard() {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
+  const [done, setDone] = useState(false);
   const [error, setError] = useState("");
   const [draft, setDraft] = useState(() => {
     // Parse stored schoolName back to type + school for editing
@@ -119,7 +120,8 @@ export default function DriverOnboardingWizard() {
         visibleToCompanies: draft.visibleToCompanies,
       });
       trackDriverOnboardingComplete(primarySegment);
-      navigate("/profil", { replace: true });
+      setDone(true);
+      setTimeout(() => navigate("/profil", { replace: true }), 2200);
     } catch (saveError) {
       setError(saveError?.message || "Kunde inte spara din profil. Försök igen.");
     } finally {
@@ -127,36 +129,56 @@ export default function DriverOnboardingWizard() {
     }
   };
 
+  if (done) {
+    return (
+      <main className="max-w-2xl mx-auto px-4 sm:px-6 py-10">
+        <section className="bg-white rounded-xl border border-slate-200 p-8 sm:p-12 text-center space-y-5">
+          <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto text-2xl font-bold text-green-700">
+            ✓
+          </div>
+          <h1 className="text-2xl font-bold text-slate-900">Din profil är skapad!</h1>
+          <p className="text-slate-600 max-w-sm mx-auto">
+            Du kan nu bli hittad av företag på STP. Logga in när som helst för att komplettera din profil och öka dina chanser ytterligare.
+          </p>
+          <p className="text-sm text-slate-400">Tar dig till din profil...</p>
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main className="max-w-2xl mx-auto px-4 sm:px-6 py-10">
       <section className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8">
-        <p className="text-sm text-slate-500">Förar-onboarding · Steg {step + 1} av {steps.length}</p>
-        <h1 className="mt-1 text-2xl font-bold text-slate-900">Välkommen {user?.name || ""}</h1>
+        <p className="text-sm text-slate-500">Välkommen till STP</p>
+        <h1 className="mt-1 text-2xl font-bold text-slate-900">Hej {user?.name?.split(" ")[0] || ""}! Sätt upp din profil.</h1>
         <p className="mt-2 text-slate-600">
-          Vi samlar först in samma minimum för alla förare. Du kan fylla på resten senare i profilen.
+          Fyll i det viktigaste nu — du kan alltid lägga till mer sen. Tar bara ett par minuter.
         </p>
         {error ? (
           <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
             {error}
           </div>
         ) : null}
-        <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <p className="text-sm font-semibold text-slate-900">Varför STP gör så här</p>
-          <p className="mt-1 text-sm text-slate-600">
-            Målet är att du ska kunna bli bedömd snabbare och mer rättvist än i vanliga fritextflöden. Därför börjar alla förare med samma tydliga grund.
-          </p>
-        </div>
-        <div className="mt-4 flex flex-wrap gap-2 text-xs">
-          {steps.map((label, index) => (
-            <span
-              key={label}
-              className={`px-2.5 py-1 rounded-full ${
-                index === step ? "bg-[var(--color-primary)] text-white" : "bg-slate-100 text-slate-600"
-              }`}
-            >
-              {label}
-            </span>
-          ))}
+
+        {/* Progress bar */}
+        <div className="mt-5">
+          <div className="flex justify-between mb-1.5">
+            {steps.map((label, index) => (
+              <span
+                key={label}
+                className={`text-xs font-medium ${index <= step ? "text-[var(--color-primary)]" : "text-slate-400"}`}
+              >
+                {label}
+              </span>
+            ))}
+          </div>
+          <div className="h-1.5 bg-slate-200 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-[var(--color-primary)] rounded-full transition-all duration-300"
+              style={{ width: `${((step + 1) / steps.length) * 100}%` }}
+            />
+          </div>
+          <p className="mt-1 text-xs text-slate-400 text-right">Steg {step + 1} av {steps.length}</p>
         </div>
 
         <div className="mt-8">
@@ -278,7 +300,7 @@ export default function DriverOnboardingWizard() {
           {step === 1 && (
             <div className="space-y-4">
               <h2 className="font-semibold text-slate-900">Kontaktuppgifter</h2>
-              <p className="text-sm text-slate-600">Alla förare ska ha samma grunddata från start.</p>
+              <p className="text-sm text-slate-600">Dina kontaktuppgifter behövs för att företag ska kunna nå dig.</p>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Namn</label>
                 <input
@@ -445,7 +467,7 @@ export default function DriverOnboardingWizard() {
               disabled={saving}
               className="px-5 py-3 rounded-lg bg-[var(--color-primary)] text-white font-medium disabled:opacity-50 min-h-[44px]"
             >
-              {saving ? "Sparar..." : "Spara och fortsätt"}
+              {saving ? "Sparar..." : "Skapa min profil"}
             </button>
           )}
         </div>

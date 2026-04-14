@@ -19,6 +19,7 @@ export default function CompanyOnboardingWizard() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [done, setDone] = useState(false);
   const [error, setError] = useState("");
   const [profile, setProfile] = useState(null);
   const [defaults, setDefaults] = useState([]);
@@ -97,7 +98,8 @@ export default function CompanyOnboardingWizard() {
       await refreshOrgs?.();
       if (org?.id) switchOrg?.(org.id);
       trackCompanyOnboardingComplete(firstCompany.segmentDefaults);
-      navigate("/foretag", { replace: true });
+      setDone(true);
+      setTimeout(() => navigate("/foretag", { replace: true }), 2200);
     } catch (e) {
       setError(e.message || "Kunde inte lägga till företag.");
     } finally {
@@ -124,7 +126,8 @@ export default function CompanyOnboardingWizard() {
       });
       await refreshUser?.();
       trackCompanyOnboardingComplete(defaults);
-      navigate("/foretag", { replace: true });
+      setDone(true);
+      setTimeout(() => navigate("/foretag", { replace: true }), 2200);
     } catch (e) {
       setError(e.message || "Kunde inte spara onboarding.");
     } finally {
@@ -132,17 +135,36 @@ export default function CompanyOnboardingWizard() {
     }
   };
 
+  if (done) {
+    return (
+      <main className="max-w-2xl mx-auto px-4 sm:px-6 py-10">
+        <section className="bg-white rounded-xl border border-slate-200 p-8 sm:p-12 text-center space-y-5">
+          <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto text-2xl font-bold text-green-700">
+            ✓
+          </div>
+          <h1 className="text-2xl font-bold text-slate-900">Ni är redo att köra!</h1>
+          <p className="text-slate-600 max-w-sm mx-auto">
+            Ert konto är uppsatt. Ni kan nu söka förare och publicera jobb på STP.
+          </p>
+          <p className="text-sm text-slate-400">Tar dig till företagsdashboarden...</p>
+        </section>
+      </main>
+    );
+  }
+
   if (needsFirstCompany) {
     return (
       <main className="max-w-2xl mx-auto px-4 sm:px-6 py-10">
         <section className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8 space-y-6">
-          <p className="text-sm text-slate-500">Rekryterar-onboarding</p>
-          <h1 className="text-2xl font-bold text-slate-900">Lägg till ditt första åkeri</h1>
-          <p className="text-slate-600">
-            Lägg grunden en gång så kan ni börja hitta förare och publicera jobb direkt efteråt.
-          </p>
+          <div>
+            <p className="text-sm text-slate-500">Välkommen till STP</p>
+            <h1 className="mt-1 text-2xl font-bold text-slate-900">Sätt upp ert åkeri</h1>
+            <p className="mt-2 text-slate-600">
+              Det tar bara ett par minuter. Sedan kan ni börja hitta förare och publicera jobb direkt.
+            </p>
+          </div>
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <p className="text-sm font-semibold text-slate-900">Varför vi börjar här</p>
+            <p className="text-sm font-semibold text-slate-900">Det här ger er direkt</p>
             <ul className="mt-2 space-y-1.5 text-sm text-slate-600">
               {onboardingReasons.map((reason) => (
                 <li key={reason}>{reason}</li>
@@ -232,13 +254,13 @@ export default function CompanyOnboardingWizard() {
   return (
     <main className="max-w-2xl mx-auto px-4 sm:px-6 py-10">
       <section className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8">
-        <p className="text-sm text-slate-500">Rekryterar-onboarding</p>
+        <p className="text-sm text-slate-500">Välkommen till STP</p>
         <h1 className="mt-1 text-2xl font-bold text-slate-900">Vilka segment rekryterar ni för?</h1>
-        <p className="mt-2 text-slate-600">Standardval när ni publicerar jobb och söker förare. Går att ändra per annons.</p>
+        <p className="mt-2 text-slate-600">Välj era standardsegment — ni kan alltid ändra per annons.</p>
         <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <p className="text-sm font-semibold text-slate-900">Detta hjälper er direkt</p>
+          <p className="text-sm font-semibold text-slate-900">Varför det spelar roll</p>
           <p className="mt-1 text-sm text-slate-600">
-            När segmenten är tydliga blir matchningen mer träffsäker och era annonser lättare att förstå för rätt förare.
+            Rätt segment gör att förare med rätt bakgrund hittar era annonser — och att ni hittar rätt förare snabbare.
           </p>
         </div>
         <div className="mt-6 grid gap-3">
