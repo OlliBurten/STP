@@ -65,10 +65,10 @@ async function main() {
   const adminHash =
     "$2a$10$tUfzMmI9MXaiFvcaZNv1uuEFCbZbQrAnk22Kix6Vo16UkG3KBtS4i"; /* bcrypt hash – ändra lösenord via Glömt lösenord eller db om behov */
   const admin = await prisma.user.upsert({
-    where: { email: "oliverharburt@gmail.com" },
+    where: { email: "oliver@transportplattformen.se" },
     update: { emailVerifiedAt: new Date() },
     create: {
-      email: "oliverharburt@gmail.com",
+      email: "oliver@transportplattformen.se",
       passwordHash: adminHash,
       role: "DRIVER",
       name: "Admin",

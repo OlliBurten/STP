@@ -112,7 +112,7 @@ Se [docs/STACK.md](docs/STACK.md) och [docs/INFRASTRUKTUR.md](docs/INFRASTRUKTUR
 
 **Admin-inloggning på produktion fungerar inte – checklista:**
 
-1. **Backend-miljö (Railway/Render/etc.):** Sätt `ADMIN_EMAILS` till din admin-e-post, komma-separerat vid flera (t.ex. `oliverharburt@gmail.com`). Detta styr vem som får `isAdmin` efter inloggning.
+1. **Backend-miljö (Railway/Render/etc.):** Sätt `ADMIN_EMAILS` till din admin-e-post, komma-separerat vid flera (t.ex. `oliver@transportplattformen.se`). Detta styr vem som får `isAdmin` efter inloggning.
 2. **Användaren finns i prod-databasen:** Kontot måste skapas/registrerat mot **produktionens** databas (inte lokalt). Registrera dig på live-sidan eller kör seed/migration mot prod-DB om ni har ett admin-konto i seed.
 3. **E-post verifierad:** Inloggning kräver `emailVerifiedAt`. Om kontot skapades manuellt eller via seed mot prod: kör mot prod-databasen `npm run db:verify-user -- din@epost.se` i `server/` (sätt `DATABASE_URL` till prod innan), eller sätt fältet i Prisma Studio.
 4. **Lösenord:** Samma lösenord som du registrerade med på prod (eller som sattes i seed). Vid behov: använd "Glömt lösenord" på live-sidan om e-post är konfigurerad.

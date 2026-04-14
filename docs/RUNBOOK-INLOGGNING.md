@@ -27,7 +27,7 @@ Det här är **inte** något som "bara började strula" – det brukar koppla ti
 
 ### 1. Backend-miljö (Railway/Render/etc.)
 
-- [ ] `ADMIN_EMAILS` är satt (kommaseparerat, t.ex. `oliverharburt@gmail.com`). Annars får ingen admin-rättigheter.
+- [ ] `ADMIN_EMAILS` är satt (kommaseparerat, t.ex. `oliver@transportplattformen.se`). Annars får ingen admin-rättigheter.
 - [ ] `FRONTEND_URL` innehåller prod-/demo-URL (kommaseparerat vid flera). Annars kan CORS blockera.
 - [ ] `DATABASE_URL` pekar på rätt databas (samma som användarna skapades mot).
 
