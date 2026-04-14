@@ -8,7 +8,7 @@ import LoadingBlock, { JobListSkeleton } from "../components/LoadingBlock";
 import { useAuth } from "../context/AuthContext";
 import { useProfile } from "../context/ProfileContext";
 import { calcYearsExperience } from "../utils/profileUtils";
-import { getJobMatchHighlights, getRecommendedJobsForDriver, matchScore } from "../utils/matchUtils";
+import { getMatchCriteria, getRecommendedJobsForDriver, matchScore } from "../utils/matchUtils";
 import { fetchJobs, fetchSavedJobs, saveJob, unsaveJob } from "../api/jobs.js";
 import { mapEmploymentToSegment } from "../data/segments";
 
@@ -210,7 +210,7 @@ export default function JobList() {
                     key={job.id}
                     job={job}
                     matchScore={score}
-                    matchHighlights={getJobMatchHighlights(job, details)}
+                    matchCriteria={getMatchCriteria(driverForMatch, job, details)}
                     showSave={isDriver && hasApi}
                     isSaved={savedJobIds.has(job.id)}
                     onToggleSave={handleToggleSave}
@@ -236,7 +236,7 @@ export default function JobList() {
                       key={job.id}
                       job={job}
                       matchScore={data?.score ?? null}
-                      matchHighlights={data?.score > 0 ? getJobMatchHighlights(job, data?.details) : []}
+                      matchCriteria={data?.score > 0 ? getMatchCriteria(driverForMatch, job, data?.details) : []}
                       showSave={isDriver && hasApi}
                       isSaved={savedJobIds.has(job.id)}
                       onToggleSave={handleToggleSave}

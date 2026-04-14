@@ -4,16 +4,18 @@ import { segmentLabel, internshipTypeLabel, parseSchoolName } from "../data/segm
 import { LocationIcon, CheckIcon } from "./Icons";
 import { isDriverMinimumProfileComplete } from "../utils/driverProfileRequirements.js";
 
-function matchQuality(score) {
-  if (score >= 70) return { label: "Stark match", className: "bg-green-100 text-green-800" };
-  if (score >= 40) return { label: "God match", className: "bg-amber-50 text-amber-800" };
+// matchPct is 0-100 (normalised percentage, not raw score)
+function matchQuality(pct) {
+  if (pct >= 80) return { label: "Stark match", className: "bg-green-100 text-green-800" };
+  if (pct >= 55) return { label: "God match", className: "bg-amber-50 text-amber-800" };
   return { label: "Möjlig match", className: "bg-slate-100 text-slate-600" };
 }
 
-export default function DriverCard({ driver, matchScore = null, matchHighlights = [], isContacted = false }) {
+export default function DriverCard({ driver, matchScore = null, matchPct = null, matchCriteria = [], matchHighlights = [], isContacted = false }) {
   const availabilityLabel = availabilityTypes.find((a) => a.value === driver.availability)?.label || driver.availability;
   const hasMinimumProfile = isDriverMinimumProfileComplete(driver);
-  const quality = matchScore != null && matchScore > 0 ? matchQuality(matchScore) : null;
+  const effectivePct = matchPct ?? (matchScore != null ? matchScore : null);
+  const quality = effectivePct != null && effectivePct > 0 ? matchQuality(effectivePct) : null;
 
   return (
     <Link
@@ -94,14 +96,19 @@ export default function DriverCard({ driver, matchScore = null, matchHighlights 
           Se profil →
         </span>
       </div>
-      {matchHighlights.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-2">
-          {matchHighlights.map((highlight) => (
+      {matchCriteria.length > 0 && (
+        <div className="mt-3 pt-3 border-t border-slate-100 flex flex-wrap gap-1.5">
+          {matchCriteria.map((c) => (
             <span
-              key={highlight}
-              className="inline-flex items-center rounded-full bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600"
+              key={c.label}
+              className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium border ${
+                c.met
+                  ? "bg-green-50 text-green-700 border-green-200"
+                  : "bg-red-50 text-red-700 border-red-200"
+              }`}
             >
-              {highlight}
+              {c.met ? <CheckIcon className="w-3 h-3 shrink-0" /> : <span className="font-bold leading-none">✗</span>}
+              {c.label}
             </span>
           ))}
         </div>

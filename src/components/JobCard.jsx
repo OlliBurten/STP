@@ -5,6 +5,7 @@ import { StarFilledIcon, StarOutlineIcon, LocationIcon, CheckIcon } from "./Icon
 export default function JobCard({
   job,
   matchScore = null,
+  matchCriteria = [],
   matchHighlights = [],
   showSave = false,
   isSaved = false,
@@ -99,15 +100,19 @@ export default function JobCard({
           <span className="w-full text-xs text-slate-500 sm:w-auto sm:text-right">Publicerad {formatDate(job.published)}</span>
         </div>
       </div>
-      {matchHighlights.length > 0 && (
+      {matchCriteria.length > 0 && (
         <div className="mt-3 pt-3 border-t border-green-100 flex flex-wrap gap-1.5">
-          {matchHighlights.map((highlight) => (
+          {matchCriteria.map((c) => (
             <span
-              key={highlight}
-              className="inline-flex items-center gap-1 rounded-full bg-green-50 border border-green-200 px-2.5 py-0.5 text-xs font-medium text-green-800"
+              key={c.label}
+              className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium border ${
+                c.met
+                  ? "bg-green-50 text-green-700 border-green-200"
+                  : "bg-slate-50 text-slate-500 border-slate-200"
+              }`}
             >
-              <CheckIcon className="w-3 h-3 shrink-0" />
-              {highlight}
+              {c.met ? <CheckIcon className="w-3 h-3 shrink-0" /> : <span className="leading-none opacity-60">–</span>}
+              {c.label}
             </span>
           ))}
         </div>

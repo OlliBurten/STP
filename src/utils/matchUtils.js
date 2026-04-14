@@ -207,7 +207,10 @@ export function matchScore(driver, job) {
 
   score += privateMatchNotesAdjustment(driver.privateMatchNotes, job);
 
-  return { score: Math.max(0, score), details };
+  const finalScore = Math.max(0, score);
+  const max = matchMaxScore(job);
+  const pct = max > 0 ? Math.round((finalScore / max) * 100) : 0;
+  return { score: finalScore, pct, details };
 }
 
 export function getJobMatchHighlights(job, details = {}) {
@@ -254,6 +257,43 @@ export function getDriverMatchHighlights(driver, details = {}) {
     highlights.push("Rimlig erfarenhetsnivå");
   }
   return highlights.slice(0, 3);
+}
+
+/**
+ * Maximum possible score for a given job (used for % normalisation).
+ */
+export function matchMaxScore(job) {
+  return (
+    (job?.segment ? 2 : 0) +
+    (Array.isArray(job?.license) && job.license.length > 0 ? 2 : 0) +
+    Math.max(Array.isArray(job?.certificates) ? job.certificates.length : 0, 1) +
+    2 + // region
+    1 + // experience
+    1   // availability
+  );
+}
+
+/**
+ * Per-criterion breakdown for display on cards.
+ * Returns [{ label: string, met: boolean }] for each hard requirement the job specifies.
+ * Only includes license, certificates, and region — the things recruiters scan first.
+ */
+export function getMatchCriteria(driver, job, details) {
+  const criteria = [];
+  const jobLicenses = job?.license || [];
+  const driverLicenses = driver?.licenses || [];
+  for (const lic of jobLicenses) {
+    criteria.push({ label: lic, met: driverLicenses.includes(lic) });
+  }
+  const jobCerts = job?.certificates || [];
+  const driverCerts = driver?.certificates || [];
+  for (const cert of jobCerts) {
+    criteria.push({ label: getCertificateLabel(cert), met: driverCerts.includes(cert) });
+  }
+  if (job?.region) {
+    criteria.push({ label: job.region, met: Boolean(details?.region) });
+  }
+  return criteria;
 }
 
 /**

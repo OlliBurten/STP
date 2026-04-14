@@ -5,7 +5,7 @@ import { mockJobs } from "../data/mockJobs";
 import { useProfile } from "../context/ProfileContext";
 import { useAuth } from "../context/AuthContext";
 import { calcYearsExperience } from "../utils/profileUtils";
-import { getDriverMatchHighlights, getMatchingDriversForJob } from "../utils/matchUtils";
+import { getMatchCriteria, getMatchingDriversForJob } from "../utils/matchUtils";
 import DriverCard from "../components/DriverCard";
 import DriverFilters from "../components/DriverFilters";
 import { ChevronDownIcon } from "../components/Icons";
@@ -336,12 +336,12 @@ export default function DriverSearch() {
             <DriverListSkeleton count={5} />
           ) : sortedDrivers.length > 0 ? (
             <div className="space-y-3">
-              {sortedDrivers.map(({ driver, score, details }) => (
+              {sortedDrivers.map(({ driver, score, pct, details }) => (
                 <DriverCard
                   key={driver.id}
                   driver={driver}
-                  matchScore={matchJob && score > 0 ? score : null}
-                  matchHighlights={matchJob && score > 0 ? getDriverMatchHighlights(driver, details) : []}
+                  matchPct={matchJob && score > 0 ? pct : null}
+                  matchCriteria={matchJob && score > 0 ? getMatchCriteria(driver, matchJob, details) : []}
                   isContacted={contactedDriverIds.has(driver.id)}
                 />
               ))}
