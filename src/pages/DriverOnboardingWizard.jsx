@@ -56,7 +56,7 @@ export default function DriverOnboardingWizard() {
       summary: profile.summary || "",
       primarySegment: profile.primarySegment || "",
       secondarySegments: profile.secondarySegments || [],
-      isGymnasieelev: profile.isGymnasieelev ?? false,
+      isGymnasieelev: profile.isGymnasieelev ?? null, // null = inget valt ännu
       internshipType,
       schoolName: schoolNameOnly,
       licenses: profile.licenses || [],
@@ -83,6 +83,7 @@ export default function DriverOnboardingWizard() {
 
   const canContinue = () => {
     if (step === 0) {
+      if (draft.isGymnasieelev === null) return false;
       if (draft.isGymnasieelev) return Boolean(draft.internshipType);
       return Boolean(draft.primarySegment);
     }
@@ -99,7 +100,7 @@ export default function DriverOnboardingWizard() {
   };
 
   const saveAndFinish = async () => {
-    const primarySegment = draft.isGymnasieelev ? "INTERNSHIP" : draft.primarySegment;
+    const primarySegment = draft.isGymnasieelev === true ? "INTERNSHIP" : draft.primarySegment;
     setSaving(true);
     setError("");
     try {
@@ -200,8 +201,8 @@ export default function DriverOnboardingWizard() {
                       primarySegment: "INTERNSHIP",
                     }))
                   }
-                  className={`text-left rounded-xl border p-4 ${
-                    draft.isGymnasieelev
+                  className={`text-left rounded-xl border p-4 transition-colors ${
+                    draft.isGymnasieelev === true
                       ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5"
                       : "border-slate-200 hover:bg-slate-50"
                   }`}
@@ -219,8 +220,8 @@ export default function DriverOnboardingWizard() {
                       primarySegment: prev.primarySegment === "INTERNSHIP" ? "" : prev.primarySegment,
                     }))
                   }
-                  className={`text-left rounded-xl border p-4 ${
-                    !draft.isGymnasieelev && draft.primarySegment
+                  className={`text-left rounded-xl border p-4 transition-colors ${
+                    draft.isGymnasieelev === false
                       ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5"
                       : "border-slate-200 hover:bg-slate-50"
                   }`}
@@ -230,7 +231,7 @@ export default function DriverOnboardingWizard() {
                 </button>
               </div>
 
-              {draft.isGymnasieelev ? (
+              {draft.isGymnasieelev === true ? (
                 <div className="mt-6 space-y-4">
                   <p className="font-medium text-slate-900">Vilken typ av utbildning?</p>
                   <div className="grid gap-3">
@@ -272,7 +273,7 @@ export default function DriverOnboardingWizard() {
                     </div>
                   )}
                 </div>
-              ) : (
+              ) : draft.isGymnasieelev === false ? (
                 <>
                   <p className="mt-6 font-medium text-slate-900">Vilket segment söker du främst?</p>
                   <div className="mt-3 grid gap-3">
@@ -281,7 +282,7 @@ export default function DriverOnboardingWizard() {
                         key={segment.value}
                         type="button"
                         onClick={() => setDraft((prev) => ({ ...prev, primarySegment: segment.value }))}
-                        className={`text-left rounded-xl border p-4 ${
+                        className={`text-left rounded-xl border p-4 transition-colors ${
                           draft.primarySegment === segment.value
                             ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5"
                             : "border-slate-200 hover:bg-slate-50"
@@ -293,7 +294,7 @@ export default function DriverOnboardingWizard() {
                     ))}
                   </div>
                 </>
-              )}
+              ) : null}
             </div>
           )}
 

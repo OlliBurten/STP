@@ -179,7 +179,9 @@ export async function issueEmailVerification(userId, email, baseUrlOverride) {
   const sent = await sendEmail({
     to: email,
     subject: "Verifiera din e-post – Sveriges Transportplattform",
-    text: `Hej!\n\nVerifiera din e-post genom att öppna länken nedan:\n${verifyUrl}\n\nLänken är giltig i 24 timmar.\n\nOm du inte skapade kontot kan du ignorera detta mail.\n\nSveriges Transportplattform`,
+    text: `Hej!\n\nKlicka på knappen nedan för att verifiera din e-postadress på Sveriges Transportplattform.\n\nLänken är giltig i 24 timmar.\n\nOm du inte skapade kontot kan du ignorera detta mail.\n\nSveriges Transportplattform`,
+    ctaUrl: verifyUrl,
+    ctaText: "Verifiera e-post",
   });
   return sent;
 }
@@ -262,16 +264,6 @@ authRouter.post("/register", validateBody(registerSchema), async (req, res, next
       });
     } catch (notifyErr) {
       console.error("Admin new-registration notify failed:", notifyErr);
-    }
-    try {
-      await sendWelcomeEmail({
-        to: user.email,
-        name: user.name,
-        role: user.role,
-        frontendBaseUrl: verificationBaseUrl,
-      });
-    } catch (welcomeErr) {
-      console.error("Welcome email failed:", welcomeErr);
     }
     const augmentedUser = await augmentCompanyMemberUser(user);
     const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, {
@@ -626,6 +618,15 @@ authRouter.get("/verify-email", async (req, res, next) => {
         emailVerificationExpiresAt: null,
       },
     });
+    try {
+      await sendWelcomeEmail({
+        to: user.email,
+        name: user.name,
+        role: user.role,
+      });
+    } catch (welcomeErr) {
+      console.error("Welcome email (post-verify) failed:", welcomeErr);
+    }
     res.json({ ok: true, message: "E-post verifierad" });
   } catch (e) {
     next(e);

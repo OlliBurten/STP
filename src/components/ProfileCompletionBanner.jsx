@@ -22,14 +22,11 @@ export default function ProfileCompletionBanner({ pct, missing, profileUrl, stor
     setDismissed(true);
   }
 
-  const isRed = pct < 40;
-  const bg = isRed ? "bg-red-50 border-red-200" : "bg-amber-50 border-amber-200";
-  const barColor = isRed ? "bg-red-400" : "bg-amber-400";
-  const textStrong = isRed ? "text-red-900" : "text-amber-900";
-  const textMuted = isRed ? "text-red-700" : "text-amber-700";
-  const btnClass = isRed
-    ? "bg-red-600 hover:bg-red-700 text-white"
-    : "bg-amber-500 hover:bg-amber-600 text-white";
+  const bg = "bg-slate-50 border-slate-200";
+  const barColor = "bg-[var(--color-primary)]";
+  const textStrong = "text-slate-900";
+  const textMuted = "text-slate-600";
+  const btnClass = "bg-[var(--color-primary)] hover:opacity-90 text-white";
 
   const shown = missing.slice(0, 2);
   const extra = missing.length - shown.length;
