@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, matchPath } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import OAuthProviders from "./components/OAuthProviders";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -83,10 +83,14 @@ const DRIVER_ITEMS = [
   { key: "regionsWilling",   label: "Körregioner",             fn: (p) => Array.isArray(p.regionsWilling) && p.regionsWilling.length > 0 },
 ];
 
+const ONBOARDING_PATHS = ["/onboarding/forare", "/foretag/onboarding"];
+
 function DriverCompletionNudge() {
   const { user, isDriver } = useAuth();
   const { profile, profileLoaded } = useProfile();
-  if (!isDriver || !profileLoaded || !user || user.isAdmin) return null;
+  const { pathname } = useLocation();
+  const isOnboarding = ONBOARDING_PATHS.some((p) => matchPath(p, pathname));
+  if (!isDriver || !profileLoaded || !user || user.isAdmin || isOnboarding) return null;
   const p = { ...profile, name: profile?.name || user.name };
   const items = DRIVER_ITEMS.map((item) => ({ label: item.label, done: item.fn(p) }));
   const pct = Math.round((items.filter((i) => i.done).length / items.length) * 100);

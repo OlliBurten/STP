@@ -183,33 +183,16 @@ export default function DriverOnboardingWizard() {
         </div>
 
         <div className="mt-8">
-          <div className="mb-6 rounded-xl border border-[var(--color-primary)]/20 bg-[var(--color-primary)]/5 p-4">
-            <p className="text-sm font-semibold text-slate-900">{stepGuidance[step].title}</p>
-            <p className="mt-1 text-sm text-slate-600">{stepGuidance[step].text}</p>
-          </div>
+          {step > 0 && (
+            <div className="mb-6 rounded-xl border border-[var(--color-primary)]/20 bg-[var(--color-primary)]/5 p-4">
+              <p className="text-sm font-semibold text-slate-900">{stepGuidance[step].title}</p>
+              <p className="mt-1 text-sm text-slate-600">{stepGuidance[step].text}</p>
+            </div>
+          )}
           {step === 0 && (
             <div>
-              <h2 className="font-semibold text-slate-900">Söker du praktik eller anställning?</h2>
-              <p className="mt-1 text-sm text-slate-600">Välj det som bäst beskriver din huvudinriktning just nu.</p>
+              <h2 className="text-lg font-semibold text-slate-900">Vad söker du?</h2>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setDraft((prev) => ({
-                      ...prev,
-                      isGymnasieelev: true,
-                      primarySegment: "INTERNSHIP",
-                    }))
-                  }
-                  className={`text-left rounded-xl border p-4 transition-colors ${
-                    draft.isGymnasieelev === true
-                      ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5"
-                      : "border-slate-200 hover:bg-slate-50"
-                  }`}
-                >
-                  <p className="font-semibold text-slate-900">Praktik</p>
-                  <p className="text-sm text-slate-600">Elev eller studerande som söker praktikplats.</p>
-                </button>
                 <button
                   type="button"
                   onClick={() =>
@@ -220,14 +203,32 @@ export default function DriverOnboardingWizard() {
                       primarySegment: prev.primarySegment === "INTERNSHIP" ? "" : prev.primarySegment,
                     }))
                   }
-                  className={`text-left rounded-xl border p-4 transition-colors ${
+                  className={`text-left rounded-xl border-2 p-5 transition-colors ${
                     draft.isGymnasieelev === false
                       ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5"
-                      : "border-slate-200 hover:bg-slate-50"
+                      : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
                   }`}
                 >
-                  <p className="font-semibold text-slate-900">Heltid eller vikarie</p>
-                  <p className="text-sm text-slate-600">Yrkesförare eller arbetssökande inom transport.</p>
+                  <p className="text-base font-semibold text-slate-900">Jobb</p>
+                  <p className="mt-1 text-sm text-slate-500">Heltid, vikariat eller timanställning inom transport.</p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setDraft((prev) => ({
+                      ...prev,
+                      isGymnasieelev: true,
+                      primarySegment: "INTERNSHIP",
+                    }))
+                  }
+                  className={`text-left rounded-xl border-2 p-5 transition-colors ${
+                    draft.isGymnasieelev === true
+                      ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5"
+                      : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+                  }`}
+                >
+                  <p className="text-base font-semibold text-slate-900">Praktik</p>
+                  <p className="mt-1 text-sm text-slate-500">Elev eller studerande som söker praktikplats.</p>
                 </button>
               </div>
 
