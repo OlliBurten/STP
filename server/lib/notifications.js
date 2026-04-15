@@ -1,7 +1,9 @@
 /**
- * In-app notifications. Create records so the header bell can show recent activity.
+ * In-app notifications. Create records so the header bell can show recent activity,
+ * and optionally forward as browser push notifications.
  */
 import { prisma } from "../lib/prisma.js";
+import { sendPushToUser } from "../lib/push.js";
 
 /**
  * Create a notification for a user.
@@ -28,4 +30,7 @@ export async function createNotification({
       actorName: actorName ?? undefined,
     },
   });
+
+  // Fire-and-forget push — don't let push failures affect the main flow
+  sendPushToUser(userId, { title, body: body ?? undefined, link: link ?? undefined }).catch(() => {});
 }

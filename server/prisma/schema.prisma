@@ -49,6 +49,7 @@ model User {
   reviewsReceived CompanyReview[] @relation("ReviewCompany")
   savedJobs       SavedJob[]
   notifications   Notification[] @relation("NotificationRecipient")
+  pushSubscriptions PushSubscription[]
   lastMatchJobEmailAt    DateTime?  // driver: last time we sent "matching jobs" email
   lastMatchDriverEmailAt DateTime?  // company: last time we sent "matching driver" email
   lastLoginAt            DateTime?  // senaste inloggning (alla metoder)
@@ -77,6 +78,18 @@ model User {
   adminAuditTargets     AdminAuditLog[] @relation("AdminAuditTarget")
   adminImpersonationSessions AdminImpersonationSession[] @relation("AdminImpersonationActor")
   impersonatedBySessions     AdminImpersonationSession[] @relation("AdminImpersonationTarget")
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 model AdminImpersonationSession {

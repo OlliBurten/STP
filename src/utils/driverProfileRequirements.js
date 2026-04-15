@@ -1,4 +1,5 @@
 const SUMMARY_MIN_LENGTH = 20;
+const SUMMARY_MAX_LENGTH = 600;
 
 function trimmed(value) {
   return String(value || "").trim();
@@ -123,4 +124,4 @@ export function getProfileCompletion(user) {
   return { pct, colorClass };
 }
 
-export { SUMMARY_MIN_LENGTH };
+export { SUMMARY_MIN_LENGTH, SUMMARY_MAX_LENGTH };

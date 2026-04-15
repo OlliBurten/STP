@@ -5,6 +5,7 @@ import { matchScore, driverYearsFromExperience } from "../utils/matchScore.js";
 import { isDriverMinimumProfileComplete } from "../utils/driverProfileRequirements.js";
 import { notifyRecommendedDriverMatch } from "../lib/email.js";
 import { createNotification } from "../lib/notifications.js";
+import { analyzeSummary } from "../lib/analyzeSummary.js";
 
 export const profileRouter = Router();
 const MATCH_ALERTS_ENABLED = process.env.MATCH_ALERTS_ENABLED !== "false";
@@ -327,6 +328,23 @@ profileRouter.put("/", async (req, res, next) => {
 });
 
 // PATCH /api/profile/notification-settings
+// AI-analys av profiltext — används i onboarding wizard steg 4
+profileRouter.post("/analyze-summary", async (req, res, next) => {
+  try {
+    const text = String(req.body?.text || "").trim();
+    if (text.length < 20) {
+      return res.json({ ok: true, issues: [], suggestions: [] });
+    }
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return res.json({ ok: true, issues: [], suggestions: [] });
+    }
+    const result = await analyzeSummary(text);
+    res.json(result);
+  } catch (e) {
+    next(e);
+  }
+});
+
 profileRouter.patch("/notification-settings", async (req, res, next) => {
   try {
     const allowed = ["profileReminder", "jobMatch", "messageReminder", "inactivity"];

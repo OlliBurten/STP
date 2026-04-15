@@ -293,14 +293,7 @@ export default function Login() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <>
-            <div className="p-3 rounded-lg bg-red-50 text-red-800 text-sm">{error}</div>
-            {error.includes("Försök igen senare") && (
-              <p className="text-xs text-slate-600 mt-1">
-                Vid serverfel: kontrollera att backend och databas körs och att ADMIN_EMAILS är satt. Kolla backend-loggarna (t.ex. Railway) för detaljer.
-              </p>
-            )}
-          </>
+          <div className="p-3 rounded-lg bg-red-50 text-red-800 text-sm">{error}</div>
         )}
         {info && (
           <div className="p-3 rounded-lg bg-green-50 text-green-800 text-sm">{info}</div>

@@ -533,6 +533,9 @@ authRouter.post("/google", validateBody(oauthGoogleSchema), async (req, res, nex
     if (e.message?.includes("Token")) {
       return res.status(401).json({ error: "Ogiltig eller utgången inloggning. Försök igen." });
     }
+    if (e.message?.includes("avstängt")) {
+      return res.status(403).json({ error: e.message });
+    }
     next(e);
   }
 });
@@ -560,6 +563,9 @@ authRouter.post("/microsoft", validateBody(oauthMicrosoftSchema), async (req, re
   } catch (e) {
     if (e.message?.includes("Token") || e.message?.includes("jwt")) {
       return res.status(401).json({ error: "Ogiltig eller utgången inloggning. Försök igen." });
+    }
+    if (e.message?.includes("avstängt")) {
+      return res.status(403).json({ error: e.message });
     }
     next(e);
   }

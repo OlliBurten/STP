@@ -14,6 +14,18 @@ import { HelmetProvider } from 'react-helmet-async'
 import './index.css'
 import App from './App.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
+import { registerServiceWorker } from './utils/pushNotifications.js'
+
+registerServiceWorker().catch(() => {});
+
+// Handle navigation requests from service worker push clicks
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.addEventListener("message", (event) => {
+    if (event.data?.type === "PUSH_NAVIGATE" && event.data.link) {
+      window.location.href = event.data.link;
+    }
+  });
+}
 
 const GOOGLE_CLIENT_ID = (import.meta.env.VITE_GOOGLE_CLIENT_ID || "").trim();
 

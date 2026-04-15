@@ -3,6 +3,7 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useChat } from "../context/ChatContext";
 import { fetchNotifications, markNotificationRead, markAllNotificationsRead } from "../api/notifications.js";
+import { subscribeToPush, unsubscribeFromPush, getPushPermission, getCurrentSubscription } from "../utils/pushNotifications.js";
 import { BellIcon, MenuIcon, CloseIcon, ChevronDownIcon } from "./Icons";
 import Logo from "./Logo";
 
@@ -49,6 +50,9 @@ export default function Header({ onboarding = false }) {
   const [navDropdownOpen, setNavDropdownOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState({ list: [], unreadCount: 0 });
+  const [pushPermission, setPushPermission] = useState("default"); // "default" | "granted" | "denied" | "unsupported"
+  const [pushSubscribed, setPushSubscribed] = useState(false);
+  const [pushLoading, setPushLoading] = useState(false);
   const notifRef = useRef(null);
   const navDropdownRef = useRef(null);
   const userMenuRef = useRef(null);
@@ -56,6 +60,16 @@ export default function Header({ onboarding = false }) {
   const platformAdminSession = isAdmin && !isImpersonating;
 
   const isVerifiedCompany = !isCompany || user?.companyStatus === "VERIFIED";
+
+  useEffect(() => {
+    if (!user) return;
+    getPushPermission().then((perm) => {
+      setPushPermission(perm);
+      if (perm === "granted") {
+        getCurrentSubscription().then((sub) => setPushSubscribed(!!sub)).catch(() => {});
+      }
+    });
+  }, [user]);
 
   useEffect(() => {
     if (!user || !notifOpen) return;
@@ -109,6 +123,31 @@ export default function Header({ onboarding = false }) {
     }
     setNotifOpen(false);
     if (item.link) navigate(item.link);
+  };
+
+  const handleTogglePush = async () => {
+    if (pushLoading) return;
+    setPushLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      if (pushSubscribed) {
+        await unsubscribeFromPush(token);
+        setPushSubscribed(false);
+      } else {
+        const sub = await subscribeToPush(token);
+        if (sub) {
+          setPushSubscribed(true);
+          setPushPermission("granted");
+        } else {
+          // Permission denied or unsupported
+          setPushPermission(await getPushPermission());
+        }
+      }
+    } catch {
+      // ignore
+    } finally {
+      setPushLoading(false);
+    }
   };
 
   const handleMarkAllRead = () => {
@@ -323,6 +362,27 @@ export default function Header({ onboarding = false }) {
                       ))
                     )}
                   </ul>
+                  {pushPermission !== "unsupported" && pushPermission !== "denied" && (
+                    <div className="border-t border-slate-100 px-3 py-2">
+                      <button
+                        type="button"
+                        onClick={handleTogglePush}
+                        disabled={pushLoading}
+                        className="w-full text-xs text-center text-slate-500 hover:text-[var(--color-primary)] transition-colors disabled:opacity-50"
+                      >
+                        {pushLoading
+                          ? "..."
+                          : pushSubscribed
+                          ? "Stäng av push-notiser"
+                          : "Aktivera push-notiser"}
+                      </button>
+                    </div>
+                  )}
+                  {pushPermission === "denied" && (
+                    <div className="border-t border-slate-100 px-3 py-2">
+                      <p className="text-xs text-center text-slate-400">Push-notiser blockerade i webbläsaren</p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

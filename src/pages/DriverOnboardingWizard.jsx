@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useProfile } from "../context/ProfileContext";
 import { useAuth } from "../context/AuthContext";
@@ -7,6 +7,7 @@ import { licenseTypes, regions } from "../data/mockJobs";
 import { trackDriverOnboardingComplete } from "../utils/segmentMetrics";
 import {
   SUMMARY_MIN_LENGTH,
+  SUMMARY_MAX_LENGTH,
   hasDriverMinimumAvailability,
   hasDriverMinimumLicense,
   hasDriverMinimumName,
@@ -43,6 +44,8 @@ export default function DriverOnboardingWizard() {
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
+  const [aiAnalysis, setAiAnalysis] = useState(null); // { ok, issues, suggestions }
+  const [aiLoading, setAiLoading] = useState(false);
   const [draft, setDraft] = useState(() => {
     // Parse stored schoolName back to type + school for editing
     const storedSchool = profile.schoolName || "";
@@ -99,10 +102,43 @@ export default function DriverOnboardingWizard() {
       return Boolean(draft.location?.trim()) && Boolean(draft.region) && hasDriverMinimumLicense(draft) && hasDriverMinimumAvailability(draft);
     }
     if (step === 3) {
-      return hasDriverMinimumSummary(draft);
+      if (!hasDriverMinimumSummary(draft)) return false;
+      if (aiLoading) return false;
+      if (aiAnalysis && !aiAnalysis.ok) return false;
+      return true;
     }
     return true;
   };
+
+  const analyzeDebounceRef = useRef(null);
+
+  useEffect(() => {
+    if (step !== 3) return;
+    const text = draft.summary.trim();
+    if (text.length < SUMMARY_MIN_LENGTH) {
+      setAiAnalysis(null);
+      return;
+    }
+    setAiLoading(true);
+    clearTimeout(analyzeDebounceRef.current);
+    analyzeDebounceRef.current = setTimeout(async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/profile/analyze-summary`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ text }),
+        });
+        const data = await res.json();
+        setAiAnalysis(data);
+      } catch {
+        setAiAnalysis(null);
+      } finally {
+        setAiLoading(false);
+      }
+    }, 800);
+    return () => clearTimeout(analyzeDebounceRef.current);
+  }, [draft.summary, step]);
 
   const saveAndFinish = async () => {
     const primarySegment = draft.isGymnasieelev === true ? "INTERNSHIP" : draft.primarySegment;
@@ -407,16 +443,69 @@ export default function DriverOnboardingWizard() {
                 <p className="text-sm text-slate-600">
                   Denna text visas för företag. Håll den kort och tydlig: vad du kan och vad du söker.
                 </p>
-                <textarea
-                  value={draft.summary}
-                  onChange={(e) => setDraft((prev) => ({ ...prev, summary: e.target.value }))}
-                  rows={5}
-                  placeholder="Exempel: CE-chaufför med erfarenhet av distribution. Söker helst dagtid i Skåne."
-                  className="w-full px-4 py-3 rounded-lg border border-slate-300 bg-white"
-                />
+                <div className="relative">
+                  <textarea
+                    value={draft.summary}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val.length <= SUMMARY_MAX_LENGTH) {
+                        setDraft((prev) => ({ ...prev, summary: val }));
+                        setAiAnalysis(null);
+                      }
+                    }}
+                    rows={5}
+                    placeholder="Exempel: CE-chaufför med erfarenhet av distribution. Söker helst dagtid i Skåne."
+                    className="w-full px-4 py-3 rounded-lg border border-slate-300 bg-white"
+                  />
+                  <span className={`absolute bottom-2 right-3 text-xs ${
+                    draft.summary.length > SUMMARY_MAX_LENGTH * 0.9
+                      ? "text-amber-500"
+                      : "text-slate-400"
+                  }`}>
+                    {draft.summary.length}/{SUMMARY_MAX_LENGTH}
+                  </span>
+                </div>
                 <p className="text-xs text-slate-500">
-                  Minst {SUMMARY_MIN_LENGTH} tecken krävs för att profilen ska räknas som komplett.
+                  Minst {SUMMARY_MIN_LENGTH} tecken krävs. Max {SUMMARY_MAX_LENGTH} tecken.
                 </p>
+
+                {/* AI-analysstatus */}
+                {aiLoading && draft.summary.trim().length >= SUMMARY_MIN_LENGTH && (
+                  <p className="flex items-center gap-2 text-xs text-slate-500">
+                    <span className="inline-block w-3 h-3 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
+                    Granskar text...
+                  </p>
+                )}
+
+                {aiAnalysis && (
+                  <div className={`rounded-lg border p-4 text-sm space-y-2 ${
+                    aiAnalysis.ok
+                      ? "border-green-200 bg-green-50"
+                      : "border-amber-200 bg-amber-50"
+                  }`}>
+                    <p className={`font-medium ${aiAnalysis.ok ? "text-green-800" : "text-amber-800"}`}>
+                      {aiAnalysis.ok ? "✓ Texten ser bra ut!" : "⚠ Några saker att tänka på"}
+                    </p>
+                    {aiAnalysis.issues.length > 0 && (
+                      <ul className="space-y-1 text-amber-800">
+                        {aiAnalysis.issues.map((issue, i) => (
+                          <li key={i} className="flex gap-2"><span>•</span><span>{issue}</span></li>
+                        ))}
+                      </ul>
+                    )}
+                    {aiAnalysis.suggestions.length > 0 && (
+                      <div>
+                        <p className="font-medium text-slate-700 mt-2">Förslag:</p>
+                        <ul className="space-y-1 text-slate-600">
+                          {aiAnalysis.suggestions.map((s, i) => (
+                            <li key={i} className="flex gap-2"><span>→</span><span>{s}</span></li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600">
                   Skriv det en trafikledare eller rekryterare vill förstå på 10 sekunder: vad du har kört, vad du söker och vad du föredrar.
                 </div>
