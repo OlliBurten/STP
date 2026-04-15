@@ -62,7 +62,7 @@ const FAQ_ITEMS = [
   {
     id: "faq-1",
     question: "Är STP bemanning?",
-    answer: "Nej. STP är inte ett bemanningsbolag. Vi möjliggör direktkontakt mellan förare och åkerier — inga mellanhänder tar en del av lönen.",
+    answer: "Nej. STP är inte ett bemanningsbolag. Vi möjliggör direktkontakt mellan förare och åkerier, utan mellanhänder som tar en del av lönen.",
   },
   {
     id: "faq-2",
@@ -83,14 +83,14 @@ const FAQ_ITEMS = [
 
 const HOW_IT_WORKS = {
   driver: [
-    { step: "1", text: "Skapa konto och fyll i din profil — körkort, region och tillgänglighet." },
+    { step: "1", text: "Skapa konto och fyll i din profil med körkort, region och tillgänglighet." },
     { step: "2", text: "Välj om du vill vara synlig för åkerier direkt eller bara söka jobb." },
-    { step: "3", text: "Bli hittad eller ansök — all kontakt sker via plattformen." },
+    { step: "3", text: "Bli hittad eller ansök direkt. All kontakt sker via plattformen." },
   ],
   company: [
     { step: "1", text: "Registrera ditt åkeri och verifiera kontot." },
     { step: "2", text: "Publicera en annons eller sök direkt bland förare med rätt behörigheter." },
-    { step: "3", text: "Kontakta förare direkt — inga mellanhänder, ingen provision." },
+    { step: "3", text: "Kontakta förare direkt, utan mellanhänder och utan provision." },
   ],
 };
 
@@ -248,7 +248,7 @@ export default function Home() {
                 Svensk transport saknar en samlad och kvalitetssäkrad digital struktur för kompetens och matchning.
               </p>
               <p className="mt-4 text-slate-500 leading-relaxed">
-                Kompetenta förare och seriösa åkerier finns — men strukturen som för dem samman på ett tryggt sätt saknas.
+                Kompetenta förare och seriösa åkerier finns, men strukturen som för dem samman på ett tryggt sätt saknas.
               </p>
             </div>
             <div className="lg:col-span-3 space-y-4">
@@ -270,7 +270,7 @@ export default function Home() {
                 <div>
                   <h3 className="text-base font-semibold text-slate-900">Ingen kvalitetssäkring</h3>
                   <p className="mt-1.5 text-slate-600 leading-relaxed text-sm">
-                    Rekrytering sker utan transparent information om behörigheter och erfarenhet. Bemanningsbolag tjänar på osäkerheten — förare och åkerier betalar priset.
+                    Rekrytering sker utan transparent information om behörigheter och erfarenhet. Bemanningsbolag tjänar på osäkerheten. Förare och åkerier betalar priset.
                   </p>
                 </div>
               </div>
@@ -299,7 +299,7 @@ export default function Home() {
               En samlande digital struktur för svensk transport
             </h2>
             <p className="mt-4 text-slate-600 leading-relaxed max-w-2xl mx-auto">
-              STP samlar branschen i en transparent och kvalitetssäkrad plattform — utan mellanhänder.
+              STP samlar branschen i en transparent och kvalitetssäkrad plattform, utan mellanhänder.
             </p>
           </div>
           <ul className="grid sm:grid-cols-2 gap-5 list-none p-0 m-0">
@@ -418,7 +418,7 @@ export default function Home() {
                 Vanliga frågor
               </h2>
               <p className="mt-4 text-slate-500 leading-relaxed">
-                Korta svar på det vi får frågor om oftast. Saknar du något — hör av dig.
+                Korta svar på det vi får frågor om oftast. Saknar du något? Hör av dig.
               </p>
             </div>
             <ul className="lg:col-span-3 divide-y divide-slate-200 border border-slate-200 rounded-2xl overflow-hidden list-none p-0 m-0" role="list">

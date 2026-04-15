@@ -1,11 +1,11 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { usePageTitle } from "../hooks/usePageTitle";
-import { fetchMyJobs, updateJob } from "../api/jobs.js";
+import { fetchMyJobs, updateJob, renewJob } from "../api/jobs.js";
 import { useAuth } from "../context/AuthContext";
 import { useChat } from "../context/ChatContext";
 import { segmentLabel } from "../data/segments";
-import { isJobOlderThan30Days, countOldActiveJobs } from "../utils/jobUtils.js";
+import { isJobOlderThan30Days, isJobApproaching60Days, countOldActiveJobs } from "../utils/jobUtils.js";
 import PageHeader from "../components/PageHeader";
 import LoadingBlock from "../components/LoadingBlock";
 
@@ -17,6 +17,7 @@ export default function MinaJobb() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [closingId, setClosingId] = useState(null);
+  const [renewingId, setRenewingId] = useState(null);
   const [successMessage, setSuccessMessage] = useState("");
 
   const handleCloseJob = async (e, jobId) => {
@@ -53,6 +54,23 @@ export default function MinaJobb() {
       })
       .finally(() => setLoading(false));
   }, [hasApi]);
+
+  const handleRenewJob = async (e, jobId) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setRenewingId(jobId);
+    setSuccessMessage("");
+    try {
+      const updated = await renewJob(jobId);
+      setJobs((prev) => prev.map((j) => (j.id === jobId ? { ...j, status: "ACTIVE", renewedAt: updated.renewedAt ?? new Date().toISOString(), filledAt: null, tips30SentAt: null, warningSentAt: null } : j)));
+      setSuccessMessage("Annonsen är förnyad och aktiv i 60 dagar till.");
+      setTimeout(() => setSuccessMessage(""), 4000);
+    } catch (err) {
+      alert(err.message || "Kunde inte förnya annonsen");
+    } finally {
+      setRenewingId(null);
+    }
+  };
 
   const oldActiveCount = useMemo(() => countOldActiveJobs(jobs), [jobs]);
 
@@ -162,10 +180,37 @@ export default function MinaJobb() {
                   <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-[var(--color-primary)]/10 text-[var(--color-primary)]">
                     {job.applicantCount === 0 ? "Inga sökande" : job.applicantCount === 1 ? "1 sökande" : `${job.applicantCount} sökande`}
                   </span>
-                  {job.status === "ACTIVE" && isJobOlderThan30Days(job) && (
+                  {job.status === "ACTIVE" && isJobApproaching60Days(job) && (
+                    <span className="text-xs text-red-700 font-medium" title="Annonsen arkiveras automatiskt inom kort">
+                      Snart utgången
+                    </span>
+                  )}
+                  {job.status === "ACTIVE" && !isJobApproaching60Days(job) && isJobOlderThan30Days(job) && (
                     <span className="text-xs text-amber-700 font-medium" title="Stäng annonsen om tjänsten är tillsatt">
                       Öppen över 30 dagar
                     </span>
+                  )}
+                  {job.status === "ACTIVE" && isJobApproaching60Days(job) && (
+                    <button
+                      type="button"
+                      onClick={(e) => handleRenewJob(e, job.id)}
+                      disabled={renewingId === job.id}
+                      className="text-sm font-medium text-[var(--color-primary)] hover:underline disabled:opacity-50"
+                      aria-label={`Förnya annons: ${job.title}`}
+                    >
+                      {renewingId === job.id ? "Förnyar..." : "Förnya"}
+                    </button>
+                  )}
+                  {job.status === "HIDDEN" && (
+                    <button
+                      type="button"
+                      onClick={(e) => handleRenewJob(e, job.id)}
+                      disabled={renewingId === job.id}
+                      className="text-sm font-medium text-[var(--color-primary)] hover:underline disabled:opacity-50"
+                      aria-label={`Förnya annons: ${job.title}`}
+                    >
+                      {renewingId === job.id ? "Förnyar..." : "Förnya"}
+                    </button>
                   )}
                   {job.status === "ACTIVE" && (
                     <button

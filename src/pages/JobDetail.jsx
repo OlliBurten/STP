@@ -604,7 +604,7 @@ export default function JobDetail() {
                   Ansök med din profil
                 </button>
                 <p className="mt-4 text-sm text-slate-500">
-                  Din profil är ditt CV – inget behov att ladda upp. Företaget ser din profil direkt.
+                  Din profil är ditt CV. Inget behov att ladda upp något. Företaget ser din profil direkt.
                 </p>
               </>
             ) : isCompany ? (

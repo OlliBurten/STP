@@ -119,6 +119,10 @@ companiesRouter.get("/:id/public", async (req, res, next) => {
         companyLocation: true,
         companyBransch: true,
         companyRegion: true,
+        fSkattsedel: true,
+        industryOrgMember: true,
+        industryOrgName: true,
+        policyAgreedAt: true,
       },
     });
     if (!company || company.role !== "COMPANY") {
@@ -154,6 +158,10 @@ companiesRouter.get("/:id/public", async (req, res, next) => {
       bransch: company.companyBransch || [],
       region: company.companyRegion || "",
       verified: company.companyStatus === "VERIFIED",
+      fSkattsedel: company.fSkattsedel || false,
+      industryOrgMember: company.industryOrgMember || false,
+      industryOrgName: company.industryOrgName || null,
+      policyAgreedAt: company.policyAgreedAt || null,
       reviewAverage: reviewAggregate._avg.rating
         ? Number(reviewAggregate._avg.rating.toFixed(2))
         : null,
@@ -195,7 +203,13 @@ companiesRouter.get("/me/profile", async (req, res, next) => {
       if (!org) return res.status(404).json({ error: "Företaget hittades inte" });
       const owner = await prisma.user.findUnique({
         where: { id: resolved.ownerId },
-        select: { emailNotificationSettings: true },
+        select: {
+          emailNotificationSettings: true,
+          fSkattsedel: true,
+          industryOrgMember: true,
+          industryOrgName: true,
+          policyAgreedAt: true,
+        },
       });
       return res.json({
         id: org.id,
@@ -210,6 +224,10 @@ companiesRouter.get("/me/profile", async (req, res, next) => {
         companyRegion: org.region,
         companyStatus: org.status,
         emailNotificationSettings: owner?.emailNotificationSettings || {},
+        fSkattsedel: owner?.fSkattsedel || false,
+        industryOrgMember: owner?.industryOrgMember || false,
+        industryOrgName: owner?.industryOrgName || null,
+        policyAgreedAt: owner?.policyAgreedAt || null,
       });
     }
 
@@ -228,6 +246,10 @@ companiesRouter.get("/me/profile", async (req, res, next) => {
         companyRegion: true,
         companyStatus: true,
         emailNotificationSettings: true,
+        fSkattsedel: true,
+        industryOrgMember: true,
+        industryOrgName: true,
+        policyAgreedAt: true,
       },
     });
     if (!company) return res.status(404).json({ error: "Företaget hittades inte" });
@@ -333,12 +355,24 @@ companiesRouter.put("/me/profile", requireCompanyOwner, validateBody(companyProf
           status: true,
         },
       });
+      // Trust fields always live on the owner User
+      const trustData = {};
+      if (body.fSkattsedel !== undefined) trustData.fSkattsedel = body.fSkattsedel;
+      if (body.industryOrgMember !== undefined) trustData.industryOrgMember = body.industryOrgMember;
+      if (body.industryOrgName !== undefined) trustData.industryOrgName = body.industryOrgName;
+      if (body.policyAgreedAt !== undefined) trustData.policyAgreedAt = body.policyAgreedAt ? new Date(body.policyAgreedAt) : null;
+      const ownerId = req.companyOwnerId ?? req.userId;
+      const ownerUpdates = { ...trustData };
       if (Array.isArray(updated.segmentDefaults) && updated.segmentDefaults.length > 0) {
-        await prisma.user.update({
-          where: { id: req.companyOwnerId ?? req.userId },
-          data: { needsRecruiterOnboarding: false },
-        });
+        ownerUpdates.needsRecruiterOnboarding = false;
       }
+      const ownerUser = Object.keys(ownerUpdates).length > 0
+        ? await prisma.user.update({
+            where: { id: ownerId },
+            data: ownerUpdates,
+            select: { fSkattsedel: true, industryOrgMember: true, industryOrgName: true, policyAgreedAt: true },
+          })
+        : null;
       return res.json({
         id: updated.id,
         name: updated.name,
@@ -351,6 +385,10 @@ companiesRouter.put("/me/profile", requireCompanyOwner, validateBody(companyProf
         companyBransch: updated.bransch,
         companyRegion: updated.region,
         companyStatus: updated.status,
+        fSkattsedel: ownerUser?.fSkattsedel ?? false,
+        industryOrgMember: ownerUser?.industryOrgMember ?? false,
+        industryOrgName: ownerUser?.industryOrgName ?? null,
+        policyAgreedAt: ownerUser?.policyAgreedAt ?? null,
       });
     }
 
@@ -368,6 +406,12 @@ companiesRouter.put("/me/profile", requireCompanyOwner, validateBody(companyProf
         companyBransch: Array.isArray(body.companyBransch) ? body.companyBransch : undefined,
         companyRegion: body.companyRegion !== undefined ? body.companyRegion : undefined,
         name: body.name !== undefined ? body.name : undefined,
+        fSkattsedel: body.fSkattsedel !== undefined ? body.fSkattsedel : undefined,
+        industryOrgMember: body.industryOrgMember !== undefined ? body.industryOrgMember : undefined,
+        industryOrgName: body.industryOrgName !== undefined ? body.industryOrgName : undefined,
+        policyAgreedAt: body.policyAgreedAt !== undefined
+          ? (body.policyAgreedAt ? new Date(body.policyAgreedAt) : null)
+          : undefined,
       },
       select: {
         id: true,
@@ -381,6 +425,10 @@ companiesRouter.put("/me/profile", requireCompanyOwner, validateBody(companyProf
         companyBransch: true,
         companyRegion: true,
         companyStatus: true,
+        fSkattsedel: true,
+        industryOrgMember: true,
+        industryOrgName: true,
+        policyAgreedAt: true,
       },
     });
     if (Array.isArray(updated.companySegmentDefaults) && updated.companySegmentDefaults.length > 0) {

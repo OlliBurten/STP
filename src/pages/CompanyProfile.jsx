@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchMyCompanyProfile, updateMyCompanyProfile, updateCompanyNotificationSettings } from "../api/companies.js";
 import { listCompanyInvites, createCompanyInvite, revokeCompanyInvite } from "../api/invites.js";
+import { changePassword } from "../api/auth.js";
 import { useAuth } from "../context/AuthContext";
 import { segmentOptions } from "../data/segments";
 import { branschValues } from "../data/bransch.js";
@@ -9,7 +10,7 @@ import BranschSearch from "../components/BranschSearch.jsx";
 import { regions } from "../data/mockJobs.js";
 import LoadingBlock from "../components/LoadingBlock";
 import { useToast } from "../context/ToastContext";
-import { ChevronDownIcon } from "../components/Icons";
+import { ChevronDownIcon, EyeIcon, EyeOffIcon } from "../components/Icons";
 
 export default function CompanyProfile() {
   const { hasApi, user } = useAuth();
@@ -28,6 +29,12 @@ export default function CompanyProfile() {
   const [lastDevInviteLink, setLastDevInviteLink] = useState("");
   const [notifSettings, setNotifSettings] = useState(null);
   const [notifSaving, setNotifSaving] = useState(false);
+  const [pwForm, setPwForm] = useState({ current: "", next: "", confirm: "" });
+  const [pwError, setPwError] = useState("");
+  const [pwSuccess, setPwSuccess] = useState("");
+  const [pwLoading, setPwLoading] = useState(false);
+  const [showPwCurrent, setShowPwCurrent] = useState(false);
+  const [showPwNext, setShowPwNext] = useState(false);
 
   useEffect(() => {
     if (!hasApi) {
@@ -71,6 +78,10 @@ export default function CompanyProfile() {
           : [],
         companyBransch: (Array.isArray(draft.companyBransch) ? draft.companyBransch : []).filter((b) => branschValues.includes(b)),
         companyRegion: draft.companyRegion !== undefined ? draft.companyRegion : "",
+        fSkattsedel: Boolean(draft.fSkattsedel),
+        industryOrgMember: Boolean(draft.industryOrgMember),
+        industryOrgName: draft.industryOrgName || null,
+        policyAgreedAt: draft.policyAgreedAt || null,
       });
       setProfile(updated);
       setDraft(updated);
@@ -202,6 +213,68 @@ export default function CompanyProfile() {
             className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none"
           />
         </div>
+        <div className="border-t border-slate-100 pt-5">
+          <h2 className="text-base font-semibold text-slate-900 mb-1">Certifieringar &amp; trovärdighet</h2>
+          <p className="text-xs text-slate-500 mb-4">
+            Dessa uppgifter visas som badges på er offentliga profil och hjälper förare att snabbt bedöma hur seriöst ert åkeri är. Ni intygar på heder att uppgifterna stämmer.
+          </p>
+          <div className="space-y-4">
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={Boolean(draft?.fSkattsedel)}
+                onChange={(e) => {
+                  setDraft((p) => ({ ...p, fSkattsedel: e.target.checked }));
+                }}
+                className="mt-0.5 w-4 h-4 rounded accent-[var(--color-primary)]"
+              />
+              <div>
+                <p className="text-sm font-medium text-slate-800">Vi innehar F-skattsedel</p>
+                <p className="text-xs text-slate-500">Intygar att ni betalar arbetsgivaravgifter och följer Skatteverkets regler.</p>
+              </div>
+            </label>
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={Boolean(draft?.industryOrgMember)}
+                onChange={(e) => {
+                  setDraft((p) => ({ ...p, industryOrgMember: e.target.checked }));
+                }}
+                className="mt-0.5 w-4 h-4 rounded accent-[var(--color-primary)]"
+              />
+              <div>
+                <p className="text-sm font-medium text-slate-800">Medlem i branschorganisation</p>
+                <p className="text-xs text-slate-500">T.ex. Transportföretagen, Sveriges Åkeriföretag (SÅ), TYA eller liknande.</p>
+              </div>
+            </label>
+            {draft?.industryOrgMember && (
+              <div className="ml-7">
+                <label className="block text-xs font-medium text-slate-700 mb-1">Namn på organisation (valfritt)</label>
+                <input
+                  value={draft?.industryOrgName || ""}
+                  onChange={(e) => setDraft((p) => ({ ...p, industryOrgName: e.target.value }))}
+                  placeholder="t.ex. Sveriges Åkeriföretag"
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none"
+                />
+              </div>
+            )}
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={Boolean(draft?.policyAgreedAt)}
+                onChange={(e) => {
+                  setDraft((p) => ({ ...p, policyAgreedAt: e.target.checked ? new Date().toISOString() : null }));
+                }}
+                className="mt-0.5 w-4 h-4 rounded accent-[var(--color-primary)]"
+              />
+              <div>
+                <p className="text-sm font-medium text-slate-800">Vi förbinder oss att följa STP:s uppförandekod</p>
+                <p className="text-xs text-slate-500">Intygar att ni inte diskriminerar, villfarar eller missbrukar plattformen.</p>
+              </div>
+            </label>
+          </div>
+        </div>
+
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-2">
             Standardsegment för nya annonser
@@ -243,7 +316,7 @@ export default function CompanyProfile() {
         <section className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8 space-y-5">
           <h2 className="text-xl font-bold text-slate-900">Bjud in teammedlemmar</h2>
           <p className="text-sm text-slate-600">
-            Bjud in kollegor som ska kunna logga in, publicera jobb och söka förare tillsammans med er. De behöver bara skapa ett konto – ingen företags-onboarding krävs.
+            Bjud in kollegor som ska kunna logga in, publicera jobb och söka förare tillsammans med er. De behöver bara skapa ett konto, ingen företags-onboarding krävs.
           </p>
           <form
             onSubmit={async (e) => {
@@ -393,6 +466,60 @@ export default function CompanyProfile() {
             </label>
           );
         })}
+      </section>
+
+      {/* Change password */}
+      <section className="mt-6 bg-white rounded-xl border border-slate-200 p-6 sm:p-8">
+        <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-1">Ändra lösenord</h2>
+        <p className="text-sm text-slate-500 mb-5">Välj ett nytt lösenord på minst 8 tecken.</p>
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            setPwError("");
+            setPwSuccess("");
+            if (pwForm.next.length < 8) { setPwError("Lösenordet måste vara minst 8 tecken."); return; }
+            if (pwForm.next !== pwForm.confirm) { setPwError("Lösenorden matchar inte."); return; }
+            setPwLoading(true);
+            try {
+              await changePassword(pwForm.current, pwForm.next);
+              setPwSuccess("Lösenordet har uppdaterats.");
+              setPwForm({ current: "", next: "", confirm: "" });
+            } catch (err) {
+              setPwError(err.message || "Kunde inte uppdatera lösenordet.");
+            } finally {
+              setPwLoading(false);
+            }
+          }}
+          className="space-y-4 max-w-sm"
+        >
+          {pwError && <p className="text-sm text-red-600">{pwError}</p>}
+          {pwSuccess && <p className="text-sm text-green-700">{pwSuccess}</p>}
+          <div>
+            <label htmlFor="cp-current" className="block text-sm font-medium text-slate-700 mb-1">Nuvarande lösenord</label>
+            <div className="relative">
+              <input id="cp-current" type={showPwCurrent ? "text" : "password"} value={pwForm.current} onChange={(e) => setPwForm((p) => ({ ...p, current: e.target.value }))} required className="w-full px-4 py-3 pr-12 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none text-sm" />
+              <button type="button" onClick={() => setShowPwCurrent((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600" aria-label={showPwCurrent ? "Dölj" : "Visa"}>
+                {showPwCurrent ? <EyeOffIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+              </button>
+            </div>
+          </div>
+          <div>
+            <label htmlFor="cp-next" className="block text-sm font-medium text-slate-700 mb-1">Nytt lösenord</label>
+            <div className="relative">
+              <input id="cp-next" type={showPwNext ? "text" : "password"} value={pwForm.next} onChange={(e) => setPwForm((p) => ({ ...p, next: e.target.value }))} required minLength={8} placeholder="Minst 8 tecken" className="w-full px-4 py-3 pr-12 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none text-sm" />
+              <button type="button" onClick={() => setShowPwNext((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600" aria-label={showPwNext ? "Dölj" : "Visa"}>
+                {showPwNext ? <EyeOffIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+              </button>
+            </div>
+          </div>
+          <div>
+            <label htmlFor="cp-confirm" className="block text-sm font-medium text-slate-700 mb-1">Bekräfta nytt lösenord</label>
+            <input id="cp-confirm" type={showPwNext ? "text" : "password"} value={pwForm.confirm} onChange={(e) => setPwForm((p) => ({ ...p, confirm: e.target.value }))} required className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none text-sm" />
+          </div>
+          <button type="submit" disabled={pwLoading} className="px-5 py-2.5 rounded-lg bg-[var(--color-primary)] text-white text-sm font-medium hover:bg-[var(--color-primary-light)] disabled:opacity-50">
+            {pwLoading ? "Sparar…" : "Spara nytt lösenord"}
+          </button>
+        </form>
       </section>
     </main>
   );

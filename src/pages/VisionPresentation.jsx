@@ -27,7 +27,7 @@ const LIVE_FEATURES = [
 const PROBLEMS = [
   {
     title: "Fragmenterade kanaler",
-    text: "Matchning sker i spridda Facebook-grupper, Blocket-annonser och lösa kontakter — utan gemensam struktur.",
+    text: "Matchning sker i spridda Facebook-grupper, Blocket-annonser och lösa kontakter, utan gemensam struktur.",
   },
   {
     title: "Otydliga profiler",
@@ -61,9 +61,9 @@ const SEGMENTS = [
 ];
 
 const ROADMAP = [
-  "Omdömen och trust-profil för åkerier — förare kan se hur ett företag upplevs av andra.",
-  "Matchningspoäng — tydligare signal till åkerier om hur väl en förare matchar ett specifikt behov.",
-  "Djupare branschinsikter — data och trendrapporter för att förstå var kompetensen finns och behövs.",
+  "Omdömen och trust-profil för åkerier, så att förare kan se hur ett företag upplevs av andra.",
+  "Matchningspoäng som ger tydligare signal till åkerier om hur väl en förare matchar ett specifikt behov.",
+  "Djupare branschinsikter med data och trendrapporter för att förstå var kompetensen finns och behövs.",
   "Partnerskap med branschorganisationer för gemensam kvalitetssäkring.",
 ];
 
@@ -87,7 +87,7 @@ export default function VisionPresentation() {
             STP är en branschnära plattform som gör matchning mellan förare och åkerier tydligare, snabbare och mer tillförlitlig. Ingen mellanhänder. Direkt kontakt. Rätt kompetens till rätt ställe.
           </p>
           <p className="mt-3 text-base text-white/70 max-w-2xl">
-            Vi bygger av branschen, för branschen — och välkomnar partners som vill vara med och forma hur det ser ut de närmaste åren.
+            Vi bygger av branschen, för branschen. Partners som vill vara med och forma hur det ser ut de närmaste åren är varmt välkomna.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
@@ -227,7 +227,7 @@ export default function VisionPresentation() {
             Vill ni vara med och bygga detta?
           </h2>
           <p className="mt-4 max-w-2xl text-white/85 leading-relaxed">
-            Vi söker partners som delar synen att branschen behöver en gemensam, professionell standard för matchning. Hör av dig — vi berättar gärna mer om var vi är och vart vi är på väg.
+            Vi söker partners som delar synen att branschen behöver en gemensam, professionell standard för matchning. Hör av dig så berättar vi mer om var vi är och vart vi är på väg.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <Link

@@ -260,7 +260,7 @@ export default function CompanyOnboardingWizard() {
         <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4">
           <p className="text-sm font-semibold text-slate-900">Varför det spelar roll</p>
           <p className="mt-1 text-sm text-slate-600">
-            Rätt segment gör att förare med rätt bakgrund hittar era annonser — och att ni hittar rätt förare snabbare.
+            Rätt segment gör att förare med rätt bakgrund hittar era annonser, och att ni hittar rätt förare snabbare.
           </p>
         </div>
         <div className="mt-6 grid gap-3">

@@ -20,7 +20,7 @@ const steps = ["Mål", "Kontakt", "Kärnprofil", "Avsluta"];
 const stepGuidance = [
   {
     title: "Välj rätt segment",
-    text: "Rätt segment gör att rätt jobb och företag hittar dig direkt — du slipper sållas bort i fel flöde.",
+    text: "Rätt segment gör att rätt jobb och företag hittar dig direkt. Du slipper sållas bort i fel flöde.",
   },
   {
     title: "Så kan företag nå dig",
@@ -32,7 +32,7 @@ const stepGuidance = [
   },
   {
     title: "Sista steget",
-    text: "En kort presentation gör att ett företag förstår vem du är på 10 sekunder — det ökar chansen att de hör av sig.",
+    text: "En kort presentation gör att ett företag förstår vem du är på 10 sekunder. Det ökar chansen att de hör av sig.",
   },
 ];
 
@@ -152,7 +152,7 @@ export default function DriverOnboardingWizard() {
         <p className="text-sm text-slate-500">Välkommen till STP</p>
         <h1 className="mt-1 text-2xl font-bold text-slate-900">Hej {user?.name?.split(" ")[0] || ""}! Sätt upp din profil.</h1>
         <p className="mt-2 text-slate-600">
-          Fyll i det viktigaste nu — du kan alltid lägga till mer sen. Tar bara ett par minuter.
+          Fyll i det viktigaste nu. Du kan alltid lägga till mer sen. Tar bara ett par minuter.
         </p>
         {error ? (
           <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">

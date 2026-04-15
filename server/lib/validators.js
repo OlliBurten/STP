@@ -91,6 +91,11 @@ export const resetPasswordSchema = z.object({
   password: z.string().min(8, "Lösenordet måste vara minst 8 tecken").max(200),
 });
 
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, "Nuvarande lösenord krävs"),
+  newPassword: z.string().min(8, "Lösenordet måste vara minst 8 tecken").max(200),
+});
+
 export const resendVerificationSchema = z.object({
   email: z.string().min(1, "E-post krävs").email("Ogiltig e-postadress").max(255),
   verificationBaseUrl: z.string().url().max(500).optional(),
@@ -184,6 +189,10 @@ export const companyProfileSchema = z.object({
   companySegmentDefaults: z.array(z.string().max(50)).optional(),
   companyBransch: z.array(z.enum(BRANSCH_VALUES)).optional(),
   companyRegion: z.string().max(100).optional().nullable(),
+  fSkattsedel: z.boolean().optional(),
+  industryOrgMember: z.boolean().optional(),
+  industryOrgName: z.string().max(200).optional().nullable(),
+  policyAgreedAt: z.string().datetime().optional().nullable(),
 });
 
 export const createConversationSchema = z.object({

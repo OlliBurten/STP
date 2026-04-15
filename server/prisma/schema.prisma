@@ -27,6 +27,10 @@ model User {
   companyBransch    String[]  @default([])  // t.ex. ["tank", "distribution"] – för sök åkerier
   companyRegion     String?                 // t.ex. Stockholm, Skåne – för sök åkerier
   companyStatus String @default("VERIFIED") // PENDING | VERIFIED | REJECTED
+  fSkattsedel        Boolean  @default(false) // F-skattsedel (arbetsgivaransvar)
+  industryOrgMember  Boolean  @default(false) // Branschorganisation-medlem
+  industryOrgName    String?                  // Namn på branschorganisation
+  policyAgreedAt     DateTime?                // När de godkände STP:s policy
   suspendedAt DateTime?
   suspensionReason String?
   warningCount Int @default(0)
@@ -243,6 +247,9 @@ model Job {
   published   DateTime @default(now())
   filledAt    DateTime? // när annonsen stängdes (tillsatt)
   kollektivavtal Boolean? // kollektivavtal ja/nej
+  tips30SentAt   DateTime? // när 30-dagars tips-mail skickades
+  warningSentAt  DateTime? // när 55-dagars förnyelse-varning skickades
+  renewedAt      DateTime? // när företaget senast förnyade annonsen
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

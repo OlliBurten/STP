@@ -40,6 +40,11 @@ export async function updateJob(jobId, data) {
   return apiPatch(`/api/jobs/${jobId}`, data);
 }
 
+/** Förnya en annons — återställer publiceringsdatumet och aktiverar den igen */
+export async function renewJob(jobId) {
+  return apiPost(`/api/jobs/${jobId}/renew`, {});
+}
+
 /** Registrera en visning av ett jobb (fire-and-forget) */
 export function trackJobView(jobId) {
   return apiPost(`/api/jobs/${jobId}/view`, {});

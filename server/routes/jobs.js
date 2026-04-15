@@ -604,6 +604,31 @@ jobsRouter.post("/", authMiddleware, requireCompany, attachCompanyContext, requi
   }
 });
 
+jobsRouter.post("/:id/renew", authMiddleware, requireCompany, attachCompanyContext, requireVerifiedCompany, async (req, res, next) => {
+  try {
+    const job = await prisma.job.findUnique({ where: { id: req.params.id } });
+    if (!job) return res.status(404).json({ error: "Jobbet hittades inte" });
+    const hasAccess =
+      (job.organizationId && job.organizationId === req.organizationId) ||
+      job.userId === effectiveCompanyId(req);
+    if (!hasAccess) return res.status(403).json({ error: "Ingen åtkomst" });
+    const now = new Date();
+    const updated = await prisma.job.update({
+      where: { id: job.id },
+      data: {
+        status: "ACTIVE",
+        renewedAt: now,
+        tips30SentAt: null,
+        warningSentAt: null,
+        filledAt: null,
+      },
+    });
+    res.json({ id: updated.id, status: updated.status, renewedAt: updated.renewedAt?.toISOString() });
+  } catch (e) {
+    next(e);
+  }
+});
+
 jobsRouter.patch("/:id", authMiddleware, requireCompany, attachCompanyContext, requireVerifiedCompany, validateBody(patchJobSchema), async (req, res, next) => {
   try {
     const job = await prisma.job.findUnique({

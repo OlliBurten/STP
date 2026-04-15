@@ -3,13 +3,14 @@ import crypto from "node:crypto";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { prisma } from "../lib/prisma.js";
-import { sendEmail, notifyAdminNewRegistration } from "../lib/email.js";
+import { sendEmail, notifyAdminNewRegistration, sendWelcomeEmail, notifyPasswordChanged } from "../lib/email.js";
 import { validateBody } from "../middleware/validate.js";
 import {
   registerSchema,
   loginSchema,
   requestPasswordResetSchema,
   resetPasswordSchema,
+  changePasswordSchema,
   resendVerificationSchema,
   oauthGoogleSchema,
   oauthMicrosoftSchema,
@@ -262,6 +263,16 @@ authRouter.post("/register", validateBody(registerSchema), async (req, res, next
     } catch (notifyErr) {
       console.error("Admin new-registration notify failed:", notifyErr);
     }
+    try {
+      await sendWelcomeEmail({
+        to: user.email,
+        name: user.name,
+        role: user.role,
+        frontendBaseUrl: verificationBaseUrl,
+      });
+    } catch (welcomeErr) {
+      console.error("Welcome email failed:", welcomeErr);
+    }
     const augmentedUser = await augmentCompanyMemberUser(user);
     const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, {
       expiresIn: "24h",
@@ -478,6 +489,11 @@ async function findOrCreateOAuthUser(claims, role) {
   } catch (notifyErr) {
     console.error("Admin new-registration notify failed:", notifyErr);
   }
+  try {
+    await sendWelcomeEmail({ to: user.email, name: user.name, role: user.role });
+  } catch (welcomeErr) {
+    console.error("Welcome email (OAuth) failed:", welcomeErr);
+  }
   return { user };
 }
 
@@ -657,8 +673,8 @@ authRouter.post("/request-password-reset", validateBody(requestPasswordResetSche
       try {
         await sendEmail({
           to: user.email,
-          subject: "Återställ lösenord – DriverMatch",
-          text: `Hej!\n\nÅterställ ditt lösenord via länken:\n${resetUrl}\n\nLänken gäller i 1 timme.\n\nOm du inte begärde återställning kan du ignorera detta mail.\n\n/DriverMatch`,
+          subject: "Återställ lösenord – Sveriges Transportplattform",
+          text: `Hej!\n\nÅterställ ditt lösenord via länken:\n${resetUrl}\n\nLänken gäller i 1 timme.\n\nOm du inte begärde återställning kan du ignorera detta mail.\n\nSveriges Transportplattform`,
         });
       } catch (mailError) {
         // Do not fail the endpoint to avoid user enumeration
@@ -694,6 +710,30 @@ authRouter.post("/reset-password", validateBody(resetPasswordSchema), async (req
       },
     });
     res.json({ ok: true, message: "Lösenord uppdaterat" });
+  } catch (e) {
+    next(e);
+  }
+});
+
+authRouter.post("/change-password", authMiddleware, validateBody(changePasswordSchema), async (req, res, next) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const user = await prisma.user.findUnique({ where: { id: req.userId } });
+    if (!user || !user.passwordHash) {
+      return res.status(400).json({ error: "Lösenordsändring är inte tillgänglig för det här kontot." });
+    }
+    const valid = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!valid) {
+      return res.status(400).json({ error: "Nuvarande lösenord stämmer inte." });
+    }
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+    await prisma.user.update({ where: { id: req.userId }, data: { passwordHash } });
+    try {
+      await notifyPasswordChanged({ to: user.email, name: user.name });
+    } catch (e) {
+      console.error("Password changed email failed:", e?.message);
+    }
+    res.json({ ok: true, message: "Lösenordet har uppdaterats." });
   } catch (e) {
     next(e);
   }

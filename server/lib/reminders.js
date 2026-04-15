@@ -12,7 +12,7 @@
  */
 
 import { prisma } from "./prisma.js";
-import { sendEmail } from "./email.js";
+import { sendEmail, notifyJobTips, notifyJobExpiring, notifyJobAutoArchived } from "./email.js";
 import { isDriverMinimumProfileComplete } from "../utils/driverProfileRequirements.js";
 
 const FRONTEND_URL = (process.env.FRONTEND_URL || "https://transportplattformen.se")
@@ -426,21 +426,91 @@ export async function runInactivityReminders() {
   return { sent };
 }
 
+// ─── 5. Job maintenance (tips → warning → auto-archive) ─────────────────────
+
+export async function runJobMaintenance() {
+  const now = new Date();
+  const day30 = new Date(now - 30 * 24 * 60 * 60 * 1000);
+  const day55 = new Date(now - 55 * 24 * 60 * 60 * 1000);
+  const day60 = new Date(now - 60 * 24 * 60 * 60 * 1000);
+
+  const activeJobs = await prisma.job.findMany({
+    where: { status: "ACTIVE", published: { lt: day30 } },
+    select: {
+      id: true, title: true, company: true, contact: true,
+      published: true, renewedAt: true,
+      tips30SentAt: true, warningSentAt: true,
+      _count: { select: { conversations: true, views: true } },
+    },
+  });
+
+  let tips = 0, warnings = 0, archived = 0;
+
+  for (const job of activeJobs) {
+    // Use renewedAt as the reference date if the job has been renewed
+    const refDate = job.renewedAt ?? job.published;
+    const ageMs = now - new Date(refDate);
+    const ageDays = ageMs / (24 * 60 * 60 * 1000);
+
+    try {
+      if (ageDays >= 60) {
+        // Auto-archive
+        await prisma.job.update({ where: { id: job.id }, data: { status: "HIDDEN" } });
+        await notifyJobAutoArchived({
+          to: job.contact,
+          companyName: job.company,
+          jobTitle: job.title,
+        });
+        archived++;
+      } else if (ageDays >= 55 && !job.warningSentAt) {
+        // Warning at day 55
+        await notifyJobExpiring({
+          to: job.contact,
+          companyName: job.company,
+          jobTitle: job.title,
+          jobId: job.id,
+        });
+        await prisma.job.update({ where: { id: job.id }, data: { warningSentAt: new Date() } });
+        warnings++;
+      } else if (ageDays >= 30 && !job.tips30SentAt) {
+        // Tips at day 30
+        await notifyJobTips({
+          to: job.contact,
+          companyName: job.company,
+          jobTitle: job.title,
+          jobId: job.id,
+          viewCount: job._count.views,
+          applicationCount: job._count.conversations,
+        });
+        await prisma.job.update({ where: { id: job.id }, data: { tips30SentAt: new Date() } });
+        tips++;
+      }
+    } catch (e) {
+      console.error(`[JobMaintenance] Failed for job ${job.id}:`, e?.message);
+    }
+  }
+
+  console.log(`[JobMaintenance] tips=${tips} warnings=${warnings} archived=${archived}`);
+  return { tips, warnings, archived };
+}
+
 // ─── Run all ─────────────────────────────────────────────────────────────────
 
 export async function runAllReminders() {
   console.log("[Reminders] Starting daily reminder run...");
-  const [profile, jobMatch, message, inactivity] = await Promise.allSettled([
+  const [profile, jobMatch, message, inactivity, jobMaintenance] = await Promise.allSettled([
     runProfileReminders(),
     runJobMatchReminders(),
     runMessageReminders(),
     runInactivityReminders(),
+    runJobMaintenance(),
   ]);
   const summary = {
     profile: profile.status === "fulfilled" ? profile.value : { error: profile.reason?.message },
     jobMatch: jobMatch.status === "fulfilled" ? jobMatch.value : { error: jobMatch.reason?.message },
     message: message.status === "fulfilled" ? message.value : { error: message.reason?.message },
     inactivity: inactivity.status === "fulfilled" ? inactivity.value : { error: inactivity.reason?.message },
+    jobMaintenance: jobMaintenance.status === "fulfilled" ? jobMaintenance.value : { error: jobMaintenance.reason?.message },
   };
   console.log("[Reminders] Done:", JSON.stringify(summary));
   return summary;

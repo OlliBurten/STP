@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { useAuth } from "../context/AuthContext";
 import { requestPasswordReset, resendVerification } from "../api/auth";
-import { TruckIcon, BuildingIcon } from "../components/Icons";
+import { TruckIcon, BuildingIcon, EyeIcon, EyeOffIcon } from "../components/Icons";
 import OAuthButtons from "../components/OAuthButtons";
 import ErrorBoundary from "../components/ErrorBoundary";
 
@@ -40,6 +40,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [oauthPickingRole, setOauthPickingRole] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleMockDriver = () => {
     loginAsDriver();
@@ -370,16 +371,26 @@ export default function Login() {
               Ingen lösenordsinmatning behövs här.
             </p>
           ) : (
-            <input
-              id="password"
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none"
-              placeholder={mode === "register" ? "Minst 8 tecken" : ""}
-              minLength={mode === "register" ? 8 : undefined}
-            />
+            <div className="relative">
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-3 pr-12 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none"
+                placeholder={mode === "register" ? "Minst 8 tecken" : ""}
+                minLength={mode === "register" ? 8 : undefined}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                aria-label={showPassword ? "Dölj lösenord" : "Visa lösenord"}
+              >
+                {showPassword ? <EyeOffIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+              </button>
+            </div>
           )}
         </div>
         {mode === "register" && (

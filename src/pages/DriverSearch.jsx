@@ -180,7 +180,7 @@ export default function DriverSearch() {
         <p className="mt-1 text-slate-500 text-sm">
           {loadingDrivers
             ? "Hämtar förare…"
-            : `${filteredDrivers.length} förare tillgängliga – hitta rätt och kontakta direkt`}
+            : `${filteredDrivers.length} förare tillgängliga. Hitta rätt och kontakta direkt.`}
         </p>
       </div>
 
@@ -320,7 +320,7 @@ export default function DriverSearch() {
               {loadingDrivers ? "Hämtar…" : (
                 <>
                   <span className="font-semibold text-slate-900">{filteredDrivers.length}</span>
-                  {" "}förare{matchJob && <> – sorterade efter match mot <span className="font-medium">{forJobTitle || matchJob.title}</span></>}
+                  {" "}förare{matchJob && <>, sorterade efter match mot <span className="font-medium">{forJobTitle || matchJob.title}</span></>}
                 </>
               )}
             </p>

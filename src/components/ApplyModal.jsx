@@ -87,8 +87,7 @@ export default function ApplyModal({ job, onClose, onSuccess }) {
         </div>
 
         <p className="text-slate-600 mb-6">
-          Du ansöker till <strong>{job.title}</strong> på {job.company}. Din profil kommer att delas
-          med företaget – inget CV behövs. Ni kan chatta direkt via Sveriges Transportplattform.
+          Du ansöker till <strong>{job.title}</strong> på {job.company}. Din profil delas med företaget, inget CV behövs. Ni kan chatta direkt via Sveriges Transportplattform.
         </p>
 
         <div className="mb-6 p-4 bg-slate-50 rounded-lg">

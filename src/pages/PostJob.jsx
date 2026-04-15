@@ -214,7 +214,7 @@ export default function PostJob() {
 
       <h1 className="text-3xl font-bold text-slate-900 mb-2">Publicera jobb</h1>
       <p className="text-slate-600 mb-6">
-        Fyll i nedanstående fält – ju mer komplett annonsen är, desto lättare för rätt förare att hitta den.
+        Fyll i nedanstående fält. Ju mer komplett annonsen är, desto lättare för rätt förare att hitta den.
       </p>
 
       {/* Checklist – live progress, visas överst */}
@@ -506,7 +506,7 @@ export default function PostJob() {
                 ))}
               </select>
               <p className="mt-1 text-xs text-slate-500">
-                T.ex. tankbil, dagdistribution – hjälper förare att filtrera på bransch.
+                T.ex. tankbil, dagdistribution. Hjälper förare att filtrera på bransch.
               </p>
             </div>
             <div>

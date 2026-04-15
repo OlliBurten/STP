@@ -206,6 +206,9 @@ export default function Header({ onboarding = false }) {
           <li>
             <NavLink to="/favoriter" onClick={closeMobile} className={navClass}>Favoriter</NavLink>
           </li>
+          <li>
+            <NavLink to="/mina-ansokningar" onClick={closeMobile} className={navClass}>Mina ansökningar</NavLink>
+          </li>
         </>
       )}
       {isCompany && (
@@ -382,6 +385,19 @@ export default function Header({ onboarding = false }) {
                       className="block px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50"
                     >
                       Favoriter
+                    </Link>
+                  ) : null}
+                  {!platformAdminSession && isDriver ? (
+                    <Link
+                      to="/mina-ansokningar"
+                      role="menuitem"
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        closeMobile();
+                      }}
+                      className="block px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50"
+                    >
+                      Mina ansökningar
                     </Link>
                   ) : null}
                   {isAdmin ? (

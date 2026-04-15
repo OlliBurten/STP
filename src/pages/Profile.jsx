@@ -4,7 +4,7 @@ import { useProfile } from "../context/ProfileContext";
 import { useAuth } from "../context/AuthContext";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { fetchDriverProfileStats } from "../api/drivers.js";
-import { deleteMyAccount } from "../api/auth.js";
+import { deleteMyAccount, changePassword } from "../api/auth.js";
 import { updateNotificationSettings } from "../api/profile.js";
 import {
   licenseTypes,
@@ -15,7 +15,7 @@ import {
   availabilityTypes,
 } from "../data/profileData";
 import { segmentOptions, segmentLabel, internshipTypeLabel, parseSchoolName } from "../data/segments";
-import { CheckIcon, CircleOutlineIcon, LocationIcon, ChevronDownIcon } from "../components/Icons";
+import { CheckIcon, CircleOutlineIcon, LocationIcon, ChevronDownIcon, EyeIcon, EyeOffIcon } from "../components/Icons";
 import { useToast } from "../context/ToastContext";
 import {
   getDriverMinimumChecklist,
@@ -32,6 +32,12 @@ export default function Profile() {
   const { user, hasApi, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
   const [deletingAccount, setDeletingAccount] = useState(false);
+  const [pwForm, setPwForm] = useState({ current: "", next: "", confirm: "" });
+  const [pwError, setPwError] = useState("");
+  const [pwSuccess, setPwSuccess] = useState("");
+  const [pwLoading, setPwLoading] = useState(false);
+  const [showPwCurrent, setShowPwCurrent] = useState(false);
+  const [showPwNext, setShowPwNext] = useState(false);
   const [notifSettings, setNotifSettings] = useState(null);
   const [notifSaving, setNotifSaving] = useState(false);
   const { profile, profileLoaded, updateProfile, profileSaving, profileSaveError } = useProfile();
@@ -931,6 +937,95 @@ export default function Profile() {
               </label>
             );
           })}
+        </div>
+      )}
+
+      {/* Change password */}
+      {hasApi && (
+        <div className="mt-6 bg-white rounded-xl border border-slate-200 p-6 sm:p-8">
+          <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-1">Ändra lösenord</h2>
+          <p className="text-sm text-slate-500 mb-5">Välj ett nytt lösenord på minst 8 tecken.</p>
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              setPwError("");
+              setPwSuccess("");
+              if (pwForm.next.length < 8) {
+                setPwError("Lösenordet måste vara minst 8 tecken.");
+                return;
+              }
+              if (pwForm.next !== pwForm.confirm) {
+                setPwError("Lösenorden matchar inte.");
+                return;
+              }
+              setPwLoading(true);
+              try {
+                await changePassword(pwForm.current, pwForm.next);
+                setPwSuccess("Lösenordet har uppdaterats.");
+                setPwForm({ current: "", next: "", confirm: "" });
+              } catch (err) {
+                setPwError(err.message || "Kunde inte uppdatera lösenordet.");
+              } finally {
+                setPwLoading(false);
+              }
+            }}
+            className="space-y-4 max-w-sm"
+          >
+            {pwError && <p className="text-sm text-red-600">{pwError}</p>}
+            {pwSuccess && <p className="text-sm text-green-700">{pwSuccess}</p>}
+            <div>
+              <label htmlFor="pw-current" className="block text-sm font-medium text-slate-700 mb-1">Nuvarande lösenord</label>
+              <div className="relative">
+                <input
+                  id="pw-current"
+                  type={showPwCurrent ? "text" : "password"}
+                  value={pwForm.current}
+                  onChange={(e) => setPwForm((p) => ({ ...p, current: e.target.value }))}
+                  required
+                  className="w-full px-4 py-3 pr-12 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none text-sm"
+                />
+                <button type="button" onClick={() => setShowPwCurrent((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600" aria-label={showPwCurrent ? "Dölj" : "Visa"}>
+                  {showPwCurrent ? <EyeOffIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+                </button>
+              </div>
+            </div>
+            <div>
+              <label htmlFor="pw-next" className="block text-sm font-medium text-slate-700 mb-1">Nytt lösenord</label>
+              <div className="relative">
+                <input
+                  id="pw-next"
+                  type={showPwNext ? "text" : "password"}
+                  value={pwForm.next}
+                  onChange={(e) => setPwForm((p) => ({ ...p, next: e.target.value }))}
+                  required
+                  minLength={8}
+                  placeholder="Minst 8 tecken"
+                  className="w-full px-4 py-3 pr-12 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none text-sm"
+                />
+                <button type="button" onClick={() => setShowPwNext((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600" aria-label={showPwNext ? "Dölj" : "Visa"}>
+                  {showPwNext ? <EyeOffIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+                </button>
+              </div>
+            </div>
+            <div>
+              <label htmlFor="pw-confirm" className="block text-sm font-medium text-slate-700 mb-1">Bekräfta nytt lösenord</label>
+              <input
+                id="pw-confirm"
+                type={showPwNext ? "text" : "password"}
+                value={pwForm.confirm}
+                onChange={(e) => setPwForm((p) => ({ ...p, confirm: e.target.value }))}
+                required
+                className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none text-sm"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={pwLoading}
+              className="px-5 py-2.5 rounded-lg bg-[var(--color-primary)] text-white text-sm font-medium hover:bg-[var(--color-primary-light)] disabled:opacity-50"
+            >
+              {pwLoading ? "Sparar…" : "Spara nytt lösenord"}
+            </button>
+          </form>
         </div>
       )}
 

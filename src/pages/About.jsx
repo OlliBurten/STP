@@ -10,13 +10,13 @@ const VALUES = [
   },
   {
     icon: BuildingIcon,
-    title: "Direktkontakt — inga bemanningsbolag",
+    title: "Direktkontakt utan bemanningsbolag",
     text: "STP är inte ett bemanningsbolag. Vi möjliggör direktkontakt mellan förare och åkerier. Det är snabbare, billigare och mer ärligt för alla.",
   },
   {
     icon: ShieldCheckIcon,
     title: "Seriösa aktörer sticker ut",
-    text: "Vi bygger stegvis verifiering och kvalitetssäkring — kollektivavtal, omdömen, behörigheter — så att seriösa företag och förare hittar varandra lättare.",
+    text: "Vi bygger stegvis verifiering och kvalitetssäkring av kollektivavtal, omdömen och behörigheter, så att seriösa företag och förare hittar varandra lättare.",
   },
 ];
 
@@ -35,7 +35,7 @@ export default function About() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
           <p className="text-sm font-semibold uppercase tracking-widest text-white/60 mb-3">Om STP</p>
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight leading-tight">
-            Byggt av en som sökte jobb — och inte hittade rätt ställe.
+            Byggt av en som sökte jobb och inte hittade rätt ställe.
           </h1>
           <p className="mt-6 text-lg text-white/85 leading-relaxed max-w-2xl">
             Sveriges Transportplattform startades av en lastbilschaufförsstudent som tröttnade på att
@@ -53,17 +53,17 @@ export default function About() {
             </p>
             <p>
               När man söker "lastbilsjobb" på Google landar man direkt på Indeed, Simplex Bemanning
-              och generiska plattformar byggda för alla branscher — inte för transport. De vet inte
+              och generiska plattformar byggda för alla branscher, inte för transport. De vet inte
               skillnaden på ett CE-körkort och ett C, och bryr sig inte om YKB eller ADR.
             </p>
             <p>
               Det riktiga jobbet skedde på Facebook. Stora grupper med tusentals förare och åkerier
-              som lade ut annonser i flödet — effektivt för stunden, men utan historik, struktur
+              som lade ut annonser i flödet. Effektivt för stunden, men utan historik, struktur
               eller kvalitetskontroll. Bra leads försvann i bruset efter 24 timmar.
             </p>
             <p>
               STP är svaret på det: en plats byggd specifikt för transportbranschen, med rätt
-              struktur för körkort, certifikat, segment och region — och direktkontakt utan mellanhänder.
+              struktur för körkort, certifikat, segment och region, med direktkontakt utan mellanhänder.
             </p>
           </div>
           <div className="lg:col-span-2 space-y-4">
@@ -114,7 +114,7 @@ export default function About() {
           <h2 className="text-2xl font-bold text-slate-900">Plattformen testas med branschen</h2>
           <p className="mt-4 text-slate-600 leading-relaxed max-w-2xl">
             STP är i tidig fas. Vi bygger tillsammans med förare och åkerier som vill vara med och
-            forma hur plattformen fungerar. Feedback välkomnas — hör av dig direkt.
+            forma hur plattformen fungerar. Feedback välkomnas, hör av dig direkt.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link

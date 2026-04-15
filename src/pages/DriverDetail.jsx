@@ -12,6 +12,7 @@ import { LocationIcon, CheckIcon } from "../components/Icons";
 import { fetchDriver, trackDriverProfileView } from "../api/drivers.js";
 import { fetchMyJobs } from "../api/jobs.js";
 import { isDriverMinimumProfileComplete } from "../utils/driverProfileRequirements.js";
+import PageMeta from "../components/PageMeta";
 
 export default function DriverDetail() {
   const { id } = useParams();
@@ -96,8 +97,19 @@ export default function DriverDetail() {
     driver.yearsExperience || driver.yearsExperience === 0 ? `${driver.yearsExperience} års erfarenhet` : null,
   ].filter(Boolean);
 
+  const metaDescription = [
+    driver.location && driver.region ? `${driver.location}, ${driver.region}` : null,
+    driver.licenses?.length ? `Körkort: ${driver.licenses.join(", ")}` : null,
+    driver.availability ? availabilityLabel : null,
+  ].filter(Boolean).join(" · ");
+
   return (
     <main className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
+      <PageMeta
+        title={driver.name}
+        description={metaDescription || "Förarprofil på Sveriges Transportplattform"}
+        canonical={`/foretag/chaufforer/${id}`}
+      />
       <Link
         to="/foretag/chaufforer"
         className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-[var(--color-primary)] mb-8"

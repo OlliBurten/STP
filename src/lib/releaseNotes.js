@@ -1,6 +1,22 @@
-export const CURRENT_VERSION = "v0.5.0";
+export const CURRENT_VERSION = "v0.6.0";
 
 export const releaseNotes = [
+  {
+    version: "v0.6.0",
+    date: "2026-04-15",
+    title: "Mina ansökningar, lösenordshantering och smarta annonser",
+    items: [
+      "Förare: ny sida 'Mina ansökningar' visar alla jobb du sökt med status (inväntar svar, utvald, ej aktuell).",
+      "Du kan nu ändra lösenord direkt från din profil — utan att behöva logga ut.",
+      "Lösenordstext kan nu visas/döljas med ögat på inloggning, registrering och lösenordsåterställning.",
+      "Välkomstmail skickas nu automatiskt när du skapar ett nytt konto.",
+      "Bekräftelsemail skickas till föraren direkt när en ansökan har skickats.",
+      "Säkerhetsmail skickas när ditt lösenord ändras — om du inte kände igen ändringen kan du agera direkt.",
+      "Jobbannonser arkiveras nu automatiskt efter 60 dagar. Företag får ett tips-mail efter 30 dagar och en varning 5 dagar innan.",
+      "Företag: förnya en annons med ett klick från 'Mina jobb' — annonsen får nytt publiceringsdatum och visas högre i söket.",
+      "Sidor scrollar nu automatiskt till toppen vid navigering.",
+    ],
+  },
   {
     version: "v0.5.0",
     date: "2026-04-13",

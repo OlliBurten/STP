@@ -40,7 +40,7 @@ const COMPANY_SEGMENTS = [
   },
   {
     title: "Praktik",
-    text: "För företag som vill synas mot elever och framtida förare — gymnasieskola, AF eller Komvux — och bygga relationer tidigt.",
+    text: "För företag som vill synas mot elever och framtida förare från gymnasieskola, AF eller Komvux, och bygga relationer tidigt.",
     icon: BuildingIcon,
     bg: "bg-[var(--color-primary)]/5",
     border: "border-[var(--color-primary)]/20",
@@ -196,7 +196,7 @@ export default function ForCompaniesLanding() {
             <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
               <p className="font-semibold">Verifiering krävs för att publicera jobb</p>
               <p className="mt-1 text-amber-800">
-                Vi granskar nya företagskonton manuellt — det tar vanligtvis 1–2 vardagar. Under tiden kan ni redan börja söka bland förare via Hitta förare.
+                Vi granskar nya företagskonton manuellt. Det tar vanligtvis 1–2 vardagar. Under tiden kan ni redan börja söka bland förare via Hitta förare.
               </p>
             </div>
           </div>

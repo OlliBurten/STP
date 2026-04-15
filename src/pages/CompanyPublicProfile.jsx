@@ -78,6 +78,24 @@ export default function CompanyPublicProfile() {
               Verifierat företag
             </span>
           ) : null}
+          {company.policyAgreedAt ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-green-800">
+              <CheckIcon className="w-4 h-4" />
+              Följer STP:s uppförandekod
+            </span>
+          ) : null}
+          {company.fSkattsedel ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-green-800">
+              <CheckIcon className="w-4 h-4" />
+              F-skattsedel
+            </span>
+          ) : null}
+          {company.industryOrgMember ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-green-800">
+              <CheckIcon className="w-4 h-4" />
+              {company.industryOrgName ? `Medlem i ${company.industryOrgName}` : "Branschorganisation-medlem"}
+            </span>
+          ) : null}
           {hasStrongProfile ? (
             <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-slate-700">
               Utfylld företagsprofil

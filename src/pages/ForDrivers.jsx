@@ -40,7 +40,7 @@ const DRIVER_SEGMENTS = [
   },
   {
     title: "Praktik",
-    text: "För elever och förare i början av resan — gymnasieskola, Arbetsförmedlingen eller Komvux — som vill hitta seriösa företag att växa med.",
+    text: "För elever och förare i början av karriären, från gymnasieskola, Arbetsförmedlingen eller Komvux, som vill hitta seriösa företag att växa med.",
     icon: BuildingIcon,
     bg: "bg-[var(--color-primary)]/5",
     border: "border-[var(--color-primary)]/20",

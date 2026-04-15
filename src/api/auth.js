@@ -1,4 +1,7 @@
 import { apiGet, apiPost, apiDelete } from "./client.js";
+export async function changePassword(currentPassword, newPassword) {
+  return apiPost("/api/auth/change-password", { currentPassword, newPassword });
+}
 
 /** Hämta aktuell inloggad användare (augmenterad med org/segmentDefaults). */
 export async function fetchMe() {

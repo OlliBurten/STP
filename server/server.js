@@ -234,6 +234,10 @@ app.post("/api/internal/migrate", internalLimiter, express.json(), async (req, r
     await prisma.$executeRawUnsafe('ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "profileReminderCount" INTEGER NOT NULL DEFAULT 0');
     await prisma.$executeRawUnsafe('ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "messageReminderSentAt" TIMESTAMPTZ');
     await prisma.$executeRawUnsafe('ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "inactivityReminderSentAt" TIMESTAMPTZ');
+    await prisma.$executeRawUnsafe('ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "fSkattsedel" BOOLEAN NOT NULL DEFAULT false');
+    await prisma.$executeRawUnsafe('ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "industryOrgMember" BOOLEAN NOT NULL DEFAULT false');
+    await prisma.$executeRawUnsafe('ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "industryOrgName" TEXT');
+    await prisma.$executeRawUnsafe('ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "policyAgreedAt" TIMESTAMPTZ');
     res.json({ ok: true, message: "Migration complete" });
   } catch (e) {
     console.error("[migrate]", e);

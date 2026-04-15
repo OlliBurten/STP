@@ -28,3 +28,15 @@ export function countOldActiveJobs(jobs) {
   if (!Array.isArray(jobs)) return 0;
   return jobs.filter((j) => j.status === "ACTIVE" && isJobOlderThan30Days(j)).length;
 }
+
+/**
+ * Returnerar true om jobbet är 55+ dagar gammalt (snart auto-arkiveras vid 60 dagar).
+ * Använder renewedAt som referens om det finns, annars published.
+ */
+export function isJobApproaching60Days(job) {
+  if (!job) return false;
+  const ref = job.renewedAt ? new Date(job.renewedAt) : job.published ? new Date(job.published) : null;
+  if (!ref || isNaN(ref.getTime())) return false;
+  const days = (Date.now() - ref.getTime()) / MS_PER_DAY;
+  return days >= 55;
+}

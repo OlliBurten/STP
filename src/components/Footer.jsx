@@ -48,7 +48,7 @@ export default function Footer() {
               <Logo height={40} variant="light" />
             </Link>
             <p className="mt-4 text-sm text-white/70 leading-relaxed max-w-xs">
-              Sveriges matchningsplattform för yrkesförare och transportföretag. Direkt kontakt — inga mellanhänder.
+              Sveriges matchningsplattform för yrkesförare och transportföretag. Direkt kontakt utan mellanhänder.
             </p>
             <a
               href="mailto:hej@transportplattformen.se"

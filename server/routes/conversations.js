@@ -6,7 +6,7 @@ import {
   requireVerifiedCompany,
   attachCompanyContext,
 } from "../middleware/auth.js";
-import { notifyDriverSelected, notifyNewApplication, notifyNewMessage } from "../lib/email.js";
+import { notifyDriverSelected, notifyNewApplication, notifyNewMessage, notifyApplicationConfirmation } from "../lib/email.js";
 import { createNotification } from "../lib/notifications.js";
 import { validateBody } from "../middleware/validate.js";
 import { createConversationSchema, sendMessageSchema } from "../lib/validators.js";
@@ -175,15 +175,28 @@ conversationsRouter.post("/", requireVerifiedIfCompany, validateBody(createConve
         });
         const driver = await prisma.user.findUnique({
           where: { id: req.userId },
-          select: { name: true },
+          select: { name: true, email: true },
         });
+        const fb = (process.env.FRONTEND_URL || "").split(",")[0]?.trim().replace(/\/$/, "");
         if (job?.contact && driver?.name) {
-          const fb = (process.env.FRONTEND_URL || "").split(",")[0]?.trim().replace(/\/$/, "");
           await notifyNewApplication({
             companyEmail: job.contact,
             driverName: driver.name,
             jobTitle,
-            conversationUrl: fb ? `${fb}/foretag/meddelanden/${conversation.id}` : null,
+            conversationUrl: fb ? `${fb}/foretag/meddelanden/${conv.id}` : null,
+          });
+        }
+        if (driver?.email) {
+          const companyUser = await prisma.user.findUnique({
+            where: { id: job?.userId || actualCompanyId },
+            select: { companyName: true, name: true },
+          });
+          await notifyApplicationConfirmation({
+            driverEmail: driver.email,
+            driverName: driver.name,
+            jobTitle,
+            companyName: companyUser?.companyName || companyUser?.name || "företaget",
+            conversationUrl: fb ? `${fb}/meddelanden/${conv.id}` : null,
           });
         }
         const recipientIds = await listCompanyRecipientIds({

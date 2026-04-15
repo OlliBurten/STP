@@ -75,7 +75,7 @@ export default function SavedJobs() {
         title="Sparade jobb"
         description={
           jobs.length === 0 && !loading && !error
-            ? "Spara jobb du är intresserad av – då hittar du dem här och får notis om uppdateringar."
+            ? "Spara jobb du är intresserad av, så hittar du dem här och får notis om uppdateringar."
             : "Dina bevakade annonser på ett ställe. Du får notis när något uppdateras."
         }
       />
@@ -100,7 +100,7 @@ export default function SavedJobs() {
       {!loading && !error && jobs.length > 0 ? (
         <div className="space-y-4">
           <p className="text-sm text-slate-500">
-            {jobs.length} {jobs.length === 1 ? "annons" : "annonser"} sparade. Öppna när du vill – vi påminner dig om uppdateringar.
+            {jobs.length} {jobs.length === 1 ? "annons" : "annonser"} sparade. Öppna när du vill, vi påminner dig om uppdateringar.
           </p>
           {jobs.map((job) => {
             const data = driverForMatch ? matchScore(driverForMatch, job) : null;

@@ -122,7 +122,7 @@ export default function AddCompany() {
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
           <p className="font-semibold">Verifiering krävs</p>
           <p className="mt-1 text-amber-800">
-            Nya åkerier granskas manuellt – det tar vanligtvis 1–2 vardagar. Du kan direkt börja söka bland förare.
+            Nya åkerier granskas manuellt. Det tar vanligtvis 1–2 vardagar. Du kan direkt börja söka bland förare.
           </p>
         </div>
 

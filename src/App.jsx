@@ -21,6 +21,7 @@ import Profile from "./pages/Profile";
 import DriverSearch from "./pages/DriverSearch";
 import DriverDetail from "./pages/DriverDetail";
 import MinaJobb from "./pages/MinaJobb";
+import MinaAnsokningar from "./pages/MinaAnsokningar";
 import Messages from "./pages/Messages";
 import Login from "./pages/Login";
 import VerifyEmail from "./pages/VerifyEmail";
@@ -56,6 +57,14 @@ function Analytics() {
       window.plausible("pageview");
     }
   }, [location.pathname]);
+  return null;
+}
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
   return null;
 }
 
@@ -180,6 +189,14 @@ function AppLayout() {
                       </ProtectedRoute>
                     }
                   />
+                  <Route
+                    path="/mina-ansokningar"
+                    element={
+                      <ProtectedRoute requiredRole="driver">
+                        <MinaAnsokningar />
+                      </ProtectedRoute>
+                    }
+                  />
 
                   {/* Company only */}
                   <Route
@@ -267,6 +284,7 @@ function AppLayout() {
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Analytics />
       <ErrorBoundary>
         <OAuthProviders>
