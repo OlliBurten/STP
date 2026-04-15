@@ -128,7 +128,7 @@ export default function DriverOnboardingWizard() {
         region: draft.region,
         location: draft.location.trim(),
         availability: derivedAvailability,
-        visibleToCompanies: draft.visibleToCompanies,
+        visibleToCompanies: true,
       });
       trackDriverOnboardingComplete(primarySegment);
       setDone(true);
@@ -422,26 +422,6 @@ export default function DriverOnboardingWizard() {
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-slate-200">
-                <h2 className="font-semibold text-slate-900">Synlighet</h2>
-                <p className="mt-1 text-sm text-slate-600">
-                  När du är synlig kan företag hitta dig i sökningen direkt. Du kan ändra detta senare.
-                </p>
-                <label className="mt-4 flex items-center gap-3 cursor-pointer min-h-[44px]">
-                  <input
-                    type="checkbox"
-                    checked={draft.visibleToCompanies}
-                    onChange={(e) =>
-                      setDraft((prev) => ({ ...prev, visibleToCompanies: e.target.checked }))
-                    }
-                    className="w-5 h-5 rounded accent-[var(--color-primary)] cursor-pointer"
-                  />
-                  <span className="text-sm text-slate-700">Synlig för företag i sökning</span>
-                </label>
-                <p className="mt-2 text-xs text-slate-500">
-                  Du kan alltid ändra detta senare i profilen.
-                </p>
-              </div>
             </div>
           )}
         </div>
