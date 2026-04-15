@@ -276,9 +276,9 @@ export default function DriverOnboardingWizard() {
                 </div>
               ) : draft.isGymnasieelev === false ? (
                 <>
-                  <p className="mt-6 font-medium text-slate-900">Vilket segment söker du främst?</p>
+                  <p className="mt-6 font-medium text-slate-900">Vilket söker du?</p>
                   <div className="mt-3 grid gap-3">
-                    {segmentOptions.map((segment) => (
+                    {segmentOptions.filter((s) => s.value !== "INTERNSHIP").map((segment) => (
                       <button
                         key={segment.value}
                         type="button"
