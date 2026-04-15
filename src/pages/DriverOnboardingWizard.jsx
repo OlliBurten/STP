@@ -4,7 +4,6 @@ import { useProfile } from "../context/ProfileContext";
 import { useAuth } from "../context/AuthContext";
 import { segmentOptions, internshipTypeOptions, encodeSchoolName } from "../data/segments";
 import { licenseTypes, regions } from "../data/mockJobs";
-import { availabilityTypes } from "../data/profileData";
 import { trackDriverOnboardingComplete } from "../utils/segmentMetrics";
 import {
   SUMMARY_MIN_LENGTH,
@@ -74,9 +73,15 @@ export default function DriverOnboardingWizard() {
   const toggleLicense = (value) => {
     setDraft((prev) => {
       const current = prev.licenses || [];
-      const next = current.includes(value)
-        ? current.filter((license) => license !== value)
+      let next = current.includes(value)
+        ? current.filter((l) => l !== value)
         : [...current, value];
+      // B ingår automatiskt med C eller CE
+      if (next.includes("C") || next.includes("CE")) {
+        if (!next.includes("B")) next = ["B", ...next];
+      } else {
+        next = next.filter((l) => l !== "B");
+      }
       return { ...prev, licenses: next };
     });
   };
@@ -101,6 +106,11 @@ export default function DriverOnboardingWizard() {
 
   const saveAndFinish = async () => {
     const primarySegment = draft.isGymnasieelev === true ? "INTERNSHIP" : draft.primarySegment;
+    // Härled tillgänglighet från segment-valet i steg 1
+    const derivedAvailability =
+      primarySegment === "FULLTIME" ? "fast"
+      : primarySegment === "FLEX" ? "vikariat"
+      : "open"; // INTERNSHIP eller okänt
     setSaving(true);
     setError("");
     try {
@@ -110,14 +120,14 @@ export default function DriverOnboardingWizard() {
         summary: draft.summary.trim(),
         primarySegment,
         secondarySegments: [],
-        isGymnasieelev: draft.isGymnasieelev,
-        schoolName: draft.isGymnasieelev
+        isGymnasieelev: draft.isGymnasieelev === true,
+        schoolName: draft.isGymnasieelev === true
           ? encodeSchoolName(draft.internshipType, draft.schoolName.trim())
           : "",
         licenses: draft.licenses,
         region: draft.region,
         location: draft.location.trim(),
-        availability: draft.availability,
+        availability: derivedAvailability,
         visibleToCompanies: draft.visibleToCompanies,
       });
       trackDriverOnboardingComplete(primarySegment);
@@ -365,14 +375,14 @@ export default function DriverOnboardingWizard() {
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Körkort</label>
                 <div className="flex flex-wrap gap-2">
-                  {licenseTypes.map((license) => {
+                  {licenseTypes.filter((l) => l.value !== "B").map((license) => {
                     const active = (draft.licenses || []).includes(license.value);
                     return (
                       <button
                         key={license.value}
                         type="button"
                         onClick={() => toggleLicense(license.value)}
-                        className={`px-3 py-2 rounded-lg text-sm border ${
+                        className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
                           active
                             ? "bg-[var(--color-primary)] text-white border-[var(--color-primary)]"
                             : "border-slate-300 text-slate-700 hover:bg-slate-50"
@@ -383,23 +393,9 @@ export default function DriverOnboardingWizard() {
                     );
                   })}
                 </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Tillgänglighet</label>
-                <select
-                  value={draft.availability}
-                  onChange={(e) => setDraft((prev) => ({ ...prev, availability: e.target.value }))}
-                  className="w-full px-4 py-2 rounded-lg border border-slate-300 bg-white"
-                >
-                  {availabilityTypes.map((availability) => (
-                    <option key={availability.value} value={availability.value}>
-                      {availability.label}
-                    </option>
-                  ))}
-                </select>
-                <p className="mt-1 text-xs text-slate-500">
-                  När tillgängligheten är tydlig blir det enklare att matcha dig mot rätt typ av uppdrag direkt.
-                </p>
+                {((draft.licenses || []).includes("C") || (draft.licenses || []).includes("CE")) && (
+                  <p className="mt-2 text-xs text-slate-400">B-körkort ingår automatiskt med C/CE.</p>
+                )}
               </div>
             </div>
           )}
