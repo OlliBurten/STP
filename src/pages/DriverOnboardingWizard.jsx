@@ -161,25 +161,31 @@ export default function DriverOnboardingWizard() {
           </div>
         ) : null}
 
-        {/* Progress bar */}
+        {/* Step indicator */}
         <div className="mt-5">
-          <div className="flex justify-between mb-1.5">
+          <div className="flex items-center">
             {steps.map((label, index) => (
-              <span
-                key={label}
-                className={`text-xs font-medium ${index <= step ? "text-[var(--color-primary)]" : "text-slate-400"}`}
-              >
-                {label}
-              </span>
+              <div key={label} className="flex items-center flex-1 last:flex-none">
+                <div className="flex flex-col items-center gap-1">
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
+                    index < step
+                      ? "bg-[var(--color-primary)] text-white"
+                      : index === step
+                        ? "bg-[var(--color-primary)] text-white ring-4 ring-[var(--color-primary)]/20"
+                        : "bg-slate-200 text-slate-400"
+                  }`}>
+                    {index < step ? "✓" : index + 1}
+                  </div>
+                  <span className={`text-[10px] font-medium whitespace-nowrap ${index <= step ? "text-[var(--color-primary)]" : "text-slate-400"}`}>
+                    {label}
+                  </span>
+                </div>
+                {index < steps.length - 1 && (
+                  <div className={`flex-1 h-0.5 mx-1 mb-4 transition-colors ${index < step ? "bg-[var(--color-primary)]" : "bg-slate-200"}`} />
+                )}
+              </div>
             ))}
           </div>
-          <div className="h-1.5 bg-slate-200 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-[var(--color-primary)] rounded-full transition-all duration-300"
-              style={{ width: `${((step + 1) / steps.length) * 100}%` }}
-            />
-          </div>
-          <p className="mt-1 text-xs text-slate-400 text-right">Steg {step + 1} av {steps.length}</p>
         </div>
 
         <div className="mt-8">
