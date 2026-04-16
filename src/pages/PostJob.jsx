@@ -16,12 +16,15 @@ import { createJob } from "../api/jobs.js";
 import { fetchMyCompanyProfile } from "../api/companies.js";
 import { mapEmploymentToSegment, segmentOptions } from "../data/segments";
 import { trackJobPosted } from "../utils/segmentMetrics";
+import { generateJobDescription as aiGenerateJobDescription } from "../api/ai.js";
 
 export default function PostJob() {
   const { hasApi, user, isCompany } = useAuth();
   const isVerifiedCompany = !isCompany || user?.companyStatus === "VERIFIED";
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState(null);
+  const [aiGenerating, setAiGenerating] = useState(false);
+  const [aiError, setAiError] = useState("");
   const [form, setForm] = useState({
     title: "",
     company: "",
@@ -76,6 +79,20 @@ export default function PostJob() {
         ? prev.certificates.filter((c) => c !== cert)
         : [...prev.certificates, cert],
     }));
+  };
+
+  const handleGenerateDescription = async () => {
+    if (!form.title) { setAiError("Välj jobbtitel först."); return; }
+    setAiError("");
+    setAiGenerating(true);
+    try {
+      const data = await aiGenerateJobDescription(form);
+      if (data?.description) handleChange("description", data.description);
+    } catch (e) {
+      setAiError(e.message || "Kunde inte generera beskrivning.");
+    } finally {
+      setAiGenerating(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -604,7 +621,28 @@ export default function PostJob() {
               onChange={(e) => handleChange("description", e.target.value)}
               className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none"
             />
-            <p className="mt-1 text-xs text-slate-500">
+            <div className="mt-2 flex items-center gap-3">
+              <button
+                type="button"
+                onClick={handleGenerateDescription}
+                disabled={aiGenerating || !hasApi}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border border-[var(--color-primary)]/30 text-[var(--color-primary)] bg-[var(--color-primary)]/5 hover:bg-[var(--color-primary)]/10 disabled:opacity-40 transition-colors"
+              >
+                {aiGenerating ? (
+                  <>
+                    <span className="inline-block w-3 h-3 rounded-full bg-[var(--color-primary)]/40 animate-pulse" />
+                    Genererar...
+                  </>
+                ) : (
+                  <>✨ Generera med AI</>
+                )}
+              </button>
+              {aiError && <p className="text-xs text-red-600">{aiError}</p>}
+              {!aiError && (
+                <p className="text-xs text-slate-400">Baseras på vad du fyllt i ovan. Du kan redigera texten efteråt.</p>
+              )}
+            </div>
+            <p className="mt-2 text-xs text-slate-500">
               Tydliga annonser får bättre respons. Beskriv vardagen, fordonet, upplägget och vad ni faktiskt behöver hjälp med.
             </p>
           </div>

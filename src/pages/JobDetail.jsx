@@ -8,6 +8,7 @@ import DriverCard from "../components/DriverCard";
 import { useAuth } from "../context/AuthContext";
 import { getDriverMatchHighlights, getMatchingDriversForJob } from "../utils/matchUtils";
 import { fetchJob, fetchJobApplicants, fetchSavedJobs, saveJob, unsaveJob, trackJobView, fetchJobStats } from "../api/jobs.js";
+import { fetchMatchExplanation, screenApplicant as screenApplicantApi } from "../api/ai.js";
 import { selectConversation, rejectConversation } from "../api/conversations.js";
 import { getCompanyReviewSummary } from "../api/reviews.js";
 import { mapEmploymentToSegment, segmentLabel } from "../data/segments";
@@ -32,6 +33,10 @@ export default function JobDetail() {
   const [applicantsLoading, setApplicantsLoading] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [jobStats, setJobStats] = useState(null);
+  const [matchExplanation, setMatchExplanation] = useState(null);
+  const [matchExplanationLoading, setMatchExplanationLoading] = useState(false);
+  const [screenings, setScreenings] = useState({});
+  const [screeningsLoading, setScreeningsLoading] = useState(false);
   const isMyJob =
     hasApi &&
     isCompany &&
@@ -86,6 +91,35 @@ export default function JobDetail() {
       .then(setJobStats)
       .catch(() => setJobStats(null));
   }, [isMyJob, job?.id]);
+
+  // AI matchningsförklaring för förare
+  useEffect(() => {
+    if (!hasApi || !isDriver || !job?.id) return;
+    setMatchExplanationLoading(true);
+    fetchMatchExplanation(job.id)
+      .then((data) => setMatchExplanation(data?.explanation || null))
+      .catch(() => setMatchExplanation(null))
+      .finally(() => setMatchExplanationLoading(false));
+  }, [hasApi, isDriver, job?.id]);
+
+  // AI-screening av sökande för företag (när listan laddats)
+  useEffect(() => {
+    if (!isMyJob || applicants.length === 0) return;
+    setScreeningsLoading(true);
+    Promise.all(
+      applicants.map((a) =>
+        screenApplicantApi(job.id, a.driverId)
+          .then((result) => ({ id: a.driverId, result }))
+          .catch(() => ({ id: a.driverId, result: null }))
+      )
+    )
+      .then((results) => {
+        const map = {};
+        results.forEach(({ id, result }) => { if (result) map[id] = result; });
+        setScreenings(map);
+      })
+      .finally(() => setScreeningsLoading(false));
+  }, [isMyJob, applicants.length, job?.id]);
 
   const handleMarkSelected = async (conversationId) => {
     try {
@@ -501,6 +535,17 @@ export default function JobDetail() {
                           <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[var(--color-primary)]/10 text-[var(--color-primary)]">
                             {a.matchScore} match
                           </span>
+                          {screenings[a.driverId] && (
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                              screenings[a.driverId].matchStrength === "strong"
+                                ? "bg-green-100 text-green-800"
+                                : screenings[a.driverId].matchStrength === "weak"
+                                  ? "bg-red-100 text-red-800"
+                                  : "bg-amber-50 text-amber-800"
+                            }`}>
+                              AI: {screenings[a.driverId].matchStrength === "strong" ? "Stark match" : screenings[a.driverId].matchStrength === "weak" ? "Svag match" : "God match"}
+                            </span>
+                          )}
                           {a.rejectedByCompanyAt && (
                             <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
                               Avvisad
@@ -517,6 +562,22 @@ export default function JobDetail() {
                             .filter(Boolean)
                             .join(" · ")}
                         </p>
+                        {screeningsLoading && !screenings[a.driverId] && (
+                          <p className="text-xs text-slate-400 mt-1 animate-pulse">AI analyserar...</p>
+                        )}
+                        {screenings[a.driverId]?.summary && (
+                          <p className="text-xs text-slate-600 mt-1 italic">{screenings[a.driverId].summary}</p>
+                        )}
+                        {screenings[a.driverId]?.highlights?.length > 0 && (
+                          <div className="mt-1.5 flex flex-wrap gap-1">
+                            {screenings[a.driverId].highlights.map((h) => (
+                              <span key={h} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-green-50 text-green-700 border border-green-200">✓ {h}</span>
+                            ))}
+                            {screenings[a.driverId].gaps.map((g) => (
+                              <span key={g} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-red-50 text-red-700 border border-red-200">✗ {g}</span>
+                            ))}
+                          </div>
+                        )}
                       </div>
                       <div className="flex items-center gap-2">
                         <Link
@@ -577,6 +638,24 @@ export default function JobDetail() {
               >
                 Hitta fler förare →
               </Link>
+            </div>
+          )}
+
+          {isDriver && (matchExplanationLoading || matchExplanation) && (
+            <div className="mt-8 pt-8 border-t border-slate-200">
+              <div className="rounded-xl border border-[var(--color-primary)]/20 bg-[var(--color-primary)]/5 p-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-primary)] mb-2">
+                  Din matchning — AI-analys
+                </p>
+                {matchExplanationLoading ? (
+                  <div className="flex items-center gap-2 text-sm text-slate-500">
+                    <span className="inline-block w-3 h-3 rounded-full bg-[var(--color-primary)]/30 animate-pulse" />
+                    Analyserar matchningen...
+                  </div>
+                ) : (
+                  <p className="text-sm text-slate-700 leading-relaxed">{matchExplanation}</p>
+                )}
+              </div>
             </div>
           )}
 

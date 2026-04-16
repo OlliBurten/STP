@@ -34,6 +34,7 @@ import { organizationsRouter } from "./routes/organizations.js";
 import { invitesRouter } from "./routes/invites.js";
 import { notificationsRouter } from "./routes/notifications.js";
 import { feedbackRouter } from "./routes/feedback.js";
+import { aiRouter } from "./routes/ai.js";
 import { isGoogleConfigured, isMicrosoftConfigured } from "./lib/oauth.js";
 import { JWT_SECRET } from "./lib/config.js";
 import { startReminderScheduler } from "./lib/reminderScheduler.js";
@@ -157,6 +158,7 @@ app.use("/api/organizations", apiPublicLimiter, organizationsRouter);
 app.use("/api/invites", apiPublicLimiter, invitesRouter);
 app.use("/api/notifications", notificationsRouter);
 app.use("/api/feedback", apiWriteLimiter, feedbackRouter);
+app.use("/api/ai", apiWriteLimiter, aiRouter);
 
 app.get("/", (_, res) => {
   res.json({
