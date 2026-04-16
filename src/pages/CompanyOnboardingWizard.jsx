@@ -180,14 +180,20 @@ export default function CompanyOnboardingWizard() {
     return (
       <main className="max-w-2xl mx-auto px-4 sm:px-6 py-10">
         <section className="bg-white rounded-xl border border-slate-200 p-8 sm:p-12 text-center space-y-5">
-          <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto text-2xl font-bold text-green-700">
+          <div className="w-16 h-16 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center mx-auto text-2xl font-bold text-[var(--color-primary)]">
             ✓
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">Ni är redo att köra!</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Kontot är uppsatt!</h1>
           <p className="text-slate-600 max-w-sm mx-auto">
-            Ert konto är uppsatt. Ni kan nu söka förare och publicera jobb på STP.
+            Ni kan redan söka bland förare och förbereda jobbannonser.
           </p>
-          <p className="text-sm text-slate-400">Tar dig till företagsdashboarden...</p>
+          <div className="rounded-xl border border-[var(--color-accent)]/40 bg-[var(--color-accent)]/8 p-4 text-left max-w-sm mx-auto">
+            <p className="text-sm font-semibold text-slate-800">En sak kvar: verifiering</p>
+            <p className="mt-1 text-sm text-slate-600">
+              För att publicera jobb och kontakta förare behöver vi verifiera ert företag. Vi granskar er ansökan och återkommer inom 1–2 arbetsdagar.
+            </p>
+          </div>
+          <p className="text-sm text-slate-400">Tar dig till dashboarden...</p>
         </section>
       </main>
     );
@@ -198,7 +204,10 @@ export default function CompanyOnboardingWizard() {
       <main className="max-w-2xl mx-auto px-4 sm:px-6 py-10">
         <section className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8 space-y-6">
           <div>
-            <p className="text-sm text-slate-500">Steg 2 av 2</p>
+            <div className="flex gap-1.5 mb-4">
+              <span className="w-2 h-2 rounded-full bg-slate-300" />
+              <span className="w-2 h-2 rounded-full bg-[var(--color-primary)]" />
+            </div>
             <h1 className="mt-1 text-2xl font-bold text-slate-900">Bjud in teammedlemmar</h1>
             <p className="mt-2 text-slate-600">
               Lägg till kolleger som ska ha åtkomst till ert konto. De får ett e-postinbjudan och kan skapa ett konto eller logga in.
@@ -277,7 +286,10 @@ export default function CompanyOnboardingWizard() {
       <main className="max-w-2xl mx-auto px-4 sm:px-6 py-10">
         <section className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8 space-y-6">
           <div>
-            <p className="text-sm text-slate-500">Välkommen till STP</p>
+            <div className="flex gap-1.5 mb-4">
+              <span className="w-2 h-2 rounded-full bg-[var(--color-primary)]" />
+              <span className="w-2 h-2 rounded-full bg-slate-200" />
+            </div>
             <h1 className="mt-1 text-2xl font-bold text-slate-900">Sätt upp ert åkeri</h1>
             <p className="mt-2 text-slate-600">
               Det tar bara ett par minuter. Sedan kan ni börja hitta förare och publicera jobb direkt.
@@ -374,7 +386,10 @@ export default function CompanyOnboardingWizard() {
   return (
     <main className="max-w-2xl mx-auto px-4 sm:px-6 py-10">
       <section className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8">
-        <p className="text-sm text-slate-500">Välkommen till STP</p>
+        <div className="flex gap-1.5 mb-4">
+          <span className="w-2 h-2 rounded-full bg-[var(--color-primary)]" />
+          <span className="w-2 h-2 rounded-full bg-slate-200" />
+        </div>
         <h1 className="mt-1 text-2xl font-bold text-slate-900">Vilka segment rekryterar ni för?</h1>
         <p className="mt-2 text-slate-600">Välj era standardsegment — ni kan alltid ändra per annons.</p>
         <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4">

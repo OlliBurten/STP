@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { mockDrivers } from "../data/mockDrivers";
-import { mockJobs } from "../data/mockJobs";
 import { useProfile } from "../context/ProfileContext";
 import { useAuth } from "../context/AuthContext";
 import { calcYearsExperience } from "../utils/profileUtils";
@@ -65,13 +63,9 @@ export default function DriverDetail() {
         }
       : null;
 
-  const driver =
-    apiDriver ||
-    currentUserAsDriver ||
-    (!hasApi && mockDrivers.find((d) => d.id === id)) ||
-    null;
+  const driver = apiDriver || currentUserAsDriver || null;
 
-  const jobsForModal = hasApi ? apiJobs : mockJobs;
+  const jobsForModal = apiJobs;
 
   if (loading) {
     return (
