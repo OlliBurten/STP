@@ -211,12 +211,12 @@ export default function DriverDetail() {
           </div>
 
           {(driverSummaryLoading || driverSummary) && (
-            <div className="mt-6 rounded-xl border border-blue-100 bg-blue-50 p-4">
-              <p className="text-xs font-semibold text-blue-700 mb-1">✨ AI-sammanfattning</p>
+            <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <p className="text-xs font-semibold text-[var(--color-primary)] mb-1">✨ AI-sammanfattning</p>
               {driverSummaryLoading ? (
-                <div className="h-4 bg-blue-100 rounded animate-pulse w-3/4" />
+                <div className="h-4 bg-slate-200 rounded animate-pulse w-3/4" />
               ) : (
-                <p className="text-sm text-blue-900">{driverSummary}</p>
+                <p className="text-sm text-slate-700">{driverSummary}</p>
               )}
             </div>
           )}

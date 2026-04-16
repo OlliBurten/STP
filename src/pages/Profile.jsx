@@ -349,8 +349,8 @@ export default function Profile() {
           {profileTips && profileTips.length > 0 && (
             <ul className="space-y-2">
               {profileTips.map((tip, i) => (
-                <li key={i} className="flex items-start gap-2 rounded-lg px-4 py-3 text-sm bg-blue-50 border border-blue-100 text-blue-900">
-                  <span className="shrink-0 mt-0.5">💡</span>
+                <li key={i} className="flex items-start gap-2 rounded-lg px-4 py-3 text-sm bg-slate-50 border border-slate-200 text-slate-700">
+                  <span className="shrink-0 mt-0.5 text-[var(--color-primary)]">✦</span>
                   {tip}
                 </li>
               ))}
@@ -386,14 +386,12 @@ export default function Profile() {
                   key={i}
                   className={`flex items-start gap-2 rounded-lg px-4 py-3 text-sm ${
                     r.type === "warning"
-                      ? "bg-amber-50 border border-amber-200 text-amber-900"
-                      : r.type === "insight"
-                      ? "bg-blue-50 border border-blue-200 text-blue-900"
+                      ? "bg-[var(--color-accent)]/10 border border-[var(--color-accent)]/30 text-slate-800"
                       : "bg-slate-50 border border-slate-200 text-slate-700"
                   }`}
                 >
                   <span className="shrink-0 mt-0.5">
-                    {r.type === "warning" ? "⚠️" : r.type === "insight" ? "💡" : "✏️"}
+                    {r.type === "warning" ? "⚠️" : "✦"}
                   </span>
                   {r.text}
                 </li>

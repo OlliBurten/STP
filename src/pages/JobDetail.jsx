@@ -495,14 +495,12 @@ export default function JobDetail() {
                       key={i}
                       className={`flex items-start gap-2 rounded-lg px-4 py-3 text-sm ${
                         r.type === "warning"
-                          ? "bg-amber-50 border border-amber-200 text-amber-900"
-                          : r.type === "insight"
-                          ? "bg-blue-50 border border-blue-200 text-blue-900"
+                          ? "bg-[var(--color-accent)]/10 border border-[var(--color-accent)]/30 text-slate-800"
                           : "bg-slate-50 border border-slate-200 text-slate-700"
                       }`}
                     >
                       <span className="shrink-0 mt-0.5">
-                        {r.type === "warning" ? "⚠️" : r.type === "insight" ? "💡" : "✏️"}
+                        {r.type === "warning" ? "⚠️" : "✦"}
                       </span>
                       {r.text}
                     </li>
@@ -538,10 +536,10 @@ export default function JobDetail() {
                           {screenings[a.driverId] && (
                             <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
                               screenings[a.driverId].matchStrength === "strong"
-                                ? "bg-green-100 text-green-800"
+                                ? "bg-[var(--color-primary)]/10 text-[var(--color-primary)]"
                                 : screenings[a.driverId].matchStrength === "weak"
-                                  ? "bg-red-100 text-red-800"
-                                  : "bg-amber-50 text-amber-800"
+                                  ? "bg-slate-200 text-slate-600"
+                                  : "bg-slate-100 text-slate-700"
                             }`}>
                               AI: {screenings[a.driverId].matchStrength === "strong" ? "Stark match" : screenings[a.driverId].matchStrength === "weak" ? "Svag match" : "God match"}
                             </span>
@@ -571,10 +569,10 @@ export default function JobDetail() {
                         {screenings[a.driverId]?.highlights?.length > 0 && (
                           <div className="mt-1.5 flex flex-wrap gap-1">
                             {screenings[a.driverId].highlights.map((h) => (
-                              <span key={h} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-green-50 text-green-700 border border-green-200">✓ {h}</span>
+                              <span key={h} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-[var(--color-primary)]/8 text-[var(--color-primary)] border border-[var(--color-primary)]/20">✓ {h}</span>
                             ))}
                             {screenings[a.driverId].gaps.map((g) => (
-                              <span key={g} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-red-50 text-red-700 border border-red-200">✗ {g}</span>
+                              <span key={g} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-slate-100 text-slate-500 border border-slate-200">✗ {g}</span>
                             ))}
                           </div>
                         )}
