@@ -13,6 +13,7 @@
 
 import { prisma } from "./prisma.js";
 import { sendEmail, notifyJobTips, notifyJobExpiring, notifyJobAutoArchived } from "./email.js";
+import { issueEmailVerification } from "../routes/auth.js";
 import { isDriverMinimumProfileComplete } from "../utils/driverProfileRequirements.js";
 
 const FRONTEND_URL = (process.env.FRONTEND_URL || "https://transportplattformen.se")
@@ -494,16 +495,54 @@ export async function runJobMaintenance() {
   return { tips, warnings, archived };
 }
 
+// ─── 6. Email verification reminder (3 days after registration) ──────────────
+
+export async function runVerificationReminders() {
+  const DELAY_DAYS = 3;       // send after 3 days of no verification
+  const MAX_SENDS = 1;        // send once only
+  const delayCutoff = daysAgo(DELAY_DAYS);
+
+  const users = await prisma.user.findMany({
+    where: {
+      emailVerifiedAt: null,
+      suspendedAt: null,
+      createdAt: { lt: delayCutoff },
+      lastVerificationReminderAt: null, // only users who haven't received a reminder yet
+    },
+    select: {
+      id: true, email: true, name: true, createdAt: true,
+    },
+  });
+
+  let sent = 0;
+  for (const u of users) {
+    try {
+      await issueEmailVerification(u.id, u.email);
+      await prisma.user.update({
+        where: { id: u.id },
+        data: { lastVerificationReminderAt: new Date() },
+      });
+      sent++;
+    } catch (e) {
+      console.error(`[Reminders:verification] Failed for ${u.email}:`, e?.message);
+    }
+  }
+
+  console.log(`[Reminders:verification] Sent ${sent}/${users.length}`);
+  return { sent, total: users.length };
+}
+
 // ─── Run all ─────────────────────────────────────────────────────────────────
 
 export async function runAllReminders() {
   console.log("[Reminders] Starting daily reminder run...");
-  const [profile, jobMatch, message, inactivity, jobMaintenance] = await Promise.allSettled([
+  const [profile, jobMatch, message, inactivity, jobMaintenance, verification] = await Promise.allSettled([
     runProfileReminders(),
     runJobMatchReminders(),
     runMessageReminders(),
     runInactivityReminders(),
     runJobMaintenance(),
+    runVerificationReminders(),
   ]);
   const summary = {
     profile: profile.status === "fulfilled" ? profile.value : { error: profile.reason?.message },
@@ -511,6 +550,7 @@ export async function runAllReminders() {
     message: message.status === "fulfilled" ? message.value : { error: message.reason?.message },
     inactivity: inactivity.status === "fulfilled" ? inactivity.value : { error: inactivity.reason?.message },
     jobMaintenance: jobMaintenance.status === "fulfilled" ? jobMaintenance.value : { error: jobMaintenance.reason?.message },
+    verification: verification.status === "fulfilled" ? verification.value : { error: verification.reason?.message },
   };
   console.log("[Reminders] Done:", JSON.stringify(summary));
   return summary;
