@@ -318,6 +318,7 @@ model Conversation {
   jobTitle  String?
   selectedByCompanyAt DateTime?  // company marked driver as "utvald"
   readByCompanyAt   DateTime?    // företag har öppnat konversationen
+  readByDriverAt    DateTime?    // förare har öppnat konversationen (läs-kvitto för företag)
   rejectedByCompanyAt DateTime?  // företag avvisade
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

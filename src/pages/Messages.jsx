@@ -120,25 +120,35 @@ function ChatWindow({ conversation, isDriver, onBack, onReport, onReview, canRev
       )}
 
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
-        {conversation.messages.map((msg) => {
+        {conversation.messages.map((msg, idx) => {
           const isOwn = msg.sender === (isDriver ? "driver" : "company");
+          const isLastCompanyMsg = !isDriver &&
+            msg.sender === "company" &&
+            conversation.messages.slice(idx + 1).every((m) => m.sender !== "company");
+          const showReadReceipt = isLastCompanyMsg && conversation.readByDriverAt;
           return (
-            <div
-              key={msg.id}
-              className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
-            >
-              <div
-                className={`max-w-[85%] rounded-lg px-4 py-2 ${
-                  isOwn
-                    ? "bg-[var(--color-primary)] text-white"
-                    : "bg-slate-100 text-slate-900"
-                }`}
-              >
-                <p className="whitespace-pre-wrap">{msg.content}</p>
-                <p className={`text-xs mt-1 ${isOwn ? "text-white/80" : "text-slate-500"}`}>
-                  {formatTime(msg.timestamp)}
-                </p>
+            <div key={msg.id}>
+              <div className={`flex ${isOwn ? "justify-end" : "justify-start"}`}>
+                <div
+                  className={`max-w-[85%] rounded-lg px-4 py-2 ${
+                    isOwn
+                      ? "bg-[var(--color-primary)] text-white"
+                      : "bg-slate-100 text-slate-900"
+                  }`}
+                >
+                  <p className="whitespace-pre-wrap">{msg.content}</p>
+                  <p className={`text-xs mt-1 ${isOwn ? "text-white/80" : "text-slate-500"}`}>
+                    {formatTime(msg.timestamp)}
+                  </p>
+                </div>
               </div>
+              {showReadReceipt && (
+                <p className="text-right text-xs text-slate-400 mt-0.5 pr-1">
+                  Läst {new Date(conversation.readByDriverAt).toLocaleString("sv-SE", {
+                    day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"
+                  })}
+                </p>
+              )}
             </div>
           );
         })}

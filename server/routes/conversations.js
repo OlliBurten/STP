@@ -59,6 +59,7 @@ function toConversation(c) {
     jobTitle: c.jobTitle,
     selectedByCompanyAt: c.selectedByCompanyAt?.toISOString() ?? null,
     readByCompanyAt: c.readByCompanyAt?.toISOString() ?? null,
+    readByDriverAt: c.readByDriverAt?.toISOString() ?? null,
     rejectedByCompanyAt: c.rejectedByCompanyAt?.toISOString() ?? null,
     messages: (c.messages || []).map((m) => ({
       id: m.id,
@@ -111,6 +112,13 @@ conversationsRouter.get("/:id", requireVerifiedIfCompany, async (req, res, next)
         data: { readByCompanyAt: new Date() },
       });
       c.readByCompanyAt = new Date();
+    }
+    if (req.role === "DRIVER" && c.driverId === req.userId && !c.readByDriverAt) {
+      await prisma.conversation.update({
+        where: { id: c.id },
+        data: { readByDriverAt: new Date() },
+      });
+      c.readByDriverAt = new Date();
     }
     res.json(toConversation(c));
   } catch (e) {
