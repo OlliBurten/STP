@@ -56,12 +56,40 @@ export default function CompanyPublicProfile() {
     .join(" ")
     .slice(0, 160);
 
+  const BASE_URL = "https://transportplattformen.se";
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: company.name,
+    url: `${BASE_URL}/foretag/${company.id}`,
+    ...(company.description ? { description: company.description.replace(/\n+/g, " ").slice(0, 500) } : {}),
+    ...(company.website ? { sameAs: [company.website] } : {}),
+    ...((company.location || company.region) ? {
+      address: {
+        "@type": "PostalAddress",
+        ...(company.location ? { addressLocality: company.location } : {}),
+        ...(company.region ? { addressRegion: company.region } : {}),
+        addressCountry: "SE",
+      },
+    } : {}),
+    ...(company.reviewCount > 0 ? {
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: company.reviewAverage,
+        reviewCount: company.reviewCount,
+        bestRating: 5,
+        worstRating: 1,
+      },
+    } : {}),
+  };
+
   return (
     <main className="max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-6">
       <PageMeta
         title={company.name}
         description={companyDescription}
         canonical={`/foretag/${company.id}`}
+        jsonLd={jsonLd}
       />
       <Link to="/jobb" className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-[var(--color-primary)]">
         ← Tillbaka till jobb
