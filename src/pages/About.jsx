@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { CheckIcon, TruckIcon, BuildingIcon, ShieldCheckIcon } from "../components/Icons";
 import { usePageTitle } from "../hooks/usePageTitle";
+import PageMeta from "../components/PageMeta";
 
 const VALUES = [
   {
@@ -29,6 +30,7 @@ export default function About() {
   usePageTitle("Om oss");
   return (
     <main className="bg-slate-50">
+      <PageMeta description="Lär dig mer om Sveriges Transportplattform – en direktkanal mellan yrkesförare och åkerier. Inga bemanningsbolag, full kontroll för föraren." canonical="/om-oss" />
 
       {/* Hero */}
       <section className="bg-[var(--color-primary)] text-white">

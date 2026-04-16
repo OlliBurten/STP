@@ -11,6 +11,7 @@ import { calcYearsExperience } from "../utils/profileUtils";
 import { getMatchCriteria, getRecommendedJobsForDriver, matchScore } from "../utils/matchUtils";
 import { fetchJobs, fetchSavedJobs, saveJob, unsaveJob } from "../api/jobs.js";
 import { mapEmploymentToSegment } from "../data/segments";
+import PageMeta from "../components/PageMeta";
 
 export default function JobList() {
   usePageTitle("Lediga chaufförsjobb");
@@ -144,6 +145,7 @@ export default function JobList() {
 
   return (
     <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+      <PageMeta description="Bläddra bland lediga lastbilsjobb i Sverige. Filtrera på körkort, region och anställningstyp. Ansök direkt till åkeriet – utan mellanskapare." canonical="/jobb" />
       <div className="mb-8">
         {isGymnasieelev && (
           <div className="mb-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-900">

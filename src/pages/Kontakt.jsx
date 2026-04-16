@@ -1,9 +1,11 @@
 import { usePageTitle } from "../hooks/usePageTitle";
+import PageMeta from "../components/PageMeta";
 
 export default function Kontakt() {
   usePageTitle("Kontakt");
   return (
     <main className="max-w-2xl mx-auto px-4 sm:px-6 py-16">
+      <PageMeta description="Kontakta Sveriges Transportplattform (STP) med frågor om samverkan, plattformen eller genomgång. Vi svarar på info@transportplattformen.se." canonical="/kontakt" />
       <h1 className="text-3xl font-bold text-slate-900">Kontakt</h1>
       <p className="mt-4 text-slate-700">
         För frågor om Sveriges Transportplattform (STP), samverkan eller genomgång – kontakta oss.

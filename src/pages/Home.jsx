@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { usePageTitle } from "../hooks/usePageTitle";
+import PageMeta from "../components/PageMeta";
 import { CheckIcon, ChartBarIcon, ShieldCheckIcon, ClockIcon, TruckIcon, BuildingIcon, ArrowRightIcon } from "../components/Icons";
 
 /** När elementet syns i viewport sätts inView till true (stannar true). Respekterar prefers-reduced-motion. */
@@ -135,6 +136,10 @@ export default function Home() {
 
   return (
     <main>
+      <PageMeta
+        description="Sveriges Transportplattform – hitta lastbilsjobb eller rekrytera yrkesförare direkt. Inga bemanningsföretag, ingen mellanskapare."
+        canonical="/"
+      />
       {/* Hero – truck image background, vänster copy, höger STP Snapshot */}
       <section
         ref={heroRef}
