@@ -12,7 +12,7 @@ Sentry.init({
 
   // Strip SQL query parameters and email addresses from Sentry breadcrumbs
   beforeSend(event) {
-    if (event.breadcrumbs?.values) {
+    if (Array.isArray(event.breadcrumbs?.values)) {
       event.breadcrumbs.values = event.breadcrumbs.values.map((b) => {
         if (b.category === "db.sql.query" && b.message) {
           b.message = b.message.replace(/'[^']*'/g, "'?'");
