@@ -5,8 +5,9 @@
 
 import crypto from "crypto";
 import { prisma } from "./prisma.js";
-import { sendInviteEmail } from "./email.js";
+import { sendInviteEmail, sendEmail } from "./email.js";
 import { issueEmailVerification } from "../routes/auth.js";
+import { createNotification } from "./notifications.js";
 
 const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 const MAX_INVITES_PER_COMPANY = 50;
@@ -483,6 +484,34 @@ export async function acceptInvite({ token, action, email, password, name, verif
       data: { status: "ACCEPTED" },
     });
 
+    // Notify the inviter
+    if (invite.invitedById && invite.invitedById !== user.id) {
+      const inviterUser = await prisma.user.findUnique({
+        where: { id: invite.invitedById },
+        select: { email: true, name: true },
+      });
+      const companyName = company.name || "Företaget";
+      const memberName = user.name || invite.email;
+      const fb = (process.env.FRONTEND_URL || "").split(",")[0]?.trim().replace(/\/$/, "");
+      createNotification({
+        userId: invite.invitedById,
+        type: "INVITE_ACCEPTED",
+        title: "Inbjudan accepterad",
+        body: `${memberName} har gått med i ${companyName}.`,
+        link: "/foretag/team",
+        actorName: memberName,
+      }).catch((e) => console.error("[Invite] createNotification failed:", e?.message));
+      if (inviterUser?.email) {
+        sendEmail({
+          to: inviterUser.email,
+          subject: `${memberName} har gått med i ${companyName}`,
+          text: `Hej ${inviterUser.name || ""}!\n\n${memberName} har accepterat din inbjudan och gått med i ${companyName} på Sveriges Transportplattform.\n\nMed vänliga hälsningar,\nSveriges Transportplattform`,
+          ctaUrl: fb ? `${fb}/foretag/team` : undefined,
+          ctaText: fb ? "Se teamet" : undefined,
+        }).catch((e) => console.error("[Invite] notifyInviterAccepted email failed:", e?.message));
+      }
+    }
+
     owner = await prisma.organization.findUnique({
       where: { id: invite.organizationId },
       select: {
@@ -516,6 +545,34 @@ export async function acceptInvite({ token, action, email, password, name, verif
       where: { id: invite.id },
       data: { status: "ACCEPTED" },
     });
+
+    // Notify the inviter
+    if (invite.invitedById && invite.invitedById !== user.id) {
+      const inviterUser = await prisma.user.findUnique({
+        where: { id: invite.invitedById },
+        select: { email: true, name: true, companyName: true },
+      });
+      const companyDisplayName = inviterUser?.companyName || company.name || "Företaget";
+      const memberName = user.name || invite.email;
+      const fb = (process.env.FRONTEND_URL || "").split(",")[0]?.trim().replace(/\/$/, "");
+      createNotification({
+        userId: invite.invitedById,
+        type: "INVITE_ACCEPTED",
+        title: "Inbjudan accepterad",
+        body: `${memberName} har gått med i ${companyDisplayName}.`,
+        link: "/foretag/team",
+        actorName: memberName,
+      }).catch((e) => console.error("[Invite] createNotification failed:", e?.message));
+      if (inviterUser?.email) {
+        sendEmail({
+          to: inviterUser.email,
+          subject: `${memberName} har gått med i ${companyDisplayName}`,
+          text: `Hej ${inviterUser.name || ""}!\n\n${memberName} har accepterat din inbjudan och gått med i ${companyDisplayName} på Sveriges Transportplattform.\n\nMed vänliga hälsningar,\nSveriges Transportplattform`,
+          ctaUrl: fb ? `${fb}/foretag/team` : undefined,
+          ctaText: fb ? "Se teamet" : undefined,
+        }).catch((e) => console.error("[Invite] notifyInviterAccepted email failed:", e?.message));
+      }
+    }
 
     owner = await prisma.user.findUnique({
       where: { id: invite.companyOwnerId },
@@ -566,6 +623,7 @@ export async function validateInviteToken(rawToken) {
       id: true,
       email: true,
       organizationId: true,
+      invitedById: true,
       status: true,
       expiresAt: true,
       organization: {
@@ -590,6 +648,7 @@ export async function validateInviteToken(rawToken) {
         id: orgInvite.id,
         email: orgInvite.email,
         organizationId: orgInvite.organizationId,
+        invitedById: orgInvite.invitedById,
       },
       company: {
         name: orgInvite.organization?.name || "Företaget",
@@ -603,6 +662,7 @@ export async function validateInviteToken(rawToken) {
       id: true,
       email: true,
       companyOwnerId: true,
+      invitedById: true,
       status: true,
       expiresAt: true,
       company: {
@@ -627,6 +687,7 @@ export async function validateInviteToken(rawToken) {
       id: invite.id,
       email: invite.email,
       companyOwnerId: invite.companyOwnerId,
+      invitedById: invite.invitedById,
     },
     company: {
       name: invite.company?.companyName || invite.company?.name || "Företaget",
