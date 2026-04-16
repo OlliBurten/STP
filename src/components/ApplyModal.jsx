@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { useProfile } from "../context/ProfileContext";
 import { useChat } from "../context/ChatContext";
 import { CloseIcon, CheckIcon } from "./Icons";
+import { suggestMessage } from "../api/ai.js";
 
 export default function ApplyModal({ job, onClose, onSuccess }) {
   const { user } = useAuth();
@@ -13,6 +14,7 @@ export default function ApplyModal({ job, onClose, onSuccess }) {
   const [submitted, setSubmitted] = useState(false);
   const [conversationId, setConversationId] = useState(null);
   const [sending, setSending] = useState(false);
+  const [suggesting, setSuggesting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -101,9 +103,26 @@ export default function ApplyModal({ job, onClose, onSuccess }) {
         </div>
 
         <form onSubmit={handleSubmit}>
-          <label htmlFor="apply-message" className="block text-sm font-medium text-slate-700 mb-2">
-            Meddelande (valfritt)
-          </label>
+          <div className="flex items-center justify-between mb-2">
+            <label htmlFor="apply-message" className="block text-sm font-medium text-slate-700">
+              Meddelande (valfritt)
+            </label>
+            <button
+              type="button"
+              onClick={async () => {
+                setSuggesting(true);
+                try {
+                  const data = await suggestMessage({ jobId: job.id });
+                  if (data?.suggestion) setMessage(data.suggestion);
+                } catch (_) {}
+                setSuggesting(false);
+              }}
+              disabled={suggesting}
+              className="inline-flex items-center gap-1 text-xs font-medium text-[var(--color-primary)] hover:underline disabled:opacity-50"
+            >
+              {suggesting ? "Skriver förslag..." : "Hjälp mig skriva"}
+            </button>
+          </div>
           <textarea
             id="apply-message"
             rows={4}

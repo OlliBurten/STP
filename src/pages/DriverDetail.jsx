@@ -206,7 +206,7 @@ export default function DriverDetail() {
 
           {(driverSummaryLoading || driverSummary) && (
             <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <p className="text-xs font-semibold text-[var(--color-primary)] mb-1">✨ AI-sammanfattning</p>
+              <p className="text-xs font-semibold text-[var(--color-primary)] mb-1">Snabbanalys av profilen</p>
               {driverSummaryLoading ? (
                 <div className="h-4 bg-slate-200 rounded animate-pulse w-3/4" />
               ) : (

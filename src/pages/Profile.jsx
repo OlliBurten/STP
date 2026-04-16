@@ -321,7 +321,7 @@ export default function Profile() {
                 disabled={profileTipsLoading}
                 className="inline-flex items-center gap-1 text-xs font-medium text-[var(--color-primary)] hover:underline disabled:opacity-50"
               >
-                {profileTipsLoading ? "Analyserar..." : "✨ Analysera med AI"}
+                {profileTipsLoading ? "Hämtar..." : "Visa vad arbetsgivare söker"}
               </button>
             )}
           </div>
@@ -342,7 +342,7 @@ export default function Profile() {
             </ul>
           )}
           {!profileTips && !profileTipsLoading && (
-            <p className="text-sm text-slate-500">Få AI-baserade tips om hur du kan förbättra din profil baserat på vad företag söker i din region.</p>
+            <p className="text-sm text-slate-500">Se vad arbetsgivare faktiskt söker i din region — och vad som kan stärka din profil.</p>
           )}
         </div>
       )}

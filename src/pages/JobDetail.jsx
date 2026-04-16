@@ -541,7 +541,7 @@ export default function JobDetail() {
                                   ? "bg-slate-200 text-slate-600"
                                   : "bg-slate-100 text-slate-700"
                             }`}>
-                              AI: {screenings[a.driverId].matchStrength === "strong" ? "Stark match" : screenings[a.driverId].matchStrength === "weak" ? "Svag match" : "God match"}
+                              {screenings[a.driverId].matchStrength === "strong" ? "Stark match" : screenings[a.driverId].matchStrength === "weak" ? "Svag match" : "God match"}
                             </span>
                           )}
                           {a.rejectedByCompanyAt && (
@@ -561,7 +561,7 @@ export default function JobDetail() {
                             .join(" · ")}
                         </p>
                         {screeningsLoading && !screenings[a.driverId] && (
-                          <p className="text-xs text-slate-400 mt-1 animate-pulse">AI analyserar...</p>
+                          <p className="text-xs text-slate-400 mt-1 animate-pulse">Analyserar sökande...</p>
                         )}
                         {screenings[a.driverId]?.summary && (
                           <p className="text-xs text-slate-600 mt-1 italic">{screenings[a.driverId].summary}</p>
@@ -643,12 +643,12 @@ export default function JobDetail() {
             <div className="mt-8 pt-8 border-t border-slate-200">
               <div className="rounded-xl border border-[var(--color-primary)]/20 bg-[var(--color-primary)]/5 p-4">
                 <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-primary)] mb-2">
-                  Din matchning — AI-analys
+                  Varför detta jobb passar dig
                 </p>
                 {matchExplanationLoading ? (
                   <div className="flex items-center gap-2 text-sm text-slate-500">
                     <span className="inline-block w-3 h-3 rounded-full bg-[var(--color-primary)]/30 animate-pulse" />
-                    Analyserar matchningen...
+                    Kollar din profil mot jobbet...
                   </div>
                 ) : (
                   <p className="text-sm text-slate-700 leading-relaxed">{matchExplanation}</p>

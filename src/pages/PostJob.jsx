@@ -634,7 +634,7 @@ export default function PostJob() {
                     Genererar...
                   </>
                 ) : (
-                  <>✨ Generera med AI</>
+                  <>Generera annonstext</>
                 )}
               </button>
               {aiError && <p className="text-xs text-red-600">{aiError}</p>}

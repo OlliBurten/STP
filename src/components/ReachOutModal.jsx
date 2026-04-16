@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { useChat } from "../context/ChatContext";
 import { useProfile } from "../context/ProfileContext";
 import { CloseIcon, CheckIcon } from "./Icons";
+import { suggestMessage } from "../api/ai.js";
 
 export default function ReachOutModal({ driver, jobs, onClose, onSuccess }) {
   const { user } = useAuth();
@@ -16,6 +17,7 @@ export default function ReachOutModal({ driver, jobs, onClose, onSuccess }) {
   const [submitted, setSubmitted] = useState(false);
   const [conversationId, setConversationId] = useState(null);
   const [sending, setSending] = useState(false);
+  const [suggesting, setSuggesting] = useState(false);
 
   const selectedJob = selectedJobId ? jobs.find((j) => j.id === selectedJobId) : null;
   const effectiveCompany = mode === "invite" && selectedJob ? selectedJob.company : companyName;
@@ -156,9 +158,29 @@ export default function ReachOutModal({ driver, jobs, onClose, onSuccess }) {
           )}
 
           <div className="mb-6">
-            <label htmlFor="reach-message" className="block text-sm font-medium text-slate-700 mb-2">
-              Meddelande
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label htmlFor="reach-message" className="block text-sm font-medium text-slate-700">
+                Meddelande
+              </label>
+              <button
+                type="button"
+                onClick={async () => {
+                  setSuggesting(true);
+                  try {
+                    const data = await suggestMessage({
+                      driverId: driver.id,
+                      jobId: selectedJobId || undefined,
+                    });
+                    if (data?.suggestion) setMessage(data.suggestion);
+                  } catch (_) {}
+                  setSuggesting(false);
+                }}
+                disabled={suggesting}
+                className="inline-flex items-center gap-1 text-xs font-medium text-[var(--color-primary)] hover:underline disabled:opacity-50"
+              >
+                {suggesting ? "Skriver förslag..." : "Förslag på meddelande"}
+              </button>
+            </div>
             <textarea
               id="reach-message"
               rows={4}
