@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { fetchMyCompanyProfile, updateMyCompanyProfile } from "../api/companies.js";
 import { fetchMyOrganizations, createOrganization } from "../api/organizations.js";
+import { createCompanyInvite } from "../api/invites.js";
 import { segmentOptions } from "../data/segments";
 import BranschSearch from "../components/BranschSearch.jsx";
 import { regions } from "../data/mockJobs.js";
@@ -19,8 +20,12 @@ export default function CompanyOnboardingWizard() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [done, setDone] = useState(false);
+  const [step, setStep] = useState("setup"); // "setup" | "invite" | "done"
   const [error, setError] = useState("");
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteList, setInviteList] = useState([]);
+  const [inviteSending, setInviteSending] = useState(false);
+  const [inviteErrors, setInviteErrors] = useState({});
   const [profile, setProfile] = useState(null);
   const [defaults, setDefaults] = useState([]);
   const [needsFirstCompany, setNeedsFirstCompany] = useState(false);
@@ -98,8 +103,7 @@ export default function CompanyOnboardingWizard() {
       await refreshOrgs?.();
       if (org?.id) switchOrg?.(org.id);
       trackCompanyOnboardingComplete(firstCompany.segmentDefaults);
-      setDone(true);
-      setTimeout(() => navigate("/foretag", { replace: true }), 2200);
+      setStep("invite");
     } catch (e) {
       setError(e.message || "Kunde inte lägga till företag.");
     } finally {
@@ -126,8 +130,7 @@ export default function CompanyOnboardingWizard() {
       });
       await refreshUser?.();
       trackCompanyOnboardingComplete(defaults);
-      setDone(true);
-      setTimeout(() => navigate("/foretag", { replace: true }), 2200);
+      setStep("invite");
     } catch (e) {
       setError(e.message || "Kunde inte spara onboarding.");
     } finally {
@@ -135,7 +138,45 @@ export default function CompanyOnboardingWizard() {
     }
   };
 
-  if (done) {
+  const addInviteEmail = () => {
+    const trimmed = inviteEmail.trim().toLowerCase();
+    if (!trimmed || inviteList.includes(trimmed)) return;
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(trimmed)) return;
+    setInviteList((prev) => [...prev, trimmed]);
+    setInviteEmail("");
+  };
+
+  const removeInviteEmail = (email) => {
+    setInviteList((prev) => prev.filter((e) => e !== email));
+    setInviteErrors((prev) => { const n = { ...prev }; delete n[email]; return n; });
+  };
+
+  const sendInvites = async () => {
+    if (inviteList.length === 0) { finishOnboarding(); return; }
+    setInviteSending(true);
+    const errors = {};
+    for (const email of inviteList) {
+      try {
+        await createCompanyInvite(email);
+      } catch (e) {
+        errors[email] = e.message || "Kunde inte skicka inbjudan";
+      }
+    }
+    setInviteSending(false);
+    if (Object.keys(errors).length > 0) {
+      setInviteErrors(errors);
+      return;
+    }
+    finishOnboarding();
+  };
+
+  const finishOnboarding = () => {
+    setStep("done");
+    setTimeout(() => navigate("/foretag", { replace: true }), 2200);
+  };
+
+  if (step === "done") {
     return (
       <main className="max-w-2xl mx-auto px-4 sm:px-6 py-10">
         <section className="bg-white rounded-xl border border-slate-200 p-8 sm:p-12 text-center space-y-5">
@@ -147,6 +188,85 @@ export default function CompanyOnboardingWizard() {
             Ert konto är uppsatt. Ni kan nu söka förare och publicera jobb på STP.
           </p>
           <p className="text-sm text-slate-400">Tar dig till företagsdashboarden...</p>
+        </section>
+      </main>
+    );
+  }
+
+  if (step === "invite") {
+    return (
+      <main className="max-w-2xl mx-auto px-4 sm:px-6 py-10">
+        <section className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8 space-y-6">
+          <div>
+            <p className="text-sm text-slate-500">Steg 2 av 2</p>
+            <h1 className="mt-1 text-2xl font-bold text-slate-900">Bjud in teammedlemmar</h1>
+            <p className="mt-2 text-slate-600">
+              Lägg till kolleger som ska ha åtkomst till ert konto. De får ett e-postinbjudan och kan skapa ett konto eller logga in.
+            </p>
+          </div>
+
+          <div className="flex gap-2">
+            <input
+              type="email"
+              value={inviteEmail}
+              onChange={(e) => setInviteEmail(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addInviteEmail(); } }}
+              placeholder="kollega@foretagsnamn.se"
+              className="flex-1 px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none"
+            />
+            <button
+              type="button"
+              onClick={addInviteEmail}
+              className="px-4 py-3 rounded-lg bg-slate-100 text-slate-700 font-medium hover:bg-slate-200 transition-colors"
+            >
+              Lägg till
+            </button>
+          </div>
+
+          {inviteList.length > 0 && (
+            <ul className="space-y-2">
+              {inviteList.map((email) => (
+                <li key={email} className="flex items-center justify-between rounded-lg border border-slate-200 px-4 py-2.5">
+                  <span className="text-sm text-slate-800">{email}</span>
+                  <div className="flex items-center gap-3">
+                    {inviteErrors[email] && (
+                      <span className="text-xs text-red-600">{inviteErrors[email]}</span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => removeInviteEmail(email)}
+                      className="text-slate-400 hover:text-slate-600 text-lg leading-none"
+                      aria-label={`Ta bort ${email}`}
+                    >
+                      ×
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <div className="flex items-center justify-between pt-2">
+            <button
+              type="button"
+              onClick={finishOnboarding}
+              className="text-sm text-slate-500 hover:text-slate-700 underline"
+            >
+              Hoppa över
+            </button>
+            <button
+              type="button"
+              onClick={sendInvites}
+              disabled={inviteSending}
+              className="px-5 py-2.5 rounded-lg bg-[var(--color-primary)] text-white font-medium disabled:opacity-50 transition-colors"
+            >
+              {inviteSending
+                ? "Skickar..."
+                : inviteList.length > 0
+                  ? `Skicka ${inviteList.length === 1 ? "inbjudan" : `${inviteList.length} inbjudningar`} och fortsätt`
+                  : "Fortsätt"}
+            </button>
+          </div>
         </section>
       </main>
     );
