@@ -6,6 +6,7 @@ import { useChat } from "../context/ChatContext";
 import { fetchMyJobs } from "../api/jobs.js";
 import { getCompanyReviewSummary } from "../api/reviews.js";
 import { fetchMyCompanyProfile } from "../api/companies.js";
+import { fetchCompanyMarket } from "../api/stats.js";
 import { CheckIcon, CircleOutlineIcon, TruckIcon, BellIcon, ArrowRightIcon } from "../components/Icons";
 import OrgSwitcher from "../components/OrgSwitcher";
 import ProfileCompletionBanner from "../components/ProfileCompletionBanner";
@@ -51,6 +52,7 @@ export default function ForCompanies() {
   const [myJobs, setMyJobs] = useState([]);
   const [reviewSummary, setReviewSummary] = useState(null);
   const [companyProfile, setCompanyProfile] = useState(null);
+  const [companyMarket, setCompanyMarket] = useState(null);
   const onboardingKey = user?.id ? `drivermatch-onboarding-dismissed:${user.id}:company` : "";
   const [hideOnboarding, setHideOnboarding] = useState(() => {
     if (!onboardingKey) return false;
@@ -77,6 +79,7 @@ export default function ForCompanies() {
   useEffect(() => {
     if (!hasApi || !isCompany) return;
     fetchMyCompanyProfile().then(setCompanyProfile).catch(() => setCompanyProfile(null));
+    fetchCompanyMarket().then(setCompanyMarket).catch(() => setCompanyMarket(null));
   }, [hasApi, isCompany]);
 
   const activeJobCount = myJobs.filter((j) => j.status === "ACTIVE").length;
@@ -248,28 +251,86 @@ export default function ForCompanies() {
 
       {/* Onboarding checklist */}
       {isCompany && !hideOnboarding && !onboardingDone && (
-        <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-5">
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="font-semibold text-indigo-900">Kom igång – 3 steg</p>
-              <p className="mt-0.5 text-sm text-indigo-700">
+              <p className="font-semibold text-slate-900">Kom igång – 3 steg</p>
+              <p className="mt-0.5 text-sm text-slate-600">
                 Slutför dessa för att få ut mesta möjliga av plattformen.
               </p>
             </div>
-            <button type="button" onClick={dismissOnboarding} className="text-xs text-indigo-600 hover:text-indigo-800">
+            <button type="button" onClick={dismissOnboarding} className="text-xs text-slate-500 hover:text-slate-700">
               Dölj
             </button>
           </div>
           <ul className="mt-4 space-y-2">
             {onboardingSteps.map((step) => (
-              <li key={step.label} className={`flex items-center gap-2 text-sm ${step.done ? "text-green-700" : "text-indigo-900"}`}>
+              <li key={step.label} className={`flex items-center gap-2 text-sm ${step.done ? "text-[var(--color-primary)]" : "text-slate-700"}`}>
                 {step.done
-                  ? <CheckIcon className="w-4 h-4 text-green-600 shrink-0" />
+                  ? <CheckIcon className="w-4 h-4 text-[var(--color-primary)] shrink-0" />
                   : <CircleOutlineIcon className="w-4 h-4 text-slate-400 shrink-0" />}
                 {step.label}
               </li>
             ))}
           </ul>
+        </div>
+      )}
+
+      {/* Förartillgänglighet i er region */}
+      {isVerifiedCompany && companyMarket && companyMarket.driversInRegion > 0 && (
+        <div className="rounded-xl border border-slate-200 bg-white p-6">
+          <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">
+            Förartillgänglighet i {companyMarket.region}
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 mb-5">
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-center">
+              <p className="text-2xl font-bold text-slate-900">{companyMarket.driversInRegion}</p>
+              <p className="text-xs text-slate-500 mt-0.5">Synliga förare</p>
+            </div>
+            {companyMarket.availabilityBreakdown.slice(0, 2).map((a) => (
+              <div key={a.value} className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-center">
+                <p className="text-2xl font-bold text-slate-900">{a.count}</p>
+                <p className="text-xs text-slate-500 mt-0.5">{a.label}</p>
+              </div>
+            ))}
+          </div>
+          {companyMarket.topLicenses.length > 0 && (
+            <div className="mb-3">
+              <p className="text-xs font-medium text-slate-500 mb-2">Tillgängliga körkort</p>
+              <div className="space-y-1.5">
+                {companyMarket.topLicenses.map((l) => (
+                  <div key={l.name} className="flex items-center gap-2">
+                    <span className="text-xs text-slate-700 w-8 shrink-0">{l.name}</span>
+                    <div className="flex-1 h-1.5 rounded-full bg-slate-100">
+                      <div
+                        className="h-1.5 rounded-full bg-[var(--color-primary)]"
+                        style={{ width: `${Math.round((l.count / companyMarket.driversInRegion) * 100)}%` }}
+                      />
+                    </div>
+                    <span className="text-xs text-slate-500 w-8 text-right shrink-0">{l.count} st</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {companyMarket.topCerts.length > 0 && (
+            <div className="mb-4">
+              <p className="text-xs font-medium text-slate-500 mb-2">Tillgängliga certifikat</p>
+              <div className="flex flex-wrap gap-1.5">
+                {companyMarket.topCerts.map((c) => (
+                  <span key={c.name} className="px-2.5 py-1 rounded-full text-xs bg-slate-100 text-slate-700">
+                    {c.name} · {c.count} förare
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+          <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+            <p className="text-xs text-slate-400">Förare som är synliga för sökning just nu</p>
+            <Link to="/foretag/chaufforer" className="text-xs font-medium text-[var(--color-primary)] hover:underline">
+              Sök bland förare →
+            </Link>
+          </div>
         </div>
       )}
 

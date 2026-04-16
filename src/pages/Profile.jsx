@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { fetchDriverProfileStats } from "../api/drivers.js";
 import { fetchProfileTips } from "../api/ai.js";
+import { fetchDriverMarket } from "../api/stats.js";
 import PasswordSection from "../components/profile/PasswordSection.jsx";
 import NotificationSettings from "../components/profile/NotificationSettings.jsx";
 import DangerZone from "../components/profile/DangerZone.jsx";
@@ -40,6 +41,7 @@ export default function Profile() {
   const [profileStats, setProfileStats] = useState(null);
   const [profileTips, setProfileTips] = useState(null);
   const [profileTipsLoading, setProfileTipsLoading] = useState(false);
+  const [driverMarket, setDriverMarket] = useState(null);
   const onboardingKey = user?.id ? `drivermatch-onboarding-dismissed:${user.id}:driver` : "";
   const [hideOnboarding, setHideOnboarding] = useState(() => {
     if (!onboardingKey) return false;
@@ -62,6 +64,9 @@ export default function Profile() {
     fetchDriverProfileStats()
       .then(setProfileStats)
       .catch(() => setProfileStats(null));
+    fetchDriverMarket()
+      .then(setDriverMarket)
+      .catch(() => setDriverMarket(null));
   }, [hasApi]);
 
   const current = editing ? draft : profile;
@@ -303,10 +308,59 @@ export default function Profile() {
         );
       })()}
 
-      {hasApi && (
+      {hasApi && driverMarket && driverMarket.jobsInRegion > 0 && (
         <div className="mb-6 bg-white rounded-xl border border-slate-200 p-6">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide">Marknadsinsikter</h2>
+          <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">
+            Marknaden i {driverMarket.region}
+          </h2>
+          <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-5">
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-center">
+              <p className="text-2xl font-bold text-slate-900">{driverMarket.jobsInRegion}</p>
+              <p className="text-xs text-slate-500 mt-0.5">Aktiva jobb</p>
+            </div>
+            {driverMarket.topLicenses[0] && (
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-center">
+                <p className="text-2xl font-bold text-slate-900">{driverMarket.topLicenses[0].pct}%</p>
+                <p className="text-xs text-slate-500 mt-0.5">av jobb kräver {driverMarket.topLicenses[0].name}</p>
+              </div>
+            )}
+            {driverMarket.topCerts[0] && (
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-center">
+                <p className="text-2xl font-bold text-slate-900">{driverMarket.topCerts[0].pct}%</p>
+                <p className="text-xs text-slate-500 mt-0.5">av jobb kräver {driverMarket.topCerts[0].name}</p>
+              </div>
+            )}
+          </div>
+          {driverMarket.topLicenses.length > 1 && (
+            <div className="mb-3">
+              <p className="text-xs font-medium text-slate-500 mb-2">Mest efterfrågade körkort</p>
+              <div className="space-y-1.5">
+                {driverMarket.topLicenses.map((l) => (
+                  <div key={l.name} className="flex items-center gap-2">
+                    <span className="text-xs text-slate-700 w-8 shrink-0">{l.name}</span>
+                    <div className="flex-1 h-1.5 rounded-full bg-slate-100">
+                      <div className="h-1.5 rounded-full bg-[var(--color-primary)]" style={{ width: `${l.pct}%` }} />
+                    </div>
+                    <span className="text-xs text-slate-500 w-8 text-right shrink-0">{l.pct}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {driverMarket.topCerts.length > 0 && (
+            <div className="mb-4">
+              <p className="text-xs font-medium text-slate-500 mb-2">Mest efterfrågade certifikat</p>
+              <div className="flex flex-wrap gap-1.5">
+                {driverMarket.topCerts.map((c) => (
+                  <span key={c.name} className="px-2.5 py-1 rounded-full text-xs bg-slate-100 text-slate-700">
+                    {c.name} · {c.pct}%
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+          <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+            <p className="text-xs text-slate-400">Baserat på aktiva jobbannonser just nu</p>
             {!profileTips && (
               <button
                 type="button"
@@ -319,20 +373,14 @@ export default function Profile() {
                   setProfileTipsLoading(false);
                 }}
                 disabled={profileTipsLoading}
-                className="inline-flex items-center gap-1 text-xs font-medium text-[var(--color-primary)] hover:underline disabled:opacity-50"
+                className="text-xs font-medium text-[var(--color-primary)] hover:underline disabled:opacity-50"
               >
-                {profileTipsLoading ? "Hämtar..." : "Visa vad arbetsgivare söker"}
+                {profileTipsLoading ? "Hämtar..." : "Visa vad som kan stärka din profil"}
               </button>
             )}
           </div>
-          {profileTipsLoading && !profileTips && (
-            <div className="space-y-2">
-              <div className="h-4 bg-slate-100 rounded animate-pulse w-full" />
-              <div className="h-4 bg-slate-100 rounded animate-pulse w-5/6" />
-            </div>
-          )}
           {profileTips && profileTips.length > 0 && (
-            <ul className="space-y-2">
+            <ul className="mt-3 space-y-2">
               {profileTips.map((tip, i) => (
                 <li key={i} className="flex items-start gap-2 rounded-lg px-4 py-3 text-sm bg-slate-50 border border-slate-200 text-slate-700">
                   <span className="shrink-0 mt-0.5 text-[var(--color-primary)]">✦</span>
@@ -340,9 +388,6 @@ export default function Profile() {
                 </li>
               ))}
             </ul>
-          )}
-          {!profileTips && !profileTipsLoading && (
-            <p className="text-sm text-slate-500">Se vad arbetsgivare faktiskt söker i din region — och vad som kan stärka din profil.</p>
           )}
         </div>
       )}
