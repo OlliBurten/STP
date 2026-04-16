@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { useAuth } from "../context/AuthContext";
@@ -41,6 +41,24 @@ export default function Login() {
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [oauthPickingRole, setOauthPickingRole] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  // Reset to login mode when the user navigates to this page again
+  // (e.g. clicks "Logga in" in the header while on register/forgot mode)
+  const isInitialMount = useRef(true);
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    const stateMode = location.state?.initialMode;
+    if (!stateMode || stateMode === "login") {
+      setMode("login");
+      setRoleChosen(true);
+      setError("");
+      setInfo("");
+      setShowResendVerification(false);
+    }
+  }, [location.key]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleMockDriver = () => {
     loginAsDriver();
@@ -357,15 +375,11 @@ export default function Login() {
             placeholder="din@epost.se"
           />
         </div>
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1">
-            Lösenord *
-          </label>
-          {mode === "forgot" ? (
-            <p className="text-sm text-slate-500">
-              Ingen lösenordsinmatning behövs här.
-            </p>
-          ) : (
+        {mode !== "forgot" && (
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1">
+              Lösenord *
+            </label>
             <div className="relative">
               <input
                 id="password"
@@ -387,8 +401,8 @@ export default function Login() {
                 {showPassword ? <EyeOffIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
               </button>
             </div>
-          )}
-        </div>
+          </div>
+        )}
         {mode === "register" && (
           <label className="flex items-start gap-3 cursor-pointer">
             <input
