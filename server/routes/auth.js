@@ -208,11 +208,9 @@ authRouter.post("/register", validateBody(registerSchema), async (req, res, next
       return res.status(409).json({ error: "E-postadressen används redan" });
     }
     const passwordHash = await bcrypt.hash(password, 10);
-    const autoVerify = process.env.AUTO_VERIFY_COMPANIES === "true" || process.env.AUTO_VERIFY_COMPANIES === "1";
     const hasCompanyAtReg = role === "COMPANY" && companyName?.trim() && normalizedOrgNumber;
-    const canAutoVerify = hasCompanyAtReg && autoVerify && shouldAutoVerifyCompany(email, normalizedOrgNumber);
-  const companyStatus =
-    role === "COMPANY" ? (hasCompanyAtReg ? (canAutoVerify ? "VERIFIED" : "PENDING") : "VERIFIED") : "VERIFIED";
+    const companyStatus =
+      role === "COMPANY" ? (hasCompanyAtReg ? (shouldAutoVerifyCompany(email, normalizedOrgNumber) ? "VERIFIED" : "PENDING") : "VERIFIED") : "VERIFIED";
 
     const user = await prisma.user.create({
       data: {

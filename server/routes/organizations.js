@@ -53,10 +53,7 @@ organizationsRouter.post("/", validateBody(createOrganizationSchema), async (req
       where: { id: req.userId },
       select: { email: true },
     });
-    const autoVerify =
-      process.env.AUTO_VERIFY_COMPANIES === "true" || process.env.AUTO_VERIFY_COMPANIES === "1";
-    const canAutoVerify = autoVerify && shouldAutoVerifyCompany(user?.email, orgNum);
-    const status = canAutoVerify ? "VERIFIED" : "PENDING";
+    const status = shouldAutoVerifyCompany(user?.email, orgNum) ? "VERIFIED" : "PENDING";
 
     const org = await prisma.organization.create({
       data: {
