@@ -1,7 +1,14 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
 import { authMiddleware, requireCompany, requireVerifiedCompany, attachCompanyContext } from "../middleware/auth.js";
-import { generateMatchExplanation, generateJobDescription, screenApplicant } from "../lib/ai.js";
+import {
+  generateMatchExplanation,
+  generateJobDescription,
+  screenApplicant,
+  suggestMessage,
+  summarizeDriverProfile,
+  generateProfileTips,
+} from "../lib/ai.js";
 
 export const aiRouter = Router();
 
@@ -173,3 +180,177 @@ aiRouter.post(
     }
   }
 );
+
+// ─── 4. Suggest message — förslag på förstameddelande ────────────────────────
+
+aiRouter.post("/suggest-message", authMiddleware, requireAiKey, async (req, res, next) => {
+  try {
+    const isDriver = req.role === "DRIVER";
+    const { jobId, driverId } = req.body;
+
+    let driver, job = null;
+
+    if (isDriver) {
+      // Driver applying: use their own profile, fetch job
+      if (!jobId) return res.status(400).json({ error: "jobId krävs" });
+      const [driverUser, jobData] = await Promise.all([
+        prisma.user.findUnique({
+          where: { id: req.userId },
+          select: { name: true, driverProfile: { select: { licenses: true, certificates: true, region: true, primarySegment: true, summary: true } } },
+        }),
+        prisma.job.findUnique({
+          where: { id: jobId },
+          select: { title: true, company: true, region: true },
+        }),
+      ]);
+      if (!driverUser) return res.status(404).json({ error: "Profil saknas" });
+      driver = { name: driverUser.name, ...driverUser.driverProfile };
+      job = jobData;
+    } else {
+      // Company reaching out: fetch driver profile
+      if (!driverId) return res.status(400).json({ error: "driverId krävs" });
+      const [driverUser, jobData] = await Promise.all([
+        prisma.user.findUnique({
+          where: { id: driverId },
+          select: { name: true, driverProfile: { select: { licenses: true, certificates: true, region: true, primarySegment: true, summary: true } } },
+        }),
+        jobId
+          ? prisma.job.findUnique({ where: { id: jobId }, select: { title: true, company: true, region: true } })
+          : Promise.resolve(null),
+      ]);
+      if (!driverUser) return res.status(404).json({ error: "Föraren hittades inte" });
+      driver = { name: driverUser.name, ...driverUser.driverProfile };
+      job = jobData;
+    }
+
+    const senderRole = isDriver ? "driver" : "company";
+    const suggestion = await suggestMessage(driver, job, senderRole);
+    res.json({ suggestion });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// ─── 5. Driver summary — sammanfatta förarprofil för åkeri ───────────────────
+
+aiRouter.post(
+  "/driver-summary",
+  authMiddleware,
+  requireCompany,
+  requireAiKey,
+  async (req, res, next) => {
+    try {
+      const { driverId } = req.body;
+      if (!driverId) return res.status(400).json({ error: "driverId krävs" });
+
+      const driverUser = await prisma.user.findUnique({
+        where: { id: driverId },
+        select: {
+          name: true,
+          driverProfile: {
+            select: {
+              licenses: true, certificates: true, region: true,
+              regionsWilling: true, primarySegment: true,
+              availability: true, experience: true, summary: true,
+            },
+          },
+        },
+      });
+      if (!driverUser) return res.status(404).json({ error: "Föraren hittades inte" });
+
+      const p = driverUser.driverProfile;
+      const exp = Array.isArray(p?.experience) ? p.experience : [];
+      const yearsExperience = exp.reduce((sum, e) => {
+        if (!e?.startYear) return sum;
+        const end = e.current ? new Date().getFullYear() : (e.endYear || new Date().getFullYear());
+        return sum + Math.max(0, end - e.startYear);
+      }, 0);
+
+      const summary = await summarizeDriverProfile({
+        name: driverUser.name,
+        licenses: p?.licenses || [],
+        certificates: p?.certificates || [],
+        region: p?.region,
+        regionsWilling: p?.regionsWilling || [],
+        yearsExperience,
+        primarySegment: p?.primarySegment,
+        availability: p?.availability,
+        summary: p?.summary,
+      });
+
+      res.json({ summary });
+    } catch (e) {
+      next(e);
+    }
+  }
+);
+
+// ─── 6. Profile tips — marknadsbaserade tips för föraren ─────────────────────
+
+aiRouter.post("/profile-tips", authMiddleware, requireAiKey, async (req, res, next) => {
+  try {
+    if (req.role !== "DRIVER") {
+      return res.status(403).json({ error: "Endast förare kan använda denna funktion." });
+    }
+
+    const driverProfile = await prisma.driverProfile.findUnique({
+      where: { userId: req.userId },
+      select: { licenses: true, certificates: true, region: true, primarySegment: true, availability: true, summary: true },
+    });
+    if (!driverProfile) return res.status(404).json({ error: "Förarprofil saknas" });
+
+    const region = driverProfile.region;
+
+    // Fetch active jobs in driver's region for market stats
+    const regionJobs = region
+      ? await prisma.job.findMany({
+          where: { status: "ACTIVE", region },
+          select: { license: true, certificates: true, segment: true },
+          take: 100,
+        })
+      : [];
+
+    // Compute market stats
+    const totalInRegion = regionJobs.length;
+    const certCount = {};
+    const licCount = {};
+    const segCount = {};
+    for (const j of regionJobs) {
+      for (const c of j.certificates || []) certCount[c] = (certCount[c] || 0) + 1;
+      for (const l of j.license || []) licCount[l] = (licCount[l] || 0) + 1;
+      if (j.segment) segCount[j.segment] = (segCount[j.segment] || 0) + 1;
+    }
+
+    const pct = (n) => totalInRegion > 0 ? Math.round((n / totalInRegion) * 100) : 0;
+    const driverCerts = new Set(driverProfile.certificates || []);
+    const driverLics = new Set(driverProfile.licenses || []);
+
+    const commonCerts = Object.entries(certCount)
+      .filter(([name]) => !driverCerts.has(name))
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([name, count]) => ({ name, pct: pct(count) }));
+
+    const commonLicenses = Object.entries(licCount)
+      .filter(([name]) => !driverLics.has(name))
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 2)
+      .map(([name, count]) => ({ name, pct: pct(count) }));
+
+    const topSegments = Object.entries(segCount)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([name]) => name);
+
+    const tips = await generateProfileTips(driverProfile, {
+      jobsInRegion: totalInRegion,
+      commonCerts,
+      commonLicenses,
+      topSegments,
+    });
+
+    res.json({ tips, jobsInRegion: totalInRegion });
+  } catch (e) {
+    next(e);
+  }
+});
