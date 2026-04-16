@@ -4,6 +4,7 @@ import { useProfile } from "../context/ProfileContext";
 import { useAuth } from "../context/AuthContext";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { fetchDriverProfileStats } from "../api/drivers.js";
+import { fetchProfileTips } from "../api/ai.js";
 import { deleteMyAccount, changePassword } from "../api/auth.js";
 import { updateNotificationSettings } from "../api/profile.js";
 import {
@@ -46,6 +47,8 @@ export default function Profile() {
   const [draft, setDraft] = useState(profile);
   const [newExp, setNewExp] = useState({ company: "", role: "", startYear: "", endYear: "", current: false, description: "" });
   const [profileStats, setProfileStats] = useState(null);
+  const [profileTips, setProfileTips] = useState(null);
+  const [profileTipsLoading, setProfileTipsLoading] = useState(false);
   const onboardingKey = user?.id ? `drivermatch-onboarding-dismissed:${user.id}:driver` : "";
   const [hideOnboarding, setHideOnboarding] = useState(() => {
     if (!onboardingKey) return false;
@@ -314,6 +317,50 @@ export default function Profile() {
           </div>
         );
       })()}
+
+      {hasApi && (
+        <div className="mb-6 bg-white rounded-xl border border-slate-200 p-6">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide">Marknadsinsikter</h2>
+            {!profileTips && (
+              <button
+                type="button"
+                onClick={async () => {
+                  setProfileTipsLoading(true);
+                  try {
+                    const data = await fetchProfileTips();
+                    if (data?.tips) setProfileTips(data.tips);
+                  } catch (_) {}
+                  setProfileTipsLoading(false);
+                }}
+                disabled={profileTipsLoading}
+                className="inline-flex items-center gap-1 text-xs font-medium text-[var(--color-primary)] hover:underline disabled:opacity-50"
+              >
+                {profileTipsLoading ? "Analyserar..." : "✨ Analysera med AI"}
+              </button>
+            )}
+          </div>
+          {profileTipsLoading && !profileTips && (
+            <div className="space-y-2">
+              <div className="h-4 bg-slate-100 rounded animate-pulse w-full" />
+              <div className="h-4 bg-slate-100 rounded animate-pulse w-5/6" />
+            </div>
+          )}
+          {profileTips && profileTips.length > 0 && (
+            <ul className="space-y-2">
+              {profileTips.map((tip, i) => (
+                <li key={i} className="flex items-start gap-2 rounded-lg px-4 py-3 text-sm bg-blue-50 border border-blue-100 text-blue-900">
+                  <span className="shrink-0 mt-0.5">💡</span>
+                  {tip}
+                </li>
+              ))}
+            </ul>
+          )}
+          {!profileTips && !profileTipsLoading && (
+            <p className="text-sm text-slate-500">Få AI-baserade tips om hur du kan förbättra din profil baserat på vad företag söker i din region.</p>
+          )}
+        </div>
+      )}
 
       {profileStats && (
         <div className="mb-6 bg-white rounded-xl border border-slate-200 p-6">

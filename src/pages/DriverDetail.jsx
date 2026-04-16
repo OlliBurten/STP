@@ -12,17 +12,20 @@ import { LocationIcon, CheckIcon } from "../components/Icons";
 import { fetchDriver, trackDriverProfileView } from "../api/drivers.js";
 import { fetchMyJobs } from "../api/jobs.js";
 import { isDriverMinimumProfileComplete } from "../utils/driverProfileRequirements.js";
+import { fetchDriverSummary } from "../api/ai.js";
 import PageMeta from "../components/PageMeta";
 
 export default function DriverDetail() {
   const { id } = useParams();
-  const { hasApi } = useAuth();
+  const { hasApi, user } = useAuth();
   const { profile } = useProfile();
   const [showReachOut, setShowReachOut] = useState(false);
   const [apiDriver, setApiDriver] = useState(null);
   const [apiJobs, setApiJobs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState(false);
+  const [driverSummary, setDriverSummary] = useState(null);
+  const [driverSummaryLoading, setDriverSummaryLoading] = useState(false);
 
   useEffect(() => {
     if (!hasApi || !id) return;
@@ -42,6 +45,16 @@ export default function DriverDetail() {
     if (!hasApi || !id) return;
     trackDriverProfileView(id).catch(() => {});
   }, [hasApi, id]);
+
+  // AI-sammanfattning för företag som tittar på förarprofil
+  useEffect(() => {
+    if (!hasApi || !id || !user || user.role !== "COMPANY") return;
+    setDriverSummaryLoading(true);
+    fetchDriverSummary(id)
+      .then((data) => setDriverSummary(data?.summary || null))
+      .catch(() => {})
+      .finally(() => setDriverSummaryLoading(false));
+  }, [hasApi, id, user]);
 
   const currentUserAsDriver =
     !hasApi && profile.visibleToCompanies && profile.id === id
@@ -196,6 +209,17 @@ export default function DriverDetail() {
               Tanken med STP är att ni ska kunna förstå en förare snabbare än i ett vanligt fritextflöde.
             </p>
           </div>
+
+          {(driverSummaryLoading || driverSummary) && (
+            <div className="mt-6 rounded-xl border border-blue-100 bg-blue-50 p-4">
+              <p className="text-xs font-semibold text-blue-700 mb-1">✨ AI-sammanfattning</p>
+              {driverSummaryLoading ? (
+                <div className="h-4 bg-blue-100 rounded animate-pulse w-3/4" />
+              ) : (
+                <p className="text-sm text-blue-900">{driverSummary}</p>
+              )}
+            </div>
+          )}
 
           {driver.summary && (
             <div className="mt-6 pt-6 border-t border-slate-200">
