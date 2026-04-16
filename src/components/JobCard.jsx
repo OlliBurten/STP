@@ -79,7 +79,7 @@ export default function JobCard({
                 e.preventDefault();
                 onToggleSave?.(job.id, !isSaved);
               }}
-              className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${
+              className={`inline-flex items-center min-h-[44px] px-3 py-1 rounded-full text-xs font-medium border ${
                 isSaved
                   ? "bg-amber-50 border-amber-200 text-amber-800"
                   : "bg-white border-slate-300 text-slate-600 hover:border-slate-400"
