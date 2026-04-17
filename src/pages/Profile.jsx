@@ -251,26 +251,26 @@ export default function Profile() {
       )}
 
       {!hideOnboarding && !onboardingDone && (
-        <section className="mb-6 rounded-xl border border-indigo-200 bg-indigo-50 p-5">
+        <section className="mb-6 rounded-xl border border-slate-200 bg-slate-50 p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h2 className="text-base font-semibold text-indigo-900">Kom igång med din profil</h2>
-              <p className="mt-1 text-sm text-indigo-800">
+              <h2 className="text-base font-semibold text-slate-900">Kom igång med din profil</h2>
+              <p className="mt-1 text-sm text-slate-600">
                 Fyll i dessa steg för att öka chanserna att matchas med jobb.
               </p>
             </div>
             <button
               type="button"
               onClick={dismissOnboarding}
-              className="text-xs font-medium text-indigo-700 hover:text-indigo-900"
+              className="text-xs font-medium text-slate-500 hover:text-slate-700"
             >
               Dölj guide
             </button>
           </div>
           <ul className="mt-4 space-y-1.5 text-sm">
             {onboardingSteps.map((step) => (
-              <li key={step.label} className={step.done ? "text-green-700" : "text-indigo-900"}>
-                {step.done ? <CheckIcon className="w-4 h-4 inline-block mr-1 align-middle text-green-600" /> : <CircleOutlineIcon className="w-4 h-4 inline-block mr-1 align-middle text-slate-400" />} {step.label}
+              <li key={step.label} className={step.done ? "text-[var(--color-primary)]" : "text-slate-700"}>
+                {step.done ? <CheckIcon className="w-4 h-4 inline-block mr-1 align-middle text-[var(--color-primary)]" /> : <CircleOutlineIcon className="w-4 h-4 inline-block mr-1 align-middle text-slate-400" />} {step.label}
               </li>
             ))}
           </ul>

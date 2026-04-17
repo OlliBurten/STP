@@ -160,6 +160,11 @@ export default function DriverDetail() {
                     {segmentLabel(driver.primarySegment)}
                   </span>
                 )}
+                {driver.fastResponder && (
+                  <span className="px-3 py-1 rounded-full text-sm font-medium bg-[var(--color-accent)]/10 text-slate-700 border border-[var(--color-accent)]/30">
+                    Snabb svarstid
+                  </span>
+                )}
               </div>
             </div>
             <button

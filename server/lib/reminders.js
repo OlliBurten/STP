@@ -572,17 +572,98 @@ export async function runVerificationReminders() {
   return { sent, total: users.length };
 }
 
+// ─── 7. Fast responder badge ─────────────────────────────────────────────────
+
+export async function runFastResponderUpdate() {
+  const WINDOW_DAYS = 60;     // look at last 60 days of conversations
+  const MIN_SAMPLES = 3;      // need at least 3 company-initiated convos
+  const FAST_THRESHOLD_MS = 24 * 60 * 60 * 1000; // 24 hours
+  const FAST_RATE = 0.75;     // 75% of replies must be within 24h
+
+  const cutoff = daysAgo(WINDOW_DAYS);
+
+  // Fetch all drivers with at least one conversation in the window
+  const drivers = await prisma.driverProfile.findMany({
+    where: {
+      user: {
+        conversationsAsDriver: {
+          some: { createdAt: { gte: cutoff } },
+        },
+      },
+    },
+    select: {
+      userId: true,
+      fastResponder: true,
+      user: {
+        select: {
+          conversationsAsDriver: {
+            where: { createdAt: { gte: cutoff } },
+            select: {
+              messages: {
+                orderBy: { createdAt: "asc" },
+                take: 6,
+                select: { senderId: true, senderRole: true, createdAt: true },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  let updated = 0;
+  for (const dp of drivers) {
+    const convs = dp.user?.conversationsAsDriver || [];
+
+    // Only conversations where company sent first
+    const companyInitiated = convs.filter((c) => c.messages[0]?.senderRole === "company");
+    if (companyInitiated.length < MIN_SAMPLES) {
+      // Not enough data — reset badge if they had it
+      if (dp.fastResponder) {
+        await prisma.driverProfile.update({
+          where: { userId: dp.userId },
+          data: { fastResponder: false },
+        });
+        updated++;
+      }
+      continue;
+    }
+
+    let fastCount = 0;
+    for (const c of companyInitiated) {
+      const companyMsg = c.messages[0];
+      const driverReply = c.messages.find((m) => m.senderRole === "driver");
+      if (!driverReply) continue;
+      const elapsed = new Date(driverReply.createdAt) - new Date(companyMsg.createdAt);
+      if (elapsed <= FAST_THRESHOLD_MS) fastCount++;
+    }
+
+    const isFast = fastCount / companyInitiated.length >= FAST_RATE;
+    if (isFast !== dp.fastResponder) {
+      await prisma.driverProfile.update({
+        where: { userId: dp.userId },
+        data: { fastResponder: isFast },
+      });
+      updated++;
+    }
+  }
+
+  console.log(`[FastResponder] Updated ${updated}/${drivers.length}`);
+  return { updated, total: drivers.length };
+}
+
 // ─── Run all ─────────────────────────────────────────────────────────────────
 
 export async function runAllReminders() {
   console.log("[Reminders] Starting daily reminder run...");
-  const [profile, jobMatch, message, inactivity, jobMaintenance, verification] = await Promise.allSettled([
+  const [profile, jobMatch, message, inactivity, jobMaintenance, verification, fastResponder] = await Promise.allSettled([
     runProfileReminders(),
     runJobMatchReminders(),
     runMessageReminders(),
     runInactivityReminders(),
     runJobMaintenance(),
     runVerificationReminders(),
+    runFastResponderUpdate(),
   ]);
   const summary = {
     profile: profile.status === "fulfilled" ? profile.value : { error: profile.reason?.message },
@@ -591,6 +672,7 @@ export async function runAllReminders() {
     inactivity: inactivity.status === "fulfilled" ? inactivity.value : { error: inactivity.reason?.message },
     jobMaintenance: jobMaintenance.status === "fulfilled" ? jobMaintenance.value : { error: jobMaintenance.reason?.message },
     verification: verification.status === "fulfilled" ? verification.value : { error: verification.reason?.message },
+    fastResponder: fastResponder.status === "fulfilled" ? fastResponder.value : { error: fastResponder.reason?.message },
   };
   console.log("[Reminders] Done:", JSON.stringify(summary));
   return summary;

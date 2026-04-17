@@ -225,6 +225,7 @@ model DriverProfile {
   schoolName          String?
   physicalWorkOk      Boolean? // fysiskt tungt arbete ok
   soloWorkOk          Boolean? // ensamarbete ok
+  fastResponder       Boolean  @default(false) // svarar på meddelanden inom 24h
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 }

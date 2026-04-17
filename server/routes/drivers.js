@@ -88,6 +88,7 @@ driversRouter.get("/", authMiddleware, requireCompany, requireVerifiedCompany, a
         physicalWorkOk: p.physicalWorkOk ?? null,
         soloWorkOk: p.soloWorkOk ?? null,
         profileScore: computeProfileScore(p, p.user).score,
+        fastResponder: p.fastResponder ?? false,
         _lastLoginAt: p.user?.lastLoginAt,
       };
     });
@@ -233,6 +234,7 @@ driversRouter.get("/:id", authMiddleware, requireCompany, requireVerifiedCompany
       physicalWorkOk: profile.physicalWorkOk ?? null,
       soloWorkOk: profile.soloWorkOk ?? null,
       profileScore: computeProfileScore(profile, profile.user).score,
+      fastResponder: profile.fastResponder ?? false,
     });
   } catch (e) {
     next(e);

@@ -52,6 +52,11 @@ export default function DriverCard({ driver, matchScore = null, matchPct = null,
                 Profil {driver.profileScore}/100
               </span>
             )}
+            {driver.fastResponder && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-[var(--color-accent)]/10 text-slate-700 border border-[var(--color-accent)]/30">
+                Snabb svarstid
+              </span>
+            )}
             {driver.licenses?.map((lic) => (
               <span
                 key={lic}
