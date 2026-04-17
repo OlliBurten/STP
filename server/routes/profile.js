@@ -6,6 +6,7 @@ import { isDriverMinimumProfileComplete } from "../utils/driverProfileRequiremen
 import { notifyRecommendedDriverMatch } from "../lib/email.js";
 import { createNotification } from "../lib/notifications.js";
 import { analyzeSummary } from "../lib/analyzeSummary.js";
+import { computeProfileScore } from "../lib/profileScore.js";
 
 export const profileRouter = Router();
 const MATCH_ALERTS_ENABLED = process.env.MATCH_ALERTS_ENABLED !== "false";
@@ -183,7 +184,7 @@ profileRouter.get("/", async (req, res, next) => {
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.userId },
-      select: { name: true, email: true, emailNotificationSettings: true },
+      select: { name: true, email: true, emailNotificationSettings: true, lastLoginAt: true },
     });
     let profile = await prisma.driverProfile.findUnique({
       where: { userId: req.userId },
@@ -196,9 +197,13 @@ profileRouter.get("/", async (req, res, next) => {
         },
       });
     }
+    const { score, breakdown, tips } = computeProfileScore(profile, user);
     res.json({
       ...formatProfileResponse(profile, user),
       emailNotificationSettings: user?.emailNotificationSettings || {},
+      profileScore: score,
+      profileScoreBreakdown: breakdown,
+      profileScoreTips: tips,
     });
   } catch (e) {
     next(e);

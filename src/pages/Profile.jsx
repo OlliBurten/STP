@@ -22,13 +22,70 @@ import { CheckIcon, CircleOutlineIcon, LocationIcon, ChevronDownIcon } from "../
 import { useToast } from "../context/ToastContext";
 import {
   getDriverMinimumChecklist,
-  hasDriverMinimumAvailability,
-  hasDriverMinimumLicense,
-  hasDriverMinimumRegion,
-  hasDriverMinimumSummary,
   isDriverMinimumProfileComplete,
   SUMMARY_MIN_LENGTH,
 } from "../utils/driverProfileRequirements";
+
+function ProfileScoreCard({ score, tips, onEdit }) {
+  const label =
+    score >= 90 ? "Utmärkt profil" :
+    score >= 70 ? "Stark profil" :
+    score >= 50 ? "Bra profil" :
+    score >= 30 ? "Under uppbyggnad" :
+    "Grundläggande profil";
+
+  const barColor =
+    score >= 70 ? "bg-[var(--color-primary)]" :
+    score >= 50 ? "bg-[var(--color-primary-light)]" :
+    score >= 30 ? "bg-[var(--color-accent)]" :
+    "bg-slate-400";
+
+  return (
+    <div className="mb-6 rounded-xl border border-slate-200 bg-white p-5">
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-sm font-semibold text-slate-900">Profilstyrka</span>
+        <span className="text-sm font-bold text-slate-700">{score}/100</span>
+      </div>
+      <div className="h-2 rounded-full bg-slate-100 overflow-hidden mb-1">
+        <div
+          className={`h-2 rounded-full transition-all duration-500 ${barColor}`}
+          style={{ width: `${score}%` }}
+        />
+      </div>
+      <p className="text-xs text-slate-500 mb-4">{label}</p>
+      {tips.length === 0 ? (
+        <p className="text-sm text-[var(--color-primary)] font-medium">
+          Din profil är komplett — åkerier hittar dig enkelt.
+        </p>
+      ) : (
+        <>
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+            Stärk din profil
+          </p>
+          <ul className="space-y-1.5">
+            {tips.map((tip, i) => (
+              <li key={i} className="flex items-start gap-2 text-sm text-slate-600">
+                <span className="mt-0.5 w-4 h-4 shrink-0 rounded-full border border-slate-300 inline-flex items-center justify-center">
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+                </span>
+                {tip}
+              </li>
+            ))}
+          </ul>
+          {!onEdit ? null : (
+            <button
+              type="button"
+              onClick={onEdit}
+              className="mt-4 text-sm font-medium text-[var(--color-primary)] hover:underline"
+            >
+              Redigera profil →
+            </button>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
 
 export default function Profile() {
   usePageTitle("Min profil");
@@ -281,32 +338,9 @@ export default function Profile() {
         </p>
       )}
 
-      {profile != null && (() => {
-        const hasSummary = hasDriverMinimumSummary(profile);
-        const hasLicense = hasDriverMinimumLicense(profile);
-        const hasRegion = hasDriverMinimumRegion(profile);
-        const hasAvailability = hasDriverMinimumAvailability(profile);
-        const isVisible = Boolean(profile.visibleToCompanies);
-        const allDone = hasSummary && hasLicense && hasRegion && hasAvailability;
-        if (allDone && isVisible) return null;
-        return (
-          <div className="mb-6 rounded-xl border border-slate-200 bg-slate-50 p-4" role="region" aria-label="Tips för att nå fler företag">
-            <p className="text-sm font-semibold text-slate-900">Saker som lätt glöms – så når fler företag dig</p>
-            <ul className="mt-2 space-y-1.5 text-sm text-slate-700">
-              {!hasSummary && <li><span className="text-slate-500" aria-hidden>○</span> Lägg till en kort profiltext (minst {SUMMARY_MIN_LENGTH} tecken) så företag förstår vem du är.</li>}
-              {hasSummary && <li><CheckIcon className="w-4 h-4 inline-block mr-1 align-middle text-green-600" aria-hidden /> Profiltext ifylld</li>}
-              {!hasLicense && <li><span className="text-slate-500" aria-hidden>○</span> Välj minst ett körkort (t.ex. CE, C) – annars matchar du inte jobben.</li>}
-              {hasLicense && <li><CheckIcon className="w-4 h-4 inline-block mr-1 align-middle text-green-600" aria-hidden /> Körkort angivet</li>}
-              {!hasRegion && <li><span className="text-slate-500" aria-hidden>○</span> Välj region – då syns du i rätt sökningar.</li>}
-              {hasRegion && <li><CheckIcon className="w-4 h-4 inline-block mr-1 align-middle text-green-600" aria-hidden /> Region vald</li>}
-              {!hasAvailability && <li><span className="text-slate-500" aria-hidden>○</span> Välj tillgänglighet så att vi kan matcha dig mot rätt typ av jobb.</li>}
-              {hasAvailability && <li><CheckIcon className="w-4 h-4 inline-block mr-1 align-middle text-green-600" aria-hidden /> Tillgänglighet vald</li>}
-              {!isVisible && hasRegion && <li><span className="text-slate-500" aria-hidden>○</span> Bli synlig för företag så att de kan hitta dig i förarsökningen.</li>}
-              {isVisible && <li><CheckIcon className="w-4 h-4 inline-block mr-1 align-middle text-green-600" aria-hidden /> Synlig för företag</li>}
-            </ul>
-          </div>
-        );
-      })()}
+      {hasApi && profile?.profileScore != null && (
+        <ProfileScoreCard score={profile.profileScore} tips={profile.profileScoreTips || []} onEdit={startEditing} />
+      )}
 
       {hasApi && driverMarket && driverMarket.jobsInRegion > 0 && (
         <div className="mb-6 bg-white rounded-xl border border-slate-200 p-6">

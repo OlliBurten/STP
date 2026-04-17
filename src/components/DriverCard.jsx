@@ -2,18 +2,22 @@ import { Link } from "react-router-dom";
 import { availabilityTypes, getCertificateLabel } from "../data/profileData";
 import { segmentLabel, internshipTypeLabel, parseSchoolName } from "../data/segments";
 import { LocationIcon, CheckIcon } from "./Icons";
-import { isDriverMinimumProfileComplete } from "../utils/driverProfileRequirements.js";
 
 // matchPct is 0-100 (normalised percentage, not raw score)
 function matchQuality(pct) {
-  if (pct >= 80) return { label: "Stark match", className: "bg-green-100 text-green-800" };
-  if (pct >= 55) return { label: "God match", className: "bg-amber-50 text-amber-800" };
+  if (pct >= 80) return { label: "Stark match", className: "bg-[var(--color-primary)]/10 text-[var(--color-primary)]" };
+  if (pct >= 55) return { label: "God match", className: "bg-[var(--color-accent)]/10 text-slate-700" };
   return { label: "Möjlig match", className: "bg-slate-100 text-slate-600" };
+}
+
+function scoreColor(score) {
+  if (score >= 70) return "text-[var(--color-primary)]";
+  if (score >= 50) return "text-slate-600";
+  return "text-slate-400";
 }
 
 export default function DriverCard({ driver, matchScore = null, matchPct = null, matchCriteria = [], matchHighlights = [], isContacted = false }) {
   const availabilityLabel = availabilityTypes.find((a) => a.value === driver.availability)?.label || driver.availability;
-  const hasMinimumProfile = isDriverMinimumProfileComplete(driver);
   const effectivePct = matchPct ?? (matchScore != null ? matchScore : null);
   const quality = effectivePct != null && effectivePct > 0 ? matchQuality(effectivePct) : null;
 
@@ -43,10 +47,9 @@ export default function DriverCard({ driver, matchScore = null, matchPct = null,
             <LocationIcon className="w-4 h-4 shrink-0" /> {driver.location}, {driver.region}
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
-            {hasMinimumProfile && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                <CheckIcon className="w-3.5 h-3.5" />
-                Minimumprofil klar
+            {driver.profileScore != null && (
+              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-50 border border-slate-200 ${scoreColor(driver.profileScore)}`}>
+                Profil {driver.profileScore}/100
               </span>
             )}
             {driver.licenses?.map((lic) => (
@@ -103,8 +106,8 @@ export default function DriverCard({ driver, matchScore = null, matchPct = null,
               key={c.label}
               className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium border ${
                 c.met
-                  ? "bg-green-50 text-green-700 border-green-200"
-                  : "bg-red-50 text-red-700 border-red-200"
+                  ? "bg-[var(--color-primary)]/8 text-[var(--color-primary)] border-[var(--color-primary)]/20"
+                  : "bg-slate-100 text-slate-500 border-slate-200"
               }`}
             >
               {c.met ? <CheckIcon className="w-3 h-3 shrink-0" /> : <span className="font-bold leading-none">✗</span>}

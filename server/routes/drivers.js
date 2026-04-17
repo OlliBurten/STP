@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
 import { authMiddleware, requireCompany, requireDriver, requireVerifiedCompany } from "../middleware/auth.js";
+import { computeProfileScore } from "../lib/profileScore.js";
 
 export const driversRouter = Router();
 
@@ -37,7 +38,7 @@ driversRouter.get("/", authMiddleware, requireCompany, requireVerifiedCompany, a
         }),
       },
       include: {
-        user: { select: { id: true, name: true, email: true } },
+        user: { select: { id: true, name: true, email: true, lastLoginAt: true } },
       },
     });
     let list = profiles.map((p) => {
@@ -75,8 +76,11 @@ driversRouter.get("/", authMiddleware, requireCompany, requireVerifiedCompany, a
         schoolName: p.schoolName ?? null,
         physicalWorkOk: p.physicalWorkOk ?? null,
         soloWorkOk: p.soloWorkOk ?? null,
+        profileScore: computeProfileScore(p, p.user).score,
       };
     });
+    // Sortera på profilstyrka (starkast profil först)
+    list.sort((a, b) => b.profileScore - a.profileScore);
     if (experience) {
       const [min, max] =
         experience === "10+" ? [10, 999]
@@ -173,7 +177,7 @@ driversRouter.get("/:id", authMiddleware, requireCompany, requireVerifiedCompany
           suspendedAt: null,
         },
       },
-      include: { user: { select: { id: true, name: true, email: true } } },
+      include: { user: { select: { id: true, name: true, email: true, lastLoginAt: true } } },
     });
     if (!profile) return res.status(404).json({ error: "Chaufför hittades inte" });
     const exp = (profile.experience && typeof profile.experience === "object")
@@ -210,6 +214,7 @@ driversRouter.get("/:id", authMiddleware, requireCompany, requireVerifiedCompany
       schoolName: profile.schoolName ?? null,
       physicalWorkOk: profile.physicalWorkOk ?? null,
       soloWorkOk: profile.soloWorkOk ?? null,
+      profileScore: computeProfileScore(profile, profile.user).score,
     });
   } catch (e) {
     next(e);
