@@ -41,6 +41,17 @@ driversRouter.get("/", authMiddleware, requireCompany, requireVerifiedCompany, a
         user: { select: { id: true, name: true, email: true, lastLoginAt: true } },
       },
     });
+    const now = Date.now();
+
+    // Recency multiplier — drivers inactive > 30d are ranked lower
+    function recencyMultiplier(lastLoginAt) {
+      if (!lastLoginAt) return 0.55;
+      const daysSince = (now - new Date(lastLoginAt).getTime()) / 86_400_000;
+      if (daysSince < 30) return 1.0;
+      if (daysSince < 60) return 0.80;
+      return 0.55;
+    }
+
     let list = profiles.map((p) => {
       const exp = (p.experience && typeof p.experience === "object")
         ? p.experience
@@ -77,10 +88,17 @@ driversRouter.get("/", authMiddleware, requireCompany, requireVerifiedCompany, a
         physicalWorkOk: p.physicalWorkOk ?? null,
         soloWorkOk: p.soloWorkOk ?? null,
         profileScore: computeProfileScore(p, p.user).score,
+        _lastLoginAt: p.user?.lastLoginAt,
       };
     });
-    // Sortera på profilstyrka (starkast profil först)
-    list.sort((a, b) => b.profileScore - a.profileScore);
+    // Sortera: profilstyrka × recency-multiplikator (inaktiva profiler sjunker)
+    list.sort((a, b) => {
+      const ea = a.profileScore * recencyMultiplier(a._lastLoginAt);
+      const eb = b.profileScore * recencyMultiplier(b._lastLoginAt);
+      return eb - ea;
+    });
+    // Strippa interna sorteringsfält
+    list = list.map(({ _lastLoginAt, ...rest }) => rest);
     if (experience) {
       const [min, max] =
         experience === "10+" ? [10, 999]

@@ -385,6 +385,7 @@ export async function runInactivityReminders() {
       id: true, email: true, name: true, role: true,
       lastLoginAt: true,
       emailNotificationSettings: true,
+      driverProfile: { select: { region: true, regionsWilling: true } },
     },
   });
 
@@ -393,23 +394,62 @@ export async function runInactivityReminders() {
     if (!isEnabled(u, "inactivity")) continue;
 
     const loginUrl = `${FRONTEND_URL}/login`;
-    const roleHint = u.role === "DRIVER"
-      ? "Nya jobb kan ha publicerats sedan du senast loggade in."
-      : "Det kan finnas förare som matchar era krav sedan du senast loggade in.";
+    let subject = "Det händer på STP — är du med?";
+    let bodyLines;
 
-    const text = [
-      `Hej ${u.name || ""},`,
-      "",
-      `Vi har inte sett dig på Sveriges Transportplattform på ett tag. ${roleHint}`,
-      "",
-      "Logga in och ta en titt:",
-      loginUrl,
-      "",
-      "Med vänliga hälsningar,",
-      "Sveriges Transportplattform",
-    ].join("\n");
+    if (u.role === "DRIVER") {
+      // Count active jobs in the driver's region(s)
+      const regions = [
+        u.driverProfile?.region,
+        ...(u.driverProfile?.regionsWilling || []),
+      ].filter(Boolean);
 
-    const subject = "Det händer på STP — är du med?";
+      let jobCount = 0;
+      if (regions.length > 0) {
+        jobCount = await prisma.job.count({
+          where: {
+            status: "ACTIVE",
+            region: { in: regions },
+          },
+        });
+      }
+
+      const jobHint = jobCount > 0
+        ? `Det finns just nu ${jobCount} aktiva jobb i din region.`
+        : "Nya jobb kan ha publicerats sedan du senast loggade in.";
+
+      if (jobCount > 0) {
+        subject = `${jobCount} aktiva jobb väntar på dig på STP`;
+      }
+
+      bodyLines = [
+        `Hej ${u.name || ""},`,
+        "",
+        `Det är ett tag sedan vi såg dig på Sveriges Transportplattform. ${jobHint}`,
+        "",
+        "Se lediga jobb:",
+        `${FRONTEND_URL}/jobb`,
+        "",
+        "Tips: En aktiv profil syns högre upp när åkerier söker förare.",
+        "",
+        "Med vänliga hälsningar,",
+        "Sveriges Transportplattform",
+      ];
+    } else {
+      bodyLines = [
+        `Hej ${u.name || ""},`,
+        "",
+        "Det kan finnas förare som matchar era krav sedan du senast loggade in på Sveriges Transportplattform.",
+        "",
+        "Logga in och sök bland tillgängliga förare:",
+        `${FRONTEND_URL}/foretag/chaufforer`,
+        "",
+        "Med vänliga hälsningar,",
+        "Sveriges Transportplattform",
+      ];
+    }
+
+    const text = bodyLines.join("\n");
 
     try {
       await sendEmail({ to: u.email, subject, text });
