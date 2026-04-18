@@ -44,6 +44,13 @@ import Kompetenslaget2025 from "./pages/Kompetenslaget2025";
 import Kontakt from "./pages/Kontakt";
 import PatchNotes from "./pages/PatchNotes";
 import VisionPresentation from "./pages/VisionPresentation";
+import BloggIndex from "./pages/blogg/BloggIndex";
+import CeKorkortSverige from "./pages/blogg/CeKorkortSverige";
+import YkbGuide from "./pages/blogg/YkbGuide";
+import AdrUtbildning from "./pages/blogg/AdrUtbildning";
+import LonLastbilschauffor from "./pages/blogg/LonLastbilschauffor";
+import HittaJobbCeChauffor from "./pages/blogg/HittaJobbCeChauffor";
+import HittaCeChauffor from "./pages/blogg/HittaCeChauffor";
 import { useAuth } from "./context/AuthContext";
 import { useProfile } from "./context/ProfileContext";
 import ProfileCompletionBanner from "./components/ProfileCompletionBanner";
@@ -126,6 +133,13 @@ function AppLayout() {
                   <Route path="/om-oss" element={<About />} />
                   <Route path="/branschinsikter" element={<Branschinsikter />} />
                   <Route path="/branschinsikter/kompetenslaget-2025" element={<Kompetenslaget2025 />} />
+                  <Route path="/blogg" element={<BloggIndex />} />
+                  <Route path="/blogg/ce-korkort-sverige" element={<CeKorkortSverige />} />
+                  <Route path="/blogg/ykb-yrkesforarkompetens" element={<YkbGuide />} />
+                  <Route path="/blogg/adr-utbildning-farligt-gods" element={<AdrUtbildning />} />
+                  <Route path="/blogg/lon-lastbilschauffor" element={<LonLastbilschauffor />} />
+                  <Route path="/blogg/hitta-jobb-ce-chauffor" element={<HittaJobbCeChauffor />} />
+                  <Route path="/blogg/hitta-ce-chauffor" element={<HittaCeChauffor />} />
                   <Route path="/kontakt" element={<Kontakt />} />
                   <Route path="/uppdateringar" element={<PatchNotes />} />
                   <Route path="/vision" element={<VisionPresentation />} />

@@ -87,9 +87,83 @@ function ProfileScoreCard({ score, tips, onEdit }) {
   );
 }
 
+function CertSuggestionInline({ token }) {
+  const [open, setOpen] = useState(false);
+  const [text, setText] = useState("");
+  const [status, setStatus] = useState(null); // null | "sending" | "sent" | "error"
+
+  async function submit(e) {
+    e.preventDefault();
+    if (!text.trim() || text.trim().length < 2) return;
+    setStatus("sending");
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/suggestions/certificate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ text: text.trim() }),
+      });
+      if (!res.ok) throw new Error();
+      setStatus("sent");
+      setText("");
+    } catch {
+      setStatus("error");
+    }
+  }
+
+  if (status === "sent") {
+    return (
+      <p className="mt-2 text-xs text-[var(--color-primary)]">
+        Tack! Vi har tagit emot ditt förslag.
+      </p>
+    );
+  }
+
+  return (
+    <div className="mt-2">
+      {!open ? (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="text-xs text-slate-400 hover:text-slate-600 underline underline-offset-2"
+        >
+          Saknar du ett certifikat i listan?
+        </button>
+      ) : (
+        <form onSubmit={submit} className="flex items-center gap-2 mt-1">
+          <input
+            type="text"
+            value={text}
+            onChange={(e) => { setText(e.target.value); setStatus(null); }}
+            placeholder="Beskriv certifikatet..."
+            maxLength={200}
+            className="flex-1 px-3 py-1.5 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-white"
+          />
+          <button
+            type="submit"
+            disabled={status === "sending" || text.trim().length < 2}
+            className="px-3 py-1.5 text-xs font-medium rounded-lg bg-[var(--color-primary)] text-white disabled:opacity-50"
+          >
+            Skicka
+          </button>
+          <button
+            type="button"
+            onClick={() => { setOpen(false); setStatus(null); setText(""); }}
+            className="text-xs text-slate-400 hover:text-slate-600"
+          >
+            Avbryt
+          </button>
+          {status === "error" && (
+            <span className="text-xs text-red-500">Något gick fel, försök igen.</span>
+          )}
+        </form>
+      )}
+    </div>
+  );
+}
+
 export default function Profile() {
   usePageTitle("Min profil");
-  const { user, hasApi, isAdmin } = useAuth();
+  const { user, token, hasApi, isAdmin } = useAuth();
   const { profile, profileLoaded, updateProfile, profileSaving, profileSaveError } = useProfile();
   const toast = useToast();
   const [editing, setEditing] = useState(false);
@@ -658,6 +732,7 @@ export default function Profile() {
                       </button>
                     ))}
                   </div>
+                  <CertSuggestionInline token={token} />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">Tillgänglighet</label>

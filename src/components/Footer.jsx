@@ -19,6 +19,7 @@ const footerLinks = {
       { to: "/om-oss", label: "Om oss" },
       { to: "/vision", label: "Vision & roadmap" },
       { to: "/branschinsikter", label: "Branschinsikter" },
+      { to: "/blogg", label: "Blogg" },
       { to: "/kontakt", label: "Kontakt" },
     ],
   },

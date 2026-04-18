@@ -213,6 +213,12 @@ export default function Header({ onboarding = false }) {
                   <Link to="/om-oss" role="menuitem" onClick={closeNavDropdown} className="block px-5 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[var(--color-primary)]">
                     Om STP
                   </Link>
+                  <Link to="/blogg" role="menuitem" onClick={closeNavDropdown} className="block px-5 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[var(--color-primary)]">
+                    Blogg
+                  </Link>
+                  <Link to="/branschinsikter" role="menuitem" onClick={closeNavDropdown} className="block px-5 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[var(--color-primary)]">
+                    Branschinsikter
+                  </Link>
                 </div>
               </div>
             )}

@@ -47,6 +47,7 @@ model User {
   reportsReceived Report[] @relation("ReportTarget")
   reviewsWritten CompanyReview[] @relation("ReviewAuthor")
   reviewsReceived CompanyReview[] @relation("ReviewCompany")
+  certificateSuggestions CertificateSuggestion[]
   savedJobs       SavedJob[]
   notifications   Notification[] @relation("NotificationRecipient")
   pushSubscriptions PushSubscription[]
@@ -407,4 +408,15 @@ model CompanyReview {
   updatedAt DateTime @updatedAt
 
   @@unique([authorId, conversationId])
+}
+
+
+model CertificateSuggestion {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  text      String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
 }

@@ -5,9 +5,11 @@
 
 // —— Körkort & grund (filter + krav) ——
 export const licenseTypes = [
-  { value: "B", label: "B" },
-  { value: "C", label: "C" },
-  { value: "CE", label: "CE" },
+  { value: "B",   label: "B" },
+  { value: "C1",  label: "C1" },
+  { value: "C1E", label: "C1E" },
+  { value: "C",   label: "C" },
+  { value: "CE",  label: "CE" },
 ];
 
 // —— Certifikat: grupperade för UI, platt lista för val ——
@@ -18,7 +20,7 @@ const certGroups = [
     options: [
       { value: "YKB", label: "YKB (Yrkesförarkompetens)" },
       { value: "Digitalt_fardskrivarkort", label: "Digitalt färdskrivarkort" },
-      { value: "Forarkort", label: "Förarkort" },
+      // Forarkort är bakåtkompatibel alias — dold från UI men lever i gamla profiler
     ],
   },
   {
@@ -27,7 +29,7 @@ const certGroups = [
     options: [
       { value: "ADR", label: "ADR (grund)" },
       { value: "ADR_Tank", label: "ADR Tank" },
-      { value: "Tank", label: "Tankbehörighet" }, // bakåtkompatibel alias
+      // Tank är bakåtkompatibel alias — dold från UI men lever i gamla profiler
     ],
   },
   {
@@ -43,14 +45,21 @@ const certGroups = [
   },
   {
     id: "maskin",
-    label: "Maskin & kran",
+    label: "Kran & lyft",
     options: [
-      { value: "Truck_A", label: "Truck A" },
-      { value: "Truck_B", label: "Truck B" },
-      { value: "Truck_C", label: "Truck C" },
-      { value: "Truck_D", label: "Truck D" },
       { value: "Kran", label: "Kranförarbevis" },
-      { value: "Fordonsmonterad_kran", label: "Fordonsmonterad kran" },
+      { value: "Fordonsmonterad_kran", label: "Fordonsmonterad kran (HIAB)" },
+    ],
+  },
+  {
+    id: "terminal",
+    label: "Terminal & lager",
+    options: [
+      { value: "Truck_A", label: "Truck A (låglyftande)" },
+      { value: "Truck_B", label: "Truck B (motviktstruck)" },
+      { value: "Truck_C", label: "Truck C (skjutstativstruck)" },
+      { value: "Truck_D", label: "Truck D (skjutbomstruck)" },
+      { value: "Bakgavellyft", label: "Bakgavellyft" },
     ],
   },
   {
@@ -58,16 +67,26 @@ const certGroups = [
     label: "Övriga certifikat",
     options: [
       { value: "Lastsakring", label: "Lastsäkring" },
-      { value: "Heta_arbeten", label: "Heta arbeten" },
-      { value: "ID06", label: "ID06" },
       { value: "Livsmedelshantering", label: "Livsmedelshantering" },
       { value: "Kyl", label: "Kylskåpsbehörighet" },
+      { value: "Heta_arbeten", label: "Heta arbeten" },
+      { value: "ID06", label: "ID06" },
     ],
   },
 ];
 
-/** Platt lista för kryssrutor/dropdown (behåll bakåtkompatibilitet: ADR, YKB, Tank, Kyl) */
-export const certificateTypes = certGroups.flatMap((g) => g.options);
+// Dolda bakåtkompatibla värden — visas ej i UI men lever i gamla profiler
+const _legacyOptions = [
+  { value: "Tank",     label: "Tankbehörighet" },
+  { value: "Forarkort", label: "Förarkort" },
+  { value: "Truck_A", label: "Truck A" },
+  { value: "Truck_B", label: "Truck B" },
+  { value: "Truck_C", label: "Truck C" },
+  { value: "Truck_D", label: "Truck D" },
+];
+
+/** Platt lista för kryssrutor/dropdown */
+export const certificateTypes = [...certGroups.flatMap((g) => g.options), ..._legacyOptions];
 
 /** Grupperade för UI (t.ex. profil med rubriker) */
 export const certificateGroups = certGroups;
