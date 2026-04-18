@@ -399,6 +399,15 @@ export function AuthProvider({ children }) {
 
 export function useAuth() {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  // During Vite HMR the provider tree can be momentarily absent — return safe
+  // defaults instead of throwing so hot-reload doesn't crash the whole page.
+  if (!ctx) {
+    if (import.meta.env.DEV) {
+      // eslint-disable-next-line no-console
+      console.warn("useAuth called outside AuthProvider (likely HMR)");
+      return { user: null, token: null, hasApi: false, isAdmin: false, isDriver: false };
+    }
+    throw new Error("useAuth must be used within AuthProvider");
+  }
   return ctx;
 }

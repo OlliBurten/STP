@@ -486,14 +486,14 @@ export default function DriverOnboardingWizard() {
                     <p className={`font-medium ${aiAnalysis.ok ? "text-green-800" : "text-amber-800"}`}>
                       {aiAnalysis.ok ? "✓ Texten ser bra ut!" : "⚠ Några saker att tänka på"}
                     </p>
-                    {aiAnalysis.issues.length > 0 && (
+                    {Array.isArray(aiAnalysis.issues) && aiAnalysis.issues.length > 0 && (
                       <ul className="space-y-1 text-amber-800">
                         {aiAnalysis.issues.map((issue, i) => (
                           <li key={i} className="flex gap-2"><span>•</span><span>{issue}</span></li>
                         ))}
                       </ul>
                     )}
-                    {aiAnalysis.suggestions.length > 0 && (
+                    {Array.isArray(aiAnalysis.suggestions) && aiAnalysis.suggestions.length > 0 && (
                       <div>
                         <p className="font-medium text-slate-700 mt-2">Förslag:</p>
                         <ul className="space-y-1 text-slate-600">

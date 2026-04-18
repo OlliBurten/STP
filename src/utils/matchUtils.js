@@ -132,6 +132,7 @@ function privateMatchNotesAdjustment(notes, job) {
  * @returns {{ score: number, details: Object }}
  */
 export function matchScore(driver, job) {
+  if (!driver || !job) return { score: 0, details: { segment: false, license: false, certificates: false, region: false, experience: false, availability: false } };
   const details = { segment: false, license: false, certificates: false, region: false, experience: false, availability: false };
   let score = 0;
 
