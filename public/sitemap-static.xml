@@ -41,6 +41,66 @@
     <priority>0.5</priority>
   </url>
   <url>
+    <loc>https://transportplattformen.se/lastbilsjobb/stockholm</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://transportplattformen.se/lastbilsjobb/skane</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://transportplattformen.se/lastbilsjobb/vastra-gotaland</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://transportplattformen.se/lastbilsjobb/halland</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://transportplattformen.se/lastbilsjobb/ostergotland</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://transportplattformen.se/lastbilsjobb/vasterbotten</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://transportplattformen.se/lastbilsjobb/varmland</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://transportplattformen.se/lastbilsjobb/vastmanland</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://transportplattformen.se/lastbilsjobb/uppsala</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://transportplattformen.se/lastbilsjobb/dalarna</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://transportplattformen.se/lastbilsjobb/gavleborg</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://transportplattformen.se/lastbilsjobb/norrbotten</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://transportplattformen.se/blogg</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>

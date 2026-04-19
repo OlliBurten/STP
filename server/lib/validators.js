@@ -220,6 +220,7 @@ export const companiesSearchQuerySchema = z.object({
 /** Query: bransch for jobs list (optional) */
 export const jobsListQuerySchema = z.object({
   bransch: z.string().max(50).optional(),
+  region: z.string().max(100).optional(),
 });
 
 /** Create company invite */

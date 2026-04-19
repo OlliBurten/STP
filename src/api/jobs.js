@@ -3,6 +3,7 @@ import { apiDelete, apiGet, apiPatch, apiPost } from "./client.js";
 export function fetchJobs(params = {}) {
   const q = new URLSearchParams();
   if (params.bransch) q.set("bransch", params.bransch);
+  if (params.region) q.set("region", params.region);
   const query = q.toString();
   return apiGet(`/api/jobs${query ? `?${query}` : ""}`);
 }

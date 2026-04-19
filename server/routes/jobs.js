@@ -152,10 +152,12 @@ jobsRouter.get("/mine", authMiddleware, requireCompany, attachCompanyContext, re
 jobsRouter.get("/", validateQuery(jobsListQuerySchema), async (req, res, next) => {
   try {
     const bransch = req.query.bransch && String(req.query.bransch).trim() ? req.query.bransch.trim() : null;
+    const region = req.query.region && String(req.query.region).trim() ? req.query.region.trim() : null;
     const jobs = await prisma.job.findMany({
       where: {
         status: "ACTIVE",
         ...(bransch ? { bransch } : {}),
+        ...(region ? { region } : {}),
       },
       orderBy: { published: "desc" },
       include: {
