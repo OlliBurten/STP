@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { mapEmploymentToSegment, segmentLabel } from "../data/segments";
 import { StarFilledIcon, StarOutlineIcon, LocationIcon, CheckIcon } from "./Icons";
+import { getSlugByName } from "../data/regions";
 
 export default function JobCard({
   job,
@@ -63,9 +64,22 @@ export default function JobCard({
               </span>
             ))}
             {/* Neutral info — slate */}
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
-              <LocationIcon className="w-3.5 h-3.5" /> {job.location}
-            </span>
+            {(() => {
+              const regionSlug = getSlugByName(job.region);
+              return regionSlug ? (
+                <Link
+                  to={`/lastbilsjobb/${regionSlug}`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
+                >
+                  <LocationIcon className="w-3.5 h-3.5" /> {job.location}
+                </Link>
+              ) : (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+                  <LocationIcon className="w-3.5 h-3.5" /> {job.location}
+                </span>
+              );
+            })()}
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
               {job.employment === "fast" ? "Fast anst." : job.employment === "vikariat" ? "Vikariat" : "Timanst."}
             </span>

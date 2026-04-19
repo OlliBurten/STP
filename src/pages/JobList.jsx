@@ -12,6 +12,7 @@ import { getMatchCriteria, getRecommendedJobsForDriver, matchScore } from "../ut
 import { fetchJobs, fetchSavedJobs, saveJob, unsaveJob } from "../api/jobs.js";
 import { mapEmploymentToSegment } from "../data/segments";
 import PageMeta from "../components/PageMeta";
+import { regionPages } from "../data/regions";
 
 export default function JobList() {
   usePageTitle("Lediga chaufförsjobb");
@@ -262,6 +263,24 @@ export default function JobList() {
               </>
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Region links — SEO internal linking + hjälper besökare */}
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 pb-16 mt-6">
+        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-3">
+          Lastbilsjobb per region
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {regionPages.map((r) => (
+            <Link
+              key={r.slug}
+              to={`/lastbilsjobb/${r.slug}`}
+              className="px-3 py-1.5 rounded-lg border border-slate-200 text-sm text-slate-600 hover:border-[var(--color-primary)]/40 hover:text-[var(--color-primary)] transition-colors"
+            >
+              {r.name}
+            </Link>
+          ))}
         </div>
       </div>
     </main>
