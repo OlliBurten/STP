@@ -101,6 +101,51 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://transportplattformen.se/lastbilsjobb/jonkoping</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://transportplattformen.se/lastbilsjobb/kronoberg</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://transportplattformen.se/lastbilsjobb/kalmar</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://transportplattformen.se/lastbilsjobb/blekinge</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://transportplattformen.se/lastbilsjobb/gotland</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://transportplattformen.se/lastbilsjobb/sodermanland</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://transportplattformen.se/lastbilsjobb/orebro</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://transportplattformen.se/lastbilsjobb/vasternorrland</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://transportplattformen.se/lastbilsjobb/jamtland</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://transportplattformen.se/blogg</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
