@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import Logo from "./Logo";
 import { CURRENT_VERSION } from "../lib/releaseNotes";
+import { regionPages } from "../data/regions";
 
 const footerLinks = {
   plattformen: {
@@ -88,6 +89,24 @@ export default function Footer() {
               </ul>
             </div>
           ))}
+        </div>
+
+        {/* Region links */}
+        <div className="mt-10 pt-8 border-t border-white/10">
+          <h3 className="text-xs font-semibold uppercase tracking-widest text-white/50 mb-4">
+            Lastbilsjobb per region
+          </h3>
+          <div className="flex flex-wrap gap-x-4 gap-y-2">
+            {regionPages.map((r) => (
+              <Link
+                key={r.slug}
+                to={`/lastbilsjobb/${r.slug}`}
+                className="text-sm text-white/60 hover:text-white transition-colors"
+              >
+                {r.name}
+              </Link>
+            ))}
+          </div>
         </div>
 
         {/* Bottom bar */}
