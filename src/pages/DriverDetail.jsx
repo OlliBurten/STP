@@ -10,6 +10,7 @@ import { LocationIcon, CheckIcon } from "../components/Icons";
 import { fetchDriver, trackDriverProfileView } from "../api/drivers.js";
 import { fetchMyJobs } from "../api/jobs.js";
 import { isDriverMinimumProfileComplete } from "../utils/driverProfileRequirements.js";
+import { computeDriverBadges } from "../utils/driverBadges.js";
 import { fetchDriverSummary } from "../api/ai.js";
 import PageMeta from "../components/PageMeta";
 
@@ -165,6 +166,11 @@ export default function DriverDetail() {
                     Snabb svarstid
                   </span>
                 )}
+                {computeDriverBadges(driver).map((b) => (
+                  <span key={b.label} className={`px-3 py-1 rounded-full text-sm font-medium ${b.className}`}>
+                    {b.label}
+                  </span>
+                ))}
               </div>
             </div>
             <button

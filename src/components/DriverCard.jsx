@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { availabilityTypes, getCertificateLabel } from "../data/profileData";
 import { segmentLabel, internshipTypeLabel, parseSchoolName } from "../data/segments";
 import { LocationIcon, CheckIcon } from "./Icons";
+import { computeDriverBadges } from "../utils/driverBadges";
 
 // matchPct is 0-100 (normalised percentage, not raw score)
 function matchQuality(pct) {
@@ -16,10 +17,12 @@ function scoreColor(score) {
   return "text-slate-400";
 }
 
+
 export default function DriverCard({ driver, matchScore = null, matchPct = null, matchCriteria = [], matchHighlights = [], isContacted = false }) {
   const availabilityLabel = availabilityTypes.find((a) => a.value === driver.availability)?.label || driver.availability;
   const effectivePct = matchPct ?? (matchScore != null ? matchScore : null);
   const quality = effectivePct != null && effectivePct > 0 ? matchQuality(effectivePct) : null;
+  const badges = computeDriverBadges(driver);
 
   return (
     <Link
@@ -57,6 +60,11 @@ export default function DriverCard({ driver, matchScore = null, matchPct = null,
                 Snabb svarstid
               </span>
             )}
+            {badges.map((b) => (
+              <span key={b.label} className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${b.className}`}>
+                {b.label}
+              </span>
+            ))}
             {driver.licenses?.map((lic) => (
               <span
                 key={lic}
