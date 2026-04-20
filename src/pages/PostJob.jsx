@@ -40,6 +40,8 @@ export default function PostJob() {
     schedule: "",
     experience: "",
     salary: "",
+    salaryMin: "",
+    salaryMax: "",
     extraRequirements: "",
     contact: "",
     physicalWorkRequired: false,
@@ -56,7 +58,7 @@ export default function PostJob() {
       { label: "Segment valt", done: Boolean(form.segment) },
       { label: "Kontaktadress ifylld", done: Boolean(form.contact.trim()) },
       { label: "Tydlig jobbtext", done: form.description.trim().length >= 80 },
-      { label: "Lön eller ersättning angiven", done: Boolean(form.salary.trim()) },
+      { label: "Lön eller ersättning angiven", done: Boolean(form.salaryMin) },
       { label: "Kollektivavtal markerat", done: form.kollektivavtal === true },
     ],
     [form]
@@ -115,6 +117,8 @@ export default function PostJob() {
           schedule: form.schedule || null,
           experience: form.experience || null,
           salary: form.salary || null,
+          salaryMin: form.salaryMin ? parseInt(form.salaryMin, 10) : null,
+          salaryMax: form.salaryMax ? parseInt(form.salaryMax, 10) : null,
           requirements: [],
           extraRequirements: form.extraRequirements || null,
           contact: form.contact,
@@ -589,13 +593,51 @@ export default function PostJob() {
             <p className="text-xs text-slate-500 mb-2">Kryssa i om tjänsten omfattas av kollektivavtal – många förare söker efter detta.</p>
           </div>
           <div>
-            <label htmlFor="salary" className="block text-sm font-medium text-slate-700 mb-1">
-              Lön / ersättning (valfritt men uppskattas)
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Lön (kr/mån) — visas för inloggade förare
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label htmlFor="salaryMin" className="block text-xs text-slate-500 mb-1">Från (kr/mån)</label>
+                <input
+                  id="salaryMin"
+                  type="number"
+                  min="0"
+                  max="500000"
+                  step="500"
+                  placeholder="t.ex. 30000"
+                  value={form.salaryMin}
+                  onChange={(e) => handleChange("salaryMin", e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none"
+                />
+              </div>
+              <div>
+                <label htmlFor="salaryMax" className="block text-xs text-slate-500 mb-1">Till (kr/mån, valfritt)</label>
+                <input
+                  id="salaryMax"
+                  type="number"
+                  min="0"
+                  max="500000"
+                  step="500"
+                  placeholder="t.ex. 45000"
+                  value={form.salaryMax}
+                  onChange={(e) => handleChange("salaryMax", e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none"
+                />
+              </div>
+            </div>
+            <p className="mt-1 text-xs text-slate-500">
+              Annonser med lön synlig får fler ansökningar. Lönen visas endast för inloggade förare.
+            </p>
+          </div>
+          <div>
+            <label htmlFor="salary" className="block text-xs text-slate-500 mb-1">
+              Övrigt om ersättning (valfritt, t.ex. "OB-tillägg, traktamente")
             </label>
             <input
               id="salary"
               type="text"
-              placeholder="t.ex. Enligt kollektivavtal, 290 kr/tim, 35 000 kr/mån"
+              placeholder="t.ex. Enligt kollektivavtal, OB-tillägg tillkommer"
               value={form.salary}
               onChange={(e) => handleChange("salary", e.target.value)}
               className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none"

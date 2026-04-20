@@ -262,6 +262,18 @@ export default function JobDetail() {
     validThrough: job.filledAt
       ? new Date(job.filledAt).toISOString()
       : new Date(new Date(job.published).getTime() + 60 * 24 * 60 * 60 * 1000).toISOString(),
+    ...(job.salaryMin ? {
+      baseSalary: {
+        "@type": "MonetaryAmount",
+        currency: "SEK",
+        value: {
+          "@type": "QuantitativeValue",
+          minValue: job.salaryMin,
+          ...(job.salaryMax ? { maxValue: job.salaryMax } : {}),
+          unitText: "MONTH",
+        },
+      },
+    } : {}),
     directApply: true,
   };
 
@@ -474,7 +486,36 @@ export default function JobDetail() {
 
             <div>
               <h2 className="font-semibold text-slate-900 mb-2">Ersättning</h2>
-              <p className="text-slate-700">{job.salary}</p>
+              {user ? (
+                <div>
+                  {(job.salaryMin || job.salaryMax) && (
+                    <p className="text-lg font-semibold text-slate-900">
+                      {job.salaryMin && job.salaryMax
+                        ? `${job.salaryMin.toLocaleString("sv-SE")} – ${job.salaryMax.toLocaleString("sv-SE")} kr/mån`
+                        : job.salaryMin
+                          ? `Från ${job.salaryMin.toLocaleString("sv-SE")} kr/mån`
+                          : `Upp till ${job.salaryMax.toLocaleString("sv-SE")} kr/mån`}
+                    </p>
+                  )}
+                  {job.salary && (
+                    <p className="text-slate-700 mt-1">{job.salary}</p>
+                  )}
+                  {!job.salaryMin && !job.salary && (
+                    <p className="text-slate-500 text-sm">Ej angiven — fråga vid intervju.</p>
+                  )}
+                </div>
+              ) : (
+                <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 flex items-center justify-between gap-4">
+                  <p className="text-sm text-slate-600">Logga in för att se lönen</p>
+                  <Link
+                    to="/login"
+                    state={{ from: `/jobb/${id}` }}
+                    className="shrink-0 inline-flex items-center px-3 py-1.5 rounded-lg bg-[var(--color-primary)] text-white text-sm font-medium hover:opacity-90 transition-opacity"
+                  >
+                    Logga in
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
 

@@ -153,11 +153,13 @@ jobsRouter.get("/", validateQuery(jobsListQuerySchema), async (req, res, next) =
   try {
     const bransch = req.query.bransch && String(req.query.bransch).trim() ? req.query.bransch.trim() : null;
     const region = req.query.region && String(req.query.region).trim() ? req.query.region.trim() : null;
+    const minSalary = req.query.minSalary ? Number(req.query.minSalary) : null;
     const jobs = await prisma.job.findMany({
       where: {
         status: "ACTIVE",
         ...(bransch ? { bransch } : {}),
         ...(region ? { region } : {}),
+        ...(minSalary ? { salaryMin: { gte: minSalary } } : {}),
       },
       orderBy: { published: "desc" },
       include: {
@@ -196,6 +198,8 @@ jobsRouter.get("/", validateQuery(jobsListQuerySchema), async (req, res, next) =
       schedule: j.schedule,
       experience: j.experience,
       salary: j.salary,
+      salaryMin: j.salaryMin ?? null,
+      salaryMax: j.salaryMax ?? null,
       description: j.description,
       requirements: j.requirements ? JSON.parse(j.requirements || "[]") : [],
       status: j.status,
@@ -412,6 +416,8 @@ jobsRouter.get("/:id", optionalAuthMiddleware, attachCompanyContext, async (req,
       schedule: job.schedule,
       experience: job.experience,
       salary: job.salary,
+      salaryMin: job.salaryMin ?? null,
+      salaryMax: job.salaryMax ?? null,
       description: job.description,
       requirements: job.requirements ? JSON.parse(job.requirements) : [],
       extraRequirements: job.extraRequirements,
@@ -585,6 +591,8 @@ jobsRouter.post("/", authMiddleware, requireCompany, attachCompanyContext, requi
         schedule: body.schedule || null,
         experience: body.experience || null,
         salary: body.salary || null,
+        salaryMin: body.salaryMin ?? null,
+        salaryMax: body.salaryMax ?? null,
         requirements,
         extraRequirements: body.extraRequirements || null,
         contact: body.contact,

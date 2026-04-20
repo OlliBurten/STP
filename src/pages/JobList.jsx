@@ -30,16 +30,20 @@ export default function JobList() {
     jobType: "",
     employment: "",
     bransch: "",
+    minSalary: "",
   });
 
   useEffect(() => {
     if (!hasApi) return;
     setJobsLoading(true);
-    fetchJobs({ bransch: filters.bransch || undefined })
+    fetchJobs({
+      bransch: filters.bransch || undefined,
+      minSalary: filters.minSalary || undefined,
+    })
       .then(setJobs)
       .catch(() => setJobs([]))
       .finally(() => setJobsLoading(false));
-  }, [hasApi, filters.bransch]);
+  }, [hasApi, filters.bransch, filters.minSalary]);
 
   useEffect(() => {
     if (!hasApi || !isDriver) {

@@ -251,6 +251,8 @@ model Job {
   schedule    String?  // dag, kväll, natt, blandat, flex, skift, veckopendling
   experience  String?  // 0-1, 1-3, 3-5, 5+, 1-2, 2-5, 5-10, 10+
   salary      String?
+  salaryMin   Int?     // kr/mån
+  salaryMax   Int?     // kr/mån
   physicalWorkRequired Boolean? // fysiskt krävande arbete
   soloWorkOk  Boolean? // ensamarbete ok för rollen
   requirements String? // JSON or text

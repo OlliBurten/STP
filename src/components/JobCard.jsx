@@ -110,7 +110,13 @@ export default function JobCard({
               Matchar din profil
             </span>
           )}
-          <span className="text-sm font-medium text-slate-900 sm:text-right">{job.salary}</span>
+          <span className="text-sm font-medium text-slate-900 sm:text-right">
+            {job.salaryMin
+              ? job.salaryMax
+                ? `${job.salaryMin.toLocaleString("sv-SE")} – ${job.salaryMax.toLocaleString("sv-SE")} kr/mån`
+                : `Från ${job.salaryMin.toLocaleString("sv-SE")} kr/mån`
+              : job.salary || null}
+          </span>
           <span className="w-full text-xs text-slate-500 sm:w-auto sm:text-right">Publicerad {formatDate(job.published)}</span>
         </div>
       </div>

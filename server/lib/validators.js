@@ -135,6 +135,8 @@ export const createJobSchema = z.object({
   schedule: z.string().max(50).optional().nullable(),
   experience: z.string().max(20).optional().nullable(),
   salary: z.string().max(100).optional().nullable(),
+  salaryMin: z.number().int().min(0).max(500000).optional().nullable(),
+  salaryMax: z.number().int().min(0).max(500000).optional().nullable(),
   requirements: z.array(z.string()).optional(),
   extraRequirements: z.string().max(2000).optional().nullable(),
   bransch: z
@@ -221,6 +223,7 @@ export const companiesSearchQuerySchema = z.object({
 export const jobsListQuerySchema = z.object({
   bransch: z.string().max(50).optional(),
   region: z.string().max(100).optional(),
+  minSalary: z.coerce.number().int().min(0).max(500000).optional(),
 });
 
 /** Create company invite */

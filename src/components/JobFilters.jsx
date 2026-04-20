@@ -40,8 +40,18 @@ export default function JobFilters({ filters, setFilters }) {
       jobType: "",
       employment: "",
       bransch: "",
+      minSalary: "",
     });
   };
+
+  const MIN_SALARY_OPTIONS = [
+    { value: "", label: "Alla löner" },
+    { value: "25000", label: "Minst 25 000 kr/mån" },
+    { value: "30000", label: "Minst 30 000 kr/mån" },
+    { value: "35000", label: "Minst 35 000 kr/mån" },
+    { value: "40000", label: "Minst 40 000 kr/mån" },
+    { value: "45000", label: "Minst 45 000 kr/mån" },
+  ];
 
   const activeFilterTags = [
     filters.region ? { key: "region", label: filters.region } : null,
@@ -56,6 +66,9 @@ export default function JobFilters({ filters, setFilters }) {
       ? { key: "employment", label: employmentTypes.find((e) => e.value === filters.employment)?.label || filters.employment }
       : null,
     filters.bransch ? { key: "bransch", label: getBranschLabel(filters.bransch) } : null,
+    filters.minSalary
+      ? { key: "minSalary", label: MIN_SALARY_OPTIONS.find((o) => o.value === filters.minSalary)?.label || filters.minSalary }
+      : null,
   ].filter(Boolean);
 
   const hasActiveFilters = filters.search || activeFilterTags.length > 0;
@@ -160,6 +173,17 @@ export default function JobFilters({ filters, setFilters }) {
                 <option key={b.value} value={b.value}>{b.label}</option>
               ))}
             </optgroup>
+          ))}
+        </SelectField>
+
+        <SelectField
+          id="minSalary"
+          label="Minimilön"
+          value={filters.minSalary}
+          onChange={(e) => handleChange("minSalary", e.target.value)}
+        >
+          {MIN_SALARY_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>{o.label}</option>
           ))}
         </SelectField>
       </div>

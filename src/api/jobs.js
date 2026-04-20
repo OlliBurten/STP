@@ -4,6 +4,7 @@ export function fetchJobs(params = {}) {
   const q = new URLSearchParams();
   if (params.bransch) q.set("bransch", params.bransch);
   if (params.region) q.set("region", params.region);
+  if (params.minSalary) q.set("minSalary", params.minSalary);
   const query = q.toString();
   return apiGet(`/api/jobs${query ? `?${query}` : ""}`);
 }
