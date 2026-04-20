@@ -259,6 +259,9 @@ export default function JobDetail() {
       name: "Transportplattformen",
       value: job.id,
     },
+    validThrough: job.filledAt
+      ? new Date(job.filledAt).toISOString()
+      : new Date(new Date(job.published).getTime() + 60 * 24 * 60 * 60 * 1000).toISOString(),
     directApply: true,
   };
 
