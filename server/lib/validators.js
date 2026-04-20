@@ -191,6 +191,8 @@ export const companyProfileSchema = z.object({
   companySegmentDefaults: z.array(z.string().max(50)).optional(),
   companyBransch: z.array(z.enum(BRANSCH_VALUES)).optional(),
   companyRegion: z.string().max(100).optional().nullable(),
+  companyContactEmail: z.string().email().max(255).optional().nullable(),
+  companyContactPhone: z.string().max(30).optional().nullable(),
   fSkattsedel: z.boolean().optional(),
   industryOrgMember: z.boolean().optional(),
   industryOrgName: z.string().max(200).optional().nullable(),

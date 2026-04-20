@@ -4,9 +4,11 @@ import PageMeta from "../components/PageMeta";
 import { fetchCompanyPublicProfile } from "../api/companies.js";
 import { getBranschLabel } from "../data/bransch.js";
 import { StarFilledIcon, LocationIcon, CheckIcon } from "../components/Icons";
+import { useAuth } from "../context/AuthContext";
 
 export default function CompanyPublicProfile() {
   const { id } = useParams();
+  const { user } = useAuth();
   const [company, setCompany] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -17,7 +19,7 @@ export default function CompanyPublicProfile() {
       .then(setCompany)
       .catch(() => setCompany(null))
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, user]);
 
   if (loading) {
     return (
@@ -174,6 +176,40 @@ export default function CompanyPublicProfile() {
           <p className="text-slate-700 leading-relaxed whitespace-pre-line">
             {company.description || "Företaget har inte lagt till någon presentation ännu."}
           </p>
+        </div>
+
+        {/* Contact info — gated behind login */}
+        <div className="px-6 sm:px-8 py-4 border-t border-slate-100">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-3">Kontakt</p>
+          {user ? (
+            (company.contactEmail || company.contactPhone) ? (
+              <div className="flex flex-wrap gap-4">
+                {company.contactEmail && (
+                  <a href={`mailto:${company.contactEmail}`} className="text-sm text-[var(--color-primary)] hover:underline font-medium">
+                    {company.contactEmail}
+                  </a>
+                )}
+                {company.contactPhone && (
+                  <a href={`tel:${company.contactPhone}`} className="text-sm text-slate-700 hover:text-slate-900">
+                    {company.contactPhone}
+                  </a>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-slate-400">Inga kontaktuppgifter tillagda ännu.</p>
+            )
+          ) : (
+            <div className="flex items-center justify-between gap-4 rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-3">
+              <p className="text-sm text-slate-600">Logga in för att se kontaktuppgifter</p>
+              <Link
+                to="/login"
+                state={{ from: `/foretag/${company.id}` }}
+                className="shrink-0 inline-flex items-center gap-1 rounded-lg bg-[var(--color-primary)] px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 transition-opacity"
+              >
+                Logga in
+              </Link>
+            </div>
+          )}
         </div>
       </section>
 

@@ -32,14 +32,13 @@ function SelectField({ id, label, value, onChange, children }) {
 }
 
 export default function AkerierSearch() {
-  usePageTitle("Åkerier & transportföretag");
-  const { hasApi } = useAuth();
+  usePageTitle("Åkeridatabasen – hitta transportföretag i Sverige");
+  const { hasApi, user } = useAuth();
   const { profile } = useProfile();
   const [bransch, setBransch] = useState("");
   const [region, setRegion] = useState("");
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [filtersOpen, setFiltersOpen] = useState(false);
   const isGymnasieelev = Boolean(profile?.isGymnasieelev);
 
   const hasActiveFilters = bransch || region;
@@ -67,27 +66,37 @@ export default function AkerierSearch() {
       .then(setList)
       .catch(() => setList([]))
       .finally(() => setLoading(false));
-  }, [hasApi, bransch, region, isGymnasieelev]);
+  }, [hasApi, bransch, region, isGymnasieelev, user]);
 
   return (
     <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-      {/* Page header */}
+
+      {/* Hero intro */}
       <div className="mb-8">
         {isGymnasieelev && (
           <div className="mb-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-900">
             Du är registrerad som gymnasieelev. Endast åkerier som erbjuder <strong>praktik</strong> visas.
           </div>
         )}
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Hitta åkerier</h1>
-        <p className="mt-1.5 text-slate-500 text-sm">
-          {loading
-            ? "Hämtar åkerier..."
-            : hasApi
-            ? `${list.length} verifierade åkerier`
-            : isGymnasieelev
-            ? "Åkerier som tar emot praktikanter."
-            : "Sök efter bransch och region — kontakta åkerier direkt, även utan aktiv annons."}
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Åkeridatabasen</h1>
+        <p className="mt-1.5 text-slate-600 text-sm max-w-2xl">
+          Alla verifierade transportföretag på Sveriges Transportplattform — i en och samma katalog.
+          Filtrera på bransch och region. Kontaktuppgifter är en medlemsförmån för inloggade förare.
         </p>
+        {!user && (
+          <div className="mt-4 inline-flex items-center gap-3 rounded-xl border border-[var(--color-primary)]/30 bg-[var(--color-primary)]/5 px-4 py-3">
+            <span className="text-sm text-slate-700">
+              Logga in för att se kontaktuppgifter direkt i listan
+            </span>
+            <Link
+              to="/login"
+              state={{ from: "/akerier" }}
+              className="shrink-0 inline-flex items-center gap-1 rounded-lg bg-[var(--color-primary)] px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 transition-opacity"
+            >
+              Logga in <ArrowRightIcon className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        )}
       </div>
 
       <div className="grid lg:grid-cols-[260px_1fr] gap-6 lg:gap-8">
@@ -95,27 +104,19 @@ export default function AkerierSearch() {
         {/* Filter sidebar */}
         <aside className="lg:sticky lg:top-24 lg:self-start">
           <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-            {/* Mobil toggle */}
-            <button
-              type="button"
-              onClick={() => setFiltersOpen(!filtersOpen)}
-              className="lg:hidden w-full flex items-center justify-between px-5 py-4 text-sm font-semibold text-slate-900 min-h-[44px] hover:bg-slate-50 transition-colors"
-              aria-expanded={filtersOpen}
-            >
-              <span>
-                Filter
-                {activeChips.length > 0 && (
-                  <span className="ml-2 inline-flex items-center justify-center w-4 h-4 rounded-full bg-[var(--color-primary)] text-white text-xs font-bold">{activeChips.length}</span>
-                )}
-              </span>
-              <span className="text-xs text-slate-500">{filtersOpen ? "Stäng ↑" : "Visa ↓"}</span>
-            </button>
-            {/* Desktop rubrik */}
-            <div className="hidden lg:flex items-center px-5 pt-5 pb-3">
-              <span className="text-xs font-semibold uppercase tracking-widest text-slate-400">Filter</span>
+            <div className="flex items-center justify-between px-5 pt-5 pb-3">
+              <span className="text-xs font-semibold uppercase tracking-widest text-slate-400">Filtrera</span>
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={() => { setBransch(""); setRegion(""); }}
+                  className="text-xs text-slate-400 hover:text-slate-600 transition-colors"
+                >
+                  Rensa
+                </button>
+              )}
             </div>
-
-            <div className={`${filtersOpen ? "block" : "hidden"} lg:block px-5 pb-5 space-y-5`}>
+            <div className="px-5 pb-5 space-y-5">
               <div className="h-px bg-slate-100" />
 
               <SelectField
@@ -147,104 +148,167 @@ export default function AkerierSearch() {
               </SelectField>
 
               {hasActiveFilters && (
-                <div className="pt-1 space-y-3">
-                  <div className="flex flex-wrap gap-1.5">
-                    {activeChips.map(({ key, label }) => (
-                      <button
-                        key={key}
-                        type="button"
-                        onClick={() => clearFilter(key)}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-[var(--color-primary)]/10 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20 transition-colors"
-                      >
-                        {label}
-                        <span aria-hidden className="text-[var(--color-primary)]/60 font-bold leading-none">×</span>
-                      </button>
-                    ))}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => { setBransch(""); setRegion(""); }}
-                    className="w-full py-1.5 rounded-lg border border-slate-200 text-xs font-medium text-slate-500 hover:border-slate-300 hover:text-slate-700 transition-colors"
-                  >
-                    Rensa alla filter
-                  </button>
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {activeChips.map(({ key, label }) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => clearFilter(key)}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-[var(--color-primary)]/10 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20 transition-colors"
+                    >
+                      {label}
+                      <span aria-hidden className="font-bold leading-none">×</span>
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
           </div>
+
+          {/* Member perk callout */}
+          {!user && (
+            <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-2">Medlemsförmån</p>
+              <p className="text-sm text-slate-700 leading-snug">
+                Som inloggad förare ser du direktkontakt till varje åkeri — e-post och telefonnummer.
+              </p>
+              <Link
+                to="/registrera"
+                className="mt-3 inline-block text-xs font-semibold text-[var(--color-primary)] hover:underline"
+              >
+                Skapa gratis konto →
+              </Link>
+            </div>
+          )}
         </aside>
 
         {/* Results */}
         <div>
+          {/* Result count */}
+          {hasApi && !loading && (
+            <p className="text-xs text-slate-400 mb-3">
+              {list.length} {hasActiveFilters ? "matchande" : "verifierade"} åkeri{list.length !== 1 ? "er" : ""}
+            </p>
+          )}
+
           {!hasApi ? (
             <div className="p-8 bg-white rounded-xl border border-slate-200 text-slate-600 text-sm">
-              Sök åkerier kräver att appen är kopplad till servern. Sätt <code className="bg-slate-100 px-1 rounded">VITE_API_URL</code> och starta backend.
+              Åkeridatabasen kräver att appen är kopplad till servern.
             </div>
           ) : loading ? (
-            <div className="space-y-3">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-28 rounded-xl bg-slate-100 animate-pulse" />
+            <div className="space-y-2">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="h-24 rounded-xl bg-slate-100 animate-pulse" />
               ))}
             </div>
           ) : list.length === 0 ? (
             <div className="p-12 bg-white rounded-xl border border-slate-200 text-center">
               <p className="text-slate-700 font-medium">Inga åkerier matchar filtren.</p>
-              <p className="mt-2 text-sm text-slate-500">
-                Prova annan bransch eller region.
-              </p>
+              <p className="mt-2 text-sm text-slate-500">Prova annan bransch eller region.</p>
               <Link to="/jobb" className="mt-4 inline-block text-sm text-[var(--color-primary)] font-medium hover:underline">
                 Se lediga jobb istället →
               </Link>
             </div>
           ) : (
-            <ul className="space-y-3">
+            <ul className="space-y-2">
               {list.map((c) => (
                 <li key={c.id}>
-                  <Link
-                    to={`/foretag/${c.id}`}
-                    className="block p-5 bg-white rounded-xl border border-slate-200 hover:border-[var(--color-primary)] hover:shadow-md transition-all group"
-                  >
-                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-2 mb-1">
-                          <h2 className="text-base font-semibold text-slate-900 group-hover:text-[var(--color-primary)] transition-colors">
-                            {c.name}
-                          </h2>
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            <CheckIcon className="w-3 h-3" /> Verifierat
-                          </span>
-                        </div>
-                        {(c.region || c.location) && (
-                          <p className="flex items-center gap-1 text-sm text-slate-500 mb-2">
-                            <LocationIcon className="w-3.5 h-3.5 shrink-0" />
-                            {[c.location, c.region].filter(Boolean).join(" · ")}
-                          </p>
-                        )}
-                        {c.bransch?.length > 0 && (
-                          <div className="flex flex-wrap gap-1.5 mb-2">
-                            {c.bransch.map((b) => (
-                              <span key={b} className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--color-primary)]/10 text-[var(--color-primary)]">
-                                {getBranschLabel(b)}
-                              </span>
-                            ))}
+                  <div className="bg-white rounded-xl border border-slate-200 hover:border-slate-300 hover:shadow-sm transition-all">
+                    <div className="p-4 sm:p-5">
+                      <div className="flex flex-col sm:flex-row sm:items-start gap-3">
+                        {/* Left: company info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-2 mb-0.5">
+                            <Link
+                              to={`/foretag/${c.id}`}
+                              className="text-base font-semibold text-slate-900 hover:text-[var(--color-primary)] transition-colors"
+                            >
+                              {c.name}
+                            </Link>
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              <CheckIcon className="w-3 h-3" /> Verifierat
+                            </span>
                           </div>
-                        )}
-                        {c.description && (
-                          <p className="text-sm text-slate-500 line-clamp-2">{c.description}</p>
-                        )}
-                      </div>
-                      <div className="flex sm:flex-col items-center sm:items-end gap-2 shrink-0">
-                        {c.activeJobCount > 0 && (
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
-                            {c.activeJobCount} aktiva jobb
-                          </span>
-                        )}
-                        <span className="inline-flex items-center gap-1 text-sm font-medium text-[var(--color-primary)] group-hover:gap-2 transition-all">
-                          Visa <ArrowRightIcon className="w-3.5 h-3.5" />
-                        </span>
+
+                          {(c.region || c.location) && (
+                            <p className="flex items-center gap-1 text-xs text-slate-500 mb-1.5">
+                              <LocationIcon className="w-3 h-3 shrink-0" />
+                              {[c.location, c.region].filter(Boolean).filter((v, i, arr) => arr.indexOf(v) === i).join(" · ")}
+                            </p>
+                          )}
+
+                          {c.bransch?.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mb-1.5">
+                              {c.bransch.slice(0, 4).map((b) => (
+                                <span key={b} className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+                                  {getBranschLabel(b)}
+                                </span>
+                              ))}
+                              {c.bransch.length > 4 && (
+                                <span className="inline-flex px-2 py-0.5 rounded-full text-xs text-slate-400">
+                                  +{c.bransch.length - 4}
+                                </span>
+                              )}
+                            </div>
+                          )}
+
+                          {c.description && (
+                            <p className="text-xs text-slate-500 line-clamp-1">{c.description}</p>
+                          )}
+                        </div>
+
+                        {/* Right: contact + job count */}
+                        <div className="shrink-0 flex flex-col items-start sm:items-end gap-1.5">
+                          {c.activeJobCount > 0 && (
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+                              {c.activeJobCount} aktiva jobb
+                            </span>
+                          )}
+
+                          {user ? (
+                            /* Logged in — show contact info */
+                            <div className="flex flex-col items-start sm:items-end gap-1 mt-0.5">
+                              {c.contactEmail ? (
+                                <a
+                                  href={`mailto:${c.contactEmail}`}
+                                  className="text-xs text-[var(--color-primary)] hover:underline font-medium"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  {c.contactEmail}
+                                </a>
+                              ) : null}
+                              {c.contactPhone ? (
+                                <a
+                                  href={`tel:${c.contactPhone}`}
+                                  className="text-xs text-slate-600 hover:text-slate-900"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  {c.contactPhone}
+                                </a>
+                              ) : null}
+                              {!c.contactEmail && !c.contactPhone && (
+                                <Link
+                                  to={`/foretag/${c.id}`}
+                                  className="inline-flex items-center gap-1 text-xs font-medium text-[var(--color-primary)] hover:gap-1.5 transition-all"
+                                >
+                                  Visa profil <ArrowRightIcon className="w-3 h-3" />
+                                </Link>
+                              )}
+                            </div>
+                          ) : (
+                            /* Guest — login gate */
+                            <Link
+                              to="/login"
+                              state={{ from: "/akerier" }}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-dashed border-slate-300 text-xs text-slate-400 hover:border-[var(--color-primary)]/40 hover:text-[var(--color-primary)] transition-colors"
+                            >
+                              Logga in för kontakt
+                            </Link>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </Link>
+                  </div>
                 </li>
               ))}
             </ul>

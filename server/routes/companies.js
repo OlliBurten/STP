@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
-import { authMiddleware, requireCompany, requireCompanyOwner, attachCompanyContext } from "../middleware/auth.js";
+import { authMiddleware, optionalAuthMiddleware, requireCompany, requireCompanyOwner, attachCompanyContext } from "../middleware/auth.js";
 import { validateBody, validateQuery } from "../middleware/validate.js";
 import {
   companyProfileSchema,
@@ -18,8 +18,10 @@ function resolveSegment(segment, employment) {
 }
 
 /** Public: sök åkerier på bransch och/eller region (gula sidorna). */
-companiesRouter.get("/search", validateQuery(companiesSearchQuerySchema), async (req, res, next) => {
+companiesRouter.get("/search", optionalAuthMiddleware, validateQuery(companiesSearchQuerySchema), async (req, res, next) => {
   try {
+    const isAuthenticated = Boolean(req.userId);
+
     const bransch = req.query.bransch && String(req.query.bransch).trim() ? req.query.bransch.trim() : null;
     const region = req.query.region && String(req.query.region).trim() ? req.query.region.trim() : null;
     const segment = req.query.segment && String(req.query.segment).trim() ? req.query.segment.trim() : null;
@@ -27,8 +29,6 @@ companiesRouter.get("/search", validateQuery(companiesSearchQuerySchema), async 
     const where = {
       role: "COMPANY",
       companyStatus: "VERIFIED",
-      companyBransch: { isEmpty: false },
-      companyRegion: { not: null },
     };
     if (bransch) {
       where.companyBransch = { has: bransch };
@@ -61,6 +61,8 @@ companiesRouter.get("/search", validateQuery(companiesSearchQuerySchema), async 
         companyRegion: true,
         companyWebsite: true,
         companyBransch: true,
+        companyContactEmail: true,
+        companyContactPhone: true,
       },
       orderBy: { companyName: "asc" },
     });
@@ -75,18 +77,6 @@ companiesRouter.get("/search", validateQuery(companiesSearchQuerySchema), async 
       : [];
     const countByUserId = new Map(jobCounts.map((j) => [j.userId, j._count._all]));
 
-    const contactByUserId = new Map();
-    if (ids.length > 0) {
-      const firstJobs = await prisma.job.findMany({
-        where: { userId: { in: ids }, status: "ACTIVE" },
-        select: { userId: true, contact: true },
-        orderBy: { published: "desc" },
-      });
-      for (const j of firstJobs) {
-        if (!contactByUserId.has(j.userId)) contactByUserId.set(j.userId, j.contact);
-      }
-    }
-
     const list = companies.map((c) => ({
       id: c.id,
       name: c.companyName || c.name,
@@ -96,7 +86,9 @@ companiesRouter.get("/search", validateQuery(companiesSearchQuerySchema), async 
       website: c.companyWebsite || "",
       bransch: c.companyBransch || [],
       activeJobCount: countByUserId.get(c.id) || 0,
-      contact: contactByUserId.get(c.id) || null,
+      contactPerson: isAuthenticated ? (c.name || null) : null,
+      contactEmail: isAuthenticated ? (c.companyContactEmail || null) : null,
+      contactPhone: isAuthenticated ? (c.companyContactPhone || null) : null,
     }));
     res.json(list);
   } catch (e) {
@@ -104,8 +96,9 @@ companiesRouter.get("/search", validateQuery(companiesSearchQuerySchema), async 
   }
 });
 
-companiesRouter.get("/:id/public", async (req, res, next) => {
+companiesRouter.get("/:id/public", optionalAuthMiddleware, async (req, res, next) => {
   try {
+    const isAuthenticated = Boolean(req.userId);
     const company = await prisma.user.findUnique({
       where: { id: req.params.id },
       select: {
@@ -123,6 +116,8 @@ companiesRouter.get("/:id/public", async (req, res, next) => {
         industryOrgMember: true,
         industryOrgName: true,
         policyAgreedAt: true,
+        companyContactEmail: true,
+        companyContactPhone: true,
       },
     });
     if (!company || company.role !== "COMPANY") {
@@ -162,6 +157,8 @@ companiesRouter.get("/:id/public", async (req, res, next) => {
       industryOrgMember: company.industryOrgMember || false,
       industryOrgName: company.industryOrgName || null,
       policyAgreedAt: company.policyAgreedAt || null,
+      contactEmail: isAuthenticated ? (company.companyContactEmail || null) : null,
+      contactPhone: isAuthenticated ? (company.companyContactPhone || null) : null,
       reviewAverage: reviewAggregate._avg.rating
         ? Number(reviewAggregate._avg.rating.toFixed(2))
         : null,
@@ -209,6 +206,8 @@ companiesRouter.get("/me/profile", async (req, res, next) => {
           industryOrgMember: true,
           industryOrgName: true,
           policyAgreedAt: true,
+          companyContactEmail: true,
+          companyContactPhone: true,
         },
       });
       return res.json({
@@ -228,6 +227,8 @@ companiesRouter.get("/me/profile", async (req, res, next) => {
         industryOrgMember: owner?.industryOrgMember || false,
         industryOrgName: owner?.industryOrgName || null,
         policyAgreedAt: owner?.policyAgreedAt || null,
+        companyContactEmail: owner?.companyContactEmail || null,
+        companyContactPhone: owner?.companyContactPhone || null,
       });
     }
 
@@ -250,6 +251,8 @@ companiesRouter.get("/me/profile", async (req, res, next) => {
         industryOrgMember: true,
         industryOrgName: true,
         policyAgreedAt: true,
+        companyContactEmail: true,
+        companyContactPhone: true,
       },
     });
     if (!company) return res.status(404).json({ error: "Företaget hittades inte" });
@@ -361,6 +364,8 @@ companiesRouter.put("/me/profile", requireCompanyOwner, validateBody(companyProf
       if (body.industryOrgMember !== undefined) trustData.industryOrgMember = body.industryOrgMember;
       if (body.industryOrgName !== undefined) trustData.industryOrgName = body.industryOrgName;
       if (body.policyAgreedAt !== undefined) trustData.policyAgreedAt = body.policyAgreedAt ? new Date(body.policyAgreedAt) : null;
+      if (body.companyContactEmail !== undefined) trustData.companyContactEmail = body.companyContactEmail;
+      if (body.companyContactPhone !== undefined) trustData.companyContactPhone = body.companyContactPhone;
       const ownerId = req.companyOwnerId ?? req.userId;
       const ownerUpdates = { ...trustData };
       if (Array.isArray(updated.segmentDefaults) && updated.segmentDefaults.length > 0) {
@@ -412,6 +417,8 @@ companiesRouter.put("/me/profile", requireCompanyOwner, validateBody(companyProf
         policyAgreedAt: body.policyAgreedAt !== undefined
           ? (body.policyAgreedAt ? new Date(body.policyAgreedAt) : null)
           : undefined,
+        companyContactEmail: body.companyContactEmail !== undefined ? body.companyContactEmail : undefined,
+        companyContactPhone: body.companyContactPhone !== undefined ? body.companyContactPhone : undefined,
       },
       select: {
         id: true,
@@ -429,6 +436,8 @@ companiesRouter.put("/me/profile", requireCompanyOwner, validateBody(companyProf
         industryOrgMember: true,
         industryOrgName: true,
         policyAgreedAt: true,
+        companyContactEmail: true,
+        companyContactPhone: true,
       },
     });
     if (Array.isArray(updated.companySegmentDefaults) && updated.companySegmentDefaults.length > 0) {

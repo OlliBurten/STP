@@ -82,6 +82,8 @@ export default function CompanyProfile() {
         industryOrgMember: Boolean(draft.industryOrgMember),
         industryOrgName: draft.industryOrgName || null,
         policyAgreedAt: draft.policyAgreedAt || null,
+        companyContactEmail: draft.companyContactEmail || null,
+        companyContactPhone: draft.companyContactPhone || null,
       });
       setProfile(updated);
       setDraft(updated);
@@ -212,6 +214,34 @@ export default function CompanyProfile() {
             placeholder="Beskriv ert åkeri, uppdrag och vad ni erbjuder förare."
             className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none"
           />
+        </div>
+        <div className="border-t border-slate-100 pt-5">
+          <h2 className="text-base font-semibold text-slate-900 mb-1">Kontaktuppgifter</h2>
+          <p className="text-xs text-slate-500 mb-4">
+            Visas för inloggade förare i åkeridatabasen — en direktväg för spontankontakt, även utan aktiv annons.
+          </p>
+          <div className="space-y-3">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Kontakt-e-post</label>
+              <input
+                type="email"
+                value={draft?.companyContactEmail || ""}
+                onChange={(e) => setDraft((p) => ({ ...p, companyContactEmail: e.target.value || null }))}
+                placeholder="rekrytering@ert-akeri.se"
+                className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Telefon (valfritt)</label>
+              <input
+                type="tel"
+                value={draft?.companyContactPhone || ""}
+                onChange={(e) => setDraft((p) => ({ ...p, companyContactPhone: e.target.value || null }))}
+                placeholder="070-000 00 00"
+                className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none text-sm"
+              />
+            </div>
+          </div>
         </div>
         <div className="border-t border-slate-100 pt-5">
           <h2 className="text-base font-semibold text-slate-900 mb-1">Certifieringar &amp; trovärdighet</h2>

@@ -22,6 +22,8 @@ model User {
   companyOrgNumber String? @unique // for companies
   companyDescription String?
   companyWebsite String?
+  companyContactEmail String?  // synlig för inloggade förare i åkeridatabasen
+  companyContactPhone String?  // synlig för inloggade förare i åkeridatabasen
   companyLocation String?
   companySegmentDefaults String[] @default([])
   companyBransch    String[]  @default([])  // t.ex. ["tank", "distribution"] – för sök åkerier
