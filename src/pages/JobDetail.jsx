@@ -681,16 +681,34 @@ export default function JobDetail() {
                     {isSaved ? <><StarFilledIcon className="w-4 h-4 mr-1.5 inline" /> Sparat jobb</> : <><StarOutlineIcon className="w-4 h-4 mr-1.5 inline" /> Spara jobb</>}
                   </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setShowApplyModal(true)}
-                  className="inline-flex items-center justify-center w-full sm:w-auto px-6 py-3.5 rounded-xl bg-[var(--color-primary)] text-white font-semibold hover:bg-[var(--color-primary-light)] transition-colors"
-                >
-                  Ansök med din profil
-                </button>
-                <p className="mt-4 text-sm text-slate-500">
-                  Din profil är ditt CV. Inget behov att ladda upp något. Företaget ser din profil direkt.
-                </p>
+                {job.externalApplyUrl ? (
+                  <>
+                    <a
+                      href={job.externalApplyUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center w-full sm:w-auto px-6 py-3.5 rounded-xl bg-[var(--color-primary)] text-white font-semibold hover:bg-[var(--color-primary-light)] transition-colors"
+                    >
+                      Ansök på företagets hemsida ↗
+                    </a>
+                    <p className="mt-4 text-sm text-slate-500">
+                      Du skickas till åkeriets egen ansökningssida.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setShowApplyModal(true)}
+                      className="inline-flex items-center justify-center w-full sm:w-auto px-6 py-3.5 rounded-xl bg-[var(--color-primary)] text-white font-semibold hover:bg-[var(--color-primary-light)] transition-colors"
+                    >
+                      Ansök med din profil
+                    </button>
+                    <p className="mt-4 text-sm text-slate-500">
+                      Din profil är ditt CV. Inget behov att ladda upp något. Företaget ser din profil direkt.
+                    </p>
+                  </>
+                )}
               </>
             ) : isCompany ? (
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">

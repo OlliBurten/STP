@@ -42,6 +42,7 @@ export default function PostJob() {
     salary: "",
     salaryMin: "",
     salaryMax: "",
+    externalApplyUrl: "",
     extraRequirements: "",
     contact: "",
     physicalWorkRequired: false,
@@ -119,6 +120,7 @@ export default function PostJob() {
           salary: form.salary || null,
           salaryMin: form.salaryMin ? parseInt(form.salaryMin, 10) : null,
           salaryMax: form.salaryMax ? parseInt(form.salaryMax, 10) : null,
+          externalApplyUrl: form.externalApplyUrl.trim() || null,
           requirements: [],
           extraRequirements: form.extraRequirements || null,
           contact: form.contact,
@@ -707,6 +709,22 @@ export default function PostJob() {
               onChange={(e) => handleChange("contact", e.target.value)}
               className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none"
             />
+          </div>
+          <div>
+            <label htmlFor="externalApplyUrl" className="block text-sm font-medium text-slate-700 mb-1">
+              Extern ansökningslänk (valfritt)
+            </label>
+            <input
+              id="externalApplyUrl"
+              type="url"
+              placeholder="https://ert-akeri.se/jobb/chauffor"
+              value={form.externalApplyUrl}
+              onChange={(e) => handleChange("externalApplyUrl", e.target.value)}
+              className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none"
+            />
+            <p className="mt-1 text-xs text-slate-500">
+              Om ni har en egen ansökningssida — förare skickas dit istället för att kontakta via STP.
+            </p>
           </div>
         </section>
 

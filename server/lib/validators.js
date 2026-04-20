@@ -137,6 +137,7 @@ export const createJobSchema = z.object({
   salary: z.string().max(100).optional().nullable(),
   salaryMin: z.number().int().min(0).max(500000).optional().nullable(),
   salaryMax: z.number().int().min(0).max(500000).optional().nullable(),
+  externalApplyUrl: z.string().url("Ogiltig URL").max(500).optional().nullable(),
   requirements: z.array(z.string()).optional(),
   extraRequirements: z.string().max(2000).optional().nullable(),
   bransch: z

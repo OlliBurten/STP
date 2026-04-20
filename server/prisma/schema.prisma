@@ -255,6 +255,7 @@ model Job {
   salary      String?
   salaryMin   Int?     // kr/mån
   salaryMax   Int?     // kr/mån
+  externalApplyUrl String? // om ansökan sker via extern sida
   physicalWorkRequired Boolean? // fysiskt krävande arbete
   soloWorkOk  Boolean? // ensamarbete ok för rollen
   requirements String? // JSON or text
