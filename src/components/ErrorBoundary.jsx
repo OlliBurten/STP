@@ -15,6 +15,24 @@ export default class ErrorBoundary extends Component {
 
   componentDidCatch(error, errorInfo) {
     console.error("[ErrorBoundary]", error, errorInfo);
+
+    // Auto-reload on stale chunk errors after a new deployment.
+    // Use sessionStorage to prevent reload loops.
+    const isChunkError =
+      error?.name === "TypeError" &&
+      (error?.message?.includes("Failed to fetch dynamically imported module") ||
+        error?.message?.includes("Load failed") ||
+        error?.message?.includes("Importing a module script failed") ||
+        error?.message?.includes("error loading dynamically imported module"));
+    if (isChunkError) {
+      const key = "chunk_reload_attempted";
+      if (!sessionStorage.getItem(key)) {
+        sessionStorage.setItem(key, "1");
+        window.location.reload();
+        return;
+      }
+    }
+
     Sentry.captureException(error, { extra: errorInfo });
   }
 
