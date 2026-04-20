@@ -37,7 +37,7 @@ const stepGuidance = [
 ];
 
 export default function DriverOnboardingWizard() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const { profile, profileLoaded, updateProfile } = useProfile();
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
@@ -68,10 +68,6 @@ export default function DriverOnboardingWizard() {
       visibleToCompanies: profile.visibleToCompanies ?? true,
     };
   });
-
-  if (profileLoaded && isDriverMinimumProfileComplete(profile)) {
-    return <Navigate to="/profil" replace />;
-  }
 
   const toggleLicense = (value) => {
     setDraft((prev) => {
@@ -123,7 +119,6 @@ export default function DriverOnboardingWizard() {
     clearTimeout(analyzeDebounceRef.current);
     analyzeDebounceRef.current = setTimeout(async () => {
       try {
-        const token = localStorage.getItem("token");
         const res = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/profile/analyze-summary`, {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
@@ -138,7 +133,11 @@ export default function DriverOnboardingWizard() {
       }
     }, 800);
     return () => clearTimeout(analyzeDebounceRef.current);
-  }, [draft.summary, step]);
+  }, [draft.summary, step, token]);
+
+  if (profileLoaded && isDriverMinimumProfileComplete(profile)) {
+    return <Navigate to="/profil" replace />;
+  }
 
   const saveAndFinish = async () => {
     const primarySegment = draft.isGymnasieelev === true ? "INTERNSHIP" : draft.primarySegment;
