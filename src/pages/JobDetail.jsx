@@ -225,7 +225,7 @@ export default function JobDetail() {
   };
 
   const metaDescription = [
-    `${job.title} hos ${job.companyName}`,
+    `${job.title} hos ${job.company}`,
     job.location ? `i ${job.location}` : null,
     job.description ? `– ${job.description.replace(/\n+/g, " ")}` : null,
   ]
@@ -242,26 +242,30 @@ export default function JobDetail() {
     employmentType: EMPLOYMENT_TYPE_MAP[job.employment] || "FULL_TIME",
     hiringOrganization: {
       "@type": "Organization",
-      name: job.companyName,
-      ...(job.companyWebsite ? { sameAs: job.companyWebsite } : {}),
+      name: job.company,
+      ...(job.companyWebsite ? { sameAs: job.companyWebsite.startsWith("http") ? job.companyWebsite : `https://${job.companyWebsite}` } : {}),
     },
     jobLocation: {
       "@type": "Place",
       address: {
         "@type": "PostalAddress",
-        addressLocality: job.location || job.companyLocation || undefined,
-        addressRegion: job.region || undefined,
+        addressLocality: job.location || job.companyLocation || "",
+        addressRegion: job.region || "",
         addressCountry: "SE",
       },
     },
+    identifier: {
+      "@type": "PropertyValue",
+      name: "Transportplattformen",
+      value: job.id,
+    },
     directApply: true,
-    jobLocationType: "TELECOMMUTE" === job.jobType ? "TELECOMMUTE" : undefined,
   };
 
   return (
     <main className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
       <PageMeta
-        title={`${job.title} – ${job.companyName}`}
+        title={`${job.title} – ${job.company}`}
         description={metaDescription}
         canonical={`/jobb/${job.id}`}
         jsonLd={jobLd}
