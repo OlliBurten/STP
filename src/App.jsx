@@ -59,6 +59,12 @@ const AdrUtbildning         = lazy(() => import("./pages/blogg/AdrUtbildning"));
 const LonLastbilschauffor   = lazy(() => import("./pages/blogg/LonLastbilschauffor"));
 const HittaJobbCeChauffor   = lazy(() => import("./pages/blogg/HittaJobbCeChauffor"));
 const HittaCeChauffor       = lazy(() => import("./pages/blogg/HittaCeChauffor"));
+const YkbFortbildning       = lazy(() => import("./pages/blogg/YkbFortbildning"));
+const Kranforarbevis        = lazy(() => import("./pages/blogg/Kranforarbevis"));
+const KollektivavtalAkeri   = lazy(() => import("./pages/blogg/KollektivavtalAkeri"));
+const LastbilschaufforUtbildning = lazy(() => import("./pages/blogg/LastbilschaufforUtbildning"));
+const ArbetstidChauffor     = lazy(() => import("./pages/blogg/ArbetstidChauffor"));
+const Fjarrkörning          = lazy(() => import("./pages/blogg/Fjarrkörning"));
 
 function Analytics() {
   const location = useLocation();
@@ -145,6 +151,12 @@ function AppLayout() {
                   <Route path="/blogg/lon-lastbilschauffor" element={<LonLastbilschauffor />} />
                   <Route path="/blogg/hitta-jobb-ce-chauffor" element={<HittaJobbCeChauffor />} />
                   <Route path="/blogg/hitta-ce-chauffor" element={<HittaCeChauffor />} />
+                  <Route path="/blogg/ykb-fortbildning" element={<YkbFortbildning />} />
+                  <Route path="/blogg/kranforarbevis" element={<Kranforarbevis />} />
+                  <Route path="/blogg/kollektivavtal-akeri" element={<KollektivavtalAkeri />} />
+                  <Route path="/blogg/lastbilschauffor-utbildning" element={<LastbilschaufforUtbildning />} />
+                  <Route path="/blogg/arbetstid-chauffor" element={<ArbetstidChauffor />} />
+                  <Route path="/blogg/fjarrkörning" element={<Fjarrkörning />} />
                   <Route path="/kontakt" element={<Kontakt />} />
                   <Route path="/uppdateringar" element={<PatchNotes />} />
                   <Route path="/vision" element={<VisionPresentation />} />
