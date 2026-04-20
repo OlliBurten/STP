@@ -100,7 +100,8 @@ export default function DriverOnboardingWizard() {
     if (step === 3) {
       if (!hasDriverMinimumSummary(draft)) return false;
       if (aiLoading) return false;
-      if (aiAnalysis && !aiAnalysis.ok) return false;
+      // Only block if AI returned actual issues to address — not on empty failures
+      if (aiAnalysis && !aiAnalysis.ok && aiAnalysis.issues?.length > 0) return false;
       return true;
     }
     return true;
@@ -124,8 +125,17 @@ export default function DriverOnboardingWizard() {
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           body: JSON.stringify({ text }),
         });
+        if (!res.ok) {
+          setAiAnalysis(null);
+          return;
+        }
         const data = await res.json();
-        setAiAnalysis(data);
+        // Only use the analysis if it has the expected shape
+        if (typeof data?.ok === "boolean") {
+          setAiAnalysis(data);
+        } else {
+          setAiAnalysis(null);
+        }
       } catch {
         setAiAnalysis(null);
       } finally {
@@ -476,7 +486,7 @@ export default function DriverOnboardingWizard() {
                   </p>
                 )}
 
-                {aiAnalysis && (
+                {aiAnalysis && (aiAnalysis.ok || aiAnalysis.issues?.length > 0 || aiAnalysis.suggestions?.length > 0) && (
                   <div className={`rounded-lg border p-4 text-sm space-y-2 ${
                     aiAnalysis.ok
                       ? "border-green-200 bg-green-50"

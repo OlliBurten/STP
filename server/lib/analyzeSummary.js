@@ -8,7 +8,7 @@ const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
  */
 export async function analyzeSummary(text) {
   const message = await client.messages.create({
-    model: "claude-haiku-4-5",
+    model: "claude-haiku-4-5-20251001",
     max_tokens: 512,
     system: `Du är en kvalitetskontroll för en svensk jobbplattform för yrkeschaufförer (lastbil, transport).
 Din uppgift är att granska en förares profiltext och ge feedback på svenska.
