@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import PageMeta from "../components/PageMeta";
 import { fetchCompanyPublicProfile } from "../api/companies.js";
-import { mapEmploymentToSegment, segmentLabel } from "../data/segments";
 import { getBranschLabel } from "../data/bransch.js";
 import { StarFilledIcon, LocationIcon, CheckIcon } from "../components/Icons";
 
@@ -38,14 +37,6 @@ export default function CompanyPublicProfile() {
       </main>
     );
   }
-
-  const hasStrongProfile = Boolean(
-    company.description &&
-    company.website &&
-    company.region &&
-    Array.isArray(company.bransch) &&
-    company.bransch.length > 0
-  );
 
   const companyDescription = [
     company.name,
@@ -83,107 +74,149 @@ export default function CompanyPublicProfile() {
     } : {}),
   };
 
+  const displayLocation = [company.location, company.region]
+    .filter(Boolean)
+    .filter((v, i, arr) => arr.indexOf(v) === i)
+    .join(", ");
+
   return (
-    <main className="max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-6">
+    <main className="max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-5">
       <PageMeta
         title={company.name}
         description={companyDescription}
         canonical={`/foretag/${company.id}`}
         jsonLd={jsonLd}
       />
-      <Link to="/jobb" className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-[var(--color-primary)]">
-        ← Tillbaka till jobb
-      </Link>
-      <Link to="/akerier" className="ml-4 inline-flex items-center gap-1 text-sm text-slate-600 hover:text-[var(--color-primary)]">
-        ← Hitta åkerier
-      </Link>
-      <section className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8">
-        <h1 className="text-3xl font-bold text-slate-900">{company.name}</h1>
-        <div className="mt-3 flex flex-wrap gap-3 text-sm text-slate-600">
-          {company.verified ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-green-800">
-              <CheckIcon className="w-4 h-4" />
-              Verifierat företag
-            </span>
-          ) : null}
-          {company.policyAgreedAt ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-green-800">
-              <CheckIcon className="w-4 h-4" />
-              Följer STP:s uppförandekod
-            </span>
-          ) : null}
-          {company.fSkattsedel ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-green-800">
-              <CheckIcon className="w-4 h-4" />
-              F-skattsedel
-            </span>
-          ) : null}
-          {company.industryOrgMember ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-green-800">
-              <CheckIcon className="w-4 h-4" />
-              {company.industryOrgName ? `Medlem i ${company.industryOrgName}` : "Branschorganisation-medlem"}
-            </span>
-          ) : null}
-          {hasStrongProfile ? (
-            <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-slate-700">
-              Utfylld företagsprofil
-            </span>
-          ) : null}
-          <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-slate-700">
-            {company.jobs.length} aktiva jobb
-          </span>
-          {company.location ? <span className="inline-flex items-center gap-1"><LocationIcon className="w-4 h-4 shrink-0" /> {company.location}</span> : null}
-          {company.region ? <span className="inline-flex items-center gap-1"><LocationIcon className="w-4 h-4 shrink-0" /> {company.region}</span> : null}
-          {company.bransch?.length > 0 ? (
-            <span className="flex flex-wrap gap-1">
-              {company.bransch.map((b) => (
-                <span key={b} className="px-2 py-0.5 rounded bg-slate-100 text-slate-700">
-                  {getBranschLabel(b)}
+
+      {/* Back nav */}
+      <nav className="text-sm text-slate-500 flex items-center gap-2">
+        <Link to="/jobb" className="hover:text-[var(--color-primary)]">Jobb</Link>
+        <span>›</span>
+        <Link to="/akerier" className="hover:text-[var(--color-primary)]">Åkerier</Link>
+        <span>›</span>
+        <span className="text-slate-700">{company.name}</span>
+      </nav>
+
+      {/* ── Company header ── */}
+      <section className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <div className="p-6 sm:p-8">
+          <h1 className="text-3xl font-bold text-slate-900">{company.name}</h1>
+
+          {/* Meta row */}
+          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-500">
+            {displayLocation && (
+              <span className="flex items-center gap-1">
+                <LocationIcon className="w-3.5 h-3.5 shrink-0" />{displayLocation}
+              </span>
+            )}
+            {company.website && (
+              <>
+                <span className="text-slate-300">·</span>
+                <a href={company.website.startsWith("http") ? company.website : `https://${company.website}`} target="_blank" rel="noreferrer" className="text-[var(--color-primary)] hover:underline">
+                  Webbplats ↗
+                </a>
+              </>
+            )}
+            {company.reviewCount > 0 && (
+              <>
+                <span className="text-slate-300">·</span>
+                <span className="flex items-center gap-1">
+                  <StarFilledIcon className="w-3.5 h-3.5 text-amber-500" />
+                  {company.reviewAverage}/5 ({company.reviewCount} omdömen)
                 </span>
-              ))}
-            </span>
-          ) : null}
-          {company.reviewCount > 0 ? (
-            <span className="inline-flex items-center gap-1"><StarFilledIcon className="w-4 h-4 text-amber-500" /> {company.reviewAverage}/5 ({company.reviewCount})</span>
-          ) : (
-            <span>Nytt konto</span>
+              </>
+            )}
+            <span className="text-slate-300">·</span>
+            <span>{company.jobs.length} aktiva jobb</span>
+          </div>
+
+          {/* Trust badges */}
+          {(company.verified || company.policyAgreedAt || company.fSkattsedel || company.industryOrgMember) && (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {company.verified && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
+                  <CheckIcon className="w-3.5 h-3.5" /> Verifierat företag
+                </span>
+              )}
+              {company.policyAgreedAt && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
+                  <CheckIcon className="w-3.5 h-3.5" /> Uppförandekod
+                </span>
+              )}
+              {company.fSkattsedel && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
+                  <CheckIcon className="w-3.5 h-3.5" /> F-skattsedel
+                </span>
+              )}
+              {company.industryOrgMember && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
+                  <CheckIcon className="w-3.5 h-3.5" />
+                  {company.industryOrgName ? `Medlem i ${company.industryOrgName}` : "Branschmedlem"}
+                </span>
+              )}
+            </div>
           )}
-          {company.website ? (
-            <a href={company.website} target="_blank" rel="noreferrer" className="text-[var(--color-primary)] hover:underline">
-              Webbplats
-            </a>
-          ) : null}
         </div>
-        <p className="mt-5 text-slate-700 whitespace-pre-line">
-          {company.description || "Företaget har inte lagt till någon presentation ännu."}
-        </p>
-        <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <p className="text-sm font-medium text-slate-900">Varför detta spelar roll</p>
-          <p className="mt-1 text-sm text-slate-600">
-            På STP försöker vi göra det enklare att snabbt bedöma hur seriöst och relevant ett företag är genom tydligare profilinformation, verifiering och omdömen.
+
+        {/* Bransch tag strip */}
+        {company.bransch?.length > 0 && (
+          <div className="px-6 sm:px-8 py-3 border-t border-slate-100 bg-slate-50/60 flex flex-wrap gap-1.5">
+            {company.bransch.map((b) => (
+              <span key={b} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-200 text-slate-700">
+                {getBranschLabel(b)}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Description */}
+        <div className="px-6 sm:px-8 py-6 border-t border-slate-100">
+          <p className="text-slate-700 leading-relaxed whitespace-pre-line">
+            {company.description || "Företaget har inte lagt till någon presentation ännu."}
           </p>
         </div>
       </section>
 
-      <section className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8">
-        <h2 className="text-xl font-semibold text-slate-900">Aktiva jobb</h2>
+      {/* ── Active jobs ── */}
+      <section>
+        <h2 className="text-lg font-semibold text-slate-900 mb-3">Aktiva jobb</h2>
         {company.jobs.length === 0 ? (
-          <p className="mt-3 text-slate-600">Inga aktiva jobb just nu.</p>
+          <div className="bg-white rounded-xl border border-slate-200 p-6 text-slate-500 text-sm">
+            Inga aktiva jobb just nu.
+          </div>
         ) : (
-          <ul className="mt-4 space-y-3">
+          <ul className="space-y-3">
             {company.jobs.map((job) => (
-              <li key={job.id} className="rounded-lg border border-slate-200 p-4">
-                <Link to={`/jobb/${job.id}`} className="font-medium text-slate-900 hover:text-[var(--color-primary)]">
-                  {job.title}
+              <li key={job.id}>
+                <Link
+                  to={`/jobb/${job.id}`}
+                  className="block p-4 sm:p-5 bg-white rounded-xl border border-slate-200 hover:border-[var(--color-primary)]/40 hover:shadow-sm transition-all group"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="font-semibold text-slate-900 group-hover:text-[var(--color-primary)] transition-colors">
+                        {job.title}
+                      </p>
+                      <p className="mt-0.5 text-sm text-slate-500 flex items-center gap-1">
+                        <LocationIcon className="w-3.5 h-3.5 shrink-0" />{job.location}, {job.region}
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5 shrink-0">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-800">
+                        {job.employment === "fast" ? "Fast anst." : job.employment === "vikariat" ? "Vikariat" : "Timjobb"}
+                      </span>
+                      {(job.salaryMin || job.salary) && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
+                          {job.salaryMin
+                            ? job.salaryMax
+                              ? `${job.salaryMin.toLocaleString("sv-SE")}–${job.salaryMax.toLocaleString("sv-SE")} kr/mån`
+                              : `Från ${job.salaryMin.toLocaleString("sv-SE")} kr/mån`
+                            : job.salary}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </Link>
-                <p className="mt-1 text-sm text-slate-600 flex items-center gap-1">
-                  <LocationIcon className="w-4 h-4 shrink-0" /> {job.location}, {job.region}
-                </p>
-                {(job.segment || job.employment) && (
-                  <p className="mt-1 text-xs text-slate-500">
-                    Segment: {segmentLabel(job.segment || mapEmploymentToSegment(job.employment))}
-                  </p>
-                )}
               </li>
             ))}
           </ul>

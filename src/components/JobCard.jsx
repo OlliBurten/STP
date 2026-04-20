@@ -34,6 +34,9 @@ export default function JobCard({
             {job.title}
           </h3>
           <p className="mt-1 text-sm text-slate-600">{job.company}</p>
+          {job.description && (
+            <p className="mt-1.5 text-xs text-slate-400 line-clamp-1 leading-relaxed">{job.description}</p>
+          )}
           <div className="mt-3 flex flex-wrap gap-2">
             {/* Trust signals — green */}
             {job.companyVerified && (
@@ -81,7 +84,7 @@ export default function JobCard({
               );
             })()}
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
-              {job.employment === "fast" ? "Fast anst." : job.employment === "vikariat" ? "Vikariat" : "Timanst."}
+              {job.employment === "fast" ? "Fast anst." : job.employment === "vikariat" ? "Vikariat" : "Timjobb"}
             </span>
           </div>
         </div>

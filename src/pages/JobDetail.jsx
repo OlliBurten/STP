@@ -16,7 +16,7 @@ import { getBranschLabel } from "../data/bransch.js";
 import { getCertificateLabel } from "../data/profileData";
 import { scheduleTypes } from "../data/mockJobs";
 import { isJobOlderThan30Days } from "../utils/jobUtils.js";
-import { StarFilledIcon, StarOutlineIcon, LocationIcon } from "../components/Icons";
+import { StarFilledIcon, StarOutlineIcon, LocationIcon, CheckIcon } from "../components/Icons";
 import Breadcrumbs from "../components/Breadcrumbs";
 import LoadingBlock from "../components/LoadingBlock";
 import { useToast } from "../context/ToastContext";
@@ -304,156 +304,116 @@ export default function JobDetail() {
       </div>
 
       <article className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        <div className="p-6 sm:p-8">
-          {/* Grouped tag sections */}
-          <div className="mb-5 space-y-2">
-            {/* Behörighet: licenses + certificates */}
-            {((job.license?.length > 0) || (job.certificates?.length > 0)) && (
-              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1.5">
-                <span className="text-xs font-semibold uppercase tracking-wide text-slate-400 shrink-0 w-24">Behörighet</span>
-                <div className="flex flex-wrap gap-1.5">
-                  {(job.license || []).map((lic) => (
-                    <span key={lic} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[var(--color-primary)]/10 text-[var(--color-primary)]">{lic}</span>
-                  ))}
-                  {(job.certificates || []).map((c) => (
-                    <span key={c} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">{getCertificateLabel(c)}</span>
-                  ))}
-                </div>
-              </div>
-            )}
-            {/* Tjänst: employment, job type, segment, schedule */}
-            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1.5">
-              <span className="text-xs font-semibold uppercase tracking-wide text-slate-400 shrink-0 w-24">Tjänst</span>
-              <div className="flex flex-wrap gap-1.5">
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-800">
-                  {job.employment === "fast" ? "Fast anställning" : job.employment === "vikariat" ? "Vikariat" : "Timanställning"}
-                </span>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
-                  {job.jobType === "fjärrkörning" ? "Fjärrkörning" : job.jobType === "lokalt" ? "Lokalt" : job.jobType === "distribution" ? "Distribution" : "Timjobb"}
-                </span>
-                {(job.segment || job.employment) && (
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
-                    {segmentLabel(job.segment || mapEmploymentToSegment(job.employment))}
-                  </span>
-                )}
-                {job.schedule && (
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
-                    {scheduleTypes.find((s) => s.value === job.schedule)?.label ?? job.schedule}
-                  </span>
-                )}
-              </div>
-            </div>
-            {/* Övrigt: bransch, physical, solo */}
-            {(job.bransch || job.physicalWorkRequired || job.soloWorkOk) && (
-              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1.5">
-                <span className="text-xs font-semibold uppercase tracking-wide text-slate-400 shrink-0 w-24">Övrigt</span>
-                <div className="flex flex-wrap gap-1.5">
-                  {job.bransch && (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">{getBranschLabel(job.bransch)}</span>
-                  )}
-                  {job.physicalWorkRequired && (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">Fysiskt krävande</span>
-                  )}
-                  {job.soloWorkOk && (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">Ensamarbete ok</span>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
+        {/* ── Header ── */}
+        <div className="p-6 sm:p-8 pb-5">
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 leading-snug">{job.title}</h1>
 
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">{job.title}</h1>
-          {job.userId ? (
-            <Link to={`/foretag/${job.userId}`} className="mt-2 inline-block text-lg text-slate-600 hover:text-[var(--color-primary)] hover:underline">
-              {job.company}
-            </Link>
-          ) : (
-            <p className="mt-2 text-lg text-slate-600">{job.company}</p>
-          )}
-          <div className="mt-3 flex flex-wrap gap-2 text-sm">
-            {job.companyVerified && (
-              <span className="inline-flex items-center rounded-full bg-green-100 px-3 py-1 font-medium text-green-800">
-                Verifierat företag
-              </span>
-            )}
-            {reviewSummary && (
-              <span className="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 font-medium text-amber-800">
-                Omdömen: {reviewSummary.reviewCount > 0
-                  ? `${reviewSummary.averageRating}/5 (${reviewSummary.reviewCount} st)`
-                  : "Inga omdömen ännu"}
-              </span>
-            )}
-          </div>
-          <p className="mt-1 text-slate-500 flex items-center gap-1"><LocationIcon className="w-4 h-4 shrink-0" /> {job.location}, {job.region}</p>
-
-          {/* Tydlighet & förtroende: publiceringsdatum och senast uppdaterad */}
-          <div className="mt-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
-            <p className="text-sm font-medium text-slate-700">
-              Publicerad {formatDate(job.published)}
-              {showUpdatedSeparately && (
-                <span className="text-slate-500 font-normal ml-2">
-                  · Senast uppdaterad {formatDate(job.updatedAt)}
-                </span>
-              )}
-            </p>
-            {job.kollektivavtal === true && (
-              <p className="mt-1 text-sm text-green-700 font-medium">Kollektivavtal</p>
-            )}
-          </div>
-
-          {jobIsOld && (
-            <div className="mt-4 p-4 rounded-xl border border-amber-300 bg-amber-50 text-amber-900" role="alert">
-              <p className="text-sm font-medium">Denna annons är äldre än 30 dagar</p>
-              <p className="mt-1 text-sm text-amber-800">
-                Kontakta företaget för att höra om tjänsten fortfarande är ledig.
-              </p>
-            </div>
-          )}
-
-          {/* Kort om företaget – ger förtroende och kontext */}
-          <div className="mt-6 p-5 rounded-xl border border-slate-200 bg-white">
-            <h2 className="text-base font-semibold text-slate-900 mb-2">
-              Om {job.company}
-            </h2>
-            {job.companyDescriptionShort ? (
-              <p className="text-slate-700 text-sm leading-relaxed">{job.companyDescriptionShort}</p>
+          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-500">
+            {job.userId ? (
+              <Link to={`/foretag/${job.userId}`} className="font-medium text-slate-700 hover:text-[var(--color-primary)] hover:underline">
+                {job.company}
+              </Link>
             ) : (
-              <p className="text-slate-600 text-sm">Företagets profil innehåller mer information.</p>
+              <span className="font-medium text-slate-700">{job.company}</span>
             )}
-            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-600">
+            <span className="text-slate-300">·</span>
+            <span className="flex items-center gap-1"><LocationIcon className="w-3.5 h-3.5 shrink-0" />{job.location}, {job.region}</span>
+            <span className="text-slate-300">·</span>
+            <span>
+              Publicerad {formatDate(job.published)}
+              {showUpdatedSeparately && <span className="ml-1">· Uppdaterad {formatDate(job.updatedAt)}</span>}
+            </span>
+          </div>
+
+          {/* Trust badges */}
+          {(job.companyVerified || job.kollektivavtal === true || (reviewSummary?.reviewCount > 0)) && (
+            <div className="mt-3 flex flex-wrap gap-2">
               {job.companyVerified && (
-                <span className="text-green-700 font-medium">Verifierat företag</span>
-              )}
-              {job.companyLocation && (
-                <span className="flex items-center gap-1">
-                  <LocationIcon className="w-4 h-4 shrink-0" /> {job.companyLocation}
+                <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
+                  <CheckIcon className="w-3.5 h-3.5" /> Verifierat företag
                 </span>
-              )}
-              {job.companyWebsite && (
-                <a
-                  href={job.companyWebsite.startsWith("http") ? job.companyWebsite : `https://${job.companyWebsite}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[var(--color-primary)] hover:underline"
-                >
-                  Webbplats
-                </a>
               )}
               {job.kollektivavtal === true && (
-                <span className="text-green-700 font-medium">Kollektivavtal</span>
+                <span className="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
+                  Kollektivavtal
+                </span>
+              )}
+              {reviewSummary?.reviewCount > 0 && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-800">
+                  <StarFilledIcon className="w-3.5 h-3.5 text-amber-500" />
+                  {reviewSummary.averageRating}/5 ({reviewSummary.reviewCount} omdömen)
+                </span>
               )}
             </div>
-            {job.userId && (
-              <Link
-                to={`/foretag/${job.userId}`}
-                className="mt-3 inline-block text-sm font-medium text-[var(--color-primary)] hover:underline"
-              >
-                Läs mer om företaget →
-              </Link>
-            )}
-          </div>
+          )}
+        </div>
 
-          <div className="mt-8 pt-8 border-t border-slate-200 space-y-6">
+        {/* ── Compact tag strip ── */}
+        <div className="px-6 sm:px-8 py-3 border-t border-slate-100 bg-slate-50/60 flex flex-wrap gap-1.5">
+          {(job.license || []).map((lic) => (
+            <span key={lic} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[var(--color-primary)]/10 text-[var(--color-primary)]">{lic}</span>
+          ))}
+          {(job.certificates || []).map((c) => (
+            <span key={c} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-200 text-slate-700">{getCertificateLabel(c)}</span>
+          ))}
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-800">
+            {job.employment === "fast" ? "Fast anställning" : job.employment === "vikariat" ? "Vikariat" : "Timanställning"}
+          </span>
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-200 text-slate-700">
+            {job.jobType === "fjärrkörning" ? "Fjärrkörning" : job.jobType === "lokalt" ? "Lokalt" : job.jobType === "distribution" ? "Distribution" : "Timjobb"}
+          </span>
+          {job.schedule && (
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-200 text-slate-700">
+              {scheduleTypes.find((s) => s.value === job.schedule)?.label ?? job.schedule}
+            </span>
+          )}
+          {job.bransch && (
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-200 text-slate-700">{getBranschLabel(job.bransch)}</span>
+          )}
+          {job.physicalWorkRequired && (
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">Fysiskt krävande</span>
+          )}
+          {job.soloWorkOk && (
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-200 text-slate-700">Ensamarbete ok</span>
+          )}
+        </div>
+
+        <div className="p-6 sm:p-8 pt-6">
+          {jobIsOld && (
+            <div className="mb-6 p-4 rounded-xl border border-amber-300 bg-amber-50 text-amber-900" role="alert">
+              <p className="text-sm font-medium">Denna annons är äldre än 30 dagar</p>
+              <p className="mt-1 text-sm text-amber-800">Kontakta företaget för att höra om tjänsten fortfarande är ledig.</p>
+            </div>
+          )}
+
+          {/* Om företaget – kort, utan duplikat */}
+          {(job.companyDescriptionShort || job.companyWebsite || job.userId) && (
+            <div className="mb-6 p-4 rounded-xl border border-slate-200 bg-slate-50/50">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-2">Om {job.company}</p>
+              {job.companyDescriptionShort ? (
+                <p className="text-slate-700 text-sm leading-relaxed">{job.companyDescriptionShort}</p>
+              ) : null}
+              <div className="mt-2 flex flex-wrap items-center gap-3 text-sm">
+                {job.companyWebsite && (
+                  <a
+                    href={job.companyWebsite.startsWith("http") ? job.companyWebsite : `https://${job.companyWebsite}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[var(--color-primary)] hover:underline"
+                  >
+                    Webbplats ↗
+                  </a>
+                )}
+                {job.userId && (
+                  <Link to={`/foretag/${job.userId}`} className="text-[var(--color-primary)] hover:underline">
+                    Hela företagsprofilen →
+                  </Link>
+                )}
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-6">
             <div>
               <h2 className="font-semibold text-slate-900 mb-2">Om jobbet</h2>
               <p className="text-slate-700 whitespace-pre-line">{job.description}</p>
