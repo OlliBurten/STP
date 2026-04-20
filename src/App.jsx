@@ -1,3 +1,4 @@
+import { lazy, Suspense, useEffect } from "react";
 import { BrowserRouter, Routes, Route, useLocation, matchPath } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import OAuthProviders from "./components/OAuthProviders";
@@ -9,54 +10,55 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import OnboardingGate, { useOnboardingRequired } from "./components/OnboardingGate";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
-import Home from "./pages/Home";
-import ForDrivers from "./pages/ForDrivers";
-import ForCompaniesLanding from "./pages/ForCompaniesLanding";
-import JobList from "./pages/JobList";
-import JobDetail from "./pages/JobDetail";
-import ForCompanies from "./pages/ForCompanies";
-import PostJob from "./pages/PostJob";
-import About from "./pages/About";
-import Profile from "./pages/Profile";
-import DriverSearch from "./pages/DriverSearch";
-import DriverDetail from "./pages/DriverDetail";
-import MinaJobb from "./pages/MinaJobb";
-import MinaAnsokningar from "./pages/MinaAnsokningar";
-import Messages from "./pages/Messages";
-import Login from "./pages/Login";
-import VerifyEmail from "./pages/VerifyEmail";
-import ResetPassword from "./pages/ResetPassword";
-import Terms from "./pages/Terms";
-import Privacy from "./pages/Privacy";
-import Admin from "./pages/Admin";
-import Status from "./pages/Status";
-import NotFound from "./pages/NotFound";
-import SavedJobs from "./pages/SavedJobs";
-import CompanyProfile from "./pages/CompanyProfile";
-import CompanyPublicProfile from "./pages/CompanyPublicProfile";
-import DriverOnboardingWizard from "./pages/DriverOnboardingWizard";
-import CompanyOnboardingWizard from "./pages/CompanyOnboardingWizard";
-import AddCompany from "./pages/AddCompany";
-import InviteAccept from "./pages/InviteAccept";
-import AkerierSearch from "./pages/AkerierSearch";
-import Branschinsikter from "./pages/Branschinsikter";
-import Kompetenslaget2025 from "./pages/Kompetenslaget2025";
-import Kontakt from "./pages/Kontakt";
-import PatchNotes from "./pages/PatchNotes";
-import VisionPresentation from "./pages/VisionPresentation";
-import BloggIndex from "./pages/blogg/BloggIndex";
-import CeKorkortSverige from "./pages/blogg/CeKorkortSverige";
-import YkbGuide from "./pages/blogg/YkbGuide";
-import AdrUtbildning from "./pages/blogg/AdrUtbildning";
-import LonLastbilschauffor from "./pages/blogg/LonLastbilschauffor";
-import HittaJobbCeChauffor from "./pages/blogg/HittaJobbCeChauffor";
-import HittaCeChauffor from "./pages/blogg/HittaCeChauffor";
-import RegionJobList from "./pages/RegionJobList";
 import { useAuth } from "./context/AuthContext";
 import { useProfile } from "./context/ProfileContext";
 import ProfileCompletionBanner from "./components/ProfileCompletionBanner";
 import FeedbackButton from "./components/FeedbackButton";
-import { useEffect } from "react";
+
+// Lazy-loaded pages — each becomes its own chunk
+const Home                  = lazy(() => import("./pages/Home"));
+const ForDrivers            = lazy(() => import("./pages/ForDrivers"));
+const ForCompaniesLanding   = lazy(() => import("./pages/ForCompaniesLanding"));
+const JobList               = lazy(() => import("./pages/JobList"));
+const JobDetail             = lazy(() => import("./pages/JobDetail"));
+const ForCompanies          = lazy(() => import("./pages/ForCompanies"));
+const PostJob               = lazy(() => import("./pages/PostJob"));
+const About                 = lazy(() => import("./pages/About"));
+const Profile               = lazy(() => import("./pages/Profile"));
+const DriverSearch          = lazy(() => import("./pages/DriverSearch"));
+const DriverDetail          = lazy(() => import("./pages/DriverDetail"));
+const MinaJobb              = lazy(() => import("./pages/MinaJobb"));
+const MinaAnsokningar       = lazy(() => import("./pages/MinaAnsokningar"));
+const Messages              = lazy(() => import("./pages/Messages"));
+const Login                 = lazy(() => import("./pages/Login"));
+const VerifyEmail           = lazy(() => import("./pages/VerifyEmail"));
+const ResetPassword         = lazy(() => import("./pages/ResetPassword"));
+const Terms                 = lazy(() => import("./pages/Terms"));
+const Privacy               = lazy(() => import("./pages/Privacy"));
+const Admin                 = lazy(() => import("./pages/Admin"));
+const Status                = lazy(() => import("./pages/Status"));
+const NotFound              = lazy(() => import("./pages/NotFound"));
+const SavedJobs             = lazy(() => import("./pages/SavedJobs"));
+const CompanyProfile        = lazy(() => import("./pages/CompanyProfile"));
+const CompanyPublicProfile  = lazy(() => import("./pages/CompanyPublicProfile"));
+const DriverOnboardingWizard   = lazy(() => import("./pages/DriverOnboardingWizard"));
+const CompanyOnboardingWizard  = lazy(() => import("./pages/CompanyOnboardingWizard"));
+const AddCompany            = lazy(() => import("./pages/AddCompany"));
+const InviteAccept          = lazy(() => import("./pages/InviteAccept"));
+const AkerierSearch         = lazy(() => import("./pages/AkerierSearch"));
+const Branschinsikter       = lazy(() => import("./pages/Branschinsikter"));
+const Kompetenslaget2025    = lazy(() => import("./pages/Kompetenslaget2025"));
+const Kontakt               = lazy(() => import("./pages/Kontakt"));
+const PatchNotes            = lazy(() => import("./pages/PatchNotes"));
+const VisionPresentation    = lazy(() => import("./pages/VisionPresentation"));
+const RegionJobList         = lazy(() => import("./pages/RegionJobList"));
+const BloggIndex            = lazy(() => import("./pages/blogg/BloggIndex"));
+const CeKorkortSverige      = lazy(() => import("./pages/blogg/CeKorkortSverige"));
+const YkbGuide              = lazy(() => import("./pages/blogg/YkbGuide"));
+const AdrUtbildning         = lazy(() => import("./pages/blogg/AdrUtbildning"));
+const LonLastbilschauffor   = lazy(() => import("./pages/blogg/LonLastbilschauffor"));
+const HittaJobbCeChauffor   = lazy(() => import("./pages/blogg/HittaJobbCeChauffor"));
+const HittaCeChauffor       = lazy(() => import("./pages/blogg/HittaCeChauffor"));
 
 function Analytics() {
   const location = useLocation();
@@ -122,6 +124,7 @@ function AppLayout() {
       <div className={`flex-1 ${isImpersonating ? "pt-[104px]" : "pt-16"}`}>
         <DriverCompletionNudge />
         <OnboardingGate>
+        <Suspense fallback={<div className="min-h-[60vh]" />}>
         <Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/forare" element={<ForDrivers />} />
@@ -293,6 +296,7 @@ function AppLayout() {
                   />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
+        </Suspense>
         </OnboardingGate>
               </div>
               <Footer />
