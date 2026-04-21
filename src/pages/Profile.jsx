@@ -18,7 +18,7 @@ import {
   availabilityTypes,
 } from "../data/profileData";
 import { segmentOptions, segmentLabel, internshipTypeLabel, parseSchoolName } from "../data/segments";
-import { CheckIcon, CircleOutlineIcon, LocationIcon, ChevronDownIcon } from "../components/Icons";
+import { CheckIcon, CircleOutlineIcon, LocationIcon, ChevronDownIcon, PencilIcon, TrashIcon } from "../components/Icons";
 import { useToast } from "../context/ToastContext";
 import {
   getDriverMinimumChecklist,
@@ -168,7 +168,9 @@ export default function Profile() {
   const toast = useToast();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(profile);
-  const [newExp, setNewExp] = useState({ company: "", role: "", startYear: "", endYear: "", current: false, description: "" });
+  const [newExp, setNewExp] = useState({ company: "", role: "", startYear: "", endYear: "", current: false, description: "", vehicleTypes: [], jobType: "" });
+  const [editingExpId, setEditingExpId] = useState(null);
+  const [editingExpDraft, setEditingExpDraft] = useState(null);
   const [profileStats, setProfileStats] = useState(null);
   const [profileTips, setProfileTips] = useState(null);
   const [profileTipsLoading, setProfileTipsLoading] = useState(false);
@@ -269,6 +271,26 @@ export default function Profile() {
     updateDraft({ certificates: next });
   };
 
+  const EXP_VEHICLE_TYPES = [
+    { value: "ce_lastbil", label: "CE Lastbil" },
+    { value: "c_lastbil", label: "C Lastbil" },
+    { value: "tankbil", label: "Tankbil" },
+    { value: "kylbil", label: "Kylbil" },
+    { value: "containerbil", label: "Container" },
+    { value: "skåpbil", label: "Skåp/budbil" },
+    { value: "kranbil", label: "Kranbil" },
+    { value: "timmerbil", label: "Timmerbil" },
+    { value: "betongbil", label: "Betongbil" },
+  ];
+  const EXP_JOB_TYPES = [
+    { value: "farjkorning", label: "Fjärrkörning" },
+    { value: "distribution", label: "Distribution" },
+    { value: "lokalt", label: "Lokalkörning" },
+    { value: "tim", label: "Timkörning" },
+    { value: "natt", label: "Nattransport" },
+  ];
+  const expYears = Array.from({ length: new Date().getFullYear() - 1969 }, (_, i) => new Date().getFullYear() - i);
+
   const handleAddExperience = (e) => {
     e.preventDefault();
     if (!newExp.company || !newExp.role) return;
@@ -283,14 +305,25 @@ export default function Profile() {
           endYear: newExp.endYear ? parseInt(newExp.endYear, 10) : null,
           current: newExp.current,
           description: newExp.description,
+          vehicleTypes: newExp.vehicleTypes,
+          jobType: newExp.jobType,
         },
       ],
     });
-    setNewExp({ company: "", role: "", startYear: "", endYear: "", current: false, description: "" });
+    setNewExp({ company: "", role: "", startYear: "", endYear: "", current: false, description: "", vehicleTypes: [], jobType: "" });
   };
 
   const removeExperience = (id) => {
     updateDraft({ experience: (current.experience || []).filter((e) => e.id !== id) });
+  };
+
+  const startEditExp = (exp) => { setEditingExpId(exp.id); setEditingExpDraft({ ...exp, vehicleTypes: exp.vehicleTypes || [], jobType: exp.jobType || "" }); };
+  const cancelEditExp = () => { setEditingExpId(null); setEditingExpDraft(null); };
+  const saveEditExp = () => {
+    if (!editingExpDraft) return;
+    updateDraft({ experience: current.experience.map((e) => e.id === editingExpId ? editingExpDraft : e) });
+    setEditingExpId(null);
+    setEditingExpDraft(null);
   };
 
   const formatYearRange = (exp) => {
@@ -1021,85 +1054,208 @@ export default function Profile() {
             <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">
               Erfarenhet
             </h2>
+
+            {/* Empty state */}
+            {(!current.experience || current.experience.length === 0) && (
+              <div className="text-center py-8 px-4 border-2 border-dashed border-slate-200 rounded-xl mb-6">
+                <p className="text-2xl mb-2">🚛</p>
+                <p className="font-medium text-slate-700 mb-1">Lägg till din första erfarenhet</p>
+                <p className="text-sm text-slate-500">Din jobbhistorik är det viktigaste åkerier tittar på.</p>
+              </div>
+            )}
+
+            {/* Timeline list */}
             {current.experience?.length > 0 && (
-              <ul className="space-y-4 mb-6">
+              <ul className="relative mb-6 space-y-0">
+                <div className="absolute left-[11px] top-3 bottom-3 w-0.5 bg-slate-200" />
                 {current.experience.map((exp) => (
-                  <li key={exp.id} className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 p-4 bg-slate-50 rounded-lg">
-                    <div>
-                      <p className="font-medium text-slate-900">{exp.role} @ {exp.company}</p>
-                      <p className="text-sm text-slate-600">{formatYearRange(exp)}</p>
-                      {exp.description && (
-                        <p className="mt-1 text-sm text-slate-600">{exp.description}</p>
-                      )}
+                  <li key={exp.id} className="relative pl-8 pb-6 last:pb-0">
+                    {/* Timeline dot */}
+                    <div className={`absolute left-0 top-1.5 w-6 h-6 rounded-full border-2 flex items-center justify-center text-xs font-bold ${exp.current ? "bg-green-500 border-green-500 text-white" : "bg-white border-slate-300 text-slate-400"}`}>
+                      {exp.current ? "●" : "○"}
                     </div>
-                    {editing && (
-                      <button
-                        type="button"
-                        onClick={() => removeExperience(exp.id)}
-                        className="text-sm text-red-600 hover:text-red-700"
-                      >
-                        Ta bort
-                      </button>
+
+                    {editingExpId === exp.id ? (
+                      /* Inline edit form */
+                      <div className="bg-white border border-[var(--color-primary)] rounded-xl p-4 shadow-sm space-y-3">
+                        <p className="text-sm font-semibold text-slate-700">Redigera erfarenhet</p>
+                        <div className="grid sm:grid-cols-2 gap-3">
+                          <input type="text" placeholder="Företag" value={editingExpDraft.company}
+                            onChange={(e) => setEditingExpDraft((p) => ({ ...p, company: e.target.value }))}
+                            className="px-3 py-2 rounded-lg border border-slate-200 text-sm" />
+                          <input type="text" placeholder="Roll / titel" value={editingExpDraft.role}
+                            onChange={(e) => setEditingExpDraft((p) => ({ ...p, role: e.target.value }))}
+                            className="px-3 py-2 rounded-lg border border-slate-200 text-sm" />
+                          <select value={editingExpDraft.startYear || ""}
+                            onChange={(e) => setEditingExpDraft((p) => ({ ...p, startYear: e.target.value ? parseInt(e.target.value) : null }))}
+                            className="px-3 py-2 rounded-lg border border-slate-200 text-sm bg-white">
+                            <option value="">Startår</option>
+                            {expYears.map((y) => <option key={y} value={y}>{y}</option>)}
+                          </select>
+                          <select value={editingExpDraft.endYear || ""} disabled={editingExpDraft.current}
+                            onChange={(e) => setEditingExpDraft((p) => ({ ...p, endYear: e.target.value ? parseInt(e.target.value) : null }))}
+                            className="px-3 py-2 rounded-lg border border-slate-200 text-sm bg-white disabled:opacity-40">
+                            <option value="">Slutår</option>
+                            {expYears.map((y) => <option key={y} value={y}>{y}</option>)}
+                          </select>
+                        </div>
+                        <label className="flex items-center gap-2 text-sm cursor-pointer">
+                          <input type="checkbox" checked={editingExpDraft.current}
+                            onChange={(e) => setEditingExpDraft((p) => ({ ...p, current: e.target.checked, endYear: e.target.checked ? null : p.endYear }))}
+                            className="rounded" />
+                          Pågående jobb
+                        </label>
+                        <div>
+                          <p className="text-xs font-medium text-slate-600 mb-1.5">Fordonstyp</p>
+                          <div className="flex flex-wrap gap-2">
+                            {EXP_VEHICLE_TYPES.map((v) => {
+                              const active = (editingExpDraft.vehicleTypes || []).includes(v.value);
+                              return (
+                                <button key={v.value} type="button"
+                                  onClick={() => setEditingExpDraft((p) => ({ ...p, vehicleTypes: active ? (p.vehicleTypes || []).filter((x) => x !== v.value) : [...(p.vehicleTypes || []), v.value] }))}
+                                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${active ? "bg-[var(--color-primary)] text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>
+                                  {v.label}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium text-slate-600 mb-1.5">Körtyp</p>
+                          <div className="flex flex-wrap gap-2">
+                            {EXP_JOB_TYPES.map((j) => (
+                              <button key={j.value} type="button"
+                                onClick={() => setEditingExpDraft((p) => ({ ...p, jobType: p.jobType === j.value ? "" : j.value }))}
+                                className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${editingExpDraft.jobType === j.value ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>
+                                {j.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <textarea placeholder="Kort beskrivning (valfritt)" value={editingExpDraft.description || ""}
+                          onChange={(e) => setEditingExpDraft((p) => ({ ...p, description: e.target.value }))}
+                          rows={2}
+                          className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm resize-none" />
+                        <div className="flex gap-2">
+                          <button type="button" onClick={saveEditExp}
+                            className="px-4 py-1.5 rounded-lg bg-[var(--color-primary)] text-white text-sm font-medium">Spara</button>
+                          <button type="button" onClick={cancelEditExp}
+                            className="px-4 py-1.5 rounded-lg border border-slate-200 text-sm text-slate-600">Avbryt</button>
+                        </div>
+                      </div>
+                    ) : (
+                      /* Display card */
+                      <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <p className="font-semibold text-slate-900">{exp.role}</p>
+                              {exp.current && (
+                                <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Pågående</span>
+                              )}
+                            </div>
+                            <p className="text-sm text-slate-600 mt-0.5">{exp.company} · {formatYearRange(exp)}</p>
+                            {(exp.vehicleTypes?.length > 0 || exp.jobType) && (
+                              <div className="flex flex-wrap gap-1.5 mt-2">
+                                {(exp.vehicleTypes || []).map((v) => (
+                                  <span key={v} className="px-2 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-600">
+                                    {EXP_VEHICLE_TYPES.find((x) => x.value === v)?.label || v}
+                                  </span>
+                                ))}
+                                {exp.jobType && (
+                                  <span className="px-2 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-700">
+                                    {EXP_JOB_TYPES.find((x) => x.value === exp.jobType)?.label || exp.jobType}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                            {exp.description && (
+                              <p className="mt-2 text-sm text-slate-500">{exp.description}</p>
+                            )}
+                          </div>
+                          {editing && (
+                            <div className="flex items-center gap-1 shrink-0">
+                              <button type="button" onClick={() => startEditExp(exp)}
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors">
+                                <PencilIcon className="w-4 h-4" />
+                              </button>
+                              <button type="button" onClick={() => removeExperience(exp.id)}
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors">
+                                <TrashIcon className="w-4 h-4" />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     )}
                   </li>
                 ))}
               </ul>
             )}
-            {editing && (
-              <form onSubmit={handleAddExperience} className="space-y-3 p-4 border border-dashed border-slate-300 rounded-lg">
-                <p className="text-sm font-medium text-slate-700">Lägg till erfarenhet</p>
+
+            {/* Add experience form */}
+            {editing && editingExpId === null && (
+              <form onSubmit={handleAddExperience} className="space-y-3 p-4 border-2 border-dashed border-slate-200 rounded-xl bg-slate-50">
+                <p className="text-sm font-semibold text-slate-700">+ Lägg till erfarenhet</p>
                 <div className="grid sm:grid-cols-2 gap-3">
-                  <input
-                    type="text"
-                    placeholder="Företag"
-                    value={newExp.company}
+                  <input type="text" placeholder="Företag *" value={newExp.company}
                     onChange={(e) => setNewExp((p) => ({ ...p, company: e.target.value }))}
-                    className="px-3 py-2 rounded-lg border border-slate-200 text-sm"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Roll"
-                    value={newExp.role}
+                    className="px-3 py-2 rounded-lg border border-slate-200 text-sm bg-white" />
+                  <input type="text" placeholder="Roll / titel *" value={newExp.role}
                     onChange={(e) => setNewExp((p) => ({ ...p, role: e.target.value }))}
-                    className="px-3 py-2 rounded-lg border border-slate-200 text-sm"
-                  />
-                  <input
-                    type="number"
-                    placeholder="Startår"
-                    value={newExp.startYear || ""}
+                    className="px-3 py-2 rounded-lg border border-slate-200 text-sm bg-white" />
+                  <select value={newExp.startYear || ""}
                     onChange={(e) => setNewExp((p) => ({ ...p, startYear: e.target.value }))}
-                    className="px-3 py-2 rounded-lg border border-slate-200 text-sm"
-                  />
-                  <input
-                    type="number"
-                    placeholder="Slutår"
-                    value={newExp.endYear || ""}
+                    className="px-3 py-2 rounded-lg border border-slate-200 text-sm bg-white">
+                    <option value="">Startår</option>
+                    {expYears.map((y) => <option key={y} value={y}>{y}</option>)}
+                  </select>
+                  <select value={newExp.endYear || ""} disabled={newExp.current}
                     onChange={(e) => setNewExp((p) => ({ ...p, endYear: e.target.value }))}
-                    className="px-3 py-2 rounded-lg border border-slate-200 text-sm"
-                    disabled={newExp.current}
-                  />
+                    className="px-3 py-2 rounded-lg border border-slate-200 text-sm bg-white disabled:opacity-40">
+                    <option value="">Slutår</option>
+                    {expYears.map((y) => <option key={y} value={y}>{y}</option>)}
+                  </select>
                 </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="current"
-                    checked={newExp.current}
-                    onChange={(e) => setNewExp((p) => ({ ...p, current: e.target.checked }))}
-                    className="rounded"
-                  />
-                  <label htmlFor="current" className="text-sm">Pågående</label>
+                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                  <input type="checkbox" id="newExpCurrent" checked={newExp.current}
+                    onChange={(e) => setNewExp((p) => ({ ...p, current: e.target.checked, endYear: e.target.checked ? "" : p.endYear }))}
+                    className="rounded" />
+                  Pågående jobb
+                </label>
+                <div>
+                  <p className="text-xs font-medium text-slate-600 mb-1.5">Fordonstyp</p>
+                  <div className="flex flex-wrap gap-2">
+                    {EXP_VEHICLE_TYPES.map((v) => {
+                      const active = newExp.vehicleTypes.includes(v.value);
+                      return (
+                        <button key={v.value} type="button"
+                          onClick={() => setNewExp((p) => ({ ...p, vehicleTypes: active ? p.vehicleTypes.filter((x) => x !== v.value) : [...p.vehicleTypes, v.value] }))}
+                          className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${active ? "bg-[var(--color-primary)] text-white" : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-100"}`}>
+                          {v.label}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-                <input
-                  type="text"
-                  placeholder="Kort beskrivning"
-                  value={newExp.description}
+                <div>
+                  <p className="text-xs font-medium text-slate-600 mb-1.5">Körtyp</p>
+                  <div className="flex flex-wrap gap-2">
+                    {EXP_JOB_TYPES.map((j) => (
+                      <button key={j.value} type="button"
+                        onClick={() => setNewExp((p) => ({ ...p, jobType: p.jobType === j.value ? "" : j.value }))}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${newExp.jobType === j.value ? "bg-blue-600 text-white" : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-100"}`}>
+                        {j.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <textarea placeholder="Kort beskrivning (valfritt)" value={newExp.description}
                   onChange={(e) => setNewExp((p) => ({ ...p, description: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm"
-                />
-                <button
-                  type="submit"
-                  className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white text-sm font-medium hover:bg-[var(--color-primary-light)]"
-                >
+                  rows={2}
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm bg-white resize-none" />
+                <button type="submit" disabled={!newExp.company || !newExp.role}
+                  className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white text-sm font-medium disabled:opacity-40">
                   Lägg till
                 </button>
               </form>
