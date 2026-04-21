@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect } from "react";
+import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
 import { BrowserRouter, Routes, Route, useLocation, matchPath } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import OAuthProviders from "./components/OAuthProviders";
@@ -67,7 +68,7 @@ const LastbilschaufforUtbildning = lazy(() => import("./pages/blogg/Lastbilschau
 const ArbetstidChauffor     = lazy(() => import("./pages/blogg/ArbetstidChauffor"));
 const Fjarrkörning          = lazy(() => import("./pages/blogg/Fjarrkörning"));
 
-function Analytics() {
+function PlausibleAnalytics() {
   const location = useLocation();
   useEffect(() => {
     if (typeof window.plausible === "function") {
@@ -323,7 +324,8 @@ function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
-      <Analytics />
+      <PlausibleAnalytics />
+      <VercelAnalytics />
       <ErrorBoundary>
         <OAuthProviders>
           <AuthProvider>
