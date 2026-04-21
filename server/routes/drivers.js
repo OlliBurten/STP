@@ -193,7 +193,6 @@ driversRouter.get("/public/:id", async (req, res, next) => {
         userId: req.params.id,
         visibleToCompanies: true,
         user: {
-          needsDriverOnboarding: false,
           suspendedAt: null,
         },
       },
