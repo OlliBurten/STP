@@ -46,6 +46,7 @@ const CompanyOnboardingWizard  = lazy(() => import("./pages/CompanyOnboardingWiz
 const AddCompany            = lazy(() => import("./pages/AddCompany"));
 const InviteAccept          = lazy(() => import("./pages/InviteAccept"));
 const AkerierSearch         = lazy(() => import("./pages/AkerierSearch"));
+const PublicDriverProfile   = lazy(() => import("./pages/PublicDriverProfile"));
 const Branschinsikter       = lazy(() => import("./pages/Branschinsikter"));
 const Kompetenslaget2025    = lazy(() => import("./pages/Kompetenslaget2025"));
 const Kontakt               = lazy(() => import("./pages/Kontakt"));
@@ -134,6 +135,7 @@ function AppLayout() {
         <Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/forare" element={<ForDrivers />} />
+                  <Route path="/forare/:id" element={<PublicDriverProfile />} />
                   <Route path="/for-akerier" element={<ForCompaniesLanding />} />
                   <Route path="/jobb" element={<JobList />} />
                   <Route path="/jobb/:id" element={<JobDetail />} />

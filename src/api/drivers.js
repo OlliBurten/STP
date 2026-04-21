@@ -18,3 +18,8 @@ export function trackDriverProfileView(driverId) {
 export async function fetchDriverProfileStats() {
   return apiGet("/api/drivers/me/stats");
 }
+
+/** Publik förarprofil — kräver ingen inloggning */
+export async function fetchPublicDriver(id) {
+  return apiGet(`/api/drivers/public/${id}`);
+}

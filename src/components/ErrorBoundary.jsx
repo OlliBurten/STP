@@ -23,7 +23,8 @@ export default class ErrorBoundary extends Component {
       (error?.message?.includes("Failed to fetch dynamically imported module") ||
         error?.message?.includes("Load failed") ||
         error?.message?.includes("Importing a module script failed") ||
-        error?.message?.includes("error loading dynamically imported module"));
+        error?.message?.includes("error loading dynamically imported module") ||
+        error?.message?.includes("is not a valid JavaScript MIME type"));
     if (isChunkError) {
       const key = "chunk_reload_attempted";
       if (!sessionStorage.getItem(key)) {

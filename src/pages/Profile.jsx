@@ -172,6 +172,7 @@ export default function Profile() {
   const [profileStats, setProfileStats] = useState(null);
   const [profileTips, setProfileTips] = useState(null);
   const [profileTipsLoading, setProfileTipsLoading] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
   const [driverMarket, setDriverMarket] = useState(null);
   const onboardingKey = user?.id ? `drivermatch-onboarding-dismissed:${user.id}:driver` : "";
   const [hideOnboarding, setHideOnboarding] = useState(() => {
@@ -414,6 +415,43 @@ export default function Profile() {
 
       {hasApi && profile?.profileScore != null && (
         <ProfileScoreCard score={profile.profileScore} tips={profile.profileScoreTips || []} onEdit={startEditing} />
+      )}
+
+      {hasApi && user?.id && (
+        <div className="mb-6 bg-white rounded-xl border border-slate-200 p-5">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <p className="text-sm font-semibold text-slate-900">Din publika profillänk</p>
+              <p className="text-xs text-slate-500 mt-0.5">
+                {profile?.visibleToCompanies
+                  ? "Dela länken direkt med åkerier — de ser dina uppgifter utan inloggning."
+                  : "Aktivera synlighet för att profilen ska synas för besökare."}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <a
+                href={`/forare/${user.id}`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-sm text-[var(--color-primary)] hover:underline truncate max-w-[220px]"
+              >
+                transportplattformen.se/forare/{user.id.slice(0, 8)}…
+              </a>
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(`https://transportplattformen.se/forare/${user.id}`).then(() => {
+                    setLinkCopied(true);
+                    setTimeout(() => setLinkCopied(false), 2000);
+                  });
+                }}
+                className="shrink-0 px-3 py-1.5 rounded-lg border border-slate-300 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+              >
+                {linkCopied ? "Kopierat!" : "Kopiera"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {hasApi && driverMarket && driverMarket.jobsInRegion > 0 && (

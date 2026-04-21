@@ -185,6 +185,57 @@ driversRouter.get("/me/stats", authMiddleware, requireDriver, async (req, res, n
   }
 });
 
+/** Publik förarprofil — ingen auth, returnerar aldrig kontaktuppgifter */
+driversRouter.get("/public/:id", async (req, res, next) => {
+  try {
+    const profile = await prisma.driverProfile.findFirst({
+      where: {
+        userId: req.params.id,
+        visibleToCompanies: true,
+        user: {
+          needsDriverOnboarding: false,
+          suspendedAt: null,
+        },
+      },
+      include: { user: { select: { id: true, name: true } } },
+    });
+    if (!profile) return res.status(404).json({ error: "Föraren hittades inte eller har valt att inte synas offentligt" });
+    const exp = (profile.experience && typeof profile.experience === "object")
+      ? profile.experience
+      : typeof profile.experience === "string"
+        ? JSON.parse(profile.experience || "[]")
+        : [];
+    const now = new Date().getFullYear();
+    let yearsExperience = 0;
+    for (const e of exp) {
+      const start = e.startYear || now;
+      const end = e.current ? now : e.endYear || now;
+      yearsExperience += Math.max(0, end - start);
+    }
+    res.json({
+      id: profile.userId,
+      name: profile.user?.name || "",
+      location: profile.location,
+      region: profile.region,
+      regionsWilling: profile.regionsWilling,
+      licenses: profile.licenses,
+      certificates: profile.certificates,
+      availability: profile.availability,
+      primarySegment: profile.primarySegment,
+      secondarySegments: profile.secondarySegments,
+      yearsExperience,
+      summary: profile.summary,
+      experience: exp,
+      isGymnasieelev: profile.isGymnasieelev ?? false,
+      schoolName: profile.schoolName ?? null,
+      profileScore: computeProfileScore(profile, profile.user).score,
+      fastResponder: profile.fastResponder ?? false,
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
 driversRouter.get("/:id", authMiddleware, requireCompany, requireVerifiedCompany, async (req, res, next) => {
   try {
     const profile = await prisma.driverProfile.findFirst({
