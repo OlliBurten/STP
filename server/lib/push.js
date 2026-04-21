@@ -1,11 +1,13 @@
 import webpush from "web-push";
 import { prisma } from "./prisma.js";
 
-webpush.setVapidDetails(
-  process.env.VAPID_SUBJECT || "mailto:oliver@transportplattformen.se",
-  process.env.VAPID_PUBLIC_KEY,
-  process.env.VAPID_PRIVATE_KEY
-);
+if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+  webpush.setVapidDetails(
+    process.env.VAPID_SUBJECT || "mailto:oliver@transportplattformen.se",
+    process.env.VAPID_PUBLIC_KEY,
+    process.env.VAPID_PRIVATE_KEY
+  );
+}
 
 /**
  * Send a push notification to all subscriptions for a user.
