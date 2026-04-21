@@ -606,21 +606,22 @@ export default function Profile() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Region</label>
-                    <div className="relative">
-                      <select
-                        value={current.region || ""}
-                        onChange={(e) => updateDraft({ region: e.target.value })}
-                        className="w-full appearance-none px-3 pr-9 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent bg-white text-sm"
-                      >
-                        <option value="">Välj</option>
-                        {regions.map((r) => (
-                          <option key={r} value={r}>{r}</option>
-                        ))}
-                      </select>
-                      <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-400">
-                        <ChevronDownIcon className="w-4 h-4" />
-                      </span>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Region</label>
+                    <div className="flex flex-wrap gap-2">
+                      {regions.map((r) => (
+                        <button
+                          key={r}
+                          type="button"
+                          onClick={() => updateDraft({ region: current.region === r ? "" : r })}
+                          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                            current.region === r
+                              ? "bg-[var(--color-primary)] text-white"
+                              : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                          }`}
+                        >
+                          {r}
+                        </button>
+                      ))}
                     </div>
                   </div>
                 </div>
