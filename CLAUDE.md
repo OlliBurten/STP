@@ -42,12 +42,34 @@ npm run dev
 ```
 
 ### Deployment
+
+**Frontend** — always run from project root (not server/):
 ```bash
-npx vercel          # Deploy preview
-npx vercel --prod   # Deploy to production (transportplattformen.se)
-vercel env add <NAME> production   # Add/update env var
-vercel env ls                      # List env vars
+vercel --cwd /Users/harburt/Desktop/DriverMatch --prod   # Deploy to transportplattformen.se
+vercel --cwd /Users/harburt/Desktop/DriverMatch          # Deploy preview
+vercel --cwd /Users/harburt/Desktop/DriverMatch env add <NAME> production
 ```
+
+**Backend** — Railway project `drivermatch`, service `nodejs`:
+```bash
+# First time / if CLI is linked to wrong project:
+cd server && railway link -p drivermatch -s nodejs
+
+# Deploy:
+cd server && railway up
+
+# Logs / variables:
+railway logs
+railway variables
+```
+
+**Infrastructure summary:**
+- Live frontend: Vercel project `drivermatch-20260212` → transportplattformen.se
+- Live backend: Railway project `drivermatch`, service `nodejs` → nodejs-production-f3b9.up.railway.app
+- Demo frontend: Vercel project `transportplattform-demo` → transportplattform-demo.vercel.app
+- Demo backend: Railway project `drivermatch-demo` → drivermatch-demo-production.up.railway.app
+- `drivermatch-clean` on Railway is UNUSED — can be deleted
+- `server/.vercel/` points to a dead "server" Vercel project — ignore it, always use --cwd flag
 
 ## Architecture
 
