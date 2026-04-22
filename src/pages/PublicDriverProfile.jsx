@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { fetchPublicDriver } from "../api/drivers.js";
+import { fetchPublicDriver, trackDriverProfileView } from "../api/drivers.js";
 import { availabilityTypes, getCertificateLabel } from "../data/profileData";
 import { segmentLabel } from "../data/segments";
 import { LocationIcon } from "../components/Icons";
@@ -56,6 +56,12 @@ export default function PublicDriverProfile() {
       .catch(() => setError(true))
       .finally(() => setLoading(false));
   }, [id]);
+
+  // Track view when a verified company visits (fire-and-forget)
+  useEffect(() => {
+    if (!id || !isCompany || user?.id === id) return;
+    trackDriverProfileView(id).catch(() => {});
+  }, [id, isCompany, user?.id]);
 
   const handleShare = async () => {
     const url = window.location.href;

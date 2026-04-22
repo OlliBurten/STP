@@ -18,7 +18,7 @@ import {
   availabilityTypes,
 } from "../data/profileData";
 import { segmentOptions, segmentLabel, internshipTypeLabel, parseSchoolName } from "../data/segments";
-import { CheckIcon, CircleOutlineIcon, LocationIcon, ChevronDownIcon, PencilIcon, TrashIcon } from "../components/Icons";
+import { CheckIcon, CircleOutlineIcon, LocationIcon, ChevronDownIcon, PencilIcon, TrashIcon, EyeIcon } from "../components/Icons";
 import { useToast } from "../context/ToastContext";
 import {
   getDriverMinimumChecklist,
@@ -573,19 +573,22 @@ export default function Profile() {
 
       {profileStats && (
         <div className="mb-6 bg-white rounded-xl border border-slate-200 p-6">
-          <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">Din statistik</h2>
+          <div className="flex items-center gap-2 mb-4">
+            <EyeIcon className="w-4 h-4 text-slate-400" />
+            <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide">Hur din profil presterar</h2>
+          </div>
           <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-4">
             <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 sm:p-4 text-center">
               <p className="text-xl sm:text-2xl font-bold text-slate-900">{profileStats.views7}</p>
-              <p className="text-xs text-slate-500 mt-1">Vy 7 dagar</p>
+              <p className="text-xs text-slate-500 mt-1">Visningar<br/>7 dagar</p>
             </div>
             <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 sm:p-4 text-center">
               <p className="text-xl sm:text-2xl font-bold text-slate-900">{profileStats.views30}</p>
-              <p className="text-xs text-slate-500 mt-1">Vy 30 dagar</p>
+              <p className="text-xs text-slate-500 mt-1">Visningar<br/>30 dagar</p>
             </div>
             <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 sm:p-4 text-center">
               <p className="text-xl sm:text-2xl font-bold text-slate-900">{profileStats.conversationCount}</p>
-              <p className="text-xs text-slate-500 mt-1">Kontakter</p>
+              <p className="text-xs text-slate-500 mt-1">Åkerier har<br/>kontaktat dig</p>
             </div>
           </div>
           {profileStats.recommendations?.length > 0 && (
