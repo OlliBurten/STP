@@ -13,19 +13,12 @@ function initialsFromUser(user) {
   const email = String(user.email || "").trim();
   if (name) {
     const parts = name.split(/\s+/).filter(Boolean);
-    if (parts.length >= 2) {
-      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-    }
+    if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
     return name.slice(0, 2).toUpperCase();
   }
   if (email) return email.slice(0, 2).toUpperCase();
   return "?";
 }
-
-const navClass = ({ isActive }) =>
-  isActive
-    ? "text-[var(--color-primary)] font-semibold relative after:absolute after:-bottom-1 after:left-0 after:right-0 after:h-0.5 after:rounded-full after:bg-[var(--color-primary)]"
-    : "text-slate-600 hover:text-[var(--color-primary)] transition-colors";
 
 const PUBLIC_NAV_LINKS = [
   { to: "/", label: "Hem" },
@@ -42,15 +35,16 @@ const PUBLIC_EXTRA_LINKS = [
 ];
 
 export default function Header({ onboarding = false }) {
-  const { user, adminUser, impersonation, isDriver, isCompany, isAdmin, isImpersonating, logout, stopViewAs } = useAuth();
+  const { user, isDriver, isCompany, isAdmin, isImpersonating, logout, stopViewAs } = useAuth();
   const { selectedNotificationCount, unreadCount = 0, companyUnreadConversationCount = 0 } = useChat();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [navDropdownOpen, setNavDropdownOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const [notifications, setNotifications] = useState({ list: [], unreadCount: 0 });
-  const [pushPermission, setPushPermission] = useState("default"); // "default" | "granted" | "denied" | "unsupported"
+  const [pushPermission, setPushPermission] = useState("default");
   const [pushSubscribed, setPushSubscribed] = useState(false);
   const [pushLoading, setPushLoading] = useState(false);
   const notifRef = useRef(null);
@@ -59,15 +53,17 @@ export default function Header({ onboarding = false }) {
 
   const platformAdminSession = isAdmin && !isImpersonating;
 
-  const isVerifiedCompany = !isCompany || user?.companyStatus === "VERIFIED";
+  useEffect(() => {
+    const fn = () => setScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", fn, { passive: true });
+    return () => window.removeEventListener("scroll", fn);
+  }, []);
 
   useEffect(() => {
     if (!user) return;
     getPushPermission().then((perm) => {
       setPushPermission(perm);
-      if (perm === "granted") {
-        getCurrentSubscription().then((sub) => setPushSubscribed(!!sub)).catch(() => {});
-      }
+      if (perm === "granted") getCurrentSubscription().then((sub) => setPushSubscribed(!!sub)).catch(() => {});
     });
   }, [user]);
 
@@ -75,7 +71,7 @@ export default function Header({ onboarding = false }) {
     if (!user || !notifOpen) return;
     fetchNotifications()
       .then((data) => setNotifications({ list: data.list || [], unreadCount: data.unreadCount ?? 0 }))
-      .catch(() => setNotifications((n) => n));
+      .catch(() => {});
   }, [user, notifOpen]);
 
   useEffect(() => {
@@ -96,17 +92,12 @@ export default function Header({ onboarding = false }) {
   }, [notifOpen, navDropdownOpen, userMenuOpen]);
 
   const closeMobile = () => setMobileOpen(false);
-  const handleLogout = () => {
-    closeMobile();
-    logout();
-  };
+  const handleLogout = () => { closeMobile(); logout(); };
+
   const handleStopViewAs = async () => {
     try {
       await stopViewAs();
-      if (typeof window !== "undefined") {
-        window.location.assign("/admin");
-        return;
-      }
+      if (typeof window !== "undefined") { window.location.assign("/admin"); return; }
       navigate("/admin", { replace: true });
       closeMobile();
     } catch (_) {}
@@ -135,19 +126,10 @@ export default function Header({ onboarding = false }) {
         setPushSubscribed(false);
       } else {
         const sub = await subscribeToPush(token);
-        if (sub) {
-          setPushSubscribed(true);
-          setPushPermission("granted");
-        } else {
-          // Permission denied or unsupported
-          setPushPermission(await getPushPermission());
-        }
+        if (sub) { setPushSubscribed(true); setPushPermission("granted"); }
+        else setPushPermission(await getPushPermission());
       }
-    } catch {
-      // ignore
-    } finally {
-      setPushLoading(false);
-    }
+    } catch { /* ignore */ } finally { setPushLoading(false); }
   };
 
   const handleMarkAllRead = () => {
@@ -167,18 +149,41 @@ export default function Header({ onboarding = false }) {
     return d.toLocaleDateString("sv-SE", { day: "numeric", month: "short" });
   };
 
-  const closeNavDropdown = () => {
-    setNavDropdownOpen(false);
-    closeMobile();
+  // ── Always dark header — dark gradient at top so logo is always visible ───
+  // On scroll: solid dark. At top: dark gradient (not fully transparent)
+  // so that the logo/links are readable regardless of page background.
+  const headerStyle = {
+    background: scrolled
+      ? "rgba(5,14,14,0.92)"
+      : "linear-gradient(to bottom, rgba(5,14,14,0.72) 0%, rgba(5,14,14,0.1) 100%)",
+    borderBottom: isImpersonating
+      ? "1px solid rgba(245,166,35,0.4)"
+      : scrolled
+      ? "1px solid rgba(255,255,255,0.06)"
+      : "none",
+    backdropFilter: scrolled ? "blur(12px)" : "none",
+    transition: "background 0.3s, backdrop-filter 0.3s, border-color 0.3s",
+    boxShadow: "none",
   };
 
+  // ── Nav link helper ────────────────────────────────────────────────────────
+  const darkNavLinkClass = ({ isActive }) =>
+    isActive ? "dm-dark-nav-link active-dark" : "dm-dark-nav-link";
+
+  // ── Nav links content ──────────────────────────────────────────────────────
   const navLinks = (
     <>
       {!user && (
         <>
           {PUBLIC_NAV_LINKS.map((item) => (
             <li key={item.label}>
-              <NavLink to={item.to} onClick={closeMobile} className={navClass} end={item.to === "/"}>
+              <NavLink
+                to={item.to}
+                onClick={closeMobile}
+                className={darkNavLinkClass}
+                style={{ fontSize: 14, fontWeight: 500 }}
+                end={item.to === "/"}
+              >
                 {item.label}
               </NavLink>
             </li>
@@ -188,7 +193,8 @@ export default function Header({ onboarding = false }) {
               type="button"
               onClick={() => setNavDropdownOpen((o) => !o)}
               onMouseEnter={() => setNavDropdownOpen(true)}
-              className="flex items-center gap-1 text-slate-600 hover:text-[var(--color-primary)] transition-colors font-medium"
+              className="dm-dark-nav-link flex items-center gap-1"
+              style={{ background: "none", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 500 }}
               aria-expanded={navDropdownOpen}
               aria-haspopup="true"
               aria-controls="nav-mer-dropdown"
@@ -200,46 +206,56 @@ export default function Header({ onboarding = false }) {
               <div
                 id="nav-mer-dropdown"
                 role="menu"
-                className="absolute left-0 right-0 top-full mt-0 pt-2 z-[100] w-full min-w-0 sm:left-1/2 sm:right-auto sm:w-auto sm:-translate-x-1/2 sm:min-w-[200px]"
+                className="absolute left-0 top-full mt-0 pt-2 z-[100] w-full min-w-0 sm:left-1/2 sm:right-auto sm:w-auto sm:-translate-x-1/2 sm:min-w-[200px]"
                 onMouseLeave={() => setNavDropdownOpen(false)}
               >
-                <div className="bg-white rounded-xl border border-slate-200 shadow-lg py-2 min-w-[200px] w-full sm:w-auto">
-                  <Link to="/#sa-fungerar-det" role="menuitem" onClick={closeNavDropdown} className="block px-5 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[var(--color-primary)]">
-                    Så fungerar STP
-                  </Link>
-                  <Link to="/uppdateringar" role="menuitem" onClick={closeNavDropdown} className="block px-5 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[var(--color-primary)]">
-                    Vad är nytt
-                  </Link>
-                  <Link to="/om-oss" role="menuitem" onClick={closeNavDropdown} className="block px-5 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[var(--color-primary)]">
-                    Om STP
-                  </Link>
-                  <Link to="/blogg" role="menuitem" onClick={closeNavDropdown} className="block px-5 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[var(--color-primary)]">
-                    Blogg
-                  </Link>
-                  <Link to="/branschinsikter" role="menuitem" onClick={closeNavDropdown} className="block px-5 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[var(--color-primary)]">
-                    Branschinsikter
-                  </Link>
+                <div
+                  className="rounded-xl shadow-lg py-2 min-w-[200px] w-full sm:w-auto"
+                  style={{ background: "rgba(10,22,22,0.97)", border: "1px solid rgba(255,255,255,0.1)", backdropFilter: "blur(12px)" }}
+                >
+                  {[
+                    { to: "/#sa-fungerar-det", label: "Så fungerar STP" },
+                    { to: "/uppdateringar", label: "Vad är nytt" },
+                    { to: "/om-oss", label: "Om STP" },
+                    { to: "/blogg", label: "Blogg" },
+                    { to: "/branschinsikter", label: "Branschinsikter" },
+                  ].map((item) => (
+                    <Link
+                      key={item.to}
+                      to={item.to}
+                      role="menuitem"
+                      onClick={() => { setNavDropdownOpen(false); closeMobile(); }}
+                      className="block px-5 py-2.5 text-sm transition-colors"
+                      style={{ color: "rgba(255,255,255,0.75)", textDecoration: "none" }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; e.currentTarget.style.color = "#fff"; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = ""; e.currentTarget.style.color = "rgba(255,255,255,0.75)"; }}
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
                 </div>
               </div>
             )}
           </li>
           <li>
-            <Link to="/kontakt" onClick={closeMobile} className="hover:text-[var(--color-primary)] transition-colors">
+            <Link
+              to="/kontakt"
+              onClick={closeMobile}
+              className="dm-dark-nav-link"
+              style={{ fontSize: 14, fontWeight: 500 }}
+            >
               Kontakt
             </Link>
           </li>
         </>
       )}
+
       {user && isDriver && !platformAdminSession && (
         <>
+          <li><NavLink to="/jobb" onClick={closeMobile} className={darkNavLinkClass} style={{ fontSize: 14 }}>Jobb</NavLink></li>
+          <li><NavLink to="/akerier" onClick={closeMobile} className={darkNavLinkClass} style={{ fontSize: 14 }}>Åkerier</NavLink></li>
           <li>
-            <NavLink to="/jobb" onClick={closeMobile} className={navClass}>Jobb</NavLink>
-          </li>
-          <li>
-            <NavLink to="/akerier" onClick={closeMobile} className={navClass}>Åkerier</NavLink>
-          </li>
-          <li>
-            <NavLink to="/meddelanden" onClick={closeMobile} className={({ isActive }) => `inline-flex items-center gap-1.5 ${navClass({ isActive })}`}>
+            <NavLink to="/meddelanden" onClick={closeMobile} className={({ isActive }) => `inline-flex items-center gap-1.5 ${isActive ? "dm-dark-nav-link active-dark" : "dm-dark-nav-link"}`} style={{ fontSize: 14 }}>
               Meddelanden
               {(unreadCount > 0 || selectedNotificationCount > 0) && (
                 <span className="inline-flex items-center justify-center min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold">
@@ -248,27 +264,18 @@ export default function Header({ onboarding = false }) {
               )}
             </NavLink>
           </li>
-          <li>
-            <NavLink to="/favoriter" onClick={closeMobile} className={navClass}>Favoriter</NavLink>
-          </li>
-          <li>
-            <NavLink to="/mina-ansokningar" onClick={closeMobile} className={navClass}>Mina ansökningar</NavLink>
-          </li>
+          <li><NavLink to="/favoriter" onClick={closeMobile} className={darkNavLinkClass} style={{ fontSize: 14 }}>Favoriter</NavLink></li>
+          <li><NavLink to="/mina-ansokningar" onClick={closeMobile} className={darkNavLinkClass} style={{ fontSize: 14 }}>Mina ansökningar</NavLink></li>
         </>
       )}
+
       {isCompany && (
         <>
+          <li><NavLink to="/foretag" onClick={closeMobile} className={darkNavLinkClass} style={{ fontSize: 14 }} end>Översikt</NavLink></li>
+          <li><NavLink to="/foretag/mina-jobb" onClick={closeMobile} className={darkNavLinkClass} style={{ fontSize: 14 }}>Mina jobb</NavLink></li>
+          <li><NavLink to="/foretag/chaufforer" onClick={closeMobile} className={darkNavLinkClass} style={{ fontSize: 14 }}>Hitta förare</NavLink></li>
           <li>
-            <NavLink to="/foretag" onClick={closeMobile} className={navClass} end>Översikt</NavLink>
-          </li>
-          <li>
-            <NavLink to="/foretag/mina-jobb" onClick={closeMobile} className={navClass}>Mina jobb</NavLink>
-          </li>
-          <li>
-            <NavLink to="/foretag/chaufforer" onClick={closeMobile} className={navClass}>Hitta förare</NavLink>
-          </li>
-          <li>
-            <NavLink to="/foretag/meddelanden" onClick={closeMobile} className={({ isActive }) => `inline-flex items-center gap-1.5 ${navClass({ isActive })}`}>
+            <NavLink to="/foretag/meddelanden" onClick={closeMobile} className={({ isActive }) => `inline-flex items-center gap-1.5 ${isActive ? "dm-dark-nav-link active-dark" : "dm-dark-nav-link"}`} style={{ fontSize: 14 }}>
               Meddelanden
               {companyUnreadConversationCount > 0 && (
                 <span className="inline-flex min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold items-center justify-center">
@@ -282,326 +289,314 @@ export default function Header({ onboarding = false }) {
     </>
   );
 
+  // ── Onboarding mode ────────────────────────────────────────────────────────
   if (onboarding && user) {
     return (
-      <>
-        <header className="fixed left-0 right-0 top-0 z-50 bg-white/95 backdrop-blur border-b border-slate-200">
-          <nav className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-14">
-            <Link to="/" className="flex items-center" aria-label="Startsida">
-              <Logo height={32} />
-            </Link>
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="text-sm font-medium text-slate-600 hover:text-[var(--color-primary)] py-2 px-3"
-            >
-              Logga ut
-            </button>
-          </nav>
-        </header>
-      </>
+      <header style={{ ...headerStyle, position: "fixed", left: 0, right: 0, top: 0, zIndex: 50 }}>
+        <nav className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
+          <Link to="/" className="flex items-center" aria-label="Startsida">
+            <Logo height={32} variant="light" />
+          </Link>
+          <button type="button" onClick={handleLogout} className="dm-dark-nav-link text-sm font-medium py-2 px-3" style={{ background: "none", border: "none", cursor: "pointer" }}>
+            Logga ut
+          </button>
+        </nav>
+      </header>
     );
   }
 
   return (
     <>
-    <header className={`fixed left-0 right-0 top-0 z-50 bg-white/95 backdrop-blur border-b shadow-sm ${isImpersonating ? "border-amber-300" : "border-slate-200"}`}>
-      <nav className="dm-header-nav max-w-6xl mx-auto px-4 sm:px-6 flex items-center h-16 relative">
-        <div className="flex items-center shrink-0 overflow-visible">
-          <Link to="/" className="flex items-center focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 rounded overflow-visible">
-            <Logo height={36} />
-          </Link>
-        </div>
+      <header
+        className="fixed left-0 right-0 top-0 z-50"
+        style={headerStyle}
+      >
+        <nav className="dm-header-nav max-w-6xl mx-auto px-4 sm:px-6 flex items-center h-16 relative">
+          {/* Logo */}
+          <div className="flex items-center shrink-0 overflow-visible">
+            <Link to="/" className="flex items-center focus:outline-none rounded overflow-visible">
+              <Logo height={36} variant="light" />
+            </Link>
+          </div>
 
-        <ul className="dm-desktop-nav absolute left-1/2 -translate-x-1/2 flex items-center gap-8 text-sm font-medium text-slate-600">
-          {navLinks}
-        </ul>
+          {/* Desktop nav links — centered */}
+          <ul className="dm-desktop-nav absolute left-1/2 -translate-x-1/2 flex items-center gap-8 text-sm font-medium">
+            {navLinks}
+          </ul>
 
-        <div className="flex items-center gap-2 sm:gap-3 ml-auto shrink-0">
-          {user && !platformAdminSession && (
-            <div className="relative" ref={notifRef}>
-              <button
-                type="button"
-                onClick={() => setNotifOpen((o) => !o)}
-                className="p-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-[var(--color-primary)] relative flex items-center justify-center"
-                aria-label={notifications.unreadCount ? `${notifications.unreadCount} olästa notiser` : "Notiser"}
-              >
-                <span className="relative inline-flex">
-                  <BellIcon className="w-5 h-5" />
-                  {notifications.unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-semibold leading-none px-0.5">
-                      {notifications.unreadCount > 99 ? "99+" : notifications.unreadCount}
-                    </span>
-                  )}
-                </span>
-              </button>
-              {notifOpen && (
-                <div className="fixed right-2 top-[4.25rem] sm:absolute sm:right-0 sm:top-full sm:mt-1 w-[320px] max-w-[calc(100vw-1rem)] max-h-[400px] overflow-auto rounded-xl border border-slate-200 bg-white shadow-lg z-[100]">
-                  <div className="p-2 border-b border-slate-100 flex items-center justify-between">
-                    <span className="text-sm font-semibold text-slate-800">Notiser</span>
-                    {notifications.unreadCount > 0 && (
-                      <button
-                        type="button"
-                        onClick={handleMarkAllRead}
-                        className="text-xs text-[var(--color-primary)] hover:underline"
-                      >
-                        Markera alla som lästa
-                      </button>
-                    )}
-                  </div>
-                  <ul className="py-1">
-                    {notifications.list.length === 0 ? (
-                      <li className="px-3 py-4 text-sm text-slate-500 text-center">Inga notiser</li>
-                    ) : (
-                      notifications.list.map((n) => (
-                        <li key={n.id}>
-                          <button
-                            type="button"
-                            onClick={() => handleNotificationClick(n)}
-                            className={`w-full text-left px-3 py-2.5 text-sm hover:bg-slate-50 rounded-lg transition-colors ${!n.readAt ? "bg-slate-50/80" : ""}`}
-                          >
-                            <div className="font-medium text-slate-800 truncate">{n.title}</div>
-                            {n.body && <div className="text-slate-600 truncate text-xs mt-0.5">{n.body}</div>}
-                            <div className="text-slate-400 text-xs mt-1">{formatNotifDate(n.createdAt)}</div>
-                          </button>
-                        </li>
-                      ))
-                    )}
-                  </ul>
-                  {pushPermission !== "unsupported" && pushPermission !== "denied" && (
-                    <div className="border-t border-slate-100 px-3 py-2">
-                      <button
-                        type="button"
-                        onClick={handleTogglePush}
-                        disabled={pushLoading}
-                        className="w-full text-xs text-center text-slate-500 hover:text-[var(--color-primary)] transition-colors disabled:opacity-50"
-                      >
-                        {pushLoading
-                          ? "..."
-                          : pushSubscribed
-                          ? "Stäng av push-notiser"
-                          : "Aktivera push-notiser"}
-                      </button>
-                    </div>
-                  )}
-                  {pushPermission === "denied" && (
-                    <div className="border-t border-slate-100 px-3 py-2">
-                      <p className="text-xs text-center text-slate-400">Push-notiser blockerade i webbläsaren</p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-          {user && (
-            <div className="relative" ref={userMenuRef}>
-              <button
-                type="button"
-                onClick={() => setUserMenuOpen((o) => !o)}
-                className="flex items-center justify-center w-10 h-10 rounded-full bg-[var(--color-primary)] text-white text-sm font-semibold shadow-sm ring-2 ring-white hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2"
-                aria-haspopup="menu"
-                aria-expanded={userMenuOpen}
-                aria-label="Konto och inställningar"
-              >
-                {initialsFromUser(user)}
-              </button>
-              {userMenuOpen && (
-                <div
-                  className="absolute right-0 top-full mt-2 w-56 max-w-[calc(100vw-1rem)] rounded-xl border border-slate-200 bg-white shadow-lg py-1 z-[110]"
-                  role="menu"
+          {/* Right side */}
+          <div className="flex items-center gap-2 sm:gap-3 ml-auto shrink-0">
+
+            {/* Notification bell (logged-in only) */}
+            {user && !platformAdminSession && (
+              <div className="relative" ref={notifRef}>
+                <button
+                  type="button"
+                  onClick={() => setNotifOpen((o) => !o)}
+                  className="p-2 rounded-lg flex items-center justify-center transition-colors"
+                  style={{ color: "rgba(255,255,255,0.6)" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.background = "rgba(255,255,255,0.08)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = "rgba(255,255,255,0.6)"; e.currentTarget.style.background = ""; }}
+                  aria-label={notifications.unreadCount ? `${notifications.unreadCount} olästa notiser` : "Notiser"}
                 >
-                  <div className="px-3 py-2 border-b border-slate-100">
-                    <p className="text-sm font-medium text-slate-900 truncate">{user?.name || "Konto"}</p>
-                    <p className="text-xs text-slate-500 truncate">{user?.email}</p>
+                  <span className="relative inline-flex">
+                    <BellIcon className="w-5 h-5" />
+                    {notifications.unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-semibold leading-none px-0.5">
+                        {notifications.unreadCount > 99 ? "99+" : notifications.unreadCount}
+                      </span>
+                    )}
+                  </span>
+                </button>
+                {notifOpen && (
+                  <div
+                    className="fixed right-2 top-[4.25rem] sm:absolute sm:right-0 sm:top-full sm:mt-1 w-[320px] max-w-[calc(100vw-1rem)] max-h-[400px] overflow-auto rounded-xl z-[100]"
+                    style={{ background: "#0a1818", border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 16px 48px rgba(0,0,0,0.4)" }}
+                  >
+                    <div className="p-3 flex items-center justify-between" style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+                      <span className="text-sm font-semibold" style={{ color: "#f0faf9" }}>Notiser</span>
+                      {notifications.unreadCount > 0 && (
+                        <button type="button" onClick={handleMarkAllRead} className="text-xs hover:underline" style={{ color: "#F5A623" }}>
+                          Markera alla som lästa
+                        </button>
+                      )}
+                    </div>
+                    <ul className="py-1">
+                      {notifications.list.length === 0 ? (
+                        <li className="px-3 py-4 text-sm text-center" style={{ color: "rgba(240,250,249,0.4)" }}>Inga notiser</li>
+                      ) : (
+                        notifications.list.map((n) => (
+                          <li key={n.id}>
+                            <button
+                              type="button"
+                              onClick={() => handleNotificationClick(n)}
+                              className="w-full text-left px-3 py-2.5 text-sm rounded-lg transition-colors"
+                              style={{ background: !n.readAt ? "rgba(255,255,255,0.03)" : "" }}
+                              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
+                              onMouseLeave={(e) => { e.currentTarget.style.background = !n.readAt ? "rgba(255,255,255,0.03)" : ""; }}
+                            >
+                              <div className="font-medium truncate" style={{ color: "#f0faf9" }}>{n.title}</div>
+                              {n.body && <div className="truncate text-xs mt-0.5" style={{ color: "rgba(240,250,249,0.5)" }}>{n.body}</div>}
+                              <div className="text-xs mt-1" style={{ color: "rgba(240,250,249,0.3)" }}>{formatNotifDate(n.createdAt)}</div>
+                            </button>
+                          </li>
+                        ))
+                      )}
+                    </ul>
+                    {pushPermission !== "unsupported" && pushPermission !== "denied" && (
+                      <div className="px-3 py-2" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+                        <button type="button" onClick={handleTogglePush} disabled={pushLoading} className="w-full text-xs text-center transition-colors disabled:opacity-50" style={{ color: "rgba(240,250,249,0.4)", background: "none", border: "none", cursor: "pointer" }}
+                          onMouseEnter={(e) => { e.currentTarget.style.color = "#F5A623"; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.color = "rgba(240,250,249,0.4)"; }}
+                        >
+                          {pushLoading ? "…" : pushSubscribed ? "Stäng av push-notiser" : "Aktivera push-notiser"}
+                        </button>
+                      </div>
+                    )}
+                    {pushPermission === "denied" && (
+                      <div className="px-3 py-2" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+                        <p className="text-xs text-center" style={{ color: "rgba(240,250,249,0.3)" }}>Push-notiser blockerade i webbläsaren</p>
+                      </div>
+                    )}
                   </div>
-                  {!platformAdminSession && isDriver ? (
-                    <Link
-                      to="/profil"
-                      role="menuitem"
-                      onClick={() => {
-                        setUserMenuOpen(false);
-                        closeMobile();
-                      }}
-                      className="block px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50"
-                    >
-                      Min profil
-                    </Link>
-                  ) : null}
-                  {!platformAdminSession && isCompany ? (
-                    <Link
-                      to="/foretag/profil"
-                      role="menuitem"
-                      onClick={() => {
-                        setUserMenuOpen(false);
-                        closeMobile();
-                      }}
-                      className="block px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50"
-                    >
-                      Företagsprofil
-                    </Link>
-                  ) : null}
-                  {!platformAdminSession && isDriver ? (
-                    <Link
-                      to="/favoriter"
-                      role="menuitem"
-                      onClick={() => {
-                        setUserMenuOpen(false);
-                        closeMobile();
-                      }}
-                      className="block px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50"
-                    >
-                      Favoriter
-                    </Link>
-                  ) : null}
-                  {!platformAdminSession && isDriver ? (
-                    <Link
-                      to="/mina-ansokningar"
-                      role="menuitem"
-                      onClick={() => {
-                        setUserMenuOpen(false);
-                        closeMobile();
-                      }}
-                      className="block px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50"
-                    >
-                      Mina ansökningar
-                    </Link>
-                  ) : null}
-                  {isAdmin ? (
-                    <>
+                )}
+              </div>
+            )}
+
+            {/* User avatar menu */}
+            {user && (
+              <div className="relative" ref={userMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setUserMenuOpen((o) => !o)}
+                  className="flex items-center justify-center w-9 h-9 rounded-full text-white text-sm font-semibold ring-2 hover:opacity-95 focus:outline-none focus:ring-offset-2 transition-opacity"
+                  style={{ background: "#1F5F5C", ringColor: "rgba(255,255,255,0.2)" }}
+                  aria-haspopup="menu"
+                  aria-expanded={userMenuOpen}
+                  aria-label="Konto och inställningar"
+                >
+                  {initialsFromUser(user)}
+                </button>
+                {userMenuOpen && (
+                  <div
+                    className="absolute right-0 top-full mt-2 w-56 max-w-[calc(100vw-1rem)] rounded-xl py-1 z-[110]"
+                    style={{ background: "#0a1818", border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 16px 48px rgba(0,0,0,0.4)" }}
+                    role="menu"
+                  >
+                    <div className="px-3 py-2.5" style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+                      <p className="text-sm font-semibold truncate" style={{ color: "#f0faf9" }}>{user?.name || "Konto"}</p>
+                      <p className="text-xs truncate mt-0.5" style={{ color: "rgba(240,250,249,0.4)" }}>{user?.email}</p>
+                    </div>
+                    {[
+                      !platformAdminSession && isDriver ? { to: "/profil", label: "Min profil" } : null,
+                      !platformAdminSession && isCompany ? { to: "/foretag/profil", label: "Företagsprofil" } : null,
+                      !platformAdminSession && isDriver ? { to: "/favoriter", label: "Favoriter" } : null,
+                      !platformAdminSession && isDriver ? { to: "/mina-ansokningar", label: "Mina ansökningar" } : null,
+                      isAdmin ? { to: "/admin", label: "Admin" } : null,
+                      isAdmin ? { to: "/admin/status", label: "Systemstatus" } : null,
+                    ].filter(Boolean).map((item) => (
                       <Link
-                        to="/admin"
+                        key={item.to}
+                        to={item.to}
                         role="menuitem"
-                        onClick={() => {
-                          setUserMenuOpen(false);
-                          closeMobile();
-                        }}
-                        className="block px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50"
+                        onClick={() => { setUserMenuOpen(false); closeMobile(); }}
+                        className="block px-3 py-2.5 text-sm transition-colors"
+                        style={{ color: "rgba(240,250,249,0.75)", textDecoration: "none" }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; e.currentTarget.style.color = "#f0faf9"; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = ""; e.currentTarget.style.color = "rgba(240,250,249,0.75)"; }}
                       >
-                        Admin
+                        {item.label}
                       </Link>
-                      <Link
-                        to="/admin/status"
-                        role="menuitem"
-                        onClick={() => {
-                          setUserMenuOpen(false);
-                          closeMobile();
-                        }}
-                        className="block px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50"
-                      >
-                        Systemstatus
-                      </Link>
-                    </>
-                  ) : null}
+                    ))}
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => { setUserMenuOpen(false); handleLogout(); }}
+                      className="w-full text-left px-3 py-2.5 text-sm transition-colors"
+                      style={{ color: "rgba(248,113,113,0.85)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(248,113,113,0.08)"; e.currentTarget.style.color = "#f87171"; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = ""; e.currentTarget.style.color = "rgba(248,113,113,0.85)"; }}
+                    >
+                      Logga ut
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Impersonation / admin badge */}
+            {user && isAdmin && (
+              isImpersonating ? (
+                <button
+                  type="button"
+                  onClick={handleStopViewAs}
+                  className="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold transition-colors"
+                  style={{ background: "rgba(245,166,35,0.15)", color: "#F5A623", border: "1px solid rgba(245,166,35,0.3)" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(245,166,35,0.25)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(245,166,35,0.15)"; }}
+                  title={`Visar som: ${user?.name || user?.email}`}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#F5A623] shrink-0" />
+                  Avsluta view as
+                </button>
+              ) : (
+                <span className="hidden lg:inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold" style={{ background: "rgba(99,102,241,0.15)", color: "rgba(165,180,252,0.9)", border: "1px solid rgba(99,102,241,0.25)" }}>
+                  Admin
+                </span>
+              )
+            )}
+
+            {/* Mobile menu button */}
+            <button
+              type="button"
+              onClick={() => setMobileOpen(!mobileOpen)}
+              className="dm-mobile-menu-button p-2 -mr-2 rounded-lg min-h-[44px] min-w-[44px] flex items-center justify-center transition-colors"
+              style={{ color: "rgba(255,255,255,0.7)" }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.08)"; e.currentTarget.style.color = "#fff"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = ""; e.currentTarget.style.color = "rgba(255,255,255,0.7)"; }}
+              aria-label={mobileOpen ? "Stäng meny" : "Öppna meny"}
+              aria-expanded={mobileOpen}
+            >
+              {mobileOpen ? <CloseIcon className="w-5 h-5" /> : <MenuIcon className="w-5 h-5" />}
+            </button>
+
+            {/* Desktop login / register (public) */}
+            {!user && (
+              <>
+                <Link
+                  to="/login"
+                  className="dm-header-primary-cta text-sm font-medium"
+                  style={{ color: "rgba(255,255,255,0.75)", textDecoration: "none" }}
+                >
+                  Logga in
+                </Link>
+                <Link
+                  to="/login"
+                  state={{ initialMode: "register" }}
+                  className="dm-header-primary-cta text-sm font-bold rounded-[10px] transition-opacity hover:opacity-90"
+                  style={{ background: "#F5A623", color: "#000", padding: "9px 18px", textDecoration: "none" }}
+                >
+                  Skapa konto
+                </Link>
+              </>
+            )}
+          </div>
+        </nav>
+
+        {/* Mobile menu panel */}
+        {mobileOpen && (
+          <div
+            className="dm-mobile-menu-panel shadow-lg"
+            style={{ background: "rgba(5,14,14,0.98)", borderTop: "1px solid rgba(255,255,255,0.08)" }}
+          >
+            <ul className="py-2 text-sm font-medium">
+              {!user ? (
+                [...PUBLIC_NAV_LINKS, ...PUBLIC_EXTRA_LINKS].map((item) => (
+                  <li key={item.label} style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                    <Link
+                      to={item.to}
+                      onClick={closeMobile}
+                      className="block py-3 px-4 transition-colors"
+                      style={{ color: "rgba(255,255,255,0.7)", textDecoration: "none" }}
+                      onMouseEnter={(e) => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.color = "rgba(255,255,255,0.7)"; e.currentTarget.style.background = ""; }}
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
+                ))
+              ) : (
+                navLinks
+              )}
+            </ul>
+            <div className="px-4 py-3" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+              {user ? (
+                <div className="flex flex-col gap-2">
+                  {isAdmin && isImpersonating && (
+                    <button
+                      type="button"
+                      onClick={() => { closeMobile(); handleStopViewAs(); }}
+                      className="inline-flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+                      style={{ background: "rgba(245,166,35,0.15)", color: "#F5A623", border: "1px solid rgba(245,166,35,0.3)" }}
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#F5A623] shrink-0" />
+                      Avsluta view as
+                    </button>
+                  )}
                   <button
                     type="button"
-                    role="menuitem"
-                    onClick={() => {
-                      setUserMenuOpen(false);
-                      handleLogout();
-                    }}
-                    className="w-full text-left px-3 py-2.5 text-sm text-red-700 hover:bg-red-50"
+                    onClick={() => { closeMobile(); handleLogout(); }}
+                    className="inline-flex items-center justify-center w-full px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                    style={{ border: "1px solid rgba(255,255,255,0.12)", color: "rgba(240,250,249,0.7)", background: "rgba(255,255,255,0.04)" }}
                   >
                     Logga ut
                   </button>
                 </div>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  <Link
+                    to="/login"
+                    state={{ initialMode: "register" }}
+                    onClick={closeMobile}
+                    className="inline-flex w-full items-center justify-center px-4 py-2.5 rounded-xl text-sm font-bold"
+                    style={{ background: "#F5A623", color: "#000" }}
+                  >
+                    Skapa konto
+                  </Link>
+                  <Link
+                    to="/login"
+                    onClick={closeMobile}
+                    className="inline-flex w-full items-center justify-center px-4 py-2.5 rounded-xl text-sm font-medium"
+                    style={{ background: "rgba(255,255,255,0.08)", color: "#fff", border: "1px solid rgba(255,255,255,0.15)" }}
+                  >
+                    Logga in
+                  </Link>
+                </div>
               )}
             </div>
-          )}
-          {user && isAdmin && (
-            isImpersonating ? (
-              <button
-                type="button"
-                onClick={handleStopViewAs}
-                className="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-semibold hover:bg-amber-200 transition-colors"
-                title={`Visar som: ${user?.name || user?.email}`}
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
-                Avsluta view as
-              </button>
-            ) : (
-              <span className="hidden lg:inline-flex items-center px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-800 text-xs font-semibold">
-                Admin
-              </span>
-            )
-          )}
-          {/* Mobile menu button */}
-          <button
-            type="button"
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="dm-mobile-menu-button p-2 -mr-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-[var(--color-primary)] min-h-[44px] min-w-[44px] flex items-center justify-center"
-            aria-label={mobileOpen ? "Stäng meny" : "Öppna meny"}
-            aria-expanded={mobileOpen}
-          >
-            {mobileOpen ? <CloseIcon className="w-5 h-5" /> : <MenuIcon className="w-5 h-5" />}
-          </button>
-          {!user && (
-            <Link
-              to="/login"
-              className="dm-header-primary-cta px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white text-sm font-medium hover:bg-[var(--color-primary-light)] transition-colors"
-            >
-              Logga in
-            </Link>
-          )}
-        </div>
-      </nav>
-
-      {/* Mobile menu panel */}
-      {mobileOpen && (
-        <div className="dm-mobile-menu-panel border-t border-slate-200 bg-white shadow-lg">
-          <ul className="py-2 text-sm font-medium text-slate-600 [&>li]:border-b [&>li]:border-slate-100 [&>li]:last:border-b-0 [&>li>a]:block [&>li>a]:py-3 [&>li>a]:px-4">
-            {!user ? (
-              [...PUBLIC_NAV_LINKS, ...PUBLIC_EXTRA_LINKS].map((item) => (
-                <li key={item.label} className="border-b border-slate-100 last:border-b-0">
-                  <Link
-                    to={item.to}
-                    onClick={closeMobile}
-                    className="block py-3 px-4 hover:bg-slate-50 hover:text-[var(--color-primary)] transition-colors"
-                  >
-                    {item.label}
-                  </Link>
-                </li>
-              ))
-            ) : (
-              navLinks
-            )}
-          </ul>
-          <div className="px-4 py-3 border-t border-slate-100">
-            {user ? (
-              <div className="flex flex-col gap-2">
-                {isAdmin && isImpersonating && (
-                  <button
-                    type="button"
-                    onClick={() => { closeMobile(); handleStopViewAs(); }}
-                    className="inline-flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg bg-amber-100 text-amber-800 text-sm font-medium hover:bg-amber-200 transition-colors"
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
-                    Avsluta view as
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={() => {
-                    closeMobile();
-                    handleLogout();
-                  }}
-                  className="inline-flex items-center justify-center w-full px-4 py-2 rounded-lg border border-slate-300 text-slate-700 text-sm font-medium"
-                >
-                  Logga ut
-                </button>
-              </div>
-            ) : (
-              <Link
-                to="/login"
-                onClick={closeMobile}
-                className="inline-flex w-full items-center justify-center px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white text-sm font-medium"
-              >
-                Logga in
-              </Link>
-            )}
           </div>
-        </div>
-      )}
-    </header>
+        )}
+      </header>
     </>
   );
 }

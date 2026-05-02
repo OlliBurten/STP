@@ -51,6 +51,7 @@ const PublicDriverProfile   = lazy(() => import("./pages/PublicDriverProfile"));
 const Branschinsikter       = lazy(() => import("./pages/Branschinsikter"));
 const Kompetenslaget2025    = lazy(() => import("./pages/Kompetenslaget2025"));
 const Kontakt               = lazy(() => import("./pages/Kontakt"));
+const LoneKalkylator        = lazy(() => import("./pages/LoneKalkylator"));
 const PatchNotes            = lazy(() => import("./pages/PatchNotes"));
 const VisionPresentation    = lazy(() => import("./pages/VisionPresentation"));
 const RegionJobList         = lazy(() => import("./pages/RegionJobList"));
@@ -127,7 +128,7 @@ function AppLayout() {
   const { user, isCompany, isImpersonating } = useAuth();
   const onboarding = useOnboardingRequired();
   return (
-    <div className="min-h-screen flex flex-col overflow-x-hidden">
+    <div className="min-h-screen flex flex-col" style={{ overflowX: "clip" }}>
       <Header onboarding={onboarding} />
       <div className={`flex-1 ${isImpersonating ? "pt-[104px]" : "pt-16"}`}>
         <DriverCompletionNudge />
@@ -161,6 +162,7 @@ function AppLayout() {
                   <Route path="/blogg/arbetstid-chauffor" element={<ArbetstidChauffor />} />
                   <Route path="/blogg/fjarrkörning" element={<Fjarrkörning />} />
                   <Route path="/kontakt" element={<Kontakt />} />
+                  <Route path="/lon-kalkylator" element={<LoneKalkylator />} />
                   <Route path="/uppdateringar" element={<PatchNotes />} />
                   <Route path="/vision" element={<VisionPresentation />} />
                   <Route path="/login" element={<Login />} />

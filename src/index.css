@@ -17,8 +17,23 @@ body {
   font-family: var(--font-sans);
   color: var(--color-text);
   background: var(--color-surface);
-  overflow-x: hidden;
+  overflow-x: clip;
+  -webkit-text-size-adjust: 100%;
 }
+
+/* Prevent iOS Safari from zooming on input focus (requires font-size >= 16px) */
+input,
+textarea,
+select {
+  font-size: 1rem;
+  font-family: var(--font-sans);
+}
+
+/* Remove gray tap flash on Android Chrome */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
 
 .dm-desktop-nav {
   display: none;
@@ -86,6 +101,30 @@ body {
   }
 }
 
+/* Dark public nav link hover + active state */
+.dm-dark-nav-link {
+  color: rgba(255,255,255,0.7);
+  text-decoration: none;
+  transition: color 0.2s;
+  position: relative;
+}
+.dm-dark-nav-link:hover {
+  color: #F5A623;
+}
+.dm-dark-nav-link.active-dark {
+  color: #F5A623;
+  font-weight: 700;
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+}
+
 @keyframes fade-in {
   from {
     opacity: 0;
@@ -110,6 +149,33 @@ body {
 .animate-spin {
   animation: spin 0.8s linear infinite;
 }
+
+/* ── Dark prose override ─────────────────────────────────────────────────────
+   Wrap any existing Tailwind-light prose section in .dark-prose to flip
+   all the slate/light colours to their dark equivalents.
+   ──────────────────────────────────────────────────────────────────────────── */
+.dark-prose .text-slate-900,
+.dark-prose h1, .dark-prose h2, .dark-prose h3, .dark-prose h4, .dark-prose h5,
+.dark-prose strong {
+  color: #f0faf9 !important;
+}
+.dark-prose .text-slate-700,
+.dark-prose p,
+.dark-prose li,
+.dark-prose td {
+  color: rgba(240,250,249,0.72) !important;
+}
+.dark-prose .text-slate-600 { color: rgba(240,250,249,0.6) !important; }
+.dark-prose .text-slate-500 { color: rgba(240,250,249,0.45) !important; }
+.dark-prose .text-slate-400 { color: rgba(240,250,249,0.35) !important; }
+.dark-prose .bg-slate-50    { background: rgba(255,255,255,0.04) !important; }
+.dark-prose .border-slate-200,
+.dark-prose .border-slate-100 { border-color: rgba(255,255,255,0.1) !important; }
+.dark-prose a.text-\[var\(--color-primary\)\],
+.dark-prose .text-\[var\(--color-primary\)\]     { color: #4ade80 !important; }
+.dark-prose a { color: #4ade80; }
+.dark-prose a:hover { color: #86efac; }
+.dark-prose ul.list-disc li::marker { color: rgba(240,250,249,0.4); }
 
 @media print {
   header, nav, footer, .print\:hidden { display: none !important; }
