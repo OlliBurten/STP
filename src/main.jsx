@@ -5,6 +5,9 @@ Sentry.init({
   environment: import.meta.env.MODE,
   sendDefaultPii: true,
   tracesSampleRate: import.meta.env.PROD ? 0.1 : 1.0,
+  integrations: [Sentry.replayIntegration({ maskAllText: false, maskAllInputs: false, blockAllMedia: false })],
+  replaysSessionSampleRate: 0.1,
+  replaysOnErrorSampleRate: 1.0,
 });
 
 import { StrictMode } from 'react'
@@ -17,6 +20,11 @@ import ErrorBoundary from './components/ErrorBoundary.jsx'
 import { registerServiceWorker } from './utils/pushNotifications.js'
 
 registerServiceWorker().catch(() => {});
+
+// Reload on stale chunk errors (old cached HTML pointing to hashed JS that no longer exists after deploy)
+window.addEventListener("vite:preloadError", () => {
+  window.location.reload();
+});
 
 // Handle navigation requests from service worker push clicks
 if ("serviceWorker" in navigator) {
