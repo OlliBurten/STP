@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import ArticleJsonLd from "../../components/ArticleJsonLd";
+import BlogPost from "../../components/BlogPost";
 
 const TITLE = "Kollektivavtal åkeri — vad ingår och varför det spelar roll";
 const DESC = "Vad innebär kollektivavtal inom åkeribranschen? Lönegolv, OB-tillägg, övertid och semesterersättning — guide för chaufförer och åkerier.";
@@ -9,14 +10,9 @@ export default function KollektivavtalAkeri() {
   usePageMeta({ title: TITLE, description: DESC, canonical: "/blogg/kollektivavtal-akeri", type: "article" });
 
   return (
-    <main className="max-w-3xl mx-auto px-4 sm:px-6 py-16">
+    <BlogPost breadcrumb="Kollektivavtal åkeri">
       <ArticleJsonLd headline={TITLE} description={DESC} datePublished="2025-04-20" url="/blogg/kollektivavtal-akeri" />
 
-      <nav className="text-sm text-slate-500 mb-6">
-        <Link to="/blogg" className="hover:text-[var(--color-primary)]">Blogg</Link>
-        <span className="mx-2">›</span>
-        <span className="text-slate-700">Kollektivavtal åkeri</span>
-      </nav>
 
       <h1 className="text-3xl font-bold text-slate-900 mb-4">{TITLE}</h1>
       <p className="text-slate-500 text-sm mb-8">Publicerad 20 april 2025 · Källa: Transportföretagen, Svenska Transportarbetareförbundet</p>
@@ -105,6 +101,6 @@ export default function KollektivavtalAkeri() {
           </ul>
         </div>
       </div>
-    </main>
+    </BlogPost>
   );
 }

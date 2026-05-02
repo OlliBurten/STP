@@ -1,131 +1,148 @@
 /** Shared SVG icons – no emojis. Use for accessibility and consistency. */
 
-export function BellIcon({ className = "w-5 h-5" }) {
+export function BellIcon({ className = "w-5 h-5", style }) {
   return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+    <svg className={className} style={style} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m-6 0H9" />
     </svg>
   );
 }
 
-export function MenuIcon({ className = "w-5 h-5" }) {
+export function MenuIcon({ className = "w-5 h-5", style }) {
   return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+    <svg className={className} style={style} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
     </svg>
   );
 }
 
-export function CloseIcon({ className = "w-5 h-5" }) {
+export function CloseIcon({ className = "w-5 h-5", style }) {
   return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+    <svg className={className} style={style} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
     </svg>
   );
 }
 
-export function CheckIcon({ className = "w-5 h-5" }) {
+export function CheckIcon({ className = "w-5 h-5", style }) {
   return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+    <svg className={className} style={style} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
     </svg>
   );
 }
 
-export function StarFilledIcon({ className = "w-4 h-4" }) {
+export function StarFilledIcon({ className = "w-4 h-4", style }) {
   return (
-    <svg className={className} fill="currentColor" viewBox="0 0 20 20" aria-hidden>
+    <svg className={className} style={style} fill="currentColor" viewBox="0 0 20 20" aria-hidden>
       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
     </svg>
   );
 }
 
-export function StarOutlineIcon({ className = "w-4 h-4" }) {
+export function StarOutlineIcon({ className = "w-4 h-4", style }) {
   return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 20 20" aria-hidden>
+    <svg className={className} style={style} fill="none" stroke="currentColor" viewBox="0 0 20 20" aria-hidden>
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
     </svg>
   );
 }
 
-export function TruckIcon({ className = "w-5 h-5" }) {
+export function TruckIcon({ className = "w-5 h-5", style }) {
   return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+    <svg className={className} style={style} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
     </svg>
   );
 }
 
-export function BuildingIcon({ className = "w-5 h-5" }) {
+export function BuildingIcon({ className = "w-5 h-5", style }) {
   return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+    <svg className={className} style={style} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
     </svg>
   );
 }
 
 /** Empty circle for "not done" state in lists */
-export function CircleOutlineIcon({ className = "w-4 h-4" }) {
+export function CircleOutlineIcon({ className = "w-4 h-4", style }) {
   return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+    <svg className={className} style={style} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
       <circle cx="12" cy="12" r="10" strokeWidth={2} />
     </svg>
   );
 }
 
-export function LocationIcon({ className = "w-4 h-4" }) {
+export function LocationIcon({ className = "w-4 h-4", style }) {
   return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+    <svg className={className} style={style} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
     </svg>
   );
 }
 
-export function ChevronDownIcon({ className = "w-4 h-4" }) {
+export function ChevronDownIcon({ className = "w-4 h-4", style }) {
   return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+    <svg className={className} style={style} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
     </svg>
   );
 }
 
-export function ChartBarIcon({ className = "w-5 h-5" }) {
+export function ChartBarIcon({ className = "w-5 h-5", style }) {
   return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+    <svg className={className} style={style} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H7a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
     </svg>
   );
 }
 
-export function ShieldCheckIcon({ className = "w-5 h-5" }) {
+export function ShieldCheckIcon({ className = "w-5 h-5", style }) {
   return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+    <svg className={className} style={style} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
     </svg>
   );
 }
 
-export function ClockIcon({ className = "w-5 h-5" }) {
+export function ClockIcon({ className = "w-5 h-5", style }) {
   return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+    <svg className={className} style={style} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
   );
 }
 
-export function ArrowRightIcon({ className = "w-5 h-5" }) {
+export function SearchIcon({ className = "w-5 h-5", style }) {
   return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+    <svg className={className} style={style} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+      <circle cx="11" cy="11" r="8" strokeWidth={2} />
+      <line x1="21" y1="21" x2="16.65" y2="16.65" strokeWidth={2} strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function WarningIcon({ className = "w-5 h-5", style }) {
+  return (
+    <svg className={className} style={style} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+    </svg>
+  );
+}
+
+export function ArrowRightIcon({ className = "w-5 h-5", style }) {
+  return (
+    <svg className={className} style={style} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
     </svg>
   );
 }
 
 /** View-as / preview (read-only supervision) */
-export function EyeIcon({ className = "w-5 h-5" }) {
+export function EyeIcon({ className = "w-5 h-5", style }) {
   return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+    <svg className={className} style={style} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
       <path
         strokeLinecap="round"
@@ -137,35 +154,36 @@ export function EyeIcon({ className = "w-5 h-5" }) {
   );
 }
 
-export function EyeOffIcon({ className = "w-5 h-5" }) {
+export function EyeOffIcon({ className = "w-5 h-5", style }) {
   return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+    <svg className={className} style={style} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a9.97 9.97 0 012.02-3.707M6.53 6.53A9.956 9.956 0 0112 5c4.478 0 8.268 2.943 9.542 7a9.969 9.969 0 01-4.073 5.368M6.53 6.53L3 3m3.53 3.53l11.94 11.94M15 12a3 3 0 11-5.47-1.94M15 12a3 3 0 01-2.06 2.84" />
     </svg>
   );
 }
 
 /** Loading spinner for tool-style feedback */
-export function PencilIcon({ className = "w-4 h-4" }) {
+export function PencilIcon({ className = "w-4 h-4", style }) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden>
+    <svg className={className} style={style} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden>
       <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536M9 11l6.768-6.768a2 2 0 012.828 2.828L11.828 13.828A2 2 0 0110 14.414l-3 .586.586-3A2 2 0 019 11z" />
     </svg>
   );
 }
 
-export function TrashIcon({ className = "w-4 h-4" }) {
+export function TrashIcon({ className = "w-4 h-4", style }) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden>
+    <svg className={className} style={style} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden>
       <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2" />
     </svg>
   );
 }
 
-export function SpinnerIcon({ className = "w-6 h-6" }) {
+export function SpinnerIcon({ className = "w-6 h-6", style }) {
   return (
     <svg
       className={`animate-spin text-slate-400 ${className}`}
+      style={style}
       fill="none"
       viewBox="0 0 24 24"
       aria-hidden

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
+  adminCreateJob,
   getAdminSummary,
   getUserAdminDetail,
   listJobsForAdmin,
@@ -15,6 +16,7 @@ import {
   updateUserWarnings,
   verifyUserEmail,
 } from "../api/admin";
+import { regions as REGIONS } from "../data/mockJobs.js";
 import { listReviewsForAdmin, moderateReview } from "../api/reviews.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import { EyeIcon } from "../components/Icons.jsx";
@@ -54,6 +56,15 @@ export default function Admin() {
   const [reasonModal, setReasonModal] = useState(null);
   const [reasonInput, setReasonInput] = useState("");
   const [warningChecked, setWarningChecked] = useState(false);
+
+  const EMPTY_JOB_FORM = {
+    title: "", company: "", contact: "", location: "", region: "",
+    jobType: "fjärrkörning", employment: "fast", description: "",
+    license: [], salary: "", externalApplyUrl: "",
+  };
+  const [showCreateJob, setShowCreateJob] = useState(false);
+  const [createJobForm, setCreateJobForm] = useState(EMPTY_JOB_FORM);
+  const [createJobLoading, setCreateJobLoading] = useState(false);
 
   const clearFlash = () => {
     setError("");
@@ -261,6 +272,32 @@ export default function Admin() {
       setError(e.message || "Kunde inte uppdatera jobb");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAdminCreateJob = async (e) => {
+    e.preventDefault();
+    setCreateJobLoading(true);
+    clearFlash();
+    try {
+      const f = createJobForm;
+      await adminCreateJob({
+        title: f.title, company: f.company, contact: f.contact,
+        location: f.location, region: f.region,
+        jobType: f.jobType, employment: f.employment,
+        description: f.description,
+        license: f.license,
+        salary: f.salary || null,
+        externalApplyUrl: f.externalApplyUrl || null,
+      });
+      setSuccess(`Jobbet "${f.title}" hos ${f.company} skapades.`);
+      setCreateJobForm(EMPTY_JOB_FORM);
+      setShowCreateJob(false);
+      await loadJobs();
+    } catch (err) {
+      setError(err.message || "Kunde inte skapa jobb");
+    } finally {
+      setCreateJobLoading(false);
     }
   };
 
@@ -876,7 +913,113 @@ export default function Admin() {
 
       {activeTab === "jobs" && (
         <section className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
-          <h2 className="text-lg font-semibold text-slate-900">Jobbmoderering</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-slate-900">Jobbmoderering</h2>
+            <button
+              type="button"
+              onClick={() => setShowCreateJob((v) => !v)}
+              className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white text-sm font-semibold hover:opacity-90"
+            >
+              {showCreateJob ? "Stäng" : "+ Skapa jobb åt åkeri"}
+            </button>
+          </div>
+
+          {showCreateJob && (
+            <form onSubmit={handleAdminCreateJob} className="border border-slate-200 rounded-xl p-5 bg-slate-50 space-y-4">
+              <p className="text-sm font-semibold text-slate-700">Skapa jobb åt ett åkeri (utan att de behöver ett konto)</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Jobbtitel *</label>
+                  <input required value={createJobForm.title} onChange={(e) => setCreateJobForm((p) => ({ ...p, title: e.target.value }))}
+                    placeholder="CE-chaufför fjärrkörning" className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Företagsnamn *</label>
+                  <input required value={createJobForm.company} onChange={(e) => setCreateJobForm((p) => ({ ...p, company: e.target.value }))}
+                    placeholder="Anderssons Åkeri AB" className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Kontakt-epost *</label>
+                  <input required type="email" value={createJobForm.contact} onChange={(e) => setCreateJobForm((p) => ({ ...p, contact: e.target.value }))}
+                    placeholder="rekrytering@akeri.se" className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Ort *</label>
+                  <input required value={createJobForm.location} onChange={(e) => setCreateJobForm((p) => ({ ...p, location: e.target.value }))}
+                    placeholder="Stockholm" className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Region *</label>
+                  <select required value={createJobForm.region} onChange={(e) => setCreateJobForm((p) => ({ ...p, region: e.target.value }))}
+                    className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm">
+                    <option value="">Välj region</option>
+                    {REGIONS.map((r) => <option key={r} value={r}>{r}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Typ av körning *</label>
+                  <select value={createJobForm.jobType} onChange={(e) => setCreateJobForm((p) => ({ ...p, jobType: e.target.value }))}
+                    className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm">
+                    <option value="fjärrkörning">Fjärrkörning</option>
+                    <option value="lokalt">Lokalkörning</option>
+                    <option value="distribution">Distribution</option>
+                    <option value="timjobb">Timjobb</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Anställningsform *</label>
+                  <select value={createJobForm.employment} onChange={(e) => setCreateJobForm((p) => ({ ...p, employment: e.target.value }))}
+                    className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm">
+                    <option value="fast">Fast</option>
+                    <option value="vikariat">Vikariat</option>
+                    <option value="tim">Tim</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Lön (fritext)</label>
+                  <input value={createJobForm.salary} onChange={(e) => setCreateJobForm((p) => ({ ...p, salary: e.target.value }))}
+                    placeholder="35 000 kr/mån" className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Extern ansökningslänk</label>
+                  <input type="url" value={createJobForm.externalApplyUrl} onChange={(e) => setCreateJobForm((p) => ({ ...p, externalApplyUrl: e.target.value }))}
+                    placeholder="https://akeri.se/jobb/apply" className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Körkort</label>
+                  <div className="flex gap-2 flex-wrap mt-1">
+                    {["CE", "C", "C1", "BE", "B"].map((l) => (
+                      <label key={l} className="flex items-center gap-1.5 text-sm cursor-pointer">
+                        <input type="checkbox" checked={createJobForm.license.includes(l)}
+                          onChange={(e) => setCreateJobForm((p) => ({
+                            ...p,
+                            license: e.target.checked ? [...p.license, l] : p.license.filter((x) => x !== l),
+                          }))} />
+                        {l}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-600 mb-1">Jobbeskrivning *</label>
+                <textarea required rows={4} value={createJobForm.description} onChange={(e) => setCreateJobForm((p) => ({ ...p, description: e.target.value }))}
+                  placeholder="Beskriv tjänsten, arbetsuppgifter, krav och vad åkeriet erbjuder..."
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm resize-y" />
+              </div>
+              <div className="flex gap-3">
+                <button type="submit" disabled={createJobLoading}
+                  className="px-5 py-2.5 rounded-lg bg-[var(--color-primary)] text-white text-sm font-semibold disabled:opacity-50">
+                  {createJobLoading ? "Skapar..." : "Skapa jobb"}
+                </button>
+                <button type="button" onClick={() => { setShowCreateJob(false); setCreateJobForm(EMPTY_JOB_FORM); }}
+                  className="px-5 py-2.5 rounded-lg border border-slate-300 text-sm font-medium text-slate-700">
+                  Avbryt
+                </button>
+              </div>
+            </form>
+          )}
+
           <div className="flex flex-wrap gap-3">
             <input
               value={jobFilters.q}

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import ArticleJsonLd from "../../components/ArticleJsonLd";
+import BlogPost from "../../components/BlogPost";
 
 const TITLE = "Vad tjänar en lastbilschaufför i Sverige?";
 const DESC = "Löner för lastbilschaufförer 2025 — vad påverkar lönen, skillnader per körkortsbehörighet, bransch och kollektivavtal.";
@@ -9,7 +10,7 @@ export default function LonLastbilschauffor() {
   usePageMeta({ title: TITLE, description: DESC, canonical: "/blogg/lon-lastbilschauffor", type: "article" });
 
   return (
-    <main className="max-w-3xl mx-auto px-4 sm:px-6 py-16">
+    <BlogPost breadcrumb="Lön lastbilschaufför">
       <ArticleJsonLd
         headline={TITLE}
         description={DESC}
@@ -17,11 +18,6 @@ export default function LonLastbilschauffor() {
         url="/blogg/lon-lastbilschauffor"
       />
 
-      <nav className="text-sm text-slate-500 mb-6">
-        <Link to="/blogg" className="hover:text-[var(--color-primary)]">Blogg</Link>
-        <span className="mx-2">›</span>
-        <span className="text-slate-700">Lön lastbilschaufför</span>
-      </nav>
 
       <h1 className="text-3xl font-bold text-slate-900 mb-4">{TITLE}</h1>
       <p className="text-slate-500 text-sm mb-2">Publicerad 22 mars 2025 · Källa: SCB, Medlingsinstitutet, Transportföretagen</p>
@@ -155,6 +151,6 @@ export default function LonLastbilschauffor() {
           </ul>
         </div>
       </div>
-    </main>
+    </BlogPost>
   );
 }

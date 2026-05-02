@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import ArticleJsonLd from "../../components/ArticleJsonLd";
+import BlogPost from "../../components/BlogPost";
 
 const TITLE = "Arbetstidsregler för lastbilschaufförer — vad lagen säger";
 const DESC = "Körkortstider, veckovila, raster och kör-/vilotidsregler för lastbilschaufförer enligt EU-förordning 561/2006 och AETR. Förklarat på svenska.";
@@ -9,14 +10,9 @@ export default function ArbetstidChauffor() {
   usePageMeta({ title: TITLE, description: DESC, canonical: "/blogg/arbetstid-chauffor", type: "article" });
 
   return (
-    <main className="max-w-3xl mx-auto px-4 sm:px-6 py-16">
+    <BlogPost breadcrumb="Arbetstidsregler">
       <ArticleJsonLd headline={TITLE} description={DESC} datePublished="2025-04-20" url="/blogg/arbetstid-chauffor" />
 
-      <nav className="text-sm text-slate-500 mb-6">
-        <Link to="/blogg" className="hover:text-[var(--color-primary)]">Blogg</Link>
-        <span className="mx-2">›</span>
-        <span className="text-slate-700">Arbetstidsregler för chaufförer</span>
-      </nav>
 
       <h1 className="text-3xl font-bold text-slate-900 mb-4">{TITLE}</h1>
       <p className="text-slate-500 text-sm mb-8">Publicerad 20 april 2025 · Källa: Transportstyrelsen, EU-förordning 561/2006</p>
@@ -129,6 +125,6 @@ export default function ArbetstidChauffor() {
           </ul>
         </div>
       </div>
-    </main>
+    </BlogPost>
   );
 }

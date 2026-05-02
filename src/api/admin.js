@@ -56,6 +56,10 @@ export function updateJobStatus(id, status, reason) {
   return apiPatch(`/api/admin/jobs/${id}/status`, { status, reason: reason || null });
 }
 
+export function adminCreateJob(data) {
+  return apiPost("/api/admin/jobs", data);
+}
+
 export function listReports(filters) {
   return apiGet(`/api/admin/reports${toQuery(filters)}`);
 }

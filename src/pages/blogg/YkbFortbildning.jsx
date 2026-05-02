@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import ArticleJsonLd from "../../components/ArticleJsonLd";
+import BlogPost from "../../components/BlogPost";
 
 const TITLE = "YKB fortbildning — kostnad, längd och var du gör det";
 const DESC = "Allt om YKB-fortbildningen: vad 35 timmarna kostar, hur du hittar godkänd utbildare och vad som händer om du missar förnyelsen.";
@@ -9,14 +10,9 @@ export default function YkbFortbildning() {
   usePageMeta({ title: TITLE, description: DESC, canonical: "/blogg/ykb-fortbildning", type: "article" });
 
   return (
-    <main className="max-w-3xl mx-auto px-4 sm:px-6 py-16">
+    <BlogPost breadcrumb="YKB fortbildning">
       <ArticleJsonLd headline={TITLE} description={DESC} datePublished="2025-04-20" url="/blogg/ykb-fortbildning" />
 
-      <nav className="text-sm text-slate-500 mb-6">
-        <Link to="/blogg" className="hover:text-[var(--color-primary)]">Blogg</Link>
-        <span className="mx-2">›</span>
-        <span className="text-slate-700">YKB fortbildning</span>
-      </nav>
 
       <h1 className="text-3xl font-bold text-slate-900 mb-4">{TITLE}</h1>
       <p className="text-slate-500 text-sm mb-8">Publicerad 20 april 2025 · Källa: Transportstyrelsen, TYA</p>
@@ -98,6 +94,6 @@ export default function YkbFortbildning() {
           </ul>
         </div>
       </div>
-    </main>
+    </BlogPost>
   );
 }

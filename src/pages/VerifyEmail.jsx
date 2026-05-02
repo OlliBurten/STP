@@ -25,26 +25,23 @@ export default function VerifyEmail() {
       });
   }, [token]);
 
+  const statusStyle = status === "success"
+    ? { background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.2)", color: "#4ade80" }
+    : status === "error"
+      ? { background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#f87171" }
+      : { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(240,250,249,0.7)" };
+
   return (
-    <main className="max-w-md mx-auto px-4 py-16">
-      <div
-        className={`rounded-xl border p-6 ${
-          status === "success"
-            ? "bg-green-50 border-green-200 text-green-900"
-            : status === "error"
-              ? "bg-red-50 border-red-200 text-red-900"
-              : "bg-slate-50 border-slate-200 text-slate-900"
-        }`}
-      >
-        <h1 className="text-xl font-bold">E-postverifiering</h1>
-        <p className="mt-2 text-sm">{message}</p>
+    <main style={{ background: "#060f0f", minHeight: "100vh", marginTop: "-64px", display: "flex", alignItems: "center", justifyContent: "center", padding: "80px 16px" }}>
+      <div style={{ width: "100%", maxWidth: 420 }}>
+        <div style={{ ...statusStyle, borderRadius: 16, padding: "24px 28px" }}>
+          <h1 style={{ fontSize: 18, fontWeight: 700, margin: "0 0 8px" }}>E-postverifiering</h1>
+          <p style={{ fontSize: 14, margin: 0, opacity: 0.85 }}>{message}</p>
+        </div>
+        <Link to="/login" style={{ display: "inline-block", marginTop: 24, fontSize: 14, color: "#4ade80", textDecoration: "none" }}>
+          Till login
+        </Link>
       </div>
-      <Link
-        to="/login"
-        className="mt-6 inline-block text-[var(--color-primary)] font-medium hover:underline"
-      >
-        Till login
-      </Link>
     </main>
   );
 }

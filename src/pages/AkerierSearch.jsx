@@ -8,23 +8,25 @@ import { transportSegmentGroups, getBranschLabel } from "../data/bransch.js";
 import { regions } from "../data/mockJobs.js";
 import { ChevronDownIcon, LocationIcon, CheckIcon, ArrowRightIcon } from "../components/Icons.jsx";
 
+const S = {
+  page: { background: "#060f0f", minHeight: "100vh", marginTop: "-64px", paddingTop: 88 },
+  wrap: { maxWidth: 1100, margin: "0 auto", padding: "0 24px 80px" },
+  card: { background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16 },
+  select: { width: "100%", appearance: "none", minHeight: 40, paddingLeft: 12, paddingRight: 36, paddingTop: 8, paddingBottom: 8, borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#f0faf9", fontSize: 13, outline: "none", boxSizing: "border-box", fontFamily: "inherit" },
+};
+
 function SelectField({ id, label, value, onChange, children }) {
   return (
     <div>
-      <label htmlFor={id} className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+      <label htmlFor={id} style={{ display: "block", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(240,250,249,0.4)", marginBottom: 6 }}>
         {label}
       </label>
-      <div className="relative">
-        <select
-          id={id}
-          value={value}
-          onChange={onChange}
-          className="w-full appearance-none min-h-[42px] pl-3 pr-9 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none bg-white text-sm text-slate-800"
-        >
+      <div style={{ position: "relative" }}>
+        <select id={id} value={value} onChange={onChange} style={S.select}>
           {children}
         </select>
-        <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-400">
-          <ChevronDownIcon className="w-4 h-4" />
+        <span style={{ pointerEvents: "none", position: "absolute", insetBlock: 0, right: 10, display: "flex", alignItems: "center", color: "rgba(240,250,249,0.35)" }}>
+          <ChevronDownIcon style={{ width: 14, height: 14, color: "rgba(240,250,249,0.35)" }} />
         </span>
       </div>
     </div>
@@ -69,209 +71,202 @@ export default function AkerierSearch() {
   }, [hasApi, bransch, region, isGymnasieelev, user]);
 
   return (
-    <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+    <main style={S.page}>
+      <div style={S.wrap}>
 
-      {/* Hero intro */}
-      <div className="mb-8">
-        {isGymnasieelev && (
-          <div className="mb-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-900">
-            Du är registrerad som gymnasieelev. Endast åkerier som erbjuder <strong>praktik</strong> visas.
-          </div>
-        )}
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Åkeridatabasen</h1>
-        <p className="mt-1.5 text-slate-600 text-sm max-w-2xl">
-          Alla verifierade transportföretag på Sveriges Transportplattform — i en och samma katalog.
-          Filtrera på bransch och region. Kontaktuppgifter är en medlemsförmån för inloggade förare.
-        </p>
-        {!user && (
-          <div className="mt-4 inline-flex items-center gap-3 rounded-xl border border-[var(--color-primary)]/30 bg-[var(--color-primary)]/5 px-4 py-3">
-            <span className="text-sm text-slate-700">
-              Logga in för att se kontaktuppgifter direkt i listan
-            </span>
-            <Link
-              to="/login"
-              state={{ from: "/akerier" }}
-              className="shrink-0 inline-flex items-center gap-1 rounded-lg bg-[var(--color-primary)] px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 transition-opacity"
-            >
-              Logga in <ArrowRightIcon className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-        )}
-      </div>
-
-      <div className="grid lg:grid-cols-[260px_1fr] gap-6 lg:gap-8">
-
-        {/* Filter sidebar */}
-        <aside className="lg:sticky lg:top-24 lg:self-start">
-          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-            <div className="flex items-center justify-between px-5 pt-5 pb-3">
-              <span className="text-xs font-semibold uppercase tracking-widest text-slate-400">Filtrera</span>
-              {hasActiveFilters && (
-                <button
-                  type="button"
-                  onClick={() => { setBransch(""); setRegion(""); }}
-                  className="text-xs text-slate-400 hover:text-slate-600 transition-colors"
-                >
-                  Rensa
-                </button>
-              )}
+        {/* Hero intro */}
+        <div style={{ marginBottom: 32 }}>
+          {isGymnasieelev && (
+            <div style={{ marginBottom: 16, padding: "12px 16px", borderRadius: 12, border: "1px solid rgba(74,222,128,0.2)", background: "rgba(74,222,128,0.06)", fontSize: 13, color: "#4ade80" }}>
+              Du är registrerad som gymnasieelev. Endast åkerier som erbjuder <strong>praktik</strong> visas.
             </div>
-            <div className="px-5 pb-5 space-y-5">
-              <div className="h-px bg-slate-100" />
-
-              <SelectField
-                id="akerier-bransch"
-                label="Bransch"
-                value={bransch}
-                onChange={(e) => setBransch(e.target.value)}
-              >
-                <option value="">Alla branscher</option>
-                {transportSegmentGroups.map((g) => (
-                  <optgroup key={g.id} label={g.label}>
-                    {g.options.map((b) => (
-                      <option key={b.value} value={b.value}>{b.label}</option>
-                    ))}
-                  </optgroup>
-                ))}
-              </SelectField>
-
-              <SelectField
-                id="akerier-region"
-                label="Region"
-                value={region}
-                onChange={(e) => setRegion(e.target.value)}
-              >
-                <option value="">Alla regioner</option>
-                {regions.map((r) => (
-                  <option key={r} value={r}>{r}</option>
-                ))}
-              </SelectField>
-
-              {hasActiveFilters && (
-                <div className="flex flex-wrap gap-1.5 pt-1">
-                  {activeChips.map(({ key, label }) => (
-                    <button
-                      key={key}
-                      type="button"
-                      onClick={() => clearFilter(key)}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-[var(--color-primary)]/10 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20 transition-colors"
-                    >
-                      {label}
-                      <span aria-hidden className="font-bold leading-none">×</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Member perk callout */}
+          )}
+          <h1 style={{ fontSize: 36, fontWeight: 900, color: "#f0faf9", letterSpacing: "-0.5px", margin: "0 0 10px" }}>
+            Åkeridatabasen
+          </h1>
+          <p style={{ fontSize: 15, color: "rgba(240,250,249,0.55)", maxWidth: 600, lineHeight: 1.6, margin: "0 0 16px" }}>
+            Alla verifierade transportföretag på Sveriges Transportplattform — i en och samma katalog.
+            Filtrera på bransch och region. Kontaktuppgifter är en medlemsförmån för inloggade förare.
+          </p>
           {!user && (
-            <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-2">Medlemsförmån</p>
-              <p className="text-sm text-slate-700 leading-snug">
-                Som inloggad förare ser du direktkontakt till varje åkeri — e-post och telefonnummer.
-              </p>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 12, borderRadius: 12, border: "1px solid rgba(31,95,92,0.35)", background: "rgba(31,95,92,0.1)", padding: "10px 16px" }}>
+              <span style={{ fontSize: 13, color: "rgba(240,250,249,0.7)" }}>
+                Logga in för att se kontaktuppgifter direkt i listan
+              </span>
               <Link
-                to="/registrera"
-                className="mt-3 inline-block text-xs font-semibold text-[var(--color-primary)] hover:underline"
+                to="/login"
+                state={{ from: "/akerier" }}
+                style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 4, borderRadius: 10, background: "#1F5F5C", padding: "6px 14px", fontSize: 12, fontWeight: 700, color: "#f0faf9", textDecoration: "none" }}
               >
-                Skapa gratis konto →
+                Logga in <ArrowRightIcon style={{ width: 12, height: 12, color: "#f0faf9" }} />
               </Link>
             </div>
           )}
-        </aside>
+        </div>
 
-        {/* Results */}
-        <div>
-          {/* Result count */}
-          {hasApi && !loading && (
-            <p className="text-xs text-slate-400 mb-3">
-              {list.length} {hasActiveFilters ? "matchande" : "verifierade"} åkeri{list.length !== 1 ? "er" : ""}
-            </p>
-          )}
+        <div style={{ display: "grid", gridTemplateColumns: "240px 1fr", gap: 24, alignItems: "start" }}>
 
-          {!hasApi ? (
-            <div className="p-8 bg-white rounded-xl border border-slate-200 text-slate-600 text-sm">
-              Åkeridatabasen kräver att appen är kopplad till servern.
+          {/* Filter sidebar */}
+          <aside style={{ position: "sticky", top: 88 }}>
+            <div style={S.card}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 18px 10px" }}>
+                <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(240,250,249,0.35)" }}>Filtrera</span>
+                {hasActiveFilters && (
+                  <button
+                    type="button"
+                    onClick={() => { setBransch(""); setRegion(""); }}
+                    style={{ fontSize: 11, color: "rgba(240,250,249,0.4)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}
+                  >
+                    Rensa
+                  </button>
+                )}
+              </div>
+              <div style={{ padding: "4px 18px 18px", display: "flex", flexDirection: "column", gap: 14 }}>
+                <div style={{ height: 1, background: "rgba(255,255,255,0.07)" }} />
+                <SelectField id="akerier-bransch" label="Bransch" value={bransch} onChange={(e) => setBransch(e.target.value)}>
+                  <option value="">Alla branscher</option>
+                  {transportSegmentGroups.map((g) => (
+                    <optgroup key={g.id} label={g.label}>
+                      {g.options.map((b) => (
+                        <option key={b.value} value={b.value}>{b.label}</option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </SelectField>
+                <SelectField id="akerier-region" label="Region" value={region} onChange={(e) => setRegion(e.target.value)}>
+                  <option value="">Alla regioner</option>
+                  {regions.map((r) => (
+                    <option key={r} value={r}>{r}</option>
+                  ))}
+                </SelectField>
+
+                {hasActiveFilters && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                    {activeChips.map(({ key, label }) => (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => clearFilter(key)}
+                        style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 10px", borderRadius: 99, fontSize: 11, fontWeight: 600, background: "rgba(31,95,92,0.2)", border: "1px solid rgba(31,95,92,0.35)", color: "#4ade80", cursor: "pointer", fontFamily: "inherit" }}
+                      >
+                        {label}
+                        <span aria-hidden style={{ fontWeight: 700, opacity: 0.7 }}>×</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-          ) : loading ? (
-            <div className="space-y-2">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="h-24 rounded-xl bg-slate-100 animate-pulse" />
-              ))}
-            </div>
-          ) : list.length === 0 ? (
-            <div className="p-12 bg-white rounded-xl border border-slate-200 text-center">
-              <p className="text-slate-700 font-medium">Inga åkerier matchar filtren.</p>
-              <p className="mt-2 text-sm text-slate-500">Prova annan bransch eller region.</p>
-              <Link to="/jobb" className="mt-4 inline-block text-sm text-[var(--color-primary)] font-medium hover:underline">
-                Se lediga jobb istället →
-              </Link>
-            </div>
-          ) : (
-            <ul className="space-y-2">
-              {list.map((c) => (
-                <li key={c.id}>
-                  <div className="bg-white rounded-xl border border-slate-200 hover:border-slate-300 hover:shadow-sm transition-all">
-                    <div className="p-4 sm:p-5">
-                      <div className="flex flex-col sm:flex-row sm:items-start gap-3">
+
+            {/* Member perk callout */}
+            {!user && (
+              <div style={{ marginTop: 12, ...S.card, padding: "16px 18px" }}>
+                <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(240,250,249,0.35)", marginBottom: 8 }}>Medlemsförmån</p>
+                <p style={{ fontSize: 13, color: "rgba(240,250,249,0.6)", lineHeight: 1.55, margin: "0 0 10px" }}>
+                  Som inloggad förare ser du direktkontakt till varje åkeri — e-post och telefonnummer.
+                </p>
+                <Link
+                  to="/registrera"
+                  style={{ fontSize: 12, fontWeight: 700, color: "#4ade80", textDecoration: "none" }}
+                >
+                  Skapa gratis konto →
+                </Link>
+              </div>
+            )}
+          </aside>
+
+          {/* Results */}
+          <div>
+            {/* Result count */}
+            {hasApi && !loading && (
+              <p style={{ fontSize: 12, color: "rgba(240,250,249,0.35)", marginBottom: 10 }}>
+                {list.length} {hasActiveFilters ? "matchande" : "verifierade"} åkeri{list.length !== 1 ? "er" : ""}
+              </p>
+            )}
+
+            {!hasApi ? (
+              <div style={{ ...S.card, padding: "24px 28px" }}>
+                <p style={{ fontSize: 13, color: "rgba(240,250,249,0.5)", margin: 0 }}>Åkeridatabasen kräver att appen är kopplad till servern.</p>
+              </div>
+            ) : loading ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} style={{ height: 88, borderRadius: 14, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }} />
+                ))}
+              </div>
+            ) : list.length === 0 ? (
+              <div style={{ ...S.card, padding: "48px 32px", textAlign: "center" }}>
+                <p style={{ fontSize: 15, fontWeight: 600, color: "#f0faf9", margin: "0 0 6px" }}>Inga åkerier matchar filtren.</p>
+                <p style={{ fontSize: 13, color: "rgba(240,250,249,0.45)", margin: "0 0 16px" }}>Prova annan bransch eller region.</p>
+                <Link to="/jobb" style={{ fontSize: 13, color: "#4ade80", fontWeight: 600, textDecoration: "none" }}>
+                  Se lediga jobb istället →
+                </Link>
+              </div>
+            ) : (
+              <ul style={{ display: "flex", flexDirection: "column", gap: 8, listStyle: "none", padding: 0, margin: 0 }}>
+                {list.map((c) => (
+                  <li key={c.id}>
+                    <div
+                      style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, padding: "16px 20px", transition: "border-color 0.2s" }}
+                      onMouseEnter={e => e.currentTarget.style.borderColor = "rgba(31,95,92,0.45)"}
+                      onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)"}
+                    >
+                      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-start", gap: 12 }}>
                         {/* Left: company info */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex flex-wrap items-center gap-2 mb-0.5">
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8, marginBottom: 4 }}>
                             <Link
                               to={`/foretag/${c.id}`}
-                              className="text-base font-semibold text-slate-900 hover:text-[var(--color-primary)] transition-colors"
+                              style={{ fontSize: 15, fontWeight: 700, color: "#f0faf9", textDecoration: "none" }}
                             >
                               {c.name}
                             </Link>
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                              <CheckIcon className="w-3 h-3" /> Verifierat
+                            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 8px", borderRadius: 99, fontSize: 10, fontWeight: 700, background: "rgba(74,222,128,0.1)", border: "1px solid rgba(74,222,128,0.2)", color: "#4ade80" }}>
+                              <CheckIcon style={{ width: 10, height: 10, color: "#4ade80" }} /> Verifierat
                             </span>
                           </div>
 
                           {(c.region || c.location) && (
-                            <p className="flex items-center gap-1 text-xs text-slate-500 mb-1.5">
-                              <LocationIcon className="w-3 h-3 shrink-0" />
+                            <p style={{ fontSize: 12, color: "rgba(240,250,249,0.4)", margin: "0 0 8px", display: "flex", alignItems: "center", gap: 4 }}>
+                              <LocationIcon style={{ width: 11, height: 11, color: "rgba(240,250,249,0.35)", flexShrink: 0 }} />
                               {[c.location, c.region].filter(Boolean).filter((v, i, arr) => arr.indexOf(v) === i).join(" · ")}
                             </p>
                           )}
 
                           {c.bransch?.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mb-1.5">
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 6 }}>
                               {c.bransch.slice(0, 4).map((b) => (
-                                <span key={b} className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+                                <span key={b} style={{ padding: "1px 8px", borderRadius: 99, fontSize: 11, fontWeight: 500, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(240,250,249,0.55)" }}>
                                   {getBranschLabel(b)}
                                 </span>
                               ))}
                               {c.bransch.length > 4 && (
-                                <span className="inline-flex px-2 py-0.5 rounded-full text-xs text-slate-400">
-                                  +{c.bransch.length - 4}
-                                </span>
+                                <span style={{ fontSize: 11, color: "rgba(240,250,249,0.3)" }}>+{c.bransch.length - 4}</span>
                               )}
                             </div>
                           )}
 
                           {c.description && (
-                            <p className="text-xs text-slate-500 line-clamp-1">{c.description}</p>
+                            <p style={{ fontSize: 12, color: "rgba(240,250,249,0.4)", margin: 0, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 1, WebkitBoxOrient: "vertical" }}>
+                              {c.description}
+                            </p>
                           )}
                         </div>
 
                         {/* Right: contact + job count */}
-                        <div className="shrink-0 flex flex-col items-start sm:items-end gap-1.5">
+                        <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
                           {c.activeJobCount > 0 && (
-                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+                            <span style={{ padding: "2px 10px", borderRadius: 99, fontSize: 11, fontWeight: 500, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(240,250,249,0.5)" }}>
                               {c.activeJobCount} aktiva jobb
                             </span>
                           )}
 
                           {user ? (
-                            /* Logged in — show contact info */
-                            <div className="flex flex-col items-start sm:items-end gap-1 mt-0.5">
+                            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
                               {c.contactEmail ? (
                                 <a
                                   href={`mailto:${c.contactEmail}`}
-                                  className="text-xs text-[var(--color-primary)] hover:underline font-medium"
+                                  style={{ fontSize: 12, color: "#4ade80", textDecoration: "none", fontWeight: 500 }}
                                   onClick={(e) => e.stopPropagation()}
                                 >
                                   {c.contactEmail}
@@ -280,7 +275,7 @@ export default function AkerierSearch() {
                               {c.contactPhone ? (
                                 <a
                                   href={`tel:${c.contactPhone}`}
-                                  className="text-xs text-slate-600 hover:text-slate-900"
+                                  style={{ fontSize: 12, color: "rgba(240,250,249,0.6)", textDecoration: "none" }}
                                   onClick={(e) => e.stopPropagation()}
                                 >
                                   {c.contactPhone}
@@ -289,18 +284,17 @@ export default function AkerierSearch() {
                               {!c.contactEmail && !c.contactPhone && (
                                 <Link
                                   to={`/foretag/${c.id}`}
-                                  className="inline-flex items-center gap-1 text-xs font-medium text-[var(--color-primary)] hover:gap-1.5 transition-all"
+                                  style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 600, color: "#4ade80", textDecoration: "none" }}
                                 >
-                                  Visa profil <ArrowRightIcon className="w-3 h-3" />
+                                  Visa profil <ArrowRightIcon style={{ width: 11, height: 11, color: "#4ade80" }} />
                                 </Link>
                               )}
                             </div>
                           ) : (
-                            /* Guest — login gate */
                             <Link
                               to="/login"
                               state={{ from: "/akerier" }}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-dashed border-slate-300 text-xs text-slate-400 hover:border-[var(--color-primary)]/40 hover:text-[var(--color-primary)] transition-colors"
+                              style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 8, border: "1px dashed rgba(255,255,255,0.15)", fontSize: 11, color: "rgba(240,250,249,0.4)", textDecoration: "none" }}
                             >
                               Logga in för kontakt
                             </Link>
@@ -308,11 +302,11 @@ export default function AkerierSearch() {
                         </div>
                       </div>
                     </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
       </div>
     </main>

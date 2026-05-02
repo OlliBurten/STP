@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import ArticleJsonLd from "../../components/ArticleJsonLd";
+import BlogPost from "../../components/BlogPost";
 
 const TITLE = "Kranförarbevis — krav, utbildning och kostnad";
 const DESC = "Vad krävs för att köra kran i Sverige? Guide om kranförarbevis, HIAB-certifikat, utbildningslängd och vad det kostar 2025.";
@@ -9,14 +10,9 @@ export default function Kranforarbevis() {
   usePageMeta({ title: TITLE, description: DESC, canonical: "/blogg/kranforarbevis", type: "article" });
 
   return (
-    <main className="max-w-3xl mx-auto px-4 sm:px-6 py-16">
+    <BlogPost breadcrumb="Kranförarbevis">
       <ArticleJsonLd headline={TITLE} description={DESC} datePublished="2025-04-20" url="/blogg/kranforarbevis" />
 
-      <nav className="text-sm text-slate-500 mb-6">
-        <Link to="/blogg" className="hover:text-[var(--color-primary)]">Blogg</Link>
-        <span className="mx-2">›</span>
-        <span className="text-slate-700">Kranförarbevis</span>
-      </nav>
 
       <h1 className="text-3xl font-bold text-slate-900 mb-4">{TITLE}</h1>
       <p className="text-slate-500 text-sm mb-8">Publicerad 20 april 2025 · Källa: Arbetsmiljöverket, TYA</p>
@@ -96,6 +92,6 @@ export default function Kranforarbevis() {
           </ul>
         </div>
       </div>
-    </main>
+    </BlogPost>
   );
 }

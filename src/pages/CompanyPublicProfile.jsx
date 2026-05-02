@@ -6,6 +6,12 @@ import { getBranschLabel } from "../data/bransch.js";
 import { StarFilledIcon, LocationIcon, CheckIcon } from "../components/Icons";
 import { useAuth } from "../context/AuthContext";
 
+const S = {
+  page: { background: "#060f0f", minHeight: "100vh", marginTop: "-64px", paddingTop: 88 },
+  wrap: { maxWidth: 900, margin: "0 auto", padding: "0 24px 80px" },
+  card: { background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, overflow: "hidden" },
+};
+
 export default function CompanyPublicProfile() {
   const { id } = useParams();
   const { user } = useAuth();
@@ -23,19 +29,23 @@ export default function CompanyPublicProfile() {
 
   if (loading) {
     return (
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-10">
-        <p className="text-slate-500">Laddar företag...</p>
+      <main style={S.page}>
+        <div style={S.wrap}>
+          <p style={{ fontSize: 14, color: "rgba(240,250,249,0.45)" }}>Laddar företag...</p>
+        </div>
       </main>
     );
   }
 
   if (!company) {
     return (
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-10">
-        <p className="text-slate-700">Företaget hittades inte.</p>
-        <Link to="/jobb" className="mt-3 inline-block text-[var(--color-primary)] hover:underline">
-          Tillbaka till jobb
-        </Link>
+      <main style={S.page}>
+        <div style={S.wrap}>
+          <p style={{ fontSize: 15, color: "rgba(240,250,249,0.7)", marginBottom: 12 }}>Företaget hittades inte.</p>
+          <Link to="/jobb" style={{ fontSize: 14, color: "#4ade80", textDecoration: "none" }}>
+            Tillbaka till jobb
+          </Link>
+        </div>
       </main>
     );
   }
@@ -82,182 +92,188 @@ export default function CompanyPublicProfile() {
     .join(", ");
 
   return (
-    <main className="max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-5">
+    <main style={S.page}>
       <PageMeta
         title={company.name}
         description={companyDescription}
         canonical={`/foretag/${company.id}`}
         jsonLd={jsonLd}
       />
+      <div style={S.wrap}>
 
-      {/* Back nav */}
-      <nav className="text-sm text-slate-500 flex items-center gap-2">
-        <Link to="/jobb" className="hover:text-[var(--color-primary)]">Jobb</Link>
-        <span>›</span>
-        <Link to="/akerier" className="hover:text-[var(--color-primary)]">Åkerier</Link>
-        <span>›</span>
-        <span className="text-slate-700">{company.name}</span>
-      </nav>
+        {/* Back nav */}
+        <nav style={{ fontSize: 13, color: "rgba(240,250,249,0.4)", marginBottom: 24, display: "flex", alignItems: "center", gap: 8 }}>
+          <Link to="/jobb" style={{ color: "#4ade80", textDecoration: "none" }}>Jobb</Link>
+          <span style={{ color: "rgba(240,250,249,0.2)" }}>›</span>
+          <Link to="/akerier" style={{ color: "#4ade80", textDecoration: "none" }}>Åkerier</Link>
+          <span style={{ color: "rgba(240,250,249,0.2)" }}>›</span>
+          <span style={{ color: "rgba(240,250,249,0.6)" }}>{company.name}</span>
+        </nav>
 
-      {/* ── Company header ── */}
-      <section className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        <div className="p-6 sm:p-8">
-          <h1 className="text-3xl font-bold text-slate-900">{company.name}</h1>
+        {/* ── Company header card ── */}
+        <section style={{ ...S.card, marginBottom: 16 }}>
+          <div style={{ padding: "28px 32px" }}>
+            <h1 style={{ fontSize: 30, fontWeight: 900, color: "#f0faf9", letterSpacing: "-0.5px", margin: "0 0 10px" }}>
+              {company.name}
+            </h1>
 
-          {/* Meta row */}
-          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-500">
-            {displayLocation && (
-              <span className="flex items-center gap-1">
-                <LocationIcon className="w-3.5 h-3.5 shrink-0" />{displayLocation}
-              </span>
-            )}
-            {company.website && (
-              <>
-                <span className="text-slate-300">·</span>
-                <a href={company.website.startsWith("http") ? company.website : `https://${company.website}`} target="_blank" rel="noreferrer" className="text-[var(--color-primary)] hover:underline">
-                  Webbplats ↗
-                </a>
-              </>
-            )}
-            {company.reviewCount > 0 && (
-              <>
-                <span className="text-slate-300">·</span>
-                <span className="flex items-center gap-1">
-                  <StarFilledIcon className="w-3.5 h-3.5 text-amber-500" />
-                  {company.reviewAverage}/5 ({company.reviewCount} omdömen)
-                </span>
-              </>
-            )}
-            <span className="text-slate-300">·</span>
-            <span>{company.jobs.length} aktiva jobb</span>
-          </div>
-
-          {/* Trust badges */}
-          {(company.verified || company.policyAgreedAt || company.fSkattsedel || company.industryOrgMember) && (
-            <div className="mt-4 flex flex-wrap gap-2">
-              {company.verified && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
-                  <CheckIcon className="w-3.5 h-3.5" /> Verifierat företag
+            {/* Meta row */}
+            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "6px 12px", fontSize: 13, color: "rgba(240,250,249,0.5)", marginBottom: 14 }}>
+              {displayLocation && (
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                  <LocationIcon style={{ width: 13, height: 13, color: "rgba(240,250,249,0.4)", flexShrink: 0 }} />
+                  {displayLocation}
                 </span>
               )}
-              {company.policyAgreedAt && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
-                  <CheckIcon className="w-3.5 h-3.5" /> Uppförandekod
-                </span>
+              {company.website && (
+                <>
+                  <span style={{ opacity: 0.2 }}>·</span>
+                  <a href={company.website.startsWith("http") ? company.website : `https://${company.website}`} target="_blank" rel="noreferrer" style={{ color: "#4ade80", textDecoration: "none" }}>
+                    Webbplats ↗
+                  </a>
+                </>
               )}
-              {company.fSkattsedel && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
-                  <CheckIcon className="w-3.5 h-3.5" /> F-skattsedel
-                </span>
+              {company.reviewCount > 0 && (
+                <>
+                  <span style={{ opacity: 0.2 }}>·</span>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                    <StarFilledIcon style={{ width: 13, height: 13, color: "#F5A623" }} />
+                    {company.reviewAverage}/5 ({company.reviewCount} omdömen)
+                  </span>
+                </>
               )}
-              {company.industryOrgMember && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
-                  <CheckIcon className="w-3.5 h-3.5" />
-                  {company.industryOrgName ? `Medlem i ${company.industryOrgName}` : "Branschmedlem"}
-                </span>
-              )}
+              <span style={{ opacity: 0.2 }}>·</span>
+              <span>{company.jobs.length} aktiva jobb</span>
             </div>
-          )}
-        </div>
 
-        {/* Bransch tag strip */}
-        {company.bransch?.length > 0 && (
-          <div className="px-6 sm:px-8 py-3 border-t border-slate-100 bg-slate-50/60 flex flex-wrap gap-1.5">
-            {company.bransch.map((b) => (
-              <span key={b} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-200 text-slate-700">
-                {getBranschLabel(b)}
-              </span>
-            ))}
-          </div>
-        )}
-
-        {/* Description */}
-        <div className="px-6 sm:px-8 py-6 border-t border-slate-100">
-          <p className="text-slate-700 leading-relaxed whitespace-pre-line">
-            {company.description || "Företaget har inte lagt till någon presentation ännu."}
-          </p>
-        </div>
-
-        {/* Contact info — gated behind login */}
-        <div className="px-6 sm:px-8 py-4 border-t border-slate-100">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-3">Kontakt</p>
-          {user ? (
-            (company.contactEmail || company.contactPhone) ? (
-              <div className="flex flex-wrap gap-4">
-                {company.contactEmail && (
-                  <a href={`mailto:${company.contactEmail}`} className="text-sm text-[var(--color-primary)] hover:underline font-medium">
-                    {company.contactEmail}
-                  </a>
+            {/* Trust badges */}
+            {(company.verified || company.policyAgreedAt || company.fSkattsedel || company.industryOrgMember) && (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {company.verified && (
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 10px", borderRadius: 99, background: "rgba(74,222,128,0.1)", border: "1px solid rgba(74,222,128,0.2)", fontSize: 11, fontWeight: 600, color: "#4ade80" }}>
+                    <CheckIcon style={{ width: 11, height: 11, color: "#4ade80" }} /> Verifierat företag
+                  </span>
                 )}
-                {company.contactPhone && (
-                  <a href={`tel:${company.contactPhone}`} className="text-sm text-slate-700 hover:text-slate-900">
-                    {company.contactPhone}
-                  </a>
+                {company.policyAgreedAt && (
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 10px", borderRadius: 99, background: "rgba(74,222,128,0.1)", border: "1px solid rgba(74,222,128,0.2)", fontSize: 11, fontWeight: 600, color: "#4ade80" }}>
+                    <CheckIcon style={{ width: 11, height: 11, color: "#4ade80" }} /> Uppförandekod
+                  </span>
+                )}
+                {company.fSkattsedel && (
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 10px", borderRadius: 99, background: "rgba(74,222,128,0.1)", border: "1px solid rgba(74,222,128,0.2)", fontSize: 11, fontWeight: 600, color: "#4ade80" }}>
+                    <CheckIcon style={{ width: 11, height: 11, color: "#4ade80" }} /> F-skattsedel
+                  </span>
+                )}
+                {company.industryOrgMember && (
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 10px", borderRadius: 99, background: "rgba(74,222,128,0.1)", border: "1px solid rgba(74,222,128,0.2)", fontSize: 11, fontWeight: 600, color: "#4ade80" }}>
+                    <CheckIcon style={{ width: 11, height: 11, color: "#4ade80" }} />
+                    {company.industryOrgName ? `Medlem i ${company.industryOrgName}` : "Branschmedlem"}
+                  </span>
                 )}
               </div>
-            ) : (
-              <p className="text-sm text-slate-400">Inga kontaktuppgifter tillagda ännu.</p>
-            )
-          ) : (
-            <div className="flex items-center justify-between gap-4 rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-3">
-              <p className="text-sm text-slate-600">Logga in för att se kontaktuppgifter</p>
-              <Link
-                to="/login"
-                state={{ from: `/foretag/${company.id}` }}
-                className="shrink-0 inline-flex items-center gap-1 rounded-lg bg-[var(--color-primary)] px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 transition-opacity"
-              >
-                Logga in
-              </Link>
+            )}
+          </div>
+
+          {/* Bransch tag strip */}
+          {company.bransch?.length > 0 && (
+            <div style={{ padding: "10px 32px", borderTop: "1px solid rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.02)", display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {company.bransch.map((b) => (
+                <span key={b} style={{ display: "inline-flex", padding: "2px 10px", borderRadius: 99, fontSize: 11, fontWeight: 500, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(240,250,249,0.6)" }}>
+                  {getBranschLabel(b)}
+                </span>
+              ))}
             </div>
           )}
-        </div>
-      </section>
 
-      {/* ── Active jobs ── */}
-      <section>
-        <h2 className="text-lg font-semibold text-slate-900 mb-3">Aktiva jobb</h2>
-        {company.jobs.length === 0 ? (
-          <div className="bg-white rounded-xl border border-slate-200 p-6 text-slate-500 text-sm">
-            Inga aktiva jobb just nu.
+          {/* Description */}
+          <div style={{ padding: "20px 32px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+            <p style={{ fontSize: 14, color: "rgba(240,250,249,0.6)", lineHeight: 1.7, whiteSpace: "pre-line", margin: 0 }}>
+              {company.description || "Företaget har inte lagt till någon presentation ännu."}
+            </p>
           </div>
-        ) : (
-          <ul className="space-y-3">
-            {company.jobs.map((job) => (
-              <li key={job.id}>
+
+          {/* Contact info — gated behind login */}
+          <div style={{ padding: "16px 32px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+            <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(240,250,249,0.35)", marginBottom: 10 }}>Kontakt</p>
+            {user ? (
+              (company.contactEmail || company.contactPhone) ? (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 16 }}>
+                  {company.contactEmail && (
+                    <a href={`mailto:${company.contactEmail}`} style={{ fontSize: 13, color: "#4ade80", textDecoration: "none", fontWeight: 500 }}>
+                      {company.contactEmail}
+                    </a>
+                  )}
+                  {company.contactPhone && (
+                    <a href={`tel:${company.contactPhone}`} style={{ fontSize: 13, color: "rgba(240,250,249,0.7)", textDecoration: "none" }}>
+                      {company.contactPhone}
+                    </a>
+                  )}
+                </div>
+              ) : (
+                <p style={{ fontSize: 13, color: "rgba(240,250,249,0.35)" }}>Inga kontaktuppgifter tillagda ännu.</p>
+              )
+            ) : (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, borderRadius: 12, border: "1px dashed rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.02)", padding: "12px 16px" }}>
+                <p style={{ fontSize: 13, color: "rgba(240,250,249,0.5)", margin: 0 }}>Logga in för att se kontaktuppgifter</p>
                 <Link
-                  to={`/jobb/${job.id}`}
-                  className="block p-4 sm:p-5 bg-white rounded-xl border border-slate-200 hover:border-[var(--color-primary)]/40 hover:shadow-sm transition-all group"
+                  to="/login"
+                  state={{ from: `/foretag/${company.id}` }}
+                  style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 4, borderRadius: 10, background: "#1F5F5C", padding: "6px 14px", fontSize: 12, fontWeight: 700, color: "#f0faf9", textDecoration: "none" }}
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="font-semibold text-slate-900 group-hover:text-[var(--color-primary)] transition-colors">
-                        {job.title}
-                      </p>
-                      <p className="mt-0.5 text-sm text-slate-500 flex items-center gap-1">
-                        <LocationIcon className="w-3.5 h-3.5 shrink-0" />{job.location}, {job.region}
-                      </p>
-                    </div>
-                    <div className="flex flex-wrap gap-1.5 shrink-0">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-800">
-                        {job.employment === "fast" ? "Fast anst." : job.employment === "vikariat" ? "Vikariat" : "Timjobb"}
-                      </span>
-                      {(job.salaryMin || job.salary) && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
-                          {job.salaryMin
-                            ? job.salaryMax
-                              ? `${job.salaryMin.toLocaleString("sv-SE")}–${job.salaryMax.toLocaleString("sv-SE")} kr/mån`
-                              : `Från ${job.salaryMin.toLocaleString("sv-SE")} kr/mån`
-                            : job.salary}
-                        </span>
-                      )}
-                    </div>
-                  </div>
+                  Logga in
                 </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* ── Active jobs ── */}
+        <section>
+          <h2 style={{ fontSize: 17, fontWeight: 700, color: "#f0faf9", margin: "0 0 12px" }}>Aktiva jobb</h2>
+          {company.jobs.length === 0 ? (
+            <div style={{ ...S.card, padding: "20px 24px" }}>
+              <p style={{ fontSize: 13, color: "rgba(240,250,249,0.45)", margin: 0 }}>Inga aktiva jobb just nu.</p>
+            </div>
+          ) : (
+            <ul style={{ display: "flex", flexDirection: "column", gap: 8, listStyle: "none", padding: 0, margin: 0 }}>
+              {company.jobs.map((job) => (
+                <li key={job.id}>
+                  <Link
+                    to={`/jobb/${job.id}`}
+                    style={{ display: "block", padding: "16px 20px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, textDecoration: "none", transition: "border-color 0.2s" }}
+                    onMouseEnter={e => e.currentTarget.style.borderColor = "rgba(31,95,92,0.5)"}
+                    onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)"}
+                  >
+                    <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                      <div style={{ minWidth: 0 }}>
+                        <p style={{ fontSize: 15, fontWeight: 700, color: "#f0faf9", margin: "0 0 4px" }}>{job.title}</p>
+                        <p style={{ fontSize: 12, color: "rgba(240,250,249,0.45)", margin: 0, display: "flex", alignItems: "center", gap: 4 }}>
+                          <LocationIcon style={{ width: 11, height: 11, color: "rgba(240,250,249,0.35)", flexShrink: 0 }} />
+                          {job.location}, {job.region}
+                        </p>
+                      </div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, flexShrink: 0 }}>
+                        <span style={{ padding: "2px 9px", borderRadius: 99, fontSize: 11, fontWeight: 600, background: "rgba(245,166,35,0.1)", border: "1px solid rgba(245,166,35,0.2)", color: "#F5A623" }}>
+                          {job.employment === "fast" ? "Fast anst." : job.employment === "vikariat" ? "Vikariat" : "Timjobb"}
+                        </span>
+                        {(job.salaryMin || job.salary) && (
+                          <span style={{ padding: "2px 9px", borderRadius: 99, fontSize: 11, fontWeight: 500, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(240,250,249,0.55)" }}>
+                            {job.salaryMin
+                              ? job.salaryMax
+                                ? `${job.salaryMin.toLocaleString("sv-SE")}–${job.salaryMax.toLocaleString("sv-SE")} kr/mån`
+                                : `Från ${job.salaryMin.toLocaleString("sv-SE")} kr/mån`
+                              : job.salary}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </div>
     </main>
   );
 }

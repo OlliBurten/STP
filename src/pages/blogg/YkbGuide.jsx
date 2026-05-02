@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import ArticleJsonLd from "../../components/ArticleJsonLd";
+import BlogPost from "../../components/BlogPost";
 
 const TITLE = "YKB — allt du behöver veta om yrkesförarkompetens";
 const DESC = "YKB är ett lagkrav för yrkeschaufförer i EU. Vi reder ut vad det innebär, hur du tar det, hur länge det gäller och hur du förnyar det.";
@@ -9,7 +10,7 @@ export default function YkbGuide() {
   usePageMeta({ title: TITLE, description: DESC, canonical: "/blogg/ykb-yrkesforarkompetens", type: "article" });
 
   return (
-    <main className="max-w-3xl mx-auto px-4 sm:px-6 py-16">
+    <BlogPost breadcrumb="YKB">
       <ArticleJsonLd
         headline={TITLE}
         description={DESC}
@@ -17,11 +18,6 @@ export default function YkbGuide() {
         url="/blogg/ykb-yrkesforarkompetens"
       />
 
-      <nav className="text-sm text-slate-500 mb-6">
-        <Link to="/blogg" className="hover:text-[var(--color-primary)]">Blogg</Link>
-        <span className="mx-2">›</span>
-        <span className="text-slate-700">YKB</span>
-      </nav>
 
       <h1 className="text-3xl font-bold text-slate-900 mb-4">{TITLE}</h1>
       <p className="text-slate-500 text-sm mb-8">Publicerad 8 mars 2025 · Källa: Transportstyrelsen, TYA</p>
@@ -163,6 +159,6 @@ export default function YkbGuide() {
           </ul>
         </div>
       </div>
-    </main>
+    </BlogPost>
   );
 }

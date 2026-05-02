@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import ArticleJsonLd from "../../components/ArticleJsonLd";
+import BlogPost from "../../components/BlogPost";
 
 const TITLE = "Bli lastbilschaufför — vägen från B-körkort till CE";
 const DESC = "Steg-för-steg: hur du tar CE-körkort, vad YKB kostar, hur lång utbildningen är och vad du kan tjäna som ny lastbilschaufför 2025.";
@@ -9,14 +10,9 @@ export default function LastbilschaufforUtbildning() {
   usePageMeta({ title: TITLE, description: DESC, canonical: "/blogg/lastbilschauffor-utbildning", type: "article" });
 
   return (
-    <main className="max-w-3xl mx-auto px-4 sm:px-6 py-16">
+    <BlogPost breadcrumb="Bli lastbilschaufför">
       <ArticleJsonLd headline={TITLE} description={DESC} datePublished="2025-04-20" url="/blogg/lastbilschauffor-utbildning" />
 
-      <nav className="text-sm text-slate-500 mb-6">
-        <Link to="/blogg" className="hover:text-[var(--color-primary)]">Blogg</Link>
-        <span className="mx-2">›</span>
-        <span className="text-slate-700">Bli lastbilschaufför</span>
-      </nav>
 
       <h1 className="text-3xl font-bold text-slate-900 mb-4">{TITLE}</h1>
       <p className="text-slate-500 text-sm mb-8">Publicerad 20 april 2025 · Källa: Transportstyrelsen, TYA, Transportföretagen</p>
@@ -128,6 +124,6 @@ export default function LastbilschaufforUtbildning() {
           </ul>
         </div>
       </div>
-    </main>
+    </BlogPost>
   );
 }

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import ArticleJsonLd from "../../components/ArticleJsonLd";
+import BlogPost from "../../components/BlogPost";
 
 const TITLE = "CE-körkort i Sverige — krav, utbildning och kostnad";
 const DESC = "Allt du behöver veta om att ta CE-körkort: vilka krav som gäller, hur lång utbildningen är och vad det kostar 2025.";
@@ -9,19 +10,13 @@ export default function CeKorkortSverige() {
   usePageMeta({ title: TITLE, description: DESC, canonical: "/blogg/ce-korkort-sverige", type: "article" });
 
   return (
-    <main className="max-w-3xl mx-auto px-4 sm:px-6 py-16">
+    <BlogPost breadcrumb="CE-körkort">
       <ArticleJsonLd
         headline={TITLE}
         description={DESC}
         datePublished="2025-03-01"
         url="/blogg/ce-korkort-sverige"
       />
-
-      <nav className="text-sm text-slate-500 mb-6">
-        <Link to="/blogg" className="hover:text-[var(--color-primary)]">Blogg</Link>
-        <span className="mx-2">›</span>
-        <span className="text-slate-700">CE-körkort</span>
-      </nav>
 
       <h1 className="text-3xl font-bold text-slate-900 mb-4">{TITLE}</h1>
       <p className="text-slate-500 text-sm mb-8">Publicerad 1 mars 2025 · Källa: Trafikverket</p>
@@ -136,6 +131,6 @@ export default function CeKorkortSverige() {
           </ul>
         </div>
       </div>
-    </main>
+    </BlogPost>
   );
 }

@@ -1,6 +1,19 @@
-export const CURRENT_VERSION = "v0.6.0";
+export const CURRENT_VERSION = "v0.7.0";
 
 export const releaseNotes = [
+  {
+    version: "v0.7.0",
+    date: "2026-04-23",
+    title: "Publik förarprofil, CV-verktyg och åkeridatabas",
+    items: [
+      "Förare: din profil har nu en publik länk (transportplattformen.se/forare/...) som du kan dela direkt med åkerier — ingen inloggning krävs för att se den.",
+      "Förare: se hur många åkerier som tittat på din profil de senaste 7 och 30 dagarna, samt hur många som kontaktat dig.",
+      "Erfarenhet är nu ett eget steg i registreringsflödet — lägg till jobbhistorik, fordonstyp och körtyp direkt när du skapar kontot.",
+      "Erfarenhetssektionen på profilen har byggts om med tidslinje, fordonschips (CE lastbil, tankbil, kranbil m.fl.) och körtyp (fjärrkörning, distribution etc.).",
+      "Ny åkeridatabas: bläddra bland åkerier i Sverige med kontaktuppgifter — tillgänglig för inloggade förare.",
+      "Företag: lägg till en extern ansökningslänk på jobbannonsen om ni vill ta emot ansökningar via er egen sida.",
+    ],
+  },
   {
     version: "v0.6.0",
     date: "2026-04-15",

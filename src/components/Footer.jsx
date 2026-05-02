@@ -3,8 +3,8 @@ import Logo from "./Logo";
 import { CURRENT_VERSION } from "../lib/releaseNotes";
 import { regionPages } from "../data/regions";
 
-const footerLinks = {
-  plattformen: {
+const COLS = [
+  {
     heading: "Plattformen",
     links: [
       { to: "/jobb", label: "Lediga jobb" },
@@ -14,7 +14,7 @@ const footerLinks = {
       { to: "/uppdateringar", label: "Nyheter" },
     ],
   },
-  om: {
+  {
     heading: "Om STP",
     links: [
       { to: "/om-oss", label: "Om oss" },
@@ -24,85 +24,60 @@ const footerLinks = {
       { to: "/kontakt", label: "Kontakt" },
     ],
   },
-  juridik: {
-    heading: "Juridik & integritet",
+  {
+    heading: "Juridik",
     links: [
       { to: "/anvandarvillkor", label: "Användarvillkor" },
       { to: "/integritet", label: "Integritetspolicy" },
     ],
   },
-};
+];
 
 export default function Footer() {
   return (
-    <footer className="mt-auto bg-[var(--color-primary)] text-white">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-14 pb-8">
+    <footer style={{ background: "#040c0c" }} className="mt-auto text-white">
+      <div className="max-w-[1200px] mx-auto px-5 sm:px-10 pt-20 pb-10">
 
         {/* Main grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-10 lg:gap-8">
-
-          {/* Brand column */}
-          <div className="sm:col-span-3 lg:col-span-1">
-            <Link
-              to="/"
-              className="inline-block focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-[var(--color-primary)] rounded-lg"
-            >
-              <Logo height={40} variant="light" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4" style={{ gap: 60, marginBottom: 60 }}>
+          {/* Brand */}
+          <div>
+            <Link to="/" className="inline-block mb-5">
+              <Logo height={32} variant="light" />
             </Link>
-            <p className="mt-4 text-sm text-white/70 leading-relaxed max-w-xs">
+            <p style={{ fontSize: 14, color: "rgba(255,255,255,0.5)", lineHeight: 1.7, maxWidth: 260, marginBottom: 16 }}>
               Sveriges matchningsplattform för yrkesförare och transportföretag. Direkt kontakt utan mellanhänder.
             </p>
-            <a
-              href="mailto:hej@transportplattformen.se"
-              className="mt-4 inline-block text-sm text-white/80 hover:text-white transition-colors"
-            >
+            <a href="mailto:hej@transportplattformen.se" style={{ fontSize: 13, color: "rgba(255,255,255,0.6)" }} className="hover:text-white transition-colors">
               hej@transportplattformen.se
             </a>
           </div>
 
           {/* Link columns */}
-          {Object.values(footerLinks).map((col) => (
+          {COLS.map((col) => (
             <div key={col.heading}>
-              <h3 className="text-xs font-semibold uppercase tracking-widest text-white/50 mb-4">
+              <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 20 }}>
                 {col.heading}
-              </h3>
-              <ul className="space-y-2.5">
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 {col.links.map((link) => (
-                  <li key={link.label}>
-                    {link.href ? (
-                      <a
-                        href={link.href}
-                        className="text-sm text-white/75 hover:text-white transition-colors"
-                      >
-                        {link.label}
-                      </a>
-                    ) : (
-                      <Link
-                        to={link.to}
-                        className="text-sm text-white/75 hover:text-white transition-colors"
-                      >
-                        {link.label}
-                      </Link>
-                    )}
-                  </li>
+                  <Link key={link.label} to={link.to} style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", textDecoration: "none" }} className="hover:text-white transition-colors">
+                    {link.label}
+                  </Link>
                 ))}
-              </ul>
+              </div>
             </div>
           ))}
         </div>
 
         {/* Region links */}
-        <div className="mt-10 pt-8 border-t border-white/10">
-          <h3 className="text-xs font-semibold uppercase tracking-widest text-white/50 mb-4">
+        <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 32, marginBottom: 32 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 16 }}>
             Lastbilsjobb per region
-          </h3>
-          <div className="flex flex-wrap gap-x-4 gap-y-2">
+          </div>
+          <div className="flex flex-wrap" style={{ gap: "8px 24px" }}>
             {regionPages.map((r) => (
-              <Link
-                key={r.slug}
-                to={`/lastbilsjobb/${r.slug}`}
-                className="text-sm text-white/60 hover:text-white transition-colors"
-              >
+              <Link key={r.slug} to={`/lastbilsjobb/${r.slug}`} style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", textDecoration: "none" }} className="hover:text-white transition-colors">
                 {r.name}
               </Link>
             ))}
@@ -110,34 +85,25 @@ export default function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div className="space-y-1">
-            <p className="text-xs text-white/50">
+        <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 28, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+          <div>
+            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.3)" }}>
               © {new Date().getFullYear()} Sveriges Transportplattform AB
             </p>
-            <p className="text-xs text-white/40">
+            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.2)", marginTop: 4 }}>
               Datapunkter baseras på TYA Trendindikator Åkeri 2025/2026.
             </p>
           </div>
-          <div className="flex items-center gap-4">
-            <Link
-              to="/integritet"
-              className="text-xs text-white/50 hover:text-white/80 transition-colors"
-            >
-              Integritetspolicy
-            </Link>
-            <Link
-              to="/anvandarvillkor"
-              className="text-xs text-white/50 hover:text-white/80 transition-colors"
-            >
-              Villkor
-            </Link>
-            <Link
-              to="/uppdateringar"
-              className="text-xs text-white/50 hover:text-white/80 transition-colors"
-            >
-              v{CURRENT_VERSION}
-            </Link>
+          <div className="flex items-center" style={{ gap: 24 }}>
+            {[
+              { to: "/integritet", label: "Integritetspolicy" },
+              { to: "/anvandarvillkor", label: "Villkor" },
+              { to: "/uppdateringar", label: `v${CURRENT_VERSION}` },
+            ].map((l) => (
+              <Link key={l.label} to={l.to} style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", textDecoration: "none" }} className="hover:text-white/60 transition-colors">
+                {l.label}
+              </Link>
+            ))}
           </div>
         </div>
       </div>

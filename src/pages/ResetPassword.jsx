@@ -42,60 +42,46 @@ export default function ResetPassword() {
     }
   };
 
+  const inputStyle = { width: "100%", padding: "13px 48px 13px 16px", borderRadius: 12, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: "#f0faf9", fontSize: 15, outline: "none", boxSizing: "border-box" };
+
   return (
-    <main className="max-w-md mx-auto px-4 py-16">
-      <h1 className="text-2xl font-bold text-slate-900">Återställ lösenord</h1>
-      <p className="mt-2 text-slate-600">Ange nytt lösenord (minst 8 tecken).</p>
-      <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-        {error && <p className="text-sm text-red-600">{error}</p>}
-        {success && <p className="text-sm text-green-700">{success}</p>}
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1">
-            Nytt lösenord
-          </label>
-          <div className="relative">
-            <input
-              id="password"
-              type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full px-4 py-3 pr-12 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none"
-            />
-            <button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600" aria-label={showPassword ? "Dölj lösenord" : "Visa lösenord"}>
-              {showPassword ? <EyeOffIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
-            </button>
+    <main style={{ background: "#060f0f", minHeight: "100vh", marginTop: "-64px", display: "flex", alignItems: "center", justifyContent: "center", padding: "80px 16px" }}>
+      <div style={{ width: "100%", maxWidth: 420, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 24, padding: "40px 36px" }}>
+        <h1 style={{ fontSize: 26, fontWeight: 900, color: "#f0faf9", letterSpacing: "-0.5px", margin: "0 0 10px" }}>Återställ lösenord</h1>
+        <p style={{ fontSize: 15, color: "rgba(240,250,249,0.5)", margin: "0 0 24px" }}>Ange nytt lösenord (minst 8 tecken).</p>
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          {error && <p style={{ fontSize: 14, color: "#f87171", padding: "10px 14px", background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 10 }}>{error}</p>}
+          {success && <p style={{ fontSize: 14, color: "#4ade80", padding: "10px 14px", background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.2)", borderRadius: 10 }}>{success}</p>}
+          <div>
+            <label htmlFor="password" style={{ display: "block", fontSize: 13, fontWeight: 600, color: "rgba(240,250,249,0.65)", marginBottom: 8 }}>
+              Nytt lösenord
+            </label>
+            <div style={{ position: "relative" }}>
+              <input id="password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required style={inputStyle} />
+              <button type="button" onClick={() => setShowPassword((v) => !v)} style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "rgba(240,250,249,0.4)", display: "flex" }} aria-label={showPassword ? "Dölj lösenord" : "Visa lösenord"}>
+                {showPassword ? <EyeOffIcon style={{ width: 18, height: 18 }} /> : <EyeIcon style={{ width: 18, height: 18 }} />}
+              </button>
+            </div>
           </div>
-        </div>
-        <div>
-          <label htmlFor="confirm" className="block text-sm font-medium text-slate-700 mb-1">
-            Bekräfta lösenord
-          </label>
-          <div className="relative">
-            <input
-              id="confirm"
-              type={showPassword ? "text" : "password"}
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              required
-              className="w-full px-4 py-3 pr-12 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none"
-            />
-            <button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600" aria-label={showPassword ? "Dölj lösenord" : "Visa lösenord"}>
-              {showPassword ? <EyeOffIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
-            </button>
+          <div>
+            <label htmlFor="confirm" style={{ display: "block", fontSize: 13, fontWeight: 600, color: "rgba(240,250,249,0.65)", marginBottom: 8 }}>
+              Bekräfta lösenord
+            </label>
+            <div style={{ position: "relative" }}>
+              <input id="confirm" type={showPassword ? "text" : "password"} value={confirm} onChange={(e) => setConfirm(e.target.value)} required style={inputStyle} />
+              <button type="button" onClick={() => setShowPassword((v) => !v)} style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "rgba(240,250,249,0.4)", display: "flex" }} aria-label={showPassword ? "Dölj lösenord" : "Visa lösenord"}>
+                {showPassword ? <EyeOffIcon style={{ width: 18, height: 18 }} /> : <EyeIcon style={{ width: 18, height: 18 }} />}
+              </button>
+            </div>
           </div>
-        </div>
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full py-3 rounded-xl bg-[var(--color-primary)] text-white font-semibold hover:bg-[var(--color-primary-light)] disabled:opacity-60"
-        >
-          {loading ? "Sparar..." : "Spara nytt lösenord"}
-        </button>
-      </form>
-      <Link to="/login" className="mt-6 inline-block text-[var(--color-primary)] font-medium hover:underline">
-        Till login
-      </Link>
+          <button type="submit" disabled={loading} style={{ width: "100%", padding: "14px", borderRadius: 14, background: "#F5A623", color: "#000", fontSize: 15, fontWeight: 800, border: "none", cursor: "pointer", opacity: loading ? 0.5 : 1 }}>
+            {loading ? "Sparar..." : "Spara nytt lösenord"}
+          </button>
+        </form>
+        <Link to="/login" style={{ display: "inline-block", marginTop: 20, fontSize: 14, color: "#4ade80", textDecoration: "none" }}>
+          Till login
+        </Link>
+      </div>
     </main>
   );
 }

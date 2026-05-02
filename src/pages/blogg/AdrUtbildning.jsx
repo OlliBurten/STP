@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import ArticleJsonLd from "../../components/ArticleJsonLd";
+import BlogPost from "../../components/BlogPost";
 
 const TITLE = "ADR-utbildning — farligt gods och vad som krävs";
 const DESC = "Vad är ADR, vilka klasser finns och hur skaffar du ADR-behörighet? Komplett guide om transport av farligt gods för svenska chaufförer.";
@@ -9,7 +10,7 @@ export default function AdrUtbildning() {
   usePageMeta({ title: TITLE, description: DESC, canonical: "/blogg/adr-utbildning-farligt-gods", type: "article" });
 
   return (
-    <main className="max-w-3xl mx-auto px-4 sm:px-6 py-16">
+    <BlogPost breadcrumb="ADR-utbildning">
       <ArticleJsonLd
         headline={TITLE}
         description={DESC}
@@ -17,11 +18,6 @@ export default function AdrUtbildning() {
         url="/blogg/adr-utbildning-farligt-gods"
       />
 
-      <nav className="text-sm text-slate-500 mb-6">
-        <Link to="/blogg" className="hover:text-[var(--color-primary)]">Blogg</Link>
-        <span className="mx-2">›</span>
-        <span className="text-slate-700">ADR-utbildning</span>
-      </nav>
 
       <h1 className="text-3xl font-bold text-slate-900 mb-4">{TITLE}</h1>
       <p className="text-slate-500 text-sm mb-8">Publicerad 15 mars 2025 · Källa: MSB, Transportstyrelsen</p>
@@ -149,6 +145,6 @@ export default function AdrUtbildning() {
           </ul>
         </div>
       </div>
-    </main>
+    </BlogPost>
   );
 }
