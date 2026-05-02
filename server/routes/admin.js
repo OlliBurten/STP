@@ -1278,3 +1278,62 @@ adminRouter.patch("/reviews/:id", async (req, res, next) => {
     next(e);
   }
 });
+
+// ─── Admin: create job on behalf of a company ────────────────────────────────
+
+function resolveSegment(segment, employment) {
+  if (segment === "INTERNSHIP") return "INTERNSHIP";
+  if (segment === "FLEX") return "FLEX";
+  if (employment === "vikariat" || employment === "tim") return "FLEX";
+  return "FULLTIME";
+}
+
+adminRouter.post("/jobs", async (req, res, next) => {
+  try {
+    const body = req.body;
+    const required = ["title", "company", "description", "location", "region", "jobType", "employment", "contact"];
+    for (const f of required) {
+      if (!body[f]) return res.status(400).json({ error: `Fältet '${f}' krävs` });
+    }
+
+    // Use the admin's own userId as the owner (jobs will appear under admin account)
+    const adminUserId = req.user.id;
+
+    const job = await prisma.job.create({
+      data: {
+        userId: adminUserId,
+        title: String(body.title).trim(),
+        company: String(body.company).trim(),
+        description: String(body.description).trim(),
+        location: String(body.location).trim(),
+        region: String(body.region).trim(),
+        license: Array.isArray(body.license) ? body.license : [],
+        certificates: Array.isArray(body.certificates) ? body.certificates : [],
+        jobType: body.jobType,
+        employment: body.employment,
+        segment: resolveSegment(body.segment, body.employment),
+        contact: String(body.contact).trim(),
+        salary: body.salary || null,
+        salaryMin: body.salaryMin ? Number(body.salaryMin) : null,
+        salaryMax: body.salaryMax ? Number(body.salaryMax) : null,
+        externalApplyUrl: body.externalApplyUrl || null,
+        requirements: body.requirements ? JSON.stringify(body.requirements) : "[]",
+        extraRequirements: body.extraRequirements || null,
+        bransch: body.bransch || null,
+        schedule: body.schedule || null,
+        experience: body.experience || null,
+      },
+    });
+
+    await createAdminAuditLog({
+      req,
+      action: "JOB_CREATED",
+      targetType: "JOB",
+      metadata: { jobId: job.id, company: job.company, title: job.title },
+    });
+
+    res.status(201).json({ id: job.id, title: job.title, company: job.company });
+  } catch (e) {
+    next(e);
+  }
+});

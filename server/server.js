@@ -179,7 +179,7 @@ app.get("/api/sitemap-dynamic.xml", async (req, res) => {
     const FRONTEND = (process.env.FRONTEND_URL || "https://transportplattformen.se")
       .split(",")[0].trim();
 
-    const [jobs, orgs] = await Promise.all([
+    const [jobs, orgs, drivers] = await Promise.all([
       prisma.job.findMany({
         where: { status: "ACTIVE" },
         select: { id: true, updatedAt: true },
@@ -192,6 +192,12 @@ app.get("/api/sitemap-dynamic.xml", async (req, res) => {
         orderBy: { updatedAt: "desc" },
         take: 500,
       }),
+      prisma.driverProfile.findMany({
+        where: { visibleToCompanies: true, suspendedAt: null },
+        select: { userId: true, updatedAt: true },
+        orderBy: { updatedAt: "desc" },
+        take: 2000,
+      }),
     ]);
 
     const esc = (s) => String(s).replace(/&/g, "&amp;");
@@ -201,6 +207,7 @@ app.get("/api/sitemap-dynamic.xml", async (req, res) => {
     const entries = [
       ...jobs.map((j) => urlEntry(`${FRONTEND}/jobb/${j.id}`, j.updatedAt, "0.8")),
       ...orgs.map((o) => urlEntry(`${FRONTEND}/foretag/${o.id}`, o.updatedAt, "0.6")),
+      ...drivers.map((d) => urlEntry(`${FRONTEND}/forare/${d.userId}`, d.updatedAt, "0.5")),
     ];
 
     res.set("Content-Type", "application/xml; charset=utf-8");
