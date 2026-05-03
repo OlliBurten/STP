@@ -531,126 +531,183 @@ export default function Login() {
       {meta}
       <div
         style={{
-          width: "100%", maxWidth: 480,
+          width: "100%", maxWidth: 800, borderRadius: 20, overflow: "hidden",
           opacity: animOut ? 0 : 1, transform: animOut ? "translateY(8px)" : "translateY(0)",
           transition: "opacity 0.18s ease-out, transform 0.18s ease-out",
         }}
       >
-        <div style={{ padding: "52px 48px", display: "flex", flexDirection: "column", gap: 28 }}>
-          {mode === "login" && (
-            <div>
-              <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.12em", color: "#F5A623", textTransform: "uppercase", marginBottom: 10, margin: "0 0 10px" }}>
-                Välkommen tillbaka
-              </p>
-              <h1 style={{ fontSize: 36, fontWeight: 900, color: "var(--t-text)", lineHeight: 1.1, letterSpacing: "-1px", margin: 0 }}>
-                Logga in på<br />STP
-              </h1>
-            </div>
-          )}
-          {mode === "forgot" && (
-            <div>
-              <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.12em", color: "#F5A623", textTransform: "uppercase", marginBottom: 10, margin: "0 0 10px" }}>
-                Återställ lösenord
-              </p>
-              <h1 style={{ fontSize: 30, fontWeight: 900, color: "var(--t-text)", lineHeight: 1.1, letterSpacing: "-0.5px", margin: 0 }}>
-                Glömt ditt lösenord?
-              </h1>
-            </div>
-          )}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", minHeight: 600 }}>
 
-          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            {error && <div style={S.error}>{error}</div>}
-            {info && <div style={S.info}>{info}</div>}
-
-            {oauthPickingRole && (
-              <OAuthSection
-                onSuccess={handleOAuthAuthSuccess}
-                onError={(msg) => { setError(msg); setInfo(""); setOauthPickingRole(false); }}
-                onRolePickerVisible={setOauthPickingRole}
-                requiredRole={requiredRole}
-                from={from}
-                mode="login"
-              />
+          {/* ── Left: form ──────────────────────────────────────────────── */}
+          <div style={{ padding: "52px 44px", display: "flex", flexDirection: "column", gap: 24, borderRight: "1px solid rgba(255,255,255,0.08)" }}>
+            {mode === "login" && (
+              <div>
+                <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.12em", color: "#F5A623", textTransform: "uppercase", margin: "0 0 10px" }}>
+                  Välkommen tillbaka
+                </p>
+                <h1 style={{ fontSize: 36, fontWeight: 900, color: "var(--t-text)", lineHeight: 1.1, letterSpacing: "-1px", margin: 0 }}>
+                  Logga in på<br />STP
+                </h1>
+              </div>
             )}
-
-            {!oauthPickingRole && (
-              <>
-                <Field label="E-POST" id="email">
-                  <input
-                    id="email" type="email" required autoComplete="email"
-                    value={email} onChange={(e) => setEmail(e.target.value)}
-                    style={S.input} placeholder="din@epost.se"
-                  />
-                </Field>
-
-                {mode !== "forgot" && (
-                  <Field label="LÖSENORD" id="password">
-                    <div style={{ position: "relative" }}>
-                      <input
-                        id="password" type={showPassword ? "text" : "password"}
-                        required autoComplete="current-password"
-                        value={password} onChange={(e) => setPassword(e.target.value)}
-                        style={{ ...S.input, paddingRight: 44 }}
-                        placeholder="••••••••"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword((v) => !v)}
-                        style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "rgba(240,250,249,0.4)", display: "flex", padding: 0 }}
-                        aria-label={showPassword ? "Dölj lösenord" : "Visa lösenord"}
-                      >
-                        {showPassword ? <EyeOffIcon style={{ width: 16, height: 16 }} /> : <EyeIcon style={{ width: 16, height: 16 }} />}
-                      </button>
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 6 }}>
-                      <button type="button" onClick={() => goTo("forgot")} style={{ ...S.btnText, fontSize: 12 }}>
-                        Glömt lösenord?
-                      </button>
-                    </div>
-                  </Field>
-                )}
-
-                <button type="submit" disabled={loading} style={{ ...S.btnPrimary, marginTop: 4, opacity: loading ? 0.5 : 1 }}>
-                  {loading ? "Väntar..." : mode === "login" ? "Logga in →" : "Skicka återställningslänk"}
+            {mode === "forgot" && (
+              <div>
+                <button
+                  type="button"
+                  onClick={() => goTo("login")}
+                  style={{ background: "none", border: "none", color: "var(--t-muted)", fontSize: 13, cursor: "pointer", padding: 0, fontFamily: "inherit", marginBottom: 12, display: "block" }}
+                >
+                  ← Tillbaka
                 </button>
-              </>
+                <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.12em", color: "#F5A623", textTransform: "uppercase", margin: "0 0 10px" }}>
+                  Återställ lösenord
+                </p>
+                <h1 style={{ fontSize: 30, fontWeight: 900, color: "var(--t-text)", lineHeight: 1.1, letterSpacing: "-0.5px", margin: 0 }}>
+                  Glömt ditt lösenord?
+                </h1>
+              </div>
             )}
 
-            {mode === "login" && hasApi && !oauthPickingRole && (
-              <OAuthSection
-                onSuccess={handleOAuthAuthSuccess}
-                onError={(msg) => { setError(msg); setInfo(""); setOauthPickingRole(false); }}
-                onRolePickerVisible={setOauthPickingRole}
-                requiredRole={requiredRole}
-                from={from}
-                mode="login"
-              />
-            )}
+            <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              {error && <div style={S.error}>{error}</div>}
+              {info && <div style={S.info}>{info}</div>}
 
-            {!oauthPickingRole && mode === "login" && showResendVerification && (
-              <button type="button" onClick={handleResendVerification} disabled={loading} style={{ ...S.btnText, textAlign: "center", width: "100%", opacity: loading ? 0.5 : 1 }}>
-                Skicka verifieringsmail igen
-              </button>
-            )}
-          </form>
+              {oauthPickingRole && (
+                <OAuthSection
+                  onSuccess={handleOAuthAuthSuccess}
+                  onError={(msg) => { setError(msg); setInfo(""); setOauthPickingRole(false); }}
+                  onRolePickerVisible={setOauthPickingRole}
+                  requiredRole={requiredRole}
+                  from={from}
+                  mode="login"
+                />
+              )}
 
-          {/* Footer links */}
-          {mode === "login" && (
-            <p style={{ textAlign: "center", fontSize: 13, color: "var(--t-muted)", margin: 0 }}>
-              Inget konto?{" "}
-              <button type="button" onClick={() => goTo("register_pick")} style={{ ...S.btnText, color: "#F5A623" }}>
-                Skapa konto gratis
+              {!oauthPickingRole && (
+                <>
+                  <Field label="E-POST" id="email">
+                    <input
+                      id="email" type="email" required autoComplete="email"
+                      value={email} onChange={(e) => setEmail(e.target.value)}
+                      style={S.input} placeholder="din@epost.se"
+                    />
+                  </Field>
+
+                  {mode !== "forgot" && (
+                    <Field label="LÖSENORD" id="password">
+                      <div style={{ position: "relative" }}>
+                        <input
+                          id="password" type={showPassword ? "text" : "password"}
+                          required autoComplete="current-password"
+                          value={password} onChange={(e) => setPassword(e.target.value)}
+                          style={{ ...S.input, paddingRight: 44 }}
+                          placeholder="••••••••"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword((v) => !v)}
+                          style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "rgba(240,250,249,0.4)", display: "flex", padding: 0 }}
+                          aria-label={showPassword ? "Dölj lösenord" : "Visa lösenord"}
+                        >
+                          {showPassword ? <EyeOffIcon style={{ width: 16, height: 16 }} /> : <EyeIcon style={{ width: 16, height: 16 }} />}
+                        </button>
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 6 }}>
+                        <button type="button" onClick={() => goTo("forgot")} style={{ ...S.btnText, fontSize: 12 }}>
+                          Glömt lösenord?
+                        </button>
+                      </div>
+                    </Field>
+                  )}
+
+                  <button type="submit" disabled={loading} style={{ ...S.btnPrimary, marginTop: 4, opacity: loading ? 0.5 : 1 }}>
+                    {loading ? "Väntar..." : mode === "login" ? "Logga in →" : "Skicka återställningslänk"}
+                  </button>
+                </>
+              )}
+
+              {mode === "login" && hasApi && !oauthPickingRole && (
+                <OAuthSection
+                  onSuccess={handleOAuthAuthSuccess}
+                  onError={(msg) => { setError(msg); setInfo(""); setOauthPickingRole(false); }}
+                  onRolePickerVisible={setOauthPickingRole}
+                  requiredRole={requiredRole}
+                  from={from}
+                  mode="login"
+                />
+              )}
+
+              {!oauthPickingRole && mode === "login" && showResendVerification && (
+                <button type="button" onClick={handleResendVerification} disabled={loading} style={{ ...S.btnText, textAlign: "center", width: "100%", opacity: loading ? 0.5 : 1 }}>
+                  Skicka verifieringsmail igen
+                </button>
+              )}
+            </form>
+
+            {/* Footer links */}
+            {mode === "login" && (
+              <p style={{ fontSize: 13, color: "var(--t-muted)", margin: 0 }}>
+                Inget konto?{" "}
+                <button type="button" onClick={() => goTo("register_pick")} style={{ ...S.btnText, color: "#F5A623" }}>
+                  Skapa konto gratis
+                </button>
+              </p>
+            )}
+          </div>
+
+          {/* ── Right: hero panel ───────────────────────────────────────── */}
+          <div style={{
+            background: "linear-gradient(145deg, #0d2b2b 0%, #0a1818 60%, #050e0e 100%)",
+            padding: "52px 44px",
+            display: "flex", flexDirection: "column", justifyContent: "center", gap: 32,
+            position: "relative", overflow: "hidden",
+          }}>
+            <div style={{ position: "absolute", top: -80, right: -80, width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle, rgba(31,95,92,0.35) 0%, transparent 70%)", pointerEvents: "none" }} />
+            <div style={{ position: "absolute", bottom: -60, left: -40, width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle, rgba(245,166,35,0.12) 0%, transparent 70%)", pointerEvents: "none" }} />
+
+            <div style={{ position: "relative", zIndex: 1 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", color: "#4ade80", textTransform: "uppercase", marginBottom: 14 }}>
+                Sveriges Transportplattform
+              </div>
+              <h2 style={{ fontSize: 26, fontWeight: 900, color: "var(--t-text)", lineHeight: 1.2, letterSpacing: "-0.5px", margin: "0 0 12px" }}>
+                Rätt jobb.<br />Rätt förare.
+              </h2>
+              <p style={{ fontSize: 14, color: "var(--t-sub)", lineHeight: 1.65, margin: 0 }}>
+                Kopplar ihop yrkesförare med åkerier — snabbt, enkelt och utan mellanhänder.
+              </p>
+            </div>
+
+            <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", gap: 14 }}>
+              {[
+                { icon: "✓", text: "Gratis för förare" },
+                { icon: "✓", text: "Ansök med ett klick" },
+                { icon: "✓", text: "Verifierade åkerier" },
+                { icon: "✓", text: "AI-matchning inbyggd" },
+              ].map(({ icon, text }) => (
+                <div key={text} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{ width: 22, height: 22, borderRadius: "50%", background: "rgba(74,222,128,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <span style={{ fontSize: 11, color: "#4ade80", fontWeight: 700 }}>{icon}</span>
+                  </div>
+                  <span style={{ fontSize: 13, color: "var(--t-sub)" }}>{text}</span>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ position: "relative", zIndex: 1, padding: "16px 20px", borderRadius: 14, background: "rgba(245,166,35,0.07)", border: "1px solid rgba(245,166,35,0.18)" }}>
+              <p style={{ fontSize: 13, color: "rgba(240,250,249,0.7)", lineHeight: 1.6, margin: 0 }}>
+                <span style={{ color: "#F5A623", fontWeight: 700 }}>Nytt konto?</span>{" "}
+                Registrering tar under 2 minuter — din profil är din CV.
+              </p>
+              <button
+                type="button"
+                onClick={() => goTo("register_pick")}
+                style={{ marginTop: 10, background: "none", border: "none", color: "#F5A623", fontSize: 13, fontWeight: 700, cursor: "pointer", padding: 0, fontFamily: "inherit" }}
+              >
+                Skapa konto gratis →
               </button>
-            </p>
-          )}
-          {mode === "forgot" && (
-            <p style={{ textAlign: "center", fontSize: 13, color: "var(--t-muted)", margin: 0 }}>
-              Tillbaka till{" "}
-              <button type="button" onClick={() => goTo("login")} style={S.btnText}>
-                logga in
-              </button>
-            </p>
-          )}
+            </div>
+          </div>
+
         </div>
       </div>
     </main>
