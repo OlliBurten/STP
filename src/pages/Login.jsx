@@ -3,23 +3,75 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { useAuth } from "../context/AuthContext";
 import { requestPasswordReset, resendVerification } from "../api/auth";
-import { TruckIcon, BuildingIcon, EyeIcon, EyeOffIcon } from "../components/Icons";
+import { EyeIcon, EyeOffIcon } from "../components/Icons";
 import OAuthButtons from "../components/OAuthButtons";
 import ErrorBoundary from "../components/ErrorBoundary";
 import PageMeta from "../components/PageMeta";
 
+// ── Truck SVG (inline, no dep on Icons for this specific shape) ──────────────
+function TruckSVG({ size = 28, color = "#4ade80" }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="1" y="3" width="15" height="13" rx="2" />
+      <path d="M16 8h4l3 3v5h-7V8z" />
+      <circle cx="5.5" cy="18.5" r="2.5" />
+      <circle cx="18.5" cy="18.5" r="2.5" />
+    </svg>
+  );
+}
+
+function HouseSVG({ size = 28, color = "#F5A623" }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+      <polyline points="9 22 9 12 15 12 15 22" />
+    </svg>
+  );
+}
+
+// ── Shared styles ─────────────────────────────────────────────────────────────
 const S = {
-  page:    { background: "#060f0f", minHeight: "100vh", marginTop: "-64px", display: "flex", alignItems: "center", justifyContent: "center", padding: "80px 16px 60px" },
-  card:    { width: "100%", maxWidth: 420, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 24, padding: "40px 36px" },
-  label:   { display: "block", fontSize: 13, fontWeight: 600, color: "rgba(240,250,249,0.65)", marginBottom: 8 },
-  input:   { width: "100%", padding: "13px 16px", borderRadius: 12, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: "#f0faf9", fontSize: 15, outline: "none", boxSizing: "border-box" },
-  btnPrimary: { width: "100%", padding: "14px", borderRadius: 14, background: "#F5A623", color: "#000", fontSize: 15, fontWeight: 800, border: "none", cursor: "pointer" },
-  btnText:    { background: "none", border: "none", color: "#4ade80", fontSize: 14, fontWeight: 600, cursor: "pointer", padding: 0 },
-  divider:    { borderTop: "1px solid rgba(255,255,255,0.07)", margin: "20px 0" },
+  page:    { background: "var(--t-bg)", minHeight: "100vh", marginTop: "-64px", display: "flex", alignItems: "center", justifyContent: "center", padding: "80px 16px 60px" },
+  label:   { display: "block", fontSize: 12, fontWeight: 600, color: "rgba(240,250,249,0.55)", marginBottom: 6, letterSpacing: "0.02em", textTransform: "uppercase" },
+  input:   { width: "100%", padding: "11px 14px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.14)", background: "rgba(255,255,255,0.05)", color: "var(--t-text)", fontSize: 14, outline: "none", boxSizing: "border-box", fontFamily: "inherit" },
+  btnPrimary: { width: "100%", padding: "14px", borderRadius: 12, background: "var(--t-amber)", color: "#000", fontSize: 15, fontWeight: 800, border: "none", cursor: "pointer", fontFamily: "inherit" },
+  btnText:    { background: "none", border: "none", color: "var(--t-green)", fontSize: 14, fontWeight: 600, cursor: "pointer", padding: 0, fontFamily: "inherit" },
   error:   { padding: "12px 16px", borderRadius: 12, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#f87171", fontSize: 14 },
   info:    { padding: "12px 16px", borderRadius: 12, background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.2)", color: "#4ade80", fontSize: 14 },
-  roleBtn: { width: "100%", padding: "16px 18px", borderRadius: 14, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.03)", cursor: "pointer", textAlign: "left", display: "flex", alignItems: "center", gap: 14 },
 };
+
+// ── OAuth row ─────────────────────────────────────────────────────────────────
+function OAuthSection({ onSuccess, onError, onRolePickerVisible, requiredRole, from, mode }) {
+  return (
+    <ErrorBoundary
+      fallback={
+        <p style={{ fontSize: 13, color: "rgba(240,250,249,0.4)", padding: "8px 0" }}>
+          Google/Microsoft kunde inte laddas just nu. Använd e-post och lösenord i stället.
+        </p>
+      }
+    >
+      <OAuthButtons
+        onSuccess={onSuccess}
+        onError={(msg) => { onError(msg); }}
+        onRolePickerVisible={onRolePickerVisible}
+        requiredRole={requiredRole}
+        fromPath={from}
+        authMode={mode === "login" ? "login" : "register"}
+        promptText={mode === "login" ? "Eller logga in med" : "Eller registrera med"}
+      />
+    </ErrorBoundary>
+  );
+}
+
+// ── Field with label ──────────────────────────────────────────────────────────
+function Field({ label, id, children }) {
+  return (
+    <div>
+      <label htmlFor={id} style={S.label}>{label}</label>
+      {children}
+    </div>
+  );
+}
 
 export default function Login() {
   usePageTitle("Logga in");
@@ -37,13 +89,19 @@ export default function Login() {
   const requiredRole = location.state?.requiredRole;
   const requestedMode = location.state?.initialMode;
 
-  const [mode, setMode] = useState(
-    requestedMode === "register" || requestedMode === "forgot" ? requestedMode : "login"
-  );
-  const [role, setRole] = useState(requiredRole === "company" ? "company" : "driver");
-  const [roleChosen, setRoleChosen] = useState(
-    requestedMode !== "register" || !!requiredRole
-  );
+  // ── State machine: login | register_pick | register_driver | register_company | forgot
+  const getInitialMode = () => {
+    if (requestedMode === "register") {
+      if (requiredRole === "driver")  return "register_driver";
+      if (requiredRole === "company") return "register_company";
+      return "register_pick";
+    }
+    if (requestedMode === "forgot") return "forgot";
+    return "login";
+  };
+
+  const [mode, setMode] = useState(getInitialMode);
+  const [animOut, setAnimOut] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -55,57 +113,56 @@ export default function Login() {
   const [oauthPickingRole, setOauthPickingRole] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  const isRegister = mode === "register_driver" || mode === "register_company";
+  const role = mode === "register_company" ? "company" : "driver";
+
+  // Animate between steps
+  const goTo = (newMode) => {
+    setAnimOut(true);
+    setTimeout(() => { setMode(newMode); setAnimOut(false); setError(""); setInfo(""); }, 180);
+  };
+
+  // Reset on browser back/forward
   const isInitialMount = useRef(true);
   useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
+    if (isInitialMount.current) { isInitialMount.current = false; return; }
     const stateMode = location.state?.initialMode;
     if (!stateMode || stateMode === "login") {
       setMode("login");
-      setRoleChosen(true);
-      setError("");
-      setInfo("");
-      setShowResendVerification(false);
+      setError(""); setInfo(""); setShowResendVerification(false);
     }
   }, [location.key]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // ── Mock (no API) ──────────────────────────────────────────────────────────
   const handleMockDriver = () => {
     loginAsDriver();
     navigate(from.startsWith("/foretag") ? "/jobb" : from, { replace: true });
   };
-
   const handleMockCompany = () => {
     loginAsCompany();
     navigate(from.startsWith("/foretag") ? from : "/foretag", { replace: true });
   };
 
+  // ── OAuth success ──────────────────────────────────────────────────────────
   const handleOAuthAuthSuccess = (data) => {
-    setError("");
-    setInfo("");
-    setOauthPickingRole(false);
+    setError(""); setInfo(""); setOauthPickingRole(false);
     loginWithOAuthResponse(data);
     const u = data.user;
-    const isAdmin = Boolean(u?.isAdmin);
-    if (isAdmin) {
-      const adminTarget = from?.startsWith("/admin") ? from : "/admin";
-      setTimeout(() => navigate(adminTarget, { replace: true }), 0);
+    if (u?.isAdmin) {
+      setTimeout(() => navigate(from?.startsWith("/admin") ? from : "/admin", { replace: true }), 0);
       return;
     }
-    const isRecruiter =
-      String(u?.role || "").toUpperCase() === "COMPANY" || String(u?.role || "").toUpperCase() === "RECRUITER";
+    const isRecruiter = ["COMPANY", "RECRUITER"].includes(String(u?.role || "").toUpperCase());
     const target = isRecruiter
       ? u?.shouldShowOnboarding ? "/foretag/onboarding" : "/foretag"
       : u?.shouldShowOnboarding ? "/onboarding/forare" : from || "/";
     setTimeout(() => navigate(target, { replace: true }), 0);
   };
 
+  // ── Form submit ────────────────────────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setInfo("");
-    setShowResendVerification(false);
+    setError(""); setInfo(""); setShowResendVerification(false);
     setLoading(true);
     try {
       if (mode === "forgot") {
@@ -113,12 +170,12 @@ export default function Login() {
         setInfo("Om e-postadressen finns i systemet har vi skickat instruktioner.");
         return;
       }
-      if (mode === "register") {
+      if (isRegister) {
         if (!name.trim()) { setError("Namn krävs"); return; }
         if (!acceptTerms) { setError("Du måste godkänna användarvillkoren och integritetspolicyn."); return; }
         const result = await registerWithApi({ email: email.trim(), password, role, name: name.trim() });
         if (result?.emailVerificationSent === false) {
-          setInfo("Kontot skapades men vi kunde tyvärr inte skicka verifieringsmail just nu. Kontakta oss med din e-postadress så verifierar vi dig manuellt, eller försök 'Skicka verifieringslänk igen' senare.");
+          setInfo("Kontot skapades men vi kunde tyvärr inte skicka verifieringsmail just nu. Kontakta oss med din e-postadress så verifierar vi dig manuellt.");
           setShowResendVerification(true);
         } else {
           setInfo("Kontot skapades. Kolla din inkorg och klicka på verifieringslänken innan du loggar in.");
@@ -127,13 +184,9 @@ export default function Login() {
         return;
       } else {
         const loggedInUser = await loginWithApi(email.trim(), password);
-        if (loggedInUser.isAdmin) {
-          navigate(from?.startsWith("/admin") ? from : "/admin", { replace: true });
-          return;
-        }
+        if (loggedInUser.isAdmin) { navigate(from?.startsWith("/admin") ? from : "/admin", { replace: true }); return; }
         if (loggedInUser.role === "recruiter") {
-          if (loggedInUser.shouldShowOnboarding) { navigate("/foretag/onboarding", { replace: true }); return; }
-          navigate("/foretag", { replace: true });
+          navigate(loggedInUser.shouldShowOnboarding ? "/foretag/onboarding" : "/foretag", { replace: true });
           return;
         }
         if (loggedInUser.shouldShowOnboarding) { navigate("/onboarding/forare", { replace: true }); return; }
@@ -144,8 +197,7 @@ export default function Login() {
       if (mode === "login" && /verifiera din e-post/i.test(message)) {
         setShowResendVerification(true);
         setInfo("Kontot finns men e-posten är inte verifierad ännu.");
-      }
-      if (mode === "register" && /E-postadressen används redan/i.test(message)) {
+      } else if (isRegister && /E-postadressen används redan/i.test(message)) {
         setError("Det finns redan ett konto med den e-posten. Logga in i stället.");
       } else {
         setError(message);
@@ -157,9 +209,7 @@ export default function Login() {
 
   const handleResendVerification = async () => {
     if (!email.trim()) { setError("Ange e-post först"); return; }
-    setError("");
-    setInfo("");
-    setLoading(true);
+    setError(""); setInfo(""); setLoading(true);
     try {
       const origin = typeof window !== "undefined" && window.location?.origin ? window.location.origin : undefined;
       await resendVerification(email.trim(), origin);
@@ -171,34 +221,39 @@ export default function Login() {
     }
   };
 
-  const showPasswordFields = !oauthPickingRole && (mode === "login" || mode === "forgot" || mode === "register");
+  const meta = (
+    <PageMeta
+      title="Logga in – Sveriges Transportplattform"
+      description="Logga in på STP för att söka lastbilsjobb, hantera din förarprofil eller rekrytera yrkesförare till ditt åkeri."
+      canonical="/login"
+    />
+  );
 
-  // ── Mock (no API) ──
+  // ── Mock mode ──────────────────────────────────────────────────────────────
   if (!hasApi) {
     return (
       <main style={S.page}>
-        <div style={S.card}>
-          <div style={{ textAlign: "center", marginBottom: 32 }}>
-            <h1 style={{ fontSize: 28, fontWeight: 900, color: "#f0faf9", letterSpacing: "-0.5px", margin: "0 0 10px" }}>Logga in</h1>
-            <p style={{ fontSize: 15, color: "rgba(240,250,249,0.5)", margin: 0 }}>Demo – klicka för att logga in som förare eller rekryterare.</p>
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <button type="button" onClick={handleMockDriver} style={S.roleBtn}>
-              <TruckIcon style={{ width: 36, height: 36, color: "#4ade80", flexShrink: 0 }} />
+        {meta}
+        <div style={{ width: "100%", maxWidth: 400, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "40px 36px" }}>
+          <h1 style={{ fontSize: 28, fontWeight: 900, color: "var(--t-text)", letterSpacing: "-0.5px", margin: "0 0 8px" }}>Logga in</h1>
+          <p style={{ fontSize: 14, color: "var(--t-sub)", margin: "0 0 24px" }}>Demo – välj roll</p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <button type="button" onClick={handleMockDriver} style={{ ...S.btnPrimary, display: "flex", alignItems: "center", gap: 12, padding: "16px 20px", textAlign: "left", justifyContent: "flex-start" }}>
+              <TruckSVG size={22} color="#000" />
               <div>
-                <p style={{ fontSize: 15, fontWeight: 700, color: "#f0faf9", margin: "0 0 3px" }}>Förare</p>
-                <p style={{ fontSize: 13, color: "rgba(240,250,249,0.45)", margin: 0 }}>Sök jobb, ansök med din profil</p>
+                <div style={{ fontWeight: 800 }}>Förare</div>
+                <div style={{ fontSize: 12, fontWeight: 400, opacity: 0.7 }}>Sök jobb, ansök med din profil</div>
               </div>
             </button>
-            <button type="button" onClick={handleMockCompany} style={S.roleBtn}>
-              <BuildingIcon style={{ width: 36, height: 36, color: "#F5A623", flexShrink: 0 }} />
+            <button type="button" onClick={handleMockCompany} style={{ ...S.btnPrimary, display: "flex", alignItems: "center", gap: 12, padding: "16px 20px", textAlign: "left", justifyContent: "flex-start", background: "rgba(255,255,255,0.08)", color: "var(--t-text)", border: "1px solid rgba(255,255,255,0.14)" }}>
+              <HouseSVG size={22} color="var(--t-amber)" />
               <div>
-                <p style={{ fontSize: 15, fontWeight: 700, color: "#f0faf9", margin: "0 0 3px" }}>Rekryterare</p>
-                <p style={{ fontSize: 13, color: "rgba(240,250,249,0.45)", margin: 0 }}>Publicera jobb, hitta förare</p>
+                <div style={{ fontWeight: 800 }}>Rekryterare</div>
+                <div style={{ fontSize: 12, fontWeight: 400, opacity: 0.7 }}>Publicera jobb, hitta förare</div>
               </div>
             </button>
           </div>
-          <Link to="/" style={{ display: "block", textAlign: "center", marginTop: 24, fontSize: 14, color: "rgba(240,250,249,0.4)", textDecoration: "none" }}>
+          <Link to="/" style={{ display: "block", textAlign: "center", marginTop: 24, fontSize: 13, color: "rgba(240,250,249,0.3)", textDecoration: "none" }}>
             ← Tillbaka
           </Link>
         </div>
@@ -206,253 +261,397 @@ export default function Login() {
     );
   }
 
-  // ── Role picker ──
-  if (mode === "register" && !roleChosen) {
+  // ── Register role picker ───────────────────────────────────────────────────
+  if (mode === "register_pick") {
     return (
       <main style={S.page}>
-        <div style={S.card}>
-          <div style={{ textAlign: "center", marginBottom: 28 }}>
-            <h1 style={{ fontSize: 28, fontWeight: 900, color: "#f0faf9", letterSpacing: "-0.5px", margin: "0 0 10px" }}>Skapa konto</h1>
-            <p style={{ fontSize: 15, color: "rgba(240,250,249,0.5)", margin: 0 }}>Vad stämmer bäst in på dig?</p>
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <button type="button" onClick={() => { setRole("driver"); setRoleChosen(true); setError(""); setInfo(""); }} style={S.roleBtn}>
-              <TruckIcon style={{ width: 34, height: 34, color: "#4ade80", flexShrink: 0 }} />
+        {meta}
+        <div
+          style={{
+            width: "100%", maxWidth: 800,
+            background: "var(--t-bg)", borderRadius: 20, overflow: "hidden",
+            opacity: animOut ? 0 : 1, transform: animOut ? "translateY(8px)" : "translateY(0)",
+            transition: "opacity 0.18s ease-out, transform 0.18s ease-out",
+          }}
+        >
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", minHeight: 580 }}>
+            {/* ── Förare (grön) */}
+            <button
+              type="button"
+              onClick={() => goTo("register_driver")}
+              style={{
+                padding: "52px 44px", cursor: "pointer", textAlign: "left",
+                background: "linear-gradient(145deg, #0d2b2b 0%, #0a1818 100%)",
+                borderRight: "1px solid rgba(255,255,255,0.08)",
+                display: "flex", flexDirection: "column", gap: 20,
+                border: "none", fontFamily: "inherit", position: "relative", overflow: "hidden",
+                transition: "filter 0.18s",
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.filter = "brightness(1.08)"}
+              onMouseLeave={(e) => e.currentTarget.style.filter = "brightness(1)"}
+            >
+              <div style={{ position: "absolute", bottom: -40, right: -40, width: 180, height: 180, borderRadius: "50%", background: "radial-gradient(circle, rgba(74,222,128,0.1) 0%, transparent 70%)", pointerEvents: "none" }} />
+              <div style={{ width: 56, height: 56, borderRadius: 16, background: "rgba(74,222,128,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <TruckSVG size={28} color="#4ade80" />
+              </div>
               <div>
-                <p style={{ fontSize: 15, fontWeight: 700, color: "#f0faf9", margin: "0 0 3px" }}>Förare</p>
-                <p style={{ fontSize: 13, color: "rgba(240,250,249,0.45)", margin: 0 }}>Sök och ansök till jobb med din profil</p>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", color: "#4ade80", textTransform: "uppercase", marginBottom: 8 }}>Jag är förare</div>
+                <h2 style={{ fontSize: 26, fontWeight: 900, color: "var(--t-text)", lineHeight: 1.15, letterSpacing: "-0.5px", marginBottom: 12 }}>
+                  Hitta ditt nästa jobb
+                </h2>
+                <p style={{ fontSize: 14, color: "var(--t-sub)", lineHeight: 1.6, margin: 0 }}>
+                  Bygg din profil en gång. Ansök till hundratals åkerier med ett klick.
+                </p>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: "auto" }}>
+                {["Gratis att använda", "Ansök med ett klick", "Synlig för verifierade åkerier"].map((t) => (
+                  <div key={t} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#4ade80", flexShrink: 0 }} />
+                    <span style={{ fontSize: 13, color: "var(--t-sub)" }}>{t}</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ padding: "13px 20px", borderRadius: 12, border: "1.5px solid rgba(74,222,128,0.3)", background: "rgba(74,222,128,0.06)", color: "#4ade80", fontWeight: 700, fontSize: 14, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <span>Registrera som förare</span>
+                <span>→</span>
               </div>
             </button>
-            <button type="button" onClick={() => { setRole("company"); setRoleChosen(true); setError(""); setInfo(""); }} style={S.roleBtn}>
-              <BuildingIcon style={{ width: 34, height: 34, color: "#F5A623", flexShrink: 0 }} />
+
+            {/* ── Åkeri (amber) */}
+            <button
+              type="button"
+              onClick={() => goTo("register_company")}
+              style={{
+                padding: "52px 44px", cursor: "pointer", textAlign: "left",
+                background: "linear-gradient(145deg, #1a1200 0%, #0f0c00 60%, #050e0e 100%)",
+                display: "flex", flexDirection: "column", gap: 20,
+                border: "none", fontFamily: "inherit", position: "relative", overflow: "hidden",
+                transition: "filter 0.18s",
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.filter = "brightness(1.1)"}
+              onMouseLeave={(e) => e.currentTarget.style.filter = "brightness(1)"}
+            >
+              <div style={{ position: "absolute", bottom: -40, left: -40, width: 180, height: 180, borderRadius: "50%", background: "radial-gradient(circle, rgba(245,166,35,0.12) 0%, transparent 70%)", pointerEvents: "none" }} />
+              <div style={{ width: 56, height: 56, borderRadius: 16, background: "rgba(245,166,35,0.10)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <HouseSVG size={28} color="#F5A623" />
+              </div>
               <div>
-                <p style={{ fontSize: 15, fontWeight: 700, color: "#f0faf9", margin: "0 0 3px" }}>Åkeri / Transportföretag</p>
-                <p style={{ fontSize: 13, color: "rgba(240,250,249,0.45)", margin: 0 }}>Publicera jobb och hitta rätt förare</p>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", color: "#F5A623", textTransform: "uppercase", marginBottom: 8 }}>Jag är åkeri</div>
+                <h2 style={{ fontSize: 26, fontWeight: 900, color: "var(--t-text)", lineHeight: 1.15, letterSpacing: "-0.5px", marginBottom: 12 }}>
+                  Hitta rätt förare — snabbt
+                </h2>
+                <p style={{ fontSize: 14, color: "var(--t-sub)", lineHeight: 1.6, margin: 0 }}>
+                  Publicera tjänster, sök i vår förardatabas och matcha med kvalificerade kandidater.
+                </p>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: "auto" }}>
+                {["Publicera jobb gratis", "Sök bland verifierade förare", "AI-matchning inbyggd"].map((t) => (
+                  <div key={t} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#F5A623", flexShrink: 0 }} />
+                    <span style={{ fontSize: 13, color: "var(--t-sub)" }}>{t}</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ padding: "13px 20px", borderRadius: 12, border: "1.5px solid rgba(245,166,35,0.3)", background: "rgba(245,166,35,0.06)", color: "#F5A623", fontWeight: 700, fontSize: 14, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <span>Registrera som åkeri</span>
+                <span>→</span>
               </div>
             </button>
           </div>
-          <p style={{ marginTop: 28, textAlign: "center", fontSize: 14, color: "rgba(240,250,249,0.45)" }}>
-            Har du konto?{" "}
-            <button type="button" onClick={() => { setError(""); setInfo(""); setMode("login"); }} style={S.btnText}>
+
+          {/* Footer */}
+          <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", padding: "16px 44px", textAlign: "center" }}>
+            <span style={{ fontSize: 13, color: "var(--t-muted)" }}>Har du redan ett konto? </span>
+            <button type="button" onClick={() => goTo("login")} style={S.btnText}>
               Logga in
             </button>
-          </p>
-          <Link to="/" style={{ display: "block", textAlign: "center", marginTop: 12, fontSize: 13, color: "rgba(240,250,249,0.3)", textDecoration: "none" }}>
-            ← Tillbaka till startsidan
-          </Link>
+          </div>
         </div>
       </main>
     );
   }
 
-  // ── Main login/register/forgot form ──
-  const headings = {
-    login:    "Logga in",
-    register: "Skapa konto",
-    forgot:   "Glömt lösenord",
-  };
-  const subtitles = {
-    login:    "Ange e-post och lösenord.",
-    register: role === "driver" ? "Välkommen som förare." : "Välkommen som åkeri.",
-    forgot:   "Ange e-post så skickar vi en återställningslänk.",
-  };
+  // ── Register form (driver or company) ─────────────────────────────────────
+  if (isRegister) {
+    const isDriver = mode === "register_driver";
+    const accent = isDriver ? "#4ade80" : "#F5A623";
+    const accentAlpha = isDriver ? "rgba(74,222,128" : "rgba(245,166,35";
+    const valuePropBg = isDriver
+      ? "linear-gradient(145deg, #0d2b2b 0%, #0a1818 100%)"
+      : "linear-gradient(145deg, #1a1200 0%, #0f0c00 60%, #050e0e 100%)";
+    const features = isDriver
+      ? [
+          { icon: "🔍", title: "Bli hittad", desc: "Åkerier söker aktivt efter förare med din bakgrund" },
+          { icon: "⚡", title: "Snabb ansökan", desc: "Ansök med ett klick — din profil är din CV" },
+          { icon: "🛡️", title: "Trygt & verifierat", desc: "Alla åkerier är verifierade på plattformen" },
+        ]
+      : [
+          { icon: "🎯", title: "Precisionsmatchning", desc: "AI matchar din tjänst med rätt förare direkt" },
+          { icon: "📋", title: "Publicera jobb enkelt", desc: "Annons live på under 5 minuter" },
+          { icon: "👁️", title: "Sök i förardatabasen", desc: "Bläddra bland verifierade förare aktivt" },
+        ];
 
-  return (
-    <main style={S.page}>
-      <PageMeta
-        title="Logga in – Sveriges Transportplattform"
-        description="Logga in på STP för att söka lastbilsjobb, hantera din förarprofil eller rekrytera yrkesförare till ditt åkeri."
-        canonical="/login"
-      />
-      <div style={S.card}>
-        <div style={{ textAlign: "center", marginBottom: 28 }}>
-          <h1 style={{ fontSize: 28, fontWeight: 900, color: "#f0faf9", letterSpacing: "-0.5px", margin: "0 0 10px" }}>
-            {oauthPickingRole ? "Välj roll" : headings[mode]}
-          </h1>
-          <p style={{ fontSize: 15, color: "rgba(240,250,249,0.5)", margin: 0 }}>
-            {oauthPickingRole ? "Välj om du är förare eller åkeri" : subtitles[mode]}
-          </p>
-        </div>
+    return (
+      <main style={S.page}>
+        {meta}
+        <div
+          style={{
+            width: "100%", maxWidth: 800,
+            background: "var(--t-bg)", borderRadius: 20, overflow: "hidden",
+            opacity: animOut ? 0 : 1, transform: animOut ? "translateY(8px)" : "translateY(0)",
+            transition: "opacity 0.18s ease-out, transform 0.18s ease-out",
+          }}
+        >
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", minHeight: 660 }}>
+            {/* ── Left: form */}
+            <div style={{ padding: "44px 40px", display: "flex", flexDirection: "column", gap: 16, borderRight: "1px solid rgba(255,255,255,0.08)" }}>
+              <button
+                type="button"
+                onClick={() => goTo("register_pick")}
+                style={{ background: "none", border: "none", color: "var(--t-muted)", fontSize: 13, cursor: "pointer", padding: 0, textAlign: "left", fontFamily: "inherit", marginBottom: 4 }}
+              >
+                ← Tillbaka
+              </button>
 
-        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          {error && <div style={S.error}>{error}</div>}
-          {info && <div style={S.info}>{info}</div>}
-
-          {showPasswordFields && (
-            <>
-              {mode === "register" && (
-                <>
-                  {/* Role indicator */}
-                  <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", borderRadius: 12, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
-                    {role === "driver"
-                      ? <TruckIcon style={{ width: 18, height: 18, color: "#4ade80", flexShrink: 0 }} />
-                      : <BuildingIcon style={{ width: 18, height: 18, color: "#F5A623", flexShrink: 0 }} />}
-                    <span style={{ fontSize: 14, fontWeight: 600, color: "rgba(240,250,249,0.75)", flex: 1 }}>
-                      {role === "driver" ? "Förare" : "Åkeri / Transportföretag"}
-                    </span>
-                    {!requiredRole && (
-                      <button type="button" onClick={() => setRoleChosen(false)} style={{ ...S.btnText, fontSize: 12 }}>
-                        Ändra
-                      </button>
-                    )}
-                  </div>
-                  <div>
-                    <label htmlFor="name" style={S.label}>
-                      Namn{role === "company" ? " (kontaktperson)" : ""} *
-                    </label>
-                    <input
-                      id="name"
-                      type="text"
-                      required
-                      autoComplete="name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      style={S.input}
-                      placeholder={role === "company" ? "Anna Andersson" : "Erik Lindström"}
-                    />
-                  </div>
-                  {role === "company" && (
-                    <p style={{ fontSize: 13, color: "rgba(240,250,249,0.4)", margin: 0 }}>
-                      Du lägger till ditt åkeri/företag i nästa steg efter registrering.
-                    </p>
-                  )}
-                </>
-              )}
-
-              <div>
-                <label htmlFor="email" style={S.label}>E-post *</label>
-                <input
-                  id="email"
-                  type="email"
-                  required
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  style={S.input}
-                  placeholder="din@epost.se"
-                />
+              {/* Role badge */}
+              <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", borderRadius: 10, background: `${accentAlpha},0.07)`, border: `1px solid ${accentAlpha},0.2)` }}>
+                {isDriver ? <TruckSVG size={16} color={accent} /> : <HouseSVG size={16} color={accent} />}
+                <span style={{ fontSize: 13, fontWeight: 600, color: accent }}>
+                  {isDriver ? "Förare" : "Åkeri / Transportföretag"}
+                </span>
               </div>
 
-              {mode !== "forgot" && (
-                <div>
-                  <label htmlFor="password" style={S.label}>Lösenord *</label>
+              <div>
+                <h2 style={{ fontSize: 20, fontWeight: 800, color: "var(--t-text)", marginBottom: 3 }}>
+                  {isDriver ? "Skapa ditt förarkonto" : "Skapa företagskonto"}
+                </h2>
+                <p style={{ fontSize: 13, color: "var(--t-sub)", margin: 0 }}>
+                  {isDriver ? "Gratis — tar under 2 minuter" : "Du lägger till företagsuppgifter i nästa steg"}
+                </p>
+              </div>
+
+              <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                {error && <div style={S.error}>{error}</div>}
+                {info && <div style={S.info}>{info}</div>}
+
+                <Field label={isDriver ? "NAMN" : "NAMN (KONTAKTPERSON)"} id="name">
+                  <input
+                    id="name" type="text" required autoComplete="name"
+                    value={name} onChange={(e) => setName(e.target.value)}
+                    style={S.input}
+                    placeholder={isDriver ? "Erik Lindström" : "Anna Andersson"}
+                  />
+                </Field>
+
+                <Field label="E-POST" id="email">
+                  <input
+                    id="email" type="email" required autoComplete="email"
+                    value={email} onChange={(e) => setEmail(e.target.value)}
+                    style={S.input}
+                    placeholder={isDriver ? "din@epost.se" : "din@foretag.se"}
+                  />
+                </Field>
+
+                <Field label="LÖSENORD" id="password">
                   <div style={{ position: "relative" }}>
                     <input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      required
-                      autoComplete={mode === "register" ? "new-password" : "current-password"}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      style={{ ...S.input, paddingRight: 48 }}
-                      placeholder={mode === "register" ? "Minst 8 tecken" : ""}
-                      minLength={mode === "register" ? 8 : undefined}
+                      id="password" type={showPassword ? "text" : "password"}
+                      required autoComplete="new-password" minLength={8}
+                      value={password} onChange={(e) => setPassword(e.target.value)}
+                      style={{ ...S.input, paddingRight: 44 }}
+                      placeholder="Minst 8 tecken"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword((v) => !v)}
-                      style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "rgba(240,250,249,0.4)", display: "flex" }}
+                      style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "rgba(240,250,249,0.4)", display: "flex", padding: 0 }}
                       aria-label={showPassword ? "Dölj lösenord" : "Visa lösenord"}
                     >
-                      {showPassword ? <EyeOffIcon style={{ width: 18, height: 18 }} /> : <EyeIcon style={{ width: 18, height: 18 }} />}
+                      {showPassword ? <EyeOffIcon style={{ width: 16, height: 16 }} /> : <EyeIcon style={{ width: 16, height: 16 }} />}
                     </button>
                   </div>
-                </div>
-              )}
+                </Field>
 
-              {mode === "register" && (
                 <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer" }}>
-                  <input
-                    type="checkbox"
-                    checked={acceptTerms}
-                    onChange={(e) => setAcceptTerms(e.target.checked)}
-                    style={{ marginTop: 3, accentColor: "#F5A623", flexShrink: 0 }}
-                  />
-                  <span style={{ fontSize: 13, color: "rgba(240,250,249,0.55)" }}>
+                  <input type="checkbox" checked={acceptTerms} onChange={(e) => setAcceptTerms(e.target.checked)} style={{ marginTop: 3, accentColor: "#F5A623", flexShrink: 0 }} />
+                  <span style={{ fontSize: 12, color: "var(--t-muted)", lineHeight: 1.5 }}>
                     Jag godkänner{" "}
-                    <a href="/anvandarvillkor" target="_blank" rel="noopener noreferrer" style={{ color: "#4ade80", textDecoration: "none" }}>
-                      användarvillkoren
-                    </a>{" "}
-                    och{" "}
-                    <a href="/integritet" target="_blank" rel="noopener noreferrer" style={{ color: "#4ade80", textDecoration: "none" }}>
-                      integritetspolicyn
-                    </a>.
+                    <a href="/anvandarvillkor" target="_blank" rel="noopener noreferrer" style={{ color: "#4ade80", textDecoration: "none" }}>användarvillkoren</a>
+                    {" "}och{" "}
+                    <a href="/integritet" target="_blank" rel="noopener noreferrer" style={{ color: "#4ade80", textDecoration: "none" }}>integritetspolicyn</a>.
                   </span>
                 </label>
-              )}
 
-              <button type="submit" disabled={loading} style={{ ...S.btnPrimary, opacity: loading ? 0.5 : 1 }}>
-                {loading ? "Vänta..." : mode === "login" ? "Logga in" : mode === "register" ? "Registrera" : "Skicka återställningslänk"}
-              </button>
-            </>
-          )}
+                <button type="submit" disabled={loading} style={{ ...S.btnPrimary, opacity: loading ? 0.5 : 1 }}>
+                  {loading ? "Skapar konto..." : isDriver ? "Skapa förarkonto →" : "Skapa företagskonto →"}
+                </button>
 
-          {(mode === "login" || mode === "register") && hasApi && (
-            <div style={oauthPickingRole ? {} : { borderTop: "1px solid rgba(255,255,255,0.07)", paddingTop: 16 }}>
-              <ErrorBoundary
-                fallback={
-                  <p style={{ fontSize: 13, color: "rgba(240,250,249,0.4)", padding: "8px 0" }}>
-                    Google/Microsoft kunde inte laddas just nu. Använd e-post och lösenord i stället.
-                  </p>
-                }
-              >
-                <OAuthButtons
+                <OAuthSection
                   onSuccess={handleOAuthAuthSuccess}
                   onError={(msg) => { setError(msg); setInfo(""); setOauthPickingRole(false); }}
                   onRolePickerVisible={setOauthPickingRole}
                   requiredRole={requiredRole}
-                  fromPath={from}
-                  authMode={mode === "register" ? "register" : "login"}
-                  promptText={mode === "register" ? "Eller registrera med" : "Eller logga in med"}
+                  from={from}
+                  mode="register"
                 />
-              </ErrorBoundary>
+              </form>
+            </div>
+
+            {/* ── Right: value prop */}
+            <div style={{ background: valuePropBg, padding: "44px 36px", display: "flex", flexDirection: "column", justifyContent: "center", gap: 28 }}>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", color: accent, textTransform: "uppercase", marginBottom: 12 }}>
+                  {isDriver ? "Varför STP?" : "För åkerier"}
+                </div>
+                <h3 style={{ fontSize: 22, fontWeight: 900, color: "var(--t-text)", lineHeight: 1.2, letterSpacing: "-0.4px", margin: 0 }}>
+                  {isDriver ? "En profil.\nHundratals möjligheter." : "Rätt förare.\nUtan mellanhänder."}
+                </h3>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+                {features.map(({ icon, title, desc }) => (
+                  <div key={title} style={{ display: "flex", gap: 14 }}>
+                    <span style={{ fontSize: 20, flexShrink: 0, lineHeight: 1 }}>{icon}</span>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "var(--t-text)", marginBottom: 3 }}>{title}</div>
+                      <div style={{ fontSize: 12, color: "var(--t-sub)", lineHeight: 1.5 }}>{desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // ── Login & Forgot ─────────────────────────────────────────────────────────
+  return (
+    <main style={S.page}>
+      {meta}
+      <div
+        style={{
+          width: "100%", maxWidth: 480,
+          opacity: animOut ? 0 : 1, transform: animOut ? "translateY(8px)" : "translateY(0)",
+          transition: "opacity 0.18s ease-out, transform 0.18s ease-out",
+        }}
+      >
+        <div style={{ padding: "52px 48px", display: "flex", flexDirection: "column", gap: 28 }}>
+          {mode === "login" && (
+            <div>
+              <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.12em", color: "#F5A623", textTransform: "uppercase", marginBottom: 10, margin: "0 0 10px" }}>
+                Välkommen tillbaka
+              </p>
+              <h1 style={{ fontSize: 36, fontWeight: 900, color: "var(--t-text)", lineHeight: 1.1, letterSpacing: "-1px", margin: 0 }}>
+                Logga in på<br />STP
+              </h1>
+            </div>
+          )}
+          {mode === "forgot" && (
+            <div>
+              <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.12em", color: "#F5A623", textTransform: "uppercase", marginBottom: 10, margin: "0 0 10px" }}>
+                Återställ lösenord
+              </p>
+              <h1 style={{ fontSize: 30, fontWeight: 900, color: "var(--t-text)", lineHeight: 1.1, letterSpacing: "-0.5px", margin: 0 }}>
+                Glömt ditt lösenord?
+              </h1>
             </div>
           )}
 
-          {!oauthPickingRole && mode === "login" && showResendVerification && (
-            <button
-              type="button"
-              onClick={handleResendVerification}
-              disabled={loading}
-              style={{ ...S.btnText, textAlign: "center", width: "100%", opacity: loading ? 0.5 : 1 }}
-            >
-              Skicka verifieringsmail igen
-            </button>
-          )}
-        </form>
+          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            {error && <div style={S.error}>{error}</div>}
+            {info && <div style={S.info}>{info}</div>}
 
-        <p style={{ marginTop: 24, textAlign: "center", fontSize: 14, color: "rgba(240,250,249,0.45)" }}>
-          {mode === "login" ? (
-            <>
-              Saknar du konto?{" "}
-              <button type="button" onClick={() => { setShowResendVerification(false); setError(""); setInfo(""); setMode("register"); setRoleChosen(false); }} style={S.btnText}>
-                Registrera
+            {oauthPickingRole && (
+              <OAuthSection
+                onSuccess={handleOAuthAuthSuccess}
+                onError={(msg) => { setError(msg); setInfo(""); setOauthPickingRole(false); }}
+                onRolePickerVisible={setOauthPickingRole}
+                requiredRole={requiredRole}
+                from={from}
+                mode="login"
+              />
+            )}
+
+            {!oauthPickingRole && (
+              <>
+                <Field label="E-POST" id="email">
+                  <input
+                    id="email" type="email" required autoComplete="email"
+                    value={email} onChange={(e) => setEmail(e.target.value)}
+                    style={S.input} placeholder="din@epost.se"
+                  />
+                </Field>
+
+                {mode !== "forgot" && (
+                  <Field label="LÖSENORD" id="password">
+                    <div style={{ position: "relative" }}>
+                      <input
+                        id="password" type={showPassword ? "text" : "password"}
+                        required autoComplete="current-password"
+                        value={password} onChange={(e) => setPassword(e.target.value)}
+                        style={{ ...S.input, paddingRight: 44 }}
+                        placeholder="••••••••"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((v) => !v)}
+                        style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "rgba(240,250,249,0.4)", display: "flex", padding: 0 }}
+                        aria-label={showPassword ? "Dölj lösenord" : "Visa lösenord"}
+                      >
+                        {showPassword ? <EyeOffIcon style={{ width: 16, height: 16 }} /> : <EyeIcon style={{ width: 16, height: 16 }} />}
+                      </button>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 6 }}>
+                      <button type="button" onClick={() => goTo("forgot")} style={{ ...S.btnText, fontSize: 12 }}>
+                        Glömt lösenord?
+                      </button>
+                    </div>
+                  </Field>
+                )}
+
+                <button type="submit" disabled={loading} style={{ ...S.btnPrimary, marginTop: 4, opacity: loading ? 0.5 : 1 }}>
+                  {loading ? "Väntar..." : mode === "login" ? "Logga in →" : "Skicka återställningslänk"}
+                </button>
+              </>
+            )}
+
+            {mode === "login" && hasApi && !oauthPickingRole && (
+              <OAuthSection
+                onSuccess={handleOAuthAuthSuccess}
+                onError={(msg) => { setError(msg); setInfo(""); setOauthPickingRole(false); }}
+                onRolePickerVisible={setOauthPickingRole}
+                requiredRole={requiredRole}
+                from={from}
+                mode="login"
+              />
+            )}
+
+            {!oauthPickingRole && mode === "login" && showResendVerification && (
+              <button type="button" onClick={handleResendVerification} disabled={loading} style={{ ...S.btnText, textAlign: "center", width: "100%", opacity: loading ? 0.5 : 1 }}>
+                Skicka verifieringsmail igen
               </button>
-              {" · "}
-              <button type="button" onClick={() => { setShowResendVerification(false); setMode("forgot"); }} style={S.btnText}>
-                Glömt lösenord?
+            )}
+          </form>
+
+          {/* Footer links */}
+          {mode === "login" && (
+            <p style={{ textAlign: "center", fontSize: 13, color: "var(--t-muted)", margin: 0 }}>
+              Inget konto?{" "}
+              <button type="button" onClick={() => goTo("register_pick")} style={{ ...S.btnText, color: "#F5A623" }}>
+                Skapa konto gratis
               </button>
-            </>
-          ) : mode === "register" ? (
-            <>
-              Har du konto?{" "}
-              <button type="button" onClick={() => { setShowResendVerification(false); setError(""); setInfo(""); setMode("login"); }} style={S.btnText}>
-                Logga in
-              </button>
-            </>
-          ) : (
-            <>
+            </p>
+          )}
+          {mode === "forgot" && (
+            <p style={{ textAlign: "center", fontSize: 13, color: "var(--t-muted)", margin: 0 }}>
               Tillbaka till{" "}
-              <button type="button" onClick={() => { setShowResendVerification(false); setError(""); setInfo(""); setMode("login"); }} style={S.btnText}>
-                login
+              <button type="button" onClick={() => goTo("login")} style={S.btnText}>
+                logga in
               </button>
-            </>
+            </p>
           )}
-        </p>
-
-        <Link to="/" style={{ display: "block", textAlign: "center", marginTop: 14, fontSize: 13, color: "rgba(240,250,249,0.3)", textDecoration: "none" }}>
-          ← Tillbaka till startsidan
-        </Link>
+        </div>
       </div>
     </main>
   );
