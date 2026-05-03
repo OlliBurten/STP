@@ -35,6 +35,13 @@ if ("serviceWorker" in navigator) {
   });
 }
 
+// Apply saved theme before first paint to avoid flash
+try {
+  const saved = localStorage.getItem("stp-theme");
+  const preferred = window.matchMedia?.("(prefers-color-scheme: light)").matches ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", saved || preferred);
+} catch {}
+
 const GOOGLE_CLIENT_ID = (import.meta.env.VITE_GOOGLE_CLIENT_ID || "").trim();
 
 const root = createRoot(document.getElementById('root'));

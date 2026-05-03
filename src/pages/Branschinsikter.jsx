@@ -1,12 +1,18 @@
 import { Link } from "react-router-dom";
 import { usePageTitle } from "../hooks/usePageTitle";
+import PageMeta from "../components/PageMeta";
 
 export default function Branschinsikter() {
   usePageTitle("Branschinsikter för transport");
   return (
-    <main style={{ background: "#060f0f", minHeight: "100vh", marginTop: "-64px", paddingTop: 96 }}>
-      <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px 96px" }}>
-        <h1 style={{ fontSize: 36, fontWeight: 900, color: "#f0faf9", letterSpacing: "-0.5px", margin: "0 0 16px" }}>
+    <main style={{ background: "#0a1818", minHeight: "100vh", marginTop: "-64px", paddingTop: 96 }}>
+      <PageMeta
+        title="Branschinsikter – transport & åkeri"
+        description="Statistik och sammanställningar om kompetensläget i svensk transportbransch. Baserat på TYA Trendindikator Åkeri och SCB-data."
+        canonical="/branschinsikter"
+      />
+      <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 24px 96px" }}>
+        <h1 style={{ fontSize: "clamp(28px,4vw,38px)", fontWeight: 900, color: "#f0faf9", letterSpacing: "-1px", lineHeight: 1.15, margin: "0 0 16px" }}>
           Branschinsikter
         </h1>
         <p style={{ fontSize: 16, color: "rgba(240,250,249,0.6)", lineHeight: 1.65, margin: "0 0 40px", maxWidth: 560 }}>

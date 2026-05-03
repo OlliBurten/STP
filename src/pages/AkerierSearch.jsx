@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { usePageTitle } from "../hooks/usePageTitle";
+import PageMeta from "../components/PageMeta";
 import { fetchCompaniesSearch } from "../api/companies.js";
 import { useAuth } from "../context/AuthContext";
 import { useProfile } from "../context/ProfileContext";
@@ -9,7 +10,7 @@ import { regions } from "../data/mockJobs.js";
 import { ChevronDownIcon, LocationIcon, CheckIcon, ArrowRightIcon } from "../components/Icons.jsx";
 
 const S = {
-  page: { background: "#060f0f", minHeight: "100vh", marginTop: "-64px", paddingTop: 88 },
+  page: { background: "#0a1818", minHeight: "100vh", marginTop: "-64px", paddingTop: 96 },
   wrap: { maxWidth: 1100, margin: "0 auto", padding: "0 24px 80px" },
   card: { background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16 },
   select: { width: "100%", appearance: "none", minHeight: 40, paddingLeft: 12, paddingRight: 36, paddingTop: 8, paddingBottom: 8, borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#f0faf9", fontSize: 13, outline: "none", boxSizing: "border-box", fontFamily: "inherit" },
@@ -72,6 +73,11 @@ export default function AkerierSearch() {
 
   return (
     <main style={S.page}>
+      <PageMeta
+        title="Åkeridatabasen – hitta transportföretag i Sverige"
+        description="Sök bland verifierade åkerier och transportföretag i Sverige. Filtrera på bransch och region och kontakta dem direkt via STP."
+        canonical="/akerier"
+      />
       <div style={S.wrap}>
 
         {/* Hero intro */}
@@ -89,16 +95,16 @@ export default function AkerierSearch() {
             Filtrera på bransch och region. Kontaktuppgifter är en medlemsförmån för inloggade förare.
           </p>
           {!user && (
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 12, borderRadius: 12, border: "1px solid rgba(31,95,92,0.35)", background: "rgba(31,95,92,0.1)", padding: "10px 16px" }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 12, borderRadius: 12, border: "1px solid rgba(245,166,35,0.3)", background: "rgba(245,166,35,0.08)", padding: "10px 16px" }}>
               <span style={{ fontSize: 13, color: "rgba(240,250,249,0.7)" }}>
                 Logga in för att se kontaktuppgifter direkt i listan
               </span>
               <Link
                 to="/login"
                 state={{ from: "/akerier" }}
-                style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 4, borderRadius: 10, background: "#1F5F5C", padding: "6px 14px", fontSize: 12, fontWeight: 700, color: "#f0faf9", textDecoration: "none" }}
+                style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 4, borderRadius: 10, background: "#F5A623", padding: "6px 14px", fontSize: 12, fontWeight: 700, color: "#000", textDecoration: "none" }}
               >
-                Logga in <ArrowRightIcon style={{ width: 12, height: 12, color: "#f0faf9" }} />
+                Logga in <ArrowRightIcon style={{ width: 12, height: 12, color: "#000" }} />
               </Link>
             </div>
           )}
@@ -294,7 +300,7 @@ export default function AkerierSearch() {
                             <Link
                               to="/login"
                               state={{ from: "/akerier" }}
-                              style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 8, border: "1px dashed rgba(255,255,255,0.15)", fontSize: 11, color: "rgba(240,250,249,0.4)", textDecoration: "none" }}
+                              style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 8, background: "rgba(245,166,35,0.12)", border: "1px solid rgba(245,166,35,0.25)", fontSize: 11, color: "#F5A623", fontWeight: 600, textDecoration: "none" }}
                             >
                               Logga in för kontakt
                             </Link>

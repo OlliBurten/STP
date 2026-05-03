@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useChat } from "../context/ChatContext";
+import { useTheme } from "../context/ThemeContext";
 import { fetchNotifications, markNotificationRead, markAllNotificationsRead } from "../api/notifications.js";
 import { subscribeToPush, unsubscribeFromPush, getPushPermission, getCurrentSubscription } from "../utils/pushNotifications.js";
 import { BellIcon, MenuIcon, CloseIcon, ChevronDownIcon } from "./Icons";
@@ -37,6 +38,7 @@ const PUBLIC_EXTRA_LINKS = [
 export default function Header({ onboarding = false }) {
   const { user, isDriver, isCompany, isAdmin, isImpersonating, logout, stopViewAs } = useAuth();
   const { selectedNotificationCount, unreadCount = 0, companyUnreadConversationCount = 0 } = useChat();
+  const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -326,6 +328,31 @@ export default function Header({ onboarding = false }) {
 
           {/* Right side */}
           <div className="flex items-center gap-2 sm:gap-3 ml-auto shrink-0">
+
+            {/* Theme toggle — only for logged-in users */}
+            {user && (
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className="p-2 rounded-lg flex items-center justify-center transition-colors"
+                style={{ color: "rgba(255,255,255,0.6)", background: "none", border: "none", cursor: "pointer" }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.background = "rgba(255,255,255,0.08)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = "rgba(255,255,255,0.6)"; e.currentTarget.style.background = ""; }}
+                aria-label={isDark ? "Byt till ljust tema" : "Byt till mörkt tema"}
+                title={isDark ? "Ljust tema" : "Mörkt tema"}
+              >
+                {isDark ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="4"/>
+                    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+                  </svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                  </svg>
+                )}
+              </button>
+            )}
 
             {/* Notification bell (logged-in only) */}
             {user && !platformAdminSession && (

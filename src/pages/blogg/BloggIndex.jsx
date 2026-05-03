@@ -59,7 +59,7 @@ const articles = [
     date: "8 april 2025",
     readTime: "6 min",
     tag: "Rekrytering",
-    tagStyle: { background: "rgba(167,139,250,0.15)", color: "#a78bfa", border: "1px solid rgba(167,139,250,0.3)" },
+    tagStyle: { background: "rgba(74,222,128,0.12)", color: "#4ade80", border: "1px solid rgba(74,222,128,0.25)" },
     for: "Åkerier",
   },
   {
@@ -119,7 +119,7 @@ const articles = [
     date: "20 april 2025",
     readTime: "5 min",
     tag: "Yrket",
-    tagStyle: { background: "rgba(129,140,248,0.15)", color: "#818cf8", border: "1px solid rgba(129,140,248,0.3)" },
+    tagStyle: { background: "rgba(99,179,237,0.15)", color: "#63b3ed", border: "1px solid rgba(99,179,237,0.3)" },
     for: "Förare",
   },
 ];
@@ -134,7 +134,7 @@ export default function BloggIndex() {
   });
 
   return (
-    <main style={{ background: "#060f0f", minHeight: "100vh", marginTop: "-64px", paddingTop: 96 }}>
+    <main style={{ background: "#0a1818", minHeight: "100vh", marginTop: "-64px", paddingTop: 96 }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px 96px" }}>
 
         {/* Header */}

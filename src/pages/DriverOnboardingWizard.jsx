@@ -18,13 +18,13 @@ import {
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const T = {
-  bg: "#050e0e", bg2: "#0a1818", bg3: "#0d2b2b",
-  primary: "#1F5F5C", pLight: "#2a7a76",
-  pGlow: "rgba(31,95,92,0.3)", pDim: "rgba(31,95,92,0.15)",
-  amber: "#F5A623", amberDim: "rgba(245,166,35,0.12)",
-  text: "#f0faf9", sub: "rgba(240,250,249,0.55)", muted: "rgba(240,250,249,0.3)",
-  border: "rgba(255,255,255,0.08)", border2: "rgba(255,255,255,0.14)",
-  card: "rgba(255,255,255,0.04)", green: "#4ade80", red: "#f87171",
+  bg: "var(--t-bg)", bg2: "var(--t-bg2)", bg3: "var(--t-bg3)",
+  primary: "var(--t-primary)", pLight: "var(--t-p-light)",
+  pGlow: "var(--t-p-glow)", pDim: "var(--t-p-dim)",
+  amber: "var(--t-amber)", amberDim: "var(--t-amber-dim)",
+  text: "var(--t-text)", sub: "var(--t-sub)", muted: "var(--t-muted)",
+  border: "var(--t-border)", border2: "var(--t-border2)",
+  card: "var(--t-card)", green: "var(--t-green)", red: "var(--t-red)",
 };
 
 // ── Atoms ──────────────────────────────────────────────────────────────────────

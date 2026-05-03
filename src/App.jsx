@@ -3,6 +3,7 @@ import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
 import { BrowserRouter, Routes, Route, useLocation, matchPath } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import OAuthProviders from "./components/OAuthProviders";
+import { ThemeProvider } from "./context/ThemeContext";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ProfileProvider } from "./context/ProfileContext";
 import { ChatProvider } from "./context/ChatContext";
@@ -328,19 +329,21 @@ function App() {
       <ScrollToTop />
       <PlausibleAnalytics />
       <VercelAnalytics />
-      <ErrorBoundary>
-        <OAuthProviders>
-          <AuthProvider>
-            <ProfileProvider>
-              <ChatProvider>
-                <ToastProvider>
-                  <AppLayout />
-                </ToastProvider>
-              </ChatProvider>
-            </ProfileProvider>
-          </AuthProvider>
-        </OAuthProviders>
-      </ErrorBoundary>
+      <ThemeProvider>
+        <ErrorBoundary>
+          <OAuthProviders>
+            <AuthProvider>
+              <ProfileProvider>
+                <ChatProvider>
+                  <ToastProvider>
+                    <AppLayout />
+                  </ToastProvider>
+                </ChatProvider>
+              </ProfileProvider>
+            </AuthProvider>
+          </OAuthProviders>
+        </ErrorBoundary>
+      </ThemeProvider>
     </BrowserRouter>
   );
 }

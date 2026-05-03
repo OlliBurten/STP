@@ -6,6 +6,7 @@ import { requestPasswordReset, resendVerification } from "../api/auth";
 import { TruckIcon, BuildingIcon, EyeIcon, EyeOffIcon } from "../components/Icons";
 import OAuthButtons from "../components/OAuthButtons";
 import ErrorBoundary from "../components/ErrorBoundary";
+import PageMeta from "../components/PageMeta";
 
 const S = {
   page:    { background: "#060f0f", minHeight: "100vh", marginTop: "-64px", display: "flex", alignItems: "center", justifyContent: "center", padding: "80px 16px 60px" },
@@ -258,6 +259,11 @@ export default function Login() {
 
   return (
     <main style={S.page}>
+      <PageMeta
+        title="Logga in – Sveriges Transportplattform"
+        description="Logga in på STP för att söka lastbilsjobb, hantera din förarprofil eller rekrytera yrkesförare till ditt åkeri."
+        canonical="/login"
+      />
       <div style={S.card}>
         <div style={{ textAlign: "center", marginBottom: 28 }}>
           <h1 style={{ fontSize: 28, fontWeight: 900, color: "#f0faf9", letterSpacing: "-0.5px", margin: "0 0 10px" }}>

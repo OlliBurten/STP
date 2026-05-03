@@ -35,7 +35,7 @@ const COLS = [
 
 export default function Footer() {
   return (
-    <footer style={{ background: "#040c0c" }} className="mt-auto text-white">
+    <footer style={{ background: "#0a1818" }} className="mt-auto text-white">
       <div className="max-w-[1200px] mx-auto px-5 sm:px-10 pt-20 pb-10">
 
         {/* Main grid */}
@@ -87,10 +87,10 @@ export default function Footer() {
         {/* Bottom bar */}
         <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 28, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
           <div>
-            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.3)" }}>
+            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>
               © {new Date().getFullYear()} Sveriges Transportplattform AB
             </p>
-            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.2)", marginTop: 4 }}>
+            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.28)", marginTop: 4 }}>
               Datapunkter baseras på TYA Trendindikator Åkeri 2025/2026.
             </p>
           </div>

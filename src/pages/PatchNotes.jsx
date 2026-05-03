@@ -1,17 +1,23 @@
 import { releaseNotes, CURRENT_VERSION } from "../lib/releaseNotes";
 import { usePageTitle } from "../hooks/usePageTitle";
+import PageMeta from "../components/PageMeta";
 
 export default function PatchNotes() {
   usePageTitle("Uppdateringar & nyheter");
   return (
-    <main style={{ background: "#060f0f", minHeight: "100vh", marginTop: "-64px", paddingTop: 96 }}>
+    <main style={{ background: "#0a1818", minHeight: "100vh", marginTop: "-64px", paddingTop: 96 }}>
+      <PageMeta
+        title="Nyheter & uppdateringar – STP"
+        description="Följ de senaste uppdateringarna på Sveriges Transportplattform. Nya funktioner, förbättringar och buggfixar för förare och åkerier."
+        canonical="/uppdateringar"
+      />
       <section style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px 80px" }}>
 
         <div style={{ maxWidth: 560, marginBottom: 48 }}>
           <span style={{ display: "inline-flex", alignItems: "center", gap: 6, borderRadius: 20, background: "rgba(74,222,128,0.1)", border: "1px solid rgba(74,222,128,0.2)", padding: "4px 12px", fontSize: 12, fontWeight: 700, color: "#4ade80", letterSpacing: "0.5px" }}>
             Senaste version: {CURRENT_VERSION}
           </span>
-          <h1 style={{ fontSize: "clamp(28px,4vw,38px)", fontWeight: 900, letterSpacing: "-1px", color: "#f0faf9", margin: "16px 0 14px", lineHeight: 1.15 }}>
+          <h1 style={{ fontSize: "clamp(30px,4vw,42px)", fontWeight: 900, letterSpacing: "-1px", color: "#f0faf9", margin: "16px 0 14px", lineHeight: 1.15 }}>
             Vad är nytt
           </h1>
           <p style={{ fontSize: 16, color: "rgba(240,250,249,0.55)", lineHeight: 1.7, margin: 0 }}>

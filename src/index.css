@@ -9,6 +9,48 @@
   --color-text: #1a2f2f;
   --color-text-muted: #5a7272;
   --font-sans: "DM Sans", system-ui, sans-serif;
+
+  /* Theme tokens — dark (default) */
+  --t-bg: #050e0e;
+  --t-bg2: #0a1818;
+  --t-bg3: #0d2b2b;
+  --t-primary: #1F5F5C;
+  --t-p-light: #2a7a76;
+  --t-p-glow: rgba(31,95,92,0.3);
+  --t-p-dim: rgba(31,95,92,0.15);
+  --t-amber: #F5A623;
+  --t-amber-dim: rgba(245,166,35,0.12);
+  --t-text: #f0faf9;
+  --t-sub: rgba(240,250,249,0.55);
+  --t-muted: rgba(240,250,249,0.3);
+  --t-border: rgba(255,255,255,0.08);
+  --t-border2: rgba(255,255,255,0.14);
+  --t-card: rgba(255,255,255,0.04);
+  --t-green: #4ade80;
+  --t-red: #f87171;
+  --t-p-text: #7dd3c8;
+}
+
+/* Theme tokens — light override */
+[data-theme="light"] {
+  --t-bg: #f4f8f8;
+  --t-bg2: #ffffff;
+  --t-bg3: #e6f2f1;
+  --t-primary: #1F5F5C;
+  --t-p-light: #2a7a76;
+  --t-p-glow: rgba(31,95,92,0.15);
+  --t-p-dim: rgba(31,95,92,0.1);
+  --t-amber: #d48a0f;
+  --t-amber-dim: rgba(245,166,35,0.1);
+  --t-text: #0e1e1e;
+  --t-sub: rgba(14,30,30,0.65);
+  --t-muted: rgba(14,30,30,0.4);
+  --t-border: rgba(0,0,0,0.08);
+  --t-border2: rgba(0,0,0,0.14);
+  --t-card: rgba(0,0,0,0.03);
+  --t-green: #16a34a;
+  --t-red: #dc2626;
+  --t-p-text: #1F5F5C;
 }
 
 body {
