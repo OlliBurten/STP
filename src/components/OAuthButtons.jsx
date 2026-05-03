@@ -35,7 +35,7 @@ function MicrosoftButton({ onSuccess, onError }) {
     <button
       type="button"
       onClick={handleClick}
-      className="flex-1 h-12 min-h-[48px] inline-flex items-center justify-center gap-2 px-4 rounded-xl border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-colors text-slate-800 font-medium"
+      className="flex-1 h-12 min-h-[48px] inline-flex items-center justify-center gap-2 px-4 rounded-xl border-2 border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 transition-colors text-slate-800 font-medium"
     >
       <svg className="w-5 h-5" viewBox="0 0 24 24">
         <path fill="#F25022" d="M1 1h10v10H1z" />
@@ -218,7 +218,13 @@ export default function OAuthButtons({
           backend inkluderar din sajt-URL (CORS).
         </div>
       )}
-      <p className="text-sm text-slate-600">{promptText || (authMode === "register" ? "Eller skapa konto med" : "Eller logga in med")}</p>
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.12)" }} />
+        <span style={{ fontSize: 12, color: "rgba(240,250,249,0.4)", whiteSpace: "nowrap" }}>
+          {promptText || (authMode === "register" ? "eller skapa konto med" : "eller logga in med")}
+        </span>
+        <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.12)" }} />
+      </div>
       <div className="flex flex-col gap-3">
         {showGoogle && (
           <div className="flex-1 h-12 min-h-[48px] relative rounded-xl border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-colors flex items-center justify-center overflow-hidden">
