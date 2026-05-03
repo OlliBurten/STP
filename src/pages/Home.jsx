@@ -170,7 +170,6 @@ export default function Home() {
       >
         <div className="absolute inset-0" style={{ backgroundImage: "url('/hero.png')", backgroundSize: "cover", backgroundPosition: "center 35%", opacity: 0.18 }} />
         <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 80% 60% at 70% 40%, rgba(31,95,92,0.35) 0%, transparent 70%)" }} />
-        <div className="absolute bottom-0 left-0 right-0 h-32" style={{ background: "linear-gradient(to top, #fff, transparent)" }} />
 
         <div className="relative w-full max-w-[1200px] mx-auto" style={{ padding: "120px 40px 80px" }}>
           <div className="grid lg:grid-cols-2 gap-20 items-center">
