@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { usePageTitle } from "../hooks/usePageTitle";
+import { useIsMobile } from "../hooks/useIsMobile";
 import PageMeta from "../components/PageMeta";
 
 const FAQ = [
@@ -47,12 +48,13 @@ function FaqItem({ item }) {
 
 export default function Kontakt() {
   usePageTitle("Kontakt");
+  const isMobile = useIsMobile();
   return (
     <main style={{ background: "#fff", minHeight: "100vh", marginTop: "-64px" }}>
       <PageMeta title="Kontakt – Sveriges Transportplattform" description="Kontakta Sveriges Transportplattform (STP) med frågor om samverkan, plattformen eller genomgång. Vi svarar på info@transportplattformen.se." canonical="/kontakt" />
 
       {/* ── Teal mini-hero ────────────────────────────────────────────────────── */}
-      <section style={{ background: "linear-gradient(135deg, #1F5F5C 0%, #0b302e 100%)", padding: "120px 40px 80px", position: "relative", overflow: "hidden" }}>
+      <section style={{ background: "linear-gradient(135deg, #1F5F5C 0%, #0b302e 100%)", padding: isMobile ? "100px 20px 60px" : "120px 40px 80px", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", right: -60, top: -60, width: 300, height: 300, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.06)", pointerEvents: "none" }} />
         <div style={{ maxWidth: 560, margin: "0 auto", position: "relative", zIndex: 1, textAlign: "center" }}>
           <p style={{ fontSize: 12, fontWeight: 700, color: "rgba(245,166,35,0.9)", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 14 }}>
@@ -68,8 +70,8 @@ export default function Kontakt() {
       </section>
 
       {/* ── Contact + FAQ ─────────────────────────────────────────────────────── */}
-      <section style={{ background: "#fff", padding: "60px 40px 96px" }}>
-        <div style={{ maxWidth: 800, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1.4fr", gap: 48, alignItems: "start" }}>
+      <section style={{ background: "#fff", padding: isMobile ? "40px 20px 60px" : "60px 40px 96px" }}>
+        <div style={{ maxWidth: 800, margin: "0 auto", display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1.4fr", gap: isMobile ? 32 : 48, alignItems: "start" }}>
 
           {/* Contact card */}
           <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 24, padding: "36px 32px", boxShadow: "0 8px 40px rgba(31,95,92,0.08)", textAlign: "center" }}>

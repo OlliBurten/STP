@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { CheckIcon, TruckIcon, BuildingIcon, ShieldCheckIcon } from "../components/Icons";
 import { usePageTitle } from "../hooks/usePageTitle";
+import { useIsMobile } from "../hooks/useIsMobile";
 import PageMeta from "../components/PageMeta";
 
 const VALUES = [
@@ -35,6 +36,8 @@ const PARTNERS = [
 
 export default function About() {
   usePageTitle("Om oss");
+  const isMobile = useIsMobile();
+  const sp = isMobile ? "0 20px" : "0 40px";
 
   useEffect(() => {
     const jsonLd = {
@@ -62,7 +65,7 @@ export default function About() {
       <PageMeta title="Om STP – Sveriges Transportplattform" description="Lär dig mer om Sveriges Transportplattform – en direktkanal mellan yrkesförare och åkerier. Inga bemanningsbolag, full kontroll för föraren." canonical="/om-oss" />
 
       {/* ── Hero (teal gradient — on-brand, keep dark) ─────────────────────── */}
-      <section style={{ background: "linear-gradient(135deg, #1F5F5C 0%, #0b302e 100%)", padding: "128px 40px 100px", position: "relative", overflow: "hidden" }}>
+      <section style={{ background: "linear-gradient(135deg, #1F5F5C 0%, #0b302e 100%)", padding: isMobile ? "100px 20px 60px" : "128px 40px 100px", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", right: -80, top: -80, width: 400, height: 400, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.07)", pointerEvents: "none" }} />
         <div style={{ position: "absolute", left: -40, bottom: -100, width: 300, height: 300, borderRadius: "50%", background: "rgba(245,166,35,0.05)", pointerEvents: "none" }} />
         <div style={{ maxWidth: 900, margin: "0 auto", position: "relative", zIndex: 1 }}>
@@ -77,8 +80,8 @@ export default function About() {
       </section>
 
       {/* ── Founder story (white) ─────────────────────────────────────────────── */}
-      <section style={{ background: "#fff", padding: "72px 0" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 40px", display: "grid", gridTemplateColumns: "3fr 2fr", gap: 56, alignItems: "start" }}>
+      <section style={{ background: "#fff", padding: isMobile ? "48px 0" : "72px 0" }}>
+        <div style={{ maxWidth: 900, margin: "0 auto", padding: sp, display: "grid", gridTemplateColumns: isMobile ? "1fr" : "3fr 2fr", gap: isMobile ? 28 : 56, alignItems: "start" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
             <p style={{ fontSize: 18, fontWeight: 600, color: "#0f172a", margin: 0, lineHeight: 1.5 }}>
               Idén kom inifrån branschen.
@@ -114,11 +117,11 @@ export default function About() {
       </section>
 
       {/* ── Values (teal-tinted) ──────────────────────────────────────────────── */}
-      <section style={{ background: "#f0faf9", borderTop: "1px solid #d1e8e6", borderBottom: "1px solid #d1e8e6", padding: "72px 0" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 40px" }}>
+      <section style={{ background: "#f0faf9", borderTop: "1px solid #d1e8e6", borderBottom: "1px solid #d1e8e6", padding: isMobile ? "48px 0" : "72px 0" }}>
+        <div style={{ maxWidth: 900, margin: "0 auto", padding: sp }}>
           <p style={{ fontSize: 11, fontWeight: 700, color: "#1F5F5C", textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: 12 }}>Vad vi tror på</p>
-          <h2 style={{ fontSize: "clamp(24px,3vw,34px)", fontWeight: 900, letterSpacing: "-1px", color: "#0f172a", lineHeight: 1.2, margin: "0 0 40px" }}>Det vi tror på</h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 24 }}>
+          <h2 style={{ fontSize: "clamp(24px,3vw,34px)", fontWeight: 900, letterSpacing: "-1px", color: "#0f172a", lineHeight: 1.2, margin: "0 0 28px" }}>Det vi tror på</h2>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3,1fr)", gap: 16 }}>
             {VALUES.map(({ icon: Icon, color, bg, title, text }) => (
               <div key={title} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 20, padding: "28px 24px", boxShadow: "0 4px 20px rgba(15,23,42,0.06)", display: "flex", flexDirection: "column", gap: 14 }}>
                 <div style={{ width: 44, height: 44, borderRadius: 14, background: bg, border: `1px solid ${color}22`, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -133,9 +136,9 @@ export default function About() {
       </section>
 
       {/* ── Status CTA (dark) ─────────────────────────────────────────────────── */}
-      <section style={{ background: "linear-gradient(160deg, #0d2b2b 0%, #060f0f 100%)", padding: "80px 0 96px" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 40px" }}>
-          <div style={{ position: "relative", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 24, padding: "48px 48px", overflow: "hidden" }}>
+      <section style={{ background: "linear-gradient(160deg, #0d2b2b 0%, #060f0f 100%)", padding: isMobile ? "60px 0" : "80px 0 96px" }}>
+        <div style={{ maxWidth: 900, margin: "0 auto", padding: sp }}>
+          <div style={{ position: "relative", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 24, padding: isMobile ? "32px 24px" : "48px 48px", overflow: "hidden" }}>
             <div style={{ position: "absolute", top: -40, right: -40, width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle, rgba(245,166,35,0.07) 0%, transparent 70%)", pointerEvents: "none" }} />
             <p style={{ fontSize: 12, fontWeight: 700, color: "rgba(245,166,35,0.85)", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 12 }}>Var vi är nu</p>
             <h2 style={{ fontSize: "clamp(24px,3vw,34px)", fontWeight: 900, letterSpacing: "-1px", color: "#f0faf9", lineHeight: 1.2, margin: "0 0 20px" }}>Plattformen testas med branschen</h2>

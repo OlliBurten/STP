@@ -3,6 +3,7 @@ import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { CheckIcon, TruckIcon, BuildingIcon, ShieldCheckIcon, ArrowRightIcon, ClockIcon } from "../components/Icons";
 import { usePageTitle } from "../hooks/usePageTitle";
+import { useIsMobile } from "../hooks/useIsMobile";
 import PageMeta from "../components/PageMeta";
 
 const COMPANY_POINTS = [
@@ -123,7 +124,10 @@ function FaqItem({ item, isOpen, onToggle }) {
 export default function ForCompaniesLanding() {
   usePageTitle("För åkerier – Hitta chaufförer direkt");
   const { user, isDriver, isCompany } = useAuth();
+  const isMobile = useIsMobile();
   const [faqOpen, setFaqOpen] = useState(null);
+  const sp = isMobile ? "0 20px" : "0 40px";
+  const vp = isMobile ? "60px 0" : "80px 0";
 
   useEffect(() => {
     const jsonLd = {
@@ -171,8 +175,8 @@ export default function ForCompaniesLanding() {
       >
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(6,15,15,0.94) 0%, rgba(6,15,15,0.72) 60%, rgba(6,15,15,0.50) 100%)" }} />
 
-        <div style={{ ...D.section, position: "relative", zIndex: 1, padding: "128px 40px 100px", width: "100%" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "center" }}>
+        <div style={{ maxWidth: 1040, margin: "0 auto", position: "relative", zIndex: 1, padding: isMobile ? "100px 20px 60px" : "128px 40px 100px", width: "100%" }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: isMobile ? 32 : 64, alignItems: "center" }}>
             <div>
               <p style={D.label}>För åkerier</p>
               <h1 style={{ fontSize: "clamp(36px,5vw,58px)", fontWeight: 900, letterSpacing: "-2px", color: "#f0faf9", lineHeight: 1.08, margin: "14px 0 24px" }}>
@@ -199,29 +203,31 @@ export default function ForCompaniesLanding() {
               </div>
             </div>
 
-            <div style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 24, padding: "32px 36px", backdropFilter: "blur(8px)" }}>
-              <p style={{ fontSize: 13, fontWeight: 700, color: "rgba(245,166,35,0.85)", letterSpacing: "1.2px", textTransform: "uppercase", marginBottom: 20 }}>
-                Det här får ni som åkeri
-              </p>
-              <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 18 }}>
-                {COMPANY_POINTS.map((point) => (
-                  <li key={point} style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
-                    <span style={{ flexShrink: 0, width: 24, height: 24, borderRadius: "50%", background: "rgba(245,166,35,0.18)", display: "flex", alignItems: "center", justifyContent: "center", marginTop: 2 }}>
-                      <CheckIcon style={{ width: 13, height: 13, color: "#F5A623" }} />
-                    </span>
-                    <span style={{ fontSize: 15, color: "rgba(240,250,249,0.8)", lineHeight: 1.6 }}>{point}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            {!isMobile && (
+              <div style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 24, padding: "32px 36px", backdropFilter: "blur(8px)" }}>
+                <p style={{ fontSize: 13, fontWeight: 700, color: "rgba(245,166,35,0.85)", letterSpacing: "1.2px", textTransform: "uppercase", marginBottom: 20 }}>
+                  Det här får ni som åkeri
+                </p>
+                <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 18 }}>
+                  {COMPANY_POINTS.map((point) => (
+                    <li key={point} style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+                      <span style={{ flexShrink: 0, width: 24, height: 24, borderRadius: "50%", background: "rgba(245,166,35,0.18)", display: "flex", alignItems: "center", justifyContent: "center", marginTop: 2 }}>
+                        <CheckIcon style={{ width: 13, height: 13, color: "#F5A623" }} />
+                      </span>
+                      <span style={{ fontSize: 15, color: "rgba(240,250,249,0.8)", lineHeight: 1.6 }}>{point}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </div>
       </section>
 
       {/* ── Feature cards (white) ─────────────────────────────────────────────── */}
-      <section style={{ background: "#fff", padding: "80px 0" }}>
-        <div style={E.section}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20 }}>
+      <section style={{ background: "#fff", padding: vp }}>
+        <div style={{ maxWidth: 1040, margin: "0 auto", padding: sp }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3,1fr)", gap: 16 }}>
             {[
               { icon: BuildingIcon, title: "För rekrytering i transport", text: "Fokus ligger på det som faktiskt spelar roll i branschen: segment, behörigheter, tillgänglighet och snabb överblick." },
               { icon: ShieldCheckIcon, title: "Tryggare sammanhang", text: "Ambitionen är att bygga en plats där seriösa aktörer sticker ut tydligare och där kvalitet blir lättare att bedöma." },
@@ -240,14 +246,14 @@ export default function ForCompaniesLanding() {
       </section>
 
       {/* ── Segments (teal-tinted alt) ────────────────────────────────────────── */}
-      <section style={{ background: "#f0faf9", borderTop: "1px solid #d1e8e6", borderBottom: "1px solid #d1e8e6", padding: "80px 0" }}>
-        <div style={E.section}>
+      <section style={{ background: "#f0faf9", borderTop: "1px solid #d1e8e6", borderBottom: "1px solid #d1e8e6", padding: vp }}>
+        <div style={{ maxWidth: 1040, margin: "0 auto", padding: sp }}>
           <p style={E.label}>Tre segment</p>
           <h2 style={{ ...E.h2, marginTop: 12, marginBottom: 12, maxWidth: 560 }}>Branschen är bred och behoven ser olika ut.</h2>
-          <p style={{ ...E.body, maxWidth: 600, marginBottom: 40 }}>
+          <p style={{ ...E.body, maxWidth: 600, marginBottom: 32 }}>
             Därför utgår STP från tre tydliga segment. Det hjälper er att kommunicera behov tydligare och nå mer relevanta förare.
           </p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20 }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3,1fr)", gap: 16 }}>
             {COMPANY_SEGMENTS.map(({ title, text, icon: Icon, stripe, label, labelColor, labelBg }) => (
               <div key={title} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 20, overflow: "hidden", boxShadow: "0 8px 40px rgba(15,23,42,0.08)" }}>
                 <div style={{ height: 5, background: stripe }} />
@@ -268,8 +274,8 @@ export default function ForCompaniesLanding() {
       </section>
 
       {/* ── How it works (dark) ───────────────────────────────────────────────── */}
-      <section style={{ background: "#050e0e", padding: "80px 0" }}>
-        <div style={{ ...D.section, display: "grid", gridTemplateColumns: "1.2fr 0.8fr", gap: 64, alignItems: "start" }}>
+      <section style={{ background: "#050e0e", padding: vp }}>
+        <div style={{ maxWidth: 1040, margin: "0 auto", padding: sp, display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1.2fr 0.8fr", gap: isMobile ? 32 : 64, alignItems: "start" }}>
           <div>
             <p style={D.label}>Så fungerar det</p>
             <h2 style={{ ...D.h2, marginTop: 12, marginBottom: 16 }}>Börja enkelt och bygg vidare när kontot är igång.</h2>
@@ -297,8 +303,8 @@ export default function ForCompaniesLanding() {
       </section>
 
       {/* ── Why STP (white) ───────────────────────────────────────────────────── */}
-      <section style={{ background: "#fff", borderBottom: "1px solid #e2e8f0", padding: "80px 0" }}>
-        <div style={{ ...E.section, display: "grid", gridTemplateColumns: "0.95fr 1.05fr", gap: 64, alignItems: "start" }}>
+      <section style={{ background: "#fff", borderBottom: "1px solid #e2e8f0", padding: vp }}>
+        <div style={{ maxWidth: 1040, margin: "0 auto", padding: sp, display: "grid", gridTemplateColumns: isMobile ? "1fr" : "0.95fr 1.05fr", gap: isMobile ? 24 : 64, alignItems: "start" }}>
           <div>
             <p style={E.label}>Varför STP</p>
             <h2 style={{ ...E.h2, marginTop: 12, marginBottom: 16 }}>Mer struktur i varje rekryteringsbeslut.</h2>
@@ -320,8 +326,8 @@ export default function ForCompaniesLanding() {
       </section>
 
       {/* ── FAQ (teal-tinted) ─────────────────────────────────────────────────── */}
-      <section style={{ background: "#f0faf9", padding: "80px 0" }}>
-        <div style={{ ...E.section }}>
+      <section style={{ background: "#f0faf9", padding: vp }}>
+        <div style={{ maxWidth: 1040, margin: "0 auto", padding: sp }}>
           <p style={E.label}>Vanliga frågor</p>
           <h2 style={{ ...E.h2, marginTop: 12, marginBottom: 36 }}>Frågor och svar</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 10, maxWidth: 760 }}>
@@ -338,9 +344,9 @@ export default function ForCompaniesLanding() {
       </section>
 
       {/* ── CTA (dark) ────────────────────────────────────────────────────────── */}
-      <section style={{ background: "linear-gradient(160deg, #0d2b2b 0%, #060f0f 100%)", padding: "80px 0 100px" }}>
-        <div style={D.section}>
-          <div style={{ position: "relative", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 28, padding: "56px 56px", overflow: "hidden" }}>
+      <section style={{ background: "linear-gradient(160deg, #0d2b2b 0%, #060f0f 100%)", padding: isMobile ? "60px 0" : "80px 0 100px" }}>
+        <div style={{ maxWidth: 1040, margin: "0 auto", padding: sp }}>
+          <div style={{ position: "relative", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 28, padding: isMobile ? "36px 24px" : "56px 56px", overflow: "hidden" }}>
             <div style={{ position: "absolute", right: -60, top: -60, width: 300, height: 300, borderRadius: "50%", background: "radial-gradient(circle, rgba(245,166,35,0.07) 0%, transparent 70%)", pointerEvents: "none" }} />
             <div style={{ position: "relative", zIndex: 1 }}>
               <h2 style={{ fontSize: "clamp(24px,3vw,36px)", fontWeight: 900, letterSpacing: "-1px", color: "#f0faf9", margin: "0 0 16px" }}>

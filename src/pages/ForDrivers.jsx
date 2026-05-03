@@ -3,6 +3,7 @@ import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { CheckIcon, TruckIcon, ShieldCheckIcon, ArrowRightIcon, ClockIcon, BuildingIcon } from "../components/Icons";
 import { usePageTitle } from "../hooks/usePageTitle";
+import { useIsMobile } from "../hooks/useIsMobile";
 import PageMeta from "../components/PageMeta";
 
 const DRIVER_POINTS = [
@@ -140,7 +141,10 @@ function FaqItem({ item, isOpen, onToggle }) {
 export default function ForDrivers() {
   usePageTitle("För yrkesförare – Hitta lastbilsjobb");
   const { user, isDriver, isCompany } = useAuth();
+  const isMobile = useIsMobile();
   const [faqOpen, setFaqOpen] = useState(null);
+  const sp = isMobile ? "0 20px" : "0 40px"; // section padding
+  const vp = isMobile ? "60px 0" : "80px 0"; // vertical padding
 
   useEffect(() => {
     const jsonLd = {
@@ -184,8 +188,8 @@ export default function ForDrivers() {
         }}
       >
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(5,14,14,0.93) 0%, rgba(5,14,14,0.70) 60%, rgba(5,14,14,0.40) 100%)" }} />
-        <div style={{ position: "relative", ...D.section, paddingTop: 140, paddingBottom: 120 }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "center" }}>
+        <div style={{ position: "relative", maxWidth: 1040, margin: "0 auto", padding: sp, paddingTop: isMobile ? 100 : 140, paddingBottom: isMobile ? 60 : 120 }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: isMobile ? 32 : 64, alignItems: "center" }}>
             <div>
               <div style={{ ...D.label, marginBottom: 16 }}>För förare</div>
               <h1 style={{ ...D.h2, fontSize: "clamp(34px,4.5vw,52px)", marginBottom: 20 }}>
@@ -227,9 +231,9 @@ export default function ForDrivers() {
       </section>
 
       {/* ── Feature cards (white) ─────────────────────────────────────────────── */}
-      <section style={{ background: "#fff", padding: "80px 0" }}>
-        <div style={E.section}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20 }}>
+      <section style={{ background: "#fff", padding: vp }}>
+        <div style={{ maxWidth: 1040, margin: "0 auto", padding: sp }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3,1fr)", gap: 16 }}>
             {FEATURE_CARDS.map(({ icon: Icon, title, text }) => (
               <div key={title} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 20, padding: "28px 32px", boxShadow: "0 4px 24px rgba(31,95,92,0.07)" }}>
                 <span style={{ display: "inline-flex", width: 44, height: 44, borderRadius: 13, background: "#1F5F5C", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
@@ -244,16 +248,16 @@ export default function ForDrivers() {
       </section>
 
       {/* ── Segments (teal-tinted alt) ────────────────────────────────────────── */}
-      <section style={{ background: "#f0faf9", borderTop: "1px solid #d1e8e6", padding: "80px 0" }}>
-        <div style={E.section}>
-          <div style={{ marginBottom: 40 }}>
+      <section style={{ background: "#f0faf9", borderTop: "1px solid #d1e8e6", padding: vp }}>
+        <div style={{ maxWidth: 1040, margin: "0 auto", padding: sp }}>
+          <div style={{ marginBottom: 32 }}>
             <div style={{ ...E.label, marginBottom: 12 }}>Tre vägar in</div>
             <h2 style={{ ...E.h2, marginBottom: 14 }}>Alla förare söker inte samma sak.</h2>
             <p style={{ ...E.body, maxWidth: 520 }}>
               Därför är STP byggt runt tre tydliga segment. Det gör det lättare att matcha rätt behov med rätt profil.
             </p>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20 }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3,1fr)", gap: 16 }}>
             {DRIVER_SEGMENTS.map(({ title, text, icon: Icon, stripe, label, labelColor, labelBg }) => (
               <div key={title} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 20, overflow: "hidden", boxShadow: "0 8px 40px rgba(15,23,42,0.08)" }}>
                 <div style={{ height: 5, background: stripe }} />
@@ -274,8 +278,8 @@ export default function ForDrivers() {
       </section>
 
       {/* ── How it works (dark) ───────────────────────────────────────────────── */}
-      <section style={{ background: "#050e0e", padding: "80px 0" }}>
-        <div style={{ ...D.section, display: "grid", gridTemplateColumns: "1.2fr 0.8fr", gap: 64, alignItems: "start" }}>
+      <section style={{ background: "#050e0e", padding: vp }}>
+        <div style={{ maxWidth: 1040, margin: "0 auto", padding: sp, display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1.2fr 0.8fr", gap: isMobile ? 32 : 64, alignItems: "start" }}>
           <div>
             <div style={{ ...D.label, marginBottom: 12 }}>Så fungerar det</div>
             <h2 style={{ ...D.h2, marginBottom: 16 }}>Du kommer igång snabbt, men med rätt grund.</h2>
@@ -295,8 +299,8 @@ export default function ForDrivers() {
       </section>
 
       {/* ── Why STP (white) ───────────────────────────────────────────────────── */}
-      <section style={{ background: "#fff", borderBottom: "1px solid #e2e8f0", padding: "80px 0" }}>
-        <div style={{ ...E.section, display: "grid", gridTemplateColumns: "0.95fr 1.05fr", gap: 64, alignItems: "start" }}>
+      <section style={{ background: "#fff", borderBottom: "1px solid #e2e8f0", padding: vp }}>
+        <div style={{ maxWidth: 1040, margin: "0 auto", padding: sp, display: "grid", gridTemplateColumns: isMobile ? "1fr" : "0.95fr 1.05fr", gap: isMobile ? 24 : 64, alignItems: "start" }}>
           <div>
             <div style={{ ...E.label, marginBottom: 12 }}>Varför STP</div>
             <h2 style={{ ...E.h2, marginBottom: 16 }}>Mindre brus. Mer relevans.</h2>
@@ -318,8 +322,8 @@ export default function ForDrivers() {
       </section>
 
       {/* ── FAQ (teal-tinted) ─────────────────────────────────────────────────── */}
-      <section style={{ background: "#f0faf9", padding: "80px 0" }}>
-        <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 40px" }}>
+      <section style={{ background: "#f0faf9", padding: vp }}>
+        <div style={{ maxWidth: 720, margin: "0 auto", padding: sp }}>
           <div style={{ ...E.label, marginBottom: 12 }}>Vanliga frågor</div>
           <h2 style={{ ...E.h2, marginBottom: 32 }}>Frågor och svar</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -331,9 +335,9 @@ export default function ForDrivers() {
       </section>
 
       {/* ── CTA (dark) ────────────────────────────────────────────────────────── */}
-      <section style={{ background: "linear-gradient(160deg, #0d2b2b 0%, #060f0f 100%)", padding: "80px 0 100px" }}>
-        <div style={D.section}>
-          <div style={{ position: "relative", overflow: "hidden", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 24, padding: "56px 48px" }}>
+      <section style={{ background: "linear-gradient(160deg, #0d2b2b 0%, #060f0f 100%)", padding: isMobile ? "60px 0" : "80px 0 100px" }}>
+        <div style={{ maxWidth: 1040, margin: "0 auto", padding: sp }}>
+          <div style={{ position: "relative", overflow: "hidden", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 24, padding: isMobile ? "36px 24px" : "56px 48px" }}>
             <div style={{ position: "absolute", top: -60, right: -60, width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle, rgba(245,166,35,0.08) 0%, transparent 70%)", pointerEvents: "none" }} />
             <div style={{ ...D.label, marginBottom: 16 }}>Kom igång</div>
             <h2 style={{ ...D.h2, marginBottom: 16 }}>Redo att skapa din profil?</h2>

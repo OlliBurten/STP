@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { usePageTitle } from "../hooks/usePageTitle";
+import { useIsMobile } from "../hooks/useIsMobile";
 import { useAuth } from "../context/AuthContext";
 import { requestPasswordReset, resendVerification } from "../api/auth";
 import { EyeIcon, EyeOffIcon } from "../components/Icons";
@@ -113,6 +114,7 @@ export default function Login() {
   const [oauthPickingRole, setOauthPickingRole] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  const isMobile = useIsMobile();
   const isRegister = mode === "register_driver" || mode === "register_company";
   const role = mode === "register_company" ? "company" : "driver";
 
@@ -274,15 +276,16 @@ export default function Login() {
             transition: "opacity 0.18s ease-out, transform 0.18s ease-out",
           }}
         >
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", minHeight: 580 }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", minHeight: isMobile ? "auto" : 580 }}>
             {/* ── Förare (grön) */}
             <button
               type="button"
               onClick={() => goTo("register_driver")}
               style={{
-                padding: "52px 44px", cursor: "pointer", textAlign: "left",
+                padding: isMobile ? "36px 28px" : "52px 44px", cursor: "pointer", textAlign: "left",
                 background: "linear-gradient(145deg, #0d2b2b 0%, #0a1818 100%)",
-                borderRight: "1px solid rgba(255,255,255,0.08)",
+                borderRight: isMobile ? "none" : "1px solid rgba(255,255,255,0.08)",
+                borderBottom: isMobile ? "1px solid rgba(255,255,255,0.08)" : "none",
                 display: "flex", flexDirection: "column", gap: 20,
                 border: "none", fontFamily: "inherit", position: "relative", overflow: "hidden",
                 transition: "filter 0.18s",
@@ -322,7 +325,7 @@ export default function Login() {
               type="button"
               onClick={() => goTo("register_company")}
               style={{
-                padding: "52px 44px", cursor: "pointer", textAlign: "left",
+                padding: isMobile ? "36px 28px" : "52px 44px", cursor: "pointer", textAlign: "left",
                 background: "linear-gradient(145deg, #1a1200 0%, #0f0c00 60%, #050e0e 100%)",
                 display: "flex", flexDirection: "column", gap: 20,
                 border: "none", fontFamily: "inherit", position: "relative", overflow: "hidden",
@@ -402,9 +405,9 @@ export default function Login() {
             transition: "opacity 0.18s ease-out, transform 0.18s ease-out",
           }}
         >
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", minHeight: 660 }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", minHeight: isMobile ? "auto" : 660 }}>
             {/* ── Left: form */}
-            <div style={{ padding: "44px 40px", display: "flex", flexDirection: "column", gap: 16, borderRight: "1px solid rgba(255,255,255,0.08)" }}>
+            <div style={{ padding: isMobile ? "32px 24px" : "44px 40px", display: "flex", flexDirection: "column", gap: 16, borderRight: isMobile ? "none" : "1px solid rgba(255,255,255,0.08)" }}>
               <button
                 type="button"
                 onClick={() => goTo("register_pick")}
@@ -498,27 +501,29 @@ export default function Login() {
             </div>
 
             {/* ── Right: value prop */}
-            <div style={{ background: valuePropBg, padding: "44px 36px", display: "flex", flexDirection: "column", justifyContent: "center", gap: 28 }}>
-              <div>
-                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", color: accent, textTransform: "uppercase", marginBottom: 12 }}>
-                  {isDriver ? "Varför STP?" : "För åkerier"}
-                </div>
-                <h3 style={{ fontSize: 22, fontWeight: 900, color: "var(--t-text)", lineHeight: 1.2, letterSpacing: "-0.4px", margin: 0 }}>
-                  {isDriver ? "En profil.\nHundratals möjligheter." : "Rätt förare.\nUtan mellanhänder."}
-                </h3>
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-                {features.map(({ icon, title, desc }) => (
-                  <div key={title} style={{ display: "flex", gap: 14 }}>
-                    <span style={{ fontSize: 20, flexShrink: 0, lineHeight: 1 }}>{icon}</span>
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: "var(--t-text)", marginBottom: 3 }}>{title}</div>
-                      <div style={{ fontSize: 12, color: "var(--t-sub)", lineHeight: 1.5 }}>{desc}</div>
-                    </div>
+            {!isMobile && (
+              <div style={{ background: valuePropBg, padding: "44px 36px", display: "flex", flexDirection: "column", justifyContent: "center", gap: 28 }}>
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", color: accent, textTransform: "uppercase", marginBottom: 12 }}>
+                    {isDriver ? "Varför STP?" : "För åkerier"}
                   </div>
-                ))}
+                  <h3 style={{ fontSize: 22, fontWeight: 900, color: "var(--t-text)", lineHeight: 1.2, letterSpacing: "-0.4px", margin: 0 }}>
+                    {isDriver ? "En profil.\nHundratals möjligheter." : "Rätt förare.\nUtan mellanhänder."}
+                  </h3>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+                  {features.map(({ icon, title, desc }) => (
+                    <div key={title} style={{ display: "flex", gap: 14 }}>
+                      <span style={{ fontSize: 20, flexShrink: 0, lineHeight: 1 }}>{icon}</span>
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: "var(--t-text)", marginBottom: 3 }}>{title}</div>
+                        <div style={{ fontSize: 12, color: "var(--t-sub)", lineHeight: 1.5 }}>{desc}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </main>
@@ -536,10 +541,10 @@ export default function Login() {
           transition: "opacity 0.18s ease-out, transform 0.18s ease-out",
         }}
       >
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", minHeight: 600 }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", minHeight: isMobile ? "auto" : 600 }}>
 
           {/* ── Left: form ──────────────────────────────────────────────── */}
-          <div style={{ padding: "52px 44px", display: "flex", flexDirection: "column", gap: 24, borderRight: "1px solid rgba(255,255,255,0.08)" }}>
+          <div style={{ padding: isMobile ? "40px 28px" : "52px 44px", display: "flex", flexDirection: "column", gap: 24, borderRight: isMobile ? "none" : "1px solid rgba(255,255,255,0.08)" }}>
             {mode === "login" && (
               <div>
                 <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.12em", color: "#F5A623", textTransform: "uppercase", margin: "0 0 10px" }}>
@@ -656,57 +661,59 @@ export default function Login() {
           </div>
 
           {/* ── Right: hero panel ───────────────────────────────────────── */}
-          <div style={{
-            background: "linear-gradient(145deg, #0d2b2b 0%, #0a1818 60%, #050e0e 100%)",
-            padding: "52px 44px",
-            display: "flex", flexDirection: "column", justifyContent: "center", gap: 32,
-            position: "relative", overflow: "hidden",
-          }}>
-            <div style={{ position: "absolute", top: -80, right: -80, width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle, rgba(31,95,92,0.35) 0%, transparent 70%)", pointerEvents: "none" }} />
-            <div style={{ position: "absolute", bottom: -60, left: -40, width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle, rgba(245,166,35,0.12) 0%, transparent 70%)", pointerEvents: "none" }} />
+          {!isMobile && (
+            <div style={{
+              background: "linear-gradient(145deg, #0d2b2b 0%, #0a1818 60%, #050e0e 100%)",
+              padding: "52px 44px",
+              display: "flex", flexDirection: "column", justifyContent: "center", gap: 32,
+              position: "relative", overflow: "hidden",
+            }}>
+              <div style={{ position: "absolute", top: -80, right: -80, width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle, rgba(31,95,92,0.35) 0%, transparent 70%)", pointerEvents: "none" }} />
+              <div style={{ position: "absolute", bottom: -60, left: -40, width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle, rgba(245,166,35,0.12) 0%, transparent 70%)", pointerEvents: "none" }} />
 
-            <div style={{ position: "relative", zIndex: 1 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", color: "#4ade80", textTransform: "uppercase", marginBottom: 14 }}>
-                Sveriges Transportplattform
-              </div>
-              <h2 style={{ fontSize: 26, fontWeight: 900, color: "var(--t-text)", lineHeight: 1.2, letterSpacing: "-0.5px", margin: "0 0 12px" }}>
-                Rätt jobb.<br />Rätt förare.
-              </h2>
-              <p style={{ fontSize: 14, color: "var(--t-sub)", lineHeight: 1.65, margin: 0 }}>
-                Kopplar ihop yrkesförare med åkerier — snabbt, enkelt och utan mellanhänder.
-              </p>
-            </div>
-
-            <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", gap: 14 }}>
-              {[
-                { icon: "✓", text: "Gratis för förare" },
-                { icon: "✓", text: "Ansök med ett klick" },
-                { icon: "✓", text: "Verifierade åkerier" },
-                { icon: "✓", text: "AI-matchning inbyggd" },
-              ].map(({ icon, text }) => (
-                <div key={text} style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <div style={{ width: 22, height: 22, borderRadius: "50%", background: "rgba(74,222,128,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <span style={{ fontSize: 11, color: "#4ade80", fontWeight: 700 }}>{icon}</span>
-                  </div>
-                  <span style={{ fontSize: 13, color: "var(--t-sub)" }}>{text}</span>
+              <div style={{ position: "relative", zIndex: 1 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", color: "#4ade80", textTransform: "uppercase", marginBottom: 14 }}>
+                  Sveriges Transportplattform
                 </div>
-              ))}
-            </div>
+                <h2 style={{ fontSize: 26, fontWeight: 900, color: "var(--t-text)", lineHeight: 1.2, letterSpacing: "-0.5px", margin: "0 0 12px" }}>
+                  Rätt jobb.<br />Rätt förare.
+                </h2>
+                <p style={{ fontSize: 14, color: "var(--t-sub)", lineHeight: 1.65, margin: 0 }}>
+                  Kopplar ihop yrkesförare med åkerier — snabbt, enkelt och utan mellanhänder.
+                </p>
+              </div>
 
-            <div style={{ position: "relative", zIndex: 1, padding: "16px 20px", borderRadius: 14, background: "rgba(245,166,35,0.07)", border: "1px solid rgba(245,166,35,0.18)" }}>
-              <p style={{ fontSize: 13, color: "rgba(240,250,249,0.7)", lineHeight: 1.6, margin: 0 }}>
-                <span style={{ color: "#F5A623", fontWeight: 700 }}>Nytt konto?</span>{" "}
-                Registrering tar under 2 minuter — din profil är din CV.
-              </p>
-              <button
-                type="button"
-                onClick={() => goTo("register_pick")}
-                style={{ marginTop: 10, background: "none", border: "none", color: "#F5A623", fontSize: 13, fontWeight: 700, cursor: "pointer", padding: 0, fontFamily: "inherit" }}
-              >
-                Skapa konto gratis →
-              </button>
+              <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", gap: 14 }}>
+                {[
+                  { icon: "✓", text: "Gratis för förare" },
+                  { icon: "✓", text: "Ansök med ett klick" },
+                  { icon: "✓", text: "Verifierade åkerier" },
+                  { icon: "✓", text: "AI-matchning inbyggd" },
+                ].map(({ icon, text }) => (
+                  <div key={text} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <div style={{ width: 22, height: 22, borderRadius: "50%", background: "rgba(74,222,128,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <span style={{ fontSize: 11, color: "#4ade80", fontWeight: 700 }}>{icon}</span>
+                    </div>
+                    <span style={{ fontSize: 13, color: "var(--t-sub)" }}>{text}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ position: "relative", zIndex: 1, padding: "16px 20px", borderRadius: 14, background: "rgba(245,166,35,0.07)", border: "1px solid rgba(245,166,35,0.18)" }}>
+                <p style={{ fontSize: 13, color: "rgba(240,250,249,0.7)", lineHeight: 1.6, margin: 0 }}>
+                  <span style={{ color: "#F5A623", fontWeight: 700 }}>Nytt konto?</span>{" "}
+                  Registrering tar under 2 minuter — din profil är din CV.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => goTo("register_pick")}
+                  style={{ marginTop: 10, background: "none", border: "none", color: "#F5A623", fontSize: 13, fontWeight: 700, cursor: "pointer", padding: 0, fontFamily: "inherit" }}
+                >
+                  Skapa konto gratis →
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
         </div>
       </div>
