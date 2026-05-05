@@ -182,7 +182,7 @@ export default function ForDrivers() {
         style={{
           position: "relative",
           overflow: "hidden",
-          backgroundImage: "url('/hero-driver.png')",
+          backgroundImage: "url('/hero-driver.webp')",
           backgroundSize: "cover",
           backgroundPosition: "center 30%",
         }}

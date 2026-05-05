@@ -4,6 +4,6 @@
     <loc>https://transportplattformen.se/sitemap-static.xml</loc>
   </sitemap>
   <sitemap>
-    <loc>https://nodejs-production-f3b9.up.railway.app/api/sitemap-dynamic.xml</loc>
+    <loc>https://transportplattformen.se/sitemap-dynamic.xml</loc>
   </sitemap>
 </sitemapindex>

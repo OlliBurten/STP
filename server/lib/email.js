@@ -44,7 +44,7 @@ function buildHtml(text, { ctaUrl, ctaText } = {}) {
  * @param {string} [params.devInviteUrl] – Om satt och e-post inte skickas: loggas hela URL:en (för teaminbjudan i dev).
  * @returns {Promise<boolean>} true if email was sent via provider, false if only logged (not sent).
  */
-export async function sendEmail({ to, subject, text, ctaUrl, ctaText, devInviteUrl }) {
+export async function sendEmail({ to, subject, text, html: htmlOverride, ctaUrl, ctaText, devInviteUrl }) {
   const apiKey = process.env.RESEND_API_KEY;
   const fromAddress = process.env.EMAIL_FROM || "noreply@transportplattformen.se";
   const fromName = process.env.EMAIL_FROM_NAME || "Sveriges Transportplattform";
@@ -57,7 +57,7 @@ export async function sendEmail({ to, subject, text, ctaUrl, ctaText, devInviteU
       to: [to],
       subject,
       text,
-      html: buildHtml(text, { ctaUrl, ctaText }),
+      html: htmlOverride || buildHtml(text, { ctaUrl, ctaText }),
       ...(replyTo && { reply_to: replyTo }),
     };
     const res = await fetch("https://api.resend.com/emails", {

@@ -158,6 +158,15 @@ select {
   font-weight: 700;
 }
 
+/* ── Scroll reveal — disable on mobile ────────────────────────────────────── */
+@media (max-width: 767px) {
+  .scroll-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
 @keyframes marquee {
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }

@@ -157,7 +157,7 @@ export default function Header({ onboarding = false }) {
   const headerStyle = {
     background: scrolled
       ? "rgba(5,14,14,0.92)"
-      : "linear-gradient(to bottom, rgba(5,14,14,0.72) 0%, rgba(5,14,14,0.1) 100%)",
+      : "transparent",
     borderBottom: isImpersonating
       ? "1px solid rgba(245,166,35,0.4)"
       : scrolled

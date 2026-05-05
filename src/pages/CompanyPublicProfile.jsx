@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import PageMeta from "../components/PageMeta";
 import { fetchCompanyPublicProfile } from "../api/companies.js";
+import { getCompanyReviewSummary } from "../api/reviews.js";
 import { getBranschLabel } from "../data/bransch.js";
 import { StarFilledIcon, LocationIcon, CheckIcon } from "../components/Icons";
 import { useAuth } from "../context/AuthContext";
@@ -15,8 +16,10 @@ const S = {
 export default function CompanyPublicProfile() {
   const { id } = useParams();
   const { user } = useAuth();
+  const isDriver = user?.role === "DRIVER";
   const [company, setCompany] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [reviewSummary, setReviewSummary] = useState(null);
 
   useEffect(() => {
     if (!id) return;
@@ -25,6 +28,9 @@ export default function CompanyPublicProfile() {
       .then(setCompany)
       .catch(() => setCompany(null))
       .finally(() => setLoading(false));
+    getCompanyReviewSummary(id)
+      .then(setReviewSummary)
+      .catch(() => setReviewSummary(null));
   }, [id, user]);
 
   if (loading) {
@@ -271,6 +277,82 @@ export default function CompanyPublicProfile() {
                 </li>
               ))}
             </ul>
+          )}
+        </section>
+
+        {/* ── Reviews ── */}
+        <section style={{ marginTop: 32 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, gap: 12, flexWrap: "wrap" }}>
+            <h2 style={{ fontSize: 17, fontWeight: 700, color: "#f0faf9", margin: 0 }}>
+              Omdömen från förare
+              {reviewSummary?.reviewCount > 0 && (
+                <span style={{ marginLeft: 10, fontSize: 13, fontWeight: 500, color: "rgba(240,250,249,0.45)" }}>
+                  ({reviewSummary.reviewCount})
+                </span>
+              )}
+            </h2>
+            {/* Aggregate stars */}
+            {reviewSummary?.averageRating && (
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <div style={{ display: "flex", gap: 2 }}>
+                  {[1,2,3,4,5].map((n) => (
+                    <StarFilledIcon key={n} style={{ width: 15, height: 15, color: n <= Math.round(reviewSummary.averageRating) ? "#F5A623" : "rgba(245,166,35,0.2)" }} />
+                  ))}
+                </div>
+                <span style={{ fontSize: 14, fontWeight: 700, color: "#F5A623" }}>{reviewSummary.averageRating}</span>
+                <span style={{ fontSize: 12, color: "rgba(240,250,249,0.4)" }}>av 5</span>
+              </div>
+            )}
+          </div>
+
+          {/* Review cards */}
+          {reviewSummary?.recent?.length > 0 ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {reviewSummary.recent.map((r) => (
+                <div key={r.id} style={{ ...S.card, padding: "18px 22px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: r.comment ? 10 : 0 }}>
+                    <div style={{ display: "flex", gap: 2 }}>
+                      {[1,2,3,4,5].map((n) => (
+                        <StarFilledIcon key={n} style={{ width: 13, height: 13, color: n <= r.rating ? "#F5A623" : "rgba(245,166,35,0.2)" }} />
+                      ))}
+                    </div>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(240,250,249,0.55)" }}>
+                      {r.authorName || "Verifierad förare"}
+                    </span>
+                    <span style={{ marginLeft: "auto", fontSize: 11, color: "rgba(240,250,249,0.3)" }}>
+                      {new Date(r.createdAt).toLocaleDateString("sv-SE", { month: "short", year: "numeric" })}
+                    </span>
+                  </div>
+                  {r.comment && (
+                    <p style={{ fontSize: 13, color: "rgba(240,250,249,0.65)", lineHeight: 1.7, margin: 0 }}>
+                      {r.comment}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ ...S.card, padding: "22px 24px" }}>
+              <p style={{ fontSize: 13, color: "rgba(240,250,249,0.4)", margin: "0 0 4px" }}>
+                Inga omdömen ännu.
+              </p>
+              {isDriver && (
+                <p style={{ fontSize: 12, color: "rgba(240,250,249,0.3)", margin: 0 }}>
+                  Har du jobbat eller sökt jobb här? Du kan lämna ett omdöme via{" "}
+                  <Link to="/meddelanden" style={{ color: "#4ade80", textDecoration: "none" }}>dina meddelanden</Link>.
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* CTA for drivers to leave review */}
+          {isDriver && reviewSummary?.reviewCount > 0 && (
+            <p style={{ fontSize: 12, color: "rgba(240,250,249,0.3)", marginTop: 10 }}>
+              Har du jobbat här?{" "}
+              <Link to="/meddelanden" style={{ color: "#4ade80", textDecoration: "none" }}>
+                Lämna ett omdöme via dina meddelanden →
+              </Link>
+            </p>
           )}
         </section>
       </div>

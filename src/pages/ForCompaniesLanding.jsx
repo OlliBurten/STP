@@ -168,7 +168,7 @@ export default function ForCompaniesLanding() {
           display: "flex",
           alignItems: "center",
           overflow: "hidden",
-          backgroundImage: "url('/hero-company.png')",
+          backgroundImage: "url('/hero-company.webp')",
           backgroundSize: "cover",
           backgroundPosition: "center 35%",
         }}

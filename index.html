@@ -4,7 +4,13 @@
     <meta charset="UTF-8" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap"></noscript>
+    <!-- Preload LCP hero image -->
+    <link rel="preload" as="image" href="/hero.webp" type="image/webp">
+    <!-- DNS prefetch for deferred third-party origins -->
+    <link rel="dns-prefetch" href="https://plausible.io">
+    <link rel="dns-prefetch" href="https://o4511146144628736.ingest.de.sentry.io">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="google" content="notranslate" />
@@ -26,6 +32,8 @@
     <meta name="twitter:title" content="Sveriges Transportplattform – Jobb & rekrytering av yrkesförare" />
     <meta name="twitter:description" content="STP kopplar yrkesförare och åkerier direkt. Hitta chaufförjobb eller rekrytera chaufförer – utan bemanning." />
     <meta name="twitter:image" content="https://transportplattformen.se/hero.png" />
+    <!-- Google Search Console verification — fill in content value from GSC -->
+    <!-- <meta name="google-site-verification" content="REPLACE_WITH_GSC_CODE" /> -->
     <!-- Analytics -->
     <script async src="https://plausible.io/js/pa-3vLG7dGh0iZa6WUmvwN-3.js"></script>
     <script>window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};plausible.init()</script>

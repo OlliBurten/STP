@@ -9,12 +9,15 @@ import PageMeta from "../components/PageMeta";
 function useInView() {
   const [inView, setInView] = useState(() => {
     if (typeof window === "undefined") return false;
-    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return true;
+    if (window.innerWidth < 768) return true; // skip animation on mobile
+    return false;
   });
   const ref = useRef(null);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    if (window.innerWidth < 768) return; // no observer on mobile
     const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setInView(true); }, { threshold: 0.08 });
     obs.observe(el);
     return () => obs.disconnect();
@@ -62,11 +65,101 @@ const MARQUEE_ITEMS = [
   "Beta-plattform i aktiv utveckling",
 ];
 
-const MATCH_DRIVERS = [
-  { name: "Erik Lindström", loc: "Malmö · Skåne", lic: "CE · YKB", pct: 94, color: "#4ade80" },
-  { name: "Sara Johansson", loc: "Stockholm · Uppland", lic: "C · ADR", pct: 81, color: "#F5A623" },
-  { name: "Mikael Berg", loc: "Göteborg · VG", lic: "CE · CE95", pct: 76, color: "#F5A623" },
+const DRIVER_POOL = [
+  { name: "Erik Lindström",  loc: "Malmö · Skåne",        lic: "CE · YKB",     pct: 94 },
+  { name: "Sara Johansson",  loc: "Stockholm · Uppland",  lic: "C · ADR",      pct: 81 },
+  { name: "Mikael Berg",     loc: "Göteborg · VG",        lic: "CE · CE95",    pct: 76 },
+  { name: "Anna Karlsson",   loc: "Uppsala · Uppland",    lic: "CE · YKB",     pct: 91 },
+  { name: "Jonas Persson",   loc: "Helsingborg · Skåne",  lic: "CE · ADR",     pct: 88 },
+  { name: "Linda Nilsson",   loc: "Örebro · Närke",       lic: "C · YKB",      pct: 73 },
+  { name: "David Eriksson",  loc: "Norrköping · Öst.",    lic: "CE · YKB",     pct: 97 },
+  { name: "Maria Svensson",  loc: "Jönköping · Småland",  lic: "CE · CE95",    pct: 85 },
+  { name: "Tobias Larsson",  loc: "Umeå · Västerbotten",  lic: "CE · YKB",     pct: 79 },
+  { name: "Karin Hansson",   loc: "Västerås · Västmanl.", lic: "C · YKB",      pct: 83 },
+  { name: "Peter Olsson",    loc: "Sundsvall · Medelpad", lic: "CE · ADR",     pct: 90 },
+  { name: "Emma Gustavsson", loc: "Borås · VG",           lic: "CE · YKB",     pct: 86 },
 ];
+
+function useLiveMatches() {
+  const [matches, setMatches] = useState(() => {
+    // Start with 3 random drivers from the pool
+    const shuffled = [...DRIVER_POOL].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, 3).map((d) => ({ ...d, key: Math.random() }));
+  });
+  const [entering, setEntering] = useState(null);
+
+  useEffect(() => {
+    let timeout;
+    function scheduleNext() {
+      // Random interval 4–8 seconds
+      const delay = 4000 + Math.random() * 4000;
+      timeout = setTimeout(() => {
+        // Pick a driver not currently shown
+        const currentNames = matches.map((m) => m.name);
+        const pool = DRIVER_POOL.filter((d) => !currentNames.includes(d.name));
+        const next = pool[Math.floor(Math.random() * pool.length)];
+        const newEntry = { ...next, key: Math.random() };
+        setEntering(newEntry.key);
+        setMatches((prev) => [newEntry, ...prev.slice(0, 2)]);
+        setTimeout(() => setEntering(null), 600);
+        scheduleNext();
+      }, delay);
+    }
+    scheduleNext();
+    return () => clearTimeout(timeout);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return { matches, entering };
+}
+
+function LiveMatchCard() {
+  const { matches, entering } = useLiveMatches();
+  return (
+    <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "24px 28px", backdropFilter: "blur(16px)", overflow: "hidden" }}>
+      <style>{`
+        @keyframes stp-slide-in {
+          from { opacity: 0; transform: translateY(-12px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes stp-pulse-dot {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50%       { opacity: 0.4; transform: scale(0.7); }
+        }
+      `}</style>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+        <span style={{ fontSize: 13, fontWeight: 700, color: "rgba(240,250,249,0.6)", textTransform: "uppercase", letterSpacing: 1 }}>Ny match</span>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 99, background: "rgba(74,222,128,0.15)", color: "#4ade80", fontSize: 11, fontWeight: 700 }}>
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#4ade80", display: "inline-block", animation: "stp-pulse-dot 1.6s ease-in-out infinite" }} />
+          Live
+        </span>
+      </div>
+      {matches.map((d, i) => {
+        const pctColor = d.pct >= 90 ? "#4ade80" : "#F5A623";
+        const isNew = d.key === entering;
+        return (
+          <div
+            key={d.key}
+            style={{
+              display: "flex", alignItems: "center", gap: 14,
+              padding: "12px 0",
+              borderTop: i > 0 ? "1px solid rgba(255,255,255,0.06)" : "none",
+              animation: isNew ? "stp-slide-in 0.5s cubic-bezier(0.22,1,0.36,1) both" : "none",
+            }}
+          >
+            <div style={{ width: 42, height: 42, borderRadius: 12, background: "#1F5F5C", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 800, color: "#fff", flexShrink: 0 }}>
+              {d.name.split(" ").map((w) => w[0]).join("").slice(0, 2)}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "#f0faf9" }}>{d.name}</div>
+              <div style={{ fontSize: 12, color: "rgba(240,250,249,0.6)", marginTop: 1 }}>{d.loc} · {d.lic}</div>
+            </div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: pctColor, flexShrink: 0 }}>{d.pct}%</div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
@@ -92,7 +185,7 @@ function Icon({ name, size = 20, color = "currentColor" }) {
 }
 
 const reveal = (inView) =>
-  `transition-all duration-700 ease-out ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`;
+  `scroll-reveal transition-all duration-700 ease-out ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`;
 
 // ─── Section rhythm ───────────────────────────────────────────────────────────
 // Hero (dark) → Marquee (teal) → Problem (dark) → Solution (white, elevated)
@@ -168,7 +261,7 @@ export default function Home() {
         style={{ minHeight: "100vh", background: "linear-gradient(160deg,#050e0e 0%,#0d2b2b 60%,#0a1a1a 100%)" }}
         className="relative flex items-center overflow-hidden"
       >
-        <div className="absolute inset-0" style={{ backgroundImage: "url('/hero.png')", backgroundSize: "cover", backgroundPosition: "center 35%", opacity: 0.18 }} />
+        <div className="absolute inset-0" style={{ backgroundImage: "url('/hero.webp')", backgroundSize: "cover", backgroundPosition: "center 35%", opacity: 0.18 }} />
         <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 80% 60% at 70% 40%, rgba(31,95,92,0.35) 0%, transparent 70%)" }} />
 
         <div className="relative w-full max-w-[1200px] mx-auto" style={{ padding: "120px 40px 80px" }}>
@@ -210,22 +303,7 @@ export default function Home() {
               </div>
             </div>
             <div className="hidden lg:flex flex-col gap-3.5">
-              <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "24px 28px", backdropFilter: "blur(16px)" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: "rgba(240,250,249,0.6)", textTransform: "uppercase", letterSpacing: 1 }}>Ny match</span>
-                  <span style={{ padding: "4px 10px", borderRadius: 99, background: "rgba(74,222,128,0.15)", color: "#4ade80", fontSize: 11, fontWeight: 700 }}>● Live</span>
-                </div>
-                {MATCH_DRIVERS.map((d, i) => (
-                  <div key={d.name} style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 0", borderTop: i > 0 ? "1px solid rgba(255,255,255,0.06)" : "none" }}>
-                    <div style={{ width: 42, height: 42, borderRadius: 12, background: "#1F5F5C", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 800, color: "#fff", flexShrink: 0 }}>{d.name.slice(0, 2)}</div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: "#f0faf9" }}>{d.name}</div>
-                      <div style={{ fontSize: 12, color: "rgba(240,250,249,0.6)", marginTop: 1 }}>{d.loc} · {d.lic}</div>
-                    </div>
-                    <div style={{ fontSize: 16, fontWeight: 800, color: d.color, flexShrink: 0 }}>{d.pct}%</div>
-                  </div>
-                ))}
-              </div>
+              <LiveMatchCard />
               <div style={{ background: "#F5A623", borderRadius: 20, padding: "24px 28px", display: "grid", gridTemplateColumns: "auto 1fr", alignItems: "center", gap: 20 }}>
                 <div style={{ fontSize: 52, fontWeight: 900, color: "#000", lineHeight: 1, letterSpacing: -2, whiteSpace: "nowrap" }}>5 662</div>
                 <div style={{ fontSize: 13, color: "rgba(0,0,0,0.62)", lineHeight: 1.6, fontWeight: 500 }}>Lastbilsförare nyanställda de senaste 12 månaderna</div>
@@ -286,10 +364,10 @@ export default function Home() {
       </section>
 
       {/* ── SOLUTION — vit, upplyft (kontrast mot mörk problem) ──────────── */}
-      <section ref={solutionRef} style={{ background: "#fff", padding: "120px 40px" }}>
+      <section ref={solutionRef} style={{ background: "#fff", padding: "120px 40px" }} className="scroll-reveal">
         <div style={{ maxWidth: 1200, margin: "0 auto", opacity: solutionInView ? 1 : 0, transition: "opacity 0.7s ease-out" }}>
           <div className="grid lg:grid-cols-2" style={{ gap: 80, alignItems: "start" }}>
-            <div style={{ position: "sticky", top: 88 }}>
+            <div className="lg:sticky" style={{ top: 88 }}>
               <div style={{ display: "inline-block", padding: "4px 12px", borderRadius: 99, background: "rgba(31,95,92,0.1)", color: "#1F5F5C", fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 16 }}>Lösningen</div>
               <h2 style={{ fontSize: "clamp(36px,4vw,52px)", fontWeight: 900, letterSpacing: -2, color: "#0f172a", lineHeight: 1.05, marginBottom: 20 }}>
                 En samlande plattform för hela branschen.
@@ -423,7 +501,7 @@ export default function Home() {
       <section ref={faqRef} style={{ background: "#f0faf9", padding: "120px 40px" }} className={reveal(faqInView)}>
         <div style={{ maxWidth: 1000, margin: "0 auto" }}>
           <div className="grid lg:grid-cols-[1fr_1.6fr]" style={{ gap: 80, alignItems: "start" }}>
-            <div style={{ position: "sticky", top: 100 }}>
+            <div className="lg:sticky" style={{ top: 100 }}>
               <div style={{ display: "inline-block", padding: "4px 12px", borderRadius: 99, background: "rgba(31,95,92,0.1)", color: "#1F5F5C", fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 16 }}>FAQ</div>
               <h2 style={{ fontSize: "clamp(28px,3vw,44px)", fontWeight: 900, letterSpacing: -1.5, color: "#0f172a", lineHeight: 1.1, marginBottom: 16 }}>Vanliga frågor</h2>
               <p style={{ fontSize: 16, color: "#64748b", lineHeight: 1.7, marginBottom: 32 }}>Saknar du något? Hör av dig direkt.</p>
@@ -452,7 +530,7 @@ export default function Home() {
 
       {/* ── CTA — platform warm-dark gradient ────────────────────────────── */}
       <section ref={ctaRef} style={{ position: "relative", overflow: "hidden", background: "linear-gradient(160deg, #0d2b2b 0%, #060f0f 100%)" }} className={reveal(ctaInView)}>
-        <div className="absolute inset-0" style={{ backgroundImage: "url('/hero-driver.png')", backgroundSize: "cover", backgroundPosition: "center 30%", opacity: 0.12 }} />
+        <div className="absolute inset-0" style={{ backgroundImage: "url('/hero-driver.webp')", backgroundSize: "cover", backgroundPosition: "center 30%", opacity: 0.12 }} />
         <div className="absolute inset-0" style={{ background: "linear-gradient(to right, rgba(6,15,15,0.97) 35%, rgba(6,15,15,0.7) 100%)" }} />
         <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 55% 80% at 85% 50%, rgba(245,166,35,0.07) 0%, transparent 65%)" }} />
 

@@ -1,31 +1,38 @@
-import { MsalProvider } from "@azure/msal-react";
-import { PublicClientApplication } from "@azure/msal-browser";
-import { msalConfig } from "../lib/msalConfig.js";
+import { useEffect, useState } from "react";
 import ErrorBoundary from "./ErrorBoundary.jsx";
 
 const AZURE_CLIENT_ID = (import.meta.env.VITE_AZURE_CLIENT_ID || "").trim();
 
-let msalInstance = null;
-try {
-  if (AZURE_CLIENT_ID) {
-    msalInstance = new PublicClientApplication(msalConfig());
-  }
-} catch (e) {
-  console.warn("[OAuth] Msal init failed:", e?.message);
-}
-
 /**
- * MsalProvider för Microsoft. GoogleOAuthProvider renderas i OAuthButtons (nära GoogleLogin).
+ * Lazy-loads MSAL after page is interactive.
+ * Keeps the 285 kB vendor-oauth bundle off the critical path —
+ * it's only needed when the user actually clicks "Logga in med Microsoft".
  */
-function OAuthProvidersInner({ children }) {
-  if (!msalInstance) return children;
-  return <MsalProvider instance={msalInstance}>{children}</MsalProvider>;
-}
-
 export default function OAuthProviders({ children }) {
+  const [MsalWrapper, setMsalWrapper] = useState(null);
+
+  useEffect(() => {
+    if (!AZURE_CLIENT_ID) return;
+    Promise.all([
+      import("@azure/msal-react"),
+      import("@azure/msal-browser"),
+      import("../lib/msalConfig.js"),
+    ]).then(([{ MsalProvider }, { PublicClientApplication }, { msalConfig }]) => {
+      try {
+        const instance = new PublicClientApplication(msalConfig());
+        // Store as a render function to avoid React treating it as a state updater
+        setMsalWrapper(() => ({ children: c }) => (
+          <MsalProvider instance={instance}>{c}</MsalProvider>
+        ));
+      } catch (e) {
+        console.warn("[OAuth] Msal init failed:", e?.message);
+      }
+    }).catch(() => {});
+  }, []);
+
   return (
     <ErrorBoundary fallback={children}>
-      <OAuthProvidersInner>{children}</OAuthProvidersInner>
+      {MsalWrapper ? <MsalWrapper>{children}</MsalWrapper> : children}
     </ErrorBoundary>
   );
 }

@@ -155,6 +155,70 @@ export async function runProfileReminders() {
 
 // ─── 2. Job match reminder (drivers) ────────────────────────────────────────
 
+const EMP_LABEL = { fast: "Fast anställning", vikariat: "Vikariat", tim: "Timanställning" };
+
+function buildJobDigestHtml({ name, jobs, totalCount, unsubscribeUrl }) {
+  const jobCards = jobs.map((j) => {
+    const empTag = EMP_LABEL[j.employment] || j.employment || "";
+    const locationLine = [j.company, j.location || j.region].filter(Boolean).join(" &bull; ");
+    const salaryLine = j.salary
+      ? `<span style="font-size:12px;color:#0f766e;font-weight:600">${j.salary}</span>`
+      : "";
+    return `
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden">
+      <tr>
+        <td style="padding:16px 18px">
+          <p style="margin:0 0 3px;font-size:15px;font-weight:700;color:#1e293b">${j.title}</p>
+          <p style="margin:0 0 8px;font-size:13px;color:#64748b">${locationLine}</p>
+          <table cellpadding="0" cellspacing="0" style="margin-bottom:10px">
+            <tr>
+              ${empTag ? `<td style="padding-right:8px"><span style="background:#f1f5f9;color:#475569;font-size:11px;font-weight:600;padding:3px 8px;border-radius:4px">${empTag}</span></td>` : ""}
+              ${salaryLine ? `<td>${salaryLine}</td>` : ""}
+            </tr>
+          </table>
+          <a href="${FRONTEND_URL}/jobb/${j.id}" style="display:inline-block;background:#0f766e;color:#ffffff;font-size:13px;font-weight:600;text-decoration:none;padding:8px 16px;border-radius:6px">Se jobbet &rarr;</a>
+        </td>
+      </tr>
+    </table>`;
+  }).join("");
+
+  const overflowNote = totalCount > jobs.length
+    ? `<p style="font-size:13px;color:#64748b;margin:4px 0 20px">…och ${totalCount - jobs.length} till. <a href="${FRONTEND_URL}/jobb" style="color:#0f766e;text-decoration:none;font-weight:600">Se alla matchande jobb</a></p>`
+    : `<p style="margin:0 0 20px"><a href="${FRONTEND_URL}/jobb" style="font-size:13px;color:#0f766e;text-decoration:none;font-weight:600">Se alla jobb på STP &rarr;</a></p>`;
+
+  return `<!DOCTYPE html>
+<html lang="sv">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f8fafc;font-family:system-ui,-apple-system,sans-serif">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;padding:32px 0">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden">
+        <tr><td style="background:#0f766e;padding:20px 32px">
+          <span style="color:#ffffff;font-size:18px;font-weight:700;letter-spacing:-0.3px">Sveriges Transportplattform</span>
+        </td></tr>
+        <tr><td style="padding:28px 28px 8px;color:#1e293b;font-size:15px;line-height:1.7">
+          <p style="margin:0 0 6px;font-size:15px;color:#1e293b">Hej ${name || ""},</p>
+          <p style="margin:0 0 20px;font-size:15px;color:#475569">
+            ${totalCount === 1 ? "Ett nytt jobb matchar din profil den här veckan:" : `${totalCount} nya jobb matchar din profil den här veckan:`}
+          </p>
+          ${jobCards}
+          ${overflowNote}
+        </td></tr>
+        <tr><td style="padding:16px 28px 24px;border-top:1px solid #f1f5f9">
+          <p style="margin:0;font-size:12px;color:#94a3b8">
+            Sveriges Transportplattform &mdash;
+            <a href="https://transportplattformen.se" style="color:#64748b;text-decoration:none">transportplattformen.se</a>
+            &nbsp;&bull;&nbsp;
+            <a href="${unsubscribeUrl}" style="color:#64748b;text-decoration:none">Avprenumerera från jobbtips</a>
+          </p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
+
 export async function runJobMatchReminders() {
   const COOLDOWN_DAYS = 7;
   const cutoff = daysAgo(COOLDOWN_DAYS);
@@ -184,15 +248,15 @@ export async function runJobMatchReminders() {
     },
   });
 
-  // Only fetch active jobs published in the last 14 days
+  // Active jobs published in the last 14 days
   const recentJobs = await prisma.job.findMany({
     where: {
       status: "ACTIVE",
       published: { gte: daysAgo(14) },
     },
     select: {
-      id: true, title: true, company: true, region: true,
-      segment: true, license: true, employment: true,
+      id: true, title: true, company: true, region: true, location: true,
+      salary: true, segment: true, license: true, employment: true, published: true,
     },
   });
 
@@ -206,47 +270,54 @@ export async function runJobMatchReminders() {
     const sinceDate = u.lastMatchJobEmailAt || daysAgo(14);
     const driverRegions = [p.region, ...(p.regionsWilling || [])].filter(Boolean);
     const driverSegments = [p.primarySegment, ...(p.secondarySegments || [])].filter(Boolean);
+    const driverLicenses = p.licenses || [];
 
     const matched = recentJobs.filter((j) => {
       const regionMatch = !j.region || driverRegions.some(
         (r) => r.toLowerCase() === j.region.toLowerCase()
       );
       const segmentMatch = !j.segment || driverSegments.includes(j.segment);
-      const licenseMatch = !j.license?.length || j.license.some(
-        (l) => (p.licenses || []).includes(l)
-      );
+      const licenseMatch = !j.license?.length || j.license.some((l) => driverLicenses.includes(l));
       const isNew = new Date(j.published) > sinceDate;
       return regionMatch && segmentMatch && licenseMatch && isNew;
     });
 
     if (matched.length === 0) continue;
 
-    const jobListText = matched
-      .slice(0, 5)
-      .map((j) => `  • ${j.title} — ${j.company} (${j.region})`)
-      .join("\n");
-
+    // Personalized subject — mention license + region if available
+    const licenseHint = driverLicenses.includes("CE") ? "CE-" : driverLicenses.includes("C") ? "C-" : "";
+    const regionHint = p.region ? ` i ${p.region}` : "";
     const subject = matched.length === 1
-      ? `1 nytt jobb matchar din profil på STP`
-      : `${matched.length} nya jobb matchar din profil på STP`;
+      ? `1 nytt ${licenseHint}jobb${regionHint} matchar din profil`
+      : `${matched.length} nya ${licenseHint}jobb${regionHint} matchar din profil`;
 
+    const top5 = matched.slice(0, 5);
+    const unsubscribeUrl = `${FRONTEND_URL}/profil?tab=instaellningar`;
+
+    // Plain-text fallback with individual URLs
     const text = [
       `Hej ${u.name || ""},`,
       "",
-      `Det har kommit ${matched.length === 1 ? "ett nytt jobb" : `${matched.length} nya jobb`} som matchar din profil:`,
+      `${matched.length === 1 ? "Ett nytt jobb matchar" : `${matched.length} nya jobb matchar`} din profil den här veckan:`,
       "",
-      jobListText,
-      matched.length > 5 ? `  … och ${matched.length - 5} till.` : "",
+      ...top5.map((j) => `• ${j.title} — ${j.company} (${j.location || j.region})\n  ${FRONTEND_URL}/jobb/${j.id}`),
+      matched.length > 5 ? `\n…och ${matched.length - 5} till: ${FRONTEND_URL}/jobb` : "",
       "",
-      "Se alla matchande jobb:",
-      `${FRONTEND_URL}/jobb`,
+      `Avprenumerera: ${unsubscribeUrl}`,
       "",
       "Med vänliga hälsningar,",
       "Sveriges Transportplattform",
     ].filter((l) => l !== undefined).join("\n");
 
+    const html = buildJobDigestHtml({
+      name: u.name,
+      jobs: top5,
+      totalCount: matched.length,
+      unsubscribeUrl,
+    });
+
     try {
-      await sendEmail({ to: u.email, subject, text });
+      await sendEmail({ to: u.email, subject, text, html });
       await prisma.user.update({
         where: { id: u.id },
         data: { lastMatchJobEmailAt: new Date() },
