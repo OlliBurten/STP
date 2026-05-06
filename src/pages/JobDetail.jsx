@@ -587,14 +587,13 @@ export default function JobDetail() {
 
           {/* ── Content sections ── */}
           <SectionHeading>Om jobbet</SectionHeading>
-          <p style={{ ...D.body, whiteSpace: "pre-line", margin: 0 }}>{job.description}</p>
+          {job.description && job.description.trim().length >= 10
+            ? <p style={{ ...D.body, whiteSpace: "pre-line", margin: 0 }}>{job.description}</p>
+            : <p style={{ fontSize: 15, color: "rgba(240,250,249,0.3)", lineHeight: 1.8, fontStyle: "italic", margin: 0 }}>Mer information om tjänsten ges vid kontakt med företaget.</p>
+          }
 
-          {jobTasks.length > 0 && (
-            <>
-              <SectionHeading>Arbetsuppgifter</SectionHeading>
-              <BulletList items={jobTasks} />
-            </>
-          )}
+          <SectionHeading>Arbetsuppgifter</SectionHeading>
+          <BulletList items={jobTasks} fallback="Arbetsuppgifter specificeras vid intervju — kontakta företaget för mer information." />
 
           <SectionHeading>Vi söker dig som</SectionHeading>
           {job.requirements?.length > 0
@@ -604,12 +603,8 @@ export default function JobDetail() {
               : <p style={{ fontSize: 15, color: "rgba(240,250,249,0.3)", lineHeight: 1.8, fontStyle: "italic", margin: 0 }}>Krav specificeras vid kontakt.</p>
           }
 
-          {jobOffers.length > 0 && (
-            <>
-              <SectionHeading>Vi erbjuder</SectionHeading>
-              <BulletList items={jobOffers} />
-            </>
-          )}
+          <SectionHeading>Vi erbjuder</SectionHeading>
+          <BulletList items={jobOffers} fallback="Mer om vad vi erbjuder berättar vi gärna vid en intervju." />
 
           <SectionHeading>Ersättning</SectionHeading>
           <SalaryDisplay />
