@@ -535,74 +535,43 @@ export default function Profile() {
   return (
     <div style={{ minHeight: "100vh", background: T.bg, color: T.text, fontFamily: T.font }}>
 
-      {/* ── Sticky nav ── */}
-      <div style={{
-        height: 56, display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "0 40px", background: "rgba(5,14,14,0.94)",
-        borderBottom: `1px solid ${T.border}`, backdropFilter: "blur(12px)",
-        position: "sticky", top: 0, zIndex: 40,
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
-          <span style={{ fontWeight: 900, fontSize: 19, letterSpacing: "-0.5px" }}>STP</span>
-          <div style={{ display: "flex", gap: 2 }}>
-            {[
-              { label: "Jobb", href: "/jobb" },
-              { label: "Meddelanden", href: "/meddelanden" },
-              { label: "Profil", href: "/profil" },
-            ].map((item) => (
-              <Link key={item.label} to={item.href} style={{
-                padding: "6px 14px", borderRadius: 8,
-                fontSize: 13, fontWeight: 400,
-                background: item.href === "/profil" ? T.pDim : "transparent",
-                color: item.href === "/profil" ? "#7dd3c8" : T.sub,
-                textDecoration: "none",
-              }}>{item.label}</Link>
-            ))}
-          </div>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          {profileSaveError && (
-            <span style={{ fontSize: 12, color: T.red }}>{profileSaveError}</span>
-          )}
-          {editing ? (
-            <>
-              <button onClick={cancelEditing} style={{
-                padding: "6px 14px", borderRadius: 9, border: "none", minHeight: 32,
-                background: "rgba(255,255,255,0.07)", color: T.sub, fontSize: 12, fontWeight: 600,
-                cursor: "pointer", fontFamily: T.font,
-              }}>Avbryt</button>
-              <button onClick={saveProfile} disabled={profileSaving} style={{
-                padding: "6px 22px", borderRadius: 9, border: "none", minHeight: 32, minWidth: 140,
-                background: hasUnsavedChanges ? T.amber : T.primary,
-                color: hasUnsavedChanges ? "#0a1010" : "#fff",
-                fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: T.font,
-                opacity: profileSaving ? 0.6 : 1,
-              }}>
-                {profileSaving ? "Sparar…" : hasUnsavedChanges ? "Spara ändringar ✓" : "Inga ändringar"}
-              </button>
-            </>
-          ) : (
-            <button onClick={startEditing} style={{
-              padding: "6px 16px", borderRadius: 9, border: `1.5px solid ${T.border2}`,
-              background: "transparent", color: T.text, fontSize: 12, fontWeight: 600,
-              cursor: "pointer", fontFamily: T.font,
-            }}>Redigera profil</button>
-          )}
-          <div style={{
-            width: 34, height: 34, borderRadius: "50%",
-            background: `linear-gradient(135deg, ${T.primary} 0%, ${T.pLight} 100%)`,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 13, fontWeight: 700, color: "#fff",
-          }}>{initials}</div>
-        </div>
-      </div>
-
       {/* ── Hero ── */}
       <div style={{
         background: `linear-gradient(160deg, ${T.bg3} 0%, #061414 70%)`,
         borderBottom: `1px solid ${T.border}`,
       }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", padding: "36px 40px 0" }}>
+          {/* Edit toolbar */}
+          <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8, marginBottom: 20 }}>
+            {profileSaveError && (
+              <span style={{ fontSize: 12, color: T.red, marginRight: 4 }}>{profileSaveError}</span>
+            )}
+            {editing ? (
+              <>
+                <button onClick={cancelEditing} style={{
+                  padding: "7px 16px", borderRadius: 9, border: "none", minHeight: 34,
+                  background: "rgba(255,255,255,0.07)", color: T.sub, fontSize: 13, fontWeight: 600,
+                  cursor: "pointer", fontFamily: T.font,
+                }}>Avbryt</button>
+                <button onClick={saveProfile} disabled={profileSaving} style={{
+                  padding: "7px 22px", borderRadius: 9, border: "none", minHeight: 34, minWidth: 150,
+                  background: hasUnsavedChanges ? T.amber : T.primary,
+                  color: hasUnsavedChanges ? "#0a1010" : "#fff",
+                  fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: T.font,
+                  opacity: profileSaving ? 0.6 : 1,
+                }}>
+                  {profileSaving ? "Sparar…" : hasUnsavedChanges ? "Spara ändringar ✓" : "Inga ändringar"}
+                </button>
+              </>
+            ) : (
+              <button onClick={startEditing} style={{
+                padding: "7px 18px", borderRadius: 9, border: `1.5px solid ${T.border2}`,
+                background: "transparent", color: T.text, fontSize: 13, fontWeight: 600,
+                cursor: "pointer", fontFamily: T.font,
+              }}>Redigera profil</button>
+            )}
+          </div>
+
           <div style={{ display: "flex", alignItems: "flex-start", gap: 22, marginBottom: 28 }}>
             {/* Avatar */}
             <div style={{

@@ -151,19 +151,19 @@ export default function Header({ onboarding = false }) {
     return d.toLocaleDateString("sv-SE", { day: "numeric", month: "short" });
   };
 
-  // ── Always dark header — dark gradient at top so logo is always visible ───
-  // On scroll: solid dark. At top: dark gradient (not fully transparent)
-  // so that the logo/links are readable regardless of page background.
+  // ── Header background ─────────────────────────────────────────────────────
+  // Logged-in: always solid dark (platform app — the body is light so transparent would bleed through)
+  // Logged-out: transparent at top (lets hero images breathe), solid on scroll
   const headerStyle = {
-    background: scrolled
-      ? "rgba(5,14,14,0.92)"
+    background: user || scrolled
+      ? "rgba(5,14,14,0.94)"
       : "transparent",
     borderBottom: isImpersonating
       ? "1px solid rgba(245,166,35,0.4)"
-      : scrolled
+      : (user || scrolled)
       ? "1px solid rgba(255,255,255,0.06)"
       : "none",
-    backdropFilter: scrolled ? "blur(12px)" : "none",
+    backdropFilter: (user || scrolled) ? "blur(12px)" : "none",
     transition: "background 0.3s, backdrop-filter 0.3s, border-color 0.3s",
     boxShadow: "none",
   };
