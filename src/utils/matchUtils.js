@@ -132,48 +132,57 @@ function privateMatchNotesAdjustment(notes, job) {
  * @returns {{ score: number, details: Object }}
  */
 export function matchScore(driver, job) {
-  if (!driver || !job) return { score: 0, details: { segment: false, license: false, certificates: false, region: false, experience: false, availability: false } };
+  if (!driver || !job) return { score: 0, pct: 0, details: { segment: false, license: false, certificates: false, region: false, experience: false, availability: false } };
   const details = { segment: false, license: false, certificates: false, region: false, experience: false, availability: false };
-  let score = 0;
 
+  // ── Compute per-criterion pass/fail FIRST (so details is always accurate
+  //    even when an early hard-exit fires — used for the match breakdown UI)
+
+  // Segment
+  let segmentHardFail = false;
   if (job.segment) {
     const segments = driverSegments(driver);
-    if (segments.length > 0 && !segments.includes(job.segment)) {
-      return { score: 0, details };
-    }
     if (segments.includes(job.segment)) {
-      score += 2;
       details.segment = true;
+    } else if (segments.length > 0) {
+      segmentHardFail = true; // driver has a preference, none match this job
     }
+    // If driver has no segments set, treat as neutral (no bonus, no penalty)
   }
 
-  // License: driver must have at least one of job's required licenses (required for match)
+  // License
   const driverLicenses = driver.licenses || [];
   const jobLicenses = job.license || [];
   const hasLicense = jobLicenses.length === 0 || jobLicenses.some((l) => driverLicenses.includes(l));
-  if (!hasLicense && jobLicenses.length > 0) {
-    return { score: 0, details }; // No license match = no recommendation
-  }
-  if (hasLicense && jobLicenses.length > 0) {
-    score += 2;
-    details.license = true;
-  } else if (jobLicenses.length === 0) {
-    details.license = true;
-  }
+  if (hasLicense) details.license = true;
 
-  // Certificates: driver must have all job requires (hard constraint, like license)
+  // Certificates
   const driverCerts = driver.certificates || [];
   const jobCerts = job.certificates || [];
   const hasAllCerts = jobCerts.every((c) => driverCerts.includes(c));
-  if (jobCerts.length > 0 && !hasAllCerts) {
-    return { score: 0, details }; // Missing required cert = no recommendation
+  if (hasAllCerts) details.certificates = true;
+
+  // ── Apply hard exits with fully-populated details so the UI breakdown
+  //    correctly reflects which criteria the driver actually meets ──────────
+  if (segmentHardFail) return { score: 0, pct: 0, details };
+  if (!hasLicense && jobLicenses.length > 0) return { score: 0, pct: 0, details };
+  if (jobCerts.length > 0 && !hasAllCerts) return { score: 0, pct: 0, details };
+
+  // ── Score ────────────────────────────────────────────────────────────────
+  let score = 0;
+
+  if (details.segment) score += 2;
+
+  if (hasLicense && jobLicenses.length > 0) {
+    score += 2;
+  } else if (jobLicenses.length === 0) {
+    // no license req — license detail already true, no points added
   }
+
   if (hasAllCerts) {
     score += jobCerts.length || 1; // +1 per cert, or +1 if no certs required
-    details.certificates = true;
   } else if (jobCerts.length === 0) {
     score += 1;
-    details.certificates = true;
   }
 
   // Region: job region in driver's region or regionsWilling

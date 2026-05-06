@@ -82,14 +82,21 @@ function MatchRing({ pct, job, details }) {
   const [color, label, desc] =
     pct >= 85 ? ["#4ade80", "Stark match",   "Din profil matchar jobbet mycket väl"] :
     pct >= 65 ? ["#F5A623", "God match",     "Din profil matchar jobbet bra"] :
-                ["#63b3ed", "Möjlig match",  "Din profil matchar delar av jobbet"];
+    pct >= 20 ? ["#63b3ed", "Möjlig match",  "Din profil matchar delar av jobbet"] :
+                ["#f87171", "Låg match",     "Din profil matchar inte kravprofilen fullt ut"];
 
+  const segmentLabels = { FULLTIME: "Heltid", FLEX: "Flex/tim", INTERNSHIP: "Praktik/lärling" };
   const breakdown = [
-    { l: job?.license?.length > 0 ? job.license.join("+") : "Körkort",    ok: details?.license    !== false },
-    { l: job?.certificates?.length > 0 ? job.certificates.join(", ") : "Certifikat", ok: details?.certificates !== false },
-    { l: job?.region ? `Region ${job.region}` : "Region",                 ok: details?.region     !== false },
-    { l: "Erfarenhetskrav",                                                ok: details?.experience !== false },
-  ];
+    job?.segment
+      ? { l: `Inriktning: ${segmentLabels[job.segment] ?? job.segment}`, ok: details?.segment === true }
+      : null,
+    { l: job?.license?.length > 0 ? `Körkort: ${job.license.join("+")}` : "Körkort",    ok: details?.license    === true },
+    job?.certificates?.length > 0
+      ? { l: `Certifikat: ${job.certificates.join(", ")}`, ok: details?.certificates === true }
+      : null,
+    { l: job?.region ? `Region: ${job.region}` : "Region",               ok: details?.region     === true },
+    { l: "Erfarenhetskrav",                                               ok: details?.experience === true },
+  ].filter(Boolean);
 
   return (
     <div style={{ paddingBottom: 16, borderBottom: "1px solid rgba(255,255,255,0.06)", marginBottom: 4 }}>
@@ -234,7 +241,7 @@ export default function JobDetail() {
     return matchScore(profile, job);
   }, [isDriver, job, profile]);
 
-  const matchPct = driverMatch ? Math.min(100, Math.round((driverMatch.score / 10) * 100)) : 0;
+  const matchPct = driverMatch?.pct ?? 0;
 
   const parsedExtra = useMemo(() => {
     if (!job?.extraRequirements) return null;
