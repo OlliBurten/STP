@@ -2,6 +2,7 @@ import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
 import {
   authMiddleware,
+  isCompanyRole,
   requireCompany,
   requireVerifiedCompany,
   attachCompanyContext,
@@ -43,7 +44,7 @@ async function listCompanyRecipientIds({ companyId, organizationId }) {
 }
 
 async function requireVerifiedIfCompany(req, res, next) {
-  if (req.role !== "COMPANY") return next();
+  if (!isCompanyRole(req.role)) return next();
   return requireVerifiedCompany(req, res, next);
 }
 
@@ -106,7 +107,7 @@ conversationsRouter.get("/:id", requireVerifiedIfCompany, async (req, res, next)
     if (c.driverId !== req.userId && !hasCompanyAccess) {
       return res.status(403).json({ error: "Ingen åtkomst" });
     }
-    if (req.role === "COMPANY" && hasCompanyAccess && !c.readByCompanyAt) {
+    if (isCompanyRole(req.role) && hasCompanyAccess && !c.readByCompanyAt) {
       await prisma.conversation.update({
         where: { id: c.id },
         data: { readByCompanyAt: new Date() },
