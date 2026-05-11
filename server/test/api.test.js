@@ -4,7 +4,10 @@
  */
 import { describe, it } from "node:test";
 import assert from "node:assert";
+import jwt from "jsonwebtoken";
 import request from "supertest";
+import { JWT_SECRET } from "../lib/config.js";
+import { prisma } from "../lib/prisma.js";
 
 process.env.APP_LISTEN = "false";
 const { app } = await import("../server.js");
@@ -62,6 +65,73 @@ describe("POST /api/auth/register validation", () => {
       .send({ email: "a@b.se", password: "short", role: "DRIVER", name: "Test" });
     assert.strictEqual(res.status, 400);
     assert.ok(res.body?.error);
+  });
+});
+
+describe("POST /api/admin/jobs", () => {
+  it("uses the authenticated admin id when creating a job", async () => {
+    const previousAdminEmails = process.env.ADMIN_EMAILS;
+    const admin = {
+      id: "admin-1",
+      email: "admin@example.com",
+      role: "RECRUITER",
+      suspendedAt: null,
+      emailVerifiedAt: new Date(),
+    };
+    const token = jwt.sign({ userId: admin.id }, JWT_SECRET);
+    let createData;
+    let userFindUniqueCalls = 0;
+    let jobCreateCalls = 0;
+    let auditCreateCalls = 0;
+    const originalUserFindUnique = prisma.user.findUnique;
+    const originalJobCreate = prisma.job.create;
+    const originalAuditCreate = prisma.adminAuditLog.create;
+    prisma.user.findUnique = async () => {
+      userFindUniqueCalls += 1;
+      return admin;
+    };
+    prisma.job.create = async ({ data }) => {
+      jobCreateCalls += 1;
+      createData = data;
+      return { id: "job-1", title: data.title, company: data.company };
+    };
+    prisma.adminAuditLog.create = async ({ data }) => {
+      auditCreateCalls += 1;
+      return { id: "audit-1", ...data };
+    };
+
+    try {
+      process.env.ADMIN_EMAILS = admin.email;
+      const res = await request(app)
+        .post("/api/admin/jobs")
+        .set("Authorization", `Bearer ${token}`)
+        .send({
+          title: "CE-chauffor",
+          company: "STP Admin",
+          description: "Testjobb",
+          location: "Stockholm",
+          region: "Stockholm",
+          jobType: "distribution",
+          employment: "fast",
+          contact: "kontakt@example.com",
+        });
+
+      assert.strictEqual(res.status, 201);
+      assert.strictEqual(createData?.userId, admin.id);
+      assert.strictEqual(createData?.requirements, "[]");
+      assert.strictEqual(userFindUniqueCalls, 3);
+      assert.strictEqual(jobCreateCalls, 1);
+      assert.strictEqual(auditCreateCalls, 1);
+    } finally {
+      if (previousAdminEmails === undefined) {
+        delete process.env.ADMIN_EMAILS;
+      } else {
+        process.env.ADMIN_EMAILS = previousAdminEmails;
+      }
+      prisma.user.findUnique = originalUserFindUnique;
+      prisma.job.create = originalJobCreate;
+      prisma.adminAuditLog.create = originalAuditCreate;
+    }
   });
 });
 
