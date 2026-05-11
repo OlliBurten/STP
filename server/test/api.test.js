@@ -2,7 +2,7 @@
  * Core API tests. Run with: APP_LISTEN=false node --test test/api.test.js
  * Or: npm run test
  */
-import { describe, it, mock } from "node:test";
+import { describe, it } from "node:test";
 import assert from "node:assert";
 import jwt from "jsonwebtoken";
 import request from "supertest";
@@ -80,12 +80,25 @@ describe("POST /api/admin/jobs", () => {
     };
     const token = jwt.sign({ userId: admin.id }, JWT_SECRET);
     let createData;
-    const userFindUnique = mock.method(prisma.user, "findUnique", async () => admin);
-    const jobCreate = mock.method(prisma.job, "create", async ({ data }) => {
+    let userFindUniqueCalls = 0;
+    let jobCreateCalls = 0;
+    let auditCreateCalls = 0;
+    const originalUserFindUnique = prisma.user.findUnique;
+    const originalJobCreate = prisma.job.create;
+    const originalAuditCreate = prisma.adminAuditLog.create;
+    prisma.user.findUnique = async () => {
+      userFindUniqueCalls += 1;
+      return admin;
+    };
+    prisma.job.create = async ({ data }) => {
+      jobCreateCalls += 1;
       createData = data;
       return { id: "job-1", title: data.title, company: data.company };
-    });
-    const auditCreate = mock.method(prisma.adminAuditLog, "create", async ({ data }) => ({ id: "audit-1", ...data }));
+    };
+    prisma.adminAuditLog.create = async ({ data }) => {
+      auditCreateCalls += 1;
+      return { id: "audit-1", ...data };
+    };
 
     try {
       process.env.ADMIN_EMAILS = admin.email;
@@ -106,18 +119,18 @@ describe("POST /api/admin/jobs", () => {
       assert.strictEqual(res.status, 201);
       assert.strictEqual(createData?.userId, admin.id);
       assert.strictEqual(createData?.requirements, "[]");
-      assert.strictEqual(userFindUnique.mock.callCount(), 3);
-      assert.strictEqual(jobCreate.mock.callCount(), 1);
-      assert.strictEqual(auditCreate.mock.callCount(), 1);
+      assert.strictEqual(userFindUniqueCalls, 3);
+      assert.strictEqual(jobCreateCalls, 1);
+      assert.strictEqual(auditCreateCalls, 1);
     } finally {
       if (previousAdminEmails === undefined) {
         delete process.env.ADMIN_EMAILS;
       } else {
         process.env.ADMIN_EMAILS = previousAdminEmails;
       }
-      userFindUnique.mock.restore();
-      jobCreate.mock.restore();
-      auditCreate.mock.restore();
+      prisma.user.findUnique = originalUserFindUnique;
+      prisma.job.create = originalJobCreate;
+      prisma.adminAuditLog.create = originalAuditCreate;
     }
   });
 });
