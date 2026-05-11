@@ -1296,8 +1296,8 @@ adminRouter.post("/jobs", async (req, res, next) => {
       if (!body[f]) return res.status(400).json({ error: `Fältet '${f}' krävs` });
     }
 
-    // Use the admin's own userId as the owner (jobs will appear under admin account)
-    const adminUserId = req.user.id;
+    // Use the authenticated admin as the owner; authMiddleware/requireAdmin set this directly.
+    const adminUserId = req.adminUserId || req.userId;
 
     const job = await prisma.job.create({
       data: {
