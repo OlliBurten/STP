@@ -735,12 +735,12 @@ export default function Settings() {
   };
 
   return (
-    <main style={{ background: "#060f0f", minHeight: "100vh", marginTop: "-64px", paddingTop: 80 }}>
+    <main style={{ background: "#060f0f", minHeight: "100vh", marginTop: "-64px", paddingTop: 112 }}>
       <PageMeta title="Inställningar – STP" />
       <div style={{ maxWidth: 1080, margin: "0 auto", padding: "0 32px 100px" }}>
 
         {/* Page header */}
-        <div style={{ marginBottom: 32 }}>
+        <div style={{ marginBottom: 48 }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(245,166,35,0.85)", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>
             {isCompany ? "Företagskonto" : "Förarkonto"}
           </div>
@@ -769,14 +769,6 @@ export default function Settings() {
           <div style={{ minWidth: 0 }}>
             {renderContent()}
 
-            {/* Save bar */}
-            <div style={{ position: "sticky", bottom: 20, marginTop: 24, background: "rgba(10,24,24,0.95)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 14, padding: "14px 18px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, boxShadow: "0 8px 32px rgba(0,0,0,0.4)" }}>
-              <span style={{ fontSize: 13, color: "rgba(240,250,249,0.6)" }}>Ändringar sparas automatiskt</span>
-              <span style={{ fontSize: 12, color: notifSaving ? "#F5A623" : "#4ade80", display: "flex", alignItems: "center", gap: 6, fontWeight: 700 }}>
-                <Icon n="check" s={13} c="currentColor" />
-                {notifSaving ? "Sparar…" : "Sparat just nu"}
-              </span>
-            </div>
           </div>
         </div>
       </div>
