@@ -357,8 +357,8 @@ function DriverVerifieringSection({ profile }) {
           <div style={{ fontSize: 13, color: "rgba(240,250,249,0.75)", lineHeight: 1.6 }}>
             <strong style={{ color: "#F5A623" }}>Verifiering sker via support.</strong>{" "}
             Skicka dina dokument till{" "}
-            <a href="mailto:oliver@transportplattformen.se" style={{ color: "#F5A623", textDecoration: "underline" }}>
-              oliver@transportplattformen.se
+            <a href="mailto:support@transportplattformen.se" style={{ color: "#F5A623", textDecoration: "underline" }}>
+              support@transportplattformen.se
             </a>{" "}
             så hjälper vi dig.
           </div>
@@ -650,7 +650,7 @@ function CompanyVerifieringSection({ user }) {
       {!isVerified && (
         <div style={{ padding: "14px 16px", borderRadius: 11, background: "rgba(245,166,35,0.04)", border: "1px solid rgba(245,166,35,0.12)", fontSize: 13, color: "rgba(240,250,249,0.65)", lineHeight: 1.6 }}>
           Har du frågor om verifieringen?{" "}
-          <a href="mailto:oliver@transportplattformen.se" style={{ color: "#F5A623", textDecoration: "underline" }}>
+          <a href="mailto:support@transportplattformen.se" style={{ color: "#F5A623", textDecoration: "underline" }}>
             Kontakta support
           </a>
           .

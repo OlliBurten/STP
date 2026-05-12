@@ -505,7 +505,7 @@ export default function Home() {
               <div style={{ display: "inline-block", padding: "4px 12px", borderRadius: 99, background: "rgba(31,95,92,0.1)", color: "#1F5F5C", fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 16 }}>FAQ</div>
               <h2 style={{ fontSize: "clamp(28px,3vw,44px)", fontWeight: 900, letterSpacing: -1.5, color: "#0f172a", lineHeight: 1.1, marginBottom: 16 }}>Vanliga frågor</h2>
               <p style={{ fontSize: 16, color: "#64748b", lineHeight: 1.7, marginBottom: 32 }}>Saknar du något? Hör av dig direkt.</p>
-              <a href="mailto:oliver@transportplattformen.se" style={{ fontSize: 14, fontWeight: 600, color: "#1F5F5C", textDecoration: "none" }}>oliver@transportplattformen.se →</a>
+              <a href="mailto:hej@transportplattformen.se" style={{ fontSize: 14, fontWeight: 600, color: "#1F5F5C", textDecoration: "none" }}>hej@transportplattformen.se →</a>
             </div>
 
             {/* Kort per fråga — lyfts av bakgrunden */}
