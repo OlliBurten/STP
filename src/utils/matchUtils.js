@@ -139,34 +139,27 @@ export function matchScore(driver, job) {
   //    even when an early hard-exit fires — used for the match breakdown UI)
 
   // Segment
-  let segmentHardFail = false;
   if (job.segment) {
     const segments = driverSegments(driver);
     if (segments.includes(job.segment)) {
       details.segment = true;
-    } else if (segments.length > 0) {
-      segmentHardFail = true; // driver has a preference, none match this job
     }
-    // If driver has no segments set, treat as neutral (no bonus, no penalty)
+    // Mismatch or no preference → no bonus, but never a hard fail
   }
 
-  // License
+  // License — only hard fail: can't legally drive without the right license
   const driverLicenses = driver.licenses || [];
   const jobLicenses = job.license || [];
   const hasLicense = jobLicenses.length === 0 || jobLicenses.some((l) => driverLicenses.includes(l));
   if (hasLicense) details.license = true;
+  if (!hasLicense && jobLicenses.length > 0) return { score: 0, pct: 0, details };
 
-  // Certificates
+  // Certificates — partial scoring, not a hard fail
   const driverCerts = driver.certificates || [];
   const jobCerts = job.certificates || [];
-  const hasAllCerts = jobCerts.every((c) => driverCerts.includes(c));
+  const matchedCerts = jobCerts.filter((c) => driverCerts.includes(c));
+  const hasAllCerts = jobCerts.length === 0 || matchedCerts.length === jobCerts.length;
   if (hasAllCerts) details.certificates = true;
-
-  // ── Apply hard exits with fully-populated details so the UI breakdown
-  //    correctly reflects which criteria the driver actually meets ──────────
-  if (segmentHardFail) return { score: 0, pct: 0, details };
-  if (!hasLicense && jobLicenses.length > 0) return { score: 0, pct: 0, details };
-  if (jobCerts.length > 0 && !hasAllCerts) return { score: 0, pct: 0, details };
 
   // ── Score ────────────────────────────────────────────────────────────────
   let score = 0;
@@ -175,14 +168,13 @@ export function matchScore(driver, job) {
 
   if (hasLicense && jobLicenses.length > 0) {
     score += 2;
-  } else if (jobLicenses.length === 0) {
-    // no license req — license detail already true, no points added
   }
 
-  if (hasAllCerts) {
-    score += jobCerts.length || 1; // +1 per cert, or +1 if no certs required
-  } else if (jobCerts.length === 0) {
+  // Certs: +1 per matched cert (partial credit), +1 if no certs required
+  if (jobCerts.length === 0) {
     score += 1;
+  } else {
+    score += matchedCerts.length;
   }
 
   // Region: job region in driver's region or regionsWilling

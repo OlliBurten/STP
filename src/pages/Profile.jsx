@@ -1078,7 +1078,7 @@ export default function Profile() {
                   </div>
                 ) : (
                   <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                       <span style={{ fontSize: 13, color: T.sub }}>Status</span>
                       <Tag c={current.availability === "inactive" ? "red" : current.availability === "open" ? "green" : "amber"}>
                         {AVAIL.find((a) => a.value === current.availability)?.label || "—"}
