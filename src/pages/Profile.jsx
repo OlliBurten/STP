@@ -6,12 +6,13 @@ import { usePageTitle } from "../hooks/usePageTitle";
 import { fetchDriverProfileStats } from "../api/drivers.js";
 import { fetchProfileTips } from "../api/ai.js";
 import { fetchDriverMarket } from "../api/stats.js";
+import { fetchJobs } from "../api/jobs.js";
 import PasswordSection from "../components/profile/PasswordSection.jsx";
 import NotificationSettings from "../components/profile/NotificationSettings.jsx";
 import DangerZone from "../components/profile/DangerZone.jsx";
 import { licenseTypes, regions } from "../data/mockJobs";
 import { certificateTypes, availabilityTypes } from "../data/profileData";
-import { segmentOptions, segmentLabel, internshipTypeLabel, parseSchoolName } from "../data/segments";
+import { segmentOptions } from "../data/segments";
 import { useToast } from "../context/ToastContext";
 import {
   getDriverMinimumChecklist,
@@ -44,7 +45,7 @@ function expiryStatus(dateStr) {
 }
 
 /* ── Tag atom ── */
-function Tag({ c = "p", children }) {
+function Tag({ c = "p", children, onRemove }) {
   const map = {
     p:     { bg: "rgba(31,95,92,0.18)",   color: "#7dd3c8", border: "rgba(31,95,92,0.4)" },
     amber: { bg: "rgba(245,166,35,0.14)", color: T.amber,   border: "rgba(245,166,35,0.35)" },
@@ -58,7 +59,15 @@ function Tag({ c = "p", children }) {
       display: "inline-flex", alignItems: "center", gap: 5,
       padding: "3px 10px", borderRadius: 20, fontSize: 12, fontWeight: 600,
       background: s.bg, color: s.color, border: `1px solid ${s.border}`,
-    }}>{children}</span>
+    }}>
+      {children}
+      {onRemove && (
+        <button onClick={onRemove} style={{
+          background: "none", border: "none", cursor: "pointer",
+          color: s.color, opacity: 0.7, padding: 0, lineHeight: 1, fontSize: 13,
+        }}>×</button>
+      )}
+    </span>
   );
 }
 
@@ -93,7 +102,7 @@ const CERT_GROUPS = [
 /* ── Section header ── */
 function SectionHeader({ label, action }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
       <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.sub }}>{label}</p>
       {action}
     </div>
@@ -111,13 +120,27 @@ function Card({ children, style }) {
 }
 
 /* ── Score card sidebar ── */
-function ScoreCard({ score, tips, onEdit }) {
+function ScoreCard({ score, profile, onEdit }) {
   const label =
     score >= 90 ? "Utmärkt profil" :
     score >= 70 ? "Stark profil" :
     score >= 50 ? "Bra profil" :
     score >= 30 ? "Under uppbyggnad" : "Grundläggande profil";
   const barColor = score >= 70 ? T.green : score >= 50 ? T.amber : T.primary;
+
+  /* Build checklist matching design — show both done and undone items */
+  const checks = [
+    { label: "Namn",            done: Boolean(profile?.name) },
+    { label: "Ort & region",    done: Boolean(profile?.location && profile?.region) },
+    { label: "Körkort",         done: (profile?.licenses || []).length > 0 },
+    { label: "Certifikat",      done: (profile?.certificates || []).length > 0 },
+    { label: "Erfarenhet",      done: (profile?.experience || []).length > 0 },
+    { label: "Presentation",    done: (profile?.summary || "").length >= SUMMARY_MIN_LENGTH },
+    { label: "Tillgänglighet",  done: Boolean(profile?.availability) },
+    { label: "Sökbara regioner",done: (profile?.regionsWilling || []).length > 0 },
+  ];
+  const undone = checks.filter((c) => !c.done);
+  const done = checks.filter((c) => c.done);
 
   return (
     <Card style={{ marginBottom: 14 }}>
@@ -131,31 +154,40 @@ function ScoreCard({ score, tips, onEdit }) {
         <div style={{ height: 6, borderRadius: 6, background: barColor, width: `${score}%`, transition: "width .5s" }} />
       </div>
       <p style={{ fontSize: 12, color: T.sub, marginBottom: 14 }}>{label}</p>
-      {tips.length > 0 ? (
-        <>
-          <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 12 }}>
-            {tips.slice(0, 4).map((tip, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-                <div style={{
-                  width: 16, height: 16, borderRadius: "50%",
-                  border: `1.5px solid ${T.border2}`, flexShrink: 0, marginTop: 2,
-                }} />
-                <span style={{ fontSize: 12, color: T.muted, lineHeight: 1.5 }}>{tip}</span>
-              </div>
-            ))}
+      <div style={{ display: "flex", flexDirection: "column", gap: 5, marginBottom: 12 }}>
+        {/* Show up to 3 uncompleted items */}
+        {undone.slice(0, 3).map((c) => (
+          <div key={c.label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{
+              width: 16, height: 16, borderRadius: "50%",
+              border: `1.5px solid ${T.border2}`, flexShrink: 0,
+            }} />
+            <span style={{ fontSize: 12, color: T.muted, lineHeight: 1.5 }}>{c.label}</span>
           </div>
-          {onEdit && (
-            <button onClick={onEdit} style={{
-              width: "100%", padding: "8px", borderRadius: 8, border: "none",
-              background: T.pDim, color: "#7dd3c8", fontSize: 12, fontWeight: 700,
-              cursor: "pointer", fontFamily: T.font,
-            }}>Stärk profilen →</button>
-          )}
-        </>
-      ) : (
+        ))}
+        {/* Show up to 2 completed items */}
+        {done.slice(0, 2).map((c) => (
+          <div key={c.label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{
+              width: 16, height: 16, borderRadius: "50%",
+              background: "rgba(74,222,128,0.15)", border: "1.5px solid rgba(74,222,128,0.3)",
+              flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 9, color: T.green, fontWeight: 800,
+            }}>✓</div>
+            <span style={{ fontSize: 12, color: T.sub }}>{c.label}</span>
+          </div>
+        ))}
+      </div>
+      {undone.length === 0 ? (
         <p style={{ fontSize: 12, color: T.green, fontWeight: 600 }}>
           Din profil är komplett — åkerier hittar dig enkelt.
         </p>
+      ) : onEdit && (
+        <button onClick={onEdit} style={{
+          width: "100%", padding: "8px", borderRadius: 8, border: "none",
+          background: T.pDim, color: "#7dd3c8", fontSize: 12, fontWeight: 700,
+          cursor: "pointer", fontFamily: T.font,
+        }}>Stärk profilen →</button>
       )}
     </Card>
   );
@@ -164,11 +196,11 @@ function ScoreCard({ score, tips, onEdit }) {
 /* ── Market sidebar ── */
 function MarketSidebar({ driverMarket, user, linkCopied, onCopyLink }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       {driverMarket && driverMarket.jobsInRegion > 0 && (
         <Card>
           <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.sub, marginBottom: 14 }}>
-            Marknad i {driverMarket.region}
+            Marknad i {driverMarket.region || "din region"}
           </p>
           {driverMarket.topLicenses.map((l) => (
             <div key={l.name} style={{ marginBottom: 11 }}>
@@ -189,6 +221,31 @@ function MarketSidebar({ driverMarket, user, linkCopied, onCopyLink }) {
               </div>
               <div style={{ height: 4, borderRadius: 4, background: "rgba(255,255,255,0.06)" }}>
                 <div style={{ height: 4, borderRadius: 4, background: T.pLight, width: `${c.pct}%` }} />
+              </div>
+            </div>
+          ))}
+          <p style={{ fontSize: 11, color: T.muted, marginTop: 6 }}>Andel aktiva jobb som kräver respektive</p>
+        </Card>
+      )}
+      {/* Fallback static market card when no live data yet */}
+      {(!driverMarket || driverMarket.jobsInRegion === 0) && (
+        <Card>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.sub, marginBottom: 14 }}>
+            Marknad i din region
+          </p>
+          {[
+            { name: "CE-körkort", pct: 78 },
+            { name: "YKB", pct: 62 },
+            { name: "ADR", pct: 31 },
+            { name: "Truck B", pct: 24 },
+          ].map((l) => (
+            <div key={l.name} style={{ marginBottom: 11 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                <span style={{ fontSize: 12, color: T.sub }}>{l.name}</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: T.text }}>{l.pct}%</span>
+              </div>
+              <div style={{ height: 4, borderRadius: 4, background: "rgba(255,255,255,0.06)" }}>
+                <div style={{ height: 4, borderRadius: 4, background: T.primary, width: `${l.pct}%` }} />
               </div>
             </div>
           ))}
@@ -403,6 +460,50 @@ function ExpForm({ initial, onSave, onCancel }) {
   );
 }
 
+/* ── Simple match score for a job (used in Matchningar tab) ── */
+function computeSimpleMatch(profile, job) {
+  let score = 0;
+  let total = 0;
+
+  // License match (40 pts)
+  const jobLics = job.licenseRequired ? [job.licenseRequired] : [];
+  if (jobLics.length > 0) {
+    total += 40;
+    const hasLic = jobLics.some((l) => (profile.licenses || []).includes(l));
+    if (hasLic) score += 40;
+  }
+
+  // Region match (20 pts)
+  if (job.region) {
+    total += 20;
+    const inRegion = profile.region === job.region || (profile.regionsWilling || []).includes(job.region);
+    if (inRegion) score += 20;
+  }
+
+  // Cert match (20 pts)
+  if (job.certificatesRequired && job.certificatesRequired.length > 0) {
+    total += 20;
+    const hasCerts = job.certificatesRequired.every((c) => (profile.certificates || []).includes(c));
+    if (hasCerts) score += 20;
+    else {
+      const partial = job.certificatesRequired.filter((c) => (profile.certificates || []).includes(c)).length;
+      score += Math.round((partial / job.certificatesRequired.length) * 20);
+    }
+  }
+
+  // Availability match (20 pts)
+  if (job.employmentType && profile.availability) {
+    total += 20;
+    const avMap = { fast: "fast", vikariat: "vikariat", tim: "tim" };
+    if (profile.availability === "open" || profile.availability === job.employmentType || avMap[profile.availability] === job.employmentType) {
+      score += 20;
+    }
+  }
+
+  if (total === 0) return 50; // neutral default
+  return Math.min(100, Math.round((score / total) * 100));
+}
+
 /* ══════════ MAIN ══════════ */
 export default function Profile() {
   usePageTitle("Min profil");
@@ -420,6 +521,8 @@ export default function Profile() {
   const [profileTipsLoading, setProfileTipsLoading] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const [driverMarket, setDriverMarket] = useState(null);
+  const [matchedJobs, setMatchedJobs] = useState(null);
+  const [matchedJobsLoading, setMatchedJobsLoading] = useState(false);
 
   useEffect(() => {
     if (!editing) setDraft(profile);
@@ -430,6 +533,23 @@ export default function Profile() {
     fetchDriverProfileStats().then(setProfileStats).catch(() => setProfileStats(null));
     fetchDriverMarket().then(setDriverMarket).catch(() => setDriverMarket(null));
   }, [hasApi]);
+
+  /* Fetch matched jobs when Matchningar tab is opened */
+  useEffect(() => {
+    if (tab !== "matchningar" || !hasApi || matchedJobs !== null) return;
+    setMatchedJobsLoading(true);
+    fetchJobs()
+      .then((data) => {
+        const jobs = Array.isArray(data) ? data : (data?.jobs || []);
+        const withScore = jobs
+          .map((j) => ({ ...j, matchScore: computeSimpleMatch(profile, j) }))
+          .sort((a, b) => b.matchScore - a.matchScore)
+          .slice(0, 20);
+        setMatchedJobs(withScore);
+      })
+      .catch(() => setMatchedJobs([]))
+      .finally(() => setMatchedJobsLoading(false));
+  }, [tab, hasApi, matchedJobs, profile]);
 
   const current = editing ? draft : profile;
   const updateDraft = (updates) => setDraft((prev) => ({ ...prev, ...updates }));
@@ -451,7 +571,6 @@ export default function Profile() {
   const hasUnsavedChanges = editing && profileComparable !== draftComparable;
 
   const onboardingSteps = useMemo(() => getDriverMinimumChecklist(profile), [profile]);
-  const onboardingDone = onboardingSteps.every((s) => s.done);
 
   const startEditing = () => { setDraft(profile); setEditing(true); };
   const cancelEditing = () => { setDraft(profile); setEditing(false); setAddingExp(false); setEditingExpId(null); };
@@ -506,6 +625,23 @@ export default function Profile() {
     return <Navigate to="/onboarding/forare" replace />;
   }
 
+  /* Profile score from backend, falling back to local calculation */
+  const backendScore = profile?.profileScore;
+  const localScore = useMemo(() => {
+    const checks = [
+      Boolean(current?.name),
+      (current?.licenses || []).length > 0,
+      Boolean(current?.location && current?.region),
+      (current?.certificates || []).length > 0,
+      (current?.experience || []).length > 0,
+      (current?.summary || "").length >= SUMMARY_MIN_LENGTH,
+      Boolean(current?.availability),
+      (current?.regionsWilling || []).length > 0,
+    ];
+    return Math.round(checks.filter(Boolean).length / checks.length * 100);
+  }, [current]);
+  const displayScore = backendScore != null ? backendScore : localScore;
+
   const completedSteps = onboardingSteps.filter((s) => s.done).length;
   const totalSteps = onboardingSteps.length;
   const progressPct = totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0;
@@ -541,6 +677,7 @@ export default function Profile() {
         borderBottom: `1px solid ${T.border}`,
       }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", padding: "36px 40px 0" }}>
+
           {/* Edit toolbar */}
           <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8, marginBottom: 20 }}>
             {profileSaveError && (
@@ -549,15 +686,15 @@ export default function Profile() {
             {editing ? (
               <>
                 <button onClick={cancelEditing} style={{
-                  padding: "7px 16px", borderRadius: 9, border: "none", minHeight: 34,
-                  background: "rgba(255,255,255,0.07)", color: T.sub, fontSize: 13, fontWeight: 600,
+                  padding: "6px 14px", borderRadius: 9, border: "none", minHeight: 32,
+                  background: "rgba(255,255,255,0.07)", color: T.sub, fontSize: 12, fontWeight: 600,
                   cursor: "pointer", fontFamily: T.font,
                 }}>Avbryt</button>
                 <button onClick={saveProfile} disabled={profileSaving} style={{
-                  padding: "7px 22px", borderRadius: 9, border: "none", minHeight: 34, minWidth: 150,
+                  padding: "6px 14px", borderRadius: 9, border: "none", minHeight: 32, minWidth: 140,
                   background: hasUnsavedChanges ? T.amber : T.primary,
                   color: hasUnsavedChanges ? "#0a1010" : "#fff",
-                  fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: T.font,
+                  fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: T.font,
                   opacity: profileSaving ? 0.6 : 1,
                 }}>
                   {profileSaving ? "Sparar…" : hasUnsavedChanges ? "Spara ändringar ✓" : "Inga ändringar"}
@@ -565,8 +702,8 @@ export default function Profile() {
               </>
             ) : (
               <button onClick={startEditing} style={{
-                padding: "7px 18px", borderRadius: 9, border: `1.5px solid ${T.border2}`,
-                background: "transparent", color: T.text, fontSize: 13, fontWeight: 600,
+                padding: "6px 14px", borderRadius: 9, border: `1.5px solid ${T.border2}`,
+                background: "transparent", color: T.text, fontSize: 12, fontWeight: 600,
                 cursor: "pointer", fontFamily: T.font,
               }}>Redigera profil</button>
             )}
@@ -586,17 +723,21 @@ export default function Profile() {
             {/* Info */}
             <div style={{ flex: 1 }}>
               {editing ? (
-                <input
-                  value={draft.name || ""}
-                  onChange={(e) => updateDraft({ name: e.target.value })}
-                  style={{
-                    padding: "8px 12px", borderRadius: 9, marginBottom: 12,
-                    background: "rgba(255,255,255,0.08)", border: `1px solid ${T.border2}`,
-                    color: T.text, fontSize: 20, fontWeight: 700, outline: "none", fontFamily: T.font,
-                  }}
-                />
+                <div style={{ display: "flex", gap: 12, marginBottom: 12, maxWidth: 500 }}>
+                  <input
+                    value={draft.name || ""}
+                    onChange={(e) => updateDraft({ name: e.target.value })}
+                    style={{
+                      flex: 1, padding: "8px 12px", borderRadius: 9,
+                      background: "rgba(255,255,255,0.08)", border: `1px solid ${T.border2}`,
+                      color: T.text, fontSize: 20, fontWeight: 700, outline: "none", fontFamily: T.font,
+                    }}
+                  />
+                </div>
               ) : (
-                <h1 style={{ fontSize: 26, fontWeight: 800, marginBottom: 6 }}>{current.name || "—"}</h1>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
+                  <h1 style={{ fontSize: 26, fontWeight: 800 }}>{current.name || "—"}</h1>
+                </div>
               )}
               <p style={{ fontSize: 14, color: T.sub, marginBottom: 12 }}>
                 📍 {current.location || "—"}, {current.region || "—"}
@@ -617,27 +758,25 @@ export default function Profile() {
                   ? <Tag c="green">Synlig</Tag>
                   : <Tag c="red">Dold</Tag>}
               </div>
-              {/* Profile completeness bar */}
-              {!onboardingDone && (
-                <div style={{ display: "flex", alignItems: "center", gap: 12, maxWidth: 420 }}>
-                  <div style={{ flex: 1, height: 3, borderRadius: 3, background: "rgba(255,255,255,0.1)" }}>
-                    <div style={{
-                      height: 3, borderRadius: 3, transition: "width .5s",
-                      background: progressPct >= 70 ? T.green : progressPct >= 50 ? T.amber : T.primary,
-                      width: `${progressPct}%`,
-                    }} />
-                  </div>
-                  <span style={{ fontSize: 11, color: T.muted, whiteSpace: "nowrap" }}>
-                    {progressPct}% komplett
-                  </span>
+              {/* Profile completeness bar — always shown */}
+              <div style={{ display: "flex", alignItems: "center", gap: 12, maxWidth: 420 }}>
+                <div style={{ flex: 1, height: 3, borderRadius: 3, background: "rgba(255,255,255,0.1)" }}>
+                  <div style={{
+                    height: 3, borderRadius: 3, transition: "width .5s",
+                    background: progressPct >= 70 ? T.green : progressPct >= 50 ? T.amber : T.primary,
+                    width: `${progressPct}%`,
+                  }} />
                 </div>
-              )}
+                <span style={{ fontSize: 11, color: T.muted, whiteSpace: "nowrap" }}>
+                  {progressPct}% komplett
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* Tabs */}
+          {/* Tabs — 3 tabs matching design */}
           <div style={{ display: "flex", borderTop: `1px solid ${T.border}` }}>
-            {["profil", "statistik"].map((t) => (
+            {["profil", "matchningar", "statistik"].map((t) => (
               <button key={t} onClick={() => setTab(t)} style={{
                 padding: "13px 20px", border: "none", background: "transparent", cursor: "pointer",
                 fontFamily: T.font, fontSize: 13, fontWeight: tab === t ? 700 : 400,
@@ -687,10 +826,41 @@ export default function Profile() {
                         ))}
                       </div>
                     </div>
+                    <div>
+                      <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 8 }}>Tillgänglighet</p>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+                        {AVAIL.map((a) => (
+                          <button key={a.value} onClick={() => updateDraft({ availability: a.value })} style={{
+                            padding: "7px 14px", borderRadius: 8, fontSize: 12, fontWeight: 500, cursor: "pointer",
+                            fontFamily: T.font, border: `1.5px solid ${current.availability === a.value ? T.amber : T.border}`,
+                            background: current.availability === a.value ? T.amberDim : T.card,
+                            color: current.availability === a.value ? T.amber : T.sub, transition: "all .12s",
+                          }}>{a.label}</button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 8 }}>Kan jobba i dessa regioner</p>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+                        {regions.map((r) => {
+                          const on = (current.regionsWilling || []).includes(r);
+                          return (
+                            <button key={r} onClick={() => {
+                              const rw = current.regionsWilling || [];
+                              updateDraft({ regionsWilling: on ? rw.filter((x) => x !== r) : [...rw, r] });
+                            }} style={{
+                              padding: "7px 14px", borderRadius: 8, fontSize: 12, fontWeight: 500, cursor: "pointer",
+                              fontFamily: T.font, border: `1.5px solid ${on ? T.primary : T.border}`,
+                              background: on ? T.pDim : T.card, color: on ? "#7dd3c8" : T.sub, transition: "all .12s",
+                            }}>{r}</button>
+                          );
+                        })}
+                      </div>
+                    </div>
                     <div style={{ height: 1, background: T.border, margin: "4px 0" }} />
                     <div>
                       <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 10 }}>Kontaktinställningar</p>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                         {[
                           { key: "visibleToCompanies", label: "Synlig för åkerier i sökning" },
                           { key: "showPhoneToCompanies", label: "Visa telefonnummer för åkerier" },
@@ -711,8 +881,8 @@ export default function Profile() {
                       ["Region", current.region || "—"],
                       ["Telefon", current.phone || "—"],
                       ["E-post", current.email || "—"],
+                      ["Tillgänglighet", AVAIL.find((a) => a.value === current.availability)?.label || "—"],
                       ["Kan jobba i", (current.regionsWilling || []).join(", ") || "—"],
-                      ["Kontakt", [current.visibleToCompanies && "Synlig", current.showPhoneToCompanies && "Tel", current.showEmailToCompanies && "E-post"].filter(Boolean).join(" · ") || "—"],
                     ].map(([k, v]) => (
                       <div key={k} style={{ padding: "10px 0", borderBottom: `1px solid ${T.border}` }}>
                         <p style={{ fontSize: 11, color: T.muted, marginBottom: 4 }}>{k}</p>
@@ -723,7 +893,7 @@ export default function Profile() {
                 )}
               </Card>
 
-              {/* Segment */}
+              {/* Segment (only shown in edit mode, and not for gymnasieelev) */}
               {editing && !current.isGymnasieelev && (
                 <Card>
                   <SectionHeader label="Segment" />
@@ -752,24 +922,6 @@ export default function Profile() {
                             }} style={chipBtn(active)}>
                               {seg.label}
                             </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                    <div>
-                      <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 8 }}>Kan jobba i dessa regioner</p>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
-                        {regions.map((r) => {
-                          const on = (current.regionsWilling || []).includes(r);
-                          return (
-                            <button key={r} onClick={() => {
-                              const rw = current.regionsWilling || [];
-                              updateDraft({ regionsWilling: on ? rw.filter((x) => x !== r) : [...rw, r] });
-                            }} style={{
-                              ...chipBtn(on),
-                              background: on ? T.pDim : T.card,
-                              color: on ? "#7dd3c8" : T.sub,
-                            }}>{r}</button>
                           );
                         })}
                       </div>
@@ -911,21 +1063,54 @@ export default function Profile() {
                       <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 8 }}>Status</p>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
                         {AVAIL.map((a) => (
-                          <button key={a.value} onClick={() => updateDraft({ availability: a.value })} style={chipBtn(current.availability === a.value, T.amber)}>
-                            {a.label}
-                          </button>
+                          <button key={a.value} onClick={() => updateDraft({ availability: a.value })} style={{
+                            padding: "8px 16px", borderRadius: 9, fontSize: 13, fontWeight: 500, cursor: "pointer",
+                            fontFamily: T.font,
+                            border: `1.5px solid ${current.availability === a.value ? T.amber : T.border}`,
+                            background: current.availability === a.value ? T.amberDim : T.card,
+                            color: current.availability === a.value ? T.amber : T.sub, transition: "all .12s",
+                          }}>{a.label}</button>
                         ))}
                       </div>
                     </div>
                     <div>
-                      <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 8 }}>Tillgänglig från (valfritt)</p>
+                      <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 6 }}>Tillgänglig från (valfritt)</p>
                       <input
                         type="date"
                         value={current.availableFrom || ""}
                         onChange={(e) => updateDraft({ availableFrom: e.target.value })}
-                        style={{ ...inputStyle, width: "auto", cursor: "pointer" }}
+                        style={{
+                          padding: "9px 12px", borderRadius: 9, background: T.card,
+                          border: `1px solid ${T.border2}`, color: T.text, fontSize: 13,
+                          fontFamily: T.font, cursor: "pointer",
+                        }}
                       />
                       <p style={{ fontSize: 11, color: T.muted, marginTop: 5 }}>Visa åkerier när du är ledig för ett nytt uppdrag</p>
+                    </div>
+                    <div>
+                      <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 8 }}>Lediga perioder</p>
+                      <p style={{ fontSize: 11, color: T.muted, marginBottom: 10 }}>Markera veckor du är tillgänglig för extrapass eller vikariat</p>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+                        {Array.from({ length: 8 }, (_, i) => {
+                          const wk = new Date();
+                          wk.setDate(wk.getDate() + i * 7);
+                          const wkNum = Math.ceil((wk - new Date(wk.getFullYear(), 0, 1)) / (7 * 86400000));
+                          const label = `v.${wkNum}`;
+                          const on = (current.availableWeeks || []).includes(label);
+                          return (
+                            <button key={label} onClick={() => {
+                              const aw = current.availableWeeks || [];
+                              updateDraft({ availableWeeks: on ? aw.filter((x) => x !== label) : [...aw, label] });
+                            }} style={{
+                              padding: "7px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer",
+                              fontFamily: T.font,
+                              border: `1.5px solid ${on ? T.green : T.border}`,
+                              background: on ? "rgba(74,222,128,0.1)" : T.card,
+                              color: on ? T.green : T.sub, transition: "all .12s",
+                            }}>{label}</button>
+                          );
+                        })}
+                      </div>
                     </div>
                     <div>
                       <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 4 }}>Arbetsprofil</p>
@@ -956,11 +1141,22 @@ export default function Profile() {
                         <span style={{ fontSize: 13, color: T.text, fontWeight: 500 }}>{current.availableFrom}</span>
                       </div>
                     )}
+                    {(current.availableWeeks || []).length > 0 && (
+                      <div>
+                        <p style={{ fontSize: 12, color: T.muted, marginBottom: 7 }}>Lediga veckor</p>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                          {(current.availableWeeks || []).map((w) => <Tag key={w} c="green">{w}</Tag>)}
+                        </div>
+                      </div>
+                    )}
                     {(current.physicalWorkOk || current.soloWorkOk) && (
                       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                         {current.physicalWorkOk && <Tag c="muted">Fysiskt arbete ok</Tag>}
                         {current.soloWorkOk && <Tag c="muted">Ensamarbete ok</Tag>}
                       </div>
+                    )}
+                    {!current.availableFrom && (current.availableWeeks || []).length === 0 && !current.physicalWorkOk && !current.soloWorkOk && (
+                      <p style={{ fontSize: 12, color: T.muted }}>Inga specifika perioder angivna</p>
                     )}
                   </div>
                 )}
@@ -1110,9 +1306,11 @@ export default function Profile() {
 
             {/* Right sidebar */}
             <div>
-              {hasApi && profile?.profileScore != null && (
-                <ScoreCard score={profile.profileScore} tips={profile.profileScoreTips || []} onEdit={startEditing} />
-              )}
+              <ScoreCard
+                score={displayScore}
+                profile={current}
+                onEdit={startEditing}
+              />
               <MarketSidebar
                 driverMarket={driverMarket}
                 user={user}
@@ -1128,6 +1326,105 @@ export default function Profile() {
           </div>
         )}
 
+        {/* MATCHNINGAR TAB */}
+        {tab === "matchningar" && (
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 32, alignItems: "start" }}>
+            <div>
+              {matchedJobsLoading ? (
+                <div style={{ padding: 40, textAlign: "center" }}>
+                  <p style={{ fontSize: 14, color: T.muted }}>Hämtar matchande jobb…</p>
+                </div>
+              ) : matchedJobs && matchedJobs.length > 0 ? (
+                <>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+                    <h2 style={{ fontSize: 17, fontWeight: 700, color: T.text }}>
+                      Matchande jobb · {matchedJobs.length} st
+                    </h2>
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    {matchedJobs.map((job) => {
+                      const match = job.matchScore;
+                      const matchColor = match >= 90 ? T.green : match >= 75 ? "#7dd3c8" : T.amber;
+                      const matchBg = match >= 90 ? "rgba(74,222,128,0.1)" : match >= 75 ? T.pDim : T.amberDim;
+                      const matchBorder = match >= 90 ? "rgba(74,222,128,0.25)" : match >= 75 ? "rgba(31,95,92,0.35)" : "rgba(245,166,35,0.25)";
+                      return (
+                        <Link
+                          key={job.id}
+                          to={`/jobb/${job.id}`}
+                          style={{ textDecoration: "none" }}
+                        >
+                          <div style={{
+                            background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 14,
+                            padding: "18px 20px", display: "flex", alignItems: "center", gap: 16,
+                            cursor: "pointer", transition: "border-color .15s",
+                          }}>
+                            <div style={{
+                              width: 44, height: 44, borderRadius: 10, background: T.pDim,
+                              display: "flex", alignItems: "center", justifyContent: "center",
+                              fontSize: 18, fontWeight: 700, color: T.primary, flexShrink: 0,
+                            }}>
+                              {(job.companyName || job.company?.name || "?").charAt(0)}
+                            </div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
+                                <p style={{ fontWeight: 700, fontSize: 14, color: T.text }}>{job.title || job.bransch || "Chaufförstjänst"}</p>
+                              </div>
+                              <p style={{ fontSize: 12, color: T.sub, marginBottom: 8 }}>
+                                {job.companyName || job.company?.name || "Okänt företag"}
+                                {job.region ? ` · ${job.region}` : ""}
+                                {job.salary ? ` · ${job.salary}` : ""}
+                              </p>
+                              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                                {job.licenseRequired && <Tag c="muted">{job.licenseRequired}</Tag>}
+                                {job.employmentType && <Tag c="muted">{job.employmentType}</Tag>}
+                                {job.bransch && <Tag c="p">{job.bransch}</Tag>}
+                              </div>
+                            </div>
+                            <div style={{ textAlign: "center", flexShrink: 0 }}>
+                              <div style={{
+                                width: 50, height: 50, borderRadius: 12,
+                                background: matchBg,
+                                border: `1px solid ${matchBorder}`,
+                                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                              }}>
+                                <span style={{ fontSize: 15, fontWeight: 900, color: matchColor }}>{match}%</span>
+                              </div>
+                              <p style={{ fontSize: 9, color: T.muted, marginTop: 4, fontWeight: 600 }}>MATCH</p>
+                            </div>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </>
+              ) : (
+                <div style={{ padding: 40, textAlign: "center", border: `1.5px dashed ${T.border2}`, borderRadius: 14 }}>
+                  <p style={{ fontSize: 14, color: T.sub, marginBottom: 8 }}>Inga matchande jobb hittades</p>
+                  <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.6 }}>
+                    Komplettera din profil med körkort, certifikat och regioner för bättre matchning.
+                  </p>
+                  <button onClick={() => setTab("profil")} style={{
+                    marginTop: 16, padding: "9px 20px", borderRadius: 9, border: "none",
+                    background: T.primary, color: "#fff", fontSize: 13, fontWeight: 600,
+                    cursor: "pointer", fontFamily: T.font,
+                  }}>Uppdatera profil</button>
+                </div>
+              )}
+            </div>
+            <MarketSidebar
+              driverMarket={driverMarket}
+              user={user}
+              linkCopied={linkCopied}
+              onCopyLink={() => {
+                navigator.clipboard.writeText(`https://transportplattformen.se/forare/${user.id}`).then(() => {
+                  setLinkCopied(true);
+                  setTimeout(() => setLinkCopied(false), 2000);
+                });
+              }}
+            />
+          </div>
+        )}
+
         {/* STATISTIK TAB */}
         {tab === "statistik" && (
           <div style={{ maxWidth: 800 }}>
@@ -1135,18 +1432,19 @@ export default function Profile() {
               <>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14, marginBottom: 24 }}>
                   {[
-                    { val: profileStats.views7, label: "Visningar senaste 7 dagarna" },
-                    { val: profileStats.views30, label: "Visningar senaste 30 dagarna" },
-                    { val: profileStats.conversationCount, label: "Åkerier har kontaktat dig" },
-                  ].map(({ val, label }) => (
+                    { val: profileStats.views7, label: "Visningar senaste 7 dagarna", hint: profileStats.views7 === 0 ? "Öka synlighet genom att lägga till erfarenhet" : "" },
+                    { val: profileStats.views30, label: "Visningar senaste 30 dagarna", hint: "" },
+                    { val: profileStats.conversationCount, label: "Åkerier har kontaktat dig", hint: "" },
+                  ].map(({ val, label, hint }) => (
                     <Card key={label} style={{ textAlign: "center", padding: "24px" }}>
-                      <p style={{ fontSize: 38, fontWeight: 900, color: T.text, marginBottom: 8, lineHeight: 1 }}>{val}</p>
-                      <p style={{ fontSize: 12, color: T.sub, lineHeight: 1.4 }}>{label}</p>
+                      <p style={{ fontSize: 38, fontWeight: 900, color: T.text, marginBottom: 8, lineHeight: 1 }}>{val ?? 0}</p>
+                      <p style={{ fontSize: 12, color: T.sub, lineHeight: 1.4, marginBottom: hint ? 8 : 0 }}>{label}</p>
+                      {hint && <p style={{ fontSize: 11, color: T.muted, lineHeight: 1.4 }}>{hint}</p>}
                     </Card>
                   ))}
                 </div>
                 {profileStats.recommendations?.length > 0 && (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
                     {profileStats.recommendations.map((r, i) => (
                       <div key={i} style={{
                         display: "flex", alignItems: "flex-start", gap: 12,
@@ -1165,14 +1463,20 @@ export default function Profile() {
               </>
             ) : (
               <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14, marginBottom: 24 }}>
-                {["Visningar 7 dagar", "Visningar 30 dagar", "Kontakter"].map((label) => (
+                {[
+                  { label: "Visningar senaste 7 dagarna", hint: "Öka synlighet genom att lägga till erfarenhet" },
+                  { label: "Visningar senaste 30 dagarna", hint: "" },
+                  { label: "Åkerier har kontaktat dig", hint: "" },
+                ].map(({ label, hint }) => (
                   <Card key={label} style={{ textAlign: "center", padding: "24px" }}>
                     <p style={{ fontSize: 38, fontWeight: 900, color: T.text, marginBottom: 8, lineHeight: 1 }}>0</p>
-                    <p style={{ fontSize: 12, color: T.sub, lineHeight: 1.4 }}>{label}</p>
+                    <p style={{ fontSize: 12, color: T.sub, lineHeight: 1.4, marginBottom: hint ? 8 : 0 }}>{label}</p>
+                    {hint && <p style={{ fontSize: 11, color: T.muted, lineHeight: 1.4 }}>{hint}</p>}
                   </Card>
                 ))}
               </div>
             )}
+
             {!profileTips ? (
               <button
                 onClick={async () => {
@@ -1188,12 +1492,13 @@ export default function Profile() {
                   padding: "10px 22px", borderRadius: 9, border: "none",
                   background: T.pDim, color: "#7dd3c8", fontSize: 13, fontWeight: 600,
                   cursor: "pointer", fontFamily: T.font, opacity: profileTipsLoading ? 0.5 : 1,
+                  marginBottom: 20,
                 }}
               >
                 {profileTipsLoading ? "Hämtar…" : "Visa vad som kan stärka din profil"}
               </button>
             ) : profileTips.length > 0 && (
-              <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 16 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
                 {profileTips.map((tip, i) => (
                   <div key={i} style={{
                     display: "flex", alignItems: "flex-start", gap: 12,
@@ -1207,14 +1512,14 @@ export default function Profile() {
             )}
 
             <div style={{
-              marginTop: 20, padding: "20px 24px", borderRadius: 14,
+              padding: "20px 24px", borderRadius: 14,
               background: T.amberDim, border: "1px solid rgba(245,166,35,0.2)",
             }}>
               <p style={{ fontSize: 14, fontWeight: 700, color: T.amber, marginBottom: 8 }}>
-                📈 Statistik byggs upp över tid
+                📈 Din profil är ny — statistik byggs upp över tid
               </p>
               <p style={{ fontSize: 13, color: T.sub, lineHeight: 1.6 }}>
-                Åkerier börjar hitta dig när din profil är komplett. Lägg till erfarenhet, certifikat och en kort presentation.
+                Åkerier börjar hitta dig när din profil är komplett. Lägg till erfarenhet, certifikat och en kort presentation för att synas direkt i sökresultat.
               </p>
             </div>
           </div>
