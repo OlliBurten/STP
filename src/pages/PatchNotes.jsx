@@ -69,7 +69,7 @@ export default function PatchNotes() {
 
         <p style={{ marginTop: 40, textAlign: "center", fontSize: 14, color: "rgba(240,250,249,0.35)" }}>
           Har du feedback eller hittade något som inte stämmer?{" "}
-          <a href="mailto:hej@transportplattformen.se" style={{ color: "#4ade80", textDecoration: "none" }}>
+          <a href="mailto:oliver@transportplattformen.se" style={{ color: "#4ade80", textDecoration: "none" }}>
             Hör av dig
           </a>
         </p>

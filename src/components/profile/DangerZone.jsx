@@ -17,7 +17,7 @@ export default function DangerZone() {
       logout();
       navigate("/", { replace: true });
     } catch {
-      alert("Något gick fel. Kontakta oss på support@transportplattformen.se om problemet kvarstår.");
+      alert("Något gick fel. Kontakta oss på oliver@transportplattformen.se om problemet kvarstår.");
       setDeleting(false);
     }
   };
