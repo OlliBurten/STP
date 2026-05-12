@@ -261,14 +261,18 @@ export default function SavedJobs() {
   ];
 
   return (
-    <main style={{ background: "#060f0f", minHeight: "100vh", marginTop: "-64px", paddingTop: 80 }}>
+    <main style={{ background: "#060f0f", minHeight: "100vh", marginTop: "-64px", paddingTop: 64 }}>
       <PageMeta title="Favoriter – STP" />
-      <div style={{ maxWidth: 1080, margin: "0 auto", padding: "0 32px 100px" }}>
 
-        <div style={{ marginBottom: 28 }}>
-          <h1 style={{ fontSize: 32, fontWeight: 800, letterSpacing: -1, marginBottom: 8, color: "#f0faf9" }}>Favoriter</h1>
-          <p style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", margin: 0 }}>Jobb och åkerier du sparat. Vi notifierar dig när något ändras.</p>
+      {/* Page header */}
+      <div style={{ background: "linear-gradient(to bottom, #0a1818, #060f0f)", borderBottom: "1px solid rgba(255,255,255,0.06)", padding: "48px 40px 28px" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+          <h1 style={{ fontSize: 32, fontWeight: 800, letterSpacing: -1, marginBottom: 6, color: "#f0faf9" }}>Favoriter</h1>
+          <p style={{ fontSize: 14, color: "rgba(240,250,249,0.5)", margin: 0 }}>Jobb och åkerier du sparat. Vi notifierar dig när något ändras.</p>
         </div>
+      </div>
+
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 40px 100px" }}>
 
         {/* Tab bar */}
         <div style={{ display: "flex", gap: 6, marginBottom: 24, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>

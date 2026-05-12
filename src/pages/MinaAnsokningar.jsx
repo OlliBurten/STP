@@ -237,16 +237,19 @@ export default function MinaAnsokningar() {
   const seenCount = applications.filter((a) => a.readByCompanyAt).length;
 
   return (
-    <main style={{ background: "#060f0f", minHeight: "100vh", marginTop: "-64px", paddingTop: 80 }}>
+    <main style={{ background: "#060f0f", minHeight: "100vh", marginTop: "-64px", paddingTop: 64 }}>
       <PageMeta title="Mina ansökningar – STP" />
-      <div style={{ maxWidth: 920, margin: "0 auto", padding: "0 32px 100px" }}>
 
-        {/* Page header */}
-        <div style={{ marginBottom: 32 }}>
-          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "rgba(240,250,249,0.4)", marginBottom: 8 }}>Mitt konto</div>
-          <h1 style={{ fontSize: 40, fontWeight: 900, letterSpacing: -1.5, marginBottom: 6, color: "#f0faf9" }}>Mina ansökningar</h1>
-          <p style={{ fontSize: 15, color: "rgba(240,250,249,0.55)" }}>Följ varje ansökan från skickad till beslut. Vi visar dig exakt var du står.</p>
+      {/* Page header */}
+      <div style={{ background: "linear-gradient(to bottom, #0a1818, #060f0f)", borderBottom: "1px solid rgba(255,255,255,0.06)", padding: "48px 40px 28px" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "rgba(245,166,35,0.8)", marginBottom: 8 }}>Mitt konto</div>
+          <h1 style={{ fontSize: 32, fontWeight: 800, letterSpacing: -1, marginBottom: 6, color: "#f0faf9" }}>Mina ansökningar</h1>
+          <p style={{ fontSize: 14, color: "rgba(240,250,249,0.5)", margin: 0 }}>Följ varje ansökan från skickad till beslut. Vi visar dig exakt var du står.</p>
         </div>
+      </div>
+
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 40px 100px" }}>
 
         {loading ? (
           <LoadingBlock message="Hämtar dina ansökningar..." />
