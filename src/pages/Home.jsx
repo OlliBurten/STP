@@ -411,7 +411,7 @@ export default function Home() {
       {/* ── HOW IT WORKS — mörk (andra mörka zonen, skapar rytm) ────────── */}
       <section ref={howRef} id="sa-fungerar-det" style={{ background: "#050e0e", padding: "120px 40px", position: "relative", overflow: "hidden" }} className={reveal(howInView)}>
         <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 70% 50% at 50% 0%, rgba(31,95,92,0.2) 0%, transparent 60%)", pointerEvents: "none" }} />
-        <div style={{ maxWidth: 1000, margin: "0 auto", position: "relative" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto", position: "relative" }}>
           <div style={{ textAlign: "center", marginBottom: 64 }}>
             <div style={{ display: "inline-block", padding: "4px 12px", borderRadius: 99, background: "rgba(31,95,92,0.2)", color: "#7dd3c8", fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 16 }}>Kom igång</div>
             <h2 style={{ fontSize: "clamp(32px,4vw,52px)", fontWeight: 900, letterSpacing: -2, color: "#f0faf9", lineHeight: 1.05, marginBottom: 16 }}>Tre steg. Det är allt.</h2>
@@ -499,7 +499,7 @@ export default function Home() {
 
       {/* ── FAQ — teal-tintad bakgrund, kort per fråga ───────────────────── */}
       <section ref={faqRef} style={{ background: "#f0faf9", padding: "120px 40px" }} className={reveal(faqInView)}>
-        <div style={{ maxWidth: 1000, margin: "0 auto" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <div className="grid lg:grid-cols-[1fr_1.6fr]" style={{ gap: 80, alignItems: "start" }}>
             <div className="lg:sticky" style={{ top: 100 }}>
               <div style={{ display: "inline-block", padding: "4px 12px", borderRadius: 99, background: "rgba(31,95,92,0.1)", color: "#1F5F5C", fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 16 }}>FAQ</div>
