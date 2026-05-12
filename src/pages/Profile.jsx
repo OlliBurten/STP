@@ -136,9 +136,6 @@ function ScoreCard({ score, profile, onEdit }) {
     { label: "Tillgänglighet",  done: Boolean(profile?.availability) },
     { label: "Sökbara regioner",done: (profile?.regionsWilling || []).length > 0 },
   ];
-  const undone = checks.filter((c) => !c.done);
-  const done = checks.filter((c) => c.done);
-
   return (
     <Card style={{ marginBottom: 14 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
@@ -152,26 +149,18 @@ function ScoreCard({ score, profile, onEdit }) {
       </div>
       <p style={{ fontSize: 12, color: T.sub, marginBottom: 14 }}>{label}</p>
       <div style={{ display: "flex", flexDirection: "column", gap: 5, marginBottom: 12 }}>
-        {/* Show up to 3 uncompleted items */}
-        {undone.slice(0, 3).map((c) => (
+        {checks.map((c) => (
           <div key={c.label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{
-              width: 16, height: 16, borderRadius: "50%",
-              border: `1.5px solid ${T.border2}`, flexShrink: 0,
-            }} />
-            <span style={{ fontSize: 12, color: T.muted, lineHeight: 1.5 }}>{c.label}</span>
-          </div>
-        ))}
-        {/* Show up to 2 completed items */}
-        {done.slice(0, 2).map((c) => (
-          <div key={c.label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <div style={{
-              width: 16, height: 16, borderRadius: "50%",
-              background: "rgba(74,222,128,0.15)", border: "1.5px solid rgba(74,222,128,0.3)",
-              flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 9, color: T.green, fontWeight: 800,
-            }}>✓</div>
-            <span style={{ fontSize: 12, color: T.sub }}>{c.label}</span>
+              width: 16, height: 16, borderRadius: "50%", flexShrink: 0,
+              background: c.done ? "rgba(74,222,128,0.15)" : "transparent",
+              border: `1.5px solid ${c.done ? "rgba(74,222,128,0.3)" : T.border2}`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 9, color: T.green, fontWeight: 800, transition: "all .2s",
+            }}>{c.done ? "✓" : ""}</div>
+            <span style={{ fontSize: 12, color: c.done ? T.sub : T.muted, lineHeight: 1.5,
+              textDecoration: c.done ? "none" : "none",
+            }}>{c.label}</span>
           </div>
         ))}
       </div>
@@ -257,9 +246,9 @@ function MarketSidebar({ driverMarket, user, linkCopied, onCopyLink }) {
           <p style={{ fontSize: 12, color: T.sub, marginBottom: 12, lineHeight: 1.5 }}>
             Dela med åkerier — de ser din profil utan inloggning.
           </p>
-          <div style={{ padding: "8px 12px", borderRadius: 8, background: T.card, border: `1px solid ${T.border}`, marginBottom: 10 }}>
-            <p style={{ fontSize: 11, color: T.muted, fontFamily: "monospace" }}>
-              transportplattformen.se/forare/{user.id.slice(0, 8)}…
+          <div style={{ padding: "8px 12px", borderRadius: 8, background: T.card, border: `1px solid ${T.border}`, marginBottom: 10, overflow: "hidden" }}>
+            <p style={{ fontSize: 11, color: T.muted, fontFamily: "monospace", wordBreak: "break-all", margin: 0 }}>
+              transportplattformen.se/forare/{user.id}
             </p>
           </div>
           <button onClick={onCopyLink} style={{
@@ -355,10 +344,11 @@ const EXP_JOB_TYPES = [
   { value: "natt", label: "Nattransport" },
 ];
 const expYears = Array.from({ length: new Date().getFullYear() - 1969 }, (_, i) => new Date().getFullYear() - i);
+const MONTHS = ["Jan","Feb","Mar","Apr","Maj","Jun","Jul","Aug","Sep","Okt","Nov","Dec"];
 
 function ExpForm({ initial, onSave, onCancel }) {
   const [d, setD] = useState(initial || {
-    company: "", role: "", startYear: "", endYear: "", current: false,
+    company: "", role: "", startYear: "", startMonth: "", endYear: "", endMonth: "", current: false,
     description: "", vehicleTypes: [], jobType: "",
   });
   const upd = (k, v) => setD((p) => ({ ...p, [k]: v }));
@@ -392,18 +382,30 @@ function ExpForm({ initial, onSave, onCancel }) {
           <input value={d.role} onChange={(e) => upd("role", e.target.value)} placeholder="CE-chaufför" style={inputStyle} />
         </div>
         <div>
-          <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 6 }}>Startår</p>
-          <select value={d.startYear || ""} onChange={(e) => upd("startYear", e.target.value ? parseInt(e.target.value) : "")} style={inputStyle}>
-            <option value="">Välj år</option>
-            {expYears.map((y) => <option key={y} value={y}>{y}</option>)}
-          </select>
+          <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 6 }}>Start</p>
+          <div style={{ display: "flex", gap: 6 }}>
+            <select value={d.startMonth || ""} onChange={(e) => upd("startMonth", e.target.value)} style={{ ...inputStyle, flex: 1 }}>
+              <option value="">Månad</option>
+              {MONTHS.map((m, i) => <option key={m} value={i + 1}>{m}</option>)}
+            </select>
+            <select value={d.startYear || ""} onChange={(e) => upd("startYear", e.target.value ? parseInt(e.target.value) : "")} style={{ ...inputStyle, flex: 1 }}>
+              <option value="">År</option>
+              {expYears.map((y) => <option key={y} value={y}>{y}</option>)}
+            </select>
+          </div>
         </div>
         <div>
-          <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 6 }}>Slutår</p>
-          <select value={d.endYear || ""} disabled={d.current} onChange={(e) => upd("endYear", e.target.value ? parseInt(e.target.value) : "")} style={{ ...inputStyle, opacity: d.current ? 0.5 : 1 }}>
-            <option value="">Välj år</option>
-            {expYears.map((y) => <option key={y} value={y}>{y}</option>)}
-          </select>
+          <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 6 }}>Slut</p>
+          <div style={{ display: "flex", gap: 6, opacity: d.current ? 0.5 : 1 }}>
+            <select value={d.endMonth || ""} disabled={d.current} onChange={(e) => upd("endMonth", e.target.value)} style={{ ...inputStyle, flex: 1 }}>
+              <option value="">Månad</option>
+              {MONTHS.map((m, i) => <option key={m} value={i + 1}>{m}</option>)}
+            </select>
+            <select value={d.endYear || ""} disabled={d.current} onChange={(e) => upd("endYear", e.target.value ? parseInt(e.target.value) : "")} style={{ ...inputStyle, flex: 1 }}>
+              <option value="">År</option>
+              {expYears.map((y) => <option key={y} value={y}>{y}</option>)}
+            </select>
+          </div>
         </div>
       </div>
       <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: T.sub, marginBottom: 16, cursor: "pointer" }}>
@@ -614,8 +616,13 @@ export default function Profile() {
   const removeExperience = (id) => updateDraft({ experience: (current.experience || []).filter((e) => e.id !== id) });
 
   const formatYearRange = (exp) => {
-    if (exp.current) return `${exp.startYear || "?"} – nu`;
-    return `${exp.startYear || "?"} – ${exp.endYear || "?"}`;
+    const fmt = (month, year) => {
+      if (!year) return "?";
+      if (month) return `${MONTHS[month - 1]} ${year}`;
+      return String(year);
+    };
+    if (exp.current) return `${fmt(exp.startMonth, exp.startYear)} – nu`;
+    return `${fmt(exp.startMonth, exp.startYear)} – ${fmt(exp.endMonth, exp.endYear)}`;
   };
 
   if (hasApi && profileLoaded && profile.id === user?.id && !isAdmin && !isDriverMinimumProfileComplete(profile)) {
@@ -637,7 +644,7 @@ export default function Profile() {
     ];
     return Math.round(checks.filter(Boolean).length / checks.length * 100);
   }, [current]);
-  const displayScore = backendScore != null ? backendScore : localScore;
+  const displayScore = editing ? localScore : (backendScore != null ? backendScore : localScore);
 
   const completedSteps = onboardingSteps.filter((s) => s.done).length;
   const totalSteps = onboardingSteps.length;
@@ -675,28 +682,10 @@ export default function Profile() {
       }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", padding: "36px 40px 0" }}>
 
-          {/* Edit toolbar */}
+          {/* Edit toolbar — top: only show Redigera / editing indicator */}
           <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8, marginBottom: 20 }}>
-            {profileSaveError && (
-              <span style={{ fontSize: 12, color: T.red, marginRight: 4 }}>{profileSaveError}</span>
-            )}
             {editing ? (
-              <>
-                <button onClick={cancelEditing} style={{
-                  padding: "6px 14px", borderRadius: 9, border: "none", minHeight: 32,
-                  background: "rgba(255,255,255,0.07)", color: T.sub, fontSize: 12, fontWeight: 600,
-                  cursor: "pointer", fontFamily: T.font,
-                }}>Avbryt</button>
-                <button onClick={saveProfile} disabled={profileSaving} style={{
-                  padding: "6px 14px", borderRadius: 9, border: "none", minHeight: 32, minWidth: 140,
-                  background: hasUnsavedChanges ? T.amber : T.primary,
-                  color: hasUnsavedChanges ? "#0a1010" : "#fff",
-                  fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: T.font,
-                  opacity: profileSaving ? 0.6 : 1,
-                }}>
-                  {profileSaving ? "Sparar…" : hasUnsavedChanges ? "Spara ändringar ✓" : "Inga ändringar"}
-                </button>
-              </>
+              <span style={{ fontSize: 12, color: T.amber, fontWeight: 600 }}>● Redigeringsläge — spara längst ned</span>
             ) : (
               <button onClick={startEditing} style={{
                 padding: "6px 14px", borderRadius: 9, border: `1.5px solid ${T.border2}`,
@@ -824,19 +813,6 @@ export default function Profile() {
                       </div>
                     </div>
                     <div>
-                      <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 8 }}>Tillgänglighet</p>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
-                        {AVAIL.map((a) => (
-                          <button key={a.value} onClick={() => updateDraft({ availability: a.value })} style={{
-                            padding: "7px 14px", borderRadius: 8, fontSize: 12, fontWeight: 500, cursor: "pointer",
-                            fontFamily: T.font, border: `1.5px solid ${current.availability === a.value ? T.amber : T.border}`,
-                            background: current.availability === a.value ? T.amberDim : T.card,
-                            color: current.availability === a.value ? T.amber : T.sub, transition: "all .12s",
-                          }}>{a.label}</button>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
                       <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 8 }}>Kan jobba i dessa regioner</p>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
                         {regions.map((r) => {
@@ -890,42 +866,6 @@ export default function Profile() {
                 )}
               </Card>
 
-              {/* Segment (only shown in edit mode, and not for gymnasieelev) */}
-              {editing && !current.isGymnasieelev && (
-                <Card>
-                  <SectionHeader label="Segment" />
-                  <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                    <div>
-                      <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 8 }}>Primärt segment</p>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
-                        {segmentOptions.map((seg) => (
-                          <button key={seg.value} onClick={() => updateDraft({ primarySegment: seg.value })} style={chipBtn(current.primarySegment === seg.value)}>
-                            {seg.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 8 }}>Sekundära segment</p>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
-                        {segmentOptions.filter((s) => s.value !== current.primarySegment).map((seg) => {
-                          const active = (current.secondarySegments || []).includes(seg.value);
-                          return (
-                            <button key={seg.value} onClick={() => {
-                              const next = active
-                                ? (current.secondarySegments || []).filter((s) => s !== seg.value)
-                                : [...(current.secondarySegments || []), seg.value];
-                              updateDraft({ secondarySegments: next });
-                            }} style={chipBtn(active)}>
-                              {seg.label}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              )}
 
               {/* Körkort & certifikat */}
               <Card>
@@ -935,7 +875,7 @@ export default function Profile() {
                     <div>
                       <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 10 }}>Körkortsbehörighet</p>
                       <div style={{ display: "flex", gap: 8 }}>
-                        {licenseTypes.map((l) => {
+                        {licenseTypes.filter((l) => l.value !== "B").map((l) => {
                           const active = (current.licenses || []).includes(l.value);
                           return (
                             <button key={l.value} onClick={() => toggleLicense(l.value)} style={{
@@ -1070,6 +1010,18 @@ export default function Profile() {
                         ))}
                       </div>
                     </div>
+                    {!current.isGymnasieelev && (
+                      <div>
+                        <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 8 }}>Anställningsform</p>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+                          {segmentOptions.map((seg) => (
+                            <button key={seg.value} onClick={() => updateDraft({ primarySegment: seg.value })} style={chipBtn(current.primarySegment === seg.value)}>
+                              {seg.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     <div>
                       <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 6 }}>Tillgänglig från (valfritt)</p>
                       <input
@@ -1523,6 +1475,34 @@ export default function Profile() {
         )}
       </div>
 
+      {/* ── Sticky save bar (only when editing) ── */}
+      {editing && (
+        <div style={{
+          position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 50,
+          background: "rgba(6,15,15,0.96)", backdropFilter: "blur(12px)",
+          borderTop: `1px solid ${T.border2}`,
+          padding: "14px 24px",
+          display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 10,
+        }}>
+          {profileSaveError && (
+            <span style={{ fontSize: 12, color: T.red, marginRight: 8 }}>{profileSaveError}</span>
+          )}
+          <button onClick={cancelEditing} style={{
+            padding: "9px 20px", borderRadius: 9, border: "none",
+            background: "rgba(255,255,255,0.08)", color: T.sub, fontSize: 13, fontWeight: 600,
+            cursor: "pointer", fontFamily: T.font,
+          }}>Avbryt</button>
+          <button onClick={saveProfile} disabled={profileSaving} style={{
+            padding: "9px 24px", borderRadius: 9, border: "none", minWidth: 160,
+            background: hasUnsavedChanges ? T.amber : T.primary,
+            color: hasUnsavedChanges ? "#0a1010" : "#fff",
+            fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: T.font,
+            opacity: profileSaving ? 0.6 : 1,
+          }}>
+            {profileSaving ? "Sparar…" : hasUnsavedChanges ? "Spara ändringar" : "Inga ändringar"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
