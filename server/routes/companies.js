@@ -26,9 +26,18 @@ companiesRouter.get("/search", optionalAuthMiddleware, validateQuery(companiesSe
     const region = req.query.region && String(req.query.region).trim() ? req.query.region.trim() : null;
     const segment = req.query.segment && String(req.query.segment).trim() ? req.query.segment.trim() : null;
 
+    // ── Minimum synlighetskrav ────────────────────────────────────────────────
+    // Ett åkeri visas i söken om det är verifierat OCH har fyllt i:
+    //   • companyName   — företagsnamn
+    //   • companyDescription — minst 30 tecken om sig själva
+    //   • companyRegion — var de verkar
+    // Detta skyddar mot test/tomma konton och gör databasen meningsfull.
     const where = {
       role: "COMPANY",
       companyStatus: "VERIFIED",
+      companyName: { not: null },
+      companyRegion: { not: null },
+      companyDescription: { not: null },
     };
     if (bransch) {
       where.companyBransch = { has: bransch };

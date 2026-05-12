@@ -269,6 +269,54 @@ function ActiveJobsSidebar({ jobs, conversations }) {
   );
 }
 
+// ─── SearchabilityCard ────────────────────────────────────────────────────────
+// Minimikrav för att synas i Åkerier-söken: companyName + companyDescription + companyRegion
+const SEARCHABILITY_REQS = [
+  { key: "companyName",        label: "Företagsnamn",       hint: "Fyll i ert registrerade företagsnamn.",          check: (p) => Boolean(p?.companyName?.trim()) },
+  { key: "companyDescription", label: "Företagsbeskrivning", hint: "Beskriv ert åkeri — minst 30 tecken.",          check: (p) => (p?.companyDescription || "").trim().length >= 30 },
+  { key: "companyRegion",      label: "Region",              hint: "Ange vilken region ni verkar i.",                check: (p) => Boolean(p?.companyRegion?.trim()) },
+];
+
+function SearchabilityCard({ profile }) {
+  const reqs = SEARCHABILITY_REQS.map((r) => ({ ...r, done: r.check(profile) }));
+  const allDone = reqs.every((r) => r.done);
+  const donePct = Math.round((reqs.filter((r) => r.done).length / reqs.length) * 100);
+
+  return (
+    <div style={{ background: "#0a1414", border: `1px solid ${allDone ? "rgba(74,222,128,0.2)" : "rgba(255,255,255,0.06)"}`, borderRadius: 18, padding: 24 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+        <h3 style={{ fontSize: 14, fontWeight: 800, letterSpacing: -0.3 }}>Synlighet i åkeridatabasen</h3>
+        <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 9px", borderRadius: 99, background: allDone ? "rgba(74,222,128,0.12)" : "rgba(255,255,255,0.06)", color: allDone ? "#4ade80" : "rgba(255,255,255,0.5)" }}>
+          {allDone ? "Synlig" : `${donePct}%`}
+        </span>
+      </div>
+      <p style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 14, lineHeight: 1.55 }}>
+        {allDone
+          ? "Ert åkeri visas i förares sök och kan hittas utan att ni behöver ha aktiva jobb uppe."
+          : "Fyll i nedan för att visas i åkeridatabasen — förare kan då hitta och följa er direkt."}
+      </p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: 16 }}>
+        {reqs.map((r) => (
+          <div key={r.key} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "10px 12px", borderRadius: 10, background: r.done ? "rgba(74,222,128,0.05)" : "rgba(255,255,255,0.02)", border: `1px solid ${r.done ? "rgba(74,222,128,0.15)" : "rgba(255,255,255,0.05)"}` }}>
+            <div style={{ width: 18, height: 18, borderRadius: 99, flexShrink: 0, marginTop: 1, background: r.done ? "rgba(74,222,128,0.2)" : "rgba(255,255,255,0.07)", border: `1.5px solid ${r.done ? "rgba(74,222,128,0.4)" : "rgba(255,255,255,0.15)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              {r.done && <Icon n="check" size={10} color="#4ade80" />}
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: r.done ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.6)", marginBottom: r.done ? 0 : 2 }}>{r.label}</div>
+              {!r.done && <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", lineHeight: 1.4 }}>{r.hint}</div>}
+            </div>
+          </div>
+        ))}
+      </div>
+      {!allDone && (
+        <Link to="/foretag/profil" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "10px", borderRadius: 10, background: "rgba(31,95,92,0.2)", border: "1px solid rgba(31,95,92,0.4)", color: "#7dd3c8", fontSize: 13, fontWeight: 700, textDecoration: "none" }}>
+          Fyll i företagsprofilen →
+        </Link>
+      )}
+    </div>
+  );
+}
+
 // ─── SuggestedDrivers ─────────────────────────────────────────────────────────
 function SuggestedDrivers() {
   const suggested = [
@@ -386,6 +434,7 @@ export default function ForCompanies() {
             <ActivityFeed conversations={conversations} jobs={jobs} />
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+            <SearchabilityCard profile={profile} />
             <SuggestedDrivers />
             <ActiveJobsSidebar jobs={jobs} conversations={conversations} />
           </div>
