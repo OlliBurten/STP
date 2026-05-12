@@ -663,10 +663,8 @@ function CompanyVerifieringSection({ user }) {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function Settings() {
   usePageTitle("Inställningar");
-  const { user, hasApi } = useAuth();
+  const { user, hasApi, isDriver, isCompany } = useAuth();
   const { profile } = useProfile();
-  const isDriver = user?.role === "DRIVER";
-  const isCompany = user?.role === "COMPANY";
 
   const [section, setSection] = useState("konto");
   const [notifSettings, setNotifSettings] = useState({});
