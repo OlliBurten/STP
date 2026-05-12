@@ -46,7 +46,7 @@ export default function About() {
       name: "Sveriges Transportplattform",
       alternateName: "STP",
       url: "https://transportplattformen.se",
-      email: "hej@transportplattformen.se",
+      email: "hello@transportplattformen.se",
       description: "Sveriges matchningsplattform för yrkesförare och transportföretag. Direkt kontakt utan mellanhänder.",
       knowsAbout: ["Transport", "Lastbilsjobb", "CE-körkort", "YKB", "Rekrytering", "Åkeri"],
       areaServed: "SE",
@@ -153,7 +153,7 @@ export default function About() {
                 Se lediga jobb
               </Link>
               <a
-                href="mailto:hej@transportplattformen.se"
+                href="mailto:hello@transportplattformen.se"
                 style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "13px 26px", borderRadius: 12, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "#f0faf9", fontSize: 15, fontWeight: 600, textDecoration: "none" }}
               >
                 Kontakta oss

@@ -368,6 +368,12 @@ export default function ForCompaniesLanding() {
                   Läs mer om STP
                 </Link>
               </div>
+              <p style={{ marginTop: 24, fontSize: 14, color: "rgba(240,250,249,0.45)" }}>
+                Frågor om partnerskap eller enterprise?{" "}
+                <a href="mailto:partner@transportplattformen.se" style={{ color: "#F5A623", textDecoration: "none" }}>
+                  partner@transportplattformen.se
+                </a>
+              </p>
             </div>
           </div>
         </div>

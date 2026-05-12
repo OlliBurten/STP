@@ -48,8 +48,8 @@ export default function Footer() {
             <p style={{ fontSize: 14, color: "rgba(255,255,255,0.5)", lineHeight: 1.7, maxWidth: 260, marginBottom: 16 }}>
               Sveriges matchningsplattform för yrkesförare och transportföretag. Direkt kontakt utan mellanhänder.
             </p>
-            <a href="mailto:hej@transportplattformen.se" style={{ fontSize: 13, color: "rgba(255,255,255,0.6)" }} className="hover:text-white transition-colors">
-              hej@transportplattformen.se
+            <a href="mailto:hello@transportplattformen.se" style={{ fontSize: 13, color: "rgba(255,255,255,0.6)" }} className="hover:text-white transition-colors">
+              hello@transportplattformen.se
             </a>
           </div>
 
