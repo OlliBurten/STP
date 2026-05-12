@@ -21,6 +21,16 @@ import Breadcrumbs from "../components/Breadcrumbs";
 import LoadingBlock from "../components/LoadingBlock";
 import { useToast } from "../context/ToastContext";
 
+// ─── Helpers ───────────────────────────────────────────────────────────────────
+
+const AVATAR_PALETTE = ["#1F5F5C","#1a3a5c","#3a1a5c","#5c1a2a","#1a5c3a","#3a5c1a","#5c3a1a","#1a4a5c"];
+function avatarColor(name) {
+  if (!name) return AVATAR_PALETTE[0];
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xffffffff;
+  return AVATAR_PALETTE[Math.abs(h) % AVATAR_PALETTE.length];
+}
+
 // ─── Sub-components ────────────────────────────────────────────────────────────
 
 function SectionHeading({ children }) {
@@ -243,6 +253,7 @@ export default function JobDetail() {
 
   const matchPct = driverMatch?.pct ?? 0;
 
+  // Prefer new direct fields; fall back to legacy extraRequirements JSON for old jobs
   const parsedExtra = useMemo(() => {
     if (!job?.extraRequirements) return null;
     try {
@@ -252,8 +263,9 @@ export default function JobDetail() {
     return null;
   }, [job?.extraRequirements]);
 
-  const jobTasks = parsedExtra?.tasks ?? [];
-  const jobOffers = parsedExtra?.offers ?? [];
+  const jobAbout = job?.aboutJob || job?.description || "";
+  const jobTasks = (job?.tasks?.length > 0 ? job.tasks : null) ?? parsedExtra?.tasks ?? [];
+  const jobOffers = (job?.offers?.length > 0 ? job.offers : null) ?? parsedExtra?.offers ?? [];
 
   const [apiDrivers, setApiDrivers] = useState([]);
   useEffect(() => {
@@ -325,11 +337,15 @@ export default function JobDetail() {
   if (!job) {
     return (
       <main style={darkPage}>
-        <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px 80px", textAlign: "center" }}>
-          <h1 style={{ fontSize: 24, fontWeight: 700, color: "#f0faf9" }}>Jobbet hittades inte</h1>
-          <Link to="/jobb" style={{ display: "inline-block", marginTop: 16, color: "#4ade80", fontWeight: 500 }}>
-            Tillbaka till jobblistan
-          </Link>
+        <div style={{ maxWidth: 560, margin: "0 auto", padding: "80px 24px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center" }}>
+          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, color: "rgba(240,250,249,0.3)", textTransform: "uppercase", marginBottom: 24 }}>Annons hittades ej · 404</div>
+          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="rgba(245,166,35,0.4)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 20 }}><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+          <h1 style={{ fontSize: 22, fontWeight: 900, marginBottom: 10, letterSpacing: -0.5, color: "#f0faf9" }}>Annonsen finns inte längre</h1>
+          <p style={{ fontSize: 14, color: "rgba(240,250,249,0.5)", lineHeight: 1.6, marginBottom: 28, maxWidth: 340 }}>Den här annonsen är antingen avpublicerad, tillsatt eller har upphört. Vi har hundratals CE-jobb i Sverige just nu.</p>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
+            <Link to="/jobb" style={{ padding: "12px 22px", borderRadius: 11, background: "#F5A623", color: "#000", fontWeight: 800, fontSize: 13, textDecoration: "none" }}>Visa lediga jobb</Link>
+            <Link to="/jobb" onClick={() => window.history.back()} style={{ padding: "12px 22px", borderRadius: 11, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.09)", color: "rgba(240,250,249,0.7)", fontWeight: 600, fontSize: 13, textDecoration: "none" }}>Tillbaka</Link>
+          </div>
         </div>
       </main>
     );
@@ -337,20 +353,20 @@ export default function JobDetail() {
 
   // ── Schema.org ─────────────────────────────────────────────────────────────
   const breadcrumbs = isCompany
-    ? [{ label: "Företag", to: "/foretag" }, { label: "Mina jobb", to: "/foretag/mina-jobb" }, { label: job.title }]
+    ? [{ label: "Företag", to: "/foretag" }, { label: "Mina jobb", to: "/foretag/annonser" }, { label: job.title }]
     : [{ label: "Jobb", to: "/jobb" }, { label: job.title }];
 
   const EMPLOYMENT_TYPE_MAP = { fast: "FULL_TIME", vikariat: "TEMPORARY", tim: "PART_TIME", deltid: "PART_TIME" };
   const metaDescription = [
     `${job.title} hos ${job.company}`,
     job.location ? `i ${job.location}` : null,
-    job.description ? `– ${job.description.replace(/\n+/g, " ")}` : null,
+    jobAbout ? `– ${jobAbout.replace(/\n+/g, " ")}` : null,
   ].filter(Boolean).join(" ").slice(0, 160);
 
   // Build a rich plain-text description for Google for Jobs — includes all sections
   const ldDescription = (() => {
     const parts = [];
-    if (job.description) parts.push(job.description);
+    if (jobAbout) parts.push(jobAbout);
     if (jobTasks.length) parts.push("Arbetsuppgifter:\n" + jobTasks.map((t) => `• ${t}`).join("\n"));
     const reqs = Array.isArray(job.requirements) ? job.requirements : [];
     if (reqs.length) parts.push("Krav:\n" + reqs.map((r) => `• ${r}`).join("\n"));
@@ -485,7 +501,7 @@ export default function JobDetail() {
       <div style={{ maxWidth: 1240, margin: "0 auto", padding: "0 40px" }}>
         <Breadcrumbs items={breadcrumbs} className="mb-4" dark />
         <div style={{ marginBottom: 14 }}>
-          <Link to={isCompany ? "/foretag/mina-jobb" : "/jobb"} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600, color: "rgba(240,250,249,0.45)", textDecoration: "none" }}>
+          <Link to={isCompany ? "/foretag/annonser" : "/jobb"} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600, color: "rgba(240,250,249,0.45)", textDecoration: "none" }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
             {isCompany ? "Tillbaka till Mina jobb" : "Tillbaka till jobb"}
           </Link>
@@ -503,7 +519,7 @@ export default function JobDetail() {
             <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(to right, #1F5F5C, rgba(31,95,92,0))" }} />
 
             <div style={{ display: "flex", gap: 20, alignItems: "flex-start", marginBottom: 20 }}>
-              <div style={{ width: 58, height: 58, borderRadius: 15, background: "#1a3a5c", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, fontWeight: 800, color: "rgba(255,255,255,0.9)", flexShrink: 0, border: "1px solid rgba(255,255,255,0.1)", letterSpacing: -0.5 }}>
+              <div style={{ width: 58, height: 58, borderRadius: 15, background: avatarColor(job.company), display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, fontWeight: 800, color: "rgba(255,255,255,0.9)", flexShrink: 0, border: "1px solid rgba(255,255,255,0.1)", letterSpacing: -0.5 }}>
                 {companyInitials}
               </div>
               <div style={{ flex: 1 }}>
@@ -535,6 +551,7 @@ export default function JobDetail() {
             <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginBottom: 16 }}>
               {job.companyVerified && <span style={{ ...D.tag, ...D.tagGreen }}><CheckIcon style={{ width: 12, height: 12, marginRight: 5 }} /> Verifierat företag</span>}
               {job.kollektivavtal === true && <span style={{ ...D.tag, background: "rgba(99,179,237,0.08)", color: "#63b3ed", border: "1px solid rgba(99,179,237,0.18)" }}>Kollektivavtal</span>}
+              {job.rolling && <span style={{ ...D.tag, ...D.tagAmber }}>⚡ Rekrytering pågår</span>}
               {!job.companyVerified && <span style={{ ...D.tag, ...D.tagMuted }}>Ej verifierat</span>}
             </div>
 
@@ -587,8 +604,8 @@ export default function JobDetail() {
 
           {/* ── Content sections ── */}
           <SectionHeading>Om jobbet</SectionHeading>
-          {job.description && job.description.trim().length >= 10
-            ? <p style={{ ...D.body, whiteSpace: "pre-line", margin: 0 }}>{job.description}</p>
+          {jobAbout && jobAbout.trim().length >= 10
+            ? <p style={{ ...D.body, whiteSpace: "pre-line", margin: 0 }}>{jobAbout}</p>
             : <p style={{ fontSize: 15, color: "rgba(240,250,249,0.3)", lineHeight: 1.8, fontStyle: "italic", margin: 0 }}>Mer information om tjänsten ges vid kontakt med företaget.</p>
           }
 
@@ -787,9 +804,9 @@ export default function JobDetail() {
                     Ansök på företagets hemsida ↗
                   </a>
                 ) : (
-                  <button type="button" onClick={() => setShowApplyModal(true)} style={{ width: "100%", padding: "15px", borderRadius: 13, background: "#F5A623", border: "none", color: "#000", fontSize: 15, fontWeight: 800, cursor: "pointer", letterSpacing: -0.3 }}>
+                  <Link to={`/jobb/${id}/ansok`} style={{ display: "block", width: "100%", padding: "15px", borderRadius: 13, background: "#F5A623", color: "#000", fontSize: 15, fontWeight: 800, textDecoration: "none", textAlign: "center", letterSpacing: -0.3, boxSizing: "border-box" }}>
                     Ansök nu →
-                  </button>
+                  </Link>
                 )}
                 <p style={{ fontSize: 12, color: "rgba(240,250,249,0.3)", textAlign: "center", marginTop: 8, lineHeight: 1.5 }}>Din profil är ditt CV — inget att ladda upp</p>
               </>

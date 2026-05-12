@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "node --watch --import ./instrument.js server.js",
-    "start": "npx prisma db push 2>/dev/null || true && node --import ./instrument.js server.js",
+    "start": "npx prisma generate && npx prisma db push 2>/dev/null || true && node --import ./instrument.js server.js",
     "test": "APP_LISTEN=false node --test test/api.test.js",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",

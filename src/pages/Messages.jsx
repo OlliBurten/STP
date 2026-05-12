@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { useAuth } from "../context/AuthContext";
@@ -8,176 +8,365 @@ import { createReport } from "../api/reports.js";
 import { getMyConversationReview, submitCompanyReview } from "../api/reviews.js";
 import LoadingBlock from "../components/LoadingBlock";
 import { useToast } from "../context/ToastContext";
-import { ChevronDownIcon } from "../components/Icons";
 
-function getApplicationStatusLabel(conversation) {
-  if (conversation.rejectedByCompanyAt) return { label: "Avvisad", className: "bg-red-100 text-red-800" };
-  if (conversation.selectedByCompanyAt) return { label: "Utvald", className: "bg-green-100 text-green-800" };
-  if (conversation.readByCompanyAt) return { label: "Läst", className: "bg-blue-100 text-blue-800" };
-  return { label: "Skickad", className: "bg-slate-100 text-slate-700" };
+// ─── Quick replies ────────────────────────────────────────────────────────────
+const DRIVER_QUICK = [
+  "Hej! Jag är intresserad — när kan vi prata?",
+  "Tack för ert intresse! Jag är tillgänglig från [datum].",
+  "Kan ni berätta mer om lön och villkor?",
+];
+const COMPANY_QUICK = [
+  "Tack för din ansökan! Vi återkommer inom kort.",
+  "Hej! Vi är intresserade — när kan du för intervju?",
+  "Tack, men vi gick vidare med en annan kandidat.",
+];
+
+// ─── Status helpers ───────────────────────────────────────────────────────────
+function getStage(conv) {
+  if (conv.rejectedByCompanyAt) return "rejected";
+  if (conv.selectedByCompanyAt) return "selected";
+  if (conv.readByCompanyAt) return "seen";
+  return "applied";
 }
 
-function ConversationItem({ conversation, isDriver, isActive, onClick, basePath }) {
-  const other = isDriver ? conversation.companyName : conversation.driverName;
-  const lastMsg = conversation.messages[conversation.messages.length - 1];
-  const time = lastMsg
-    ? new Date(lastMsg.timestamp).toLocaleString("sv-SE", {
-        day: "numeric",
-        month: "short",
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-    : "";
-  const status = isDriver && conversation.jobId ? getApplicationStatusLabel(conversation) : null;
+const STAGE = {
+  applied:  { label: "Skickad",  color: "#63b3ed", bg: "rgba(99,179,237,0.12)",   border: "rgba(99,179,237,0.25)"  },
+  seen:     { label: "Sedd",     color: "#a78bfa", bg: "rgba(167,139,250,0.12)",  border: "rgba(167,139,250,0.25)" },
+  selected: { label: "Utvald",   color: "#4ade80", bg: "rgba(74,222,128,0.12)",   border: "rgba(74,222,128,0.25)"  },
+  rejected: { label: "Avslutad", color: "rgba(240,250,249,0.3)", bg: "rgba(255,255,255,0.04)", border: "rgba(255,255,255,0.1)" },
+};
+
+function avatarInitials(name) {
+  if (!name) return "?";
+  return name.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
+}
+function avatarBg(name) {
+  const palette = ["#1F5F5C", "#1a3a5c", "#3a2a5c", "#3a2a1a", "#1a2a3a", "#1a3a2a"];
+  let h = 0;
+  for (let i = 0; i < (name || "").length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xffff;
+  return palette[h % palette.length];
+}
+
+// ─── Conversation list item ───────────────────────────────────────────────────
+function ConvItem({ conv, isDriver, isActive, basePath }) {
+  const other = isDriver ? conv.companyName : conv.driverName;
+  const lastMsg = conv.messages?.[conv.messages.length - 1];
+  const relTime = lastMsg ? (() => {
+    const diff = Date.now() - new Date(lastMsg.timestamp).getTime();
+    const min = Math.floor(diff / 60000);
+    if (min < 1) return "nu";
+    if (min < 60) return `${min}m`;
+    const h = Math.floor(min / 60);
+    if (h < 24) return `${h}h`;
+    return new Date(lastMsg.timestamp).toLocaleDateString("sv-SE", { day: "numeric", month: "short" });
+  })() : "";
+  const stage = isDriver && conv.jobId ? getStage(conv) : null;
+  const unread = isDriver
+    ? (!conv.readByDriverAt && lastMsg?.sender !== "driver")
+    : (!conv.readByCompanyAt);
+  const s = stage ? (STAGE[stage] ?? STAGE.applied) : null;
 
   return (
     <Link
-      to={`${basePath}/${conversation.id}`}
-      className={`block w-full text-left p-4 rounded-lg transition-colors ${
-        isActive ? "bg-[var(--color-primary)]/10 border-l-4 border-[var(--color-primary)]" : "hover:bg-slate-50"
-      }`}
+      to={`${basePath}/${conv.id}`}
+      style={{
+        display: "block", padding: "16px 18px", textDecoration: "none",
+        background: isActive ? "rgba(245,166,35,0.06)" : "transparent",
+        borderLeft: isActive ? "3px solid #F5A623" : "3px solid transparent",
+        borderBottom: "1px solid rgba(255,255,255,0.04)",
+        transition: "background .15s",
+      }}
+      onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = "rgba(255,255,255,0.025)"; }}
+      onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
     >
-      <p className="font-medium text-slate-900 truncate">{other}</p>
-      {status && (
-        <p className={`text-[11px] mt-0.5 inline-flex items-center px-2 py-0.5 rounded w-fit ${status.className}`}>
-          {status.label}
-        </p>
-      )}
-      {conversation.jobTitle && (
-        <p className="text-xs text-slate-500 truncate mt-0.5">{conversation.jobTitle}</p>
-      )}
-      <p className="text-sm text-slate-600 truncate mt-1">{lastMsg?.content || "—"}</p>
-      <p className="text-xs text-slate-400 mt-1">{time}</p>
+      <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+        <div style={{ width: 38, height: 38, borderRadius: 10, background: avatarBg(other), display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 12, color: "#fff", flexShrink: 0 }}>
+          {avatarInitials(other)}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
+            <span style={{ fontSize: 13, fontWeight: unread ? 800 : 600, color: unread ? "#f0faf9" : "rgba(240,250,249,0.85)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
+              {other}
+            </span>
+            <span style={{ fontSize: 11, color: "rgba(240,250,249,0.4)", flexShrink: 0 }}>{relTime}</span>
+          </div>
+          {conv.jobTitle && (
+            <div style={{ fontSize: 12, color: "rgba(240,250,249,0.55)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: 4 }}>
+              {conv.jobTitle}
+            </div>
+          )}
+          <div style={{ fontSize: 12, color: unread ? "rgba(240,250,249,0.8)" : "rgba(240,250,249,0.4)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", lineHeight: 1.4 }}>
+            {lastMsg?.sender === (isDriver ? "driver" : "company") && <span style={{ color: "rgba(240,250,249,0.35)" }}>Du: </span>}
+            {lastMsg?.content || "—"}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
+            {s && (
+              <span style={{ padding: "2px 8px", borderRadius: 99, background: s.bg, border: `1px solid ${s.border}`, fontSize: 10, fontWeight: 800, color: s.color }}>
+                {s.label}
+              </span>
+            )}
+            {unread && (
+              <span style={{ marginLeft: "auto", minWidth: 18, height: 18, padding: "0 5px", borderRadius: 99, background: "#F5A623", color: "#000", fontSize: 10, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                1
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
     </Link>
   );
 }
 
-function ChatWindow({ conversation, isDriver, onBack, onReport, onReview, canReview, reviewStatus }) {
+// ─── Chat window ──────────────────────────────────────────────────────────────
+function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, reviewLabel }) {
   const { sendMessage } = useChat();
   const [input, setInput] = useState("");
+  const [showQuick, setShowQuick] = useState(false);
+  const bottomRef = useRef(null);
+  const textareaRef = useRef(null);
 
-  const other = isDriver ? conversation.companyName : conversation.driverName;
+  const other = isDriver ? conv.companyName : conv.driverName;
+  const stage = getStage(conv);
+  const isRejected = stage === "rejected";
+  const s = STAGE[stage] ?? STAGE.applied;
 
-  const handleSend = (e) => {
-    e.preventDefault();
-    if (!input.trim()) return;
-    sendMessage(conversation.id, input.trim(), isDriver ? "driver" : "company");
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [conv.messages?.length]);
+
+  const handleSend = () => {
+    const text = input.trim();
+    if (!text) return;
+    sendMessage(conv.id, text, isDriver ? "driver" : "company");
     setInput("");
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+    }
   };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  const handleTextareaChange = (e) => {
+    setInput(e.target.value);
+    e.target.style.height = "auto";
+    e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px";
+  };
+
+  const quickReplies = isDriver ? DRIVER_QUICK : COMPANY_QUICK;
 
   const formatTime = (ts) =>
     new Date(ts).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" });
 
+  const formatDateLabel = (ts) => {
+    const d = new Date(ts);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+    if (d.toDateString() === today.toDateString()) return "Idag";
+    if (d.toDateString() === yesterday.toDateString()) return "Igår";
+    return d.toLocaleDateString("sv-SE", { weekday: "long", day: "numeric", month: "long" });
+  };
+
+  // Group messages by calendar day
+  const allMsgs = conv.messages || [];
+  const groups = [];
+  let currentDay = null;
+  allMsgs.forEach((msg) => {
+    const day = new Date(msg.timestamp).toDateString();
+    if (day !== currentDay) {
+      currentDay = day;
+      groups.push({ day, msgs: [] });
+    }
+    groups[groups.length - 1].msgs.push(msg);
+  });
+
+  // Read receipt: last company message when driver has read it
+  const lastCompanyMsg = [...allMsgs].reverse().find((m) => m.sender === "company");
+  const readReceiptMsgId = !isDriver && conv.readByDriverAt ? lastCompanyMsg?.id : null;
+
   return (
-    <div className="flex flex-col h-full">
-      <div className="p-4 border-b border-slate-200 flex items-center gap-3">
-        <button type="button" onClick={onBack} className="lg:hidden text-slate-600 hover:text-slate-900">
+    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+      {/* Job context header */}
+      <div style={{ padding: "18px 28px", borderBottom: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", gap: 16, flexShrink: 0 }}>
+        <button type="button" onClick={onBack} style={{ background: "none", border: "none", color: "rgba(240,250,249,0.5)", cursor: "pointer", fontSize: 18, padding: "2px 4px", display: "none" }} className="lg-hide">
           ←
         </button>
-        <div className="flex-1 min-w-0">
-          <h2 className="font-semibold text-slate-900 truncate">{other}</h2>
-          {conversation.jobTitle && (
-            <p className="text-sm text-slate-500 truncate">{conversation.jobTitle}</p>
+        <div style={{ width: 48, height: 48, borderRadius: 11, background: avatarBg(other), display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 14, color: "#fff", flexShrink: 0 }}>
+          {avatarInitials(other)}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 3, letterSpacing: -0.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {conv.jobTitle || other}
+          </div>
+          <div style={{ fontSize: 12, color: "rgba(240,250,249,0.55)", display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+            <span>{other}</span>
+            {conv.location && <><span style={{ color: "rgba(255,255,255,0.2)" }}>·</span><span>{conv.location}</span></>}
+            {conv.salary && <><span style={{ color: "rgba(255,255,255,0.2)" }}>·</span><span>{conv.salary}</span></>}
+            {typeof conv.matchScore === "number" && (
+              <><span style={{ color: "rgba(255,255,255,0.2)" }}>·</span><span style={{ color: "#4ade80", fontWeight: 700 }}>{conv.matchScore}% match</span></>
+            )}
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+          <span style={{ padding: "5px 11px", borderRadius: 99, background: s.bg, border: `1px solid ${s.border}`, fontSize: 11, fontWeight: 800, color: s.color, whiteSpace: "nowrap" }}>
+            {s.label}
+          </span>
+          {conv.jobId && (
+            <Link
+              to={`/jobb/${conv.jobId}`}
+              style={{ padding: "7px 12px", borderRadius: 9, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", color: "rgba(240,250,249,0.8)", fontSize: 12, fontWeight: 700, textDecoration: "none", display: "flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}
+            >
+              Se annons
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            </Link>
+          )}
+          {isDriver && (
+            <button type="button" onClick={onReview} disabled={!canReview} style={{ padding: "6px 10px", borderRadius: 8, background: "rgba(245,166,35,0.07)", border: "1px solid rgba(245,166,35,0.15)", color: !canReview ? "rgba(240,250,249,0.2)" : "#F5A623", fontSize: 11, fontWeight: 600, cursor: canReview ? "pointer" : "not-allowed", fontFamily: "inherit", whiteSpace: "nowrap" }}>
+              {reviewLabel}
+            </button>
+          )}
+          <button type="button" onClick={onReport} style={{ padding: "6px 10px", borderRadius: 8, background: "rgba(248,113,113,0.05)", border: "1px solid rgba(248,113,113,0.12)", color: "rgba(248,113,113,0.5)", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
+            Rapportera
+          </button>
+        </div>
+      </div>
+
+      {/* Selected banner */}
+      {isDriver && conv.selectedByCompanyAt && (
+        <div style={{ padding: "14px 28px", background: "linear-gradient(135deg,rgba(74,222,128,0.1),rgba(74,222,128,0.02))", borderBottom: "1px solid rgba(74,222,128,0.2)", display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ width: 32, height: 32, borderRadius: 99, background: "rgba(74,222,128,0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 13, fontWeight: 800, color: "#4ade80" }}>Du är utvald — åtgärd krävs</div>
+            <div style={{ fontSize: 12, color: "rgba(240,250,249,0.65)", marginTop: 2 }}>{other} har valt ut din profil.</div>
+          </div>
+        </div>
+      )}
+
+      {/* Rejected banner */}
+      {isRejected && (
+        <div style={{ padding: "12px 28px", background: "rgba(255,255,255,0.02)", borderBottom: "1px solid rgba(255,255,255,0.05)", fontSize: 12, color: "rgba(240,250,249,0.45)", fontStyle: "italic" }}>
+          Konversationen är avslutad.
+        </div>
+      )}
+
+      {/* Company contact info */}
+      {!isDriver && (conv.driverEmail || conv.driverPhone) && (
+        <div style={{ padding: "10px 24px", background: "rgba(255,255,255,0.02)", borderBottom: "1px solid rgba(255,255,255,0.05)", fontSize: 13, color: "rgba(240,250,249,0.5)", display: "flex", gap: 16 }}>
+          {conv.driverEmail && <span>📧 {conv.driverEmail}</span>}
+          {conv.driverPhone && <span>📞 {conv.driverPhone}</span>}
+        </div>
+      )}
+
+      {/* Messages */}
+      <div style={{ flex: 1, overflowY: "auto", padding: "24px 28px" }}>
+        {groups.map(({ day, msgs }) => (
+          <div key={day}>
+            <div style={{ textAlign: "center", margin: "12px 0 18px", fontSize: 11, fontWeight: 700, color: "rgba(240,250,249,0.4)", letterSpacing: 0.5 }}>
+              <span style={{ padding: "4px 12px", background: "rgba(255,255,255,0.04)", borderRadius: 99 }}>
+                {formatDateLabel(msgs[0].timestamp)}
+              </span>
+            </div>
+            {msgs.map((msg) => {
+              const isOwn = msg.sender === (isDriver ? "driver" : "company");
+              return (
+                <div key={msg.id} style={{ marginBottom: 10 }}>
+                  <div style={{ display: "flex", justifyContent: isOwn ? "flex-end" : "flex-start", alignItems: "flex-end", gap: 10 }}>
+                    {!isOwn && (
+                      <div style={{ width: 32, height: 32, borderRadius: 8, background: avatarBg(other), display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 11, color: "#fff", flexShrink: 0 }}>
+                        {avatarInitials(other)}
+                      </div>
+                    )}
+                    <div style={{ maxWidth: "60%" }}>
+                      <div style={{
+                        padding: "12px 16px",
+                        borderRadius: isOwn ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
+                        background: isOwn ? "linear-gradient(135deg,#F5A623,#d97706)" : "rgba(255,255,255,0.05)",
+                        border: isOwn ? "none" : "1px solid rgba(255,255,255,0.06)",
+                        color: isOwn ? "#000" : "#f0faf9",
+                        fontWeight: isOwn ? 600 : 400,
+                      }}>
+                        <p style={{ fontSize: 14, lineHeight: 1.5, margin: 0, whiteSpace: "pre-wrap" }}>{msg.content}</p>
+                      </div>
+                      <div style={{ fontSize: 10, color: "rgba(240,250,249,0.35)", marginTop: 4, textAlign: isOwn ? "right" : "left", paddingLeft: isOwn ? 0 : 4, paddingRight: isOwn ? 4 : 0 }}>
+                        {formatTime(msg.timestamp)}
+                        {isOwn && <span style={{ marginLeft: 5 }}>· Levererat</span>}
+                      </div>
+                    </div>
+                  </div>
+                  {readReceiptMsgId === msg.id && (
+                    <p style={{ textAlign: "right", fontSize: 11, color: "rgba(240,250,249,0.25)", marginTop: 2 }}>
+                      Läst {new Date(conv.readByDriverAt).toLocaleString("sv-SE", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ))}
+        <div ref={bottomRef} />
+      </div>
+
+      {/* Composer */}
+      {!isRejected && (
+        <div style={{ padding: "16px 28px 22px", borderTop: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}>
+          <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 14, padding: "14px 16px", display: "flex", alignItems: "flex-end", gap: 10 }}>
+            <textarea
+              ref={textareaRef}
+              value={input}
+              onChange={handleTextareaChange}
+              onKeyDown={handleKeyDown}
+              placeholder={`Skriv till ${other}...`}
+              rows={1}
+              style={{ flex: 1, fontSize: 14, color: "#f0faf9", background: "transparent", outline: "none", resize: "none", lineHeight: 1.5, paddingTop: 6, paddingBottom: 6, minHeight: 24, maxHeight: 120, fontFamily: "inherit", border: "none" }}
+            />
+            <button
+              type="button"
+              onClick={handleSend}
+              disabled={!input.trim()}
+              style={{ padding: "8px 16px", borderRadius: 10, background: input.trim() ? "linear-gradient(135deg,#F5A623,#d97706)" : "rgba(255,255,255,0.05)", color: input.trim() ? "#000" : "rgba(240,250,249,0.3)", fontWeight: 800, fontSize: 13, display: "flex", alignItems: "center", gap: 7, flexShrink: 0, transition: "all .15s", fontFamily: "inherit", cursor: input.trim() ? "pointer" : "not-allowed", border: "none" }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+              Skicka
+            </button>
+          </div>
+          {/* Quick replies — always visible when selected */}
+          {stage === "selected" && (
+            <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap", alignItems: "center" }}>
+              <span style={{ fontSize: 11, color: "rgba(240,250,249,0.4)", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>Snabbsvar:</span>
+              {quickReplies.map((r) => (
+                <button key={r} type="button" onClick={() => setInput(r)} style={{ padding: "6px 12px", borderRadius: 99, background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.25)", color: "#4ade80", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+                  {r.length > 36 ? r.slice(0, 36) + "…" : r}
+                </button>
+              ))}
+            </div>
+          )}
+          {/* Quick replies toggle for non-selected */}
+          {stage !== "selected" && (
+            <div style={{ marginTop: 6, display: "flex", gap: 6, flexWrap: "wrap" }}>
+              {showQuick && quickReplies.map((r) => (
+                <button key={r} type="button" onClick={() => { setInput(r); setShowQuick(false); }} style={{ padding: "6px 12px", borderRadius: 99, background: "rgba(245,166,35,0.08)", border: "1px solid rgba(245,166,35,0.2)", color: "#F5A623", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+                  {r.length > 40 ? r.slice(0, 40) + "…" : r}
+                </button>
+              ))}
+              <button type="button" onClick={() => setShowQuick((v) => !v)} style={{ padding: "5px 10px", borderRadius: 99, background: "transparent", border: "1px solid rgba(255,255,255,0.07)", color: "rgba(240,250,249,0.35)", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+                {showQuick ? "Dölj" : "Snabbsvar"}
+              </button>
+            </div>
           )}
         </div>
-        <button
-          type="button"
-          onClick={onReport}
-          className="text-xs text-red-600 hover:text-red-700 font-medium min-h-[36px]"
-        >
-          Rapportera
-        </button>
-        {isDriver ? (
-          <button
-            type="button"
-            onClick={onReview}
-            disabled={!canReview}
-            className="text-xs text-[var(--color-primary)] hover:text-[var(--color-primary-light)] font-medium disabled:opacity-50 min-h-[36px]"
-          >
-            {reviewStatus || "Lämna omdöme"}
-          </button>
-        ) : null}
-      </div>
-
-      {!isDriver && (conversation.driverEmail || conversation.driverPhone) && (
-        <div className="px-4 py-2 bg-slate-50 border-b border-slate-200 text-sm text-slate-600">
-          {conversation.driverEmail && <span>E-post: {conversation.driverEmail}</span>}
-          {conversation.driverEmail && conversation.driverPhone && " · "}
-          {conversation.driverPhone && <span>Tel: {conversation.driverPhone}</span>}
-        </div>
       )}
-
-      {isDriver && conversation.selectedByCompanyAt && conversation.jobId && (
-        <div className="mx-4 mt-3 p-3 rounded-lg bg-green-50 border border-green-200">
-          <p className="text-sm font-medium text-green-900">Företaget har valt dig för detta jobb</p>
-          <Link
-            to={`/jobb/${conversation.jobId}`}
-            className="inline-flex items-center gap-1 mt-2 text-sm text-[var(--color-primary)] font-medium hover:underline"
-          >
-            Öppna jobbannonsen →
-          </Link>
-        </div>
-      )}
-
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
-        {conversation.messages.map((msg, idx) => {
-          const isOwn = msg.sender === (isDriver ? "driver" : "company");
-          const isLastCompanyMsg = !isDriver &&
-            msg.sender === "company" &&
-            conversation.messages.slice(idx + 1).every((m) => m.sender !== "company");
-          const showReadReceipt = isLastCompanyMsg && conversation.readByDriverAt;
-          return (
-            <div key={msg.id}>
-              <div className={`flex ${isOwn ? "justify-end" : "justify-start"}`}>
-                <div
-                  className={`max-w-[85%] rounded-lg px-4 py-2 ${
-                    isOwn
-                      ? "bg-[var(--color-primary)] text-white"
-                      : "bg-slate-100 text-slate-900"
-                  }`}
-                >
-                  <p className="whitespace-pre-wrap">{msg.content}</p>
-                  <p className={`text-xs mt-1 ${isOwn ? "text-white/80" : "text-slate-500"}`}>
-                    {formatTime(msg.timestamp)}
-                  </p>
-                </div>
-              </div>
-              {showReadReceipt && (
-                <p className="text-right text-xs text-slate-400 mt-0.5 pr-1">
-                  Läst {new Date(conversation.readByDriverAt).toLocaleString("sv-SE", {
-                    day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"
-                  })}
-                </p>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      <form onSubmit={handleSend} className="p-4 border-t border-slate-200">
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Skriv meddelande..."
-            className="flex-1 px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none"
-          />
-          <button
-            type="submit"
-            className="px-4 sm:px-6 py-3 rounded-xl bg-[var(--color-primary)] text-white font-medium hover:bg-[var(--color-primary-light)] min-h-[44px]"
-          >
-            Skicka
-          </button>
-        </div>
-        <p className="mt-2 text-xs text-slate-500">
-          All kommunikation sker via Sveriges Transportplattform. Du behöver inte dela dina kontaktuppgifter.
-        </p>
-      </form>
     </div>
   );
 }
 
+// ─── Main ─────────────────────────────────────────────────────────────────────
 export default function Messages() {
   usePageTitle("Meddelanden");
   const { id } = useParams();
@@ -197,251 +386,238 @@ export default function Messages() {
   const { pathname } = useLocation();
   const toast = useToast();
   const isDriver = !pathname.startsWith("/foretag/meddelanden");
+  const basePath = isDriver ? "/meddelanden" : "/foretag/meddelanden";
+
   const companies = hasApi
     ? [...new Set((conversationsLoading ? [] : getCompanyConversations(user?.companyName || "")).map((c) => c.companyName))]
     : [];
   const [companyFilter, setCompanyFilter] = useState("");
+  const [stageFilter, setStageFilter] = useState("all");
   const [conversationReview, setConversationReview] = useState(null);
 
-  const driverId = user?.id ?? profile.id;
+  const driverId = user?.id ?? profile?.id;
   const companyNameForFilter = user?.companyName || companyFilter;
-  const conversations = isDriver
+  const allConversations = isDriver
     ? getDriverConversations(driverId)
     : getCompanyConversations(companyNameForFilter);
 
+  const unreadCount = allConversations.filter((c) => {
+    const lastMsg = c.messages?.[c.messages.length - 1];
+    return isDriver
+      ? (!c.readByDriverAt && lastMsg?.sender !== "driver")
+      : (!c.readByCompanyAt);
+  }).length;
+
+  const selectedCount = allConversations.filter((c) => c.selectedByCompanyAt).length;
+
+  const conversations = (() => {
+    if (stageFilter === "unread") {
+      return allConversations.filter((c) => {
+        const lastMsg = c.messages?.[c.messages.length - 1];
+        return isDriver
+          ? (!c.readByDriverAt && lastMsg?.sender !== "driver")
+          : (!c.readByCompanyAt);
+      });
+    }
+    if (stageFilter === "selected") return allConversations.filter((c) => c.selectedByCompanyAt);
+    if (stageFilter === "active") return allConversations.filter((c) => !c.rejectedByCompanyAt);
+    if (stageFilter === "archived") return allConversations.filter((c) => c.rejectedByCompanyAt);
+    return allConversations;
+  })();
+
   const conversation = id ? getConversation(id) : null;
 
-  const handleReportConversation = async () => {
-    if (!conversation) return;
-    const category = prompt(
-      "Kategori (PAYMENT, BEHAVIOR, SCAM, SPAM, OTHER):",
-      "BEHAVIOR"
-    );
-    if (!category) return;
-    const description = prompt("Beskriv problemet kort:", "");
-    if (!description || description.trim().length < 10) {
-      setReportError("Beskrivning måste vara minst 10 tecken.");
-      return;
-    }
-    try {
-      const reportedUserId = isDriver ? conversation.companyId : conversation.driverId;
-      await createReport({
-        category: category.toUpperCase(),
-        description: description.trim(),
-        conversationId: conversation.id,
-        reportedUserId,
-      });
-      toast.success("Tack. Rapporten är skickad till moderation.");
-    } catch (e) {
-      toast.error(e.message || "Kunde inte skicka rapporten.");
-    }
-  };
-
-  const handleSubmitReview = async () => {
-    if (!conversation || !isDriver) return;
-    if (conversationReview) {
-      toast.info("Du har redan lämnat omdöme för denna kontakt.");
-      return;
-    }
-    const ratingRaw = prompt("Betyg 1-5:", "5");
-    if (!ratingRaw) return;
-    const rating = Number(ratingRaw);
-    const comment = prompt("Kommentar (valfritt, minst 10 tecken om ifyllt):", "") || "";
-    try {
-      const data = await submitCompanyReview({
-        conversationId: conversation.id,
-        rating,
-        comment,
-      });
-      setConversationReview(data);
-      toast.success("Tack! Ditt omdöme är registrerat.");
-    } catch (e) {
-      toast.error(e.message || "Kunde inte skicka omdöme.");
-    }
-  };
+  const STAGE_FILTERS = [
+    { k: "all",      l: "Alla",       c: allConversations.length },
+    { k: "unread",   l: "Olästa",     c: unreadCount },
+    { k: "selected", l: "Utvalda",    c: selectedCount },
+    { k: "active",   l: "Aktiva",     c: allConversations.filter((c) => !c.rejectedByCompanyAt).length },
+    { k: "archived", l: "Avslutade",  c: allConversations.filter((c) => c.rejectedByCompanyAt).length },
+  ];
 
   useEffect(() => {
     if (isDriver) return;
-    if (user?.companyName) {
-      setCompanyFilter(user.companyName);
-      return;
-    }
-    if (!companyFilter && companies.length > 0) {
-      setCompanyFilter(companies[0]);
-    }
+    if (user?.companyName) { setCompanyFilter(user.companyName); return; }
+    if (!companyFilter && companies.length > 0) setCompanyFilter(companies[0]);
   }, [isDriver, user?.companyName, companies, companyFilter]);
 
   useEffect(() => {
-    if (conversation && !isDriver) {
-      setCompanyFilter(conversation.companyName);
-    }
+    if (conversation && !isDriver) setCompanyFilter(conversation.companyName);
   }, [conversation?.id, conversation?.companyName, isDriver]);
 
   useEffect(() => {
-    if (!isDriver || !conversation?.id) {
-      setConversationReview(null);
-      return;
-    }
+    if (!isDriver || !conversation?.id) { setConversationReview(null); return; }
     getMyConversationReview(conversation.id)
-      .then((r) => setConversationReview(r))
+      .then(setConversationReview)
       .catch(() => setConversationReview(null));
   }, [isDriver, conversation?.id]);
 
   useEffect(() => {
-    if (isDriver) {
-      markSelectedNotificationsSeen();
-    }
+    if (isDriver) markSelectedNotificationsSeen();
   }, [isDriver, markSelectedNotificationsSeen]);
 
-  // Mark conversation as seen when opened
   useEffect(() => {
-    if (conversation?.id && isDriver) {
-      markConversationSeen(conversation.id);
-    }
+    if (conversation?.id && isDriver) markConversationSeen(conversation.id);
   }, [conversation?.id, isDriver, markConversationSeen]);
 
-  // Fast polling while on this page (4s instead of 20s)
   useEffect(() => {
     if (!hasApi) return;
     const interval = setInterval(refreshConversations, 4000);
     return () => clearInterval(interval);
   }, [hasApi, refreshConversations]);
 
-  const selectedConversations = isDriver
-    ? conversations.filter((c) => c.selectedByCompanyAt)
-    : [];
-  return (
-    <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 min-h-[calc(100dvh-8rem)] lg:h-[calc(100vh-8rem)]">
-      {!isDriver && companyUnreadConversationCount > 0 && (
-        <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800">
-          <p className="font-medium">Saker som lätt glöms</p>
-          <p className="mt-1 text-slate-700">Svarar ni inom 24–48 timmar ökar chansen att hitta rätt kandidat. Ni har {companyUnreadConversationCount} nya ansökningar att granska.</p>
-        </div>
-      )}
-      {isDriver && selectedConversations.length > 0 && (
-        <div className="mb-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-900">
-          <p className="font-medium">Du har blivit utvald i {selectedConversations.length} ansökan{selectedConversations.length > 1 ? "er" : ""}.</p>
-          <p className="mt-1 text-green-800">Saker som lätt glöms: svara snabbt – det visar intresse och ökar chansen till nästa steg.</p>
-          <p className="mt-1 text-green-700">Öppna konversationen nedan för att svara företaget.</p>
-        </div>
-      )}
-      <div className="flex flex-col lg:flex-row h-full gap-4">
-        <aside className={`lg:w-80 shrink-0 flex flex-col border border-slate-200 rounded-xl bg-white overflow-hidden ${id ? "hidden lg:flex" : ""}`}>
-          <div className="p-4 border-b border-slate-200">
-            <h1 className="text-xl font-bold text-slate-900">
-              {isDriver ? "Meddelanden" : "Företagsmeddelanden"}
-            </h1>
-            {!isDriver && (
-              <div className="mt-3">
-                <label htmlFor="company-select" className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
-                  Företag
-                </label>
-                <div className="relative">
-                  <select
-                    id="company-select"
-                    value={companyFilter}
-                    onChange={(e) => setCompanyFilter(e.target.value)}
-                    className="w-full appearance-none pl-3 pr-9 py-2 rounded-lg border border-slate-200 text-sm text-slate-800 bg-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none"
-                  >
-                    {companies.map((c) => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
-                  </select>
-                  <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-400">
-                    <ChevronDownIcon className="w-4 h-4" />
-                  </span>
-                </div>
-              </div>
-            )}
-          </div>
-          <div className="flex-1 overflow-y-auto">
-            {conversationsLoading ? (
-              <div className="p-6">
-                <LoadingBlock message="Hämtar meddelanden..." className="py-8" />
-              </div>
-            ) : conversations.length === 0 ? (
-              <div className="p-6 text-center text-sm space-y-3">
-                <p className="text-slate-600">
-                  {isDriver ? "Inga konversationer ännu." : "Inga konversationer för detta företag."}
-                </p>
-                {isDriver ? (
-                  <Link to="/jobb" className="inline-block px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white font-medium text-xs hover:bg-[var(--color-primary-light)]">
-                    Se lediga jobb →
-                  </Link>
-                ) : (
-                  <Link to="/foretag/chaufforer" className="inline-block px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white font-medium text-xs hover:bg-[var(--color-primary-light)]">
-                    Hitta förare →
-                  </Link>
-                )}
-              </div>
-            ) : (
-              <div className="divide-y divide-slate-100">
-                {conversations.map((c) => (
-                  <ConversationItem
-                    key={c.id}
-                    conversation={c}
-                    isDriver={isDriver}
-                    isActive={c.id === id}
-                    onClick={() => {}}
-                    basePath={isDriver ? "/meddelanden" : "/foretag/meddelanden"}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        </aside>
+  const handleReport = async () => {
+    if (!conversation) return;
+    const category = prompt("Kategori (PAYMENT, BEHAVIOR, SCAM, SPAM, OTHER):", "BEHAVIOR");
+    if (!category) return;
+    const description = prompt("Beskriv problemet kort:", "");
+    if (!description || description.trim().length < 10) { toast.error("Beskrivning måste vara minst 10 tecken."); return; }
+    try {
+      const reportedUserId = isDriver ? conversation.companyId : conversation.driverId;
+      await createReport({ category: category.toUpperCase(), description: description.trim(), conversationId: conversation.id, reportedUserId });
+      toast.success("Rapporten är skickad till moderation.");
+    } catch (e) { toast.error(e.message || "Kunde inte skicka rapporten."); }
+  };
 
-        <div className={`flex-1 min-h-0 bg-white rounded-xl border border-slate-200 overflow-hidden flex flex-col ${!id ? "hidden lg:flex" : ""}`}>
-          {conversation ? (
-            <ChatWindow
-              conversation={conversation}
-              isDriver={isDriver}
-              onBack={() => window.history.back()}
-              onReport={handleReportConversation}
-              onReview={handleSubmitReview}
-              canReview={!conversationReview}
-              reviewStatus={
-                conversationReview
-                  ? `Omdöme lämnat (${conversationReview.rating}/5)`
-                  : "Lämna omdöme"
-              }
-            />
-          ) : (
-            <div className="flex-1 flex flex-col items-center justify-center gap-4 text-slate-500 p-8 text-center">
-              {id ? (
-                <p className="text-sm">Konversationen hittades inte.</p>
-              ) : conversations.length > 0 ? (
-                <p className="text-sm">Välj en konversation till vänster.</p>
-              ) : isDriver ? (
-                <>
-                  <p className="text-sm">Ansök till ett jobb för att starta en konversation.</p>
-                  <Link to="/jobb" className="px-5 py-2.5 rounded-lg bg-[var(--color-primary)] text-white text-sm font-medium hover:bg-[var(--color-primary-light)]">
-                    Se lediga jobb
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <p className="text-sm">Kontakta en förare för att starta en konversation.</p>
-                  <Link to="/foretag/chaufforer" className="px-5 py-2.5 rounded-lg bg-[var(--color-primary)] text-white text-sm font-medium hover:bg-[var(--color-primary-light)]">
-                    Hitta förare
-                  </Link>
-                </>
+  const handleReview = async () => {
+    if (!conversation || !isDriver || conversationReview) { if (conversationReview) toast.info("Du har redan lämnat omdöme."); return; }
+    const ratingRaw = prompt("Betyg 1-5:", "5");
+    if (!ratingRaw) return;
+    const comment = prompt("Kommentar (valfritt):", "") || "";
+    try {
+      const data = await submitCompanyReview({ conversationId: conversation.id, rating: Number(ratingRaw), comment });
+      setConversationReview(data);
+      toast.success("Ditt omdöme är registrerat.");
+    } catch (e) { toast.error(e.message || "Kunde inte skicka omdöme."); }
+  };
+
+  return (
+    <main style={{ background: "#060f0f", height: "calc(100vh - 64px)", marginTop: "-64px", paddingTop: 64, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+
+      {/* Banners */}
+      {!isDriver && companyUnreadConversationCount > 0 && (
+        <div style={{ padding: "10px 24px", background: "rgba(245,166,35,0.06)", borderBottom: "1px solid rgba(245,166,35,0.12)", fontSize: 13, color: "#F5A623", flexShrink: 0 }}>
+          Ni har <strong>{companyUnreadConversationCount}</strong> nya ansökningar att granska. Svarar ni inom 24h ökar chansen att hitta rätt kandidat.
+        </div>
+      )}
+      {isDriver && selectedCount > 0 && (
+        <div style={{ padding: "10px 24px", background: "rgba(74,222,128,0.06)", borderBottom: "1px solid rgba(74,222,128,0.12)", fontSize: 13, color: "#4ade80", display: "flex", gap: 10, alignItems: "center", flexShrink: 0 }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polyline points="20 6 9 17 4 12"/></svg>
+          <span>Du är utvald i <strong>{selectedCount}</strong> ansökan{selectedCount > 1 ? "er" : ""}. Svara snabbt — det visar intresse!</span>
+        </div>
+      )}
+
+      {/* Two-column layout */}
+      <div style={{ flex: 1, display: "flex", overflow: "hidden", minHeight: 0 }}>
+
+          {/* ── Sidebar ── */}
+          <div
+            style={{ display: id ? "none" : "flex", width: 380, background: "#070d0d", borderRight: "1px solid rgba(255,255,255,0.06)", flexDirection: "column", overflow: "hidden", flexShrink: 0 }}
+            className="sidebar-panel"
+          >
+            <div style={{ padding: "22px 22px 14px", borderBottom: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+                <h1 style={{ fontSize: 20, fontWeight: 900, color: "#f0faf9", letterSpacing: -0.5 }}>
+                  {isDriver ? "Inkorg" : "Konversationer"}
+                </h1>
+                <span style={{ fontSize: 12, color: "rgba(240,250,249,0.4)" }}>{allConversations.length} totalt</span>
+              </div>
+
+              {/* Company filter */}
+              {!isDriver && companies.length > 1 && (
+                <select
+                  value={companyFilter}
+                  onChange={(e) => setCompanyFilter(e.target.value)}
+                  style={{ width: "100%", padding: "8px 10px", borderRadius: 9, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "#f0faf9", fontSize: 13, outline: "none", marginBottom: 10, fontFamily: "inherit", appearance: "none" }}
+                >
+                  {companies.map((c) => <option key={c} value={c} style={{ background: "#0a1414" }}>{c}</option>)}
+                </select>
+              )}
+
+              {/* Stage filter pills */}
+              {isDriver && (
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  {STAGE_FILTERS.map(({ k, l, c }) => {
+                    const active = stageFilter === k;
+                    return (
+                      <button
+                        key={k}
+                        onClick={() => setStageFilter(k)}
+                        style={{ padding: "6px 11px", borderRadius: 99, background: active ? "rgba(245,166,35,0.12)" : "rgba(255,255,255,0.04)", border: active ? "1px solid rgba(245,166,35,0.3)" : "1px solid rgba(255,255,255,0.05)", color: active ? "#F5A623" : "rgba(240,250,249,0.6)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}
+                      >
+                        {l}{c > 0 && ` · ${c}`}
+                      </button>
+                    );
+                  })}
+                </div>
               )}
             </div>
-          )}
-        </div>
-      </div>
 
-      {conversations.length > 0 && !id && (
-        <div className="mt-4 lg:hidden">
-          <Link
-            to={`${isDriver ? "/meddelanden" : "/foretag/meddelanden"}/${conversations[0].id}`}
-            className="block text-center py-3 rounded-lg bg-[var(--color-primary)] text-white font-medium"
-          >
-            Öppna senaste konversation
-          </Link>
+            <div style={{ flex: 1, overflowY: "auto" }}>
+              {conversationsLoading ? (
+                <div style={{ padding: "24px 16px" }}><LoadingBlock message="Hämtar..." /></div>
+              ) : conversations.length === 0 ? (
+                <div style={{ padding: "32px 20px", textAlign: "center" }}>
+                  <p style={{ fontSize: 13, color: "rgba(240,250,249,0.4)", marginBottom: 16 }}>
+                    {stageFilter !== "all" ? "Inga konversationer i denna kategori." : isDriver ? "Inga konversationer ännu." : "Inga konversationer."}
+                  </p>
+                  {stageFilter === "all" && (
+                    <Link to={isDriver ? "/jobb" : "/foretag/chaufforer"} style={{ display: "inline-block", padding: "8px 16px", borderRadius: 10, background: "#1F5F5C", color: "#fff", fontWeight: 700, fontSize: 13, textDecoration: "none" }}>
+                      {isDriver ? "Hitta jobb →" : "Hitta förare →"}
+                    </Link>
+                  )}
+                </div>
+              ) : (
+                conversations.map((c) => (
+                  <ConvItem key={c.id} conv={c} isDriver={isDriver} isActive={c.id === id} basePath={basePath} />
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* ── Chat panel ── */}
+          <div style={{ flex: 1, background: "#080f0f", display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0 }}>
+            {conversation ? (
+              <ChatWindow
+                conv={conversation}
+                isDriver={isDriver}
+                onBack={() => window.history.back()}
+                onReport={handleReport}
+                onReview={handleReview}
+                canReview={!conversationReview}
+                reviewLabel={conversationReview ? `Omdöme lämnat (${conversationReview.rating}/5)` : "Lämna omdöme"}
+              />
+            ) : (
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, padding: "40px", textAlign: "center" }}>
+                {id ? (
+                  <p style={{ fontSize: 14, color: "rgba(240,250,249,0.4)" }}>Konversationen hittades inte.</p>
+                ) : allConversations.length > 0 ? (
+                  <>
+                    <div style={{ width: 72, height: 72, borderRadius: 99, background: "rgba(245,166,35,0.08)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 6 }}>
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#F5A623" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+                    </div>
+                    <h2 style={{ fontSize: 20, fontWeight: 900, color: "#f0faf9", letterSpacing: -0.5, marginBottom: 4 }}>Välj en konversation</h2>
+                    <p style={{ fontSize: 13, color: "rgba(240,250,249,0.5)", maxWidth: 340, lineHeight: 1.6 }}>Här samlas alla dina ansökningar och meddelanden från åkerier på ett ställe.</p>
+                  </>
+                ) : isDriver ? (
+                  <>
+                    <p style={{ fontSize: 14, color: "rgba(240,250,249,0.4)" }}>Ansök till ett jobb för att starta en konversation.</p>
+                    <Link to="/jobb" style={{ padding: "10px 22px", borderRadius: 11, background: "#1F5F5C", color: "#fff", fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
+                      Se lediga jobb
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <p style={{ fontSize: 14, color: "rgba(240,250,249,0.4)" }}>Kontakta en förare för att starta en konversation.</p>
+                    <Link to="/foretag/chaufforer" style={{ padding: "10px 22px", borderRadius: 11, background: "#1F5F5C", color: "#fff", fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
+                      Hitta förare
+                    </Link>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
         </div>
-      )}
     </main>
   );
 }

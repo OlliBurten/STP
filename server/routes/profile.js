@@ -57,6 +57,7 @@ function formatProfileResponse(profile, user) {
     showEmailToCompanies: profile.showEmailToCompanies,
     showPhoneToCompanies: profile.showPhoneToCompanies,
     experience,
+    certExpiry: profile.certExpiry && typeof profile.certExpiry === "object" ? profile.certExpiry : {},
     isGymnasieelev: profile.isGymnasieelev ?? false,
     schoolName: profile.schoolName ?? null,
     physicalWorkOk: profile.physicalWorkOk ?? null,
@@ -255,6 +256,7 @@ profileRouter.put("/", async (req, res, next) => {
       showPhoneToCompanies: body.showPhoneToCompanies,
     };
     if (experience !== undefined) data.experience = experience;
+    if (body.certExpiry !== undefined) data.certExpiry = body.certExpiry && typeof body.certExpiry === "object" ? body.certExpiry : null;
     if (body.isGymnasieelev !== undefined) data.isGymnasieelev = Boolean(body.isGymnasieelev);
     if (body.schoolName !== undefined) data.schoolName = body.schoolName ? String(body.schoolName).trim() : null;
     if (body.physicalWorkOk !== undefined) data.physicalWorkOk = body.physicalWorkOk === true ? true : body.physicalWorkOk === false ? false : null;

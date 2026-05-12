@@ -63,6 +63,15 @@ companiesRouter.get("/search", optionalAuthMiddleware, validateQuery(companiesSe
         companyBransch: true,
         companyContactEmail: true,
         companyContactPhone: true,
+        userOrganizations: {
+          take: 1,
+          where: { role: "OWNER" },
+          select: {
+            organization: {
+              select: { fleet: true, employeeCount: true, foundedYear: true },
+            },
+          },
+        },
       },
       orderBy: { companyName: "asc" },
     });
@@ -77,19 +86,25 @@ companiesRouter.get("/search", optionalAuthMiddleware, validateQuery(companiesSe
       : [];
     const countByUserId = new Map(jobCounts.map((j) => [j.userId, j._count._all]));
 
-    const list = companies.map((c) => ({
-      id: c.id,
-      name: c.companyName || c.name,
-      description: (c.companyDescription || "").slice(0, 200),
-      location: c.companyLocation || "",
-      region: c.companyRegion || "",
-      website: c.companyWebsite || "",
-      bransch: c.companyBransch || [],
-      activeJobCount: countByUserId.get(c.id) || 0,
-      contactPerson: isAuthenticated ? (c.name || null) : null,
-      contactEmail: isAuthenticated ? (c.companyContactEmail || null) : null,
-      contactPhone: isAuthenticated ? (c.companyContactPhone || null) : null,
-    }));
+    const list = companies.map((c) => {
+      const org = c.userOrganizations?.[0]?.organization ?? null;
+      return {
+        id: c.id,
+        name: c.companyName || c.name,
+        description: (c.companyDescription || "").slice(0, 200),
+        location: c.companyLocation || "",
+        region: c.companyRegion || "",
+        website: c.companyWebsite || "",
+        bransch: c.companyBransch || [],
+        activeJobCount: countByUserId.get(c.id) || 0,
+        fleet: org?.fleet ?? null,
+        employeeCount: org?.employeeCount ?? null,
+        foundedYear: org?.foundedYear ?? null,
+        contactPerson: isAuthenticated ? (c.name || null) : null,
+        contactEmail: isAuthenticated ? (c.companyContactEmail || null) : null,
+        contactPhone: isAuthenticated ? (c.companyContactPhone || null) : null,
+      };
+    });
     res.json(list);
   } catch (e) {
     next(e);
@@ -118,6 +133,16 @@ companiesRouter.get("/:id/public", optionalAuthMiddleware, async (req, res, next
         policyAgreedAt: true,
         companyContactEmail: true,
         companyContactPhone: true,
+        createdAt: true,
+        userOrganizations: {
+          take: 1,
+          where: { role: "OWNER" },
+          select: {
+            organization: {
+              select: { fleet: true, employeeCount: true, foundedYear: true },
+            },
+          },
+        },
       },
     });
     if (!company || company.role !== "COMPANY") {
@@ -144,6 +169,7 @@ companiesRouter.get("/:id/public", optionalAuthMiddleware, async (req, res, next
       _count: { _all: true },
     });
 
+    const org = company.userOrganizations?.[0]?.organization ?? null;
     res.json({
       id: company.id,
       name: company.companyName || company.name,
@@ -157,6 +183,10 @@ companiesRouter.get("/:id/public", optionalAuthMiddleware, async (req, res, next
       industryOrgMember: company.industryOrgMember || false,
       industryOrgName: company.industryOrgName || null,
       policyAgreedAt: company.policyAgreedAt || null,
+      fleet: org?.fleet ?? null,
+      employeeCount: org?.employeeCount ?? null,
+      foundedYear: org?.foundedYear ?? null,
+      memberSince: company.createdAt.getFullYear(),
       contactEmail: isAuthenticated ? (company.companyContactEmail || null) : null,
       contactPhone: isAuthenticated ? (company.companyContactPhone || null) : null,
       reviewAverage: reviewAggregate._avg.rating

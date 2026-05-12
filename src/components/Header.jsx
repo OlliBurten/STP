@@ -2,9 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useChat } from "../context/ChatContext";
-import { useTheme } from "../context/ThemeContext";
 import { fetchNotifications, markNotificationRead, markAllNotificationsRead } from "../api/notifications.js";
-import { subscribeToPush, unsubscribeFromPush, getPushPermission, getCurrentSubscription } from "../utils/pushNotifications.js";
 import { BellIcon, MenuIcon, CloseIcon, ChevronDownIcon } from "./Icons";
 import Logo from "./Logo";
 
@@ -21,9 +19,19 @@ function initialsFromUser(user) {
   return "?";
 }
 
+// Färgkodad prick per notistyp — matchar designen
+const NOTIF_DOT_COLOR = {
+  selected:    "#4ade80",  // grön  — utvald
+  message:     "#F5A623",  // amber — meddelande
+  match:       "#a78bfa",  // lila  — match
+  view:        "#63b3ed",  // cyan  — profilvisning
+};
+function notifDotColor(type) {
+  return NOTIF_DOT_COLOR[type] || NOTIF_DOT_COLOR.view;
+}
+
 const PUBLIC_NAV_LINKS = [
-  { to: "/", label: "Hem" },
-  { to: "/jobb", label: "Jobb" },
+  { to: "/jobb", label: "Lediga jobb" },
   { to: "/forare", label: "För förare" },
   { to: "/for-akerier", label: "För åkerier" },
 ];
@@ -38,7 +46,6 @@ const PUBLIC_EXTRA_LINKS = [
 export default function Header({ onboarding = false }) {
   const { user, isDriver, isCompany, isAdmin, isImpersonating, logout, stopViewAs } = useAuth();
   const { selectedNotificationCount, unreadCount = 0, companyUnreadConversationCount = 0 } = useChat();
-  const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -46,9 +53,6 @@ export default function Header({ onboarding = false }) {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [notifications, setNotifications] = useState({ list: [], unreadCount: 0 });
-  const [pushPermission, setPushPermission] = useState("default");
-  const [pushSubscribed, setPushSubscribed] = useState(false);
-  const [pushLoading, setPushLoading] = useState(false);
   const notifRef = useRef(null);
   const navDropdownRef = useRef(null);
   const userMenuRef = useRef(null);
@@ -60,14 +64,6 @@ export default function Header({ onboarding = false }) {
     window.addEventListener("scroll", fn, { passive: true });
     return () => window.removeEventListener("scroll", fn);
   }, []);
-
-  useEffect(() => {
-    if (!user) return;
-    getPushPermission().then((perm) => {
-      setPushPermission(perm);
-      if (perm === "granted") getCurrentSubscription().then((sub) => setPushSubscribed(!!sub)).catch(() => {});
-    });
-  }, [user]);
 
   useEffect(() => {
     if (!user || !notifOpen) return;
@@ -118,22 +114,6 @@ export default function Header({ onboarding = false }) {
     if (item.link) navigate(item.link);
   };
 
-  const handleTogglePush = async () => {
-    if (pushLoading) return;
-    setPushLoading(true);
-    try {
-      const token = localStorage.getItem("token");
-      if (pushSubscribed) {
-        await unsubscribeFromPush(token);
-        setPushSubscribed(false);
-      } else {
-        const sub = await subscribeToPush(token);
-        if (sub) { setPushSubscribed(true); setPushPermission("granted"); }
-        else setPushPermission(await getPushPermission());
-      }
-    } catch { /* ignore */ } finally { setPushLoading(false); }
-  };
-
   const handleMarkAllRead = () => {
     markAllNotificationsRead()
       .then(() => setNotifications((prev) => ({ ...prev, unreadCount: 0, list: prev.list.map((n) => ({ ...n, readAt: n.readAt || new Date().toISOString() })) })))
@@ -152,27 +132,32 @@ export default function Header({ onboarding = false }) {
   };
 
   // ── Header background ─────────────────────────────────────────────────────
-  // Logged-in: always solid dark (platform app — the body is light so transparent would bleed through)
-  // Logged-out: transparent at top (lets hero images breathe), solid on scroll
   const headerStyle = {
-    background: user || scrolled
-      ? "rgba(5,14,14,0.94)"
-      : "transparent",
+    background: user || scrolled ? "rgba(6,15,15,0.92)" : "transparent",
     borderBottom: isImpersonating
       ? "1px solid rgba(245,166,35,0.4)"
-      : (user || scrolled)
-      ? "1px solid rgba(255,255,255,0.06)"
-      : "none",
+      : (user || scrolled) ? "1px solid rgba(255,255,255,0.06)" : "none",
     backdropFilter: (user || scrolled) ? "blur(12px)" : "none",
     transition: "background 0.3s, backdrop-filter 0.3s, border-color 0.3s",
-    boxShadow: "none",
   };
 
-  // ── Nav link helper ────────────────────────────────────────────────────────
-  const darkNavLinkClass = ({ isActive }) =>
-    isActive ? "dm-dark-nav-link active-dark" : "dm-dark-nav-link";
+  // ── Nav link helper — amber aktiv-state ────────────────────────────────────
+  const navLinkStyle = ({ isActive }) => isActive
+    ? "dm-dark-nav-link active-dark"
+    : "dm-dark-nav-link";
 
-  // ── Nav links content ──────────────────────────────────────────────────────
+  const navLinkInlineActive = (isActive) => ({
+    padding: "6px 14px",
+    borderRadius: 8,
+    fontSize: 13,
+    fontWeight: isActive ? 600 : 400,
+    color: isActive ? "#7dd3c8" : "rgba(255,255,255,0.6)",
+    textDecoration: "none",
+    background: isActive ? "rgba(31,95,92,0.18)" : "transparent",
+    display: "inline-block",
+  });
+
+  // ── Nav links ──────────────────────────────────────────────────────────────
   const navLinks = (
     <>
       {!user && (
@@ -182,7 +167,7 @@ export default function Header({ onboarding = false }) {
               <NavLink
                 to={item.to}
                 onClick={closeMobile}
-                className={darkNavLinkClass}
+                className={navLinkStyle}
                 style={{ fontSize: 14, fontWeight: 500 }}
                 end={item.to === "/"}
               >
@@ -199,15 +184,12 @@ export default function Header({ onboarding = false }) {
               style={{ background: "none", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 500 }}
               aria-expanded={navDropdownOpen}
               aria-haspopup="true"
-              aria-controls="nav-mer-dropdown"
             >
               Om STP
               <ChevronDownIcon className={`w-4 h-4 ml-0.5 transition-transform ${navDropdownOpen ? "rotate-180" : ""}`} />
             </button>
             {navDropdownOpen && (
               <div
-                id="nav-mer-dropdown"
-                role="menu"
                 className="absolute left-0 top-full mt-0 pt-2 z-[100] w-full min-w-0 sm:left-1/2 sm:right-auto sm:w-auto sm:-translate-x-1/2 sm:min-w-[200px]"
                 onMouseLeave={() => setNavDropdownOpen(false)}
               >
@@ -225,7 +207,6 @@ export default function Header({ onboarding = false }) {
                     <Link
                       key={item.to}
                       to={item.to}
-                      role="menuitem"
                       onClick={() => { setNavDropdownOpen(false); closeMobile(); }}
                       className="block px-5 py-2.5 text-sm transition-colors"
                       style={{ color: "rgba(255,255,255,0.75)", textDecoration: "none" }}
@@ -239,49 +220,67 @@ export default function Header({ onboarding = false }) {
               </div>
             )}
           </li>
-          <li>
-            <Link
-              to="/kontakt"
-              onClick={closeMobile}
-              className="dm-dark-nav-link"
-              style={{ fontSize: 14, fontWeight: 500 }}
-            >
-              Kontakt
-            </Link>
-          </li>
         </>
       )}
 
       {user && isDriver && !platformAdminSession && (
         <>
-          <li><NavLink to="/jobb" onClick={closeMobile} className={darkNavLinkClass} style={{ fontSize: 14 }}>Jobb</NavLink></li>
-          <li><NavLink to="/akerier" onClick={closeMobile} className={darkNavLinkClass} style={{ fontSize: 14 }}>Åkerier</NavLink></li>
+          {[
+            { to: "/jobb", label: "Jobb" },
+            { to: "/akerier", label: "Åkerier" },
+            { to: "/favoriter", label: "Favoriter" },
+            { to: "/mina-ansokningar", label: "Mina ansökningar" },
+          ].map((item) => (
+            <li key={item.to}>
+              <NavLink to={item.to} onClick={closeMobile} end={item.to === "/"}>
+                {({ isActive }) => (
+                  <span style={navLinkInlineActive(isActive)}>{item.label}</span>
+                )}
+              </NavLink>
+            </li>
+          ))}
           <li>
-            <NavLink to="/meddelanden" onClick={closeMobile} className={({ isActive }) => `inline-flex items-center gap-1.5 ${isActive ? "dm-dark-nav-link active-dark" : "dm-dark-nav-link"}`} style={{ fontSize: 14 }}>
-              Meddelanden
-              {(unreadCount > 0 || selectedNotificationCount > 0) && (
-                <span className="inline-flex items-center justify-center min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold">
-                  {unreadCount + selectedNotificationCount > 99 ? "99+" : unreadCount + selectedNotificationCount}
+            <NavLink to="/meddelanden" onClick={closeMobile}>
+              {({ isActive }) => (
+                <span style={{ ...navLinkInlineActive(isActive), display: "inline-flex", alignItems: "center", gap: 6 }}>
+                  Meddelanden
+                  {(unreadCount > 0 || selectedNotificationCount > 0) && (
+                    <span style={{ minWidth: 18, height: 18, padding: "0 5px", borderRadius: 99, background: "#F5A623", color: "#000", fontSize: 10, fontWeight: 900, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                      {unreadCount + selectedNotificationCount > 99 ? "99+" : unreadCount + selectedNotificationCount}
+                    </span>
+                  )}
                 </span>
               )}
             </NavLink>
           </li>
-          <li><NavLink to="/favoriter" onClick={closeMobile} className={darkNavLinkClass} style={{ fontSize: 14 }}>Favoriter</NavLink></li>
-          <li><NavLink to="/mina-ansokningar" onClick={closeMobile} className={darkNavLinkClass} style={{ fontSize: 14 }}>Mina ansökningar</NavLink></li>
         </>
       )}
 
-      {isCompany && (
+      {isCompany && !platformAdminSession && (
         <>
-          <li><NavLink to="/foretag" onClick={closeMobile} className={darkNavLinkClass} style={{ fontSize: 14 }} end>Översikt</NavLink></li>
-          <li><NavLink to="/foretag/mina-jobb" onClick={closeMobile} className={darkNavLinkClass} style={{ fontSize: 14 }}>Mina jobb</NavLink></li>
-          <li><NavLink to="/foretag/chaufforer" onClick={closeMobile} className={darkNavLinkClass} style={{ fontSize: 14 }}>Hitta förare</NavLink></li>
+          {[
+            { to: "/foretag", label: "Översikt", end: true },
+            { to: "/foretag/annonser", label: "Mina annonser" },
+            { to: "/foretag/chaufforer", label: "Hitta förare" },
+          ].map((item) => (
+            <li key={item.to}>
+              <NavLink to={item.to} onClick={closeMobile} end={item.end}>
+                {({ isActive }) => (
+                  <span style={navLinkInlineActive(isActive)}>{item.label}</span>
+                )}
+              </NavLink>
+            </li>
+          ))}
           <li>
-            <NavLink to="/foretag/meddelanden" onClick={closeMobile} className={({ isActive }) => `inline-flex items-center gap-1.5 ${isActive ? "dm-dark-nav-link active-dark" : "dm-dark-nav-link"}`} style={{ fontSize: 14 }}>
-              Meddelanden
-              {companyUnreadConversationCount > 0 && (
-                <span className="inline-flex min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold items-center justify-center">
-                  {companyUnreadConversationCount > 99 ? "99+" : companyUnreadConversationCount}
+            <NavLink to="/foretag/meddelanden" onClick={closeMobile}>
+              {({ isActive }) => (
+                <span style={{ ...navLinkInlineActive(isActive), display: "inline-flex", alignItems: "center", gap: 6 }}>
+                  Meddelanden
+                  {companyUnreadConversationCount > 0 && (
+                    <span style={{ minWidth: 18, height: 18, padding: "0 5px", borderRadius: 99, background: "#F5A623", color: "#000", fontSize: 10, fontWeight: 900, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                      {companyUnreadConversationCount > 99 ? "99+" : companyUnreadConversationCount}
+                    </span>
+                  )}
                 </span>
               )}
             </NavLink>
@@ -309,11 +308,9 @@ export default function Header({ onboarding = false }) {
 
   return (
     <>
-      <header
-        className="fixed left-0 right-0 top-0 z-50"
-        style={headerStyle}
-      >
+      <header className="fixed left-0 right-0 top-0 z-50" style={headerStyle}>
         <nav className="dm-header-nav max-w-6xl mx-auto px-4 sm:px-6 flex items-center h-16 relative">
+
           {/* Logo */}
           <div className="flex items-center shrink-0 overflow-visible">
             <Link to="/" className="flex items-center focus:outline-none rounded overflow-visible">
@@ -321,110 +318,129 @@ export default function Header({ onboarding = false }) {
             </Link>
           </div>
 
-          {/* Desktop nav links — centered */}
-          <ul className="dm-desktop-nav absolute left-1/2 -translate-x-1/2 flex items-center gap-8 text-sm font-medium">
+          {/* Desktop nav links — vänsterjusterade efter loggan */}
+          <ul className="dm-desktop-nav flex items-center gap-1 text-sm font-medium ml-6">
             {navLinks}
           </ul>
 
           {/* Right side */}
           <div className="flex items-center gap-2 sm:gap-3 ml-auto shrink-0">
 
-            {/* Theme toggle — only for logged-in users */}
-            {user && (
-              <button
-                type="button"
-                onClick={toggleTheme}
-                className="p-2 rounded-lg flex items-center justify-center transition-colors"
-                style={{ color: "rgba(255,255,255,0.6)", background: "none", border: "none", cursor: "pointer" }}
-                onMouseEnter={(e) => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.background = "rgba(255,255,255,0.08)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.color = "rgba(255,255,255,0.6)"; e.currentTarget.style.background = ""; }}
-                aria-label={isDark ? "Byt till ljust tema" : "Byt till mörkt tema"}
-                title={isDark ? "Ljust tema" : "Mörkt tema"}
+            {/* Åkeri: "Publicera jobb"-CTA */}
+            {user && isCompany && !platformAdminSession && (
+              <Link
+                to="/foretag/annonsera"
+                className="dm-desktop-nav"
+                style={{ padding: "8px 16px", borderRadius: 10, background: "#F5A623", color: "#000", fontSize: 13, fontWeight: 800, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}
               >
-                {isDark ? (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <circle cx="12" cy="12" r="4"/>
-                    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
-                  </svg>
-                ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-                  </svg>
-                )}
-              </button>
+                + Publicera jobb
+              </Link>
             )}
 
-            {/* Notification bell (logged-in only) */}
+            {/* Notification bell (logged-in only, ej admin) */}
             {user && !platformAdminSession && (
               <div className="relative" ref={notifRef}>
                 <button
                   type="button"
                   onClick={() => setNotifOpen((o) => !o)}
-                  className="p-2 rounded-lg flex items-center justify-center transition-colors"
-                  style={{ color: "rgba(255,255,255,0.6)" }}
-                  onMouseEnter={(e) => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.background = "rgba(255,255,255,0.08)"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.color = "rgba(255,255,255,0.6)"; e.currentTarget.style.background = ""; }}
+                  style={{
+                    width: 38, height: 38, borderRadius: 99,
+                    background: notifOpen ? "rgba(245,166,35,0.12)" : "rgba(255,255,255,0.04)",
+                    border: "none", cursor: "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    position: "relative", transition: "background .15s",
+                  }}
                   aria-label={notifications.unreadCount ? `${notifications.unreadCount} olästa notiser` : "Notiser"}
                 >
-                  <span className="relative inline-flex">
-                    <BellIcon className="w-5 h-5" />
-                    {notifications.unreadCount > 0 && (
-                      <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-semibold leading-none px-0.5">
-                        {notifications.unreadCount > 99 ? "99+" : notifications.unreadCount}
-                      </span>
-                    )}
-                  </span>
+                  <BellIcon style={{ width: 17, height: 17, color: "rgba(255,255,255,0.85)" }} />
+                  {notifications.unreadCount > 0 && (
+                    <span style={{
+                      position: "absolute", top: 7, right: 8,
+                      minWidth: 16, height: 16, padding: "0 4px", borderRadius: 99,
+                      background: "#F5A623", color: "#000",
+                      fontSize: 10, fontWeight: 900,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      border: "2px solid #060f0f",
+                    }}>
+                      {notifications.unreadCount > 99 ? "99+" : notifications.unreadCount}
+                    </span>
+                  )}
                 </button>
+
                 {notifOpen && (
                   <div
-                    className="fixed right-2 top-[4.25rem] sm:absolute sm:right-0 sm:top-full sm:mt-1 w-[320px] max-w-[calc(100vw-1rem)] max-h-[400px] overflow-auto rounded-xl z-[100]"
-                    style={{ background: "#0a1818", border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 16px 48px rgba(0,0,0,0.4)" }}
+                    style={{
+                      position: "fixed", right: 8, top: "4.25rem",
+                      width: 340, maxWidth: "calc(100vw - 1rem)", maxHeight: 420,
+                      background: "#0c1818", border: "1px solid rgba(255,255,255,0.08)",
+                      borderRadius: 14, boxShadow: "0 16px 48px rgba(0,0,0,0.4)",
+                      overflow: "hidden", zIndex: 100,
+                    }}
+                    className="sm:absolute sm:right-0 sm:top-full sm:mt-1 sm:fixed-none"
                   >
-                    <div className="p-3 flex items-center justify-between" style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-                      <span className="text-sm font-semibold" style={{ color: "#f0faf9" }}>Notiser</span>
+                    {/* Header */}
+                    <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <span style={{ fontSize: 14, fontWeight: 800 }}>Notifikationer</span>
                       {notifications.unreadCount > 0 && (
-                        <button type="button" onClick={handleMarkAllRead} className="text-xs hover:underline" style={{ color: "#F5A623" }}>
-                          Markera alla som lästa
+                        <button type="button" onClick={handleMarkAllRead} style={{ fontSize: 11, color: "rgba(245,166,35,0.9)", fontWeight: 700, background: "none", border: "none", cursor: "pointer" }}>
+                          Markera som lästa
                         </button>
                       )}
                     </div>
-                    <ul className="py-1">
+
+                    {/* Items */}
+                    <div style={{ maxHeight: 320, overflowY: "auto" }}>
                       {notifications.list.length === 0 ? (
-                        <li className="px-3 py-4 text-sm text-center" style={{ color: "rgba(240,250,249,0.4)" }}>Inga notiser</li>
+                        <div style={{ padding: "28px 18px", textAlign: "center", fontSize: 13, color: "rgba(240,250,249,0.4)" }}>
+                          Inga notiser
+                        </div>
                       ) : (
                         notifications.list.map((n) => (
-                          <li key={n.id}>
-                            <button
-                              type="button"
-                              onClick={() => handleNotificationClick(n)}
-                              className="w-full text-left px-3 py-2.5 text-sm rounded-lg transition-colors"
-                              style={{ background: !n.readAt ? "rgba(255,255,255,0.03)" : "" }}
-                              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
-                              onMouseLeave={(e) => { e.currentTarget.style.background = !n.readAt ? "rgba(255,255,255,0.03)" : ""; }}
-                            >
-                              <div className="font-medium truncate" style={{ color: "#f0faf9" }}>{n.title}</div>
-                              {n.body && <div className="truncate text-xs mt-0.5" style={{ color: "rgba(240,250,249,0.5)" }}>{n.body}</div>}
-                              <div className="text-xs mt-1" style={{ color: "rgba(240,250,249,0.3)" }}>{formatNotifDate(n.createdAt)}</div>
-                            </button>
-                          </li>
+                          <button
+                            key={n.id}
+                            type="button"
+                            onClick={() => handleNotificationClick(n)}
+                            style={{
+                              width: "100%", padding: "12px 18px",
+                              borderBottom: "1px solid rgba(255,255,255,0.03)",
+                              display: "flex", gap: 11, alignItems: "flex-start",
+                              background: !n.readAt ? "rgba(255,255,255,0.02)" : "transparent",
+                              border: "none", cursor: "pointer", textAlign: "left",
+                              transition: "background .15s",
+                            }}
+                            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.background = !n.readAt ? "rgba(255,255,255,0.02)" : "transparent"; }}
+                          >
+                            {/* Färgkodad prick per typ */}
+                            <span style={{
+                              width: 7, height: 7, borderRadius: 99,
+                              background: notifDotColor(n.type),
+                              marginTop: 6, flexShrink: 0,
+                            }} />
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: 13, lineHeight: 1.4, color: "#f0faf9" }}>{n.title}</div>
+                              {n.body && <div style={{ fontSize: 11.5, color: "rgba(240,250,249,0.5)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{n.body}</div>}
+                              <div style={{ fontSize: 11, color: "rgba(240,250,249,0.35)", marginTop: 3 }}>{formatNotifDate(n.createdAt)}</div>
+                            </div>
+                          </button>
                         ))
                       )}
-                    </ul>
-                    {pushPermission !== "unsupported" && pushPermission !== "denied" && (
-                      <div className="px-3 py-2" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-                        <button type="button" onClick={handleTogglePush} disabled={pushLoading} className="w-full text-xs text-center transition-colors disabled:opacity-50" style={{ color: "rgba(240,250,249,0.4)", background: "none", border: "none", cursor: "pointer" }}
-                          onMouseEnter={(e) => { e.currentTarget.style.color = "#F5A623"; }}
-                          onMouseLeave={(e) => { e.currentTarget.style.color = "rgba(240,250,249,0.4)"; }}
-                        >
-                          {pushLoading ? "…" : pushSubscribed ? "Stäng av push-notiser" : "Aktivera push-notiser"}
-                        </button>
-                      </div>
-                    )}
-                    {pushPermission === "denied" && (
-                      <div className="px-3 py-2" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-                        <p className="text-xs text-center" style={{ color: "rgba(240,250,249,0.3)" }}>Push-notiser blockerade i webbläsaren</p>
-                      </div>
-                    )}
+                    </div>
+
+                    {/* Footer — "Visa alla" */}
+                    <Link
+                      to={isCompany ? "/foretag/meddelanden" : "/meddelanden"}
+                      onClick={() => setNotifOpen(false)}
+                      style={{
+                        display: "block", padding: "12px 18px", textAlign: "center",
+                        fontSize: 13, color: "#F5A623", fontWeight: 700,
+                        textDecoration: "none", borderTop: "1px solid rgba(255,255,255,0.05)",
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = ""; }}
+                    >
+                      Visa alla →
+                    </Link>
                   </div>
                 )}
               </div>
@@ -436,29 +452,45 @@ export default function Header({ onboarding = false }) {
                 <button
                   type="button"
                   onClick={() => setUserMenuOpen((o) => !o)}
-                  className="flex items-center justify-center w-9 h-9 rounded-full text-white text-sm font-semibold ring-2 hover:opacity-95 focus:outline-none focus:ring-offset-2 transition-opacity"
-                  style={{ background: "#1F5F5C", ringColor: "rgba(255,255,255,0.2)" }}
+                  style={{
+                    width: 38, height: 38, borderRadius: 99,
+                    background: isCompany
+                      ? "linear-gradient(135deg,#F5A623,#d97706)"
+                      : "#1F5F5C",
+                    border: userMenuOpen ? "2px solid rgba(245,166,35,0.5)" : "none",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontWeight: 800, fontSize: 13,
+                    color: isCompany ? "#000" : "#fff",
+                    cursor: "pointer",
+                  }}
                   aria-haspopup="menu"
                   aria-expanded={userMenuOpen}
                   aria-label="Konto och inställningar"
                 >
                   {initialsFromUser(user)}
                 </button>
+
                 {userMenuOpen && (
                   <div
-                    className="absolute right-0 top-full mt-2 w-56 max-w-[calc(100vw-1rem)] rounded-xl py-1 z-[110]"
-                    style={{ background: "#0a1818", border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 16px 48px rgba(0,0,0,0.4)" }}
+                    style={{
+                      position: "absolute", right: 0, top: "calc(100% + 8px)",
+                      width: 230, borderRadius: 14, overflow: "hidden", zIndex: 110,
+                      background: "#0c1818", border: "1px solid rgba(255,255,255,0.1)",
+                      boxShadow: "0 16px 48px rgba(0,0,0,0.4)",
+                    }}
                     role="menu"
                   >
-                    <div className="px-3 py-2.5" style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-                      <p className="text-sm font-semibold truncate" style={{ color: "#f0faf9" }}>{user?.name || "Konto"}</p>
-                      <p className="text-xs truncate mt-0.5" style={{ color: "rgba(240,250,249,0.4)" }}>{user?.email}</p>
+                    {/* User info */}
+                    <div style={{ padding: "14px 16px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                      <div style={{ fontSize: 14, fontWeight: 800, color: "#f0faf9", marginBottom: 2 }}>{user?.name || "Konto"}</div>
+                      <div style={{ fontSize: 12, color: "rgba(240,250,249,0.5)" }}>{user?.email}</div>
                     </div>
+
+                    {/* Menu items */}
                     {[
                       !platformAdminSession && isDriver ? { to: "/profil", label: "Min profil" } : null,
                       !platformAdminSession && isCompany ? { to: "/foretag/profil", label: "Företagsprofil" } : null,
-                      !platformAdminSession && isDriver ? { to: "/favoriter", label: "Favoriter" } : null,
-                      !platformAdminSession && isDriver ? { to: "/mina-ansokningar", label: "Mina ansökningar" } : null,
+                      !platformAdminSession ? { to: "/installningar", label: "Inställningar" } : null,
                       isAdmin ? { to: "/admin", label: "Admin" } : null,
                       isAdmin ? { to: "/admin/status", label: "Systemstatus" } : null,
                     ].filter(Boolean).map((item) => (
@@ -467,20 +499,19 @@ export default function Header({ onboarding = false }) {
                         to={item.to}
                         role="menuitem"
                         onClick={() => { setUserMenuOpen(false); closeMobile(); }}
-                        className="block px-3 py-2.5 text-sm transition-colors"
-                        style={{ color: "rgba(240,250,249,0.75)", textDecoration: "none" }}
-                        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; e.currentTarget.style.color = "#f0faf9"; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.background = ""; e.currentTarget.style.color = "rgba(240,250,249,0.75)"; }}
+                        style={{ display: "block", padding: "11px 16px", fontSize: 13, fontWeight: 600, color: "rgba(240,250,249,0.85)", textDecoration: "none", transition: "background .15s" }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.color = "#f0faf9"; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = ""; e.currentTarget.style.color = "rgba(240,250,249,0.85)"; }}
                       >
                         {item.label}
                       </Link>
                     ))}
+
                     <button
                       type="button"
                       role="menuitem"
                       onClick={() => { setUserMenuOpen(false); handleLogout(); }}
-                      className="w-full text-left px-3 py-2.5 text-sm transition-colors"
-                      style={{ color: "rgba(248,113,113,0.85)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}
+                      style={{ width: "100%", padding: "11px 16px", fontSize: 13, fontWeight: 600, color: "rgba(248,113,113,0.85)", background: "none", border: "none", cursor: "pointer", textAlign: "left", fontFamily: "inherit", transition: "background .15s" }}
                       onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(248,113,113,0.08)"; e.currentTarget.style.color = "#f87171"; }}
                       onMouseLeave={(e) => { e.currentTarget.style.background = ""; e.currentTarget.style.color = "rgba(248,113,113,0.85)"; }}
                     >
@@ -518,7 +549,7 @@ export default function Header({ onboarding = false }) {
               type="button"
               onClick={() => setMobileOpen(!mobileOpen)}
               className="dm-mobile-menu-button p-2 -mr-2 rounded-lg min-h-[44px] min-w-[44px] flex items-center justify-center transition-colors"
-              style={{ color: "rgba(255,255,255,0.7)" }}
+              style={{ color: "rgba(255,255,255,0.7)", background: "none", border: "none", cursor: "pointer" }}
               onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.08)"; e.currentTarget.style.color = "#fff"; }}
               onMouseLeave={(e) => { e.currentTarget.style.background = ""; e.currentTarget.style.color = "rgba(255,255,255,0.7)"; }}
               aria-label={mobileOpen ? "Stäng meny" : "Öppna meny"}
@@ -530,11 +561,7 @@ export default function Header({ onboarding = false }) {
             {/* Desktop login / register (public) */}
             {!user && (
               <>
-                <Link
-                  to="/login"
-                  className="dm-header-primary-cta text-sm font-medium"
-                  style={{ color: "rgba(255,255,255,0.75)", textDecoration: "none" }}
-                >
+                <Link to="/login" className="dm-header-primary-cta text-sm font-medium" style={{ color: "rgba(255,255,255,0.75)", textDecoration: "none" }}>
                   Logga in
                 </Link>
                 <Link
@@ -554,7 +581,7 @@ export default function Header({ onboarding = false }) {
         {mobileOpen && (
           <div
             className="dm-mobile-menu-panel shadow-lg"
-            style={{ background: "rgba(5,14,14,0.98)", borderTop: "1px solid rgba(255,255,255,0.08)" }}
+            style={{ background: "rgba(6,15,15,0.98)", borderTop: "1px solid rgba(255,255,255,0.08)" }}
           >
             <ul className="py-2 text-sm font-medium">
               {!user ? (
@@ -579,6 +606,16 @@ export default function Header({ onboarding = false }) {
             <div className="px-4 py-3" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
               {user ? (
                 <div className="flex flex-col gap-2">
+                  {isCompany && (
+                    <Link
+                      to="/foretag/annonsera"
+                      onClick={closeMobile}
+                      className="inline-flex items-center justify-center w-full px-4 py-2.5 rounded-xl text-sm font-bold"
+                      style={{ background: "#F5A623", color: "#000" }}
+                    >
+                      + Publicera jobb
+                    </Link>
+                  )}
                   {isAdmin && isImpersonating && (
                     <button
                       type="button"

@@ -149,6 +149,8 @@ select {
   text-decoration: none;
   transition: color 0.2s;
   position: relative;
+  padding: 6px 12px;
+  border-radius: 8px;
 }
 .dm-dark-nav-link:hover {
   color: #F5A623;

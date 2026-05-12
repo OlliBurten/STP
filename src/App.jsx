@@ -23,6 +23,7 @@ const ForDrivers            = lazy(() => import("./pages/ForDrivers"));
 const ForCompaniesLanding   = lazy(() => import("./pages/ForCompaniesLanding"));
 const JobList               = lazy(() => import("./pages/JobList"));
 const JobDetail             = lazy(() => import("./pages/JobDetail"));
+const Apply                 = lazy(() => import("./pages/Apply"));
 const ForCompanies          = lazy(() => import("./pages/ForCompanies"));
 const PostJob               = lazy(() => import("./pages/PostJob"));
 const About                 = lazy(() => import("./pages/About"));
@@ -55,6 +56,8 @@ const Kontakt               = lazy(() => import("./pages/Kontakt"));
 const LoneKalkylator        = lazy(() => import("./pages/LoneKalkylator"));
 const PatchNotes            = lazy(() => import("./pages/PatchNotes"));
 const VisionPresentation    = lazy(() => import("./pages/VisionPresentation"));
+const Settings              = lazy(() => import("./pages/Settings"));
+const CompanyJobDetail      = lazy(() => import("./pages/CompanyJobDetail"));
 const RegionJobList         = lazy(() => import("./pages/RegionJobList"));
 const BloggIndex            = lazy(() => import("./pages/blogg/BloggIndex"));
 const CeKorkortSverige      = lazy(() => import("./pages/blogg/CeKorkortSverige"));
@@ -81,10 +84,17 @@ function PlausibleAnalytics() {
 }
 
 function ScrollToTop() {
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
+    if (hash) {
+      const el = document.getElementById(hash.slice(1));
+      if (el) {
+        setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
+      }
+    } else {
+      window.scrollTo(0, 0);
+    }
+  }, [pathname, hash]);
   return null;
 }
 
@@ -142,6 +152,7 @@ function AppLayout() {
                   <Route path="/for-akerier" element={<ForCompaniesLanding />} />
                   <Route path="/jobb" element={<JobList />} />
                   <Route path="/jobb/:id" element={<JobDetail />} />
+                  <Route path="/jobb/:id/ansok" element={<Apply />} />
                   <Route path="/akerier" element={<AkerierSearch />} />
                   <Route path="/foretag" element={isCompany ? <ForCompanies /> : <ForCompaniesLanding />} />
                   <Route path="/foretag/:id" element={<CompanyPublicProfile />} />
@@ -239,12 +250,31 @@ function AppLayout() {
                     }
                   />
 
+                  {/* Settings — both roles (uses own redirect in component) */}
+                  <Route path="/installningar" element={<Settings />} />
+
                   {/* Company only */}
                   <Route
                     path="/foretag/mina-jobb"
                     element={
                       <ProtectedRoute requiredRole="company">
                         <MinaJobb />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/foretag/annonser"
+                    element={
+                      <ProtectedRoute requiredRole="company">
+                        <MinaJobb />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/foretag/annonser/:id"
+                    element={
+                      <ProtectedRoute requiredRole="company">
+                        <CompanyJobDetail />
                       </ProtectedRoute>
                     }
                   />

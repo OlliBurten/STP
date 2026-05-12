@@ -56,3 +56,17 @@ export function trackJobView(jobId) {
 export async function fetchJobStats(jobId) {
   return apiGet(`/api/jobs/${jobId}/stats`);
 }
+
+// ─── Saved Companies ──────────────────────────────────────────────────────────
+
+export async function fetchSavedCompanies() {
+  return apiGet("/api/jobs/saved-companies");
+}
+
+export async function saveCompany(companyId) {
+  return apiPost(`/api/jobs/saved-companies/${companyId}`, {});
+}
+
+export async function unsaveCompany(companyId) {
+  return apiDelete(`/api/jobs/saved-companies/${companyId}`);
+}

@@ -29,6 +29,8 @@ export default function JobList() {
   const { isDriver, hasApi } = useAuth();
   const { profile } = useProfile();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [tab, setTab] = useState("all");
+  const [showMatch, setShowMatch] = useState(true);
   const [jobs, setJobs] = useState(() => (hasApi ? [] : mockJobs));
   const [jobsLoading, setJobsLoading] = useState(hasApi);
   const [savedJobIds, setSavedJobIds] = useState(new Set());
@@ -149,8 +151,10 @@ export default function JobList() {
     return map;
   }, [driverForMatch, filteredJobs]);
 
-  const toggleQuick = (key, value) =>
+  const toggleQuick = (key, value) => {
     setFilters((f) => ({ ...f, [key]: f[key] === value ? "" : value }));
+    setTab("all");
+  };
 
   // Count drawer-level active filters (excludes search and quick-filter keys handled by chips)
   const activeDrawerCount = ["region", "license", "segment", "jobType", "employment", "bransch", "minSalary"].filter(
@@ -158,6 +162,29 @@ export default function JobList() {
   ).length;
 
   const displayJobs = isDriver ? otherJobs : filteredJobs;
+
+  // Tab counts (for driver only)
+  const recommendedCount = useMemo(
+    () => filteredJobs.filter((j) => (matchDataMap[j.id]?.score ?? 0) >= 80).length,
+    [filteredJobs, matchDataMap]
+  );
+  const savedCount = savedJobIds.size;
+
+  const tabs = isDriver
+    ? [
+        { k: "all", l: "Alla jobb", c: filteredJobs.length },
+        { k: "recommended", l: "Rekommenderade", c: recommendedCount },
+        { k: "saved", l: "Sparade", c: savedCount },
+      ]
+    : null;
+
+  // Jobs to render based on active tab
+  const tabFilteredJobs = useMemo(() => {
+    if (!isDriver || tab === "all") return null; // null = use existing recommended/otherJobs split
+    if (tab === "recommended") return filteredJobs.filter((j) => (matchDataMap[j.id]?.score ?? 0) >= 80);
+    if (tab === "saved") return filteredJobs.filter((j) => savedJobIds.has(j.id));
+    return null;
+  }, [isDriver, tab, filteredJobs, matchDataMap, savedJobIds]);
 
   return (
     <div style={{ minHeight: "100vh", background: "#060f0f", marginTop: "-64px" }}>
@@ -168,7 +195,7 @@ export default function JobList() {
 
       {/* ── Page header ─────────────────────────────────────── */}
       <div style={{ background: "linear-gradient(to bottom, #0a1818, #060f0f)", borderBottom: "1px solid rgba(255,255,255,0.06)", padding: "112px 40px 32px" }}>
-        <div style={{ maxWidth: 1040, margin: "0 auto" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
 
           {isGymnasieelev && (
             <div style={{ marginBottom: 20, padding: "12px 16px", borderRadius: 12, border: "1px solid rgba(74,222,128,0.2)", background: "rgba(74,222,128,0.06)", fontSize: 13, color: "#4ade80" }}>
@@ -176,11 +203,11 @@ export default function JobList() {
             </div>
           )}
 
-          <div style={{ marginBottom: 24 }}>
+          <div style={{ marginBottom: 20 }}>
             <div style={{ fontSize: 13, fontWeight: 600, color: "rgba(245,166,35,0.8)", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 10 }}>
               Plattformen
             </div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 16 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 16, marginBottom: 16 }}>
               <div>
                 <h1 style={{ fontSize: "clamp(32px, 5vw, 44px)", fontWeight: 900, letterSpacing: "-2px", color: "#f0faf9", lineHeight: 1.15, marginBottom: 8, margin: 0 }}>
                   {isGymnasieelev ? "Praktikplatser" : "Lediga jobb"}
@@ -191,13 +218,46 @@ export default function JobList() {
                     : isGymnasieelev
                     ? `${filteredJobs.length} praktikannonser`
                     : `${filteredJobs.length} annonser · Uppdateras dagligen`}
-                  {isDriver && savedJobIds.size > 0 && (
-                    <> · <Link to="/favoriter" style={{ color: "#F5A623", fontWeight: 700, textDecoration: "none" }}>{savedJobIds.size} sparade</Link></>
-                  )}
                 </p>
               </div>
+              {isDriver && (
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ fontSize: 13, color: "rgba(240,250,249,0.45)", fontWeight: 500 }}>Visa matchning</span>
+                  <div
+                    onClick={() => setShowMatch((v) => !v)}
+                    style={{ width: 44, height: 24, borderRadius: 12, background: showMatch ? "#F5A623" : "rgba(255,255,255,0.1)", cursor: "pointer", position: "relative", transition: "background .2s", border: "1px solid rgba(255,255,255,0.08)", flexShrink: 0 }}
+                  >
+                    <div style={{ position: "absolute", top: 3, left: showMatch ? 23 : 3, width: 16, height: 16, borderRadius: 8, background: "#fff", transition: "left .2s", boxShadow: "0 1px 4px rgba(0,0,0,0.3)" }} />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
+
+          {/* Tabs (driver only) */}
+          {tabs && (
+            <div style={{ display: "flex", gap: 6, marginBottom: 18, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+              {tabs.map(({ k, l, c }) => (
+                <button
+                  key={k}
+                  onClick={() => setTab(k)}
+                  style={{
+                    padding: "10px 16px", border: "none", background: "transparent",
+                    borderBottom: tab === k ? "2px solid #F5A623" : "2px solid transparent",
+                    color: tab === k ? "#F5A623" : "rgba(240,250,249,0.55)",
+                    fontSize: 14, fontWeight: 700, cursor: "pointer", marginBottom: -1,
+                    display: "flex", alignItems: "center", gap: 7, fontFamily: "inherit",
+                    transition: "color .15s",
+                  }}
+                >
+                  {l}
+                  <span style={{ padding: "1px 8px", borderRadius: 99, background: tab === k ? "rgba(245,166,35,0.15)" : "rgba(255,255,255,0.06)", fontSize: 11, fontWeight: 800, color: tab === k ? "#F5A623" : "rgba(240,250,249,0.4)" }}>
+                    {c}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Search + quick filter chips + drawer button */}
           <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
@@ -252,7 +312,7 @@ export default function JobList() {
       </div>
 
       {/* ── Job listings ─────────────────────────────────────── */}
-      <div style={{ maxWidth: 1040, margin: "0 auto", padding: "40px 40px 80px" }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "40px 40px 80px" }}>
 
         {/* Incomplete profile nudge */}
         {isDriver && driverForMatch && recommendedJobs.length === 0 && !jobsLoading && filteredJobs.length > 0 && (
@@ -281,54 +341,19 @@ export default function JobList() {
 
         {!jobsLoading && (
           <>
-            {/* ── Featured / Recommended section ── */}
-            {isDriver && recommendedJobs.length > 0 && (
-              <div style={{ marginBottom: 48 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-                  <div style={{ height: 1, flex: 1, background: "rgba(245,166,35,0.15)" }} />
-                  <span style={{ fontSize: 12, fontWeight: 700, color: "rgba(245,166,35,0.7)", letterSpacing: "1.5px", textTransform: "uppercase", whiteSpace: "nowrap" }}>
-                    Bäst matchning för dig
-                  </span>
-                  <div style={{ height: 1, flex: 1, background: "rgba(245,166,35,0.15)" }} />
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  {recommendedJobs.map(({ job, score, details }) => (
-                    <JobCard
-                      key={job.id}
-                      job={job}
-                      matchScore={score}
-                      matchCriteria={getMatchCriteria(driverForMatch, job, details)}
-                      featured
-                      showSave={isDriver && hasApi}
-                      isSaved={savedJobIds.has(job.id)}
-                      onToggleSave={handleToggleSave}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* ── All jobs section ── */}
-            {displayJobs.length > 0 ? (
-              <div>
-                {isDriver && recommendedJobs.length > 0 && (
-                  <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-                    <div style={{ height: 1, flex: 1, background: "rgba(255,255,255,0.06)" }} />
-                    <span style={{ fontSize: 12, fontWeight: 700, color: "rgba(240,250,249,0.3)", letterSpacing: "1.5px", textTransform: "uppercase", whiteSpace: "nowrap" }}>
-                      Alla lediga jobb
-                    </span>
-                    <div style={{ height: 1, flex: 1, background: "rgba(255,255,255,0.06)" }} />
-                  </div>
-                )}
+            {/* ── Tab: recommended or saved (flat list) ── */}
+            {tabFilteredJobs !== null ? (
+              tabFilteredJobs.length > 0 ? (
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  {displayJobs.map((job) => {
+                  {tabFilteredJobs.map((job) => {
                     const data = matchDataMap[job.id];
                     return (
                       <JobCard
                         key={job.id}
                         job={job}
-                        matchScore={data?.score ?? null}
-                        matchCriteria={data?.score > 0 ? getMatchCriteria(driverForMatch, job, data?.details) : []}
+                        matchScore={showMatch ? (data?.score ?? null) : null}
+                        matchCriteria={showMatch && data?.score > 0 ? getMatchCriteria(driverForMatch, job, data?.details) : []}
+                        featured={tab === "recommended"}
                         showSave={isDriver && hasApi}
                         isSaved={savedJobIds.has(job.id)}
                         onToggleSave={handleToggleSave}
@@ -336,23 +361,108 @@ export default function JobList() {
                     );
                   })}
                 </div>
-              </div>
-            ) : (
-              <div style={{ textAlign: "center", padding: "80px 40px" }}>
-                <div style={{ marginBottom: 16, opacity: 0.25, display: "flex", justifyContent: "center" }}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: 48, height: 48, color: "#f0faf9" }}>
-                    <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-                  </svg>
+              ) : (
+                <div style={{ textAlign: "center", padding: "80px 40px" }}>
+                  <div style={{ marginBottom: 16, opacity: 0.25, display: "flex", justifyContent: "center" }}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: 48, height: 48, color: "#f0faf9" }}>
+                      <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
+                  </div>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: "#f0faf9", marginBottom: 8 }}>
+                    {tab === "saved" ? "Inga sparade jobb" : "Inga rekommenderade jobb"}
+                  </div>
+                  <div style={{ fontSize: 14, color: "rgba(240,250,249,0.45)", marginBottom: 24 }}>
+                    {tab === "saved"
+                      ? "Spara jobb du är intresserad av med stjärn-ikonen"
+                      : "Fyll i körkort, region och tillgänglighet i din profil för att få matchade jobb"}
+                  </div>
+                  {tab === "saved" ? (
+                    <button onClick={() => setTab("all")} style={{ padding: "12px 24px", borderRadius: 12, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(240,250,249,0.7)", fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+                      Visa alla jobb
+                    </button>
+                  ) : (
+                    <Link to="/profil" style={{ padding: "12px 24px", borderRadius: 12, background: "#1F5F5C", border: "none", color: "#fff", fontWeight: 700, cursor: "pointer", fontFamily: "inherit", textDecoration: "none", display: "inline-block" }}>
+                      Uppdatera profil →
+                    </Link>
+                  )}
                 </div>
-                <div style={{ fontSize: 20, fontWeight: 800, color: "#f0faf9", marginBottom: 8 }}>Inga jobb hittades</div>
-                <div style={{ fontSize: 14, color: "rgba(240,250,249,0.45)", marginBottom: 24 }}>Prova att ändra eller rensa dina filter</div>
-                <button
-                  onClick={() => setFilters({ search: "", region: "", license: "", segment: "", jobType: "", employment: "", bransch: "", minSalary: "" })}
-                  style={{ padding: "12px 24px", borderRadius: 12, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(240,250,249,0.7)", fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}
-                >
-                  Rensa alla filter
-                </button>
-              </div>
+              )
+            ) : (
+              <>
+                {/* ── Tab "all": Featured / Recommended section ── */}
+                {isDriver && recommendedJobs.length > 0 && (
+                  <div style={{ marginBottom: 48 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
+                      <div style={{ height: 1, flex: 1, background: "rgba(245,166,35,0.15)" }} />
+                      <span style={{ fontSize: 12, fontWeight: 700, color: "rgba(245,166,35,0.7)", letterSpacing: "1.5px", textTransform: "uppercase", whiteSpace: "nowrap" }}>
+                        Bäst matchning för dig
+                      </span>
+                      <div style={{ height: 1, flex: 1, background: "rgba(245,166,35,0.15)" }} />
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                      {recommendedJobs.map(({ job, score, details }) => (
+                        <JobCard
+                          key={job.id}
+                          job={job}
+                          matchScore={showMatch ? score : null}
+                          matchCriteria={showMatch ? getMatchCriteria(driverForMatch, job, details) : []}
+                          featured
+                          showSave={isDriver && hasApi}
+                          isSaved={savedJobIds.has(job.id)}
+                          onToggleSave={handleToggleSave}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* ── Tab "all": Rest of jobs ── */}
+                {displayJobs.length > 0 ? (
+                  <div>
+                    {isDriver && recommendedJobs.length > 0 && (
+                      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
+                        <div style={{ height: 1, flex: 1, background: "rgba(255,255,255,0.06)" }} />
+                        <span style={{ fontSize: 12, fontWeight: 700, color: "rgba(240,250,249,0.3)", letterSpacing: "1.5px", textTransform: "uppercase", whiteSpace: "nowrap" }}>
+                          Alla lediga jobb
+                        </span>
+                        <div style={{ height: 1, flex: 1, background: "rgba(255,255,255,0.06)" }} />
+                      </div>
+                    )}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                      {displayJobs.map((job) => {
+                        const data = matchDataMap[job.id];
+                        return (
+                          <JobCard
+                            key={job.id}
+                            job={job}
+                            matchScore={showMatch ? (data?.score ?? null) : null}
+                            matchCriteria={showMatch && data?.score > 0 ? getMatchCriteria(driverForMatch, job, data?.details) : []}
+                            showSave={isDriver && hasApi}
+                            isSaved={savedJobIds.has(job.id)}
+                            onToggleSave={handleToggleSave}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ textAlign: "center", padding: "80px 40px" }}>
+                    <div style={{ marginBottom: 16, opacity: 0.25, display: "flex", justifyContent: "center" }}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: 48, height: 48, color: "#f0faf9" }}>
+                        <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+                      </svg>
+                    </div>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: "#f0faf9", marginBottom: 8 }}>Inga jobb hittades</div>
+                    <div style={{ fontSize: 14, color: "rgba(240,250,249,0.45)", marginBottom: 24 }}>Prova att ändra eller rensa dina filter</div>
+                    <button
+                      onClick={() => setFilters({ search: "", region: "", license: "", segment: "", jobType: "", employment: "", bransch: "", minSalary: "" })}
+                      style={{ padding: "12px 24px", borderRadius: 12, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(240,250,249,0.7)", fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}
+                    >
+                      Rensa alla filter
+                    </button>
+                  </div>
+                )}
+              </>
             )}
 
             {/* ── Region grid (SEO) ── */}

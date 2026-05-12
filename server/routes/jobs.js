@@ -127,7 +127,7 @@ jobsRouter.get("/mine", authMiddleware, requireCompany, attachCompanyContext, re
       where: filter,
       orderBy: { published: "desc" },
       include: {
-        _count: { select: { conversations: true } },
+        _count: { select: { conversations: true, views: true } },
       },
     });
     const list = jobs.map((j) => ({
@@ -142,6 +142,7 @@ jobsRouter.get("/mine", authMiddleware, requireCompany, attachCompanyContext, re
       moderationReason: j.moderationReason || null,
       published: j.published.toISOString().slice(0, 10),
       applicantCount: j._count.conversations,
+      viewCount: j._count.views,
     }));
     res.json(list);
   } catch (e) {
@@ -226,7 +227,7 @@ jobsRouter.get("/", validateQuery(jobsListQuerySchema), async (req, res, next) =
 jobsRouter.get("/saved", authMiddleware, requireDriver, async (req, res, next) => {
   try {
     const saved = await prisma.savedJob.findMany({
-      where: { userId: req.userId, job: { status: "ACTIVE" } },
+      where: { userId: req.userId },
       include: {
         job: {
           include: {
@@ -421,6 +422,9 @@ jobsRouter.get("/:id", optionalAuthMiddleware, attachCompanyContext, async (req,
       salaryMax: job.salaryMax ?? null,
       externalApplyUrl: job.externalApplyUrl ?? null,
       description: job.description,
+      aboutJob: job.aboutJob ?? null,
+      tasks: job.tasks ?? [],
+      offers: job.offers ?? [],
       requirements: job.requirements ? JSON.parse(job.requirements) : [],
       extraRequirements: job.extraRequirements,
       published: job.published.toISOString().slice(0, 10),
@@ -569,6 +573,74 @@ jobsRouter.delete("/:id/save", authMiddleware, requireDriver, async (req, res, n
   }
 });
 
+// ─── Saved Companies ──────────────────────────────────────────────────────────
+
+jobsRouter.get("/saved-companies", authMiddleware, requireDriver, async (req, res, next) => {
+  try {
+    const saved = await prisma.savedCompany.findMany({
+      where: { userId: req.userId },
+      include: {
+        company: {
+          select: {
+            id: true, companyName: true, companyLocation: true,
+            companyDescriptionShort: true, companyWebsite: true, companyStatus: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    const companyIds = saved.map((s) => s.companyId);
+    const jobCounts = await prisma.job.groupBy({
+      by: ["userId"],
+      where: { userId: { in: companyIds }, status: "ACTIVE" },
+      _count: { _all: true },
+    });
+    const jobCountMap = {};
+    jobCounts.forEach((r) => { jobCountMap[r.userId] = r._count._all; });
+    res.json(saved.map((s) => ({
+      id: s.companyId,
+      companyName: s.company?.companyName ?? "",
+      companyLocation: s.company?.companyLocation ?? null,
+      companyDescriptionShort: s.company?.companyDescriptionShort ?? null,
+      companyWebsite: s.company?.companyWebsite ?? null,
+      verified: s.company?.companyStatus === "VERIFIED",
+      openJobs: jobCountMap[s.companyId] ?? 0,
+      savedAt: s.createdAt.toISOString(),
+    })));
+  } catch (e) {
+    next(e);
+  }
+});
+
+jobsRouter.post("/saved-companies/:companyId", authMiddleware, requireDriver, async (req, res, next) => {
+  try {
+    const company = await prisma.user.findFirst({
+      where: { id: req.params.companyId, role: "COMPANY" },
+      select: { id: true },
+    });
+    if (!company) return res.status(404).json({ error: "Åkeri hittades inte" });
+    await prisma.savedCompany.upsert({
+      where: { userId_companyId: { userId: req.userId, companyId: company.id } },
+      update: {},
+      create: { userId: req.userId, companyId: company.id },
+    });
+    res.status(201).json({ ok: true, saved: true });
+  } catch (e) {
+    next(e);
+  }
+});
+
+jobsRouter.delete("/saved-companies/:companyId", authMiddleware, requireDriver, async (req, res, next) => {
+  try {
+    await prisma.savedCompany.deleteMany({
+      where: { userId: req.userId, companyId: req.params.companyId },
+    });
+    res.json({ ok: true, saved: false });
+  } catch (e) {
+    next(e);
+  }
+});
+
 jobsRouter.post("/", authMiddleware, requireCompany, attachCompanyContext, requireVerifiedCompany, validateBody(createJobSchema), async (req, res, next) => {
   try {
     const body = req.body;
@@ -581,7 +653,10 @@ jobsRouter.post("/", authMiddleware, requireCompany, attachCompanyContext, requi
         organizationId: req.organizationId ?? undefined,
         title: body.title,
         company: body.company,
-        description: body.description,
+        description: body.aboutJob || body.description || "",
+        aboutJob: body.aboutJob || null,
+        tasks: Array.isArray(body.tasks) ? body.tasks : [],
+        offers: Array.isArray(body.offers) ? body.offers : [],
         location: body.location,
         region: body.region,
         license: body.license || [],

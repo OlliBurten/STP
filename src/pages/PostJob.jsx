@@ -650,7 +650,9 @@ export default function PostJob() {
         await createJob({
           title: form.title,
           company: form.company,
-          description: form.aboutJob,
+          aboutJob: form.aboutJob,
+          tasks: form.tasks,
+          offers: form.offers,
           location: form.location,
           region: form.region,
           license: form.license,
@@ -661,10 +663,6 @@ export default function PostJob() {
           schedule: form.schedule || null,
           experience: form.experience || null,
           requirements: form.requirements,
-          extraRequirements:
-            form.tasks.length > 0 || form.offers.length > 0
-              ? JSON.stringify({ tasks: form.tasks, offers: form.offers })
-              : null,
           salary: form.salaryNote || null,
           salaryMin: form.salaryMin ? parseInt(form.salaryMin, 10) : null,
           salaryMax: form.salaryMax ? parseInt(form.salaryMax, 10) : null,
@@ -709,19 +707,18 @@ export default function PostJob() {
       <main style={{ background: "#060f0f", minHeight: "100vh", marginTop: "-64px", paddingTop: 64, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <PageMeta title="Annons publicerad – STP" />
         <div style={{ maxWidth: 520, padding: "0 24px", textAlign: "center" }}>
-          <div style={{ padding: "40px 36px", background: "rgba(74,222,128,0.05)", border: "1px solid rgba(74,222,128,0.2)", borderRadius: 24 }}>
-            <div style={{ fontSize: 48, marginBottom: 16 }}>✓</div>
-            <h1 style={{ fontSize: 24, fontWeight: 900, color: "#4ade80", letterSpacing: -0.5, marginBottom: 12 }}>Annonsen är publicerad!</h1>
-            <p style={{ fontSize: 14, color: "rgba(240,250,249,0.6)", lineHeight: 1.7, marginBottom: 28 }}>
-              {hasApi ? "Förare med matchande profil notifieras. Du kan hantera annonsen under Mina jobb." : "Demo — inget jobb sparades (backend används inte)."}
+          <div style={{ padding: "40px 36px", background: "rgba(245,166,35,0.06)", border: "1px solid rgba(245,166,35,0.2)", borderRadius: 24, textAlign: "center" }}>
+            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, color: "rgba(245,166,35,0.7)", textTransform: "uppercase", marginBottom: 24 }}>Annons publicerad · Åkeri</div>
+            <div style={{ width: 80, height: 80, borderRadius: 99, background: "rgba(245,166,35,0.12)", border: "2px solid rgba(245,166,35,0.3)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="#F5A623"><path d="M12 2l2.4 7.6H22l-6.2 4.5 2.4 7.6L12 17.2l-6.2 4.5 2.4-7.6L2 9.6h7.6z"/></svg>
+            </div>
+            <h1 style={{ fontSize: 22, fontWeight: 900, letterSpacing: -0.5, marginBottom: 10, color: "#f0faf9" }}>Annonsen är publicerad!</h1>
+            <p style={{ fontSize: 14, color: "rgba(240,250,249,0.5)", lineHeight: 1.6, marginBottom: 28 }}>
+              {hasApi ? "Vi har redan börjat matcha mot förare med rätt profil. Du får e-post när första ansökan kommer in." : "Demo — inget jobb sparades (backend används inte)."}
             </p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              <Link to="/foretag/mina-jobb" style={{ display: "block", padding: "14px", borderRadius: 13, background: "#F5A623", color: "#000", fontWeight: 800, fontSize: 15, textDecoration: "none" }}>
-                Gå till Mina jobb →
-              </Link>
-              <Link to="/foretag" style={{ display: "block", padding: "14px", borderRadius: 13, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.09)", color: "rgba(240,250,249,0.6)", fontWeight: 600, fontSize: 14, textDecoration: "none" }}>
-                Tillbaka till företagsöversikten
-              </Link>
+            <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+              <Link to="/foretag/annonser" style={{ padding: "12px 22px", borderRadius: 11, background: "#F5A623", color: "#000", fontWeight: 800, fontSize: 13, textDecoration: "none" }}>Se din annons</Link>
+              <Link to="/foretag" style={{ padding: "12px 22px", borderRadius: 11, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.09)", color: "rgba(240,250,249,0.7)", fontWeight: 600, fontSize: 13, textDecoration: "none" }}>Mina jobb</Link>
             </div>
           </div>
         </div>

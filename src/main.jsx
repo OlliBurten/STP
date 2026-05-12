@@ -56,6 +56,22 @@ setTimeout(() => {
       integrations: [Sentry.replayIntegration({ maskAllText: false, maskAllInputs: false, blockAllMedia: false })],
       replaysSessionSampleRate: 0.1,
       replaysOnErrorSampleRate: 1.0,
+      beforeSend(event, hint) {
+        // Chunk-laddningsfel uppstår när en användare har en gammal flik öppen
+        // vid en ny deploy. Appen hanterar detta automatiskt med page reload —
+        // rapportera dem inte till Sentry eftersom de inte kräver åtgärd.
+        const msg = hint?.originalException?.message || "";
+        if (
+          msg.includes("Failed to fetch dynamically imported module") ||
+          msg.includes("Load failed") ||
+          msg.includes("Importing a module script failed") ||
+          msg.includes("error loading dynamically imported module") ||
+          msg.includes("is not a valid JavaScript MIME type")
+        ) {
+          return null;
+        }
+        return event;
+      },
     });
   }).catch(() => {});
 }, 3000);

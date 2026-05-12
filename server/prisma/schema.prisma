@@ -51,6 +51,8 @@ model User {
   reviewsReceived CompanyReview[] @relation("ReviewCompany")
   certificateSuggestions CertificateSuggestion[]
   savedJobs       SavedJob[]
+  savedCompanies  SavedCompany[] @relation("SavedCompanyFollower")
+  savedByDrivers  SavedCompany[] @relation("SavedCompanyTarget")
   notifications   Notification[] @relation("NotificationRecipient")
   pushSubscriptions PushSubscription[]
   lastMatchJobEmailAt    DateTime?  // driver: last time we sent "matching jobs" email
@@ -146,6 +148,9 @@ model Organization {
   bransch          String[] @default([])
   region           String?
   status           String   @default("PENDING") // PENDING | VERIFIED | REJECTED
+  fleet            Int?     // antal fordon i flottan
+  employeeCount    String?  // t.ex. "50-100", "100-250"
+  foundedYear      Int?     // grundat år
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
@@ -224,6 +229,7 @@ model DriverProfile {
   showEmailToCompanies Boolean @default(false)
   showPhoneToCompanies Boolean @default(false)
   experience          Json?    // [{ id, company, role, startYear, endYear, current, description }]
+  certExpiry          Json?    // { "YKB": "2027-03-01", "ADR klass 3": "2026-06-01", ... }
   isGymnasieelev      Boolean  @default(false)
   schoolName          String?
   physicalWorkOk      Boolean? // fysiskt tungt arbete ok
@@ -260,6 +266,9 @@ model Job {
   soloWorkOk  Boolean? // ensamarbete ok för rollen
   requirements String? // JSON or text
   extraRequirements String?
+  aboutJob     String?   @db.Text  // "Om jobbet" — fritext
+  tasks        String[]  @default([])  // "Arbetsuppgifter" — punktlista
+  offers       String[]  @default([])  // "Vi erbjuder" — punktlista
   contact     String   // email
   status      String   @default("ACTIVE") // ACTIVE | HIDDEN | REMOVED
   moderatedAt DateTime?
@@ -288,6 +297,18 @@ model SavedJob {
   createdAt DateTime @default(now())
 
   @@unique([userId, jobId])
+}
+
+model SavedCompany {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation("SavedCompanyFollower", fields: [userId], references: [id], onDelete: Cascade)
+  companyId String
+  company   User     @relation("SavedCompanyTarget", fields: [companyId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, companyId])
+  @@index([userId])
 }
 
 model JobView {
@@ -324,9 +345,13 @@ model Conversation {
   job       Job?     @relation(fields: [jobId], references: [id], onDelete: SetNull)
   jobTitle  String?
   selectedByCompanyAt DateTime?  // company marked driver as "utvald"
-  readByCompanyAt   DateTime?    // företag har öppnat konversationen
+  readByCompanyAt   DateTime?    // företag har öppnat konversationen (= "Sedd")
+  reviewedByCompanyAt DateTime?  // företag plockade till urval (= "I urval")
   readByDriverAt    DateTime?    // förare har öppnat konversationen (läs-kvitto för företag)
   rejectedByCompanyAt DateTime?  // företag avvisade
+  rejectReason      String?      // frivillig text vid avvisning
+  startDate         String?      // "now" | "month" | ISO-datum — förare anger tillträde
+  allowSimilarContact Boolean    @default(false)  // förare tillåter kontakt om liknande jobb
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
