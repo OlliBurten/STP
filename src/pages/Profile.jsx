@@ -164,7 +164,7 @@ function ScoreCard({ score, profile, onEdit }) {
           </div>
         ))}
       </div>
-      {undone.length === 0 ? (
+      {checks.every((c) => c.done) ? (
         <p style={{ fontSize: 12, color: T.green, fontWeight: 600 }}>
           Din profil är komplett — åkerier hittar dig enkelt.
         </p>
