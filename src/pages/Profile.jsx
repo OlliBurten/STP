@@ -537,7 +537,7 @@ export default function Profile() {
 
       {/* ── Hero ── */}
       <div style={{
-        background: `linear-gradient(160deg, ${T.bg3} 0%, #061414 70%)`,
+        background: `linear-gradient(160deg, #061414 0%, ${T.bg3} 50%, #061414 100%)`,
         borderBottom: `1px solid ${T.border}`,
       }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", padding: "36px 40px 0" }}>

@@ -132,14 +132,12 @@ export default function Header({ onboarding = false }) {
   };
 
   // ── Header background ─────────────────────────────────────────────────────
-  // Inloggat: solid utan blur — undviker att sidan bakom blöder igenom
-  // Utloggat: transparent vid toppen, solid+blur vid scroll
   const headerStyle = {
-    background: user ? "rgb(6,15,15)" : scrolled ? "rgba(6,15,15,0.96)" : "transparent",
+    background: user || scrolled ? "rgba(6,15,15,0.92)" : "transparent",
     borderBottom: isImpersonating
       ? "1px solid rgba(245,166,35,0.4)"
       : (user || scrolled) ? "1px solid rgba(255,255,255,0.06)" : "none",
-    backdropFilter: !user && scrolled ? "blur(12px)" : "none",
+    backdropFilter: (user || scrolled) ? "blur(12px)" : "none",
     transition: "background 0.3s, backdrop-filter 0.3s, border-color 0.3s",
   };
 
