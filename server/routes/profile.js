@@ -62,6 +62,7 @@ function formatProfileResponse(profile, user) {
     schoolName: profile.schoolName ?? null,
     physicalWorkOk: profile.physicalWorkOk ?? null,
     soloWorkOk: profile.soloWorkOk ?? null,
+    preferredEmployment: profile.preferredEmployment ?? [],
   };
 }
 
@@ -261,6 +262,7 @@ profileRouter.put("/", async (req, res, next) => {
     if (body.schoolName !== undefined) data.schoolName = body.schoolName ? String(body.schoolName).trim() : null;
     if (body.physicalWorkOk !== undefined) data.physicalWorkOk = body.physicalWorkOk === true ? true : body.physicalWorkOk === false ? false : null;
     if (body.soloWorkOk !== undefined) data.soloWorkOk = body.soloWorkOk === true ? true : body.soloWorkOk === false ? false : null;
+    if (Array.isArray(body.preferredEmployment)) data.preferredEmployment = body.preferredEmployment;
     if (data.isGymnasieelev) {
       data.primarySegment = "INTERNSHIP";
       data.secondarySegments = [];

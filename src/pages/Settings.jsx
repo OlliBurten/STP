@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { useEffect, useState, useCallback } from "react";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { useAuth } from "../context/AuthContext";
 import { useProfile } from "../context/ProfileContext";
-import { changePassword } from "../api/auth.js";
+import { changePassword, deleteMyAccount } from "../api/auth.js";
 import { updateNotificationSettings, fetchProfile, updateProfile } from "../api/profile.js";
-import { updateCompanyNotificationSettings, fetchMyCompanyProfile } from "../api/companies.js";
+import { updateCompanyNotificationSettings, fetchMyCompanyProfile, listInvites, createInvite, revokeInvite } from "../api/companies.js";
 import PageMeta from "../components/PageMeta";
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
@@ -20,6 +20,8 @@ const IC = {
   building: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>,
   eye:      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>,
   eyeoff:   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>,
+  mail:     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>,
+  trash:    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>,
 };
 const Icon = ({ n, s = 16, c = "currentColor" }) => <span style={{ display: "inline-flex", width: s, height: s, color: c, flexShrink: 0 }}>{IC[n]}</span>;
 
@@ -67,6 +69,52 @@ function ToggleRow({ label, sub, on, onChange, first }) {
         {sub && <div style={{ fontSize: 12, color: "rgba(240,250,249,0.5)", marginTop: 2 }}>{sub}</div>}
       </div>
       <Toggle checked={on} onChange={onChange} />
+    </div>
+  );
+}
+
+// ─── Delete Account Dialog ────────────────────────────────────────────────────
+function DeleteAccountDialog({ isCompany, onClose, onConfirm, loading }) {
+  const [input, setInput] = useState("");
+  const confirmed = input === "RADERA";
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+      <div style={{ background: "#0d1f1f", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 16, padding: "32px 28px", maxWidth: 440, width: "100%" }}>
+        <h2 style={{ fontSize: 20, fontWeight: 900, color: "#ef4444", margin: "0 0 10px", letterSpacing: -0.5 }}>
+          {isCompany ? "Ta bort företagskonto" : "Ta bort mitt konto"}
+        </h2>
+        <p style={{ fontSize: 14, color: "rgba(240,250,249,0.65)", lineHeight: 1.6, margin: "0 0 22px" }}>
+          Detta är <strong style={{ color: "#f0faf9" }}>permanent och kan inte ångras</strong>. All data — {isCompany ? "annonser, konversationer och teammedlemmar" : "ansökningar, meddelanden och din profil"} — raderas omedelbart.
+        </p>
+        <Field label='Skriv "RADERA" för att bekräfta'>
+          <input
+            style={{ ...inputStyle, border: confirmed ? "1px solid rgba(239,68,68,0.5)" : "1px solid rgba(255,255,255,0.1)" }}
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            placeholder="RADERA"
+            autoFocus
+          />
+        </Field>
+        <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={loading}
+            style={{ flex: 1, padding: "11px 16px", borderRadius: 10, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(240,250,249,0.8)", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}
+          >
+            Avbryt
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={!confirmed || loading}
+            style={{ flex: 1, padding: "11px 16px", borderRadius: 10, background: confirmed ? "rgba(239,68,68,0.2)" : "rgba(239,68,68,0.06)", border: `1px solid ${confirmed ? "rgba(239,68,68,0.5)" : "rgba(239,68,68,0.15)"}`, color: confirmed ? "#ef4444" : "rgba(239,68,68,0.4)", fontWeight: 700, fontSize: 13, cursor: confirmed && !loading ? "pointer" : "not-allowed", fontFamily: "inherit", transition: "all .15s" }}
+          >
+            {loading ? "Raderar…" : "Radera permanent"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -129,64 +177,64 @@ function PasswordCard() {
 
 // ─── Driver Konto ─────────────────────────────────────────────────────────────
 function DriverKontoSection({ user, profile }) {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
   const nameParts = (user?.name || "").split(" ");
-  const [form, setForm] = useState({
-    firstName: nameParts[0] || "",
-    lastName: nameParts.slice(1).join(" ") || "",
-    phone: profile?.phone || "",
-    city: profile?.location || "",
-  });
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [error, setError] = useState("");
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
-  const handleSave = async (e) => {
-    e.preventDefault();
-    setError(""); setSaved(false);
-    setSaving(true);
+  const handleDelete = async () => {
+    setDeleteLoading(true);
     try {
-      await updateProfile({ phone: form.phone, location: form.city });
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2500);
+      await deleteMyAccount();
+      logout();
+      navigate("/", { replace: true });
     } catch (err) {
-      setError(err.message || "Kunde inte spara ändringar.");
-    } finally {
-      setSaving(false);
+      setDeleteLoading(false);
+      alert(err.message || "Kunde inte radera kontot. Försök igen eller kontakta support.");
     }
   };
 
   return (
     <>
-      <Card title="Personuppgifter" sub="Kontaktinformation som visas på din profil mot åkerier.">
-        <form onSubmit={handleSave}>
-          {error && <div style={{ padding: "10px 14px", borderRadius: 10, background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)", fontSize: 13, color: "#f87171", marginBottom: 14 }}>{error}</div>}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-            <Field label="Förnamn">
-              <input style={{ ...inputStyle, color: "rgba(240,250,249,0.6)" }} value={form.firstName} disabled title="Ändra via Support" />
-            </Field>
-            <Field label="Efternamn">
-              <input style={{ ...inputStyle, color: "rgba(240,250,249,0.6)" }} value={form.lastName} disabled title="Ändra via Support" />
-            </Field>
-          </div>
-          <Field label="E-post" sub="Kontakta support om du behöver byta e-post.">
-            <input style={{ ...inputStyle, color: "rgba(240,250,249,0.5)" }} value={user?.email || ""} disabled />
+      {showDeleteDialog && (
+        <DeleteAccountDialog
+          isCompany={false}
+          onClose={() => setShowDeleteDialog(false)}
+          onConfirm={handleDelete}
+          loading={deleteLoading}
+        />
+      )}
+
+      <Card title="Personuppgifter" sub="Grundläggande kontoinformation. Kontakta /profil för att redigera telefon, ort och mer.">
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <Field label="Förnamn">
+            <input style={{ ...inputStyle, color: "rgba(240,250,249,0.6)" }} value={nameParts[0] || ""} disabled title="Ändra via Support" />
           </Field>
-          <Field label="Telefon">
-            <input style={inputStyle} value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value }))} placeholder="+46 70 000 00 00" />
+          <Field label="Efternamn">
+            <input style={{ ...inputStyle, color: "rgba(240,250,249,0.6)" }} value={nameParts.slice(1).join(" ") || ""} disabled title="Ändra via Support" />
           </Field>
-          <Field label="Bostadsort">
-            <input style={inputStyle} value={form.city} onChange={e => setForm(p => ({ ...p, city: e.target.value }))} placeholder="t.ex. Malmö" />
-          </Field>
-          <button type="submit" disabled={saving} style={{ padding: "10px 18px", borderRadius: 10, background: saving ? "rgba(245,166,35,0.2)" : "#1F5F5C", color: "#fff", fontWeight: 700, fontSize: 13, border: "none", cursor: saving ? "not-allowed" : "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 8 }}>
-            {saved ? <><Icon n="check" s={14} /> Sparat!</> : saving ? "Sparar…" : "Spara ändringar"}
-          </button>
-        </form>
+        </div>
+        <Field label="E-post" sub="Kontakta support om du behöver byta e-post.">
+          <input style={{ ...inputStyle, color: "rgba(240,250,249,0.5)" }} value={user?.email || ""} disabled />
+        </Field>
+        <div style={{ marginTop: 4 }}>
+          <Link to="/profil" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 16px", borderRadius: 10, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", fontSize: 13, fontWeight: 600, color: "rgba(240,250,249,0.75)", textDecoration: "none" }}>
+            Redigera profil (telefon, ort, erfarenhet m.m.) →
+          </Link>
+        </div>
       </Card>
 
       <PasswordCard />
 
+      <DriverAnstallningsSection profile={profile} />
+
       <Card title="Ta bort konto" sub="Detta är permanent. Alla dina ansökningar och meddelanden raderas." danger>
-        <button type="button" style={{ padding: "10px 18px", borderRadius: 10, background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.3)", color: "#ef4444", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>
+        <button
+          type="button"
+          onClick={() => setShowDeleteDialog(true)}
+          style={{ padding: "10px 18px", borderRadius: 10, background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.3)", color: "#ef4444", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}
+        >
           Ta bort mitt konto
         </button>
       </Card>
@@ -194,95 +242,62 @@ function DriverKontoSection({ user, profile }) {
   );
 }
 
-// ─── Driver Sökpreferenser ────────────────────────────────────────────────────
-const LICENSE_OPTS = ["B", "C", "CE", "D", "DE"];
-const CERT_OPTS = ["YKB", "ADR", "Truck", "ADR Tank"];
-const SEGMENT_OPTS = [
-  { v: "farjkorning",    l: "Fjärrkörning" },
-  { v: "distribution",  l: "Distribution" },
-  { v: "tankbil",       l: "Tankbil" },
-  { v: "byggmaterial",  l: "Bygg/Anläggning" },
-  { v: "containerbil",  l: "Container" },
-  { v: "skogsavverkning", l: "Skog" },
-  { v: "kyl-frys",      l: "Kyl/Frys" },
-  { v: "betong",        l: "Betong" },
+// ─── Driver Anställningsform-preferens ────────────────────────────────────────
+const EMPLOY_OPTS = [
+  ["fast",         "Fast anställning"],
+  ["vikariat",     "Vikariat"],
+  ["timjobb",      "Timjobb"],
+  ["egenanstald",  "Egenanställd"],
 ];
-const EMPLOY_OPTS = [["fast", "Fast anställning"], ["vikariat", "Vikariat"], ["timjobb", "Timjobb"], ["egenanstald", "Egenanställd"]];
 
-function DriverSokprefSection({ profile }) {
-  const [licenses, setLicenses] = useState(profile?.licenses || []);
-  const [certificates, setCertificates] = useState(profile?.certificates || []);
-  const [segments, setSegments] = useState(profile?.secondarySegments || []);
-  const [employment, setEmployment] = useState([]);
+function DriverAnstallningsSection({ profile }) {
+  const [employment, setEmployment] = useState(profile?.preferredEmployment || []);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState("");
 
   const toggle = (arr, v) => arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v];
 
   const handleSave = async () => {
-    setSaving(true);
+    setSaving(true); setError("");
     try {
-      await updateProfile({ licenses, certificates, secondarySegments: segments });
+      await updateProfile({ preferredEmployment: employment });
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
-    } catch {
-      // silent
+    } catch (err) {
+      setError(err.message || "Kunde inte spara.");
     } finally {
       setSaving(false);
     }
   };
 
-  const pill = (v, arr, setArr, activeColor = "rgba(74,222,128,0.15)", activeBorder = "rgba(74,222,128,0.4)", activeText = "#4ade80") => {
-    const on = arr.includes(v);
-    return (
-      <button key={v} type="button" onClick={() => setArr(toggle(arr, v))} style={{ padding: "8px 16px", borderRadius: 99, background: on ? activeColor : "rgba(255,255,255,0.04)", border: `1px solid ${on ? activeBorder : "rgba(255,255,255,0.08)"}`, fontSize: 13, fontWeight: 700, color: on ? activeText : "rgba(240,250,249,0.7)", cursor: "pointer", fontFamily: "inherit" }}>
-        {on ? "✓ " : ""}{v}
-      </button>
-    );
-  };
-
   return (
-    <Card title="Vad letar du efter?" sub="Används för att räkna ut din matchning mot lediga jobb.">
-      <Field label="Körkort jag har">
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {LICENSE_OPTS.map(l => pill(l, licenses, setLicenses))}
-        </div>
-      </Field>
-
-      <Field label="Certifikat">
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {CERT_OPTS.map(c => pill(c, certificates, setCertificates, "rgba(245,166,35,0.12)", "rgba(245,166,35,0.4)", "#F5A623"))}
-        </div>
-      </Field>
-
+    <Card title="Vad letar du efter?" sub="Vilken typ av anställning är du intresserad av?">
+      {error && <div style={{ padding: "10px 14px", borderRadius: 10, background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)", fontSize: 13, color: "#f87171", marginBottom: 14 }}>{error}</div>}
       <Field label="Anställningsform">
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {EMPLOY_OPTS.map(([v, l]) => {
             const on = employment.includes(v);
             return (
-              <button key={v} type="button" onClick={() => setEmployment(toggle(employment, v))} style={{ padding: "8px 16px", borderRadius: 99, background: on ? "rgba(245,166,35,0.12)" : "rgba(255,255,255,0.04)", border: `1px solid ${on ? "rgba(245,166,35,0.4)" : "rgba(255,255,255,0.08)"}`, fontSize: 13, fontWeight: 600, color: on ? "#F5A623" : "rgba(240,250,249,0.7)", cursor: "pointer", fontFamily: "inherit" }}>
-                {l}
+              <button
+                key={v}
+                type="button"
+                onClick={() => setEmployment(toggle(employment, v))}
+                style={{ padding: "8px 16px", borderRadius: 99, background: on ? "rgba(245,166,35,0.12)" : "rgba(255,255,255,0.04)", border: `1px solid ${on ? "rgba(245,166,35,0.4)" : "rgba(255,255,255,0.08)"}`, fontSize: 13, fontWeight: 600, color: on ? "#F5A623" : "rgba(240,250,249,0.7)", cursor: "pointer", fontFamily: "inherit" }}
+              >
+                {on ? "✓ " : ""}{l}
               </button>
             );
           })}
         </div>
       </Field>
-
-      <Field label="Segment jag är intresserad av">
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {SEGMENT_OPTS.map(({ v, l }) => {
-            const on = segments.includes(v);
-            return (
-              <button key={v} type="button" onClick={() => setSegments(toggle(segments, v))} style={{ padding: "7px 14px", borderRadius: 99, background: on ? "rgba(31,95,92,0.3)" : "rgba(255,255,255,0.04)", border: `1px solid ${on ? "rgba(31,95,92,0.6)" : "rgba(255,255,255,0.08)"}`, fontSize: 13, fontWeight: 600, color: on ? "#4ade80" : "rgba(240,250,249,0.7)", cursor: "pointer", fontFamily: "inherit" }}>
-                {l}
-              </button>
-            );
-          })}
-        </div>
-      </Field>
-
-      <button type="button" onClick={handleSave} disabled={saving} style={{ marginTop: 8, padding: "10px 18px", borderRadius: 10, background: "#1F5F5C", color: "#fff", fontWeight: 700, fontSize: 13, border: "none", cursor: saving ? "not-allowed" : "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 8 }}>
-        {saved ? <><Icon n="check" s={14} /> Sparat!</> : saving ? "Sparar…" : "Spara preferenser"}
+      <button
+        type="button"
+        onClick={handleSave}
+        disabled={saving}
+        style={{ padding: "10px 18px", borderRadius: 10, background: "#1F5F5C", color: "#fff", fontWeight: 700, fontSize: 13, border: "none", cursor: saving ? "not-allowed" : "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 8 }}
+      >
+        {saved ? <><Icon n="check" s={14} /> Sparat!</> : saving ? "Sparar…" : "Spara preferens"}
       </button>
     </Card>
   );
@@ -296,10 +311,9 @@ function DriverVerifieringSection({ profile }) {
   const verifiedCount = [hasLicense, hasYKB, hasADR].filter(Boolean).length;
 
   const docs = [
-    { k: "license", l: "Körkort", sub: "Foto av båda sidor. Vi raderar bilden efter verifiering.", verified: hasLicense },
-    { k: "ykb", l: "YKB-certifikat", sub: "Yrkeskompetensbevis. Krävs för C/CE/D/DE.", verified: hasYKB },
-    { k: "adr", l: "ADR-intyg", sub: "För farligt gods.", verified: hasADR },
-    { k: "cv", l: "CV / arbetsbetyg", sub: "Stärker din profil men är inte obligatoriskt.", verified: false },
+    { k: "license", l: "Körkort",        sub: "CE, C eller annan yrkeskörkortsklass.",    verified: hasLicense },
+    { k: "ykb",     l: "YKB-certifikat", sub: "Yrkeskompetensbevis. Krävs för C/CE/D/DE.", verified: hasYKB },
+    { k: "adr",     l: "ADR-intyg",      sub: "För farligt gods.",                         verified: hasADR },
   ];
 
   return (
@@ -321,24 +335,33 @@ function DriverVerifieringSection({ profile }) {
       </Card>
 
       <Card title="Mina dokument">
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 18 }}>
           {docs.map(it => (
             <div key={it.k} style={{ padding: "14px 16px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 11, display: "flex", alignItems: "center", gap: 14 }}>
               <div style={{ width: 38, height: 38, borderRadius: 10, background: it.verified ? "rgba(74,222,128,0.12)" : "rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <Icon n={it.verified ? "check" : "upload"} s={16} c={it.verified ? "#4ade80" : "rgba(240,250,249,0.6)"} />
+                <Icon n={it.verified ? "check" : "shield"} s={16} c={it.verified ? "#4ade80" : "rgba(240,250,249,0.4)"} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
                   <span style={{ fontSize: 14, fontWeight: 700 }}>{it.l}</span>
-                  {it.verified && <span style={{ padding: "2px 8px", borderRadius: 99, background: "rgba(74,222,128,0.12)", border: "1px solid rgba(74,222,128,0.25)", fontSize: 10, fontWeight: 800, color: "#4ade80", letterSpacing: 0.5 }}>VERIFIERAD</span>}
+                  {it.verified && <span style={{ padding: "2px 8px", borderRadius: 99, background: "rgba(74,222,128,0.12)", border: "1px solid rgba(74,222,128,0.25)", fontSize: 10, fontWeight: 800, color: "#4ade80", letterSpacing: 0.5 }}>REGISTRERAT</span>}
                 </div>
                 <div style={{ fontSize: 12, color: "rgba(240,250,249,0.5)" }}>{it.sub}</div>
               </div>
-              <button type="button" style={{ padding: "8px 14px", borderRadius: 9, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(240,250,249,0.8)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
-                {it.verified ? "Byt fil" : "Ladda upp"}
-              </button>
             </div>
           ))}
+        </div>
+
+        <div style={{ padding: "16px 18px", borderRadius: 12, background: "rgba(245,166,35,0.06)", border: "1px solid rgba(245,166,35,0.2)", display: "flex", alignItems: "flex-start", gap: 14 }}>
+          <Icon n="mail" s={18} c="#F5A623" />
+          <div style={{ fontSize: 13, color: "rgba(240,250,249,0.75)", lineHeight: 1.6 }}>
+            <strong style={{ color: "#F5A623" }}>Verifiering sker via support.</strong>{" "}
+            Skicka dina dokument till{" "}
+            <a href="mailto:support@transportplattformen.se" style={{ color: "#F5A623", textDecoration: "underline" }}>
+              support@transportplattformen.se
+            </a>{" "}
+            så hjälper vi dig.
+          </div>
         </div>
       </Card>
     </>
@@ -380,7 +403,6 @@ const VISIBILITY_OPTS = [
 
 function SekretessSection({ profile: initialProfile }) {
   const [visibility, setVisibility] = useState(initialProfile?.visible === false ? "hidden" : "open");
-  const [blocked, setBlocked] = useState("");
 
   const save = async (val) => {
     setVisibility(val);
@@ -392,41 +414,154 @@ function SekretessSection({ profile: initialProfile }) {
   };
 
   return (
-    <>
-      <Card title="Vem får se din profil?" sub="Du bestämmer själv hur synlig du är.">
-        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 8 }}>
-          {VISIBILITY_OPTS.map((o) => {
-            const on = visibility === o.v;
-            return (
-              <button key={o.v} type="button" onClick={() => save(o.v)} style={{ textAlign: "left", padding: "16px 18px", borderRadius: 13, background: on ? "rgba(245,166,35,0.06)" : "rgba(255,255,255,0.03)", border: `1px solid ${on ? "rgba(245,166,35,0.3)" : "rgba(255,255,255,0.07)"}`, display: "flex", gap: 14, alignItems: "flex-start", cursor: "pointer", fontFamily: "inherit", color: "inherit" }}>
-                <div style={{ width: 18, height: 18, borderRadius: 99, border: `2px solid ${on ? "#F5A623" : "rgba(255,255,255,0.3)"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
-                  {on && <div style={{ width: 8, height: 8, borderRadius: 99, background: "#F5A623" }} />}
-                </div>
-                <div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: "#f0faf9", marginBottom: 3 }}>{o.l}</div>
-                  <div style={{ fontSize: 12, color: "rgba(240,250,249,0.55)", lineHeight: 1.5 }}>{o.d}</div>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </Card>
-
-      <Card title="Blockera åkerier" sub="Åkerier du blockerar kan inte se din profil eller kontakta dig.">
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <input style={{ ...inputStyle, flex: 1 }} placeholder="Sök åkeri att blockera..." value={blocked} onChange={e => setBlocked(e.target.value)} />
-          <button type="button" style={{ padding: "11px 16px", borderRadius: 10, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(240,250,249,0.7)", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>Lägg till</button>
-        </div>
-        <div style={{ marginTop: 14, fontSize: 12, color: "rgba(240,250,249,0.45)" }}>Inga blockerade åkerier.</div>
-      </Card>
-    </>
+    <Card title="Vem får se din profil?" sub="Du bestämmer själv hur synlig du är.">
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 8 }}>
+        {VISIBILITY_OPTS.map((o) => {
+          const on = visibility === o.v;
+          return (
+            <button key={o.v} type="button" onClick={() => save(o.v)} style={{ textAlign: "left", padding: "16px 18px", borderRadius: 13, background: on ? "rgba(245,166,35,0.06)" : "rgba(255,255,255,0.03)", border: `1px solid ${on ? "rgba(245,166,35,0.3)" : "rgba(255,255,255,0.07)"}`, display: "flex", gap: 14, alignItems: "flex-start", cursor: "pointer", fontFamily: "inherit", color: "inherit" }}>
+              <div style={{ width: 18, height: 18, borderRadius: 99, border: `2px solid ${on ? "#F5A623" : "rgba(255,255,255,0.3)"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
+                {on && <div style={{ width: 8, height: 8, borderRadius: 99, background: "#F5A623" }} />}
+              </div>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "#f0faf9", marginBottom: 3 }}>{o.l}</div>
+                <div style={{ fontSize: 12, color: "rgba(240,250,249,0.55)", lineHeight: 1.5 }}>{o.d}</div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </Card>
   );
 }
 
 // ─── Company Konto ────────────────────────────────────────────────────────────
+function InviteSection() {
+  const [invites, setInvites] = useState([]);
+  const [email, setEmail] = useState("");
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    try {
+      const data = await listInvites();
+      setInvites(Array.isArray(data) ? data : []);
+    } catch {
+      // silent — non-owners won't have access
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const handleSend = async (e) => {
+    e.preventDefault();
+    setError(""); setSuccess("");
+    const trimmed = email.trim();
+    if (!trimmed || !trimmed.includes("@")) { setError("Ange en giltig e-postadress."); return; }
+    setSending(true);
+    try {
+      await createInvite(trimmed);
+      setSuccess(`Inbjudan skickad till ${trimmed}.`);
+      setEmail("");
+      await load();
+    } catch (err) {
+      setError(err.message || "Kunde inte skicka inbjudan.");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleRevoke = async (id) => {
+    try {
+      await revokeInvite(id);
+      setInvites(prev => prev.filter(inv => inv.id !== id));
+    } catch (err) {
+      setError(err.message || "Kunde inte återkalla inbjudan.");
+    }
+  };
+
+  return (
+    <Card title="Bjud in kollega" sub="Skicka en inbjudan till en kollega så kan de logga in på ert STP-konto.">
+      {error && <div style={{ padding: "10px 14px", borderRadius: 10, background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)", fontSize: 13, color: "#f87171", marginBottom: 14 }}>{error}</div>}
+      {success && <div style={{ padding: "10px 14px", borderRadius: 10, background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.2)", fontSize: 13, color: "#4ade80", marginBottom: 14 }}>{success}</div>}
+      <form onSubmit={handleSend} style={{ display: "flex", gap: 8, marginBottom: 18 }}>
+        <input
+          style={{ ...inputStyle, flex: 1 }}
+          type="email"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          placeholder="kollega@foretag.se"
+          disabled={sending}
+        />
+        <button
+          type="submit"
+          disabled={sending}
+          style={{ padding: "11px 18px", borderRadius: 10, background: "#1F5F5C", border: "none", color: "#fff", fontWeight: 700, fontSize: 13, cursor: sending ? "not-allowed" : "pointer", fontFamily: "inherit", whiteSpace: "nowrap", opacity: sending ? 0.6 : 1 }}
+        >
+          {sending ? "Skickar…" : "Skicka inbjudan"}
+        </button>
+      </form>
+
+      {loading ? (
+        <p style={{ fontSize: 13, color: "rgba(240,250,249,0.4)", margin: 0 }}>Laddar inbjudningar…</p>
+      ) : invites.length === 0 ? (
+        <p style={{ fontSize: 13, color: "rgba(240,250,249,0.4)", margin: 0 }}>Inga väntande inbjudningar.</p>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <p style={{ fontSize: 12, fontWeight: 700, color: "rgba(240,250,249,0.4)", textTransform: "uppercase", letterSpacing: 0.8, margin: "0 0 4px" }}>Väntande inbjudningar</p>
+          {invites.map(inv => (
+            <div key={inv.id} style={{ padding: "12px 14px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10, display: "flex", alignItems: "center", gap: 12 }}>
+              <Icon n="mail" s={15} c="rgba(240,250,249,0.4)" />
+              <span style={{ flex: 1, fontSize: 13, color: "rgba(240,250,249,0.8)" }}>{inv.email}</span>
+              <span style={{ fontSize: 11, color: "rgba(240,250,249,0.35)", marginRight: 8 }}>Väntar</span>
+              <button
+                type="button"
+                onClick={() => handleRevoke(inv.id)}
+                style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 10px", borderRadius: 8, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#ef4444", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}
+              >
+                <Icon n="trash" s={12} /> Återkalla
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
+  );
+}
+
 function CompanyKontoSection({ user }) {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
+  const handleDelete = async () => {
+    setDeleteLoading(true);
+    try {
+      await deleteMyAccount();
+      logout();
+      navigate("/", { replace: true });
+    } catch (err) {
+      setDeleteLoading(false);
+      alert(err.message || "Kunde inte radera kontot. Försök igen eller kontakta support.");
+    }
+  };
+
   return (
     <>
+      {showDeleteDialog && (
+        <DeleteAccountDialog
+          isCompany={true}
+          onClose={() => setShowDeleteDialog(false)}
+          onConfirm={handleDelete}
+          loading={deleteLoading}
+        />
+      )}
+
       <Card title="Företagsuppgifter" sub="Din inloggningsinformation på STP.">
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 4 }}>
           {[
@@ -473,13 +608,16 @@ function CompanyKontoSection({ user }) {
             </div>
           ))}
         </div>
-        <button type="button" style={{ padding: "10px 16px", borderRadius: 10, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(240,250,249,0.8)", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>
-          + Bjud in kollega
-        </button>
       </Card>
 
+      <InviteSection />
+
       <Card title="Ta bort konto" sub="Detta är permanent. Alla era annonser och konversationer raderas." danger>
-        <button type="button" style={{ padding: "10px 18px", borderRadius: 10, background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.3)", color: "#ef4444", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>
+        <button
+          type="button"
+          onClick={() => setShowDeleteDialog(true)}
+          style={{ padding: "10px 18px", borderRadius: 10, background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.3)", color: "#ef4444", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}
+        >
           Ta bort företagskonto
         </button>
       </Card>
@@ -490,12 +628,6 @@ function CompanyKontoSection({ user }) {
 // ─── Company Verifiering ──────────────────────────────────────────────────────
 function CompanyVerifieringSection({ user }) {
   const isVerified = user?.status === "VERIFIED";
-  const checks = [
-    { l: "Org.nummer registrerat", v: true },
-    { l: "F-skattsedel",           v: isVerified },
-    { l: "Kollektivavtal",         v: isVerified },
-    { l: "Trafiktillstånd",        v: isVerified },
-  ];
 
   return (
     <Card title="Företagsverifiering" sub="Verifierade åkerier får 3× fler ansökningar i snitt.">
@@ -508,19 +640,22 @@ function CompanyVerifieringSection({ user }) {
             {isVerified ? "Verifierat företag" : "Verifiering pågår"}
           </div>
           <div style={{ fontSize: 12, color: "rgba(240,250,249,0.6)" }}>
-            {isVerified ? "F-skatt och kollektivavtal kontrollerade" : "Vår granskare kontrollerar era uppgifter"}
+            {isVerified
+              ? "Ert företag är granskat och godkänt av STP."
+              : "Vår granskare kontrollerar era uppgifter. Detta tar vanligtvis 1–2 arbetsdagar."}
           </div>
         </div>
       </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {checks.map(d => (
-          <div key={d.l} style={{ padding: "11px 14px", background: "rgba(255,255,255,0.03)", border: `1px solid ${d.v ? "rgba(255,255,255,0.05)" : "rgba(245,166,35,0.15)"}`, borderRadius: 10, display: "flex", alignItems: "center", gap: 11 }}>
-            <Icon n={d.v ? "check" : "shield"} s={14} c={d.v ? "#4ade80" : "rgba(245,166,35,0.7)"} />
-            <span style={{ fontSize: 13, color: d.v ? "#f0faf9" : "rgba(240,250,249,0.5)" }}>{d.l}</span>
-            {!d.v && <span style={{ marginLeft: "auto", fontSize: 11, color: "#F5A623", fontWeight: 700 }}>Granskas</span>}
-          </div>
-        ))}
-      </div>
+
+      {!isVerified && (
+        <div style={{ padding: "14px 16px", borderRadius: 11, background: "rgba(245,166,35,0.04)", border: "1px solid rgba(245,166,35,0.12)", fontSize: 13, color: "rgba(240,250,249,0.65)", lineHeight: 1.6 }}>
+          Har du frågor om verifieringen?{" "}
+          <a href="mailto:support@transportplattformen.se" style={{ color: "#F5A623", textDecoration: "underline" }}>
+            Kontakta support
+          </a>
+          .
+        </div>
+      )}
     </Card>
   );
 }
@@ -567,16 +702,15 @@ export default function Settings() {
   if (!user) return <Navigate to="/login" state={{ from: "/installningar" }} replace />;
 
   const driverSections = [
-    { k: "konto",       l: "Konto",           i: "user"    },
-    { k: "sokpref",     l: "Sökpreferenser",  i: "search"  },
-    { k: "verifiering", l: "Verifiering",     i: "shield"  },
-    { k: "notiser",     l: "Notiser",         i: "bell"    },
-    { k: "sekretess",   l: "Sekretess",       i: "lock"    },
+    { k: "konto",       l: "Konto",       i: "user"   },
+    { k: "verifiering", l: "Verifiering", i: "shield" },
+    { k: "notiser",     l: "Notiser",     i: "bell"   },
+    { k: "sekretess",   l: "Sekretess",   i: "lock"   },
   ];
   const companySections = [
-    { k: "konto",       l: "Konto & team",    i: "building" },
-    { k: "verifiering", l: "Verifiering",     i: "shield"   },
-    { k: "notiser",     l: "Notiser",         i: "bell"     },
+    { k: "konto",       l: "Konto & team",  i: "building" },
+    { k: "verifiering", l: "Verifiering",   i: "shield"   },
+    { k: "notiser",     l: "Notiser",       i: "bell"     },
   ];
   const sections = isCompany ? companySections : driverSections;
 
@@ -585,7 +719,6 @@ export default function Settings() {
       if (isDriver) return <DriverKontoSection user={user} profile={profile} />;
       return <CompanyKontoSection user={user} />;
     }
-    if (section === "sokpref" && isDriver) return <DriverSokprefSection profile={profile} />;
     if (section === "verifiering") {
       if (isDriver) return <DriverVerifieringSection profile={profile} />;
       return <CompanyVerifieringSection user={user} />;
@@ -611,7 +744,7 @@ export default function Settings() {
           <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(245,166,35,0.85)", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>
             {isCompany ? "Företagskonto" : "Förarkonto"}
           </div>
-          <h1 style={{ fontSize: 36, fontWeight: 900, letterSpacing: -1.2, margin: 0 }}>Inställningar</h1>
+          <h1 style={{ fontSize: 36, fontWeight: 900, letterSpacing: -1.2, margin: 0, color: "#f0faf9" }}>Inställningar</h1>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "260px 1fr", gap: 32, alignItems: "flex-start" }}>

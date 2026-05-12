@@ -1,4 +1,4 @@
-import { apiGet, apiPut, apiPatch } from "./client.js";
+import { apiGet, apiPost, apiPut, apiPatch, apiDelete } from "./client.js";
 
 export function updateCompanyNotificationSettings(settings) {
   return apiPatch("/api/companies/notification-settings", settings);
@@ -24,4 +24,17 @@ export function fetchCompaniesSearch(params = {}) {
 
 export function fetchCompanyPublicProfile(companyId) {
   return apiGet(`/api/companies/${companyId}/public`);
+}
+
+/** Team invites */
+export function listInvites() {
+  return apiGet("/api/companies/me/invites");
+}
+
+export function createInvite(email) {
+  return apiPost("/api/companies/me/invites", { email });
+}
+
+export function revokeInvite(id) {
+  return apiDelete(`/api/companies/me/invites/${id}`);
 }

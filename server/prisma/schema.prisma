@@ -235,6 +235,7 @@ model DriverProfile {
   physicalWorkOk      Boolean? // fysiskt tungt arbete ok
   soloWorkOk          Boolean? // ensamarbete ok
   fastResponder       Boolean  @default(false) // svarar på meddelanden inom 24h
+  preferredEmployment String[] @default([])   // ["fast", "vikariat", "timjobb", "egenanstald"]
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 }
