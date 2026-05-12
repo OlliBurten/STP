@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { licenseTypes, regions } from "../data/mockJobs";
+import { jobTypes, licenseTypes, regions } from "../data/mockJobs";
 import { certificateTypes } from "../data/profileData";
 import { useAuth } from "../context/AuthContext";
 import { createJob } from "../api/jobs.js";
@@ -359,6 +359,14 @@ function StepBasics({ form, setForm }) {
         </div>
       </Field>
 
+      <Field label="Typ av körning" required hint="Styr filtrering i jobblistan och hjälper förare hitta rätt typ av uppdrag.">
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {jobTypes.map((j) => (
+            <ToggleChip key={j.value} label={j.label} active={form.jobType === j.value} onClick={() => setForm((f) => ({ ...f, jobType: j.value }))} color="orange" />
+          ))}
+        </div>
+      </Field>
+
       <Field label="Minsta erfarenhet">
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {EXP_DISPLAY.map((e) => (
@@ -519,6 +527,7 @@ function StepPreview({ form, onPublish, publishing, publishError }) {
     { label: "Företag ifyllt",            done: !!form.company },
     { label: "Ort + region",              done: !!form.location && !!form.region },
     { label: "Körkort valt",              done: form.license.length > 0 },
+    { label: "Typ av körning vald",       done: !!form.jobType },
     { label: "Anställningsform vald",     done: !!form.employment },
     { label: "Schema valt",               done: !!form.schedule },
     { label: "Om jobbet (60+ tecken)",    done: form.aboutJob.trim().length >= 60 },
@@ -586,6 +595,7 @@ export default function PostJob() {
     region: "",
     license: [],
     certificates: [],
+    jobType: "",
     experienceLabel: "",
     experience: "",
     employment: "",
@@ -622,7 +632,7 @@ export default function PostJob() {
   }, [hasApi, isCompany, user?.email]);
 
   const canNext = () => {
-    if (step === 0) return form.title && form.company && form.location && form.region && form.license.length > 0 && form.employment && form.schedule;
+    if (step === 0) return form.title && form.company && form.location && form.region && form.license.length > 0 && form.jobType && form.employment && form.schedule;
     if (step === 1) return form.aboutJob.trim().length >= 60 && form.requirements.length >= 1;
     if (step === 2) return !!form.contact;
     return true;
@@ -655,7 +665,7 @@ export default function PostJob() {
           region: form.region,
           license: form.license,
           certificates: form.certificates,
-          jobType: "fjärrkörning",
+          jobType: form.jobType,
           employment: form.employment,
           segment: form.segment || mapEmploymentToSegment(form.employment) || "FULLTIME",
           schedule: form.schedule || null,
