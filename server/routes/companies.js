@@ -32,12 +32,14 @@ companiesRouter.get("/search", optionalAuthMiddleware, validateQuery(companiesSe
     //   • companyDescription — minst 30 tecken om sig själva
     //   • companyRegion — var de verkar
     // Detta skyddar mot test/tomma konton och gör databasen meningsfull.
+    // ── Minimum synlighetskrav ────────────────────────────────────────────────
+    // gt: "" filtrerar bort både null och tomma strängar (PostgreSQL: NULL > '' = NULL = falsy)
     const where = {
       role: "COMPANY",
       companyStatus: "VERIFIED",
-      companyName: { not: null },
-      companyRegion: { not: null },
-      companyDescription: { not: null },
+      companyName: { gt: "" },
+      companyRegion: { gt: "" },
+      companyDescription: { gt: "" },
     };
     if (bransch) {
       where.companyBransch = { has: bransch };
