@@ -299,9 +299,15 @@ profileRouter.put("/", async (req, res, next) => {
     }
     const user = await prisma.user.findUnique({
       where: { id: req.userId },
-      select: { name: true, email: true },
+      select: { name: true, email: true, lastLoginAt: true },
     });
-    res.json(formatProfileResponse(profile, user));
+    const { score, breakdown, tips } = computeProfileScore(profile, user);
+    res.json({
+      ...formatProfileResponse(profile, user),
+      profileScore: score,
+      profileScoreBreakdown: breakdown,
+      profileScoreTips: tips,
+    });
     const shouldSendMatchAlerts =
       profile.visibleToCompanies &&
       JSON.stringify({

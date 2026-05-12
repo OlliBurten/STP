@@ -66,6 +66,8 @@ const Btn = ({ children, v = "primary", onClick, style, disabled, type = "button
   );
 };
 
+const MONTHS = ["Jan","Feb","Mar","Apr","Maj","Jun","Jul","Aug","Sep","Okt","Nov","Dec"];
+
 // ── Experience constants ───────────────────────────────────────────────────────
 const EXP_VEHICLE_TYPES = [
   { value: "ce_lastbil", label: "CE Lastbil" },
@@ -219,7 +221,9 @@ function ProfilePreview({ name, licenses, region, segment, summary }) {
 // ── Experience step (dark-themed) ──────────────────────────────────────────────
 function ExperienceStep({ draft, setDraft, onSkip }) {
   const [newExp, setNewExp] = useState({
-    company: "", role: "", startYear: "", endYear: "",
+    company: "", role: "",
+    startMonth: "", startYear: "",
+    endMonth: "", endYear: "",
     current: false, vehicleTypes: [], jobType: "",
   });
 
@@ -234,7 +238,9 @@ function ExperienceStep({ draft, setDraft, onSkip }) {
           id: `exp-${Date.now()}`,
           company: newExp.company.trim(),
           role: newExp.role.trim(),
+          startMonth: newExp.startMonth ? parseInt(newExp.startMonth, 10) : null,
           startYear: newExp.startYear ? parseInt(newExp.startYear, 10) : null,
+          endMonth: newExp.endMonth ? parseInt(newExp.endMonth, 10) : null,
           endYear: newExp.endYear ? parseInt(newExp.endYear, 10) : null,
           current: newExp.current,
           description: "",
@@ -243,7 +249,7 @@ function ExperienceStep({ draft, setDraft, onSkip }) {
         },
       ],
     }));
-    setNewExp({ company: "", role: "", startYear: "", endYear: "", current: false, vehicleTypes: [], jobType: "" });
+    setNewExp({ company: "", role: "", startMonth: "", startYear: "", endMonth: "", endYear: "", current: false, vehicleTypes: [], jobType: "" });
   };
 
   const remove = (id) => setDraft((prev) => ({ ...prev, experience: prev.experience.filter((e) => e.id !== id) }));
@@ -305,11 +311,25 @@ function ExperienceStep({ draft, setDraft, onSkip }) {
           <input type="text" placeholder="Roll / titel *" value={newExp.role}
             onChange={(e) => setNewExp((p) => ({ ...p, role: e.target.value }))}
             style={inputStyle} />
+          {/* Start: month + year */}
+          <select value={newExp.startMonth}
+            onChange={(e) => setNewExp((p) => ({ ...p, startMonth: e.target.value }))}
+            style={selectStyle}>
+            <option value="">Startmånad</option>
+            {MONTHS.map((m, i) => <option key={i+1} value={i+1}>{m}</option>)}
+          </select>
           <select value={newExp.startYear}
             onChange={(e) => setNewExp((p) => ({ ...p, startYear: e.target.value }))}
             style={selectStyle}>
             <option value="">Startår</option>
             {expYears.map((y) => <option key={y} value={y}>{y}</option>)}
+          </select>
+          {/* End: month + year */}
+          <select value={newExp.endMonth} disabled={newExp.current}
+            onChange={(e) => setNewExp((p) => ({ ...p, endMonth: e.target.value }))}
+            style={{ ...selectStyle, opacity: newExp.current ? 0.4 : 1 }}>
+            <option value="">Slutmånad</option>
+            {MONTHS.map((m, i) => <option key={i+1} value={i+1}>{m}</option>)}
           </select>
           <select value={newExp.endYear} disabled={newExp.current}
             onChange={(e) => setNewExp((p) => ({ ...p, endYear: e.target.value }))}
@@ -513,7 +533,7 @@ export default function DriverOnboardingWizard() {
   // ── Done screen ──────────────────────────────────────────────────────────────
   if (done) {
     return (
-      <div style={{ minHeight: "100vh", background: T.bg, color: T.text, fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+      <div style={{ minHeight: "100vh", background: "#050e0e", color: T.text, fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, marginTop: "-64px", paddingTop: 64 }}>
         <div style={{ maxWidth: 480, width: "100%", textAlign: "center" }}>
           <div style={{
             width: 72, height: 72, borderRadius: "50%",
@@ -766,7 +786,7 @@ export default function DriverOnboardingWizard() {
           <MatchCounter licenses={draft.licenses || []} region={draft.region} />
 
           {/* Region */}
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.muted, margin: "24px 0 10px" }}>Region & ort</p>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.muted, margin: "24px 0 10px" }}>Region (landsdel)</p>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
             {regions.slice(0, 12).map((r) => (
               <button key={r} type="button" onClick={() => setDraft((p) => ({ ...p, region: r }))} style={{
@@ -782,7 +802,8 @@ export default function DriverOnboardingWizard() {
           </div>
 
           <div>
-            <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 7 }}>Ort</p>
+            <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 4 }}>Stad / ort</p>
+            <p style={{ fontSize: 11, color: T.muted, marginBottom: 7 }}>Din specifika stad, t.ex. Malmö eller Göteborg</p>
             <input type="text" value={draft.location}
               onChange={(e) => setDraft((p) => ({ ...p, location: e.target.value }))}
               placeholder="t.ex. Malmö"
@@ -881,7 +902,7 @@ export default function DriverOnboardingWizard() {
   const showSidebar = step > 0;
 
   return (
-    <div style={{ minHeight: "100vh", background: T.bg, color: T.text, fontFamily: "inherit" }}>
+    <div style={{ minHeight: "100vh", background: "#050e0e", color: T.text, fontFamily: "inherit", marginTop: "-64px", paddingTop: 64 }}>
       <div style={{
         maxWidth: 1080, margin: "0 auto",
         padding: "40px 32px 80px",

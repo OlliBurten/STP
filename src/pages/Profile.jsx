@@ -183,7 +183,7 @@ function ScoreCard({ score, profile, onEdit }) {
 function MarketSidebar({ driverMarket, user, linkCopied, onCopyLink }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      {driverMarket && driverMarket.jobsInRegion > 0 && (
+      {driverMarket && driverMarket.jobsInRegion >= 5 && (
         <Card>
           <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.sub, marginBottom: 14 }}>
             Marknad i {driverMarket.region || "din region"}
@@ -743,19 +743,6 @@ export default function Profile() {
                 {current.visibleToCompanies
                   ? <Tag c="green">Synlig</Tag>
                   : <Tag c="red">Dold</Tag>}
-              </div>
-              {/* Profile completeness bar — always shown */}
-              <div style={{ display: "flex", alignItems: "center", gap: 12, maxWidth: 420 }}>
-                <div style={{ flex: 1, height: 3, borderRadius: 3, background: "rgba(255,255,255,0.1)" }}>
-                  <div style={{
-                    height: 3, borderRadius: 3, transition: "width .5s",
-                    background: progressPct >= 70 ? T.green : progressPct >= 50 ? T.amber : T.primary,
-                    width: `${progressPct}%`,
-                  }} />
-                </div>
-                <span style={{ fontSize: 11, color: T.muted, whiteSpace: "nowrap" }}>
-                  {progressPct}% komplett
-                </span>
               </div>
             </div>
           </div>
