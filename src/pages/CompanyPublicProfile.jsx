@@ -237,10 +237,10 @@ export default function CompanyPublicProfile() {
         </Link>
       </div>
 
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px" }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px", position: "relative", zIndex: 1 }}>
 
         {/* Identity row */}
-        <div style={{ display: "flex", gap: 24, alignItems: "flex-end", marginTop: -60, marginBottom: 24 }}>
+        <div style={{ display: "flex", gap: 24, alignItems: "flex-end", marginTop: -72, marginBottom: 32 }}>
           {/* Avatar */}
           <div style={{ width: 128, height: 128, borderRadius: 24, background: color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 42, color: "#F5A623", letterSpacing: -1.5, border: "5px solid #060f0f", boxShadow: "0 20px 50px rgba(0,0,0,0.5)", flexShrink: 0 }}>
             {companyInitials(company.name)}
