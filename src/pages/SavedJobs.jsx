@@ -266,7 +266,7 @@ export default function SavedJobs() {
       <div style={{ maxWidth: 1080, margin: "0 auto", padding: "0 32px 100px" }}>
 
         <div style={{ marginBottom: 28 }}>
-          <h1 style={{ fontSize: 32, fontWeight: 800, letterSpacing: -1, marginBottom: 8 }}>Favoriter</h1>
+          <h1 style={{ fontSize: 32, fontWeight: 800, letterSpacing: -1, marginBottom: 8, color: "#f0faf9" }}>Favoriter</h1>
           <p style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", margin: 0 }}>Jobb och åkerier du sparat. Vi notifierar dig när något ändras.</p>
         </div>
 

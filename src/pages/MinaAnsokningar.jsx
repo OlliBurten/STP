@@ -244,7 +244,7 @@ export default function MinaAnsokningar() {
         {/* Page header */}
         <div style={{ marginBottom: 32 }}>
           <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "rgba(240,250,249,0.4)", marginBottom: 8 }}>Mitt konto</div>
-          <h1 style={{ fontSize: 40, fontWeight: 900, letterSpacing: -1.5, marginBottom: 6 }}>Mina ansökningar</h1>
+          <h1 style={{ fontSize: 40, fontWeight: 900, letterSpacing: -1.5, marginBottom: 6, color: "#f0faf9" }}>Mina ansökningar</h1>
           <p style={{ fontSize: 15, color: "rgba(240,250,249,0.55)" }}>Följ varje ansökan från skickad till beslut. Vi visar dig exakt var du står.</p>
         </div>
 

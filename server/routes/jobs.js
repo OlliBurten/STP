@@ -343,6 +343,78 @@ jobsRouter.get("/:id/applicants", authMiddleware, requireCompany, attachCompanyC
   }
 });
 
+// ─── Saved Companies ──────────────────────────────────────────────────────────
+// IMPORTANT: these must be registered BEFORE /:id to avoid Express matching
+// "saved-companies" as a job id.
+
+jobsRouter.get("/saved-companies", authMiddleware, requireDriver, async (req, res, next) => {
+  try {
+    const saved = await prisma.savedCompany.findMany({
+      where: { userId: req.userId },
+      include: {
+        company: {
+          select: {
+            id: true, companyName: true, companyLocation: true,
+            companyDescriptionShort: true, companyWebsite: true, companyStatus: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    const companyIds = saved.map((s) => s.companyId);
+    const jobCounts = await prisma.job.groupBy({
+      by: ["userId"],
+      where: { userId: { in: companyIds }, status: "ACTIVE" },
+      _count: { _all: true },
+    });
+    const jobCountMap = {};
+    jobCounts.forEach((r) => { jobCountMap[r.userId] = r._count._all; });
+    res.json(saved.map((s) => ({
+      id: s.companyId,
+      companyName: s.company?.companyName ?? "",
+      companyLocation: s.company?.companyLocation ?? null,
+      companyDescriptionShort: s.company?.companyDescriptionShort ?? null,
+      companyWebsite: s.company?.companyWebsite ?? null,
+      verified: s.company?.companyStatus === "VERIFIED",
+      openJobs: jobCountMap[s.companyId] ?? 0,
+      savedAt: s.createdAt.toISOString(),
+    })));
+  } catch (e) {
+    next(e);
+  }
+});
+
+jobsRouter.post("/saved-companies/:companyId", authMiddleware, requireDriver, async (req, res, next) => {
+  try {
+    const company = await prisma.user.findFirst({
+      where: { id: req.params.companyId, role: "COMPANY" },
+      select: { id: true },
+    });
+    if (!company) return res.status(404).json({ error: "Åkeri hittades inte" });
+    await prisma.savedCompany.upsert({
+      where: { userId_companyId: { userId: req.userId, companyId: company.id } },
+      update: {},
+      create: { userId: req.userId, companyId: company.id },
+    });
+    res.status(201).json({ ok: true, saved: true });
+  } catch (e) {
+    next(e);
+  }
+});
+
+jobsRouter.delete("/saved-companies/:companyId", authMiddleware, requireDriver, async (req, res, next) => {
+  try {
+    await prisma.savedCompany.deleteMany({
+      where: { userId: req.userId, companyId: req.params.companyId },
+    });
+    res.json({ ok: true, saved: false });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// ─── Job by id ────────────────────────────────────────────────────────────────
+
 jobsRouter.get("/:id", optionalAuthMiddleware, attachCompanyContext, async (req, res, next) => {
   try {
     const job = await prisma.job.findFirst({
@@ -566,74 +638,6 @@ jobsRouter.delete("/:id/save", authMiddleware, requireDriver, async (req, res, n
         userId: req.userId,
         jobId: req.params.id,
       },
-    });
-    res.json({ ok: true, saved: false });
-  } catch (e) {
-    next(e);
-  }
-});
-
-// ─── Saved Companies ──────────────────────────────────────────────────────────
-
-jobsRouter.get("/saved-companies", authMiddleware, requireDriver, async (req, res, next) => {
-  try {
-    const saved = await prisma.savedCompany.findMany({
-      where: { userId: req.userId },
-      include: {
-        company: {
-          select: {
-            id: true, companyName: true, companyLocation: true,
-            companyDescriptionShort: true, companyWebsite: true, companyStatus: true,
-          },
-        },
-      },
-      orderBy: { createdAt: "desc" },
-    });
-    const companyIds = saved.map((s) => s.companyId);
-    const jobCounts = await prisma.job.groupBy({
-      by: ["userId"],
-      where: { userId: { in: companyIds }, status: "ACTIVE" },
-      _count: { _all: true },
-    });
-    const jobCountMap = {};
-    jobCounts.forEach((r) => { jobCountMap[r.userId] = r._count._all; });
-    res.json(saved.map((s) => ({
-      id: s.companyId,
-      companyName: s.company?.companyName ?? "",
-      companyLocation: s.company?.companyLocation ?? null,
-      companyDescriptionShort: s.company?.companyDescriptionShort ?? null,
-      companyWebsite: s.company?.companyWebsite ?? null,
-      verified: s.company?.companyStatus === "VERIFIED",
-      openJobs: jobCountMap[s.companyId] ?? 0,
-      savedAt: s.createdAt.toISOString(),
-    })));
-  } catch (e) {
-    next(e);
-  }
-});
-
-jobsRouter.post("/saved-companies/:companyId", authMiddleware, requireDriver, async (req, res, next) => {
-  try {
-    const company = await prisma.user.findFirst({
-      where: { id: req.params.companyId, role: "COMPANY" },
-      select: { id: true },
-    });
-    if (!company) return res.status(404).json({ error: "Åkeri hittades inte" });
-    await prisma.savedCompany.upsert({
-      where: { userId_companyId: { userId: req.userId, companyId: company.id } },
-      update: {},
-      create: { userId: req.userId, companyId: company.id },
-    });
-    res.status(201).json({ ok: true, saved: true });
-  } catch (e) {
-    next(e);
-  }
-});
-
-jobsRouter.delete("/saved-companies/:companyId", authMiddleware, requireDriver, async (req, res, next) => {
-  try {
-    await prisma.savedCompany.deleteMany({
-      where: { userId: req.userId, companyId: req.params.companyId },
     });
     res.json({ ok: true, saved: false });
   } catch (e) {
