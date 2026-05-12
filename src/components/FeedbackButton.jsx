@@ -16,6 +16,7 @@ export default function FeedbackButton() {
       await apiPost("/api/feedback", {
         message: message.trim(),
         email: user?.email || undefined,
+        name: user?.name || undefined,
       });
       setStatus("done");
       setMessage("");

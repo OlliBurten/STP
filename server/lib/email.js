@@ -44,12 +44,12 @@ function buildHtml(text, { ctaUrl, ctaText } = {}) {
  * @param {string} [params.devInviteUrl] – Om satt och e-post inte skickas: loggas hela URL:en (för teaminbjudan i dev).
  * @returns {Promise<boolean>} true if email was sent via provider, false if only logged (not sent).
  */
-export async function sendEmail({ to, subject, text, html: htmlOverride, ctaUrl, ctaText, devInviteUrl }) {
+export async function sendEmail({ to, subject, text, html: htmlOverride, ctaUrl, ctaText, devInviteUrl, replyTo: replyToOverride }) {
   const apiKey = process.env.RESEND_API_KEY;
   const fromAddress = process.env.EMAIL_FROM || "noreply@transportplattformen.se";
   const fromName = process.env.EMAIL_FROM_NAME || "Sveriges Transportplattform";
   const from = `${fromName} <${fromAddress}>`;
-  const replyTo = process.env.EMAIL_REPLY_TO;
+  const replyTo = replyToOverride || process.env.EMAIL_REPLY_TO;
 
   if (apiKey) {
     const body = {
@@ -323,17 +323,24 @@ export async function notifyJobAutoArchived({ to, companyName, jobTitle, fronten
 }
 
 /** Skickar användarfeedback till admin (för in-app feedback-formulär). */
-export async function sendFeedbackToAdmin({ message, senderEmail }) {
+export async function sendFeedbackToAdmin({ message, senderEmail, senderName }) {
   const adminEmails = String(process.env.ADMIN_EMAILS || "")
     .split(",")
     .map((e) => e.trim().toLowerCase())
     .filter(Boolean);
   if (adminEmails.length === 0) return;
-  const subject = "Feedback från plattformen";
-  const text = `Feedback:\n\n${message}\n\n${senderEmail ? `Avsändare: ${senderEmail}` : "Avsändare: ej angiven"}`;
+
+  const fromLabel = senderEmail
+    ? (senderName ? `${senderName} <${senderEmail}>` : senderEmail)
+    : "ej angiven";
+  const subject = senderEmail
+    ? `Feedback från ${senderEmail}`
+    : "Feedback från plattformen";
+  const text = `Feedback från plattformen:\n\n${message}\n\n---\nAvsändare: ${fromLabel}\n\n${senderEmail ? "Svara på det här mailet för att kontakta användaren direkt." : ""}`;
+
   for (const to of adminEmails) {
     try {
-      await sendEmail({ to, subject, text });
+      await sendEmail({ to, subject, text, ...(senderEmail && { replyTo: senderEmail }) });
     } catch (e) {
       console.error("[Email] sendFeedbackToAdmin failed for", to, e?.message);
     }

@@ -12,7 +12,8 @@ feedbackRouter.post("/", async (req, res, next) => {
       });
     }
     const senderEmail = req.body?.email ? String(req.body.email).trim().slice(0, 255) : null;
-    await sendFeedbackToAdmin({ message, senderEmail: senderEmail || undefined });
+    const senderName = req.body?.name ? String(req.body.name).trim().slice(0, 255) : null;
+    await sendFeedbackToAdmin({ message, senderEmail: senderEmail || undefined, senderName: senderName || undefined });
     res.status(200).json({ ok: true, message: "Tack för din feedback." });
   } catch (e) {
     next(e);
