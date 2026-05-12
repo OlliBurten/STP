@@ -7,9 +7,6 @@ import { fetchDriverProfileStats } from "../api/drivers.js";
 import { fetchProfileTips } from "../api/ai.js";
 import { fetchDriverMarket } from "../api/stats.js";
 import { fetchJobs } from "../api/jobs.js";
-import PasswordSection from "../components/profile/PasswordSection.jsx";
-import NotificationSettings from "../components/profile/NotificationSettings.jsx";
-import DangerZone from "../components/profile/DangerZone.jsx";
 import { licenseTypes, regions } from "../data/mockJobs";
 import { certificateTypes, availabilityTypes } from "../data/profileData";
 import { segmentOptions } from "../data/segments";
@@ -1526,12 +1523,6 @@ export default function Profile() {
         )}
       </div>
 
-      {/* Bottom sections (account settings) */}
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 40px 80px" }}>
-        {hasApi && <NotificationSettings initialSettings={profile?.emailNotificationSettings} />}
-        {hasApi && <PasswordSection />}
-        {hasApi && <DangerZone />}
-      </div>
     </div>
   );
 }
