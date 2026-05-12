@@ -294,7 +294,7 @@ export default function Header({ onboarding = false }) {
   if (onboarding && user) {
     return (
       <header style={{ ...headerStyle, position: "fixed", left: 0, right: 0, top: 0, zIndex: 50 }}>
-        <nav className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
+        <nav className="max-w-[1200px] mx-auto px-4 sm:px-10 flex items-center justify-between h-16">
           <Link to="/" className="flex items-center" aria-label="Startsida">
             <Logo height={32} variant="light" />
           </Link>
@@ -309,7 +309,7 @@ export default function Header({ onboarding = false }) {
   return (
     <>
       <header className="fixed left-0 right-0 top-0 z-50" style={headerStyle}>
-        <nav className="dm-header-nav max-w-6xl mx-auto px-4 sm:px-6 flex items-center h-16 relative">
+        <nav className="dm-header-nav max-w-[1200px] mx-auto px-4 sm:px-10 flex items-center h-16 relative">
 
           {/* Logo */}
           <div className="flex items-center shrink-0 overflow-visible">

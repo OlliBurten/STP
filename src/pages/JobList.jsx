@@ -204,15 +204,15 @@ export default function JobList() {
           )}
 
           <div style={{ marginBottom: 20 }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: "rgba(245,166,35,0.8)", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 10 }}>
+            <div style={{ fontSize: 11, fontWeight: 800, color: "rgba(245,166,35,0.8)", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>
               Plattformen
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 16, marginBottom: 16 }}>
               <div>
-                <h1 style={{ fontSize: "clamp(32px, 5vw, 44px)", fontWeight: 900, letterSpacing: "-2px", color: "#f0faf9", lineHeight: 1.15, marginBottom: 8, margin: 0 }}>
+                <h1 style={{ fontSize: 32, fontWeight: 800, letterSpacing: -1, color: "#f0faf9", lineHeight: 1.2, margin: "0 0 6px" }}>
                   {isGymnasieelev ? "Praktikplatser" : "Lediga jobb"}
                 </h1>
-                <p style={{ fontSize: 15, color: "rgba(240,250,249,0.5)", fontWeight: 500, marginTop: 8 }}>
+                <p style={{ fontSize: 14, color: "rgba(240,250,249,0.5)", margin: 0 }}>
                   {jobsLoading
                     ? "Hämtar jobb…"
                     : isGymnasieelev
