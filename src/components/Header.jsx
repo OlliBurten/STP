@@ -318,8 +318,14 @@ export default function Header({ onboarding = false }) {
             </Link>
           </div>
 
-          {/* Desktop nav links — vänsterjusterade efter loggan */}
-          <ul className="dm-desktop-nav flex items-center gap-1 text-sm font-medium ml-6">
+          {/* Desktop nav links — centrerade i utloggat läge, vänster i inloggat */}
+          <ul
+            className="dm-desktop-nav flex items-center gap-1 text-sm font-medium"
+            style={user
+              ? { marginLeft: 24 }
+              : { position: "absolute", left: "50%", transform: "translateX(-50%)" }
+            }
+          >
             {navLinks}
           </ul>
 
