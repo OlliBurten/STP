@@ -210,7 +210,7 @@ export default function CompanyPublicProfile() {
   };
 
   return (
-    <main style={{ background: "#060f0f", minHeight: "100vh", marginTop: "-64px" }}>
+    <main style={{ background: "#060f0f", minHeight: "100vh", marginTop: "-64px", paddingTop: 64, paddingBottom: 80 }}>
       <PageMeta
         title={`${company.name} – STP`}
         description={metaDescription}
