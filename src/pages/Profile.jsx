@@ -533,7 +533,7 @@ export default function Profile() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#060f0f", color: T.text, fontFamily: T.font }}>
+    <div style={{ minHeight: "100vh", background: "#060f0f", color: T.text, fontFamily: T.font, marginTop: "-64px", paddingTop: 64 }}>
 
       {/* ── Hero ── */}
       <div style={{
