@@ -2,12 +2,33 @@
  * Core API tests. Run with: APP_LISTEN=false node --test test/api.test.js
  * Or: npm run test
  */
+/* global process */
 import { describe, it } from "node:test";
 import assert from "node:assert";
 import request from "supertest";
+import jwt from "jsonwebtoken";
 
 process.env.APP_LISTEN = "false";
+process.env.ADMIN_EMAILS = "admin@example.com";
 const { app } = await import("../server.js");
+const { prisma } = await import("../lib/prisma.js");
+const { JWT_SECRET } = await import("../lib/config.js");
+
+function replaceDelegateMethod(delegate, methodName, replacement) {
+  const originalDescriptor = Object.getOwnPropertyDescriptor(delegate, methodName);
+  Object.defineProperty(delegate, methodName, {
+    configurable: true,
+    writable: true,
+    value: replacement,
+  });
+  return () => {
+    if (originalDescriptor) {
+      Object.defineProperty(delegate, methodName, originalDescriptor);
+    } else {
+      delete delegate[methodName];
+    }
+  };
+}
 
 describe("GET /api/health", () => {
   it("returns 200 and ok: true", async () => {
@@ -62,6 +83,57 @@ describe("POST /api/auth/register validation", () => {
       .send({ email: "a@b.se", password: "short", role: "DRIVER", name: "Test" });
     assert.strictEqual(res.status, 400);
     assert.ok(res.body?.error);
+  });
+});
+
+describe("POST /api/admin/jobs", () => {
+  it("creates a job owned by the authenticated admin", async () => {
+    const adminId = "admin-user-1";
+    const adminUser = {
+      id: adminId,
+      email: "admin@example.com",
+      role: "COMPANY",
+      suspendedAt: null,
+      emailVerifiedAt: new Date("2026-01-01T00:00:00.000Z"),
+    };
+    let createdJobData = null;
+
+    const restoreUserFindUnique = replaceDelegateMethod(prisma.user, "findUnique", async () => adminUser);
+    const restoreJobCreate = replaceDelegateMethod(prisma.job, "create", async ({ data }) => {
+      createdJobData = data;
+      return { id: "job-1", title: data.title, company: data.company };
+    });
+    const restoreAuditCreate = replaceDelegateMethod(
+      prisma.adminAuditLog,
+      "create",
+      async ({ data }) => ({ id: "audit-1", ...data })
+    );
+
+    try {
+      const token = jwt.sign({ userId: adminId, role: "COMPANY" }, JWT_SECRET);
+      const res = await request(app)
+        .post("/api/admin/jobs")
+        .set("Authorization", `Bearer ${token}`)
+        .send({
+          title: "CE-chaufför",
+          company: "Teståkeriet AB",
+          description: "Transportuppdrag i Stockholm",
+          location: "Stockholm",
+          region: "Stockholm",
+          jobType: "distribution",
+          employment: "fast",
+          contact: "jobb@example.com",
+          license: ["CE"],
+        });
+
+      assert.strictEqual(res.status, 201, res.text);
+      assert.strictEqual(createdJobData?.userId, adminId);
+      assert.strictEqual(res.body?.id, "job-1");
+    } finally {
+      restoreAuditCreate();
+      restoreJobCreate();
+      restoreUserFindUnique();
+    }
   });
 });
 
