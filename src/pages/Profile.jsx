@@ -3,6 +3,7 @@ import { Link, Navigate } from "react-router-dom";
 import { useProfile } from "../context/ProfileContext";
 import { useAuth } from "../context/AuthContext";
 import { usePageTitle } from "../hooks/usePageTitle";
+import { useIsMobile } from "../hooks/useIsMobile";
 import { fetchDriverProfileStats } from "../api/drivers.js";
 import { fetchProfileTips } from "../api/ai.js";
 import { fetchDriverMarket } from "../api/stats.js";
@@ -512,6 +513,7 @@ export default function Profile() {
 
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(profile);
+  const isMobile = useIsMobile();
   const [tab, setTab] = useState("profil");
   const [addingExp, setAddingExp] = useState(false);
   const [editingExpId, setEditingExpId] = useState(null);
@@ -763,11 +765,11 @@ export default function Profile() {
       </div>
 
       {/* ── Content ── */}
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 40px 80px" }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: isMobile ? "24px 20px 80px" : "32px 40px 80px" }}>
 
         {/* PROFIL TAB */}
         {tab === "profil" && (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 32, alignItems: "start" }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 300px", gap: isMobile ? 16 : 32, alignItems: "start" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
               {/* Grundläggande */}
@@ -775,7 +777,7 @@ export default function Profile() {
                 <SectionHeader label="Grundläggande" />
                 {editing ? (
                   <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 14 }}>
                       <div>
                         <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 6 }}>Ort</p>
                         <input value={current.location || ""} onChange={(e) => updateDraft({ location: e.target.value })} placeholder="Malmö" style={inputStyle} />
@@ -835,7 +837,7 @@ export default function Profile() {
                     </div>
                   </div>
                 ) : (
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 0 }}>
                     {[
                       ["Ort", current.location || "—"],
                       ["Region", current.region || "—"],
@@ -1264,7 +1266,7 @@ export default function Profile() {
 
         {/* MATCHNINGAR TAB */}
         {tab === "matchningar" && (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 32, alignItems: "start" }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 300px", gap: isMobile ? 16 : 32, alignItems: "start" }}>
             <div>
               {matchedJobsLoading ? (
                 <div style={{ padding: 40, textAlign: "center" }}>
@@ -1366,7 +1368,7 @@ export default function Profile() {
           <div style={{ maxWidth: 800 }}>
             {profileStats ? (
               <>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14, marginBottom: 24 }}>
+                <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3,1fr)", gap: 14, marginBottom: 24 }}>
                   {[
                     { val: profileStats.views7, label: "Visningar senaste 7 dagarna", hint: profileStats.views7 === 0 ? "Öka synlighet genom att lägga till erfarenhet" : "" },
                     { val: profileStats.views30, label: "Visningar senaste 30 dagarna", hint: "" },
@@ -1398,7 +1400,7 @@ export default function Profile() {
                 )}
               </>
             ) : (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14, marginBottom: 24 }}>
+              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3,1fr)", gap: 14, marginBottom: 24 }}>
                 {[
                   { label: "Visningar senaste 7 dagarna", hint: "Öka synlighet genom att lägga till erfarenhet" },
                   { label: "Visningar senaste 30 dagarna", hint: "" },

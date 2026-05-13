@@ -8,6 +8,7 @@ import { useAuth } from "../context/AuthContext";
 import { useProfile } from "../context/ProfileContext";
 import { matchScore } from "../utils/matchUtils";
 import { calcYearsExperience } from "../utils/profileUtils";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 const PALETTE = ["#1F5F5C","#1a3a5c","#2D4A3E","#3a2a1a","#1a2a3a","#1a3a2a","#2a1a3a","#3a1a2a","#0d3d4f","#2a3a1a"];
@@ -183,6 +184,7 @@ function CompanyCard({ company, onUnsave }) {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function SavedJobs() {
   usePageTitle("Favoriter");
+  const isMobile = useIsMobile();
   const { hasApi, isDriver } = useAuth();
   const { profile } = useProfile();
   const [tab, setTab] = useState("jobs");
@@ -272,7 +274,7 @@ export default function SavedJobs() {
         </div>
       </div>
 
-      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "28px 40px 100px" }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: isMobile ? "24px 20px 80px" : "28px 40px 100px" }}>
 
         {/* Tab bar */}
         <div style={{ display: "flex", gap: 6, marginBottom: 24, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>

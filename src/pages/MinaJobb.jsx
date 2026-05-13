@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { fetchMyJobs, updateJob } from "../api/jobs.js";
 import { useChat } from "../context/ChatContext";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 // ─── Icons ───────────────────────────────────────────────────────────────────
 function Icon({ n, size = 18, color = "currentColor" }) {
@@ -57,7 +58,7 @@ function normalizeStatus(status) {
 }
 
 // ─── JobCard ─────────────────────────────────────────────────────────────────
-function JobCard({ job, pipeline, onOpen, onPause, onClose }) {
+function JobCard({ job, pipeline, onOpen, onPause, onClose, isMobile }) {
   const [hovered, setHovered] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const status = normalizeStatus(job.status);
@@ -83,7 +84,7 @@ function JobCard({ job, pipeline, onOpen, onPause, onClose }) {
       onMouseLeave={() => setHovered(false)}
       style={{ background: "#0a1414", border: `1px solid ${hovered ? "rgba(245,166,35,0.25)" : "rgba(255,255,255,0.05)"}`, borderRadius: 16, padding: 20, cursor: "pointer", transition: "all .15s", opacity: status === "closed" ? 0.65 : 1, transform: hovered ? "translateY(-1px)" : "none" }}
     >
-      <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr 1fr auto", gap: 24, alignItems: "center" }}>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr auto" : "1.5fr 1fr 1fr auto", gap: isMobile ? 12 : 24, alignItems: "center" }}>
         {/* Titelblock */}
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
@@ -102,7 +103,7 @@ function JobCard({ job, pipeline, onOpen, onPause, onClose }) {
         </div>
 
         {/* Pipeline-bar */}
-        <div>
+        {!isMobile && <div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 7 }}>
             <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", fontWeight: 600 }}>Kandidatpipeline</span>
             <span style={{ fontSize: 11, fontWeight: 700 }}>{total} totalt</span>
@@ -121,10 +122,10 @@ function JobCard({ job, pipeline, onOpen, onPause, onClose }) {
             {pipeline.contacted > 0 && <span style={{ color: "rgba(255,255,255,0.55)" }}>{pipeline.contacted} kontaktade</span>}
             {pipeline.interviewed > 0 && <span style={{ color: "rgba(255,255,255,0.55)" }}>{pipeline.interviewed} intervjuade</span>}
           </div>
-        </div>
+        </div>}
 
         {/* Stats */}
-        <div style={{ display: "flex", gap: 28 }}>
+        {!isMobile && <div style={{ display: "flex", gap: 28 }}>
           <div>
             <div style={{ fontSize: 18, fontWeight: 800, lineHeight: 1, marginBottom: 3 }}>{job.viewCount ?? 0}</div>
             <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", display: "flex", alignItems: "center", gap: 4 }}>
@@ -137,7 +138,7 @@ function JobCard({ job, pipeline, onOpen, onPause, onClose }) {
               <Icon n="user" size={10} /> ansökningar
             </div>
           </div>
-        </div>
+        </div>}
 
         {/* Åtgärder */}
         <div style={{ display: "flex", gap: 6, position: "relative" }} onClick={(e) => e.stopPropagation()}>
@@ -185,6 +186,7 @@ export default function MinaJobb() {
   usePageTitle("Mina annonser");
   const navigate = useNavigate();
   const { conversations } = useChat();
+  const isMobile = useIsMobile();
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState("active");
@@ -247,7 +249,7 @@ export default function MinaJobb() {
 
   return (
     <div style={{ minHeight: "100vh", background: "#060f0f", color: "#f0faf9" }}>
-      <main style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 40px 60px" }}>
+      <main style={{ maxWidth: 1280, margin: "0 auto", padding: isMobile ? "24px 20px 60px" : "32px 40px 60px" }}>
 
         {/* Sidhuvud */}
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 24, gap: 24, flexWrap: "wrap" }}>
@@ -289,7 +291,7 @@ export default function MinaJobb() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Sök annons"
-                style={{ padding: "9px 14px 9px 36px", background: "#0a1414", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 99, fontSize: 12.5, width: 240, outline: "none", color: "#f0faf9" }}
+                style={{ padding: "9px 14px 9px 36px", background: "#0a1414", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 99, fontSize: 12.5, width: isMobile ? 160 : 240, outline: "none", color: "#f0faf9" }}
               />
             </div>
           </div>
@@ -326,6 +328,7 @@ export default function MinaJobb() {
                 onOpen={() => navigate(`/foretag/annonser/${j.id}`)}
                 onPause={handlePause}
                 onClose={handleClose}
+                isMobile={isMobile}
               />
             ))}
           </div>

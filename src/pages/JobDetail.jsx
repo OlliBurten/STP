@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { useIsMobile } from "../hooks/useIsMobile";
 import { useParams, Link } from "react-router-dom";
 import PageMeta from "../components/PageMeta";
 import { mockJobs } from "../data/mockJobs";
@@ -152,6 +153,7 @@ function MatchRing({ pct, job, details }) {
 export default function JobDetail() {
   const { id } = useParams();
   const { user, isDriver, isCompany, hasApi, activeOrg } = useAuth();
+  const isMobile = useIsMobile();
   const { profile } = useProfile();
   const toast = useToast();
   const [job, setJob] = useState(() => (!hasApi ? mockJobs.find((j) => j.id === id) : null));
@@ -498,7 +500,7 @@ export default function JobDetail() {
     <main style={{ background: "#060f0f", minHeight: "100vh", marginTop: "-64px", paddingTop: 80 }}>
       <PageMeta title={`${job.title} – ${job.company}`} description={metaDescription} canonical={`/jobb/${job.id}`} jsonLd={jobLd} />
 
-      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 40px" }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: isMobile ? "0 20px" : "0 40px" }}>
         <Breadcrumbs items={breadcrumbs} className="mb-4" dark />
         <div style={{ marginBottom: 14 }}>
           <Link to={isCompany ? "/foretag/annonser" : "/jobb"} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600, color: "rgba(240,250,249,0.45)", textDecoration: "none" }}>
@@ -509,7 +511,7 @@ export default function JobDetail() {
       </div>
 
       {/* Two-column grid */}
-      <div style={{ maxWidth: 1240, margin: "0 auto", padding: "0 40px 120px", display: "grid", gridTemplateColumns: "1fr 368px", gap: 36, alignItems: "start" }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: isMobile ? "0 20px 80px" : "0 40px 120px", display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 368px", gap: isMobile ? 20 : 36, alignItems: "start" }}>
 
         {/* ── LEFT COLUMN ──────────────────────────────────────────────────── */}
         <div>
@@ -627,7 +629,7 @@ export default function JobDetail() {
           <SalaryDisplay />
 
           {/* Info grid */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginTop: 28, padding: "20px 22px", background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 16 }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr 1fr", gap: 12, marginTop: 28, padding: "20px 22px", background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 16 }}>
             {[
               { icon: briefcaseIcon, label: "Anställningsform", val: empLabel },
               { icon: clockIcon,     label: "Arbetstider",      val: scheduleLabel },
@@ -663,7 +665,7 @@ export default function JobDetail() {
           {isMyJob && jobStats && (
             <div style={D.section}>
               <h2 style={D.h2}>Annonsstatistik</h2>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10, marginBottom: 16 }}>
+              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(3,1fr)", gap: 10, marginBottom: 16 }}>
                 {[
                   { value: jobStats.viewCount, label: "Visningar" },
                   { value: jobStats.savedCount, label: "Sparade" },

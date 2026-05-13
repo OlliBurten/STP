@@ -9,6 +9,7 @@ import { mapEmploymentToSegment } from "../data/segments";
 import { trackJobPosted } from "../utils/segmentMetrics";
 import { generateJobDescription as aiGenerateJobDescription } from "../api/ai.js";
 import PageMeta from "../components/PageMeta";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const STEPS = [
@@ -569,6 +570,7 @@ function StepPreview({ form, onPublish, publishing, publishError }) {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function PostJob() {
+  const isMobile = useIsMobile();
   const { hasApi, user, isCompany } = useAuth();
   const isVerifiedCompany = !isCompany || user?.companyStatus === "VERIFIED";
 
@@ -754,7 +756,7 @@ export default function PostJob() {
   return (
     <main style={{ background: "#060f0f", minHeight: "100vh", marginTop: "-64px", paddingTop: 64 }}>
       <PageMeta title="Publicera jobb – STP" />
-      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "36px 40px 100px", display: "grid", gridTemplateColumns: "1fr 420px", gap: 48, alignItems: "start" }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: isMobile ? "24px 20px 80px" : "36px 40px 100px", display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 420px", gap: isMobile ? 24 : 48, alignItems: "start" }}>
 
         {/* ── Left: form ── */}
         <div>

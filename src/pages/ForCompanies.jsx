@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useIsMobile } from "../hooks/useIsMobile";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useChat } from "../context/ChatContext";
@@ -360,6 +361,7 @@ function SuggestedDrivers() {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function ForCompanies() {
   usePageTitle("Översikt");
+  const isMobile = useIsMobile();
   const { user } = useAuth();
   const { conversations, companyUnreadConversationCount } = useChat();
   const [jobs, setJobs] = useState([]);
@@ -423,12 +425,12 @@ export default function ForCompanies() {
         {!loading && !isVerified && <VerificationGate />}
 
         {/* KPI-grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 28 }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4,1fr)", gap: 14, marginBottom: 28 }}>
           {kpis.map((k, i) => <KpiCard key={i} {...k} />)}
         </div>
 
         {/* 2-kol layout */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 24, alignItems: "flex-start" }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 360px", gap: 24, alignItems: "flex-start" }}>
           <div>
             <PerformanceChart />
             <ActivityFeed conversations={conversations} jobs={jobs} />

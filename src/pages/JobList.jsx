@@ -12,6 +12,7 @@ import { fetchJobs, fetchSavedJobs, saveJob, unsaveJob } from "../api/jobs.js";
 import { mapEmploymentToSegment } from "../data/segments";
 import PageMeta from "../components/PageMeta";
 import { regionPages } from "../data/regions";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 const QUICK_FILTERS = [
   { label: "CE-körkort", key: "license", value: "CE" },
@@ -26,6 +27,7 @@ const QUICK_FILTERS = [
 
 export default function JobList() {
   usePageTitle("Lediga chaufförsjobb");
+  const isMobile = useIsMobile();
   const { isDriver, hasApi } = useAuth();
   const { profile } = useProfile();
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -312,7 +314,7 @@ export default function JobList() {
       </div>
 
       {/* ── Job listings ─────────────────────────────────────── */}
-      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "40px 40px 80px" }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: isMobile ? "24px 20px 80px" : "40px 40px 80px" }}>
 
         {/* Incomplete profile nudge */}
         {isDriver && driverForMatch && recommendedJobs.length === 0 && !jobsLoading && filteredJobs.length > 0 && (

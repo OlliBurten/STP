@@ -5,6 +5,7 @@ import { fetchConversations } from "../api/conversations.js";
 import { useAuth } from "../context/AuthContext";
 import LoadingBlock from "../components/LoadingBlock";
 import PageMeta from "../components/PageMeta";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function getStage(conv) {
@@ -215,6 +216,7 @@ function StatCard({ label, value, color, hint }) {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function MinaAnsokningar() {
   usePageTitle("Mina ansökningar");
+  const isMobile = useIsMobile();
   const { hasApi } = useAuth();
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -249,7 +251,7 @@ export default function MinaAnsokningar() {
         </div>
       </div>
 
-      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 40px 100px" }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: isMobile ? "24px 20px 80px" : "32px 40px 100px" }}>
 
         {loading ? (
           <LoadingBlock message="Hämtar dina ansökningar..." />

@@ -8,6 +8,7 @@ import { useAuth } from "../context/AuthContext";
 import { useProfile } from "../context/ProfileContext";
 import { transportSegmentGroups, getBranschLabel } from "../data/bransch.js";
 import { regions } from "../data/mockJobs.js";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 // ── Icons ────────────────────────────────────────────────────────────────────
 
@@ -280,6 +281,7 @@ function CompanyListRow({ c, user, saved, onToggleSave }) {
 
 export default function AkerierSearch() {
   usePageTitle("Hitta ditt nästa åkeri – Transportplattformen");
+  const isMobile = useIsMobile();
   const { hasApi, user } = useAuth();
   const { profile } = useProfile();
   const isGymnasieelev = Boolean(profile?.isGymnasieelev);
@@ -464,7 +466,7 @@ export default function AkerierSearch() {
       </div>
 
       {/* Results area */}
-      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "28px 40px 80px" }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: isMobile ? "24px 20px 80px" : "28px 40px 80px" }}>
 
         {/* Toolbar: count + sort + view toggle */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 22, flexWrap: "wrap", gap: 12 }}>
