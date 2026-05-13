@@ -565,7 +565,7 @@ export async function runJobMaintenance() {
     const ageDays = ageMs / (24 * 60 * 60 * 1000);
 
     try {
-      if (ageDays >= 60) {
+      if (ageDays >= 90) {
         // Auto-archive
         await prisma.job.update({ where: { id: job.id }, data: { status: "HIDDEN" } });
         await notifyJobAutoArchived({
