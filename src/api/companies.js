@@ -26,6 +26,14 @@ export function fetchCompanyPublicProfile(companyId) {
   return apiGet(`/api/companies/${companyId}/public`);
 }
 
+export function fetchJobViewStats() {
+  return apiGet("/api/companies/stats/job-views");
+}
+
+export function fetchMatchingDrivers() {
+  return apiGet("/api/companies/stats/matching-drivers");
+}
+
 /** Team invites */
 export function listInvites() {
   return apiGet("/api/companies/me/invites");

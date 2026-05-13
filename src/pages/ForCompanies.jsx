@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useChat } from "../context/ChatContext";
 import { fetchMyJobs } from "../api/jobs.js";
-import { fetchMyCompanyProfile } from "../api/companies.js";
+import { fetchMyCompanyProfile, fetchJobViewStats, fetchMatchingDrivers } from "../api/companies.js";
 import { usePageTitle } from "../hooks/usePageTitle.js";
 
 // ─── Icons ───────────────────────────────────────────────────────────────────
@@ -110,30 +110,43 @@ function KpiCard({ label, value, delta, positive, icon, glow, to }) {
 }
 
 // ─── PerformanceChart ─────────────────────────────────────────────────────────
-function PerformanceChart() {
-  const data = [42, 38, 51, 47, 58, 63, 71, 68, 74, 82, 79, 88];
-  const max = Math.max(...data);
+function PerformanceChart({ weeks, total }) {
+  const data = weeks || Array(12).fill(0);
+  const max = Math.max(...data, 1);
+  const firstHalf = data.slice(0, 6).reduce((s, v) => s + v, 0);
+  const secondHalf = data.slice(6).reduce((s, v) => s + v, 0);
+  const trend = firstHalf === 0
+    ? null
+    : Math.round(((secondHalf - firstHalf) / firstHalf) * 100);
+  const trendLabel = trend === null ? null : trend >= 0 ? `+${trend}%` : `${trend}%`;
+  const trendPositive = trend === null ? null : trend >= 0;
+
+  // Veckoenummer för dagens vecka (bakåt)
+  const currentWeek = Math.ceil((new Date().getDate() + new Date(new Date().getFullYear(), new Date().getMonth(), 1).getDay()) / 7);
+
   return (
     <div style={{ background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 18, padding: 24, marginBottom: 24 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 18 }}>
         <div>
-          <h3 style={{ fontSize: 15, fontWeight: 800, letterSpacing: -0.3, marginBottom: 4 }}>Profilvisningar — senaste 12 veckorna</h3>
-          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>Trend uppåt — fler förare hittar er via Åkeri-söket</div>
+          <h3 style={{ fontSize: 15, fontWeight: 800, letterSpacing: -0.3, marginBottom: 4 }}>Jobbvisningar — senaste 12 veckorna</h3>
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>{total} visningar totalt</div>
         </div>
-        <div style={{ textAlign: "right" }}>
-          <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: -0.5, color: "#4ade80" }}>+109%</div>
-          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>vs förra kvartalet</div>
-        </div>
+        {trendLabel && (
+          <div style={{ textAlign: "right" }}>
+            <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: -0.5, color: trendPositive ? "#4ade80" : "#f87171" }}>{trendLabel}</div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>vs de 6 föregående</div>
+          </div>
+        )}
       </div>
       <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 6, height: 80 }}>
         {data.map((v, i) => (
           <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
             <div style={{ width: "100%", height: `${(v / max) * 100}%`, background: i === data.length - 1 ? "linear-gradient(180deg,#F5A623,#d97706)" : "linear-gradient(180deg,#1F5F5C,#0e3a37)", borderRadius: 4, position: "relative", minHeight: 4 }}>
-              {i === data.length - 1 && (
+              {i === data.length - 1 && v > 0 && (
                 <div style={{ position: "absolute", top: -22, left: "50%", transform: "translateX(-50%)", fontSize: 10.5, fontWeight: 800, color: "#F5A623", whiteSpace: "nowrap" }}>{v}</div>
               )}
             </div>
-            <div style={{ fontSize: 9, color: "rgba(255,255,255,0.3)" }}>v{34 + i}</div>
+            <div style={{ fontSize: 9, color: "rgba(255,255,255,0.3)" }}>v{((currentWeek - 11 + i + 52) % 52) + 1}</div>
           </div>
         ))}
       </div>
@@ -320,12 +333,21 @@ function SearchabilityCard({ profile }) {
 }
 
 // ─── SuggestedDrivers ─────────────────────────────────────────────────────────
-function SuggestedDrivers() {
-  const suggested = [
-    { name: "Lars Eriksson", initials: "LE", color: "#F5A623", loc: "Malmö",     exp: 8,  segments: ["Fjärr", "ADR"],    match: 91 },
-    { name: "Karin Olsson",  initials: "KO", color: "#7dd3c8", loc: "Göteborg",  exp: 14, segments: ["Fjärr"],           match: 88 },
-    { name: "Johan Berg",    initials: "JB", color: "#a78bfa", loc: "Stockholm", exp: 6,  segments: ["Distribution"],    match: 84 },
-  ];
+const AVATAR_COLORS = ["#F5A623", "#7dd3c8", "#a78bfa", "#4ade80", "#f87171"];
+function SuggestedDrivers({ drivers }) {
+  if (!drivers || drivers.length === 0) {
+    return (
+      <div style={{ background: "linear-gradient(135deg,rgba(245,166,35,0.06),rgba(245,166,35,0.01))", border: "1px solid rgba(245,166,35,0.18)", borderRadius: 18, padding: 24 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+          <Icon n="spark" size={15} color="#F5A623" />
+          <h3 style={{ fontSize: 15, fontWeight: 800, letterSpacing: -0.3 }}>Förare som matchar era annonser</h3>
+        </div>
+        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", textAlign: "center", padding: "20px 0" }}>
+          Publicera en annons för att se matchande förare här.
+        </div>
+      </div>
+    );
+  }
   return (
     <div style={{ background: "linear-gradient(135deg,rgba(245,166,35,0.06),rgba(245,166,35,0.01))", border: "1px solid rgba(245,166,35,0.18)", borderRadius: 18, padding: 24 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
@@ -339,21 +361,27 @@ function SuggestedDrivers() {
         Baserat på era öppna annonser och förare som söker aktivt i området.
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {suggested.map((d, i) => (
-          <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", background: "rgba(255,255,255,0.02)", borderRadius: 11, border: "1px solid rgba(255,255,255,0.04)" }}>
-            <div style={{ width: 38, height: 38, borderRadius: 99, background: d.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, color: "#000", flexShrink: 0 }}>
-              {d.initials}
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2 }}>{d.name}</div>
-              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }}>{d.loc} · {d.exp} år · {d.segments.join(", ")}</div>
-            </div>
-            <div style={{ textAlign: "right" }}>
-              <div style={{ fontSize: 14, fontWeight: 800, color: "#F5A623", lineHeight: 1 }}>{d.match}%</div>
-              <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>match</div>
-            </div>
-          </div>
-        ))}
+        {drivers.map((d, i) => {
+          const initials = (d.name || "??").split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase();
+          const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
+          return (
+            <Link key={d.id} to={`/foretag/chaufforer/${d.id}`} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", background: "rgba(255,255,255,0.02)", borderRadius: 11, border: "1px solid rgba(255,255,255,0.04)", textDecoration: "none", color: "inherit" }}>
+              <div style={{ width: 38, height: 38, borderRadius: 99, background: color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, color: "#000", flexShrink: 0 }}>
+                {initials}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2 }}>{d.name}</div>
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }}>
+                  {[d.location, d.yearsExperience > 0 && `${d.yearsExperience} år`, ...(d.segments || [])].filter(Boolean).join(" · ")}
+                </div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <div style={{ fontSize: 14, fontWeight: 800, color: "#F5A623", lineHeight: 1 }}>{d.match}%</div>
+                <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>match</div>
+              </div>
+            </Link>
+          );
+        })}
       </div>
     </div>
   );
@@ -368,12 +396,16 @@ export default function ForCompanies() {
   const [jobs, setJobs] = useState([]);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [jobViewStats, setJobViewStats] = useState({ weeks: Array(12).fill(0), total: 0 });
+  const [matchingDrivers, setMatchingDrivers] = useState([]);
 
   useEffect(() => {
-    Promise.all([fetchMyJobs(), fetchMyCompanyProfile()])
-      .then(([jobsData, profileData]) => {
+    Promise.all([fetchMyJobs(), fetchMyCompanyProfile(), fetchJobViewStats(), fetchMatchingDrivers()])
+      .then(([jobsData, profileData, viewStats, driversData]) => {
         setJobs(Array.isArray(jobsData) ? jobsData : []);
         setProfile(profileData);
+        if (viewStats?.weeks) setJobViewStats(viewStats);
+        if (Array.isArray(driversData)) setMatchingDrivers(driversData);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -433,12 +465,12 @@ export default function ForCompanies() {
         {/* 2-kol layout */}
         <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 360px", gap: 24, alignItems: "flex-start" }}>
           <div>
-            <PerformanceChart />
+            <PerformanceChart weeks={jobViewStats.weeks} total={jobViewStats.total} />
             <ActivityFeed conversations={conversations} jobs={jobs} />
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
             <SearchabilityCard profile={profile} />
-            <SuggestedDrivers />
+            <SuggestedDrivers drivers={matchingDrivers} />
             <ActiveJobsSidebar jobs={jobs} conversations={conversations} />
           </div>
         </div>

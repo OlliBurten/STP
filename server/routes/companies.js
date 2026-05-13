@@ -493,6 +493,152 @@ companiesRouter.put("/me/profile", requireCompanyOwner, validateBody(companyProf
   }
 });
 
+// GET /api/companies/stats/job-views — jobbvisningar per vecka senaste 12 veckorna
+companiesRouter.get("/stats/job-views", async (req, res, next) => {
+  try {
+    const resolved = await resolveCompanyOwner(req.userId);
+    if (!resolved) return res.status(404).json({ error: "Företaget hittades inte" });
+
+    const jobs = await prisma.job.findMany({
+      where: { userId: resolved.ownerId },
+      select: { id: true },
+    });
+    const jobIds = jobs.map((j) => j.id);
+
+    if (jobIds.length === 0) return res.json({ weeks: Array(12).fill(0), total: 0 });
+
+    const twelveWeeksAgo = new Date();
+    twelveWeeksAgo.setDate(twelveWeeksAgo.getDate() - 84); // 12 × 7
+
+    const views = await prisma.jobView.findMany({
+      where: { jobId: { in: jobIds }, createdAt: { gte: twelveWeeksAgo } },
+      select: { createdAt: true },
+    });
+
+    // Bucketa i veckor (0 = äldst, 11 = senaste)
+    const weeks = Array(12).fill(0);
+    const now = Date.now();
+    for (const v of views) {
+      const daysAgo = (now - new Date(v.createdAt).getTime()) / 86_400_000;
+      const weekIndex = 11 - Math.min(11, Math.floor(daysAgo / 7));
+      weeks[weekIndex]++;
+    }
+
+    res.json({ weeks, total: views.length });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// GET /api/companies/stats/matching-drivers — top 3 förare som matchar aktiva annonser
+companiesRouter.get("/stats/matching-drivers", async (req, res, next) => {
+  try {
+    const resolved = await resolveCompanyOwner(req.userId);
+    if (!resolved) return res.status(404).json({ error: "Företaget hittades inte" });
+
+    const activeJobs = await prisma.job.findMany({
+      where: { userId: resolved.ownerId, status: "ACTIVE" },
+      select: {
+        id: true, license: true, certificates: true, region: true,
+        employment: true, experience: true, segment: true,
+      },
+    });
+
+    if (activeJobs.length === 0) return res.json([]);
+
+    const drivers = await prisma.driverProfile.findMany({
+      where: {
+        visibleToCompanies: true,
+        user: { needsDriverOnboarding: false, suspendedAt: null },
+      },
+      include: { user: { select: { id: true, name: true, lastLoginAt: true } } },
+    });
+
+    function yearsExp(profile) {
+      const exp = Array.isArray(profile.experience)
+        ? profile.experience
+        : typeof profile.experience === "string"
+          ? JSON.parse(profile.experience || "[]")
+          : [];
+      const now = new Date().getFullYear();
+      return exp.reduce((sum, e) => {
+        const start = e.startYear || now;
+        const end = e.current ? now : e.endYear || now;
+        return sum + Math.max(0, end - start);
+      }, 0);
+    }
+
+    function matchPct(driver, job) {
+      const driverLicenses = driver.licenses || [];
+      const jobLicenses = job.license || [];
+      const hasLicense = jobLicenses.length === 0 || jobLicenses.some((l) => driverLicenses.includes(l));
+      if (!hasLicense && jobLicenses.length > 0) return 0;
+
+      const driverCerts = driver.certificates || [];
+      const jobCerts = job.certificates || [];
+      const matchedCerts = jobCerts.filter((c) => driverCerts.includes(c));
+
+      let score = 0;
+      const max = 9;
+
+      // Segment
+      const driverSegs = [driver.primarySegment, ...(driver.secondarySegments || [])].filter(Boolean);
+      if (job.segment && driverSegs.includes(job.segment)) score += 2;
+
+      // License
+      if (hasLicense && jobLicenses.length > 0) score += 2;
+
+      // Certs
+      score += jobCerts.length === 0 ? 1 : matchedCerts.length;
+
+      // Region
+      const driverRegion = driver.region || "";
+      const willing = driver.regionsWilling || [driverRegion].filter(Boolean);
+      const jobRegion = job.region || "";
+      if (!jobRegion || driverRegion === jobRegion || willing.includes(jobRegion)) score += 2;
+
+      // Experience
+      const minYears = typeof job.experience === "number" ? job.experience : 0;
+      if (yearsExp(driver) >= minYears) score += 1;
+
+      // Availability
+      const avail = driver.availability;
+      const emp = job.employment;
+      const flexEmps = ["vikariat", "tim", "extra"];
+      const availOk = !avail || !emp
+        || (avail === "FULLTIME" && !flexEmps.includes(emp))
+        || (avail === "FLEX" && flexEmps.includes(emp))
+        || avail === "BOTH";
+      if (availOk) score += 1;
+
+      return Math.round((score / max) * 100);
+    }
+
+    // Bästa match mot vilket som helst av företagets aktiva jobb
+    const scored = drivers.map((d) => {
+      const best = Math.max(...activeJobs.map((j) => matchPct(d, j)));
+      return { driver: d, match: best };
+    });
+
+    const top3 = scored
+      .filter((s) => s.match > 0)
+      .sort((a, b) => b.match - a.match)
+      .slice(0, 3)
+      .map(({ driver: d, match }) => ({
+        id: d.userId,
+        name: d.user?.name || "Förare",
+        location: d.location || d.region || "",
+        yearsExperience: yearsExp(d),
+        segments: [d.primarySegment, ...(d.secondarySegments || [])].filter(Boolean),
+        match,
+      }));
+
+    res.json(top3);
+  } catch (e) {
+    next(e);
+  }
+});
+
 // PATCH /api/companies/notification-settings
 companiesRouter.patch("/notification-settings", authMiddleware, requireCompany, async (req, res, next) => {
   try {
