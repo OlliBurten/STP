@@ -9,6 +9,7 @@ import { getCertificateLabel } from "../data/profileData";
 import { matchScore } from "../utils/matchUtils";
 import { calcYearsExperience } from "../utils/profileUtils";
 import PageMeta from "../components/PageMeta";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 const IC = {
@@ -69,7 +70,7 @@ function Toggle({ on, setOn, label, sub }) {
 }
 
 // ─── JobStrip ─────────────────────────────────────────────────────────────────
-function JobStrip({ job, pct }) {
+function JobStrip({ job, pct, isMobile }) {
   if (!job) return null;
   const initials = (job.company || "?").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
   const salaryDisplay = job.salaryMin
@@ -83,23 +84,19 @@ function JobStrip({ job, pct }) {
 
   return (
     <div style={{ background: "linear-gradient(180deg, rgba(31,95,92,0.18) 0%, rgba(31,95,92,0) 100%)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 32px 24px", display: "flex", alignItems: "center", gap: 18 }}>
-        <div style={{ width: 56, height: 56, borderRadius: 14, background: "#1F5F5C", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 18, color: "#F5A623", letterSpacing: -0.5, flexShrink: 0 }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: isMobile ? "16px 20px" : "32px 32px 24px", display: "flex", alignItems: "center", gap: isMobile ? 12 : 18 }}>
+        <div style={{ width: isMobile ? 40 : 56, height: isMobile ? 40 : 56, borderRadius: isMobile ? 10 : 14, background: "#1F5F5C", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: isMobile ? 14 : 18, color: "#F5A623", letterSpacing: -0.5, flexShrink: 0 }}>
           {initials}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(245,166,35,0.9)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 4 }}>Du ansöker till</div>
-          <div style={{ fontSize: 22, fontWeight: 800, lineHeight: 1.2, marginBottom: 4, color: "#f0faf9" }}>{job.title}</div>
-          <div style={{ fontSize: 13, color: "rgba(255,255,255,0.65)", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
-              {job.company}
-              {job.companyVerified && <Icon n="shield" s={12} c="#4ade80" />}
-            </span>
-            {job.location && <><span style={{ opacity: 0.4 }}>·</span><span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}><Icon n="pin" s={11} />{job.location}</span></>}
-            {salaryDisplay && <><span style={{ opacity: 0.4 }}>·</span><span>{salaryDisplay}</span></>}
+          {!isMobile && <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(245,166,35,0.9)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 4 }}>Du ansöker till</div>}
+          <div style={{ fontSize: isMobile ? 15 : 22, fontWeight: 800, lineHeight: 1.2, marginBottom: 3, color: "#f0faf9", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{job.title}</div>
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <span>{job.company}</span>
+            {job.location && <><span style={{ opacity: 0.4 }}>·</span><span>{job.location}</span></>}
           </div>
         </div>
-        {pct != null && (
+        {pct != null && !isMobile && (
           <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", borderRadius: 99, background: matchBg, border: `1px solid ${matchBorder}`, flexShrink: 0 }}>
             <Icon n="spark" s={14} c={matchColor} />
             <div>
@@ -249,6 +246,7 @@ function Submitted({ job, conversationId }) {
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function Apply() {
+  const isMobile = useIsMobile();
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, isDriver, hasApi } = useAuth();
@@ -372,7 +370,7 @@ export default function Apply() {
         <PageMeta title={`Ansökan skickad – ${job.title}`} />
         {/* Sub-header */}
         <div style={{ paddingTop: 64, borderBottom: "1px solid rgba(255,255,255,0.06)", background: "rgba(6,15,15,0.95)" }}>
-          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "16px 32px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ maxWidth: 1200, margin: "0 auto", padding: isMobile ? "12px 20px" : "16px 32px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <Link to={`/jobb/${id}`} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "rgba(255,255,255,0.6)", textDecoration: "none", fontWeight: 600 }}>
               <Icon n="back" s={16} /> Tillbaka till jobbet
             </Link>
@@ -389,20 +387,20 @@ export default function Apply() {
 
       {/* Sub-header below site nav */}
       <div style={{ paddingTop: 64, borderBottom: "1px solid rgba(255,255,255,0.06)", background: "rgba(6,15,15,0.92)", backdropFilter: "blur(14px)" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "16px 32px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: isMobile ? "12px 20px" : "16px 32px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <Link to={`/jobb/${id}`} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "rgba(255,255,255,0.6)", textDecoration: "none", fontWeight: 600 }}>
             <Icon n="back" s={16} /> Tillbaka till jobbet
           </Link>
-          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>Steg 1 av 1 — granska & skicka</div>
+          {!isMobile && <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>Steg 1 av 1 — granska & skicka</div>}
         </div>
       </div>
 
       {/* Job context strip */}
-      <JobStrip job={job} pct={pct} />
+      <JobStrip job={job} pct={pct} isMobile={isMobile} />
 
       {/* Main content */}
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 32px 120px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 380px", gap: 32, alignItems: "flex-start" }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: isMobile ? "20px 20px 80px" : "32px 32px 120px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 380px", gap: isMobile ? 20 : 32, alignItems: "flex-start" }}>
 
           {/* ── Left: form ── */}
           <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
@@ -501,27 +499,29 @@ export default function Apply() {
             )}
           </div>
 
-          {/* ── Right: preview ── */}
-          <PreviewCol profile={profile} message={message} />
+          {/* ── Right: preview (desktop only) ── */}
+          {!isMobile && <PreviewCol profile={profile} message={message} />}
         </div>
       </div>
 
       {/* Sticky CTA bar */}
       <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 40, background: "rgba(6,15,15,0.95)", backdropFilter: "blur(14px)", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "16px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
-          <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.55)", display: "flex", alignItems: "center", gap: 8 }}>
-            <Icon n="lock" s={13} c="rgba(255,255,255,0.5)" />
-            Din profil och meddelande skickas krypterat
-          </div>
-          <div style={{ display: "flex", gap: 10 }}>
-            <Link to={`/jobb/${id}`} style={{ padding: "13px 22px", borderRadius: 99, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", fontSize: 13.5, fontWeight: 600, color: "rgba(255,255,255,0.7)", textDecoration: "none" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: isMobile ? "12px 20px 16px" : "16px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+          {!isMobile && (
+            <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.55)", display: "flex", alignItems: "center", gap: 8 }}>
+              <Icon n="lock" s={13} c="rgba(255,255,255,0.5)" />
+              Din profil och meddelande skickas krypterat
+            </div>
+          )}
+          <div style={{ display: "flex", gap: 10, flex: isMobile ? 1 : "unset" }}>
+            <Link to={`/jobb/${id}`} style={{ padding: isMobile ? "13px 16px" : "13px 22px", borderRadius: 99, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", fontSize: 13.5, fontWeight: 600, color: "rgba(255,255,255,0.7)", textDecoration: "none" }}>
               Avbryt
             </Link>
             <button
               type="button"
               onClick={handleSubmit}
               disabled={sending || !job?.userId}
-              style={{ padding: "13px 26px", borderRadius: 99, background: !sending ? "linear-gradient(135deg,#F5A623,#d97706)" : "rgba(255,255,255,0.06)", color: !sending ? "#000" : "rgba(255,255,255,0.3)", fontSize: 13.5, fontWeight: 800, border: "none", cursor: sending ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: 8, boxShadow: !sending ? "0 4px 22px rgba(245,166,35,0.3)" : "none", fontFamily: "inherit", transition: "all .15s" }}
+              style={{ flex: isMobile ? 1 : "unset", padding: isMobile ? "13px 16px" : "13px 26px", borderRadius: 99, background: !sending ? "linear-gradient(135deg,#F5A623,#d97706)" : "rgba(255,255,255,0.06)", color: !sending ? "#000" : "rgba(255,255,255,0.3)", fontSize: 13.5, fontWeight: 800, border: "none", cursor: sending ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: !sending ? "0 4px 22px rgba(245,166,35,0.3)" : "none", fontFamily: "inherit", transition: "all .15s" }}
             >
               {sending ? "Skickar..." : "Skicka ansökan"}
               {!sending && <Icon n="arrow" s={14} c="#000" />}
