@@ -181,9 +181,71 @@ function ScoreCard({ score, profile, onEdit }) {
 }
 
 /* ── Market sidebar ── */
-function MarketSidebar({ driverMarket, user, linkCopied, onCopyLink }) {
+function MarketSidebar({ driverMarket, user, linkCopied, onCopyLink, profileStats, certExpiry }) {
+  // Certifikat som snart går ut (< 180 dagar)
+  const certWarnings = Object.entries(certExpiry || {})
+    .map(([id, dateStr]) => {
+      if (!dateStr) return null;
+      const d = new Date(dateStr);
+      const daysLeft = Math.ceil((d - new Date()) / 86400000);
+      if (daysLeft < 0 || daysLeft > 180) return null;
+      return { id, daysLeft };
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.daysLeft - b.daysLeft);
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+
+      {/* Profilvisningar — visas alltid om stats finns */}
+      {profileStats && (
+        <Card>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.sub, marginBottom: 14 }}>
+            Profilvisningar
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
+            {[
+              { val: profileStats.views7 ?? 0, label: "Senaste 7 dagar" },
+              { val: profileStats.views30 ?? 0, label: "Senaste 30 dagar" },
+            ].map(({ val, label }) => (
+              <div key={label} style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 10, padding: "12px 10px", textAlign: "center" }}>
+                <div style={{ fontSize: 26, fontWeight: 900, color: val > 0 ? T.amber : T.muted, lineHeight: 1, marginBottom: 4 }}>{val}</div>
+                <div style={{ fontSize: 10, color: T.muted, lineHeight: 1.3 }}>{label}</div>
+              </div>
+            ))}
+          </div>
+          {profileStats.conversationCount > 0 && (
+            <p style={{ fontSize: 12, color: T.green, fontWeight: 600, margin: 0 }}>
+              {profileStats.conversationCount} {profileStats.conversationCount === 1 ? "åkeri" : "åkerier"} har kontaktat dig
+            </p>
+          )}
+          {(profileStats.views7 ?? 0) === 0 && (profileStats.views30 ?? 0) === 0 && (
+            <p style={{ fontSize: 11, color: T.muted, lineHeight: 1.5, margin: 0 }}>
+              Inga visningar än — se till att din profil är synlig och komplett.
+            </p>
+          )}
+        </Card>
+      )}
+
+      {/* Certifikatvarningar */}
+      {certWarnings.length > 0 && (
+        <Card style={{ border: `1px solid rgba(245,166,35,0.3)`, background: "rgba(245,166,35,0.05)" }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.amber, marginBottom: 12 }}>
+            ⚠ Certifikat löper ut
+          </p>
+          {certWarnings.map(({ id, daysLeft }) => (
+            <div key={id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+              <span style={{ fontSize: 12, color: T.sub }}>{id}</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: daysLeft < 30 ? T.red : T.amber }}>
+                {daysLeft} dagar
+              </span>
+            </div>
+          ))}
+          <p style={{ fontSize: 11, color: T.muted, marginTop: 6, lineHeight: 1.5 }}>
+            Boka förnyelse i god tid — lång kötid är vanligt.
+          </p>
+        </Card>
+      )}
       {driverMarket && driverMarket.jobsInRegion >= 5 && (
         <Card>
           <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.sub, marginBottom: 14 }}>
@@ -1253,6 +1315,8 @@ export default function Profile() {
                 driverMarket={driverMarket}
                 user={user}
                 linkCopied={linkCopied}
+                profileStats={profileStats}
+                certExpiry={current.certExpiry}
                 onCopyLink={() => {
                   navigator.clipboard.writeText(`https://transportplattformen.se/forare/${user.id}`).then(() => {
                     setLinkCopied(true);
@@ -1353,6 +1417,8 @@ export default function Profile() {
               driverMarket={driverMarket}
               user={user}
               linkCopied={linkCopied}
+              profileStats={profileStats}
+              certExpiry={current.certExpiry}
               onCopyLink={() => {
                 navigator.clipboard.writeText(`https://transportplattformen.se/forare/${user.id}`).then(() => {
                   setLinkCopied(true);

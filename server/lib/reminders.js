@@ -723,11 +723,181 @@ export async function runFastResponderUpdate() {
   return { updated, total: drivers.length };
 }
 
+// ─── 8. Certifikat-påminnelser ───────────────────────────────────────────────
+
+const CERT_LABELS = {
+  YKB: "YKB (yrkesförarkompetens)",
+  "ADR": "ADR (farligt gods)",
+  "ADR klass 3": "ADR klass 3",
+  "ADR klass 1": "ADR klass 1",
+  "CE95": "CE95",
+  "Kranförarbevis": "Kranförarbevis",
+  "Truckkort A+B": "Truckkort A+B",
+};
+
+export async function runCertExpiryReminders() {
+  const now = new Date();
+
+  // Hämta alla förare med certifikat-utgångsdatum
+  const profiles = await prisma.driverProfile.findMany({
+    where: {
+      certExpiry: { not: null },
+      user: {
+        emailVerifiedAt: { not: null },
+        suspendedAt: null,
+      },
+    },
+    select: {
+      userId: true,
+      certExpiry: true,
+      user: {
+        select: { id: true, email: true, name: true, emailNotificationSettings: true },
+      },
+    },
+  });
+
+  let sent = 0;
+  for (const profile of profiles) {
+    const certExpiry = profile.certExpiry;
+    if (!certExpiry || typeof certExpiry !== "object") continue;
+
+    const user = profile.user;
+    if (!isEnabled(user, "certExpiry")) continue;
+
+    // Samla certifikat som snart går ut (90d och 30d)
+    const warnings90 = [];
+    const warnings30 = [];
+
+    for (const [certId, dateStr] of Object.entries(certExpiry)) {
+      if (!dateStr || certId.startsWith("_")) continue;
+      const expiry = new Date(dateStr);
+      const daysLeft = Math.ceil((expiry - now) / (1000 * 60 * 60 * 24));
+
+      // 90-dagarsvarning: 88–92 dagar kvar
+      if (daysLeft >= 88 && daysLeft <= 92) {
+        warnings90.push({ certId, daysLeft, dateStr });
+      }
+      // 30-dagarsvarning: 28–32 dagar kvar
+      if (daysLeft >= 28 && daysLeft <= 32) {
+        warnings30.push({ certId, daysLeft, dateStr });
+      }
+    }
+
+    const allWarnings = [...warnings30, ...warnings90];
+    if (allWarnings.length === 0) continue;
+
+    // Välj den mest akuta (30d prioriteras)
+    const urgent = warnings30.length > 0 ? warnings30 : warnings90;
+    const isUrgent = warnings30.length > 0;
+    const firstName = (user.name || "").split(" ")[0] || "Hej";
+
+    const certList = urgent
+      .map((w) => {
+        const label = CERT_LABELS[w.certId] || w.certId;
+        return `• ${label} — ${w.daysLeft} dagar kvar (${w.dateStr})`;
+      })
+      .join("\n");
+
+    const subject = isUrgent
+      ? `⚠️ Ditt certifikat går ut om ${urgent[0].daysLeft} dagar`
+      : `Påminnelse: Ditt certifikat går ut om 3 månader`;
+
+    const text = `Hej ${firstName}!
+
+${isUrgent ? "Viktigt — ditt certifikat löper snart ut:" : "En påminnelse om att följande certifikat behöver förnyas inom 3 månader:"}
+
+${certList}
+
+Kom ihåg att boka förnyelseutbildning i god tid — populära utbildare kan ha lång kötid.
+
+Du kan uppdatera dina certifikat och förnyelsedatum direkt i din profil på STP.`;
+
+    try {
+      await sendEmail({
+        to: user.email,
+        subject,
+        text,
+        ctaUrl: `${FRONTEND_URL}/profil`,
+        ctaText: "Uppdatera min profil",
+      });
+      sent++;
+    } catch (e) {
+      console.error(`[Reminders:certExpiry] Failed for ${user.email}:`, e?.message);
+    }
+  }
+
+  console.log(`[Reminders:certExpiry] Sent ${sent}/${profiles.length}`);
+  return { sent, total: profiles.length };
+}
+
+// ─── 9. Veckodigest profilvisningar (körs måndag) ────────────────────────────
+
+export async function runWeeklyProfileViewDigest() {
+  // Kör bara på måndagar
+  const dayOfWeek = new Date().getDay(); // 0=sön, 1=mån
+  if (dayOfWeek !== 1) return { skipped: true, reason: "not Monday" };
+
+  const sevenDaysAgo = daysAgo(7);
+
+  // Hämta förare med minst 1 visning senaste veckan
+  const views = await prisma.driverProfileView.groupBy({
+    by: ["driverUserId"],
+    where: { createdAt: { gte: sevenDaysAgo } },
+    _count: { _all: true },
+  });
+
+  if (views.length === 0) return { sent: 0 };
+
+  const driverIds = views.map((v) => v.driverUserId);
+  const driverMap = new Map(views.map((v) => [v.driverUserId, v._count._all]));
+
+  const users = await prisma.user.findMany({
+    where: {
+      id: { in: driverIds },
+      role: "DRIVER",
+      emailVerifiedAt: { not: null },
+      suspendedAt: null,
+    },
+    select: { id: true, email: true, name: true, emailNotificationSettings: true },
+  });
+
+  let sent = 0;
+  for (const user of users) {
+    if (!isEnabled(user, "profileViews")) continue;
+
+    const count = driverMap.get(user.id) || 0;
+    if (count === 0) continue;
+
+    const firstName = (user.name || "").split(" ")[0] || "Hej";
+    const text = `Hej ${firstName}!
+
+Din profil på STP har setts av ${count} ${count === 1 ? "åkeri" : "åkerier"} den senaste veckan.
+
+Ju mer komplett din profil är, desto fler åkerier hittar dig. Se till att dina certifikat, körkortsbehörighet och region är uppdaterade.`;
+
+    try {
+      await sendEmail({
+        to: user.email,
+        subject: `Din profil har setts av ${count} ${count === 1 ? "åkeri" : "åkerier"} den här veckan`,
+        text,
+        ctaUrl: `${FRONTEND_URL}/profil`,
+        ctaText: "Se min profil",
+      });
+      sent++;
+    } catch (e) {
+      console.error(`[Reminders:weeklyDigest] Failed for ${user.email}:`, e?.message);
+    }
+  }
+
+  console.log(`[Reminders:weeklyDigest] Sent ${sent}/${users.length}`);
+  return { sent, total: users.length };
+}
+
 // ─── Run all ─────────────────────────────────────────────────────────────────
 
 export async function runAllReminders() {
   console.log("[Reminders] Starting daily reminder run...");
-  const [profile, jobMatch, message, inactivity, jobMaintenance, verification, fastResponder] = await Promise.allSettled([
+  const [profile, jobMatch, message, inactivity, jobMaintenance, verification, fastResponder, certExpiry, weeklyDigest] = await Promise.allSettled([
     runProfileReminders(),
     runJobMatchReminders(),
     runMessageReminders(),
@@ -735,6 +905,8 @@ export async function runAllReminders() {
     runJobMaintenance(),
     runVerificationReminders(),
     runFastResponderUpdate(),
+    runCertExpiryReminders(),
+    runWeeklyProfileViewDigest(),
   ]);
   const summary = {
     profile: profile.status === "fulfilled" ? profile.value : { error: profile.reason?.message },
@@ -744,6 +916,8 @@ export async function runAllReminders() {
     jobMaintenance: jobMaintenance.status === "fulfilled" ? jobMaintenance.value : { error: jobMaintenance.reason?.message },
     verification: verification.status === "fulfilled" ? verification.value : { error: verification.reason?.message },
     fastResponder: fastResponder.status === "fulfilled" ? fastResponder.value : { error: fastResponder.reason?.message },
+    certExpiry: certExpiry.status === "fulfilled" ? certExpiry.value : { error: certExpiry.reason?.message },
+    weeklyDigest: weeklyDigest.status === "fulfilled" ? weeklyDigest.value : { error: weeklyDigest.reason?.message },
   };
   console.log("[Reminders] Done:", JSON.stringify(summary));
   return summary;
