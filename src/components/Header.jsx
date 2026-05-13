@@ -334,11 +334,10 @@ export default function Header({ onboarding = false }) {
           {/* Right side */}
           <div className="flex items-center gap-2 sm:gap-3 ml-auto shrink-0">
 
-            {/* Åkeri: "Publicera jobb"-CTA */}
-            {user && isCompany && !platformAdminSession && (
+            {/* Åkeri: "Publicera jobb"-CTA (dold på mobil — finns i hamburgermenyn) */}
+            {!isMobile && user && isCompany && !platformAdminSession && (
               <Link
                 to="/foretag/annonsera"
-                className="dm-desktop-nav"
                 style={{ padding: "8px 16px", borderRadius: 10, background: "#F5A623", color: "#000", fontSize: 13, fontWeight: 800, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}
               >
                 + Publicera jobb
