@@ -13,6 +13,22 @@ const { app } = await import("../server.js");
 const { prisma } = await import("../lib/prisma.js");
 const { JWT_SECRET } = await import("../lib/config.js");
 
+function replaceDelegateMethod(delegate, methodName, replacement) {
+  const originalDescriptor = Object.getOwnPropertyDescriptor(delegate, methodName);
+  Object.defineProperty(delegate, methodName, {
+    configurable: true,
+    writable: true,
+    value: replacement,
+  });
+  return () => {
+    if (originalDescriptor) {
+      Object.defineProperty(delegate, methodName, originalDescriptor);
+    } else {
+      delete delegate[methodName];
+    }
+  };
+}
+
 describe("GET /api/health", () => {
   it("returns 200 and ok: true", async () => {
     const res = await request(app).get("/api/health");
@@ -70,7 +86,7 @@ describe("POST /api/auth/register validation", () => {
 });
 
 describe("POST /api/admin/jobs", () => {
-  it("creates a job owned by the authenticated admin", async (t) => {
+  it("creates a job owned by the authenticated admin", async () => {
     const adminId = "admin-user-1";
     const adminUser = {
       id: adminId,
@@ -81,32 +97,42 @@ describe("POST /api/admin/jobs", () => {
     };
     let createdJobData = null;
 
-    t.mock.method(prisma.user, "findUnique", async () => adminUser);
-    t.mock.method(prisma.job, "create", async ({ data }) => {
+    const restoreUserFindUnique = replaceDelegateMethod(prisma.user, "findUnique", async () => adminUser);
+    const restoreJobCreate = replaceDelegateMethod(prisma.job, "create", async ({ data }) => {
       createdJobData = data;
       return { id: "job-1", title: data.title, company: data.company };
     });
-    t.mock.method(prisma.adminAuditLog, "create", async ({ data }) => ({ id: "audit-1", ...data }));
+    const restoreAuditCreate = replaceDelegateMethod(
+      prisma.adminAuditLog,
+      "create",
+      async ({ data }) => ({ id: "audit-1", ...data })
+    );
 
-    const token = jwt.sign({ userId: adminId, role: "COMPANY" }, JWT_SECRET);
-    const res = await request(app)
-      .post("/api/admin/jobs")
-      .set("Authorization", `Bearer ${token}`)
-      .send({
-        title: "CE-chaufför",
-        company: "Teståkeriet AB",
-        description: "Transportuppdrag i Stockholm",
-        location: "Stockholm",
-        region: "Stockholm",
-        jobType: "distribution",
-        employment: "fast",
-        contact: "jobb@example.com",
-        license: ["CE"],
-      });
+    try {
+      const token = jwt.sign({ userId: adminId, role: "COMPANY" }, JWT_SECRET);
+      const res = await request(app)
+        .post("/api/admin/jobs")
+        .set("Authorization", `Bearer ${token}`)
+        .send({
+          title: "CE-chaufför",
+          company: "Teståkeriet AB",
+          description: "Transportuppdrag i Stockholm",
+          location: "Stockholm",
+          region: "Stockholm",
+          jobType: "distribution",
+          employment: "fast",
+          contact: "jobb@example.com",
+          license: ["CE"],
+        });
 
-    assert.strictEqual(res.status, 201, res.text);
-    assert.strictEqual(createdJobData?.userId, adminId);
-    assert.strictEqual(res.body?.id, "job-1");
+      assert.strictEqual(res.status, 201, res.text);
+      assert.strictEqual(createdJobData?.userId, adminId);
+      assert.strictEqual(res.body?.id, "job-1");
+    } finally {
+      restoreAuditCreate();
+      restoreJobCreate();
+      restoreUserFindUnique();
+    }
   });
 });
 
