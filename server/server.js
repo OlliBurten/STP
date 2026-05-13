@@ -37,6 +37,7 @@ import { feedbackRouter } from "./routes/feedback.js";
 import { aiRouter } from "./routes/ai.js";
 import { statsRouter } from "./routes/stats.js";
 import { suggestionsRouter } from "./routes/suggestions.js";
+import { utilsRouter } from "./routes/utils.js";
 import { isGoogleConfigured, isMicrosoftConfigured } from "./lib/oauth.js";
 import { JWT_SECRET } from "./lib/config.js";
 import { startReminderScheduler } from "./lib/reminderScheduler.js";
@@ -163,6 +164,7 @@ app.use("/api/feedback", apiWriteLimiter, feedbackRouter);
 app.use("/api/ai", apiWriteLimiter, aiRouter);
 app.use("/api/stats", statsRouter);
 app.use("/api/suggestions", suggestionsRouter);
+app.use("/api/utils", apiPublicLimiter, utilsRouter);
 
 app.get("/", (_, res) => {
   res.json({

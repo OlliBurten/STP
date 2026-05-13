@@ -15,18 +15,20 @@ const COLS = [
     ],
   },
   {
+    heading: "Verktyg",
+    links: [
+      { to: "/lon-kalkylator", label: "Lönekalkylatorn" },
+      { to: "/ykb-timer", label: "YKB-timer" },
+      { to: "/blogg", label: "Blogg & guider" },
+      { to: "/branschinsikter", label: "Branschinsikter" },
+    ],
+  },
+  {
     heading: "Om STP",
     links: [
       { to: "/om-oss", label: "Om oss" },
       { to: "/vision", label: "Vision & roadmap" },
-      { to: "/branschinsikter", label: "Branschinsikter" },
-      { to: "/blogg", label: "Blogg" },
       { to: "/kontakt", label: "Kontakt" },
-    ],
-  },
-  {
-    heading: "Juridik",
-    links: [
       { to: "/anvandarvillkor", label: "Användarvillkor" },
       { to: "/integritet", label: "Integritetspolicy" },
     ],
@@ -39,7 +41,7 @@ export default function Footer() {
       <div className="max-w-[1280px] mx-auto px-5 sm:px-10 pt-20 pb-10">
 
         {/* Main grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4" style={{ gap: 60, marginBottom: 60 }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4" style={{ gap: 48, marginBottom: 60 }}>
           {/* Brand */}
           <div>
             <Link to="/" className="inline-block mb-5">

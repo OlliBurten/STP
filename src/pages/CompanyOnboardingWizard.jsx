@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { fetchMyCompanyProfile, updateMyCompanyProfile } from "../api/companies.js";
 import { fetchMyOrganizations, createOrganization } from "../api/organizations.js";
@@ -8,6 +8,7 @@ import BranschSearch from "../components/BranschSearch.jsx";
 import { regions } from "../data/mockJobs.js";
 import { useAuth } from "../context/AuthContext";
 import { trackCompanyOnboardingComplete } from "../utils/segmentMetrics";
+import { apiGet } from "../api/client.js";
 
 const onboardingReasons = [
   "Segmenten hjälper STP att visa rätt förare snabbare.",
@@ -36,6 +37,45 @@ export default function CompanyOnboardingWizard() {
     segmentDefaults: [],
     bransch: [],
   });
+  const [orgLookup, setOrgLookup] = useState({ loading: false, valid: null, suggestion: null, error: null });
+  const lookupTimer = useRef(null);
+
+  const handleOrgNumberChange = useCallback((raw) => {
+    setFirstCompany((p) => ({ ...p, orgNumber: raw }));
+    setOrgLookup({ loading: false, valid: null, suggestion: null, error: null });
+
+    // Strip non-digits to check length
+    const digits = raw.replace(/\D/g, "");
+    if (digits.length < 10) return;
+
+    clearTimeout(lookupTimer.current);
+    lookupTimer.current = setTimeout(async () => {
+      setOrgLookup((s) => ({ ...s, loading: true }));
+      try {
+        const data = await apiGet(`/api/utils/company-lookup?orgnr=${encodeURIComponent(raw)}`);
+        setOrgLookup({
+          loading: false,
+          valid: data.valid,
+          suggestion: data.companyName || null,
+          error: data.valid ? null : (data.error || "Ogiltigt organisationsnummer"),
+        });
+        // Auto-format the number
+        if (data.formatted) {
+          setFirstCompany((p) => ({ ...p, orgNumber: data.formatted }));
+        }
+        // Auto-fill name if empty and we got a name from Bolagsverket
+        if (data.companyName && !firstCompany.name.trim()) {
+          setFirstCompany((p) => ({ ...p, name: data.companyName }));
+        }
+      } catch {
+        setOrgLookup({ loading: false, valid: null, suggestion: null, error: null });
+      }
+    }, 600);
+  }, [firstCompany.name]);
+
+  useEffect(() => {
+    return () => clearTimeout(lookupTimer.current);
+  }, []);
 
   useEffect(() => {
     if (!hasApi) {
@@ -308,12 +348,31 @@ export default function CompanyOnboardingWizard() {
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Organisationsnummer *</label>
-            <input
-              value={firstCompany.orgNumber}
-              onChange={(e) => setFirstCompany((p) => ({ ...p, orgNumber: e.target.value }))}
-              placeholder="556123-4567"
-              className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)]"
-            />
+            <div className="relative">
+              <input
+                value={firstCompany.orgNumber}
+                onChange={(e) => handleOrgNumberChange(e.target.value)}
+                placeholder="556123-4567"
+                className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-[var(--color-primary)] ${
+                  orgLookup.valid === false ? "border-red-400" : orgLookup.valid === true ? "border-green-400" : "border-slate-300"
+                }`}
+              />
+              {orgLookup.loading && (
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">Kontrollerar…</span>
+              )}
+              {orgLookup.valid === true && !orgLookup.loading && (
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-green-600 font-medium">✓ Giltigt</span>
+              )}
+            </div>
+            {orgLookup.error && (
+              <p className="mt-1 text-xs text-red-600">{orgLookup.error}</p>
+            )}
+            {orgLookup.suggestion && (
+              <p className="mt-1 text-xs text-green-700">
+                Hittades: <strong>{orgLookup.suggestion}</strong>
+                {!firstCompany.name.trim() && " (ifyllt som företagsnamn)"}
+              </p>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Region</label>

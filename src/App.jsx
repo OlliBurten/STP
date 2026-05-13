@@ -54,6 +54,7 @@ const Branschinsikter       = lazy(() => import("./pages/Branschinsikter"));
 const Kompetenslaget2025    = lazy(() => import("./pages/Kompetenslaget2025"));
 const Kontakt               = lazy(() => import("./pages/Kontakt"));
 const LoneKalkylator        = lazy(() => import("./pages/LoneKalkylator"));
+const YkbTimer              = lazy(() => import("./pages/YkbTimer"));
 const PatchNotes            = lazy(() => import("./pages/PatchNotes"));
 const VisionPresentation    = lazy(() => import("./pages/VisionPresentation"));
 const Settings              = lazy(() => import("./pages/Settings"));
@@ -175,6 +176,7 @@ function AppLayout() {
                   <Route path="/blogg/fjarrkörning" element={<Fjarrkörning />} />
                   <Route path="/kontakt" element={<Kontakt />} />
                   <Route path="/lon-kalkylator" element={<LoneKalkylator />} />
+                  <Route path="/ykb-timer" element={<YkbTimer />} />
                   <Route path="/uppdateringar" element={<PatchNotes />} />
                   <Route path="/vision" element={<VisionPresentation />} />
                   <Route path="/login" element={<Login />} />
