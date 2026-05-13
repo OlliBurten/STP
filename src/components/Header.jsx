@@ -622,6 +622,7 @@ export default function Header({ onboarding = false }) {
                         { to: "/foretag/annonser", label: "Mina annonser" },
                         { to: "/foretag/chaufforer", label: "Hitta förare" },
                         { to: "/foretag/meddelanden", label: "Meddelanden", badge: companyUnreadConversationCount || 0 },
+                        { to: "/installningar", label: "Inställningar" },
                       ]
                     : [];
                   return mobileLinks.map((item) => (
