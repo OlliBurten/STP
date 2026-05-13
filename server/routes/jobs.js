@@ -355,7 +355,7 @@ jobsRouter.get("/saved-companies", authMiddleware, requireDriver, async (req, re
         company: {
           select: {
             id: true, companyName: true, companyLocation: true,
-            companyDescriptionShort: true, companyWebsite: true, companyStatus: true,
+            companyDescription: true, companyWebsite: true, companyStatus: true,
           },
         },
       },
@@ -373,7 +373,7 @@ jobsRouter.get("/saved-companies", authMiddleware, requireDriver, async (req, re
       id: s.companyId,
       companyName: s.company?.companyName ?? "",
       companyLocation: s.company?.companyLocation ?? null,
-      companyDescriptionShort: s.company?.companyDescriptionShort ?? null,
+      companyDescriptionShort: s.company?.companyDescription ? s.company.companyDescription.slice(0, 120) : null,
       companyWebsite: s.company?.companyWebsite ?? null,
       verified: s.company?.companyStatus === "VERIFIED",
       openJobs: jobCountMap[s.companyId] ?? 0,
