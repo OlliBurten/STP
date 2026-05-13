@@ -292,15 +292,15 @@ export default function Home() {
                   Jag är ett åkeri
                 </Link>
               </div>
-              <div style={{ marginTop: 56, paddingTop: 40, borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", gap: 40, flexWrap: "wrap" }}>
+              <div style={{ marginTop: isMobile ? 28 : 56, paddingTop: isMobile ? 20 : 40, borderTop: "1px solid rgba(255,255,255,0.08)", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: isMobile ? 0 : 40 }}>
                 {[
                   [count1.toLocaleString("sv-SE"), "Nya tjänster att tillsätta"],
                   [`${count2}%`, "Av åkerier har rekryteringsproblem"],
                   ["Gratis", "För alla förare"],
-                ].map(([n, l]) => (
-                  <div key={l}>
-                    <div style={{ fontSize: 30, fontWeight: 900, color: "#fff", letterSpacing: -1 }}>{n}</div>
-                    <div style={{ fontSize: 12, color: "rgba(255,255,255,0.55)", marginTop: 4, lineHeight: 1.5 }}>{l}</div>
+                ].map(([n, l], i) => (
+                  <div key={l} style={isMobile ? { borderLeft: i > 0 ? "1px solid rgba(255,255,255,0.08)" : "none", paddingLeft: i > 0 ? 14 : 0, paddingRight: i < 2 ? 14 : 0 } : {}}>
+                    <div style={{ fontSize: isMobile ? 20 : 30, fontWeight: 900, color: "#fff", letterSpacing: -0.5 }}>{n}</div>
+                    <div style={{ fontSize: isMobile ? 10 : 12, color: "rgba(255,255,255,0.5)", marginTop: 3, lineHeight: 1.4 }}>{l}</div>
                   </div>
                 ))}
               </div>
