@@ -497,7 +497,7 @@ export default function JobDetail() {
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <main style={{ background: "#060f0f", minHeight: "100vh", marginTop: "-64px", paddingTop: 80 }}>
+    <main style={{ background: "#060f0f", minHeight: "100vh", marginTop: "-64px", paddingTop: 80, overflowX: "clip" }}>
       <PageMeta title={`${job.title} – ${job.company}`} description={metaDescription} canonical={`/jobb/${job.id}`} jsonLd={jobLd} />
 
       <div style={{ maxWidth: 1280, margin: "0 auto", padding: isMobile ? "0 20px" : "0 40px" }}>
@@ -514,7 +514,7 @@ export default function JobDetail() {
       <div style={{ maxWidth: 1280, margin: "0 auto", padding: isMobile ? "0 20px 100px" : "0 40px 120px", display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 368px", gap: isMobile ? 16 : 36, alignItems: "start" }}>
 
         {/* ── LEFT COLUMN ──────────────────────────────────────────────────── */}
-        <div style={{ order: isMobile ? 1 : 0 }}>
+        <div style={{ order: isMobile ? 1 : 0, minWidth: 0 }}>
 
           {/* Header card */}
           <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: isMobile ? 16 : 24, padding: isMobile ? "20px 16px" : "36px 40px", position: "relative", overflow: "hidden", marginBottom: 12 }}>
@@ -607,7 +607,7 @@ export default function JobDetail() {
           {/* ── Content sections ── */}
           <SectionHeading>Om jobbet</SectionHeading>
           {jobAbout && jobAbout.trim().length >= 10
-            ? <p style={{ ...D.body, whiteSpace: "pre-line", margin: 0 }}>{jobAbout}</p>
+            ? <p style={{ ...D.body, whiteSpace: "pre-line", overflowWrap: "break-word", margin: 0 }}>{jobAbout}</p>
             : <p style={{ fontSize: 15, color: "rgba(240,250,249,0.3)", lineHeight: 1.8, fontStyle: "italic", margin: 0 }}>Mer information om tjänsten ges vid kontakt med företaget.</p>
           }
 
@@ -782,7 +782,7 @@ export default function JobDetail() {
         </div>
 
         {/* ── RIGHT SIDEBAR ─────────────────────────────────────────────────── */}
-        <div style={{ position: isMobile ? "static" : "sticky", top: 88, order: isMobile ? 0 : 1 }}>
+        <div style={{ position: isMobile ? "static" : "sticky", top: 88, order: isMobile ? 0 : 1, minWidth: 0 }}>
 
           {/* CTA card */}
           <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.09)", borderRadius: isMobile ? 16 : 22, padding: isMobile ? "16px" : "22px", marginBottom: 10, overflow: "hidden" }}>
