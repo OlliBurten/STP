@@ -260,7 +260,7 @@ export default function MinaAnsokningar() {
             <div style={{ width: 72, height: 72, borderRadius: 99, background: "rgba(245,166,35,0.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
               <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" style={{ color: "#F5A623" }}><path d="M12 2L13.5 8.5 20 10l-6.5 1.5L12 18l-1.5-6.5L4 10l6.5-1.5z"/></svg>
             </div>
-            <h2 style={{ fontSize: 22, fontWeight: 900, letterSpacing: -0.5, marginBottom: 10 }}>Du har inte sökt något jobb ännu</h2>
+            <h2 style={{ fontSize: 22, fontWeight: 900, letterSpacing: -0.5, marginBottom: 10, color: "#f0faf9" }}>Du har inte sökt något jobb ännu</h2>
             <p style={{ fontSize: 14, color: "rgba(240,250,249,0.5)", lineHeight: 1.6, maxWidth: 420, margin: "0 auto 24px" }}>
               När du ansöker till ett jobb dyker det upp här. Vi följer hela vägen från skickad ansökan till slutligt beslut, så du alltid vet var du står.
             </p>
