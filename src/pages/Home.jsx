@@ -3,6 +3,7 @@ import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { usePageTitle } from "../hooks/usePageTitle";
 import PageMeta from "../components/PageMeta";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 // ─── Hooks ────────────────────────────────────────────────────────────────────
 
@@ -193,7 +194,9 @@ const reveal = (inView) =>
 
 export default function Home() {
   usePageTitle();
+  const isMobile = useIsMobile();
   const { user, isDriver, isCompany, isAdmin } = useAuth();
+  const sectionPad = isMobile ? "64px 20px" : "120px 40px";
 
   const [wordIdx, setWordIdx] = useState(0);
   const [wordVisible, setWordVisible] = useState(true);
@@ -264,7 +267,7 @@ export default function Home() {
         <div className="absolute inset-0" style={{ backgroundImage: "url('/hero.webp')", backgroundSize: "cover", backgroundPosition: "center 35%", opacity: 0.18 }} />
         <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 80% 60% at 70% 40%, rgba(31,95,92,0.35) 0%, transparent 70%)" }} />
 
-        <div className="relative w-full max-w-[1280px] mx-auto" style={{ padding: "120px 40px 80px" }}>
+        <div className="relative w-full max-w-[1280px] mx-auto" style={{ padding: isMobile ? "100px 20px 60px" : "120px 40px 80px" }}>
           <div className="grid lg:grid-cols-2 gap-20 items-center">
             <div>
               <div className="inline-flex items-center gap-2 mb-9" style={{ padding: "6px 16px", borderRadius: 99, background: "rgba(245,166,35,0.15)", border: "1px solid rgba(245,166,35,0.3)" }}>
@@ -333,7 +336,7 @@ export default function Home() {
       </div>
 
       {/* ── PROBLEM — mörk sektion (kontrast mot hero → ljus solution) ──── */}
-      <section ref={problemRef} style={{ background: "#0d2b2b", padding: "120px 40px", position: "relative", overflow: "hidden" }} className={reveal(problemInView)}>
+      <section ref={problemRef} style={{ background: "#0d2b2b", padding: sectionPad, position: "relative", overflow: "hidden" }} className={reveal(problemInView)}>
         {/* Subtil amber glow */}
         <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 60% 50% at 10% 50%, rgba(245,166,35,0.05) 0%, transparent 70%)", pointerEvents: "none" }} />
         <div style={{ maxWidth: 1200, margin: "0 auto", position: "relative" }}>
@@ -364,7 +367,7 @@ export default function Home() {
       </section>
 
       {/* ── SOLUTION — vit, upplyft (kontrast mot mörk problem) ──────────── */}
-      <section ref={solutionRef} style={{ background: "#fff", padding: "120px 40px" }} className="scroll-reveal">
+      <section ref={solutionRef} style={{ background: "#fff", padding: sectionPad }} className="scroll-reveal">
         <div style={{ maxWidth: 1200, margin: "0 auto", opacity: solutionInView ? 1 : 0, transition: "opacity 0.7s ease-out" }}>
           <div className="grid lg:grid-cols-2" style={{ gap: 80, alignItems: "start" }}>
             <div className="lg:sticky" style={{ top: 88 }}>
@@ -409,7 +412,7 @@ export default function Home() {
       </section>
 
       {/* ── HOW IT WORKS — mörk (andra mörka zonen, skapar rytm) ────────── */}
-      <section ref={howRef} id="sa-fungerar-det" style={{ background: "#050e0e", padding: "120px 40px", position: "relative", overflow: "hidden" }} className={reveal(howInView)}>
+      <section ref={howRef} id="sa-fungerar-det" style={{ background: "#050e0e", padding: sectionPad, position: "relative", overflow: "hidden" }} className={reveal(howInView)}>
         <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 70% 50% at 50% 0%, rgba(31,95,92,0.2) 0%, transparent 60%)", pointerEvents: "none" }} />
         <div style={{ maxWidth: 1200, margin: "0 auto", position: "relative" }}>
           <div style={{ textAlign: "center", marginBottom: 64 }}>
@@ -462,7 +465,7 @@ export default function Home() {
       </section>
 
       {/* ── SEGMENTS — vit, kort med färgat toppband ─────────────────────── */}
-      <section ref={segRef} style={{ background: "#fff", padding: "120px 40px" }} className={reveal(segInView)}>
+      <section ref={segRef} style={{ background: "#fff", padding: sectionPad }} className={reveal(segInView)}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 64 }}>
             <div style={{ display: "inline-block", padding: "4px 12px", borderRadius: 99, background: "rgba(31,95,92,0.1)", color: "#1F5F5C", fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 16 }}>Tre vägar in</div>
@@ -498,7 +501,7 @@ export default function Home() {
       </section>
 
       {/* ── FAQ — teal-tintad bakgrund, kort per fråga ───────────────────── */}
-      <section ref={faqRef} style={{ background: "#f0faf9", padding: "120px 40px" }} className={reveal(faqInView)}>
+      <section ref={faqRef} style={{ background: "#f0faf9", padding: sectionPad }} className={reveal(faqInView)}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <div className="grid lg:grid-cols-[1fr_1.6fr]" style={{ gap: 80, alignItems: "start" }}>
             <div className="lg:sticky" style={{ top: 100 }}>
@@ -535,7 +538,7 @@ export default function Home() {
         <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 55% 80% at 85% 50%, rgba(245,166,35,0.07) 0%, transparent 65%)" }} />
 
         <div className="relative grid lg:grid-cols-2" style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div style={{ padding: "100px 60px 100px 40px", borderRight: "1px solid rgba(255,255,255,0.06)", display: "flex", flexDirection: "column" }}>
+          <div style={{ padding: isMobile ? "48px 20px 32px" : "100px 60px 100px 40px", borderRight: isMobile ? "none" : "1px solid rgba(255,255,255,0.06)", borderBottom: isMobile ? "1px solid rgba(255,255,255,0.06)" : "none", display: "flex", flexDirection: "column" }}>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 12px", borderRadius: 99, background: "rgba(245,166,35,0.12)", border: "1px solid rgba(245,166,35,0.2)", marginBottom: 32 }}>
               <Icon name="truck" size={14} color="#F5A623" />
               <span style={{ fontSize: 11, fontWeight: 700, color: "#F5A623", letterSpacing: 1.5, textTransform: "uppercase" }}>För förare</span>
@@ -561,7 +564,7 @@ export default function Home() {
             </Link>
           </div>
 
-          <div style={{ padding: "100px 40px 100px 60px", display: "flex", flexDirection: "column" }}>
+          <div style={{ padding: isMobile ? "32px 20px 48px" : "100px 40px 100px 60px", display: "flex", flexDirection: "column" }}>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 12px", borderRadius: 99, background: "rgba(31,95,92,0.2)", border: "1px solid rgba(31,95,92,0.4)", marginBottom: 32 }}>
               <Icon name="building" size={14} color="#4ade80" />
               <span style={{ fontSize: 11, fontWeight: 700, color: "#4ade80", letterSpacing: 1.5, textTransform: "uppercase" }}>För åkerier</span>
@@ -588,7 +591,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="relative" style={{ borderTop: "1px solid rgba(255,255,255,0.05)", padding: "20px 40px", display: "flex", justifyContent: "center", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+        <div className="relative" style={{ borderTop: "1px solid rgba(255,255,255,0.05)", padding: isMobile ? "20px 20px" : "20px 40px", display: "flex", justifyContent: "center", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
           {["Gratis under beta", "Inga kreditkort", "transportplattformen.se"].map((t, i) => (
             <span key={t} style={{ display: "flex", alignItems: "center", gap: 16 }}>
               {i > 0 && <span style={{ color: "rgba(255,255,255,0.1)" }}>·</span>}
