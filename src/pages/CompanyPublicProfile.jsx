@@ -224,7 +224,7 @@ export default function CompanyPublicProfile() {
       />
 
       {/* Cover */}
-      <div style={{ height: 200, background: `linear-gradient(135deg, ${color} 0%, #1F5F5C 100%)`, position: "relative", overflow: "hidden" }}>
+      <div style={{ height: isMobile ? 150 : 200, background: `linear-gradient(135deg, ${color} 0%, #1F5F5C 100%)`, position: "relative", overflow: "hidden" }}>
         {/* Particle overlay */}
         <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0.12 }} viewBox="0 0 1200 200" preserveAspectRatio="none">
           {[...Array(30)].map((_, i) => (
@@ -233,7 +233,7 @@ export default function CompanyPublicProfile() {
         </svg>
         <Link
           to="/akerier"
-          style={{ position: "absolute", top: 18, left: 32, display: "inline-flex", alignItems: "center", gap: 7, padding: "8px 14px", borderRadius: 99, background: "rgba(0,0,0,0.4)", backdropFilter: "blur(10px)", color: "#fff", fontSize: 12.5, fontWeight: 600, textDecoration: "none" }}
+          style={{ position: "absolute", top: 18, left: isMobile ? 16 : 32, display: "inline-flex", alignItems: "center", gap: 7, padding: "8px 14px", borderRadius: 99, background: "rgba(0,0,0,0.4)", backdropFilter: "blur(10px)", color: "#fff", fontSize: 12.5, fontWeight: 600, textDecoration: "none" }}
         >
           <Icon n="back" s={13} /> Tillbaka till åkerier
         </Link>
@@ -242,128 +242,218 @@ export default function CompanyPublicProfile() {
       <div style={{ maxWidth: 1280, margin: "0 auto", padding: isMobile ? "0 20px" : "0 40px", position: "relative", zIndex: 1 }}>
 
         {/* Identity row */}
-        <div style={{ display: "flex", gap: 24, alignItems: "flex-end", marginTop: -44, marginBottom: 28 }}>
-          {/* Avatar */}
-          <div style={{ width: 128, height: 128, borderRadius: 24, background: color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 42, color: "#F5A623", letterSpacing: -1.5, border: "5px solid #060f0f", boxShadow: "0 20px 50px rgba(0,0,0,0.5)", flexShrink: 0 }}>
-            {companyInitials(company.name)}
-          </div>
-
-          <div style={{ flex: 1, paddingBottom: 6 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6, flexWrap: "wrap" }}>
-              <h1 style={{ fontSize: "clamp(26px,3vw,36px)", fontWeight: 800, letterSpacing: -1.2, lineHeight: 1, color: "#f0faf9", margin: 0 }}>{company.name}</h1>
-              {company.verified && (
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 99, background: "rgba(74,222,128,0.1)", border: "1px solid rgba(74,222,128,0.25)", fontSize: 11, fontWeight: 700, color: "#4ade80" }}>
-                  <Icon n="shield" s={11} /> Verifierat
-                </span>
-              )}
-              {(company.fSkattsedel || company.policyAgreedAt) && (
-                <span style={{ padding: "4px 10px", borderRadius: 99, background: "rgba(99,179,237,0.1)", border: "1px solid rgba(99,179,237,0.2)", fontSize: 11, fontWeight: 700, color: "#63b3ed" }}>
-                  F-skatt
-                </span>
-              )}
+        {isMobile ? (
+          <div style={{ marginTop: -40, marginBottom: 20 }}>
+            {/* Avatar + name */}
+            <div style={{ display: "flex", gap: 14, alignItems: "flex-end", marginBottom: 14 }}>
+              <div style={{ width: 80, height: 80, borderRadius: 18, background: color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 26, color: "#F5A623", letterSpacing: -1, border: "4px solid #060f0f", boxShadow: "0 12px 30px rgba(0,0,0,0.5)", flexShrink: 0 }}>
+                {companyInitials(company.name)}
+              </div>
+              <div style={{ flex: 1, minWidth: 0, paddingBottom: 4 }}>
+                <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: -0.8, lineHeight: 1.15, color: "#f0faf9", margin: "0 0 6px" }}>{company.name}</h1>
+                <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                  {company.verified && (
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 3, padding: "3px 8px", borderRadius: 99, background: "rgba(74,222,128,0.1)", border: "1px solid rgba(74,222,128,0.25)", fontSize: 10.5, fontWeight: 700, color: "#4ade80" }}>
+                      <Icon n="shield" s={10} /> Verifierat
+                    </span>
+                  )}
+                  {(company.fSkattsedel || company.policyAgreedAt) && (
+                    <span style={{ padding: "3px 8px", borderRadius: 99, background: "rgba(99,179,237,0.1)", border: "1px solid rgba(99,179,237,0.2)", fontSize: 10.5, fontWeight: 700, color: "#63b3ed" }}>
+                      F-skatt
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
-            <div style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
+            {/* Meta */}
+            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: 14 }}>
               {displayLocation && (
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
-                  <Icon n="pin" s={12} /> {displayLocation}
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                  <Icon n="pin" s={11} /> {displayLocation}
                 </span>
               )}
               {company.foundedYear && (
-                <>
-                  <span style={{ opacity: 0.35 }}>·</span>
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
-                    <Icon n="building" s={12} /> Grundat {company.foundedYear}
-                  </span>
-                </>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                  <Icon n="building" s={11} /> Grundat {company.foundedYear}
+                </span>
               )}
               {company.website && (
-                <>
-                  <span style={{ opacity: 0.35 }}>·</span>
-                  <a
-                    href={company.website.startsWith("http") ? company.website : `https://${company.website}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{ display: "inline-flex", alignItems: "center", gap: 5, color: "#F5A623", textDecoration: "none", fontSize: 14 }}
-                  >
-                    {company.website.replace(/^https?:\/\//, "")} <Icon n="external" s={11} />
-                  </a>
-                </>
+                <a
+                  href={company.website.startsWith("http") ? company.website : `https://${company.website}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ display: "inline-flex", alignItems: "center", gap: 4, color: "#F5A623", textDecoration: "none", fontSize: 13 }}
+                >
+                  {company.website.replace(/^https?:\/\//, "").split("/")[0]} <Icon n="external" s={10} />
+                </a>
+              )}
+            </div>
+            {/* Action buttons */}
+            <div style={{ display: "flex", gap: 8 }}>
+              {isDriver && (
+                <button
+                  type="button"
+                  onClick={handleMessage}
+                  disabled={messaging}
+                  style={{ flex: 1, padding: "12px 16px", borderRadius: 12, background: "linear-gradient(135deg, #F5A623, #d97706)", color: "#000", fontSize: 13, fontWeight: 800, cursor: "pointer", border: "none", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, fontFamily: "inherit", boxShadow: "0 4px 18px rgba(245,166,35,0.25)" }}
+                >
+                  <Icon n="msg" s={13} c="#000" /> Skicka meddelande
+                </button>
+              )}
+              {!user && (
+                <Link
+                  to="/login"
+                  state={{ from: `/foretag/${company.id}` }}
+                  style={{ flex: 1, padding: "12px 16px", borderRadius: 12, background: "linear-gradient(135deg, #F5A623, #d97706)", color: "#000", fontSize: 13, fontWeight: 800, textDecoration: "none", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, boxShadow: "0 4px 18px rgba(245,166,35,0.25)" }}
+                >
+                  Logga in för kontakt
+                </Link>
+              )}
+              {user && (
+                <button
+                  type="button"
+                  onClick={handleToggleSave}
+                  disabled={saving}
+                  style={{ width: 48, height: 48, borderRadius: 12, background: saved ? "rgba(245,166,35,0.12)" : "rgba(255,255,255,0.05)", border: `1px solid ${saved ? "rgba(245,166,35,0.4)" : "rgba(255,255,255,0.08)"}`, color: saved ? "#F5A623" : "rgba(255,255,255,0.6)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
+                >
+                  <Icon n="heart" s={16} filled={saved} c={saved ? "#F5A623" : "rgba(255,255,255,0.6)"} />
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => navigator.share?.({ title: company.name, url: window.location.href }).catch(() => navigator.clipboard?.writeText(window.location.href))}
+                style={{ width: 48, height: 48, borderRadius: 12, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}
+              >
+                <Icon n="share" s={15} c="rgba(255,255,255,0.6)" />
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div style={{ display: "flex", gap: 24, alignItems: "flex-end", marginTop: -44, marginBottom: 28 }}>
+            {/* Avatar */}
+            <div style={{ width: 128, height: 128, borderRadius: 24, background: color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 42, color: "#F5A623", letterSpacing: -1.5, border: "5px solid #060f0f", boxShadow: "0 20px 50px rgba(0,0,0,0.5)", flexShrink: 0 }}>
+              {companyInitials(company.name)}
+            </div>
+
+            <div style={{ flex: 1, paddingBottom: 6 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6, flexWrap: "wrap" }}>
+                <h1 style={{ fontSize: "clamp(26px,3vw,36px)", fontWeight: 800, letterSpacing: -1.2, lineHeight: 1, color: "#f0faf9", margin: 0 }}>{company.name}</h1>
+                {company.verified && (
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 99, background: "rgba(74,222,128,0.1)", border: "1px solid rgba(74,222,128,0.25)", fontSize: 11, fontWeight: 700, color: "#4ade80" }}>
+                    <Icon n="shield" s={11} /> Verifierat
+                  </span>
+                )}
+                {(company.fSkattsedel || company.policyAgreedAt) && (
+                  <span style={{ padding: "4px 10px", borderRadius: 99, background: "rgba(99,179,237,0.1)", border: "1px solid rgba(99,179,237,0.2)", fontSize: 11, fontWeight: 700, color: "#63b3ed" }}>
+                    F-skatt
+                  </span>
+                )}
+              </div>
+              <div style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
+                {displayLocation && (
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
+                    <Icon n="pin" s={12} /> {displayLocation}
+                  </span>
+                )}
+                {company.foundedYear && (
+                  <>
+                    <span style={{ opacity: 0.35 }}>·</span>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
+                      <Icon n="building" s={12} /> Grundat {company.foundedYear}
+                    </span>
+                  </>
+                )}
+                {company.website && (
+                  <>
+                    <span style={{ opacity: 0.35 }}>·</span>
+                    <a
+                      href={company.website.startsWith("http") ? company.website : `https://${company.website}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ display: "inline-flex", alignItems: "center", gap: 5, color: "#F5A623", textDecoration: "none", fontSize: 14 }}
+                    >
+                      {company.website.replace(/^https?:\/\//, "")} <Icon n="external" s={11} />
+                    </a>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Action buttons */}
+            <div style={{ display: "flex", gap: 8, paddingBottom: 6 }}>
+              <button
+                type="button"
+                onClick={() => navigator.share?.({ title: company.name, url: window.location.href }).catch(() => navigator.clipboard?.writeText(window.location.href))}
+                style={{ width: 42, height: 42, borderRadius: 99, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+                title="Dela"
+              >
+                <Icon n="share" s={15} c="rgba(255,255,255,0.7)" />
+              </button>
+              {user && (
+                <button
+                  type="button"
+                  onClick={handleToggleSave}
+                  disabled={saving}
+                  style={{ padding: "11px 18px", borderRadius: 99, background: saved ? "rgba(245,166,35,0.12)" : "rgba(255,255,255,0.04)", border: `1px solid ${saved ? "rgba(245,166,35,0.4)" : "rgba(255,255,255,0.08)"}`, color: saved ? "#F5A623" : "rgba(255,255,255,0.85)", fontSize: 13, fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 7, fontFamily: "inherit", transition: "all .15s" }}
+                >
+                  <Icon n="heart" s={13} filled={saved} c={saved ? "#F5A623" : "rgba(255,255,255,0.85)"} />
+                  {saved ? "Följer" : "Följ"}
+                </button>
+              )}
+              {isDriver && (
+                <button
+                  type="button"
+                  onClick={handleMessage}
+                  disabled={messaging}
+                  style={{ padding: "11px 22px", borderRadius: 99, background: "linear-gradient(135deg, #F5A623, #d97706)", color: "#000", fontSize: 13, fontWeight: 800, cursor: "pointer", border: "none", display: "inline-flex", alignItems: "center", gap: 7, fontFamily: "inherit", boxShadow: "0 4px 18px rgba(245,166,35,0.25)", transition: "opacity .15s" }}
+                >
+                  <Icon n="msg" s={13} c="#000" /> Skicka meddelande
+                </button>
+              )}
+              {!user && (
+                <Link
+                  to="/login"
+                  state={{ from: `/foretag/${company.id}` }}
+                  style={{ padding: "11px 22px", borderRadius: 99, background: "linear-gradient(135deg, #F5A623, #d97706)", color: "#000", fontSize: 13, fontWeight: 800, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 7, boxShadow: "0 4px 18px rgba(245,166,35,0.25)" }}
+                >
+                  Logga in för kontakt
+                </Link>
               )}
             </div>
           </div>
-
-          {/* Action buttons */}
-          <div style={{ display: "flex", gap: 8, paddingBottom: 6 }}>
-            <button
-              type="button"
-              onClick={() => navigator.share?.({ title: company.name, url: window.location.href }).catch(() => navigator.clipboard?.writeText(window.location.href))}
-              style={{ width: 42, height: 42, borderRadius: 99, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
-              title="Dela"
-            >
-              <Icon n="share" s={15} c="rgba(255,255,255,0.7)" />
-            </button>
-            {user && (
-              <button
-                type="button"
-                onClick={handleToggleSave}
-                disabled={saving}
-                style={{ padding: "11px 18px", borderRadius: 99, background: saved ? "rgba(245,166,35,0.12)" : "rgba(255,255,255,0.04)", border: `1px solid ${saved ? "rgba(245,166,35,0.4)" : "rgba(255,255,255,0.08)"}`, color: saved ? "#F5A623" : "rgba(255,255,255,0.85)", fontSize: 13, fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 7, fontFamily: "inherit", transition: "all .15s" }}
-              >
-                <Icon n="heart" s={13} filled={saved} c={saved ? "#F5A623" : "rgba(255,255,255,0.85)"} />
-                {saved ? "Följer" : "Följ"}
-              </button>
-            )}
-            {isDriver && (
-              <button
-                type="button"
-                onClick={handleMessage}
-                disabled={messaging}
-                style={{ padding: "11px 22px", borderRadius: 99, background: "linear-gradient(135deg, #F5A623, #d97706)", color: "#000", fontSize: 13, fontWeight: 800, cursor: "pointer", border: "none", display: "inline-flex", alignItems: "center", gap: 7, fontFamily: "inherit", boxShadow: "0 4px 18px rgba(245,166,35,0.25)", transition: "opacity .15s" }}
-              >
-                <Icon n="msg" s={13} c="#000" /> Skicka meddelande
-              </button>
-            )}
-            {!user && (
-              <Link
-                to="/login"
-                state={{ from: `/foretag/${company.id}` }}
-                style={{ padding: "11px 22px", borderRadius: 99, background: "linear-gradient(135deg, #F5A623, #d97706)", color: "#000", fontSize: 13, fontWeight: 800, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 7, boxShadow: "0 4px 18px rgba(245,166,35,0.25)" }}
-              >
-                Logga in för kontakt
-              </Link>
-            )}
-          </div>
-        </div>
+        )}
 
         {/* Stats strip */}
-        <div style={{ display: "flex", alignItems: "center", padding: "18px 22px", background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 14, marginBottom: 32, flexWrap: "wrap", gap: "0" }}>
-          {/* Rating */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12, paddingRight: 24 }}>
-            <div style={{ fontSize: 32, fontWeight: 800, letterSpacing: -1, color: "#F5A623" }}>{rating ?? "—"}</div>
-            <div>
-              <Stars rating={rating ?? 0} size={12} />
-              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", marginTop: 3 }}>
-                {reviewCount > 0 ? `Baserat på ${reviewCount} omdömen` : "Inga omdömen ännu"}
+        <div style={{ overflowX: isMobile ? "auto" : "visible", WebkitOverflowScrolling: "touch", marginBottom: 24 }}>
+          <div style={{ display: "flex", alignItems: "center", padding: isMobile ? "14px 16px" : "18px 22px", background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 14, gap: 0, minWidth: isMobile ? "max-content" : undefined }}>
+            {/* Rating */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10, paddingRight: isMobile ? 16 : 24, flexShrink: 0 }}>
+              <div style={{ fontSize: isMobile ? 26 : 32, fontWeight: 800, letterSpacing: -1, color: "#F5A623" }}>{rating ?? "—"}</div>
+              <div>
+                <Stars rating={rating ?? 0} size={11} />
+                <div style={{ fontSize: 10, color: "rgba(255,255,255,0.45)", marginTop: 3, whiteSpace: "nowrap" }}>
+                  {reviewCount > 0 ? `${reviewCount} omdömen` : "Inga omdömen"}
+                </div>
               </div>
             </div>
-          </div>
-          <div style={{ width: 1, height: 40, background: "rgba(255,255,255,0.08)", margin: "0 24px" }} />
-          {/* Svarsfrekvens */}
-          <div style={{ paddingRight: 24 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 3 }}>Svarsfrekvens</div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: "rgba(255,255,255,0.85)", letterSpacing: -0.5 }}>—</div>
-          </div>
-          <div style={{ width: 1, height: 40, background: "rgba(255,255,255,0.08)", margin: "0 24px 0 0" }} />
-          {/* Svar i snitt */}
-          <div style={{ paddingRight: 24 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 3 }}>Svar i snitt</div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: "rgba(255,255,255,0.85)", letterSpacing: -0.5 }}>—</div>
-          </div>
-          <div style={{ width: 1, height: 40, background: "rgba(255,255,255,0.08)", margin: "0 24px 0 0" }} />
-          {/* Lediga jobb */}
-          <div>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 3 }}>Lediga jobb</div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: "#F5A623", letterSpacing: -0.5 }}>{company.jobs.length}</div>
+            <div style={{ width: 1, height: 36, background: "rgba(255,255,255,0.08)", margin: isMobile ? "0 16px" : "0 24px", flexShrink: 0 }} />
+            {/* Svarsfrekvens */}
+            <div style={{ paddingRight: isMobile ? 16 : 24, flexShrink: 0 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 3, whiteSpace: "nowrap" }}>Svarsfrekvens</div>
+              <div style={{ fontSize: isMobile ? 17 : 20, fontWeight: 800, color: "rgba(255,255,255,0.85)", letterSpacing: -0.5 }}>—</div>
+            </div>
+            <div style={{ width: 1, height: 36, background: "rgba(255,255,255,0.08)", margin: isMobile ? "0 16px 0 0" : "0 24px 0 0", flexShrink: 0 }} />
+            {/* Svar i snitt */}
+            <div style={{ paddingRight: isMobile ? 16 : 24, flexShrink: 0 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 3, whiteSpace: "nowrap" }}>Svar i snitt</div>
+              <div style={{ fontSize: isMobile ? 17 : 20, fontWeight: 800, color: "rgba(255,255,255,0.85)", letterSpacing: -0.5 }}>—</div>
+            </div>
+            <div style={{ width: 1, height: 36, background: "rgba(255,255,255,0.08)", margin: isMobile ? "0 16px 0 0" : "0 24px 0 0", flexShrink: 0 }} />
+            {/* Lediga jobb */}
+            <div style={{ flexShrink: 0 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 3, whiteSpace: "nowrap" }}>Lediga jobb</div>
+              <div style={{ fontSize: isMobile ? 17 : 20, fontWeight: 800, color: "#F5A623", letterSpacing: -0.5 }}>{company.jobs.length}</div>
+            </div>
           </div>
         </div>
 
@@ -448,34 +538,32 @@ export default function CompanyPublicProfile() {
                   <Link
                     key={job.id}
                     to={`/jobb/${job.id}`}
-                    style={{ display: "flex", alignItems: "center", gap: 18, padding: "18px 22px", background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 14, textDecoration: "none", color: "inherit", transition: "all .15s" }}
+                    style={{ display: "flex", alignItems: "center", gap: isMobile ? 12 : 18, padding: isMobile ? "14px 16px" : "18px 22px", background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 14, textDecoration: "none", color: "inherit", transition: "all .15s" }}
                     onMouseEnter={e => { e.currentTarget.style.background = "#0e1c1c"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; }}
                     onMouseLeave={e => { e.currentTarget.style.background = "#0a1414"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.05)"; }}
                   >
-                    <div style={{ width: 46, height: 46, borderRadius: 11, background: color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 13, color: "#F5A623", flexShrink: 0 }}>
+                    <div style={{ width: isMobile ? 38 : 46, height: isMobile ? 38 : 46, borderRadius: isMobile ? 9 : 11, background: color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: isMobile ? 11 : 13, color: "#F5A623", flexShrink: 0 }}>
                       {licLabel}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                        <span style={{ fontSize: 15, fontWeight: 700, color: "#f0faf9" }}>{job.title}</span>
-                      </div>
-                      <div style={{ fontSize: 12, color: "rgba(255,255,255,0.55)", display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+                      <div style={{ fontSize: isMobile ? 14 : 15, fontWeight: 700, color: "#f0faf9", marginBottom: 3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{job.title}</div>
+                      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
                         {(job.location || job.region) && (
-                          <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-                            <Icon n="pin" s={11} /> {[job.location, job.region].filter(Boolean).join(", ")}
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 3 }}>
+                            <Icon n="pin" s={10} /> {[job.location, job.region].filter(Boolean).join(", ")}
                           </span>
                         )}
                         <span>{employmentLabel(job.employment)}</span>
-                        {job.segment && <span>{segmentLabel(job.segment)}</span>}
+                        {job.segment && !isMobile && <span>{segmentLabel(job.segment)}</span>}
                       </div>
                     </div>
                     {pct !== null && (
-                      <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 99, background: matchBg }}>
-                        <svg viewBox="0 0 24 24" fill="currentColor" style={{ width: 12, height: 12, color: matchColor }}><path d="M12 2L13.5 8.5 20 10l-6.5 1.5L12 18l-1.5-6.5L4 10l6.5-1.5z"/></svg>
-                        <span style={{ fontSize: 13, fontWeight: 800, color: matchColor }}>{pct}%</span>
+                      <div style={{ display: "flex", alignItems: "center", gap: 4, padding: isMobile ? "4px 8px" : "6px 12px", borderRadius: 99, background: matchBg, flexShrink: 0 }}>
+                        <svg viewBox="0 0 24 24" fill="currentColor" style={{ width: 10, height: 10, color: matchColor }}><path d="M12 2L13.5 8.5 20 10l-6.5 1.5L12 18l-1.5-6.5L4 10l6.5-1.5z"/></svg>
+                        <span style={{ fontSize: 12, fontWeight: 800, color: matchColor }}>{pct}%</span>
                       </div>
                     )}
-                    <Icon n="arrow" s={16} c="rgba(255,255,255,0.4)" />
+                    <Icon n="arrow" s={14} c="rgba(255,255,255,0.4)" />
                   </Link>
                 );
               })}
