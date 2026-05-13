@@ -243,7 +243,7 @@ export default function MinaAnsokningar() {
       <PageMeta title="Mina ansökningar – STP" />
 
       {/* Page header */}
-      <div style={{ background: "linear-gradient(to bottom, #0a1818, #060f0f)", borderBottom: "1px solid rgba(255,255,255,0.06)", padding: "48px 40px 28px" }}>
+      <div style={{ background: "linear-gradient(to bottom, #0a1818, #060f0f)", borderBottom: "1px solid rgba(255,255,255,0.06)", padding: isMobile ? "32px 20px 20px" : "48px 40px 28px" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "rgba(245,166,35,0.8)", marginBottom: 8 }}>Mitt konto</div>
           <h1 style={{ fontSize: 32, fontWeight: 800, letterSpacing: -1, marginBottom: 6, color: "#f0faf9" }}>Mina ansökningar</h1>

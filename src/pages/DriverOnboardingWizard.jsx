@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useProfile } from "../context/ProfileContext";
 import { useAuth } from "../context/AuthContext";
+import { useIsMobile } from "../hooks/useIsMobile";
 import { segmentOptions, internshipTypeOptions, encodeSchoolName } from "../data/segments";
 import { licenseTypes, regions } from "../data/mockJobs";
 import { trackDriverOnboardingComplete } from "../utils/segmentMetrics";
@@ -397,6 +398,7 @@ function ExperienceStep({ draft, setDraft, onSkip }) {
 const STEP_LABELS = ["Mål", "Kontakt", "Kärnprofil", "Erfarenhet", "Avsluta"];
 
 export default function DriverOnboardingWizard() {
+  const isMobile = useIsMobile();
   const { user, token } = useAuth();
   const { profile, profileLoaded, updateProfile } = useProfile();
   const navigate = useNavigate();
@@ -905,9 +907,9 @@ export default function DriverOnboardingWizard() {
     <div style={{ minHeight: "100vh", background: "#050e0e", color: T.text, fontFamily: "inherit", marginTop: "-64px", paddingTop: 64 }}>
       <div style={{
         maxWidth: 1080, margin: "0 auto",
-        padding: "40px 32px 80px",
+        padding: isMobile ? "24px 20px 80px" : "40px 32px 80px",
         display: "grid",
-        gridTemplateColumns: showSidebar ? "1fr 280px" : "1fr",
+        gridTemplateColumns: isMobile ? "1fr" : (showSidebar ? "1fr 280px" : "1fr"),
         gap: 56,
         alignItems: "start",
       }}>
@@ -986,7 +988,7 @@ export default function DriverOnboardingWizard() {
         </div>
 
         {/* RIGHT — sticky profile preview */}
-        {showSidebar && (
+        {showSidebar && !isMobile && (
           <ProfilePreview
             name={draft.name}
             licenses={draft.licenses || []}
