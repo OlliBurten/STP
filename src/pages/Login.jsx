@@ -124,7 +124,7 @@ export default function Login() {
     setTimeout(() => { setMode(newMode); setAnimOut(false); setError(""); setInfo(""); }, 180);
   };
 
-  // Reset on browser back/forward
+  // Reset on browser back/forward, or when navigating to /login with a new state
   const isInitialMount = useRef(true);
   useEffect(() => {
     if (isInitialMount.current) { isInitialMount.current = false; return; }
@@ -132,6 +132,11 @@ export default function Login() {
     if (!stateMode || stateMode === "login") {
       setMode("login");
       setError(""); setInfo(""); setShowResendVerification(false);
+    } else if (stateMode === "register") {
+      const requiredRole = location.state?.requiredRole;
+      if (requiredRole === "driver") goTo("register_driver");
+      else if (requiredRole === "company") goTo("register_company");
+      else goTo("register_pick");
     }
   }, [location.key]); // eslint-disable-line react-hooks/exhaustive-deps
 
