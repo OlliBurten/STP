@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { apiGet } from "../api/client.js";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { usePageTitle } from "../hooks/usePageTitle";
@@ -69,8 +70,7 @@ const MARQUEE_ITEMS = [
 function usePlatformStats() {
   const [stats, setStats] = useState(null);
   useEffect(() => {
-    fetch("/api/stats/platform")
-      .then((r) => r.ok ? r.json() : null)
+    apiGet("/api/stats/platform")
       .then((data) => { if (data) setStats(data); })
       .catch(() => {});
   }, []);
