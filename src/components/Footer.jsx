@@ -36,7 +36,7 @@ const COLS = [
 export default function Footer() {
   return (
     <footer style={{ background: "#0a1818" }} className="mt-auto text-white">
-      <div className="max-w-[1200px] mx-auto px-5 sm:px-10 pt-20 pb-10">
+      <div className="max-w-[1280px] mx-auto px-5 sm:px-10 pt-20 pb-10">
 
         {/* Main grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4" style={{ gap: 60, marginBottom: 60 }}>

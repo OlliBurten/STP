@@ -264,7 +264,7 @@ export default function Home() {
         <div className="absolute inset-0" style={{ backgroundImage: "url('/hero.webp')", backgroundSize: "cover", backgroundPosition: "center 35%", opacity: 0.18 }} />
         <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 80% 60% at 70% 40%, rgba(31,95,92,0.35) 0%, transparent 70%)" }} />
 
-        <div className="relative w-full max-w-[1200px] mx-auto" style={{ padding: "120px 40px 80px" }}>
+        <div className="relative w-full max-w-[1280px] mx-auto" style={{ padding: "120px 40px 80px" }}>
           <div className="grid lg:grid-cols-2 gap-20 items-center">
             <div>
               <div className="inline-flex items-center gap-2 mb-9" style={{ padding: "6px 16px", borderRadius: 99, background: "rgba(245,166,35,0.15)", border: "1px solid rgba(245,166,35,0.3)" }}>
