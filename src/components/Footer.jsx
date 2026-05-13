@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import Logo from "./Logo";
 import { CURRENT_VERSION } from "../lib/releaseNotes";
 import { regionPages } from "../data/regions";
+import { cityPages } from "../data/cities";
 
 const COLS = [
   {
@@ -72,8 +73,22 @@ export default function Footer() {
           ))}
         </div>
 
+        {/* City links */}
+        <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 32, marginBottom: 24 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 16 }}>
+            CE-jobb per stad
+          </div>
+          <div className="flex flex-wrap" style={{ gap: "8px 24px" }}>
+            {cityPages.map((c) => (
+              <Link key={c.slug} to={`/ce-jobb/${c.slug}`} style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", textDecoration: "none" }} className="hover:text-white transition-colors">
+                {c.name}
+              </Link>
+            ))}
+          </div>
+        </div>
+
         {/* Region links */}
-        <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 32, marginBottom: 32 }}>
+        <div style={{ marginBottom: 32 }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 16 }}>
             Lastbilsjobb per region
           </div>
