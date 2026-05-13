@@ -5,6 +5,7 @@ import { useChat } from "../context/ChatContext";
 import { fetchNotifications, markNotificationRead, markAllNotificationsRead } from "../api/notifications.js";
 import { BellIcon, MenuIcon, CloseIcon, ChevronDownIcon } from "./Icons";
 import Logo from "./Logo";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 function initialsFromUser(user) {
   if (!user) return "?";
@@ -44,6 +45,7 @@ const PUBLIC_EXTRA_LINKS = [
 ];
 
 export default function Header({ onboarding = false }) {
+  const isMobile = useIsMobile();
   const { user, isDriver, isCompany, isAdmin, isImpersonating, logout, stopViewAs } = useAuth();
   const { selectedNotificationCount, unreadCount = 0, companyUnreadConversationCount = 0 } = useChat();
   const navigate = useNavigate();
@@ -294,7 +296,7 @@ export default function Header({ onboarding = false }) {
   if (onboarding && user) {
     return (
       <header style={{ ...headerStyle, position: "fixed", left: 0, right: 0, top: 0, zIndex: 50 }}>
-        <nav className="flex items-center justify-between h-16" style={{ maxWidth: 1280, margin: "0 auto", padding: "0 40px", width: "100%" }}>
+        <nav className="flex items-center justify-between h-16" style={{ maxWidth: 1280, margin: "0 auto", padding: isMobile ? "0 20px" : "0 40px", width: "100%" }}>
           <Link to="/" className="flex items-center" aria-label="Startsida">
             <Logo height={32} variant="light" />
           </Link>
@@ -309,7 +311,7 @@ export default function Header({ onboarding = false }) {
   return (
     <>
       <header className="fixed left-0 right-0 top-0 z-50" style={headerStyle}>
-        <nav className="dm-header-nav flex items-center h-16 relative" style={{ maxWidth: 1280, margin: "0 auto", padding: "0 40px", width: "100%" }}>
+        <nav className="dm-header-nav flex items-center h-16 relative" style={{ maxWidth: 1280, margin: "0 auto", padding: isMobile ? "0 20px" : "0 40px", width: "100%" }}>
 
           {/* Logo */}
           <div className="flex items-center shrink-0 overflow-visible">
