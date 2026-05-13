@@ -247,7 +247,7 @@ export default function MinaJobb() {
 
   return (
     <div style={{ minHeight: "100vh", background: "#060f0f", color: "#f0faf9" }}>
-      <main style={{ maxWidth: 1320, margin: "0 auto", padding: "32px 24px 60px" }}>
+      <main style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 40px 60px" }}>
 
         {/* Sidhuvud */}
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 24, gap: 24, flexWrap: "wrap" }}>

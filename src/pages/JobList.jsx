@@ -312,7 +312,7 @@ export default function JobList() {
       </div>
 
       {/* ── Job listings ─────────────────────────────────────── */}
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "40px 40px 80px" }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "40px 40px 80px" }}>
 
         {/* Incomplete profile nudge */}
         {isDriver && driverForMatch && recommendedJobs.length === 0 && !jobsLoading && filteredJobs.length > 0 && (

@@ -97,7 +97,7 @@ const DRIVER_PROMISES = [
 
 // Dark palette for hero/CTA/how-it-works
 const D = {
-  section:      { maxWidth: 1200, margin: "0 auto", padding: "0 40px" },
+  section:      { maxWidth: 1280, margin: "0 auto", padding: "0 40px" },
   label:        { fontSize: 12, fontWeight: 700, color: "rgba(245,166,35,0.85)", letterSpacing: "1.5px", textTransform: "uppercase" },
   h2:           { fontSize: "clamp(28px,4vw,40px)", fontWeight: 900, letterSpacing: "-1.5px", color: "#f0faf9", lineHeight: 1.15, margin: 0 },
   body:         { fontSize: 16, color: "rgba(240,250,249,0.55)", lineHeight: 1.7 },
@@ -107,7 +107,7 @@ const D = {
 
 // Light editorial palette
 const E = {
-  section:   { maxWidth: 1200, margin: "0 auto", padding: "0 40px" },
+  section:   { maxWidth: 1280, margin: "0 auto", padding: "0 40px" },
   label:     { fontSize: 12, fontWeight: 700, color: "#1F5F5C", letterSpacing: "1.5px", textTransform: "uppercase" },
   h2:        { fontSize: "clamp(28px,4vw,40px)", fontWeight: 900, letterSpacing: "-1.5px", color: "#0f172a", lineHeight: 1.15, margin: 0 },
   body:      { fontSize: 16, color: "#64748b", lineHeight: 1.7 },

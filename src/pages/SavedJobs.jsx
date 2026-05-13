@@ -272,7 +272,7 @@ export default function SavedJobs() {
         </div>
       </div>
 
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 40px 100px" }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "28px 40px 100px" }}>
 
         {/* Tab bar */}
         <div style={{ display: "flex", gap: 6, marginBottom: 24, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>

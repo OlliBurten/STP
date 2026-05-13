@@ -249,7 +249,7 @@ export default function MinaAnsokningar() {
         </div>
       </div>
 
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 40px 100px" }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 40px 100px" }}>
 
         {loading ? (
           <LoadingBlock message="Hämtar dina ansökningar..." />

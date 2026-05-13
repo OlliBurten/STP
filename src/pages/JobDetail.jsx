@@ -498,7 +498,7 @@ export default function JobDetail() {
     <main style={{ background: "#060f0f", minHeight: "100vh", marginTop: "-64px", paddingTop: 80 }}>
       <PageMeta title={`${job.title} – ${job.company}`} description={metaDescription} canonical={`/jobb/${job.id}`} jsonLd={jobLd} />
 
-      <div style={{ maxWidth: 1240, margin: "0 auto", padding: "0 40px" }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 40px" }}>
         <Breadcrumbs items={breadcrumbs} className="mb-4" dark />
         <div style={{ marginBottom: 14 }}>
           <Link to={isCompany ? "/foretag/annonser" : "/jobb"} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600, color: "rgba(240,250,249,0.45)", textDecoration: "none" }}>

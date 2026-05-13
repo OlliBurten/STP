@@ -165,7 +165,7 @@ export default function CompanyPublicProfile() {
     return (
       <main style={{ background: "#060f0f", minHeight: "100vh", marginTop: "-64px", paddingTop: 64 }}>
         <div style={{ height: 180, background: "rgba(255,255,255,0.04)" }} />
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px" }}>
+        <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 40px" }}>
           <div style={{ height: 96, width: 96, borderRadius: 24, background: "rgba(255,255,255,0.06)", marginTop: -48, marginBottom: 24 }} />
           <div style={{ height: 40, width: 320, borderRadius: 10, background: "rgba(255,255,255,0.04)", marginBottom: 12 }} />
           <div style={{ height: 60, borderRadius: 14, background: "rgba(255,255,255,0.03)" }} />
@@ -177,7 +177,7 @@ export default function CompanyPublicProfile() {
   if (!company) {
     return (
       <main style={{ background: "#060f0f", minHeight: "100vh", marginTop: "-64px", paddingTop: 80 }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px" }}>
+        <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 40px" }}>
           <p style={{ fontSize: 15, color: "rgba(240,250,249,0.7)", marginBottom: 12 }}>Företaget hittades inte.</p>
           <Link to="/akerier" style={{ fontSize: 14, color: "#4ade80", textDecoration: "none" }}>← Tillbaka till åkerier</Link>
         </div>
@@ -237,7 +237,7 @@ export default function CompanyPublicProfile() {
         </Link>
       </div>
 
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px", position: "relative", zIndex: 1 }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 40px", position: "relative", zIndex: 1 }}>
 
         {/* Identity row */}
         <div style={{ display: "flex", gap: 24, alignItems: "flex-end", marginTop: -44, marginBottom: 28 }}>

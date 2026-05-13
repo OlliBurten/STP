@@ -362,7 +362,7 @@ export default function AkerierSearch() {
 
       {/* Page header with gradient */}
       <div style={{ background: "linear-gradient(to bottom, #0a1818, #060f0f)", borderBottom: "1px solid rgba(255,255,255,0.06)", padding: "48px 40px 28px" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+        <div style={{ maxWidth: 1280, margin: "0 auto" }}>
           {isGymnasieelev && (
             <div style={{ marginBottom: 16, padding: "10px 16px", borderRadius: 10, border: "1px solid rgba(74,222,128,0.2)", background: "rgba(74,222,128,0.06)", fontSize: 13, color: "#4ade80" }}>
               Du är registrerad som gymnasieelev. Endast åkerier med <strong>praktikplatser</strong> visas.
@@ -464,7 +464,7 @@ export default function AkerierSearch() {
       </div>
 
       {/* Results area */}
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 40px 80px" }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "28px 40px 80px" }}>
 
         {/* Toolbar: count + sort + view toggle */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 22, flexWrap: "wrap", gap: 12 }}>
