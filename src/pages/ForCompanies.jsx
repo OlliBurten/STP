@@ -43,7 +43,7 @@ function daysAgo(dateStr) {
 }
 
 // ─── Verifieringsgate ────────────────────────────────────────────────────────
-function VerificationGate() {
+function VerificationGate({ isMobile }) {
   const steps = [
     { done: true,  label: "E-post bekräftad" },
     { done: true,  label: "Företagsuppgifter ifyllda" },
@@ -51,32 +51,33 @@ function VerificationGate() {
     { done: false, label: "Trafiktillstånd verifierat", action: "Ladda upp" },
   ];
   return (
-    <div style={{ marginBottom: 28, background: "linear-gradient(135deg,rgba(245,166,35,0.08),rgba(245,166,35,0.02))", border: "1px solid rgba(245,166,35,0.25)", borderRadius: 20, padding: 28, display: "flex", gap: 28, alignItems: "flex-start" }}>
-      <div style={{ width: 48, height: 48, borderRadius: 13, background: "rgba(245,166,35,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-        <Icon n="shield" size={22} color="#F5A623" />
+    <div style={{ marginBottom: 28, background: "linear-gradient(135deg,rgba(245,166,35,0.08),rgba(245,166,35,0.02))", border: "1px solid rgba(245,166,35,0.25)", borderRadius: 20, padding: isMobile ? 20 : 28 }}>
+      {/* Header: ikon + titel */}
+      <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 12 }}>
+        <div style={{ width: 40, height: 40, borderRadius: 11, background: "rgba(245,166,35,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <Icon n="shield" size={20} color="#F5A623" />
+        </div>
+        <div style={{ fontSize: isMobile ? 15 : 18, fontWeight: 800, letterSpacing: -0.4, lineHeight: 1.25 }}>Slutför verifiering för att börja rekrytera</div>
       </div>
-      <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 6, letterSpacing: -0.4 }}>Slutför verifiering för att börja rekrytera</div>
-        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", lineHeight: 1.5, marginBottom: 18, maxWidth: 560 }}>
-          2 av 4 steg klara. Verifiering tar normalt 1 arbetsdag och låter er publicera annonser, kontakta förare och visas i åkeridatabasen.
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {steps.map((s, i) => (
-            <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "11px 14px", background: s.done ? "rgba(74,222,128,0.06)" : "rgba(255,255,255,0.03)", border: `1px solid ${s.done ? "rgba(74,222,128,0.18)" : "rgba(255,255,255,0.06)"}`, borderRadius: 11 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
-                <div style={{ width: 22, height: 22, borderRadius: 99, background: s.done ? "#4ade80" : "rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  {s.done && <Icon n="check" size={12} color="#000" />}
-                </div>
-                <span style={{ fontSize: 13, fontWeight: 600 }}>{s.label}</span>
+      <div style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", lineHeight: 1.5, marginBottom: 16 }}>
+        2 av 4 steg klara. Verifiering tar normalt 1 arbetsdag.
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {steps.map((s, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "11px 14px", background: s.done ? "rgba(74,222,128,0.06)" : "rgba(255,255,255,0.03)", border: `1px solid ${s.done ? "rgba(74,222,128,0.18)" : "rgba(255,255,255,0.06)"}`, borderRadius: 11 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+              <div style={{ width: 22, height: 22, borderRadius: 99, background: s.done ? "#4ade80" : "rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                {s.done && <Icon n="check" size={12} color="#000" />}
               </div>
-              {!s.done && (
-                <button style={{ padding: "6px 14px", borderRadius: 99, background: "#F5A623", color: "#000", fontSize: 12, fontWeight: 800, border: "none", cursor: "pointer" }}>
-                  {s.action}
-                </button>
-              )}
+              <span style={{ fontSize: 13, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.label}</span>
             </div>
-          ))}
-        </div>
+            {!s.done && (
+              <button style={{ padding: "6px 14px", borderRadius: 99, background: "#F5A623", color: "#000", fontSize: 12, fontWeight: 800, border: "none", cursor: "pointer", flexShrink: 0 }}>
+                {s.action}
+              </button>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -422,7 +423,7 @@ export default function ForCompanies() {
         </div>
 
         {/* Verifieringsgate */}
-        {!loading && !isVerified && <VerificationGate />}
+        {!loading && !isVerified && <VerificationGate isMobile={isMobile} />}
 
         {/* KPI-grid */}
         <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4,1fr)", gap: 14, marginBottom: 28 }}>

@@ -252,23 +252,23 @@ export default function MinaJobb() {
       <main style={{ maxWidth: 1280, margin: "0 auto", padding: isMobile ? "24px 20px 60px" : "32px 40px 60px" }}>
 
         {/* Sidhuvud */}
-        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 24, gap: 24, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", alignItems: isMobile ? "flex-start" : "flex-end", justifyContent: "space-between", marginBottom: 24, gap: 16 }}>
           <div>
-            <h1 style={{ fontSize: 30, fontWeight: 800, letterSpacing: -1, marginBottom: 6 }}>Mina annonser</h1>
+            <h1 style={{ fontSize: isMobile ? 26 : 30, fontWeight: 800, letterSpacing: -1, marginBottom: 6 }}>Mina annonser</h1>
             <div style={{ fontSize: 13.5, color: "rgba(255,255,255,0.55)" }}>
               {counts.active} aktiva annonser · {totalCandidates} kandidater totalt
               {newSince > 0 && <span style={{ color: "#F5A623", fontWeight: 700 }}> · {newSince} nya sedan igår</span>}
             </div>
           </div>
           <Link to="/foretag/annonsera"
-            style={{ padding: "11px 20px", borderRadius: 99, background: "linear-gradient(135deg,#F5A623,#d97706)", color: "#000", fontSize: 13.5, fontWeight: 800, textDecoration: "none", display: "flex", alignItems: "center", gap: 7, boxShadow: "0 4px 18px rgba(245,166,35,0.25)" }}>
+            style={{ padding: "11px 20px", borderRadius: 99, background: "linear-gradient(135deg,#F5A623,#d97706)", color: "#000", fontSize: 13.5, fontWeight: 800, textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, boxShadow: "0 4px 18px rgba(245,166,35,0.25)", alignSelf: isMobile ? "stretch" : "auto" }}>
             <Icon n="plus" size={14} /> Publicera ny annons
           </Link>
         </div>
 
         {/* Tabs + sök */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22, gap: 16, flexWrap: "wrap" }}>
-          <div style={{ display: "flex", gap: 4, background: "#0a1414", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 99, padding: 4 }}>
+        <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", justifyContent: "space-between", alignItems: isMobile ? "stretch" : "center", marginBottom: 22, gap: 12 }}>
+          <div style={{ display: "flex", gap: 4, background: "#0a1414", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 99, padding: 4, overflowX: "auto" }}>
             {[
               { k: "active", l: "Aktiva",    c: counts.active },
               { k: "paused", l: "Pausade",   c: counts.paused },
@@ -276,24 +276,22 @@ export default function MinaJobb() {
               { k: "all",    l: "Alla",      c: counts.all    },
             ].map((t) => (
               <button key={t.k} onClick={() => setTab(t.k)}
-                style={{ padding: "8px 16px", borderRadius: 99, background: tab === t.k ? "#F5A623" : "transparent", border: "none", color: tab === t.k ? "#000" : "rgba(255,255,255,0.7)", fontSize: 12.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, transition: "all .15s" }}>
+                style={{ padding: isMobile ? "8px 12px" : "8px 16px", borderRadius: 99, background: tab === t.k ? "#F5A623" : "transparent", border: "none", color: tab === t.k ? "#000" : "rgba(255,255,255,0.7)", fontSize: 12.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, transition: "all .15s", whiteSpace: "nowrap", flexShrink: 0 }}>
                 {t.l}
                 <span style={{ padding: "1px 7px", borderRadius: 99, background: tab === t.k ? "rgba(0,0,0,0.15)" : "rgba(255,255,255,0.08)", fontSize: 10.5, fontWeight: 800 }}>{t.c}</span>
               </button>
             ))}
           </div>
-          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            <div style={{ position: "relative" }}>
-              <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
-                <Icon n="search" size={14} color="rgba(255,255,255,0.4)" />
-              </span>
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Sök annons"
-                style={{ padding: "9px 14px 9px 36px", background: "#0a1414", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 99, fontSize: 12.5, width: isMobile ? 160 : 240, outline: "none", color: "#f0faf9" }}
-              />
-            </div>
+          <div style={{ position: "relative" }}>
+            <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
+              <Icon n="search" size={14} color="rgba(255,255,255,0.4)" />
+            </span>
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Sök annons"
+              style={{ padding: "9px 14px 9px 36px", background: "#0a1414", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 99, fontSize: 12.5, width: isMobile ? "100%" : 240, outline: "none", color: "#f0faf9", boxSizing: "border-box" }}
+            />
           </div>
         </div>
 
