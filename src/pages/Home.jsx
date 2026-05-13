@@ -315,13 +315,13 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 opacity-50">
+        {!isMobile && <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 opacity-50">
           <span style={{ fontSize: 11, color: "#fff", letterSpacing: 2, textTransform: "uppercase" }}>Scrolla</span>
           <svg width="16" height="24" viewBox="0 0 16 24" fill="none">
             <rect x="6" y="1" width="4" height="10" rx="2" fill="white" opacity=".5" />
             <path d="M8 18L4 22M8 18L12 22M8 18V14" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
           </svg>
-        </div>
+        </div>}
       </section>
 
       {/* ── MARQUEE — teal brand strip ───────────────────────────────────── */}
