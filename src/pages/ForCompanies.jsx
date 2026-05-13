@@ -90,7 +90,7 @@ function KpiCard({ label, value, delta, positive, icon, glow, to }) {
     <div
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      style={{ background: "#0a1414", border: `1px solid ${hovered ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.05)"}`, borderRadius: 16, padding: 20, cursor: "pointer", transform: hovered ? "translateY(-2px)" : "none", transition: "all .15s" }}
+      style={{ background: "#0a1414", border: `1px solid ${hovered ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.05)"}`, borderRadius: 16, padding: 20, cursor: "pointer", transform: hovered ? "translateY(-2px)" : "none", transition: "all .15s", height: "100%", boxSizing: "border-box" }}
     >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
         <div style={{ width: 34, height: 34, borderRadius: 10, background: `${glow}1a`, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -105,7 +105,7 @@ function KpiCard({ label, value, delta, positive, icon, glow, to }) {
       </div>
     </div>
   );
-  if (to) return <Link to={to} style={{ textDecoration: "none", color: "inherit" }}>{card}</Link>;
+  if (to) return <Link to={to} style={{ textDecoration: "none", color: "inherit", display: "block", height: "100%" }}>{card}</Link>;
   return card;
 }
 
@@ -426,7 +426,7 @@ export default function ForCompanies() {
         {!loading && !isVerified && <VerificationGate isMobile={isMobile} />}
 
         {/* KPI-grid */}
-        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4,1fr)", gap: 14, marginBottom: 28 }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4,1fr)", gridAutoRows: "1fr", gap: 14, marginBottom: 28 }}>
           {kpis.map((k, i) => <KpiCard key={i} {...k} />)}
         </div>
 
