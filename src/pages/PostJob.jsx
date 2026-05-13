@@ -146,12 +146,12 @@ function BulletEditor({ items, onChange, placeholder, color }) {
   );
 }
 
-function StepBar({ current }) {
+function StepBar({ current, isMobile }) {
   return (
     <div style={{ display: "flex", alignItems: "center", marginBottom: 40 }}>
       {STEPS.map((s, i) => (
         <div key={s.id} style={{ display: "flex", alignItems: "center", flex: i < STEPS.length - 1 ? 1 : 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: isMobile ? 0 : 8, flexShrink: 0 }}>
             <span style={{
               width: 32, height: 32, borderRadius: 99, display: "flex", alignItems: "center",
               justifyContent: "center", fontSize: 13, fontWeight: 800, flexShrink: 0, transition: "all .2s",
@@ -163,15 +163,22 @@ function StepBar({ current }) {
                 ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                 : i + 1}
             </span>
-            <span style={{ fontSize: 13, fontWeight: i === current ? 700 : 500, color: i === current ? "#f0faf9" : i < current ? "rgba(240,250,249,0.65)" : "rgba(240,250,249,0.3)", whiteSpace: "nowrap" }}>
-              {s.label}
-            </span>
+            {!isMobile && (
+              <span style={{ fontSize: 13, fontWeight: i === current ? 700 : 500, color: i === current ? "#f0faf9" : i < current ? "rgba(240,250,249,0.65)" : "rgba(240,250,249,0.3)", whiteSpace: "nowrap" }}>
+                {s.label}
+              </span>
+            )}
           </div>
           {i < STEPS.length - 1 && (
-            <div style={{ flex: 1, height: 2, background: i < current ? "rgba(31,95,92,0.5)" : "rgba(255,255,255,0.06)", margin: "0 12px", minWidth: 16, transition: "background .3s" }} />
+            <div style={{ flex: 1, height: 2, background: i < current ? "rgba(31,95,92,0.5)" : "rgba(255,255,255,0.06)", margin: isMobile ? "0 8px" : "0 12px", minWidth: 12, transition: "background .3s" }} />
           )}
         </div>
       ))}
+      {isMobile && (
+        <span style={{ marginLeft: 12, fontSize: 13, fontWeight: 700, color: "#f0faf9", whiteSpace: "nowrap" }}>
+          {STEPS[current].label}
+        </span>
+      )}
     </div>
   );
 }
@@ -312,7 +319,7 @@ function LivePreview({ form }) {
 }
 
 // ─── Step 1: Grundinfo ────────────────────────────────────────────────────────
-function StepBasics({ form, setForm }) {
+function StepBasics({ form, setForm, isMobile }) {
   const toggle = (key, val) =>
     setForm((f) => ({
       ...f,
@@ -332,7 +339,7 @@ function StepBasics({ form, setForm }) {
         <input value={form.company} onChange={(e) => setForm((f) => ({ ...f, company: e.target.value }))} placeholder="Ditt företagsnamn" style={inputStyle} />
       </Field>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 24 }}>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 16, marginBottom: 24 }}>
         <Field label="Ort / Bas" required hint="Var utgår körningarna från?" noMargin>
           <input value={form.location} onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))} placeholder="t.ex. Malmö" style={inputStyle} />
         </Field>
@@ -368,7 +375,7 @@ function StepBasics({ form, setForm }) {
         </div>
       </Field>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 24 }}>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 16, marginBottom: 24 }}>
         <Field label="Anställningsform" required noMargin>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {EMP_OPTS.map((e) => (
@@ -760,10 +767,10 @@ export default function PostJob() {
 
         {/* ── Left: form ── */}
         <div>
-          <StepBar current={step} />
+          <StepBar current={step} isMobile={isMobile} />
           <CompletenessBar form={form} />
 
-          {step === 0 && <StepBasics form={form} setForm={setForm} />}
+          {step === 0 && <StepBasics form={form} setForm={setForm} isMobile={isMobile} />}
           {step === 1 && <StepContent form={form} setForm={setForm} aiGenerating={aiGenerating} aiError={aiError} onGenerate={handleGenerate} hasApi={hasApi} />}
           {step === 2 && <StepTerms form={form} setForm={setForm} />}
           {step === 3 && <StepPreview form={form} onPublish={handlePublish} publishing={publishing} publishError={publishError} />}
@@ -780,8 +787,8 @@ export default function PostJob() {
           )}
         </div>
 
-        {/* ── Right: sticky preview / info ── */}
-        <div style={{ position: "sticky", top: 84 }}>
+        {/* ── Right: sticky preview / info (desktop only) ── */}
+        {!isMobile && <div style={{ position: "sticky", top: 84 }}>
           {step < 3 ? (
             <>
               <div style={{ fontSize: 11, fontWeight: 800, color: "rgba(240,250,249,0.25)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 14 }}>Live-förhandsvy</div>
@@ -793,7 +800,7 @@ export default function PostJob() {
           ) : (
             <RightInfoPanel />
           )}
-        </div>
+        </div>}
       </div>
     </main>
   );

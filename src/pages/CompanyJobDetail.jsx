@@ -591,7 +591,7 @@ export default function CompanyJobDetail() {
         ) : null}
 
         {/* Stat strip */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 36 }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4,1fr)", gap: 14, marginBottom: 36 }}>
           <StatCard icon="eye"     label="Visningar"          value={stats?.viewCount ?? "–"}          accent="#63b3ed" />
           <StatCard icon="star"    label="Sparade"             value={stats?.savedCount ?? "–"}         accent="#F5A623" />
           <StatCard icon="user"    label="Sökande"             value={stats?.conversationCount ?? applicants.length} sub={counts.new > 0 ? `${counts.new} nya att granska` : undefined} accent="#4ade80" />
@@ -612,7 +612,7 @@ export default function CompanyJobDetail() {
               </Link>
             </div>
           ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 380px", gap: 24, alignItems: "start" }}>
+            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 380px", gap: 24, alignItems: "start" }}>
 
               {/* Left: list */}
               <div>
@@ -670,8 +670,8 @@ export default function CompanyJobDetail() {
                 </div>
               </div>
 
-              {/* Right: detail */}
-              <div style={{ position: "sticky", top: 84 }}>
+              {/* Right: detail (desktop only — on mobile tap a candidate to open detail) */}
+              {!isMobile && <div style={{ position: "sticky", top: 84 }}>
                 <CandidateDetail
                   a={selectedApplicant}
                   job={job}
@@ -680,7 +680,7 @@ export default function CompanyJobDetail() {
                   onReject={handleReject}
                   onHire={handleHire}
                 />
-              </div>
+              </div>}
             </div>
           )
         )}
@@ -700,7 +700,7 @@ export default function CompanyJobDetail() {
               <ViewChart total={stats?.viewCount ?? 0} />
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, marginBottom: 24 }}>
+            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 18, marginBottom: 24 }}>
               {/* Conversion funnel */}
               <div style={{ padding: "24px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 18 }}>
                 <div style={{ fontSize: 12, fontWeight: 700, color: "rgba(240,250,249,0.4)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 14 }}>Konverteringstratt</div>
