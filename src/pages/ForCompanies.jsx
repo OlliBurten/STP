@@ -72,9 +72,9 @@ function VerificationGate({ isMobile }) {
               <span style={{ fontSize: 13, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.label}</span>
             </div>
             {!s.done && (
-              <button style={{ padding: "6px 14px", borderRadius: 99, background: "#F5A623", color: "#000", fontSize: 12, fontWeight: 800, border: "none", cursor: "pointer", flexShrink: 0 }}>
+              <Link to="/installningar" style={{ padding: "6px 14px", borderRadius: 99, background: "#F5A623", color: "#000", fontSize: 12, fontWeight: 800, textDecoration: "none", flexShrink: 0 }}>
                 {s.action}
-              </button>
+              </Link>
             )}
           </div>
         ))}
