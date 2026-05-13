@@ -55,6 +55,7 @@ const Kompetenslaget2025    = lazy(() => import("./pages/Kompetenslaget2025"));
 const Kontakt               = lazy(() => import("./pages/Kontakt"));
 const LoneKalkylator        = lazy(() => import("./pages/LoneKalkylator"));
 const YkbTimer              = lazy(() => import("./pages/YkbTimer"));
+const CityJobList           = lazy(() => import("./pages/CityJobList"));
 const PatchNotes            = lazy(() => import("./pages/PatchNotes"));
 const VisionPresentation    = lazy(() => import("./pages/VisionPresentation"));
 const Settings              = lazy(() => import("./pages/Settings"));
@@ -161,6 +162,7 @@ function AppLayout() {
                   <Route path="/branschinsikter" element={<Branschinsikter />} />
                   <Route path="/branschinsikter/kompetenslaget-2025" element={<Kompetenslaget2025 />} />
                   <Route path="/lastbilsjobb/:regionSlug" element={<RegionJobList />} />
+                  <Route path="/ce-jobb/:citySlug" element={<CityJobList />} />
                   <Route path="/blogg" element={<BloggIndex />} />
                   <Route path="/blogg/ce-korkort-sverige" element={<CeKorkortSverige />} />
                   <Route path="/blogg/ykb-yrkesforarkompetens" element={<YkbGuide />} />
