@@ -243,26 +243,27 @@ export default function CompanyPublicProfile() {
 
         {/* Identity row */}
         {isMobile ? (
-          <div style={{ marginTop: -40, marginBottom: 20 }}>
-            {/* Avatar + name */}
-            <div style={{ display: "flex", gap: 14, alignItems: "flex-end", marginBottom: 14 }}>
-              <div style={{ width: 80, height: 80, borderRadius: 18, background: color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 26, color: "#F5A623", letterSpacing: -1, border: "4px solid #060f0f", boxShadow: "0 12px 30px rgba(0,0,0,0.5)", flexShrink: 0 }}>
+          <div style={{ marginBottom: 20 }}>
+            {/* Avatar — overlaps banner */}
+            <div style={{ marginTop: -44, marginBottom: 12 }}>
+              <div style={{ width: 80, height: 80, borderRadius: 18, background: color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 26, color: "#F5A623", letterSpacing: -1, border: "4px solid #060f0f", boxShadow: "0 12px 30px rgba(0,0,0,0.5)" }}>
                 {companyInitials(company.name)}
               </div>
-              <div style={{ flex: 1, minWidth: 0, paddingBottom: 4 }}>
-                <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: -0.8, lineHeight: 1.15, color: "#f0faf9", margin: "0 0 6px" }}>{company.name}</h1>
-                <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-                  {company.verified && (
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 3, padding: "3px 8px", borderRadius: 99, background: "rgba(74,222,128,0.1)", border: "1px solid rgba(74,222,128,0.25)", fontSize: 10.5, fontWeight: 700, color: "#4ade80" }}>
-                      <Icon n="shield" s={10} /> Verifierat
-                    </span>
-                  )}
-                  {(company.fSkattsedel || company.policyAgreedAt) && (
-                    <span style={{ padding: "3px 8px", borderRadius: 99, background: "rgba(99,179,237,0.1)", border: "1px solid rgba(99,179,237,0.2)", fontSize: 10.5, fontWeight: 700, color: "#63b3ed" }}>
-                      F-skatt
-                    </span>
-                  )}
-                </div>
+            </div>
+            {/* Name + badges — fully on dark background */}
+            <div style={{ marginBottom: 10 }}>
+              <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: -0.8, lineHeight: 1.15, color: "#f0faf9", margin: "0 0 8px" }}>{company.name}</h1>
+              <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                {company.verified && (
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 3, padding: "3px 8px", borderRadius: 99, background: "rgba(74,222,128,0.1)", border: "1px solid rgba(74,222,128,0.25)", fontSize: 10.5, fontWeight: 700, color: "#4ade80" }}>
+                    <Icon n="shield" s={10} /> Verifierat
+                  </span>
+                )}
+                {(company.fSkattsedel || company.policyAgreedAt) && (
+                  <span style={{ padding: "3px 8px", borderRadius: 99, background: "rgba(99,179,237,0.1)", border: "1px solid rgba(99,179,237,0.2)", fontSize: 10.5, fontWeight: 700, color: "#63b3ed" }}>
+                    F-skatt
+                  </span>
+                )}
               </div>
             </div>
             {/* Meta */}
