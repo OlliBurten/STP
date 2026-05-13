@@ -5,9 +5,11 @@ import { usePageMeta } from "../hooks/usePageMeta";
 import { getRegionBySlug, regionPages } from "../data/regions";
 import JobCard from "../components/JobCard";
 import ArticleJsonLd from "../components/ArticleJsonLd";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 export default function RegionJobList() {
   const { regionSlug } = useParams();
+  const isMobile = useIsMobile();
   const region = getRegionBySlug(regionSlug);
 
   const [jobs, setJobs] = useState([]);
@@ -36,7 +38,7 @@ export default function RegionJobList() {
   if (!region) return <Navigate to="/jobb" replace />;
 
   return (
-    <main className="max-w-5xl mx-auto px-4 sm:px-6 py-12">
+    <div style={{ minHeight: "100vh", background: "#060f0f", marginTop: "-64px" }}>
       <ArticleJsonLd
         headline={`Lastbilsjobb i ${region.name}`}
         description={region.desc}
@@ -45,90 +47,102 @@ export default function RegionJobList() {
         url={`/lastbilsjobb/${regionSlug}`}
       />
 
-      {/* Breadcrumb */}
-      <nav className="text-sm text-slate-500 mb-6">
-        <Link to="/jobb" className="hover:text-[var(--color-primary)]">Alla jobb</Link>
-        <span className="mx-2">›</span>
-        <span className="text-slate-700">{region.name}</span>
-      </nav>
+      {/* ── Page header ──────────────────────────────────────────────────────── */}
+      <div style={{ background: "linear-gradient(to bottom, #0a1818, #060f0f)", borderBottom: "1px solid rgba(255,255,255,0.06)", padding: isMobile ? "88px 20px 20px" : "112px 40px 32px" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
 
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">
-          Lastbilsjobb i {region.name}
-        </h1>
-        <p className="text-slate-500 text-lg">
-          {loading
-            ? "Hämtar lediga tjänster..."
-            : jobs.length > 0
-              ? `${jobs.length} ${jobs.length === 1 ? "ledig tjänst" : "lediga tjänster"} just nu`
-              : "Inga lediga tjänster just nu — kolla tillbaka snart."}
-        </p>
+          {/* Breadcrumb */}
+          <nav style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "rgba(240,250,249,0.4)", marginBottom: 18 }}>
+            <Link to="/jobb" style={{ color: "rgba(240,250,249,0.4)", textDecoration: "none" }}>Alla jobb</Link>
+            <span>›</span>
+            <span style={{ color: "rgba(240,250,249,0.7)" }}>{region.name}</span>
+          </nav>
+
+          <div style={{ fontSize: 11, fontWeight: 800, color: "rgba(245,166,35,0.8)", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>
+            Region
+          </div>
+          <h1 style={{ fontSize: isMobile ? 24 : 32, fontWeight: 800, letterSpacing: -0.8, color: "#f0faf9", lineHeight: 1.2, margin: "0 0 6px" }}>
+            Lastbilsjobb i {region.name}
+          </h1>
+          <p style={{ fontSize: 13, color: "rgba(240,250,249,0.45)", margin: 0 }}>
+            {loading
+              ? "Hämtar lediga tjänster…"
+              : jobs.length > 0
+                ? `${jobs.length} ${jobs.length === 1 ? "ledig tjänst" : "lediga tjänster"} just nu`
+                : "Inga lediga tjänster just nu — kolla tillbaka snart."}
+          </p>
+        </div>
       </div>
 
-      {/* Job list */}
-      {loading ? (
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-28 rounded-xl bg-slate-100 animate-pulse" />
-          ))}
-        </div>
-      ) : jobs.length > 0 ? (
-        <div className="space-y-4 mb-12">
-          {jobs.map((job) => (
-            <JobCard key={job.id} job={job} />
-          ))}
-        </div>
-      ) : (
-        <div className="rounded-xl border border-slate-200 bg-white p-10 text-center mb-12">
-          <p className="text-slate-500 mb-4">
-            Inga lediga tjänster i {region.name} just nu.
-          </p>
+      {/* ── Content ──────────────────────────────────────────────────────────── */}
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: isMobile ? "24px 20px" : "32px 40px" }}>
+
+        {/* Job list */}
+        {loading ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {[1, 2, 3].map((i) => (
+              <div key={i} style={{ height: 112, borderRadius: 16, background: "rgba(255,255,255,0.04)", animation: "pulse 1.5s ease-in-out infinite" }} />
+            ))}
+          </div>
+        ) : jobs.length > 0 ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 40 }}>
+            {jobs.map((job) => (
+              <JobCard key={job.id} job={job} />
+            ))}
+          </div>
+        ) : (
+          <div style={{ borderRadius: 18, border: "1px solid rgba(255,255,255,0.07)", background: "rgba(255,255,255,0.02)", padding: "48px 24px", textAlign: "center", marginBottom: 40 }}>
+            <p style={{ color: "rgba(240,250,249,0.4)", fontSize: 14, marginBottom: 20 }}>
+              Inga lediga tjänster i {region.name} just nu.
+            </p>
+            <Link
+              to="/jobb"
+              style={{ display: "inline-block", background: "#F5A623", color: "#000", padding: "10px 20px", borderRadius: 10, fontSize: 13, fontWeight: 700, textDecoration: "none" }}
+            >
+              Sök i hela Sverige →
+            </Link>
+          </div>
+        )}
+
+        {/* CTA för åkerier */}
+        <div style={{ borderRadius: 18, background: "rgba(31,95,92,0.15)", border: "1px solid rgba(31,95,92,0.3)", padding: isMobile ? "24px 20px" : "28px 32px", display: "flex", flexDirection: isMobile ? "column" : "row", alignItems: isMobile ? "flex-start" : "center", gap: 20, marginBottom: 40 }}>
+          <div style={{ flex: 1 }}>
+            <h3 style={{ fontSize: 16, fontWeight: 700, color: "#f0faf9", margin: "0 0 4px" }}>Åkeri i {region.name}?</h3>
+            <p style={{ fontSize: 13, color: "rgba(240,250,249,0.5)", margin: 0 }}>
+              Nå chaufförer som aktivt söker jobb i din region — utan bemanningsbolag.
+            </p>
+          </div>
           <Link
-            to="/jobb"
-            className="inline-block bg-[var(--color-primary)] text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity"
+            to="/login"
+            state={{ initialMode: "register" }}
+            style={{ flexShrink: 0, display: "inline-block", background: "#F5A623", color: "#000", padding: "10px 20px", borderRadius: 10, fontSize: 13, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" }}
           >
-            Sök i hela Sverige →
+            Lägg upp annons gratis
           </Link>
         </div>
-      )}
 
-      {/* Other regions */}
-      <div className="border-t border-slate-100 pt-10">
-        <h2 className="text-base font-semibold text-slate-700 mb-4">
-          Lastbilsjobb i andra regioner
-        </h2>
-        <div className="flex flex-wrap gap-2">
-          {regionPages
-            .filter((r) => r.slug !== regionSlug)
-            .map((r) => (
-              <Link
-                key={r.slug}
-                to={`/lastbilsjobb/${r.slug}`}
-                className="px-3 py-1.5 rounded-lg border border-slate-200 text-sm text-slate-600 hover:border-[var(--color-primary)]/40 hover:text-[var(--color-primary)] transition-colors"
-              >
-                {r.name}
-              </Link>
-            ))}
+        {/* Other regions */}
+        <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 28 }}>
+          <h2 style={{ fontSize: 14, fontWeight: 700, color: "rgba(240,250,249,0.6)", marginBottom: 14 }}>
+            Lastbilsjobb i andra regioner
+          </h2>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {regionPages
+              .filter((r) => r.slug !== regionSlug)
+              .map((r) => (
+                <Link
+                  key={r.slug}
+                  to={`/lastbilsjobb/${r.slug}`}
+                  style={{ padding: "6px 14px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.1)", fontSize: 13, color: "rgba(240,250,249,0.6)", textDecoration: "none", transition: "border-color .15s, color .15s" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(245,166,35,0.4)"; e.currentTarget.style.color = "#F5A623"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; e.currentTarget.style.color = "rgba(240,250,249,0.6)"; }}
+                >
+                  {r.name}
+                </Link>
+              ))}
+          </div>
         </div>
       </div>
-
-      {/* CTA för åkerier */}
-      <div className="mt-10 rounded-2xl bg-slate-50 border border-slate-200 px-8 py-8 flex flex-col sm:flex-row items-center gap-6">
-        <div className="flex-1">
-          <h3 className="font-semibold text-slate-900 mb-1">Åkeri i {region.name}?</h3>
-          <p className="text-sm text-slate-500">
-            Nå chaufförer som aktivt söker jobb i din region — utan bemanningsbolag.
-          </p>
-        </div>
-        <Link
-          to="/login"
-          state={{ initialMode: "register" }}
-          className="shrink-0 inline-block bg-[var(--color-primary)] text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity"
-        >
-          Lägg upp annons gratis
-        </Link>
-      </div>
-    </main>
+    </div>
   );
 }
