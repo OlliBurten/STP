@@ -8,6 +8,7 @@ import { createReport } from "../api/reports.js";
 import { getMyConversationReview, submitCompanyReview } from "../api/reviews.js";
 import LoadingBlock from "../components/LoadingBlock";
 import { useToast } from "../context/ToastContext";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 // ─── Quick replies ────────────────────────────────────────────────────────────
 const DRIVER_QUICK = [
@@ -118,7 +119,7 @@ function ConvItem({ conv, isDriver, isActive, basePath }) {
 }
 
 // ─── Chat window ──────────────────────────────────────────────────────────────
-function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, reviewLabel }) {
+function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, reviewLabel, isMobile }) {
   const { sendMessage } = useChat();
   const [input, setInput] = useState("");
   const [showQuick, setShowQuick] = useState(false);
@@ -192,53 +193,56 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       {/* Job context header */}
-      <div style={{ padding: "18px 28px", borderBottom: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", gap: 16, flexShrink: 0 }}>
-        <button type="button" onClick={onBack} style={{ background: "none", border: "none", color: "rgba(240,250,249,0.5)", cursor: "pointer", fontSize: 18, padding: "2px 4px", display: "none" }} className="lg-hide">
-          ←
-        </button>
-        <div style={{ width: 48, height: 48, borderRadius: 11, background: avatarBg(other), display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 14, color: "#fff", flexShrink: 0 }}>
+      <div style={{ padding: isMobile ? "12px 16px" : "18px 28px", borderBottom: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", gap: isMobile ? 10 : 16, flexShrink: 0 }}>
+        {isMobile && (
+          <button type="button" onClick={onBack} style={{ background: "none", border: "none", color: "rgba(240,250,249,0.6)", cursor: "pointer", fontSize: 20, padding: "2px 4px", lineHeight: 1, flexShrink: 0 }}>
+            ←
+          </button>
+        )}
+        <div style={{ width: isMobile ? 36 : 48, height: isMobile ? 36 : 48, borderRadius: isMobile ? 9 : 11, background: avatarBg(other), display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: isMobile ? 12 : 14, color: "#fff", flexShrink: 0 }}>
           {avatarInitials(other)}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 3, letterSpacing: -0.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          <div style={{ fontSize: isMobile ? 14 : 16, fontWeight: 800, marginBottom: 2, letterSpacing: -0.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {conv.jobTitle || other}
           </div>
-          <div style={{ fontSize: 12, color: "rgba(240,250,249,0.55)", display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+          <div style={{ fontSize: 11, color: "rgba(240,250,249,0.5)", display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
             <span>{other}</span>
-            {conv.location && <><span style={{ color: "rgba(255,255,255,0.2)" }}>·</span><span>{conv.location}</span></>}
-            {conv.salary && <><span style={{ color: "rgba(255,255,255,0.2)" }}>·</span><span>{conv.salary}</span></>}
+            {!isMobile && conv.location && <><span style={{ color: "rgba(255,255,255,0.2)" }}>·</span><span>{conv.location}</span></>}
+            {!isMobile && conv.salary && <><span style={{ color: "rgba(255,255,255,0.2)" }}>·</span><span>{conv.salary}</span></>}
             {typeof conv.matchScore === "number" && (
               <><span style={{ color: "rgba(255,255,255,0.2)" }}>·</span><span style={{ color: "#4ade80", fontWeight: 700 }}>{conv.matchScore}% match</span></>
             )}
           </div>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-          <span style={{ padding: "5px 11px", borderRadius: 99, background: s.bg, border: `1px solid ${s.border}`, fontSize: 11, fontWeight: 800, color: s.color, whiteSpace: "nowrap" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+          <span style={{ padding: "4px 9px", borderRadius: 99, background: s.bg, border: `1px solid ${s.border}`, fontSize: 10, fontWeight: 800, color: s.color, whiteSpace: "nowrap" }}>
             {s.label}
           </span>
           {conv.jobId && (
             <Link
               to={`/jobb/${conv.jobId}`}
-              style={{ padding: "7px 12px", borderRadius: 9, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", color: "rgba(240,250,249,0.8)", fontSize: 12, fontWeight: 700, textDecoration: "none", display: "flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}
+              style={{ padding: isMobile ? "6px 9px" : "7px 12px", borderRadius: 9, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", color: "rgba(240,250,249,0.8)", fontSize: 11, fontWeight: 700, textDecoration: "none", display: "flex", alignItems: "center", gap: 4, whiteSpace: "nowrap" }}
             >
-              Se annons
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              {isMobile ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg> : <>Se annons <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></>}
             </Link>
           )}
-          {isDriver && (
+          {!isMobile && isDriver && (
             <button type="button" onClick={onReview} disabled={!canReview} style={{ padding: "6px 10px", borderRadius: 8, background: "rgba(245,166,35,0.07)", border: "1px solid rgba(245,166,35,0.15)", color: !canReview ? "rgba(240,250,249,0.2)" : "#F5A623", fontSize: 11, fontWeight: 600, cursor: canReview ? "pointer" : "not-allowed", fontFamily: "inherit", whiteSpace: "nowrap" }}>
               {reviewLabel}
             </button>
           )}
-          <button type="button" onClick={onReport} style={{ padding: "6px 10px", borderRadius: 8, background: "rgba(248,113,113,0.05)", border: "1px solid rgba(248,113,113,0.12)", color: "rgba(248,113,113,0.5)", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
-            Rapportera
-          </button>
+          {!isMobile && (
+            <button type="button" onClick={onReport} style={{ padding: "6px 10px", borderRadius: 8, background: "rgba(248,113,113,0.05)", border: "1px solid rgba(248,113,113,0.12)", color: "rgba(248,113,113,0.5)", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
+              Rapportera
+            </button>
+          )}
         </div>
       </div>
 
       {/* Selected banner */}
       {isDriver && conv.selectedByCompanyAt && (
-        <div style={{ padding: "14px 28px", background: "linear-gradient(135deg,rgba(74,222,128,0.1),rgba(74,222,128,0.02))", borderBottom: "1px solid rgba(74,222,128,0.2)", display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ padding: isMobile ? "12px 16px" : "14px 28px", background: "linear-gradient(135deg,rgba(74,222,128,0.1),rgba(74,222,128,0.02))", borderBottom: "1px solid rgba(74,222,128,0.2)", display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{ width: 32, height: 32, borderRadius: 99, background: "rgba(74,222,128,0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           </div>
@@ -251,7 +255,7 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
 
       {/* Rejected banner */}
       {isRejected && (
-        <div style={{ padding: "12px 28px", background: "rgba(255,255,255,0.02)", borderBottom: "1px solid rgba(255,255,255,0.05)", fontSize: 12, color: "rgba(240,250,249,0.45)", fontStyle: "italic" }}>
+        <div style={{ padding: isMobile ? "10px 16px" : "12px 28px", background: "rgba(255,255,255,0.02)", borderBottom: "1px solid rgba(255,255,255,0.05)", fontSize: 12, color: "rgba(240,250,249,0.45)", fontStyle: "italic" }}>
           Konversationen är avslutad.
         </div>
       )}
@@ -265,7 +269,7 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
       )}
 
       {/* Messages */}
-      <div style={{ flex: 1, overflowY: "auto", padding: "24px 28px" }}>
+      <div style={{ flex: 1, overflowY: "auto", padding: isMobile ? "16px 16px" : "24px 28px" }}>
         {groups.map(({ day, msgs }) => (
           <div key={day}>
             <div style={{ textAlign: "center", margin: "12px 0 18px", fontSize: 11, fontWeight: 700, color: "rgba(240,250,249,0.4)", letterSpacing: 0.5 }}>
@@ -283,7 +287,7 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
                         {avatarInitials(other)}
                       </div>
                     )}
-                    <div style={{ maxWidth: "60%" }}>
+                    <div style={{ maxWidth: isMobile ? "80%" : "60%" }}>
                       <div style={{
                         padding: "12px 16px",
                         borderRadius: isOwn ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
@@ -315,7 +319,7 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
 
       {/* Composer */}
       {!isRejected && (
-        <div style={{ padding: "16px 28px 22px", borderTop: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}>
+        <div style={{ padding: isMobile ? "12px 16px 16px" : "16px 28px 22px", borderTop: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}>
           <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 14, padding: "14px 16px", display: "flex", alignItems: "flex-end", gap: 10 }}>
             <textarea
               ref={textareaRef}
@@ -369,6 +373,7 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function Messages() {
   usePageTitle("Meddelanden");
+  const isMobile = useIsMobile();
   const { id } = useParams();
   const { user, hasApi } = useAuth();
   const { profile } = useProfile();
@@ -512,7 +517,7 @@ export default function Messages() {
 
           {/* ── Sidebar ── */}
           <div
-            style={{ display: id ? "none" : "flex", width: 380, background: "#070d0d", borderRight: "1px solid rgba(255,255,255,0.06)", flexDirection: "column", overflow: "hidden", flexShrink: 0 }}
+            style={{ display: id ? "none" : "flex", width: isMobile ? "100%" : 380, background: "#070d0d", borderRight: "1px solid rgba(255,255,255,0.06)", flexDirection: "column", overflow: "hidden", flexShrink: 0 }}
             className="sidebar-panel"
           >
             <div style={{ padding: "22px 22px 14px", borderBottom: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}>
@@ -586,6 +591,7 @@ export default function Messages() {
                 onReview={handleReview}
                 canReview={!conversationReview}
                 reviewLabel={conversationReview ? `Omdöme lämnat (${conversationReview.rating}/5)` : "Lämna omdöme"}
+                isMobile={isMobile}
               />
             ) : (
               <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, padding: "40px", textAlign: "center" }}>
