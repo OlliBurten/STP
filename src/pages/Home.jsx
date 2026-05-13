@@ -284,11 +284,11 @@ export default function Home() {
               <p style={{ fontSize: 19, color: "rgba(255,255,255,0.7)", lineHeight: 1.7, maxWidth: 460, marginBottom: 44 }}>
                 Sveriges matchningsplattform för yrkesförare och transportföretag. Inga mellanhänder. Inga avgifter.
               </p>
-              <div className="flex flex-wrap gap-3">
-                <Link to="/jobb" style={{ display: "inline-flex", alignItems: "center", background: "#F5A623", color: "#000", fontWeight: 800, fontSize: 15, padding: "16px 34px", borderRadius: 12, textDecoration: "none" }}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 12, flexDirection: isMobile ? "column" : "row" }}>
+                <Link to="/jobb" style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "#F5A623", color: "#000", fontWeight: 800, fontSize: 15, padding: "16px 34px", borderRadius: 12, textDecoration: "none" }}>
                   Se lediga jobb →
                 </Link>
-                <Link to="/for-akerier" state={{ initialMode: "register", requiredRole: "company" }} style={{ display: "inline-flex", alignItems: "center", background: "rgba(255,255,255,0.08)", color: "#fff", border: "1px solid rgba(255,255,255,0.18)", fontSize: 15, padding: "16px 34px", borderRadius: 12, textDecoration: "none", fontWeight: 600 }}>
+                <Link to="/for-akerier" state={{ initialMode: "register", requiredRole: "company" }} style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,0.08)", color: "#fff", border: "1px solid rgba(255,255,255,0.18)", fontSize: 15, padding: "16px 34px", borderRadius: 12, textDecoration: "none", fontWeight: 600 }}>
                   Jag är ett åkeri
                 </Link>
               </div>
