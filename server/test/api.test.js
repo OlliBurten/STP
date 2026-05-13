@@ -2,6 +2,7 @@
  * Core API tests. Run with: APP_LISTEN=false node --test test/api.test.js
  * Or: npm run test
  */
+/* global process */
 import { describe, it } from "node:test";
 import assert from "node:assert";
 import request from "supertest";
