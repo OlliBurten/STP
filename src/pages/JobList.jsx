@@ -223,7 +223,7 @@ export default function JobList() {
               </div>
               {isDriver && (
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  {!isMobile && <span style={{ fontSize: 13, color: "rgba(240,250,249,0.45)", fontWeight: 500 }}>Visa matchning</span>}
+                  <span style={{ fontSize: isMobile ? 12 : 13, color: "rgba(240,250,249,0.45)", fontWeight: 500 }}>Visa matchning</span>
                   <div
                     onClick={() => setShowMatch((v) => !v)}
                     style={{ width: 40, height: 22, borderRadius: 11, background: showMatch ? "#F5A623" : "rgba(255,255,255,0.1)", cursor: "pointer", position: "relative", transition: "background .2s", border: "1px solid rgba(255,255,255,0.08)", flexShrink: 0 }}
