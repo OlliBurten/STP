@@ -422,6 +422,8 @@ export default function DriverOnboardingWizard() {
       isGymnasieelev: profile.isGymnasieelev ?? null,
       internshipType,
       schoolName: schoolNameOnly,
+      studyProgram: profile.studyProgram || "",
+      graduationYear: profile.graduationYear ? String(profile.graduationYear) : "",
       licenses: profile.licenses || [],
       region: profile.region || "",
       location: profile.location || "",
@@ -515,6 +517,8 @@ export default function DriverOnboardingWizard() {
         schoolName: draft.isGymnasieelev === true
           ? encodeSchoolName(draft.internshipType, draft.schoolName.trim())
           : "",
+        studyProgram: draft.isGymnasieelev === true ? (draft.studyProgram.trim() || null) : null,
+        graduationYear: draft.isGymnasieelev === true && draft.graduationYear ? parseInt(draft.graduationYear, 10) : null,
         licenses: draft.licenses,
         region: draft.region,
         location: draft.location.trim(),
@@ -669,12 +673,32 @@ export default function DriverOnboardingWizard() {
               ))}
             </div>
             {draft.internshipType && (
-              <div style={{ marginTop: 16 }}>
-                <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 7 }}>Skola / program (valfritt)</p>
-                <input type="text" value={draft.schoolName}
-                  onChange={(e) => setDraft((p) => ({ ...p, schoolName: e.target.value }))}
-                  placeholder="t.ex. Transportgymnasiet Stockholm"
-                  style={inputStyle} />
+              <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+                <div>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 7 }}>Skola (valfritt)</p>
+                  <input type="text" value={draft.schoolName}
+                    onChange={(e) => setDraft((p) => ({ ...p, schoolName: e.target.value }))}
+                    placeholder="t.ex. Transportgymnasiet Stockholm"
+                    style={inputStyle} />
+                </div>
+                <div>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 7 }}>Program / utbildning (valfritt)</p>
+                  <input type="text" value={draft.studyProgram}
+                    onChange={(e) => setDraft((p) => ({ ...p, studyProgram: e.target.value }))}
+                    placeholder="t.ex. Transportprogrammet, Fordon och Transport"
+                    style={inputStyle} />
+                </div>
+                <div>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 7 }}>Förväntad examen (valfritt)</p>
+                  <select value={draft.graduationYear}
+                    onChange={(e) => setDraft((p) => ({ ...p, graduationYear: e.target.value }))}
+                    style={{ ...inputStyle, background: T.card }}>
+                    <option value="">Välj år</option>
+                    {[2025, 2026, 2027, 2028, 2029, 2030].map(y => (
+                      <option key={y} value={y}>{y}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
             )}
           </div>

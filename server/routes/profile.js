@@ -60,6 +60,8 @@ function formatProfileResponse(profile, user) {
     certExpiry: profile.certExpiry && typeof profile.certExpiry === "object" ? profile.certExpiry : {},
     isGymnasieelev: profile.isGymnasieelev ?? false,
     schoolName: profile.schoolName ?? null,
+    studyProgram: profile.studyProgram ?? null,
+    graduationYear: profile.graduationYear ?? null,
     physicalWorkOk: profile.physicalWorkOk ?? null,
     soloWorkOk: profile.soloWorkOk ?? null,
     preferredEmployment: profile.preferredEmployment ?? [],
@@ -260,6 +262,8 @@ profileRouter.put("/", async (req, res, next) => {
     if (body.certExpiry !== undefined) data.certExpiry = body.certExpiry && typeof body.certExpiry === "object" ? body.certExpiry : null;
     if (body.isGymnasieelev !== undefined) data.isGymnasieelev = Boolean(body.isGymnasieelev);
     if (body.schoolName !== undefined) data.schoolName = body.schoolName ? String(body.schoolName).trim() : null;
+    if (body.studyProgram !== undefined) data.studyProgram = body.studyProgram ? String(body.studyProgram).trim() : null;
+    if (body.graduationYear !== undefined) data.graduationYear = body.graduationYear ? parseInt(body.graduationYear, 10) : null;
     if (body.physicalWorkOk !== undefined) data.physicalWorkOk = body.physicalWorkOk === true ? true : body.physicalWorkOk === false ? false : null;
     if (body.soloWorkOk !== undefined) data.soloWorkOk = body.soloWorkOk === true ? true : body.soloWorkOk === false ? false : null;
     if (Array.isArray(body.preferredEmployment)) data.preferredEmployment = body.preferredEmployment;

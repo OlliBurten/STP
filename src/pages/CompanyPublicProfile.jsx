@@ -264,6 +264,11 @@ export default function CompanyPublicProfile() {
                     F-skatt
                   </span>
                 )}
+                {company.acceptsPraktik && (
+                  <span style={{ padding: "3px 8px", borderRadius: 99, background: "rgba(125,211,200,0.1)", border: "1px solid rgba(125,211,200,0.25)", fontSize: 10.5, fontWeight: 700, color: "#7dd3c8" }}>
+                    🎓 Tar emot praktikanter
+                  </span>
+                )}
               </div>
             </div>
             {/* Meta */}
@@ -347,6 +352,11 @@ export default function CompanyPublicProfile() {
                 {(company.fSkattsedel || company.policyAgreedAt) && (
                   <span style={{ padding: "4px 10px", borderRadius: 99, background: "rgba(99,179,237,0.1)", border: "1px solid rgba(99,179,237,0.2)", fontSize: 11, fontWeight: 700, color: "#63b3ed" }}>
                     F-skatt
+                  </span>
+                )}
+                {company.acceptsPraktik && (
+                  <span style={{ padding: "4px 10px", borderRadius: 99, background: "rgba(125,211,200,0.1)", border: "1px solid rgba(125,211,200,0.25)", fontSize: 11, fontWeight: 700, color: "#7dd3c8" }}>
+                    🎓 Tar emot praktikanter
                   </span>
                 )}
               </div>

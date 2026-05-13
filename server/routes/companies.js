@@ -150,7 +150,7 @@ companiesRouter.get("/:id/public", optionalAuthMiddleware, async (req, res, next
           where: { role: "OWNER" },
           select: {
             organization: {
-              select: { fleet: true, employeeCount: true, foundedYear: true },
+              select: { fleet: true, employeeCount: true, foundedYear: true, acceptsPraktik: true },
             },
           },
         },
@@ -197,6 +197,7 @@ companiesRouter.get("/:id/public", optionalAuthMiddleware, async (req, res, next
       fleet: org?.fleet ?? null,
       employeeCount: org?.employeeCount ?? null,
       foundedYear: org?.foundedYear ?? null,
+      acceptsPraktik: org?.acceptsPraktik ?? false,
       memberSince: company.createdAt.getFullYear(),
       contactEmail: isAuthenticated ? (company.companyContactEmail || null) : null,
       contactPhone: isAuthenticated ? (company.companyContactPhone || null) : null,
@@ -236,6 +237,7 @@ companiesRouter.get("/me/profile", async (req, res, next) => {
           bransch: true,
           region: true,
           status: true,
+          acceptsPraktik: true,
         },
       });
       if (!org) return res.status(404).json({ error: "Företaget hittades inte" });
@@ -263,6 +265,7 @@ companiesRouter.get("/me/profile", async (req, res, next) => {
         companyBransch: org.bransch,
         companyRegion: org.region,
         companyStatus: org.status,
+        acceptsPraktik: org.acceptsPraktik ?? false,
         emailNotificationSettings: owner?.emailNotificationSettings || {},
         fSkattsedel: owner?.fSkattsedel || false,
         industryOrgMember: owner?.industryOrgMember || false,
@@ -385,6 +388,7 @@ companiesRouter.put("/me/profile", requireCompanyOwner, validateBody(companyProf
             : undefined,
           bransch: Array.isArray(body.companyBransch) ? body.companyBransch : undefined,
           region: body.companyRegion !== undefined ? body.companyRegion : undefined,
+          ...(body.acceptsPraktik !== undefined && { acceptsPraktik: Boolean(body.acceptsPraktik) }),
         },
         select: {
           id: true,
@@ -397,6 +401,7 @@ companiesRouter.put("/me/profile", requireCompanyOwner, validateBody(companyProf
           bransch: true,
           region: true,
           status: true,
+          acceptsPraktik: true,
         },
       });
       // Trust fields always live on the owner User
@@ -431,6 +436,7 @@ companiesRouter.put("/me/profile", requireCompanyOwner, validateBody(companyProf
         companyBransch: updated.bransch,
         companyRegion: updated.region,
         companyStatus: updated.status,
+        acceptsPraktik: updated.acceptsPraktik ?? false,
         fSkattsedel: ownerUser?.fSkattsedel ?? false,
         industryOrgMember: ownerUser?.industryOrgMember ?? false,
         industryOrgName: ownerUser?.industryOrgName ?? null,

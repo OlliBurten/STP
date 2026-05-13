@@ -61,6 +61,7 @@ const VisionPresentation    = lazy(() => import("./pages/VisionPresentation"));
 const Settings              = lazy(() => import("./pages/Settings"));
 const CompanyJobDetail      = lazy(() => import("./pages/CompanyJobDetail"));
 const RegionJobList         = lazy(() => import("./pages/RegionJobList"));
+const PraktikLanding        = lazy(() => import("./pages/PraktikLanding"));
 const BloggIndex            = lazy(() => import("./pages/blogg/BloggIndex"));
 const CeKorkortSverige      = lazy(() => import("./pages/blogg/CeKorkortSverige"));
 const YkbGuide              = lazy(() => import("./pages/blogg/YkbGuide"));
@@ -179,6 +180,7 @@ function AppLayout() {
                   <Route path="/kontakt" element={<Kontakt />} />
                   <Route path="/lon-kalkylator" element={<LoneKalkylator />} />
                   <Route path="/ykb-timer" element={<YkbTimer />} />
+                  <Route path="/praktik" element={<PraktikLanding />} />
                   <Route path="/uppdateringar" element={<PatchNotes />} />
                   <Route path="/vision" element={<VisionPresentation />} />
                   <Route path="/login" element={<Login />} />

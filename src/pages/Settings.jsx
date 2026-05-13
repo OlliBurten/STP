@@ -6,7 +6,7 @@ import { useProfile } from "../context/ProfileContext";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { changePassword, deleteMyAccount } from "../api/auth.js";
 import { updateNotificationSettings, fetchProfile, updateProfile } from "../api/profile.js";
-import { updateCompanyNotificationSettings, fetchMyCompanyProfile, listInvites, createInvite, revokeInvite } from "../api/companies.js";
+import { updateCompanyNotificationSettings, fetchMyCompanyProfile, updateMyCompanyProfile, listInvites, createInvite, revokeInvite } from "../api/companies.js";
 import PageMeta from "../components/PageMeta";
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
@@ -626,6 +626,54 @@ function CompanyKontoSection({ user }) {
   );
 }
 
+// ─── Company Praktik toggle ────────────────────────────────────────────────────
+function PraktikToggleCard() {
+  const [accepts, setAccepts] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    fetchMyCompanyProfile()
+      .then(d => setAccepts(d?.acceptsPraktik ?? false))
+      .catch(() => setAccepts(false));
+  }, []);
+
+  const toggle = async () => {
+    if (accepts === null) return;
+    const next = !accepts;
+    setAccepts(next);
+    setSaving(true);
+    try {
+      await updateMyCompanyProfile({ acceptsPraktik: next });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch {
+      setAccepts(!next);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (accepts === null) return null;
+
+  return (
+    <Card title="Praktik & APL" sub="Visa för gymnasieelever och YKB-studerande att ni tar emot praktikanter.">
+      <ToggleRow
+        label="Vi tar emot praktikanter"
+        sub={accepts ? "Er profil visas för elever som söker APL-plats i er region." : "Aktivera för att dyka upp i sökresultat för praktikplatser."}
+        on={accepts}
+        onChange={toggle}
+        first
+      />
+      {saved && (
+        <div style={{ marginTop: 10, fontSize: 12, color: "#4ade80", display: "flex", alignItems: "center", gap: 6 }}>
+          <Icon n="check" s={13} c="#4ade80" /> Sparat
+        </div>
+      )}
+    </Card>
+  );
+}
+
 // ─── Company Verifiering ──────────────────────────────────────────────────────
 function CompanyVerifieringSection({ user }) {
   const isVerified = user?.status === "VERIFIED";
@@ -721,7 +769,12 @@ export default function Settings() {
     }
     if (section === "verifiering") {
       if (isDriver) return <DriverVerifieringSection profile={profile} />;
-      return <CompanyVerifieringSection user={user} />;
+      return (
+        <>
+          <CompanyVerifieringSection user={user} />
+          <PraktikToggleCard />
+        </>
+      );
     }
     if (section === "notiser") {
       return settingsLoading ? (

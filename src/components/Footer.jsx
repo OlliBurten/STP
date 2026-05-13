@@ -11,6 +11,7 @@ const COLS = [
       { to: "/jobb", label: "Lediga jobb" },
       { to: "/forare", label: "För förare" },
       { to: "/for-akerier", label: "För åkerier" },
+      { to: "/praktik", label: "Praktik & APL" },
       { to: "/#sa-fungerar-det", label: "Så fungerar STP" },
       { to: "/uppdateringar", label: "Nyheter" },
     ],
