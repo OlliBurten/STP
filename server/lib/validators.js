@@ -215,11 +215,12 @@ export const sendMessageSchema = z.object({
   content: z.string().min(1, "Meddelande krävs").max(5000),
 });
 
-/** Query: bransch, region, segment. segment=INTERNSHIP => åkerier som erbjuder praktik. */
+/** Query: bransch, region, segment, praktik. */
 export const companiesSearchQuerySchema = z.object({
   bransch: z.string().max(50).optional(),
   region: z.string().max(100).optional(),
   segment: z.enum(["FULLTIME", "FLEX", "INTERNSHIP"]).optional(),
+  praktik: z.enum(["true", "false"]).optional(),
 });
 
 /** Query: bransch for jobs list (optional) */

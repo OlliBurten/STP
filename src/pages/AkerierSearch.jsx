@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { usePageTitle } from "../hooks/usePageTitle";
 import PageMeta from "../components/PageMeta";
 import { fetchCompaniesSearch } from "../api/companies.js";
@@ -100,6 +100,9 @@ function CompanyGridCard({ c, user, saved, onToggleSave }) {
           <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3, flexWrap: "wrap" }}>
             <h3 style={{ fontSize: 16, fontWeight: 800, color: "#f0faf9", letterSpacing: -0.3, margin: 0 }}>{c.name}</h3>
             <Icon n="check" s={14} c="#4ade80" />
+            {c.acceptsPraktik && (
+              <span style={{ padding: "2px 7px", borderRadius: 99, background: "rgba(125,211,200,0.12)", border: "1px solid rgba(125,211,200,0.3)", fontSize: 10, fontWeight: 700, color: "#7dd3c8" }}>🎓 Praktik</span>
+            )}
           </div>
           {(c.location || c.region) && (
             <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, color: "rgba(240,250,249,0.55)" }}>
@@ -223,9 +226,12 @@ function CompanyListRow({ c, user, saved, onToggleSave }) {
 
       {/* Main info */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3, flexWrap: "wrap" }}>
           <span style={{ fontSize: 15, fontWeight: 800, color: "#f0faf9" }}>{c.name}</span>
           <Icon n="check" s={13} c="#4ade80" />
+          {c.acceptsPraktik && (
+            <span style={{ padding: "2px 7px", borderRadius: 99, background: "rgba(125,211,200,0.12)", border: "1px solid rgba(125,211,200,0.3)", fontSize: 10, fontWeight: 700, color: "#7dd3c8" }}>🎓 Praktik</span>
+          )}
         </div>
         <div style={{ fontSize: 12, color: "rgba(240,250,249,0.5)", display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
           {(c.location || c.region) && (
@@ -285,6 +291,7 @@ export default function AkerierSearch() {
   const { hasApi, user } = useAuth();
   const { profile } = useProfile();
   const isGymnasieelev = Boolean(profile?.isGymnasieelev);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [bransch, setBransch] = useState("");
   const [region, setRegion] = useState("");
@@ -292,9 +299,18 @@ export default function AkerierSearch() {
   const [viewMode, setViewMode] = useState("grid");
   const [sort, setSort] = useState("jobs");
   const [onlyWithJobs, setOnlyWithJobs] = useState(false);
+  const [onlyPraktik, setOnlyPraktik] = useState(() => searchParams.get("praktik") === "true");
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [savedIds, setSavedIds] = useState(new Set());
+
+  // Sync onlyPraktik → URL
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams);
+    if (onlyPraktik) params.set("praktik", "true");
+    else params.delete("praktik");
+    setSearchParams(params, { replace: true });
+  }, [onlyPraktik]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Load companies
   useEffect(() => {
@@ -304,11 +320,12 @@ export default function AkerierSearch() {
       bransch: bransch || undefined,
       region: region || undefined,
       segment: isGymnasieelev ? "INTERNSHIP" : undefined,
+      praktik: onlyPraktik || isGymnasieelev || undefined,
     })
       .then(setList)
       .catch(() => setList([]))
       .finally(() => setLoading(false));
-  }, [hasApi, bransch, region, isGymnasieelev]);
+  }, [hasApi, bransch, region, isGymnasieelev, onlyPraktik]);
 
   // Load saved companies
   useEffect(() => {
@@ -351,8 +368,8 @@ export default function AkerierSearch() {
     return result;
   }, [list, search, onlyWithJobs, sort]);
 
-  const hasActiveFilters = bransch || region || search || onlyWithJobs;
-  const clearAll = () => { setBransch(""); setRegion(""); setSearch(""); setOnlyWithJobs(false); };
+  const hasActiveFilters = bransch || region || search || onlyWithJobs || onlyPraktik;
+  const clearAll = () => { setBransch(""); setRegion(""); setSearch(""); setOnlyWithJobs(false); setOnlyPraktik(false); };
 
   return (
     <main style={{ background: "#060f0f", minHeight: "100vh", marginTop: "-64px", paddingTop: 64 }}>
@@ -365,9 +382,10 @@ export default function AkerierSearch() {
       {/* Page header with gradient */}
       <div style={{ background: "linear-gradient(to bottom, #0a1818, #060f0f)", borderBottom: "1px solid rgba(255,255,255,0.06)", padding: isMobile ? "32px 20px 20px" : "48px 40px 28px" }}>
         <div style={{ maxWidth: 1280, margin: "0 auto" }}>
-          {isGymnasieelev && (
-            <div style={{ marginBottom: 16, padding: "10px 16px", borderRadius: 10, border: "1px solid rgba(74,222,128,0.2)", background: "rgba(74,222,128,0.06)", fontSize: 13, color: "#4ade80" }}>
-              Du är registrerad som gymnasieelev. Endast åkerier med <strong>praktikplatser</strong> visas.
+          {(isGymnasieelev || onlyPraktik) && (
+            <div style={{ marginBottom: 16, padding: "10px 16px", borderRadius: 10, border: "1px solid rgba(125,211,200,0.2)", background: "rgba(125,211,200,0.06)", fontSize: 13, color: "#7dd3c8", display: "flex", alignItems: "center", gap: 8 }}>
+              🎓 <span>Visar åkerier som <strong>tar emot praktikanter</strong>.{" "}
+              {onlyPraktik && !isGymnasieelev && <button type="button" onClick={() => setOnlyPraktik(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#7dd3c8", textDecoration: "underline", fontFamily: "inherit", fontSize: 13, padding: 0 }}>Visa alla →</button>}</span>
             </div>
           )}
 
@@ -451,6 +469,13 @@ export default function AkerierSearch() {
               style={{ padding: "6px 13px", borderRadius: 99, background: onlyWithJobs ? "rgba(245,166,35,0.12)" : "rgba(255,255,255,0.04)", border: `1px solid ${onlyWithJobs ? "rgba(245,166,35,0.3)" : "rgba(255,255,255,0.07)"}`, fontSize: 12, fontWeight: 700, color: onlyWithJobs ? "#F5A623" : "rgba(240,250,249,0.65)", cursor: "pointer", fontFamily: "inherit" }}
             >
               Lediga jobb
+            </button>
+            <button
+              type="button"
+              onClick={() => setOnlyPraktik(!onlyPraktik)}
+              style={{ padding: "6px 13px", borderRadius: 99, background: onlyPraktik ? "rgba(125,211,200,0.12)" : "rgba(255,255,255,0.04)", border: `1px solid ${onlyPraktik ? "rgba(125,211,200,0.3)" : "rgba(255,255,255,0.07)"}`, fontSize: 12, fontWeight: 700, color: onlyPraktik ? "#7dd3c8" : "rgba(240,250,249,0.65)", cursor: "pointer", fontFamily: "inherit" }}
+            >
+              🎓 Praktikplatser
             </button>
             {hasActiveFilters && (
               <button

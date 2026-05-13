@@ -12,12 +12,13 @@ export function updateMyCompanyProfile(payload) {
   return apiPut("/api/companies/me/profile", payload);
 }
 
-/** Public: sök åkerier. segment=INTERNSHIP => åkerier som erbjuder praktik. */
+/** Public: sök åkerier. praktik=true => åkerier som tar emot praktikanter. */
 export function fetchCompaniesSearch(params = {}) {
   const q = new URLSearchParams();
   if (params.bransch) q.set("bransch", params.bransch);
   if (params.region) q.set("region", params.region);
   if (params.segment) q.set("segment", params.segment);
+  if (params.praktik) q.set("praktik", "true");
   const query = q.toString();
   return apiGet(`/api/companies/search${query ? `?${query}` : ""}`);
 }

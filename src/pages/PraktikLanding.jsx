@@ -29,7 +29,7 @@ const SEGMENTS = [
       { step: "2", title: "Hitta åkerier som tar emot praktikanter", body: "Filtrera på region och se vilka verifierade åkerier som är öppna. Se företagets profil, flottstorlek och vad de kör." },
       { step: "3", title: "Ta direktkontakt", body: "Skicka en förfrågan direkt på plattformen. Inget CV-mail till fel adress — bara en strukturerad kontakt med rätt person." },
     ],
-    cta: { to: "/login", label: "Skapa profil gratis →", solid: true },
+    cta: { to: "/akerier?praktik=true", label: "Hitta praktikplatser →", solid: true },
   },
   {
     id: "company",
@@ -136,11 +136,11 @@ export default function PraktikLanding() {
           </p>
 
           <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-            <Link to="/login" style={{
+            <Link to="/akerier?praktik=true" style={{
               padding: "13px 26px", borderRadius: 12, background: T.amber,
               color: "#000", fontSize: 14, fontWeight: 800, textDecoration: "none",
             }}>
-              Skapa profil gratis
+              Hitta praktikplats
             </Link>
             <Link to="/kontakt" style={{
               padding: "13px 26px", borderRadius: 12, border: `1px solid ${T.border}`,

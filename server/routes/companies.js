@@ -25,6 +25,7 @@ companiesRouter.get("/search", optionalAuthMiddleware, validateQuery(companiesSe
     const bransch = req.query.bransch && String(req.query.bransch).trim() ? req.query.bransch.trim() : null;
     const region = req.query.region && String(req.query.region).trim() ? req.query.region.trim() : null;
     const segment = req.query.segment && String(req.query.segment).trim() ? req.query.segment.trim() : null;
+    const praktik = req.query.praktik === "true";
 
     // ── Minimum synlighetskrav ────────────────────────────────────────────────
     // Ett åkeri visas i söken om det är verifierat OCH har fyllt i:
@@ -50,12 +51,13 @@ companiesRouter.get("/search", optionalAuthMiddleware, validateQuery(companiesSe
         { jobs: { some: { status: "ACTIVE", region } } },
       ];
     }
-    if (segment === "INTERNSHIP") {
+    if (segment === "INTERNSHIP" || praktik) {
       where.AND = [
         {
           OR: [
             { companySegmentDefaults: { has: "INTERNSHIP" } },
             { jobs: { some: { status: "ACTIVE", segment: "INTERNSHIP" } } },
+            { userOrganizations: { some: { organization: { acceptsPraktik: true } } } },
           ],
         },
       ];
@@ -79,7 +81,7 @@ companiesRouter.get("/search", optionalAuthMiddleware, validateQuery(companiesSe
           where: { role: "OWNER" },
           select: {
             organization: {
-              select: { fleet: true, employeeCount: true, foundedYear: true },
+              select: { fleet: true, employeeCount: true, foundedYear: true, acceptsPraktik: true },
             },
           },
         },
@@ -111,6 +113,7 @@ companiesRouter.get("/search", optionalAuthMiddleware, validateQuery(companiesSe
         fleet: org?.fleet ?? null,
         employeeCount: org?.employeeCount ?? null,
         foundedYear: org?.foundedYear ?? null,
+        acceptsPraktik: org?.acceptsPraktik ?? false,
         contactPerson: isAuthenticated ? (c.name || null) : null,
         contactEmail: isAuthenticated ? (c.companyContactEmail || null) : null,
         contactPhone: isAuthenticated ? (c.companyContactPhone || null) : null,
