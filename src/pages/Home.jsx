@@ -66,98 +66,33 @@ const MARQUEE_ITEMS = [
   "Beta-plattform i aktiv utveckling",
 ];
 
-const DRIVER_POOL = [
-  { name: "Erik Lindström",  loc: "Malmö · Skåne",        lic: "CE · YKB",     pct: 94 },
-  { name: "Sara Johansson",  loc: "Stockholm · Uppland",  lic: "C · ADR",      pct: 81 },
-  { name: "Mikael Berg",     loc: "Göteborg · VG",        lic: "CE · CE95",    pct: 76 },
-  { name: "Anna Karlsson",   loc: "Uppsala · Uppland",    lic: "CE · YKB",     pct: 91 },
-  { name: "Jonas Persson",   loc: "Helsingborg · Skåne",  lic: "CE · ADR",     pct: 88 },
-  { name: "Linda Nilsson",   loc: "Örebro · Närke",       lic: "C · YKB",      pct: 73 },
-  { name: "David Eriksson",  loc: "Norrköping · Öst.",    lic: "CE · YKB",     pct: 97 },
-  { name: "Maria Svensson",  loc: "Jönköping · Småland",  lic: "CE · CE95",    pct: 85 },
-  { name: "Tobias Larsson",  loc: "Umeå · Västerbotten",  lic: "CE · YKB",     pct: 79 },
-  { name: "Karin Hansson",   loc: "Västerås · Västmanl.", lic: "C · YKB",      pct: 83 },
-  { name: "Peter Olsson",    loc: "Sundsvall · Medelpad", lic: "CE · ADR",     pct: 90 },
-  { name: "Emma Gustavsson", loc: "Borås · VG",           lic: "CE · YKB",     pct: 86 },
-];
-
-function useLiveMatches() {
-  const [matches, setMatches] = useState(() => {
-    // Start with 3 random drivers from the pool
-    const shuffled = [...DRIVER_POOL].sort(() => Math.random() - 0.5);
-    return shuffled.slice(0, 3).map((d) => ({ ...d, key: Math.random() }));
-  });
-  const [entering, setEntering] = useState(null);
-
+function usePlatformStats() {
+  const [stats, setStats] = useState(null);
   useEffect(() => {
-    let timeout;
-    function scheduleNext() {
-      // Random interval 4–8 seconds
-      const delay = 4000 + Math.random() * 4000;
-      timeout = setTimeout(() => {
-        // Pick a driver not currently shown
-        const currentNames = matches.map((m) => m.name);
-        const pool = DRIVER_POOL.filter((d) => !currentNames.includes(d.name));
-        const next = pool[Math.floor(Math.random() * pool.length)];
-        const newEntry = { ...next, key: Math.random() };
-        setEntering(newEntry.key);
-        setMatches((prev) => [newEntry, ...prev.slice(0, 2)]);
-        setTimeout(() => setEntering(null), 600);
-        scheduleNext();
-      }, delay);
-    }
-    scheduleNext();
-    return () => clearTimeout(timeout);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  return { matches, entering };
+    fetch("/api/stats/platform")
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => { if (data) setStats(data); })
+      .catch(() => {});
+  }, []);
+  return stats;
 }
 
-function LiveMatchCard() {
-  const { matches, entering } = useLiveMatches();
+function PlatformStatsCard() {
+  const stats = usePlatformStats();
+  const rows = [
+    { label: "Aktiva förare på plattformen", value: stats?.activeDrivers ?? "—", color: "#4ade80" },
+    { label: "Öppna jobbannonser just nu",   value: stats?.activeJobs ?? "—",    color: "#F5A623" },
+    { label: "Meddelanden skickade",         value: stats?.totalMessages ?? "—", color: "#7dd3c8" },
+  ];
   return (
-    <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "24px 28px", backdropFilter: "blur(16px)", overflow: "hidden" }}>
-      <style>{`
-        @keyframes stp-slide-in {
-          from { opacity: 0; transform: translateY(-12px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes stp-pulse-dot {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50%       { opacity: 0.4; transform: scale(0.7); }
-        }
-      `}</style>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-        <span style={{ fontSize: 13, fontWeight: 700, color: "rgba(240,250,249,0.6)", textTransform: "uppercase", letterSpacing: 1 }}>Ny match</span>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 99, background: "rgba(74,222,128,0.15)", color: "#4ade80", fontSize: 11, fontWeight: 700 }}>
-          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#4ade80", display: "inline-block", animation: "stp-pulse-dot 1.6s ease-in-out infinite" }} />
-          Live
-        </span>
-      </div>
-      {matches.map((d, i) => {
-        const pctColor = d.pct >= 90 ? "#4ade80" : "#F5A623";
-        const isNew = d.key === entering;
-        return (
-          <div
-            key={d.key}
-            style={{
-              display: "flex", alignItems: "center", gap: 14,
-              padding: "12px 0",
-              borderTop: i > 0 ? "1px solid rgba(255,255,255,0.06)" : "none",
-              animation: isNew ? "stp-slide-in 0.5s cubic-bezier(0.22,1,0.36,1) both" : "none",
-            }}
-          >
-            <div style={{ width: 42, height: 42, borderRadius: 12, background: "#1F5F5C", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 800, color: "#fff", flexShrink: 0 }}>
-              {d.name.split(" ").map((w) => w[0]).join("").slice(0, 2)}
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "#f0faf9" }}>{d.name}</div>
-              <div style={{ fontSize: 12, color: "rgba(240,250,249,0.6)", marginTop: 1 }}>{d.loc} · {d.lic}</div>
-            </div>
-            <div style={{ fontSize: 16, fontWeight: 800, color: pctColor, flexShrink: 0 }}>{d.pct}%</div>
-          </div>
-        );
-      })}
+    <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "24px 28px", backdropFilter: "blur(16px)" }}>
+      <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(240,250,249,0.6)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 20 }}>Plattformen just nu</div>
+      {rows.map((r, i) => (
+        <div key={r.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderTop: i > 0 ? "1px solid rgba(255,255,255,0.06)" : "none" }}>
+          <div style={{ fontSize: 13, color: "rgba(240,250,249,0.7)" }}>{r.label}</div>
+          <div style={{ fontSize: 18, fontWeight: 800, color: r.color, flexShrink: 0 }}>{typeof r.value === "number" ? r.value.toLocaleString("sv-SE") : r.value}</div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -306,7 +241,7 @@ export default function Home() {
               </div>
             </div>
             <div className="hidden lg:flex flex-col gap-3.5">
-              <LiveMatchCard />
+              <PlatformStatsCard />
               <div style={{ background: "#F5A623", borderRadius: 20, padding: "24px 28px", display: "grid", gridTemplateColumns: "auto 1fr", alignItems: "center", gap: 20 }}>
                 <div style={{ fontSize: 52, fontWeight: 900, color: "#000", lineHeight: 1, letterSpacing: -2, whiteSpace: "nowrap" }}>5 662</div>
                 <div style={{ fontSize: 13, color: "rgba(0,0,0,0.62)", lineHeight: 1.6, fontWeight: 500 }}>Lastbilsförare nyanställda de senaste 12 månaderna</div>

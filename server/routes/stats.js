@@ -10,6 +10,20 @@ import { resolveEffectiveOrganization } from "../lib/organizations.js";
 
 export const statsRouter = Router();
 
+// ─── 0. Publik plattformsstatistik (ingen auth) ───────────────────────────────
+statsRouter.get("/platform", async (req, res, next) => {
+  try {
+    const [activeDrivers, activeJobs, totalMessages] = await Promise.all([
+      prisma.driverProfile.count({ where: { visibleToCompanies: true, user: { needsDriverOnboarding: false, suspendedAt: null } } }),
+      prisma.job.count({ where: { status: "ACTIVE" } }),
+      prisma.message.count(),
+    ]);
+    res.json({ activeDrivers, activeJobs, totalMessages });
+  } catch (e) {
+    next(e);
+  }
+});
+
 // ─── 1. Förare: marknadsdata för jobbannonser i din region ───────────────────
 
 statsRouter.get("/driver-market", authMiddleware, async (req, res, next) => {
