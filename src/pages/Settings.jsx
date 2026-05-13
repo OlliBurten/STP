@@ -3,6 +3,7 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { useAuth } from "../context/AuthContext";
 import { useProfile } from "../context/ProfileContext";
+import { useIsMobile } from "../hooks/useIsMobile";
 import { changePassword, deleteMyAccount } from "../api/auth.js";
 import { updateNotificationSettings, fetchProfile, updateProfile } from "../api/profile.js";
 import { updateCompanyNotificationSettings, fetchMyCompanyProfile, listInvites, createInvite, revokeInvite } from "../api/companies.js";
@@ -663,6 +664,7 @@ function CompanyVerifieringSection({ user }) {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function Settings() {
   usePageTitle("Inställningar");
+  const isMobile = useIsMobile();
   const { user, hasApi, isDriver, isCompany } = useAuth();
   const { profile } = useProfile();
 
@@ -733,42 +735,63 @@ export default function Settings() {
   };
 
   return (
-    <main style={{ background: "#060f0f", minHeight: "100vh", marginTop: "-64px", paddingTop: 112 }}>
+    <main style={{ background: "#060f0f", minHeight: "100vh", marginTop: "-64px", paddingTop: isMobile ? 88 : 112 }}>
       <PageMeta title="Inställningar – STP" />
-      <div style={{ maxWidth: 1080, margin: "0 auto", padding: "0 32px 100px" }}>
+      <div style={{ maxWidth: 1080, margin: "0 auto", padding: isMobile ? "0 20px 80px" : "0 32px 100px" }}>
 
         {/* Page header */}
-        <div style={{ marginBottom: 48 }}>
+        <div style={{ marginBottom: isMobile ? 24 : 48 }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(245,166,35,0.85)", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>
             {isCompany ? "Företagskonto" : "Förarkonto"}
           </div>
-          <h1 style={{ fontSize: 36, fontWeight: 900, letterSpacing: -1.2, margin: 0, color: "#f0faf9" }}>Inställningar</h1>
+          <h1 style={{ fontSize: isMobile ? 28 : 36, fontWeight: 900, letterSpacing: -1.2, margin: 0, color: "#f0faf9" }}>Inställningar</h1>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "260px 1fr", gap: 32, alignItems: "flex-start" }}>
-          {/* Sidebar */}
-          <aside style={{ position: "sticky", top: 88, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 8 }}>
-            {sections.map((s) => {
-              const active = section === s.k;
-              return (
-                <button key={s.k} type="button" onClick={() => setSection(s.k)} style={{ width: "100%", padding: "11px 14px", borderRadius: 9, display: "flex", alignItems: "center", gap: 11, background: active ? "rgba(245,166,35,0.1)" : "transparent", color: active ? "#F5A623" : "rgba(240,250,249,0.7)", fontSize: 14, fontWeight: active ? 700 : 600, textAlign: "left", marginBottom: 2, border: "none", cursor: "pointer", fontFamily: "inherit" }}>
-                  <Icon n={s.i} s={16} c="currentColor" />
-                  {s.l}
-                </button>
-              );
-            })}
-            <div style={{ height: 1, background: "rgba(255,255,255,0.05)", margin: "8px 0" }} />
-            <Link to={isCompany ? "/foretag" : "/profil"} style={{ display: "block", padding: "11px 14px", borderRadius: 9, fontSize: 13, fontWeight: 600, color: "rgba(240,250,249,0.55)", textDecoration: "none" }}>
-              ← Tillbaka till {isCompany ? "dashboard" : "profil"}
-            </Link>
-          </aside>
-
-          {/* Content */}
-          <div style={{ minWidth: 0 }}>
-            {renderContent()}
-
+        {isMobile ? (
+          /* Mobile: horizontal tab bar + content below */
+          <div>
+            <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 12, marginBottom: 20, WebkitOverflowScrolling: "touch" }}>
+              {sections.map((s) => {
+                const active = section === s.k;
+                return (
+                  <button key={s.k} type="button" onClick={() => setSection(s.k)}
+                    style={{ flexShrink: 0, padding: "9px 14px", borderRadius: 99, display: "flex", alignItems: "center", gap: 7, background: active ? "rgba(245,166,35,0.12)" : "rgba(255,255,255,0.04)", border: `1px solid ${active ? "rgba(245,166,35,0.3)" : "rgba(255,255,255,0.07)"}`, color: active ? "#F5A623" : "rgba(240,250,249,0.7)", fontSize: 13, fontWeight: active ? 700 : 600, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
+                    <Icon n={s.i} s={14} c="currentColor" />
+                    {s.l}
+                  </button>
+                );
+              })}
+            </div>
+            <div>{renderContent()}</div>
+            <div style={{ marginTop: 16 }}>
+              <Link to={isCompany ? "/foretag" : "/profil"} style={{ fontSize: 13, fontWeight: 600, color: "rgba(240,250,249,0.5)", textDecoration: "none" }}>
+                ← Tillbaka till {isCompany ? "dashboard" : "profil"}
+              </Link>
+            </div>
           </div>
-        </div>
+        ) : (
+          /* Desktop: sidebar + content grid */
+          <div style={{ display: "grid", gridTemplateColumns: "260px 1fr", gap: 32, alignItems: "flex-start" }}>
+            <aside style={{ position: "sticky", top: 88, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 8 }}>
+              {sections.map((s) => {
+                const active = section === s.k;
+                return (
+                  <button key={s.k} type="button" onClick={() => setSection(s.k)} style={{ width: "100%", padding: "11px 14px", borderRadius: 9, display: "flex", alignItems: "center", gap: 11, background: active ? "rgba(245,166,35,0.1)" : "transparent", color: active ? "#F5A623" : "rgba(240,250,249,0.7)", fontSize: 14, fontWeight: active ? 700 : 600, textAlign: "left", marginBottom: 2, border: "none", cursor: "pointer", fontFamily: "inherit" }}>
+                    <Icon n={s.i} s={16} c="currentColor" />
+                    {s.l}
+                  </button>
+                );
+              })}
+              <div style={{ height: 1, background: "rgba(255,255,255,0.05)", margin: "8px 0" }} />
+              <Link to={isCompany ? "/foretag" : "/profil"} style={{ display: "block", padding: "11px 14px", borderRadius: 9, fontSize: 13, fontWeight: 600, color: "rgba(240,250,249,0.55)", textDecoration: "none" }}>
+                ← Tillbaka till {isCompany ? "dashboard" : "profil"}
+              </Link>
+            </aside>
+            <div style={{ minWidth: 0 }}>
+              {renderContent()}
+            </div>
+          </div>
+        )}
       </div>
     </main>
   );

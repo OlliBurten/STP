@@ -347,7 +347,7 @@ const EXP_JOB_TYPES = [
 const expYears = Array.from({ length: new Date().getFullYear() - 1969 }, (_, i) => new Date().getFullYear() - i);
 const MONTHS = ["Jan","Feb","Mar","Apr","Maj","Jun","Jul","Aug","Sep","Okt","Nov","Dec"];
 
-function ExpForm({ initial, onSave, onCancel }) {
+function ExpForm({ initial, onSave, onCancel, isMobile }) {
   const [d, setD] = useState(initial || {
     company: "", role: "", startYear: "", startMonth: "", endYear: "", endMonth: "", current: false,
     description: "", vehicleTypes: [], jobType: "",
@@ -368,12 +368,12 @@ function ExpForm({ initial, onSave, onCancel }) {
   return (
     <div style={{
       background: T.bg2, border: `1.5px solid ${T.primary}`,
-      borderRadius: 14, padding: 20, marginLeft: 28, marginBottom: 8,
+      borderRadius: 14, padding: isMobile ? 16 : 20, marginLeft: isMobile ? 0 : 28, marginBottom: 8,
     }}>
       <p style={{ fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 16 }}>
         {initial ? "Redigera erfarenhet" : "Lägg till erfarenhet"}
       </p>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12, marginBottom: 12 }}>
         <div>
           <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 6 }}>Företag *</p>
           <input value={d.company} onChange={(e) => upd("company", e.target.value)} placeholder="Nordic Logistics AB" style={inputStyle} />
@@ -1183,7 +1183,7 @@ export default function Profile() {
                   )}
                   {(current.experience || []).map((exp) => (
                     editingExpId === exp.id ? (
-                      <ExpForm key={exp.id} initial={exp} onSave={handleSaveExp} onCancel={() => setEditingExpId(null)} />
+                      <ExpForm key={exp.id} initial={exp} onSave={handleSaveExp} onCancel={() => setEditingExpId(null)} isMobile={isMobile} />
                     ) : (
                       <div key={exp.id} style={{ display: "flex", gap: 0, paddingLeft: 28, paddingBottom: 20, position: "relative" }}>
                         <div style={{
@@ -1235,7 +1235,7 @@ export default function Profile() {
                     )
                   ))}
                   {addingExp && (
-                    <ExpForm onSave={handleAddExperience} onCancel={() => setAddingExp(false)} />
+                    <ExpForm onSave={handleAddExperience} onCancel={() => setAddingExp(false)} isMobile={isMobile} />
                   )}
                 </div>
               </Card>
