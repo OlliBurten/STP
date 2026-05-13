@@ -608,7 +608,47 @@ export default function Header({ onboarding = false }) {
                   </li>
                 ))
               ) : (
-                navLinks
+                (() => {
+                  const mobileLinks = user && isDriver && !platformAdminSession
+                    ? [
+                        { to: "/jobb", label: "Jobb" },
+                        { to: "/akerier", label: "Åkerier" },
+                        { to: "/favoriter", label: "Favoriter" },
+                        { to: "/mina-ansokningar", label: "Mina ansökningar" },
+                        { to: "/meddelanden", label: "Meddelanden", badge: unreadCount + selectedNotificationCount || 0 },
+                      ]
+                    : isCompany && !platformAdminSession
+                    ? [
+                        { to: "/foretag", label: "Översikt", end: true },
+                        { to: "/foretag/annonser", label: "Mina annonser" },
+                        { to: "/foretag/chaufforer", label: "Hitta förare" },
+                        { to: "/foretag/meddelanden", label: "Meddelanden", badge: companyUnreadConversationCount || 0 },
+                      ]
+                    : [];
+                  return mobileLinks.map((item) => (
+                    <li key={item.to} style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                      <NavLink to={item.to} onClick={closeMobile} end={item.end}>
+                        {({ isActive }) => (
+                          <span style={{
+                            display: "flex", alignItems: "center", gap: 8,
+                            padding: "14px 20px",
+                            color: isActive ? "#7dd3c8" : "rgba(255,255,255,0.75)",
+                            background: isActive ? "rgba(31,95,92,0.2)" : "transparent",
+                            borderLeft: `3px solid ${isActive ? "#7dd3c8" : "transparent"}`,
+                            fontSize: 15, fontWeight: isActive ? 700 : 500,
+                          }}>
+                            {item.label}
+                            {item.badge > 0 && (
+                              <span style={{ minWidth: 18, height: 18, padding: "0 5px", borderRadius: 99, background: "#F5A623", color: "#000", fontSize: 10, fontWeight: 900, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                                {item.badge > 99 ? "99+" : item.badge}
+                              </span>
+                            )}
+                          </span>
+                        )}
+                      </NavLink>
+                    </li>
+                  ));
+                })()
               )}
             </ul>
             <div className="px-4 py-3" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
