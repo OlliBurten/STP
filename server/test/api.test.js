@@ -5,9 +5,13 @@
 import { describe, it } from "node:test";
 import assert from "node:assert";
 import request from "supertest";
+import jwt from "jsonwebtoken";
 
 process.env.APP_LISTEN = "false";
+process.env.ADMIN_EMAILS = "admin@example.com";
 const { app } = await import("../server.js");
+const { prisma } = await import("../lib/prisma.js");
+const { JWT_SECRET } = await import("../lib/config.js");
 
 describe("GET /api/health", () => {
   it("returns 200 and ok: true", async () => {
@@ -62,6 +66,47 @@ describe("POST /api/auth/register validation", () => {
       .send({ email: "a@b.se", password: "short", role: "DRIVER", name: "Test" });
     assert.strictEqual(res.status, 400);
     assert.ok(res.body?.error);
+  });
+});
+
+describe("POST /api/admin/jobs", () => {
+  it("creates a job owned by the authenticated admin", async (t) => {
+    const adminId = "admin-user-1";
+    const adminUser = {
+      id: adminId,
+      email: "admin@example.com",
+      role: "COMPANY",
+      suspendedAt: null,
+      emailVerifiedAt: new Date("2026-01-01T00:00:00.000Z"),
+    };
+    let createdJobData = null;
+
+    t.mock.method(prisma.user, "findUnique", async () => adminUser);
+    t.mock.method(prisma.job, "create", async ({ data }) => {
+      createdJobData = data;
+      return { id: "job-1", title: data.title, company: data.company };
+    });
+    t.mock.method(prisma.adminAuditLog, "create", async ({ data }) => ({ id: "audit-1", ...data }));
+
+    const token = jwt.sign({ userId: adminId, role: "COMPANY" }, JWT_SECRET);
+    const res = await request(app)
+      .post("/api/admin/jobs")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        title: "CE-chaufför",
+        company: "Teståkeriet AB",
+        description: "Transportuppdrag i Stockholm",
+        location: "Stockholm",
+        region: "Stockholm",
+        jobType: "distribution",
+        employment: "fast",
+        contact: "jobb@example.com",
+        license: ["CE"],
+      });
+
+    assert.strictEqual(res.status, 201, res.text);
+    assert.strictEqual(createdJobData?.userId, adminId);
+    assert.strictEqual(res.body?.id, "job-1");
   });
 });
 

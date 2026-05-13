@@ -1296,8 +1296,9 @@ adminRouter.post("/jobs", async (req, res, next) => {
       if (!body[f]) return res.status(400).json({ error: `Fältet '${f}' krävs` });
     }
 
-    // Use the admin's own userId as the owner (jobs will appear under admin account)
-    const adminUserId = req.user.id;
+    // Admin-created jobs are owned by the admin account because no company user exists.
+    const adminUserId = req.adminUserId || req.userId;
+    if (!adminUserId) return res.status(401).json({ error: "Ej inloggad" });
 
     const job = await prisma.job.create({
       data: {
