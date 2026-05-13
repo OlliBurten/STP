@@ -511,17 +511,17 @@ export default function JobDetail() {
       </div>
 
       {/* Two-column grid */}
-      <div style={{ maxWidth: 1280, margin: "0 auto", padding: isMobile ? "0 20px 80px" : "0 40px 120px", display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 368px", gap: isMobile ? 20 : 36, alignItems: "start" }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: isMobile ? "0 20px 100px" : "0 40px 120px", display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 368px", gap: isMobile ? 16 : 36, alignItems: "start" }}>
 
         {/* ── LEFT COLUMN ──────────────────────────────────────────────────── */}
-        <div>
+        <div style={{ order: isMobile ? 1 : 0 }}>
 
           {/* Header card */}
-          <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 24, padding: "36px 40px", position: "relative", overflow: "hidden", marginBottom: 12 }}>
+          <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: isMobile ? 16 : 24, padding: isMobile ? "20px 16px" : "36px 40px", position: "relative", overflow: "hidden", marginBottom: 12 }}>
             <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(to right, #1F5F5C, rgba(31,95,92,0))" }} />
 
-            <div style={{ display: "flex", gap: 20, alignItems: "flex-start", marginBottom: 20 }}>
-              <div style={{ width: 58, height: 58, borderRadius: 15, background: avatarColor(job.company), display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, fontWeight: 800, color: "rgba(255,255,255,0.9)", flexShrink: 0, border: "1px solid rgba(255,255,255,0.1)", letterSpacing: -0.5 }}>
+            <div style={{ display: "flex", gap: isMobile ? 12 : 20, alignItems: "flex-start", marginBottom: isMobile ? 14 : 20 }}>
+              <div style={{ width: isMobile ? 44 : 58, height: isMobile ? 44 : 58, borderRadius: isMobile ? 12 : 15, background: avatarColor(job.company), display: "flex", alignItems: "center", justifyContent: "center", fontSize: isMobile ? 15 : 17, fontWeight: 800, color: "rgba(255,255,255,0.9)", flexShrink: 0, border: "1px solid rgba(255,255,255,0.1)", letterSpacing: -0.5 }}>
                 {companyInitials}
               </div>
               <div style={{ flex: 1 }}>
@@ -782,10 +782,10 @@ export default function JobDetail() {
         </div>
 
         {/* ── RIGHT SIDEBAR ─────────────────────────────────────────────────── */}
-        <div style={{ position: "sticky", top: 88 }}>
+        <div style={{ position: isMobile ? "static" : "sticky", top: 88, order: isMobile ? 0 : 1 }}>
 
           {/* CTA card */}
-          <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.09)", borderRadius: 22, padding: "22px", marginBottom: 10, overflow: "hidden" }}>
+          <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.09)", borderRadius: isMobile ? 16 : 22, padding: isMobile ? "16px" : "22px", marginBottom: 10, overflow: "hidden" }}>
 
             {/* Match ring — logged-in drivers only */}
             {isDriver && hasApi && driverMatch && (
@@ -793,8 +793,8 @@ export default function JobDetail() {
             )}
 
             {/* Salary */}
-            <div style={{ margin: "18px 0 16px" }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(240,250,249,0.3)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Ersättning</div>
+            <div style={{ margin: isMobile ? "12px 0 12px" : "18px 0 16px" }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(240,250,249,0.3)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>Ersättning</div>
               <SalaryDisplay sidebar />
             </div>
 
@@ -810,7 +810,7 @@ export default function JobDetail() {
                     Ansök nu →
                   </Link>
                 )}
-                <p style={{ fontSize: 12, color: "rgba(240,250,249,0.3)", textAlign: "center", marginTop: 8, lineHeight: 1.5 }}>Din profil är ditt CV — inget att ladda upp</p>
+                {!isMobile && <p style={{ fontSize: 12, color: "rgba(240,250,249,0.3)", textAlign: "center", marginTop: 8, lineHeight: 1.5 }}>Din profil är ditt CV — inget att ladda upp</p>}
               </>
             ) : isCompany ? (
               <div style={{ padding: "12px 14px", borderRadius: 11, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
@@ -837,45 +837,74 @@ export default function JobDetail() {
             )}
           </div>
 
-          {/* Snabbfakta */}
-          <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 20, padding: "18px 20px", marginBottom: 10 }}>
-            <div style={{ fontSize: 11, fontWeight: 800, color: "rgba(240,250,249,0.3)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 4 }}>Snabbfakta</div>
-            <FactRow iconEl={briefcaseIcon} label="Anställningsform" value={empLabel} />
-            <FactRow iconEl={clockIcon}     label="Arbetstider"      value={scheduleLabel || "Ej angiven"} missing={!scheduleLabel} />
-            <FactRow iconEl={calendarIcon}  label="Tillträde"        value={job.start || "Ej angiven"} missing={!job.start} />
-            <FactRow iconEl={locationIcon}  label="Ort"              value={job.location} />
-            <FactRow iconEl={truckIcon}     label="Körkort"          value={[...(job.license || []), ...(job.certificates || []).map(getCertificateLabel)].join(", ") || "—"} />
-            <FactRow iconEl={moneyIcon}     label="Lön"
-              value={salaryFactVal}
-              highlight={!!user && !!(job.salaryMin || job.salary)}
-              missing={!!user && !job.salaryMin && !job.salary}
-            />
-            {/* Urgency */}
-            {job.rolling && (
-              <div style={{ marginTop: 14, padding: "10px 12px", background: "rgba(245,166,35,0.06)", border: "1px solid rgba(245,166,35,0.13)", borderRadius: 10, display: "flex", gap: 8, alignItems: "flex-start" }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F5A623" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                <span style={{ fontSize: 12, color: "rgba(240,250,249,0.55)", lineHeight: 1.6 }}>
-                  <strong style={{ color: "#F5A623" }}>Löpande rekrytering.</strong> Ansök snarast.
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* Liknande jobb */}
-          <div style={{ padding: "14px 18px", background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 15, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "#f0faf9", marginBottom: 2 }}>Liknande jobb</div>
-              <div style={{ fontSize: 12, color: "rgba(240,250,249,0.35)" }}>
-                {(job.license || []).join("+")}-jobb i {job.region || "din region"}
-              </div>
+          {/* Snabbfakta — desktop only */}
+          {!isMobile && (
+            <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 20, padding: "18px 20px", marginBottom: 10 }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: "rgba(240,250,249,0.3)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 4 }}>Snabbfakta</div>
+              <FactRow iconEl={briefcaseIcon} label="Anställningsform" value={empLabel} />
+              <FactRow iconEl={clockIcon}     label="Arbetstider"      value={scheduleLabel || "Ej angiven"} missing={!scheduleLabel} />
+              <FactRow iconEl={calendarIcon}  label="Tillträde"        value={job.start || "Ej angiven"} missing={!job.start} />
+              <FactRow iconEl={locationIcon}  label="Ort"              value={job.location} />
+              <FactRow iconEl={truckIcon}     label="Körkort"          value={[...(job.license || []), ...(job.certificates || []).map(getCertificateLabel)].join(", ") || "—"} />
+              <FactRow iconEl={moneyIcon}     label="Lön"
+                value={salaryFactVal}
+                highlight={!!user && !!(job.salaryMin || job.salary)}
+                missing={!!user && !job.salaryMin && !job.salary}
+              />
+              {job.rolling && (
+                <div style={{ marginTop: 14, padding: "10px 12px", background: "rgba(245,166,35,0.06)", border: "1px solid rgba(245,166,35,0.13)", borderRadius: 10, display: "flex", gap: 8, alignItems: "flex-start" }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F5A623" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  <span style={{ fontSize: 12, color: "rgba(240,250,249,0.55)", lineHeight: 1.6 }}>
+                    <strong style={{ color: "#F5A623" }}>Löpande rekrytering.</strong> Ansök snarast.
+                  </span>
+                </div>
+              )}
             </div>
-            <Link to="/jobb" style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 700, color: "#4ade80", textDecoration: "none" }}>
-              Se alla <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-            </Link>
-          </div>
+          )}
+
+          {/* Liknande jobb — desktop only */}
+          {!isMobile && (
+            <div style={{ padding: "14px 18px", background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 15, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "#f0faf9", marginBottom: 2 }}>Liknande jobb</div>
+                <div style={{ fontSize: 12, color: "rgba(240,250,249,0.35)" }}>
+                  {(job.license || []).join("+")}-jobb i {job.region || "din region"}
+                </div>
+              </div>
+              <Link to="/jobb" style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 700, color: "#4ade80", textDecoration: "none" }}>
+                Se alla <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </Link>
+            </div>
+          )}
 
         </div>
       </div>
+
+      {/* ── Sticky bottom apply bar (mobile, drivers + logged-out) ── */}
+      {isMobile && (isDriver || !user) && (
+        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 40, padding: "12px 20px 20px", background: "rgba(6,15,15,0.96)", backdropFilter: "blur(12px)", borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", gap: 10 }}>
+          {isDriver ? (
+            <>
+              {job.externalApplyUrl ? (
+                <a href={job.externalApplyUrl} target="_blank" rel="noopener noreferrer" style={{ flex: 1, padding: "14px", borderRadius: 13, background: "#F5A623", color: "#000", fontSize: 15, fontWeight: 800, textDecoration: "none", textAlign: "center" }}>
+                  Ansök ↗
+                </a>
+              ) : (
+                <Link to={`/jobb/${id}/ansok`} style={{ flex: 1, padding: "14px", borderRadius: 13, background: "#F5A623", color: "#000", fontSize: 15, fontWeight: 800, textDecoration: "none", textAlign: "center" }}>
+                  Ansök nu →
+                </Link>
+              )}
+              <button type="button" onClick={handleToggleSave} style={{ width: 52, borderRadius: 13, background: isSaved ? "rgba(245,166,35,0.15)" : "rgba(255,255,255,0.06)", border: isSaved ? "1px solid rgba(245,166,35,0.3)" : "1px solid rgba(255,255,255,0.1)", color: isSaved ? "#F5A623" : "rgba(240,250,249,0.5)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
+                {isSaved ? <StarFilledIcon style={{ width: 18, height: 18 }} /> : <StarOutlineIcon style={{ width: 18, height: 18 }} />}
+              </button>
+            </>
+          ) : (
+            <Link to="/login" state={{ from: `/jobb/${id}`, requiredRole: "driver" }} style={{ flex: 1, padding: "14px", borderRadius: 13, background: "#F5A623", color: "#000", fontSize: 15, fontWeight: 800, textDecoration: "none", textAlign: "center" }}>
+              Logga in för att ansöka
+            </Link>
+          )}
+        </div>
+      )}
 
       {showApplyModal && (
         <ApplyModal job={job} onClose={() => setShowApplyModal(false)} onSuccess={() => setShowApplyModal(false)} />
