@@ -392,7 +392,7 @@ export default function ForCompanies() {
 
   return (
     <div style={{ minHeight: "100vh", background: "#060f0f", color: "#f0faf9" }}>
-      <main style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 40px 60px" }}>
+      <main style={{ maxWidth: 1280, margin: "0 auto", padding: isMobile ? "24px 20px 60px" : "32px 40px 60px" }}>
 
         {/* Hero */}
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 28, gap: 24, flexWrap: "wrap" }}>

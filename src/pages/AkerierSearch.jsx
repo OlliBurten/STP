@@ -363,7 +363,7 @@ export default function AkerierSearch() {
       />
 
       {/* Page header with gradient */}
-      <div style={{ background: "linear-gradient(to bottom, #0a1818, #060f0f)", borderBottom: "1px solid rgba(255,255,255,0.06)", padding: "48px 40px 28px" }}>
+      <div style={{ background: "linear-gradient(to bottom, #0a1818, #060f0f)", borderBottom: "1px solid rgba(255,255,255,0.06)", padding: isMobile ? "32px 20px 20px" : "48px 40px 28px" }}>
         <div style={{ maxWidth: 1280, margin: "0 auto" }}>
           {isGymnasieelev && (
             <div style={{ marginBottom: 16, padding: "10px 16px", borderRadius: 10, border: "1px solid rgba(74,222,128,0.2)", background: "rgba(74,222,128,0.06)", fontSize: 13, color: "#4ade80" }}>

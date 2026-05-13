@@ -267,7 +267,7 @@ export default function SavedJobs() {
       <PageMeta title="Favoriter – STP" />
 
       {/* Page header */}
-      <div style={{ background: "linear-gradient(to bottom, #0a1818, #060f0f)", borderBottom: "1px solid rgba(255,255,255,0.06)", padding: "48px 40px 28px" }}>
+      <div style={{ background: "linear-gradient(to bottom, #0a1818, #060f0f)", borderBottom: "1px solid rgba(255,255,255,0.06)", padding: isMobile ? "32px 20px 20px" : "48px 40px 28px" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <h1 style={{ fontSize: 32, fontWeight: 800, letterSpacing: -1, marginBottom: 6, color: "#f0faf9" }}>Favoriter</h1>
           <p style={{ fontSize: 14, color: "rgba(240,250,249,0.5)", margin: 0 }}>Jobb och åkerier du sparat. Vi notifierar dig när något ändras.</p>

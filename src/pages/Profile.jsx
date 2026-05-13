@@ -682,7 +682,7 @@ export default function Profile() {
         background: `linear-gradient(160deg, #061414 0%, ${T.bg3} 50%, #061414 100%)`,
         borderBottom: `1px solid ${T.border}`,
       }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "36px 40px 0" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto", padding: isMobile ? "24px 20px 0" : "36px 40px 0" }}>
 
           {/* Edit toolbar — top: only show Redigera / editing indicator */}
           <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8, marginBottom: 20 }}>

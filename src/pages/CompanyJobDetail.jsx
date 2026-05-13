@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { useChat } from "../context/ChatContext";
 import { fetchJob, fetchJobApplicants, fetchJobStats, updateJob } from "../api/jobs.js";
 import { selectConversation, rejectConversation } from "../api/conversations.js";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -415,6 +416,7 @@ function TabBar({ tab, setTab, applicantCount }) {
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 export default function CompanyJobDetail() {
+  const isMobile = useIsMobile();
   const { id } = useParams();
   const navigate = useNavigate();
   const { hasApi } = useAuth();
@@ -521,7 +523,7 @@ export default function CompanyJobDetail() {
 
   return (
     <main style={{ background: "#060f0f", minHeight: "100vh", marginTop: "-64px", paddingTop: 80 }}>
-      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 40px 100px" }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: isMobile ? "0 20px 80px" : "0 40px 100px" }}>
 
         {/* Breadcrumb */}
         <div style={{ padding: "22px 0 0" }}>
