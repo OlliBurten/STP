@@ -196,40 +196,40 @@ export default function JobList() {
       />
 
       {/* ── Page header ─────────────────────────────────────── */}
-      <div style={{ background: "linear-gradient(to bottom, #0a1818, #060f0f)", borderBottom: "1px solid rgba(255,255,255,0.06)", padding: "112px 40px 32px" }}>
+      <div style={{ background: "linear-gradient(to bottom, #0a1818, #060f0f)", borderBottom: "1px solid rgba(255,255,255,0.06)", padding: isMobile ? "88px 20px 20px" : "112px 40px 32px" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
 
           {isGymnasieelev && (
-            <div style={{ marginBottom: 20, padding: "12px 16px", borderRadius: 12, border: "1px solid rgba(74,222,128,0.2)", background: "rgba(74,222,128,0.06)", fontSize: 13, color: "#4ade80" }}>
+            <div style={{ marginBottom: 16, padding: "12px 16px", borderRadius: 12, border: "1px solid rgba(74,222,128,0.2)", background: "rgba(74,222,128,0.06)", fontSize: 13, color: "#4ade80" }}>
               Du är registrerad som praktikant. Endast jobb som erbjuder <strong>praktik</strong> visas.
             </div>
           )}
 
-          <div style={{ marginBottom: 20 }}>
-            <div style={{ fontSize: 11, fontWeight: 800, color: "rgba(245,166,35,0.8)", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>
-              Plattformen
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 16, marginBottom: 16 }}>
+          {/* Title + count + (desktop) match toggle */}
+          <div style={{ marginBottom: isMobile ? 14 : 20 }}>
+            {!isMobile && (
+              <div style={{ fontSize: 11, fontWeight: 800, color: "rgba(245,166,35,0.8)", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>
+                Plattformen
+              </div>
+            )}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: isMobile ? "center" : "flex-end", flexWrap: "wrap", gap: 12, marginBottom: isMobile ? 0 : 16 }}>
               <div>
-                <h1 style={{ fontSize: 32, fontWeight: 800, letterSpacing: -1, color: "#f0faf9", lineHeight: 1.2, margin: "0 0 6px" }}>
+                <h1 style={{ fontSize: isMobile ? 24 : 32, fontWeight: 800, letterSpacing: -0.8, color: "#f0faf9", lineHeight: 1.2, margin: "0 0 4px" }}>
                   {isGymnasieelev ? "Praktikplatser" : "Lediga jobb"}
                 </h1>
-                <p style={{ fontSize: 14, color: "rgba(240,250,249,0.5)", margin: 0 }}>
-                  {jobsLoading
-                    ? "Hämtar jobb…"
-                    : isGymnasieelev
-                    ? `${filteredJobs.length} praktikannonser`
-                    : `${filteredJobs.length} annonser · Uppdateras dagligen`}
+                <p style={{ fontSize: 13, color: "rgba(240,250,249,0.45)", margin: 0 }}>
+                  {jobsLoading ? "Hämtar jobb…" : isGymnasieelev ? `${filteredJobs.length} praktikannonser` : `${filteredJobs.length} annonser`}
                 </p>
               </div>
               {isDriver && (
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <span style={{ fontSize: 13, color: "rgba(240,250,249,0.45)", fontWeight: 500 }}>Visa matchning</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  {!isMobile && <span style={{ fontSize: 13, color: "rgba(240,250,249,0.45)", fontWeight: 500 }}>Visa matchning</span>}
                   <div
                     onClick={() => setShowMatch((v) => !v)}
-                    style={{ width: 44, height: 24, borderRadius: 12, background: showMatch ? "#F5A623" : "rgba(255,255,255,0.1)", cursor: "pointer", position: "relative", transition: "background .2s", border: "1px solid rgba(255,255,255,0.08)", flexShrink: 0 }}
+                    style={{ width: 40, height: 22, borderRadius: 11, background: showMatch ? "#F5A623" : "rgba(255,255,255,0.1)", cursor: "pointer", position: "relative", transition: "background .2s", border: "1px solid rgba(255,255,255,0.08)", flexShrink: 0 }}
+                    title={showMatch ? "Dölj matchning" : "Visa matchning"}
                   >
-                    <div style={{ position: "absolute", top: 3, left: showMatch ? 23 : 3, width: 16, height: 16, borderRadius: 8, background: "#fff", transition: "left .2s", boxShadow: "0 1px 4px rgba(0,0,0,0.3)" }} />
+                    <div style={{ position: "absolute", top: 3, left: showMatch ? 21 : 3, width: 14, height: 14, borderRadius: 7, background: "#fff", transition: "left .2s", boxShadow: "0 1px 4px rgba(0,0,0,0.3)" }} />
                   </div>
                 </div>
               )}
@@ -238,22 +238,22 @@ export default function JobList() {
 
           {/* Tabs (driver only) */}
           {tabs && (
-            <div style={{ display: "flex", gap: 6, marginBottom: 18, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+            <div style={{ display: "flex", gap: isMobile ? 4 : 6, marginBottom: isMobile ? 14 : 18, borderBottom: "1px solid rgba(255,255,255,0.06)", overflowX: "auto" }}>
               {tabs.map(({ k, l, c }) => (
                 <button
                   key={k}
                   onClick={() => setTab(k)}
                   style={{
-                    padding: "10px 16px", border: "none", background: "transparent",
+                    padding: isMobile ? "8px 12px" : "10px 16px", border: "none", background: "transparent",
                     borderBottom: tab === k ? "2px solid #F5A623" : "2px solid transparent",
                     color: tab === k ? "#F5A623" : "rgba(240,250,249,0.55)",
-                    fontSize: 14, fontWeight: 700, cursor: "pointer", marginBottom: -1,
-                    display: "flex", alignItems: "center", gap: 7, fontFamily: "inherit",
-                    transition: "color .15s",
+                    fontSize: isMobile ? 13 : 14, fontWeight: 700, cursor: "pointer", marginBottom: -1,
+                    display: "flex", alignItems: "center", gap: 6, fontFamily: "inherit",
+                    transition: "color .15s", whiteSpace: "nowrap", flexShrink: 0,
                   }}
                 >
-                  {l}
-                  <span style={{ padding: "1px 8px", borderRadius: 99, background: tab === k ? "rgba(245,166,35,0.15)" : "rgba(255,255,255,0.06)", fontSize: 11, fontWeight: 800, color: tab === k ? "#F5A623" : "rgba(240,250,249,0.4)" }}>
+                  {isMobile && k === "recommended" ? "Matchade" : l}
+                  <span style={{ padding: "1px 6px", borderRadius: 99, background: tab === k ? "rgba(245,166,35,0.15)" : "rgba(255,255,255,0.06)", fontSize: 10.5, fontWeight: 800, color: tab === k ? "#F5A623" : "rgba(240,250,249,0.4)" }}>
                     {c}
                   </span>
                 </button>
@@ -261,55 +261,95 @@ export default function JobList() {
             </div>
           )}
 
-          {/* Search + quick filter chips + drawer button */}
-          <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-            {/* Search */}
-            <div style={{ position: "relative", flex: "1 1 260px", maxWidth: 420 }}>
-              <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "rgba(240,250,249,0.3)", display: "flex", pointerEvents: "none" }}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 16, height: 16 }}>
-                  <circle cx="11" cy="11" r="8" />
-                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          {/* Search + filters */}
+          {isMobile ? (
+            /* Mobile: search + filter button on one row, chips scrollable below */
+            <div>
+              <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+                <div style={{ position: "relative", flex: 1 }}>
+                  <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "rgba(240,250,249,0.3)", display: "flex", pointerEvents: "none" }}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 15, height: 15 }}>
+                      <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
+                  </span>
+                  <input
+                    type="search"
+                    value={filters.search}
+                    onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
+                    placeholder="Sök jobb, företag..."
+                    style={{ width: "100%", padding: "10px 14px 10px 36px", borderRadius: 10, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "#f0faf9", fontSize: 14, outline: "none", fontFamily: "inherit", boxSizing: "border-box" }}
+                  />
+                </div>
+                <button
+                  onClick={() => setDrawerOpen(true)}
+                  style={{ flexShrink: 0, padding: "10px 14px", borderRadius: 10, background: activeDrawerCount > 0 ? "rgba(31,95,92,0.25)" : "rgba(255,255,255,0.05)", border: activeDrawerCount > 0 ? "1px solid rgba(31,95,92,0.5)" : "1px solid rgba(255,255,255,0.1)", color: activeDrawerCount > 0 ? "#4ade80" : "rgba(240,250,249,0.65)", fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, fontFamily: "inherit", whiteSpace: "nowrap" }}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 14, height: 14 }}>
+                    <line x1="4" y1="6" x2="20" y2="6" /><line x1="8" y1="12" x2="16" y2="12" /><line x1="11" y1="18" x2="13" y2="18" />
+                  </svg>
+                  Filter{activeDrawerCount > 0 ? ` (${activeDrawerCount})` : ""}
+                </button>
+              </div>
+              {/* Horizontally scrollable quick chips */}
+              <div style={{ display: "flex", gap: 7, overflowX: "auto", paddingBottom: 4, WebkitOverflowScrolling: "touch" }}>
+                {QUICK_FILTERS.map((qf) => {
+                  const active = filters[qf.key] === qf.value;
+                  return (
+                    <button
+                      key={`${qf.key}-${qf.value}`}
+                      onClick={() => toggleQuick(qf.key, qf.value)}
+                      style={{ flexShrink: 0, padding: "7px 14px", borderRadius: 99, background: active ? "#1F5F5C" : "rgba(255,255,255,0.05)", border: active ? "1px solid rgba(31,95,92,0.6)" : "1px solid rgba(255,255,255,0.08)", color: active ? "#fff" : "rgba(240,250,249,0.6)", fontSize: 12.5, fontWeight: active ? 700 : 500, cursor: "pointer", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 5, fontFamily: "inherit" }}
+                    >
+                      {qf.label}
+                      {active && <span style={{ opacity: 0.7 }}>✕</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            /* Desktop: search + chips + filter button inline */
+            <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+              <div style={{ position: "relative", flex: "1 1 260px", maxWidth: 420 }}>
+                <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "rgba(240,250,249,0.3)", display: "flex", pointerEvents: "none" }}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 16, height: 16 }}>
+                    <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
+                </span>
+                <input
+                  type="search"
+                  value={filters.search}
+                  onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
+                  placeholder="Sök titel, företag, ort..."
+                  style={{ width: "100%", padding: "12px 16px 12px 42px", borderRadius: 12, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "#f0faf9", fontSize: 14, outline: "none", fontFamily: "inherit" }}
+                />
+              </div>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {QUICK_FILTERS.map((qf) => {
+                  const active = filters[qf.key] === qf.value;
+                  return (
+                    <button
+                      key={`${qf.key}-${qf.value}`}
+                      onClick={() => toggleQuick(qf.key, qf.value)}
+                      style={{ padding: "8px 16px", borderRadius: 99, background: active ? "#1F5F5C" : "rgba(255,255,255,0.05)", border: active ? "1px solid rgba(31,95,92,0.6)" : "1px solid rgba(255,255,255,0.08)", color: active ? "#fff" : "rgba(240,250,249,0.65)", fontSize: 13, fontWeight: active ? 700 : 500, cursor: "pointer", whiteSpace: "nowrap", transition: "all .15s", display: "flex", alignItems: "center", gap: 6, fontFamily: "inherit" }}
+                    >
+                      {qf.label}
+                      {active && <span style={{ opacity: 0.7 }}>✕</span>}
+                    </button>
+                  );
+                })}
+              </div>
+              <button
+                onClick={() => setDrawerOpen(true)}
+                style={{ padding: "10px 18px", borderRadius: 12, background: activeDrawerCount > 0 ? "rgba(31,95,92,0.2)" : "rgba(255,255,255,0.05)", border: activeDrawerCount > 0 ? "1px solid rgba(31,95,92,0.4)" : "1px solid rgba(255,255,255,0.1)", color: activeDrawerCount > 0 ? "#4ade80" : "rgba(240,250,249,0.65)", fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 8, whiteSpace: "nowrap", fontFamily: "inherit", flexShrink: 0 }}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 15, height: 15 }}>
+                  <line x1="4" y1="6" x2="20" y2="6" /><line x1="8" y1="12" x2="16" y2="12" /><line x1="11" y1="18" x2="13" y2="18" />
                 </svg>
-              </span>
-              <input
-                type="search"
-                value={filters.search}
-                onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
-                placeholder="Sök titel, företag, ort..."
-                style={{ width: "100%", padding: "12px 16px 12px 42px", borderRadius: 12, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "#f0faf9", fontSize: 14, outline: "none", fontFamily: "inherit" }}
-              />
+                Fler filter{activeDrawerCount > 0 ? ` (${activeDrawerCount})` : ""}
+              </button>
             </div>
-
-            {/* Quick filter chips */}
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {QUICK_FILTERS.map((qf) => {
-                const active = filters[qf.key] === qf.value;
-                return (
-                  <button
-                    key={`${qf.key}-${qf.value}`}
-                    onClick={() => toggleQuick(qf.key, qf.value)}
-                    style={{ padding: "8px 16px", borderRadius: 99, background: active ? "#1F5F5C" : "rgba(255,255,255,0.05)", border: active ? "1px solid rgba(31,95,92,0.6)" : "1px solid rgba(255,255,255,0.08)", color: active ? "#fff" : "rgba(240,250,249,0.65)", fontSize: 13, fontWeight: active ? 700 : 500, cursor: "pointer", whiteSpace: "nowrap", transition: "all .15s", display: "flex", alignItems: "center", gap: 6, fontFamily: "inherit" }}
-                  >
-                    {qf.label}
-                    {active && <span style={{ opacity: 0.7 }}>✕</span>}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Fler filter */}
-            <button
-              onClick={() => setDrawerOpen(true)}
-              style={{ padding: "10px 18px", borderRadius: 12, background: activeDrawerCount > 0 ? "rgba(31,95,92,0.2)" : "rgba(255,255,255,0.05)", border: activeDrawerCount > 0 ? "1px solid rgba(31,95,92,0.4)" : "1px solid rgba(255,255,255,0.1)", color: activeDrawerCount > 0 ? "#4ade80" : "rgba(240,250,249,0.65)", fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 8, whiteSpace: "nowrap", fontFamily: "inherit", flexShrink: 0 }}
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 15, height: 15 }}>
-                <line x1="4" y1="6" x2="20" y2="6" />
-                <line x1="8" y1="12" x2="16" y2="12" />
-                <line x1="11" y1="18" x2="13" y2="18" />
-              </svg>
-              Fler filter{activeDrawerCount > 0 ? ` (${activeDrawerCount})` : ""}
-            </button>
-          </div>
+          )}
         </div>
       </div>
 
