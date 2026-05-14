@@ -670,8 +670,8 @@ export default function CompanyJobDetail() {
                 </div>
               </div>
 
-              {/* Right: detail (desktop only — on mobile tap a candidate to open detail) */}
-              {!isMobile && <div style={{ position: "sticky", top: 84 }}>
+              {/* Detail/action panel. On mobile it stacks below the list. */}
+              <div style={{ position: isMobile ? "static" : "sticky", top: isMobile ? undefined : 84 }}>
                 <CandidateDetail
                   a={selectedApplicant}
                   job={job}
@@ -680,7 +680,7 @@ export default function CompanyJobDetail() {
                   onReject={handleReject}
                   onHire={handleHire}
                 />
-              </div>}
+              </div>
             </div>
           )
         )}
