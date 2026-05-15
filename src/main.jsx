@@ -7,12 +7,9 @@ import App from './App.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
 import { registerServiceWorker } from './utils/pushNotifications.js'
 
-// Apply saved theme before first paint to avoid flash
-try {
-  const saved = localStorage.getItem("stp-theme");
-  const preferred = window.matchMedia?.("(prefers-color-scheme: light)").matches ? "light" : "dark";
-  document.documentElement.setAttribute("data-theme", saved || preferred);
-} catch {}
+// Always dark theme — light theme not optimized yet
+document.documentElement.setAttribute("data-theme", "dark");
+try { localStorage.setItem("stp-theme", "dark"); } catch {}
 
 // Handle navigation requests from service worker push clicks
 if ("serviceWorker" in navigator) {

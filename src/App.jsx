@@ -17,51 +17,80 @@ import { useProfile } from "./context/ProfileContext";
 import ProfileCompletionBanner from "./components/ProfileCompletionBanner";
 import FeedbackButton from "./components/FeedbackButton";
 
+// Wraps lazy() to intercept stale-chunk errors after a new deployment.
+// If the chunk URL no longer exists (404 → not valid JS), reload immediately
+// before the ErrorBoundary has a chance to render the error screen.
+function lazyRetry(importFn) {
+  return lazy(() =>
+    importFn().catch((err) => {
+      const msg = String(err?.message || "");
+      const isChunkError =
+        msg.includes("Failed to fetch dynamically imported module") ||
+        msg.includes("Load failed") ||
+        msg.includes("Importing a module script failed") ||
+        msg.includes("error loading dynamically imported module") ||
+        msg.includes("is not a valid JavaScript MIME type");
+
+      if (isChunkError && !sessionStorage.getItem("chunk_reload")) {
+        sessionStorage.setItem("chunk_reload", "1");
+        window.location.reload();
+        // Keep Suspense in loading state while reload happens — no error flash.
+        return new Promise(() => {});
+      }
+      throw err;
+    })
+  );
+}
+
 // Lazy-loaded pages — each becomes its own chunk
-const Home                  = lazy(() => import("./pages/Home"));
-const ForDrivers            = lazy(() => import("./pages/ForDrivers"));
-const ForCompaniesLanding   = lazy(() => import("./pages/ForCompaniesLanding"));
-const JobList               = lazy(() => import("./pages/JobList"));
-const JobDetail             = lazy(() => import("./pages/JobDetail"));
-const Apply                 = lazy(() => import("./pages/Apply"));
-const ForCompanies          = lazy(() => import("./pages/ForCompanies"));
-const PostJob               = lazy(() => import("./pages/PostJob"));
-const About                 = lazy(() => import("./pages/About"));
-const Profile               = lazy(() => import("./pages/Profile"));
-const DriverSearch          = lazy(() => import("./pages/DriverSearch"));
-const DriverDetail          = lazy(() => import("./pages/DriverDetail"));
-const MinaJobb              = lazy(() => import("./pages/MinaJobb"));
-const MinaAnsokningar       = lazy(() => import("./pages/MinaAnsokningar"));
-const Messages              = lazy(() => import("./pages/Messages"));
-const Login                 = lazy(() => import("./pages/Login"));
-const VerifyEmail           = lazy(() => import("./pages/VerifyEmail"));
-const ResetPassword         = lazy(() => import("./pages/ResetPassword"));
-const Terms                 = lazy(() => import("./pages/Terms"));
-const Privacy               = lazy(() => import("./pages/Privacy"));
-const Admin                 = lazy(() => import("./pages/Admin"));
-const Status                = lazy(() => import("./pages/Status"));
-const NotFound              = lazy(() => import("./pages/NotFound"));
-const SavedJobs             = lazy(() => import("./pages/SavedJobs"));
-const CompanyProfile        = lazy(() => import("./pages/CompanyProfile"));
-const CompanyPublicProfile  = lazy(() => import("./pages/CompanyPublicProfile"));
-const DriverOnboardingWizard   = lazy(() => import("./pages/DriverOnboardingWizard"));
-const CompanyOnboardingWizard  = lazy(() => import("./pages/CompanyOnboardingWizard"));
-const AddCompany            = lazy(() => import("./pages/AddCompany"));
-const InviteAccept          = lazy(() => import("./pages/InviteAccept"));
-const AkerierSearch         = lazy(() => import("./pages/AkerierSearch"));
-const PublicDriverProfile   = lazy(() => import("./pages/PublicDriverProfile"));
-const Branschinsikter       = lazy(() => import("./pages/Branschinsikter"));
-const Kompetenslaget2025    = lazy(() => import("./pages/Kompetenslaget2025"));
-const Kontakt               = lazy(() => import("./pages/Kontakt"));
-const LoneKalkylator        = lazy(() => import("./pages/LoneKalkylator"));
-const YkbTimer              = lazy(() => import("./pages/YkbTimer"));
-const CityJobList           = lazy(() => import("./pages/CityJobList"));
-const PatchNotes            = lazy(() => import("./pages/PatchNotes"));
-const VisionPresentation    = lazy(() => import("./pages/VisionPresentation"));
-const Settings              = lazy(() => import("./pages/Settings"));
-const CompanyJobDetail      = lazy(() => import("./pages/CompanyJobDetail"));
-const RegionJobList         = lazy(() => import("./pages/RegionJobList"));
-const PraktikLanding        = lazy(() => import("./pages/PraktikLanding"));
+const Home                  = lazyRetry(() => import("./pages/Home"));
+const ForDrivers            = lazyRetry(() => import("./pages/ForDrivers"));
+const ForCompaniesLanding   = lazyRetry(() => import("./pages/ForCompaniesLanding"));
+const JobList               = lazyRetry(() => import("./pages/JobList"));
+const JobDetail             = lazyRetry(() => import("./pages/JobDetail"));
+const Apply                 = lazyRetry(() => import("./pages/Apply"));
+const ForCompanies          = lazyRetry(() => import("./pages/ForCompanies"));
+const PostJob               = lazyRetry(() => import("./pages/PostJob"));
+const About                 = lazyRetry(() => import("./pages/About"));
+const Profile               = lazyRetry(() => import("./pages/Profile"));
+const DriverSearch          = lazyRetry(() => import("./pages/DriverSearch"));
+const DriverDetail          = lazyRetry(() => import("./pages/DriverDetail"));
+const MinaJobb              = lazyRetry(() => import("./pages/MinaJobb"));
+const MinaAnsokningar       = lazyRetry(() => import("./pages/MinaAnsokningar"));
+const Messages              = lazyRetry(() => import("./pages/Messages"));
+const Login                 = lazyRetry(() => import("./pages/Login"));
+const VerifyEmail           = lazyRetry(() => import("./pages/VerifyEmail"));
+const ResetPassword         = lazyRetry(() => import("./pages/ResetPassword"));
+const Terms                 = lazyRetry(() => import("./pages/Terms"));
+const Privacy               = lazyRetry(() => import("./pages/Privacy"));
+const Admin                 = lazyRetry(() => import("./pages/Admin"));
+const Status                = lazyRetry(() => import("./pages/Status"));
+const NotFound              = lazyRetry(() => import("./pages/NotFound"));
+const SavedJobs             = lazyRetry(() => import("./pages/SavedJobs"));
+const CompanyProfile        = lazyRetry(() => import("./pages/CompanyProfile"));
+const CompanyPublicProfile  = lazyRetry(() => import("./pages/CompanyPublicProfile"));
+const DriverOnboardingWizard   = lazyRetry(() => import("./pages/DriverOnboardingWizard"));
+const CompanyOnboardingWizard  = lazyRetry(() => import("./pages/CompanyOnboardingWizard"));
+const AddCompany            = lazyRetry(() => import("./pages/AddCompany"));
+const InviteAccept          = lazyRetry(() => import("./pages/InviteAccept"));
+const AkerierSearch         = lazyRetry(() => import("./pages/AkerierSearch"));
+const PublicDriverProfile   = lazyRetry(() => import("./pages/PublicDriverProfile"));
+const Branschinsikter       = lazyRetry(() => import("./pages/Branschinsikter"));
+const Kompetenslaget2025    = lazyRetry(() => import("./pages/Kompetenslaget2025"));
+const Kontakt               = lazyRetry(() => import("./pages/Kontakt"));
+const LoneKalkylator        = lazyRetry(() => import("./pages/LoneKalkylator"));
+const YkbTimer              = lazyRetry(() => import("./pages/YkbTimer"));
+const CityJobList           = lazyRetry(() => import("./pages/CityJobList"));
+const PatchNotes            = lazyRetry(() => import("./pages/PatchNotes"));
+const VisionPresentation    = lazyRetry(() => import("./pages/VisionPresentation"));
+const Settings              = lazyRetry(() => import("./pages/Settings"));
+const CompanyJobDetail      = lazyRetry(() => import("./pages/CompanyJobDetail"));
+const RegionJobList         = lazyRetry(() => import("./pages/RegionJobList"));
+const PraktikLanding        = lazyRetry(() => import("./pages/PraktikLanding"));
+const SchoolLanding         = lazyRetry(() => import("./pages/SchoolLanding"));
+const HittaPraktik          = lazyRetry(() => import("./pages/HittaPraktik"));
+const Arbetsmarknadsutbildning = lazyRetry(() => import("./pages/Arbetsmarknadsutbildning"));
+const Partner               = lazyRetry(() => import("./pages/Partner"));
 const BloggIndex            = lazy(() => import("./pages/blogg/BloggIndex"));
 const CeKorkortSverige      = lazy(() => import("./pages/blogg/CeKorkortSverige"));
 const YkbGuide              = lazy(() => import("./pages/blogg/YkbGuide"));
@@ -83,6 +112,17 @@ function PlausibleAnalytics() {
       window.plausible("pageview");
     }
   }, [location.pathname]);
+  return null;
+}
+
+/** Fångar ?skola= på vilken sida som helst och sparar i sessionStorage. */
+function SchoolParamCapture() {
+  const location = useLocation();
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const skola = params.get("skola");
+    if (skola) sessionStorage.setItem("stp_school", skola);
+  }, [location.search]);
   return null;
 }
 
@@ -181,6 +221,10 @@ function AppLayout() {
                   <Route path="/lon-kalkylator" element={<LoneKalkylator />} />
                   <Route path="/ykb-timer" element={<YkbTimer />} />
                   <Route path="/praktik" element={<PraktikLanding />} />
+                  <Route path="/hitta-praktik" element={<HittaPraktik />} />
+                  <Route path="/arbetsmarknadsutbildning" element={<Arbetsmarknadsutbildning />} />
+                  <Route path="/partner" element={<Partner />} />
+                  <Route path="/skola/:slug" element={<SchoolLanding />} />
                   <Route path="/uppdateringar" element={<PatchNotes />} />
                   <Route path="/vision" element={<VisionPresentation />} />
                   <Route path="/login" element={<Login />} />
@@ -364,6 +408,7 @@ function App() {
     <BrowserRouter>
       <ScrollToTop />
       <PlausibleAnalytics />
+      <SchoolParamCapture />
       <VercelAnalytics />
       <ThemeProvider>
         <ErrorBoundary>

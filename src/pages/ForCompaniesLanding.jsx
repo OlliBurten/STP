@@ -51,7 +51,7 @@ const COMPANY_SEGMENTS = [
 const FAQ_ITEMS = [
   {
     question: "Hur snabbt kan vi börja hitta förare?",
-    answer: "Direkt efter att ert konto är verifierat. Verifieringen tar normalt 1–2 vardagar och sker mot Bolagsverket. Efter det kan ni söka bland tillgängliga förare och skicka meddelanden direkt.",
+    answer: "Direkt. Med ett giltigt organisationsnummer verifieras ert konto automatiskt under registreringen — ni kan söka bland förare och publicera jobb direkt efter att ni skapat kontot.",
   },
   {
     question: "Kostar det att använda STP?",
@@ -293,9 +293,9 @@ export default function ForCompaniesLanding() {
               ))}
             </ol>
             <div style={{ background: "rgba(245,166,35,0.06)", border: "1px solid rgba(245,166,35,0.2)", borderRadius: 16, padding: "18px 20px" }}>
-              <p style={{ fontSize: 14, fontWeight: 700, color: "#F5A623", margin: "0 0 6px" }}>Verifiering krävs för att publicera jobb</p>
+              <p style={{ fontSize: 14, fontWeight: 700, color: "#F5A623", margin: "0 0 6px" }}>Kom igång direkt</p>
               <p style={{ fontSize: 14, color: "rgba(245,166,35,0.7)", margin: 0, lineHeight: 1.6 }}>
-                Vi granskar nya företagskonton manuellt. Det tar vanligtvis 1–2 vardagar. Under tiden kan ni redan börja söka bland förare via Hitta förare.
+                Ange ert organisationsnummer vid registreringen — verifiering sker automatiskt mot Bolagsverket och ni kan publicera jobb direkt.
               </p>
             </div>
           </div>

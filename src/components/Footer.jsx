@@ -30,6 +30,7 @@ const COLS = [
     links: [
       { to: "/om-oss", label: "Om oss" },
       { to: "/vision", label: "Vision & roadmap" },
+      { to: "/partner", label: "Partnerskap" },
       { to: "/kontakt", label: "Kontakt" },
       { to: "/anvandarvillkor", label: "Användarvillkor" },
       { to: "/integritet", label: "Integritetspolicy" },

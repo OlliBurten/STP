@@ -413,6 +413,8 @@ export default function DriverOnboardingWizard() {
     const pipeIdx = storedSchool.indexOf("|");
     const internshipType = pipeIdx !== -1 ? storedSchool.slice(0, pipeIdx) : "";
     const schoolNameOnly = pipeIdx !== -1 ? storedSchool.slice(pipeIdx + 1) : storedSchool;
+    // Pre-fyll skolnamn från skollandningssida (?skola= eller /skola/:slug)
+    const sessionSchool = sessionStorage.getItem("stp_school") || "";
     return {
       name: profile.name || user?.name || "",
       phone: profile.phone || "",
@@ -421,7 +423,7 @@ export default function DriverOnboardingWizard() {
       secondarySegments: profile.secondarySegments || [],
       isGymnasieelev: profile.isGymnasieelev ?? null,
       internshipType,
-      schoolName: schoolNameOnly,
+      schoolName: schoolNameOnly || sessionSchool,
       studyProgram: profile.studyProgram || "",
       graduationYear: profile.graduationYear ? String(profile.graduationYear) : "",
       licenses: profile.licenses || [],
@@ -527,6 +529,7 @@ export default function DriverOnboardingWizard() {
         experience: draft.experience,
       });
       trackDriverOnboardingComplete(primarySegment);
+      sessionStorage.removeItem("stp_school");
       setDone(true);
       setTimeout(() => navigate("/profil", { replace: true }), 2500);
     } catch (saveError) {

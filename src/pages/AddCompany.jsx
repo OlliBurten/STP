@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { createOrganization } from "../api/organizations.js";
 import { useAuth } from "../context/AuthContext";
 import BranschSearch from "../components/BranschSearch.jsx";
 import { regions } from "../data/mockJobs.js";
+import { apiGet } from "../api/client.js";
 
 export default function AddCompany() {
   const { refreshOrgs, switchOrg } = useAuth();
@@ -18,14 +19,52 @@ export default function AddCompany() {
     bransch: [],
     segmentDefaults: [],
   });
+  const [orgLookup, setOrgLookup] = useState({ loading: false, valid: null, suggestion: null, error: null });
+  const lookupTimer = useRef(null);
 
   const update = (key, value) => setForm((p) => ({ ...p, [key]: value }));
+
+  const handleOrgNumberChange = useCallback((raw) => {
+    update("orgNumber", raw);
+    setOrgLookup({ loading: false, valid: null, suggestion: null, error: null });
+
+    const digits = raw.replace(/\D/g, "");
+    if (digits.length < 10) return;
+
+    clearTimeout(lookupTimer.current);
+    lookupTimer.current = setTimeout(async () => {
+      setOrgLookup((s) => ({ ...s, loading: true }));
+      try {
+        const data = await apiGet(`/api/utils/company-lookup?orgnr=${encodeURIComponent(raw)}`);
+        setOrgLookup({
+          loading: false,
+          valid: data.valid,
+          suggestion: data.companyName || null,
+          error: data.valid ? null : (data.error || "Ogiltigt organisationsnummer"),
+        });
+        if (data.formatted) {
+          update("orgNumber", data.formatted);
+        }
+        if (data.companyName) {
+          setForm((p) => ({ ...p, name: p.name.trim() ? p.name : data.companyName }));
+        }
+      } catch {
+        setOrgLookup({ loading: false, valid: null, suggestion: null, error: null });
+      }
+    }, 600);
+  }, []);
+
+  useEffect(() => {
+    return () => clearTimeout(lookupTimer.current);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     if (!form.name.trim()) { setError("Företagsnamn krävs"); return; }
     if (!form.orgNumber.trim()) { setError("Organisationsnummer krävs"); return; }
+    if (orgLookup.valid === false) { setError("Ogiltigt organisationsnummer — kontrollera och försök igen."); return; }
+    if (orgLookup.valid !== true) { setError("Vänta tills organisationsnumret har validerats."); return; }
     setSaving(true);
     try {
       const org = await createOrganization(form);
@@ -67,15 +106,36 @@ export default function AddCompany() {
 
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Organisationsnummer *</label>
-            <input
-              type="text"
-              value={form.orgNumber}
-              onChange={(e) => update("orgNumber", e.target.value)}
-              placeholder="556036-0793"
-              className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none"
-              required
-            />
-            <p className="mt-1 text-xs text-slate-500">10 siffror med bindestreck, t.ex. 556036-0793</p>
+            <div className="relative">
+              <input
+                type="text"
+                value={form.orgNumber}
+                onChange={(e) => handleOrgNumberChange(e.target.value)}
+                placeholder="556036-0793"
+                className={`w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none ${
+                  orgLookup.valid === false ? "border-red-400" : orgLookup.valid === true ? "border-green-400" : "border-slate-300"
+                }`}
+                required
+              />
+              {orgLookup.loading && (
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">Kontrollerar…</span>
+              )}
+              {orgLookup.valid === true && !orgLookup.loading && (
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-green-600 font-medium">✓ Giltigt</span>
+              )}
+            </div>
+            {orgLookup.error && (
+              <p className="mt-1 text-xs text-red-600">{orgLookup.error}</p>
+            )}
+            {orgLookup.valid === true && !orgLookup.loading && (
+              <p className="mt-1 text-xs text-green-700 font-medium">
+                Ert åkeri verifieras automatiskt — ni kan börja direkt.
+                {orgLookup.suggestion && <> Hittades: <strong>{orgLookup.suggestion}</strong></>}
+              </p>
+            )}
+            {!orgLookup.valid && !orgLookup.error && (
+              <p className="mt-1 text-xs text-slate-500">10 siffror med bindestreck, t.ex. 556036-0793</p>
+            )}
           </div>
 
           <div className="grid sm:grid-cols-2 gap-4">
@@ -118,13 +178,6 @@ export default function AddCompany() {
             {error}
           </div>
         )}
-
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-          <p className="font-semibold">Verifiering krävs</p>
-          <p className="mt-1 text-amber-800">
-            Nya åkerier granskas manuellt. Det tar vanligtvis 1–2 vardagar. Du kan direkt börja söka bland förare.
-          </p>
-        </div>
 
         <button
           type="submit"

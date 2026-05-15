@@ -79,3 +79,11 @@ export function stopViewAs() {
 export function getViewAsStatus() {
   return apiGet("/api/admin/impersonation/status");
 }
+
+export function deleteUser(id) {
+  return apiDelete(`/api/admin/users/${id}`);
+}
+
+export function listSchools() {
+  return apiGet("/api/admin/schools");
+}

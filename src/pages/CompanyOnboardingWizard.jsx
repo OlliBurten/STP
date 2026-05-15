@@ -125,6 +125,14 @@ export default function CompanyOnboardingWizard() {
       setError("Organisationsnummer krävs");
       return;
     }
+    if (orgLookup.valid === false) {
+      setError("Ogiltigt organisationsnummer — kontrollera och försök igen.");
+      return;
+    }
+    if (orgLookup.valid !== true) {
+      setError("Vänta tills organisationsnumret har validerats.");
+      return;
+    }
     if (firstCompany.segmentDefaults.length === 0) {
       setError("Välj minst ett transportsegment.");
       return;
@@ -367,10 +375,10 @@ export default function CompanyOnboardingWizard() {
             {orgLookup.error && (
               <p className="mt-1 text-xs text-red-600">{orgLookup.error}</p>
             )}
-            {orgLookup.suggestion && (
-              <p className="mt-1 text-xs text-green-700">
-                Hittades: <strong>{orgLookup.suggestion}</strong>
-                {!firstCompany.name.trim() && " (ifyllt som företagsnamn)"}
+            {orgLookup.valid === true && !orgLookup.loading && (
+              <p className="mt-1 text-xs text-green-700 font-medium">
+                Ert åkeri verifieras automatiskt — ni kan börja direkt.
+                {orgLookup.suggestion && <> Hittades: <strong>{orgLookup.suggestion}</strong></>}
               </p>
             )}
           </div>

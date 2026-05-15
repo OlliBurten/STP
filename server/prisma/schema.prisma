@@ -151,6 +151,7 @@ model Organization {
   fleet            Int?     // antal fordon i flottan
   employeeCount    String?  // t.ex. "50-100", "100-250"
   foundedYear      Int?     // grundat år
+  acceptsPraktik   Boolean  @default(false) // öppen för praktikanter
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
@@ -232,6 +233,8 @@ model DriverProfile {
   certExpiry          Json?    // { "YKB": "2027-03-01", "ADR klass 3": "2026-06-01", ... }
   isGymnasieelev      Boolean  @default(false)
   schoolName          String?
+  studyProgram        String?  // t.ex. "Transportprogrammet", "Fordon och Transport"
+  graduationYear      Int?     // förväntad examen, t.ex. 2026
   physicalWorkOk      Boolean? // fysiskt tungt arbete ok
   soloWorkOk          Boolean? // ensamarbete ok
   fastResponder       Boolean  @default(false) // svarar på meddelanden inom 24h

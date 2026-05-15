@@ -303,6 +303,9 @@ adminRouter.get("/summary", async (req, res, next) => {
       driversWithMinimumProfile,
       driversTotalForProfile,
       jobsWithConversationsRaw,
+      pendingLegacyCompanies,
+      pendingOrganizations,
+      acceptsPraktikCompanies,
     ] = await Promise.all([
       prisma.user.count({ where: { createdAt: { gte: since24h } } }),
       prisma.user.count({ where: { createdAt: { gte: since7d } } }),
@@ -357,6 +360,11 @@ adminRouter.get("/summary", async (req, res, next) => {
         distinct: ["jobId"],
         select: { jobId: true },
       }),
+      prisma.user.count({
+        where: { role: "COMPANY", companyStatus: "PENDING", companyOrgNumber: { not: null } },
+      }),
+      prisma.organization.count({ where: { status: "PENDING" } }),
+      prisma.organization.count({ where: { acceptsPraktik: true } }),
     ]);
 
     res.json({
@@ -381,6 +389,8 @@ adminRouter.get("/summary", async (req, res, next) => {
       },
       verification: {
         verifiedCompanies: verifiedLegacyCompanies + verifiedOrganizations,
+        pendingCompanies: pendingLegacyCompanies + pendingOrganizations,
+        acceptsPraktikCompanies,
       },
       driverProfiles: {
         completeMinimum: driversWithMinimumProfile,
@@ -395,6 +405,25 @@ adminRouter.get("/summary", async (req, res, next) => {
         published: toIso(job.published),
       })),
     });
+  } catch (e) {
+    next(e);
+  }
+});
+
+adminRouter.get("/schools", async (req, res, next) => {
+  try {
+    const rows = await prisma.driverProfile.groupBy({
+      by: ["schoolName"],
+      where: { schoolName: { not: null } },
+      _count: { id: true },
+      orderBy: { _count: { id: "desc" } },
+    });
+    res.json(
+      rows.map((r) => ({
+        schoolName: r.schoolName,
+        count: r._count.id,
+      }))
+    );
   } catch (e) {
     next(e);
   }
@@ -1274,6 +1303,68 @@ adminRouter.patch("/reviews/:id", async (req, res, next) => {
         status: updated.status,
       },
     });
+  } catch (e) {
+    next(e);
+  }
+});
+
+adminRouter.delete("/users/:id", async (req, res, next) => {
+  try {
+    const targetId = req.params.id;
+    const actorId = getAdminActorId(req);
+
+    if (targetId === actorId) {
+      return res.status(400).json({ error: "Du kan inte ta bort ditt eget konto." });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: targetId },
+      select: { id: true, email: true, name: true, role: true },
+    });
+    if (!user) return res.status(404).json({ error: "Användaren hittades inte." });
+
+    if (isAdminEmail(user.email)) {
+      return res.status(403).json({ error: "Adminkonton kan inte tas bort via admin-panelen." });
+    }
+
+    // Handle organizations where user is owner
+    const ownedOrgs = await prisma.userOrganization.findMany({
+      where: { userId: targetId, role: "OWNER" },
+      include: {
+        organization: {
+          include: {
+            userOrganizations: { select: { userId: true, role: true } },
+          },
+        },
+      },
+    });
+
+    for (const membership of ownedOrgs) {
+      const org = membership.organization;
+      const otherMembers = org.userOrganizations.filter((m) => m.userId !== targetId);
+      if (otherMembers.length === 0) {
+        // Sole member — delete the org entirely
+        await prisma.organization.delete({ where: { id: org.id } });
+      }
+      // If other members exist, removing the user via cascade is fine — org survives
+    }
+
+    // Log before deleting (targetUser will be set to null via SetNull after deletion)
+    await createAdminAuditLog({
+      req,
+      action: "USER_DELETED",
+      targetUserId: targetId,
+      targetType: "USER",
+      metadata: {
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      },
+    });
+
+    await prisma.user.delete({ where: { id: targetId } });
+
+    res.json({ ok: true, message: `Kontot för ${user.email} har tagits bort.` });
   } catch (e) {
     next(e);
   }

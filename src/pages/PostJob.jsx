@@ -699,9 +699,9 @@ export default function PostJob() {
         <div style={{ maxWidth: 520, padding: "0 24px", textAlign: "center" }}>
           <div style={{ padding: "32px 36px", background: "rgba(245,166,35,0.06)", border: "1px solid rgba(245,166,35,0.2)", borderRadius: 20 }}>
             <div style={{ fontSize: 32, marginBottom: 16 }}>⏳</div>
-            <h1 style={{ fontSize: 20, fontWeight: 800, color: "#F5A623", marginBottom: 12 }}>Verifiering krävs innan publicering</h1>
+            <h1 style={{ fontSize: 20, fontWeight: 800, color: "#F5A623", marginBottom: 12 }}>Kontot är inte verifierat</h1>
             <p style={{ fontSize: 14, color: "rgba(240,250,249,0.6)", lineHeight: 1.7, margin: 0 }}>
-              Företagskontot är skapat men ännu inte verifierat. När verifieringen är klar kan ni publicera jobb direkt.
+              Verifiering sker automatiskt med ett giltigt organisationsnummer. Gå till företagsöversikten och kontrollera att ert org-nummer är korrekt angivet.
             </p>
           </div>
           <Link to="/foretag" style={{ display: "inline-block", marginTop: 20, fontSize: 14, color: "rgba(240,250,249,0.4)", textDecoration: "none" }}>← Tillbaka till företagsöversikten</Link>

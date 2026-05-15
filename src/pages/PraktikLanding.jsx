@@ -67,7 +67,7 @@ const WHY = [
   {
     icon: "✓",
     title: "Verifierade åkerier",
-    body: "Alla företag på STP granskas manuellt innan de kan publicera. Elever möter inga falska aktörer.",
+    body: "Alla företag på STP verifieras mot Bolagsverket innan de kan publicera. Elever möter inga falska aktörer.",
   },
   {
     icon: "⟷",
@@ -170,7 +170,7 @@ export default function PraktikLanding() {
           {SEGMENTS.map((s) => (
             <div key={s.id} style={{
               background: s.bg, border: `1px solid ${s.border}`,
-              borderRadius: 20, padding: "32px 36px",
+              borderRadius: 20, padding: "28px clamp(18px, 5vw, 36px)",
             }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
                 <span style={{ fontSize: 22 }}>{s.icon}</span>
@@ -222,22 +222,19 @@ export default function PraktikLanding() {
         {/* ── Arbetsförmedlingen-not ── */}
         <div style={{
           background: "rgba(255,255,255,0.02)", border: `1px solid ${T.border}`,
-          borderRadius: 18, padding: "30px 36px", marginBottom: 56,
-          display: "grid", gridTemplateColumns: "1fr auto", gap: 24, alignItems: "center",
+          borderRadius: 18, padding: "28px clamp(18px, 5vw, 36px)", marginBottom: 56,
         }}>
-          <div>
-            <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.muted, marginBottom: 8 }}>Samarbete</p>
-            <p style={{ fontSize: 16, fontWeight: 700, color: T.text, marginBottom: 8 }}>
-              AF-utbildade förare söker sin första tjänst här.
-            </p>
-            <p style={{ fontSize: 13, color: T.sub, lineHeight: 1.65, maxWidth: 520 }}>
-              Arbetsförmedlingen finansierar yrkesinriktad utbildning till CE-körkort och YKB för arbetssökande. STP är matchningsplattformen dit dessa förare naturligt hamnar — verifierade åkerier som söker förare möter dem direkt.
-            </p>
-          </div>
+          <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.muted, marginBottom: 8 }}>Samarbete</p>
+          <p style={{ fontSize: 16, fontWeight: 700, color: T.text, marginBottom: 8 }}>
+            AF-utbildade förare söker sin första tjänst här.
+          </p>
+          <p style={{ fontSize: 13, color: T.sub, lineHeight: 1.65, marginBottom: 20 }}>
+            Arbetsförmedlingen finansierar yrkesinriktad utbildning till CE-körkort och YKB för arbetssökande. STP är matchningsplattformen dit dessa förare naturligt hamnar — verifierade åkerier som söker förare möter dem direkt.
+          </p>
           <Link to="/kontakt" style={{
-            flexShrink: 0, padding: "11px 22px", borderRadius: 10,
+            display: "inline-block", padding: "11px 22px", borderRadius: 10,
             border: `1px solid ${T.border}`, color: T.sub,
-            fontSize: 13, fontWeight: 600, textDecoration: "none", whiteSpace: "nowrap",
+            fontSize: 13, fontWeight: 600, textDecoration: "none",
           }}>
             Kontakta oss →
           </Link>
