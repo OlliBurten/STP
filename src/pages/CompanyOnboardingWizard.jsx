@@ -4,509 +4,698 @@ import { fetchMyCompanyProfile, updateMyCompanyProfile } from "../api/companies.
 import { fetchMyOrganizations, createOrganization } from "../api/organizations.js";
 import { createCompanyInvite } from "../api/invites.js";
 import { segmentOptions } from "../data/segments";
-import BranschSearch from "../components/BranschSearch.jsx";
-import { regions } from "../data/mockJobs.js";
 import { useAuth } from "../context/AuthContext";
 import { trackCompanyOnboardingComplete } from "../utils/segmentMetrics";
 import { apiGet } from "../api/client.js";
 
-const onboardingReasons = [
-  "Segmenten hjälper STP att visa rätt förare snabbare.",
-  "Region och bransch gör att ni syns tydligare i Hitta åkerier och i relevanta filter.",
-  "Mer komplett grunddata skapar ett mer seriöst första intryck direkt.",
-];
+// ── Design tokens (matchar DriverOnboardingWizard) ──────────────────────────
+const T = {
+  bg:      "#050e0e",
+  bg2:     "#0a1818",
+  bg3:     "#0d2b2b",
+  primary: "#1F5F5C",
+  pLight:  "#2a7a76",
+  pGlow:   "rgba(31,95,92,0.3)",
+  pDim:    "rgba(31,95,92,0.15)",
+  amber:   "#F5A623",
+  amberDim:"rgba(245,166,35,0.12)",
+  text:    "#f0faf9",
+  sub:     "rgba(240,250,249,0.55)",
+  muted:   "rgba(240,250,249,0.3)",
+  border:  "rgba(255,255,255,0.08)",
+  border2: "rgba(255,255,255,0.14)",
+  card:    "rgba(255,255,255,0.04)",
+  green:   "#4ade80",
+  red:     "#f87171",
+};
 
+const inputStyle = {
+  width: "100%", padding: "14px 16px", borderRadius: 12,
+  background: T.bg2, border: `1.5px solid ${T.border2}`,
+  color: T.text, fontSize: 15, fontFamily: "inherit",
+  outline: "none", transition: "border-color .2s",
+};
+
+// ── Atoms ───────────────────────────────────────────────────────────────────
+const Btn = ({ children, v = "primary", onClick, style, disabled, type = "button" }) => {
+  const vs = {
+    primary: { bg: T.primary,                  color: "#fff",   border: "none" },
+    amber:   { bg: T.amber,                     color: "#0a1010",border: "none" },
+    outline: { bg: "transparent",               color: T.text,   border: `1.5px solid ${T.border2}` },
+    dim:     { bg: "rgba(255,255,255,0.07)",     color: T.sub,    border: "none" },
+    green:   { bg: "rgba(74,222,128,0.12)",      color: T.green,  border: `1px solid rgba(74,222,128,0.25)` },
+  };
+  const s = vs[v] || vs.primary;
+  return (
+    <button type={type} onClick={onClick} disabled={disabled} style={{
+      display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7,
+      fontFamily: "inherit", fontWeight: 700, cursor: disabled ? "default" : "pointer",
+      border: s.border, borderRadius: 11, fontSize: 14, padding: "11px 24px",
+      minHeight: 44, background: s.bg, color: s.color, opacity: disabled ? 0.4 : 1,
+      transition: "all .15s", ...style,
+    }}>{children}</button>
+  );
+};
+
+// ── Company preview card ─────────────────────────────────────────────────────
+function CompanyPreview({ name, orgNumber, city, segments, isTransport }) {
+  const segLabels = { FULLTIME: "Heltid", FLEX: "Vikariat/Extra", INTERNSHIP: "Praktik" };
+  const completion = [
+    name?.trim().length > 0,
+    orgNumber?.replace(/\D/g, "").length >= 10,
+    segments.length > 0,
+  ].filter(Boolean).length;
+  const pct = Math.round(completion / 3 * 100);
+
+  return (
+    <div style={{
+      background: T.bg2, border: `1px solid ${T.border}`,
+      borderRadius: 16, overflow: "hidden",
+      position: "sticky", top: 80,
+    }}>
+      {/* Header */}
+      <div style={{
+        background: `linear-gradient(135deg, ${T.bg3} 0%, #061414 100%)`,
+        padding: "20px 20px 16px",
+      }}>
+        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.muted, marginBottom: 12 }}>
+          Ert åkeri
+        </p>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+          <div style={{
+            width: 44, height: 44, borderRadius: 12,
+            background: `linear-gradient(135deg, ${T.primary} 0%, ${T.pLight} 100%)`,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 18, fontWeight: 900, color: "#fff",
+            border: "2px solid rgba(255,255,255,0.12)", flexShrink: 0,
+          }}>
+            {name?.trim() ? name.trim().split(" ").map(w => w[0]).slice(0,2).join("").toUpperCase() : "?"}
+          </div>
+          <div>
+            <p style={{ fontWeight: 700, fontSize: 14, color: T.text }}>
+              {name?.trim() || <span style={{ color: T.muted }}>Företagsnamn</span>}
+            </p>
+            <p style={{ fontSize: 11, color: T.sub }}>
+              {city ? `📍 ${city}` : orgNumber?.replace(/\D/g,"").length >= 10 ? "📍 Hämtar stad…" : <span style={{ color: T.muted }}>📍 Stad</span>}
+            </p>
+          </div>
+        </div>
+        {isTransport && (
+          <div style={{
+            display: "inline-flex", alignItems: "center", gap: 6,
+            padding: "4px 10px", borderRadius: 20,
+            background: "rgba(74,222,128,0.1)", border: "1px solid rgba(74,222,128,0.25)",
+          }}>
+            <span style={{ fontSize: 10, color: T.green }}>✓</span>
+            <span style={{ fontSize: 11, fontWeight: 600, color: T.green }}>Verifierat transportföretag</span>
+          </div>
+        )}
+        {segments.length > 0 && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 10 }}>
+            {segments.map(s => (
+              <span key={s} style={{
+                padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 600,
+                background: T.pDim, color: "#7dd3c8", border: `1px solid rgba(31,95,92,0.4)`,
+              }}>{segLabels[s] || s}</span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Progress */}
+      <div style={{ padding: "14px 20px", borderBottom: `1px solid ${T.border}` }}>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+          <span style={{ fontSize: 12, color: T.sub }}>Kontoprofil</span>
+          <span style={{ fontSize: 12, fontWeight: 700, color: pct >= 80 ? T.green : pct >= 50 ? T.amber : T.sub }}>{pct}%</span>
+        </div>
+        <div style={{ height: 5, borderRadius: 5, background: "rgba(255,255,255,0.08)" }}>
+          <div style={{
+            height: 5, borderRadius: 5, transition: "width .4s",
+            background: pct >= 80 ? T.green : pct >= 50 ? T.amber : T.primary,
+            width: `${pct}%`,
+          }} />
+        </div>
+      </div>
+
+      {/* Checklist */}
+      <div style={{ padding: "14px 20px" }}>
+        {[
+          { label: "Organisationsnummer", done: orgNumber?.replace(/\D/g,"").length >= 10 },
+          { label: "Företagsnamn hämtat", done: name?.trim().length > 0 },
+          { label: "Segment valt", done: segments.length > 0 },
+        ].map(({ label, done }) => (
+          <div key={label} style={{
+            display: "flex", alignItems: "center", gap: 10,
+            padding: "6px 0", borderBottom: `1px solid rgba(255,255,255,0.04)`,
+          }}>
+            <div style={{
+              width: 18, height: 18, borderRadius: "50%", flexShrink: 0,
+              background: done ? "rgba(74,222,128,0.15)" : "transparent",
+              border: `1.5px solid ${done ? T.green : T.border2}`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 10, color: T.green,
+            }}>{done ? "✓" : ""}</div>
+            <span style={{ fontSize: 12, color: done ? T.text : T.muted, fontWeight: done ? 500 : 400 }}>{label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Huvudkomponent ──────────────────────────────────────────────────────────
 export default function CompanyOnboardingWizard() {
   const { hasApi, refreshUser, refreshOrgs, switchOrg } = useAuth();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [step, setStep] = useState("setup"); // "setup" | "invite" | "done"
-  const [error, setError] = useState("");
-  const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteList, setInviteList] = useState([]);
-  const [inviteSending, setInviteSending] = useState(false);
-  const [inviteErrors, setInviteErrors] = useState({});
-  const [profile, setProfile] = useState(null);
-  const [defaults, setDefaults] = useState([]);
+
+  const [loading, setLoading]               = useState(true);
+  const [saving, setSaving]                 = useState(false);
+  const [step, setStep]                     = useState(0); // 0=orgnr, 1=segment, 2=invite, 3=done
+  const [error, setError]                   = useState("");
+  const [profile, setProfile]               = useState(null);
   const [needsFirstCompany, setNeedsFirstCompany] = useState(false);
-  const [firstCompany, setFirstCompany] = useState({
-    name: "",
-    orgNumber: "",
-    region: "",
-    segmentDefaults: [],
-    bransch: [],
-    city: "",
-    foundedYear: null,
+
+  // Formulärdata
+  const [form, setForm] = useState({
+    orgNumber: "", name: "", region: "", city: "",
+    foundedYear: null, segmentDefaults: [],
   });
-  const [orgLookup, setOrgLookup] = useState({ loading: false, valid: null, suggestion: null, error: null, isTransport: null, sniCodes: [] });
+  const [orgLookup, setOrgLookup] = useState({
+    loading: false, valid: null, isTransport: null, suggestion: null, error: null,
+  });
   const lookupTimer = useRef(null);
 
-  const handleOrgNumberChange = useCallback((raw) => {
-    setFirstCompany((p) => ({ ...p, orgNumber: raw }));
-    setOrgLookup({ loading: false, valid: null, suggestion: null, error: null });
+  // Inbjudan
+  const [inviteEmail, setInviteEmail]     = useState("");
+  const [inviteList, setInviteList]       = useState([]);
+  const [inviteSending, setInviteSending] = useState(false);
+  const [inviteErrors, setInviteErrors]   = useState({});
 
-    // Strip non-digits to check length
+  // Ladda befintlig profil
+  useEffect(() => {
+    if (!hasApi) { setLoading(false); return; }
+    Promise.all([fetchMyCompanyProfile().catch(() => null), fetchMyOrganizations().catch(() => [])])
+      .then(([profileData, orgs]) => {
+        setProfile(profileData);
+        setNeedsFirstCompany(!profileData && (!orgs || orgs.length === 0));
+      })
+      .finally(() => setLoading(false));
+  }, [hasApi]);
+
+  // Org-nummer → Bolagsverket
+  const handleOrgNumberChange = useCallback((raw) => {
+    setForm(p => ({ ...p, orgNumber: raw }));
+    setOrgLookup({ loading: false, valid: null, isTransport: null, suggestion: null, error: null });
     const digits = raw.replace(/\D/g, "");
     if (digits.length < 10) return;
-
     clearTimeout(lookupTimer.current);
     lookupTimer.current = setTimeout(async () => {
-      setOrgLookup((s) => ({ ...s, loading: true }));
+      setOrgLookup(s => ({ ...s, loading: true }));
       try {
         const data = await apiGet(`/api/utils/company-lookup?orgnr=${encodeURIComponent(raw)}`);
         setOrgLookup({
           loading: false,
           valid: data.valid,
+          isTransport: data.isTransport ?? null,
           suggestion: data.companyName || null,
           error: data.valid ? null : (data.error || "Ogiltigt organisationsnummer"),
-          isTransport: data.isTransport ?? null,
-          sniCodes: data.sniCodes ?? [],
         });
-        // Auto-format the number
-        if (data.formatted) {
-          setFirstCompany((p) => ({ ...p, orgNumber: data.formatted }));
-        }
-        // Auto-fill fields from Bolagsverket
-        setFirstCompany((p) => ({
+        if (data.formatted) setForm(p => ({ ...p, orgNumber: data.formatted }));
+        setForm(p => ({
           ...p,
           name:        data.companyName && !p.name.trim() ? data.companyName : p.name,
           city:        data.city        ? data.city        : p.city,
           foundedYear: data.foundedYear ? data.foundedYear : p.foundedYear,
         }));
       } catch {
-        setOrgLookup({ loading: false, valid: null, suggestion: null, error: null });
+        setOrgLookup({ loading: false, valid: null, isTransport: null, suggestion: null, error: null });
       }
     }, 600);
-  }, [firstCompany.name]);
+  }, [form.name]);
 
-  useEffect(() => {
-    return () => clearTimeout(lookupTimer.current);
-  }, []);
+  useEffect(() => () => clearTimeout(lookupTimer.current), []);
 
-  useEffect(() => {
-    if (!hasApi) {
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    Promise.all([fetchMyCompanyProfile().catch(() => null), fetchMyOrganizations().catch(() => [])])
-      .then(([profileData, orgs]) => {
-        setProfile(profileData);
-        if (profileData) {
-          setDefaults(Array.isArray(profileData?.companySegmentDefaults) ? profileData.companySegmentDefaults : []);
-        }
-        setNeedsFirstCompany(!profileData && (!orgs || orgs.length === 0));
-      })
-      .catch(() => setProfile(null))
-      .finally(() => setLoading(false));
-  }, [hasApi]);
-
+  // Guards
   if (!hasApi) return <Navigate to="/foretag" replace />;
-  if (!loading && profile && (profile.companySegmentDefaults || []).length > 0) {
+  if (!loading && profile && (profile.companySegmentDefaults || []).length > 0)
     return <Navigate to="/foretag" replace />;
-  }
-  if (!loading && !needsFirstCompany && !profile) return <Navigate to="/foretag" replace />;
+  if (!loading && !needsFirstCompany && !profile)
+    return <Navigate to="/foretag" replace />;
 
-  const toggleDefault = (segment) => {
-    setDefaults((prev) =>
-      prev.includes(segment) ? prev.filter((s) => s !== segment) : [...prev, segment]
-    );
-  };
-
-  const toggleFirstCompanySegment = (segment) => {
-    setFirstCompany((prev) => ({
-      ...prev,
-      segmentDefaults: prev.segmentDefaults.includes(segment)
-        ? prev.segmentDefaults.filter((s) => s !== segment)
-        : [...prev.segmentDefaults, segment],
+  // Toggle segment
+  const toggleSegment = (seg) =>
+    setForm(p => ({
+      ...p,
+      segmentDefaults: p.segmentDefaults.includes(seg)
+        ? p.segmentDefaults.filter(s => s !== seg)
+        : [...p.segmentDefaults, seg],
     }));
-  };
 
-  const saveFirstCompany = async () => {
-    if (!firstCompany.name.trim()) {
-      setError("Företagsnamn krävs");
-      return;
-    }
-    if (!firstCompany.orgNumber.trim()) {
-      setError("Organisationsnummer krävs");
-      return;
-    }
-    if (orgLookup.valid === false) {
-      setError("Ogiltigt organisationsnummer — kontrollera och försök igen.");
-      return;
-    }
-    if (orgLookup.valid !== true) {
-      setError("Vänta tills organisationsnumret har validerats.");
-      return;
-    }
+  // Spara och gå till steg 2
+  const handleSave = async () => {
+    setError("");
+    if (!form.orgNumber.trim()) { setError("Fyll i organisationsnummer."); return; }
+    if (orgLookup.valid === false) { setError("Ogiltigt organisationsnummer — kontrollera och försök igen."); return; }
+    if (orgLookup.valid !== true)  { setError("Vänta tills organisationsnumret har validerats."); return; }
     if (orgLookup.isTransport === false) {
-      setError("Ert företag verkar inte vara registrerat som transportföretag hos Bolagsverket. STP är till för åkerier och transportföretag.");
+      setError("Ert företag är inte registrerat som transportverksamhet hos Bolagsverket. STP är till för åkerier och transportföretag.");
       return;
     }
-    if (firstCompany.segmentDefaults.length === 0) {
-      setError("Välj minst ett transportsegment.");
-      return;
-    }
-    setError("");
+    if (form.segmentDefaults.length === 0) { setError("Välj minst ett transportsegment."); return; }
+
     setSaving(true);
     try {
-      const org = await createOrganization({
-        name: firstCompany.name.trim(),
-        orgNumber: firstCompany.orgNumber.trim(),
-        region: firstCompany.region || undefined,
-        segmentDefaults: firstCompany.segmentDefaults,
-        bransch: firstCompany.bransch.length > 0 ? firstCompany.bransch : undefined,
-      });
-      await refreshUser?.();
-      await refreshOrgs?.();
-      if (org?.id) switchOrg?.(org.id);
-      trackCompanyOnboardingComplete(firstCompany.segmentDefaults);
-      setStep("invite");
+      if (needsFirstCompany) {
+        const org = await createOrganization({
+          name: form.name.trim(),
+          orgNumber: form.orgNumber.trim(),
+          region: form.region || undefined,
+          segmentDefaults: form.segmentDefaults,
+        });
+        await refreshUser?.();
+        await refreshOrgs?.();
+        if (org?.id) switchOrg?.(org.id);
+      } else {
+        await updateMyCompanyProfile({
+          name: profile?.name || "",
+          companyName: form.name || profile?.companyName || "",
+          companyDescription: profile?.companyDescription || "",
+          companyWebsite: profile?.companyWebsite || "",
+          companyLocation: form.city || profile?.companyLocation || "",
+          companySegmentDefaults: form.segmentDefaults,
+        });
+        await refreshUser?.();
+      }
+      trackCompanyOnboardingComplete(form.segmentDefaults);
+      setStep(2);
     } catch (e) {
-      setError(e.message || "Kunde inte lägga till företag.");
+      setError(e.message || "Kunde inte spara. Försök igen.");
     } finally {
       setSaving(false);
     }
   };
 
-  const save = async () => {
-    if (defaults.length === 0) {
-      setError("Välj minst ett standardsegment.");
-      return;
-    }
-    if (!profile) return;
-    setError("");
-    setSaving(true);
-    try {
-      await updateMyCompanyProfile({
-        name: profile.name || "",
-        companyName: profile.companyName || "",
-        companyDescription: profile.companyDescription || "",
-        companyWebsite: profile.companyWebsite || "",
-        companyLocation: profile.companyLocation || "",
-        companySegmentDefaults: defaults,
-      });
-      await refreshUser?.();
-      trackCompanyOnboardingComplete(defaults);
-      setStep("invite");
-    } catch (e) {
-      setError(e.message || "Kunde inte spara onboarding.");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const addInviteEmail = () => {
-    const trimmed = inviteEmail.trim().toLowerCase();
-    if (!trimmed || inviteList.includes(trimmed)) return;
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailPattern.test(trimmed)) return;
-    setInviteList((prev) => [...prev, trimmed]);
+  // Inbjudan
+  const addInvite = () => {
+    const t = inviteEmail.trim().toLowerCase();
+    if (!t || inviteList.includes(t) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(t)) return;
+    setInviteList(p => [...p, t]);
     setInviteEmail("");
   };
-
-  const removeInviteEmail = (email) => {
-    setInviteList((prev) => prev.filter((e) => e !== email));
-    setInviteErrors((prev) => { const n = { ...prev }; delete n[email]; return n; });
+  const removeInvite = (email) => {
+    setInviteList(p => p.filter(e => e !== email));
+    setInviteErrors(p => { const n = { ...p }; delete n[email]; return n; });
   };
-
   const sendInvites = async () => {
-    if (inviteList.length === 0) { finishOnboarding(); return; }
+    if (inviteList.length === 0) { finish(); return; }
     setInviteSending(true);
     const errors = {};
     for (const email of inviteList) {
-      try {
-        await createCompanyInvite(email);
-      } catch (e) {
-        errors[email] = e.message || "Kunde inte skicka inbjudan";
-      }
+      try { await createCompanyInvite(email); }
+      catch (e) { errors[email] = e.message || "Kunde inte skicka"; }
     }
     setInviteSending(false);
-    if (Object.keys(errors).length > 0) {
-      setInviteErrors(errors);
-      return;
+    if (Object.keys(errors).length > 0) { setInviteErrors(errors); return; }
+    finish();
+  };
+  const finish = () => {
+    setStep(3);
+    setTimeout(() => navigate("/foretag", { replace: true }), 2400);
+  };
+
+  // ── Gemensam wrapper ──────────────────────────────────────────────────────
+  const canContinue = () => {
+    if (step === 0) {
+      const digits = form.orgNumber.replace(/\D/g, "");
+      return digits.length >= 10 && orgLookup.valid === true && orgLookup.isTransport !== false && !orgLookup.loading;
     }
-    finishOnboarding();
+    if (step === 1) return form.segmentDefaults.length > 0;
+    return true;
   };
 
-  const finishOnboarding = () => {
-    setStep("done");
-    setTimeout(() => navigate("/foretag", { replace: true }), 2200);
+  const wrapStyle = {
+    minHeight: "100vh",
+    background: T.bg,
+    color: T.text,
+    fontFamily: "inherit",
+    marginTop: "-64px",
+    paddingTop: "64px",
   };
 
-  if (step === "done") {
-    return (
-      <main className="max-w-2xl mx-auto px-4 sm:px-6 py-10">
-        <section className="bg-white rounded-xl border border-slate-200 p-8 sm:p-12 text-center space-y-5">
-          <div className="w-16 h-16 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center mx-auto text-2xl font-bold text-[var(--color-primary)]">
-            ✓
-          </div>
-          <h1 className="text-2xl font-bold text-slate-900">Ni är redo att köra!</h1>
-          <p className="text-slate-600 max-w-sm mx-auto">
-            Ert åkeri är verifierat. Ni kan nu söka förare, publicera jobb och kontakta kandidater direkt.
-          </p>
-          <p className="text-sm text-slate-400">Tar dig till dashboarden...</p>
-        </section>
-      </main>
-    );
-  }
-
-  if (step === "invite") {
-    return (
-      <main className="max-w-2xl mx-auto px-4 sm:px-6 py-10">
-        <section className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8 space-y-6">
-          <div>
-            <div className="flex gap-1.5 mb-4">
-              <span className="w-2 h-2 rounded-full bg-slate-300" />
-              <span className="w-2 h-2 rounded-full bg-[var(--color-primary)]" />
+  // ── Done ─────────────────────────────────────────────────────────────────
+  if (step === 3) return (
+    <div style={{ ...wrapStyle, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+      <div style={{ maxWidth: 480, width: "100%", textAlign: "center" }}>
+        <div style={{
+          width: 72, height: 72, borderRadius: "50%",
+          background: "rgba(74,222,128,0.1)", border: "2px solid rgba(74,222,128,0.3)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 28, margin: "0 auto 24px", color: T.green,
+        }}>✓</div>
+        <h1 style={{ fontSize: 36, fontWeight: 900, lineHeight: 1.15, marginBottom: 14 }}>
+          Ni är live<br />
+          <span style={{ color: T.green }}>på STP!</span>
+        </h1>
+        <p style={{ fontSize: 15, color: T.sub, lineHeight: 1.7, marginBottom: 32 }}>
+          {form.name || "Ert åkeri"} är nu aktiv på plattformen. Ni kan publicera jobb och kontakta förare direkt.
+        </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 28 }}>
+          {[
+            { icon: "🚛", title: "Hitta förare direkt", text: "Sök bland förare med rätt körkort och region — kontakta dem utan mellanhänder." },
+            { icon: "📋", title: "Publicera er första annons", text: "En jobbannons når förare som matchar er region och era körkortskrav automatiskt." },
+            { icon: "🔔", title: "Bli hittade av förare", text: "Förare söker bland åkerier på STP — er profil visas för dem i er region." },
+          ].map(({ icon, title, text }) => (
+            <div key={title} style={{
+              display: "flex", gap: 14, padding: "14px 16px", borderRadius: 12, textAlign: "left",
+              background: T.card, border: `1px solid ${T.border}`,
+            }}>
+              <span style={{ fontSize: 20, flexShrink: 0 }}>{icon}</span>
+              <div>
+                <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 3 }}>{title}</p>
+                <p style={{ fontSize: 12, color: T.sub, lineHeight: 1.5 }}>{text}</p>
+              </div>
             </div>
-            <h1 className="mt-1 text-2xl font-bold text-slate-900">Bjud in teammedlemmar</h1>
-            <p className="mt-2 text-slate-600">
-              Lägg till kolleger som ska ha åtkomst till ert konto. De får ett e-postinbjudan och kan skapa ett konto eller logga in.
-            </p>
-          </div>
+          ))}
+        </div>
+        <p style={{ fontSize: 12, color: T.muted }}>Tar dig till dashboarden…</p>
+      </div>
+    </div>
+  );
 
-          <div className="flex gap-2">
+  // ── Steg 2: Inbjudan ─────────────────────────────────────────────────────
+  if (step === 2) return (
+    <div style={{ ...wrapStyle, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+      <div style={{ maxWidth: 520, width: "100%" }}>
+        {/* Steg-prickar */}
+        <div style={{ display: "flex", gap: 6, marginBottom: 32, justifyContent: "center" }}>
+          {["Företag", "Segment", "Team"].map((label, i) => (
+            <div key={label} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
+              <div style={{
+                width: 28, height: 28, borderRadius: "50%",
+                background: i < 2 ? T.primary : `1px solid ${T.border2}`,
+                border: i === 2 ? `2px solid ${T.primary}` : "none",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 11, fontWeight: 700, color: i < 2 ? "#fff" : T.primary,
+              }}>{i < 2 ? "✓" : "3"}</div>
+              <span style={{ fontSize: 10, color: i === 2 ? T.text : T.muted }}>{label}</span>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 20, padding: "32px 36px" }}>
+          <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.amber, marginBottom: 14 }}>
+            Steg 3 · Bjud in team
+          </p>
+          <h2 style={{ fontSize: 28, fontWeight: 800, lineHeight: 1.2, marginBottom: 10 }}>
+            Lägg till<br />
+            <span style={{ color: "#7dd3c8" }}>teammedlemmar.</span>
+          </h2>
+          <p style={{ fontSize: 14, color: T.sub, marginBottom: 28, lineHeight: 1.65 }}>
+            Valfritt — kolleger som ska ha åtkomst till kontot. De får en inbjudan via e-post.
+          </p>
+
+          <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
             <input
               type="email"
               value={inviteEmail}
-              onChange={(e) => setInviteEmail(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addInviteEmail(); } }}
+              onChange={e => setInviteEmail(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addInvite(); } }}
               placeholder="kollega@foretagsnamn.se"
-              className="flex-1 px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none"
+              style={{ ...inputStyle, flex: 1 }}
             />
-            <button
-              type="button"
-              onClick={addInviteEmail}
-              className="px-4 py-3 rounded-lg bg-slate-100 text-slate-700 font-medium hover:bg-slate-200 transition-colors"
-            >
-              Lägg till
-            </button>
+            <Btn v="outline" onClick={addInvite}>Lägg till</Btn>
           </div>
 
           {inviteList.length > 0 && (
-            <ul className="space-y-2">
-              {inviteList.map((email) => (
-                <li key={email} className="flex items-center justify-between rounded-lg border border-slate-200 px-4 py-2.5">
-                  <span className="text-sm text-slate-800">{email}</span>
-                  <div className="flex items-center gap-3">
-                    {inviteErrors[email] && (
-                      <span className="text-xs text-red-600">{inviteErrors[email]}</span>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => removeInviteEmail(email)}
-                      className="text-slate-400 hover:text-slate-600 text-lg leading-none"
-                      aria-label={`Ta bort ${email}`}
-                    >
-                      ×
-                    </button>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 20 }}>
+              {inviteList.map(email => (
+                <div key={email} style={{
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  padding: "10px 14px", borderRadius: 10, background: T.card, border: `1px solid ${T.border}`,
+                }}>
+                  <span style={{ fontSize: 13, color: T.text }}>{email}</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    {inviteErrors[email] && <span style={{ fontSize: 11, color: T.red }}>{inviteErrors[email]}</span>}
+                    <button onClick={() => removeInvite(email)} style={{
+                      background: "none", border: "none", color: T.muted, cursor: "pointer", fontSize: 18, lineHeight: 1,
+                    }}>×</button>
                   </div>
-                </li>
+                </div>
               ))}
-            </ul>
+            </div>
           )}
 
-          <div className="flex items-center justify-between pt-2">
-            <button
-              type="button"
-              onClick={finishOnboarding}
-              className="text-sm text-slate-500 hover:text-slate-700 underline"
-            >
-              Hoppa över
-            </button>
-            <button
-              type="button"
-              onClick={sendInvites}
-              disabled={inviteSending}
-              className="px-5 py-2.5 rounded-lg bg-[var(--color-primary)] text-white font-medium disabled:opacity-50 transition-colors"
-            >
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 24 }}>
+            <button onClick={finish} style={{
+              background: "none", border: "none", color: T.muted, cursor: "pointer",
+              fontSize: 13, fontFamily: "inherit", textDecoration: "underline",
+            }}>Hoppa över</button>
+            <Btn onClick={sendInvites} disabled={inviteSending}>
               {inviteSending
-                ? "Skickar..."
+                ? "Skickar…"
                 : inviteList.length > 0
-                  ? `Skicka ${inviteList.length === 1 ? "inbjudan" : `${inviteList.length} inbjudningar`} och fortsätt`
-                  : "Fortsätt"}
-            </button>
+                  ? `Skicka ${inviteList.length === 1 ? "inbjudan" : `${inviteList.length} inbjudningar`} →`
+                  : "Fortsätt →"}
+            </Btn>
           </div>
-        </section>
-      </main>
-    );
-  }
+        </div>
+      </div>
+    </div>
+  );
 
-  if (needsFirstCompany) {
-    return (
-      <main className="max-w-2xl mx-auto px-4 sm:px-6 py-10">
-        <section className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8 space-y-6">
-          <div>
-            <div className="flex gap-1.5 mb-4">
-              <span className="w-2 h-2 rounded-full bg-[var(--color-primary)]" />
-              <span className="w-2 h-2 rounded-full bg-slate-200" />
-            </div>
-            <h1 className="mt-1 text-2xl font-bold text-slate-900">Sätt upp ert åkeri</h1>
-            <p className="mt-2 text-slate-600">
-              Det tar bara ett par minuter. Sedan kan ni börja hitta förare och publicera jobb direkt.
-            </p>
-          </div>
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <p className="text-sm font-semibold text-slate-900">Det här ger er direkt</p>
-            <ul className="mt-2 space-y-1.5 text-sm text-slate-600">
-              {onboardingReasons.map((reason) => (
-                <li key={reason}>{reason}</li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Företagsnamn *</label>
-            <input
-              value={firstCompany.name}
-              onChange={(e) => setFirstCompany((p) => ({ ...p, name: e.target.value }))}
-              placeholder="Nordic Transport AB"
-              className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)]"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Organisationsnummer *</label>
-            <div className="relative">
-              <input
-                value={firstCompany.orgNumber}
-                onChange={(e) => handleOrgNumberChange(e.target.value)}
-                placeholder="556123-4567"
-                className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-[var(--color-primary)] ${
-                  orgLookup.valid === false ? "border-red-400" : orgLookup.valid === true ? "border-green-400" : "border-slate-300"
-                }`}
-              />
-              {orgLookup.loading && (
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">Kontrollerar…</span>
-              )}
-              {orgLookup.valid === true && !orgLookup.loading && (
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-green-600 font-medium">✓ Giltigt</span>
-              )}
-            </div>
-            {orgLookup.error && (
-              <p className="mt-1 text-xs text-red-600">{orgLookup.error}</p>
-            )}
-            {orgLookup.valid === true && !orgLookup.loading && orgLookup.isTransport !== false && (
-              <p className="mt-1 text-xs text-green-700 font-medium">
-                Ert åkeri verifieras automatiskt — ni kan börja direkt.
-                {orgLookup.suggestion && <> Hittades: <strong>{orgLookup.suggestion}</strong></>}
-              </p>
-            )}
-            {orgLookup.valid === true && !orgLookup.loading && orgLookup.isTransport === false && (
-              <p className="mt-1 text-xs text-red-600 font-medium">
-                Ert företag är inte registrerat som transportverksamhet hos Bolagsverket. STP är till för åkerier och transportföretag.
-              </p>
-            )}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Region</label>
-            <select
-              value={firstCompany.region}
-              onChange={(e) => setFirstCompany((p) => ({ ...p, region: e.target.value }))}
-              className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)]"
-            >
-              <option value="">Välj region</option>
-              {regions.map((r) => (
-                <option key={r} value={r}>{r}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">Bransch (rekommenderat)</label>
-            <p className="text-xs text-slate-500 mb-2">Hjälper förare att förstå vilken typ av verksamhet ni har.</p>
-            <BranschSearch
-              value={firstCompany.bransch}
-              onChange={(v) => setFirstCompany((prev) => ({ ...prev, bransch: v }))}
-              placeholder="Sök bransch, t.ex. tankbil, timmerbil..."
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">Transportsegment *</label>
-            <p className="text-xs text-slate-500 mb-2">Välj minst ett. Standardval för nya jobb.</p>
-            <div className="space-y-3">
-              {segmentOptions.map((segment) => {
-                const active = firstCompany.segmentDefaults.includes(segment.value);
-                return (
-                  <button
-                    key={segment.value}
-                    type="button"
-                    onClick={() => toggleFirstCompanySegment(segment.value)}
-                    className={`w-full text-left rounded-xl border p-4 ${
-                      active
-                        ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5"
-                        : "border-slate-200 hover:bg-slate-50"
-                    }`}
-                  >
-                    <p className="font-semibold text-slate-900">{segment.label}</p>
-                    <p className="text-sm text-slate-600">{segment.description}</p>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-          {error ? <p className="text-sm text-red-600">{error}</p> : null}
-          <div className="flex justify-end">
-            <button
-              type="button"
-              onClick={saveFirstCompany}
-              disabled={saving}
-              className="px-5 py-2 rounded-lg bg-[var(--color-primary)] text-white font-medium disabled:opacity-50"
-            >
-              {saving ? "Sparar..." : "Lägg till och fortsätt"}
-            </button>
-          </div>
-        </section>
-      </main>
-    );
-  }
+  // ── Steg 0 + 1: Wizard (org + segment) ───────────────────────────────────
+  const showSidebar = true;
 
   return (
-    <main className="max-w-2xl mx-auto px-4 sm:px-6 py-10">
-      <section className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8">
-        <div className="flex gap-1.5 mb-4">
-          <span className="w-2 h-2 rounded-full bg-[var(--color-primary)]" />
-          <span className="w-2 h-2 rounded-full bg-slate-200" />
+    <div style={{ ...wrapStyle, padding: "0 0 80px" }}>
+      {/* Progress-bar */}
+      <div style={{ height: 3, background: "rgba(255,255,255,0.06)" }}>
+        <div style={{
+          height: 3, background: T.primary, transition: "width .4s",
+          width: step === 0 ? "25%" : step === 1 ? "65%" : "100%",
+        }} />
+      </div>
+
+      <div style={{
+        maxWidth: 1060, margin: "0 auto", padding: "48px 24px 0",
+        display: "grid",
+        gridTemplateColumns: showSidebar ? "1fr 320px" : "1fr",
+        gap: 48,
+        alignItems: "start",
+      }}>
+        {/* LEFT — steg-innehåll */}
+        <div>
+          {/* Steg-prickar */}
+          <div style={{ display: "flex", gap: 6, marginBottom: 40 }}>
+            {["Företag", "Segment"].map((label, i) => (
+              <div key={label} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
+                <div style={{
+                  width: 28, height: 28, borderRadius: "50%",
+                  background: i < step ? T.primary : i === step ? T.primary : "transparent",
+                  border: i > step ? `2px solid ${T.border2}` : "none",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 11, fontWeight: 700,
+                  color: i <= step ? "#fff" : T.muted,
+                }}>{i < step ? "✓" : i + 1}</div>
+                <span style={{ fontSize: 10, color: i === step ? T.text : T.muted }}>{label}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* ── Steg 0: Orgnr ── */}
+          {step === 0 && (
+            <div>
+              <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.amber, marginBottom: 14 }}>
+                Välkommen till STP
+              </p>
+              <h1 style={{ fontSize: 38, fontWeight: 900, lineHeight: 1.1, marginBottom: 14 }}>
+                Starta ert åkeri<br />
+                <span style={{ color: "#7dd3c8" }}>på 3 minuter.</span>
+              </h1>
+              <p style={{ fontSize: 15, color: T.sub, lineHeight: 1.7, marginBottom: 36, maxWidth: 500 }}>
+                Vi hämtar företagsuppgifter automatiskt från Bolagsverket — ni behöver bara ert organisationsnummer.
+              </p>
+
+              {/* Fördelar */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 36, maxWidth: 520 }}>
+                {[
+                  { icon: "🎯", title: "Hitta rätt förare snabbare", text: "Sök bland förare med CE/C, rätt region och rätt tillgänglighet — allt på ett ställe." },
+                  { icon: "📋", title: "Publicera jobb direkt", text: "En annons når automatiskt förare som matchar era krav. Inga jobbportaler." },
+                  { icon: "✓", title: "Automatisk verifiering", text: "Transportföretag verifieras mot Bolagsverket direkt — inga väntetider." },
+                ].map(({ icon, title, text }) => (
+                  <div key={title} style={{
+                    display: "flex", gap: 14, padding: "14px 18px", borderRadius: 14,
+                    background: T.card, border: `1px solid ${T.border}`,
+                  }}>
+                    <span style={{ fontSize: 22, flexShrink: 0 }}>{icon}</span>
+                    <div>
+                      <p style={{ fontWeight: 700, fontSize: 14, color: T.text, marginBottom: 3 }}>{title}</p>
+                      <p style={{ fontSize: 13, color: T.sub, lineHeight: 1.55 }}>{text}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Org-nummer input */}
+              <div style={{ maxWidth: 520 }}>
+                <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 8 }}>Organisationsnummer *</p>
+                <div style={{ position: "relative" }}>
+                  <input
+                    value={form.orgNumber}
+                    onChange={e => handleOrgNumberChange(e.target.value)}
+                    placeholder="556123-4567"
+                    style={{
+                      ...inputStyle,
+                      borderColor: orgLookup.valid === false
+                        ? "rgba(248,113,113,0.6)"
+                        : orgLookup.valid === true
+                          ? "rgba(74,222,128,0.5)"
+                          : T.border2,
+                      paddingRight: 120,
+                    }}
+                  />
+                  {orgLookup.loading && (
+                    <span style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", fontSize: 12, color: T.muted }}>
+                      Kontrollerar…
+                    </span>
+                  )}
+                  {orgLookup.valid === true && !orgLookup.loading && (
+                    <span style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", fontSize: 12, fontWeight: 600, color: T.green }}>
+                      ✓ Giltigt
+                    </span>
+                  )}
+                </div>
+
+                {/* Bolagsverket-feedback */}
+                {orgLookup.error && (
+                  <p style={{ marginTop: 8, fontSize: 12, color: T.red }}>{orgLookup.error}</p>
+                )}
+                {orgLookup.valid === true && !orgLookup.loading && orgLookup.isTransport !== false && (
+                  <div style={{
+                    marginTop: 12, padding: "12px 16px", borderRadius: 12,
+                    background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.2)",
+                    display: "flex", alignItems: "center", gap: 10,
+                  }}>
+                    <span style={{ color: T.green, fontSize: 16 }}>✓</span>
+                    <div>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: T.green }}>
+                        {form.name || orgLookup.suggestion || "Företag hittades"}
+                      </p>
+                      <p style={{ fontSize: 12, color: T.sub, marginTop: 2 }}>
+                        Registrerat transportföretag — verifieras automatiskt.
+                        {form.city ? ` 📍 ${form.city}` : ""}
+                      </p>
+                    </div>
+                  </div>
+                )}
+                {orgLookup.valid === true && !orgLookup.loading && orgLookup.isTransport === false && (
+                  <div style={{
+                    marginTop: 12, padding: "12px 16px", borderRadius: 12,
+                    background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)",
+                  }}>
+                    <p style={{ fontSize: 12, color: T.red, fontWeight: 600 }}>
+                      Ert företag är inte registrerat som transportverksamhet hos Bolagsverket.
+                      STP är till för åkerier och transportföretag.
+                    </p>
+                  </div>
+                )}
+
+                {error && step === 0 && (
+                  <p style={{ marginTop: 10, fontSize: 13, color: T.red }}>{error}</p>
+                )}
+              </div>
+
+              {/* Navigering */}
+              <div style={{ marginTop: 36, maxWidth: 520 }}>
+                <Btn
+                  disabled={!canContinue()}
+                  onClick={() => { setError(""); setStep(1); }}
+                  style={{ minWidth: 200 }}
+                >
+                  Nästa →
+                </Btn>
+                <p style={{ fontSize: 12, color: T.muted, marginTop: 12 }}>
+                  Gratis för åkerier · Ingen bindningstid
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* ── Steg 1: Segment ── */}
+          {step === 1 && (
+            <div>
+              <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.amber, marginBottom: 14 }}>
+                Steg 2 · Transportsegment
+              </p>
+              <h2 style={{ fontSize: 34, fontWeight: 900, lineHeight: 1.15, marginBottom: 10 }}>
+                Vilka förare<br />
+                <span style={{ color: "#7dd3c8" }}>rekryterar ni?</span>
+              </h2>
+              <p style={{ fontSize: 14, color: T.sub, lineHeight: 1.7, marginBottom: 32, maxWidth: 500 }}>
+                Välj minst ett segment. Det styr vilka förare ni matchas mot och är standardval när ni skapar annonser.
+              </p>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 560 }}>
+                {segmentOptions.map(segment => {
+                  const active = form.segmentDefaults.includes(segment.value);
+                  return (
+                    <button
+                      key={segment.value}
+                      type="button"
+                      onClick={() => toggleSegment(segment.value)}
+                      style={{
+                        display: "flex", alignItems: "center", gap: 18,
+                        padding: "18px 20px", borderRadius: 16, cursor: "pointer",
+                        fontFamily: "inherit", textAlign: "left",
+                        border: `2px solid ${active ? T.primary : T.border2}`,
+                        background: active ? T.pDim : T.card,
+                        transition: "all .15s",
+                      }}
+                    >
+                      <div style={{ flex: 1 }}>
+                        <p style={{ fontWeight: 700, fontSize: 15, color: T.text }}>{segment.label}</p>
+                        <p style={{ fontSize: 13, color: T.sub, marginTop: 3, lineHeight: 1.5 }}>{segment.description}</p>
+                      </div>
+                      <div style={{
+                        width: 22, height: 22, borderRadius: "50%", flexShrink: 0,
+                        border: `2px solid ${active ? T.primary : T.border2}`,
+                        background: active ? T.primary : "transparent",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        color: "#fff", fontSize: 11, transition: "all .15s",
+                      }}>{active ? "✓" : ""}</div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {error && step === 1 && (
+                <p style={{ marginTop: 16, fontSize: 13, color: T.red }}>{error}</p>
+              )}
+
+              {/* Navigering */}
+              <div style={{ marginTop: 36, display: "flex", gap: 12, maxWidth: 560 }}>
+                <Btn v="dim" onClick={() => setStep(0)}>← Tillbaka</Btn>
+                <Btn
+                  disabled={saving || !canContinue()}
+                  onClick={handleSave}
+                  style={{ flex: 1 }}
+                >
+                  {saving ? "Sparar…" : "Skapa konto →"}
+                </Btn>
+              </div>
+            </div>
+          )}
         </div>
-        <h1 className="mt-1 text-2xl font-bold text-slate-900">Vilka segment rekryterar ni för?</h1>
-        <p className="mt-2 text-slate-600">Välj era standardsegment — ni kan alltid ändra per annons.</p>
-        <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <p className="text-sm font-semibold text-slate-900">Varför det spelar roll</p>
-          <p className="mt-1 text-sm text-slate-600">
-            Rätt segment gör att förare med rätt bakgrund hittar era annonser, och att ni hittar rätt förare snabbare.
-          </p>
-        </div>
-        <div className="mt-6 grid gap-3">
-          {segmentOptions.map((segment) => {
-            const active = defaults.includes(segment.value);
-            return (
-              <button
-                key={segment.value}
-                type="button"
-                onClick={() => toggleDefault(segment.value)}
-                className={`text-left rounded-xl border p-4 ${
-                  active
-                    ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5"
-                    : "border-slate-200 hover:bg-slate-50"
-                }`}
-              >
-                <p className="font-semibold text-slate-900">{segment.label}</p>
-                <p className="text-sm text-slate-600">{segment.description}</p>
-              </button>
-            );
-          })}
-        </div>
-        {error ? <p className="mt-4 text-sm text-red-600">{error}</p> : null}
-        <div className="mt-8 flex items-center justify-end">
-          <button
-            type="button"
-            onClick={save}
-            disabled={saving}
-            className="px-5 py-2 rounded-lg bg-[var(--color-primary)] text-white font-medium disabled:opacity-50"
-          >
-            {saving ? "Sparar..." : "Spara och fortsätt"}
-          </button>
-        </div>
-      </section>
-    </main>
+
+        {/* RIGHT — preview */}
+        <CompanyPreview
+          name={form.name}
+          orgNumber={form.orgNumber}
+          city={form.city}
+          segments={form.segmentDefaults}
+          isTransport={orgLookup.isTransport}
+        />
+      </div>
+    </div>
   );
 }
