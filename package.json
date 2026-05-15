@@ -9,7 +9,9 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "e2e": "playwright test",
-    "e2e:ui": "playwright test --ui"
+    "e2e:ui": "playwright test --ui",
+    "e2e:live": "PLAYWRIGHT_BASE_URL=https://transportplattformen.se playwright test --project=setup --project=chromium --project=chromium-auth",
+    "e2e:live:public": "PLAYWRIGHT_BASE_URL=https://transportplattformen.se playwright test --project=chromium"
   },
   "dependencies": {
     "@azure/msal-browser": "^4.29.1",

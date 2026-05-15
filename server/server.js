@@ -42,6 +42,7 @@ import { schoolsRouter } from "./routes/schools.js";
 import { isGoogleConfigured, isMicrosoftConfigured } from "./lib/oauth.js";
 import { JWT_SECRET } from "./lib/config.js";
 import { startReminderScheduler } from "./lib/reminderScheduler.js";
+import { prisma } from "./lib/prisma.js";
 import * as Sentry from "@sentry/node";
 
 const app = express();
@@ -262,6 +263,78 @@ app.post("/api/internal/migrate", internalLimiter, express.json(), async (req, r
   }
 });
 
+// Verifiera e-post för ett konto (kräver ADMIN_API_KEY) — används för E2E-testsetup
+app.post("/api/internal/verify-email", internalLimiter, express.json(), async (req, res) => {
+  const key = req.headers["x-admin-api-key"] || req.body?.adminApiKey;
+  const expected = process.env.ADMIN_API_KEY;
+  if (!expected || key !== expected) return res.status(401).json({ error: "Unauthorized" });
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: "email krävs" });
+  const user = await prisma.user.update({
+    where: { email: email.trim().toLowerCase() },
+    data: { emailVerifiedAt: new Date() },
+    select: { id: true, email: true },
+  }).catch(() => null);
+  if (!user) return res.status(404).json({ error: "Användare hittades inte" });
+  res.json({ ok: true, email: user.email });
+});
+
+// Sätt upp minimalt förarprofil för e2e-testkonto (kräver ADMIN_API_KEY)
+app.post("/api/internal/setup-e2e-driver", internalLimiter, express.json(), async (req, res) => {
+  const key = req.headers["x-admin-api-key"] || req.body?.adminApiKey;
+  const expected = process.env.ADMIN_API_KEY;
+  if (!expected || key !== expected) return res.status(401).json({ error: "Unauthorized" });
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: "email krävs" });
+  const user = await prisma.user.findUnique({ where: { email: email.trim().toLowerCase() }, select: { id: true } }).catch(() => null);
+  if (!user) return res.status(404).json({ error: "Användare hittades inte" });
+  await prisma.driverProfile.update({
+    where: { userId: user.id },
+    data: {
+      primarySegment: "FULLTIME",
+      phone: "0701234567",
+      location: "Stockholm",
+      region: "Stockholm",
+      licenses: ["CE"],
+      availability: "Omgående",
+      summary: "E2E-testkonto för automatiserade tester på Transportplattformen.",
+    },
+  });
+  await prisma.user.update({ where: { id: user.id }, data: { needsDriverOnboarding: false } });
+  res.json({ ok: true, email });
+});
+
+app.post("/api/internal/setup-e2e-company", internalLimiter, express.json(), async (req, res) => {
+  const key = req.headers["x-admin-api-key"] || req.body?.adminApiKey;
+  const expected = process.env.ADMIN_API_KEY;
+  if (!expected || key !== expected) return res.status(401).json({ error: "Unauthorized" });
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: "email krävs" });
+  const user = await prisma.user.findUnique({ where: { email: email.trim().toLowerCase() }, select: { id: true, role: true } }).catch(() => null);
+  if (!user) return res.status(404).json({ error: "Användare hittades inte" });
+
+  // Skapa organisation om användaren saknar en
+  const existing = await prisma.userOrganization.findFirst({ where: { userId: user.id } });
+  if (!existing) {
+    const orgNumber = `E2E${user.id.slice(-8).toUpperCase()}`;
+    const org = await prisma.organization.upsert({
+      where: { orgNumber },
+      update: {},
+      create: {
+        name: "E2E Teståkeri AB",
+        orgNumber,
+        segmentDefaults: ["FULLTIME", "FLEX"],
+        region: "Stockholm",
+        status: "VERIFIED",
+      },
+    });
+    await prisma.userOrganization.create({
+      data: { userId: user.id, organizationId: org.id, role: "OWNER" },
+    });
+  }
+  res.json({ ok: true, email });
+});
+
 // Manual trigger for all reminders (kräver ADMIN_API_KEY)
 app.post("/api/internal/send-reminders", internalLimiter, express.json(), async (req, res) => {
   const key = req.headers["x-admin-api-key"] || req.body?.adminApiKey;
@@ -396,6 +469,14 @@ if (process.env.APP_LISTEN !== "false") {
     );
     process.exit(1);
   }
+  // Engångsstädning: nollställ tomma org-nummer som lagrades som "" istället för null
+  prisma.user.updateMany({
+    where: { companyOrgNumber: "" },
+    data: { companyOrgNumber: null },
+  }).then((r) => {
+    if (r.count > 0) console.log(`[Startup] Städade ${r.count} tomma companyOrgNumber → null`);
+  }).catch(() => {});
+
   app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
     startReminderScheduler();

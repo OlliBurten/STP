@@ -104,7 +104,7 @@ const RESET_TTL_MS = 60 * 60 * 1000; // 1h
 function normalizeOrgNumber(value) {
   const digits = String(value || "").replace(/\D/g, "");
   if (digits.length === 12) return digits.slice(2);
-  return digits;
+  return digits || null;
 }
 
 function tokenHash(token) {
@@ -291,6 +291,15 @@ authRouter.post("/register", validateBody(registerSchema), async (req, res, next
       },
     });
   } catch (e) {
+    if (e?.code === "P2002") {
+      const field = e?.meta?.target?.[0];
+      if (field === "companyOrgNumber") {
+        return res.status(409).json({ error: "Organisationsnumret används redan" });
+      }
+      if (field === "email") {
+        return res.status(409).json({ error: "E-postadressen används redan" });
+      }
+    }
     next(e);
   }
 });

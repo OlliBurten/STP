@@ -2,10 +2,22 @@
 import { defineConfig, devices } from "@playwright/test";
 
 /**
- * E2E-tester mot DriverMatch. Kräver att backend och frontend körs:
- * - Backend: cd server && npm run dev (port 3001)
- * - Frontend: npm run dev (port 5173)
- * Kör: npm run e2e
+ * E2E-tester mot Transportplattformen.
+ *
+ * Lokal dev (default):
+ *   npm run e2e        # backend på :3001, frontend på :5173
+ *
+ * Mot live:
+ *   PLAYWRIGHT_BASE_URL=https://transportplattformen.se \
+ *   DRIVER_EMAIL=… DRIVER_PASSWORD=… \
+ *   COMPANY_EMAIL=… COMPANY_PASSWORD=… \
+ *   npx playwright test --project=chromium --project=chromium-auth
+ *
+ * Projekt:
+ *   setup         — loggar in en gång och sparar session (kör alltid före auth-tester)
+ *   chromium      — publika sidor, registrering (kräver ej inloggning)
+ *   chromium-auth — inloggade flöden (beror på setup)
+ *
  * @see https://playwright.dev/docs/test-configuration
  */
 export default defineConfig({
@@ -21,9 +33,28 @@ export default defineConfig({
     screenshot: "only-on-failure",
   },
   projects: [
-    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
-    { name: "firefox", use: { ...devices["Desktop Firefox"] } },
+    // 1. Auth setup — körs en gång, skapar playwright/.auth/*.json
+    {
+      name: "setup",
+      testMatch: /setup\/auth\.setup\.js/,
+      use: { ...devices["Desktop Chrome"] },
+    },
+
+    // 2. Publika sidor (smoke, public-pages, register) — kräver ej inloggning
+    {
+      name: "chromium",
+      testIgnore: [/setup\//, /driver-journey/, /company-journey/, /auth\.spec/],
+      use: { ...devices["Desktop Chrome"] },
+    },
+
+    // 3. Inloggade flöden — beror på setup, specs väljer storageState via test.use()
+    {
+      name: "chromium-auth",
+      testMatch: [/driver-journey\.spec/, /company-journey\.spec/, /auth\.spec/],
+      use: { ...devices["Desktop Chrome"] },
+      dependencies: ["setup"],
+    },
   ],
-  timeout: 15000,
-  expect: { timeout: 5000 },
+  timeout: 20000,
+  expect: { timeout: 8000 },
 });
