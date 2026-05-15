@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
-import { authMiddleware, optionalAuthMiddleware, requireCompany, requireCompanyOwner, attachCompanyContext } from "../middleware/auth.js";
+import { authMiddleware, optionalAuthMiddleware, requireCompany, requireCompanyOwner, requireVerifiedCompany, attachCompanyContext } from "../middleware/auth.js";
 import { validateBody, validateQuery } from "../middleware/validate.js";
 import {
   companyProfileSchema,
@@ -494,7 +494,7 @@ companiesRouter.put("/me/profile", requireCompanyOwner, validateBody(companyProf
 });
 
 // GET /api/companies/stats/job-views — jobbvisningar per vecka senaste 12 veckorna
-companiesRouter.get("/stats/job-views", async (req, res, next) => {
+companiesRouter.get("/stats/job-views", requireVerifiedCompany, async (req, res, next) => {
   try {
     const resolved = await resolveCompanyOwner(req.userId);
     if (!resolved) return res.status(404).json({ error: "Företaget hittades inte" });
@@ -531,7 +531,7 @@ companiesRouter.get("/stats/job-views", async (req, res, next) => {
 });
 
 // GET /api/companies/stats/matching-drivers — top 3 förare som matchar aktiva annonser
-companiesRouter.get("/stats/matching-drivers", async (req, res, next) => {
+companiesRouter.get("/stats/matching-drivers", requireVerifiedCompany, async (req, res, next) => {
   try {
     const resolved = await resolveCompanyOwner(req.userId);
     if (!resolved) return res.status(404).json({ error: "Företaget hittades inte" });
