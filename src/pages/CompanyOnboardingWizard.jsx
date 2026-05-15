@@ -36,8 +36,10 @@ export default function CompanyOnboardingWizard() {
     region: "",
     segmentDefaults: [],
     bransch: [],
+    city: "",
+    foundedYear: null,
   });
-  const [orgLookup, setOrgLookup] = useState({ loading: false, valid: null, suggestion: null, error: null });
+  const [orgLookup, setOrgLookup] = useState({ loading: false, valid: null, suggestion: null, error: null, isTransport: null, sniCodes: [] });
   const lookupTimer = useRef(null);
 
   const handleOrgNumberChange = useCallback((raw) => {
@@ -58,15 +60,20 @@ export default function CompanyOnboardingWizard() {
           valid: data.valid,
           suggestion: data.companyName || null,
           error: data.valid ? null : (data.error || "Ogiltigt organisationsnummer"),
+          isTransport: data.isTransport ?? null,
+          sniCodes: data.sniCodes ?? [],
         });
         // Auto-format the number
         if (data.formatted) {
           setFirstCompany((p) => ({ ...p, orgNumber: data.formatted }));
         }
-        // Auto-fill name if empty and we got a name from Bolagsverket
-        if (data.companyName && !firstCompany.name.trim()) {
-          setFirstCompany((p) => ({ ...p, name: data.companyName }));
-        }
+        // Auto-fill fields from Bolagsverket
+        setFirstCompany((p) => ({
+          ...p,
+          name:        data.companyName && !p.name.trim() ? data.companyName : p.name,
+          city:        data.city        ? data.city        : p.city,
+          foundedYear: data.foundedYear ? data.foundedYear : p.foundedYear,
+        }));
       } catch {
         setOrgLookup({ loading: false, valid: null, suggestion: null, error: null });
       }
@@ -131,6 +138,10 @@ export default function CompanyOnboardingWizard() {
     }
     if (orgLookup.valid !== true) {
       setError("Vänta tills organisationsnumret har validerats.");
+      return;
+    }
+    if (orgLookup.isTransport === false) {
+      setError("Ert företag verkar inte vara registrerat som transportföretag hos Bolagsverket. STP är till för åkerier och transportföretag.");
       return;
     }
     if (firstCompany.segmentDefaults.length === 0) {
@@ -375,10 +386,15 @@ export default function CompanyOnboardingWizard() {
             {orgLookup.error && (
               <p className="mt-1 text-xs text-red-600">{orgLookup.error}</p>
             )}
-            {orgLookup.valid === true && !orgLookup.loading && (
+            {orgLookup.valid === true && !orgLookup.loading && orgLookup.isTransport !== false && (
               <p className="mt-1 text-xs text-green-700 font-medium">
                 Ert åkeri verifieras automatiskt — ni kan börja direkt.
                 {orgLookup.suggestion && <> Hittades: <strong>{orgLookup.suggestion}</strong></>}
+              </p>
+            )}
+            {orgLookup.valid === true && !orgLookup.loading && orgLookup.isTransport === false && (
+              <p className="mt-1 text-xs text-red-600 font-medium">
+                Ert företag är inte registrerat som transportverksamhet hos Bolagsverket. STP är till för åkerier och transportföretag.
               </p>
             )}
           </div>

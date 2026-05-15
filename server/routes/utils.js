@@ -127,12 +127,32 @@ async function lookupBolagsverket(orgnr) {
     const org  = data?.organisationer?.[0];
     if (!org) return null;
 
-    // Pick the primary company name (kod: FORETAGSNAMN)
+    // Company name
     const nameLista = org.organisationsnamn?.organisationsnamnLista ?? [];
     const primary   = nameLista.find((n) => n.organisationsnamntyp?.kod === "FORETAGSNAMN");
     const companyName = primary?.namn ?? nameLista[0]?.namn ?? null;
 
-    return { companyName };
+    // City
+    const city = org.postadressOrganisation?.postadress?.postort ?? null;
+
+    // Company type (AB, HB, etc.)
+    const companyType = org.juridiskForm?.klartext ?? null;
+
+    // Founded year
+    const regDatum = org.organisationsdatum?.registreringsdatum ?? null;
+    const foundedYear = regDatum ? parseInt(regDatum.slice(0, 4), 10) : null;
+
+    // SNI codes
+    const sniList = org.naringsgrenOrganisation?.sni ?? [];
+    const sniCodes = sniList.map((s) => s.kod);
+
+    // Transport check — SNI codes starting with 49, 52, 53
+    const TRANSPORT_PREFIXES = ["49", "52", "53"];
+    const isTransport = sniCodes.length === 0
+      ? null // unknown — no SNI data
+      : sniCodes.some((kod) => TRANSPORT_PREFIXES.some((p) => kod.startsWith(p)));
+
+    return { companyName, city, companyType, foundedYear, sniCodes, isTransport };
   } catch (err) {
     console.error("[bolagsverket] lookup error:", err.message);
     return null;
@@ -168,9 +188,14 @@ utilsRouter.get("/company-lookup", async (req, res) => {
   const bolag     = await lookupBolagsverket(digits);
 
   return res.json({
-    valid:       true,
+    valid:        true,
     formatted,
-    companyName: bolag?.companyName ?? null,
-    source:      bolag ? "bolagsverket" : "format-only",
+    companyName:  bolag?.companyName  ?? null,
+    city:         bolag?.city         ?? null,
+    companyType:  bolag?.companyType  ?? null,
+    foundedYear:  bolag?.foundedYear  ?? null,
+    sniCodes:     bolag?.sniCodes     ?? [],
+    isTransport:  bolag?.isTransport  ?? null,
+    source:       bolag ? "bolagsverket" : "format-only",
   });
 });

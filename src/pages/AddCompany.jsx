@@ -19,7 +19,7 @@ export default function AddCompany() {
     bransch: [],
     segmentDefaults: [],
   });
-  const [orgLookup, setOrgLookup] = useState({ loading: false, valid: null, suggestion: null, error: null });
+  const [orgLookup, setOrgLookup] = useState({ loading: false, valid: null, suggestion: null, error: null, isTransport: null });
   const lookupTimer = useRef(null);
 
   const update = (key, value) => setForm((p) => ({ ...p, [key]: value }));
@@ -41,15 +41,15 @@ export default function AddCompany() {
           valid: data.valid,
           suggestion: data.companyName || null,
           error: data.valid ? null : (data.error || "Ogiltigt organisationsnummer"),
+          isTransport: data.isTransport ?? null,
         });
-        if (data.formatted) {
-          update("orgNumber", data.formatted);
-        }
-        if (data.companyName) {
-          setForm((p) => ({ ...p, name: p.name.trim() ? p.name : data.companyName }));
-        }
+        if (data.formatted) update("orgNumber", data.formatted);
+        setForm((p) => ({
+          ...p,
+          name: data.companyName && !p.name.trim() ? data.companyName : p.name,
+        }));
       } catch {
-        setOrgLookup({ loading: false, valid: null, suggestion: null, error: null });
+        setOrgLookup({ loading: false, valid: null, suggestion: null, error: null, isTransport: null });
       }
     }, 600);
   }, []);
@@ -65,6 +65,7 @@ export default function AddCompany() {
     if (!form.orgNumber.trim()) { setError("Organisationsnummer krävs"); return; }
     if (orgLookup.valid === false) { setError("Ogiltigt organisationsnummer — kontrollera och försök igen."); return; }
     if (orgLookup.valid !== true) { setError("Vänta tills organisationsnumret har validerats."); return; }
+    if (orgLookup.isTransport === false) { setError("Ert företag är inte registrerat som transportverksamhet hos Bolagsverket. STP är till för åkerier och transportföretag."); return; }
     setSaving(true);
     try {
       const org = await createOrganization(form);
@@ -127,10 +128,15 @@ export default function AddCompany() {
             {orgLookup.error && (
               <p className="mt-1 text-xs text-red-600">{orgLookup.error}</p>
             )}
-            {orgLookup.valid === true && !orgLookup.loading && (
+            {orgLookup.valid === true && !orgLookup.loading && orgLookup.isTransport !== false && (
               <p className="mt-1 text-xs text-green-700 font-medium">
                 Ert åkeri verifieras automatiskt — ni kan börja direkt.
                 {orgLookup.suggestion && <> Hittades: <strong>{orgLookup.suggestion}</strong></>}
+              </p>
+            )}
+            {orgLookup.valid === true && !orgLookup.loading && orgLookup.isTransport === false && (
+              <p className="mt-1 text-xs text-red-600 font-medium">
+                Ert företag är inte registrerat som transportverksamhet hos Bolagsverket. STP är till för åkerier och transportföretag.
               </p>
             )}
             {!orgLookup.valid && !orgLookup.error && (
