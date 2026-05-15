@@ -127,7 +127,7 @@ const FAQ = [
   },
   {
     q: "Hur kommer vi igång?",
-    a: "Skicka ett mejl till oliver@transportplattformen.se så hör vi av oss inom en arbetsdag.",
+    a: "Skicka ett mejl till partner@transportplattformen.se så hör vi av oss inom en arbetsdag.",
   },
 ];
 
@@ -150,12 +150,20 @@ export default function Partner() {
         <p style={{ fontSize: 19, color: T.sub, lineHeight: 1.7, maxWidth: 600, margin: "0 auto 40px" }}>
           STP — Sveriges Transportplattform — kopplar ihop yrkesförare med åkerier direkt, utan bemanningsföretag. Vi söker samarbeten med organisationer som arbetar med utbildning, rekrytering och sysselsättning inom transport.
         </p>
-        <a
-          href="mailto:oliver@transportplattformen.se"
-          style={{ display: "inline-block", padding: "15px 32px", borderRadius: 12, background: T.teal, color: "#060f0f", fontWeight: 800, fontSize: 16, textDecoration: "none" }}
-        >
-          Kontakta oss →
-        </a>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <a
+            href="mailto:partner@transportplattformen.se"
+            style={{ display: "inline-block", padding: "15px 32px", borderRadius: 12, background: T.teal, color: "#060f0f", fontWeight: 800, fontSize: 16, textDecoration: "none" }}
+          >
+            Kontakta oss →
+          </a>
+          <Link
+            to="/partner/presentation"
+            style={{ display: "inline-block", padding: "15px 28px", borderRadius: 12, background: "transparent", border: `1px solid ${T.border}`, color: T.text, fontWeight: 600, fontSize: 15, textDecoration: "none" }}
+          >
+            Ladda ner presentation
+          </Link>
+        </div>
       </section>
 
       {/* Siffror */}
@@ -259,7 +267,7 @@ export default function Partner() {
         </p>
         <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
           <a
-            href="mailto:oliver@transportplattformen.se"
+            href="mailto:partner@transportplattformen.se"
             style={{ display: "inline-block", padding: "15px 32px", borderRadius: 12, background: T.teal, color: "#060f0f", fontWeight: 800, fontSize: 16, textDecoration: "none" }}
           >
             Skicka mejl →

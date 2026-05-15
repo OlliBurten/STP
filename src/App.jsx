@@ -91,6 +91,7 @@ const SchoolLanding         = lazyRetry(() => import("./pages/SchoolLanding"));
 const HittaPraktik          = lazyRetry(() => import("./pages/HittaPraktik"));
 const Arbetsmarknadsutbildning = lazyRetry(() => import("./pages/Arbetsmarknadsutbildning"));
 const Partner               = lazyRetry(() => import("./pages/Partner"));
+const PartnerPresentation   = lazyRetry(() => import("./pages/PartnerPresentation"));
 const BloggIndex            = lazy(() => import("./pages/blogg/BloggIndex"));
 const CeKorkortSverige      = lazy(() => import("./pages/blogg/CeKorkortSverige"));
 const YkbGuide              = lazy(() => import("./pages/blogg/YkbGuide"));
@@ -224,6 +225,7 @@ function AppLayout() {
                   <Route path="/hitta-praktik" element={<HittaPraktik />} />
                   <Route path="/arbetsmarknadsutbildning" element={<Arbetsmarknadsutbildning />} />
                   <Route path="/partner" element={<Partner />} />
+                  <Route path="/partner/presentation" element={<PartnerPresentation />} />
                   <Route path="/skola/:slug" element={<SchoolLanding />} />
                   <Route path="/uppdateringar" element={<PatchNotes />} />
                   <Route path="/vision" element={<VisionPresentation />} />
