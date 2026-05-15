@@ -96,23 +96,25 @@ if (corsOriginList.length > 0) {
   console.warn("CORS: FRONTEND_URL empty/invalid – allowing all origins");
 }
 
+const IS_TEST = process.env.NODE_ENV === "test";
+
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 25,
+  max: IS_TEST ? 10000 : 25,
   standardHeaders: true,
   legacyHeaders: false,
 });
 
 const apiPublicLimiter = rateLimit({
   windowMs: 1 * 60 * 1000,
-  max: 120,
+  max: IS_TEST ? 10000 : 120,
   standardHeaders: true,
   legacyHeaders: false,
 });
 
 const apiWriteLimiter = rateLimit({
   windowMs: 1 * 60 * 1000,
-  max: 60,
+  max: IS_TEST ? 10000 : 60,
   standardHeaders: true,
   legacyHeaders: false,
 });
