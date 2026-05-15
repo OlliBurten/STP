@@ -50,7 +50,7 @@ export default defineConfig({
     // 3. Inloggade flöden — beror på setup, specs väljer storageState via test.use()
     {
       name: "chromium-auth",
-      testMatch: [/driver-journey\.spec/, /company-journey\.spec/, /auth\.spec/, /driver-full\.spec/, /company-full\.spec/],
+      testMatch: [/driver-journey\.spec/, /company-journey\.spec/, /auth\.spec/, /driver-full\.spec/, /company-full\.spec/, /company-onboarding\.spec/],
       use: { ...devices["Desktop Chrome"] },
       dependencies: ["setup"],
     },
