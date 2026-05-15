@@ -3,22 +3,24 @@
  *
  * GET /api/utils/company-lookup?orgnr=5561234567
  *   Validates Swedish org number format and optionally fetches company name
- *   from Bolagsverket if BOLAGSVERKET_API_KEY is configured.
+ *   from Bolagsverket "Värdefulla datamängder" API.
  *   Always returns { valid, formatted } — companyName only when API is available.
+ *
+ * Env vars required for live lookup:
+ *   BOLAGSVERKET_CLIENT_ID
+ *   BOLAGSVERKET_CLIENT_SECRET
  */
 
 import { Router } from "express";
 
 export const utilsRouter = Router();
 
-// Swedish org number: 10 digits, first pair 16–99 (companies), format XXXXXX-XXXX
+// ── Swedish org number helpers ──────────────────────────────────────────────
+
 function normalizeOrgNr(raw) {
   if (!raw || typeof raw !== "string") return null;
   const digits = raw.replace(/\D/g, "");
-  // Accept 10 digits (org nr) or 12 digits (with leading century 16)
-  if (digits.length === 12 && digits.startsWith("16")) {
-    return digits.slice(2); // strip leading 16
-  }
+  if (digits.length === 12 && digits.startsWith("16")) return digits.slice(2);
   if (digits.length !== 10) return null;
   return digits;
 }
@@ -28,7 +30,6 @@ function formatOrgNr(digits) {
 }
 
 function luhnValid(digits) {
-  // Swedish org numbers use Luhn algorithm on the last 10 digits
   let sum = 0;
   for (let i = 0; i < 9; i++) {
     let d = parseInt(digits[i], 10);
@@ -38,41 +39,102 @@ function luhnValid(digits) {
     }
     sum += d;
   }
-  const check = (10 - (sum % 10)) % 10;
-  return check === parseInt(digits[9], 10);
+  return (10 - (sum % 10)) % 10 === parseInt(digits[9], 10);
 }
 
-async function lookupBolagsverket(orgnr) {
-  const apiKey = process.env.BOLAGSVERKET_API_KEY;
-  if (!apiKey) return null;
+// ── Bolagsverket OAuth2 token cache ────────────────────────────────────────
+
+let _tokenCache = null; // { token, expiresAt }
+
+async function fetchAccessToken() {
+  const clientId     = process.env.BOLAGSVERKET_CLIENT_ID;
+  const clientSecret = process.env.BOLAGSVERKET_CLIENT_SECRET;
+  if (!clientId || !clientSecret) return null;
+
+  // Return cached token if still valid (with 60s buffer)
+  if (_tokenCache && _tokenCache.expiresAt > Date.now() + 60_000) {
+    return _tokenCache.token;
+  }
 
   try {
-    // Bolagsverket Företagsinformation API v2
-    // Requires OAuth2 client_credentials — here we use a pre-obtained Bearer token via env var
-    const res = await fetch(
-      `https://api.bolagsverket.se/foretagsinformation/v2/foretagsinformation`,
-      {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-        },
-        body: JSON.stringify({ organisationsnummer: orgnr }),
-        signal: AbortSignal.timeout(4000),
-      }
-    );
-    if (!res.ok) return null;
+    const body = new URLSearchParams({
+      grant_type:    "client_credentials",
+      client_id:     clientId,
+      client_secret: clientSecret,
+      scope:         "vardefulla-datamangder:read vardefulla-datamangder:ping",
+    });
+
+    const res = await fetch("https://portal.api.bolagsverket.se/oauth2/token", {
+      method:  "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body,
+      signal: AbortSignal.timeout(5000),
+    });
+
+    if (!res.ok) {
+      console.error("[bolagsverket] token fetch failed:", res.status, await res.text());
+      return null;
+    }
+
     const data = await res.json();
-    // Response shape: { foretagsnamn, status, ... }
-    return {
-      companyName: data?.foretagsnamn || null,
-      status: data?.status || null,
+    const expiresIn = data.expires_in ?? 3600;
+
+    _tokenCache = {
+      token:     data.access_token,
+      expiresAt: Date.now() + expiresIn * 1000,
     };
-  } catch {
+
+    return _tokenCache.token;
+  } catch (err) {
+    console.error("[bolagsverket] token fetch error:", err.message);
     return null;
   }
 }
+
+// ── Bolagsverket company lookup ─────────────────────────────────────────────
+
+async function lookupBolagsverket(orgnr) {
+  const token = await fetchAccessToken();
+  if (!token) return null;
+
+  try {
+    const res = await fetch(
+      "https://gw.api.bolagsverket.se/vardefulla-datamangder/v1/organisationer",
+      {
+        method:  "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type":  "application/json",
+          "Accept":        "application/json",
+        },
+        body:   JSON.stringify({ identitetsbeteckning: orgnr }),
+        signal: AbortSignal.timeout(5000),
+      }
+    );
+
+    if (!res.ok) {
+      // 401 = token expired — clear cache so next request re-fetches
+      if (res.status === 401) _tokenCache = null;
+      return null;
+    }
+
+    const data = await res.json();
+    const org  = data?.organisationer?.[0];
+    if (!org) return null;
+
+    // Pick the primary company name (kod: FORETAGSNAMN)
+    const nameLista = org.organisationsnamn?.organisationsnamnLista ?? [];
+    const primary   = nameLista.find((n) => n.organisationsnamntyp?.kod === "FORETAGSNAMN");
+    const companyName = primary?.namn ?? nameLista[0]?.namn ?? null;
+
+    return { companyName };
+  } catch (err) {
+    console.error("[bolagsverket] lookup error:", err.message);
+    return null;
+  }
+}
+
+// ── Route ───────────────────────────────────────────────────────────────────
 
 utilsRouter.get("/company-lookup", async (req, res) => {
   const raw = (req.query.orgnr || "").trim();
@@ -82,22 +144,28 @@ utilsRouter.get("/company-lookup", async (req, res) => {
 
   const digits = normalizeOrgNr(raw);
   if (!digits) {
-    return res.json({ valid: false, formatted: null, error: "Ogiltigt format — ange 10 siffror, t.ex. 556123-4567" });
+    return res.json({
+      valid:     false,
+      formatted: null,
+      error:     "Ogiltigt format — ange 10 siffror, t.ex. 556123-4567",
+    });
   }
 
-  const valid = luhnValid(digits);
-  if (!valid) {
-    return res.json({ valid: false, formatted: formatOrgNr(digits), error: "Ogiltigt organisationsnummer (kontrollsiffra stämmer inte)" });
+  if (!luhnValid(digits)) {
+    return res.json({
+      valid:     false,
+      formatted: formatOrgNr(digits),
+      error:     "Ogiltigt organisationsnummer (kontrollsiffra stämmer inte)",
+    });
   }
 
   const formatted = formatOrgNr(digits);
-  const bolag = await lookupBolagsverket(digits);
+  const bolag     = await lookupBolagsverket(digits);
 
   return res.json({
-    valid: true,
+    valid:       true,
     formatted,
     companyName: bolag?.companyName ?? null,
-    companyStatus: bolag?.status ?? null,
-    source: bolag ? "bolagsverket" : "format-only",
+    source:      bolag ? "bolagsverket" : "format-only",
   });
 });
