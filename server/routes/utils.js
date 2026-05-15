@@ -56,6 +56,9 @@ async function fetchAccessToken() {
     return _tokenCache.token;
   }
 
+  const tokenUrl = process.env.BOLAGSVERKET_TOKEN_URL ||
+    "https://portal.api.bolagsverket.se/oauth2/token";
+
   try {
     const body = new URLSearchParams({
       grant_type:    "client_credentials",
@@ -64,7 +67,7 @@ async function fetchAccessToken() {
       scope:         "vardefulla-datamangder:read vardefulla-datamangder:ping",
     });
 
-    const res = await fetch("https://portal.api.bolagsverket.se/oauth2/token", {
+    const res = await fetch(tokenUrl, {
       method:  "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body,
@@ -97,9 +100,11 @@ async function lookupBolagsverket(orgnr) {
   const token = await fetchAccessToken();
   if (!token) return null;
 
+  const apiUrl = process.env.BOLAGSVERKET_API_URL ||
+    "https://gw.api.bolagsverket.se/vardefulla-datamangder/v1/organisationer";
+
   try {
-    const res = await fetch(
-      "https://gw.api.bolagsverket.se/vardefulla-datamangder/v1/organisationer",
+    const res = await fetch(apiUrl,
       {
         method:  "POST",
         headers: {
