@@ -1,0 +1,37 @@
+{
+  "cookies": [
+    {
+      "name": "g_state",
+      "value": "{\"i_l\":0,\"i_ll\":1778864138314,\"i_b\":\"Uron6wcoGIAwA+0aYpNLHOqM0NhpdN372Z73cEckIO8\",\"i_e\":{\"enable_itp_optimization\":0},\"i_et\":1778864138314}",
+      "domain": "transportplattformen.se",
+      "path": "/",
+      "expires": 1794416138,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "https://transportplattformen.se",
+      "localStorage": [
+        {
+          "name": "drivermatch-auth",
+          "value": "{\"user\":{\"id\":\"cmp74sjm8000ao056b45l6szq\",\"email\":\"e2e-company-1778862481@stp-test.se\",\"role\":\"recruiter\",\"rawRole\":\"COMPANY\",\"isAdmin\":false,\"hadLoggedInBefore\":true,\"shouldShowOnboarding\":true,\"name\":\"E2E Teståkeri AB\",\"companyName\":\"E2E Teståkeri AB\",\"companyOrgNumber\":\"E2EB45L6SZQ\",\"companyStatus\":\"VERIFIED\",\"companySegmentDefaults\":[\"FULLTIME\",\"FLEX\"],\"companyOwnerId\":null,\"organizationId\":\"cmp75l6n30000qr560rraxel4\",\"emailVerifiedAt\":\"2026-05-15T16:30:55.421Z\"},\"adminUser\":null,\"impersonation\":null,\"token\":\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbXA3NHNqbTgwMDBhbzA1NmI0NWw2c3pxIiwicm9sZSI6IkNPTVBBTlkiLCJpYXQiOjE3Nzg4NjQxNDAsImV4cCI6MTc3ODk1MDU0MH0.TNRD4sxRo-7NdI2sIGVoNKLjm8oMnYRg_zz9SzMJ1pI\",\"issuedAt\":1778864140273,\"lastActivity\":1778864140273}"
+        },
+        {
+          "name": "stp-theme",
+          "value": "dark"
+        },
+        {
+          "name": "drivermatch-selected-seen",
+          "value": "{}"
+        },
+        {
+          "name": "drivermatch-conv-seen",
+          "value": "{}"
+        }
+      ]
+    }
+  ]
+}

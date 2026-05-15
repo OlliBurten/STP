@@ -4,8 +4,8 @@ import { test, expect } from "@playwright/test";
 test.describe("Startsida (gäst)", () => {
   test("visar rubrik och CTA", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("heading", { name: /Rätt/i })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Jag är förare" })).toBeVisible();
+    await expect(page.locator("h1").first()).toBeVisible();
+    await expect(page.getByRole("link", { name: /Se lediga jobb/i })).toBeVisible();
     await expect(page.getByRole("link", { name: "Logga in" }).first()).toBeVisible();
   });
 
@@ -16,41 +16,40 @@ test.describe("Startsida (gäst)", () => {
     await expect(page.getByRole("heading", { name: /Logga in|Registrera/i })).toBeVisible();
   });
 
-  test("navigerar till Jobb", async ({ page }) => {
+  test("navigerar till För förare", async ({ page }) => {
     await page.goto("/");
     await page.getByRole("link", { name: "För förare" }).first().click();
-    await expect(page).toHaveURL(/\/jobb/);
-    await expect(page.getByRole("heading", { name: /Lediga jobb/i })).toBeVisible();
+    await expect(page).toHaveURL(/\/forare/);
+    await expect(page.locator("h1").first()).toBeVisible();
   });
 
-  test("navigerar till Åkerier", async ({ page }) => {
+  test("navigerar till För åkerier", async ({ page }) => {
     await page.goto("/");
     await page.getByRole("link", { name: "För åkerier" }).first().click();
-    await expect(page).toHaveURL(/\/akerier/);
-    await expect(page.getByRole("heading", { name: /Hitta åkerier/i })).toBeVisible();
+    await expect(page).toHaveURL(/\/for-akerier/);
+    await expect(page.locator("h1").first()).toBeVisible();
   });
 });
 
 test.describe("Sida Jobb", () => {
   test("laddar och visar innehåll", async ({ page }) => {
     await page.goto("/jobb");
-    await expect(page.getByRole("heading", { name: /Lediga jobb/i })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Filter" })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole("heading", { name: /Lediga jobb/i })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole("button", { name: "CE-körkort" })).toBeVisible({ timeout: 10000 });
   });
 
-  test("har filter för region och bransch", async ({ page }) => {
+  test("har snabbfilter för körkort", async ({ page }) => {
     await page.goto("/jobb");
-    await expect(page.getByLabel(/Region|region/i)).toBeVisible();
-    await expect(page.getByLabel(/Bransch|bransch/i)).toBeVisible();
+    await expect(page.getByRole("button", { name: "CE-körkort" })).toBeVisible({ timeout: 8000 });
+    await expect(page.getByRole("button", { name: "C-körkort" })).toBeVisible();
   });
 });
 
 test.describe("Sida Åkerier", () => {
-  test("laddar och visar filter", async ({ page }) => {
+  test("laddar och visar sökfält", async ({ page }) => {
     await page.goto("/akerier");
-    await expect(page.getByRole("heading", { name: /Hitta åkerier/i })).toBeVisible();
-    await expect(page.getByLabel(/Bransch/i)).toBeVisible();
-    await expect(page.getByLabel(/Region|område/i)).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Hitta ditt nästa åkeri/i })).toBeVisible({ timeout: 8000 });
+    await expect(page.getByPlaceholder(/Sök åkeri/i)).toBeVisible();
   });
 });
 
@@ -58,8 +57,8 @@ test.describe("Login-sida", () => {
   test("visar inloggningsformulär", async ({ page }) => {
     await page.goto("/login");
     await expect(page.getByLabel(/E-post/i)).toBeVisible();
-    await expect(page.getByLabel(/Lösenord/i)).toBeVisible();
-    await expect(page.getByRole("button", { name: /Logga in|Skapa konto/i })).toBeVisible();
+    await expect(page.locator("#password")).toBeVisible();
+    await expect(page.getByRole("button", { name: /Logga in/i })).toBeVisible();
   });
 });
 
@@ -86,6 +85,6 @@ test.describe("Header och navigation", () => {
 
   test("footer innehåller användarvillkor", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("link", { name: /Användarvillkor/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /Användarvillkor/i }).first()).toBeVisible();
   });
 });

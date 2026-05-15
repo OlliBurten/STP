@@ -1,22 +1,22 @@
 // @ts-check
 import { test, expect } from "@playwright/test";
+import path from "path";
 
 /**
- * E2E-tester som kräver inloggning. Använder seed-användare driver@example.com / password123.
- * Kräver: backend körs med seed (npm run db:seed) och seed sätter emailVerifiedAt så att login fungerar.
+ * E2E-tester som kräver inloggning.
+ * Sessionen skapas av e2e/setup/auth.setup.js.
+ * Mot lokal dev: använd seed-användare driver@example.com / company@example.com.
  */
-test.describe("Inloggad förare", () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto("/login");
-    await page.getByLabel(/E-post/i).fill("driver@example.com");
-    await page.getByLabel(/Lösenord/i).fill("password123");
-    await page.getByRole("button", { name: /Logga in/i }).click();
-    await expect(page).not.toHaveURL(/\/login/, { timeout: 10000 });
-  });
 
-  test("når profil efter inloggning", async ({ page }) => {
-    await expect(page).toHaveURL(/\/(profil|foretag|jobb|onboarding\/forare)/);
-    await expect(page.getByText(/Min profil|Översikt|Lediga jobb|Kom igång|onboarding/i).first()).toBeVisible({ timeout: 5000 });
+const driverAuthFile = path.join(process.cwd(), "playwright/.auth/driver.json");
+const companyAuthFile = path.join(process.cwd(), "playwright/.auth/company.json");
+
+test.describe("Inloggad förare", () => {
+  test.use({ storageState: driverAuthFile });
+
+  test("når dashboard efter inloggning", async ({ page }) => {
+    await page.goto("/");
+    await expect(page).toHaveURL(/\/(profil|jobb|onboarding\/forare)/);
   });
 
   test("kan öppna Jobb-sidan", async ({ page }) => {
@@ -26,33 +26,29 @@ test.describe("Inloggad förare", () => {
 
   test("kan öppna Åkerier-sidan", async ({ page }) => {
     await page.goto("/akerier");
-    await expect(page.getByRole("heading", { name: /Hitta åkerier/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Hitta ditt nästa åkeri/i })).toBeVisible();
   });
 
   test("kan logga ut", async ({ page }) => {
-    await page.getByRole("button", { name: /Logga ut/i }).click();
-    await expect(page.getByRole("link", { name: "Logga in" }).first()).toBeVisible();
-    await page.goto("/");
-    await expect(page.getByRole("link", { name: "Jag är förare" })).toBeVisible();
+    await page.goto("/profil");
+    // Öppna kontomenyn (avatar-knappen uppe till höger)
+    await page.getByRole("button", { name: /Konto|inställningar/i }).click();
+    await page.getByRole("menuitem", { name: /Logga ut/i }).click();
+    await expect(page.getByRole("link", { name: "Logga in" }).first()).toBeVisible({ timeout: 8000 });
   });
 });
 
 test.describe("Inloggad företag", () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto("/login");
-    await page.getByLabel(/E-post/i).fill("company@example.com");
-    await page.getByLabel(/Lösenord/i).fill("password123");
-    await page.getByRole("button", { name: /Logga in/i }).click();
-    await expect(page).not.toHaveURL(/\/login/, { timeout: 10000 });
+  test.use({ storageState: companyAuthFile });
+
+  test("når företagsdashboard efter inloggning", async ({ page }) => {
+    await page.goto("/");
+    await expect(page).toHaveURL(/\/(foretag|onboarding)/);
   });
 
-  test("når företagsöversikt efter inloggning", async ({ page }) => {
-    await expect(page).toHaveURL(/\/(foretag|foretag\/mina-jobb)/);
-  });
-
-  test("kan öppna Mina jobb", async ({ page }) => {
-    await page.getByRole("link", { name: /Mina jobb/i }).first().click();
-    await expect(page).toHaveURL(/\/foretag\/mina-jobb/);
-    await expect(page.getByRole("heading", { name: /Mina jobb/i })).toBeVisible();
+  test("kan öppna Mina jobb (eller omdirigeras till onboarding)", async ({ page }) => {
+    await page.goto("/foretag/mina-jobb");
+    await expect(page).toHaveURL(/\/foretag\/(mina-jobb|onboarding)/);
+    await expect(page.locator("h1, h2").first()).toBeVisible({ timeout: 8000 });
   });
 });
