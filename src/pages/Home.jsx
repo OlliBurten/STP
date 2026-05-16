@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { apiGet } from "../api/client.js";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { usePageTitle } from "../hooks/usePageTitle";
@@ -62,35 +61,25 @@ const MARQUEE_ITEMS = [
   "Inga avgifter",
   "Matchning baserat på körkort & kompetens",
   "Verifierade åkerier",
-  "Välkomnades av Transportföretagen & SÅ",
+  "Byggt specifikt för transportbranschen",
   "Gratis för alla förare",
   "Beta-plattform i aktiv utveckling",
 ];
 
-function usePlatformStats() {
-  const [stats, setStats] = useState(null);
-  useEffect(() => {
-    apiGet("/api/stats/platform")
-      .then((data) => { if (data) setStats(data); })
-      .catch(() => {});
-  }, []);
-  return stats;
-}
-
-function PlatformStatsCard() {
-  const stats = usePlatformStats();
+function WhySTPCard() {
   const rows = [
-    { label: "Aktiva förare på plattformen", value: stats?.activeDrivers ?? "—", color: "#4ade80" },
-    { label: "Öppna jobbannonser just nu",   value: stats?.activeJobs ?? "—",    color: "#F5A623" },
-    { label: "Meddelanden skickade",         value: stats?.totalMessages ?? "—", color: "#7dd3c8" },
+    { icon: "✓", label: "Direktkontakt — inga mellanhänder", color: "#4ade80" },
+    { icon: "✓", label: "Verifierade åkerier mot Bolagsverket", color: "#4ade80" },
+    { icon: "✓", label: "Gratis under beta — för förare och åkerier", color: "#4ade80" },
+    { icon: "✓", label: "Matchning på körkort, region & tillgänglighet", color: "#4ade80" },
   ];
   return (
     <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "24px 28px", backdropFilter: "blur(16px)" }}>
-      <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(240,250,249,0.6)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 20 }}>Plattformen just nu</div>
+      <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(240,250,249,0.6)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 20 }}>Varför STP?</div>
       {rows.map((r, i) => (
-        <div key={r.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderTop: i > 0 ? "1px solid rgba(255,255,255,0.06)" : "none" }}>
-          <div style={{ fontSize: 13, color: "rgba(240,250,249,0.7)" }}>{r.label}</div>
-          <div style={{ fontSize: 18, fontWeight: 800, color: r.color, flexShrink: 0 }}>{typeof r.value === "number" ? r.value.toLocaleString("sv-SE") : r.value}</div>
+        <div key={r.label} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 0", borderTop: i > 0 ? "1px solid rgba(255,255,255,0.06)" : "none" }}>
+          <span style={{ fontSize: 14, fontWeight: 800, color: r.color, flexShrink: 0 }}>{r.icon}</span>
+          <div style={{ fontSize: 13, color: "rgba(240,250,249,0.8)", lineHeight: 1.5 }}>{r.label}</div>
         </div>
       ))}
     </div>
@@ -204,15 +193,18 @@ export default function Home() {
                 <span style={{ width: 6, height: 6, borderRadius: 3, background: "#F5A623", flexShrink: 0, display: "inline-block" }} />
                 <span style={{ fontSize: 12, fontWeight: 700, color: "#F5A623", letterSpacing: 1, textTransform: "uppercase" }}>Beta · Gratis att använda</span>
               </div>
-              <h1 style={{ fontSize: "clamp(60px,6.5vw,92px)", fontWeight: 900, lineHeight: 0.9, letterSpacing: -4, color: "#fff", marginBottom: 32, overflow: "visible" }}>
+              <p style={{ fontSize: isMobile ? 16 : 18, fontWeight: 600, color: "rgba(255,255,255,0.55)", letterSpacing: 0.2, marginBottom: 16, lineHeight: 1.4 }}>
+                Sveriges matchningsplattform för lastbilsförare och åkerier
+              </p>
+              <h1 style={{ fontSize: "clamp(56px,6vw,86px)", fontWeight: 900, lineHeight: 0.9, letterSpacing: -4, color: "#fff", marginBottom: 28, overflow: "visible" }}>
                 <span style={{ display: "block", paddingBottom: "0.1em" }}>Rätt</span>
                 <span style={{ display: "block", paddingTop: "0.05em", paddingBottom: "0.1em", color: "#F5A623", transition: "opacity 0.25s ease, transform 0.25s ease", opacity: wordVisible ? 1 : 0, transform: wordVisible ? "translateY(0)" : "translateY(8px)" }}>
                   {ROTATE_WORDS[wordIdx]}
                 </span>
                 <span style={{ display: "block", paddingTop: "0.05em", fontWeight: 300, opacity: 0.2 }}>Direkt.</span>
               </h1>
-              <p style={{ fontSize: 19, color: "rgba(255,255,255,0.7)", lineHeight: 1.7, maxWidth: 460, marginBottom: 44 }}>
-                Sveriges matchningsplattform för yrkesförare och transportföretag. Inga mellanhänder. Inga avgifter.
+              <p style={{ fontSize: 17, color: "rgba(255,255,255,0.6)", lineHeight: 1.7, maxWidth: 460, marginBottom: 44 }}>
+                Inga bemanningsföretag. Inga mellanhänder. Direktkontakt utan avgifter.
               </p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 12, flexDirection: isMobile ? "column" : "row" }}>
                 <Link to="/jobb" style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "#F5A623", color: "#000", fontWeight: 800, fontSize: 15, padding: "16px 34px", borderRadius: 12, textDecoration: "none" }}>
@@ -236,7 +228,7 @@ export default function Home() {
               </div>
             </div>
             <div className="hidden lg:flex flex-col gap-3.5">
-              <PlatformStatsCard />
+              <WhySTPCard />
               <div style={{ background: "#F5A623", borderRadius: 20, padding: "24px 28px", display: "grid", gridTemplateColumns: "auto 1fr", alignItems: "center", gap: 20 }}>
                 <div style={{ fontSize: 52, fontWeight: 900, color: "#000", lineHeight: 1, letterSpacing: -2, whiteSpace: "nowrap" }}>5 662</div>
                 <div style={{ fontSize: 13, color: "rgba(0,0,0,0.62)", lineHeight: 1.6, fontWeight: 500 }}>Lastbilsförare nyanställda de senaste 12 månaderna</div>
@@ -381,15 +373,15 @@ export default function Home() {
           </div>
 
           <div style={{ marginTop: 56, padding: "24px 32px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
-            <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(240,250,249,0.4)", textTransform: "uppercase", letterSpacing: 1.5 }}>Välkomnades av</span>
-            <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
-              {["Transportföretagen", "Sveriges Åkeriföretag (SÅ)"].map((l) => (
-                <span key={l} style={{ fontSize: 14, fontWeight: 600, color: "#f0faf9", display: "inline-flex", alignItems: "center", gap: 6 }}><Icon name="check" size={14} color="#4ade80" />{l}</span>
-              ))}
-            </div>
-            <div style={{ marginLeft: "auto", display: "flex", gap: 8, alignItems: "center" }}>
-              <span style={{ padding: "3px 10px", borderRadius: 99, background: "rgba(74,222,128,0.12)", color: "#4ade80", fontSize: 12, fontWeight: 700 }}>GRATIS</span>
-            </div>
+            {[
+              { icon: "check", text: "Gratis under hela betafasen", color: "#4ade80" },
+              { icon: "lock",  text: "Verifierat mot Bolagsverket", color: "#7dd3c8" },
+              { icon: "chat",  text: "Direktkontakt utan provision", color: "#F5A623" },
+            ].map((item) => (
+              <span key={item.text} style={{ fontSize: 13, fontWeight: 600, color: "#f0faf9", display: "inline-flex", alignItems: "center", gap: 8 }}>
+                <Icon name={item.icon} size={14} color={item.color} />{item.text}
+              </span>
+            ))}
           </div>
         </div>
       </section>
