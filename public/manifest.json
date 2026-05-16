@@ -1,0 +1,43 @@
+{
+  "name": "Sveriges Transportplattform",
+  "short_name": "STP",
+  "description": "Hitta lastbilsjobb eller rekrytera yrkesförare — direktkontakt utan mellanhänder.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#050e0e",
+  "theme_color": "#1F5F5C",
+  "lang": "sv",
+  "categories": ["business", "productivity"],
+  "icons": [
+    {
+      "src": "/stp-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/stp-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Lediga jobb",
+      "short_name": "Jobb",
+      "description": "Bläddra bland lediga lastbilsjobb",
+      "url": "/jobb",
+      "icons": [{ "src": "/stp-icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Mitt konto",
+      "short_name": "Profil",
+      "description": "Öppna min profil",
+      "url": "/profil",
+      "icons": [{ "src": "/stp-icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

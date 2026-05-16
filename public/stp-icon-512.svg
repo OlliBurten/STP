@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="96" fill="#1F5F5C"/>
+  <text
+    x="256"
+    y="352"
+    text-anchor="middle"
+    font-family="Inter, system-ui, -apple-system, Arial, sans-serif"
+    font-weight="700"
+    font-size="208"
+    letter-spacing="-8"
+    fill="#ffffff"
+  >STP</text>
+</svg>

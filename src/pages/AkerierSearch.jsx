@@ -560,7 +560,7 @@ export default function AkerierSearch() {
           </div>
         ) : loading ? (
           viewMode === "grid" ? (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 16 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(340px, 100%), 1fr))", gap: 16 }}>
               {[...Array(6)].map((_, i) => (
                 <div key={i} style={{ height: 240, borderRadius: 18, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }} />
               ))}
@@ -581,7 +581,7 @@ export default function AkerierSearch() {
             </button>
           </div>
         ) : viewMode === "grid" ? (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 16 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(340px, 100%), 1fr))", gap: 16 }}>
             {displayed.map((c) => (
               <CompanyGridCard key={c.id} c={c} user={user} saved={savedIds.has(c.id)} onToggleSave={handleToggleSave} />
             ))}
