@@ -588,6 +588,37 @@ export default function Admin() {
                   </div>
                 </div>
 
+                {/* Latest applications */}
+                {(summary.latestApplications?.length > 0) && (
+                  <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 16, padding: "20px 24px" }}>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 14 }}>
+                      Senaste ansökningar
+                      <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 99, background: "rgba(74,222,128,0.12)", color: "#4ade80" }}>
+                        Live
+                      </span>
+                    </p>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      {(summary.latestApplications || []).map((item) => (
+                        <div key={item.id} style={{
+                          background: "rgba(255,255,255,0.03)", border: `1px solid ${T.border}`,
+                          borderRadius: 10, padding: "10px 14px",
+                          display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
+                        }}>
+                          <div style={{ minWidth: 0 }}>
+                            <p style={{ fontSize: 13, fontWeight: 600, color: T.text, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                              {item.driverName}
+                              <span style={{ fontWeight: 400, color: "rgba(240,250,249,0.45)", marginLeft: 6 }}>→</span>
+                              <span style={{ fontWeight: 600, color: "#7dd3c8", marginLeft: 6 }}>{item.jobTitle || "Okänt jobb"}</span>
+                            </p>
+                            <p style={{ fontSize: 11, color: T.muted, margin: "2px 0 0" }}>{item.companyName}</p>
+                          </div>
+                          <p style={{ fontSize: 10, color: T.muted, flexShrink: 0 }}>{fmtDate(item.createdAt)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Latest users + jobs */}
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                   <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 16, padding: "20px 24px" }}>

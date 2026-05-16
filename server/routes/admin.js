@@ -306,6 +306,7 @@ adminRouter.get("/summary", async (req, res, next) => {
       pendingLegacyCompanies,
       pendingOrganizations,
       acceptsPraktikCompanies,
+      latestApplications,
     ] = await Promise.all([
       prisma.user.count({ where: { createdAt: { gte: since24h } } }),
       prisma.user.count({ where: { createdAt: { gte: since7d } } }),
@@ -365,6 +366,18 @@ adminRouter.get("/summary", async (req, res, next) => {
       }),
       prisma.organization.count({ where: { status: "PENDING" } }),
       prisma.organization.count({ where: { acceptsPraktik: true } }),
+      prisma.conversation.findMany({
+        where: { jobId: { not: null } },
+        orderBy: { createdAt: "desc" },
+        take: 8,
+        select: {
+          id: true,
+          jobTitle: true,
+          createdAt: true,
+          driver: { select: { name: true, email: true } },
+          company: { select: { companyName: true, name: true } },
+        },
+      }),
     ]);
 
     res.json({
@@ -403,6 +416,13 @@ adminRouter.get("/summary", async (req, res, next) => {
       latestJobs: latestJobs.map((job) => ({
         ...job,
         published: toIso(job.published),
+      })),
+      latestApplications: latestApplications.map((c) => ({
+        id: c.id,
+        jobTitle: c.jobTitle,
+        driverName: c.driver?.name || c.driver?.email || "Okänd förare",
+        companyName: c.company?.companyName || c.company?.name || "Okänt åkeri",
+        createdAt: toIso(c.createdAt),
       })),
     });
   } catch (e) {
