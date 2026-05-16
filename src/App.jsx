@@ -72,6 +72,7 @@ const CompanyPublicProfile  = lazyRetry(() => import("./pages/CompanyPublicProfi
 const DriverOnboardingWizard   = lazyRetry(() => import("./pages/DriverOnboardingWizard"));
 const CompanyOnboardingWizard  = lazyRetry(() => import("./pages/CompanyOnboardingWizard"));
 const AddCompany            = lazyRetry(() => import("./pages/AddCompany"));
+const CompanyTeam           = lazyRetry(() => import("./pages/CompanyTeam"));
 const InviteAccept          = lazyRetry(() => import("./pages/InviteAccept"));
 const AkerierSearch         = lazyRetry(() => import("./pages/AkerierSearch"));
 const PublicDriverProfile   = lazyRetry(() => import("./pages/PublicDriverProfile"));
@@ -375,6 +376,14 @@ function AppLayout() {
                     element={
                       <ProtectedRoute requiredRole="company">
                         <AddCompany />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/foretag/team"
+                    element={
+                      <ProtectedRoute requiredRole="company">
+                        <CompanyTeam />
                       </ProtectedRoute>
                     }
                   />

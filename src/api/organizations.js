@@ -1,4 +1,4 @@
-import { apiGet, apiPost, apiPut } from "./client.js";
+import { apiGet, apiPost, apiPut, apiDelete } from "./client.js";
 
 /** Lista användarens organisationer */
 export function fetchMyOrganizations() {
@@ -18,4 +18,14 @@ export function createOrganization(data) {
 /** Uppdatera organisation */
 export function updateOrganization(id, data) {
   return apiPut(`/api/organizations/${id}`, data);
+}
+
+/** Lista teammedlemmar för en organisation */
+export function fetchOrgMembers(orgId) {
+  return apiGet(`/api/organizations/${orgId}/members`);
+}
+
+/** Ta bort en teammedlem (ägare only) */
+export function removeOrgMember(orgId, membershipId) {
+  return apiDelete(`/api/organizations/${orgId}/members/${membershipId}`);
 }

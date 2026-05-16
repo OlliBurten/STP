@@ -121,6 +121,56 @@ organizationsRouter.get("/:id", async (req, res, next) => {
   }
 });
 
+/** Lista teammedlemmar (måste vara medlem i org) */
+organizationsRouter.get("/:id/members", async (req, res, next) => {
+  try {
+    const uo = await prisma.userOrganization.findFirst({
+      where: { userId: req.userId, organizationId: req.params.id },
+    });
+    if (!uo) return res.status(403).json({ error: "Ingen åtkomst" });
+
+    const members = await prisma.userOrganization.findMany({
+      where: { organizationId: req.params.id },
+      include: { user: { select: { id: true, name: true, email: true } } },
+      orderBy: { joinedAt: "asc" },
+    });
+
+    res.json(members.map((m) => ({
+      id: m.id,
+      userId: m.userId,
+      name: m.user.name,
+      email: m.user.email,
+      role: m.role,
+      joinedAt: m.joinedAt?.toISOString() ?? null,
+      isYou: m.userId === req.userId,
+    })));
+  } catch (e) {
+    next(e);
+  }
+});
+
+/** Ta bort en teammedlem (endast ägare, kan inte ta bort sig själv) */
+organizationsRouter.delete("/:id/members/:memberId", async (req, res, next) => {
+  try {
+    const uo = await prisma.userOrganization.findFirst({
+      where: { userId: req.userId, organizationId: req.params.id, role: "OWNER" },
+    });
+    if (!uo) return res.status(403).json({ error: "Endast ägaren kan ta bort medlemmar" });
+
+    const target = await prisma.userOrganization.findFirst({
+      where: { id: req.params.memberId, organizationId: req.params.id },
+    });
+    if (!target) return res.status(404).json({ error: "Medlemmen hittades inte" });
+    if (target.userId === req.userId) return res.status(400).json({ error: "Du kan inte ta bort dig själv" });
+    if (target.role === "OWNER") return res.status(400).json({ error: "Ägaren kan inte tas bort" });
+
+    await prisma.userOrganization.delete({ where: { id: req.params.memberId } });
+    res.status(204).send();
+  } catch (e) {
+    next(e);
+  }
+});
+
 /** Uppdatera organisation (endast ägare) */
 organizationsRouter.put("/:id", async (req, res, next) => {
   try {

@@ -5,6 +5,8 @@ import { useAuth } from "../context/AuthContext";
 import { segmentOptions } from "../data/segments";
 import { apiGet } from "../api/client.js";
 
+const DUPLICATE_ORG_MSG = "Organisationsnumret används redan av ett annat åkeri.";
+
 // ── Design tokens ────────────────────────────────────────────────────────────
 const T = {
   bg:      "#050e0e",
@@ -35,6 +37,7 @@ export default function AddCompany() {
   const navigate = useNavigate();
   const [saving, setSaving]   = useState(false);
   const [error, setError]     = useState("");
+  const [duplicate, setDuplicate] = useState(false);
   const [form, setForm]       = useState({
     name: "", orgNumber: "", location: "", region: "", foundedYear: null,
     segmentDefaults: segmentOptions.map(s => s.value),
@@ -50,6 +53,8 @@ export default function AddCompany() {
 
     setForm(p => ({ ...p, orgNumber: formatted, name: "", location: "", region: "", foundedYear: null }));
     setOrgLookup({ loading: false, valid: null, isTransport: null, error: null });
+    setDuplicate(false);
+    setError("");
 
     if (digits.length < 10) return;
     clearTimeout(lookupTimer.current);
@@ -88,6 +93,7 @@ export default function AddCompany() {
 
   const handleSubmit = async () => {
     setError("");
+    setDuplicate(false);
     if (!form.orgNumber.trim())      { setError("Fyll i organisationsnummer."); return; }
     if (orgLookup.valid === false)   { setError("Ogiltigt organisationsnummer — kontrollera och försök igen."); return; }
     if (orgLookup.valid !== true)    { setError("Vänta tills organisationsnumret har validerats."); return; }
@@ -111,7 +117,11 @@ export default function AddCompany() {
       switchOrg(org.id);
       navigate("/foretag", { replace: true });
     } catch (err) {
-      setError(err.message || "Kunde inte lägga till åkeriet. Försök igen.");
+      if (err.message === DUPLICATE_ORG_MSG) {
+        setDuplicate(true);
+      } else {
+        setError(err.message || "Kunde inte lägga till åkeriet. Försök igen.");
+      }
     } finally {
       setSaving(false);
     }
@@ -239,7 +249,33 @@ export default function AddCompany() {
           </div>
         )}
 
-        {/* Fel */}
+        {/* Duplicerat org-nummer */}
+        {duplicate && (
+          <div style={{
+            marginBottom: 20, padding: "16px 18px", borderRadius: 12,
+            background: "rgba(245,166,35,0.08)", border: "1px solid rgba(245,166,35,0.25)",
+          }}>
+            <p style={{ fontSize: 13, fontWeight: 700, color: T.amber, marginBottom: 6 }}>
+              Det här åkeriet finns redan på STP.
+            </p>
+            <p style={{ fontSize: 13, color: T.sub, lineHeight: 1.6 }}>
+              Varje åkeri kan bara läggas till av en person. Det finns två alternativ:
+            </p>
+            <ul style={{ marginTop: 8, paddingLeft: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 6 }}>
+              <li style={{ fontSize: 13, color: T.sub }}>
+                → <strong style={{ color: T.text }}>Redan ett konto?</strong>{" "}
+                <Link to="/login" style={{ color: T.amber, textDecoration: "underline" }}>Logga in</Link>{" "}
+                med det kontot som skapade åkeriet.
+              </li>
+              <li style={{ fontSize: 13, color: T.sub }}>
+                → <strong style={{ color: T.text }}>Anställd på åkeriet?</strong>{" "}
+                Be den som äger kontot bjuda in dig via <em>Headern → Team</em>.
+              </li>
+            </ul>
+          </div>
+        )}
+
+        {/* Övriga fel */}
         {error && (
           <p style={{ marginBottom: 20, fontSize: 13, color: T.red }}>{error}</p>
         )}
