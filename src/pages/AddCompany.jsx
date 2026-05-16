@@ -2,78 +2,107 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { createOrganization } from "../api/organizations.js";
 import { useAuth } from "../context/AuthContext";
-import BranschSearch from "../components/BranschSearch.jsx";
-import { regions } from "../data/mockJobs.js";
+import { segmentOptions } from "../data/segments";
 import { apiGet } from "../api/client.js";
+
+// ── Design tokens ────────────────────────────────────────────────────────────
+const T = {
+  bg:      "#050e0e",
+  bg2:     "#0a1818",
+  bg3:     "#0d2b2b",
+  primary: "#1F5F5C",
+  pLight:  "#2a7a76",
+  amber:   "#F5A623",
+  text:    "#f0faf9",
+  sub:     "rgba(240,250,249,0.55)",
+  muted:   "rgba(240,250,249,0.3)",
+  border:  "rgba(255,255,255,0.08)",
+  border2: "rgba(255,255,255,0.14)",
+  card:    "rgba(255,255,255,0.04)",
+  green:   "#4ade80",
+  red:     "#f87171",
+};
+
+const inputStyle = {
+  width: "100%", padding: "14px 16px", borderRadius: 12,
+  background: T.bg2, border: `1.5px solid ${T.border2}`,
+  color: T.text, fontSize: 15, fontFamily: "inherit",
+  outline: "none", transition: "border-color .2s", boxSizing: "border-box",
+};
 
 export default function AddCompany() {
   const { refreshOrgs, switchOrg } = useAuth();
   const navigate = useNavigate();
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-  const [form, setForm] = useState({
-    name: "",
-    orgNumber: "",
-    location: "",
-    region: "",
-    bransch: [],
-    segmentDefaults: [],
+  const [saving, setSaving]   = useState(false);
+  const [error, setError]     = useState("");
+  const [form, setForm]       = useState({
+    name: "", orgNumber: "", location: "",
+    segmentDefaults: segmentOptions.map(s => s.value),
   });
-  const [orgLookup, setOrgLookup] = useState({ loading: false, valid: null, suggestion: null, error: null, isTransport: null });
+  const [orgLookup, setOrgLookup] = useState({
+    loading: false, valid: null, isTransport: null, error: null,
+  });
   const lookupTimer = useRef(null);
 
-  const update = (key, value) => setForm((p) => ({ ...p, [key]: value }));
-
   const handleOrgNumberChange = useCallback((raw) => {
-    // Auto-formatera till XXXXXX-XXXX
-    const digits = raw.replace(/\D/g, "").slice(0, 10);
+    const digits    = raw.replace(/\D/g, "").slice(0, 10);
     const formatted = digits.length > 6 ? `${digits.slice(0, 6)}-${digits.slice(6)}` : digits;
 
-    // Rensa tidigare bolagsdata när numret ändras
-    setForm((p) => ({ ...p, orgNumber: formatted, name: "", location: "" }));
-    setOrgLookup({ loading: false, valid: null, suggestion: null, error: null, isTransport: null });
+    setForm(p => ({ ...p, orgNumber: formatted, name: "", location: "" }));
+    setOrgLookup({ loading: false, valid: null, isTransport: null, error: null });
 
     if (digits.length < 10) return;
-
     clearTimeout(lookupTimer.current);
     lookupTimer.current = setTimeout(async () => {
-      setOrgLookup((s) => ({ ...s, loading: true }));
+      setOrgLookup(s => ({ ...s, loading: true }));
       try {
         const data = await apiGet(`/api/utils/company-lookup?orgnr=${encodeURIComponent(formatted)}`);
         setOrgLookup({
           loading: false,
           valid: data.valid,
-          suggestion: data.companyName || null,
-          error: data.valid ? null : (data.error || "Ogiltigt organisationsnummer"),
           isTransport: data.isTransport ?? null,
+          error: data.valid ? null : (data.error || "Ogiltigt organisationsnummer"),
         });
-        setForm((p) => ({
+        setForm(p => ({
           ...p,
-          orgNumber:  data.formatted || p.orgNumber,
-          name:       data.companyName || "",
-          location:   data.city        || "",
+          orgNumber: data.formatted || p.orgNumber,
+          name:      data.companyName || "",
+          location:  data.city        || "",
         }));
       } catch {
-        setOrgLookup({ loading: false, valid: null, suggestion: null, error: null, isTransport: null });
+        setOrgLookup({ loading: false, valid: null, isTransport: null, error: null });
       }
     }, 600);
   }, []);
 
-  useEffect(() => {
-    return () => clearTimeout(lookupTimer.current);
-  }, []);
+  useEffect(() => () => clearTimeout(lookupTimer.current), []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const canSave =
+    form.orgNumber.replace(/\D/g, "").length >= 10 &&
+    orgLookup.valid === true &&
+    orgLookup.isTransport !== false &&
+    !orgLookup.loading &&
+    form.name.trim().length > 0;
+
+  const handleSubmit = async () => {
     setError("");
-    if (!form.name.trim()) { setError("Företagsnamn krävs"); return; }
-    if (!form.orgNumber.trim()) { setError("Organisationsnummer krävs"); return; }
-    if (orgLookup.valid === false) { setError("Ogiltigt organisationsnummer — kontrollera och försök igen."); return; }
-    if (orgLookup.valid !== true) { setError("Vänta tills organisationsnumret har validerats."); return; }
-    if (orgLookup.isTransport === false) { setError("Ert företag är inte registrerat som transportverksamhet hos Bolagsverket. STP är till för åkerier och transportföretag."); return; }
+    if (!form.orgNumber.trim())      { setError("Fyll i organisationsnummer."); return; }
+    if (orgLookup.valid === false)   { setError("Ogiltigt organisationsnummer — kontrollera och försök igen."); return; }
+    if (orgLookup.valid !== true)    { setError("Vänta tills organisationsnumret har validerats."); return; }
+    if (orgLookup.isTransport === false) {
+      setError("Ert företag är inte registrerat som transportverksamhet hos Bolagsverket. STP är till för åkerier och transportföretag.");
+      return;
+    }
+    if (!form.name.trim())           { setError("Fyll i företagsnamn."); return; }
+
     setSaving(true);
     try {
-      const org = await createOrganization(form);
+      const org = await createOrganization({
+        name:            form.name.trim(),
+        orgNumber:       form.orgNumber.trim(),
+        location:        form.location || undefined,
+        segmentDefaults: form.segmentDefaults,
+      });
       await refreshOrgs();
       switchOrg(org.id);
       navigate("/foretag", { replace: true });
@@ -85,119 +114,151 @@ export default function AddCompany() {
   };
 
   return (
-    <main className="max-w-2xl mx-auto px-4 sm:px-6 py-10">
-      <Link to="/foretag" className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-[var(--color-primary)] mb-6">
-        ← Tillbaka
-      </Link>
-      <h1 className="text-2xl font-bold text-slate-900">Lägg till åkeri</h1>
-      <p className="mt-2 text-slate-600">
-        Lägg till ett nytt åkeri på ditt rekryterarkonto. Du kan hantera flera åkerier från samma inloggning.
-      </p>
+    <div style={{
+      minHeight: "100vh", background: T.bg, color: T.text,
+      fontFamily: "inherit", marginTop: "-64px", paddingTop: "64px",
+      paddingBottom: "80px",
+    }}>
+      {/* Progress-bar */}
+      <div style={{ height: 3, background: "rgba(255,255,255,0.06)" }}>
+        <div style={{ height: 3, background: T.primary, width: "50%" }} />
+      </div>
 
-      <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-        <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-5">
-          <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide">Grunduppgifter</h2>
+      <div style={{ maxWidth: 560, margin: "0 auto", padding: "48px 24px 0" }}>
+        {/* Tillbaka */}
+        <Link to="/foretag" style={{
+          display: "inline-flex", alignItems: "center", gap: 6,
+          fontSize: 13, color: T.muted, textDecoration: "none", marginBottom: 36,
+        }}>
+          ← Tillbaka
+        </Link>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Företagsnamn *</label>
+        <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.amber, marginBottom: 12 }}>
+          Lägg till åkeri
+        </p>
+        <h1 style={{ fontSize: 34, fontWeight: 900, lineHeight: 1.1, marginBottom: 12 }}>
+          Ange ert<br />
+          <span style={{ color: "#7dd3c8" }}>organisationsnummer.</span>
+        </h1>
+        <p style={{ fontSize: 15, color: T.sub, lineHeight: 1.7, marginBottom: 36 }}>
+          Vi hämtar företagsuppgifter automatiskt från Bolagsverket — ni behöver bara ert organisationsnummer.
+        </p>
+
+        {/* Orgnummer */}
+        <div style={{ marginBottom: 24 }}>
+          <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 8 }}>
+            Organisationsnummer *
+          </p>
+          <div style={{ position: "relative" }}>
             <input
-              type="text"
-              value={form.name}
-              onChange={(e) => update("name", e.target.value)}
-              placeholder="Johansson Åkeri AB"
-              className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none"
-              required
+              value={form.orgNumber}
+              onChange={e => handleOrgNumberChange(e.target.value)}
+              placeholder="556123-4567"
+              style={{
+                ...inputStyle,
+                borderColor: orgLookup.valid === false
+                  ? "rgba(248,113,113,0.6)"
+                  : orgLookup.valid === true
+                    ? "rgba(74,222,128,0.5)"
+                    : T.border2,
+                paddingRight: 120,
+              }}
             />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Organisationsnummer *</label>
-            <div className="relative">
-              <input
-                type="text"
-                value={form.orgNumber}
-                onChange={(e) => handleOrgNumberChange(e.target.value)}
-                placeholder="556036-0793"
-                className={`w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none ${
-                  orgLookup.valid === false ? "border-red-400" : orgLookup.valid === true ? "border-green-400" : "border-slate-300"
-                }`}
-                required
-              />
-              {orgLookup.loading && (
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">Kontrollerar…</span>
-              )}
-              {orgLookup.valid === true && !orgLookup.loading && (
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-green-600 font-medium">✓ Giltigt</span>
-              )}
-            </div>
-            {orgLookup.error && (
-              <p className="mt-1 text-xs text-red-600">{orgLookup.error}</p>
+            {orgLookup.loading && (
+              <span style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", fontSize: 12, color: T.muted }}>
+                Kontrollerar…
+              </span>
             )}
-            {orgLookup.valid === true && !orgLookup.loading && orgLookup.isTransport !== false && (
-              <p className="mt-1 text-xs text-green-700 font-medium">
-                Ert åkeri verifieras automatiskt — ni kan börja direkt.
-                {orgLookup.suggestion && <> Hittades: <strong>{orgLookup.suggestion}</strong></>}
-              </p>
-            )}
-            {orgLookup.valid === true && !orgLookup.loading && orgLookup.isTransport === false && (
-              <p className="mt-1 text-xs text-red-600 font-medium">
-                Ert företag är inte registrerat som transportverksamhet hos Bolagsverket. STP är till för åkerier och transportföretag.
-              </p>
-            )}
-            {!orgLookup.valid && !orgLookup.error && (
-              <p className="mt-1 text-xs text-slate-500">10 siffror med bindestreck, t.ex. 556036-0793</p>
+            {orgLookup.valid === true && !orgLookup.loading && (
+              <span style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", fontSize: 12, fontWeight: 600, color: T.green }}>
+                ✓ Giltigt
+              </span>
             )}
           </div>
 
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Ort</label>
-              <input
-                type="text"
-                value={form.location}
-                onChange={(e) => update("location", e.target.value)}
-                placeholder="Göteborg"
-                className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none"
-              />
+          {/* Bolagsverket-feedback */}
+          {orgLookup.error && (
+            <p style={{ marginTop: 8, fontSize: 12, color: T.red }}>{orgLookup.error}</p>
+          )}
+          {orgLookup.valid === true && !orgLookup.loading && orgLookup.isTransport !== false && (
+            <div style={{
+              marginTop: 12, padding: "12px 16px", borderRadius: 12,
+              background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.2)",
+              display: "flex", alignItems: "center", gap: 10,
+            }}>
+              <span style={{ color: T.green, fontSize: 16 }}>✓</span>
+              <div>
+                <p style={{ fontSize: 13, fontWeight: 700, color: T.green }}>
+                  {form.name || "Företag hittades"}
+                </p>
+                <p style={{ fontSize: 12, color: T.sub, marginTop: 2 }}>
+                  Registrerat transportföretag — verifieras automatiskt.
+                  {form.location ? ` 📍 ${form.location}` : ""}
+                </p>
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Region</label>
-              <select
-                value={form.region}
-                onChange={(e) => update("region", e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none bg-white"
-              >
-                <option value="">Välj region</option>
-                {regions.map((r) => <option key={r} value={r}>{r}</option>)}
-              </select>
+          )}
+          {orgLookup.valid === true && !orgLookup.loading && orgLookup.isTransport === false && (
+            <div style={{
+              marginTop: 12, padding: "12px 16px", borderRadius: 12,
+              background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)",
+            }}>
+              <p style={{ fontSize: 12, color: T.red, fontWeight: 600 }}>
+                Ert företag är inte registrerat som transportverksamhet hos Bolagsverket.
+                STP är till för åkerier och transportföretag.
+              </p>
             </div>
-          </div>
+          )}
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-3">
-          <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide">Bransch</h2>
-          <p className="text-xs text-slate-500">Vilka segment verkar åkeriet inom? Används för sök och matchning.</p>
-          <BranschSearch
-            value={form.bransch}
-            onChange={(v) => update("bransch", v)}
-            placeholder="Sök bransch, t.ex. tankbil, timmerbil..."
-          />
-        </div>
-
-        {error && (
-          <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-800">
-            {error}
+        {/* Företagsnamn — visas när orgnr är validerat */}
+        {orgLookup.valid === true && !orgLookup.loading && orgLookup.isTransport !== false && (
+          <div style={{ marginBottom: 24 }}>
+            <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 8 }}>
+              Företagsnamn *
+            </p>
+            <input
+              value={form.name}
+              onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
+              placeholder="Ert åkeri AB"
+              style={{
+                ...inputStyle,
+                borderColor: form.name.trim().length > 0 ? "rgba(74,222,128,0.5)" : T.border2,
+              }}
+            />
+            {!form.name.trim() && (
+              <p style={{ marginTop: 6, fontSize: 12, color: T.muted }}>
+                Bolagsverket returnerade inget namn — ange det manuellt.
+              </p>
+            )}
           </div>
         )}
 
+        {/* Fel */}
+        {error && (
+          <p style={{ marginBottom: 20, fontSize: 13, color: T.red }}>{error}</p>
+        )}
+
+        {/* Spara */}
         <button
-          type="submit"
-          disabled={saving}
-          className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-[var(--color-primary)] text-white font-semibold hover:bg-[var(--color-primary-light)] disabled:opacity-50 transition-colors"
+          type="button"
+          onClick={handleSubmit}
+          disabled={saving || !canSave}
+          style={{
+            display: "inline-flex", alignItems: "center", justifyContent: "center",
+            padding: "14px 32px", borderRadius: 12, border: "none",
+            background: T.primary, color: "#fff", fontWeight: 700, fontSize: 15,
+            fontFamily: "inherit", cursor: saving || !canSave ? "default" : "pointer",
+            opacity: saving || !canSave ? 0.4 : 1, transition: "opacity .15s",
+            minWidth: 200,
+          }}
         >
-          {saving ? "Lägger till..." : "Lägg till åkeri"}
+          {saving ? "Lägger till…" : "Lägg till åkeri →"}
         </button>
-      </form>
-    </main>
+        <p style={{ fontSize: 12, color: T.muted, marginTop: 12 }}>
+          Gratis för åkerier · Ingen bindningstid
+        </p>
+      </div>
+    </div>
   );
 }
