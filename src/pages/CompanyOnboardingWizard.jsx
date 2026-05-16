@@ -58,14 +58,12 @@ const Btn = ({ children, v = "primary", onClick, style, disabled, type = "button
 };
 
 // ── Company preview card ─────────────────────────────────────────────────────
-function CompanyPreview({ name, orgNumber, city, segments, isTransport }) {
-  const segLabels = { FULLTIME: "Heltid", FLEX: "Vikariat/Extra", INTERNSHIP: "Praktik" };
+function CompanyPreview({ name, orgNumber, city, isTransport }) {
   const completion = [
     name?.trim().length > 0,
     orgNumber?.replace(/\D/g, "").length >= 10,
-    segments.length > 0,
   ].filter(Boolean).length;
-  const pct = Math.round(completion / 3 * 100);
+  const pct = Math.round(completion / 2 * 100);
 
   return (
     <div style={{
@@ -110,16 +108,6 @@ function CompanyPreview({ name, orgNumber, city, segments, isTransport }) {
             <span style={{ fontSize: 11, fontWeight: 600, color: T.green }}>Verifierat transportföretag</span>
           </div>
         )}
-        {segments.length > 0 && (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 10 }}>
-            {segments.map(s => (
-              <span key={s} style={{
-                padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 600,
-                background: T.pDim, color: "#7dd3c8", border: `1px solid rgba(31,95,92,0.4)`,
-              }}>{segLabels[s] || s}</span>
-            ))}
-          </div>
-        )}
       </div>
 
       {/* Progress */}
@@ -142,7 +130,6 @@ function CompanyPreview({ name, orgNumber, city, segments, isTransport }) {
         {[
           { label: "Organisationsnummer", done: orgNumber?.replace(/\D/g,"").length >= 10 },
           { label: "Företagsnamn hämtat", done: name?.trim().length > 0 },
-          { label: "Segment valt", done: segments.length > 0 },
         ].map(({ label, done }) => (
           <div key={label} style={{
             display: "flex", alignItems: "center", gap: 10,
@@ -170,15 +157,15 @@ export default function CompanyOnboardingWizard() {
 
   const [loading, setLoading]               = useState(true);
   const [saving, setSaving]                 = useState(false);
-  const [step, setStep]                     = useState(0); // 0=orgnr, 1=segment, 2=invite, 3=done
+  const [step, setStep]                     = useState(0); // 0=orgnr, 1=invite, 2=done
   const [error, setError]                   = useState("");
   const [profile, setProfile]               = useState(null);
   const [needsFirstCompany, setNeedsFirstCompany] = useState(false);
 
-  // Formulärdata
+  // Formulärdata — segmentDefaults sätts till alla värden automatiskt (inget val behövs i onboarding)
   const [form, setForm] = useState({
     orgNumber: "", name: "", region: "", city: "",
-    foundedYear: null, segmentDefaults: [],
+    foundedYear: null, segmentDefaults: segmentOptions.map(s => s.value),
   });
   const [orgLookup, setOrgLookup] = useState({
     loading: false, valid: null, isTransport: null, suggestion: null, error: null,
@@ -242,16 +229,7 @@ export default function CompanyOnboardingWizard() {
   if (!loading && !needsFirstCompany && !profile)
     return <Navigate to="/foretag" replace />;
 
-  // Toggle segment
-  const toggleSegment = (seg) =>
-    setForm(p => ({
-      ...p,
-      segmentDefaults: p.segmentDefaults.includes(seg)
-        ? p.segmentDefaults.filter(s => s !== seg)
-        : [...p.segmentDefaults, seg],
-    }));
-
-  // Spara och gå till steg 2
+  // Spara och gå till steg 1 (inbjudan)
   const handleSave = async () => {
     setError("");
     if (!form.orgNumber.trim()) { setError("Fyll i organisationsnummer."); return; }
@@ -261,7 +239,6 @@ export default function CompanyOnboardingWizard() {
       setError("Ert företag är inte registrerat som transportverksamhet hos Bolagsverket. STP är till för åkerier och transportföretag.");
       return;
     }
-    if (form.segmentDefaults.length === 0) { setError("Välj minst ett transportsegment."); return; }
 
     setSaving(true);
     try {
@@ -287,7 +264,7 @@ export default function CompanyOnboardingWizard() {
         await refreshUser?.();
       }
       trackCompanyOnboardingComplete(form.segmentDefaults);
-      setStep(2);
+      setStep(1);
     } catch (e) {
       setError(e.message || "Kunde inte spara. Försök igen.");
     } finally {
@@ -319,7 +296,7 @@ export default function CompanyOnboardingWizard() {
     finish();
   };
   const finish = () => {
-    setStep(3);
+    setStep(2);
     setTimeout(() => navigate("/foretag", { replace: true }), 2400);
   };
 
@@ -329,7 +306,6 @@ export default function CompanyOnboardingWizard() {
       const digits = form.orgNumber.replace(/\D/g, "");
       return digits.length >= 10 && orgLookup.valid === true && orgLookup.isTransport !== false && !orgLookup.loading;
     }
-    if (step === 1) return form.segmentDefaults.length > 0;
     return true;
   };
 
@@ -343,7 +319,7 @@ export default function CompanyOnboardingWizard() {
   };
 
   // ── Done ─────────────────────────────────────────────────────────────────
-  if (step === 3) return (
+  if (step === 2) return (
     <div style={{ ...wrapStyle, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
       <div style={{ maxWidth: 480, width: "100%", textAlign: "center" }}>
         <div style={{
@@ -382,29 +358,29 @@ export default function CompanyOnboardingWizard() {
     </div>
   );
 
-  // ── Steg 2: Inbjudan ─────────────────────────────────────────────────────
-  if (step === 2) return (
+  // ── Steg 1: Inbjudan ─────────────────────────────────────────────────────
+  if (step === 1) return (
     <div style={{ ...wrapStyle, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
       <div style={{ maxWidth: 520, width: "100%" }}>
         {/* Steg-prickar */}
         <div style={{ display: "flex", gap: 6, marginBottom: 32, justifyContent: "center" }}>
-          {["Företag", "Segment", "Team"].map((label, i) => (
+          {["Företag", "Team"].map((label, i) => (
             <div key={label} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
               <div style={{
                 width: 28, height: 28, borderRadius: "50%",
-                background: i < 2 ? T.primary : `1px solid ${T.border2}`,
-                border: i === 2 ? `2px solid ${T.primary}` : "none",
+                background: i < 1 ? T.primary : "transparent",
+                border: i === 1 ? `2px solid ${T.primary}` : "none",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 11, fontWeight: 700, color: i < 2 ? "#fff" : T.primary,
-              }}>{i < 2 ? "✓" : "3"}</div>
-              <span style={{ fontSize: 10, color: i === 2 ? T.text : T.muted }}>{label}</span>
+                fontSize: 11, fontWeight: 700, color: i < 1 ? "#fff" : T.primary,
+              }}>{i < 1 ? "✓" : "2"}</div>
+              <span style={{ fontSize: 10, color: i === 1 ? T.text : T.muted }}>{label}</span>
             </div>
           ))}
         </div>
 
         <div style={{ background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 20, padding: "32px 36px" }}>
           <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.amber, marginBottom: 14 }}>
-            Steg 3 · Bjud in team
+            Steg 2 · Bjud in team
           </p>
           <h2 style={{ fontSize: 28, fontWeight: 800, lineHeight: 1.2, marginBottom: 10 }}>
             Lägg till<br />
@@ -472,7 +448,7 @@ export default function CompanyOnboardingWizard() {
       <div style={{ height: 3, background: "rgba(255,255,255,0.06)" }}>
         <div style={{
           height: 3, background: T.primary, transition: "width .4s",
-          width: step === 0 ? "25%" : step === 1 ? "65%" : "100%",
+          width: step === 0 ? "40%" : "100%",
         }} />
       </div>
 
@@ -487,17 +463,17 @@ export default function CompanyOnboardingWizard() {
         <div>
           {/* Steg-prickar */}
           <div style={{ display: "flex", gap: 6, marginBottom: 40 }}>
-            {["Företag", "Segment"].map((label, i) => (
+            {["Företag", "Team"].map((label, i) => (
               <div key={label} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
                 <div style={{
                   width: 28, height: 28, borderRadius: "50%",
-                  background: i < step ? T.primary : i === step ? T.primary : "transparent",
-                  border: i > step ? `2px solid ${T.border2}` : "none",
+                  background: i === 0 ? T.primary : "transparent",
+                  border: i > 0 ? `2px solid ${T.border2}` : "none",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   fontSize: 11, fontWeight: 700,
-                  color: i <= step ? "#fff" : T.muted,
-                }}>{i < step ? "✓" : i + 1}</div>
-                <span style={{ fontSize: 10, color: i === step ? T.text : T.muted }}>{label}</span>
+                  color: i === 0 ? "#fff" : T.muted,
+                }}>1</div>
+                <span style={{ fontSize: 10, color: i === 0 ? T.text : T.muted }}>{label}</span>
               </div>
             ))}
           </div>
@@ -608,11 +584,11 @@ export default function CompanyOnboardingWizard() {
               {/* Navigering */}
               <div style={{ marginTop: 36, maxWidth: 520 }}>
                 <Btn
-                  disabled={!canContinue()}
-                  onClick={() => { setError(""); setStep(1); }}
+                  disabled={saving || !canContinue()}
+                  onClick={handleSave}
                   style={{ minWidth: 200 }}
                 >
-                  Nästa →
+                  {saving ? "Sparar…" : "Skapa konto →"}
                 </Btn>
                 <p style={{ fontSize: 12, color: T.muted, marginTop: 12 }}>
                   Gratis för åkerier · Ingen bindningstid
@@ -621,70 +597,6 @@ export default function CompanyOnboardingWizard() {
             </div>
           )}
 
-          {/* ── Steg 1: Segment ── */}
-          {step === 1 && (
-            <div>
-              <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.amber, marginBottom: 14 }}>
-                Steg 2 · Transportsegment
-              </p>
-              <h2 style={{ fontSize: 34, fontWeight: 900, lineHeight: 1.15, marginBottom: 10 }}>
-                Vilka förare<br />
-                <span style={{ color: "#7dd3c8" }}>rekryterar ni?</span>
-              </h2>
-              <p style={{ fontSize: 14, color: T.sub, lineHeight: 1.7, marginBottom: 32, maxWidth: 500 }}>
-                Välj minst ett segment. Det styr vilka förare ni matchas mot och är standardval när ni skapar annonser.
-              </p>
-
-              <div style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 560 }}>
-                {segmentOptions.map(segment => {
-                  const active = form.segmentDefaults.includes(segment.value);
-                  return (
-                    <button
-                      key={segment.value}
-                      type="button"
-                      onClick={() => toggleSegment(segment.value)}
-                      style={{
-                        display: "flex", alignItems: "center", gap: 18,
-                        padding: "18px 20px", borderRadius: 16, cursor: "pointer",
-                        fontFamily: "inherit", textAlign: "left",
-                        border: `2px solid ${active ? T.primary : T.border2}`,
-                        background: active ? T.pDim : T.card,
-                        transition: "all .15s",
-                      }}
-                    >
-                      <div style={{ flex: 1 }}>
-                        <p style={{ fontWeight: 700, fontSize: 15, color: T.text }}>{segment.label}</p>
-                        <p style={{ fontSize: 13, color: T.sub, marginTop: 3, lineHeight: 1.5 }}>{segment.description}</p>
-                      </div>
-                      <div style={{
-                        width: 22, height: 22, borderRadius: "50%", flexShrink: 0,
-                        border: `2px solid ${active ? T.primary : T.border2}`,
-                        background: active ? T.primary : "transparent",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        color: "#fff", fontSize: 11, transition: "all .15s",
-                      }}>{active ? "✓" : ""}</div>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {error && step === 1 && (
-                <p style={{ marginTop: 16, fontSize: 13, color: T.red }}>{error}</p>
-              )}
-
-              {/* Navigering */}
-              <div style={{ marginTop: 36, display: "flex", gap: 12, maxWidth: 560 }}>
-                <Btn v="dim" onClick={() => setStep(0)}>← Tillbaka</Btn>
-                <Btn
-                  disabled={saving || !canContinue()}
-                  onClick={handleSave}
-                  style={{ flex: 1 }}
-                >
-                  {saving ? "Sparar…" : "Skapa konto →"}
-                </Btn>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* RIGHT — preview */}
@@ -692,7 +604,6 @@ export default function CompanyOnboardingWizard() {
           name={form.name}
           orgNumber={form.orgNumber}
           city={form.city}
-          segments={form.segmentDefaults}
           isTransport={orgLookup.isTransport}
         />
       </div>
