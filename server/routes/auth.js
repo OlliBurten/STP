@@ -22,6 +22,7 @@ import {
   isGoogleConfigured,
   isMicrosoftConfigured,
 } from "../lib/oauth.js";
+import { resolveEffectiveOrganization } from "../lib/organizations.js";
 import { shouldAutoVerifyCompany } from "../lib/companyVerify.js";
 import { authMiddleware } from "../middleware/auth.js";
 import { isAdminEmail } from "../lib/adminAccess.js";
@@ -34,14 +35,17 @@ function isCompanyLikeRole(role) {
 }
 
 /** Augment user object for company/recruiter (Organization or legacy). */
-async function augmentCompanyMemberUser(user) {
+async function augmentCompanyMemberUser(user, requestedOrgId = null) {
   if (!user || !isCompanyLikeRole(user.role)) return user;
-  const uo = await prisma.userOrganization.findFirst({
-    where: { userId: user.id },
-    include: { organization: true },
-  });
-  if (uo) {
-    const org = uo.organization;
+  const orgRes = await resolveEffectiveOrganization(user.id, requestedOrgId);
+  if (orgRes) {
+    const org = orgRes.organization;
+    const ownerUo = orgRes.isOwner
+      ? null
+      : await prisma.userOrganization.findFirst({
+          where: { organizationId: orgRes.organizationId, role: "OWNER" },
+          select: { userId: true },
+        });
     return {
       ...user,
       companyName: org.name ?? user.companyName,
@@ -49,6 +53,7 @@ async function augmentCompanyMemberUser(user) {
       companyStatus: org.status ?? user.companyStatus,
       companySegmentDefaults: org.segmentDefaults ?? user.companySegmentDefaults ?? [],
       organizationId: org.id,
+      companyOwnerId: ownerUo?.userId,
     };
   }
   const membership = await prisma.companyMember.findUnique({
@@ -64,6 +69,7 @@ async function augmentCompanyMemberUser(user) {
   const ownerUo = await prisma.userOrganization.findFirst({
     where: { userId: membership.companyOwnerId, role: "OWNER" },
     include: { organization: true },
+    orderBy: { joinedAt: "asc" },
   });
   if (ownerUo) {
     const org = ownerUo.organization;
@@ -325,7 +331,7 @@ authRouter.get("/me", authMiddleware, async (req, res, next) => {
       },
     });
     if (!user) return res.status(404).json({ error: "Användaren hittades inte" });
-    const augmented = await augmentCompanyMemberUser(user);
+    const augmented = await augmentCompanyMemberUser(user, req.headers["x-active-org"] || null);
     let actorUser = null;
     if (req.actorUserId && req.actorUserId !== req.userId) {
       actorUser = await prisma.user.findUnique({
