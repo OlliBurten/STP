@@ -9,6 +9,11 @@ export default function InstallPrompt() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
+    // Visa bara på mobila enheter — på desktop är det onödigt och förvirrande
+    const isMobile = window.matchMedia("(max-width: 768px)").matches ||
+      ("ontouchstart" in window && navigator.maxTouchPoints > 0);
+    if (!isMobile) return;
+
     // Om redan installerat eller avvisat i denna session — visa inte
     if (sessionStorage.getItem("stp-install-dismissed")) return;
 
