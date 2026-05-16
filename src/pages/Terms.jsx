@@ -10,7 +10,7 @@ export default function Terms() {
           ← Tillbaka
         </Link>
         <h1 className="text-3xl font-bold text-slate-900">Användarvillkor</h1>
-        <p className="mt-2 text-slate-500">Senast uppdaterad: 7 april 2026</p>
+        <p className="mt-2 text-slate-500">Senast uppdaterad: 16 maj 2026</p>
 
         <div className="mt-10 space-y-8 text-slate-700">
           <section>
@@ -92,6 +92,20 @@ export default function Terms() {
               STP ansvarar inte för innehållet i jobbannonser eller förarprofiler, för avtal som ingås
               mellan förare och företag, eller för direkta eller indirekta skador som uppstår till följd
               av användningen av tjänsten. Vi garanterar inte kontinuerlig tillgänglighet av tjänsten.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-slate-900 mb-3">7a. Beta-tjänst</h2>
+            <p>
+              STP befinner sig i beta-fas. Det innebär att funktioner kan förändras, läggas till eller
+              tas bort utan föregående varning. Tjänsten tillhandahålls kostnadsfritt under beta-perioden.
+              Vi förbehåller oss rätten att introducera betalda funktioner i framtiden, med minst 30 dagars
+              förvarning via e-post till registrerade användare.
+            </p>
+            <p className="mt-2">
+              Gratis-tiers för grundfunktioner (skapa profil, söka jobb) avses bibehållas även efter
+              beta-periodens slut, men detta är inte ett avtalsåtagande i nuläget.
             </p>
           </section>
 

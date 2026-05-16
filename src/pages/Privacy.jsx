@@ -10,7 +10,7 @@ export default function Privacy() {
           ← Tillbaka
         </Link>
         <h1 className="text-3xl font-bold text-slate-900">Integritetspolicy</h1>
-        <p className="mt-2 text-slate-500">Senast uppdaterad: 7 april 2026</p>
+        <p className="mt-2 text-slate-500">Senast uppdaterad: 16 maj 2026</p>
 
         <div className="mt-10 space-y-8 text-slate-700">
           <section>
@@ -24,6 +24,10 @@ export default function Privacy() {
               <a href="mailto:support@transportplattformen.se" className="text-[var(--color-primary)] hover:underline">
                 support@transportplattformen.se
               </a>
+            </p>
+            <p className="mt-2 text-sm text-slate-500">
+              Plattformen drivs av Oliver Harburt. För frågor om personuppgiftsbehandling, vänligen kontakta
+              oss via e-postadressen ovan. Vi svarar på förfrågningar inom 30 dagar i enlighet med GDPR.
             </p>
           </section>
 
@@ -91,7 +95,7 @@ export default function Privacy() {
               <li><strong>Rätta</strong> felaktiga uppgifter (direkt via din profil)</li>
               <li><strong>Radera</strong> ditt konto och all tillhörande data (direkt via tjänsten)</li>
               <li><strong>Begränsa</strong> behandling av dina uppgifter</li>
-              <li><strong>Dataportabilitet</strong> — begär ut dina uppgifter i maskinläsbart format</li>
+              <li><strong>Dataportabilitet</strong> — begär ut dina uppgifter i maskinläsbart format via e-post till support@transportplattformen.se</li>
               <li><strong>Invända</strong> mot behandling baserad på berättigat intresse</li>
             </ul>
             <p className="mt-3">
@@ -108,13 +112,24 @@ export default function Privacy() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-slate-900 mb-3" id="cookies">7. Cookies</h2>
-            <p>
-              Vi använder <strong>endast nödvändiga cookies</strong> för att tjänsten ska fungera —
-              t.ex. för inloggning och sessionshantering. Vi använder inga marknadsförings-,
-              spårnings- eller analyskakor från tredje part. Inga cookies kräver ditt samtycke
-              eftersom de är tekniskt nödvändiga.
-            </p>
+            <h2 className="text-xl font-semibold text-slate-900 mb-3" id="cookies">7. Cookies och samtycke</h2>
+            <p>Vi skiljer på två kategorier av cookies:</p>
+            <div className="mt-3 space-y-3">
+              <div>
+                <strong>Nödvändiga cookies</strong> — krävs för att tjänsten ska fungera (inloggning,
+                sessionshantering, OAuth). Dessa kräver inget samtycke och kan inte stängas av.
+              </div>
+              <div>
+                <strong>Analytics- och felrapporteringscookies</strong> — vi använder Sentry för
+                felövervakning, vilket kan lagra sessionsinformation. Detta kräver ditt samtycke
+                och aktiveras bara om du väljer "Acceptera alla" i cookie-bannern. Du kan ändra
+                ditt val när som helst genom att rensa cookies i din webbläsare.
+              </div>
+              <div>
+                <strong>Besöksstatistik</strong> — vi använder Plausible Analytics, som är helt
+                cookiefritt och inte spårar enskilda användare. Plausible kräver inget samtycke.
+              </div>
+            </div>
           </section>
 
           <section>
