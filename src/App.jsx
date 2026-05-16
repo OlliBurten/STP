@@ -94,6 +94,7 @@ const SchoolLanding         = lazyRetry(() => import("./pages/SchoolLanding"));
 const HittaPraktik          = lazyRetry(() => import("./pages/HittaPraktik"));
 const Arbetsmarknadsutbildning = lazyRetry(() => import("./pages/Arbetsmarknadsutbildning"));
 const Partner               = lazyRetry(() => import("./pages/Partner"));
+const DriverAcquisitionLanding = lazyRetry(() => import("./pages/DriverAcquisitionLanding"));
 const PartnerPresentation   = lazyRetry(() => import("./pages/PartnerPresentation"));
 const BloggIndex            = lazy(() => import("./pages/blogg/BloggIndex"));
 const CeKorkortSverige      = lazy(() => import("./pages/blogg/CeKorkortSverige"));
@@ -432,7 +433,12 @@ function App() {
               <ProfileProvider>
                 <ChatProvider>
                   <ToastProvider>
-                    <AppLayout />
+                    <Routes>
+                      {/* Standalone landing pages — ingen header/footer */}
+                      <Route path="/bli-forare" element={<DriverAcquisitionLanding />} />
+                      {/* Alla andra sidor via AppLayout */}
+                      <Route path="/*" element={<AppLayout />} />
+                    </Routes>
                   </ToastProvider>
                 </ChatProvider>
               </ProfileProvider>
