@@ -25,17 +25,21 @@ export default function AddCompany() {
   const update = (key, value) => setForm((p) => ({ ...p, [key]: value }));
 
   const handleOrgNumberChange = useCallback((raw) => {
-    update("orgNumber", raw);
-    setOrgLookup({ loading: false, valid: null, suggestion: null, error: null });
+    // Auto-formatera till XXXXXX-XXXX
+    const digits = raw.replace(/\D/g, "").slice(0, 10);
+    const formatted = digits.length > 6 ? `${digits.slice(0, 6)}-${digits.slice(6)}` : digits;
 
-    const digits = raw.replace(/\D/g, "");
+    // Rensa tidigare bolagsdata när numret ändras
+    setForm((p) => ({ ...p, orgNumber: formatted, name: "", location: "" }));
+    setOrgLookup({ loading: false, valid: null, suggestion: null, error: null, isTransport: null });
+
     if (digits.length < 10) return;
 
     clearTimeout(lookupTimer.current);
     lookupTimer.current = setTimeout(async () => {
       setOrgLookup((s) => ({ ...s, loading: true }));
       try {
-        const data = await apiGet(`/api/utils/company-lookup?orgnr=${encodeURIComponent(raw)}`);
+        const data = await apiGet(`/api/utils/company-lookup?orgnr=${encodeURIComponent(formatted)}`);
         setOrgLookup({
           loading: false,
           valid: data.valid,
@@ -43,10 +47,11 @@ export default function AddCompany() {
           error: data.valid ? null : (data.error || "Ogiltigt organisationsnummer"),
           isTransport: data.isTransport ?? null,
         });
-        if (data.formatted) update("orgNumber", data.formatted);
         setForm((p) => ({
           ...p,
-          name: data.companyName && !p.name.trim() ? data.companyName : p.name,
+          orgNumber:  data.formatted || p.orgNumber,
+          name:       data.companyName || "",
+          location:   data.city        || "",
         }));
       } catch {
         setOrgLookup({ loading: false, valid: null, suggestion: null, error: null, isTransport: null });

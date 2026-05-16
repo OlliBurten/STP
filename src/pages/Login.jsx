@@ -161,7 +161,7 @@ export default function Login() {
     }
     const isRecruiter = ["COMPANY", "RECRUITER"].includes(String(u?.role || "").toUpperCase());
     const target = isRecruiter
-      ? u?.shouldShowOnboarding ? "/foretag/onboarding" : "/foretag"
+      ? "/foretag"
       : u?.shouldShowOnboarding ? "/onboarding/forare" : from || "/";
     setTimeout(() => navigate(target, { replace: true }), 0);
   };
@@ -193,7 +193,7 @@ export default function Login() {
         const loggedInUser = await loginWithApi(email.trim(), password);
         if (loggedInUser.isAdmin) { navigate(from?.startsWith("/admin") ? from : "/admin", { replace: true }); return; }
         if (loggedInUser.role === "recruiter") {
-          navigate(loggedInUser.shouldShowOnboarding ? "/foretag/onboarding" : "/foretag", { replace: true });
+          navigate("/foretag", { replace: true });
           return;
         }
         if (loggedInUser.shouldShowOnboarding) { navigate("/onboarding/forare", { replace: true }); return; }

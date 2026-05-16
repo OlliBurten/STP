@@ -416,6 +416,60 @@ export default function ForCompanies() {
   const activeJobs = jobs.filter((j) => j.status === "ACTIVE");
   const newApplications = conversations.filter((c) => !c.readByCompanyAt).length;
 
+  // Inget företag kopplat ännu — visa empty state
+  if (!loading && !profile) {
+    return (
+      <div style={{ minHeight: "100vh", background: "#060f0f", color: "#f0faf9", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+        <div style={{ maxWidth: 520, width: "100%", textAlign: "center" }}>
+          <div style={{
+            width: 72, height: 72, borderRadius: "50%",
+            background: "rgba(31,95,92,0.15)", border: "2px solid rgba(31,95,92,0.4)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 30, margin: "0 auto 28px",
+          }}>🚛</div>
+          <h1 style={{ fontSize: 30, fontWeight: 900, lineHeight: 1.2, marginBottom: 12 }}>
+            Välkommen till STP
+          </h1>
+          <p style={{ fontSize: 15, color: "rgba(240,250,249,0.6)", lineHeight: 1.7, marginBottom: 36, maxWidth: 400, margin: "0 auto 36px" }}>
+            Ditt konto är skapat. Lägg till ditt åkeri för att börja publicera jobb och kontakta förare.
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 36, textAlign: "left", maxWidth: 400, margin: "0 auto 36px" }}>
+            {[
+              { icon: "🎯", title: "Hitta förare direkt", text: "Sök bland förare med rätt körkort och region." },
+              { icon: "📋", title: "Publicera jobb", text: "En annons når automatiskt matchande förare." },
+              { icon: "🏢", title: "Flera åkerier", text: "Hantera flera bolag inom samma konto." },
+            ].map(({ icon, title, text }) => (
+              <div key={title} style={{
+                display: "flex", gap: 14, padding: "14px 16px", borderRadius: 12,
+                background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
+              }}>
+                <span style={{ fontSize: 20, flexShrink: 0 }}>{icon}</span>
+                <div>
+                  <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 2 }}>{title}</p>
+                  <p style={{ fontSize: 12, color: "rgba(240,250,249,0.5)", lineHeight: 1.5 }}>{text}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <Link
+            to="/foretag/lagg-till-akeri"
+            style={{
+              display: "inline-flex", alignItems: "center", gap: 8,
+              padding: "14px 32px", borderRadius: 12,
+              background: "#1F5F5C", color: "#fff",
+              fontWeight: 700, fontSize: 15, textDecoration: "none",
+            }}
+          >
+            <Icon n="plus" size={16} /> Lägg till ditt åkeri
+          </Link>
+          <p style={{ fontSize: 12, color: "rgba(240,250,249,0.3)", marginTop: 14 }}>
+            Gratis för åkerier · Ingen bindningstid
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   const kpis = [
     { label: "Nya ansökningar",        value: newApplications,                delta: newApplications > 0 ? `${newApplications} att granska` : "Inga nya",    positive: newApplications > 0 ? true : null,                    icon: "user",      glow: "#F5A623", to: "/foretag/annonser" },
     { label: "Obesvarade meddelanden", value: companyUnreadConversationCount,  delta: companyUnreadConversationCount > 0 ? "Kräver svar" : "Alla besvarade",  positive: companyUnreadConversationCount > 0 ? false : null,     icon: "msg",       glow: "#f87171", to: "/foretag/meddelanden" },

@@ -176,12 +176,7 @@ export default function Home() {
   const count2 = useCountUp(36, 1400, heroInView);
 
   if (user && !isAdmin) {
-    if (isCompany) {
-      if (user.shouldShowOnboarding && (!Array.isArray(user.companySegmentDefaults) || user.companySegmentDefaults.length === 0)) {
-        return <Navigate to="/foretag/onboarding" replace />;
-      }
-      return <Navigate to="/foretag" replace />;
-    }
+    if (isCompany) return <Navigate to="/foretag" replace />;
     if (isDriver) return <Navigate to="/profil" replace />;
   }
 

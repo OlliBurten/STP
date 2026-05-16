@@ -60,11 +60,5 @@ export default function OnboardingGate({ children }) {
 
   if (!user.shouldShowOnboarding) return children;
 
-  if (isCompany) {
-    if (!isCompanyMember && (!hasOrganizationContext || !hasSegments) && path !== "/foretag/onboarding" && !path.startsWith("/foretag/onboarding")) {
-      return <Navigate to="/foretag/onboarding" state={{ from: path }} replace />;
-    }
-  }
-
   return children;
 }
