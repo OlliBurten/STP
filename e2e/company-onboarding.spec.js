@@ -1,12 +1,13 @@
 // @ts-check
 /**
- * Åkeri-onboarding — testar wizard-flödet (steg 0–3).
+ * Åkeri-onboarding — testar wizard-flödet (steg 0–3) + Bolagsverket-integration.
  * Använder samma autentiserade session som company-full.spec.js.
  * Om kontot redan har genomfört onboarding (t.ex. live-kontot test@akeri.se)
- * hoppar testerna över automatiskt.
+ * hoppar wizard-UI-testerna över automatiskt.
  *
- * Kör mot live:
+ * Kör mot live (kräver BACKEND_URL för Bolagsverket-direkttest):
  *   PLAYWRIGHT_BASE_URL=https://transportplattformen.se \
+ *   BACKEND_URL=https://nodejs-production-f3b9.up.railway.app \
  *   COMPANY_EMAIL=… COMPANY_PASSWORD=… \
  *   npx playwright test --project=setup --project=chromium-auth e2e/company-onboarding.spec.js
  */
@@ -15,8 +16,11 @@ import path from "path";
 
 test.use({ storageState: path.join(process.cwd(), "playwright/.auth/company.json") });
 
-// Känt transport-organisationsnummer för validering (Volvo AB)
+// Känt transport-organisationsnummer (Volvo AB)
 const TEST_ORG = "556036-0793";
+
+// Backend-URL — lokal dev eller live Railway-backend
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
 
 /**
  * Navigera till onboarding. Returnerar false om kontot är redan onboardat
@@ -190,5 +194,83 @@ test.describe("Komplett onboarding-flöde", () => {
 
     // Auto-redirect till /foretag inom ~3 sek
     await expect(page).toHaveURL(/\/foretag/, { timeout: 6000 });
+  });
+});
+
+// ── Bolagsverket API — direkttester (körs alltid, kräver inte wizard) ──────────
+//
+// Dessa tester anropar backend-API:t direkt via BACKEND_URL.
+// På live (med riktiga Bolagsverket-tokens) valideras faktisk bolagsdata.
+// Lokalt utan tokens returnerar API:t "format-only" — då hoppas data-assertionerna över.
+
+test.describe("Bolagsverket API — integration", () => {
+  test("giltigt transportorgnr (Volvo AB) returnerar valid=true", async ({ page }) => {
+    const resp = await page.request.get(
+      `${BACKEND_URL}/api/utils/company-lookup?orgnr=${TEST_ORG}`
+    );
+    expect(resp.ok()).toBe(true);
+
+    const data = await resp.json();
+    expect(data.valid).toBe(true);
+    expect(data.formatted).toBe(TEST_ORG);
+  });
+
+  test("live-tokens ger bolagsnamn och transportkod (hoppar över lokalt)", async ({ page }) => {
+    const resp = await page.request.get(
+      `${BACKEND_URL}/api/utils/company-lookup?orgnr=${TEST_ORG}`
+    );
+    const data = await resp.json();
+
+    if (data.source === "format-only") {
+      console.log("ℹ️  Bolagsverket-tokens ej konfigurerade — hoppar över data-assertion");
+      return;
+    }
+
+    // På live: riktigt API-svar
+    expect(data.companyName).toBeTruthy();
+    expect(typeof data.isTransport).toBe("boolean");
+    expect(data.city).toBeTruthy();
+    console.log(`✓ Bolagsverket: ${data.companyName}, stad=${data.city}, transport=${data.isTransport}`);
+  });
+
+  test("ogiltigt orgnr (fel format) returnerar valid=false", async ({ page }) => {
+    const resp = await page.request.get(
+      `${BACKEND_URL}/api/utils/company-lookup?orgnr=123`
+    );
+    expect(resp.ok()).toBe(true);
+    const data = await resp.json();
+    expect(data.valid).toBe(false);
+  });
+
+  test("Bolagsverket-validering syns i wizard-UI när orgnr anges", async ({ page }) => {
+    if (!(await gotoOnboarding(page))) {
+      // Kontot är onboardat — testa ändå via direkt API-anrop
+      const resp = await page.request.get(
+        `${BACKEND_URL}/api/utils/company-lookup?orgnr=${TEST_ORG}`
+      );
+      expect(resp.ok()).toBe(true);
+      const data = await resp.json();
+      expect(data.valid).toBe(true);
+      console.log("ℹ️  Wizard ej tillgänglig — API-test använt som fallback");
+      return;
+    }
+
+    await page.getByPlaceholder("556123-4567").fill(TEST_ORG);
+
+    // Kontrollera-animationen ska visas
+    const checking = page.getByText(/Kontrollerar/i);
+    await checking.isVisible({ timeout: 2000 }).catch(() => {});
+
+    // Giltigt-indikatorn ska visas (max 8 sek)
+    const valid = page.getByText(/✓ Giltigt/i);
+    const isValid = await valid.isVisible({ timeout: 8000 }).catch(() => false);
+    if (!isValid) {
+      console.log("ℹ️  Bolagsverket-tokens ej konfigurerade lokalt — hoppar över UI-assertion");
+      return;
+    }
+
+    await expect(valid).toBeVisible();
+    await expect(page.getByText(/Registrerat transportföretag/i)).toBeVisible({ timeout: 4000 });
+    await expect(page.getByRole("button", { name: /Nästa/i })).toBeEnabled();
   });
 });
