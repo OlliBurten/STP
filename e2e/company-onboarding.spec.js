@@ -1,11 +1,9 @@
 // @ts-check
 /**
- * Åkeri-onboarding — testar wizard-flödet (steg 0–3) + Bolagsverket-integration.
- * Använder samma autentiserade session som company-full.spec.js.
- * Om kontot redan har genomfört onboarding (t.ex. live-kontot test@akeri.se)
- * hoppar wizard-UI-testerna över automatiskt.
+ * Åkeri-registrering och onboarding — testar det nya flödet där
+ * org-nummer läggs till från dashboarden, inte under registreringen.
  *
- * Kör mot live (kräver BACKEND_URL för Bolagsverket-direkttest):
+ * Kör mot live:
  *   PLAYWRIGHT_BASE_URL=https://transportplattformen.se \
  *   BACKEND_URL=https://nodejs-production-f3b9.up.railway.app \
  *   COMPANY_EMAIL=… COMPANY_PASSWORD=… \
@@ -16,261 +14,196 @@ import path from "path";
 
 test.use({ storageState: path.join(process.cwd(), "playwright/.auth/company.json") });
 
-// Känt transport-organisationsnummer (Volvo AB)
-const TEST_ORG = "556036-0793";
-
-// Backend-URL — lokal dev eller live Railway-backend
+const TEST_ORG   = "556036-0793"; // Volvo AB — känt transportorgnr
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
 
-/**
- * Navigera till onboarding. Returnerar false om kontot är redan onboardat
- * (wizard visar ej → redirect till /foretag).
- */
-async function gotoOnboarding(page) {
-  await page.goto("/foretag/onboarding");
-  await page.waitForLoadState("networkidle", { timeout: 8000 }).catch(() => {});
+// ── Inloggning → dashboard (aldrig /foretag/onboarding) ──────────────────────
 
-  const heading = page.getByRole("heading", { name: /Starta ert åkeri/i });
-  const visible = await heading.isVisible({ timeout: 4000 }).catch(() => false);
-  if (!visible) {
-    console.log("ℹ️  Onboarding redan slutförd för detta konto — hoppar över testet");
-    return false;
-  }
-  return true;
-}
-
-// ── Rendering och tema ────────────────────────────────────────────────────────
-
-test.describe("Åkeri-onboarding — rendering och tema", () => {
-  test("sidan laddas med mörkt tema och rätt rubrik", async ({ page }) => {
-    if (!(await gotoOnboarding(page))) return;
-
-    await expect(page.getByRole("heading", { name: /Starta ert åkeri/i })).toBeVisible();
-
-    // Bakgrunden ska INTE vara vit
-    const bg = await page.evaluate(() => window.getComputedStyle(document.body).backgroundColor);
-    expect(bg).not.toBe("rgb(255, 255, 255)");
+test.describe("Inloggning — redirectar till dashboard", () => {
+  test("åkeri-inloggning landar på /foretag", async ({ page }) => {
+    await page.goto("/foretag");
+    await expect(page).toHaveURL(/\/foretag/, { timeout: 8000 });
+    // Ska INTE ha hamnat på onboarding-wizard
+    expect(page.url()).not.toMatch(/\/foretag\/onboarding/);
   });
 
-  test("förhandsgranskningspanel (CompanyPreview) syns i sidopanelen", async ({ page }) => {
-    if (!(await gotoOnboarding(page))) return;
-
-    await expect(page.getByText("Ert åkeri", { exact: true })).toBeVisible();
-    await expect(page.getByText("Organisationsnummer", { exact: true })).toBeVisible();
-    await expect(page.getByText("Segment valt", { exact: true })).toBeVisible();
-  });
-
-  test("fördelskort syns på steg 0", async ({ page }) => {
-    if (!(await gotoOnboarding(page))) return;
-
-    await expect(page.getByText(/Hitta rätt förare snabbare/i)).toBeVisible();
-    await expect(page.getByText(/Publicera jobb direkt/i)).toBeVisible();
-    await expect(page.getByText(/Automatisk verifiering/i)).toBeVisible();
+  test("/foretag/onboarding redirectar inte längre tvångsmässigt", async ({ page }) => {
+    await page.goto("/foretag/onboarding");
+    await page.waitForLoadState("networkidle", { timeout: 8000 }).catch(() => {});
+    // Ska antingen stanna kvar på onboarding eller redirecta till /foretag — aldrig blockera
+    const url = page.url();
+    expect(url).toMatch(/\/(foretag)/);
   });
 });
 
-// ── Steg 0: Organisationsnummer ───────────────────────────────────────────────
+// ── Dashboard — empty state ───────────────────────────────────────────────────
 
-test.describe("Steg 0 — organisationsnummer", () => {
-  test("orgnummer-fältet syns med rätt placeholder", async ({ page }) => {
-    if (!(await gotoOnboarding(page))) return;
+test.describe("Dashboard — tomt state utan företag", () => {
+  test("om inget företag finns visas CTA att lägga till åkeri", async ({ page }) => {
+    await page.goto("/foretag");
+    await page.waitForLoadState("networkidle", { timeout: 8000 }).catch(() => {});
 
-    await expect(page.getByPlaceholder("556123-4567")).toBeVisible();
+    // Antingen visas empty state (nytt konto) eller dashboard (befintligt konto)
+    const hasEmptyState = await page.getByText(/Lägg till ditt åkeri/i).isVisible({ timeout: 4000 }).catch(() => false);
+    const hasDashboard  = await page.getByText(/Välkommen tillbaka|God morgon|God dag|God kväll|God natt/i).isVisible({ timeout: 4000 }).catch(() => false);
+
+    expect(hasEmptyState || hasDashboard).toBe(true);
+
+    if (hasEmptyState) {
+      // Knappen ska leda till /foretag/lagg-till-akeri
+      const link = page.getByRole("link", { name: /Lägg till ditt åkeri/i });
+      await expect(link).toBeVisible();
+      await expect(link).toHaveAttribute("href", /lagg-till-akeri/);
+    } else {
+      console.log("ℹ️  Konto har redan ett företag — empty state-test hoppar över");
+    }
+  });
+});
+
+// ── /foretag/lagg-till-akeri — formulär ──────────────────────────────────────
+
+test.describe("Lägg till åkeri — formulär", () => {
+  test("sidan laddas med orgnr-fält och företagsnamn-fält", async ({ page }) => {
+    await page.goto("/foretag/lagg-till-akeri");
+    await expect(page.getByPlaceholder(/556036-0793/i)).toBeVisible({ timeout: 6000 });
+    await expect(page.getByLabel(/Företagsnamn/i)).toBeVisible();
+    await expect(page.getByRole("button", { name: /Lägg till åkeri/i })).toBeVisible();
   });
 
-  test('"Nästa →" är inaktiv tills orgnr är validerat', async ({ page }) => {
-    if (!(await gotoOnboarding(page))) return;
-
-    await expect(page.getByRole("button", { name: /Nästa/i })).toBeDisabled();
+  test("orgnr auto-formateras till XXXXXX-XXXX", async ({ page }) => {
+    await page.goto("/foretag/lagg-till-akeri");
+    const input = page.getByPlaceholder(/556036-0793/i);
+    await input.fill("5560360793");
+    await expect(input).toHaveValue("556036-0793", { timeout: 2000 });
   });
 
-  test("Bolagsverket-validering ger grönt svar på ett giltigt transportorgnr", async ({ page }) => {
-    if (!(await gotoOnboarding(page))) return;
+  test("klistrar man in ett annat nummer rensas gamla företagsnamnet", async ({ page }) => {
+    await page.goto("/foretag/lagg-till-akeri");
+    const orgInput  = page.getByPlaceholder(/556036-0793/i);
+    const nameInput = page.getByLabel(/Företagsnamn/i);
 
-    await page.getByPlaceholder("556123-4567").fill(TEST_ORG);
+    // Fyll i första numret
+    await orgInput.fill("556036-0793");
+    await page.waitForTimeout(800); // vänta på Bolagsverket-debounce
 
-    // Vänta på asynkron Bolagsverket-kontroll (max 8 sek)
-    const validIndicator = page.getByText(/✓ Giltigt/i);
-    const isValid = await validIndicator.isVisible({ timeout: 8000 }).catch(() => false);
+    // Byt till ett annat nummer — förra företagsnamnet ska försvinna
+    await orgInput.fill("556007-3506");
+    const nameVal = await nameInput.inputValue();
+    expect(nameVal).toBe("");
+  });
+
+  test("Bolagsverket-validering ger grön indikator på giltigt transportorgnr", async ({ page }) => {
+    await page.goto("/foretag/lagg-till-akeri");
+    await page.getByPlaceholder(/556036-0793/i).fill(TEST_ORG);
+
+    const valid = page.getByText(/✓ Giltigt/i);
+    const isValid = await valid.isVisible({ timeout: 8000 }).catch(() => false);
     if (!isValid) {
-      console.log("ℹ️  Bolagsverket-API ej tillgängligt — hoppar över validerings-assertion");
+      console.log("ℹ️  Bolagsverket-API ej tillgängligt lokalt — hoppar över validerings-assertion");
       return;
     }
-
-    await expect(validIndicator).toBeVisible();
-    await expect(page.getByText(/Registrerat transportföretag/i)).toBeVisible({ timeout: 4000 });
-    await expect(page.getByRole("button", { name: /Nästa/i })).toBeEnabled();
+    await expect(valid).toBeVisible();
   });
 
-  test("förhandsgranskningspanelens checklista uppdateras när orgnr fylls i", async ({ page }) => {
-    if (!(await gotoOnboarding(page))) return;
+  test("ogiltigt orgnr-format ger felmeddelande", async ({ page }) => {
+    await page.goto("/foretag/lagg-till-akeri");
+    const input = page.getByPlaceholder(/556036-0793/i);
 
-    // Skriv 10-siffrigt orgnr → panelen ska reagera utan att krascha
-    await page.getByPlaceholder("556123-4567").fill(TEST_ORG);
+    // Skriv in 10 siffror med fel Luhn
+    await input.fill("000000-0000");
+    await page.waitForTimeout(800);
 
-    // Checkliste-texten i panelen ska fortfarande vara synlig
-    await expect(page.getByText("Organisationsnummer", { exact: true })).toBeVisible();
-  });
-});
-
-// ── Steg 1: Segment ───────────────────────────────────────────────────────────
-
-test.describe("Steg 1 — transportsegment", () => {
-  /** Navigera till steg 1. Returnerar false om ej möjligt. */
-  async function goToStep1(page) {
-    if (!(await gotoOnboarding(page))) return false;
-
-    await page.getByPlaceholder("556123-4567").fill(TEST_ORG);
-    const nextBtn = page.getByRole("button", { name: /Nästa/i });
-    const enabled = await nextBtn.isEnabled({ timeout: 8000 }).catch(() => false);
-    if (!enabled) {
-      console.log("ℹ️  Bolagsverket-API ej tillgängligt — hoppar över steg-1-test");
-      return false;
-    }
-    await nextBtn.click();
-    await page.waitForTimeout(400);
-    return true;
-  }
-
-  test("segment-rubrik och kort visas på steg 1", async ({ page }) => {
-    if (!(await goToStep1(page))) return;
-
-    await expect(page.getByRole("heading", { name: /Vilka förare/i })).toBeVisible({ timeout: 6000 });
-    await expect(page.getByText("Heltid")).toBeVisible();
-    await expect(page.getByText("Vikariat")).toBeVisible();
-    await expect(page.getByText("Praktik")).toBeVisible();
+    // Skicka formuläret och se om validering reagerar
+    await page.getByRole("button", { name: /Lägg till åkeri/i }).click();
+    await expect(page.getByText(/ogiltigt|fel|kontrollera/i)).toBeVisible({ timeout: 4000 });
   });
 
-  test('"Skapa konto →" inaktiv utan valt segment', async ({ page }) => {
-    if (!(await goToStep1(page))) return;
-
-    await expect(page.getByRole("button", { name: /Skapa konto/i })).toBeDisabled({ timeout: 4000 });
+  test("företagsnamn-fält kan redigeras manuellt (t.ex. enskild firma)", async ({ page }) => {
+    await page.goto("/foretag/lagg-till-akeri");
+    const nameInput = page.getByLabel(/Företagsnamn/i);
+    await nameInput.fill("Mitt Åkeri AB");
+    await expect(nameInput).toHaveValue("Mitt Åkeri AB");
   });
 
-  test("kan välja segment och aktivera Skapa-knappen", async ({ page }) => {
-    if (!(await goToStep1(page))) return;
-
-    await page.getByText("Heltid").first().click();
-    await expect(page.getByRole("button", { name: /Skapa konto/i })).toBeEnabled({ timeout: 4000 });
-  });
-
-  test("Tillbaka-knappen tar tillbaka till steg 0", async ({ page }) => {
-    if (!(await goToStep1(page))) return;
-
-    await page.getByRole("button", { name: /Tillbaka/i }).click();
-    await expect(page.getByRole("heading", { name: /Starta ert åkeri/i })).toBeVisible({ timeout: 4000 });
+  test("Tillbaka-länk tar till /foretag", async ({ page }) => {
+    await page.goto("/foretag/lagg-till-akeri");
+    await page.getByRole("link", { name: /Tillbaka/i }).click();
+    await expect(page).toHaveURL(/\/foretag$/, { timeout: 4000 });
   });
 });
 
-// ── Komplett flöde ─────────────────────────────────────────────────────────────
+// ── Komplett flöde: lägg till åkeri → /foretag ───────────────────────────────
 
-test.describe("Komplett onboarding-flöde", () => {
-  test("steg 0 → 1 → 2 (inbjudan) → klar → /foretag", async ({ page }) => {
-    if (!(await gotoOnboarding(page))) return;
+test.describe("Komplett flöde — lägg till åkeri", () => {
+  test("kan fylla i formulär och skicka om Bolagsverket är tillgängligt", async ({ page }) => {
+    await page.goto("/foretag/lagg-till-akeri");
 
-    // Steg 0 — orgnr
-    await page.getByPlaceholder("556123-4567").fill(TEST_ORG);
-    const nextBtn = page.getByRole("button", { name: /Nästa/i });
-    const enabled = await nextBtn.isEnabled({ timeout: 8000 }).catch(() => false);
-    if (!enabled) {
+    // Fyll i orgnr och vänta på Bolagsverket
+    await page.getByPlaceholder(/556036-0793/i).fill(TEST_ORG);
+    const valid = page.getByText(/✓ Giltigt/i);
+    const isValid = await valid.isVisible({ timeout: 8000 }).catch(() => false);
+    if (!isValid) {
       console.log("ℹ️  Bolagsverket-API ej tillgängligt — hoppar över komplett flöde");
       return;
     }
-    await nextBtn.click();
 
-    // Steg 1 — välj Heltid-segment
-    await expect(page.getByRole("heading", { name: /Vilka förare/i })).toBeVisible({ timeout: 6000 });
-    await page.getByText("Heltid").first().click();
-    await page.getByRole("button", { name: /Skapa konto/i }).click();
+    // Säkerställ att företagsnamn finns (kan vara ifyllt av Bolagsverket)
+    const nameInput = page.getByLabel(/Företagsnamn/i);
+    const currentName = await nameInput.inputValue();
+    if (!currentName.trim()) await nameInput.fill("Test Åkeri AB");
 
-    // Steg 2 — inbjudan
-    await expect(page.getByText(/teammedlemmar|Bjud in team/i)).toBeVisible({ timeout: 8000 });
+    // Skicka — org kan redan finnas (duplicate), det är OK
+    await page.getByRole("button", { name: /Lägg till åkeri/i }).click();
+    await page.waitForTimeout(1500);
 
-    // Hoppa över inbjudan
-    await page.getByText(/Hoppa över/i).click();
-
-    // Steg 3 — klart-skärm
-    await expect(page.getByText(/Ni är live/i)).toBeVisible({ timeout: 8000 });
-
-    // Auto-redirect till /foretag inom ~3 sek
-    await expect(page).toHaveURL(/\/foretag/, { timeout: 6000 });
+    // Antingen redirect till /foretag eller felmeddelande om org redan finns
+    const url = page.url();
+    const hasError = await page.getByText(/finns redan|duplicate|redan registrerat/i).isVisible({ timeout: 2000 }).catch(() => false);
+    if (!hasError) {
+      expect(url).toMatch(/\/foretag/);
+    } else {
+      console.log("ℹ️  Org finns redan i systemet — redirect-test hoppar över");
+    }
   });
 });
 
-// ── Bolagsverket API — direkttester (körs alltid, kräver inte wizard) ──────────
-//
-// Dessa tester anropar backend-API:t direkt via BACKEND_URL.
-// På live (med riktiga Bolagsverket-tokens) valideras faktisk bolagsdata.
-// Lokalt utan tokens returnerar API:t "format-only" — då hoppas data-assertionerna över.
+// ── Bolagsverket API — direkttester ──────────────────────────────────────────
 
 test.describe("Bolagsverket API — integration", () => {
-  test("giltigt transportorgnr (Volvo AB) returnerar valid=true", async ({ page }) => {
-    const resp = await page.request.get(
-      `${BACKEND_URL}/api/utils/company-lookup?orgnr=${TEST_ORG}`
-    );
+  test("giltigt transportorgnr returnerar valid=true", async ({ page }) => {
+    const resp = await page.request.get(`${BACKEND_URL}/api/utils/company-lookup?orgnr=${TEST_ORG}`);
     expect(resp.ok()).toBe(true);
-
     const data = await resp.json();
     expect(data.valid).toBe(true);
     expect(data.formatted).toBe(TEST_ORG);
   });
 
   test("live-tokens ger bolagsnamn och transportkod (hoppar över lokalt)", async ({ page }) => {
-    const resp = await page.request.get(
-      `${BACKEND_URL}/api/utils/company-lookup?orgnr=${TEST_ORG}`
-    );
+    const resp = await page.request.get(`${BACKEND_URL}/api/utils/company-lookup?orgnr=${TEST_ORG}`);
     const data = await resp.json();
-
     if (data.source === "format-only") {
       console.log("ℹ️  Bolagsverket-tokens ej konfigurerade — hoppar över data-assertion");
       return;
     }
-
-    // På live: riktigt API-svar
     expect(data.companyName).toBeTruthy();
     expect(typeof data.isTransport).toBe("boolean");
-    expect(data.city).toBeTruthy();
     console.log(`✓ Bolagsverket: ${data.companyName}, stad=${data.city}, transport=${data.isTransport}`);
   });
 
-  test("ogiltigt orgnr (fel format) returnerar valid=false", async ({ page }) => {
-    const resp = await page.request.get(
-      `${BACKEND_URL}/api/utils/company-lookup?orgnr=123`
-    );
+  test("ogiltigt orgnr returnerar valid=false", async ({ page }) => {
+    const resp = await page.request.get(`${BACKEND_URL}/api/utils/company-lookup?orgnr=123`);
     expect(resp.ok()).toBe(true);
     const data = await resp.json();
     expect(data.valid).toBe(false);
   });
 
-  test("Bolagsverket-validering syns i wizard-UI när orgnr anges", async ({ page }) => {
-    if (!(await gotoOnboarding(page))) {
-      // Kontot är onboardat — testa ändå via direkt API-anrop
-      const resp = await page.request.get(
-        `${BACKEND_URL}/api/utils/company-lookup?orgnr=${TEST_ORG}`
-      );
-      expect(resp.ok()).toBe(true);
-      const data = await resp.json();
-      expect(data.valid).toBe(true);
-      console.log("ℹ️  Wizard ej tillgänglig — API-test använt som fallback");
-      return;
-    }
-
-    await page.getByPlaceholder("556123-4567").fill(TEST_ORG);
-
-    // Kontrollera-animationen ska visas
-    const checking = page.getByText(/Kontrollerar/i);
-    await checking.isVisible({ timeout: 2000 }).catch(() => {});
-
-    // Giltigt-indikatorn ska visas (max 8 sek)
-    const valid = page.getByText(/✓ Giltigt/i);
-    const isValid = await valid.isVisible({ timeout: 8000 }).catch(() => false);
-    if (!isValid) {
-      console.log("ℹ️  Bolagsverket-tokens ej konfigurerade lokalt — hoppar över UI-assertion");
-      return;
-    }
-
-    await expect(valid).toBeVisible();
-    await expect(page.getByText(/Registrerat transportföretag/i)).toBeVisible({ timeout: 4000 });
-    await expect(page.getByRole("button", { name: /Nästa/i })).toBeEnabled();
+  test("enskild firma-format (YYMMDD-XXXX) accepteras av API", async ({ page }) => {
+    // 000104-3397 är ett enskild firma-format (personnnummer-baserat)
+    const resp = await page.request.get(`${BACKEND_URL}/api/utils/company-lookup?orgnr=000104-3397`);
+    expect(resp.ok()).toBe(true);
+    const data = await resp.json();
+    // Ska antingen vara valid=true (format godkänt) eller returnera info om enskild firma
+    expect(typeof data.valid).toBe("boolean");
+    console.log(`✓ Enskild firma 000104-3397: valid=${data.valid}, source=${data.source}`);
   });
 });

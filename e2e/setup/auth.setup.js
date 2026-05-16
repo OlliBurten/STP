@@ -77,18 +77,7 @@ setup("autentisera som åkeri", async ({ page }) => {
   await page.getByLabel(/E-post/i).fill(COMPANY_EMAIL);
   await page.locator("#password").fill(COMPANY_PASSWORD);
   await page.getByRole("button", { name: /Logga in/i }).click();
-  await expect(page).not.toHaveURL(/\/login/, { timeout: 15000 });
-
-  // Hantera åkeri-onboarding om den visas (första inloggningen)
-  const onboardingHeading = page.getByRole("heading", { name: /Sätt upp ert åkeri/i });
-  if (await onboardingHeading.isVisible({ timeout: 3000 }).catch(() => false)) {
-    await page.getByPlaceholder(/Nordic Transport/i).fill("Test Åkeri AB");
-    await page.getByPlaceholder(/556123/i).fill("556999-0001");
-    await page.getByRole("combobox").selectOption("Stockholm");
-    await page.getByRole("button", { name: /Heltid/i }).first().click();
-    await page.getByRole("button", { name: /Lägg till och fortsätt/i }).click();
-    await page.waitForURL(/\/(foretag|dashboard|jobb|forare)/, { timeout: 10000 }).catch(() => {});
-  }
-
+  // Ska landa på /foretag direkt — ingen onboarding-wizard längre
+  await expect(page).toHaveURL(/\/foretag/, { timeout: 15000 });
   await page.context().storageState({ path: companyAuthFile });
 });
