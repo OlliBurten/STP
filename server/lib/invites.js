@@ -93,8 +93,8 @@ async function requireCompanyOwner(userId) {
   }
 }
 
-export async function resolveInviteScopeByOwner(companyOwnerId, requestedOrgId = null) {
-  const ownerOrg = await prisma.userOrganization.findFirst({
+export async function resolveInviteScopeByOwner(companyOwnerId, requestedOrgId = null, db = prisma) {
+  const ownerOrg = await db.userOrganization.findFirst({
     where: {
       userId: companyOwnerId,
       role: "OWNER",
