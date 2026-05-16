@@ -15,11 +15,7 @@ export function useOnboardingRequired() {
   if (!user) return false;
   if (isAdmin) return false;
   if (isDriver) return profileLoaded && !isDriverMinimumProfileComplete(profile);
-  if (!user.shouldShowOnboarding) return false;
-  if (isCompany) {
-    if (isCompanyMember) return false;
-    return !hasOrganizationContext || !hasSegments;
-  }
+  if (isCompany) return false; // companies use dashboard empty state instead
   return false;
 }
 

@@ -413,6 +413,12 @@ export default function ForCompanies() {
 
   const isVerified = profile?.status === "VERIFIED";
   const companyName = profile?.name || user?.name || "Ert åkeri";
+  // Kort visningsnamn: hoppa över inledande ettbokstavsord (t.ex. "E Gustavsson AB" → "Gustavsson")
+  const companyShort = (() => {
+    const words = companyName.trim().split(/\s+/);
+    const first = words[0] || "";
+    return first.length <= 2 ? words.slice(0, 2).join(" ") : first;
+  })();
   const activeJobs = jobs.filter((j) => j.status === "ACTIVE");
   const newApplications = conversations.filter((c) => !c.readByCompanyAt).length;
 
@@ -478,33 +484,38 @@ export default function ForCompanies() {
   ];
 
   return (
-    <div style={{ minHeight: "100vh", background: "#060f0f", color: "#f0faf9" }}>
+    <div style={{ minHeight: "100vh", background: "#060f0f", color: "#f0faf9", marginTop: "-64px", paddingTop: "64px" }}>
       <main style={{ maxWidth: 1280, margin: "0 auto", padding: isMobile ? "24px 20px 60px" : "32px 40px 60px" }}>
 
         {/* Hero */}
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 28, gap: 24, flexWrap: "wrap" }}>
           <div>
             <div style={{ fontSize: 12, fontWeight: 700, color: "rgba(245,166,35,0.9)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 8 }}>
-              {timeGreeting()}, {companyName.split(" ")[0]}
+              {timeGreeting()}, {companyShort}
             </div>
             <h1 style={{ fontSize: "clamp(26px,3vw,34px)", fontWeight: 800, lineHeight: 1.1, letterSpacing: -1.2, color: "#f0faf9" }}>
               {newApplications > 0 ? (
                 <>Du har <span style={{ color: "#F5A623" }}>{newApplications} {newApplications === 1 ? "ny kandidat" : "nya kandidater"}</span><br />som väntar.</>
               ) : (
-                <>Välkommen tillbaka,<br /><span style={{ color: "#F5A623" }}>{companyName.split(" ")[0]}</span>.</>
+                <>Välkommen tillbaka,<br /><span style={{ color: "#F5A623" }}>{companyShort}</span>.</>
               )}
             </h1>
           </div>
           {!loading && (
-            isVerified ? (
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "8px 14px", borderRadius: 99, background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.25)", fontSize: 12, fontWeight: 700, color: "#4ade80" }}>
-                <Icon n="shield" size={13} /> Verifierat åkeri
-              </span>
-            ) : (
-              <Link to="/installningar" style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "8px 14px", borderRadius: 99, background: "rgba(245,166,35,0.1)", border: "1px solid rgba(245,166,35,0.35)", fontSize: 12, fontWeight: 700, color: "#F5A623", textDecoration: "none" }}>
-                <Icon n="alert" size={13} /> Verifiering pågår
+            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+              {isVerified ? (
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "8px 14px", borderRadius: 99, background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.25)", fontSize: 12, fontWeight: 700, color: "#4ade80" }}>
+                  <Icon n="shield" size={13} /> Verifierat åkeri
+                </span>
+              ) : (
+                <Link to="/installningar" style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "8px 14px", borderRadius: 99, background: "rgba(245,166,35,0.1)", border: "1px solid rgba(245,166,35,0.35)", fontSize: 12, fontWeight: 700, color: "#F5A623", textDecoration: "none" }}>
+                  <Icon n="alert" size={13} /> Verifiering pågår
+                </Link>
+              )}
+              <Link to="/foretag/lagg-till-akeri" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 99, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", fontSize: 12, fontWeight: 600, color: "rgba(240,250,249,0.7)", textDecoration: "none" }}>
+                <Icon n="plus" size={12} /> Lägg till åkeri
               </Link>
-            )
+            </div>
           )}
         </div>
 
