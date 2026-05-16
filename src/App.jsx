@@ -17,6 +17,7 @@ import { useProfile } from "./context/ProfileContext";
 import ProfileCompletionBanner from "./components/ProfileCompletionBanner";
 import FeedbackButton from "./components/FeedbackButton";
 import InstallPrompt from "./components/InstallPrompt";
+import CookieBanner from "./components/CookieBanner";
 
 // Wraps lazy() to intercept stale-chunk errors after a new deployment.
 // If the chunk URL no longer exists (404 → not valid JS), reload immediately
@@ -412,6 +413,7 @@ function AppLayout() {
               <Footer />
               <FeedbackButton />
               <InstallPrompt />
+              <CookieBanner />
             </div>
   );
 }

@@ -6,6 +6,7 @@ import './index.css'
 import App from './App.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
 import { registerServiceWorker } from './utils/pushNotifications.js'
+import { hasCookieConsent } from './components/CookieBanner.jsx'
 
 // Always dark theme — light theme not optimized yet
 document.documentElement.setAttribute("data-theme", "dark");
@@ -40,18 +41,21 @@ root.render(
   </StrictMode>,
 );
 
-// Defer Sentry init until after page is interactive — keeps it off the critical path
-// Early errors are missed but user-interaction errors (the majority) are captured
+// Initiera Sentry enbart om användaren har accepterat analytics-cookies (GDPR).
+// Körs med 3s fördröjning för att hålla det utanför critical path.
 setTimeout(() => {
+  if (!hasCookieConsent()) return; // Vänta tills samtycke ges via CookieBanner
+  if (window.__sentryInitialized) return;
+  window.__sentryInitialized = true;
   const dsn = import.meta.env.VITE_SENTRY_DSN || "https://c1f2eba279f911f1d3211870fd6ef49c@o4511146144628736.ingest.de.sentry.io/4511146155704400";
   import("@sentry/react").then((Sentry) => {
     Sentry.init({
       dsn,
       environment: import.meta.env.MODE,
-      sendDefaultPii: true,
+      sendDefaultPii: false,
       tracesSampleRate: import.meta.env.PROD ? 0.1 : 1.0,
-      integrations: [Sentry.replayIntegration({ maskAllText: false, maskAllInputs: false, blockAllMedia: false })],
-      replaysSessionSampleRate: 0.1,
+      integrations: [Sentry.replayIntegration({ maskAllText: true, maskAllInputs: true, blockAllMedia: true })],
+      replaysSessionSampleRate: 0.05,
       replaysOnErrorSampleRate: 1.0,
       beforeSend(event, hint) {
         // Chunk-laddningsfel uppstår när en användare har en gammal flik öppen

@@ -13,6 +13,25 @@ import { createConversationSchema, sendMessageSchema } from "../lib/validators.j
 
 export const conversationsRouter = Router();
 
+// Throttle: skicka max ett e-postmeddelande per konversation var 4:e timme.
+// Förhindrar spam om båda parter skriver aktivt.
+const emailThrottle = new Map(); // key: `${conversationId}:${recipientEmail}` → timestamp
+const EMAIL_THROTTLE_MS = 4 * 60 * 60 * 1000; // 4 timmar
+function shouldSendMessageEmail(conversationId, recipientEmail) {
+  const key = `${conversationId}:${recipientEmail}`;
+  const last = emailThrottle.get(key) ?? 0;
+  if (Date.now() - last < EMAIL_THROTTLE_MS) return false;
+  emailThrottle.set(key, Date.now());
+  // Rensa gamla nycklar var 12:e timme för att hålla minnet i schack
+  if (emailThrottle.size > 5000) {
+    const cutoff = Date.now() - EMAIL_THROTTLE_MS * 3;
+    for (const [k, ts] of emailThrottle) {
+      if (ts < cutoff) emailThrottle.delete(k);
+    }
+  }
+  return true;
+}
+
 conversationsRouter.use(authMiddleware, attachCompanyContext);
 
 function effectiveCompanyId(req) {
@@ -356,7 +375,7 @@ conversationsRouter.post("/:id/messages", requireVerifiedIfCompany, validateBody
     const messagesPath = req.role === "DRIVER" ? "/foretag/meddelanden" : "/meddelanden";
     const frontendBase = (process.env.FRONTEND_URL || "").split(",")[0]?.trim().replace(/\/$/, "");
     const conversationUrl = frontendBase ? `${frontendBase}${messagesPath}/${conv.id}` : null;
-    if (recipientEmail && preview) {
+    if (recipientEmail && preview && shouldSendMessageEmail(conv.id, recipientEmail)) {
       notifyNewMessage({ toEmail: recipientEmail, fromName, preview, conversationUrl }).catch((e) =>
         console.error("Notify new message:", e)
       );
