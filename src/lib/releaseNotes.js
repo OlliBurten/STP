@@ -1,6 +1,33 @@
-export const CURRENT_VERSION = "v0.7.0";
+export const CURRENT_VERSION = "v0.9.0";
 
 export const releaseNotes = [
+  {
+    version: "v0.9.0",
+    date: "2026-05-16",
+    title: "PWA, GDPR och lansering",
+    items: [
+      "STP fungerar nu som en app — Android-användare kan installera plattformen direkt på hemskärmen via en banner som visas automatiskt.",
+      "iOS: lägg till STP på hemskärmen via Safari → Dela → Lägg till på hemskärmen. Appen har eget ikon och namn.",
+      "Cookie-samtyckesbanner är nu på plats — du väljer själv om du vill dela anonym statistik och felrapportering. Inloggning och grundfunktioner kräver inga analytiska cookies.",
+      "Felrapportering (Sentry) aktiveras nu enbart om du accepterat analytics-cookies — i linje med GDPR.",
+      "Meddelande-emails skickas nu max en gång var 4:e timme per konversation, så du slipper spam när en tråd är aktiv.",
+      "Startsidan är uppdaterad — vi visar nu tydligt vad STP är och vad du kan göra här, direkt när du landar.",
+      "Push-notiser fungerar nu fullt ut i produktion för Android och moderna webbläsare.",
+    ],
+  },
+  {
+    version: "v0.8.0",
+    date: "2026-05-10",
+    title: "Team-hantering och Bolagsverket-verifiering",
+    items: [
+      "Åkerier: ny team-sida där du ser alla medlemmar, deras roller och när de gick med — nås via Header → Team.",
+      "Ägare kan nu ta bort teammedlemmar direkt från team-sidan.",
+      "Hanterar du flera åkerier? Byt enkelt mellan dem via en ny dropdown i headern — du behöver inte längre logga ut och in.",
+      "Organisationsnummer valideras nu i realtid mot Bolagsverket när du registrerar ett åkeri — företagsnamn, ort och bransch fylls i automatiskt.",
+      "Bolagsverket kontrollerar nu även att företaget är registrerat som transportverksamhet — bara åkerier och transportföretag godkänns.",
+      "Om ett åkeri redan finns på STP visas tydlig information om hur du går tillväga istället för ett generiskt felmeddelande.",
+    ],
+  },
   {
     version: "v0.7.0",
     date: "2026-04-23",
