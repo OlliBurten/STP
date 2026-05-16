@@ -94,6 +94,11 @@ export default function Header({ onboarding = false }) {
     return () => document.removeEventListener("click", handleClickOutside);
   }, [notifOpen, navDropdownOpen, userMenuOpen]);
 
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileOpen]);
+
   const closeMobile = () => setMobileOpen(false);
   const handleLogout = () => { closeMobile(); logout(); };
 
@@ -314,6 +319,18 @@ export default function Header({ onboarding = false }) {
 
   return (
     <>
+      {mobileOpen && (
+        <div
+          onClick={closeMobile}
+          style={{
+            position: "fixed", inset: 0, zIndex: 49,
+            background: "rgba(0,0,0,0.55)",
+            backdropFilter: "blur(2px)",
+            WebkitBackdropFilter: "blur(2px)",
+          }}
+          aria-hidden="true"
+        />
+      )}
       <header className="fixed left-0 right-0 top-0 z-50" style={headerStyle}>
         <nav className="dm-header-nav flex items-center h-16 relative" style={{ maxWidth: 1280, margin: "0 auto", padding: isMobile ? "0 20px" : "0 40px", width: "100%" }}>
 
@@ -668,8 +685,13 @@ export default function Header({ onboarding = false }) {
         {mobileOpen && (
           <div
             className="dm-mobile-menu-panel shadow-lg"
-            style={{ background: "rgba(6,15,15,0.98)", borderTop: "1px solid rgba(255,255,255,0.08)" }}
+            style={{
+              background: "rgba(6,15,15,0.98)",
+              borderTop: "1px solid rgba(255,255,255,0.08)",
+              animation: "mobileMenuSlide 0.22s ease-out",
+            }}
           >
+            <style>{`@keyframes mobileMenuSlide { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }`}</style>
             <ul className="py-2 text-sm font-medium">
               {!user ? (
                 [...PUBLIC_NAV_LINKS, ...PUBLIC_EXTRA_LINKS].map((item) => (
