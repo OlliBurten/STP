@@ -173,6 +173,7 @@ export const createOrganizationSchema = z
     segmentDefaults: z.array(z.string().max(50)).optional(),
     bransch: z.array(z.enum(BRANSCH_VALUES)).optional(),
     region: z.string().max(100).optional().nullable(),
+    foundedYear: z.number().int().min(1800).max(2100).optional().nullable(),
   })
   .refine((data) => isValidSwedishOrgNumber(data.orgNumber), {
     message: "Ogiltigt organisationsnummer",

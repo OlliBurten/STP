@@ -132,8 +132,36 @@ async function lookupBolagsverket(orgnr) {
     const primary   = nameLista.find((n) => n.organisationsnamntyp?.kod === "FORETAGSNAMN");
     const companyName = primary?.namn ?? nameLista[0]?.namn ?? null;
 
-    // City
-    const city = org.postadressOrganisation?.postadress?.postort ?? null;
+    // City + county (lan)
+    const postadress  = org.postadressOrganisation?.postadress ?? {};
+    const city        = postadress.postort ?? null;
+    const lanRaw      = postadress.lan     ?? null;
+
+    // Map Swedish county name → platform region value
+    const LAN_TO_REGION = {
+      "Stockholms":       "Stockholm",
+      "Uppsala":          "Uppsala",
+      "Södermanlands":    "Södermanland",
+      "Östergötlands":    "Östergötland",
+      "Jönköpings":       "Jönköping",
+      "Kronobergs":       "Kronoberg",
+      "Kalmar":           "Kalmar",
+      "Gotlands":         "Gotland",
+      "Blekinge":         "Blekinge",
+      "Skåne":            "Skåne",
+      "Hallands":         "Halland",
+      "Västra Götalands": "Västra Götaland",
+      "Värmlands":        "Värmland",
+      "Örebro":           "Örebro",
+      "Västmanlands":     "Västmanland",
+      "Dalarnas":         "Dalarna",
+      "Gävleborgs":       "Gävleborg",
+      "Västernorrlands":  "Västernorrland",
+      "Jämtlands":        "Jämtland",
+      "Västerbottens":    "Västerbotten",
+      "Norrbottens":      "Norrbotten",
+    };
+    const region = lanRaw ? (LAN_TO_REGION[lanRaw] ?? null) : null;
 
     // Company type (AB, HB, etc.)
     const companyType = org.juridiskForm?.klartext ?? null;
@@ -152,7 +180,7 @@ async function lookupBolagsverket(orgnr) {
       ? null // unknown — no SNI data
       : sniCodes.some((kod) => TRANSPORT_PREFIXES.some((p) => kod.startsWith(p)));
 
-    return { companyName, city, companyType, foundedYear, sniCodes, isTransport };
+    return { companyName, city, region, companyType, foundedYear, sniCodes, isTransport };
   } catch (err) {
     console.error("[bolagsverket] lookup error:", err.message);
     return null;
@@ -192,6 +220,7 @@ utilsRouter.get("/company-lookup", async (req, res) => {
     formatted,
     companyName:  bolag?.companyName  ?? null,
     city:         bolag?.city         ?? null,
+    region:       bolag?.region       ?? null,
     companyType:  bolag?.companyType  ?? null,
     foundedYear:  bolag?.foundedYear  ?? null,
     sniCodes:     bolag?.sniCodes     ?? [],

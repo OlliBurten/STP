@@ -36,7 +36,7 @@ export default function AddCompany() {
   const [saving, setSaving]   = useState(false);
   const [error, setError]     = useState("");
   const [form, setForm]       = useState({
-    name: "", orgNumber: "", location: "",
+    name: "", orgNumber: "", location: "", region: "", foundedYear: null,
     segmentDefaults: segmentOptions.map(s => s.value),
   });
   const [orgLookup, setOrgLookup] = useState({
@@ -48,7 +48,7 @@ export default function AddCompany() {
     const digits    = raw.replace(/\D/g, "").slice(0, 10);
     const formatted = digits.length > 6 ? `${digits.slice(0, 6)}-${digits.slice(6)}` : digits;
 
-    setForm(p => ({ ...p, orgNumber: formatted, name: "", location: "" }));
+    setForm(p => ({ ...p, orgNumber: formatted, name: "", location: "", region: "", foundedYear: null }));
     setOrgLookup({ loading: false, valid: null, isTransport: null, error: null });
 
     if (digits.length < 10) return;
@@ -65,9 +65,11 @@ export default function AddCompany() {
         });
         setForm(p => ({
           ...p,
-          orgNumber: data.formatted || p.orgNumber,
-          name:      data.companyName || "",
-          location:  data.city        || "",
+          orgNumber:   data.formatted    || p.orgNumber,
+          name:        data.companyName  || "",
+          location:    data.city         || "",
+          region:      data.region       || "",
+          foundedYear: data.foundedYear  || null,
         }));
       } catch {
         setOrgLookup({ loading: false, valid: null, isTransport: null, error: null });
@@ -100,7 +102,9 @@ export default function AddCompany() {
       const org = await createOrganization({
         name:            form.name.trim(),
         orgNumber:       form.orgNumber.trim(),
-        location:        form.location || undefined,
+        location:        form.location   || undefined,
+        region:          form.region     || undefined,
+        foundedYear:     form.foundedYear || undefined,
         segmentDefaults: form.segmentDefaults,
       });
       await refreshOrgs();
@@ -193,7 +197,8 @@ export default function AddCompany() {
                 </p>
                 <p style={{ fontSize: 12, color: T.sub, marginTop: 2 }}>
                   Registrerat transportföretag — verifieras automatiskt.
-                  {form.location ? ` 📍 ${form.location}` : ""}
+                  {form.location ? ` 📍 ${form.location}${form.region ? `, ${form.region}` : ""}` : ""}
+                  {form.foundedYear ? ` · Grundat ${form.foundedYear}` : ""}
                 </p>
               </div>
             </div>

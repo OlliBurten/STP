@@ -65,6 +65,7 @@ organizationsRouter.post("/", validateBody(createOrganizationSchema), async (req
         segmentDefaults: Array.isArray(body.segmentDefaults) ? body.segmentDefaults : [],
         bransch: Array.isArray(body.bransch) ? body.bransch : [],
         region: body.region?.trim() || null,
+        foundedYear: body.foundedYear ?? null,
         status,
       },
     });
