@@ -129,7 +129,7 @@ function CompanyPreview({ name, orgNumber, city, isTransport }) {
       <div style={{ padding: "14px 20px" }}>
         {[
           { label: "Organisationsnummer", done: orgNumber?.replace(/\D/g,"").length >= 10 },
-          { label: "Företagsnamn hämtat", done: name?.trim().length > 0 },
+          { label: "Företagsnamn", done: name?.trim().length > 0 },
         ].map(({ label, done }) => (
           <div key={label} style={{
             display: "flex", alignItems: "center", gap: 10,
@@ -304,7 +304,7 @@ export default function CompanyOnboardingWizard() {
   const canContinue = () => {
     if (step === 0) {
       const digits = form.orgNumber.replace(/\D/g, "");
-      return digits.length >= 10 && orgLookup.valid === true && orgLookup.isTransport !== false && !orgLookup.loading;
+      return digits.length >= 10 && orgLookup.valid === true && orgLookup.isTransport !== false && !orgLookup.loading && form.name.trim().length > 0;
     }
     return true;
   };
@@ -443,7 +443,7 @@ export default function CompanyOnboardingWizard() {
   const showSidebar = true;
 
   return (
-    <div style={{ ...wrapStyle, padding: "0 0 80px" }}>
+    <div style={{ ...wrapStyle, paddingBottom: "80px" }}>
       {/* Progress-bar */}
       <div style={{ height: 3, background: "rgba(255,255,255,0.06)" }}>
         <div style={{
@@ -573,6 +573,29 @@ export default function CompanyOnboardingWizard() {
                       Ert företag är inte registrerat som transportverksamhet hos Bolagsverket.
                       STP är till för åkerier och transportföretag.
                     </p>
+                  </div>
+                )}
+
+                {/* Företagsnamn — visas när orgnr är validerat */}
+                {orgLookup.valid === true && !orgLookup.loading && orgLookup.isTransport !== false && (
+                  <div style={{ marginTop: 20 }}>
+                    <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 8 }}>
+                      Företagsnamn *
+                    </p>
+                    <input
+                      value={form.name}
+                      onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
+                      placeholder="Ert åkeri AB"
+                      style={{
+                        ...inputStyle,
+                        borderColor: form.name.trim().length > 0 ? "rgba(74,222,128,0.5)" : T.border2,
+                      }}
+                    />
+                    {!form.name.trim() && (
+                      <p style={{ marginTop: 6, fontSize: 12, color: T.muted }}>
+                        Bolagsverket returnerade inget namn — ange det manuellt.
+                      </p>
+                    )}
                   </div>
                 )}
 
