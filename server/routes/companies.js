@@ -223,7 +223,9 @@ companiesRouter.use(authMiddleware, requireCompany, attachCompanyContext);
 
 companiesRouter.get("/me/profile", async (req, res, next) => {
   try {
-    const resolved = await resolveCompanyOwner(req.userId);
+    const resolved = req.organizationId
+      ? { ownerId: req.companyOwnerId ?? req.userId, organizationId: req.organizationId }
+      : await resolveCompanyOwner(req.userId);
     if (!resolved) return res.status(404).json({ error: "Företaget hittades inte" });
 
     if (resolved.organizationId) {
@@ -316,7 +318,7 @@ companiesRouter.get(
   async (req, res, next) => {
     try {
       const ownerId = req.companyOwnerId ?? req.userId;
-      const invites = await listInvites(ownerId);
+      const invites = await listInvites(ownerId, req.organizationId ?? null);
       res.json(invites);
     } catch (e) {
       next(e);
@@ -346,6 +348,7 @@ companiesRouter.post(
         invitedById: req.userId,
         companyName: owner?.companyName || owner?.name || "Företaget",
         frontendBaseUrl,
+        organizationId: req.organizationId ?? null,
       });
       res.status(201).json({
         invite,
@@ -365,7 +368,7 @@ companiesRouter.delete(
   async (req, res, next) => {
     try {
       const ownerId = req.companyOwnerId ?? req.userId;
-      await revokeInvite(req.params.id, ownerId);
+      await revokeInvite(req.params.id, ownerId, req.organizationId ?? null);
       res.status(204).send();
     } catch (e) {
       if (e.status) return res.status(e.status).json({ error: e.message });
@@ -505,11 +508,15 @@ companiesRouter.put("/me/profile", requireCompanyOwner, validateBody(companyProf
 // GET /api/companies/stats/job-views — jobbvisningar per vecka senaste 12 veckorna
 companiesRouter.get("/stats/job-views", async (req, res, next) => {
   try {
-    const resolved = await resolveCompanyOwner(req.userId);
+    const resolved = req.organizationId
+      ? { ownerId: req.companyOwnerId ?? req.userId, organizationId: req.organizationId }
+      : await resolveCompanyOwner(req.userId);
     if (!resolved) return res.status(404).json({ error: "Företaget hittades inte" });
 
     const jobs = await prisma.job.findMany({
-      where: { userId: resolved.ownerId },
+      where: resolved.organizationId
+        ? { organizationId: resolved.organizationId }
+        : { userId: resolved.ownerId },
       select: { id: true },
     });
     const jobIds = jobs.map((j) => j.id);
@@ -542,11 +549,15 @@ companiesRouter.get("/stats/job-views", async (req, res, next) => {
 // GET /api/companies/stats/matching-drivers — top 3 förare som matchar aktiva annonser
 companiesRouter.get("/stats/matching-drivers", async (req, res, next) => {
   try {
-    const resolved = await resolveCompanyOwner(req.userId);
+    const resolved = req.organizationId
+      ? { ownerId: req.companyOwnerId ?? req.userId, organizationId: req.organizationId }
+      : await resolveCompanyOwner(req.userId);
     if (!resolved) return res.status(404).json({ error: "Företaget hittades inte" });
 
     const activeJobs = await prisma.job.findMany({
-      where: { userId: resolved.ownerId, status: "ACTIVE" },
+      where: resolved.organizationId
+        ? { organizationId: resolved.organizationId, status: "ACTIVE" }
+        : { userId: resolved.ownerId, status: "ACTIVE" },
       select: {
         id: true, license: true, certificates: true, region: true,
         employment: true, experience: true, segment: true,

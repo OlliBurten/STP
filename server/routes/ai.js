@@ -9,12 +9,9 @@ import {
   summarizeDriverProfile,
   generateProfileTips,
 } from "../lib/ai.js";
+import { hasJobCompanyAccess } from "../lib/jobAccess.js";
 
 export const aiRouter = Router();
-
-function effectiveCompanyId(req) {
-  return req.companyOwnerId ?? req.userId;
-}
 
 // Shared: check ANTHROPIC_API_KEY up front
 function requireAiKey(req, res, next) {
@@ -131,10 +128,7 @@ aiRouter.post(
       });
       if (!job) return res.status(404).json({ error: "Jobbet hittades inte" });
 
-      const hasAccess =
-        (job.organizationId && job.organizationId === req.organizationId) ||
-        job.userId === effectiveCompanyId(req);
-      if (!hasAccess) return res.status(403).json({ error: "Ingen åtkomst" });
+      if (!hasJobCompanyAccess(req, job)) return res.status(403).json({ error: "Ingen åtkomst" });
 
       const driverUser = await prisma.user.findUnique({
         where: { id: driverId },
