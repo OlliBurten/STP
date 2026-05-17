@@ -61,6 +61,16 @@ const INP = {
   boxSizing: "border-box",
 };
 
+function useIsMobile(breakpoint = 640) {
+  const [isMobile, setIsMobile] = useState(() => typeof window !== "undefined" && window.innerWidth < breakpoint);
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth < breakpoint);
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
+  }, [breakpoint]);
+  return isMobile;
+}
+
 function fmtDate(value) {
   if (!value) return "–";
   const d = new Date(value);
@@ -142,9 +152,11 @@ function KpiCard({ label, value, sub, urgent, teal, onClick }) {
 }
 
 function SectionCard({ children }) {
+  const isMobile = useIsMobile();
   return (
     <div style={{
-      background: T.card, border: `1px solid ${T.border}`, borderRadius: 20, padding: "28px 32px",
+      background: T.card, border: `1px solid ${T.border}`, borderRadius: 20,
+      padding: isMobile ? "16px" : "28px 32px",
     }}>
       {children}
     </div>
@@ -154,6 +166,7 @@ function SectionCard({ children }) {
 export default function Admin() {
   const navigate = useNavigate();
   const { startViewAs } = useAuth();
+  const isMobile = useIsMobile();
   const [summary, setSummary] = useState(null);
   const [activeTab, setActiveTab] = useState("overview");
   const [loading, setLoading] = useState(false);
@@ -620,7 +633,7 @@ export default function Admin() {
                 )}
 
                 {/* Latest users + jobs */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 16 }}>
                   <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 16, padding: "20px 24px" }}>
                     <p style={{ fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 14 }}>Senaste registreringar</p>
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -738,7 +751,7 @@ export default function Admin() {
             </p>
 
             {/* Filters */}
-            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 10, marginBottom: 12 }}>
+            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "2fr 1fr 1fr", gap: 10, marginBottom: 12 }}>
               <input
                 value={userFilters.q}
                 onChange={(e) => setUserFilters((p) => ({ ...p, q: e.target.value }))}
@@ -773,7 +786,7 @@ export default function Admin() {
               </Btn>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 16 }}>
+            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 300px", gap: 16 }}>
               {/* User table */}
               <div style={{ overflowX: "auto" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
@@ -872,7 +885,7 @@ export default function Admin() {
                                   <p style={{ fontSize: 12, color: T.muted, paddingTop: 8 }}>Laddar...</p>
                                 ) : (
                                   <div style={{ background: "rgba(255,255,255,0.02)", border: `1px solid ${T.border}`, borderRadius: 10, overflow: "hidden", marginTop: 4 }}>
-                                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", borderBottom: `1px solid ${T.border}` }}>
+                                    <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4, 1fr)", borderBottom: `1px solid ${T.border}` }}>
                                       {[
                                         { label: "Skapad", value: fmtDate(detail.createdAt) },
                                         { label: "Inloggad", value: detail.lastLoginAt ? fmtDate(detail.lastLoginAt) : "Aldrig" },
@@ -908,7 +921,7 @@ export default function Admin() {
               </div>
 
               {/* Desktop detail panel */}
-              <div style={{
+              {!isMobile && <div style={{
                 background: "rgba(255,255,255,0.02)", border: `1px solid ${T.border}`,
                 borderRadius: 14, position: "sticky", top: 88, alignSelf: "start", overflow: "hidden",
               }}>
@@ -1013,7 +1026,7 @@ export default function Admin() {
                     </div>
                   </>
                 )}
-              </div>
+              </div>}
             </div>
           </SectionCard>
         )}
@@ -1023,7 +1036,7 @@ export default function Admin() {
         ════════════════════════════════════════ */}
         {activeTab === "jobs" && (
           <SectionCard>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10, marginBottom: 20 }}>
               <p style={{ fontSize: 16, fontWeight: 700, color: T.text, margin: 0 }}>Jobbmoderering</p>
               <Btn variant="primary" size="md" onClick={() => setShowCreateJob((v) => !v)}>
                 {showCreateJob ? "Stäng" : "+ Skapa jobb åt åkeri"}
@@ -1036,7 +1049,7 @@ export default function Admin() {
                 borderRadius: 14, padding: "24px", marginBottom: 24,
               }}>
                 <p style={{ fontSize: 13, fontWeight: 700, color: T.sub, marginBottom: 16 }}>Skapa jobb åt ett åkeri (utan att de behöver ett konto)</p>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
+                <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12, marginBottom: 12 }}>
                   <div>
                     <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: T.muted, marginBottom: 5 }}>Jobbtitel *</label>
                     <input required value={createJobForm.title} onChange={(e) => setCreateJobForm((p) => ({ ...p, title: e.target.value }))}
