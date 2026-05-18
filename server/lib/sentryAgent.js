@@ -4,6 +4,7 @@
  */
 import Anthropic from "@anthropic-ai/sdk";
 import { sendEmail } from "./email.js";
+import { attemptBugFix } from "./bugFixAgent.js";
 
 function getAnthropic() {
   if (!process.env.ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY saknas");
@@ -99,6 +100,18 @@ ${url ? `URL: ${url}` : ""}`;
     }
 
     console.log(`[SentryAgent] ${severity} alert skickat: ${errorTitle}`);
+
+    // Försök auto-fixa om vi har GitHub-credentials och felet är CRITICAL/WARNING
+    if (process.env.GITHUB_TOKEN && process.env.GITHUB_REPO) {
+      attemptBugFix(payload).then((result) => {
+        if (result.fixed) {
+          console.log(`[SentryAgent] Auto-fix deployed: ${result.file}`);
+        } else {
+          console.log(`[SentryAgent] Auto-fix skippat: ${result.reason}`);
+        }
+      }).catch((e) => console.error("[SentryAgent] BugFixAgent fel:", e.message));
+    }
+
     return { severity, emailSent: true };
   } catch (e) {
     console.error("[SentryAgent] Fel:", e.message);
