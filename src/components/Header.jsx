@@ -236,12 +236,12 @@ export default function Header({ onboarding = false }) {
       {user && isDriver && !platformAdminSession && (
         <>
           {[
-            { to: "/jobb", label: "Jobb" },
+            { to: "/jobb", label: "Jobb", tour: "jobs-link" },
             { to: "/akerier", label: "Åkerier" },
             { to: "/favoriter", label: "Favoriter" },
             { to: "/mina-ansokningar", label: "Mina ansökningar" },
           ].map((item) => (
-            <li key={item.to}>
+            <li key={item.to} {...(item.tour ? { "data-tour": item.tour } : {})}>
               <NavLink to={item.to} onClick={closeMobile} end={item.to === "/"}>
                 {({ isActive }) => (
                   <span style={navLinkInlineActive(isActive)}>{item.label}</span>
@@ -443,7 +443,7 @@ export default function Header({ onboarding = false }) {
 
             {/* Notification bell (logged-in only, ej admin) */}
             {user && !platformAdminSession && (
-              <div className="relative" ref={notifRef}>
+              <div className="relative" ref={notifRef} data-tour="notifications">
                 <button
                   type="button"
                   onClick={() => setNotifOpen((o) => !o)}
@@ -552,7 +552,7 @@ export default function Header({ onboarding = false }) {
 
             {/* User avatar menu */}
             {user && (
-              <div className="relative" ref={userMenuRef}>
+              <div className="relative" ref={userMenuRef} data-tour="user-menu">
                 <button
                   type="button"
                   onClick={() => setUserMenuOpen((o) => !o)}

@@ -13,6 +13,7 @@ import { mapEmploymentToSegment } from "../data/segments";
 import PageMeta from "../components/PageMeta";
 import { regionPages } from "../data/regions";
 import { useIsMobile } from "../hooks/useIsMobile";
+import { useDriverTour } from "../hooks/useDriverTour";
 
 const QUICK_FILTERS = [
   { label: "CE-körkort", key: "license", value: "CE" },
@@ -28,8 +29,10 @@ const QUICK_FILTERS = [
 export default function JobList() {
   usePageTitle("Lediga chaufförsjobb");
   const isMobile = useIsMobile();
-  const { isDriver, hasApi } = useAuth();
+  const { isDriver, hasApi, user } = useAuth();
   const { profile } = useProfile();
+
+  useDriverTour({ isDriver, user, profileLoaded: !jobsLoading });
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [tab, setTab] = useState("all");
   const [showMatch, setShowMatch] = useState(true);
@@ -281,6 +284,7 @@ export default function JobList() {
                   />
                 </div>
                 <button
+                  data-tour="job-filters"
                   onClick={() => setDrawerOpen(true)}
                   style={{ flexShrink: 0, padding: "10px 14px", borderRadius: 10, background: activeDrawerCount > 0 ? "rgba(31,95,92,0.25)" : "rgba(255,255,255,0.05)", border: activeDrawerCount > 0 ? "1px solid rgba(31,95,92,0.5)" : "1px solid rgba(255,255,255,0.1)", color: activeDrawerCount > 0 ? "#4ade80" : "rgba(240,250,249,0.65)", fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, fontFamily: "inherit", whiteSpace: "nowrap" }}
                 >
