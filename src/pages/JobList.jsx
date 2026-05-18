@@ -32,12 +32,13 @@ export default function JobList() {
   const { isDriver, hasApi, user } = useAuth();
   const { profile } = useProfile();
 
-  useDriverTour({ isDriver, user, profileLoaded: !jobsLoading });
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [tab, setTab] = useState("all");
   const [showMatch, setShowMatch] = useState(true);
   const [jobs, setJobs] = useState(() => (hasApi ? [] : mockJobs));
   const [jobsLoading, setJobsLoading] = useState(hasApi);
+
+  useDriverTour({ isDriver, user, profileLoaded: !jobsLoading });
   const [savedJobIds, setSavedJobIds] = useState(new Set());
   const [filters, setFilters] = useState({
     search: "",
