@@ -17,6 +17,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { prisma } from "./prisma.js";
 import { sendEmail } from "./email.js";
+import { findEmail } from "./emailFinder.js";
 
 const REGIONS = [
   // Week 0 (cycle index 0)
@@ -38,12 +39,14 @@ function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-/** ISO week number → 0-indexed cycle (0, 1, 2) → which 7 regions this week */
-function getWeekCycleIndex() {
-  const now = new Date();
-  const startOfYear = new Date(now.getFullYear(), 0, 1);
-  const week = Math.ceil(((now - startOfYear) / 86400000 + startOfYear.getDay() + 1) / 7);
-  return (week - 1) % 3;
+/**
+ * Dag-index (0–6) → vilka 3 regioner körs idag.
+ * 21 regioner / 7 dagar = 3 regioner per dag, full rotation på 1 vecka.
+ */
+function getTodaysRegions() {
+  const day = new Date().getDay(); // 0=sön, 1=mån, ... 6=lör
+  const index = day * 3;
+  return REGIONS.slice(index, index + 3);
 }
 
 function stripHtml(html) {
@@ -131,43 +134,18 @@ async function importNew(companies) {
 // ─── Step 3: Enrich (website → Claude → email) ───────────────────────────────
 
 async function enrichOne(prospect) {
-  const anthropic = getAnthropicClient();
-  const base = prospect.website.replace(/\/$/, "");
-  const urlsToTry = [`${base}/kontakt`, `${base}/om-oss`, `${base}/contact`, base];
-
-  let html = "";
-  for (const url of urlsToTry) {
-    try {
-      const resp = await fetch(url, {
-        signal: AbortSignal.timeout(8000),
-        headers: { "User-Agent": "Mozilla/5.0 (compatible; STP-bot/1.0)" },
-      });
-      if (resp.ok) { html = await resp.text(); break; }
-    } catch (_) { continue; }
-  }
-  if (!html) return null;
-
-  const text = stripHtml(html).slice(0, 5000);
-
-  const message = await anthropic.messages.create({
-    model: "claude-haiku-4-5-20251001",
-    max_tokens: 150,
-    messages: [{
-      role: "user",
-      content: `Extrahera kontaktinfo från åkeriets webbplats. Returnera BARA JSON: {"email":...|null,"phone":...|null}\n\n${text}`,
-    }],
+  const result = await findEmail({
+    companyName: prospect.companyName,
+    website: prospect.website,
+    city: prospect.city,
   });
-
-  try {
-    const raw = message.content[0].text.trim();
-    const match = raw.match(/\{[\s\S]*?\}/);
-    return match ? JSON.parse(match[0]) : null;
-  } catch (_) { return null; }
+  return result ? { email: result.email, source: result.source } : null;
 }
 
 async function enrichBatch(region) {
+  // Hämta alla NEW prospects i regionen — även utan hemsida (Hitta.se + SMTP kan hjälpa)
   const prospects = await prisma.outreachProspect.findMany({
-    where: { region, status: "NEW", website: { not: null } },
+    where: { region, status: "NEW" },
     take: 30,
   });
 
@@ -175,18 +153,18 @@ async function enrichBatch(region) {
   for (const p of prospects) {
     try {
       const contact = await enrichOne(p);
+      const email = contact?.email || p.email || null;
       await prisma.outreachProspect.update({
         where: { id: p.id },
         data: {
-          email: contact?.email || p.email,
-          phone: contact?.phone || p.phone,
+          email,
           enrichedAt: new Date(),
-          status: (contact?.email || p.email) ? "ENRICHED" : p.status,
+          status: email ? "ENRICHED" : "NO_EMAIL",
         },
       });
-      if (contact?.email) enriched++;
+      if (email) enriched++;
     } catch (_) {}
-    await delay(500);
+    await delay(800);
   }
   return enriched;
 }
@@ -460,12 +438,11 @@ export async function runOutreachAgent({ dryRun = false, regions: overrideRegion
   };
 
   try {
-    // Determine regions for this week
-    const cycleIndex = getWeekCycleIndex();
-    const regions = overrideRegions || REGIONS.slice(cycleIndex * 7, cycleIndex * 7 + 7);
+    // 3 regioner per dag, alla 21 täcks på en vecka
+    const regions = overrideRegions || getTodaysRegions();
     stats.regionsProcessed = regions;
 
-    console.log(`[OutreachAgent] Regioner v${cycleIndex + 1}: ${regions.join(", ")}`);
+    console.log(`[OutreachAgent] Regioner idag: ${regions.join(", ")}`);
 
     for (const region of regions) {
       console.log(`[OutreachAgent] Processar ${region}...`);

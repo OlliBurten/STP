@@ -21,8 +21,8 @@ export function startReminderScheduler() {
     }
   }, { timezone: "Europe/Stockholm" });
 
-  // Every Monday at 09:00 Stockholm time — autonomous outreach agent
-  cron.schedule("0 9 * * 1", async () => {
+  // Every day at 09:00 Stockholm time — autonomous outreach agent (3 regions/day, full rotation weekly)
+  cron.schedule("0 9 * * *", async () => {
     try {
       await runOutreachAgent();
     } catch (e) {
@@ -30,5 +30,5 @@ export function startReminderScheduler() {
     }
   }, { timezone: "Europe/Stockholm" });
 
-  console.log("[ReminderScheduler] Started — daily 08:00 + outreach Mondays 09:00 Europe/Stockholm");
+  console.log("[ReminderScheduler] Started — reminders 08:00 + outreach 09:00 daily Europe/Stockholm");
 }
