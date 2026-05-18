@@ -23,6 +23,10 @@ import { listReviewsForAdmin, moderateReview } from "../api/reviews.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import { EyeIcon } from "../components/Icons.jsx";
 import { getProfileCompletion } from "../utils/driverProfileRequirements.js";
+import {
+  deleteProspect, enrichProspect, generateEmail, getOutreachStats,
+  importProspects, listProspects, addProspect, scrapeRegion, sendOutreach,
+} from "../api/outreach.js";
 
 const T = {
   bg:          "#060f0f",
@@ -189,6 +193,22 @@ export default function Admin() {
   const [reportFilters, setReportFilters] = useState({ status: "" });
   const [reviewFilters, setReviewFilters] = useState({ status: "" });
 
+  // ── Outreach state ──
+  const [outreachStats, setOutreachStats] = useState(null);
+  const [outreachProspects, setOutreachProspects] = useState([]);
+  const [outreachTotal, setOutreachTotal] = useState(0);
+  const [outreachSubTab, setOutreachSubTab] = useState("prospects");
+  const [outreachFilters, setOutreachFilters] = useState({ status: "", region: "", q: "" });
+  const [scrapeRegionVal, setScrapeRegionVal] = useState("Stockholm");
+  const [scrapeQuery, setScrapeQuery] = useState("åkeri");
+  const [scrapeResults, setScrapeResults] = useState([]);
+  const [scrapeSelected, setScrapeSelected] = useState(new Set());
+  const [scrapeLoading, setScrapeLoading] = useState(false);
+  const [prospectLoading, setProspectLoading] = useState("");
+  const [expandedProspect, setExpandedProspect] = useState(null);
+  const [manualForm, setManualForm] = useState({ companyName: "", website: "", email: "", phone: "", region: "", city: "" });
+  const [manualLoading, setManualLoading] = useState(false);
+
   const [reasonModal, setReasonModal] = useState(null);
   const [reasonInput, setReasonInput] = useState("");
   const [warningChecked, setWarningChecked] = useState(false);
@@ -264,6 +284,81 @@ export default function Admin() {
     setSchools(Array.isArray(data) ? data : []);
   }
 
+  async function loadOutreach() {
+    const [statsData, prospectsData] = await Promise.all([
+      getOutreachStats(),
+      listProspects(outreachFilters),
+    ]);
+    setOutreachStats(statsData);
+    setOutreachProspects(Array.isArray(prospectsData?.prospects) ? prospectsData.prospects : []);
+    setOutreachTotal(prospectsData?.total ?? 0);
+  }
+
+  async function handleScrape() {
+    setScrapeLoading(true); clearFlash();
+    try {
+      const data = await scrapeRegion(scrapeRegionVal, scrapeQuery);
+      setScrapeResults(data.companies || []);
+      setScrapeSelected(new Set());
+      if ((data.companies || []).length === 0) setError("Inga företag hittades — försök en annan region eller sökterm.");
+      else setSuccess(`${data.count} företag hittades i ${data.region}.`);
+    } catch (e) { setError(e.message || "Scraping misslyckades"); }
+    finally { setScrapeLoading(false); }
+  }
+
+  async function handleImportSelected() {
+    const toImport = scrapeResults.filter((_, i) => scrapeSelected.has(i));
+    if (!toImport.length) return;
+    setLoading(true); clearFlash();
+    try {
+      const data = await importProspects(toImport);
+      setSuccess(`Importerade ${data.imported} prospects. ${data.skipped > 0 ? `${data.skipped} hoppades över.` : ""}`);
+      setScrapeResults([]);
+      setScrapeSelected(new Set());
+      await loadOutreach();
+    } catch (e) { setError(e.message || "Import misslyckades"); }
+    finally { setLoading(false); }
+  }
+
+  async function handleOutreachAction(id, action) {
+    setProspectLoading(id + action); clearFlash();
+    try {
+      let updated;
+      if (action === "enrich")   updated = await enrichProspect(id);
+      if (action === "generate") updated = await generateEmail(id);
+      if (action === "send")     updated = await sendOutreach(id);
+      if (action === "delete") {
+        await deleteProspect(id);
+        setOutreachProspects((p) => p.filter((x) => x.id !== id));
+        setSuccess("Prospect borttagen.");
+        return;
+      }
+      if (updated) {
+        setOutreachProspects((p) => p.map((x) => x.id === id ? updated : x));
+        if (action === "generate") setExpandedProspect(id);
+        setSuccess(
+          action === "enrich"   ? "Berikad — e-post hittad!" :
+          action === "generate" ? "E-post genererad." :
+          action === "send"     ? "E-post skickad!" : "Klar."
+        );
+      }
+    } catch (e) { setError(e.message || "Något gick fel"); }
+    finally { setProspectLoading(""); }
+  }
+
+  async function handleAddManual(e) {
+    e.preventDefault();
+    setManualLoading(true); clearFlash();
+    try {
+      const created = await addProspect(manualForm);
+      setOutreachProspects((p) => [created, ...p]);
+      setManualForm({ companyName: "", website: "", email: "", phone: "", region: "", city: "" });
+      setSuccess("Prospect tillagd.");
+      setOutreachSubTab("prospects");
+    } catch (err) { setError(err.message || "Kunde inte lägga till"); }
+    finally { setManualLoading(false); }
+  }
+
   async function refreshCurrentTab() {
     setLoading(true);
     clearFlash();
@@ -281,6 +376,7 @@ export default function Admin() {
       if (activeTab === "reports")   await loadReports();
       if (activeTab === "reviews")   await loadReviews();
       if (activeTab === "schools")   await loadSchools();
+      if (activeTab === "outreach")  await loadOutreach();
     } catch (e) {
       setError(e.message || "Kunde inte hämta data");
     } finally {
@@ -471,6 +567,7 @@ export default function Admin() {
     { id: "reports",    label: "Rapporter" },
     { id: "reviews",    label: "Omdömen" },
     { id: "schools",    label: "Skolor" },
+    { id: "outreach",   label: "Outreach" },
   ];
 
   return (
@@ -1344,6 +1441,264 @@ export default function Admin() {
               </table>
             </div>
           </SectionCard>
+        )}
+
+        {/* ════════════════════════════════════════
+            OUTREACH TAB
+        ════════════════════════════════════════ */}
+        {activeTab === "outreach" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+
+            {/* Stats bar */}
+            {outreachStats && (
+              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(3,1fr)" : "repeat(6,1fr)", gap: 10 }}>
+                {[
+                  { label: "Totalt",     value: outreachStats.total ?? 0,                         color: T.text },
+                  { label: "Nya",        value: outreachStats.byStatus?.NEW ?? 0,                  color: T.muted },
+                  { label: "Berikade",   value: outreachStats.byStatus?.ENRICHED ?? 0,             color: T.indigo },
+                  { label: "Redo",       value: outreachStats.byStatus?.READY ?? 0,                color: T.tealBright },
+                  { label: "Skickade",   value: outreachStats.byStatus?.SENT ?? 0,                 color: T.green },
+                  { label: "Studsade",   value: (outreachStats.byStatus?.BOUNCED ?? 0),            color: T.red },
+                ].map(({ label, value, color }) => (
+                  <div key={label} style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 12, padding: "14px 16px" }}>
+                    <p style={{ fontSize: 10, fontWeight: 700, color: T.muted, textTransform: "uppercase", letterSpacing: "0.08em", margin: 0 }}>{label}</p>
+                    <p style={{ fontSize: 22, fontWeight: 800, color, margin: "4px 0 0" }}>{value}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Sub-tabs */}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {[
+                { id: "prospects", label: "Prospekt" },
+                { id: "scrape",    label: "Prospektera" },
+                { id: "manual",    label: "+ Manuellt" },
+              ].map((t) => (
+                <button key={t.id} type="button" onClick={() => setOutreachSubTab(t.id)} style={{
+                  padding: "7px 14px", borderRadius: 9, fontSize: 12, fontWeight: 700, cursor: "pointer", border: "none",
+                  background: outreachSubTab === t.id ? T.amber : "rgba(255,255,255,0.06)",
+                  color: outreachSubTab === t.id ? "#000" : T.sub,
+                }}>
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            {/* ── Prospektera (scrape) ── */}
+            {outreachSubTab === "scrape" && (
+              <SectionCard>
+                <p style={{ fontSize: 14, fontWeight: 700, color: T.text, marginBottom: 4 }}>Hitta åkerier på Hitta.se</p>
+                <p style={{ fontSize: 12, color: T.muted, marginBottom: 20 }}>AI scraper — välj region och sökterm, importera sedan valda företag.</p>
+                <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr auto", gap: 10, marginBottom: 16 }}>
+                  <select value={scrapeRegionVal} onChange={(e) => setScrapeRegionVal(e.target.value)} style={INP}>
+                    {["Stockholm","Uppsala","Södermanland","Östergötland","Jönköping","Kronoberg","Kalmar","Gotland","Blekinge","Skåne","Halland","Västra Götaland","Värmland","Örebro","Västmanland","Dalarna","Gävleborg","Västernorrland","Jämtland","Västerbotten","Norrbotten"].map((r) => (
+                      <option key={r} value={r}>{r}</option>
+                    ))}
+                  </select>
+                  <input value={scrapeQuery} onChange={(e) => setScrapeQuery(e.target.value)} placeholder="Sökterm (t.ex. åkeri, transport)" style={INP} />
+                  <Btn variant="primary" size="md" disabled={scrapeLoading} onClick={handleScrape}>
+                    {scrapeLoading ? "Söker..." : "Sök"}
+                  </Btn>
+                </div>
+
+                {scrapeResults.length > 0 && (
+                  <>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, flexWrap: "wrap", gap: 8 }}>
+                      <p style={{ fontSize: 12, color: T.muted, margin: 0 }}>{scrapeResults.length} hittade — {scrapeSelected.size} valda</p>
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <Btn size="sm" onClick={() => setScrapeSelected(new Set(scrapeResults.map((_, i) => i)))}>
+                          Välj alla
+                        </Btn>
+                        <Btn size="sm" onClick={() => setScrapeSelected(new Set())}>Avmarkera</Btn>
+                        <Btn variant="primary" size="sm" disabled={scrapeSelected.size === 0 || loading} onClick={handleImportSelected}>
+                          Importera valda ({scrapeSelected.size})
+                        </Btn>
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      {scrapeResults.map((c, i) => (
+                        <div key={i} onClick={() => setScrapeSelected((s) => { const n = new Set(s); n.has(i) ? n.delete(i) : n.add(i); return n; })}
+                          style={{
+                            display: "flex", alignItems: "center", gap: 12, padding: "10px 14px",
+                            background: scrapeSelected.has(i) ? "rgba(165,180,252,0.08)" : "rgba(255,255,255,0.02)",
+                            border: `1px solid ${scrapeSelected.has(i) ? T.indigoBorder : T.border}`,
+                            borderRadius: 10, cursor: "pointer",
+                          }}
+                        >
+                          <input type="checkbox" checked={scrapeSelected.has(i)} readOnly style={{ flexShrink: 0 }} />
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <p style={{ fontWeight: 600, color: T.text, margin: 0, fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.companyName}</p>
+                            <p style={{ fontSize: 11, color: T.muted, margin: "2px 0 0" }}>
+                              {[c.city, c.phone, c.website].filter(Boolean).join(" · ")}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </SectionCard>
+            )}
+
+            {/* ── Manuellt ── */}
+            {outreachSubTab === "manual" && (
+              <SectionCard>
+                <p style={{ fontSize: 14, fontWeight: 700, color: T.text, marginBottom: 20 }}>Lägg till prospect manuellt</p>
+                <form onSubmit={handleAddManual}>
+                  <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12, marginBottom: 12 }}>
+                    <div>
+                      <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: T.muted, marginBottom: 5 }}>Företagsnamn *</label>
+                      <input required value={manualForm.companyName} onChange={(e) => setManualForm((p) => ({ ...p, companyName: e.target.value }))} placeholder="Anderssons Åkeri AB" style={INP} />
+                    </div>
+                    <div>
+                      <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: T.muted, marginBottom: 5 }}>Webbadress</label>
+                      <input type="url" value={manualForm.website} onChange={(e) => setManualForm((p) => ({ ...p, website: e.target.value }))} placeholder="https://anderssonsak.se" style={INP} />
+                    </div>
+                    <div>
+                      <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: T.muted, marginBottom: 5 }}>E-post</label>
+                      <input type="email" value={manualForm.email} onChange={(e) => setManualForm((p) => ({ ...p, email: e.target.value }))} placeholder="info@anderssonsak.se" style={INP} />
+                    </div>
+                    <div>
+                      <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: T.muted, marginBottom: 5 }}>Telefon</label>
+                      <input value={manualForm.phone} onChange={(e) => setManualForm((p) => ({ ...p, phone: e.target.value }))} placeholder="08-123 456" style={INP} />
+                    </div>
+                    <div>
+                      <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: T.muted, marginBottom: 5 }}>Region</label>
+                      <select value={manualForm.region} onChange={(e) => setManualForm((p) => ({ ...p, region: e.target.value }))} style={INP}>
+                        <option value="">Välj region</option>
+                        {["Stockholm","Uppsala","Södermanland","Östergötland","Jönköping","Kronoberg","Kalmar","Gotland","Blekinge","Skåne","Halland","Västra Götaland","Värmland","Örebro","Västmanland","Dalarna","Gävleborg","Västernorrland","Jämtland","Västerbotten","Norrbotten"].map((r) => (
+                          <option key={r} value={r}>{r}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: T.muted, marginBottom: 5 }}>Stad</label>
+                      <input value={manualForm.city} onChange={(e) => setManualForm((p) => ({ ...p, city: e.target.value }))} placeholder="Stockholm" style={INP} />
+                    </div>
+                  </div>
+                  <Btn type="submit" variant="primary" size="md" disabled={manualLoading}>
+                    {manualLoading ? "Lägger till..." : "Lägg till prospect"}
+                  </Btn>
+                </form>
+              </SectionCard>
+            )}
+
+            {/* ── Prospects table ── */}
+            {outreachSubTab === "prospects" && (
+              <SectionCard>
+                {/* Filters */}
+                <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "2fr 1fr 1fr auto", gap: 10, marginBottom: 16 }}>
+                  <input value={outreachFilters.q} onChange={(e) => setOutreachFilters((p) => ({ ...p, q: e.target.value }))}
+                    onKeyDown={(e) => { if (e.key === "Enter") loadOutreach(); }}
+                    placeholder="Sök namn / e-post / stad" style={INP} />
+                  <select value={outreachFilters.status} onChange={(e) => setOutreachFilters((p) => ({ ...p, status: e.target.value }))} style={INP}>
+                    <option value="">Alla statusar</option>
+                    <option value="NEW">Nya</option>
+                    <option value="ENRICHED">Berikade</option>
+                    <option value="READY">Redo</option>
+                    <option value="SENT">Skickade</option>
+                    <option value="BOUNCED">Studsade</option>
+                  </select>
+                  <select value={outreachFilters.region} onChange={(e) => setOutreachFilters((p) => ({ ...p, region: e.target.value }))} style={INP}>
+                    <option value="">Alla regioner</option>
+                    {["Stockholm","Uppsala","Södermanland","Östergötland","Jönköping","Kronoberg","Kalmar","Gotland","Blekinge","Skåne","Halland","Västra Götaland","Värmland","Örebro","Västmanland","Dalarna","Gävleborg","Västernorrland","Jämtland","Västerbotten","Norrbotten"].map((r) => (
+                      <option key={r} value={r}>{r}</option>
+                    ))}
+                  </select>
+                  <Btn variant="primary" size="md" onClick={loadOutreach} disabled={loading}>Filtrera</Btn>
+                </div>
+
+                <p style={{ fontSize: 12, color: T.muted, marginBottom: 12 }}>{outreachTotal} prospects</p>
+
+                {outreachProspects.length === 0 ? (
+                  <p style={{ fontSize: 13, color: T.muted, padding: "24px 0", textAlign: "center" }}>
+                    Inga prospects ännu — börja med att scrapa eller lägg till manuellt.
+                  </p>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    {outreachProspects.map((p) => {
+                      const isExpanded = expandedProspect === p.id;
+                      const isLoading = (v) => prospectLoading === p.id + v;
+                      const statusColor = {
+                        NEW: T.muted, ENRICHED: T.indigo, READY: T.tealBright,
+                        SENT: T.green, BOUNCED: T.red, UNSUBSCRIBED: T.red,
+                      }[p.status] || T.muted;
+
+                      return (
+                        <div key={p.id} style={{
+                          background: "rgba(255,255,255,0.02)", border: `1px solid ${T.border}`,
+                          borderRadius: 12, overflow: "hidden",
+                        }}>
+                          {/* Row */}
+                          <div style={{
+                            display: "flex", alignItems: "center", gap: 12, padding: "10px 14px",
+                            cursor: "pointer",
+                          }} onClick={() => setExpandedProspect(isExpanded ? null : p.id)}>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <p style={{ fontWeight: 600, color: T.text, margin: 0, fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                {p.companyName}
+                              </p>
+                              <p style={{ fontSize: 11, color: T.muted, margin: "2px 0 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                {[p.city, p.region, p.email].filter(Boolean).join(" · ")}
+                              </p>
+                            </div>
+                            <span style={{
+                              fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 99,
+                              background: `${statusColor}18`, color: statusColor, border: `1px solid ${statusColor}44`,
+                              flexShrink: 0,
+                            }}>
+                              {p.status}
+                            </span>
+                          </div>
+
+                          {/* Expanded */}
+                          {isExpanded && (
+                            <div style={{ borderTop: `1px solid ${T.border}`, padding: "12px 14px" }}>
+                              {/* Actions */}
+                              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: p.generatedEmail ? 12 : 0 }}>
+                                {p.website && (
+                                  <Btn size="sm" variant="default" disabled={!!prospectLoading} onClick={() => handleOutreachAction(p.id, "enrich")}>
+                                    {isLoading("enrich") ? "Berikar..." : "Berika"}
+                                  </Btn>
+                                )}
+                                <Btn size="sm" variant="default" disabled={!!prospectLoading} onClick={() => handleOutreachAction(p.id, "generate")}>
+                                  {isLoading("generate") ? "Genererar..." : "Generera e-post"}
+                                </Btn>
+                                {p.generatedEmail && p.email && p.status !== "SENT" && (
+                                  <Btn size="sm" variant="success" disabled={!!prospectLoading} onClick={() => handleOutreachAction(p.id, "send")}>
+                                    {isLoading("send") ? "Skickar..." : "Skicka"}
+                                  </Btn>
+                                )}
+                                {p.sentAt && (
+                                  <span style={{ fontSize: 11, color: T.green, padding: "7px 0" }}>
+                                    ✓ Skickad {new Date(p.sentAt).toLocaleDateString("sv-SE")}
+                                  </span>
+                                )}
+                                <Btn size="sm" variant="danger" disabled={!!prospectLoading} onClick={() => handleOutreachAction(p.id, "delete")}>
+                                  {isLoading("delete") ? "..." : "Ta bort"}
+                                </Btn>
+                              </div>
+
+                              {/* Generated email preview */}
+                              {p.generatedEmail && (
+                                <div style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${T.border}`, borderRadius: 8, padding: 12 }}>
+                                  <p style={{ fontSize: 10, fontWeight: 700, color: T.muted, marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                                    Ämne: {p.generatedSubject || "–"}
+                                  </p>
+                                  <p style={{ fontSize: 12, color: T.sub, margin: 0, whiteSpace: "pre-wrap", lineHeight: 1.6 }}>{p.generatedEmail}</p>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </SectionCard>
+            )}
+          </div>
         )}
 
         {/* ════════════════════════════════════════

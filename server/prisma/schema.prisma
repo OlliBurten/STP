@@ -454,3 +454,26 @@ model CertificateSuggestion {
 
   @@index([createdAt])
 }
+
+model OutreachProspect {
+  id               String    @id @default(cuid())
+  companyName      String
+  orgNumber        String?
+  website          String?
+  email            String?
+  phone            String?
+  region           String?
+  city             String?
+  source           String?   // "hitta" | "manual"
+  status           String    @default("NEW")
+  // NEW | ENRICHED | READY | SENT | BOUNCED | UNSUBSCRIBED
+  generatedSubject String?
+  generatedEmail   String?   @db.Text
+  enrichedAt       DateTime?
+  sentAt           DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([status])
+  @@index([region])
+}
