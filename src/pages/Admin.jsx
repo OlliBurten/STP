@@ -27,6 +27,7 @@ import {
   deleteProspect, enrichProspect, generateEmail, getOutreachStats,
   importProspects, listProspects, addProspect, runAgent, scrapeRegion, sendOutreach,
 } from "../api/outreach.js";
+import { listFeedback, updateFeedbackStatus } from "../api/feedback.js";
 
 const T = {
   bg:          "#060f0f",
@@ -209,6 +210,12 @@ export default function Admin() {
   const [manualForm, setManualForm] = useState({ companyName: "", website: "", email: "", phone: "", region: "", city: "" });
   const [manualLoading, setManualLoading] = useState(false);
 
+  // ── Feedback state ──
+  const [feedbackItems, setFeedbackItems] = useState([]);
+  const [feedbackFilter, setFeedbackFilter] = useState("NEW");
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
+  const [expandedFeedback, setExpandedFeedback] = useState(null);
+
   const [reasonModal, setReasonModal] = useState(null);
   const [reasonInput, setReasonInput] = useState("");
   const [warningChecked, setWarningChecked] = useState(false);
@@ -282,6 +289,21 @@ export default function Admin() {
   async function loadSchools() {
     const data = await listSchools();
     setSchools(Array.isArray(data) ? data : []);
+  }
+
+  async function loadFeedback(filter = feedbackFilter) {
+    setFeedbackLoading(true);
+    try {
+      const data = await listFeedback({ status: filter === "ALL" ? undefined : filter });
+      setFeedbackItems(Array.isArray(data?.items) ? data.items : []);
+    } catch (e) { console.error(e); }
+    finally { setFeedbackLoading(false); }
+  }
+
+  async function handleFeedbackStatus(id, status) {
+    await updateFeedbackStatus(id, status);
+    setFeedbackItems((prev) => prev.map((f) => f.id === id ? { ...f, status } : f));
+    if (expandedFeedback?.id === id) setExpandedFeedback((f) => ({ ...f, status }));
   }
 
   async function loadOutreach() {
@@ -377,6 +399,7 @@ export default function Admin() {
       if (activeTab === "reviews")   await loadReviews();
       if (activeTab === "schools")   await loadSchools();
       if (activeTab === "outreach")  await loadOutreach();
+      if (activeTab === "feedback")  await loadFeedback();
     } catch (e) {
       setError(e.message || "Kunde inte hämta data");
     } finally {
@@ -568,6 +591,7 @@ export default function Admin() {
     { id: "reviews",    label: "Omdömen" },
     { id: "schools",    label: "Skolor" },
     { id: "outreach",   label: "Outreach" },
+    { id: "feedback",   label: feedbackItems.filter(f => f.status === "NEW").length > 0 ? `Feedback (${feedbackItems.filter(f => f.status === "NEW").length})` : "Feedback" },
   ];
 
   return (
@@ -1732,6 +1756,118 @@ export default function Admin() {
               </SectionCard>
             )}
           </div>
+        )}
+
+        {/* ════════════════════════════════════════
+            FEEDBACK TAB
+        ════════════════════════════════════════ */}
+        {activeTab === "feedback" && (
+          <SectionCard>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
+              <div>
+                <p style={{ fontSize: 16, fontWeight: 700, color: T.text, margin: 0 }}>Användarfeedback</p>
+                <p style={{ fontSize: 12, color: T.muted, margin: "4px 0 0" }}>
+                  AI-analyserad och prioriterad. Auto-svar skickas till användaren.
+                </p>
+              </div>
+              <div style={{ display: "flex", gap: 6 }}>
+                {["NEW", "REVIEWED", "DONE", "ALL"].map((f) => (
+                  <button key={f} onClick={() => { setFeedbackFilter(f); loadFeedback(f); }} style={{
+                    padding: "5px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer",
+                    background: feedbackFilter === f ? T.teal : "transparent",
+                    color: feedbackFilter === f ? "#fff" : T.muted,
+                    border: `1px solid ${feedbackFilter === f ? T.teal : T.border}`,
+                  }}>{f === "NEW" ? "Nya" : f === "REVIEWED" ? "Granskade" : f === "DONE" ? "Klara" : "Alla"}</button>
+                ))}
+              </div>
+            </div>
+
+            {feedbackLoading ? (
+              <div style={{ padding: "40px 0", textAlign: "center", color: T.muted, fontSize: 13 }}>Laddar...</div>
+            ) : feedbackItems.length === 0 ? (
+              <div style={{ padding: "40px 0", textAlign: "center", color: T.muted, fontSize: 13 }}>
+                Ingen feedback {feedbackFilter !== "ALL" ? `med status ${feedbackFilter}` : ""} ännu.
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {feedbackItems.map((fb) => {
+                  const priorityColor = fb.priority === "HIGH" ? "#ef4444" : fb.priority === "MEDIUM" ? "#f59e0b" : "#22c55e";
+                  const isExpanded = expandedFeedback?.id === fb.id;
+                  return (
+                    <div key={fb.id} style={{
+                      background: T.card, border: `1px solid ${T.border}`, borderRadius: 12,
+                      overflow: "hidden", cursor: "pointer",
+                    }} onClick={() => setExpandedFeedback(isExpanded ? null : fb)}>
+                      {/* Header row */}
+                      <div style={{ padding: "12px 16px", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                        {fb.priority && (
+                          <span style={{
+                            padding: "2px 8px", borderRadius: 6, fontSize: 11, fontWeight: 700,
+                            background: `${priorityColor}22`, color: priorityColor, border: `1px solid ${priorityColor}44`,
+                          }}>{fb.priority}</span>
+                        )}
+                        {fb.category && (
+                          <span style={{
+                            padding: "2px 8px", borderRadius: 6, fontSize: 11, fontWeight: 600,
+                            background: "rgba(255,255,255,0.05)", color: T.muted,
+                          }}>{fb.category}</span>
+                        )}
+                        <span style={{ fontSize: 13, color: T.text, flex: 1 }}>
+                          {fb.aiSummary || fb.message.slice(0, 80)}
+                        </span>
+                        <span style={{ fontSize: 11, color: T.muted, whiteSpace: "nowrap" }}>
+                          {new Date(fb.createdAt).toLocaleDateString("sv-SE")}
+                        </span>
+                      </div>
+
+                      {/* Expanded content */}
+                      {isExpanded && (
+                        <div style={{ borderTop: `1px solid ${T.border}`, padding: "16px" }} onClick={(e) => e.stopPropagation()}>
+                          <p style={{ fontSize: 13, color: T.textMuted, marginBottom: 12, lineHeight: 1.6 }}>
+                            {fb.message}
+                          </p>
+                          {fb.aiAction && (
+                            <div style={{ background: "rgba(45,212,191,0.08)", border: `1px solid ${T.teal}33`, borderRadius: 8, padding: "10px 14px", marginBottom: 12 }}>
+                              <span style={{ fontSize: 11, color: T.teal, fontWeight: 700 }}>ÅTGÄRD: </span>
+                              <span style={{ fontSize: 12, color: T.text }}>{fb.aiAction}</span>
+                            </div>
+                          )}
+                          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                            {fb.senderEmail && (
+                              <span style={{ fontSize: 12, color: T.muted }}>
+                                {fb.senderName ? `${fb.senderName} — ` : ""}{fb.senderEmail}
+                                {fb.autoReplySentAt && <span style={{ color: T.teal, marginLeft: 6 }}>✓ Auto-svar skickat</span>}
+                              </span>
+                            )}
+                            <div style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
+                              {fb.status !== "REVIEWED" && (
+                                <button onClick={() => handleFeedbackStatus(fb.id, "REVIEWED")} style={{
+                                  padding: "5px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer",
+                                  background: "transparent", color: T.muted, border: `1px solid ${T.border}`,
+                                }}>Markera granskad</button>
+                              )}
+                              {fb.status !== "DONE" && (
+                                <button onClick={() => handleFeedbackStatus(fb.id, "DONE")} style={{
+                                  padding: "5px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer",
+                                  background: T.teal, color: "#fff", border: "none",
+                                }}>Klar</button>
+                              )}
+                              {fb.status === "DONE" && (
+                                <button onClick={() => handleFeedbackStatus(fb.id, "NEW")} style={{
+                                  padding: "5px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer",
+                                  background: "transparent", color: T.muted, border: `1px solid ${T.border}`,
+                                }}>Återöppna</button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </SectionCard>
         )}
 
         {/* ════════════════════════════════════════

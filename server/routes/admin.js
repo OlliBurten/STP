@@ -1448,3 +1448,36 @@ adminRouter.post("/jobs", async (req, res, next) => {
     next(e);
   }
 });
+
+// ─── Feedback ─────────────────────────────────────────────────────────────────
+adminRouter.get("/feedback", async (req, res, next) => {
+  try {
+    const { status, priority } = req.query;
+    const where = {};
+    if (status) where.status = status;
+    if (priority) where.priority = priority;
+    const items = await prisma.feedback.findMany({
+      where,
+      orderBy: [
+        { priority: "asc" },
+        { createdAt: "desc" },
+      ],
+      take: 200,
+    });
+    res.json({ items, total: items.length });
+  } catch (e) { next(e); }
+});
+
+adminRouter.patch("/feedback/:id", async (req, res, next) => {
+  try {
+    const { status, adminNote } = req.body;
+    const updated = await prisma.feedback.update({
+      where: { id: req.params.id },
+      data: {
+        ...(status && { status }),
+        ...(adminNote !== undefined && { adminNote }),
+      },
+    });
+    res.json(updated);
+  } catch (e) { next(e); }
+});

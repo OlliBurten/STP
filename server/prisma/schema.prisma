@@ -455,6 +455,28 @@ model CertificateSuggestion {
   @@index([createdAt])
 }
 
+model Feedback {
+  id               String    @id @default(cuid())
+  message          String    @db.Text
+  senderEmail      String?
+  senderName       String?
+  // AI-analys
+  priority         String?   // HIGH | MEDIUM | LOW
+  category         String?   // BUG | FUNKTION | UX | INNEHÅLL | KONTO | ÖVRIGT
+  aiSummary        String?
+  aiAction         String?
+  analyzedAt       DateTime?
+  autoReplySentAt  DateTime?
+  // Admin-hantering
+  status           String    @default("NEW") // NEW | REVIEWED | DONE | DISMISSED
+  adminNote        String?
+  createdAt        DateTime  @default(now())
+
+  @@index([status])
+  @@index([priority])
+  @@index([createdAt])
+}
+
 model OutreachProspect {
   id               String    @id @default(cuid())
   companyName      String

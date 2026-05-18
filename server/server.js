@@ -40,6 +40,7 @@ import { suggestionsRouter } from "./routes/suggestions.js";
 import { utilsRouter } from "./routes/utils.js";
 import { schoolsRouter } from "./routes/schools.js";
 import { outreachRouter } from "./routes/outreach.js";
+import { webhooksRouter } from "./routes/webhooks.js";
 import { isGoogleConfigured, isMicrosoftConfigured } from "./lib/oauth.js";
 import { JWT_SECRET } from "./lib/config.js";
 import { startReminderScheduler } from "./lib/reminderScheduler.js";
@@ -172,6 +173,7 @@ app.use("/api/suggestions", suggestionsRouter);
 app.use("/api/utils", apiPublicLimiter, utilsRouter);
 app.use("/api/schools", apiPublicLimiter, schoolsRouter);
 app.use("/api/outreach", outreachRouter);
+app.use("/api/webhooks", webhooksRouter);
 
 app.get("/", (_, res) => {
   res.json({
