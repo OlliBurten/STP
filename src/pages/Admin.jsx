@@ -1457,16 +1457,29 @@ export default function Admin() {
                   Agent kör automatiskt varje måndag 09:00 — bearbetar 7 regioner/vecka på 3-veckors rotation.
                 </p>
               </div>
-              <Btn variant="primary" size="md" disabled={loading} onClick={async () => {
-                setLoading(true); clearFlash();
-                try {
-                  const data = await runAgent({ dryRun: false });
-                  setSuccess(data.message);
-                } catch (e) { setError(e.message || "Kunde inte starta agent"); }
-                finally { setLoading(false); }
-              }}>
-                {loading ? "Startar..." : "▶ Kör agent nu"}
-              </Btn>
+              <div style={{ display: "flex", gap: 8 }}>
+                <Btn size="md" disabled={loading} onClick={async () => {
+                  setLoading(true); clearFlash();
+                  try {
+                    const data = await runAgent({ dryRun: true });
+                    setSuccess("Dry run startad — se server-loggar på Railway för resultat. Inga mail skickas.");
+                  } catch (e) { setError(e.message || "Kunde inte starta"); }
+                  finally { setLoading(false); }
+                }}>
+                  {loading ? "..." : "Dry run"}
+                </Btn>
+                <Btn variant="primary" size="md" disabled={loading} onClick={async () => {
+                  if (!window.confirm("Kör agenten på riktigt? Den skrapar Hitta.se och skickar mail till åkerier.")) return;
+                  setLoading(true); clearFlash();
+                  try {
+                    const data = await runAgent({ dryRun: false });
+                    setSuccess(data.message);
+                  } catch (e) { setError(e.message || "Kunde inte starta agent"); }
+                  finally { setLoading(false); }
+                }}>
+                  {loading ? "Startar..." : "▶ Kör agent nu"}
+                </Btn>
+              </div>
             </div>
 
             {/* Stats bar */}
