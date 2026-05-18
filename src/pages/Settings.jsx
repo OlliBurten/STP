@@ -230,6 +230,16 @@ function DriverKontoSection({ user, profile }) {
 
       <DriverAnstallningsSection profile={profile} />
 
+      <Card title="Plattformsguide" sub="Gå igenom introduktionsguiden igen för att se tips och funktioner.">
+        <button
+          type="button"
+          onClick={() => { localStorage.removeItem("stp_driver_tour_done"); window.location.href = "/jobb"; }}
+          style={{ padding: "10px 18px", borderRadius: 10, background: "rgba(31,95,92,0.15)", border: "1px solid rgba(31,95,92,0.4)", color: "#4ade80", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}
+        >
+          Starta om guiden
+        </button>
+      </Card>
+
       <Card title="Ta bort konto" sub="Detta är permanent. Alla dina ansökningar och meddelanden raderas." danger>
         <button
           type="button"
@@ -612,6 +622,16 @@ function CompanyKontoSection({ user }) {
       </Card>
 
       <InviteSection />
+
+      <Card title="Plattformsguide" sub="Gå igenom introduktionsguiden igen för att se tips och funktioner.">
+        <button
+          type="button"
+          onClick={() => { localStorage.removeItem("stp_company_tour_done"); window.location.href = "/foretag"; }}
+          style={{ padding: "10px 18px", borderRadius: 10, background: "rgba(31,95,92,0.15)", border: "1px solid rgba(31,95,92,0.4)", color: "#4ade80", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}
+        >
+          Starta om guiden
+        </button>
+      </Card>
 
       <Card title="Ta bort konto" sub="Detta är permanent. Alla era annonser och konversationer raderas." danger>
         <button

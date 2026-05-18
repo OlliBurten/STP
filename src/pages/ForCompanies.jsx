@@ -6,6 +6,7 @@ import { useChat } from "../context/ChatContext";
 import { fetchMyJobs } from "../api/jobs.js";
 import { fetchMyCompanyProfile, fetchJobViewStats, fetchMatchingDrivers } from "../api/companies.js";
 import { usePageTitle } from "../hooks/usePageTitle.js";
+import { useCompanyTour } from "../hooks/useCompanyTour.js";
 
 // ─── Icons ───────────────────────────────────────────────────────────────────
 function Icon({ n, size = 18, color = "currentColor" }) {
@@ -396,6 +397,8 @@ export default function ForCompanies() {
   const [jobs, setJobs] = useState([]);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  useCompanyTour({ isCompany: true, user, ready: !loading });
   const [jobViewStats, setJobViewStats] = useState({ weeks: Array(12).fill(0), total: 0 });
   const [matchingDrivers, setMatchingDrivers] = useState([]);
 

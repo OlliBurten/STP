@@ -269,12 +269,12 @@ export default function Header({ onboarding = false }) {
       {isCompany && !platformAdminSession && (
         <>
           {[
-            { to: "/foretag", label: "Översikt", end: true },
-            { to: "/foretag/annonser", label: "Mina annonser" },
-            { to: "/foretag/chaufforer", label: "Hitta förare" },
+            { to: "/foretag", label: "Översikt", end: true, tour: "company-overview" },
+            { to: "/foretag/annonser", label: "Mina annonser", tour: "company-jobs" },
+            { to: "/foretag/chaufforer", label: "Hitta förare", tour: "company-drivers" },
             { to: "/foretag/team", label: "Team" },
           ].map((item) => (
-            <li key={item.to}>
+            <li key={item.to} {...(item.tour ? { "data-tour": item.tour } : {})}>
               <NavLink to={item.to} onClick={closeMobile} end={item.end}>
                 {({ isActive }) => (
                   <span style={navLinkInlineActive(isActive)}>{item.label}</span>
@@ -434,6 +434,7 @@ export default function Header({ onboarding = false }) {
             {/* Åkeri: "Publicera jobb"-CTA (dold på mobil — finns i hamburgermenyn) */}
             {!isMobile && user && isCompany && !platformAdminSession && (
               <Link
+                data-tour="company-post-job"
                 to="/foretag/annonsera"
                 style={{ padding: "8px 16px", borderRadius: 10, background: "#F5A623", color: "#000", fontSize: 13, fontWeight: 800, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}
               >
