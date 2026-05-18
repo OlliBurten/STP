@@ -2,7 +2,7 @@
  * Core API tests. Run with: APP_LISTEN=false node --test test/api.test.js
  * Or: npm run test
  */
-import { afterEach, describe, it, mock } from "node:test";
+import { afterEach, describe, it } from "node:test";
 import assert from "node:assert";
 import request from "supertest";
 
@@ -11,8 +11,20 @@ const { app } = await import("../server.js");
 const { prisma } = await import("../lib/prisma.js");
 const { createInvite, listInvites, revokeInvite } = await import("../lib/invites.js");
 
+const restores = [];
+
+function stubMethod(target, methodName, implementation) {
+  const original = target[methodName];
+  target[methodName] = implementation;
+  restores.push(() => {
+    target[methodName] = original;
+  });
+}
+
 afterEach(() => {
-  mock.restoreAll();
+  while (restores.length) {
+    restores.pop()();
+  }
 });
 
 describe("GET /api/health", () => {
@@ -83,7 +95,7 @@ describe("organization invite scoping", () => {
     const expiresAt = new Date("2030-01-01T00:00:00.000Z");
     const createdAt = new Date("2026-01-01T00:00:00.000Z");
 
-    mock.method(prisma.userOrganization, "findFirst", async (args) => {
+    stubMethod(prisma.userOrganization, "findFirst", async (args) => {
       assert.deepStrictEqual(args.where, {
         userId: "owner-1",
         role: "OWNER",
@@ -91,7 +103,7 @@ describe("organization invite scoping", () => {
       });
       return { organizationId: "org-b", organization: { name: "Org B" } };
     });
-    mock.method(prisma.organizationInvite, "findMany", async (args) => {
+    stubMethod(prisma.organizationInvite, "findMany", async (args) => {
       assert.deepStrictEqual(args.where, { organizationId: "org-b" });
       return [
         {
@@ -104,7 +116,7 @@ describe("organization invite scoping", () => {
         },
       ];
     });
-    mock.method(prisma.companyInvite, "findMany", async () => {
+    stubMethod(prisma.companyInvite, "findMany", async () => {
       throw new Error("legacy invite lookup should not be used");
     });
 
@@ -118,7 +130,7 @@ describe("organization invite scoping", () => {
     const expiresAt = new Date("2030-01-01T00:00:00.000Z");
     const createdAt = new Date("2026-01-01T00:00:00.000Z");
 
-    mock.method(prisma.userOrganization, "findFirst", async (args) => {
+    stubMethod(prisma.userOrganization, "findFirst", async (args) => {
       assert.deepStrictEqual(args.where, {
         userId: "owner-1",
         role: "OWNER",
@@ -126,15 +138,15 @@ describe("organization invite scoping", () => {
       });
       return { organizationId: "org-b", organization: { name: "Org B" } };
     });
-    mock.method(prisma.organizationInvite, "count", async (args) => {
+    stubMethod(prisma.organizationInvite, "count", async (args) => {
       assert.deepStrictEqual(args.where, {
         organizationId: "org-b",
         status: { in: ["PENDING", "ACCEPTED"] },
       });
       return 0;
     });
-    mock.method(prisma.user, "findUnique", async () => null);
-    mock.method(prisma.organizationInvite, "findUnique", async (args) => {
+    stubMethod(prisma.user, "findUnique", async () => null);
+    stubMethod(prisma.organizationInvite, "findUnique", async (args) => {
       if (args.where?.email_organizationId) {
         assert.strictEqual(args.where.email_organizationId.organizationId, "org-b");
         return null;
@@ -145,7 +157,7 @@ describe("organization invite scoping", () => {
       }
       throw new Error("unexpected organization invite lookup");
     });
-    mock.method(prisma.organizationInvite, "upsert", async (args) => {
+    stubMethod(prisma.organizationInvite, "upsert", async (args) => {
       assert.strictEqual(args.where.email_organizationId.organizationId, "org-b");
       assert.strictEqual(args.create.organizationId, "org-b");
       return {
@@ -156,23 +168,23 @@ describe("organization invite scoping", () => {
         createdAt,
       };
     });
-    mock.method(prisma.organizationInvite, "update", async (args) => {
+    stubMethod(prisma.organizationInvite, "update", async (args) => {
       assert.deepStrictEqual(args, {
         where: { id: "invite-b" },
         data: { status: "EXPIRED" },
       });
       return {};
     });
-    mock.method(prisma.companyInvite, "count", async () => {
+    stubMethod(prisma.companyInvite, "count", async () => {
       throw new Error("legacy invite count should not be used");
     });
-    mock.method(prisma.companyInvite, "findUnique", async () => {
+    stubMethod(prisma.companyInvite, "findUnique", async () => {
       throw new Error("legacy invite lookup should not be used");
     });
-    mock.method(prisma.companyInvite, "upsert", async () => {
+    stubMethod(prisma.companyInvite, "upsert", async () => {
       throw new Error("legacy invite create should not be used");
     });
-    mock.method(prisma.companyInvite, "update", async () => {
+    stubMethod(prisma.companyInvite, "update", async () => {
       throw new Error("legacy invite update should not be used");
     });
 
