@@ -471,6 +471,9 @@ model OutreachProspect {
   generatedEmail   String?   @db.Text
   enrichedAt       DateTime?
   sentAt           DateTime?
+  followUpSentAt   DateTime?
+  followUpEmail    String?   @db.Text
+  isRegistered     Boolean   @default(false)
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 

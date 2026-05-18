@@ -3,6 +3,7 @@ import { prisma } from "../lib/prisma.js";
 import { authMiddleware, requireAdmin } from "../middleware/auth.js";
 import { sendEmail } from "../lib/email.js";
 import Anthropic from "@anthropic-ai/sdk";
+import { runOutreachAgent } from "../lib/outreachAgent.js";
 
 export const outreachRouter = Router();
 outreachRouter.use(authMiddleware, requireAdmin);
@@ -331,6 +332,24 @@ Format (exakt):
     });
 
     res.json(updated);
+  } catch (e) { next(e); }
+});
+
+// ─── Manual agent trigger ─────────────────────────────────────────────────────
+outreachRouter.post("/run-agent", async (req, res, next) => {
+  try {
+    const { dryRun = false, regions } = req.body;
+    // Run async — don't block the HTTP response
+    runOutreachAgent({ dryRun, regions }).catch((e) =>
+      console.error("[OutreachAgent] Manual trigger error:", e.message)
+    );
+    res.json({
+      ok: true,
+      message: dryRun
+        ? "Dry run startad — kontrollera server-loggar för resultat."
+        : "Agent startad — du får en rapport via e-post när den är klar.",
+      dryRun,
+    });
   } catch (e) { next(e); }
 });
 

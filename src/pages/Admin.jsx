@@ -25,7 +25,7 @@ import { EyeIcon } from "../components/Icons.jsx";
 import { getProfileCompletion } from "../utils/driverProfileRequirements.js";
 import {
   deleteProspect, enrichProspect, generateEmail, getOutreachStats,
-  importProspects, listProspects, addProspect, scrapeRegion, sendOutreach,
+  importProspects, listProspects, addProspect, runAgent, scrapeRegion, sendOutreach,
 } from "../api/outreach.js";
 
 const T = {
@@ -1448,6 +1448,26 @@ export default function Admin() {
         ════════════════════════════════════════ */}
         {activeTab === "outreach" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+
+            {/* Header */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+              <div>
+                <p style={{ fontSize: 16, fontWeight: 700, color: T.text, margin: 0 }}>Outreach</p>
+                <p style={{ fontSize: 12, color: T.muted, margin: "3px 0 0" }}>
+                  Agent kör automatiskt varje måndag 09:00 — bearbetar 7 regioner/vecka på 3-veckors rotation.
+                </p>
+              </div>
+              <Btn variant="primary" size="md" disabled={loading} onClick={async () => {
+                setLoading(true); clearFlash();
+                try {
+                  const data = await runAgent({ dryRun: false });
+                  setSuccess(data.message);
+                } catch (e) { setError(e.message || "Kunde inte starta agent"); }
+                finally { setLoading(false); }
+              }}>
+                {loading ? "Startar..." : "▶ Kör agent nu"}
+              </Btn>
+            </div>
 
             {/* Stats bar */}
             {outreachStats && (

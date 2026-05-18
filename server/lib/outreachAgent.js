@@ -1,0 +1,525 @@
+/**
+ * Autonomous outreach agent for STP.
+ *
+ * Runs every Monday at 08:00. Processes 7 Swedish regions per week
+ * on a 3-week rotation (7 × 3 = 21 regions total).
+ *
+ * Per region:
+ *   1. Scrape Hitta.se → import new prospects
+ *   2. Enrich: fetch company websites → Claude extracts email
+ *   3. Generate: Claude writes personalized outreach email
+ *   4. Send: Resend delivers + marks SENT (3s delay between sends)
+ *
+ * Also: follow-ups to prospects sent 14+ days ago without registering.
+ * Finally: sends admin summary report.
+ */
+
+import Anthropic from "@anthropic-ai/sdk";
+import { prisma } from "./prisma.js";
+import { sendEmail } from "./email.js";
+
+const REGIONS = [
+  // Week 0 (cycle index 0)
+  "Stockholm", "Uppsala", "Södermanland", "Östergötland", "Jönköping", "Kronoberg", "Kalmar",
+  // Week 1 (cycle index 1)
+  "Gotland", "Blekinge", "Skåne", "Halland", "Västra Götaland", "Värmland", "Örebro",
+  // Week 2 (cycle index 2)
+  "Västmanland", "Dalarna", "Gävleborg", "Västernorrland", "Jämtland", "Västerbotten", "Norrbotten",
+];
+
+const SEND_DELAY_MS = 3000; // 3s between sends for deliverability
+
+function getAnthropicClient() {
+  if (!process.env.ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY saknas");
+  return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+}
+
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/** ISO week number → 0-indexed cycle (0, 1, 2) → which 7 regions this week */
+function getWeekCycleIndex() {
+  const now = new Date();
+  const startOfYear = new Date(now.getFullYear(), 0, 1);
+  const week = Math.ceil(((now - startOfYear) / 86400000 + startOfYear.getDay() + 1) / 7);
+  return (week - 1) % 3;
+}
+
+function stripHtml(html) {
+  return html
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s{3,}/g, "\n")
+    .trim();
+}
+
+// ─── Step 1: Scrape Hitta.se ──────────────────────────────────────────────────
+
+async function scrapeHitta(region, query = "åkeri") {
+  const anthropic = getAnthropicClient();
+  const url = `https://www.hitta.se/s%C3%B6k?vad=${encodeURIComponent(query)}&var=${encodeURIComponent(region)}`;
+
+  let html = "";
+  try {
+    const resp = await fetch(url, {
+      signal: AbortSignal.timeout(15000),
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "sv-SE,sv;q=0.9",
+      },
+    });
+    html = await resp.text();
+  } catch (e) {
+    throw new Error(`Hitta.se ej nåbar för ${region}: ${e.message}`);
+  }
+
+  if (!html || html.length < 200) throw new Error(`Hitta.se tomt svar för ${region}`);
+
+  const text = stripHtml(html).slice(0, 12000);
+
+  const message = await anthropic.messages.create({
+    model: "claude-haiku-4-5-20251001",
+    max_tokens: 2000,
+    messages: [{
+      role: "user",
+      content: `Sökresultatsida på Hitta.se för "${query}" i ${region}, Sverige.
+Extrahera alla företag som JSON-array: [{companyName, phone, website, city}]
+Returnera BARA JSON-arrayen.
+---
+${text}`,
+    }],
+  });
+
+  let companies = [];
+  try {
+    const raw = message.content[0].text.trim();
+    const match = raw.match(/\[[\s\S]*\]/);
+    if (match) companies = JSON.parse(match[0]);
+  } catch (_) {}
+
+  return companies.filter((c) => c?.companyName).map((c) => ({ ...c, region, source: "hitta" }));
+}
+
+// ─── Step 2: Import new (skip duplicates) ────────────────────────────────────
+
+async function importNew(companies) {
+  let imported = 0;
+  for (const c of companies) {
+    try {
+      await prisma.outreachProspect.create({
+        data: {
+          companyName: c.companyName.trim(),
+          website: c.website?.trim() || null,
+          phone: c.phone?.trim() || null,
+          region: c.region?.trim() || null,
+          city: c.city?.trim() || null,
+          source: c.source || "hitta",
+          status: "NEW",
+        },
+      });
+      imported++;
+    } catch (_) {
+      // Unique constraint or other — skip
+    }
+  }
+  return imported;
+}
+
+// ─── Step 3: Enrich (website → Claude → email) ───────────────────────────────
+
+async function enrichOne(prospect) {
+  const anthropic = getAnthropicClient();
+  const base = prospect.website.replace(/\/$/, "");
+  const urlsToTry = [`${base}/kontakt`, `${base}/om-oss`, `${base}/contact`, base];
+
+  let html = "";
+  for (const url of urlsToTry) {
+    try {
+      const resp = await fetch(url, {
+        signal: AbortSignal.timeout(8000),
+        headers: { "User-Agent": "Mozilla/5.0 (compatible; STP-bot/1.0)" },
+      });
+      if (resp.ok) { html = await resp.text(); break; }
+    } catch (_) { continue; }
+  }
+  if (!html) return null;
+
+  const text = stripHtml(html).slice(0, 5000);
+
+  const message = await anthropic.messages.create({
+    model: "claude-haiku-4-5-20251001",
+    max_tokens: 150,
+    messages: [{
+      role: "user",
+      content: `Extrahera kontaktinfo från åkeriets webbplats. Returnera BARA JSON: {"email":...|null,"phone":...|null}\n\n${text}`,
+    }],
+  });
+
+  try {
+    const raw = message.content[0].text.trim();
+    const match = raw.match(/\{[\s\S]*?\}/);
+    return match ? JSON.parse(match[0]) : null;
+  } catch (_) { return null; }
+}
+
+async function enrichBatch(region) {
+  const prospects = await prisma.outreachProspect.findMany({
+    where: { region, status: "NEW", website: { not: null } },
+    take: 30,
+  });
+
+  let enriched = 0;
+  for (const p of prospects) {
+    try {
+      const contact = await enrichOne(p);
+      await prisma.outreachProspect.update({
+        where: { id: p.id },
+        data: {
+          email: contact?.email || p.email,
+          phone: contact?.phone || p.phone,
+          enrichedAt: new Date(),
+          status: (contact?.email || p.email) ? "ENRICHED" : p.status,
+        },
+      });
+      if (contact?.email) enriched++;
+    } catch (_) {}
+    await delay(500);
+  }
+  return enriched;
+}
+
+// ─── Step 4: Generate emails ──────────────────────────────────────────────────
+
+async function generateOne(prospect) {
+  const anthropic = getAnthropicClient();
+
+  const [driverCount, activeJobs] = await Promise.all([
+    prisma.driverProfile.count({
+      where: { visibleToCompanies: true, ...(prospect.region ? { region: prospect.region } : {}) },
+    }),
+    prisma.job.count({
+      where: { status: "ACTIVE", ...(prospect.region ? { region: prospect.region } : {}) },
+    }),
+  ]);
+
+  const message = await anthropic.messages.create({
+    model: "claude-haiku-4-5-20251001",
+    max_tokens: 600,
+    messages: [{
+      role: "user",
+      content: `Skriv ett kort personligt cold-email på svenska till ett åkeriföretag.
+
+Företag: ${prospect.companyName}
+Stad: ${prospect.city || "okänd"}
+Region: ${prospect.region || "Sverige"}
+Aktiva förare i regionen: ${driverCount}
+Aktiva jobbannonser: ${activeJobs}
+
+Plattformen: Sveriges Transportplattform (transportplattformen.se)
+- Gratis att registrera och posta jobb
+- Direktkontakt med CE/C-förare, ingen rekryteringsavgift
+
+Max 110 ord. Naturlig, professionell ton.
+Börja: "Hej [${prospect.companyName}],"
+Avsluta med: transportplattformen.se/registrera
+Signera: Oliver Harburt, Grundare – Sveriges Transportplattform
+
+Format:
+ÄMNE: [ämnesraden]
+---
+[brödtexten]`,
+    }],
+  });
+
+  const raw = message.content[0].text.trim();
+  const subjectMatch = raw.match(/ÄMNE:\s*(.+)/);
+  const bodyMatch = raw.match(/---\n([\s\S]+)/);
+
+  return {
+    subject: subjectMatch?.[1]?.trim() || `Hitta CE-förare i ${prospect.region || "Sverige"} – Transportplattformen`,
+    body: bodyMatch?.[1]?.trim() || raw,
+  };
+}
+
+async function generateBatch(region) {
+  const prospects = await prisma.outreachProspect.findMany({
+    where: { region, status: "ENRICHED" },
+    take: 30,
+  });
+
+  let generated = 0;
+  for (const p of prospects) {
+    try {
+      const { subject, body } = await generateOne(p);
+      await prisma.outreachProspect.update({
+        where: { id: p.id },
+        data: { generatedSubject: subject, generatedEmail: body, status: "READY" },
+      });
+      generated++;
+    } catch (_) {}
+    await delay(300);
+  }
+  return generated;
+}
+
+// ─── Step 5: Check if already registered on STP ──────────────────────────────
+
+async function checkAlreadyRegistered(prospect) {
+  if (prospect.orgNumber) {
+    const org = await prisma.organization.findUnique({ where: { orgNumber: prospect.orgNumber } });
+    if (org) return true;
+    const user = await prisma.user.findFirst({ where: { companyOrgNumber: prospect.orgNumber } });
+    if (user) return true;
+  }
+  // Fuzzy match by company name
+  const nameLower = prospect.companyName.toLowerCase();
+  const org = await prisma.organization.findFirst({
+    where: { name: { contains: nameLower.slice(0, 20), mode: "insensitive" } },
+  });
+  return Boolean(org);
+}
+
+// ─── Step 6: Send batch ───────────────────────────────────────────────────────
+
+async function sendBatch(region) {
+  const prospects = await prisma.outreachProspect.findMany({
+    where: { region, status: "READY" },
+    take: 20,
+  });
+
+  const replyTo = process.env.OUTREACH_REPLY_TO
+    || process.env.ADMIN_EMAILS?.split(",")[0]?.trim()
+    || undefined;
+
+  let sent = 0;
+  let skippedRegistered = 0;
+
+  for (const p of prospects) {
+    try {
+      // Skip if already registered
+      const registered = await checkAlreadyRegistered(p);
+      if (registered) {
+        await prisma.outreachProspect.update({
+          where: { id: p.id },
+          data: { status: "REGISTERED", isRegistered: true },
+        });
+        skippedRegistered++;
+        continue;
+      }
+
+      await sendEmail({
+        to: p.email,
+        subject: p.generatedSubject,
+        text: p.generatedEmail,
+        replyTo,
+      });
+
+      await prisma.outreachProspect.update({
+        where: { id: p.id },
+        data: { status: "SENT", sentAt: new Date() },
+      });
+      sent++;
+      await delay(SEND_DELAY_MS);
+    } catch (_) {}
+  }
+  return { sent, skippedRegistered };
+}
+
+// ─── Follow-ups (14 days after initial send) ─────────────────────────────────
+
+async function runFollowUps() {
+  const anthropic = getAnthropicClient();
+  const cutoff = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+
+  const candidates = await prisma.outreachProspect.findMany({
+    where: {
+      status: "SENT",
+      sentAt: { lte: cutoff },
+      followUpSentAt: null,
+      email: { not: null },
+    },
+    take: 20,
+  });
+
+  const replyTo = process.env.OUTREACH_REPLY_TO
+    || process.env.ADMIN_EMAILS?.split(",")[0]?.trim()
+    || undefined;
+
+  let followUpsSent = 0;
+
+  for (const p of candidates) {
+    try {
+      // Skip if they've registered since initial send
+      const registered = await checkAlreadyRegistered(p);
+      if (registered) {
+        await prisma.outreachProspect.update({
+          where: { id: p.id },
+          data: { isRegistered: true },
+        });
+        continue;
+      }
+
+      const message = await anthropic.messages.create({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 400,
+        messages: [{
+          role: "user",
+          content: `Skriv ett kort uppföljningsmail på svenska (max 70 ord). Åkeriet fick ett mail för 2 veckor sedan om Sveriges Transportplattform men har inte registrerat sig ännu.
+
+Företag: ${p.companyName}
+Region: ${p.region || "Sverige"}
+
+Ton: Mjuk påminnelse, inte påträngande. Nämn att det är gratis.
+Börja: "Hej [${p.companyName}],"
+Avsluta: transportplattformen.se/registrera
+Signera: Oliver Harburt, Grundare – Sveriges Transportplattform
+
+Format:
+ÄMNE: [ämnesraden]
+---
+[brödtexten]`,
+        }],
+      });
+
+      const raw = message.content[0].text.trim();
+      const subjectMatch = raw.match(/ÄMNE:\s*(.+)/);
+      const bodyMatch = raw.match(/---\n([\s\S]+)/);
+      const subject = subjectMatch?.[1]?.trim() || "Kort uppföljning – Sveriges Transportplattform";
+      const body = bodyMatch?.[1]?.trim() || raw;
+
+      await sendEmail({ to: p.email, subject, text: body, replyTo });
+
+      await prisma.outreachProspect.update({
+        where: { id: p.id },
+        data: { followUpSentAt: new Date(), followUpEmail: body },
+      });
+      followUpsSent++;
+      await delay(SEND_DELAY_MS);
+    } catch (_) {}
+  }
+  return followUpsSent;
+}
+
+// ─── Admin summary report ─────────────────────────────────────────────────────
+
+async function sendAgentReport(stats) {
+  const adminEmails = String(process.env.ADMIN_EMAILS || "")
+    .split(",").map((e) => e.trim()).filter(Boolean);
+  if (!adminEmails.length) return;
+
+  const lines = [
+    `Outreach-agent körde ${new Date().toLocaleDateString("sv-SE")}`,
+    ``,
+    `Regioner: ${stats.regionsProcessed.join(", ")}`,
+    ``,
+    `Resultat:`,
+    `  Scraped:        ${stats.scraped} företag hittade`,
+    `  Importerade:    ${stats.imported} nya prospects`,
+    `  Berikade:       ${stats.enriched} e-poster hittade`,
+    `  Genererade:     ${stats.generated} mail skapade`,
+    `  Skickade:       ${stats.sent} outreach-mail`,
+    `  Uppföljningar:  ${stats.followUps} follow-up mail`,
+    `  Redan reg:      ${stats.alreadyRegistered} åkerier redan på STP`,
+    ``,
+    stats.errors.length
+      ? `Fel:\n${stats.errors.map((e) => `  - ${e}`).join("\n")}`
+      : `Inga fel.`,
+    ``,
+    `Se alla prospects: transportplattformen.se/admin (Outreach-fliken)`,
+  ].join("\n");
+
+  for (const to of adminEmails) {
+    try {
+      await sendEmail({
+        to,
+        subject: `[STP Agent] Outreach klar — ${stats.sent} mail skickade`,
+        text: lines,
+      });
+    } catch (_) {}
+  }
+}
+
+// ─── Main entry point ─────────────────────────────────────────────────────────
+
+export async function runOutreachAgent({ dryRun = false, regions: overrideRegions } = {}) {
+  console.log(`[OutreachAgent] Startar${dryRun ? " (dry run)" : ""}...`);
+
+  const stats = {
+    regionsProcessed: [],
+    scraped: 0,
+    imported: 0,
+    enriched: 0,
+    generated: 0,
+    sent: 0,
+    followUps: 0,
+    alreadyRegistered: 0,
+    errors: [],
+  };
+
+  try {
+    // Determine regions for this week
+    const cycleIndex = getWeekCycleIndex();
+    const regions = overrideRegions || REGIONS.slice(cycleIndex * 7, cycleIndex * 7 + 7);
+    stats.regionsProcessed = regions;
+
+    console.log(`[OutreachAgent] Regioner v${cycleIndex + 1}: ${regions.join(", ")}`);
+
+    for (const region of regions) {
+      console.log(`[OutreachAgent] Processar ${region}...`);
+      try {
+        // 1. Scrape
+        const companies = await scrapeHitta(region);
+        stats.scraped += companies.length;
+        console.log(`[OutreachAgent] ${region}: ${companies.length} företag hittade`);
+
+        if (!dryRun) {
+          // 2. Import new
+          const imported = await importNew(companies);
+          stats.imported += imported;
+
+          // 3. Enrich
+          const enriched = await enrichBatch(region);
+          stats.enriched += enriched;
+
+          // 4. Generate
+          const generated = await generateBatch(region);
+          stats.generated += generated;
+
+          // 5. Send
+          const { sent, skippedRegistered } = await sendBatch(region);
+          stats.sent += sent;
+          stats.alreadyRegistered += skippedRegistered;
+
+          console.log(`[OutreachAgent] ${region}: +${imported} imp, +${enriched} enr, +${generated} gen, +${sent} sent`);
+        }
+      } catch (e) {
+        const msg = `${region}: ${e.message}`;
+        stats.errors.push(msg);
+        console.error(`[OutreachAgent] Fel för ${region}:`, e.message);
+      }
+
+      await delay(5000); // 5s between regions
+    }
+
+    // Follow-ups
+    if (!dryRun) {
+      console.log("[OutreachAgent] Kör uppföljningar...");
+      stats.followUps = await runFollowUps();
+      console.log(`[OutreachAgent] ${stats.followUps} uppföljningar skickade`);
+    }
+
+  } catch (e) {
+    stats.errors.push(`Kritiskt fel: ${e.message}`);
+    console.error("[OutreachAgent] Kritiskt fel:", e.message);
+  } finally {
+    if (!dryRun) {
+      await sendAgentReport(stats);
+    }
+    console.log("[OutreachAgent] Klar.", stats);
+  }
+
+  return stats;
+}

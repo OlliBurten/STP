@@ -4,6 +4,7 @@
  */
 import cron from "node-cron";
 import { runAllReminders } from "./reminders.js";
+import { runOutreachAgent } from "./outreachAgent.js";
 
 let started = false;
 
@@ -20,5 +21,14 @@ export function startReminderScheduler() {
     }
   }, { timezone: "Europe/Stockholm" });
 
-  console.log("[ReminderScheduler] Started — daily at 08:00 Europe/Stockholm");
+  // Every Monday at 09:00 Stockholm time — autonomous outreach agent
+  cron.schedule("0 9 * * 1", async () => {
+    try {
+      await runOutreachAgent();
+    } catch (e) {
+      console.error("[OutreachScheduler] Uncaught error:", e?.message);
+    }
+  }, { timezone: "Europe/Stockholm" });
+
+  console.log("[ReminderScheduler] Started — daily 08:00 + outreach Mondays 09:00 Europe/Stockholm");
 }

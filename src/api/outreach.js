@@ -17,3 +17,4 @@ export const scrapeRegion = (region, query) => apiPost("/api/outreach/scrape", {
 export const enrichProspect = (id) => apiPost(`/api/outreach/enrich/${id}`);
 export const generateEmail = (id) => apiPost(`/api/outreach/generate/${id}`);
 export const sendOutreach = (id) => apiPost(`/api/outreach/send/${id}`);
+export const runAgent = (opts) => apiPost("/api/outreach/run-agent", opts || {});
