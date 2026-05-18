@@ -24,6 +24,10 @@ export function getAdminSummary() {
   return apiGet("/api/admin/summary");
 }
 
+export function getOnboardingStats() {
+  return apiGet("/api/admin/onboarding");
+}
+
 export function getUserAdminDetail(id) {
   return apiGet(`/api/admin/users/${id}`);
 }

@@ -1468,6 +1468,93 @@ adminRouter.get("/feedback", async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
+adminRouter.get("/onboarding", async (req, res, next) => {
+  try {
+    const now = new Date();
+    const since7d  = new Date(now.getTime() - 7  * 24 * 60 * 60 * 1000);
+    const since30d = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    const SUMMARY_MIN_LENGTH = 20;
+
+    function scoreDriver(user) {
+      const p = user.driverProfile || {};
+      const t = (v) => String(v || "").trim();
+      const digits = (v) => t(v).replace(/\D/g, "");
+      const required = [
+        t(user.name).length >= 2,
+        digits(p.phone).length >= 7,
+        t(p.primarySegment).length > 0,
+        t(p.location).length > 0,
+        t(p.region).length > 0,
+        Array.isArray(p.licenses) && p.licenses.length > 0,
+        t(p.availability).length > 0,
+        t(p.summary).length >= SUMMARY_MIN_LENGTH,
+      ];
+      const optional = [
+        Array.isArray(p.certificates) && p.certificates.length > 0,
+        p.experience != null && (Array.isArray(p.experience) ? p.experience.length > 0 : true),
+        Array.isArray(p.regionsWilling) && p.regionsWilling.length > 0,
+        p.visibleToCompanies === true,
+      ];
+      const all = [...required, ...optional];
+      const filled = all.filter(Boolean).length;
+      return Math.round((filled / all.length) * 100);
+    }
+
+    const [newDrivers, allDrivers] = await Promise.all([
+      prisma.user.findMany({
+        where: { role: "DRIVER", createdAt: { gte: since7d } },
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true, name: true, email: true, createdAt: true,
+          driverProfile: {
+            select: {
+              phone: true, primarySegment: true, location: true, region: true,
+              licenses: true, availability: true, summary: true, certificates: true,
+              experience: true, regionsWilling: true, visibleToCompanies: true,
+            },
+          },
+        },
+      }),
+      prisma.user.findMany({
+        where: { role: "DRIVER", createdAt: { gte: since30d } },
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true, name: true, email: true, createdAt: true,
+          driverProfile: {
+            select: {
+              phone: true, primarySegment: true, location: true, region: true,
+              licenses: true, availability: true, summary: true, certificates: true,
+              experience: true, regionsWilling: true, visibleToCompanies: true,
+            },
+          },
+        },
+      }),
+    ]);
+
+    const buckets = { "0-25": 0, "25-50": 0, "50-75": 0, "75-100": 0 };
+    for (const u of allDrivers) {
+      const pct = scoreDriver(u);
+      if (pct < 25) buckets["0-25"]++;
+      else if (pct < 50) buckets["25-50"]++;
+      else if (pct < 75) buckets["50-75"]++;
+      else buckets["75-100"]++;
+    }
+
+    const stuck = allDrivers
+      .map((u) => ({ id: u.id, name: u.name, email: u.email, createdAt: toIso(u.createdAt), pct: scoreDriver(u) }))
+      .filter((u) => u.pct < 50)
+      .slice(0, 20);
+
+    const newWithPct = newDrivers.map((u) => ({
+      id: u.id, name: u.name, email: u.email,
+      createdAt: toIso(u.createdAt), pct: scoreDriver(u),
+    }));
+
+    res.json({ buckets, stuck, newDrivers: newWithPct, total30d: allDrivers.length });
+  } catch (e) { next(e); }
+});
+
 adminRouter.patch("/feedback/:id", async (req, res, next) => {
   try {
     const { status, adminNote } = req.body;
