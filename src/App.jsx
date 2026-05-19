@@ -73,6 +73,7 @@ const CompanyProfile        = lazyRetry(() => import("./pages/CompanyProfile"));
 const CompanyPublicProfile  = lazyRetry(() => import("./pages/CompanyPublicProfile"));
 const DriverOnboardingWizard   = lazyRetry(() => import("./pages/DriverOnboardingWizard"));
 const CompanyOnboardingWizard  = lazyRetry(() => import("./pages/CompanyOnboardingWizard"));
+const CompanyVerification      = lazyRetry(() => import("./pages/CompanyVerification"));
 const AddCompany            = lazyRetry(() => import("./pages/AddCompany"));
 const CompanyTeam           = lazyRetry(() => import("./pages/CompanyTeam"));
 const InviteAccept          = lazyRetry(() => import("./pages/InviteAccept"));
@@ -363,6 +364,14 @@ function AppLayout() {
                     element={
                       <ProtectedRoute requiredRole="company">
                         <DriverDetail />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/foretag/verifiering"
+                    element={
+                      <ProtectedRoute requiredRole="company">
+                        <CompanyVerification />
                       </ProtectedRoute>
                     }
                   />

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { fetchMyCompanyProfile, updateMyCompanyProfile, updateCompanyNotificationSettings } from "../api/companies.js";
 import { listCompanyInvites, createCompanyInvite, revokeCompanyInvite } from "../api/invites.js";
 import { changePassword } from "../api/auth.js";
@@ -13,36 +13,22 @@ import LoadingBlock from "../components/LoadingBlock";
 import { useToast } from "../context/ToastContext";
 import { EyeIcon, EyeOffIcon } from "../components/Icons";
 
-// ─── Design tokens ────────────────────────────────────────────────────────────
+// ─── Shared styles ────────────────────────────────────────────────────────────
 const inp = {
-  width: "100%", padding: "11px 14px", borderRadius: 10,
-  background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
-  color: "#f0faf9", fontSize: 14, outline: "none", fontFamily: "inherit",
+  width: "100%", padding: "12px 14px", borderRadius: 11,
+  background: "#0a1414", border: "1px solid rgba(255,255,255,0.08)",
+  color: "#fff", fontSize: 14, outline: "none", fontFamily: "inherit",
   boxSizing: "border-box",
 };
-const lbl = { display: "block", fontSize: 12, fontWeight: 700, color: "rgba(240,250,249,0.5)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 7 };
-const hint = { fontSize: 12, color: "rgba(240,250,249,0.35)", marginTop: 5, lineHeight: 1.6 };
+const lbl = { fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.7)", marginBottom: 7, display: "block" };
+const hint = { fontSize: 11.5, color: "rgba(255,255,255,0.45)", marginTop: 6, lineHeight: 1.55 };
 
-function Field({ label, sub, children }) {
+function Field({ label, hintText, children }) {
   return (
-    <div style={{ marginBottom: 20 }}>
+    <div style={{ marginBottom: 18 }}>
       <label style={lbl}>{label}</label>
-      {sub && <div style={{ ...hint, marginTop: 0, marginBottom: 7 }}>{sub}</div>}
       {children}
-    </div>
-  );
-}
-
-function Card({ title, sub, children, accent }) {
-  return (
-    <div style={{ background: "#0a1414", border: `1px solid ${accent ? "rgba(245,166,35,0.2)" : "rgba(255,255,255,0.06)"}`, borderRadius: 18, padding: "24px 28px", marginBottom: 16 }}>
-      {title && (
-        <div style={{ marginBottom: 20 }}>
-          <h2 style={{ fontSize: 16, fontWeight: 800, color: "#f0faf9", letterSpacing: -0.3, margin: 0 }}>{title}</h2>
-          {sub && <p style={{ ...hint, marginTop: 5 }}>{sub}</p>}
-        </div>
-      )}
-      {children}
+      {hintText && <div style={hint}>{hintText}</div>}
     </div>
   );
 }
@@ -56,27 +42,419 @@ function Toggle({ checked, onChange, disabled }) {
   );
 }
 
-function CheckRow({ label, sub, checked, onChange }) {
+// ─── Icons ────────────────────────────────────────────────────────────────────
+const BackIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 14, height: 14 }}>
+    <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
+  </svg>
+);
+const CheckIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ width: 10, height: 10 }}>
+    <polyline points="20 6 9 17 4 12" />
+  </svg>
+);
+const CheckIconMd = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ width: 14, height: 14 }}>
+    <polyline points="20 6 9 17 4 12" />
+  </svg>
+);
+const PlusIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ width: 13, height: 13 }}>
+    <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+  </svg>
+);
+const XIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ width: 14, height: 14 }}>
+    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+  </svg>
+);
+const DragIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ width: 14, height: 14 }}>
+    <circle cx="9" cy="6" r="1" fill="currentColor" /><circle cx="9" cy="12" r="1" fill="currentColor" /><circle cx="9" cy="18" r="1" fill="currentColor" />
+    <circle cx="15" cy="6" r="1" fill="currentColor" /><circle cx="15" cy="12" r="1" fill="currentColor" /><circle cx="15" cy="18" r="1" fill="currentColor" />
+  </svg>
+);
+const EyeExtIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 13, height: 13 }}>
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
+  </svg>
+);
+const ShieldIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 13, height: 13 }}>
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+  </svg>
+);
+
+// ─── Tab components ────────────────────────────────────────────────────────────
+function GrundInfo({ draft, setDraft, isMobile }) {
+  const toggleSeg = (v) => setDraft((p) => {
+    const cur = p?.companySegmentDefaults || [];
+    return { ...p, companySegmentDefaults: cur.includes(v) ? cur.filter((s) => s !== v) : [...cur, v] };
+  });
+
   return (
-    <label style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "14px 0", borderBottom: "1px solid rgba(255,255,255,0.04)", cursor: "pointer" }}>
-      <div
-        onClick={onChange}
-        style={{ width: 20, height: 20, borderRadius: 6, border: `2px solid ${checked ? "#F5A623" : "rgba(255,255,255,0.2)"}`, background: checked ? "#F5A623" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1, transition: "all .15s", cursor: "pointer" }}>
-        {checked && <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
+    <div>
+      <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 6, letterSpacing: -0.3 }}>Grundinfo</h2>
+      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", marginBottom: 24 }}>Den här informationen visas högst upp på er publika profil.</p>
+
+      <Field label="Företagsnamn">
+        <input style={inp} value={draft?.companyName || ""} onChange={(e) => setDraft((p) => ({ ...p, companyName: e.target.value }))} />
+      </Field>
+
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 14 }}>
+        <Field label="Ort">
+          <input style={inp} value={draft?.companyLocation || ""} onChange={(e) => setDraft((p) => ({ ...p, companyLocation: e.target.value }))} placeholder="t.ex. Malmö" />
+        </Field>
+        <Field label="Region">
+          <select style={{ ...inp, appearance: "none" }} value={draft?.companyRegion || ""} onChange={(e) => setDraft((p) => ({ ...p, companyRegion: e.target.value }))}>
+            <option value="">Välj region</option>
+            {regions.map((r) => <option key={r} value={r}>{r}</option>)}
+          </select>
+        </Field>
       </div>
-      <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 14, fontWeight: 600, color: "#f0faf9", marginBottom: 2 }}>{label}</div>
-        {sub && <div style={{ fontSize: 12, color: "rgba(240,250,249,0.45)", lineHeight: 1.5 }}>{sub}</div>}
+
+      <Field label="Webbplats" hintText="Visas på er profil">
+        <input style={inp} value={draft?.companyWebsite || ""} onChange={(e) => setDraft((p) => ({ ...p, companyWebsite: e.target.value }))} placeholder="https://..." />
+      </Field>
+
+      <Field label="Verksamhetssegment" hintText="Påverkar vilka förare ni matchas mot">
+        <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
+          {segmentOptions.map((seg) => {
+            const on = (draft?.companySegmentDefaults || []).includes(seg.value);
+            return (
+              <button key={seg.value} type="button" onClick={() => toggleSeg(seg.value)}
+                style={{ padding: "8px 14px", borderRadius: 99, background: on ? "rgba(245,166,35,0.1)" : "#0a1414", border: `1px solid ${on ? "rgba(245,166,35,0.35)" : "rgba(255,255,255,0.08)"}`, color: on ? "#F5A623" : "rgba(255,255,255,0.7)", fontSize: 12.5, fontWeight: 600, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 5 }}>
+                {on && <CheckIcon />}{seg.label}
+              </button>
+            );
+          })}
+        </div>
+      </Field>
+
+      <Field label="Bransch" hintText="Används för matchning och synlighet i Åkeri-söket.">
+        <BranschSearch
+          value={draft?.companyBransch || []}
+          onChange={(v) => setDraft((prev) => ({ ...prev, companyBransch: v }))}
+          placeholder="Sök bransch, t.ex. tankbil, timmerbil..."
+        />
+      </Field>
+
+      <Field label="Kontakt-e-post">
+        <input style={inp} type="email" value={draft?.companyContactEmail || ""} onChange={(e) => setDraft((p) => ({ ...p, companyContactEmail: e.target.value || null }))} placeholder="rekrytering@ert-akeri.se" />
+      </Field>
+      <Field label="Telefon (valfritt)">
+        <input style={inp} type="tel" value={draft?.companyContactPhone || ""} onChange={(e) => setDraft((p) => ({ ...p, companyContactPhone: e.target.value || null }))} placeholder="070-000 00 00" />
+      </Field>
+    </div>
+  );
+}
+
+function OmOss({ draft, setDraft }) {
+  const about = draft?.companyDescription || "";
+  return (
+    <div>
+      <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 6, letterSpacing: -0.3 }}>Om oss</h2>
+      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", marginBottom: 24 }}>Berätta vad som gör er till en bra arbetsgivare. Detta är ofta det första förare läser.</p>
+
+      <Field label="Företagsnamn (kontaktperson)">
+        <input style={inp} value={draft?.name || ""} onChange={(e) => setDraft((p) => ({ ...p, name: e.target.value }))} placeholder="Ditt namn" />
+      </Field>
+
+      <Field label="Om företaget" hintText={`${about.length}/1000 tecken`}>
+        <textarea
+          style={{ ...inp, lineHeight: 1.55, resize: "vertical", minHeight: 160 }}
+          value={about}
+          maxLength={1000}
+          onChange={(e) => setDraft((p) => ({ ...p, companyDescription: e.target.value }))}
+          placeholder="Berätta er historia, värderingar, varför förare trivs hos er..."
+        />
+      </Field>
+
+      <div style={{ marginTop: 8, padding: "12px 16px", background: "rgba(245,166,35,0.05)", border: "1px solid rgba(245,166,35,0.18)", borderRadius: 11, fontSize: 12, color: "rgba(255,255,255,0.7)", lineHeight: 1.55 }}>
+        <strong style={{ color: "#F5A623" }}>Tips:</strong> Nämn om ni har kollektivavtal, hur bilflottan ser ut, och om förare är hemma kvällarna.
       </div>
-    </label>
+    </div>
+  );
+}
+
+function Formaner({ draft, setDraft }) {
+  const benefits = draft?._benefits || [];
+
+  const add = () => setDraft((p) => ({ ...p, _benefits: [...(p._benefits || []), ""] }));
+  const update = (i, v) => setDraft((p) => ({ ...p, _benefits: (p._benefits || []).map((b, idx) => idx === i ? v : b) }));
+  const remove = (i) => setDraft((p) => ({ ...p, _benefits: (p._benefits || []).filter((_, idx) => idx !== i) }));
+
+  return (
+    <div>
+      <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 6, letterSpacing: -0.3 }}>Vad ni erbjuder</h2>
+      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", marginBottom: 24 }}>Förmåner och villkor som lockar förare. Lägg till 3–6 punkter.</p>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {benefits.map((b, i) => (
+          <div key={i} style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <span style={{ color: "rgba(255,255,255,0.3)", display: "inline-flex" }}><DragIcon /></span>
+            <input value={b} onChange={(e) => update(i, e.target.value)} placeholder="t.ex. Kollektivavtal med Transport" style={{ ...inp, flex: 1 }} />
+            <button onClick={() => remove(i)} style={{ padding: 8, borderRadius: 9, background: "transparent", border: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)", cursor: "pointer", display: "flex" }}>
+              <XIcon />
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <button onClick={add} style={{ marginTop: 12, padding: "10px 16px", borderRadius: 99, background: "transparent", border: "1px dashed rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.7)", fontSize: 12.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 7 }}>
+        <PlusIcon /> Lägg till förmån
+      </button>
+
+      <div style={{ marginTop: 24, padding: "14px 16px", background: "rgba(245,166,35,0.05)", border: "1px solid rgba(245,166,35,0.18)", borderRadius: 11, fontSize: 12, color: "rgba(255,255,255,0.7)", lineHeight: 1.55 }}>
+        <strong style={{ color: "#F5A623" }}>Tips:</strong> "Kollektivavtal", "Hemma varje kväll" och "Nya bilar" är de tre vanligaste sakerna förare letar efter.
+      </div>
+    </div>
+  );
+}
+
+function Verifiering({ draft, setDraft }) {
+  const fSkatt = Boolean(draft?.fSkattsedel);
+  const kollektiv = Boolean(draft?.industryOrgMember);
+
+  return (
+    <div>
+      <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 6, letterSpacing: -0.3 }}>Verifiering</h2>
+      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", marginBottom: 24 }}>Era verifierade märken visas publikt. Hantera filer och status via Verifierings-sidan.</p>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
+        {[
+          { label: "F-skattsedel", verified: fSkatt, sub: fSkatt ? "Intygas av er" : "Ej bekräftat ännu" },
+          { label: "Trafiktillstånd", verified: false, sub: "Ladda upp dokument i verifieringsflödet" },
+          { label: "Branschorganisation", verified: kollektiv, sub: draft?.industryOrgName || (kollektiv ? "Bekräftat" : "Ej bekräftat") },
+          { label: "Bolagsverket", verified: false, sub: "Kräver organisationsnummer" },
+        ].map((item, i) => (
+          <div key={i} style={{ padding: "14px 16px", background: "#0a1414", border: `1px solid ${item.verified ? "rgba(74,222,128,0.18)" : "rgba(255,255,255,0.06)"}`, borderRadius: 11, display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ width: 32, height: 32, borderRadius: 99, background: item.verified ? "rgba(74,222,128,0.15)" : "rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              {item.verified ? <span style={{ color: "#4ade80" }}><CheckIconMd /></span> : <ShieldIcon />}
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 13.5, fontWeight: 700 }}>{item.label}</div>
+              <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.5)" }}>{item.sub}</div>
+            </div>
+            {item.verified && (
+              <span style={{ padding: "3px 9px", borderRadius: 6, background: "rgba(74,222,128,0.12)", color: "#4ade80", fontSize: 10, fontWeight: 800, letterSpacing: 0.4 }}>VERIFIERAD</span>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div style={{ marginBottom: 24 }}>
+        <label style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "14px 0", borderBottom: "1px solid rgba(255,255,255,0.04)", cursor: "pointer" }}>
+          <div onClick={() => setDraft((p) => ({ ...p, fSkattsedel: !p?.fSkattsedel }))}
+            style={{ width: 20, height: 20, borderRadius: 6, border: `2px solid ${fSkatt ? "#F5A623" : "rgba(255,255,255,0.2)"}`, background: fSkatt ? "#F5A623" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1, cursor: "pointer" }}>
+            {fSkatt && <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: "#f0faf9", marginBottom: 2 }}>Vi innehar F-skattsedel</div>
+            <div style={{ fontSize: 12, color: "rgba(240,250,249,0.45)", lineHeight: 1.5 }}>Intygar att ni betalar arbetsgivaravgifter och följer Skatteverkets regler.</div>
+          </div>
+        </label>
+        <label style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "14px 0", borderBottom: "1px solid rgba(255,255,255,0.04)", cursor: "pointer" }}>
+          <div onClick={() => setDraft((p) => ({ ...p, industryOrgMember: !p?.industryOrgMember }))}
+            style={{ width: 20, height: 20, borderRadius: 6, border: `2px solid ${kollektiv ? "#F5A623" : "rgba(255,255,255,0.2)"}`, background: kollektiv ? "#F5A623" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1, cursor: "pointer" }}>
+            {kollektiv && <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: "#f0faf9", marginBottom: 2 }}>Medlem i branschorganisation</div>
+            <div style={{ fontSize: 12, color: "rgba(240,250,249,0.45)", lineHeight: 1.5 }}>T.ex. Transportföretagen, Sveriges Åkeriföretag (SÅ), TYA eller liknande.</div>
+          </div>
+        </label>
+        {kollektiv && (
+          <div style={{ marginLeft: 32, marginTop: 8 }}>
+            <input style={inp} value={draft?.industryOrgName || ""} onChange={(e) => setDraft((p) => ({ ...p, industryOrgName: e.target.value }))} placeholder="t.ex. Sveriges Åkeriföretag" />
+          </div>
+        )}
+        <label style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "14px 0", cursor: "pointer" }}>
+          <div onClick={() => setDraft((p) => ({ ...p, policyAgreedAt: p?.policyAgreedAt ? null : new Date().toISOString() }))}
+            style={{ width: 20, height: 20, borderRadius: 6, border: `2px solid ${draft?.policyAgreedAt ? "#F5A623" : "rgba(255,255,255,0.2)"}`, background: draft?.policyAgreedAt ? "#F5A623" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1, cursor: "pointer" }}>
+            {draft?.policyAgreedAt && <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: "#f0faf9", marginBottom: 2 }}>Vi förbinder oss att följa STP:s uppförandekod</div>
+            <div style={{ fontSize: 12, color: "rgba(240,250,249,0.45)", lineHeight: 1.5 }}>Intygar att ni inte diskriminerar, villfarar eller missbrukar plattformen.</div>
+          </div>
+        </label>
+      </div>
+
+      <Link to="/foretag/verifiering" style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 99, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff", fontSize: 12.5, fontWeight: 700, textDecoration: "none" }}>
+        Hantera verifiering →
+      </Link>
+    </div>
+  );
+}
+
+function TeamTab({ isOwner, invites, setInvites, toast }) {
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [inviteError, setInviteError] = useState("");
+  const [lastDevInviteLink, setLastDevInviteLink] = useState("");
+
+  if (!isOwner) {
+    return (
+      <div style={{ padding: "40px 0", textAlign: "center", color: "rgba(255,255,255,0.4)", fontSize: 14 }}>
+        Endast ägaren kan hantera teammedlemmar.
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 6, letterSpacing: -0.3 }}>Team</h2>
+      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", marginBottom: 24 }}>Kollegor som har åtkomst till kontot. Visas inte publikt.</p>
+
+      {invites.length > 0 && (
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>Skickade inbjudningar</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {invites.map((inv) => (
+              <div key={inv.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderRadius: 11, background: "#0a1414", border: "1px solid rgba(255,255,255,0.06)" }}>
+                <div>
+                  <span style={{ fontSize: 13, fontWeight: 600 }}>{inv.email}</span>
+                  <span style={{ marginLeft: 10, fontSize: 11, color: inv.status === "ACCEPTED" ? "#4ade80" : "rgba(255,255,255,0.4)" }}>
+                    {inv.status === "PENDING" ? "Väntar" : inv.status === "ACCEPTED" ? "Accepterad" : "Återkallad"}
+                  </span>
+                </div>
+                {inv.status === "PENDING" && (
+                  <button type="button"
+                    onClick={async () => {
+                      try { await revokeCompanyInvite(inv.id); setInvites(await listCompanyInvites()); }
+                      catch (err) { setInviteError(err.message); }
+                    }}
+                    style={{ fontSize: 12, fontWeight: 600, color: "#f87171", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
+                    Återkalla
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div style={{ marginBottom: 6, fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: 1 }}>Bjud in kollega</div>
+      <form onSubmit={async (e) => {
+        e.preventDefault();
+        if (!inviteEmail.trim()) return;
+        setInviteError("");
+        setInviteLoading(true);
+        try {
+          const result = await createCompanyInvite(inviteEmail.trim());
+          setInviteEmail("");
+          setInvites(await listCompanyInvites());
+          setLastDevInviteLink(result.devInviteLink || "");
+          toast.success(result.emailSent ? "Inbjudan skickad!" : "Inbjudan skapad — kopiera länken nedan.");
+        } catch (err) {
+          setInviteError(err.message || "Kunde inte skicka inbjudan");
+        } finally {
+          setInviteLoading(false);
+        }
+      }}>
+        <div style={{ display: "flex", gap: 10 }}>
+          <input style={{ ...inp, flex: 1 }} type="email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="kollega@foretag.se" disabled={inviteLoading} />
+          <button type="submit" disabled={inviteLoading || !inviteEmail.trim()}
+            style={{ padding: "11px 22px", borderRadius: 11, background: "linear-gradient(135deg,#F5A623,#d97706)", color: "#000", fontSize: 13, fontWeight: 800, border: "none", cursor: inviteLoading || !inviteEmail.trim() ? "not-allowed" : "pointer", opacity: inviteLoading || !inviteEmail.trim() ? 0.5 : 1, whiteSpace: "nowrap", fontFamily: "inherit" }}>
+            {inviteLoading ? "Skickar..." : "Bjud in"}
+          </button>
+        </div>
+      </form>
+
+      {inviteError && <div style={{ marginTop: 10, padding: "10px 14px", borderRadius: 10, background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)", color: "#f87171", fontSize: 13 }}>{inviteError}</div>}
+
+      {lastDevInviteLink && (
+        <div style={{ marginTop: 12, padding: "14px 16px", borderRadius: 12, background: "rgba(245,166,35,0.06)", border: "1px solid rgba(245,166,35,0.2)" }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#F5A623", marginBottom: 8 }}>Länk att dela manuellt</div>
+          <code style={{ display: "block", fontSize: 11, color: "rgba(255,255,255,0.7)", wordBreak: "break-all", lineHeight: 1.6 }}>{lastDevInviteLink}</code>
+          <button type="button" onClick={() => navigator.clipboard.writeText(lastDevInviteLink).then(() => toast.success("Kopierad"), () => {})}
+            style={{ marginTop: 8, fontSize: 12, fontWeight: 700, color: "#F5A623", background: "none", border: "none", cursor: "pointer", padding: 0, fontFamily: "inherit" }}>
+            Kopiera länk
+          </button>
+        </div>
+      )}
+
+      {/* Lösenord + notiser under team */}
+      <div style={{ marginTop: 32, paddingTop: 28, borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+        <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: -0.3, marginBottom: 20 }}>Kontoinställningar</div>
+        <PasswordSection />
+      </div>
+    </div>
+  );
+}
+
+function PasswordSection() {
+  const toast = useToast();
+  const [pwForm, setPwForm] = useState({ current: "", next: "", confirm: "" });
+  const [pwError, setPwError] = useState("");
+  const [pwSuccess, setPwSuccess] = useState("");
+  const [pwLoading, setPwLoading] = useState(false);
+  const [showPwCurrent, setShowPwCurrent] = useState(false);
+  const [showPwNext, setShowPwNext] = useState(false);
+
+  return (
+    <div>
+      <div style={{ fontSize: 13.5, fontWeight: 700, marginBottom: 14, color: "rgba(255,255,255,0.7)" }}>Ändra lösenord</div>
+      <form onSubmit={async (e) => {
+        e.preventDefault();
+        setPwError(""); setPwSuccess("");
+        if (pwForm.next.length < 8) { setPwError("Lösenordet måste vara minst 8 tecken."); return; }
+        if (pwForm.next !== pwForm.confirm) { setPwError("Lösenorden matchar inte."); return; }
+        setPwLoading(true);
+        try {
+          await changePassword(pwForm.current, pwForm.next);
+          setPwSuccess("Lösenordet har uppdaterats.");
+          setPwForm({ current: "", next: "", confirm: "" });
+        } catch (err) {
+          setPwError(err.message || "Kunde inte uppdatera lösenordet.");
+        } finally {
+          setPwLoading(false);
+        }
+      }} style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 400 }}>
+        {pwError && <div style={{ padding: "10px 14px", borderRadius: 10, background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)", color: "#f87171", fontSize: 13 }}>{pwError}</div>}
+        {pwSuccess && <div style={{ padding: "10px 14px", borderRadius: 10, background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.2)", color: "#4ade80", fontSize: 13 }}>{pwSuccess}</div>}
+        {[
+          { id: "cp-current", label: "Nuvarande lösenord", key: "current", show: showPwCurrent, setShow: setShowPwCurrent },
+          { id: "cp-next", label: "Nytt lösenord", key: "next", show: showPwNext, setShow: setShowPwNext },
+          { id: "cp-confirm", label: "Bekräfta nytt lösenord", key: "confirm", show: showPwNext, setShow: null },
+        ].map(({ id, label, key, show, setShow }) => (
+          <div key={id}>
+            <label htmlFor={id} style={lbl}>{label}</label>
+            <div style={{ position: "relative" }}>
+              <input id={id} type={show ? "text" : "password"} value={pwForm[key]} onChange={(e) => setPwForm((p) => ({ ...p, [key]: e.target.value }))} required style={{ ...inp, paddingRight: setShow ? 44 : 14 }} />
+              {setShow && (
+                <button type="button" onClick={() => setShow((v) => !v)}
+                  style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.4)", display: "flex" }}>
+                  {show ? <EyeOffIcon style={{ width: 18, height: 18 }} /> : <EyeIcon style={{ width: 18, height: 18 }} />}
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+        <button type="submit" disabled={pwLoading}
+          style={{ alignSelf: "flex-start", padding: "11px 24px", borderRadius: 11, background: pwLoading ? "rgba(255,255,255,0.05)" : "linear-gradient(135deg,#F5A623,#d97706)", color: pwLoading ? "rgba(255,255,255,0.3)" : "#000", fontSize: 13.5, fontWeight: 800, border: "none", cursor: pwLoading ? "not-allowed" : "pointer", fontFamily: "inherit" }}>
+          {pwLoading ? "Sparar…" : "Spara nytt lösenord"}
+        </button>
+      </form>
+    </div>
   );
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
+const TABS = [
+  { id: "basic", label: "Grundinfo" },
+  { id: "about", label: "Om oss" },
+  { id: "benefits", label: "Förmåner" },
+  { id: "verification", label: "Verifiering" },
+  { id: "team", label: "Team" },
+];
+
 export default function CompanyProfile() {
   const isMobile = useIsMobile();
   const { hasApi, user } = useAuth();
   const toast = useToast();
+  const [tab, setTab] = useState("basic");
   const [profile, setProfile] = useState(null);
   const [draft, setDraft] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -84,20 +462,9 @@ export default function CompanyProfile() {
   const isOwner = !user?.companyOwnerId;
 
   const [invites, setInvites] = useState([]);
-  const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteLoading, setInviteLoading] = useState(false);
-  const [inviteError, setInviteError] = useState("");
-  const [lastDevInviteLink, setLastDevInviteLink] = useState("");
 
   const [notifSettings, setNotifSettings] = useState(null);
   const [notifSaving, setNotifSaving] = useState(false);
-
-  const [pwForm, setPwForm] = useState({ current: "", next: "", confirm: "" });
-  const [pwError, setPwError] = useState("");
-  const [pwSuccess, setPwSuccess] = useState("");
-  const [pwLoading, setPwLoading] = useState(false);
-  const [showPwCurrent, setShowPwCurrent] = useState(false);
-  const [showPwNext, setShowPwNext] = useState(false);
 
   useEffect(() => {
     if (!hasApi) { setLoading(false); return; }
@@ -152,11 +519,11 @@ export default function CompanyProfile() {
 
   const darkPage = { background: "#060f0f", minHeight: "100vh", marginTop: "-64px", paddingTop: 64, color: "#f0faf9" };
 
-  if (loading) return <main style={darkPage}><div style={{ maxWidth: 760, margin: "0 auto", padding: "60px 24px" }}><LoadingBlock message="Hämtar företagsprofil..." /></div></main>;
+  if (loading) return <main style={darkPage}><div style={{ maxWidth: 880, margin: "0 auto", padding: "60px 24px" }}><LoadingBlock message="Hämtar företagsprofil..." /></div></main>;
 
   if (!hasApi) return (
     <main style={darkPage}>
-      <div style={{ maxWidth: 760, margin: "0 auto", padding: "60px 24px", textAlign: "center", color: "rgba(240,250,249,0.4)" }}>
+      <div style={{ maxWidth: 880, margin: "0 auto", padding: "60px 24px", textAlign: "center", color: "rgba(255,255,255,0.4)" }}>
         Företagsprofil kräver API-läge.
       </div>
     </main>
@@ -175,254 +542,86 @@ export default function CompanyProfile() {
         </div>
       )}
 
-      <div style={{ maxWidth: 760, margin: "0 auto", padding: isMobile ? "28px 20px 100px" : "36px 32px 100px" }}>
-        {/* Tillbaka */}
-        <Link to="/foretag" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600, color: "rgba(240,250,249,0.45)", textDecoration: "none", marginBottom: 24 }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-          Tillbaka till översikten
+      <div style={{ maxWidth: 880, margin: "0 auto", padding: isMobile ? "28px 20px 100px" : "32px 32px 100px" }}>
+        <Link to="/foretag" style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "6px 0", color: "rgba(255,255,255,0.55)", fontSize: 13, fontWeight: 600, textDecoration: "none", marginBottom: 20 }}>
+          <BackIcon /> Tillbaka till översikt
         </Link>
 
-        <h1 style={{ fontSize: isMobile ? 26 : 32, fontWeight: 900, letterSpacing: -1, marginBottom: 28, color: "#f0faf9" }}>Företagsprofil</h1>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 28, gap: 16, flexWrap: "wrap" }}>
+          <div>
+            <h1 style={{ fontSize: 30, fontWeight: 800, letterSpacing: -1, marginBottom: 6 }}>Företagsprofil</h1>
+            <div style={{ fontSize: 13.5, color: "rgba(255,255,255,0.55)" }}>Hur ni visas för förare på STP</div>
+          </div>
+          <Link to={`/foretag/${user?.companyOwnerId || user?.id}`} style={{ padding: "10px 18px", borderRadius: 99, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff", fontSize: 12.5, fontWeight: 700, textDecoration: "none", display: "flex", alignItems: "center", gap: 7 }}>
+            <EyeExtIcon /> Förhandsgranska profil
+          </Link>
+        </div>
 
-        {/* Varning: saknar bransch/region */}
+        {/* Varning */}
         {draft && (!Array.isArray(draft.companyBransch) || draft.companyBransch.length === 0 || !draft.companyRegion) && (
           <div style={{ marginBottom: 20, padding: "14px 18px", borderRadius: 14, background: "rgba(245,166,35,0.07)", border: "1px solid rgba(245,166,35,0.25)", display: "flex", gap: 12, alignItems: "flex-start" }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5A623" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5A623" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
             <div>
               <div style={{ fontSize: 13, fontWeight: 700, color: "#F5A623", marginBottom: 3 }}>Syns inte i Hitta åkerier ännu</div>
-              <div style={{ fontSize: 12, color: "rgba(245,166,35,0.75)", lineHeight: 1.5 }}>Fyll i <strong>bransch</strong> och <strong>region</strong> nedan så att förare kan hitta er.</div>
+              <div style={{ fontSize: 12, color: "rgba(245,166,35,0.75)", lineHeight: 1.5 }}>Fyll i <strong>bransch</strong> och <strong>region</strong> så att förare kan hitta er.</div>
             </div>
           </div>
         )}
 
-        {/* ── Grunduppgifter ── */}
-        <Card title="Grunduppgifter">
-          <Field label="Företagsnamn">
-            <input style={inp} value={draft?.companyName || ""} onChange={(e) => setDraft((p) => ({ ...p, companyName: e.target.value }))} />
-          </Field>
-          <Field label="Kontaktperson">
-            <input style={inp} value={draft?.name || ""} onChange={(e) => setDraft((p) => ({ ...p, name: e.target.value }))} />
-          </Field>
-          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 16, marginBottom: 20 }}>
-            <Field label="Ort">
-              <input style={inp} value={draft?.companyLocation || ""} onChange={(e) => setDraft((p) => ({ ...p, companyLocation: e.target.value }))} placeholder="t.ex. Malmö" />
-            </Field>
-            <Field label="Region">
-              <select style={{ ...inp, appearance: "none" }} value={draft?.companyRegion || ""} onChange={(e) => setDraft((p) => ({ ...p, companyRegion: e.target.value }))}>
-                <option value="">Välj region</option>
-                {regions.map((r) => <option key={r} value={r}>{r}</option>)}
-              </select>
-            </Field>
-          </div>
-          <Field label="Om företaget" sub="Beskriv ert åkeri, uppdrag och vad ni erbjuder förare.">
-            <textarea style={{ ...inp, minHeight: 120, lineHeight: 1.6, resize: "vertical" }}
-              value={draft?.companyDescription || ""}
-              onChange={(e) => setDraft((p) => ({ ...p, companyDescription: e.target.value }))}
-              placeholder="Vi är ett åkeri med fokus på..."
-            />
-          </Field>
-          <Field label="Webbplats">
-            <input style={inp} value={draft?.companyWebsite || ""} onChange={(e) => setDraft((p) => ({ ...p, companyWebsite: e.target.value }))} placeholder="https://..." />
-          </Field>
-        </Card>
-
-        {/* ── Bransch & segment ── */}
-        <Card title="Bransch & segment" sub="Används för matchning och synlighet i Åkeri-söket.">
-          <Field label="Bransch">
-            <BranschSearch
-              value={draft?.companyBransch || []}
-              onChange={(v) => setDraft((prev) => ({ ...prev, companyBransch: v }))}
-              placeholder="Sök bransch, t.ex. tankbil, timmerbil..."
-            />
-          </Field>
-          <Field label="Standardsegment för nya annonser" sub="Används som förval i publiceringsflödet.">
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {segmentOptions.map((segment) => {
-                const active = (draft?.companySegmentDefaults || []).includes(segment.value);
-                return (
-                  <button key={segment.value} type="button"
-                    onClick={() => setDraft((prev) => {
-                      const cur = prev?.companySegmentDefaults || [];
-                      return { ...prev, companySegmentDefaults: cur.includes(segment.value) ? cur.filter((s) => s !== segment.value) : [...cur, segment.value] };
-                    })}
-                    style={{ padding: "8px 14px", borderRadius: 99, fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all .15s", background: active ? "rgba(31,95,92,0.35)" : "rgba(255,255,255,0.04)", border: `1px solid ${active ? "rgba(31,95,92,0.6)" : "rgba(255,255,255,0.09)"}`, color: active ? "#6ee7e7" : "rgba(240,250,249,0.45)" }}>
-                    {segment.label}
-                  </button>
-                );
-              })}
-            </div>
-          </Field>
-        </Card>
-
-        {/* ── Kontaktuppgifter ── */}
-        <Card title="Kontaktuppgifter" sub="Visas för inloggade förare i åkeridatabasen — direktväg för spontankontakt.">
-          <Field label="Kontakt-e-post">
-            <input style={inp} type="email" value={draft?.companyContactEmail || ""} onChange={(e) => setDraft((p) => ({ ...p, companyContactEmail: e.target.value || null }))} placeholder="rekrytering@ert-akeri.se" />
-          </Field>
-          <Field label="Telefon (valfritt)">
-            <input style={inp} type="tel" value={draft?.companyContactPhone || ""} onChange={(e) => setDraft((p) => ({ ...p, companyContactPhone: e.target.value || null }))} placeholder="070-000 00 00" />
-          </Field>
-        </Card>
-
-        {/* ── Certifieringar ── */}
-        <Card title="Certifieringar & trovärdighet" sub="Visas som badges på er offentliga profil. Ni intygar på heder att uppgifterna stämmer.">
-          <CheckRow
-            label="Vi innehar F-skattsedel"
-            sub="Intygar att ni betalar arbetsgivaravgifter och följer Skatteverkets regler."
-            checked={Boolean(draft?.fSkattsedel)}
-            onChange={() => setDraft((p) => ({ ...p, fSkattsedel: !p?.fSkattsedel }))}
-          />
-          <CheckRow
-            label="Medlem i branschorganisation"
-            sub="T.ex. Transportföretagen, Sveriges Åkeriföretag (SÅ), TYA eller liknande."
-            checked={Boolean(draft?.industryOrgMember)}
-            onChange={() => setDraft((p) => ({ ...p, industryOrgMember: !p?.industryOrgMember }))}
-          />
-          {draft?.industryOrgMember && (
-            <div style={{ marginLeft: 32, marginTop: 8 }}>
-              <input style={inp} value={draft?.industryOrgName || ""} onChange={(e) => setDraft((p) => ({ ...p, industryOrgName: e.target.value }))} placeholder="t.ex. Sveriges Åkeriföretag" />
-            </div>
-          )}
-          <CheckRow
-            label="Vi förbinder oss att följa STP:s uppförandekod"
-            sub="Intygar att ni inte diskriminerar, villfarar eller missbrukar plattformen."
-            checked={Boolean(draft?.policyAgreedAt)}
-            onChange={() => setDraft((p) => ({ ...p, policyAgreedAt: p?.policyAgreedAt ? null : new Date().toISOString() }))}
-          />
-        </Card>
-
-        {/* ── Teammedlemmar ── */}
-        {isOwner && (
-          <Card title="Bjud in teammedlemmar" sub="Kollegor som ska kunna logga in, publicera jobb och söka förare.">
-            <form onSubmit={async (e) => {
-              e.preventDefault();
-              if (!inviteEmail.trim()) return;
-              setInviteError("");
-              setInviteLoading(true);
-              try {
-                const result = await createCompanyInvite(inviteEmail.trim());
-                setInviteEmail("");
-                setInvites(await listCompanyInvites());
-                setLastDevInviteLink(result.devInviteLink || "");
-                toast.success(result.emailSent ? "Inbjudan skickad!" : "Inbjudan skapad — kopiera länken nedan.");
-              } catch (err) {
-                setInviteError(err.message || "Kunde inte skicka inbjudan");
-              } finally {
-                setInviteLoading(false);
-              }
-            }}>
-              <div style={{ display: "flex", gap: 10, flexDirection: isMobile ? "column" : "row" }}>
-                <input style={{ ...inp, flex: 1 }} type="email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="kollega@foretag.se" disabled={inviteLoading} />
-                <button type="submit" disabled={inviteLoading || !inviteEmail.trim()}
-                  style={{ padding: "11px 22px", borderRadius: 10, background: "linear-gradient(135deg,#F5A623,#d97706)", color: "#000", fontSize: 13, fontWeight: 800, border: "none", cursor: inviteLoading || !inviteEmail.trim() ? "not-allowed" : "pointer", opacity: inviteLoading || !inviteEmail.trim() ? 0.5 : 1, whiteSpace: "nowrap", fontFamily: "inherit" }}>
-                  {inviteLoading ? "Skickar..." : "Skicka inbjudan"}
-                </button>
-              </div>
-            </form>
-            {inviteError && <div style={{ marginTop: 10, padding: "10px 14px", borderRadius: 10, background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)", color: "#f87171", fontSize: 13 }}>{inviteError}</div>}
-            {lastDevInviteLink && (
-              <div style={{ marginTop: 12, padding: "14px 16px", borderRadius: 12, background: "rgba(245,166,35,0.06)", border: "1px solid rgba(245,166,35,0.2)" }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: "#F5A623", marginBottom: 8 }}>Länk att dela manuellt (dev)</div>
-                <code style={{ display: "block", fontSize: 11, color: "rgba(240,250,249,0.7)", wordBreak: "break-all", lineHeight: 1.6 }}>{lastDevInviteLink}</code>
-                <button type="button" onClick={() => navigator.clipboard.writeText(lastDevInviteLink).then(() => toast.success("Kopierad"), () => {})}
-                  style={{ marginTop: 8, fontSize: 12, fontWeight: 700, color: "#F5A623", background: "none", border: "none", cursor: "pointer", padding: 0, fontFamily: "inherit" }}>
-                  Kopiera länk
-                </button>
-              </div>
-            )}
-            {invites.length > 0 && (
-              <div style={{ marginTop: 20 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(240,250,249,0.35)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>Skickade inbjudningar</div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  {invites.map((inv) => (
-                    <div key={inv.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", borderRadius: 10, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
-                      <div>
-                        <span style={{ fontSize: 13, fontWeight: 600 }}>{inv.email}</span>
-                        <span style={{ marginLeft: 10, fontSize: 11, color: inv.status === "ACCEPTED" ? "#4ade80" : "rgba(240,250,249,0.4)" }}>
-                          {inv.status === "PENDING" ? "Väntar" : inv.status === "ACCEPTED" ? "Accepterad" : "Återkallad"}
-                        </span>
-                      </div>
-                      {inv.status === "PENDING" && (
-                        <button type="button"
-                          onClick={async () => { try { await revokeCompanyInvite(inv.id); setInvites(await listCompanyInvites()); } catch (err) { setInviteError(err.message); } }}
-                          style={{ fontSize: 12, fontWeight: 600, color: "#f87171", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
-                          Återkalla
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </Card>
-        )}
-
-        {/* ── E-postnotiser ── */}
-        <Card title="E-postnotiser" sub="Välj vilka påminnelser ni vill få via e-post.">
-          {[
-            { key: "profileReminder", label: "Profilpåminnelser",       desc: "Påminnelse när er företagsprofil inte är komplett." },
-            { key: "jobMatch",        label: "Förarrekommendationer",   desc: "När nya förare matchar era krav publiceras." },
-            { key: "messageReminder", label: "Obesvarade meddelanden",  desc: "Påminnelse när ett meddelande väntar på svar." },
-            { key: "inactivity",      label: "Inaktivitetspåminnelse",  desc: "Om ni inte loggat in på 30 dagar." },
-          ].map(({ key, label, desc }, i) => {
-            const enabled = notifSettings ? notifSettings[key] !== false : true;
+        {/* Tabs */}
+        <div style={{ display: "flex", gap: 0, marginBottom: 28, borderBottom: "1px solid rgba(255,255,255,0.06)", overflowX: "auto" }}>
+          {TABS.map((t) => {
+            const active = tab === t.id;
             return (
-              <div key={key} style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", padding: "13px 0", borderTop: i === 0 ? "none" : "1px solid rgba(255,255,255,0.04)", gap: 20 }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: "#f0faf9" }}>{label}</div>
-                  <div style={{ fontSize: 12, color: "rgba(240,250,249,0.45)", marginTop: 2 }}>{desc}</div>
-                </div>
-                <Toggle checked={enabled} disabled={notifSaving} onChange={async () => {
-                  const next = { ...(notifSettings || {}), [key]: !enabled };
-                  setNotifSettings(next);
-                  setNotifSaving(true);
-                  try { await updateCompanyNotificationSettings(next); }
-                  catch { setNotifSettings((prev) => ({ ...prev, [key]: enabled })); }
-                  finally { setNotifSaving(false); }
-                }} />
-              </div>
+              <button key={t.id} onClick={() => setTab(t.id)}
+                style={{ padding: "12px 18px", background: "transparent", border: "none", color: active ? "#F5A623" : "rgba(255,255,255,0.6)", fontSize: 13, fontWeight: active ? 800 : 600, cursor: "pointer", borderBottom: active ? "2px solid #F5A623" : "2px solid transparent", marginBottom: -1, whiteSpace: "nowrap", fontFamily: "inherit" }}>
+                {t.label}
+              </button>
             );
           })}
-        </Card>
+        </div>
 
-        {/* ── Ändra lösenord ── */}
-        <Card title="Ändra lösenord" sub="Välj ett nytt lösenord på minst 8 tecken.">
-          <form onSubmit={async (e) => {
-            e.preventDefault();
-            setPwError(""); setPwSuccess("");
-            if (pwForm.next.length < 8) { setPwError("Lösenordet måste vara minst 8 tecken."); return; }
-            if (pwForm.next !== pwForm.confirm) { setPwError("Lösenorden matchar inte."); return; }
-            setPwLoading(true);
-            try { await changePassword(pwForm.current, pwForm.next); setPwSuccess("Lösenordet har uppdaterats."); setPwForm({ current: "", next: "", confirm: "" }); }
-            catch (err) { setPwError(err.message || "Kunde inte uppdatera lösenordet."); }
-            finally { setPwLoading(false); }
-          }} style={{ display: "flex", flexDirection: "column", gap: 14, maxWidth: 420 }}>
-            {pwError && <div style={{ padding: "10px 14px", borderRadius: 10, background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)", color: "#f87171", fontSize: 13 }}>{pwError}</div>}
-            {pwSuccess && <div style={{ padding: "10px 14px", borderRadius: 10, background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.2)", color: "#4ade80", fontSize: 13 }}>{pwSuccess}</div>}
-            {[
-              { id: "cp-current", label: "Nuvarande lösenord", key: "current", show: showPwCurrent, setShow: setShowPwCurrent },
-              { id: "cp-next",    label: "Nytt lösenord",       key: "next",    show: showPwNext,    setShow: setShowPwNext    },
-              { id: "cp-confirm", label: "Bekräfta nytt lösenord", key: "confirm", show: showPwNext, setShow: null },
-            ].map(({ id, label, key, show, setShow }) => (
-              <div key={id}>
-                <label htmlFor={id} style={lbl}>{label}</label>
-                <div style={{ position: "relative" }}>
-                  <input id={id} type={show ? "text" : "password"} value={pwForm[key]} onChange={(e) => setPwForm((p) => ({ ...p, [key]: e.target.value }))} required style={{ ...inp, paddingRight: setShow ? 44 : 14 }} />
-                  {setShow && (
-                    <button type="button" onClick={() => setShow((v) => !v)}
-                      style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "rgba(240,250,249,0.4)", display: "flex" }}>
-                      {show ? <EyeOffIcon style={{ width: 18, height: 18 }} /> : <EyeIcon style={{ width: 18, height: 18 }} />}
-                    </button>
-                  )}
-                </div>
+        {/* Tab content */}
+        <div>
+          {tab === "basic" && (
+            <>
+              <GrundInfo draft={draft} setDraft={setDraft} isMobile={isMobile} />
+              {/* E-postnotiser */}
+              <div style={{ marginTop: 32, paddingTop: 28, borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+                <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: -0.3, marginBottom: 6 }}>E-postnotiser</div>
+                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", marginBottom: 20 }}>Välj vilka påminnelser ni vill få via e-post.</div>
+                {[
+                  { key: "profileReminder", label: "Profilpåminnelser", desc: "Påminnelse när er företagsprofil inte är komplett." },
+                  { key: "jobMatch", label: "Förarrekommendationer", desc: "När nya förare matchar era krav publiceras." },
+                  { key: "messageReminder", label: "Obesvarade meddelanden", desc: "Påminnelse när ett meddelande väntar på svar." },
+                  { key: "inactivity", label: "Inaktivitetspåminnelse", desc: "Om ni inte loggat in på 30 dagar." },
+                ].map(({ key, label, desc }, i) => {
+                  const enabled = notifSettings ? notifSettings[key] !== false : true;
+                  return (
+                    <div key={key} style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", padding: "13px 0", borderTop: i === 0 ? "none" : "1px solid rgba(255,255,255,0.04)", gap: 20 }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 14, fontWeight: 600, color: "#f0faf9" }}>{label}</div>
+                        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginTop: 2 }}>{desc}</div>
+                      </div>
+                      <Toggle checked={enabled} disabled={notifSaving} onChange={async () => {
+                        const next = { ...(notifSettings || {}), [key]: !enabled };
+                        setNotifSettings(next);
+                        setNotifSaving(true);
+                        try { await updateCompanyNotificationSettings(next); }
+                        catch { setNotifSettings((prev) => ({ ...prev, [key]: enabled })); }
+                        finally { setNotifSaving(false); }
+                      }} />
+                    </div>
+                  );
+                })}
               </div>
-            ))}
-            <button type="submit" disabled={pwLoading}
-              style={{ alignSelf: "flex-start", padding: "11px 24px", borderRadius: 10, background: pwLoading ? "rgba(255,255,255,0.05)" : "linear-gradient(135deg,#F5A623,#d97706)", color: pwLoading ? "rgba(255,255,255,0.3)" : "#000", fontSize: 13.5, fontWeight: 800, border: "none", cursor: pwLoading ? "not-allowed" : "pointer", fontFamily: "inherit" }}>
-              {pwLoading ? "Sparar…" : "Spara nytt lösenord"}
-            </button>
-          </form>
-        </Card>
+            </>
+          )}
+          {tab === "about" && <OmOss draft={draft} setDraft={setDraft} />}
+          {tab === "benefits" && <Formaner draft={draft} setDraft={setDraft} />}
+          {tab === "verification" && <Verifiering draft={draft} setDraft={setDraft} />}
+          {tab === "team" && <TeamTab isOwner={isOwner} invites={invites} setInvites={setInvites} toast={toast} />}
+        </div>
       </div>
     </main>
   );

@@ -1,7 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { mockDrivers } from "../data/mockDrivers";
-import { mockJobs } from "../data/mockJobs";
 import { useProfile } from "../context/ProfileContext";
 import { useAuth } from "../context/AuthContext";
 import { calcYearsExperience } from "../utils/profileUtils";
@@ -11,400 +9,263 @@ import { fetchDrivers } from "../api/drivers.js";
 import { fetchMyJobs, fetchJob } from "../api/jobs.js";
 import { fetchConversations, createConversation } from "../api/conversations.js";
 import { segmentOptions } from "../data/segments";
-import { licenseTypes, experienceLevels, regions } from "../data/mockJobs";
-import { availabilityTypes, certificateTypes, getCertificateLabel } from "../data/profileData";
+import { regions } from "../data/mockJobs";
+import { availabilityTypes, getCertificateLabel } from "../data/profileData";
+import { mockDrivers } from "../data/mockDrivers";
+import { mockJobs } from "../data/mockJobs";
 
-/* ── Design tokens ── */
-const T = {
-  bg: "var(--t-bg)", bg2: "var(--t-bg2)", bg3: "var(--t-bg3)",
-  primary: "var(--t-primary)", pLight: "var(--t-p-light)",
-  pGlow: "var(--t-p-glow)", pDim: "var(--t-p-dim)",
-  amber: "var(--t-amber)", amberDim: "var(--t-amber-dim)",
-  text: "var(--t-text)", sub: "var(--t-sub)", muted: "var(--t-muted)",
-  border: "var(--t-border)", border2: "var(--t-border2)",
-  card: "var(--t-card)", green: "var(--t-green)", red: "var(--t-red)",
-  font: "'DM Sans', system-ui, sans-serif",
-};
-
-/* ── Tag atom ── */
-function Tag({ c = "p", size = 12, children }) {
-  const m = {
-    p:     { bg: "rgba(31,95,92,0.12)",    col: "rgba(125,211,200,0.8)",  b: "rgba(31,95,92,0.2)" },
-    amber: { bg: "rgba(245,166,35,0.08)",  col: "rgba(245,166,35,0.75)", b: "rgba(245,166,35,0.18)" },
-    green: { bg: "rgba(74,222,128,0.07)",  col: "rgba(74,222,128,0.7)",  b: "rgba(74,222,128,0.15)" },
-    red:   { bg: "rgba(248,113,113,0.07)", col: "rgba(248,113,113,0.7)", b: "rgba(248,113,113,0.15)" },
-    muted: { bg: "rgba(255,255,255,0.04)", col: "rgba(240,250,249,0.3)", b: "rgba(255,255,255,0.07)" },
-  };
-  const s = m[c] || m.p;
-  return (
-    <span style={{
-      display: "inline-flex", alignItems: "center",
-      padding: `2px ${size < 12 ? 7 : 10}px`, borderRadius: 20,
-      fontSize: size, fontWeight: 500,
-      background: s.bg, color: s.col, border: `1px solid ${s.b}`,
-    }}>{children}</span>
-  );
-}
-
-/* ── Availability dot color ── */
-function availDot(av) {
-  if (av === "open") return "rgba(74,222,128,0.75)";
-  if (av === "inactive") return "rgba(248,113,113,0.7)";
-  return "rgba(245,166,35,0.7)";
-}
-
-/* ── Driver initials ── */
+/* ── Helpers ── */
 function initials(name) {
   return (name || "?").split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
 }
 
-/* ── Driver card (minimal dark) ── */
-function DarkDriverCard({ driver, matchPct, isSelected, onClick }) {
-  const [hovered, setHovered] = useState(false);
+function driverColor(driver) {
+  const colors = ["#F5A623", "#7dd3c8", "#a78bfa", "#4ade80", "#60a5fa", "#fbbf24", "#f87171", "#34d399"];
+  const hash = (driver.id || driver.name || "").split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+  return colors[hash % colors.length];
+}
+
+function matchColor(pct) {
+  if (pct >= 85) return "#4ade80";
+  if (pct >= 70) return "#F5A623";
+  if (pct >= 55) return "#60a5fa";
+  return "rgba(255,255,255,0.4)";
+}
+
+function availColor(av) {
+  return av === "open" ? "#4ade80" : "#F5A623";
+}
+
+/* ── Icons ── */
+function Icon({ name, size = 18 }) {
+  const icons = {
+    search: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
+    filter: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="20" y2="12"/><line x1="12" y1="18" x2="20" y2="18"/><circle cx="4" cy="12" r="1.5"/><circle cx="16" cy="6" r="1.5"/><circle cx="8" cy="18" r="1.5"/></svg>,
+    x: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+    check: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
+    msg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
+    star: <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>,
+    starOutline: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>,
+    chevDown: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>,
+    ext: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>,
+  };
+  return <span style={{ display: "inline-flex", width: size, height: size, flexShrink: 0 }}>{icons[name]}</span>;
+}
+
+/* ── Driver row ── */
+function DriverRow({ driver, pct, onClick }) {
+  const [hover, setHover] = useState(false);
+  const mc = pct != null ? matchColor(pct) : null;
+  const color = driverColor(driver);
+  const exp = driver.yearsExperience ?? calcYearsExperience(driver.experience);
+  const segLabel = segmentOptions.find(s => s.value === driver.primarySegment)?.label || driver.primarySegment || "";
+
   return (
     <div
       onClick={onClick}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
       style={{
-        background: isSelected ? "rgba(31,95,92,0.07)" : "transparent",
-        border: `1px solid ${isSelected ? "rgba(31,95,92,0.3)" : hovered ? "rgba(255,255,255,0.1)" : T.border}`,
-        borderRadius: 11, padding: "13px 15px", cursor: "pointer", transition: "border-color .12s",
+        display: "flex", alignItems: "center", gap: 18,
+        padding: "18px 22px", background: "#0a1414",
+        border: `1px solid ${hover ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.05)"}`,
+        borderRadius: 14, cursor: "pointer", transition: "border-color .15s",
       }}
     >
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-        <div style={{
-          width: 36, height: 36, borderRadius: "50%", flexShrink: 0,
-          background: T.pDim, border: "1px solid rgba(31,95,92,0.2)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 11, fontWeight: 700, color: "rgba(125,211,200,0.65)",
-        }}>{initials(driver.name)}</div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 2 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-              <p style={{ fontWeight: 600, fontSize: 14, color: T.text }}>{driver.name}</p>
-              <span style={{ width: 5, height: 5, borderRadius: "50%", background: availDot(driver.availability), flexShrink: 0 }} />
-            </div>
-            {matchPct != null && (
-              <span style={{ fontSize: 11, color: T.muted }}>{matchPct}%</span>
-            )}
-          </div>
-          <p style={{ fontSize: 11, color: T.muted, marginBottom: 8 }}>
-            {driver.location || driver.region}
-            {(driver.yearsExperience ?? calcYearsExperience(driver.experience)) > 0
-              ? ` · ${driver.yearsExperience ?? calcYearsExperience(driver.experience)} år`
-              : ""}
-          </p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
-            {(driver.licenses || []).map((l) => <Tag key={l} c="p" size={11}>{l}</Tag>)}
-            {(driver.certificates || []).slice(0, 2).map((c) => <Tag key={c} c="muted" size={11}>{c.replace(/_/g, " ")}</Tag>)}
-          </div>
+      <div style={{ position: "relative", flexShrink: 0 }}>
+        <div style={{ width: 44, height: 44, borderRadius: 99, background: color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 13.5, color: "#000" }}>
+          {initials(driver.name)}
+        </div>
+        <div style={{ position: "absolute", bottom: -1, right: -1, width: 12, height: 12, borderRadius: 99, background: availColor(driver.availability), border: "2.5px solid #0a1414" }} />
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 15, fontWeight: 700, letterSpacing: -0.2, marginBottom: 3, color: "#f0faf9" }}>{driver.name}</div>
+        <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.5)" }}>
+          {[driver.location, exp > 0 && `${exp} år`, segLabel].filter(Boolean).join(" · ")}
         </div>
       </div>
+      {mc !== null && pct != null && (
+        <div style={{ textAlign: "right", minWidth: 50, flexShrink: 0 }}>
+          <div style={{ fontSize: 22, fontWeight: 800, color: mc, lineHeight: 1 }}>
+            {pct}<span style={{ fontSize: 13 }}>%</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-/* ── Filter chip button ── */
-function FilterChip({ active, onClick, children, color = "primary" }) {
-  const activeStyles = {
-    primary: { bg: T.primary, color: "#fff", border: T.primary },
-    amber: { bg: T.amberDim, color: "rgba(245,166,35,0.85)", border: "rgba(245,166,35,0.25)" },
-    teal: { bg: T.pDim, color: "rgba(125,211,200,0.85)", border: "rgba(31,95,92,0.2)" },
-  };
-  const s = active ? (activeStyles[color] || activeStyles.primary) : null;
-  return (
+/* ── Filter sheet (right overlay) ── */
+function FilterSheet({ open, filters, setFilters, onClose }) {
+  if (!open) return null;
+  const toggle = (key, val) => setFilters(p => ({ ...p, [key]: p[key] === val ? "" : val }));
+
+  const Section = ({ title, children }) => (
+    <div style={{ marginBottom: 24 }}>
+      <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginBottom: 12 }}>{title}</div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>{children}</div>
+    </div>
+  );
+  const Chip = ({ on, onClick, children }) => (
     <button onClick={onClick} style={{
-      padding: "4px 9px", borderRadius: 6, fontSize: 11, fontWeight: 500, cursor: "pointer",
-      fontFamily: T.font, border: `1px solid ${active ? s.border : T.border}`,
-      background: active ? s.bg : "transparent", color: active ? s.color : T.sub, transition: "all .1s",
+      padding: "7px 14px", borderRadius: 99, cursor: "pointer", fontFamily: "inherit",
+      background: on ? "rgba(245,166,35,0.12)" : "rgba(255,255,255,0.04)",
+      border: `1px solid ${on ? "rgba(245,166,35,0.4)" : "rgba(255,255,255,0.07)"}`,
+      color: on ? "#F5A623" : "rgba(255,255,255,0.65)",
+      fontSize: 12.5, fontWeight: 600, transition: "all .15s",
     }}>{children}</button>
   );
-}
-
-/* ── Filter drawer ── */
-function FilterDrawer({ open, onClose, filters, setFilters }) {
-  const toggle = (key, val) => setFilters((p) => ({
-    ...p, [key]: p[key] === val ? "" : val,
-  }));
-  const toggleArr = (key, val) => setFilters((p) => ({
-    ...p, [key]: (p[key] || []).includes(val)
-      ? (p[key] || []).filter((x) => x !== val)
-      : [...(p[key] || []), val],
-  }));
 
   return (
-    <div style={{
-      width: open ? 240 : 0, flexShrink: 0, overflow: "hidden",
-      background: T.bg2, borderRight: open ? `1px solid ${T.border}` : "none",
-      transition: "width .2s ease",
-    }}>
-      <div style={{ width: 240, overflowY: "auto", height: "100%" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px 6px" }}>
-          <p style={{ fontSize: 12, fontWeight: 700, color: T.text }}>Filter</p>
-          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, fontSize: 18, lineHeight: 1 }}>×</button>
+    <>
+      <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 60 }} />
+      <div style={{ position: "fixed", top: 0, right: 0, height: "100vh", width: 380, maxWidth: "100vw", background: "#0a1414", borderLeft: "1px solid rgba(255,255,255,0.08)", zIndex: 70, display: "flex", flexDirection: "column" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "22px 24px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+          <h3 style={{ fontSize: 17, fontWeight: 800, letterSpacing: -0.3, color: "#f0faf9" }}>Filter</h3>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.6)", cursor: "pointer", display: "flex" }}><Icon name="x" size={20} /></button>
         </div>
-        <div style={{ padding: "10px 16px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
-
-          {/* Region */}
-          <div>
-            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.muted, marginBottom: 7 }}>Region</p>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
-              {regions.slice(0, 8).map((r) => (
-                <FilterChip key={r} active={filters.region === r} onClick={() => toggle("region", r)}>{r}</FilterChip>
-              ))}
-            </div>
-          </div>
-
-          {/* Licenses */}
-          <div>
-            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.muted, marginBottom: 7 }}>Körkort</p>
-            <div style={{ display: "flex", gap: 5 }}>
-              {["B", "C", "CE", "D"].map((l) => {
-                const on = filters.license === l;
-                return (
-                  <button key={l} onClick={() => toggle("license", l)} style={{
-                    width: 40, height: 40, borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: "pointer",
-                    fontFamily: T.font, border: `1.5px solid ${on ? T.primary : T.border}`,
-                    background: on ? T.primary : "transparent", color: on ? "#fff" : T.sub, transition: "all .1s",
-                  }}>{l}</button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Certificates */}
-          <div>
-            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.muted, marginBottom: 7 }}>Certifikat</p>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
-              {["YKB", "ADR", "ADR_Tank", "Kran", "Truck_B", "APV_1_1"].map((c) => {
-                const on = filters.certificate === c;
-                return (
-                  <FilterChip key={c} active={on} color="teal" onClick={() => toggle("certificate", c)}>
-                    {c.replace(/_/g, " ")}
-                  </FilterChip>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Availability */}
-          <div>
-            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.muted, marginBottom: 7 }}>Tillgänglighet</p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-              {availabilityTypes.map((a) => (
-                <FilterChip key={a.value} active={filters.availability === a.value} color="amber" onClick={() => toggle("availability", a.value)}>
-                  {a.label}
-                </FilterChip>
-              ))}
-            </div>
-          </div>
-
-          {/* Segment */}
-          <div>
-            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.muted, marginBottom: 7 }}>Söker</p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-              {segmentOptions.map((s) => (
-                <FilterChip key={s.value} active={filters.segment === s.value} color="teal" onClick={() => toggle("segment", s.value)}>
-                  {s.label}
-                </FilterChip>
-              ))}
-            </div>
-          </div>
-
-          {/* Experience */}
-          <div>
-            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.muted, marginBottom: 7 }}>Erfarenhet</p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-              {experienceLevels.map((e) => (
-                <FilterChip key={e.value} active={filters.experience === e.value} color="teal" onClick={() => toggle("experience", e.value)}>
-                  {e.label}
-                </FilterChip>
-              ))}
-            </div>
-          </div>
-
-          {/* Search */}
-          <div>
-            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.muted, marginBottom: 7 }}>Sök</p>
-            <input
-              type="text"
-              value={filters.search || ""}
-              onChange={(e) => setFilters((p) => ({ ...p, search: e.target.value }))}
-              placeholder="Namn, region…"
-              style={{
-                width: "100%", padding: "7px 10px", borderRadius: 7, fontSize: 12,
-                background: T.card, border: `1px solid ${T.border2}`, color: T.text,
-                fontFamily: T.font, outline: "none",
-              }}
-            />
-          </div>
-
+        <div style={{ flex: 1, overflowY: "auto", padding: "24px" }}>
+          <Section title="Tillgänglighet">
+            {availabilityTypes.slice(0, 3).map(a => (
+              <Chip key={a.value} on={filters.availability === a.value} onClick={() => toggle("availability", a.value)}>{a.label}</Chip>
+            ))}
+          </Section>
+          <Section title="Körkort">
+            {["B", "C", "CE", "D"].map(l => (
+              <Chip key={l} on={filters.license === l} onClick={() => toggle("license", l)}>{l}</Chip>
+            ))}
+          </Section>
+          <Section title="Segment">
+            {segmentOptions.map(s => (
+              <Chip key={s.value} on={filters.segment === s.value} onClick={() => toggle("segment", s.value)}>{s.label}</Chip>
+            ))}
+          </Section>
+          <Section title="Region">
+            {regions.slice(0, 9).map(r => (
+              <Chip key={r} on={filters.region === r} onClick={() => toggle("region", r)}>{r}</Chip>
+            ))}
+          </Section>
+          <Section title="Certifikat">
+            {["YKB", "ADR", "ADR_Tank", "Kran", "Truck_B"].map(c => (
+              <Chip key={c} on={filters.certificate === c} onClick={() => toggle("certificate", c)}>{c.replace(/_/g, " ")}</Chip>
+            ))}
+          </Section>
+          <Section title="Minsta erfarenhet">
+            {[["1-3", "1+ år"], ["3-5", "3+ år"], ["5-10", "5+ år"], ["10+", "10+ år"]].map(([val, label]) => (
+              <Chip key={val} on={filters.experience === val} onClick={() => toggle("experience", val)}>{label}</Chip>
+            ))}
+          </Section>
+        </div>
+        <div style={{ padding: "18px 24px", borderTop: "1px solid rgba(255,255,255,0.05)", display: "flex", gap: 10 }}>
           <button
             onClick={() => setFilters({ search: "", region: "", license: "", certificate: "", segment: "", availability: "", experience: "" })}
-            style={{
-              padding: "6px", borderRadius: 7, border: `1px solid ${T.border}`,
-              background: "transparent", color: T.muted, fontSize: 11, cursor: "pointer", fontFamily: T.font,
-            }}
-          >Rensa filter</button>
+            style={{ flex: 1, padding: "12px", borderRadius: 11, background: "transparent", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.7)", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}
+          >Rensa</button>
+          <button onClick={onClose} style={{ flex: 1.5, padding: "12px", borderRadius: 11, background: "linear-gradient(135deg,#F5A623,#d97706)", border: "none", color: "#000", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>Visa resultat</button>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
-/* ── Driver detail panel ── */
-function DriverDetailPanel({ driver, matchPct, matchCriteria, isContacted, onClose, onContact }) {
-  const avLabels = {
-    open: "Öppen för jobb", fast: "Söker fast", vikariat: "Söker vikariat",
-    tim: "Söker timjobb", inactive: "Inte aktivt sökande",
-  };
-  const yearsExp = driver.yearsExperience ?? calcYearsExperience(driver.experience);
+/* ── Detail modal ── */
+function DetailModal({ driver, pct, matchJob, criteria, isContacted, onClose, onContact, navigate }) {
+  if (!driver) return null;
+  const mc = pct != null ? matchColor(pct) : null;
+  const matchLabel = pct >= 85 ? "Stark match" : pct >= 70 ? "Bra match" : pct >= 55 ? "Delvis match" : "Svag match";
+  const color = driverColor(driver);
+  const exp = driver.yearsExperience ?? calcYearsExperience(driver.experience);
 
   return (
-    <div style={{
-      width: 360, flexShrink: 0, background: T.bg2, borderLeft: `1px solid ${T.border}`,
-      height: "calc(100vh - 56px)", overflowY: "auto", position: "sticky", top: 56,
-    }}>
-      {/* Hero */}
-      <div style={{ background: `linear-gradient(160deg, ${T.bg3} 0%, #061414 100%)`, padding: "20px 20px 0" }}>
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 14 }}>
-          <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-            <div style={{
-              width: 44, height: 44, borderRadius: "50%", flexShrink: 0,
-              background: T.pDim, border: "1px solid rgba(31,95,92,0.25)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 14, fontWeight: 700, color: "rgba(125,211,200,0.7)",
-            }}>{initials(driver.name)}</div>
-            <div>
-              <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 3, color: T.text }}>{driver.name}</h2>
-              <p style={{ fontSize: 11, color: T.muted }}>📍 {driver.location || "—"}, {driver.region || "—"}</p>
-            </div>
-          </div>
-          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, fontSize: 20, lineHeight: 1, padding: 2 }}>×</button>
-        </div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 14 }}>
-          {(driver.licenses || []).map((l) => <Tag key={l} c="p" size={11}>{l}</Tag>)}
-          {(driver.certificates || []).map((c) => <Tag key={c} c="muted" size={11}>{c.replace(/_/g, " ")}</Tag>)}
-        </div>
-        {matchPct != null && (
-          <div style={{ background: "rgba(0,0,0,0.2)", borderRadius: "7px 7px 0 0", padding: "10px 14px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-              <span style={{ fontSize: 11, color: T.muted }}>Matchning</span>
-              <span style={{ fontSize: 12, fontWeight: 600, color: T.sub }}>{matchPct}%</span>
-            </div>
-            <div style={{ height: 3, borderRadius: 3, background: "rgba(255,255,255,0.07)" }}>
-              <div style={{ height: 3, borderRadius: 3, background: T.primary, width: `${matchPct}%` }} />
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
-        {/* Action buttons */}
-        <div style={{ display: "flex", gap: 8 }}>
-          <button onClick={() => onContact(driver)} style={{
-            flex: 1, padding: "10px", borderRadius: 9, border: "none",
-            background: isContacted ? T.pDim : T.amber,
-            color: isContacted ? "rgba(125,211,200,0.85)" : "#0a1010",
-            fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: T.font,
-          }}>
-            {isContacted ? "Skicka igen" : "Kontakta"}
+    <>
+      <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)", zIndex: 70 }} />
+      <div style={{
+        position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
+        width: 460, maxWidth: "calc(100vw - 40px)", maxHeight: "calc(100vh - 80px)", overflowY: "auto",
+        background: "#0a1414", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 18, zIndex: 80,
+      }}>
+        {/* Header */}
+        <div style={{ padding: "24px 26px 20px", borderBottom: "1px solid rgba(255,255,255,0.05)", position: "relative" }}>
+          <button onClick={onClose} style={{ position: "absolute", top: 18, right: 18, width: 30, height: 30, borderRadius: 99, background: "rgba(255,255,255,0.05)", border: "none", color: "rgba(255,255,255,0.7)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <Icon name="x" size={15} />
           </button>
-          <a
-            href={`/forare/${driver.id}`}
-            target="_blank"
-            rel="noreferrer"
-            style={{
-              width: 40, height: 40, borderRadius: 9, border: `1px solid ${T.border2}`,
-              background: T.card, color: T.sub, display: "flex", alignItems: "center",
-              justifyContent: "center", fontSize: 14, textDecoration: "none",
-            }}
-            title="Öppna publik profil"
-          >↗</a>
+          <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+            <div style={{ position: "relative", flexShrink: 0 }}>
+              <div style={{ width: 64, height: 64, borderRadius: 99, background: color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 18, color: "#000" }}>
+                {initials(driver.name)}
+              </div>
+              <div style={{ position: "absolute", bottom: 0, right: 0, width: 16, height: 16, borderRadius: 99, background: availColor(driver.availability), border: "3px solid #0a1414" }} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <h2 style={{ fontSize: 20, fontWeight: 800, letterSpacing: -0.4, marginBottom: 4, color: "#f0faf9" }}>{driver.name}</h2>
+              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.6)" }}>
+                {[driver.location, exp > 0 && `${exp} år`, segmentOptions.find(s => s.value === driver.primarySegment)?.label].filter(Boolean).join(" · ")}
+              </div>
+            </div>
+          </div>
         </div>
 
-        {isContacted && (
-          <div style={{ padding: "8px 12px", borderRadius: 8, background: "rgba(74,222,128,0.05)", border: "1px solid rgba(74,222,128,0.12)" }}>
-            <p style={{ fontSize: 11, color: "rgba(74,222,128,0.7)" }}>✓ Du har redan kontaktat den här föraren</p>
+        {/* Match section */}
+        {pct != null && matchJob && (
+          <div style={{ padding: "20px 26px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
+              <div style={{ width: 60, height: 60, borderRadius: 99, background: `${mc}1a`, border: `2px solid ${mc}55`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <div style={{ fontSize: 18, fontWeight: 800, color: mc }}>{pct}<span style={{ fontSize: 11 }}>%</span></div>
+              </div>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: mc, marginBottom: 2 }}>{matchLabel}</div>
+                <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.55)" }}>mot {matchJob.title}</div>
+              </div>
+            </div>
+            {criteria && criteria.length > 0 && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {criteria.map((c, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13 }}>
+                    <div style={{ width: 18, height: 18, borderRadius: 99, background: c.met ? "rgba(74,222,128,0.15)" : "rgba(248,113,113,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      {c.met
+                        ? <Icon name="check" size={10} />
+                        : <Icon name="x" size={10} />}
+                    </div>
+                    <span style={{ color: c.met ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.4)" }}>{c.label}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
         {/* Summary */}
         {driver.summary && (
-          <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 10, padding: "13px 14px" }}>
-            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: T.muted, marginBottom: 7 }}>Presentation</p>
-            <p style={{ fontSize: 13, color: T.sub, lineHeight: 1.65 }}>{driver.summary}</p>
+          <div style={{ padding: "20px 26px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+            <p style={{ fontSize: 13.5, color: "rgba(255,255,255,0.85)", lineHeight: 1.6 }}>{driver.summary}</p>
           </div>
         )}
 
-        {/* Details */}
-        <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 10, padding: "13px 14px" }}>
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: T.muted, marginBottom: 10 }}>Detaljer</p>
-          {[
-            yearsExp > 0 && ["Erfarenhet", `${yearsExp} år`],
-            ["Tillgänglighet", avLabels[driver.availability] || driver.availability || "—"],
-            driver.primarySegment && ["Segment", segmentOptions.find((s) => s.value === driver.primarySegment)?.label || driver.primarySegment],
-            (driver.regionsWilling || []).length > 0 && ["Kan jobba i", (driver.regionsWilling || []).join(", ")],
-          ].filter(Boolean).map(([k, v]) => (
-            <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-              <span style={{ fontSize: 12, color: T.muted }}>{k}</span>
-              <span style={{ fontSize: 12, fontWeight: 500, color: T.sub }}>{v}</span>
-            </div>
-          ))}
+        {/* Actions */}
+        <div style={{ padding: "20px 26px 24px", display: "flex", gap: 10 }}>
+          <button
+            onClick={() => { onClose(); onContact(driver); }}
+            style={{ flex: 1, padding: "12px", borderRadius: 11, background: isContacted ? "rgba(31,95,92,0.3)" : "linear-gradient(135deg,#F5A623,#d97706)", color: isContacted ? "#7dd3c8" : "#000", fontSize: 13, fontWeight: 800, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, fontFamily: "inherit" }}
+          >
+            <Icon name="msg" size={14} /> {isContacted ? "Skicka igen" : "Skicka meddelande"}
+          </button>
+          <button
+            onClick={() => navigate(`/foretag/chaufforer/${driver.id}`)}
+            style={{ padding: "12px 16px", borderRadius: 11, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}
+          >Hela profilen</button>
         </div>
-
-        {/* Match criteria */}
-        {matchCriteria && matchCriteria.length > 0 && (
-          <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 10, padding: "13px 14px" }}>
-            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: T.muted, marginBottom: 10 }}>Matchkriterier</p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-              {matchCriteria.map((criterion, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ fontSize: 11, color: criterion.met ? "rgba(74,222,128,0.7)" : T.muted }}>
-                    {criterion.met ? "✓" : "○"}
-                  </span>
-                  <span style={{ fontSize: 12, color: criterion.met ? T.sub : T.muted }}>{criterion.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Experience */}
-        {(driver.experience || []).length > 0 && (
-          <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 10, padding: "13px 14px" }}>
-            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: T.muted, marginBottom: 10 }}>Erfarenhet</p>
-            {(driver.experience || []).map((exp, i) => (
-              <div key={exp.id || i} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: i < driver.experience.length - 1 ? 10 : 0 }}>
-                <div style={{
-                  width: 6, height: 6, borderRadius: "50%",
-                  background: i === 0 ? "rgba(74,222,128,0.6)" : T.border2, marginTop: 5, flexShrink: 0,
-                }} />
-                <div>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: T.text }}>{exp.role}</p>
-                  <p style={{ fontSize: 11, color: T.muted }}>
-                    {exp.company} · {exp.startYear || "?"}{exp.current ? "–nu" : exp.endYear ? `–${exp.endYear}` : ""}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
-    </div>
+    </>
   );
 }
 
 /* ── Contact modal ── */
 function ContactModal({ driver, jobs, onClose, onSent }) {
   const [selectedJobId, setSelectedJobId] = useState(jobs[0]?.id || "");
-  const selectedJob = jobs.find((j) => j.id === selectedJobId);
+  const selectedJob = jobs.find(j => j.id === selectedJobId);
   const firstName = (driver.name || "").split(" ")[0];
   const jobTitle = selectedJob?.title || "en tjänst";
-  const [msg, setMsg] = useState(
-    `Hej ${firstName}!\n\nVi söker en ${(driver.licenses || []).includes("CE") ? "CE-förare" : "förare"} och din profil verkar passa bra för ${jobTitle}. Är du intresserad av att höra mer?\n\nMed vänlig hälsning`
-  );
+  const [msg, setMsg] = useState(`Hej ${firstName}!\n\nVi söker en ${(driver.licenses || []).includes("CE") ? "CE-förare" : "förare"} och din profil verkar passa bra för ${jobTitle}. Är du intresserad av att höra mer?\n\nMed vänlig hälsning`);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
@@ -423,77 +284,65 @@ function ContactModal({ driver, jobs, onClose, onSent }) {
     }
   }
 
+  const overlay = { position: "fixed", inset: 0, background: "rgba(0,0,0,0.65)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100 };
+  const modal = { background: "#0a1414", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 18, padding: 24, maxWidth: 480, width: "90%", maxHeight: "calc(100vh-80px)", overflowY: "auto" };
+
   if (sent) {
     return (
-      <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.65)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100 }}>
-        <div style={{ background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 14, padding: 36, textAlign: "center", maxWidth: 380, width: "90%" }}>
-          <div style={{ width: 52, height: 52, borderRadius: "50%", background: "rgba(74,222,128,0.08)", border: "1.5px solid rgba(74,222,128,0.25)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, margin: "0 auto 14px" }}>✓</div>
-          <p style={{ fontSize: 17, fontWeight: 700, marginBottom: 8, color: T.text }}>Skickat!</p>
-          <p style={{ fontSize: 13, color: T.sub, marginBottom: 22, lineHeight: 1.6 }}>
-            {firstName} får en notifikation och kan svara via chatten.
-          </p>
-          <button onClick={onClose} style={{ width: "100%", padding: "10px", borderRadius: 9, border: "none", background: T.primary, color: "#fff", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: T.font }}>
-            Stäng
-          </button>
+      <div style={overlay}>
+        <div style={{ ...modal, textAlign: "center", maxWidth: 380 }}>
+          <div style={{ width: 52, height: 52, borderRadius: 99, background: "rgba(74,222,128,0.1)", border: "1.5px solid rgba(74,222,128,0.3)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
+            <Icon name="check" size={22} />
+          </div>
+          <p style={{ fontSize: 18, fontWeight: 800, marginBottom: 8, color: "#f0faf9" }}>Skickat!</p>
+          <p style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", marginBottom: 22, lineHeight: 1.6 }}>{firstName} får en notis och kan svara via chatten.</p>
+          <button onClick={onClose} style={{ width: "100%", padding: 12, borderRadius: 11, border: "none", background: "linear-gradient(135deg,#F5A623,#d97706)", color: "#000", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>Stäng</button>
         </div>
       </div>
     );
   }
 
   return (
-    <div
-      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.65)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100 }}
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
-      <div style={{ background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 14, padding: 24, maxWidth: 460, width: "90%" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 36, height: 36, borderRadius: "50%", background: T.pDim, border: "1px solid rgba(31,95,92,0.25)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: "rgba(125,211,200,0.7)" }}>
-              {initials(driver.name)}
-            </div>
-            <div>
-              <p style={{ fontWeight: 700, fontSize: 14, color: T.text }}>Kontakta {firstName}</p>
-              <p style={{ fontSize: 11, color: T.muted }}>Skicka ett första meddelande</p>
-            </div>
-          </div>
-          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, fontSize: 22 }}>×</button>
+    <div style={overlay} onClick={e => e.target === e.currentTarget && onClose()}>
+      <div style={modal}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+          <h3 style={{ fontSize: 18, fontWeight: 800, letterSpacing: -0.3, color: "#f0faf9" }}>Skicka meddelande</h3>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.6)", cursor: "pointer", display: "flex" }}><Icon name="x" size={18} /></button>
         </div>
+        <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.55)", marginBottom: 18 }}>{firstName} ser ditt meddelande tillsammans med en länk till annonsen.</div>
 
-        {jobs.length > 1 && (
+        {jobs.length > 0 && (
           <div style={{ marginBottom: 14 }}>
-            <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 6 }}>Jobb att koppla</p>
-            <select
-              value={selectedJobId}
-              onChange={(e) => setSelectedJobId(e.target.value)}
-              style={{ width: "100%", padding: "8px 12px", borderRadius: 8, background: T.card, border: `1px solid ${T.border2}`, color: T.text, fontSize: 13, fontFamily: T.font, outline: "none" }}
-            >
-              <option value="">Inget specifikt jobb</option>
-              {jobs.map((j) => <option key={j.id} value={j.id}>{j.title}</option>)}
-            </select>
+            <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.5)", marginBottom: 7, fontWeight: 600 }}>Annons</div>
+            <div style={{ position: "relative" }}>
+              <select
+                value={selectedJobId}
+                onChange={e => setSelectedJobId(e.target.value)}
+                style={{ width: "100%", padding: "12px 40px 12px 14px", borderRadius: 10, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer", outline: "none", appearance: "none", fontFamily: "inherit" }}
+              >
+                <option value="">Inget specifikt jobb</option>
+                {jobs.map(j => <option key={j.id} value={j.id}>{j.title}</option>)}
+              </select>
+              <div style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "rgba(255,255,255,0.5)" }}><Icon name="chevDown" size={14} /></div>
+            </div>
           </div>
         )}
 
-        <textarea
-          value={msg}
-          onChange={(e) => setMsg(e.target.value)}
-          rows={7}
-          style={{ width: "100%", padding: 12, borderRadius: 9, background: T.card, border: `1px solid ${T.border2}`, color: T.text, fontSize: 13, outline: "none", lineHeight: 1.65, resize: "none", marginBottom: 14, fontFamily: T.font }}
-        />
+        <div style={{ marginBottom: 18 }}>
+          <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.5)", marginBottom: 7, fontWeight: 600 }}>Meddelande</div>
+          <textarea
+            value={msg}
+            onChange={e => setMsg(e.target.value)}
+            rows={5}
+            style={{ width: "100%", padding: "12px 14px", borderRadius: 10, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "#fff", fontSize: 13, lineHeight: 1.5, fontFamily: "inherit", resize: "none", outline: "none" }}
+          />
+        </div>
         {error && <p style={{ fontSize: 12, color: "#f87171", marginBottom: 10 }}>{error}</p>}
-        <p style={{ fontSize: 11, color: T.muted, marginBottom: 14, lineHeight: 1.5 }}>Föraren ser ditt företagsnamn och svarar i chatten.</p>
-        <div style={{ display: "flex", gap: 8 }}>
-          <button onClick={handleSend} disabled={sending || !msg.trim()} style={{
-            flex: 1, padding: "10px 22px", borderRadius: 9, border: "none",
-            background: T.amber, color: "#0a1010", fontSize: 14, fontWeight: 700,
-            cursor: "pointer", fontFamily: T.font, opacity: (sending || !msg.trim()) ? 0.5 : 1,
-          }}>
-            {sending ? "Skickar…" : "Skicka"}
+        <div style={{ display: "flex", gap: 10 }}>
+          <button onClick={onClose} style={{ flex: 1, padding: 12, borderRadius: 11, background: "transparent", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.75)", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>Avbryt</button>
+          <button onClick={handleSend} disabled={sending || !msg.trim()} style={{ flex: 1.5, padding: 12, borderRadius: 11, background: "linear-gradient(135deg,#F5A623,#d97706)", border: "none", color: "#000", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", opacity: (sending || !msg.trim()) ? 0.5 : 1 }}>
+            {sending ? "Skickar…" : "Skicka meddelande"}
           </button>
-          <button onClick={onClose} style={{
-            padding: "10px 22px", borderRadius: 9, border: "none",
-            background: "rgba(255,255,255,0.07)", color: T.sub, fontSize: 14, fontWeight: 600,
-            cursor: "pointer", fontFamily: T.font,
-          }}>Avbryt</button>
         </div>
       </div>
     </div>
@@ -501,7 +350,7 @@ function ContactModal({ driver, jobs, onClose, onSent }) {
 }
 
 /* ══════════ MAIN ══════════ */
-const FILTER_KEYS = ["search", "region", "license", "certificate", "segment", "availability", "experience"];
+const EMPTY_FILTERS = { search: "", region: "", license: "", certificate: "", segment: "", availability: "", experience: "" };
 
 export default function DriverSearch() {
   const { hasApi } = useAuth();
@@ -509,7 +358,6 @@ export default function DriverSearch() {
   const { state: locationState } = useLocation();
   const navigate = useNavigate();
   const forJobId = locationState?.forJobId;
-  const forJobTitle = locationState?.forJobTitle;
 
   const [apiDrivers, setApiDrivers] = useState([]);
   const [apiJobs, setApiJobs] = useState([]);
@@ -518,18 +366,16 @@ export default function DriverSearch() {
   const [matchJobId, setMatchJobId] = useState(forJobId ?? "");
   const [fullMatchJob, setFullMatchJob] = useState(null);
   const [contactedDriverIds, setContactedDriverIds] = useState(new Set());
-  const [filterOpen, setFilterOpen] = useState(false);
-  const [selectedDriver, setSelectedDriver] = useState(null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [selectedDriverId, setSelectedDriverId] = useState(null);
   const [contactingDriver, setContactingDriver] = useState(null);
-  const [filters, setFilters] = useState({
-    search: "", region: "", license: "", certificate: "",
-    segment: "", availability: "", experience: "",
-  });
+  const [filters, setFilters] = useState({ ...EMPTY_FILTERS });
+  const [search, setSearch] = useState("");
 
-  const effectiveJobId = matchJobId === "__none__" ? null : matchJobId || forJobId || null;
+  const effectiveJobId = matchJobId === "__none__" ? null : matchJobId || null;
   const jobsForMatch = hasApi ? apiJobs : mockJobs;
   const matchJob = useMemo(
-    () => (effectiveJobId ? jobsForMatch.find((j) => j.id === effectiveJobId) || null : null),
+    () => effectiveJobId ? jobsForMatch.find(j => j.id === effectiveJobId) || null : null,
     [effectiveJobId, jobsForMatch]
   );
 
@@ -547,18 +393,18 @@ export default function DriverSearch() {
     setLoadingDrivers(true);
     setDriversError("");
     fetchDrivers(driverQueryParams)
-      .then((data) => setApiDrivers(Array.isArray(data) ? data : []))
-      .catch((err) => { setApiDrivers([]); setDriversError(err.message || "Kunde inte hämta förare."); })
+      .then(data => setApiDrivers(Array.isArray(data) ? data : []))
+      .catch(err => { setApiDrivers([]); setDriversError(err.message || "Kunde inte hämta förare."); })
       .finally(() => setLoadingDrivers(false));
     fetchMyJobs()
-      .then((data) => setApiJobs(Array.isArray(data) ? data : []))
+      .then(data => setApiJobs(Array.isArray(data) ? data : []))
       .catch(() => setApiJobs([]));
   }, [hasApi, driverQueryParams]);
 
   useEffect(() => {
     if (!hasApi) return;
     fetchConversations()
-      .then((convos) => setContactedDriverIds(new Set((convos || []).map((c) => c.driverId))))
+      .then(convos => setContactedDriverIds(new Set((convos || []).map(c => c.driverId))))
       .catch(() => {});
   }, [hasApi]);
 
@@ -568,200 +414,163 @@ export default function DriverSearch() {
   }, [effectiveJobId]);
 
   const currentUserAsDriver = useMemo(() => {
-    if (hasApi) return null;
-    if (!profile.visibleToCompanies) return null;
-    const years = calcYearsExperience(profile.experience);
-    return {
-      id: profile.id, name: profile.name, location: profile.location, region: profile.region,
-      regionsWilling: profile.regionsWilling || [profile.region],
-      licenses: profile.licenses || [], certificates: profile.certificates || [],
-      availability: profile.availability || "open", yearsExperience: years,
-      primarySegment: profile.primarySegment || "", secondarySegments: profile.secondarySegments || [],
-      summary: profile.summary, experience: profile.experience || [], visibleToCompanies: true,
-    };
+    if (hasApi || !profile.visibleToCompanies) return null;
+    return { id: profile.id, name: profile.name, location: profile.location, region: profile.region, regionsWilling: profile.regionsWilling || [profile.region], licenses: profile.licenses || [], certificates: profile.certificates || [], availability: profile.availability || "open", yearsExperience: calcYearsExperience(profile.experience), primarySegment: profile.primarySegment || "", summary: profile.summary, experience: profile.experience || [], visibleToCompanies: true };
   }, [hasApi, profile]);
 
   const allDrivers = useMemo(() => {
     if (hasApi) return apiDrivers;
-    const base = mockDrivers.map((d) => currentUserAsDriver && d.id === currentUserAsDriver.id ? currentUserAsDriver : d);
-    if (currentUserAsDriver && !base.some((d) => d.id === currentUserAsDriver.id)) base.unshift(currentUserAsDriver);
+    const base = [...mockDrivers];
+    if (currentUserAsDriver && !base.some(d => d.id === currentUserAsDriver.id)) base.unshift(currentUserAsDriver);
     return base;
   }, [hasApi, apiDrivers, currentUserAsDriver]);
 
   const filteredDrivers = useMemo(() => {
-    const searchLower = filters.search.toLowerCase();
-    return allDrivers.filter((driver) => {
-      const matchesSearch = !filters.search || driver.name.toLowerCase().includes(searchLower) || (driver.summary || "").toLowerCase().includes(searchLower) || (driver.regionsWilling || []).some((r) => r.toLowerCase().includes(searchLower));
-      const matchesRegion = hasApi || !filters.region || driver.region === filters.region || (driver.regionsWilling || []).includes(filters.region);
-      const matchesLicense = hasApi || !filters.license || (driver.licenses || []).includes(filters.license);
-      const matchesCertificate = hasApi || !filters.certificate || (driver.certificates || []).includes(filters.certificate);
-      const matchesSegment = hasApi || !filters.segment || driver.primarySegment === filters.segment || (driver.secondarySegments || []).includes(filters.segment);
-      const matchesAvailability = hasApi || !filters.availability || driver.availability === filters.availability;
-      const matchesExperience = (() => {
-        if (hasApi || !filters.experience) return true;
-        const y = driver.yearsExperience || 0;
-        if (filters.experience === "10+") return y >= 10;
-        if (filters.experience === "5+") return y >= 5;
-        const [min, max] = filters.experience.split("-").map(Number);
-        return y >= min && (max === undefined || Number.isNaN(max) || y <= max);
-      })();
-      return matchesSearch && matchesRegion && matchesLicense && matchesCertificate && matchesSegment && matchesAvailability && matchesExperience;
+    const q = search.toLowerCase();
+    return allDrivers.filter(driver => {
+      if (q && !driver.name.toLowerCase().includes(q) && !(driver.location || "").toLowerCase().includes(q)) return false;
+      if (!hasApi) {
+        if (filters.region && driver.region !== filters.region && !(driver.regionsWilling || []).includes(filters.region)) return false;
+        if (filters.license && !(driver.licenses || []).includes(filters.license)) return false;
+        if (filters.certificate && !(driver.certificates || []).includes(filters.certificate)) return false;
+        if (filters.segment && driver.primarySegment !== filters.segment) return false;
+        if (filters.availability && driver.availability !== filters.availability) return false;
+      }
+      return true;
     });
-  }, [allDrivers, filters, hasApi]);
+  }, [allDrivers, search, filters, hasApi]);
 
   const sortedDrivers = useMemo(() => {
-    if (!matchJob) return filteredDrivers.map((d) => ({ driver: d, score: 0, pct: null, details: null }));
+    if (!matchJob) return filteredDrivers.map(d => ({ driver: d, pct: null, details: null }));
     const matched = getMatchingDriversForJob(matchJob, filteredDrivers, 0, 999);
     const matchedIds = new Set(matched.map(({ driver }) => driver.id));
-    const unmatched = filteredDrivers.filter((d) => !matchedIds.has(d.id)).map((d) => ({ driver: d, score: 0, pct: null, details: null }));
+    const unmatched = filteredDrivers.filter(d => !matchedIds.has(d.id)).map(d => ({ driver: d, pct: null, details: null }));
     return [...matched, ...unmatched];
   }, [matchJob, filteredDrivers]);
 
-  const activeFilterCount = FILTER_KEYS.filter((k) => filters[k]).length;
+  const selectedEntry = useMemo(() => selectedDriverId ? sortedDrivers.find(({ driver }) => driver.id === selectedDriverId) : null, [selectedDriverId, sortedDrivers]);
 
-  /* Selected driver data from sorted list */
-  const selectedDriverData = useMemo(() => {
-    if (!selectedDriver) return null;
-    return sortedDrivers.find(({ driver }) => driver.id === selectedDriver.id) || null;
-  }, [selectedDriver, sortedDrivers]);
+  const activeCriteria = useMemo(() => {
+    if (!selectedEntry || !fullMatchJob || !selectedEntry.pct) return [];
+    return getMatchCriteria(selectedEntry.driver, fullMatchJob, selectedEntry.details) || [];
+  }, [selectedEntry, fullMatchJob]);
+
+  const activeFilterCount = Object.values(filters).filter(v => v).length;
+
+  const availableJobs = (hasApi ? apiJobs : mockJobs).filter(j => j.status !== "REMOVED");
 
   return (
-    <div style={{ minHeight: "100vh", background: T.bg, color: T.text, fontFamily: T.font }}>
-      <div style={{ display: "flex", height: "calc(100vh - 56px)", overflow: "hidden" }}>
-
-        {/* ── Slide-in filter drawer ── */}
-        <FilterDrawer
-          open={filterOpen}
-          onClose={() => setFilterOpen(false)}
-          filters={filters}
-          setFilters={setFilters}
-        />
-
-        {/* ── Center — results ── */}
-        <div style={{ flex: 1, overflowY: "auto", padding: "22px 24px" }}>
-
-          {/* Header row */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
-            <div>
-              <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 2, color: T.text }}>
-                Förare{filters.region ? ` i ${filters.region}` : ""}
-              </h2>
-              <p style={{ fontSize: 11, color: T.muted }}>
-                {loadingDrivers ? "Hämtar…" : `${filteredDrivers.length} förare`}
-                {matchJob && <> · matchning mot <strong style={{ color: T.sub }}>{forJobTitle || matchJob.title}</strong></>}
-              </p>
-            </div>
-            <div style={{ display: "flex", gap: 7, alignItems: "center" }}>
-              {/* Job match selector */}
-              <select
-                value={effectiveJobId || "__none__"}
-                onChange={(e) => setMatchJobId(e.target.value)}
-                style={{
-                  padding: "6px 10px", borderRadius: 7, background: T.card,
-                  border: `1px solid ${matchJob ? "rgba(31,95,92,0.35)" : T.border}`,
-                  color: matchJob ? "rgba(125,211,200,0.85)" : T.muted,
-                  fontSize: 11, fontFamily: T.font, cursor: "pointer", outline: "none",
-                }}
-              >
-                <option value="__none__">Visa alla</option>
-                {jobsForMatch.filter((j) => !j.filledAt && j.status !== "REMOVED").map((j) => (
-                  <option key={j.id} value={j.id}>{j.title}{j.location ? ` · ${j.location}` : ""}</option>
-                ))}
-              </select>
-              {/* Filter toggle */}
-              <button
-                onClick={() => setFilterOpen((p) => !p)}
-                style={{
-                  display: "flex", alignItems: "center", gap: 6, padding: "6px 13px", borderRadius: 8,
-                  cursor: "pointer", fontFamily: T.font, fontSize: 12, fontWeight: 500,
-                  border: `1px solid ${filterOpen || activeFilterCount > 0 ? "rgba(31,95,92,0.35)" : T.border}`,
-                  background: filterOpen || activeFilterCount > 0 ? T.pDim : T.card,
-                  color: filterOpen || activeFilterCount > 0 ? "rgba(125,211,200,0.85)" : T.sub,
-                  transition: "all .12s",
-                }}
-              >
-                <svg width="13" height="10" viewBox="0 0 13 10" fill="none"><path d="M1 2h11M3 5.5h7M5 9h3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg>
-                Filter
-                {activeFilterCount > 0 && (
-                  <span style={{ background: T.primary, color: "#fff", borderRadius: 8, fontSize: 10, fontWeight: 700, padding: "1px 5px" }}>
-                    {activeFilterCount}
-                  </span>
-                )}
-              </button>
-            </div>
-          </div>
-
-          {/* Job requirements banner */}
-          {fullMatchJob && (
-            <div style={{ marginBottom: 16, padding: "12px 16px", borderRadius: 10, background: T.pDim, border: "1px solid rgba(31,95,92,0.2)" }}>
-              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: T.muted, marginBottom: 8 }}>Jobbet kräver</p>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                {fullMatchJob.region && <Tag c="muted" size={11}>📍 {fullMatchJob.region}</Tag>}
-                {(fullMatchJob.license || []).map((l) => <Tag key={l} c="p" size={11}>{l}</Tag>)}
-                {(fullMatchJob.certificates || []).map((c) => <Tag key={c} c="muted" size={11}>{getCertificateLabel(c)}</Tag>)}
-                {fullMatchJob.experience && <Tag c="muted" size={11}>{experienceLevels.find((e) => e.value === fullMatchJob.experience)?.label ?? fullMatchJob.experience}</Tag>}
-                {fullMatchJob.employment && <Tag c="amber" size={11}>{fullMatchJob.employment === "fast" ? "Fast" : fullMatchJob.employment === "vikariat" ? "Vikariat" : "Tim"}</Tag>}
-              </div>
-            </div>
-          )}
-
-          {/* Driver list */}
-          {driversError ? (
-            <div style={{ padding: 24, background: "rgba(248,113,113,0.05)", border: "1px solid rgba(248,113,113,0.15)", borderRadius: 12 }}>
-              <p style={{ fontSize: 14, fontWeight: 600, color: "#f87171", marginBottom: 6 }}>Kunde inte hämta förare</p>
-              <p style={{ fontSize: 13, color: T.muted }}>{driversError}</p>
-            </div>
-          ) : loadingDrivers ? (
-            <DriverListSkeleton count={5} />
-          ) : sortedDrivers.length > 0 ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-              {sortedDrivers.map(({ driver, pct }) => (
-                <DarkDriverCard
-                  key={driver.id}
-                  driver={driver}
-                  matchPct={matchJob && pct ? pct : null}
-                  isSelected={selectedDriver?.id === driver.id}
-                  onClick={() => setSelectedDriver(selectedDriver?.id === driver.id ? null : driver)}
-                />
-              ))}
-            </div>
-          ) : (
-            <div style={{ textAlign: "center", padding: "48px 20px" }}>
-              <p style={{ fontSize: 13, color: T.muted, marginBottom: 8 }}>Inga förare matchar dina filter.</p>
-              <p style={{ fontSize: 12, color: T.muted }}>Prova att bredda filtret — endast synliga profiler visas.</p>
-              {activeFilterCount > 0 && (
-                <button
-                  onClick={() => setFilters({ search: "", region: "", license: "", certificate: "", segment: "", availability: "", experience: "" })}
-                  style={{ marginTop: 16, padding: "8px 18px", borderRadius: 8, border: "none", background: T.pDim, color: "rgba(125,211,200,0.85)", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: T.font }}
-                >
-                  Rensa filter
-                </button>
-              )}
-            </div>
-          )}
+    <div style={{ minHeight: "100vh", background: "#060f0f", color: "#f0faf9", fontFamily: "'DM Sans', system-ui, sans-serif", marginTop: "-64px", paddingTop: 64 }}>
+      <main style={{ maxWidth: 720, margin: "0 auto", padding: "32px 32px 80px" }}>
+        {/* Title */}
+        <div style={{ marginBottom: 24 }}>
+          <h1 style={{ fontSize: 30, fontWeight: 800, letterSpacing: -1, marginBottom: 6, color: "#f0faf9" }}>Hitta förare</h1>
+          <div style={{ fontSize: 14, color: "rgba(255,255,255,0.55)" }}>Sök bland förare som söker jobb just nu</div>
         </div>
 
-        {/* ── Right — driver detail panel ── */}
-        {selectedDriver && selectedDriverData && (
-          <DriverDetailPanel
-            driver={selectedDriver}
-            matchPct={selectedDriverData.pct}
-            matchCriteria={matchJob && selectedDriverData.score > 0 ? getMatchCriteria(selectedDriver, matchJob, selectedDriverData.details) : []}
-            isContacted={contactedDriverIds.has(selectedDriver.id)}
-            onClose={() => setSelectedDriver(null)}
-            onContact={(driver) => setContactingDriver(driver)}
-          />
-        )}
-      </div>
+        {/* Match against selector */}
+        <div style={{ marginBottom: 18, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>Sortera på match mot:</span>
+          <div style={{ position: "relative" }}>
+            <select
+              value={matchJobId || ""}
+              onChange={e => setMatchJobId(e.target.value || "")}
+              style={{ padding: "5px 26px 5px 12px", borderRadius: 99, background: "rgba(245,166,35,0.08)", border: "1px solid rgba(245,166,35,0.25)", color: "#F5A623", fontSize: 12, fontWeight: 700, cursor: "pointer", outline: "none", appearance: "none", fontFamily: "inherit" }}
+            >
+              <option value="">Ingen annons</option>
+              {availableJobs.map(j => <option key={j.id} value={j.id}>{j.title}</option>)}
+            </select>
+            <div style={{ position: "absolute", right: 9, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "#F5A623", fontSize: 9 }}>▼</div>
+          </div>
+        </div>
 
-      {/* Contact modal */}
+        {/* Search + filter bar */}
+        <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
+          <div style={{ flex: 1, position: "relative" }}>
+            <span style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.4)", display: "inline-flex" }}><Icon name="search" size={15} /></span>
+            <input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Sök på namn eller ort"
+              style={{ width: "100%", padding: "14px 16px 14px 44px", background: "#0a1414", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12, fontSize: 14, outline: "none", color: "#f0faf9", fontFamily: "inherit" }}
+            />
+          </div>
+          <button
+            onClick={() => setFiltersOpen(true)}
+            style={{ position: "relative", padding: "0 18px", borderRadius: 12, background: "#0a1414", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.85)", fontSize: 13, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 8, fontFamily: "inherit" }}
+          >
+            <Icon name="filter" size={14} />
+            Filter
+            {activeFilterCount > 0 && (
+              <span style={{ position: "absolute", bottom: 9, left: 18, right: 18, height: 2, borderRadius: 2, background: "#F5A623" }} />
+            )}
+          </button>
+        </div>
+
+        {/* Count */}
+        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginBottom: 14, fontWeight: 600 }}>
+          {loadingDrivers ? "Hämtar…" : `${sortedDrivers.length} förare`}
+          {matchJob ? " · sorterat på match" : ""}
+        </div>
+
+        {/* Driver list */}
+        {driversError ? (
+          <div style={{ padding: 24, background: "rgba(248,113,113,0.05)", border: "1px solid rgba(248,113,113,0.15)", borderRadius: 12 }}>
+            <p style={{ fontSize: 14, fontWeight: 600, color: "#f87171", marginBottom: 6 }}>Kunde inte hämta förare</p>
+            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)" }}>{driversError}</p>
+          </div>
+        ) : loadingDrivers ? (
+          <DriverListSkeleton count={5} />
+        ) : sortedDrivers.length > 0 ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {sortedDrivers.map(({ driver, pct }) => (
+              <DriverRow
+                key={driver.id}
+                driver={driver}
+                pct={matchJob ? pct : null}
+                onClick={() => setSelectedDriverId(driver.id)}
+              />
+            ))}
+          </div>
+        ) : (
+          <div style={{ padding: "60px 20px", textAlign: "center", background: "#0a1414", border: "1px dashed rgba(255,255,255,0.08)", borderRadius: 14 }}>
+            <div style={{ fontSize: 14, color: "rgba(255,255,255,0.55)", marginBottom: 12 }}>Inga förare matchar dina filter</div>
+            {(activeFilterCount > 0 || search) && (
+              <button onClick={() => { setFilters({ ...EMPTY_FILTERS }); setSearch(""); }} style={{ padding: "9px 18px", borderRadius: 99, background: "rgba(245,166,35,0.1)", border: "1px solid rgba(245,166,35,0.3)", color: "#F5A623", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+                Rensa filter
+              </button>
+            )}
+          </div>
+        )}
+      </main>
+
+      <FilterSheet
+        open={filtersOpen}
+        filters={filters}
+        setFilters={setFilters}
+        onClose={() => setFiltersOpen(false)}
+      />
+
+      {selectedEntry && (
+        <DetailModal
+          driver={selectedEntry.driver}
+          pct={selectedEntry.pct}
+          matchJob={fullMatchJob}
+          criteria={activeCriteria}
+          isContacted={contactedDriverIds.has(selectedEntry.driver.id)}
+          onClose={() => setSelectedDriverId(null)}
+          onContact={d => setContactingDriver(d)}
+          navigate={navigate}
+        />
+      )}
+
       {contactingDriver && (
         <ContactModal
           driver={contactingDriver}
-          jobs={apiJobs.filter((j) => j.status === "ACTIVE" || j.status === "HIDDEN")}
+          jobs={apiJobs.filter(j => j.status === "ACTIVE" || j.status === "HIDDEN")}
           onClose={() => setContactingDriver(null)}
-          onSent={(driverId) => {
-            setContactedDriverIds((prev) => new Set([...prev, driverId]));
+          onSent={driverId => {
+            setContactedDriverIds(prev => new Set([...prev, driverId]));
             setTimeout(() => setContactingDriver(null), 2000);
           }}
         />
