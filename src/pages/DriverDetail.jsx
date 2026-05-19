@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useIsMobile } from "../hooks/useIsMobile";
 import { calcYearsExperience } from "../utils/profileUtils";
 import { availabilityTypes, getCertificateLabel } from "../data/profileData";
 import ReachOutModal from "../components/ReachOutModal";
@@ -89,6 +90,7 @@ function Section({ title, children, last }) {
 }
 
 export default function DriverDetail() {
+  const isMobile = useIsMobile();
   const { id } = useParams();
   const { hasApi, user } = useAuth();
   const [showReachOut, setShowReachOut] = useState(false);
@@ -188,7 +190,7 @@ export default function DriverDetail() {
         description={metaDescription || "Förarprofil på Sveriges Transportplattform"}
         canonical={`/foretag/chaufforer/${id}`}
       />
-      <div style={{ maxWidth: 720, margin: "0 auto", padding: "24px 32px 120px" }}>
+      <div style={{ maxWidth: 720, margin: "0 auto", padding: isMobile ? "24px 16px 120px" : "24px 32px 120px" }}>
         <Link
           to="/foretag/chaufforer"
           style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "6px 0", color: "rgba(255,255,255,0.55)", fontSize: 13, fontWeight: 600, textDecoration: "none", marginBottom: 20 }}
@@ -199,13 +201,13 @@ export default function DriverDetail() {
         {/* Hero */}
         <div style={{ display: "flex", gap: 20, alignItems: "flex-start", marginBottom: 20 }}>
           <div style={{ position: "relative", flexShrink: 0 }}>
-            <div style={{ width: 72, height: 72, borderRadius: 99, background: color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 22, color: "#000" }}>
+            <div style={{ width: isMobile ? 56 : 72, height: isMobile ? 56 : 72, borderRadius: 99, background: color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: isMobile ? 18 : 22, color: "#000" }}>
               {initials}
             </div>
             <div style={{ position: "absolute", bottom: -1, right: -1, width: 18, height: 18, borderRadius: 99, background: availColor, border: "3px solid #060f0f" }} />
           </div>
           <div style={{ flex: 1 }}>
-            <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: -0.8, marginBottom: 5, color: "#fff" }}>{driver.name}</h1>
+            <h1 style={{ fontSize: isMobile ? 22 : 28, fontWeight: 800, letterSpacing: -0.8, marginBottom: 5, color: "#fff" }}>{driver.name}</h1>
             <div style={{ fontSize: 13.5, color: "rgba(255,255,255,0.6)", marginBottom: 8 }}>
               {[driver.age && `${driver.age} år`, driver.location, yearsExp && `${yearsExp} år som chaufför`].filter(Boolean).join(" · ")}
             </div>
@@ -374,7 +376,7 @@ export default function DriverDetail() {
 
         {/* Aktivitet */}
         <Section title="Aktivitet" last>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(3, 1fr)", gap: 10 }}>
             {[
               { label: "Tillgänglighet", value: availabilityLabel || "—" },
               { label: "Erfarenhet", value: yearsExp ? `${yearsExp} år` : "—" },

@@ -25,10 +25,17 @@ export async function subscribeToPush(token) {
   const publicKey = await getVapidPublicKey(token);
   if (!publicKey) return null;
 
-  const subscription = await registration.pushManager.subscribe({
-    userVisibleOnly: true,
-    applicationServerKey: urlBase64ToUint8Array(publicKey),
-  });
+  let subscription;
+  try {
+    subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(publicKey),
+    });
+  } catch (err) {
+    // NotAllowedError = user denied permission — expected, not an error
+    if (err.name === "NotAllowedError") return null;
+    throw err;
+  }
 
   const json = subscription.toJSON();
   await fetch(`${API}/api/notifications/push-subscribe`, {

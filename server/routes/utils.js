@@ -163,8 +163,9 @@ async function lookupBolagsverket(orgnr) {
     };
     const region = lanRaw ? (LAN_TO_REGION[lanRaw] ?? null) : null;
 
-    // Company type (AB, HB, etc.)
-    const companyType = org.juridiskForm?.klartext ?? null;
+    // Company type (AB, HB, etc.) — juridiskForm is the readable label, organisationsform is the code
+    const companyType     = org.juridiskForm?.klartext ?? null;
+    const organisationsform = org.organisationsform?.kod ?? null;
 
     // Founded year
     const regDatum = org.organisationsdatum?.registreringsdatum ?? null;
@@ -180,7 +181,14 @@ async function lookupBolagsverket(orgnr) {
       ? null // unknown — no SNI data
       : sniCodes.some((kod) => TRANSPORT_PREFIXES.some((p) => kod.startsWith(p)));
 
-    return { companyName, city, region, companyType, foundedYear, sniCodes, isTransport };
+    // Business description — typically a short SNI clarification, not a marketing text
+    const verksamhetsbeskrivning = org.verksamhetsbeskrivning?.beskrivning ?? null;
+
+    // Deregistered check
+    const avregistreradDatum = org.avregistreradOrganisation?.avregistreringsdatum ?? null;
+    const isDeregistered = !!avregistreradDatum;
+
+    return { companyName, city, region, companyType, organisationsform, foundedYear, sniCodes, isTransport, verksamhetsbeskrivning, isDeregistered };
   } catch (err) {
     console.error("[bolagsverket] lookup error:", err.message);
     return null;
@@ -215,16 +223,28 @@ utilsRouter.get("/company-lookup", async (req, res) => {
   const formatted = formatOrgNr(digits);
   const bolag     = await lookupBolagsverket(digits);
 
+  // Block deregistered companies
+  if (bolag?.isDeregistered) {
+    return res.json({
+      valid:     false,
+      formatted,
+      error:     "Detta organisationsnummer är avregistrerat och kan inte användas.",
+      isDeregistered: true,
+    });
+  }
+
   return res.json({
-    valid:        true,
+    valid:                  true,
     formatted,
-    companyName:  bolag?.companyName  ?? null,
-    city:         bolag?.city         ?? null,
-    region:       bolag?.region       ?? null,
-    companyType:  bolag?.companyType  ?? null,
-    foundedYear:  bolag?.foundedYear  ?? null,
-    sniCodes:     bolag?.sniCodes     ?? [],
-    isTransport:  bolag?.isTransport  ?? null,
-    source:       bolag ? "bolagsverket" : "format-only",
+    companyName:            bolag?.companyName            ?? null,
+    city:                   bolag?.city                   ?? null,
+    region:                 bolag?.region                 ?? null,
+    companyType:            bolag?.companyType            ?? null,
+    organisationsform:      bolag?.organisationsform      ?? null,
+    foundedYear:            bolag?.foundedYear            ?? null,
+    sniCodes:               bolag?.sniCodes               ?? [],
+    isTransport:            bolag?.isTransport            ?? null,
+    verksamhetsbeskrivning: bolag?.verksamhetsbeskrivning ?? null,
+    source:                 bolag ? "bolagsverket" : "format-only",
   });
 });

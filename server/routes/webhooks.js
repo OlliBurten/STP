@@ -1,5 +1,7 @@
 import { Router } from "express";
 import { handleSentryEvent } from "../lib/sentryAgent.js";
+import { processBacklog } from "../lib/bugFixAgent.js";
+import { authMiddleware, requireAdmin } from "../middleware/auth.js";
 
 export const webhooksRouter = Router();
 
@@ -23,5 +25,17 @@ webhooksRouter.post("/sentry", async (req, res) => {
 
   handleSentryEvent(req.body).catch((e) =>
     console.error("[SentryWebhook] Fel:", e.message)
+  );
+});
+
+/**
+ * POST /api/webhooks/sentry/process-backlog
+ * Admin-only: hämta alla öppna Sentry-issues och försök auto-fixa dem.
+ */
+webhooksRouter.post("/sentry/process-backlog", authMiddleware, requireAdmin, async (req, res) => {
+  res.json({ ok: true, message: "Backlog-processing startad, kör i bakgrunden" });
+
+  processBacklog().catch((e) =>
+    console.error("[SentryWebhook] Backlog-fel:", e.message)
   );
 });

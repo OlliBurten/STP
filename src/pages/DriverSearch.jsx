@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useIsMobile } from "../hooks/useIsMobile";
 import { useProfile } from "../context/ProfileContext";
 import { useAuth } from "../context/AuthContext";
 import { calcYearsExperience } from "../utils/profileUtils";
@@ -353,6 +354,7 @@ function ContactModal({ driver, jobs, onClose, onSent }) {
 const EMPTY_FILTERS = { search: "", region: "", license: "", certificate: "", segment: "", availability: "", experience: "" };
 
 export default function DriverSearch() {
+  const isMobile = useIsMobile();
   const { hasApi } = useAuth();
   const { profile } = useProfile();
   const { state: locationState } = useLocation();
@@ -461,7 +463,7 @@ export default function DriverSearch() {
 
   return (
     <div style={{ minHeight: "100vh", background: "#060f0f", color: "#f0faf9", fontFamily: "'DM Sans', system-ui, sans-serif", marginTop: "-64px", paddingTop: 64 }}>
-      <main style={{ maxWidth: 720, margin: "0 auto", padding: "32px 32px 80px" }}>
+      <main style={{ maxWidth: 720, margin: "0 auto", padding: isMobile ? "24px 16px 80px" : "32px 32px 80px" }}>
         {/* Title */}
         <div style={{ marginBottom: 24 }}>
           <h1 style={{ fontSize: 30, fontWeight: 800, letterSpacing: -1, marginBottom: 6, color: "#f0faf9" }}>Hitta förare</h1>

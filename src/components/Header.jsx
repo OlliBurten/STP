@@ -336,7 +336,7 @@ export default function Header({ onboarding = false }) {
 
           {/* Logo */}
           <div className="flex items-center shrink-0 overflow-visible">
-            <Link to="/" className="flex items-center focus:outline-none rounded overflow-visible">
+            <Link to={platformAdminSession ? "/admin" : "/"} className="flex items-center focus:outline-none rounded overflow-visible">
               <Logo height={36} variant="light" />
             </Link>
           </div>

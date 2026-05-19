@@ -6,13 +6,14 @@
  *   2. Identifiera vilken fil som orsakade felet
  *   3. Hämta filen från GitHub
  *   4. Claude analyserar + skriver fix
- *   5. Committa via GitHub API → Railway auto-deployas
- *   6. Skicka rapport till Oliver
+ *   5. Committa via GitHub API → Railway/Vercel auto-deployas
+ *   6. Markera Sentry-issue som resolved
+ *   7. Skicka rapport till Oliver
  *
  * Säkerhetsregler:
  *   - Rör aldrig: schema.prisma, auth.js, server.js, middleware/
  *   - Max 1 fil per fix
- *   - Om samma fil fixades för < 30 min sedan — skippa (undvik loopar)
+ *   - Om samma fil fixades för < 30 min sedan — skippa (undvika loopar)
  *   - Om Claude inte är säker — skicka bara analys, committa inte
  */
 
@@ -45,6 +46,12 @@ function getGitHub() {
   const repo = process.env.GITHUB_REPO;
   if (!token || !repo) throw new Error("GITHUB_TOKEN eller GITHUB_REPO saknas");
   return { token, repo };
+}
+
+function getSentry() {
+  const token = process.env.SENTRY_AUTH_TOKEN;
+  const org = process.env.SENTRY_ORG || "stp-jb";
+  return { token, org };
 }
 
 // ─── GitHub API helpers ───────────────────────────────────────────────────────
@@ -82,6 +89,44 @@ async function githubCommit(path, content, message, sha) {
   return resp.ok ? resp.json() : null;
 }
 
+// ─── Sentry API helpers ───────────────────────────────────────────────────────
+
+async function sentryResolveIssue(issueId) {
+  if (!issueId) return;
+  const { token, org } = getSentry();
+  if (!token) return;
+  await fetch(`https://sentry.io/api/0/organizations/${org}/issues/${issueId}/`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ status: "resolved" }),
+  }).catch(() => {});
+}
+
+export async function sentryFetchUnresolvedIssues(limit = 50) {
+  const { token, org } = getSentry();
+  if (!token) return [];
+  const resp = await fetch(
+    `https://sentry.io/api/0/organizations/${org}/issues/?limit=${limit}&query=is:unresolved&sort=date`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  if (!resp.ok) return [];
+  return resp.json();
+}
+
+async function sentryGetIssueEvents(issueId) {
+  const { token, org } = getSentry();
+  if (!token) return null;
+  const resp = await fetch(
+    `https://sentry.io/api/0/organizations/${org}/issues/${issueId}/events/latest/`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  if (!resp.ok) return null;
+  return resp.json();
+}
+
 // ─── Extrahera relevant fil från stack trace ──────────────────────────────────
 
 function extractTargetFile(stacktrace) {
@@ -92,16 +137,24 @@ function extractTargetFile(stacktrace) {
   );
   if (!frames.length) return null;
   const frame = frames[frames.length - 1];
-  // Rensa bort absolut sökväg — behåll bara relativ del (server/routes/jobs.js)
-  const match = frame.filename.match(/(server\/(?:routes|lib|scripts)\/.+\.js)/);
-  return match ? { path: match[1], line: frame.lineno, fn: frame.function } : null;
+
+  // Backend: server/routes/..., server/lib/..., server/scripts/...
+  const backendMatch = frame.filename.match(/(server\/(?:routes|lib|scripts)\/.+\.js)/);
+  if (backendMatch) return { path: backendMatch[1], line: frame.lineno, fn: frame.function };
+
+  // Frontend: src/pages/..., src/components/..., src/utils/..., src/hooks/...
+  const frontendMatch = frame.filename.match(/(src\/(?:pages|components|utils|hooks|context|api)\/.+\.[jt]sx?)/);
+  if (frontendMatch) return { path: frontendMatch[1], line: frame.lineno, fn: frame.function };
+
+  return null;
 }
 
 // ─── Huvud-funktion ───────────────────────────────────────────────────────────
 
 export async function attemptBugFix(sentryPayload) {
-  const event = sentryPayload?.data?.event || {};
-  const issue = sentryPayload?.data?.issue || {};
+  const event = sentryPayload?.data?.event || sentryPayload?.event || {};
+  const issue = sentryPayload?.data?.issue || sentryPayload?.issue || {};
+  const issueId = issue.id || sentryPayload?.issue_id || null;
   const errorTitle = event.title || issue.title || "Okänt fel";
   const errorType = event.exception?.values?.[0]?.type || "";
   const errorValue = event.exception?.values?.[0]?.value || "";
@@ -138,6 +191,11 @@ export async function attemptBugFix(sentryPayload) {
 
   const originalCode = Buffer.from(fileData.content, "base64").toString("utf-8");
 
+  const isFrontend = target.path.startsWith("src/");
+  const techContext = isFrontend
+    ? "React SPA (Vite + React 18). Filen är JSX/JS. Inga TypeScript-typer."
+    : "Express.js + Prisma + Node.js backend.";
+
   // Claude analyserar och fixar
   const anthropic = getAnthropic();
   const message = await anthropic.messages.create({
@@ -145,7 +203,7 @@ export async function attemptBugFix(sentryPayload) {
     max_tokens: 4000,
     messages: [{
       role: "user",
-      content: `Du är en senior backend-ingenjör för Sveriges Transportplattform (STP) — en Express.js/Prisma/Node.js-app.
+      content: `Du är en senior ingenjör för Sveriges Transportplattform (STP) — ${techContext}
 
 Ett produktionsfel har inträffat:
 FEL: ${errorType}: ${errorValue}
@@ -160,7 +218,7 @@ ${originalCode}
 Din uppgift:
 1. Identifiera exakt vad som orsakar felet
 2. Skriv en minimal, korrekt fix
-3. Om du INTE är säker på fixen — svara med SKIP och förklara varför
+3. Om du INTE är säker på fixen — svara med SÄKER: NEJ och förklara varför
 
 Svara i EXAKT detta format:
 
@@ -183,7 +241,7 @@ FIX: [vad du ändrade, 1 mening]
 
   if (confident !== "JA" || !codeMatch) {
     console.log(`[BugFixAgent] Inte säker på fix för ${target.path} — skickar bara analys`);
-    await sendAnalysisEmail(errorTitle, target, explanation, fixDescription, false);
+    await sendAnalysisEmail(errorTitle, target, explanation, fixDescription);
     return { fixed: false, reason: "not_confident", explanation };
   }
 
@@ -206,11 +264,74 @@ FIX: [vad du ändrade, 1 mening]
   }
 
   recentlyFixed.set(target.path, Date.now());
-  console.log(`[BugFixAgent] Fix committad: ${target.path} — deployas automatiskt via Railway`);
+  console.log(`[BugFixAgent] Fix committad: ${target.path} — deployas automatiskt`);
+
+  // Markera Sentry-issue som resolved
+  if (issueId) {
+    await sentryResolveIssue(issueId);
+    console.log(`[BugFixAgent] Sentry issue ${issueId} markerad som resolved`);
+  }
 
   await sendFixEmail(errorTitle, target, explanation, fixDescription, result);
 
   return { fixed: true, file: target.path, explanation, fix: fixDescription };
+}
+
+// ─── Backlog-processor: hämta och fixa alla öppna Sentry-issues ──────────────
+
+/**
+ * Hämtar alla öppna Sentry-issues och försöker auto-fixa dem en efter en.
+ * Körs via POST /api/webhooks/sentry/process-backlog (admin-only).
+ */
+export async function processBacklog() {
+  console.log("[BugFixAgent] Startar backlog-processing...");
+
+  const issues = await sentryFetchUnresolvedIssues(50);
+  if (!issues.length) {
+    console.log("[BugFixAgent] Inga öppna issues att processera");
+    return { processed: 0, fixed: 0 };
+  }
+
+  console.log(`[BugFixAgent] Hittade ${issues.length} öppna issues`);
+
+  let processed = 0;
+  let fixed = 0;
+
+  for (const issue of issues) {
+    try {
+      // Hämta senaste eventet för att få stack trace
+      const latestEvent = await sentryGetIssueEvents(issue.id);
+      if (!latestEvent) {
+        console.log(`[BugFixAgent] Inget event för issue ${issue.id} — skippar`);
+        continue;
+      }
+
+      // Bygg ett payload-format som attemptBugFix förväntar sig
+      const payload = {
+        data: {
+          event: latestEvent,
+          issue: {
+            id: issue.id,
+            title: issue.title,
+            web_url: issue.permalink,
+            count: issue.count,
+          },
+        },
+      };
+
+      const result = await attemptBugFix(payload);
+      processed++;
+      if (result.fixed) fixed++;
+
+      // 2 sekunders paus mellan fixar för att inte spamma GitHub API
+      await new Promise((r) => setTimeout(r, 2000));
+    } catch (e) {
+      console.error(`[BugFixAgent] Fel vid issue ${issue.id}:`, e.message);
+    }
+  }
+
+  console.log(`[BugFixAgent] Backlog klar: ${processed} processerade, ${fixed} fixade`);
+  return { processed, fixed };
 }
 
 // ─── Email-rapporter ──────────────────────────────────────────────────────────
@@ -229,7 +350,7 @@ FIL: ${target.path} (rad ~${target.line})
 ORSAK: ${explanation}
 FIX: ${fix}
 
-Commit: ${sha} → Railway deployas automatiskt inom ~2 min.
+Commit: ${sha} → deployas automatiskt inom ~2 min.
 
 Om fixen är fel: gå till GitHub och revertera commit ${sha}.
 https://github.com/${process.env.GITHUB_REPO}/commit/${commitResult?.commit?.sha || ""}`;
@@ -239,7 +360,7 @@ https://github.com/${process.env.GITHUB_REPO}/commit/${commitResult?.commit?.sha
   }
 }
 
-async function sendAnalysisEmail(errorTitle, target, explanation, fix, wasFixed) {
+async function sendAnalysisEmail(errorTitle, target, explanation, fix) {
   const adminEmails = getAdminEmails();
   if (!adminEmails.length) return;
 

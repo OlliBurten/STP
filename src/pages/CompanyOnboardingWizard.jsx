@@ -7,6 +7,7 @@ import { regions } from "../data/mockJobs.js";
 import { useAuth } from "../context/AuthContext";
 import { trackCompanyOnboardingComplete } from "../utils/segmentMetrics";
 import { apiGet } from "../api/client.js";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 const IC = {
@@ -101,7 +102,13 @@ function Step1({ form, setForm, orgLookup, onLookup, error }) {
             <div style={{ fontSize: 12.5, fontWeight: 700, color: "#4ade80" }}>Hämtat från Bolagsverket</div>
           </div>
           <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 4 }}>{form.companyName}</div>
-          {form.city && <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.6)" }}>{form.city}</div>}
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 4 }}>
+            {form.city && <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.6)" }}>{form.city}</div>}
+            {form.companyType && <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.4)" }}>·</div>}
+            {form.companyType && <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.6)" }}>{form.companyType}</div>}
+            {form.foundedYear && <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.4)" }}>·</div>}
+            {form.foundedYear && <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.6)" }}>Grundat {form.foundedYear}</div>}
+          </div>
         </div>
       )}
 
@@ -301,6 +308,7 @@ function DoneScreen({ form }) {
 export default function CompanyOnboardingWizard() {
   const { hasApi, refreshUser, refreshOrgs, switchOrg } = useAuth();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -314,6 +322,7 @@ export default function CompanyOnboardingWizard() {
     companyName: "",
     city: "",
     foundedYear: null,
+    companyType: null,
     firstName: "",
     lastName: "",
     contactRole: "",
@@ -341,7 +350,7 @@ export default function CompanyOnboardingWizard() {
   const handleOrgLookup = useCallback((raw, immediate = false) => {
     const digits = raw.replace(/\D/g, "").slice(0, 10);
     const formatted = digits.length > 6 ? `${digits.slice(0, 6)}-${digits.slice(6)}` : digits;
-    setForm((p) => ({ ...p, orgNumber: formatted, companyName: "", city: "", foundedYear: null }));
+    setForm((p) => ({ ...p, orgNumber: formatted, companyName: "", city: "", foundedYear: null, companyType: null }));
     setOrgLookup({ loading: false, valid: null, isTransport: null, error: null });
     if (digits.length < 10) return;
     clearTimeout(lookupTimer.current);
@@ -357,6 +366,7 @@ export default function CompanyOnboardingWizard() {
           companyName: data.companyName || "",
           city: data.city || "",
           foundedYear: data.foundedYear || null,
+          companyType: data.companyType || null,
         }));
       } catch {
         setOrgLookup({ loading: false, valid: null, isTransport: null, error: null });
@@ -419,7 +429,7 @@ export default function CompanyOnboardingWizard() {
 
   const wrapStyle = {
     minHeight: "100vh", background: "#060f0f", color: "#f0faf9",
-    fontFamily: "inherit", marginTop: "-64px", paddingTop: "64px",
+    fontFamily: "'DM Sans', system-ui, sans-serif", marginTop: "-64px", paddingTop: "64px",
   };
 
   return (
@@ -427,12 +437,12 @@ export default function CompanyOnboardingWizard() {
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
 
       {/* Minimal header */}
-      <header style={{ height: 64, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 32px", borderBottom: "1px solid rgba(255,255,255,0.04)", position: "sticky", top: 0, background: "rgba(6,15,15,0.96)", backdropFilter: "blur(14px)", zIndex: 50, marginTop: -64 }}>
+      <header style={{ height: 64, display: "flex", alignItems: "center", justifyContent: "space-between", padding: isMobile ? "0 16px" : "0 32px", borderBottom: "1px solid rgba(255,255,255,0.04)", position: "sticky", top: 0, background: "rgba(6,15,15,0.96)", backdropFilter: "blur(14px)", zIndex: 50, marginTop: -64 }}>
         <div style={{ fontWeight: 800, letterSpacing: -0.8, fontSize: 21 }}>STP</div>
         <Link to="/loggaut" style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", textDecoration: "none", fontWeight: 600 }}>Avbryt och logga ut</Link>
       </header>
 
-      <main style={{ maxWidth: 520, margin: "0 auto", padding: "40px 24px 80px" }}>
+      <main style={{ maxWidth: 520, margin: "0 auto", padding: isMobile ? "24px 16px 80px" : "40px 24px 80px" }}>
         {step !== "done" && <StepDots step={step} total={3} />}
 
         {step === 1 && <Step1 form={form} setForm={setForm} orgLookup={orgLookup} onLookup={handleOrgLookup} error={error} />}

@@ -292,11 +292,11 @@ authRouter.post("/register", validateBody(registerSchema), async (req, res, next
     });
   } catch (e) {
     if (e?.code === "P2002") {
-      const field = e?.meta?.target?.[0];
-      if (field === "companyOrgNumber") {
+      const target = String(e?.meta?.target || "");
+      if (target.includes("companyOrgNumber")) {
         return res.status(409).json({ error: "Organisationsnumret används redan" });
       }
-      if (field === "email") {
+      if (target.includes("email")) {
         return res.status(409).json({ error: "E-postadressen används redan" });
       }
     }

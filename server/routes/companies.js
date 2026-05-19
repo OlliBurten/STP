@@ -620,7 +620,7 @@ companiesRouter.get("/stats/matching-drivers", async (req, res, next) => {
         || avail === "BOTH";
       if (availOk) score += 1;
 
-      return Math.round((score / max) * 100);
+      return Math.min(100, Math.round((score / max) * 100));
     }
 
     // Bästa match mot vilket som helst av företagets aktiva jobb

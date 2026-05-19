@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { fetchMyCompanyProfile } from "../api/companies.js";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 const Icon = ({ n, s = 18, c = "currentColor" }) => {
@@ -180,6 +181,7 @@ function StepCard({ step, num, expanded, onToggle, onComplete, isLast }) {
 export default function CompanyVerification() {
   const { hasApi } = useAuth();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [profile, setProfile] = useState(null);
   const [expandedStep, setExpandedStep] = useState(null);
   const [steps, setSteps] = useState([
@@ -244,7 +246,7 @@ export default function CompanyVerification() {
         }
       `}</style>
 
-      <div style={{ maxWidth: 720, margin: "0 auto", padding: "24px 32px 80px" }}>
+      <div style={{ maxWidth: 720, margin: "0 auto", padding: isMobile ? "24px 16px 80px" : "24px 32px 80px" }}>
         <Link
           to="/foretag"
           style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "6px 0", color: "rgba(255,255,255,0.55)", fontSize: 13, fontWeight: 600, textDecoration: "none", marginBottom: 20 }}

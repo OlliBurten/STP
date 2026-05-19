@@ -33,8 +33,10 @@ function lazyRetry(importFn) {
         msg.includes("error loading dynamically imported module") ||
         msg.includes("is not a valid JavaScript MIME type");
 
-      if (isChunkError && !sessionStorage.getItem("chunk_reload")) {
-        sessionStorage.setItem("chunk_reload", "1");
+      const reloadTs = sessionStorage.getItem("chunk_reload");
+      const recentReload = reloadTs && Date.now() - Number(reloadTs) < 30_000;
+      if (isChunkError && !recentReload) {
+        sessionStorage.setItem("chunk_reload", String(Date.now()));
         window.location.reload();
         // Keep Suspense in loading state while reload happens — no error flash.
         return new Promise(() => {});
@@ -73,7 +75,7 @@ const CompanyProfile        = lazyRetry(() => import("./pages/CompanyProfile"));
 const CompanyPublicProfile  = lazyRetry(() => import("./pages/CompanyPublicProfile"));
 const DriverOnboardingWizard   = lazyRetry(() => import("./pages/DriverOnboardingWizard"));
 const CompanyOnboardingWizard  = lazyRetry(() => import("./pages/CompanyOnboardingWizard"));
-const CompanyVerification      = lazyRetry(() => import("./pages/CompanyVerification"));
+// const CompanyVerification   = lazyRetry(() => import("./pages/CompanyVerification")); // Disabled until F-skatt/trafiktillstånd APIs are integrated
 const AddCompany            = lazyRetry(() => import("./pages/AddCompany"));
 const CompanyTeam           = lazyRetry(() => import("./pages/CompanyTeam"));
 const InviteAccept          = lazyRetry(() => import("./pages/InviteAccept"));
@@ -367,14 +369,7 @@ function AppLayout() {
                       </ProtectedRoute>
                     }
                   />
-                  <Route
-                    path="/foretag/verifiering"
-                    element={
-                      <ProtectedRoute requiredRole="company">
-                        <CompanyVerification />
-                      </ProtectedRoute>
-                    }
-                  />
+                  {/* /foretag/verifiering disabled — see CompanyVerification.jsx */}
                   <Route
                     path="/foretag/profil"
                     element={

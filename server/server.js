@@ -456,6 +456,10 @@ export { app };
 
 async function shutdown(signal) {
   console.log(`[shutdown] ${signal} — stänger ned...`);
+  // Close HTTP server first so Railway can reuse the port immediately
+  if (app._httpServer) {
+    await new Promise((resolve) => app._httpServer.close(resolve));
+  }
   try {
     const { prisma } = await import("./lib/prisma.js");
     await prisma.$disconnect();
@@ -483,8 +487,11 @@ if (process.env.APP_LISTEN !== "false") {
     if (r.count > 0) console.log(`[Startup] Städade ${r.count} tomma companyOrgNumber → null`);
   }).catch(() => {});
 
-  app.listen(PORT, () => {
+  const httpServer = app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
     startReminderScheduler();
   });
+
+  // Expose server for graceful shutdown
+  app._httpServer = httpServer;
 }

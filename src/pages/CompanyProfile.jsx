@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { fetchMyCompanyProfile, updateMyCompanyProfile, updateCompanyNotificationSettings } from "../api/companies.js";
 import { listCompanyInvites, createCompanyInvite, revokeCompanyInvite } from "../api/invites.js";
@@ -151,6 +151,18 @@ function GrundInfo({ draft, setDraft, isMobile }) {
 
 function OmOss({ draft, setDraft }) {
   const about = draft?.companyDescription || "";
+  const [bvHint, setBvHint] = useState(null);
+  const fetched = useRef(false);
+
+  useEffect(() => {
+    if (fetched.current || about.trim() || !draft?.companyOrgNumber) return;
+    fetched.current = true;
+    fetch(`/api/utils/company-lookup?orgnr=${encodeURIComponent(draft.companyOrgNumber)}`)
+      .then((r) => r.json())
+      .then((d) => { if (d.verksamhetsbeskrivning) setBvHint(d.verksamhetsbeskrivning); })
+      .catch(() => {});
+  }, [about, draft?.companyOrgNumber]);
+
   return (
     <div>
       <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 6, letterSpacing: -0.3 }}>Om oss</h2>
@@ -168,6 +180,11 @@ function OmOss({ draft, setDraft }) {
           onChange={(e) => setDraft((p) => ({ ...p, companyDescription: e.target.value }))}
           placeholder="Berätta er historia, värderingar, varför förare trivs hos er..."
         />
+        {bvHint && !about.trim() && (
+          <div style={{ marginTop: 10, padding: "10px 14px", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 10, fontSize: 12, color: "rgba(255,255,255,0.4)", lineHeight: 1.5 }}>
+            <span style={{ fontWeight: 700, color: "rgba(255,255,255,0.3)" }}>Från Bolagsverket: </span>{bvHint}
+          </div>
+        )}
       </Field>
 
       <div style={{ marginTop: 8, padding: "12px 16px", background: "rgba(245,166,35,0.05)", border: "1px solid rgba(245,166,35,0.18)", borderRadius: 11, fontSize: 12, color: "rgba(255,255,255,0.7)", lineHeight: 1.55 }}>
@@ -445,9 +462,9 @@ function PasswordSection() {
 const TABS = [
   { id: "basic", label: "Grundinfo" },
   { id: "about", label: "Om oss" },
-  { id: "benefits", label: "Förmåner" },
-  { id: "verification", label: "Verifiering" },
   { id: "team", label: "Team" },
+  // "benefits" tab disabled — no backend field yet
+  // "verification" tab disabled — waiting for Skatteverket/Transportstyrelsen APIs
 ];
 
 export default function CompanyProfile() {
@@ -542,7 +559,7 @@ export default function CompanyProfile() {
         </div>
       )}
 
-      <div style={{ maxWidth: 880, margin: "0 auto", padding: isMobile ? "28px 20px 100px" : "32px 32px 100px" }}>
+      <div style={{ maxWidth: 880, margin: "0 auto", padding: isMobile ? "24px 20px 100px" : "32px 32px 100px" }}>
         <Link to="/foretag" style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "6px 0", color: "rgba(255,255,255,0.55)", fontSize: 13, fontWeight: 600, textDecoration: "none", marginBottom: 20 }}>
           <BackIcon /> Tillbaka till översikt
         </Link>
@@ -618,8 +635,6 @@ export default function CompanyProfile() {
             </>
           )}
           {tab === "about" && <OmOss draft={draft} setDraft={setDraft} />}
-          {tab === "benefits" && <Formaner draft={draft} setDraft={setDraft} />}
-          {tab === "verification" && <Verifiering draft={draft} setDraft={setDraft} />}
           {tab === "team" && <TeamTab isOwner={isOwner} invites={invites} setInvites={setInvites} toast={toast} />}
         </div>
       </div>

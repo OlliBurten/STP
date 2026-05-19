@@ -12,6 +12,22 @@ function getClient() {
   return new Anthropic({ apiKey });
 }
 
+// Retry helper for 529 overloaded errors from Anthropic
+async function withRetry(fn, maxAttempts = 3) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      const isOverloaded = err?.status === 529 || String(err?.message).includes("overloaded");
+      if (isOverloaded && attempt < maxAttempts) {
+        await new Promise((r) => setTimeout(r, 1000 * attempt)); // 1s, 2s
+        continue;
+      }
+      throw err;
+    }
+  }
+}
+
 // ─── 1. Match explanation — förklara varför ett jobb matchar föraren ──────────
 
 /**
@@ -45,7 +61,7 @@ export async function generateMatchExplanation(driver, job) {
     job.segment ? `Segment: ${job.segment}` : null,
   ].filter(Boolean).join("\n");
 
-  const message = await client.messages.create({
+  const message = await withRetry(() => client.messages.create({
     model: "claude-haiku-4-5",
     max_tokens: 300,
     system: `Du är en jobbmatchningsassistent för en svensk transportplattform.
@@ -60,7 +76,7 @@ Svara ENBART med de 2–3 meningarna, ingen rubrik eller inledning.`,
         content: `Förarens profil:\n${driverContext}\n\nJobbet:\n${jobContext}`,
       },
     ],
-  });
+  }));
 
   return message.content[0]?.text?.trim() || "";
 }
@@ -96,7 +112,7 @@ export async function generateJobDescription(form) {
     form.extraRequirements ? `Övriga krav: ${form.extraRequirements}` : null,
   ].filter(Boolean).join("\n");
 
-  const message = await client.messages.create({
+  const message = await withRetry(() => client.messages.create({
     model: "claude-haiku-4-5",
     max_tokens: 600,
     system: `Du är expert på att skriva jobbannonser för den svenska transportsektorn.
@@ -110,7 +126,7 @@ Annonsen ska vara 150–250 ord. Svara ENBART med annonsen, ingen rubrik eller e
         content: `Skriv en jobbannons baserat på:\n${context}`,
       },
     ],
-  });
+  }));
 
   return message.content[0]?.text?.trim() || "";
 }
@@ -144,7 +160,7 @@ export async function suggestMessage(driver, job, senderRole) {
     ? "Föraren ska skriva till arbetsgivaren. Skriv i jag-form från förarens perspektiv. Nämn relevant bakgrund och visa genuint intresse för jobbet."
     : "Åkeriet ska skriva till föraren. Skriv i vi-form från företagets perspektiv. Nämn varför föraren verkar passa och vad ni erbjuder.";
 
-  const message = await client.messages.create({
+  const message = await withRetry(() => client.messages.create({
     model: "claude-haiku-4-5",
     max_tokens: 250,
     system: `Du är en jobbmatchningsassistent för en svensk transportplattform.
@@ -158,7 +174,7 @@ Svara ENBART med meddelandet, ingen rubrik eller extra text.`,
         content: `${driverContext}\n${jobContext}`,
       },
     ],
-  });
+  }));
 
   return message.content[0]?.text?.trim() || "";
 }
@@ -186,7 +202,7 @@ export async function summarizeDriverProfile(driver) {
     driver.summary ? `Förarens profiltext: "${driver.summary.slice(0, 300)}"` : null,
   ].filter(Boolean).join("\n");
 
-  const message = await client.messages.create({
+  const message = await withRetry(() => client.messages.create({
     model: "claude-haiku-4-5",
     max_tokens: 200,
     system: `Du är en rekryteringsassistent för en svensk transportplattform.
@@ -199,7 +215,7 @@ Var objektiv och professionell. Svara ENBART med sammanfattningen, ingen rubrik.
         content: context,
       },
     ],
-  });
+  }));
 
   return message.content[0]?.text?.trim() || "";
 }
@@ -237,7 +253,7 @@ export async function generateProfileTips(driver, marketStats) {
       : null,
   ].filter(Boolean).join("\n");
 
-  const message = await client.messages.create({
+  const message = await withRetry(() => client.messages.create({
     model: "claude-haiku-4-5",
     max_tokens: 400,
     system: `Du är en karriärcoach för yrkesförare på en svensk transportplattform.
@@ -253,7 +269,7 @@ Varje tips max 2 meningar. Inga rubriker eller extra text.`,
         content: `Förarens profil:\n${driverContext}\n\nMarknadsdata:\n${statsContext}`,
       },
     ],
-  });
+  }));
 
   const raw = message.content[0]?.text || "[]";
   try {
@@ -298,7 +314,7 @@ export async function screenApplicant(driver, job) {
     job.experience ? `Min. erfarenhet: ${job.experience} år` : null,
   ].filter(Boolean).join("\n");
 
-  const message = await client.messages.create({
+  const message = await withRetry(() => client.messages.create({
     model: "claude-haiku-4-5",
     max_tokens: 400,
     system: `Du är en rekryteringsassistent för en svensk transportplattform.
@@ -318,7 +334,7 @@ Var konkret och hänvisa till specifika faktorer.`,
         content: `Förare:\n${driverContext}\n\nJobb:\n${jobContext}`,
       },
     ],
-  });
+  }));
 
   const raw = message.content[0]?.text || "{}";
   try {
