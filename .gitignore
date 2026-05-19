@@ -34,3 +34,19 @@ playwright-report
 playwright/.cache
 .env*.local
 playwright/.auth/
+
+# Design files and loose desktop files
+Bolagsverket API/
+Handoff redesigns/
+STP (1)/
+STP Jobbdetalj v3.html
+STP Lediga Jobb.html
+STP PostJob.html
+connection-establishment-guide-for-vardefulla-datamangder-test-and-production.pdf
+design_handoff_auth_flows/
+design_handoff_stp_landing/
+document.yaml
+
+# Playwright auth state (contains OAuth tokens — never commit)
+playwright/.auth/
+server/playwright/.auth/
