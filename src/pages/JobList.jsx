@@ -14,6 +14,7 @@ import PageMeta from "../components/PageMeta";
 import { regionPages } from "../data/regions";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { useDriverTour } from "../hooks/useDriverTour";
+import { getProfileCompletion, getDriverMinimumChecklist } from "../utils/driverProfileRequirements";
 
 const QUICK_FILTERS = [
   { label: "CE-körkort", key: "license", value: "CE" },
@@ -39,6 +40,9 @@ export default function JobList() {
   const [jobsLoading, setJobsLoading] = useState(hasApi);
 
   useDriverTour({ isDriver, user, profileLoaded: !jobsLoading });
+  const [bannerDismissed, setBannerDismissed] = useState(() => {
+    try { return sessionStorage.getItem("stp_profile_banner_dismissed") === "1"; } catch { return false; }
+  });
   const [savedJobIds, setSavedJobIds] = useState(new Set());
   const [filters, setFilters] = useState({
     search: "",
@@ -156,6 +160,20 @@ export default function JobList() {
     });
     return map;
   }, [driverForMatch, filteredJobs]);
+
+  // Profile completion banner data
+  const profileCompletion = useMemo(() => {
+    if (!isDriver || !profile) return null;
+    return getProfileCompletion({ ...user, driverProfile: profile });
+  }, [isDriver, user, profile]);
+
+  const profileMissingItems = useMemo(() => {
+    if (!isDriver || !profile) return [];
+    return getDriverMinimumChecklist(profile).filter((i) => !i.done).map((i) => i.label);
+  }, [isDriver, profile]);
+
+  const showProfileBanner = isDriver && !jobsLoading && !bannerDismissed
+    && profileCompletion && profileCompletion.pct < 80;
 
   const toggleQuick = (key, value) => {
     setFilters((f) => ({ ...f, [key]: f[key] === value ? "" : value }));
@@ -361,16 +379,73 @@ export default function JobList() {
       {/* ── Job listings ─────────────────────────────────────── */}
       <div style={{ maxWidth: 1280, margin: "0 auto", padding: isMobile ? "24px 20px 80px" : "40px 40px 80px" }}>
 
-        {/* Incomplete profile nudge */}
-        {isDriver && driverForMatch && recommendedJobs.length === 0 && !jobsLoading && filteredJobs.length > 0 && (
-          <div style={{ marginBottom: 32, padding: "16px 20px", borderRadius: 14, border: "1px solid rgba(99,179,237,0.2)", background: "rgba(99,179,237,0.06)", fontSize: 13, color: "rgba(99,179,237,0.9)" }}>
-            <p style={{ fontWeight: 700, marginBottom: 4, margin: 0 }}>Inga personliga rekommendationer ännu</p>
-            <p style={{ color: "rgba(99,179,237,0.7)", marginTop: 4, marginBottom: 0 }}>
-              Fyll i körkort, region och tillgänglighet i din profil för att få matchade jobb överst.{" "}
-              <Link to="/profil" style={{ fontWeight: 700, color: "#63b3ed", textDecoration: "underline" }}>
-                Uppdatera profil →
-              </Link>
-            </p>
+        {/* ── Profile completion banner ── */}
+        {showProfileBanner && (
+          <div style={{
+            marginBottom: 28,
+            borderRadius: 16,
+            border: "1px solid rgba(245,166,35,0.35)",
+            background: "linear-gradient(135deg, rgba(245,166,35,0.08) 0%, rgba(245,166,35,0.04) 100%)",
+            overflow: "hidden",
+          }}>
+            {/* Progress bar at top */}
+            <div style={{ height: 4, background: "rgba(255,255,255,0.06)" }}>
+              <div style={{ height: "100%", width: `${profileCompletion.pct}%`, background: profileCompletion.pct >= 60 ? "#F5A623" : "#f87171", borderRadius: 99, transition: "width 0.4s ease" }} />
+            </div>
+
+            <div style={{ padding: isMobile ? "16px 18px" : "18px 24px", display: "flex", alignItems: "flex-start", gap: 16, justifyContent: "space-between" }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6, flexWrap: "wrap" }}>
+                  <span style={{ fontSize: 13, fontWeight: 800, color: "#F5A623" }}>
+                    Din profil är {profileCompletion.pct}% klar
+                  </span>
+                  {profile?.visibleToCompanies !== true && (
+                    <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 99, background: "rgba(248,113,113,0.15)", border: "1px solid rgba(248,113,113,0.3)", color: "#f87171" }}>
+                      Du är dold för åkerier
+                    </span>
+                  )}
+                </div>
+
+                <p style={{ fontSize: 13, color: "rgba(240,250,249,0.75)", margin: "0 0 10px", lineHeight: 1.5 }}>
+                  {filteredJobs.length > 0
+                    ? <>Det finns <strong style={{ color: "#f0faf9" }}>{filteredJobs.length} aktiva jobb</strong> på plattformen just nu — men åkerier kan inte kontakta dig förrän din profil är komplett.</>
+                    : <>Fyll i din profil så kan åkerier hitta dig och kontakta dig direkt.</>
+                  }
+                </p>
+
+                {profileMissingItems.length > 0 && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
+                    <span style={{ fontSize: 11, color: "rgba(240,250,249,0.4)", alignSelf: "center" }}>Saknas:</span>
+                    {profileMissingItems.slice(0, 4).map((item) => (
+                      <span key={item} style={{ fontSize: 11, fontWeight: 600, padding: "3px 9px", borderRadius: 99, background: "rgba(245,166,35,0.1)", border: "1px solid rgba(245,166,35,0.25)", color: "#F5A623" }}>
+                        {item}
+                      </span>
+                    ))}
+                    {profileMissingItems.length > 4 && (
+                      <span style={{ fontSize: 11, color: "rgba(240,250,249,0.35)" }}>+{profileMissingItems.length - 4} till</span>
+                    )}
+                  </div>
+                )}
+
+                <Link
+                  to="/profil"
+                  style={{ display: "inline-block", padding: "9px 20px", borderRadius: 10, background: "#F5A623", color: "#0d1f1f", fontSize: 13, fontWeight: 800, textDecoration: "none" }}
+                >
+                  Slutför profil →
+                </Link>
+              </div>
+
+              <button
+                onClick={() => {
+                  setBannerDismissed(true);
+                  try { sessionStorage.setItem("stp_profile_banner_dismissed", "1"); } catch {}
+                }}
+                style={{ flexShrink: 0, background: "none", border: "none", cursor: "pointer", color: "rgba(240,250,249,0.3)", padding: 4, lineHeight: 1, fontSize: 18, marginTop: -2 }}
+                title="Stäng"
+              >
+                ✕
+              </button>
+            </div>
           </div>
         )}
 

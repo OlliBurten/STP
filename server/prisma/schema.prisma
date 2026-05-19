@@ -69,6 +69,10 @@ model User {
   profileReminderCount      Int      @default(0)
   messageReminderSentAt     DateTime?
   inactivityReminderSentAt  DateTime?
+  // Onboarding drip emails (dag 1 / 3 / 7 efter registrering)
+  onboardingDrip1SentAt     DateTime?
+  onboardingDrip3SentAt     DateTime?
+  onboardingDrip7SentAt     DateTime?
 
   // Team invites (deprecated - använd OrganizationInvite)
   companyInvites         CompanyInvite[]  @relation("CompanyInvites")
