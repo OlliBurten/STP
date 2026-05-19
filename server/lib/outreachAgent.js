@@ -61,6 +61,51 @@ function stripHtml(html) {
 // ─── Step 1: Scrape Hitta.se ──────────────────────────────────────────────────
 
 async function scrapeHitta(region, query = "åkeri") {
+  // Try Hitta.se JSON API first (avoids JS-rendering problem)
+  const companies = await _scrapeHittaApi(region, query)
+    || await _scrapeHittaHtmlFallback(region, query);
+
+  console.log(`[OutreachAgent] Hitta.se ${region}: ${companies.length} företag`);
+  return companies;
+}
+
+async function _scrapeHittaApi(region, query) {
+  try {
+    const q = encodeURIComponent(`${query} ${region}`);
+    const url = `https://www.hitta.se/api/search/companies?q=${q}&size=30`;
+    const resp = await fetch(url, {
+      signal: AbortSignal.timeout(12000),
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "application/json",
+        "Accept-Language": "sv-SE,sv;q=0.9",
+        "Referer": "https://www.hitta.se/",
+      },
+    });
+    if (!resp.ok) {
+      console.log(`[OutreachAgent] Hitta.se API svarade ${resp.status} för ${region}`);
+      return null;
+    }
+    const data = await resp.json();
+    const items = data?.companies?.items || data?.results || data?.hits || [];
+    if (!items.length) return null;
+
+    return items.map((c) => ({
+      companyName: c.name || c.companyName || c.title,
+      phone: c.phone || c.phoneNumber || null,
+      website: c.website || c.url || null,
+      city: c.city || c.municipality || null,
+      region,
+      source: "hitta",
+    })).filter((c) => c.companyName);
+  } catch (e) {
+    console.log(`[OutreachAgent] Hitta.se API fel ${region}: ${e?.message}`);
+    return null;
+  }
+}
+
+async function _scrapeHittaHtmlFallback(region, query) {
+  // Fallback: scrape HTML and use Claude to parse — handles JS-rendered pages poorly but better than nothing
   const anthropic = getAnthropicClient();
   const url = `https://www.hitta.se/s%C3%B6k?vad=${encodeURIComponent(query)}&var=${encodeURIComponent(region)}`;
 
@@ -70,7 +115,7 @@ async function scrapeHitta(region, query = "åkeri") {
       signal: AbortSignal.timeout(15000),
       headers: {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept": "text/html,application/xhtml+xml",
         "Accept-Language": "sv-SE,sv;q=0.9",
       },
     });
@@ -79,9 +124,13 @@ async function scrapeHitta(region, query = "åkeri") {
     throw new Error(`Hitta.se ej nåbar för ${region}: ${e.message}`);
   }
 
-  if (!html || html.length < 200) throw new Error(`Hitta.se tomt svar för ${region}`);
+  if (!html || html.length < 500) {
+    console.log(`[OutreachAgent] Hitta.se HTML för kort (${html?.length} bytes) för ${region}`);
+    return [];
+  }
 
   const text = stripHtml(html).slice(0, 12000);
+  console.log(`[OutreachAgent] Hitta.se HTML fallback ${region}: ${html.length} bytes → Claude parse`);
 
   const message = await anthropic.messages.create({
     model: "claude-haiku-4-5-20251001",
@@ -90,7 +139,7 @@ async function scrapeHitta(region, query = "åkeri") {
       role: "user",
       content: `Sökresultatsida på Hitta.se för "${query}" i ${region}, Sverige.
 Extrahera alla företag som JSON-array: [{companyName, phone, website, city}]
-Returnera BARA JSON-arrayen.
+Returnera BARA JSON-arrayen, inga förklaringar.
 ---
 ${text}`,
     }],
@@ -150,6 +199,7 @@ async function enrichBatch(region) {
   });
 
   let enriched = 0;
+  let noEmail = 0;
   for (const p of prospects) {
     try {
       const contact = await enrichOne(p);
@@ -162,10 +212,19 @@ async function enrichBatch(region) {
           status: email ? "ENRICHED" : "NO_EMAIL",
         },
       });
-      if (email) enriched++;
-    } catch (_) {}
+      if (email) {
+        enriched++;
+        console.log(`[OutreachAgent] ✅ Email hittad: ${p.companyName} → ${email} (via ${contact?.source})`);
+      } else {
+        noEmail++;
+        console.log(`[OutreachAgent] ⚠️  Ingen email: ${p.companyName} (website: ${p.website || "saknas"})`);
+      }
+    } catch (e) {
+      console.error(`[OutreachAgent] Berikningsfel för ${p.companyName}:`, e?.message);
+    }
     await delay(800);
   }
+  console.log(`[OutreachAgent] Berikade: ${enriched} hittade, ${noEmail} saknar email`);
   return enriched;
 }
 

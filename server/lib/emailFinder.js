@@ -44,14 +44,78 @@ function extractDomain(website) {
   }
 }
 
-// ─── 1. Hitta.se profilsida ───────────────────────────────────────────────────
+// ─── 1. Hitta.se profilsida (JSON API) ───────────────────────────────────────
 
 export async function scrapeHittaProfile(companyName, city) {
   try {
+    // Hitta.se has a JSON search API — use this instead of scraping HTML (which is JS-rendered)
+    const q = encodeURIComponent(`${companyName}${city ? ` ${city}` : ""}`);
+    const apiUrl = `https://www.hitta.se/api/search/companies?q=${q}&size=5`;
+
+    const resp = await fetch(apiUrl, {
+      signal: AbortSignal.timeout(SCRAPE_TIMEOUT),
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "application/json",
+        "Accept-Language": "sv-SE,sv;q=0.9",
+        "Referer": "https://www.hitta.se/",
+      },
+    });
+
+    if (!resp.ok) {
+      // Fallback: try scraping the HTML search page for mailto links
+      return await _scrapeHittaHtml(companyName, city);
+    }
+
+    const data = await resp.json().catch(() => null);
+    if (!data) return null;
+
+    // Look for email in company results
+    const companies = data?.companies?.items || data?.results || data?.hits || [];
+    for (const c of companies) {
+      const email = c.email || c.contactEmail || c.emailAddress;
+      if (email && email.includes("@")) return email.toLowerCase();
+    }
+
+    // No email in API — try individual company profile URL if available
+    const firstResult = companies[0];
+    if (firstResult?.id || firstResult?.slug) {
+      const profileUrl = `https://www.hitta.se/foretag/${firstResult.slug || firstResult.id}`;
+      const email = await _scrapeHittaCompanyPage(profileUrl);
+      if (email) return email;
+    }
+
+    return null;
+  } catch (e) {
+    console.error("[EmailFinder] Hitta.se API fel:", e?.message);
+    return null;
+  }
+}
+
+async function _scrapeHittaHtml(companyName, city) {
+  try {
     const query = encodeURIComponent(`${companyName} ${city || ""}`.trim());
     const searchUrl = `https://www.hitta.se/s%C3%B6k?vad=${query}`;
-
     const resp = await fetch(searchUrl, {
+      signal: AbortSignal.timeout(SCRAPE_TIMEOUT),
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept-Language": "sv-SE,sv;q=0.9",
+      },
+    });
+    if (!resp.ok) return null;
+    const html = await resp.text();
+    const text = stripHtml(html);
+    const emails = extractEmails(text);
+    return emails[0] || null;
+  } catch (_) {
+    return null;
+  }
+}
+
+async function _scrapeHittaCompanyPage(url) {
+  try {
+    const resp = await fetch(url, {
       signal: AbortSignal.timeout(SCRAPE_TIMEOUT),
       headers: {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -115,8 +179,19 @@ async function getMxHost(domain) {
 }
 
 async function smtpVerify(email, mxHost) {
+  // Try port 25 first, fall back to 587 (Railway blocks 25 on most plans)
+  const portsToTry = [25, 587];
+
+  for (const port of portsToTry) {
+    const result = await _smtpVerifyPort(email, mxHost, port);
+    if (result !== null) return result; // got a definitive answer
+  }
+  return null;
+}
+
+async function _smtpVerifyPort(email, mxHost, port) {
   return new Promise((resolve) => {
-    const socket = net.createConnection(25, mxHost);
+    const socket = net.createConnection(port, mxHost);
     let buffer = "";
     let step = 0;
     const timeout = setTimeout(() => { socket.destroy(); resolve(false); }, 8000);
@@ -145,6 +220,7 @@ async function smtpVerify(email, mxHost) {
     socket.on("close", () => { clearTimeout(timeout); });
   });
 }
+
 
 async function guessEmail(domain) {
   const mxHost = await getMxHost(domain);
