@@ -223,7 +223,8 @@ companiesRouter.use(authMiddleware, requireCompany, attachCompanyContext);
 
 companiesRouter.get("/me/profile", async (req, res, next) => {
   try {
-    const resolved = await resolveCompanyOwner(req.userId);
+    const activeOrgId = typeof req.headers["x-active-org"] === "string" ? req.headers["x-active-org"] : null;
+    const resolved = await resolveCompanyOwner(req.userId, activeOrgId);
     if (!resolved) return res.status(404).json({ error: "Företaget hittades inte" });
 
     if (resolved.organizationId) {
@@ -316,7 +317,7 @@ companiesRouter.get(
   async (req, res, next) => {
     try {
       const ownerId = req.companyOwnerId ?? req.userId;
-      const invites = await listInvites(ownerId);
+      const invites = await listInvites(ownerId, req.organizationId ?? null);
       res.json(invites);
     } catch (e) {
       next(e);
@@ -344,7 +345,8 @@ companiesRouter.post(
         email: req.body.email,
         companyOwnerId: ownerId,
         invitedById: req.userId,
-        companyName: owner?.companyName || owner?.name || "Företaget",
+        companyName: req.organizationId ? undefined : owner?.companyName || owner?.name || "Företaget",
+        organizationId: req.organizationId ?? null,
         frontendBaseUrl,
       });
       res.status(201).json({
@@ -365,7 +367,7 @@ companiesRouter.delete(
   async (req, res, next) => {
     try {
       const ownerId = req.companyOwnerId ?? req.userId;
-      await revokeInvite(req.params.id, ownerId);
+      await revokeInvite(req.params.id, ownerId, req.organizationId ?? null);
       res.status(204).send();
     } catch (e) {
       if (e.status) return res.status(e.status).json({ error: e.message });

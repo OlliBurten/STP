@@ -8,6 +8,11 @@ function isCompanyRole(role) {
   return normalized === "COMPANY" || normalized === "RECRUITER";
 }
 
+function isCompanyManagerRole(role) {
+  const normalized = String(role || "").trim().toUpperCase();
+  return normalized === "OWNER" || normalized === "ADMIN";
+}
+
 /** Sätter req.userId/req.role om giltig token, annars 401 */
 export function authMiddleware(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -148,6 +153,7 @@ export async function attachCompanyContext(req, res, next) {
     if (resolved) {
       req.companyOwnerId = resolved.ownerId;
       if (resolved.organizationId) req.organizationId = resolved.organizationId;
+      if (resolved.role) req.companyRole = resolved.role;
     }
     next();
   } catch (e) {
@@ -166,9 +172,35 @@ export async function requireCompanyOwner(req, res, next) {
     }
     req.companyOwnerId = resolved.ownerId;
     if (resolved.organizationId) req.organizationId = resolved.organizationId;
+    if (resolved.role) req.companyRole = resolved.role;
     next();
   } catch (e) {
     next(e);
+  }
+}
+
+/** Owners/admins can manage jobs and drivers; members are limited to messaging. */
+export async function requireCompanyManager(req, res, next) {
+  if (!isCompanyRole(req.role)) {
+    return res.status(403).json({ error: "Endast för företag" });
+  }
+  try {
+    const { resolveCompanyOwner } = await import("../lib/invites.js");
+    const requestedOrgId = req.headers["x-active-org"] || null;
+    const resolved = await resolveCompanyOwner(req.userId, requestedOrgId);
+    if (!resolved) {
+      return res.status(403).json({ error: "Ingen åtkomst till företagets hantering." });
+    }
+    const role = resolved.role || (resolved.isOwner ? "OWNER" : null);
+    if (!isCompanyManagerRole(role)) {
+      return res.status(403).json({ error: "Endast ägare eller admin kan hantera jobb och förare." });
+    }
+    req.companyOwnerId = resolved.ownerId;
+    if (resolved.organizationId) req.organizationId = resolved.organizationId;
+    if (role) req.companyRole = role;
+    return next();
+  } catch (e) {
+    return next(e);
   }
 }
 

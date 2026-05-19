@@ -1,11 +1,11 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
-import { authMiddleware, requireCompany, requireDriver, requireVerifiedCompany } from "../middleware/auth.js";
+import { authMiddleware, requireCompany, requireDriver, requireVerifiedCompany, requireCompanyManager } from "../middleware/auth.js";
 import { computeProfileScore } from "../lib/profileScore.js";
 
 export const driversRouter = Router();
 
-driversRouter.get("/", authMiddleware, requireCompany, requireVerifiedCompany, async (req, res, next) => {
+driversRouter.get("/", authMiddleware, requireCompany, requireVerifiedCompany, requireCompanyManager, async (req, res, next) => {
   try {
     const { region, license, certificate, availability, experience, segment } = req.query;
     const profiles = await prisma.driverProfile.findMany({
@@ -118,7 +118,7 @@ driversRouter.get("/", authMiddleware, requireCompany, requireVerifiedCompany, a
 });
 
 /** Registrera profilvisning – en gång per företag per dag */
-driversRouter.post("/:id/view", authMiddleware, requireCompany, requireVerifiedCompany, async (req, res, next) => {
+driversRouter.post("/:id/view", authMiddleware, requireCompany, requireVerifiedCompany, requireCompanyManager, async (req, res, next) => {
   try {
     const driverUserId = req.params.id;
     const viewerUserId = req.userId;
@@ -235,7 +235,7 @@ driversRouter.get("/public/:id", async (req, res, next) => {
   }
 });
 
-driversRouter.get("/:id", authMiddleware, requireCompany, requireVerifiedCompany, async (req, res, next) => {
+driversRouter.get("/:id", authMiddleware, requireCompany, requireVerifiedCompany, requireCompanyManager, async (req, res, next) => {
   try {
     const profile = await prisma.driverProfile.findFirst({
       where: {
