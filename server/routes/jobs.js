@@ -7,6 +7,7 @@ import {
   requireDriver,
   requireVerifiedCompany,
   attachCompanyContext,
+  requireCompanyManager,
 } from "../middleware/auth.js";
 import { matchScore, driverYearsFromExperience } from "../utils/matchScore.js";
 import { notifyRecommendedJobMatch } from "../lib/email.js";
@@ -120,7 +121,7 @@ async function sendDriverMatchAlertsForJob(job) {
   }
 }
 
-jobsRouter.get("/mine", authMiddleware, requireCompany, attachCompanyContext, requireVerifiedCompany, async (req, res, next) => {
+jobsRouter.get("/mine", authMiddleware, requireCompany, attachCompanyContext, requireVerifiedCompany, requireCompanyManager, async (req, res, next) => {
   try {
     const filter = effectiveJobFilter(req);
     const jobs = await prisma.job.findMany({
@@ -284,7 +285,7 @@ function effectiveJobFilter(req) {
   return { userId: cid };
 }
 
-jobsRouter.get("/:id/applicants", authMiddleware, requireCompany, attachCompanyContext, requireVerifiedCompany, async (req, res, next) => {
+jobsRouter.get("/:id/applicants", authMiddleware, requireCompany, attachCompanyContext, requireVerifiedCompany, requireCompanyManager, async (req, res, next) => {
   try {
     const job = await prisma.job.findUnique({
       where: { id: req.params.id },
@@ -554,7 +555,7 @@ jobsRouter.post("/:id/view", optionalAuthMiddleware, async (req, res, next) => {
   }
 });
 
-jobsRouter.get("/:id/stats", authMiddleware, requireCompany, attachCompanyContext, requireVerifiedCompany, async (req, res, next) => {
+jobsRouter.get("/:id/stats", authMiddleware, requireCompany, attachCompanyContext, requireVerifiedCompany, requireCompanyManager, async (req, res, next) => {
   try {
     const job = await prisma.job.findUnique({ where: { id: req.params.id } });
     if (!job) return res.status(404).json({ error: "Jobbet hittades inte" });
@@ -645,7 +646,7 @@ jobsRouter.delete("/:id/save", authMiddleware, requireDriver, async (req, res, n
   }
 });
 
-jobsRouter.post("/", authMiddleware, requireCompany, attachCompanyContext, requireVerifiedCompany, validateBody(createJobSchema), async (req, res, next) => {
+jobsRouter.post("/", authMiddleware, requireCompany, attachCompanyContext, requireVerifiedCompany, requireCompanyManager, validateBody(createJobSchema), async (req, res, next) => {
   try {
     const body = req.body;
     const requirements = Array.isArray(body.requirements)
@@ -696,7 +697,7 @@ jobsRouter.post("/", authMiddleware, requireCompany, attachCompanyContext, requi
   }
 });
 
-jobsRouter.post("/:id/renew", authMiddleware, requireCompany, attachCompanyContext, requireVerifiedCompany, async (req, res, next) => {
+jobsRouter.post("/:id/renew", authMiddleware, requireCompany, attachCompanyContext, requireVerifiedCompany, requireCompanyManager, async (req, res, next) => {
   try {
     const job = await prisma.job.findUnique({ where: { id: req.params.id } });
     if (!job) return res.status(404).json({ error: "Jobbet hittades inte" });
@@ -721,7 +722,7 @@ jobsRouter.post("/:id/renew", authMiddleware, requireCompany, attachCompanyConte
   }
 });
 
-jobsRouter.patch("/:id", authMiddleware, requireCompany, attachCompanyContext, requireVerifiedCompany, validateBody(patchJobSchema), async (req, res, next) => {
+jobsRouter.patch("/:id", authMiddleware, requireCompany, attachCompanyContext, requireVerifiedCompany, requireCompanyManager, validateBody(patchJobSchema), async (req, res, next) => {
   try {
     const job = await prisma.job.findUnique({
       where: { id: req.params.id },

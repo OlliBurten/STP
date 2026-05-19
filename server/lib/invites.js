@@ -40,7 +40,7 @@ function normalizeEmail(email) {
  * Resolve effective company owner ID for a user (legacy + Organization).
  * Prefer Organization; fallback to User-as-company for backward compat.
  * @param {string} userId
- * @returns {Promise<{ownerId: string, isOwner: boolean, organizationId?: string} | null>}
+ * @returns {Promise<{ownerId: string, isOwner: boolean, role?: string, organizationId?: string} | null>}
  */
 export async function resolveCompanyOwner(userId, requestedOrgId = null) {
   const { resolveEffectiveOrganization } = await import("./organizations.js");
@@ -53,15 +53,16 @@ export async function resolveCompanyOwner(userId, requestedOrgId = null) {
     return {
       ownerId: ownerUo?.userId ?? userId,
       isOwner: orgRes.isOwner,
+      role: orgRes.role,
       organizationId: orgRes.organizationId,
     };
   }
   const membership = await prisma.companyMember.findUnique({
     where: { userId },
-    select: { companyOwnerId: true },
+    select: { companyOwnerId: true, role: true },
   });
   if (membership) {
-    return { ownerId: membership.companyOwnerId, isOwner: false };
+    return { ownerId: membership.companyOwnerId, isOwner: false, role: membership.role };
   }
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -69,7 +70,7 @@ export async function resolveCompanyOwner(userId, requestedOrgId = null) {
   });
   if (!user || !isCompanyRole(user.role)) return null;
   if (user.companyOrgNumber) {
-    return { ownerId: user.id, isOwner: true };
+    return { ownerId: user.id, isOwner: true, role: "OWNER" };
   }
   return null;
 }
@@ -93,7 +94,24 @@ async function requireCompanyOwner(userId) {
   }
 }
 
-async function resolveInviteScopeByOwner(companyOwnerId) {
+async function resolveInviteScopeByOwner(companyOwnerId, requestedOrgId = null) {
+  if (requestedOrgId) {
+    const requestedOrg = await prisma.userOrganization.findFirst({
+      where: { userId: companyOwnerId, organizationId: requestedOrgId, role: "OWNER" },
+      select: { organizationId: true, organization: { select: { name: true } } },
+    });
+    if (!requestedOrg?.organizationId) {
+      const err = new Error("Ingen åtkomst till detta företag.");
+      err.status = 403;
+      throw err;
+    }
+    return {
+      type: "organization",
+      organizationId: requestedOrg.organizationId,
+      companyName: requestedOrg.organization?.name || "Företaget",
+    };
+  }
+
   const ownerOrg = await prisma.userOrganization.findFirst({
     where: { userId: companyOwnerId, role: "OWNER" },
     select: { organizationId: true, organization: { select: { name: true } } },
@@ -114,11 +132,12 @@ async function resolveInviteScopeByOwner(companyOwnerId) {
  * @param {string} params.email - Invitee email
  * @param {string} params.companyOwnerId - Owner user ID
  * @param {string} params.invitedById - Inviter user ID (must be owner for now)
- * @param {string} params.companyName - For email
+ * @param {string} [params.companyName] - For email
+ * @param {string} [params.organizationId] - Active organization scope
  * @param {string} [params.frontendBaseUrl] - Base URL for invite link
  * @returns {Promise<{invite: object, token: string, emailSent: boolean, devInviteLink?: string}>}
  */
-export async function createInvite({ email, companyOwnerId, invitedById, companyName, frontendBaseUrl }) {
+export async function createInvite({ email, companyOwnerId, invitedById, companyName, organizationId, frontendBaseUrl }) {
   const normalizedEmail = normalizeEmail(email);
   if (!normalizedEmail) {
     const err = new Error("E-postadress krävs.");
@@ -126,7 +145,7 @@ export async function createInvite({ email, companyOwnerId, invitedById, company
     throw err;
   }
 
-  const scope = await resolveInviteScopeByOwner(companyOwnerId);
+  const scope = await resolveInviteScopeByOwner(companyOwnerId, organizationId);
   const count = await (scope.type === "organization"
     ? prisma.organizationInvite.count({
         where: {
@@ -279,8 +298,8 @@ export async function createInvite({ email, companyOwnerId, invitedById, company
  * @param {string} companyOwnerId
  * @returns {Promise<object[]>}
  */
-export async function listInvites(companyOwnerId) {
-  const scope = await resolveInviteScopeByOwner(companyOwnerId);
+export async function listInvites(companyOwnerId, organizationId = null) {
+  const scope = await resolveInviteScopeByOwner(companyOwnerId, organizationId);
   const invites = await (scope.type === "organization"
     ? prisma.organizationInvite.findMany({
         where: { organizationId: scope.organizationId },
@@ -321,8 +340,8 @@ export async function listInvites(companyOwnerId) {
  * @param {string} inviteId
  * @param {string} companyOwnerId - Must own the company
  */
-export async function revokeInvite(inviteId, companyOwnerId) {
-  const scope = await resolveInviteScopeByOwner(companyOwnerId);
+export async function revokeInvite(inviteId, companyOwnerId, organizationId = null) {
+  const scope = await resolveInviteScopeByOwner(companyOwnerId, organizationId);
   const invite = await (scope.type === "organization"
     ? prisma.organizationInvite.findUnique({
         where: { id: inviteId },

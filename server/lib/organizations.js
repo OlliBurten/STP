@@ -23,6 +23,7 @@ export async function resolveEffectiveOrganization(userId, requestedOrgId = null
         organizationId: uo.organizationId,
         organization: uo.organization,
         isOwner: uo.role === "OWNER",
+        role: uo.role,
       };
     }
   }
@@ -36,12 +37,13 @@ export async function resolveEffectiveOrganization(userId, requestedOrgId = null
       organizationId: uo.organizationId,
       organization: uo.organization,
       isOwner: uo.role === "OWNER",
+      role: uo.role,
     };
   }
   // Legacy: CompanyMember → find owner's Organization
   const member = await prisma.companyMember.findUnique({
     where: { userId },
-    select: { companyOwnerId: true },
+    select: { companyOwnerId: true, role: true },
   });
   if (member) {
     const ownerUo = await prisma.userOrganization.findFirst({
@@ -53,6 +55,7 @@ export async function resolveEffectiveOrganization(userId, requestedOrgId = null
         organizationId: ownerUo.organizationId,
         organization: ownerUo.organization,
         isOwner: false,
+        role: member.role,
       };
     }
   }

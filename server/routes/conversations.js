@@ -5,6 +5,7 @@ import {
   requireCompany,
   requireVerifiedCompany,
   attachCompanyContext,
+  requireCompanyManager,
 } from "../middleware/auth.js";
 import { notifyDriverSelected, notifyNewApplication, notifyNewMessage, notifyApplicationConfirmation } from "../lib/email.js";
 import { createNotification } from "../lib/notifications.js";
@@ -44,6 +45,11 @@ function effectiveConversationWhere(req) {
     : { companyId: effectiveCompanyId(req), organizationId: null };
 }
 
+function isCompanyRole(role) {
+  const normalized = String(role || "").trim().toUpperCase();
+  return normalized === "COMPANY" || normalized === "RECRUITER";
+}
+
 async function listCompanyRecipientIds({ companyId, organizationId }) {
   if (organizationId) {
     const members = await prisma.userOrganization.findMany({
@@ -62,8 +68,13 @@ async function listCompanyRecipientIds({ companyId, organizationId }) {
 }
 
 async function requireVerifiedIfCompany(req, res, next) {
-  if (req.role !== "COMPANY") return next();
+  if (!isCompanyRole(req.role)) return next();
   return requireVerifiedCompany(req, res, next);
+}
+
+async function requireManagerIfCompany(req, res, next) {
+  if (!isCompanyRole(req.role)) return next();
+  return requireCompanyManager(req, res, next);
 }
 
 function toConversation(c) {
@@ -145,7 +156,7 @@ conversationsRouter.get("/:id", requireVerifiedIfCompany, async (req, res, next)
   }
 });
 
-conversationsRouter.post("/", requireVerifiedIfCompany, validateBody(createConversationSchema), async (req, res, next) => {
+conversationsRouter.post("/", requireVerifiedIfCompany, requireManagerIfCompany, validateBody(createConversationSchema), async (req, res, next) => {
   try {
     const { driverId, companyId, jobId, jobTitle, initialMessage } = req.body;
     const isDriver = req.role === "DRIVER";
@@ -262,7 +273,7 @@ conversationsRouter.post("/", requireVerifiedIfCompany, validateBody(createConve
   }
 });
 
-conversationsRouter.patch("/:id/reject", requireCompany, requireVerifiedCompany, async (req, res, next) => {
+conversationsRouter.patch("/:id/reject", requireCompany, requireVerifiedCompany, requireCompanyManager, async (req, res, next) => {
   try {
     const conv = await prisma.conversation.findUnique({
       where: { id: req.params.id },
@@ -289,7 +300,7 @@ conversationsRouter.patch("/:id/reject", requireCompany, requireVerifiedCompany,
   }
 });
 
-conversationsRouter.patch("/:id/select", requireCompany, requireVerifiedCompany, async (req, res, next) => {
+conversationsRouter.patch("/:id/select", requireCompany, requireVerifiedCompany, requireCompanyManager, async (req, res, next) => {
   try {
     const conv = await prisma.conversation.findUnique({
       where: { id: req.params.id },
