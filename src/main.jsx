@@ -55,7 +55,7 @@ setTimeout(() => {
       sendDefaultPii: false,
       tracesSampleRate: import.meta.env.PROD ? 0.1 : 1.0,
       integrations: [Sentry.replayIntegration({ maskAllText: true, maskAllInputs: true, blockAllMedia: true })],
-      replaysSessionSampleRate: 0.05,
+      replaysSessionSampleRate: 0.3,
       replaysOnErrorSampleRate: 1.0,
       beforeSend(event, hint) {
         // Chunk-laddningsfel uppstår när en användare har en gammal flik öppen

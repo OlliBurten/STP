@@ -6,6 +6,7 @@ import cron from "node-cron";
 import { runAllReminders } from "./reminders.js";
 import { runOutreachAgent } from "./outreachAgent.js";
 import { runOnboardingDrip } from "./onboardingDrip.js";
+import { runProductIntelligenceAgent } from "./productIntelligenceAgent.js";
 
 let started = false;
 
@@ -40,5 +41,14 @@ export function startReminderScheduler() {
     }
   }, { timezone: "Europe/Stockholm" });
 
-  console.log("[ReminderScheduler] Started — reminders 08:00 + outreach 09:00 + onboarding drip 10:00 daily Europe/Stockholm");
+  // Every Monday at 07:00 Stockholm time — product intelligence agent
+  cron.schedule("0 7 * * 1", async () => {
+    try {
+      await runProductIntelligenceAgent();
+    } catch (e) {
+      console.error("[PIAgent] Uncaught error:", e?.message);
+    }
+  }, { timezone: "Europe/Stockholm" });
+
+  console.log("[ReminderScheduler] Started — reminders 08:00 + outreach 09:00 + onboarding drip 10:00 daily | PI agent 07:00 Mondays");
 }

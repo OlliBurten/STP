@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STP – Ansökan</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',system-ui,sans-serif;background:#060f0f;color:#f0faf9;min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#1F5F5C;border-radius:3px}
+input,textarea,button{font-family:inherit;font-size:inherit;color:inherit}
+textarea{resize:vertical}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes scaleIn{from{opacity:0;transform:scale(0.92)}to{opacity:1;transform:scale(1)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.55}}
+@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+.fade{animation:fadeUp .5s cubic-bezier(.22,1,.36,1) both}
+.scaleIn{animation:scaleIn .55s cubic-bezier(.22,1,.36,1) both}
+.checkRing{stroke-dasharray:166;stroke-dashoffset:166;animation:dash 1s ease-out .2s forwards}
+.checkMark{stroke-dasharray:48;stroke-dashoffset:48;animation:dash .55s ease-out .9s forwards}
+@keyframes dash{to{stroke-dashoffset:0}}
+.shimmer{background:linear-gradient(90deg,#0e1f1f 0%,#1a2c2c 50%,#0e1f1f 100%);background-size:800px 100%;animation:shimmer 2.4s infinite linear}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "state": "form",
+  "matchScore": 82,
+  "showSalaryField": true
+}/*EDITMODE-END*/;
+
+// ─── Job context ───────────────────────────────────────────────────────────
+const JOB = {
+  title: "CE-chaufför fjärrkörning",
+  company: "Nordic Transport AB",
+  companyInitials: "NT",
+  companyColor: "#1F5F5C",
+  location: "Malmö, Skåne",
+  salary: "36 000 – 42 000 kr/mån",
+  employment: "Fast anställning",
+  start: "1 juni 2026",
+  verified: true,
+  responseRate: 87,
+  avgResponseDays: 1.8,
+};
+
+// ─── Driver profile ────────────────────────────────────────────────────────
+const ME = {
+  name: "Erik Johansson",
+  initials: "EJ",
+  age: 38,
+  location: "Malmö",
+  experience: 12,
+  segments: ["Fjärrkörning", "Distribution"],
+  license: ["CE"],
+  certificates: ["YKB (giltig till 2027)", "ADR klass 3", "Digitalt förarkort"],
+  rating: 4.7,
+  reviewCount: 8,
+  verified: true,
+  lastJob: "CE-chaufför, Skånetransport AB (2019–2025)",
+};
+
+// ─── Icons ─────────────────────────────────────────────────────────────────
+const IC = {
+  arrow: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>,
+  back: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>,
+  check: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
+  shield: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
+  star: <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>,
+  pin: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
+  briefcase: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>,
+  truck: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>,
+  eye: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>,
+  edit: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
+  spark: <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L13.5 8.5 20 10l-6.5 1.5L12 18l-1.5-6.5L4 10l6.5-1.5z"/></svg>,
+  lock: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>,
+  msg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
+  calendar: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
+  trend: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>,
+  x: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+};
+const Icon = ({ n, s=18, c="currentColor" }) => <span style={{ display:"inline-flex", width:s, height:s, color:c, flexShrink:0 }}>{IC[n]}</span>;
+
+// ─── Tiny helpers ──────────────────────────────────────────────────────────
+const useTweaks = () => {
+  const [t, setT] = React.useState(TWEAK_DEFAULTS);
+  React.useEffect(() => {
+    const onMsg = (e) => {
+      if (e.data?.type === "__activate_edit_mode") setOpen(true);
+      if (e.data?.type === "__deactivate_edit_mode") setOpen(false);
+    };
+    window.addEventListener("message", onMsg);
+    window.parent.postMessage({type:"__edit_mode_available"}, "*");
+    return () => window.removeEventListener("message", onMsg);
+  }, []);
+  const [open, setOpen] = React.useState(false);
+  const set = (k, v) => {
+    setT(p => ({...p, [k]:v}));
+    window.parent.postMessage({type:"__edit_mode_set_keys", edits:{[k]:v}}, "*");
+  };
+  return { t, set, open, setOpen };
+};
+
+// ─── Header ────────────────────────────────────────────────────────────────
+function Header() {
+  return (
+    <header style={{ position:"sticky", top:0, zIndex:50, background:"rgba(6,15,15,0.92)", backdropFilter:"blur(14px)", borderBottom:"1px solid rgba(255,255,255,0.06)", height:64, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 32px" }}>
+      <div style={{ display:"flex", alignItems:"center", gap:24 }}>
+        <a href="STP Jobbdetalj v3.html" style={{ display:"flex", alignItems:"center", gap:8, fontSize:13, color:"rgba(255,255,255,0.6)", textDecoration:"none", fontWeight:600 }}>
+          <Icon n="back" s={16}/>
+          <span>Tillbaka till jobbet</span>
+        </a>
+      </div>
+      <div style={{ position:"absolute", left:"50%", transform:"translateX(-50%)", fontFamily:"DM Sans", fontWeight:800, letterSpacing:-0.8, fontSize:21 }}>STP</div>
+      <div style={{ display:"flex", alignItems:"center", gap:14 }}>
+        <div style={{ fontSize:12, color:"rgba(255,255,255,0.5)" }}>Steg 1 av 1 — granska & skicka</div>
+      </div>
+    </header>
+  );
+}
+
+// ─── Job context strip ─────────────────────────────────────────────────────
+function JobStrip({ matchScore }) {
+  return (
+    <div style={{ background:"linear-gradient(180deg,rgba(31,95,92,0.18) 0%,rgba(31,95,92,0) 100%)", borderBottom:"1px solid rgba(255,255,255,0.05)" }}>
+      <div style={{ maxWidth:1200, margin:"0 auto", padding:"32px 32px 24px", display:"flex", alignItems:"center", gap:18 }}>
+        <div style={{ width:56, height:56, borderRadius:14, background:JOB.companyColor, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:800, fontSize:18, color:"#F5A623", letterSpacing:-0.5, flexShrink:0 }}>{JOB.companyInitials}</div>
+        <div style={{ flex:1, minWidth:0 }}>
+          <div style={{ fontSize:11, fontWeight:700, color:"rgba(245,166,35,0.9)", textTransform:"uppercase", letterSpacing:1.5, marginBottom:4 }}>Du ansöker till</div>
+          <div style={{ fontSize:22, fontWeight:800, lineHeight:1.2, marginBottom:4 }}>{JOB.title}</div>
+          <div style={{ fontSize:13, color:"rgba(255,255,255,0.65)", display:"flex", alignItems:"center", gap:10, flexWrap:"wrap" }}>
+            <span style={{ display:"inline-flex", alignItems:"center", gap:5 }}>{JOB.company}{JOB.verified && <Icon n="shield" s={12} c="#4ade80"/>}</span>
+            <span style={{ opacity:0.4 }}>·</span>
+            <span style={{ display:"inline-flex", alignItems:"center", gap:4 }}><Icon n="pin" s={11}/>{JOB.location}</span>
+            <span style={{ opacity:0.4 }}>·</span>
+            <span>{JOB.salary}</span>
+          </div>
+        </div>
+        <div style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 16px", borderRadius:99, background: matchScore >= 80 ? "rgba(74,222,128,0.12)" : matchScore >= 65 ? "rgba(245,166,35,0.12)" : "rgba(255,255,255,0.05)", border: `1px solid ${matchScore >= 80 ? "rgba(74,222,128,0.3)" : matchScore >= 65 ? "rgba(245,166,35,0.3)" : "rgba(255,255,255,0.1)"}` }}>
+          <Icon n="spark" s={14} c={matchScore >= 80 ? "#4ade80" : matchScore >= 65 ? "#F5A623" : "rgba(255,255,255,0.5)"}/>
+          <div>
+            <div style={{ fontSize:18, fontWeight:800, lineHeight:1, color: matchScore >= 80 ? "#4ade80" : matchScore >= 65 ? "#F5A623" : "rgba(255,255,255,0.7)" }}>{matchScore}%</div>
+            <div style={{ fontSize:10, color:"rgba(255,255,255,0.55)", textTransform:"uppercase", letterSpacing:1, marginTop:1 }}>match</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Form column ───────────────────────────────────────────────────────────
+function FormCol({ msg, setMsg, startDate, setStartDate, salaryExp, setSalaryExp, allowMatch, setAllowMatch, showSalaryField }) {
+  const max = 600;
+  const suggestions = [
+    "Hej! Jag har 12 års erfarenhet av fjärrkörning och bor i Malmö-området. Jag är intresserad av att veta mer om rutterna och kan börja redan i juni.",
+    "Hej! Jag är van vid Volvo FH och har kört Norden i 8 år. Letar efter ett stabilt åkeri med kollektivavtal.",
+  ];
+  return (
+    <div style={{ display:"flex", flexDirection:"column", gap:24 }}>
+      {/* Personligt meddelande */}
+      <Section title="Personligt meddelande" subtitle="Frivilligt — men ansökningar med meddelande får 3× snabbare svar" icon="msg">
+        <div style={{ position:"relative" }}>
+          <textarea
+            value={msg}
+            onChange={(e)=>setMsg(e.target.value.slice(0,max))}
+            placeholder="Berätta kort varför du är intresserad och vad du kan tillföra. Åkeriet ser detta tillsammans med din profil."
+            style={{ width:"100%", minHeight:140, padding:"16px 18px", background:"#0c1818", border:"1px solid rgba(255,255,255,0.08)", borderRadius:12, lineHeight:1.55, fontSize:14, outline:"none" }}
+            onFocus={(e)=>e.target.style.borderColor="rgba(245,166,35,0.4)"}
+            onBlur={(e)=>e.target.style.borderColor="rgba(255,255,255,0.08)"}
+          />
+          <div style={{ position:"absolute", bottom:10, right:12, fontSize:11, color: msg.length > max*0.9 ? "#F5A623" : "rgba(255,255,255,0.4)" }}>{msg.length}/{max}</div>
+        </div>
+        {msg.length === 0 && (
+          <div style={{ marginTop:12, display:"flex", flexWrap:"wrap", gap:8 }}>
+            <span style={{ fontSize:11, color:"rgba(255,255,255,0.4)", display:"flex", alignItems:"center", marginRight:4 }}>Förslag:</span>
+            {suggestions.map((s,i)=>(
+              <button key={i} onClick={()=>setMsg(s)} style={{ padding:"7px 12px", borderRadius:99, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", fontSize:11.5, color:"rgba(255,255,255,0.7)", cursor:"pointer", textAlign:"left" }}>"{s.slice(0,50)}…"</button>
+            ))}
+          </div>
+        )}
+      </Section>
+
+      {/* Tillgänglig från */}
+      <Section title="När kan du börja?" icon="calendar">
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10 }}>
+          {[
+            {k:"now", l:"Omgående", s:"Inom 1–2 veckor"},
+            {k:"month", l:"Inom en månad", s:"Måste avsluta nuvarande"},
+            {k:"date", l:"Specifikt datum", s:"Jag väljer själv"},
+          ].map(o => (
+            <button key={o.k} onClick={()=>setStartDate(o.k)} style={{ padding:"14px 14px", borderRadius:12, background: startDate === o.k ? "rgba(245,166,35,0.1)" : "#0c1818", border: `1px solid ${startDate === o.k ? "#F5A623" : "rgba(255,255,255,0.08)"}`, textAlign:"left", cursor:"pointer", transition:"all .15s" }}>
+              <div style={{ fontSize:13, fontWeight:700, marginBottom:3 }}>{o.l}</div>
+              <div style={{ fontSize:11, color:"rgba(255,255,255,0.5)" }}>{o.s}</div>
+            </button>
+          ))}
+        </div>
+        {startDate === "date" && (
+          <input type="date" defaultValue="2026-06-01" style={{ marginTop:12, padding:"12px 14px", background:"#0c1818", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, fontSize:14, width:"100%", colorScheme:"dark" }}/>
+        )}
+      </Section>
+
+      {/* Lönekrav (frivilligt) */}
+      {showSalaryField && (
+        <Section title="Lönekrav" subtitle="Frivilligt — visas bara för åkeriet om du fyller i" icon="trend">
+          <div style={{ display:"flex", gap:10, alignItems:"center" }}>
+            <div style={{ flex:1, padding:"12px 14px", background:"#0c1818", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, fontSize:13, color:"rgba(255,255,255,0.5)" }}>Annonsens spann: <span style={{ color:"#fff", fontWeight:600 }}>{JOB.salary}</span></div>
+          </div>
+          <div style={{ display:"flex", gap:8, marginTop:10 }}>
+            <input type="text" value={salaryExp} onChange={e=>setSalaryExp(e.target.value)} placeholder="t.ex. 38 000 kr/mån" style={{ flex:1, padding:"12px 14px", background:"#0c1818", border:"1px solid rgba(255,255,255,0.08)", borderRadius:10, fontSize:14, outline:"none" }}/>
+          </div>
+        </Section>
+      )}
+
+      {/* Tillåtelser */}
+      <Section title="Inställningar för denna ansökan" icon="lock">
+        <Toggle on={allowMatch} setOn={setAllowMatch} label="Låt åkeriet kontakta mig om andra liknande jobb" sub="Även om de inte väljer dig för detta jobb, kan de tipsa om andra roller."/>
+      </Section>
+    </div>
+  );
+}
+
+const Section = ({ title, subtitle, icon, children }) => (
+  <div className="fade" style={{ background:"#0a1414", border:"1px solid rgba(255,255,255,0.05)", borderRadius:18, padding:24 }}>
+    <div style={{ display:"flex", alignItems:"flex-start", gap:11, marginBottom: subtitle ? 14 : 16 }}>
+      <div style={{ width:32, height:32, borderRadius:9, background:"rgba(245,166,35,0.1)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, marginTop:1 }}>
+        <Icon n={icon} s={15} c="#F5A623"/>
+      </div>
+      <div style={{ flex:1 }}>
+        <div style={{ fontSize:15, fontWeight:700, letterSpacing:-0.2 }}>{title}</div>
+        {subtitle && <div style={{ fontSize:12, color:"rgba(255,255,255,0.5)", marginTop:3 }}>{subtitle}</div>}
+      </div>
+    </div>
+    {children}
+  </div>
+);
+
+const Toggle = ({ on, setOn, label, sub }) => (
+  <button onClick={()=>setOn(!on)} style={{ width:"100%", padding:"14px 16px", borderRadius:12, background: on ? "rgba(74,222,128,0.06)" : "#0c1818", border: `1px solid ${on ? "rgba(74,222,128,0.2)" : "rgba(255,255,255,0.08)"}`, display:"flex", alignItems:"center", gap:14, textAlign:"left", cursor:"pointer", transition:"all .15s" }}>
+    <div style={{ width:36, height:20, borderRadius:99, background: on ? "#4ade80" : "rgba(255,255,255,0.12)", position:"relative", transition:"all .2s", flexShrink:0 }}>
+      <div style={{ position:"absolute", top:2, left: on ? 18 : 2, width:16, height:16, borderRadius:99, background:"#fff", transition:"all .2s" }}/>
+    </div>
+    <div style={{ flex:1 }}>
+      <div style={{ fontSize:13, fontWeight:600, marginBottom:2 }}>{label}</div>
+      <div style={{ fontSize:11.5, color:"rgba(255,255,255,0.5)" }}>{sub}</div>
+    </div>
+  </button>
+);
+
+// ─── Preview column ────────────────────────────────────────────────────────
+function PreviewCol({ msg }) {
+  return (
+    <div style={{ position:"sticky", top:88, display:"flex", flexDirection:"column", gap:14 }}>
+      <div style={{ display:"flex", alignItems:"center", gap:8, fontSize:11, fontWeight:700, color:"rgba(245,166,35,0.9)", textTransform:"uppercase", letterSpacing:1.5 }}>
+        <Icon n="eye" s={12}/>
+        Så här ser åkeriet din ansökan
+      </div>
+      <div style={{ background:"#0a1414", border:"1px solid rgba(255,255,255,0.05)", borderRadius:18, overflow:"hidden" }}>
+        {/* Profile header */}
+        <div style={{ padding:24, borderBottom:"1px solid rgba(255,255,255,0.05)" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:14 }}>
+            <div style={{ width:56, height:56, borderRadius:99, background:"linear-gradient(135deg,#F5A623,#d97706)", display:"flex", alignItems:"center", justifyContent:"center", fontWeight:800, fontSize:18, color:"#000", letterSpacing:-0.5 }}>{ME.initials}</div>
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:2 }}>
+                <span style={{ fontSize:16, fontWeight:800 }}>{ME.name}</span>
+                {ME.verified && <Icon n="shield" s={13} c="#4ade80"/>}
+              </div>
+              <div style={{ fontSize:12, color:"rgba(255,255,255,0.55)" }}>{ME.age} år · {ME.location} · {ME.experience} års erfarenhet</div>
+            </div>
+          </div>
+          <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:12, color:"rgba(255,255,255,0.7)" }}>
+            <div style={{ display:"flex", gap:1 }}>
+              {[1,2,3,4,5].map(s => <Icon key={s} n="star" s={11} c={s <= Math.floor(ME.rating) ? "#F5A623" : "rgba(255,255,255,0.15)"}/>)}
+            </div>
+            <span style={{ fontWeight:700 }}>{ME.rating}</span>
+            <span style={{ color:"rgba(255,255,255,0.4)" }}>({ME.reviewCount} omdömen)</span>
+          </div>
+        </div>
+
+        {/* Body */}
+        <div style={{ padding:24, display:"flex", flexDirection:"column", gap:18 }}>
+          <div>
+            <div style={{ fontSize:10, fontWeight:700, color:"rgba(255,255,255,0.4)", textTransform:"uppercase", letterSpacing:1.2, marginBottom:8 }}>Körkort & certifikat</div>
+            <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+              {ME.license.map(l => <span key={l} style={{ padding:"5px 10px", borderRadius:99, background:"#1F5F5C", fontSize:11, fontWeight:700, color:"#F5A623" }}>{l}</span>)}
+              {ME.certificates.map(c => <span key={c} style={{ padding:"5px 10px", borderRadius:99, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", fontSize:11, color:"rgba(255,255,255,0.75)" }}>{c}</span>)}
+            </div>
+          </div>
+
+          <div>
+            <div style={{ fontSize:10, fontWeight:700, color:"rgba(255,255,255,0.4)", textTransform:"uppercase", letterSpacing:1.2, marginBottom:8 }}>Senaste tjänsten</div>
+            <div style={{ fontSize:12.5, color:"rgba(255,255,255,0.8)", display:"flex", alignItems:"center", gap:7 }}><Icon n="briefcase" s={12} c="rgba(255,255,255,0.5)"/>{ME.lastJob}</div>
+          </div>
+
+          {msg && (
+            <div style={{ padding:"14px 14px", background:"rgba(245,166,35,0.06)", border:"1px solid rgba(245,166,35,0.18)", borderRadius:11 }}>
+              <div style={{ fontSize:10, fontWeight:700, color:"#F5A623", textTransform:"uppercase", letterSpacing:1.2, marginBottom:6 }}>Personligt meddelande</div>
+              <div style={{ fontSize:12.5, lineHeight:1.55, color:"rgba(255,255,255,0.85)" }}>{msg}</div>
+            </div>
+          )}
+
+          <div style={{ display:"flex", gap:10, paddingTop:6, borderTop:"1px solid rgba(255,255,255,0.05)" }}>
+            <a href="STP Förarprofil.html" style={{ flex:1, padding:"10px 12px", background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:9, fontSize:12, fontWeight:600, color:"rgba(255,255,255,0.85)", textAlign:"center", textDecoration:"none", display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
+              <Icon n="edit" s={11}/> Redigera profil
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* Trust signal */}
+      <div style={{ padding:"14px 16px", background:"rgba(74,222,128,0.05)", border:"1px solid rgba(74,222,128,0.15)", borderRadius:14, display:"flex", gap:11, alignItems:"flex-start" }}>
+        <Icon n="shield" s={15} c="#4ade80"/>
+        <div>
+          <div style={{ fontSize:12.5, fontWeight:700, marginBottom:3 }}>Din profil är verifierad</div>
+          <div style={{ fontSize:11.5, color:"rgba(255,255,255,0.6)", lineHeight:1.5 }}>Verifierade ansökningar får svar 2× snabbare än oVerifierade.</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Sticky CTA bar ────────────────────────────────────────────────────────
+function CTABar({ canSubmit, onSubmit }) {
+  return (
+    <div style={{ position:"sticky", bottom:0, zIndex:40, background:"rgba(6,15,15,0.95)", backdropFilter:"blur(14px)", borderTop:"1px solid rgba(255,255,255,0.06)" }}>
+      <div style={{ maxWidth:1200, margin:"0 auto", padding:"16px 32px", display:"flex", alignItems:"center", justifyContent:"space-between", gap:16 }}>
+        <div style={{ fontSize:12.5, color:"rgba(255,255,255,0.55)", display:"flex", alignItems:"center", gap:8 }}>
+          <Icon n="lock" s={13} c="rgba(255,255,255,0.5)"/>
+          Din profil och meddelande skickas krypterat
+        </div>
+        <div style={{ display:"flex", gap:10 }}>
+          <a href="STP Jobbdetalj v3.html" style={{ padding:"13px 22px", borderRadius:99, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", fontSize:13.5, fontWeight:600, color:"rgba(255,255,255,0.7)", textDecoration:"none" }}>Avbryt</a>
+          <button onClick={onSubmit} disabled={!canSubmit} style={{ padding:"13px 26px", borderRadius:99, background: canSubmit ? "linear-gradient(135deg,#F5A623,#d97706)" : "rgba(255,255,255,0.06)", color: canSubmit ? "#000" : "rgba(255,255,255,0.3)", fontSize:13.5, fontWeight:800, border:"none", cursor: canSubmit ? "pointer" : "not-allowed", display:"flex", alignItems:"center", gap:8, boxShadow: canSubmit ? "0 4px 22px rgba(245,166,35,0.3)" : "none" }}>
+            Skicka ansökan
+            <Icon n="arrow" s={14}/>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Submitted state ───────────────────────────────────────────────────────
+function Submitted() {
+  return (
+    <div style={{ minHeight:"calc(100vh - 64px)", display:"flex", alignItems:"center", justifyContent:"center", padding:"60px 32px" }}>
+      <div className="scaleIn" style={{ maxWidth:540, width:"100%", textAlign:"center" }}>
+        <div style={{ width:88, height:88, margin:"0 auto 28px", position:"relative" }}>
+          <svg viewBox="0 0 60 60" style={{ width:"100%", height:"100%" }}>
+            <circle cx="30" cy="30" r="26" fill="none" stroke="#4ade80" strokeWidth="3" className="checkRing"/>
+            <polyline points="20 30 27 37 41 23" fill="none" stroke="#4ade80" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" className="checkMark"/>
+          </svg>
+        </div>
+        <div style={{ fontSize:32, fontWeight:800, letterSpacing:-1, lineHeight:1.1, marginBottom:12 }}>Ansökan skickad!</div>
+        <div style={{ fontSize:15, color:"rgba(255,255,255,0.65)", lineHeight:1.5, marginBottom:36 }}>
+          Din ansökan till <strong style={{ color:"#fff" }}>{JOB.title}</strong> hos <strong style={{ color:"#fff" }}>{JOB.company}</strong> är nu hos rekryteraren.
+        </div>
+
+        {/* What happens next */}
+        <div style={{ background:"#0a1414", border:"1px solid rgba(255,255,255,0.05)", borderRadius:18, padding:24, textAlign:"left", marginBottom:24 }}>
+          <div style={{ fontSize:11, fontWeight:700, color:"rgba(245,166,35,0.9)", textTransform:"uppercase", letterSpacing:1.5, marginBottom:18 }}>Vad händer nu?</div>
+          <div style={{ display:"flex", flexDirection:"column", gap:18 }}>
+            <Step n="1" title="Åkeriet får din ansökan" sub="Vanligen läses den inom 1 arbetsdag. Du ser ”Sedd” i Mina ansökningar när det händer."/>
+            <Step n="2" title="Beslut om urval" sub={`${JOB.company} svarar i snitt inom ${JOB.avgResponseDays} dagar.`}/>
+            <Step n="3" title="Kontakt eller meddelande om ej aktuell" sub="Du får alltid besked — antingen en tid för intervju eller en kort motivering."/>
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:32 }}>
+          <Stat label="Svarsfrekvens" value={`${JOB.responseRate}%`} sub="hos detta åkeri"/>
+          <Stat label="Genomsnittligt svar" value={`${JOB.avgResponseDays} dgr`} sub="senaste 90 dagarna"/>
+        </div>
+
+        <div style={{ display:"flex", gap:10, justifyContent:"center", flexWrap:"wrap" }}>
+          <a href="STP Mina Ansökningar.html" style={{ padding:"13px 22px", borderRadius:99, background:"linear-gradient(135deg,#F5A623,#d97706)", color:"#000", fontSize:13.5, fontWeight:800, textDecoration:"none", display:"inline-flex", alignItems:"center", gap:8, boxShadow:"0 4px 22px rgba(245,166,35,0.3)" }}>
+            Gå till mina ansökningar
+            <Icon n="arrow" s={14}/>
+          </a>
+          <a href="STP Lediga Jobb.html" style={{ padding:"13px 22px", borderRadius:99, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", fontSize:13.5, fontWeight:600, color:"rgba(255,255,255,0.85)", textDecoration:"none" }}>Hitta fler jobb</a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const Step = ({ n, title, sub }) => (
+  <div style={{ display:"flex", gap:14, alignItems:"flex-start" }}>
+    <div style={{ width:28, height:28, borderRadius:99, background:"rgba(245,166,35,0.1)", border:"1px solid rgba(245,166,35,0.3)", display:"flex", alignItems:"center", justifyContent:"center", fontWeight:800, fontSize:12, color:"#F5A623", flexShrink:0 }}>{n}</div>
+    <div>
+      <div style={{ fontSize:13.5, fontWeight:700, marginBottom:3 }}>{title}</div>
+      <div style={{ fontSize:12, color:"rgba(255,255,255,0.55)", lineHeight:1.5 }}>{sub}</div>
+    </div>
+  </div>
+);
+const Stat = ({ label, value, sub }) => (
+  <div style={{ padding:"14px 16px", background:"#0a1414", border:"1px solid rgba(255,255,255,0.05)", borderRadius:13, textAlign:"left" }}>
+    <div style={{ fontSize:10, fontWeight:700, color:"rgba(255,255,255,0.4)", textTransform:"uppercase", letterSpacing:1.2 }}>{label}</div>
+    <div style={{ fontSize:22, fontWeight:800, marginTop:4, color:"#4ade80", letterSpacing:-0.5 }}>{value}</div>
+    <div style={{ fontSize:11, color:"rgba(255,255,255,0.45)", marginTop:2 }}>{sub}</div>
+  </div>
+);
+
+// ─── Tweaks panel ──────────────────────────────────────────────────────────
+function TweaksPanel({ t, set, open, onClose }) {
+  if (!open) return null;
+  return (
+    <div style={{ position:"fixed", bottom:24, right:24, width:300, background:"#0a1414", border:"1px solid rgba(255,255,255,0.1)", borderRadius:16, boxShadow:"0 16px 48px rgba(0,0,0,0.5)", zIndex:1000, overflow:"hidden" }}>
+      <div style={{ padding:"14px 18px", borderBottom:"1px solid rgba(255,255,255,0.06)", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+        <span style={{ fontSize:13, fontWeight:800 }}>Tweaks</span>
+        <button onClick={onClose} style={{ padding:6 }}><Icon n="x" s={14} c="rgba(255,255,255,0.5)"/></button>
+      </div>
+      <div style={{ padding:18, display:"flex", flexDirection:"column", gap:18 }}>
+        <div>
+          <div style={{ fontSize:11, color:"rgba(255,255,255,0.5)", marginBottom:8, fontWeight:600 }}>State</div>
+          <div style={{ display:"flex", gap:6 }}>
+            {["form","submitted"].map(s => (
+              <button key={s} onClick={()=>set("state",s)} style={{ flex:1, padding:"8px 10px", borderRadius:8, background: t.state === s ? "#F5A623" : "rgba(255,255,255,0.04)", color: t.state === s ? "#000" : "rgba(255,255,255,0.7)", fontSize:11, fontWeight:700, border:"none", cursor:"pointer" }}>{s}</button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <div style={{ fontSize:11, color:"rgba(255,255,255,0.5)", marginBottom:8, fontWeight:600, display:"flex", justifyContent:"space-between" }}><span>Match score</span><span>{t.matchScore}%</span></div>
+          <input type="range" min="40" max="100" value={t.matchScore} onChange={e=>set("matchScore", parseInt(e.target.value))} style={{ width:"100%", accentColor:"#F5A623" }}/>
+        </div>
+        <div>
+          <div style={{ fontSize:11, color:"rgba(255,255,255,0.5)", marginBottom:8, fontWeight:600 }}>Lönekrav-fält</div>
+          <div style={{ display:"flex", gap:6 }}>
+            {[true,false].map(b => (
+              <button key={b} onClick={()=>set("showSalaryField",b)} style={{ flex:1, padding:"8px 10px", borderRadius:8, background: t.showSalaryField === b ? "#F5A623" : "rgba(255,255,255,0.04)", color: t.showSalaryField === b ? "#000" : "rgba(255,255,255,0.7)", fontSize:11, fontWeight:700, border:"none", cursor:"pointer" }}>{b ? "Visa" : "Dölj"}</button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── App ───────────────────────────────────────────────────────────────────
+function App() {
+  const tw = useTweaks();
+  const [msg, setMsg] = React.useState("");
+  const [startDate, setStartDate] = React.useState("month");
+  const [salaryExp, setSalaryExp] = React.useState("");
+  const [allowMatch, setAllowMatch] = React.useState(true);
+  const canSubmit = startDate !== null;
+  const onSubmit = () => tw.set("state", "submitted");
+
+  if (tw.t.state === "submitted") {
+    return (
+      <>
+        <Header/>
+        <Submitted/>
+        <TweaksPanel t={tw.t} set={tw.set} open={tw.open} onClose={()=>{tw.setOpen(false); window.parent.postMessage({type:"__edit_mode_dismissed"}, "*");}}/>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Header/>
+      <JobStrip matchScore={tw.t.matchScore}/>
+      <main style={{ maxWidth:1200, margin:"0 auto", padding:"32px 32px 32px" }}>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 380px", gap:32, alignItems:"flex-start" }}>
+          <FormCol msg={msg} setMsg={setMsg} startDate={startDate} setStartDate={setStartDate} salaryExp={salaryExp} setSalaryExp={setSalaryExp} allowMatch={allowMatch} setAllowMatch={setAllowMatch} showSalaryField={tw.t.showSalaryField}/>
+          <PreviewCol msg={msg}/>
+        </div>
+      </main>
+      <CTABar canSubmit={canSubmit} onSubmit={onSubmit}/>
+      <TweaksPanel t={tw.t} set={tw.set} open={tw.open} onClose={()=>{tw.setOpen(false); window.parent.postMessage({type:"__edit_mode_dismissed"}, "*");}}/>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>

@@ -1555,6 +1555,43 @@ adminRouter.get("/onboarding", async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
+adminRouter.get("/insights", async (req, res, next) => {
+  try {
+    const status = req.query.status || undefined;
+    const insights = await prisma.insight.findMany({
+      where: status ? { status } : undefined,
+      orderBy: [
+        { priority: "asc" }, // HIGH sorts before LOW alphabetically... use custom order below
+        { generatedAt: "desc" },
+      ],
+    });
+    // Sort by priority: HIGH → MEDIUM → LOW
+    const order = { HIGH: 0, MEDIUM: 1, LOW: 2 };
+    insights.sort((a, b) => (order[a.priority] ?? 1) - (order[b.priority] ?? 1) || new Date(b.generatedAt) - new Date(a.generatedAt));
+    res.json(insights);
+  } catch (e) { next(e); }
+});
+
+adminRouter.patch("/insights/:id", async (req, res, next) => {
+  try {
+    const { status } = req.body;
+    const updated = await prisma.insight.update({
+      where: { id: req.params.id },
+      data: { ...(status && { status }) },
+    });
+    res.json(updated);
+  } catch (e) { next(e); }
+});
+
+adminRouter.post("/insights/run", async (req, res, next) => {
+  try {
+    // Manual trigger — ignores weekly deduplication
+    const { runProductIntelligenceAgent } = await import("../lib/productIntelligenceAgent.js");
+    res.json({ started: true });
+    runProductIntelligenceAgent().catch(e => console.error("[PIAgent] Manual run error:", e?.message));
+  } catch (e) { next(e); }
+});
+
 adminRouter.patch("/feedback/:id", async (req, res, next) => {
   try {
     const { status, adminNote } = req.body;

@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>STP – Förarprofil</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;0,9..40,900&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: 'DM Sans', system-ui, sans-serif; }
+:root {
+  --bg:        #050e0e;
+  --bg2:       #0a1818;
+  --bg3:       #0d2b2b;
+  --primary:   #1F5F5C;
+  --p-light:   #2a7a76;
+  --p-glow:    rgba(31,95,92,0.3);
+  --p-dim:     rgba(31,95,92,0.15);
+  --amber:     #F5A623;
+  --amber-dim: rgba(245,166,35,0.12);
+  --text:      #f0faf9;
+  --sub:       rgba(240,250,249,0.55);
+  --muted:     rgba(240,250,249,0.3);
+  --border:    rgba(255,255,255,0.08);
+  --border2:   rgba(255,255,255,0.14);
+  --card:      rgba(255,255,255,0.04);
+  --green:     #4ade80;
+  --red:       #f87171;
+  --font:      'DM Sans', system-ui, sans-serif;
+}
+body { background: var(--bg); color: var(--text); }
+input, textarea, select { font-family: var(--font); font-size: 14px; }
+textarea { resize: none; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+@keyframes slideIn { from { opacity:0; transform:translateX(12px); } to { opacity:1; transform:translateX(0); } }
+.fade-up { animation: fadeUp .25s ease both; }
+.slide-in { animation: slideIn .2s ease both; }
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+/* ══════════ ATOMS ══════════ */
+
+const Tag = ({ c = "p", children, onRemove }) => {
+  const map = {
+    p:     { bg:"rgba(31,95,92,0.18)",   color:"#7dd3c8", border:"rgba(31,95,92,0.4)" },
+    amber: { bg:"rgba(245,166,35,0.14)", color:"#F5A623", border:"rgba(245,166,35,0.35)" },
+    green: { bg:"rgba(74,222,128,0.1)",  color:"#4ade80", border:"rgba(74,222,128,0.25)" },
+    red:   { bg:"rgba(248,113,113,0.1)", color:"#f87171", border:"rgba(248,113,113,0.25)" },
+    muted: { bg:"rgba(255,255,255,0.06)", color:"rgba(240,250,249,0.55)", border:"rgba(255,255,255,0.1)" },
+  };
+  const s = map[c] || map.p;
+  return (
+    <span style={{
+      display:"inline-flex", alignItems:"center", gap:5,
+      padding:"3px 10px", borderRadius:20, fontSize:12, fontWeight:600,
+      background:s.bg, color:s.color, border:`1px solid ${s.border}`,
+    }}>
+      {children}
+      {onRemove && (
+        <button onClick={onRemove} style={{
+          background:"none", border:"none", cursor:"pointer",
+          color:s.color, opacity:0.7, padding:0, lineHeight:1, fontSize:13,
+        }}>×</button>
+      )}
+    </span>
+  );
+};
+
+const Btn = ({ children, v="primary", sm, onClick, style, disabled }) => {
+  const vs = {
+    primary: { bg:"var(--primary)", color:"#fff" },
+    amber:   { bg:"var(--amber)", color:"#0a1010" },
+    outline: { bg:"transparent", color:"var(--text)", border:"1.5px solid var(--border2)" },
+    ghost:   { bg:"var(--p-dim)", color:"#7dd3c8" },
+    dim:     { bg:"rgba(255,255,255,0.07)", color:"var(--sub)" },
+    danger:  { bg:"rgba(248,113,113,0.12)", color:"#f87171", border:"1px solid rgba(248,113,113,0.25)" },
+  };
+  const s = vs[v] || vs.primary;
+  return (
+    <button onClick={onClick} disabled={disabled} style={{
+      display:"inline-flex", alignItems:"center", justifyContent:"center", gap:6,
+      fontFamily:"var(--font)", fontWeight:600, cursor:disabled?"default":"pointer",
+      border:s.border||"none", borderRadius:9, fontSize:sm?12:14,
+      padding:sm?"6px 14px":"10px 22px", minHeight:sm?32:42,
+      background:s.bg, color:s.color, opacity:disabled?0.4:1,
+      transition:"all .15s", whiteSpace:"nowrap", ...style,
+    }}>{children}</button>
+  );
+};
+
+const Input = ({ label, value, onChange, type="text", placeholder, hint }) => (
+  <div>
+    {label && <p style={{ fontSize:12, fontWeight:600, color:"var(--sub)", marginBottom:6 }}>{label}</p>}
+    <input type={type} value={value} onChange={onChange} placeholder={placeholder} style={{
+      width:"100%", padding:"10px 14px", borderRadius:9,
+      background:"var(--card)", border:"1px solid var(--border2)",
+      color:"var(--text)", fontSize:14, outline:"none",
+    }} />
+    {hint && <p style={{ fontSize:11, color:"var(--muted)", marginTop:5 }}>{hint}</p>}
+  </div>
+);
+
+const SectionHeader = ({ label, action }) => (
+  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
+    <p style={{ fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", color:"var(--sub)" }}>{label}</p>
+    {action}
+  </div>
+);
+
+const Divider = () => <div style={{ height:1, background:"var(--border)", margin:"20px 0" }} />;
+
+/* ══════════ NAV ══════════ */
+const Nav = ({ editing, onEdit, onSave, onCancel, unsaved, saving }) => (
+  <div style={{
+    height:56, display:"flex", alignItems:"center", justifyContent:"space-between",
+    padding:"0 40px", background:"rgba(5,14,14,0.94)",
+    borderBottom:"1px solid var(--border)", backdropFilter:"blur(12px)",
+    position:"sticky", top:0, zIndex:30,
+  }}>
+    <div style={{ display:"flex", alignItems:"center", gap:32 }}>
+      <span style={{ fontWeight:900, fontSize:19, letterSpacing:"-0.5px" }}>STP</span>
+      <div style={{ display:"flex", gap:2 }}>
+        {["Jobb","Åkerier","Meddelanden","Favoriter"].map((item,i) => (
+          <button key={item} style={{
+            padding:"6px 14px", borderRadius:8, border:"none", cursor:"pointer",
+            fontSize:13, fontWeight:i===3?600:400,
+            background:i===3?"var(--p-dim)":"transparent",
+            color:i===3?"#7dd3c8":"var(--sub)", fontFamily:"var(--font)",
+          }}>{item}</button>
+        ))}
+      </div>
+    </div>
+    <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+      {editing ? (
+        <>
+          <Btn v="dim" sm onClick={onCancel}>Avbryt</Btn>
+          <Btn sm onClick={onSave} style={{
+            background: unsaved ? "var(--amber)" : "var(--primary)",
+            color: unsaved ? "#0a1010" : "#fff",
+            minWidth: 140,
+          }}>
+            {saving ? "Sparar…" : unsaved ? "Spara ändringar ✓" : "Inga ändringar"}
+          </Btn>
+        </>
+      ) : (
+        <Btn sm onClick={onEdit}>Redigera profil</Btn>
+      )}
+      <div style={{
+        width:34, height:34, borderRadius:"50%",
+        background:"linear-gradient(135deg, var(--primary) 0%, var(--p-light) 100%)",
+        display:"flex", alignItems:"center", justifyContent:"center",
+        fontSize:13, fontWeight:700, color:"#fff",
+      }}>OH</div>
+    </div>
+  </div>
+);
+
+/* ══════════ CERT EXPIRY HELPERS ══════════ */
+function expiryStatus(dateStr) {
+  if (!dateStr) return null;
+  const d = new Date(dateStr);
+  const now = new Date();
+  const diffMs = d - now;
+  const diffDays = Math.ceil(diffMs / (1000*60*60*24));
+  if (diffDays < 0) return { c:"red", label:"Utgånget", days: diffDays };
+  if (diffDays < 90) return { c:"red", label:`${diffDays} dagar kvar`, days: diffDays };
+  if (diffDays < 180) return { c:"amber", label:`${Math.ceil(diffDays/30)} månader kvar`, days: diffDays };
+  return { c:"green", label:`Gäller t.o.m. ${dateStr}`, days: diffDays };
+}
+
+/* ══════════ CERT GROUP PICKER ══════════ */
+const CERT_GROUPS = [
+  { id:"grund", label:"Grund & körkort", opts:[
+    { value:"YKB", label:"YKB" },
+    { value:"Digitalt_fardskrivarkort", label:"Färdskrivarkort" },
+  ]},
+  { id:"adr", label:"ADR – Farligt gods", opts:[
+    { value:"ADR", label:"ADR (grund)" },
+    { value:"ADR_Tank", label:"ADR Tank" },
+  ]},
+  { id:"apv", label:"APV – Arbete på väg", opts:[
+    { value:"APV_1_1", label:"APV 1.1" },
+    { value:"APV_1_2", label:"APV 1.2" },
+    { value:"APV_2_1", label:"APV 2.1" },
+    { value:"APV_3", label:"APV 3" },
+  ]},
+  { id:"kran", label:"Kran & lyft", opts:[
+    { value:"Kran", label:"Kranförarbevis" },
+    { value:"Fordonsmonterad_kran", label:"HIAB" },
+  ]},
+  { id:"truck", label:"Truck", opts:[
+    { value:"Truck_A", label:"Truck A" },
+    { value:"Truck_B", label:"Truck B" },
+    { value:"Truck_C", label:"Truck C" },
+    { value:"Truck_D", label:"Truck D" },
+    { value:"Bakgavellyft", label:"Bakgavellyft" },
+  ]},
+  { id:"ovriga", label:"Övriga", opts:[
+    { value:"Lastsakring", label:"Lastsäkring" },
+    { value:"Livsmedelshantering", label:"Livsmedel" },
+    { value:"Kyl", label:"Kylskåp" },
+    { value:"ID06", label:"ID06" },
+  ]},
+];
+
+/* ══════════ EXPERIENCE ENTRY ══════════ */
+const EXP_VEHICLES = ["CE Lastbil","C Lastbil","Tankbil","Kylbil","Container","Skåpbil","Kranbil","Timmerbil"];
+const EXP_TYPES = ["Fjärrkörning","Distribution","Lokalkörning","Timkörning","Nattransport"];
+const YEARS = Array.from({length:55},(_,i)=>2025-i);
+
+function ExpCard({ exp, editing, onEdit, onRemove }) {
+  const isCurrent = exp.current;
+  return (
+    <div style={{
+      display:"flex", gap:0, paddingLeft:28, paddingBottom:20, position:"relative",
+    }}>
+      <div style={{
+        position:"absolute", left:0, top:4,
+        width:20, height:20, borderRadius:"50%",
+        background:isCurrent?"rgba(74,222,128,0.15)":"var(--card)",
+        border:`2px solid ${isCurrent?"var(--green)":"var(--border2)"}`,
+        display:"flex", alignItems:"center", justifyContent:"center",
+        fontSize:8, color:isCurrent?"var(--green)":"var(--border2)", flexShrink:0,
+      }}>{isCurrent?"●":"○"}</div>
+      <div style={{
+        flex:1, background:"var(--bg2)", border:"1px solid var(--border)",
+        borderRadius:14, padding:"16px 18px",
+        transition:"border-color .15s",
+      }}>
+        <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:12 }}>
+          <div style={{ flex:1, minWidth:0 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap", marginBottom:4 }}>
+              <p style={{ fontWeight:700, fontSize:15, color:"var(--text)" }}>{exp.role}</p>
+              {isCurrent && <Tag c="green">Pågående</Tag>}
+            </div>
+            <p style={{ fontSize:13, color:"var(--sub)", marginBottom:10 }}>
+              {exp.company} · {exp.startYear||"?"} – {isCurrent?"nu":exp.endYear||"?"}
+            </p>
+            <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
+              {(exp.vehicleTypes||[]).map(v=><Tag key={v} c="muted">{v}</Tag>)}
+              {exp.jobType && <Tag c="p">{exp.jobType}</Tag>}
+            </div>
+            {exp.description && <p style={{ fontSize:13, color:"var(--sub)", marginTop:10, lineHeight:1.55 }}>{exp.description}</p>}
+          </div>
+          {editing && (
+            <div style={{ display:"flex", gap:6, flexShrink:0 }}>
+              <button onClick={onEdit} style={{
+                width:30, height:30, borderRadius:8, border:"1px solid var(--border2)",
+                background:"var(--card)", color:"var(--sub)", cursor:"pointer",
+                display:"flex", alignItems:"center", justifyContent:"center", fontSize:14,
+              }}>✎</button>
+              <button onClick={onRemove} style={{
+                width:30, height:30, borderRadius:8, border:"1px solid rgba(248,113,113,0.2)",
+                background:"rgba(248,113,113,0.06)", color:"#f87171", cursor:"pointer",
+                display:"flex", alignItems:"center", justifyContent:"center", fontSize:14,
+              }}>×</button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ExpForm({ initial, onSave, onCancel }) {
+  const [draft, setDraft] = React.useState(initial || {
+    company:"", role:"", startYear:"", endYear:"", current:false,
+    vehicleTypes:[], jobType:"", description:"",
+  });
+  const upd = (k,v) => setDraft(p=>({...p,[k]:v}));
+  const toggleV = (v) => upd("vehicleTypes", draft.vehicleTypes.includes(v) ? draft.vehicleTypes.filter(x=>x!==v) : [...draft.vehicleTypes,v]);
+
+  return (
+    <div className="fade-up" style={{
+      background:"var(--bg2)", border:"1.5px solid var(--primary)",
+      borderRadius:14, padding:"20px", marginLeft:28,
+    }}>
+      <p style={{ fontSize:13, fontWeight:700, color:"var(--text)", marginBottom:16 }}>
+        {initial ? "Redigera erfarenhet" : "Lägg till erfarenhet"}
+      </p>
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:12 }}>
+        <Input label="Företag *" value={draft.company} onChange={e=>upd("company",e.target.value)} placeholder="Nordic Logistics AB" />
+        <Input label="Roll / titel *" value={draft.role} onChange={e=>upd("role",e.target.value)} placeholder="CE-chaufför" />
+        <div>
+          <p style={{ fontSize:12, fontWeight:600, color:"var(--sub)", marginBottom:6 }}>Startår</p>
+          <select value={draft.startYear} onChange={e=>upd("startYear",e.target.value)} style={{
+            width:"100%", padding:"10px 14px", borderRadius:9,
+            background:"var(--card)", border:"1px solid var(--border2)",
+            color:"var(--text)", fontSize:14,
+          }}>
+            <option value="">Välj år</option>
+            {YEARS.map(y=><option key={y} value={y}>{y}</option>)}
+          </select>
+        </div>
+        <div>
+          <p style={{ fontSize:12, fontWeight:600, color:"var(--sub)", marginBottom:6 }}>Slutår</p>
+          <select value={draft.endYear} disabled={draft.current} onChange={e=>upd("endYear",e.target.value)} style={{
+            width:"100%", padding:"10px 14px", borderRadius:9,
+            background:"var(--card)", border:"1px solid var(--border2)",
+            color:draft.current?"var(--muted)":"var(--text)", fontSize:14, opacity:draft.current?0.5:1,
+          }}>
+            <option value="">Välj år</option>
+            {YEARS.map(y=><option key={y} value={y}>{y}</option>)}
+          </select>
+        </div>
+      </div>
+      <label style={{ display:"flex", alignItems:"center", gap:8, fontSize:13, color:"var(--sub)", marginBottom:16, cursor:"pointer" }}>
+        <input type="checkbox" checked={draft.current} onChange={e=>upd("current",e.target.checked)} />
+        Pågående anställning
+      </label>
+      <div style={{ marginBottom:12 }}>
+        <p style={{ fontSize:12, fontWeight:600, color:"var(--sub)", marginBottom:8 }}>Fordonstyp</p>
+        <div style={{ display:"flex", flexWrap:"wrap", gap:7 }}>
+          {EXP_VEHICLES.map(v=>{
+            const on=draft.vehicleTypes.includes(v);
+            return <button key={v} type="button" onClick={()=>toggleV(v)} style={{
+              padding:"6px 12px", borderRadius:8, fontSize:12, fontWeight:600, cursor:"pointer",
+              fontFamily:"var(--font)", border:`1.5px solid ${on?"var(--primary)":"var(--border)"}`,
+              background:on?"var(--primary)":"var(--card)", color:on?"#fff":"var(--sub)", transition:"all .12s",
+            }}>{v}</button>;
+          })}
+        </div>
+      </div>
+      <div style={{ marginBottom:16 }}>
+        <p style={{ fontSize:12, fontWeight:600, color:"var(--sub)", marginBottom:8 }}>Körtyp</p>
+        <div style={{ display:"flex", flexWrap:"wrap", gap:7 }}>
+          {EXP_TYPES.map(t=>{
+            const on=draft.jobType===t;
+            return <button key={t} type="button" onClick={()=>upd("jobType",on?"":t)} style={{
+              padding:"6px 12px", borderRadius:8, fontSize:12, fontWeight:600, cursor:"pointer",
+              fontFamily:"var(--font)", border:`1.5px solid ${on?"#7dd3c8":"var(--border)"}`,
+              background:on?"rgba(125,211,200,0.15)":"var(--card)", color:on?"#7dd3c8":"var(--sub)", transition:"all .12s",
+            }}>{t}</button>;
+          })}
+        </div>
+      </div>
+      <div style={{ marginBottom:16 }}>
+        <p style={{ fontSize:12, fontWeight:600, color:"var(--sub)", marginBottom:6 }}>Beskrivning (valfritt)</p>
+        <textarea value={draft.description} onChange={e=>upd("description",e.target.value)} rows={2} placeholder="Kort beskrivning av rollen…" style={{
+          width:"100%", padding:"10px 14px", borderRadius:9,
+          background:"var(--card)", border:"1px solid var(--border2)",
+          color:"var(--text)", fontSize:13, outline:"none",
+        }}/>
+      </div>
+      <div style={{ display:"flex", gap:10 }}>
+        <Btn onClick={()=>onSave(draft)} disabled={!draft.company||!draft.role}>
+          {initial ? "Spara ändringar" : "Lägg till"}
+        </Btn>
+        <Btn v="dim" onClick={onCancel}>Avbryt</Btn>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════ PROFILE SCORE CARD ══════════ */
+function ScoreCard({ profile, onEdit }) {
+  const checks = [
+    { label:"Namn",           done: Boolean(profile.name) },
+    { label:"Foto / initialer",done: true },
+    { label:"Ort & region",   done: Boolean(profile.location && profile.region) },
+    { label:"Körkort",        done: (profile.licenses||[]).length > 0 },
+    { label:"Certifikat",     done: (profile.certs||[]).length > 0 },
+    { label:"Erfarenhet",     done: (profile.experience||[]).length > 0 },
+    { label:"Presentation",   done: (profile.summary||"").length >= 30 },
+    { label:"Tillgänglighet", done: Boolean(profile.availability) },
+  ];
+  const done = checks.filter(c=>c.done).length;
+  const pct = Math.round(done/checks.length*100);
+  const label = pct>=90?"Utmärkt profil":pct>=70?"Stark profil":pct>=50?"Bra profil":"Under uppbyggnad";
+  const barColor = pct>=70?"var(--green)":pct>=50?"var(--amber)":"var(--primary)";
+
+  return (
+    <div style={{ background:"var(--bg2)", border:"1px solid var(--border)", borderRadius:14, padding:"20px", marginBottom:16 }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
+        <p style={{ fontSize:13, fontWeight:700 }}>Profilstyrka</p>
+        <span style={{ fontSize:20, fontWeight:900, color:barColor }}>{pct}<span style={{ fontSize:12, fontWeight:400, color:"var(--sub)" }}>/100</span></span>
+      </div>
+      <div style={{ height:6, borderRadius:6, background:"rgba(255,255,255,0.08)", marginBottom:8 }}>
+        <div style={{ height:6, borderRadius:6, background:barColor, width:`${pct}%`, transition:"width .5s" }}/>
+      </div>
+      <p style={{ fontSize:12, color:"var(--sub)", marginBottom:14 }}>{label}</p>
+      <div style={{ display:"flex", flexDirection:"column", gap:5 }}>
+        {checks.filter(c=>!c.done).slice(0,3).map(c=>(
+          <div key={c.label} style={{ display:"flex", alignItems:"center", gap:8 }}>
+            <div style={{ width:16, height:16, borderRadius:"50%", border:"1.5px solid var(--border2)", flexShrink:0 }}/>
+            <span style={{ fontSize:12, color:"var(--muted)" }}>{c.label}</span>
+          </div>
+        ))}
+        {checks.filter(c=>c.done).slice(0,2).map(c=>(
+          <div key={c.label} style={{ display:"flex", alignItems:"center", gap:8 }}>
+            <div style={{ width:16, height:16, borderRadius:"50%", background:"rgba(74,222,128,0.15)", border:"1.5px solid rgba(74,222,128,0.3)", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", fontSize:9, color:"var(--green)", fontWeight:800 }}>✓</div>
+            <span style={{ fontSize:12, color:"var(--sub)" }}>{c.label}</span>
+          </div>
+        ))}
+      </div>
+      {pct < 100 && onEdit && (
+        <button onClick={onEdit} style={{ marginTop:12, width:"100%", padding:"8px", borderRadius:8, border:"none", background:"var(--p-dim)", color:"#7dd3c8", fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"var(--font)" }}>Stärk profilen →</button>
+      )}
+    </div>
+  );
+}
+
+/* ══════════ MATCH SIDEBAR ══════════ */
+function MatchSidebar({ region }) {
+  return (
+    <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+      <div style={{ background:"var(--bg2)", border:"1px solid var(--border)", borderRadius:14, padding:"18px 20px" }}>
+        <p style={{ fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", color:"var(--sub)", marginBottom:14 }}>Marknad i {region||"din region"}</p>
+        {[
+          { l:"CE-körkort", pct:78 },
+          { l:"YKB", pct:62 },
+          { l:"ADR", pct:31 },
+          { l:"Truck B", pct:24 },
+        ].map(({l,pct})=>(
+          <div key={l} style={{ marginBottom:11 }}>
+            <div style={{ display:"flex", justifyContent:"space-between", marginBottom:4 }}>
+              <span style={{ fontSize:12, color:"var(--sub)" }}>{l}</span>
+              <span style={{ fontSize:12, fontWeight:600 }}>{pct}%</span>
+            </div>
+            <div style={{ height:4, borderRadius:4, background:"rgba(255,255,255,0.06)" }}>
+              <div style={{ height:4, borderRadius:4, background:"var(--primary)", width:`${pct}%` }}/>
+            </div>
+          </div>
+        ))}
+        <p style={{ fontSize:11, color:"var(--muted)", marginTop:6 }}>Andel aktiva jobb som kräver respektive</p>
+      </div>
+
+      <div style={{ background:"var(--bg2)", border:"1px solid var(--border)", borderRadius:14, padding:"18px 20px" }}>
+        <p style={{ fontSize:11, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", color:"var(--sub)", marginBottom:12 }}>Din profillänk</p>
+        <p style={{ fontSize:12, color:"var(--sub)", marginBottom:12, lineHeight:1.5 }}>
+          Dela med åkerier — de ser din profil utan inloggning.
+        </p>
+        <div style={{ padding:"8px 12px", borderRadius:8, background:"var(--card)", border:"1px solid var(--border)", marginBottom:10 }}>
+          <p style={{ fontSize:11, color:"var(--muted)", fontFamily:"monospace" }}>transportplattformen.se/forare/oh…</p>
+        </div>
+        <Btn v="ghost" style={{ width:"100%" }} sm>Kopiera länk</Btn>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════ MAIN PROFILE ══════════ */
+function Profile() {
+  const [editing, setEditing] = React.useState(false);
+  const [saving, setSaving] = React.useState(false);
+  const [tab, setTab] = React.useState("profil");
+  const [addingExp, setAddingExp] = React.useState(false);
+  const [editingExpId, setEditingExpId] = React.useState(null);
+  const [linkCopied, setLinkCopied] = React.useState(false);
+
+  const initProfile = {
+    name: "Oliver Harburt",
+    location: "Malmö",
+    region: "Skåne",
+    email: "oliver@email.com",
+    phone: "0723 606 016",
+    summary: "CE-chaufför med 8 års erfarenhet av fjärrkörning och distribution i Sydsveriget. Söker fast heltid i Skåne med dagtider.",
+    availability: "open",
+    segment: "FULLTIME",
+    licenses: ["CE","C","B"],
+    certs: [
+      { id:"YKB", expiry:"2025-08-01" },
+      { id:"ADR", expiry:"2027-03-15" },
+      { id:"Truck_B", expiry:"2026-11-01" },
+    ],
+    experience: [
+      { id:"e1", company:"Nordic Logistics AB", role:"CE-chaufför", startYear:2019, endYear:null, current:true, vehicleTypes:["CE Lastbil"], jobType:"Fjärrkörning", description:"Fjärrkörning med CE-ekipage i Norden. Fasta rutter och nattransporter." },
+      { id:"e2", company:"PostNord Logistik", role:"Chaufför C", startYear:2016, endYear:2019, current:false, vehicleTypes:["C Lastbil","Skåpbil"], jobType:"Distribution", description:"Distribution i Malmö och Vellinge. Paket och pall." },
+      { id:"e3", company:"Schenker Dedicated", role:"Vikarierande CE-chaufför", startYear:2014, endYear:2016, current:false, vehicleTypes:["CE Lastbil"], jobType:"Fjärrkörning", description:"" },
+    ],
+    visibleToCompanies: true,
+    showPhone: true,
+    showEmail: false,
+    regionsWilling: ["Skåne","Blekinge"],
+    availableFrom: "",
+    availableWeeks: [],
+  };
+
+  const [profile, setProfile] = React.useState(initProfile);
+  const [draft, setDraft] = React.useState(initProfile);
+  const upd = (k,v) => setDraft(p=>({...p,[k]:v}));
+
+  const unsaved = JSON.stringify(profile) !== JSON.stringify(draft);
+  const cur = editing ? draft : profile;
+
+  const startEdit = () => { setDraft(profile); setEditing(true); };
+  const cancelEdit = () => { setDraft(profile); setEditing(false); setAddingExp(false); setEditingExpId(null); };
+  const save = () => {
+    setSaving(true);
+    setTimeout(() => { setProfile(draft); setEditing(false); setSaving(false); setAddingExp(false); setEditingExpId(null); }, 700);
+  };
+
+  const toggleLic = (l) => {
+    const next = cur.licenses.includes(l) ? cur.licenses.filter(x=>x!==l) : [...cur.licenses,l];
+    upd("licenses", next);
+  };
+  const toggleCertId = (id) => {
+    const has = cur.certs.find(c=>c.id===id);
+    upd("certs", has ? cur.certs.filter(c=>c.id!==id) : [...cur.certs,{id,expiry:""}]);
+  };
+  const setCertExpiry = (id, expiry) => upd("certs", cur.certs.map(c=>c.id===id?{...c,expiry}:c));
+
+  const addExp = (exp) => {
+    upd("experience", [...cur.experience, {...exp, id:`e${Date.now()}`}]);
+    setAddingExp(false);
+  };
+  const saveExp = (exp) => {
+    upd("experience", cur.experience.map(e=>e.id===editingExpId?{...exp,id:editingExpId}:e));
+    setEditingExpId(null);
+  };
+  const removeExp = (id) => upd("experience", cur.experience.filter(e=>e.id!==id));
+
+  /* ── Cert expiry warnings ── */
+  const warnings = cur.certs
+    .map(c=>({ ...c, status:expiryStatus(c.expiry) }))
+    .filter(c=>c.status && c.status.days < 180)
+    .sort((a,b)=>a.status.days-b.status.days);
+
+  /* ── Profile score ── */
+  const profilePct = [
+    Boolean(cur.name),
+    (cur.licenses||[]).length>0,
+    Boolean(cur.location && cur.region),
+    (cur.certs||[]).length>0,
+    (cur.experience||[]).length>0,
+    (cur.summary||"").length>=30,
+    Boolean(cur.availability),
+    (cur.regionsWilling||[]).length>0,
+  ].filter(Boolean).length / 8 * 100;
+
+  const REGIONS = ["Stockholm","Skåne","Västra Götaland","Östergötland","Norrbotten","Uppsala","Dalarna","Gävleborg","Södermanland","Jönköping","Örebro","Blekinge","Halland"];
+  const AVAIL = [
+    { val:"open", label:"Öppen för förfrågningar" },
+    { val:"fast", label:"Söker fast anställning" },
+    { val:"vikariat", label:"Söker vikariat" },
+    { val:"tim", label:"Söker timjobb" },
+    { val:"inactive", label:"Inte aktivt sökande" },
+  ];
+
+  return (
+    <div style={{ minHeight:"100vh", background:"var(--bg)", color:"var(--text)", fontFamily:"var(--font)" }}>
+      <Nav editing={editing} onEdit={startEdit} onSave={save} onCancel={cancelEdit} unsaved={unsaved} saving={saving} />
+
+      {/* ── Hero ── */}
+      <div style={{
+        background:"linear-gradient(160deg, var(--bg3) 0%, #061414 70%)",
+        borderBottom:"1px solid var(--border)", paddingBottom:0,
+      }}>
+        <div style={{ maxWidth:1100, margin:"0 auto", padding:"36px 40px 0" }}>
+
+
+          <div style={{ display:"flex", alignItems:"flex-start", gap:22, marginBottom:28 }}>
+            {/* Avatar */}
+            <div style={{
+              width:76, height:76, borderRadius:"50%", flexShrink:0,
+              background:"linear-gradient(135deg, var(--primary) 0%, var(--p-light) 100%)",
+              display:"flex", alignItems:"center", justifyContent:"center",
+              fontSize:24, fontWeight:700, color:"#fff",
+              border:"3px solid rgba(255,255,255,0.12)",
+              boxShadow:"0 0 0 1px var(--border), 0 8px 32px var(--p-glow)",
+            }}>OH</div>
+
+            {/* Info */}
+            <div style={{ flex:1 }}>
+              {editing ? (
+                <div style={{ display:"flex", gap:12, marginBottom:12, maxWidth:500 }}>
+                  <input value={draft.name} onChange={e=>upd("name",e.target.value)} style={{
+                    flex:1, padding:"8px 12px", borderRadius:9,
+                    background:"rgba(255,255,255,0.08)", border:"1px solid var(--border2)",
+                    color:"var(--text)", fontSize:20, fontWeight:700, outline:"none",
+                  }}/>
+                </div>
+              ) : (
+                <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:6 }}>
+                  <h1 style={{ fontSize:26, fontWeight:800 }}>{cur.name}</h1>
+                </div>
+              )}
+              <p style={{ fontSize:14, color:"var(--sub)", marginBottom:12 }}>
+                📍 {cur.location||"—"}, {cur.region||"—"} · {cur.experience.length > 0 ? `${2025-(cur.experience[cur.experience.length-1]?.startYear||2015)} års erfarenhet` : "Ny på plattformen"}
+              </p>
+              <div style={{ display:"flex", flexWrap:"wrap", gap:7, marginBottom:16 }}>
+                {(cur.licenses||[]).map(l=><Tag key={l} c="p">{l}</Tag>)}
+                {(cur.certs||[]).slice(0,3).map(c=>{
+                  const st=expiryStatus(c.expiry);
+                  return <Tag key={c.id} c={st&&st.days<180?st.c:"muted"}>{c.id}</Tag>;
+                })}
+                {AVAIL.find(a=>a.val===cur.availability) && (
+                  <Tag c="muted">{AVAIL.find(a=>a.val===cur.availability).label}</Tag>
+                )}
+                {cur.visibleToCompanies
+                  ? <Tag c="green">Synlig</Tag>
+                  : <Tag c="muted">Dold</Tag>}
+              </div>
+              {/* Subtle strength bar under chips */}
+              <div style={{ display:"flex", alignItems:"center", gap:12, maxWidth:420 }}>
+                <div style={{ flex:1, height:3, borderRadius:3, background:"rgba(255,255,255,0.1)" }}>
+                  <div style={{ height:3, borderRadius:3, transition:"width .5s",
+                    background:profilePct>=70?"var(--green)":profilePct>=50?"var(--amber)":"var(--primary)",
+                    width:`${profilePct}%` }}/>
+                </div>
+                <span style={{ fontSize:11, color:"var(--muted)", whiteSpace:"nowrap" }}>
+                  {Math.round(profilePct)}% komplett
+                </span>
+              </div>
+            </div>
+
+
+          </div>
+
+
+
+          {/* Tabs */}
+          <div style={{ display:"flex", borderTop:"1px solid var(--border)" }}>
+            {["profil","matchningar","statistik"].map(t=>(
+              <button key={t} onClick={()=>setTab(t)} style={{
+                padding:"13px 20px", border:"none", background:"transparent", cursor:"pointer",
+                fontFamily:"var(--font)", fontSize:13, fontWeight:tab===t?700:400,
+                color:tab===t?"var(--text)":"var(--sub)",
+                borderBottom:tab===t?"2px solid var(--amber)":"2px solid transparent",
+                transition:"all .15s", textTransform:"capitalize",
+              }}>{t.charAt(0).toUpperCase()+t.slice(1)}</button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Content ── */}
+      <div style={{ maxWidth:1100, margin:"0 auto", padding:"32px 40px 80px" }}>
+
+        {/* PROFIL TAB */}
+        {tab==="profil" && (
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 300px", gap:32, alignItems:"start" }}>
+            <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+
+              {/* Grundläggande */}
+              <div style={{ background:"var(--bg2)", border:"1px solid var(--border)", borderRadius:14, padding:"22px 24px" }}>
+                <SectionHeader label="Grundläggande" />
+                {editing ? (
+                  <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+                    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
+                      <Input label="Ort" value={draft.location} onChange={e=>upd("location",e.target.value)} placeholder="Malmö" />
+                      <Input label="E-post" value={draft.email} onChange={e=>upd("email",e.target.value)} type="email" />
+                      <Input label="Telefon" value={draft.phone} onChange={e=>upd("phone",e.target.value)} type="tel" />
+                    </div>
+                    <div>
+                      <p style={{ fontSize:12, fontWeight:600, color:"var(--sub)", marginBottom:8 }}>Region (hemmaregion)</p>
+                      <div style={{ display:"flex", flexWrap:"wrap", gap:7 }}>
+                        {REGIONS.slice(0,8).map(r=>(
+                          <button key={r} onClick={()=>upd("region",r)} style={{
+                            padding:"7px 14px", borderRadius:8, fontSize:12, fontWeight:500, cursor:"pointer",
+                            fontFamily:"var(--font)", border:`1.5px solid ${draft.region===r?"var(--primary)":"var(--border)"}`,
+                            background:draft.region===r?"var(--primary)":"var(--card)", color:draft.region===r?"#fff":"var(--sub)",
+                            transition:"all .12s",
+                          }}>{r}</button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <p style={{ fontSize:12, fontWeight:600, color:"var(--sub)", marginBottom:8 }}>Tillgänglighet</p>
+                      <div style={{ display:"flex", flexWrap:"wrap", gap:7 }}>
+                        {AVAIL.map(a=>(
+                          <button key={a.val} onClick={()=>upd("availability",a.val)} style={{
+                            padding:"7px 14px", borderRadius:8, fontSize:12, fontWeight:500, cursor:"pointer",
+                            fontFamily:"var(--font)", border:`1.5px solid ${draft.availability===a.val?"var(--amber)":"var(--border)"}`,
+                            background:draft.availability===a.val?"var(--amber-dim)":"var(--card)",
+                            color:draft.availability===a.val?"var(--amber)":"var(--sub)", transition:"all .12s",
+                          }}>{a.label}</button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <p style={{ fontSize:12, fontWeight:600, color:"var(--sub)", marginBottom:8 }}>Kan jobba i dessa regioner</p>
+                      <div style={{ display:"flex", flexWrap:"wrap", gap:7 }}>
+                        {REGIONS.map(r=>{
+                          const on=(draft.regionsWilling||[]).includes(r);
+                          return <button key={r} onClick={()=>{
+                            const rw=draft.regionsWilling||[];
+                            upd("regionsWilling",on?rw.filter(x=>x!==r):[...rw,r]);
+                          }} style={{
+                            padding:"7px 14px", borderRadius:8, fontSize:12, fontWeight:500, cursor:"pointer",
+                            fontFamily:"var(--font)", border:`1.5px solid ${on?"var(--primary)":"var(--border)"}`,
+                            background:on?"var(--p-dim)":"var(--card)", color:on?"#7dd3c8":"var(--sub)", transition:"all .12s",
+                          }}>{r}</button>;
+                        })}
+                      </div>
+                    </div>
+                    <Divider/>
+                    <div>
+                      <p style={{ fontSize:12, fontWeight:600, color:"var(--sub)", marginBottom:10 }}>Kontaktinställningar</p>
+                      <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                        {[
+                          { key:"visibleToCompanies", label:"Synlig för åkerier i sökning" },
+                          { key:"showPhone", label:"Visa telefonnummer för åkerier" },
+                          { key:"showEmail", label:"Visa e-post för åkerier" },
+                        ].map(({key,label})=>(
+                          <label key={key} style={{ display:"flex", alignItems:"center", gap:10, cursor:"pointer" }}>
+                            <div
+                              onClick={()=>upd(key,!draft[key])}
+                              style={{
+                                width:36, height:20, borderRadius:10, position:"relative", cursor:"pointer",
+                                background:draft[key]?"var(--primary)":"rgba(255,255,255,0.12)",
+                                transition:"background .2s",
+                              }}
+                            >
+                              <div style={{
+                                position:"absolute", top:3, left:draft[key]?19:3,
+                                width:14, height:14, borderRadius:"50%", background:"#fff",
+                                transition:"left .2s",
+                              }}/>
+                            </div>
+                            <span style={{ fontSize:13, color:"var(--sub)" }}>{label}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:y=>16 }}>
+                    {[
+                      ["Ort",cur.location||"—"],
+                      ["Region",cur.region||"—"],
+                      ["Telefon",cur.phone||"—"],
+                      ["E-post",cur.email||"—"],
+                      ["Tillgänglighet",AVAIL.find(a=>a.val===cur.availability)?.label||"—"],
+                      ["Kan jobba i",(cur.regionsWilling||[]).join(", ")||"—"],
+                    ].map(([k,v])=>(
+                      <div key={k} style={{ padding:"10px 0", borderBottom:"1px solid var(--border)" }}>
+                        <p style={{ fontSize:11, color:"var(--muted)", marginBottom:4 }}>{k}</p>
+                        <p style={{ fontSize:14, color:"var(--text)", fontWeight:500 }}>{v}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Körkort & certifikat */}
+              <div style={{ background:"var(--bg2)", border:"1px solid var(--border)", borderRadius:14, padding:"22px 24px" }}>
+                <SectionHeader label="Körkort & certifikat" />
+                {editing ? (
+                  <div style={{ display:"flex", flexDirection:"column", gap:20 }}>
+                    <div>
+                      <p style={{ fontSize:12, fontWeight:600, color:"var(--sub)", marginBottom:10 }}>Körkortsbehörighet</p>
+                      <div style={{ display:"flex", gap:8 }}>
+                        {["B","C1","C1E","C","CE"].map(l=>(
+                          <button key={l} onClick={()=>toggleLic(l)} style={{
+                            width:56, height:56, borderRadius:12, cursor:"pointer",
+                            border:`2px solid ${(draft.licenses||[]).includes(l)?"var(--primary)":"var(--border)"}`,
+                            background:(draft.licenses||[]).includes(l)?"var(--primary)":"var(--card)",
+                            color:(draft.licenses||[]).includes(l)?"#fff":"var(--sub)",
+                            fontWeight:800, fontSize:16, fontFamily:"var(--font)", transition:"all .15s",
+                            boxShadow:(draft.licenses||[]).includes(l)?`0 0 16px var(--p-glow)`:"none",
+                          }}>{l}</button>
+                        ))}
+                      </div>
+                    </div>
+                    {CERT_GROUPS.map(grp=>(
+                      <div key={grp.id}>
+                        <p style={{ fontSize:12, fontWeight:600, color:"var(--sub)", marginBottom:8 }}>{grp.label}</p>
+                        <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                          {grp.opts.map(opt=>{
+                            const certEntry=draft.certs.find(c=>c.id===opt.value);
+                            const selected=Boolean(certEntry);
+                            return (
+                              <div key={opt.value} style={{ display:"flex", alignItems:"center", gap:10 }}>
+                                <button onClick={()=>toggleCertId(opt.value)} style={{
+                                  padding:"7px 14px", borderRadius:8, fontSize:12, fontWeight:600, cursor:"pointer",
+                                  fontFamily:"var(--font)", flexShrink:0,
+                                  border:`1.5px solid ${selected?"var(--primary)":"var(--border)"}`,
+                                  background:selected?"var(--p-dim)":"var(--card)",
+                                  color:selected?"#7dd3c8":"var(--sub)", transition:"all .12s",
+                                }}>{opt.label}</button>
+                                {selected && (
+                                  <div className="slide-in" style={{ display:"flex", alignItems:"center", gap:8, flex:1 }}>
+                                    <span style={{ fontSize:12, color:"var(--muted)" }}>Utgår:</span>
+                                    <input type="date" value={certEntry.expiry} onChange={e=>setCertExpiry(opt.value,e.target.value)} style={{
+                                      padding:"5px 10px", borderRadius:7, background:"var(--card)",
+                                      border:`1px solid ${certEntry.expiry?expiryStatus(certEntry.expiry)?`var(--${expiryStatus(certEntry.expiry).c})`:"var(--border2)":"var(--border2)"}`,
+                                      color:"var(--text)", fontSize:12, fontFamily:"var(--font)", cursor:"pointer",
+                                    }}/>
+                                    {certEntry.expiry && expiryStatus(certEntry.expiry) && (
+                                      <Tag c={expiryStatus(certEntry.expiry).c}>{expiryStatus(certEntry.expiry).label}</Tag>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div>
+                    {/* Licenses */}
+                    <div style={{ display:"flex", flexWrap:"wrap", gap:8, marginBottom:16 }}>
+                      {(cur.licenses||[]).map(l=><Tag key={l} c="p">{l}</Tag>)}
+                    </div>
+                    {/* Certs with expiry */}
+                    {(cur.certs||[]).length > 0 && (
+                      <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+                        {cur.certs.map(c=>{
+                          const st=expiryStatus(c.expiry);
+                          const warn = st && st.days < 180;
+                          return (
+                            <div key={c.id} style={{
+                              display:"flex", alignItems:"center", justifyContent:"space-between",
+                              padding:"10px 14px", borderRadius:10,
+                              background:"var(--card)",
+                              border:`1px solid ${warn ? (st.days<90?"rgba(248,113,113,0.2)":"rgba(245,166,35,0.2)") : "var(--border)"}`,
+                            }}>
+                              <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                                {warn && (
+                                  <span style={{ fontSize:13, color: st.days<90 ? "var(--red)" : "var(--amber)" }}>
+                                    {st.days<90 ? "●" : "◐"}
+                                  </span>
+                                )}
+                                <span style={{ fontSize:13, fontWeight:600, color:"var(--text)" }}>{c.id}</span>
+                              </div>
+                              {st ? (
+                                <span style={{ fontSize:12, color: warn ? (st.days<90?"var(--red)":"var(--amber)") : "var(--muted)", fontWeight: warn?600:400 }}>
+                                  {st.label}
+                                </span>
+                              ) : (
+                                <span style={{ fontSize:12, color:"var(--muted)" }}>Lägg till datum</span>
+                              )}
+                            </div>
+                          );
+                        })}
+                        {warnings.length > 0 && !editing && (
+                          <button onClick={startEdit} style={{
+                            marginTop:4, padding:"7px 14px", borderRadius:8, border:"none",
+                            background:"var(--p-dim)", color:"#7dd3c8",
+                            fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"var(--font)",
+                            textAlign:"left",
+                          }}>
+                            Uppdatera utgångsdatum →
+                          </button>
+                        )}
+                      </div>
+                    )}
+                    {(cur.certs||[]).length === 0 && (
+                      <div style={{ padding:"16px", borderRadius:10, border:"1.5px dashed var(--border2)", textAlign:"center" }}>
+                        <p style={{ fontSize:13, color:"var(--muted)" }}>Inga certifikat tillagda</p>
+                        <button onClick={startEdit} style={{ fontSize:12, color:"var(--amber)", background:"none", border:"none", cursor:"pointer", fontFamily:"var(--font)", marginTop:6 }}>+ Lägg till certifikat</button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Tillgänglighet */}
+              <div style={{ background:"var(--bg2)", border:"1px solid var(--border)", borderRadius:14, padding:"22px 24px" }}>
+                <SectionHeader label="Tillgänglighet" />
+                {editing ? (
+                  <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+                    <div>
+                      <p style={{ fontSize:12, fontWeight:600, color:"var(--sub)", marginBottom:10 }}>Status</p>
+                      <div style={{ display:"flex", flexWrap:"wrap", gap:7 }}>
+                        {AVAIL.map(a=>(
+                          <button key={a.val} onClick={()=>upd("availability",a.val)} style={{
+                            padding:"8px 16px", borderRadius:9, fontSize:13, fontWeight:500, cursor:"pointer",
+                            fontFamily:"var(--font)",
+                            border:`1.5px solid ${draft.availability===a.val?"var(--amber)":"var(--border)"}`,
+                            background:draft.availability===a.val?"var(--amber-dim)":"var(--card)",
+                            color:draft.availability===a.val?"var(--amber)":"var(--sub)", transition:"all .12s",
+                          }}>{a.label}</button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <p style={{ fontSize:12, fontWeight:600, color:"var(--sub)", marginBottom:6 }}>Tillgänglig från (valfritt)</p>
+                      <input type="date" value={draft.availableFrom||""} onChange={e=>upd("availableFrom",e.target.value)} style={{
+                        padding:"9px 12px", borderRadius:9, background:"var(--card)",
+                        border:"1px solid var(--border2)", color:"var(--text)", fontSize:13,
+                        fontFamily:"var(--font)", cursor:"pointer",
+                      }}/>
+                      <p style={{ fontSize:11, color:"var(--muted)", marginTop:5 }}>Visa åkerier när du är ledig för ett nytt uppdrag</p>
+                    </div>
+                    <div>
+                      <p style={{ fontSize:12, fontWeight:600, color:"var(--sub)", marginBottom:8 }}>Lediga perioder</p>
+                      <p style={{ fontSize:11, color:"var(--muted)", marginBottom:10 }}>Markera veckor du är tillgänglig för extrapass eller vikariat</p>
+                      <div style={{ display:"flex", flexWrap:"wrap", gap:7 }}>
+                        {Array.from({length:8},(_,i)=>{
+                          const wk = new Date(); wk.setDate(wk.getDate() + i*7);
+                          const wkNum = Math.ceil((wk - new Date(wk.getFullYear(),0,1))/(7*86400000));
+                          const label = `v.${wkNum}`;
+                          const on=(draft.availableWeeks||[]).includes(label);
+                          return (
+                            <button key={label} onClick={()=>{
+                              const aw=draft.availableWeeks||[];
+                              upd("availableWeeks",on?aw.filter(x=>x!==label):[...aw,label]);
+                            }} style={{
+                              padding:"7px 12px", borderRadius:8, fontSize:12, fontWeight:600, cursor:"pointer",
+                              fontFamily:"var(--font)",
+                              border:`1.5px solid ${on?"var(--green)":"var(--border)"}`,
+                              background:on?"rgba(74,222,128,0.1)":"var(--card)",
+                              color:on?"var(--green)":"var(--sub)", transition:"all .12s",
+                            }}>{label}</button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+                    <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+                      <span style={{ fontSize:13, color:"var(--sub)" }}>Status</span>
+                      <Tag c={cur.availability==="inactive"?"red":cur.availability==="open"?"green":"amber"}>
+                        {AVAIL.find(a=>a.val===cur.availability)?.label||"—"}
+                      </Tag>
+                    </div>
+                    {cur.availableFrom && (
+                      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+                        <span style={{ fontSize:13, color:"var(--sub)" }}>Tillgänglig från</span>
+                        <span style={{ fontSize:13, color:"var(--text)", fontWeight:500 }}>{cur.availableFrom}</span>
+                      </div>
+                    )}
+                    {(cur.availableWeeks||[]).length > 0 && (
+                      <div>
+                        <p style={{ fontSize:12, color:"var(--muted)", marginBottom:7 }}>Lediga veckor</p>
+                        <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
+                          {(cur.availableWeeks||[]).map(w=><Tag key={w} c="green">{w}</Tag>)}
+                        </div>
+                      </div>
+                    )}
+                    {!(cur.availableFrom) && (cur.availableWeeks||[]).length===0 && (
+                      <p style={{ fontSize:12, color:"var(--muted)" }}>Inga specifika perioder angivna</p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Presentation */}
+              <div style={{ background:"var(--bg2)", border:"1px solid var(--border)", borderRadius:14, padding:"22px 24px" }}>
+                <SectionHeader label="Publik presentation" />
+                {editing ? (
+                  <div>
+                    <textarea value={draft.summary} onChange={e=>e.target.value.length<=400&&upd("summary",e.target.value)} rows={4} placeholder="Beskriv din erfarenhet och vad du söker. Visas för åkerier." style={{
+                      width:"100%", padding:"12px 14px", borderRadius:10,
+                      background:"var(--card)", border:"1px solid var(--border2)",
+                      color:"var(--text)", fontSize:14, outline:"none", lineHeight:1.6,
+                    }}/>
+                    <p style={{ fontSize:11, color:"var(--muted)", marginTop:6, textAlign:"right" }}>{draft.summary.length}/400</p>
+                  </div>
+                ) : (
+                  <p style={{ fontSize:14, color:"var(--sub)", lineHeight:1.7 }}>{cur.summary||<span style={{color:"var(--muted)"}}>Ingen presentation ännu — lägg till för att synas mer</span>}</p>
+                )}
+              </div>
+
+              {/* Erfarenhet */}
+              <div style={{ background:"var(--bg2)", border:"1px solid var(--border)", borderRadius:14, padding:"22px 24px" }}>
+                <SectionHeader label="Erfarenhet" action={
+                  editing && !addingExp && editingExpId===null &&
+                  <Btn v="ghost" sm onClick={()=>setAddingExp(true)}>+ Lägg till</Btn>
+                }/>
+
+                {/* Timeline */}
+                <div style={{ position:"relative" }}>
+                  {cur.experience.length>0 && (
+                    <div style={{ position:"absolute", left:9, top:6, bottom:20, width:1.5, background:"var(--border2)" }}/>
+                  )}
+                  {cur.experience.length === 0 && !addingExp && (
+                    <div style={{ padding:"24px", border:"1.5px dashed var(--border2)", borderRadius:12, textAlign:"center", marginBottom:12 }}>
+                      <p style={{ fontSize:14, color:"var(--sub)", marginBottom:6 }}>Ingen erfarenhet tillagd ännu</p>
+                      <p style={{ fontSize:12, color:"var(--muted)", marginBottom:12, lineHeight:1.5 }}>Jobbhistorik är det åkerier tittar på först.</p>
+                      {editing && <Btn sm onClick={()=>setAddingExp(true)}>+ Lägg till erfarenhet</Btn>}
+                    </div>
+                  )}
+                  {cur.experience.map(exp=>(
+                    editingExpId===exp.id ? (
+                      <ExpForm key={exp.id} initial={exp} onSave={saveExp} onCancel={()=>setEditingExpId(null)}/>
+                    ) : (
+                      <ExpCard key={exp.id} exp={exp} editing={editing} onEdit={()=>setEditingExpId(exp.id)} onRemove={()=>removeExp(exp.id)}/>
+                    )
+                  ))}
+                  {addingExp && (
+                    <ExpForm onSave={addExp} onCancel={()=>setAddingExp(false)}/>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Right sidebar */}
+            <div>
+              <ScoreCard profile={cur} onEdit={startEdit} />
+              <MatchSidebar region={cur.region}/>
+            </div>
+          </div>
+        )}
+
+        {/* MATCHNINGAR TAB */}
+        {tab==="matchningar" && (
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 300px", gap:32 }}>
+            <div>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
+                <h2 style={{ fontSize:17, fontWeight:700 }}>Matchande jobb · 12 st</h2>
+                <Btn v="dim" sm>Filtrera</Btn>
+              </div>
+              <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+                {[
+                  { co:"Nordic Transport AB", role:"CE-chaufför heltid", region:"Skåne", match:96, tags:["CE","Heltid","Fjärrkörning"], new:true, pay:"28 000–32 000 kr/mån" },
+                  { co:"DB Schenker", role:"CE-förare distribution", region:"Malmö", match:89, tags:["CE","C","Distribution"], new:true, pay:"26 000–29 000 kr/mån" },
+                  { co:"Bring Frigo", role:"Kylbilsförare", region:"Skåne", match:74, tags:["CE","Kylbil"], new:false, pay:"Ej angiven" },
+                  { co:"PostNord Logistik", role:"C-förare vikariat", region:"Malmö", match:67, tags:["C","Vikariat","Distribution"], new:false, pay:"Timlön" },
+                  { co:"Ragn-Sells", role:"Chaufför", region:"Lund", match:58, tags:["CE","Miljö"], new:false, pay:"Fast lön" },
+                ].map(({co,role,region,match,tags,new:isNew,pay})=>(
+                  <div key={co} style={{
+                    background:"var(--bg2)", border:"1px solid var(--border)", borderRadius:14,
+                    padding:"18px 20px", display:"flex", alignItems:"center", gap:16, cursor:"pointer",
+                    transition:"border-color .15s",
+                  }}>
+                    <div style={{
+                      width:44, height:44, borderRadius:10, background:"var(--p-dim)",
+                      display:"flex", alignItems:"center", justifyContent:"center",
+                      fontSize:18, fontWeight:700, color:"var(--primary)", flexShrink:0,
+                    }}>{co.charAt(0)}</div>
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4, flexWrap:"wrap" }}>
+                        <p style={{ fontWeight:700, fontSize:14 }}>{role}</p>
+                        {isNew && <Tag c="amber">Nytt</Tag>}
+                      </div>
+                      <p style={{ fontSize:12, color:"var(--sub)", marginBottom:8 }}>{co} · {region} · {pay}</p>
+                      <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+                        {tags.map(t=><Tag key={t} c="muted">{t}</Tag>)}
+                      </div>
+                    </div>
+                    <div style={{ textAlign:"center", flexShrink:0 }}>
+                      <div style={{
+                        width:50, height:50, borderRadius:12,
+                        background:match>=90?"rgba(74,222,128,0.1)":match>=75?"var(--p-dim)":"var(--amber-dim)",
+                        border:`1px solid ${match>=90?"rgba(74,222,128,0.25)":match>=75?"rgba(31,95,92,0.35)":"rgba(245,166,35,0.25)"}`,
+                        display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
+                      }}>
+                        <span style={{ fontSize:15, fontWeight:900, color:match>=90?"var(--green)":match>=75?"#7dd3c8":"var(--amber)" }}>{match}%</span>
+                      </div>
+                      <p style={{ fontSize:9, color:"var(--muted)", marginTop:4, fontWeight:600 }}>MATCH</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <Btn v="ghost" style={{ width:"100%", marginTop:16 }}>Visa alla 12 matchningar</Btn>
+            </div>
+            <MatchSidebar region={cur.region}/>
+          </div>
+        )}
+
+        {/* STATISTIK TAB */}
+        {tab==="statistik" && (
+          <div style={{ maxWidth:800 }}>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:14, marginBottom:24 }}>
+              {[
+                { val:"0", label:"Visningar senaste 7 dagarna", hint:"Öka synlighet genom att lägga till erfarenhet" },
+                { val:"0", label:"Visningar senaste 30 dagarna", hint:"" },
+                { val:"0", label:"Åkerier har kontaktat dig", hint:"" },
+              ].map(({val,label,hint})=>(
+                <div key={label} style={{ background:"var(--bg2)", border:"1px solid var(--border)", borderRadius:14, padding:"24px", textAlign:"center" }}>
+                  <p style={{ fontSize:38, fontWeight:900, color:"var(--text)", marginBottom:8, lineHeight:1 }}>{val}</p>
+                  <p style={{ fontSize:12, color:"var(--sub)", lineHeight:1.4, marginBottom:hint?8:0 }}>{label}</p>
+                  {hint && <p style={{ fontSize:11, color:"var(--muted)", lineHeight:1.4 }}>{hint}</p>}
+                </div>
+              ))}
+            </div>
+            <div style={{ background:"var(--amber-dim)", border:"1px solid rgba(245,166,35,0.2)", borderRadius:14, padding:"20px 24px" }}>
+              <p style={{ fontSize:14, fontWeight:700, color:"var(--amber)", marginBottom:8 }}>
+                📈 Din profil är ny — statistik byggs upp över tid
+              </p>
+              <p style={{ fontSize:13, color:"var(--sub)", lineHeight:1.6 }}>
+                Åkerier börjar hitta dig när din profil är komplett. Lägg till erfarenhet, certifikat och en kort presentation för att synas direkt i sökresultat.
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<Profile />);
+</script>
+<template id="__bundler_thumbnail">
+<svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+  <rect width="120" height="80" fill="#050e0e"/>
+  <rect x="0" y="0" width="120" height="22" fill="#0d2b2b"/>
+  <circle cx="18" cy="11" r="7" fill="rgba(31,95,92,0.6)"/>
+  <rect x="30" y="7" width="40" height="4" rx="2" fill="rgba(240,250,249,0.6)"/>
+  <rect x="30" y="14" width="28" height="2.5" rx="1.2" fill="rgba(240,250,249,0.3)"/>
+  <rect x="8" y="28" width="70" height="12" rx="4" fill="rgba(31,95,92,0.2)" stroke="rgba(31,95,92,0.3)" stroke-width="1"/>
+  <rect x="8" y="44" width="70" height="12" rx="4" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <rect x="8" y="60" width="70" height="12" rx="4" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <rect x="84" y="28" width="28" height="44" rx="4" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+</svg>
+</template>
+</body>
+</html>

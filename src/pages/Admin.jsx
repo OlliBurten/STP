@@ -6,6 +6,9 @@ import {
   getAdminSummary,
   getOnboardingStats,
   getUserAdminDetail,
+  listInsights,
+  updateInsightStatus,
+  runInsightsNow,
   listJobsForAdmin,
   listPendingCompanies,
   listReports,
@@ -175,6 +178,8 @@ export default function Admin() {
   const isMobile = useIsMobile();
   const [summary, setSummary] = useState(null);
   const [onboarding, setOnboarding] = useState(null);
+  const [insights, setInsights] = useState([]);
+  const [insightsRunning, setInsightsRunning] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -269,6 +274,11 @@ export default function Admin() {
   async function loadOnboarding() {
     const data = await getOnboardingStats();
     setOnboarding(data || null);
+  }
+
+  async function loadInsights() {
+    const data = await listInsights();
+    setInsights(Array.isArray(data) ? data : []);
   }
 
   async function loadUserDetail(userId) {
@@ -407,6 +417,7 @@ export default function Admin() {
       if (activeTab === "schools")   await loadSchools();
       if (activeTab === "outreach")  await loadOutreach();
       if (activeTab === "feedback")  await loadFeedback();
+      if (activeTab === "insights")  await loadInsights();
     } catch (e) {
       setError(e.message || "Kunde inte hämta data");
     } finally {
@@ -599,6 +610,7 @@ export default function Admin() {
     { id: "schools",    label: "Skolor" },
     { id: "outreach",   label: "Outreach" },
     { id: "feedback",   label: feedbackItems.filter(f => f.status === "NEW").length > 0 ? `Feedback (${feedbackItems.filter(f => f.status === "NEW").length})` : "Feedback" },
+    { id: "insights",   label: insights.filter(i => i.status === "NEW").length > 0 ? `Insikter ✦ ${insights.filter(i => i.status === "NEW").length}` : "Insikter" },
   ];
 
   return (
@@ -2051,6 +2063,163 @@ export default function Admin() {
               </div>
             )}
           </SectionCard>
+        )}
+
+        {/* ════════════════════════════════════════
+            INSIGHTS TAB
+        ════════════════════════════════════════ */}
+        {activeTab === "insights" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+              <div>
+                <p style={{ fontSize: 16, fontWeight: 700, color: T.text, margin: 0 }}>Produktinsikter</p>
+                <p style={{ fontSize: 12, color: T.muted, margin: "4px 0 0" }}>
+                  AI-genererade förbättringsförslag baserat på användarbeteende. Körs automatiskt varje måndag.
+                </p>
+              </div>
+              <Btn
+                variant="primary"
+                disabled={insightsRunning}
+                onClick={async () => {
+                  setInsightsRunning(true);
+                  try {
+                    await runInsightsNow();
+                    setSuccess("Agenten kör nu — insikter visas inom ~30 sekunder. Uppdatera sidan.");
+                  } catch (e) { setError(e.message); }
+                  finally { setInsightsRunning(false); }
+                }}
+              >
+                {insightsRunning ? "Kör..." : "Kör nu"}
+              </Btn>
+            </div>
+
+            {insights.length === 0 ? (
+              <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 16, padding: "48px 32px", textAlign: "center" }}>
+                <p style={{ fontSize: 24, marginBottom: 12 }}>✦</p>
+                <p style={{ fontSize: 14, fontWeight: 700, color: T.text, marginBottom: 6 }}>Inga insikter ännu</p>
+                <p style={{ fontSize: 13, color: T.muted }}>
+                  Agenten kör varje måndag kl 07:00 och analyserar hela plattformen.<br />
+                  Klicka "Kör nu" för att generera insikter direkt.
+                </p>
+              </div>
+            ) : (
+              <>
+                {/* Stats row */}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px,1fr))", gap: 10 }}>
+                  {[
+                    { label: "Totalt", value: insights.length, color: T.tealBright },
+                    { label: "Nya", value: insights.filter(i => i.status === "NEW").length, color: T.amber },
+                    { label: "Hög prio", value: insights.filter(i => i.priority === "HIGH").length, color: T.red },
+                    { label: "Klara", value: insights.filter(i => i.status === "DONE").length, color: T.green },
+                  ].map(({ label, value, color }) => (
+                    <div key={label} style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 12, padding: "14px 18px" }}>
+                      <p style={{ fontSize: 22, fontWeight: 800, color, margin: 0 }}>{value}</p>
+                      <p style={{ fontSize: 11, color: T.muted, margin: "3px 0 0" }}>{label}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Insight cards */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {insights.filter(i => i.status !== "DISMISSED").map((insight) => {
+                    const priorityColor = insight.priority === "HIGH" ? T.red : insight.priority === "MEDIUM" ? T.amber : T.muted;
+                    const priorityBg   = insight.priority === "HIGH" ? T.redBg : insight.priority === "MEDIUM" ? T.amberBg : "rgba(255,255,255,0.04)";
+                    const catColors = { UX: T.tealBright, FEATURE: T.indigo, CONTENT: T.amber, GROWTH: T.green, BUG: T.red, DATA: T.sub };
+                    const catColor = catColors[insight.category] || T.sub;
+                    const effortLabel = { LOW: "Låg insats", MEDIUM: "Medium insats", HIGH: "Hög insats" }[insight.effort] || insight.effort;
+                    const dataPoints = (() => { try { return JSON.parse(insight.dataPoints || "[]"); } catch { return []; } })();
+                    const isDone = insight.status === "DONE";
+                    const isInProgress = insight.status === "IN_PROGRESS";
+
+                    return (
+                      <div key={insight.id} style={{
+                        background: isDone ? "rgba(74,222,128,0.04)" : T.card,
+                        border: `1px solid ${isDone ? T.greenBorder : isInProgress ? T.tealBorder : T.border}`,
+                        borderRadius: 14, padding: "18px 20px",
+                        opacity: isDone ? 0.65 : 1,
+                      }}>
+                        <div style={{ display: "flex", alignItems: "flex-start", gap: 12, justifyContent: "space-between", flexWrap: "wrap" }}>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
+                              <span style={{ fontSize: 10, fontWeight: 800, padding: "2px 8px", borderRadius: 99, background: priorityBg, color: priorityColor, border: `1px solid ${priorityColor}40` }}>
+                                {insight.priority}
+                              </span>
+                              <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 99, background: "rgba(255,255,255,0.06)", color: catColor }}>
+                                {insight.category}
+                              </span>
+                              <span style={{ fontSize: 10, color: T.muted }}>
+                                {effortLabel}
+                              </span>
+                              <span style={{ fontSize: 10, color: T.muted }}>·</span>
+                              <span style={{ fontSize: 10, color: T.muted }}>{insight.weekOf}</span>
+                            </div>
+
+                            <p style={{ fontSize: 14, fontWeight: 700, color: T.text, margin: "0 0 6px", lineHeight: 1.4 }}>
+                              {insight.title}
+                            </p>
+                            <p style={{ fontSize: 13, color: T.sub, margin: "0 0 10px", lineHeight: 1.6 }}>
+                              {insight.description}
+                            </p>
+
+                            {dataPoints.length > 0 && (
+                              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                                {dataPoints.map((dp, i) => (
+                                  <span key={i} style={{ fontSize: 11, padding: "3px 9px", borderRadius: 99, background: "rgba(255,255,255,0.05)", border: `1px solid ${T.border}`, color: T.muted }}>
+                                    {dp}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
+                          <div style={{ display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>
+                            {!isDone && (
+                              <Btn
+                                size="sm"
+                                variant="primary"
+                                onClick={async () => {
+                                  try {
+                                    await updateInsightStatus(insight.id, "DONE");
+                                    setInsights(prev => prev.map(i => i.id === insight.id ? { ...i, status: "DONE" } : i));
+                                  } catch (e) { setError(e.message); }
+                                }}
+                              >
+                                ✓ Klar
+                              </Btn>
+                            )}
+                            {!isInProgress && !isDone && (
+                              <Btn
+                                size="sm"
+                                onClick={async () => {
+                                  try {
+                                    await updateInsightStatus(insight.id, "IN_PROGRESS");
+                                    setInsights(prev => prev.map(i => i.id === insight.id ? { ...i, status: "IN_PROGRESS" } : i));
+                                  } catch (e) { setError(e.message); }
+                                }}
+                              >
+                                Påbörja
+                              </Btn>
+                            )}
+                            <Btn
+                              size="sm"
+                              onClick={async () => {
+                                try {
+                                  await updateInsightStatus(insight.id, "DISMISSED");
+                                  setInsights(prev => prev.filter(i => i.id !== insight.id));
+                                } catch (e) { setError(e.message); }
+                              }}
+                            >
+                              Avfärda
+                            </Btn>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </div>
         )}
 
       </div>

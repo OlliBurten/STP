@@ -28,6 +28,18 @@ export function getOnboardingStats() {
   return apiGet("/api/admin/onboarding");
 }
 
+export function listInsights(filters) {
+  return apiGet(`/api/admin/insights${toQuery(filters)}`);
+}
+
+export function updateInsightStatus(id, status) {
+  return apiPatch(`/api/admin/insights/${id}`, { status });
+}
+
+export function runInsightsNow() {
+  return apiPost("/api/admin/insights/run", {});
+}
+
 export function getUserAdminDetail(id) {
   return apiGet(`/api/admin/users/${id}`);
 }

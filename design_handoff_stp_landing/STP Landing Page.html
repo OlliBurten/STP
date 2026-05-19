@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STP – Sveriges Transportplattform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;0,9..40,900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',system-ui,sans-serif;background:#fff;color:#0f172a;overflow-x:hidden}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:#f1f5f9}::-webkit-scrollbar-thumb{background:#1F5F5C;border-radius:3px}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(32px)}to{opacity:1;transform:translateY(0)}}
+@keyframes rotateWord{0%,20%{opacity:1;transform:translateY(0)}25%,95%{opacity:0;transform:translateY(-20px)}100%{opacity:1;transform:translateY(0)}}
+.fade-up{animation:fadeUp .7s ease both}
+.delay-1{animation-delay:.1s}.delay-2{animation-delay:.2s}.delay-3{animation-delay:.3s}.delay-4{animation-delay:.4s}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "theme": "direkt"
+}/*EDITMODE-END*/;
+
+// ─── Themes ───────────────────────────────────────────────────────────────
+const THEMES = {
+  direkt: {
+    name: "Direkt (Mörk)",
+    heroBg: "linear-gradient(160deg,#050e0e 0%,#0d2b2b 60%,#0a1a1a 100%)",
+    heroOverlay: "radial-gradient(ellipse 80% 60% at 70% 40%, rgba(31,95,92,0.35) 0%, transparent 70%)",
+    navBg: "rgba(5,14,14,0.92)",
+    navBorder: "rgba(255,255,255,0.06)",
+    navText: "#fff",
+    primary: "#1F5F5C",
+    primaryHover: "#2a7a76",
+    accent: "#F5A623",
+    accentDark: "#c98a0f",
+    sectionAlt: "#060f0f",
+    sectionWhite: "#0a1818",
+    cardBg: "rgba(255,255,255,0.04)",
+    cardBorder: "rgba(255,255,255,0.08)",
+    text: "#f0faf9",
+    subtext: "rgba(240,250,249,0.6)",
+    label: "rgba(245,166,35,0.9)",
+    divider: "rgba(255,255,255,0.06)",
+    ctaBg: "#1F5F5C",
+    footerBg: "#040c0c",
+    bodyBg: "#060f0f",
+    statsStrip: "#0d2b2b",
+    statsText: "#fff",
+    howBg: "#0a1818",
+    problemBg: "#060f0f",
+    faqBg: "#0a1818",
+    btnPrimary: "background:#F5A623;color:#000;",
+    btnSecondary: "background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.2);",
+    segmentBg: "rgba(255,255,255,0.04)",
+    segmentBorder: "rgba(255,255,255,0.08)",
+    dark: true,
+  },
+  signal: {
+    name: "Signal (Teal)",
+    heroBg: "#1F5F5C",
+    heroOverlay: "radial-gradient(ellipse 60% 70% at 80% 50%, rgba(245,166,35,0.18) 0%, transparent 65%)",
+    navBg: "rgba(13,47,47,0.96)",
+    navBorder: "rgba(255,255,255,0.1)",
+    navText: "#fff",
+    primary: "#fff",
+    primaryHover: "#e2e8f0",
+    accent: "#F5A623",
+    accentDark: "#c98a0f",
+    sectionAlt: "#f0faf9",
+    sectionWhite: "#fff",
+    cardBg: "#fff",
+    cardBorder: "#d1fae5",
+    text: "#0f172a",
+    subtext: "#475569",
+    label: "#1F5F5C",
+    divider: "#e2e8f0",
+    ctaBg: "#0d2b2b",
+    footerBg: "#0d2b2b",
+    bodyBg: "#fff",
+    statsStrip: "#164e4b",
+    statsText: "#fff",
+    howBg: "#f0faf9",
+    problemBg: "#fff",
+    faqBg: "#f8fffe",
+    btnPrimary: "background:#F5A623;color:#000;",
+    btnSecondary: "background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);",
+    segmentBg: "#fff",
+    segmentBorder: "#d1fae5",
+    dark: false,
+    heroTextDark: false,
+  },
+  editorial: {
+    name: "Editorial (Vit)",
+    heroBg: "#fff",
+    heroOverlay: "none",
+    navBg: "rgba(255,255,255,0.97)",
+    navBorder: "#e2e8f0",
+    navText: "#0f172a",
+    primary: "#1F5F5C",
+    primaryHover: "#2a7a76",
+    accent: "#F5A623",
+    accentDark: "#c98a0f",
+    sectionAlt: "#f8fffe",
+    sectionWhite: "#fff",
+    cardBg: "#fff",
+    cardBorder: "#e2e8f0",
+    text: "#0f172a",
+    subtext: "#64748b",
+    label: "#1F5F5C",
+    divider: "#e2e8f0",
+    ctaBg: "#1F5F5C",
+    footerBg: "#1F5F5C",
+    bodyBg: "#fff",
+    statsStrip: "#0f172a",
+    statsText: "#fff",
+    howBg: "#f8fffe",
+    problemBg: "#fff",
+    faqBg: "#f8fffe",
+    btnPrimary: "background:#1F5F5C;color:#fff;",
+    btnSecondary: "background:#fff;color:#1F5F5C;border:2px solid #1F5F5C;",
+    segmentBg: "#fff",
+    segmentBorder: "#e2e8f0",
+    dark: false,
+    heroTextDark: true,
+  },
+};
+
+// ─── SVG Icon system ──────────────────────────────────────────────────────
+const ICONS = {
+  truck: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>,
+  building: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9m6 12V9"/></svg>,
+  document: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>,
+  money: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M12 12m-2 0a2 2 0 1 0 4 0a2 2 0 1 0-4 0"/><path d="M6 12h.01M18 12h.01"/></svg>,
+  clock: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+  target: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>,
+  shield: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>,
+  chat: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
+  calendar: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
+  star: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
+  check: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
+  graduationcap: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>,
+  arrow: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>,
+};
+
+function Icon({ name, size = 20, color = "currentColor", strokeWidth }) {
+  const svg = ICONS[name];
+  if (!svg) return null;
+  return (
+    <span style={{ display:"inline-flex", width:size, height:size, color, flexShrink:0 }}>
+      {React.cloneElement(svg, strokeWidth ? { strokeWidth } : {})}
+    </span>
+  );
+}
+
+// ─── Shared primitives ─────────────────────────────────────────────────────
+function Btn({ label, style, onClick, href }) {
+  const s = { display:"inline-flex", alignItems:"center", justifyContent:"center", padding:"14px 28px", borderRadius:12, fontWeight:700, fontSize:15, cursor:"pointer", border:"none", fontFamily:"'DM Sans',sans-serif", textDecoration:"none", transition:"opacity .2s", ...style };
+  if (href) return <a href={href} style={s}>{label}</a>;
+  return <button style={s} onClick={onClick}>{label}</button>;
+}
+
+function Tag({ children, t }) {
+  return <span style={{ fontSize:11, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", color:t.accent, marginBottom:12, display:"block" }}>{children}</span>;
+}
+
+function SectionLabel({ children, t }) {
+  return <div style={{ display:"inline-block", padding:"4px 12px", borderRadius:99, background:`${t.accent}20`, color:t.accent, fontSize:11, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:16 }}>{children}</div>;
+}
+
+// ─── Logo ────────────────────────────────────────────────────────────────
+function STPLogo({ light = false, height = 36 }) {
+  const fill = light ? "#ffffff" : "#1F5F5C";
+  const w = height * (80/32);
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 32" role="img" aria-label="STP"
+      style={{ height, width: w, display:"block" }}>
+      <text x="0" y="26" fontFamily="'DM Sans', Inter, system-ui, sans-serif"
+        fontWeight="800" letterSpacing="-1" fontSize="26" fill={fill}>STP</text>
+    </svg>
+  );
+}
+
+// ─── Nav ──────────────────────────────────────────────────────────────────
+function Nav({ t, onThemeClick }) {
+  const [scrolled, setScrolled] = React.useState(false);
+  React.useEffect(() => {
+    const fn = () => setScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", fn);
+    return () => window.removeEventListener("scroll", fn);
+  }, []);
+  return (
+    <nav style={{ position:"fixed", top:0, left:0, right:0, zIndex:100, background: scrolled ? t.navBg : "transparent", borderBottom: scrolled ? `1px solid ${t.navBorder}` : "none", backdropFilter: scrolled ? "blur(12px)" : "none", transition:"all .3s", padding:"0 40px", display:"flex", alignItems:"center", height:64, justifyContent:"space-between" }}>
+      {/* Logo */}
+      <div style={{ display:"flex", alignItems:"center" }}>
+        <STPLogo light={true} height={32} />
+      </div>
+
+      {/* Links */}
+      <div style={{ display:"flex", gap:32, alignItems:"center" }}>
+        {["Lediga jobb","För förare","För åkerier","Om STP"].map(l => (
+          <a key={l} href="#" style={{ fontSize:14, fontWeight:500, color:t.navText, opacity:.75, textDecoration:"none", transition:"opacity .15s" }}
+            onMouseEnter={e=>e.target.style.opacity=1} onMouseLeave={e=>e.target.style.opacity=.75}>{l}</a>
+        ))}
+      </div>
+
+      {/* CTA + theme picker */}
+      <div style={{ display:"flex", gap:10, alignItems:"center" }}>
+        <a href="#" style={{ fontSize:14, fontWeight:600, color:t.navText, opacity:.8, textDecoration:"none" }}>Logga in</a>
+        <a href="#" style={{ padding:"9px 18px", borderRadius:10, background:"#F5A623", color:"#000", fontWeight:700, fontSize:13, textDecoration:"none" }}>Skapa konto</a>
+        <button onClick={onThemeClick} style={{ padding:"7px 12px", borderRadius:8, background:"rgba(255,255,255,0.1)", border:"1px solid rgba(255,255,255,0.15)", color:t.navText, fontSize:11, fontWeight:600, cursor:"pointer", marginLeft:8 }}>⚙ Tema</button>
+      </div>
+    </nav>
+  );
+}
+
+// ─── Hero ─────────────────────────────────────────────────────────────────
+const ROTATE = ["Förare.", "Åkeri.", "Match."];
+
+function Hero({ t }) {
+  const [idx, setIdx] = React.useState(0);
+  const [visible, setVisible] = React.useState(true);
+  React.useEffect(() => {
+    const id = setInterval(() => {
+      setVisible(false);
+      setTimeout(() => { setIdx(i => (i+1)%3); setVisible(true); }, 300);
+    }, 2800);
+    return () => clearInterval(id);
+  }, []);
+
+  const heroTextColor = t.heroTextDark ? "#0f172a" : "#fff";
+  const heroSubColor = t.heroTextDark ? "rgba(15,23,42,0.65)" : "rgba(255,255,255,0.7)";
+
+  return (
+    <section style={{ minHeight:"100vh", position:"relative", display:"flex", alignItems:"center", background:t.heroBg, overflow:"hidden" }}>
+      {/* Background photo */}
+      <div style={{ position:"absolute", inset:0, backgroundImage:"url('hero.png')", backgroundSize:"cover", backgroundPosition:"center 35%", opacity: t.dark ? 0.18 : t.heroTextDark ? 0.12 : 0.35 }} />
+      {/* Color overlay */}
+      {t.heroOverlay !== "none" && <div style={{ position:"absolute", inset:0, background:t.heroOverlay }} />}
+      {/* Bottom fade */}
+      <div style={{ position:"absolute", bottom:0, left:0, right:0, height:200, background:`linear-gradient(to top, ${t.bodyBg}, transparent)` }} />
+
+      <div style={{ position:"relative", maxWidth:1200, margin:"0 auto", padding:"120px 40px 80px", width:"100%", display:"grid", gridTemplateColumns:"1fr 1fr", gap:80, alignItems:"center" }}>
+        {/* Left */}
+        <div>
+          <div style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"6px 16px", borderRadius:99, background:"rgba(245,166,35,0.15)", border:"1px solid rgba(245,166,35,0.3)", marginBottom:36, whiteSpace:"nowrap" }}>
+            <span style={{ width:6, height:6, borderRadius:3, background:"#F5A623", display:"inline-block", flexShrink:0 }} />
+            <span style={{ fontSize:12, fontWeight:700, color:"#F5A623", letterSpacing:1, textTransform:"uppercase" }}>Beta · Gratis att använda</span>
+          </div>
+
+          <h1 style={{ marginBottom:32, fontSize:"clamp(60px,6.5vw,92px)", fontWeight:900, lineHeight:0.9, letterSpacing:-4, color:heroTextColor }}>
+            <span style={{ display:"block" }}>Rätt</span>
+            <span style={{ display:"block", color:"#F5A623", opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(8px)", transition:"opacity 0.25s ease, transform 0.25s ease" }}>{ROTATE[idx]}</span>
+            <span style={{ display:"block", fontWeight:300, opacity:.2 }}>Direkt.</span>
+          </h1>
+
+          <p style={{ fontSize:19, color:heroSubColor, lineHeight:1.7, maxWidth:460, marginBottom:44 }}>
+            Sveriges matchningsplattform för yrkesförare och transportföretag. Inga mellanhänder. Inga avgifter.
+          </p>
+
+          <div style={{ display:"flex", gap:14, flexWrap:"wrap" }}>
+            <Btn label="Se lediga jobb →" style={{ background:"#F5A623", color:"#000", fontSize:15, padding:"16px 34px", fontWeight:800 }} />
+            <Btn label="Jag är ett åkeri" style={{ background:"rgba(255,255,255,0.08)", color:heroTextColor, border:"1px solid rgba(255,255,255,0.18)", fontSize:15, padding:"16px 34px" }} />
+          </div>
+
+          <div style={{ marginTop:56, display:"flex", gap:40, paddingTop:40, borderTop:"1px solid rgba(255,255,255,0.08)" }}>
+            {[["4 080","Nya tjänster att tillsätta"],["36%","Av åkerier har rekryteringsproblem"],["Gratis","För alla förare"]].map(([n,l]) => (
+              <div key={n}>
+                <div style={{ fontSize:30, fontWeight:900, color:heroTextColor, letterSpacing:-1 }}>{n}</div>
+                <div style={{ fontSize:12, color:heroSubColor, marginTop:4, lineHeight:1.5 }}>{l}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Right — floating card */}
+        <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+          {/* Match card */}
+          <div style={{ background:t.cardBg, border:`1px solid ${t.cardBorder}`, borderRadius:20, padding:"24px 28px", backdropFilter:"blur(16px)" }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
+              <span style={{ fontSize:13, fontWeight:700, color:t.subtext, textTransform:"uppercase", letterSpacing:1 }}>Ny match</span>
+              <span style={{ padding:"4px 10px", borderRadius:99, background:"rgba(74,222,128,0.15)", color:"#4ade80", fontSize:11, fontWeight:700 }}>● Live</span>
+            </div>
+            {[
+              { name:"Erik Lindström", loc:"Malmö · Skåne", lic:"CE · YKB", pct:94, color:"#4ade80" },
+              { name:"Sara Johansson", loc:"Stockholm · Uppland", lic:"C · ADR", pct:81, color:"#F5A623" },
+              { name:"Mikael Berg", loc:"Göteborg · VG", lic:"CE · CE95", pct:76, color:"#F5A623" },
+            ].map((d, i) => (
+              <div key={d.name} style={{ display:"flex", alignItems:"center", gap:14, padding:"12px 0", borderTop: i>0 ? `1px solid ${t.divider}` : "none" }}>
+                <div style={{ width:42, height:42, borderRadius:12, background:"#1F5F5C", display:"flex", alignItems:"center", justifyContent:"center", fontSize:15, fontWeight:800, color:"#fff", flexShrink:0 }}>{d.name.slice(0,2)}</div>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ fontSize:14, fontWeight:700, color:t.text }}>{d.name}</div>
+                  <div style={{ fontSize:12, color:t.subtext, marginTop:1 }}>{d.loc} · {d.lic}</div>
+                </div>
+                <div style={{ fontSize:16, fontWeight:800, color:d.color, flexShrink:0 }}>{d.pct}%</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Stat card */}
+          <div style={{ background:"#F5A623", borderRadius:20, padding:"24px 28px", display:"grid", gridTemplateColumns:"auto 1fr", alignItems:"center", gap:20 }}>
+            <div style={{ fontSize:52, fontWeight:900, color:"#000", lineHeight:1, letterSpacing:-2, whiteSpace:"nowrap" }}>5&nbsp;662</div>
+            <div style={{ fontSize:13, color:"rgba(0,0,0,0.62)", lineHeight:1.6, fontWeight:500 }}>Lastbilsförare nyanställda de senaste 12 månaderna</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Scroll indicator */}
+      <div style={{ position:"absolute", bottom:32, left:"50%", transform:"translateX(-50%)", display:"flex", flexDirection:"column", alignItems:"center", gap:6, opacity:.5 }}>
+        <span style={{ fontSize:11, color:heroTextColor, letterSpacing:2, textTransform:"uppercase" }}>Scrolla</span>
+        <svg width="16" height="24" viewBox="0 0 16 24" fill="none"><rect x="6" y="1" width="4" height="10" rx="2" fill="white" opacity=".5"/><path d="M8 18L4 22M8 18L12 22M8 18V14" stroke="white" strokeWidth="1.5" strokeLinecap="round"/></svg>
+      </div>
+    </section>
+  );
+}
+
+// ─── Stats Marquee ─────────────────────────────────────────────────────────
+function StatsMarquee({ t }) {
+  const items = ["4 080 nya tjänster att tillsätta","36% har rekryteringsproblem","Inga mellanhänder","Inga avgifter","Matchning baserat på körkort & kompetens","Verifierade åkerier","Välkomnades av Transportföretagen & SÅ","Gratis för alla förare","Beta-plattform i aktiv utveckling"];
+  const all = [...items, ...items];
+  return (
+    <div style={{ background:t.statsStrip, overflow:"hidden", padding:"16px 0", borderTop:`1px solid ${t.divider}`, borderBottom:`1px solid ${t.divider}` }}>
+      <div style={{ display:"flex", animation:"marquee 30s linear infinite", width:"max-content" }}>
+        {all.map((item, i) => (
+          <span key={i} style={{ flexShrink:0, padding:"0 40px", fontSize:13, fontWeight:600, color:t.statsText, opacity:.75, display:"flex", alignItems:"center", gap:40 }}>
+            {item} <span style={{ color:"#F5A623", fontSize:8 }}>●</span>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Problem ──────────────────────────────────────────────────────────────
+function Problem({ t }) {
+  return (
+    <section style={{ background:t.problemBg, padding:"120px 40px" }}>
+      <div style={{ maxWidth:1200, margin:"0 auto" }}>
+        <div style={{ maxWidth:560, marginBottom:80 }}>
+          <SectionLabel t={t}>Bakgrund</SectionLabel>
+          <h2 style={{ fontSize:"clamp(36px,4vw,56px)", fontWeight:900, letterSpacing:-2, color:t.text, lineHeight:1.05, marginBottom:20 }}>
+            Branschen förtjänar bättre.
+          </h2>
+          <p style={{ fontSize:18, color:t.subtext, lineHeight:1.7 }}>
+            Idag matchas förare och åkerier via Facebook-grupper, generiska jobbsajter och bemanningsbolag som tar en del av lönen. Det behöver inte vara så.
+          </p>
+        </div>
+
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:2 }}>
+          {[
+            { no:"01", title:"Ingen struktur", body:"Körkort, erfarenhet och tillgänglighet begrävs i fritext och kommentarsfält. Ingen vet vem som är seriös.", icon:"📋" },
+            { no:"02", title:"Mellanhänder äter lönen", body:"Bemanningsbolag tar mellan 25–40% av lönen. Föraren förlorar. Åkeriet betalar mer. Ingen vinner.", icon:"💸" },
+            { no:"03", title:"Bra kandidater försvinner", body:"En jobbannons lever 24 timmar på sociala medier. Rätt förare ser den aldrig. Åkeriet upprepade processen.", icon:"⏱" },
+          ].map((item, i) => (
+            <div key={i} style={{ background:t.cardBg, border:`1px solid ${t.cardBorder}`, padding:"40px 36px", position:"relative", overflow:"hidden" }}>
+              <div style={{ position:"absolute", top:24, right:28, fontSize:40, opacity:.15 }}>{item.icon}</div>
+              <div style={{ fontSize:11, fontWeight:700, color:t.accent, letterSpacing:2, marginBottom:20 }}>{item.no}</div>
+              <h3 style={{ fontSize:24, fontWeight:800, color:t.text, marginBottom:16, letterSpacing:-0.5 }}>{item.title}</h3>
+              <p style={{ fontSize:15, color:t.subtext, lineHeight:1.7 }}>{item.body}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Solution features ──────────────────────────────────────────────────────
+function Solution({ t }) {
+  return (
+    <section style={{ background:t.sectionAlt, padding:"120px 40px" }}>
+      <div style={{ maxWidth:1200, margin:"0 auto" }}>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:80, alignItems:"start" }}>
+          <div style={{ position:"sticky", top:100 }}>
+            <SectionLabel t={t}>Lösningen</SectionLabel>
+            <h2 style={{ fontSize:"clamp(36px,4vw,52px)", fontWeight:900, letterSpacing:-2, color:t.text, lineHeight:1.05, marginBottom:20 }}>
+              En samlande plattform för hela branschen.
+            </h2>
+            <p style={{ fontSize:17, color:t.subtext, lineHeight:1.7, marginBottom:40 }}>
+              STP samlar förare och åkerier i en transparent och kvalitetssäkrad plattform. Direkt kontakt. Inga mellanhänder. Inga avgifter.
+            </p>
+            <div style={{ display:"flex", gap:14, flexWrap:"wrap" }}>
+              <Btn label="Skapa förarprofil →" style={{ background:"#1F5F5C", color:"#fff" }} />
+              <Btn label="Registrera åkeri" style={{ background:t.cardBg, color:t.text, border:`1px solid ${t.cardBorder}` }} />
+            </div>
+          </div>
+          <div style={{ display:"flex", flexDirection:"column", gap:4 }}>
+            {[
+              { icon:"🎯", title:"Smart matchning", body:"Matchas baserat på körkort, region, segment och tillgänglighet. Systemet rankar förare och jobb automatiskt." },
+              { icon:"🔒", title:"Verifierade åkerier", body:"Åkerier verifieras mot Bolagsverket. Förare ser bara seriösa aktörer — inga ogrundade annonsörer." },
+              { icon:"💬", title:"Direkt kommunikation", body:"Kontakta varandra direkt i plattformen. Ingen förmedling, inga mellanled, inga provision." },
+              { icon:"📅", title:"Tillgänglighetskalender", body:"Förare sätter sina tillgängliga dagar. Åkerier ser direkt när du är redo att ta uppdrag." },
+              { icon:"🏆", title:"Profiler som visar din styrka", body:"Bygg en profil med körkort, certifikat, erfarenhet och matchningstext. Gömmer du ingenting." },
+            ].map((f, i) => (
+              <div key={i} style={{ background:t.cardBg, border:`1px solid ${t.cardBorder}`, borderRadius:16, padding:"28px 28px", display:"flex", gap:20, alignItems:"flex-start" }}>
+                <div style={{ width:48, height:48, borderRadius:14, background:`${t.accent}15`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:22, flexShrink:0 }}>{f.icon}</div>
+                <div>
+                  <div style={{ fontSize:17, fontWeight:700, color:t.text, marginBottom:8 }}>{f.title}</div>
+                  <div style={{ fontSize:14, color:t.subtext, lineHeight:1.65 }}>{f.body}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── How it works ──────────────────────────────────────────────────────────
+function HowItWorks({ t }) {
+  const [tab, setTab] = React.useState("driver");
+  const steps = {
+    driver: [
+      { n:1, title:"Skapa konto", body:"Registrera dig som förare på 2 minuter. Välj körkort, region och vad du söker." },
+      { n:2, title:"Bygg din profil", body:"Fyll i körkort, certifikat, erfarenhet och tillgänglighet. Välj om du ska vara synlig för åkerier." },
+      { n:3, title:"Bli matchad", body:"Åkerier hittar dig automatiskt. Du kan också söka jobb direkt. All kontakt sker via plattformen." },
+    ],
+    company: [
+      { n:1, title:"Registrera åkeri", body:"Verifiera ditt företag mot Bolagsverket. Snabbt, säkert och gratis under beta." },
+      { n:2, title:"Publicera eller sök", body:"Lägg upp en jobbannons eller bläddra bland förare med rätt behörigheter i din region." },
+      { n:3, title:"Kontakta direkt", body:"Ta kontakt utan mellanhänder. Ingen provision. Ingen avgift per kontakt." },
+    ],
+  };
+
+  return (
+    <section style={{ background:t.howBg, padding:"120px 40px" }}>
+      <div style={{ maxWidth:1000, margin:"0 auto" }}>
+        <div style={{ textAlign:"center", marginBottom:64 }}>
+          <SectionLabel t={t}>Kom igång</SectionLabel>
+          <h2 style={{ fontSize:"clamp(32px,4vw,52px)", fontWeight:900, letterSpacing:-2, color:t.text, lineHeight:1.05, marginBottom:16 }}>Tre steg. Det är allt.</h2>
+          <p style={{ fontSize:17, color:t.subtext, maxWidth:480, margin:"0 auto" }}>Kom igång på tre steg — oavsett om du är förare eller åkeri.</p>
+        </div>
+
+        {/* Tab switcher */}
+        <div style={{ display:"flex", background:t.cardBg, border:`1px solid ${t.cardBorder}`, borderRadius:14, padding:6, gap:4, width:"fit-content", margin:"0 auto 64px" }}>
+          {[["driver","🚛 Jag är förare"],["company","🏢 Jag är ett åkeri"]].map(([k, label]) => (
+            <button key={k} onClick={() => setTab(k)} style={{ padding:"10px 28px", borderRadius:10, background: tab===k ? "#1F5F5C" : "transparent", color: tab===k ? "#fff" : t.subtext, fontWeight:700, fontSize:14, border:"none", cursor:"pointer", fontFamily:"'DM Sans',sans-serif", transition:"all .2s" }}>{label}</button>
+          ))}
+        </div>
+
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:24 }}>
+          {steps[tab].map((s, i) => (
+            <div key={i} style={{ background:t.cardBg, border:`1px solid ${t.cardBorder}`, borderRadius:20, padding:"36px 32px", position:"relative" }}>
+              <div style={{ fontSize:72, fontWeight:900, color:"#1F5F5C", opacity:.12, position:"absolute", top:16, right:24, lineHeight:1, letterSpacing:-4 }}>{s.n}</div>
+              <div style={{ width:36, height:36, borderRadius:10, background:"#1F5F5C", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:24 }}>
+                <span style={{ fontSize:16, fontWeight:900, color:"#fff" }}>{s.n}</span>
+              </div>
+              <h3 style={{ fontSize:20, fontWeight:800, color:t.text, marginBottom:12, letterSpacing:-0.3 }}>{s.title}</h3>
+              <p style={{ fontSize:14, color:t.subtext, lineHeight:1.7 }}>{s.body}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Social proof strip */}
+        <div style={{ marginTop:64, padding:"28px 36px", background:t.cardBg, border:`1px solid ${t.cardBorder}`, borderRadius:16, display:"flex", alignItems:"center", gap:24, flexWrap:"wrap" }}>
+          <span style={{ fontSize:12, fontWeight:700, color:t.subtext, textTransform:"uppercase", letterSpacing:1.5 }}>Välkomnades av</span>
+          <div style={{ display:"flex", gap:24, flexWrap:"wrap" }}>
+            {["✓ Transportföretagen", "✓ Sveriges Åkeriföretag (SÅ)"].map(l => (
+              <span key={l} style={{ fontSize:14, fontWeight:600, color:t.text }}>{l}</span>
+            ))}
+          </div>
+          <div style={{ marginLeft:"auto", display:"flex", gap:8, alignItems:"center" }}>
+            <span style={{ fontSize:13, color:t.subtext }}>Gratis under beta</span>
+            <span style={{ padding:"3px 10px", borderRadius:99, background:"rgba(74,222,128,0.12)", color:"#22c55e", fontSize:12, fontWeight:700 }}>GRATIS</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Segments ─────────────────────────────────────────────────────────────
+function Segments({ t }) {
+  return (
+    <section style={{ background:t.sectionWhite, padding:"120px 40px" }}>
+      <div style={{ maxWidth:1200, margin:"0 auto" }}>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 2fr", gap:80, alignItems:"start" }}>
+          <div>
+            <SectionLabel t={t}>Tre vägar in</SectionLabel>
+            <h2 style={{ fontSize:"clamp(32px,3vw,44px)", fontWeight:900, letterSpacing:-1.5, color:t.text, lineHeight:1.1, marginBottom:16 }}>
+              Alla förare söker inte samma sak.
+            </h2>
+            <p style={{ fontSize:16, color:t.subtext, lineHeight:1.7 }}>
+              STP är byggt runt tre tydliga segment som gör det lättare att matcha rätt behov med rätt profil.
+            </p>
+          </div>
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:16 }}>
+            {[
+              { title:"Heltid", desc:"Långsiktig roll, fast anställning. Visa erfarenhet, behörigheter och vad du söker.", tag:"Fast anst.", icon:"🚛", accent:"#22c55e", accentBg:"rgba(34,197,94,0.1)" },
+              { title:"Vikariat / Deltid", desc:"Flexibelt. Hoppa in snabbt, extrapass, deltid eller kortare uppdrag.", tag:"Flexibelt", icon:"⏰", accent:"#F5A623", accentBg:"rgba(245,166,35,0.1)" },
+              { title:"Praktik", desc:"Elever, nybörjare och de i start av karriären som söker seriösa aktörer.", tag:"Utbildning", icon:"🎓", accent:"#1F5F5C", accentBg:"rgba(31,95,92,0.1)" },
+            ].map((s, i) => (
+              <div key={i} style={{ background:t.segmentBg, border:`1px solid ${t.segmentBorder}`, borderRadius:20, padding:"28px 24px" }}>
+                <div style={{ width:44, height:44, borderRadius:12, background:s.accentBg, display:"flex", alignItems:"center", justifyContent:"center", fontSize:20, marginBottom:16 }}>{s.icon}</div>
+                <div style={{ fontSize:11, fontWeight:700, color:s.accent, letterSpacing:1, textTransform:"uppercase", marginBottom:8 }}>{s.tag}</div>
+                <h3 style={{ fontSize:18, fontWeight:800, color:t.text, marginBottom:10, letterSpacing:-0.3 }}>{s.title}</h3>
+                <p style={{ fontSize:13, color:t.subtext, lineHeight:1.65 }}>{s.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── FAQ ──────────────────────────────────────────────────────────────────
+const FAQS = [
+  { q:"Är STP ett bemanningsbolag?", a:"Nej. STP är inte ett bemanningsbolag. Vi möjliggör direktkontakt mellan förare och åkerier — utan mellanhänder som tar en del av lönen." },
+  { q:"Kostar det något?", a:"STP är helt gratis under betafasen för alla förare och åkerier. Vi meddelar tydligt i god tid innan vi introducerar betalda funktioner." },
+  { q:"Hur fungerar verifiering?", a:"Åkerier verifieras mot Bolagsverket. Förares körkort och certifikat byggs ut löpande i samarbete med branschen." },
+  { q:"Vem äger min profil?", a:"Du äger din profil och styr vad som är synligt. Du kan stänga av synligheten, uppdatera uppgifter eller radera kontot när som helst." },
+  { q:"Vad skiljer STP från vanliga jobbsajter?", a:"STP är byggt specifikt för transportbranschen. Profilen utgår från körkort, segment och tillgänglighet — inte ett generiskt CV." },
+];
+
+function FAQ({ t }) {
+  const [open, setOpen] = React.useState(null);
+  return (
+    <section style={{ background:t.faqBg, padding:"120px 40px" }}>
+      <div style={{ maxWidth:1000, margin:"0 auto" }}>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1.5fr", gap:80, alignItems:"start" }}>
+          <div style={{ position:"sticky", top:100 }}>
+            <SectionLabel t={t}>FAQ</SectionLabel>
+            <h2 style={{ fontSize:"clamp(28px,3vw,44px)", fontWeight:900, letterSpacing:-1.5, color:t.text, lineHeight:1.1, marginBottom:16 }}>Vanliga frågor</h2>
+            <p style={{ fontSize:16, color:t.subtext, lineHeight:1.7, marginBottom:32 }}>Saknar du något? Hör av dig direkt.</p>
+            <a href="mailto:hej@transportplattformen.se" style={{ fontSize:14, fontWeight:600, color:"#1F5F5C", textDecoration:"none" }}>hej@transportplattformen.se →</a>
+          </div>
+
+          <div>
+            {FAQS.map((faq, i) => (
+              <div key={i} style={{ borderBottom:`1px solid ${t.divider}`, overflow:"hidden" }}>
+                <button onClick={() => setOpen(open===i ? null : i)} style={{ width:"100%", display:"flex", justifyContent:"space-between", alignItems:"center", padding:"24px 0", gap:16, background:"none", border:"none", cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>
+                  <span style={{ fontSize:16, fontWeight:700, color:t.text, textAlign:"left", lineHeight:1.4 }}>{faq.q}</span>
+                  <span style={{ width:28, height:28, borderRadius:8, background:open===i ? "#1F5F5C" : t.cardBg, border:`1px solid ${t.cardBorder}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, fontSize:16, color:open===i ? "#fff" : t.text, transition:"all .2s" }}>{open===i ? "−" : "+"}</span>
+                </button>
+                <div style={{ maxHeight:open===i ? 200 : 0, overflow:"hidden", transition:"max-height .3s ease" }}>
+                  <p style={{ fontSize:15, color:t.subtext, lineHeight:1.7, paddingBottom:24 }}>{faq.a}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── CTA Section ───────────────────────────────────────────────────────────
+function CTA({ t }) {
+  return (
+    <section style={{ position:"relative", overflow:"hidden", background:"#050e0e" }}>
+      <div style={{ position:"absolute", inset:0, backgroundImage:"url('hero-driver.png')", backgroundSize:"cover", backgroundPosition:"center 30%", opacity:.15 }} />
+      <div style={{ position:"absolute", inset:0, background:"linear-gradient(to right, rgba(5,14,14,0.98) 40%, rgba(5,14,14,0.75) 100%)" }} />
+      <div style={{ position:"relative", maxWidth:1200, margin:"0 auto", display:"grid", gridTemplateColumns:"1fr 1fr" }}>
+        <div style={{ padding:"100px 60px 100px 40px", borderRight:"1px solid rgba(255,255,255,0.06)" }}>
+          <div style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"5px 12px", borderRadius:99, background:"rgba(245,166,35,0.12)", border:"1px solid rgba(245,166,35,0.2)", marginBottom:32 }}>
+            <Icon name="truck" size={13} color="#F5A623" />
+            <span style={{ fontSize:11, fontWeight:700, color:"#F5A623", letterSpacing:1.5, textTransform:"uppercase" }}>För förare</span>
+          </div>
+          <h2 style={{ fontSize:"clamp(32px,3.5vw,52px)", fontWeight:900, letterSpacing:-2, color:"#fff", lineHeight:1.0, marginBottom:20 }}>
+            Hitta rätt jobb.<br/><span style={{ color:"#F5A623" }}>Direkt.</span>
+          </h2>
+          <p style={{ fontSize:16, color:"rgba(255,255,255,0.55)", lineHeight:1.75, marginBottom:36, maxWidth:380 }}>
+            Skapa din profil gratis. Bli hittad av seriösa åkerier baserat på körkort, region och tillgänglighet.
+          </p>
+          <div style={{ display:"flex", flexDirection:"column", gap:12, marginBottom:40 }}>
+            {["Gratis att skapa profil","Styr din synlighet helt själv","Direktkontakt utan mellanhänder"].map(p => (
+              <div key={p} style={{ display:"flex", alignItems:"center", gap:10 }}>
+                <div style={{ width:22, height:22, borderRadius:6, background:"rgba(34,197,94,0.15)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                  <Icon name="check" size={12} color="#22c55e" />
+                </div>
+                <span style={{ fontSize:14, color:"rgba(255,255,255,0.7)", fontWeight:500 }}>{p}</span>
+              </div>
+            ))}
+          </div>
+          <Btn label="Skapa förarprofil" style={{ background:"#F5A623", color:"#000", padding:"15px 32px", fontSize:15, fontWeight:800 }} />
+        </div>
+        <div style={{ padding:"100px 40px 100px 60px" }}>
+          <div style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"5px 12px", borderRadius:99, background:"rgba(31,95,92,0.2)", border:"1px solid rgba(31,95,92,0.4)", marginBottom:32 }}>
+            <Icon name="building" size={13} color="#4ade80" />
+            <span style={{ fontSize:11, fontWeight:700, color:"#4ade80", letterSpacing:1.5, textTransform:"uppercase" }}>För åkerier</span>
+          </div>
+          <h2 style={{ fontSize:"clamp(32px,3.5vw,52px)", fontWeight:900, letterSpacing:-2, color:"#fff", lineHeight:1.0, marginBottom:20 }}>
+            Hitta rätt förare.<br/><span style={{ color:"#4ade80" }}>Utan provision.</span>
+          </h2>
+          <p style={{ fontSize:16, color:"rgba(255,255,255,0.55)", lineHeight:1.75, marginBottom:36, maxWidth:380 }}>
+            Publicera jobb eller sök direkt bland förare med rätt behörigheter i din region. Verifiera ditt företag en gång.
+          </p>
+          <div style={{ display:"flex", flexDirection:"column", gap:12, marginBottom:40 }}>
+            {["Verifiering mot Bolagsverket","Sök bland CE, C, ADR och YKB","Inga provisioner — aldrig"].map(p => (
+              <div key={p} style={{ display:"flex", alignItems:"center", gap:10 }}>
+                <div style={{ width:22, height:22, borderRadius:6, background:"rgba(74,222,128,0.12)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                  <Icon name="check" size={12} color="#4ade80" />
+                </div>
+                <span style={{ fontSize:14, color:"rgba(255,255,255,0.7)", fontWeight:500 }}>{p}</span>
+              </div>
+            ))}
+          </div>
+          <Btn label="Registrera åkeri" style={{ background:"rgba(255,255,255,0.08)", color:"#fff", border:"1px solid rgba(255,255,255,0.15)", padding:"15px 32px", fontSize:15 }} />
+        </div>
+      </div>
+      <div style={{ borderTop:"1px solid rgba(255,255,255,0.05)", padding:"20px 40px", display:"flex", justifyContent:"center", alignItems:"center", gap:16 }}>
+        <span style={{ fontSize:12, color:"rgba(255,255,255,0.25)", fontWeight:500 }}>Gratis under beta</span>
+        <span style={{ color:"rgba(255,255,255,0.1)" }}>·</span>
+        <span style={{ fontSize:12, color:"rgba(255,255,255,0.25)", fontWeight:500 }}>Inga kreditkort</span>
+        <span style={{ color:"rgba(255,255,255,0.1)" }}>·</span>
+        <span style={{ fontSize:12, color:"rgba(255,255,255,0.25)", fontWeight:500 }}>transportplattformen.se</span>
+      </div>
+    </section>
+  );
+}
+
+// ─── Footer ───────────────────────────────────────────────────────────────
+function Footer({ t }) {
+  const cols = [
+    { title:"Plattformen", links:["Lediga jobb","För förare","För åkerier","Så fungerar STP","Nyheter"] },
+    { title:"Om STP", links:["Om oss","Vision & roadmap","Branschinsikter","Blogg","Kontakt"] },
+    { title:"Juridik", links:["Användarvillkor","Integritetspolicy"] },
+  ];
+  return (
+    <footer style={{ background:t.footerBg, padding:"80px 40px 40px" }}>
+      <div style={{ maxWidth:1200, margin:"0 auto" }}>
+        <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr", gap:60, marginBottom:60 }}>
+          <div>
+            <div style={{ marginBottom:20 }}>
+              <STPLogo light={true} height={32} />
+            </div>
+            <p style={{ fontSize:14, color:"rgba(255,255,255,0.5)", lineHeight:1.7, maxWidth:260, marginBottom:20 }}>
+              Sveriges matchningsplattform för yrkesförare och transportföretag. Direkt kontakt utan mellanhänder.
+            </p>
+            <a href="mailto:hej@transportplattformen.se" style={{ fontSize:13, color:"rgba(255,255,255,0.6)", textDecoration:"none" }}>hej@transportplattformen.se</a>
+          </div>
+          {cols.map(col => (
+            <div key={col.title}>
+              <div style={{ fontSize:11, fontWeight:700, color:"rgba(255,255,255,0.35)", textTransform:"uppercase", letterSpacing:1.5, marginBottom:20 }}>{col.title}</div>
+              <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+                {col.links.map(l => <a key={l} href="#" style={{ fontSize:14, color:"rgba(255,255,255,0.6)", textDecoration:"none" }}>{l}</a>)}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{ borderTop:"1px solid rgba(255,255,255,0.08)", paddingTop:32, display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:12 }}>
+          <span style={{ fontSize:12, color:"rgba(255,255,255,0.3)" }}>© 2026 Sveriges Transportplattform AB · TYA Trendindikator Åkeri 2025/2026</span>
+          <div style={{ display:"flex", gap:24 }}>
+            {["Integritetspolicy","Villkor","v0.9.0"].map(l => <a key={l} href="#" style={{ fontSize:12, color:"rgba(255,255,255,0.3)", textDecoration:"none" }}>{l}</a>)}
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+// ─── Tweaks Panel ─────────────────────────────────────────────────────────
+function TweaksPanel({ theme, setTheme, onClose }) {
+  return (
+    <div style={{ position:"fixed", bottom:24, right:24, zIndex:9999, background:"#fff", borderRadius:20, padding:24, boxShadow:"0 16px 64px rgba(0,0,0,0.25)", width:220, border:"1px solid #e2e8f0" }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
+        <span style={{ fontSize:14, fontWeight:800, color:"#0f172a" }}>Tweaks</span>
+        <button onClick={onClose} style={{ width:24, height:24, borderRadius:6, background:"#f1f5f9", border:"none", cursor:"pointer", fontSize:14, display:"flex", alignItems:"center", justifyContent:"center" }}>✕</button>
+      </div>
+      <div style={{ fontSize:11, fontWeight:700, color:"#94a3b8", textTransform:"uppercase", letterSpacing:1, marginBottom:12 }}>Design</div>
+      {Object.entries(THEMES).map(([key, th]) => (
+        <button key={key} onClick={() => { setTheme(key); window.parent.postMessage({ type:"__edit_mode_set_keys", edits:{ theme:key } }, "*"); }} style={{ display:"block", width:"100%", textAlign:"left", padding:"10px 12px", borderRadius:10, background:theme===key ? "#f0fdf4" : "transparent", color:theme===key ? "#1F5F5C" : "#374151", fontWeight:theme===key ? 700 : 500, fontSize:13, border:theme===key ? "1px solid #bbf7d0" : "1px solid transparent", marginBottom:6, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>
+          {theme===key ? "✓ " : ""}{th.name}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ─── App ──────────────────────────────────────────────────────────────────
+function App() {
+  const [theme, setTheme] = React.useState(TWEAK_DEFAULTS.theme || "direkt");
+  const [tweaksOpen, setTweaksOpen] = React.useState(false);
+  const t = THEMES[theme];
+
+  React.useEffect(() => {
+    document.body.style.background = t.bodyBg;
+    window.addEventListener("message", e => {
+      if (e.data?.type === "__activate_edit_mode") setTweaksOpen(true);
+      if (e.data?.type === "__deactivate_edit_mode") setTweaksOpen(false);
+    });
+    window.parent.postMessage({ type:"__edit_mode_available" }, "*");
+  }, []);
+
+  React.useEffect(() => { document.body.style.background = t.bodyBg; }, [t]);
+
+  return (
+    <>
+      <Nav t={t} onThemeClick={() => setTweaksOpen(v => !v)} />
+      <Hero t={t} />
+      <StatsMarquee t={t} />
+      <Problem t={t} />
+      <Solution t={t} />
+      <HowItWorks t={t} />
+      <Segments t={t} />
+      <FAQ t={t} />
+      <CTA t={t} />
+      <Footer t={t} />
+      {tweaksOpen && <TweaksPanel theme={theme} setTheme={setTheme} onClose={() => { setTweaksOpen(false); window.parent.postMessage({ type:"__edit_mode_dismissed" }, "*"); }} />}
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

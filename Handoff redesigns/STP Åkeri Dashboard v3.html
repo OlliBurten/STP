@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STP – Åkeri Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',system-ui,sans-serif;background:#060f0f;color:#f0faf9;min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#1F5F5C;border-radius:3px}
+button,input,select{font-family:inherit;color:inherit}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.fade{animation:fadeUp .4s cubic-bezier(.22,1,.36,1) both}
+.pulse{animation:pulse 2s infinite}@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.55}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "verified": true,
+  "hasData": true,
+  "company": "Nordic Transport AB"
+}/*EDITMODE-END*/;
+
+// ─── Icons ─────────────────────────────────────────────────────────────────
+const IC = {
+  arrow: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>,
+  bell: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>,
+  plus: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+  shield: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
+  user: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+  briefcase: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>,
+  msg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
+  eye: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>,
+  spark: <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L13.5 8.5 20 10l-6.5 1.5L12 18l-1.5-6.5L4 10l6.5-1.5z"/></svg>,
+  trend: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>,
+  clock: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+  star: <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>,
+  check: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
+  alert: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,
+  pin: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
+  chev: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>,
+  inbox: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>,
+};
+const Icon = ({ n, s=18, c="currentColor" }) => <span style={{ display:"inline-flex", width:s, height:s, color:c, flexShrink:0 }}>{IC[n]}</span>;
+
+// ─── Tweaks state ──────────────────────────────────────────────────────────
+const useTweaks = () => {
+  const [t, setT] = React.useState(TWEAK_DEFAULTS);
+  const [open, setOpen] = React.useState(false);
+  React.useEffect(() => {
+    const onMsg = (e) => {
+      if (e.data?.type === "__activate_edit_mode") setOpen(true);
+      if (e.data?.type === "__deactivate_edit_mode") setOpen(false);
+    };
+    window.addEventListener("message", onMsg);
+    window.parent.postMessage({type:"__edit_mode_available"}, "*");
+    return () => window.removeEventListener("message", onMsg);
+  }, []);
+  const set = (k, v) => { setT(p => ({...p, [k]:v})); window.parent.postMessage({type:"__edit_mode_set_keys", edits:{[k]:v}}, "*"); };
+  return { t, set, open, setOpen };
+};
+
+// ─── Data ──────────────────────────────────────────────────────────────────
+const KPIS = [
+  { label:"Nya ansökningar", value:7, delta:"+3 idag", positive:true, icon:"user", glow:"#F5A623" },
+  { label:"Obesvarade meddelanden", value:3, delta:"Senaste: 18 min", positive:false, icon:"msg", glow:"#f87171" },
+  { label:"Aktiva annonser", value:4, delta:"av 5 publicerade", positive:null, icon:"briefcase", glow:"#4ade80" },
+  { label:"Profilvisningar", value:284, delta:"+24% denna vecka", positive:true, icon:"eye", glow:"#7dd3c8" },
+];
+
+const ACTIVITY = [
+  { type:"application", who:"Erik Johansson", action:"sökte", target:"CE-chaufför fjärr", time:"12 min", match:94, avatar:"EJ", color:"#F5A623" },
+  { type:"message", who:"Anna Lindberg", action:"svarade i", target:"Distribution Stockholm", time:"1 tim", avatar:"AL", color:"#4ade80" },
+  { type:"view", who:"3 förare", action:"visade", target:"er företagsprofil", time:"3 tim", avatar:"·", color:"#7dd3c8" },
+  { type:"application", who:"Mikael Stenberg", action:"sökte", target:"CE-chaufför fjärr", time:"4 tim", match:78, avatar:"MS", color:"#a78bfa" },
+  { type:"application", who:"Sara Pettersson", action:"sökte", target:"Distribution Stockholm", time:"yest.", match:86, avatar:"SP", color:"#60a5fa" },
+];
+
+const ACTIVE_JOBS = [
+  { title:"CE-chaufför fjärrkörning", loc:"Malmö", applicants:12, new:3, views:84, days:6, hot:true },
+  { title:"Distributionschaufför", loc:"Stockholm", applicants:8, new:2, views:51, days:11, hot:false },
+  { title:"Lokal CE-tjänst", loc:"Göteborg", applicants:4, new:0, views:23, days:18, hot:false },
+  { title:"Tankbilschaufför ADR", loc:"Malmö", applicants:6, new:2, views:38, days:4, hot:true },
+];
+
+const SUGGESTED = [
+  { name:"Lars Eriksson", initials:"LE", color:"#F5A623", loc:"Lund", exp:8, segments:["Fjärr","ADR"], match:91 },
+  { name:"Karin Olsson", initials:"KO", color:"#7dd3c8", loc:"Malmö", exp:14, segments:["Fjärr"], match:88 },
+  { name:"Johan Berg", initials:"JB", color:"#a78bfa", loc:"Helsingborg", exp:6, segments:["Distribution"], match:84 },
+];
+
+// ─── Header ────────────────────────────────────────────────────────────────
+function Header({ company }) {
+  const [notifOpen, setNotifOpen] = React.useState(false);
+  const [profOpen, setProfOpen] = React.useState(false);
+  React.useEffect(() => {
+    const close = () => { setNotifOpen(false); setProfOpen(false); };
+    if (notifOpen || profOpen) { window.addEventListener("click", close); return () => window.removeEventListener("click", close); }
+  }, [notifOpen, profOpen]);
+
+  const link = (label, active=false) => (
+    <a href="#" style={{ padding:"7px 0", fontSize:13.5, fontWeight: active ? 700 : 500, color: active ? "#F5A623" : "rgba(255,255,255,0.7)", textDecoration:"none", borderBottom: active ? "2px solid #F5A623" : "2px solid transparent" }}>{label}</a>
+  );
+
+  return (
+    <header style={{ position:"sticky", top:0, zIndex:50, background:"rgba(6,15,15,0.92)", backdropFilter:"blur(14px)", borderBottom:"1px solid rgba(255,255,255,0.06)", height:64, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 32px" }}>
+      <div style={{ display:"flex", alignItems:"center", gap:40 }}>
+        <div style={{ fontWeight:800, letterSpacing:-0.8, fontSize:21 }}>STP</div>
+        <nav style={{ display:"flex", gap:26 }}>
+          {link("Översikt", true)}
+          {link("Annonser")}
+          {link("Hitta förare")}
+          {link("Inkorg")}
+        </nav>
+      </div>
+      <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+        <a href="#" style={{ padding:"9px 16px", borderRadius:99, background:"linear-gradient(135deg,#F5A623,#d97706)", color:"#000", fontSize:13, fontWeight:800, textDecoration:"none", display:"flex", alignItems:"center", gap:6, boxShadow:"0 4px 18px rgba(245,166,35,0.25)" }}>
+          <Icon n="plus" s={13}/> Publicera jobb
+        </a>
+        <div style={{ position:"relative" }} onClick={e=>e.stopPropagation()}>
+          <button onClick={()=>{setNotifOpen(!notifOpen);setProfOpen(false)}} style={{ width:38, height:38, borderRadius:99, background: notifOpen ? "rgba(255,255,255,0.08)" : "transparent", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", position:"relative" }}>
+            <Icon n="bell" s={17} c="rgba(255,255,255,0.7)"/>
+            <span style={{ position:"absolute", top:8, right:9, width:7, height:7, borderRadius:99, background:"#F5A623", border:"2px solid #060f0f" }}/>
+          </button>
+          {notifOpen && <NotifDropdown/>}
+        </div>
+        <div style={{ position:"relative" }} onClick={e=>e.stopPropagation()}>
+          <button onClick={()=>{setProfOpen(!profOpen);setNotifOpen(false)}} style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 12px 5px 5px", borderRadius:99, background: profOpen ? "rgba(255,255,255,0.06)" : "transparent", border:"none", cursor:"pointer" }}>
+            <div style={{ width:30, height:30, borderRadius:99, background:"#1F5F5C", display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:800, color:"#F5A623" }}>NT</div>
+            <span style={{ fontSize:13, fontWeight:600, color:"rgba(255,255,255,0.85)" }}>{company.split(" ").slice(0,2).join(" ")}</span>
+          </button>
+          {profOpen && <ProfDropdown/>}
+        </div>
+      </div>
+    </header>
+  );
+}
+
+const NotifDropdown = () => (
+  <div className="fade" style={{ position:"absolute", top:48, right:0, width:360, background:"#0a1414", border:"1px solid rgba(255,255,255,0.1)", borderRadius:14, boxShadow:"0 16px 48px rgba(0,0,0,0.5)", overflow:"hidden" }}>
+    <div style={{ padding:"14px 18px", borderBottom:"1px solid rgba(255,255,255,0.06)", display:"flex", justifyContent:"space-between" }}>
+      <span style={{ fontSize:13, fontWeight:800 }}>Notiser</span>
+      <span style={{ fontSize:11, color:"#F5A623", fontWeight:600, cursor:"pointer" }}>Markera alla som lästa</span>
+    </div>
+    {[
+      { icon:"user", c:"#F5A623", t:"Ny ansökan från Erik Johansson", s:"CE-chaufför fjärrkörning · 12 min" },
+      { icon:"msg", c:"#4ade80", t:"Anna Lindberg svarade", s:"Distribution Stockholm · 1 tim" },
+      { icon:"eye", c:"#7dd3c8", t:"3 förare visade er profil", s:"Senaste 3 timmarna" },
+    ].map((n,i)=>(
+      <div key={i} style={{ padding:"13px 18px", display:"flex", gap:11, borderBottom: i<2 ? "1px solid rgba(255,255,255,0.04)" : "none", cursor:"pointer" }}>
+        <div style={{ width:30, height:30, borderRadius:9, background:`${n.c}1f`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}><Icon n={n.icon} s={14} c={n.c}/></div>
+        <div style={{ flex:1 }}>
+          <div style={{ fontSize:12.5, fontWeight:600, marginBottom:2 }}>{n.t}</div>
+          <div style={{ fontSize:11, color:"rgba(255,255,255,0.5)" }}>{n.s}</div>
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
+const ProfDropdown = () => (
+  <div className="fade" style={{ position:"absolute", top:48, right:0, width:230, background:"#0a1414", border:"1px solid rgba(255,255,255,0.1)", borderRadius:14, boxShadow:"0 16px 48px rgba(0,0,0,0.5)", overflow:"hidden" }}>
+    {[
+      { l:"Företagsprofil", s:"Hur förare ser er" },
+      { l:"Team", s:"3 medlemmar" },
+      { l:"Inställningar", s:"Notiser, säkerhet" },
+      { l:"Logga ut", s:"" },
+    ].map((o,i)=>(
+      <a key={i} href="#" style={{ display:"block", padding:"12px 16px", textDecoration:"none", color:"rgba(255,255,255,0.85)", fontSize:13, fontWeight:600, borderBottom: i<3 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
+        {o.l}
+        {o.s && <div style={{ fontSize:11, color:"rgba(255,255,255,0.45)", fontWeight:400, marginTop:1 }}>{o.s}</div>}
+      </a>
+    ))}
+  </div>
+);
+
+// ─── Hero greeting ─────────────────────────────────────────────────────────
+function Hero({ company, verified }) {
+  const h = new Date().getHours();
+  const greet = h < 5 ? "God natt" : h < 11 ? "God morgon" : h < 17 ? "God dag" : "God kväll";
+  return (
+    <div className="fade" style={{ display:"flex", alignItems:"flex-end", justifyContent:"space-between", marginBottom:28, gap:24, flexWrap:"wrap" }}>
+      <div>
+        <div style={{ fontSize:12, fontWeight:700, color:"rgba(245,166,35,0.9)", textTransform:"uppercase", letterSpacing:1.5, marginBottom:8 }}>{greet}, Nordic Transport</div>
+        <h1 style={{ fontSize:34, fontWeight:800, lineHeight:1.1, letterSpacing:-1.2 }}>Du har <span style={{ color:"#F5A623" }}>7 nya kandidater</span><br/>som väntar.</h1>
+      </div>
+      <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+        {verified ? (
+          <span style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"8px 14px", borderRadius:99, background:"rgba(74,222,128,0.08)", border:"1px solid rgba(74,222,128,0.25)", fontSize:12, fontWeight:700, color:"#4ade80" }}>
+            <Icon n="shield" s={13}/> Verifierat åkeri
+          </span>
+        ) : (
+          <a href="#" style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"8px 14px", borderRadius:99, background:"rgba(245,166,35,0.1)", border:"1px solid rgba(245,166,35,0.35)", fontSize:12, fontWeight:700, color:"#F5A623", textDecoration:"none" }}>
+            <Icon n="alert" s={13}/> Verifiering pågår
+          </a>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Verification gate (when not verified) ─────────────────────────────────
+function VerificationGate() {
+  const steps = [
+    { done:true, label:"E-post bekräftad" },
+    { done:true, label:"Företagsuppgifter ifyllda" },
+    { done:false, label:"F-skattsedel uppladdad", action:"Ladda upp" },
+    { done:false, label:"Trafiktillstånd verifierat", action:"Ladda upp" },
+  ];
+  return (
+    <div className="fade" style={{ marginBottom:28, background:"linear-gradient(135deg,rgba(245,166,35,0.08) 0%,rgba(245,166,35,0.02) 100%)", border:"1px solid rgba(245,166,35,0.25)", borderRadius:20, padding:28, display:"flex", gap:28, alignItems:"flex-start" }}>
+      <div style={{ width:48, height:48, borderRadius:13, background:"rgba(245,166,35,0.15)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+        <Icon n="shield" s={22} c="#F5A623"/>
+      </div>
+      <div style={{ flex:1 }}>
+        <div style={{ fontSize:18, fontWeight:800, marginBottom:6, letterSpacing:-0.4 }}>Slutför verifiering för att börja rekrytera</div>
+        <div style={{ fontSize:13, color:"rgba(255,255,255,0.6)", lineHeight:1.5, marginBottom:18, maxWidth:560 }}>2 av 4 steg klara. Verifiering tar normalt 1 arbetsdag och låter er publicera annonser, kontakta förare och visas i åkeridatabasen.</div>
+        <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+          {steps.map((s,i)=>(
+            <div key={i} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"11px 14px", background: s.done ? "rgba(74,222,128,0.06)" : "rgba(255,255,255,0.03)", border:`1px solid ${s.done ? "rgba(74,222,128,0.18)" : "rgba(255,255,255,0.06)"}`, borderRadius:11 }}>
+              <div style={{ display:"flex", alignItems:"center", gap:11 }}>
+                <div style={{ width:22, height:22, borderRadius:99, background: s.done ? "#4ade80" : "rgba(255,255,255,0.08)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  {s.done && <Icon n="check" s={12} c="#000"/>}
+                </div>
+                <span style={{ fontSize:13, fontWeight:600, color: s.done ? "rgba(255,255,255,0.85)" : "#fff" }}>{s.label}</span>
+              </div>
+              {!s.done && <button style={{ padding:"6px 14px", borderRadius:99, background:"#F5A623", color:"#000", fontSize:12, fontWeight:800, border:"none", cursor:"pointer" }}>{s.action}</button>}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── KPI cards ─────────────────────────────────────────────────────────────
+function KPIs() {
+  return (
+    <div className="fade" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:14, marginBottom:28 }}>
+      {KPIS.map((k,i)=>(
+        <div key={i} style={{ background:"#0a1414", border:"1px solid rgba(255,255,255,0.05)", borderRadius:16, padding:20, cursor:"pointer", position:"relative", overflow:"hidden", transition:"all .15s" }}
+          onMouseEnter={e=>{e.currentTarget.style.borderColor="rgba(255,255,255,0.12)"; e.currentTarget.style.transform="translateY(-2px)"}}
+          onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(255,255,255,0.05)"; e.currentTarget.style.transform="translateY(0)"}}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
+            <div style={{ width:34, height:34, borderRadius:10, background:`${k.glow}1a`, display:"flex", alignItems:"center", justifyContent:"center" }}>
+              <Icon n={k.icon} s={16} c={k.glow}/>
+            </div>
+            <Icon n="chev" s={14} c="rgba(255,255,255,0.3)"/>
+          </div>
+          <div style={{ fontSize:32, fontWeight:800, letterSpacing:-1, lineHeight:1, marginBottom:6 }}>{k.value}</div>
+          <div style={{ fontSize:12, color:"rgba(255,255,255,0.55)", marginBottom:8 }}>{k.label}</div>
+          <div style={{ fontSize:11, fontWeight:600, color: k.positive === true ? "#4ade80" : k.positive === false ? "#F5A623" : "rgba(255,255,255,0.5)" }}>
+            {k.delta}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Activity feed ─────────────────────────────────────────────────────────
+function Activity() {
+  return (
+    <div className="fade" style={{ background:"#0a1414", border:"1px solid rgba(255,255,255,0.05)", borderRadius:18, padding:24 }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:18 }}>
+        <h3 style={{ fontSize:16, fontWeight:800, letterSpacing:-0.3 }}>Senaste aktivitet</h3>
+        <a href="#" style={{ fontSize:12, color:"#F5A623", textDecoration:"none", fontWeight:600 }}>Se all aktivitet →</a>
+      </div>
+      <div style={{ display:"flex", flexDirection:"column" }}>
+        {ACTIVITY.map((a,i)=>(
+          <div key={i} style={{ display:"flex", alignItems:"center", gap:14, padding:"14px 0", borderBottom: i<ACTIVITY.length-1 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
+            <div style={{ width:38, height:38, borderRadius:99, background: a.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:800, color:"#000", flexShrink:0 }}>{a.avatar}</div>
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ fontSize:13, color:"rgba(255,255,255,0.85)", lineHeight:1.4 }}>
+                <strong style={{ fontWeight:700 }}>{a.who}</strong> <span style={{ color:"rgba(255,255,255,0.5)" }}>{a.action}</span> <strong style={{ fontWeight:700 }}>{a.target}</strong>
+              </div>
+              <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:3 }}>
+                <span style={{ fontSize:11, color:"rgba(255,255,255,0.4)" }}>{a.time} sedan</span>
+                {a.match && <>
+                  <span style={{ fontSize:11, color:"rgba(255,255,255,0.25)" }}>·</span>
+                  <span style={{ fontSize:11, fontWeight:700, color: a.match >= 85 ? "#4ade80" : "#F5A623" }}>{a.match}% match</span>
+                </>}
+              </div>
+            </div>
+            {a.type === "application" && <button style={{ padding:"6px 14px", borderRadius:99, background:"rgba(245,166,35,0.1)", border:"1px solid rgba(245,166,35,0.3)", color:"#F5A623", fontSize:11.5, fontWeight:700, cursor:"pointer" }}>Granska</button>}
+            {a.type === "message" && <button style={{ padding:"6px 14px", borderRadius:99, background:"rgba(74,222,128,0.1)", border:"1px solid rgba(74,222,128,0.3)", color:"#4ade80", fontSize:11.5, fontWeight:700, cursor:"pointer" }}>Svara</button>}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Active jobs sidebar ───────────────────────────────────────────────────
+function ActiveJobs() {
+  return (
+    <div className="fade" style={{ background:"#0a1414", border:"1px solid rgba(255,255,255,0.05)", borderRadius:18, padding:24 }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:18 }}>
+        <h3 style={{ fontSize:16, fontWeight:800, letterSpacing:-0.3 }}>Era annonser</h3>
+        <a href="#" style={{ fontSize:12, color:"#F5A623", textDecoration:"none", fontWeight:600 }}>Se alla →</a>
+      </div>
+      <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+        {ACTIVE_JOBS.map((j,i)=>(
+          <a key={i} href="#" style={{ display:"block", padding:"14px 16px", background:"rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.05)", borderRadius:12, textDecoration:"none", color:"inherit", cursor:"pointer", transition:"all .15s" }}
+            onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.04)"; e.currentTarget.style.borderColor="rgba(255,255,255,0.1)"}}
+            onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.02)"; e.currentTarget.style.borderColor="rgba(255,255,255,0.05)"}}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:6, gap:8 }}>
+              <div style={{ fontSize:13.5, fontWeight:700, lineHeight:1.3, flex:1 }}>{j.title}</div>
+              {j.hot && <span style={{ padding:"2px 7px", borderRadius:5, background:"rgba(245,166,35,0.15)", color:"#F5A623", fontSize:9.5, fontWeight:800, letterSpacing:0.5, flexShrink:0 }}>HOT</span>}
+            </div>
+            <div style={{ fontSize:11.5, color:"rgba(255,255,255,0.5)", display:"flex", alignItems:"center", gap:6, marginBottom:10 }}>
+              <Icon n="pin" s={10}/> {j.loc} · {j.days} dgr aktiv
+            </div>
+            <div style={{ display:"flex", gap:14 }}>
+              <Mini label="Ansökningar" value={j.applicants} extra={j.new ? `+${j.new} nya` : null} extraC="#F5A623"/>
+              <Mini label="Visningar" value={j.views}/>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const Mini = ({ label, value, extra, extraC }) => (
+  <div style={{ display:"flex", alignItems:"baseline", gap:4 }}>
+    <span style={{ fontSize:13, fontWeight:800 }}>{value}</span>
+    <span style={{ fontSize:11, color:"rgba(255,255,255,0.45)" }}>{label}</span>
+    {extra && <span style={{ fontSize:10.5, fontWeight:700, color:extraC, marginLeft:2 }}>{extra}</span>}
+  </div>
+);
+
+// ─── Suggested drivers ─────────────────────────────────────────────────────
+function Suggested() {
+  return (
+    <div className="fade" style={{ background:"linear-gradient(135deg,rgba(245,166,35,0.06) 0%,rgba(245,166,35,0.01) 100%)", border:"1px solid rgba(245,166,35,0.18)", borderRadius:18, padding:24 }}>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:6 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+          <Icon n="spark" s={15} c="#F5A623"/>
+          <h3 style={{ fontSize:15, fontWeight:800, letterSpacing:-0.3 }}>Förare som matchar era annonser</h3>
+        </div>
+        <a href="#" style={{ fontSize:12, color:"#F5A623", textDecoration:"none", fontWeight:600 }}>Sök alla →</a>
+      </div>
+      <div style={{ fontSize:12, color:"rgba(255,255,255,0.55)", marginBottom:18 }}>Baserat på era öppna annonser och förare som söker aktivt i området.</div>
+      <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+        {SUGGESTED.map((d,i)=>(
+          <div key={i} style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", background:"rgba(255,255,255,0.02)", borderRadius:11, border:"1px solid rgba(255,255,255,0.04)" }}>
+            <div style={{ width:38, height:38, borderRadius:99, background:d.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:800, color:"#000", flexShrink:0 }}>{d.initials}</div>
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ fontSize:13, fontWeight:700, marginBottom:2 }}>{d.name}</div>
+              <div style={{ fontSize:11, color:"rgba(255,255,255,0.5)" }}>{d.loc} · {d.exp} år · {d.segments.join(", ")}</div>
+            </div>
+            <div style={{ textAlign:"right" }}>
+              <div style={{ fontSize:14, fontWeight:800, color:"#F5A623", lineHeight:1 }}>{d.match}%</div>
+              <div style={{ fontSize:10, color:"rgba(255,255,255,0.4)", marginTop:2 }}>match</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Performance card ─────────────────────────────────────────────────────
+function Performance() {
+  const data = [42, 38, 51, 47, 58, 63, 71, 68, 74, 82, 79, 88];
+  const max = Math.max(...data);
+  return (
+    <div className="fade" style={{ background:"#0a1414", border:"1px solid rgba(255,255,255,0.05)", borderRadius:18, padding:24, marginBottom:24 }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:18 }}>
+        <div>
+          <h3 style={{ fontSize:15, fontWeight:800, letterSpacing:-0.3, marginBottom:4 }}>Profilvisningar — senaste 12 veckorna</h3>
+          <div style={{ fontSize:12, color:"rgba(255,255,255,0.5)" }}>Trend uppåt — fler förare hittar er via Åkeri-söket</div>
+        </div>
+        <div style={{ textAlign:"right" }}>
+          <div style={{ fontSize:22, fontWeight:800, letterSpacing:-0.5, color:"#4ade80" }}>+109%</div>
+          <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)" }}>vs förra kvartalet</div>
+        </div>
+      </div>
+      <div style={{ display:"flex", alignItems:"flex-end", justifyContent:"space-between", gap:6, height:80 }}>
+        {data.map((v,i)=>(
+          <div key={i} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:6 }}>
+            <div style={{ width:"100%", height: `${(v/max)*100}%`, background: i === data.length-1 ? "linear-gradient(180deg,#F5A623,#d97706)" : "linear-gradient(180deg,#1F5F5C,#0e3a37)", borderRadius:4, position:"relative" }}>
+              {i === data.length-1 && <div style={{ position:"absolute", top:-22, left:"50%", transform:"translateX(-50%)", fontSize:10.5, fontWeight:800, color:"#F5A623", whiteSpace:"nowrap" }}>{v}</div>}
+            </div>
+            <div style={{ fontSize:9, color:"rgba(255,255,255,0.3)" }}>v{34+i}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Tweaks panel ──────────────────────────────────────────────────────────
+function TweaksPanel({ t, set, open, onClose }) {
+  if (!open) return null;
+  return (
+    <div style={{ position:"fixed", bottom:24, right:24, width:300, background:"#0a1414", border:"1px solid rgba(255,255,255,0.1)", borderRadius:16, boxShadow:"0 16px 48px rgba(0,0,0,0.5)", zIndex:1000, overflow:"hidden" }}>
+      <div style={{ padding:"14px 18px", borderBottom:"1px solid rgba(255,255,255,0.06)", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+        <span style={{ fontSize:13, fontWeight:800 }}>Tweaks</span>
+        <button onClick={onClose} style={{ background:"none", border:"none", color:"rgba(255,255,255,0.5)", cursor:"pointer", padding:6, fontSize:16 }}>×</button>
+      </div>
+      <div style={{ padding:18, display:"flex", flexDirection:"column", gap:18 }}>
+        <Toggle label="Verifierat åkeri" v={t.verified} on={v=>set("verified",v)}/>
+        <Toggle label="Har data" v={t.hasData} on={v=>set("hasData",v)}/>
+      </div>
+    </div>
+  );
+}
+const Toggle = ({label, v, on}) => (
+  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+    <span style={{ fontSize:12, color:"rgba(255,255,255,0.7)", fontWeight:600 }}>{label}</span>
+    <button onClick={()=>on(!v)} style={{ width:36, height:20, borderRadius:99, background: v ? "#4ade80" : "rgba(255,255,255,0.15)", border:"none", position:"relative", cursor:"pointer" }}>
+      <div style={{ position:"absolute", top:2, left: v ? 18 : 2, width:16, height:16, borderRadius:99, background:"#fff", transition:"all .15s" }}/>
+    </button>
+  </div>
+);
+
+// ─── App ───────────────────────────────────────────────────────────────────
+function App() {
+  const tw = useTweaks();
+  return (
+    <>
+      <Header company={tw.t.company}/>
+      <main style={{ maxWidth:1320, margin:"0 auto", padding:"32px 32px 60px" }}>
+        <Hero company={tw.t.company} verified={tw.t.verified}/>
+        {!tw.t.verified && <VerificationGate/>}
+        <KPIs/>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 380px", gap:24, alignItems:"flex-start" }}>
+          <div>
+            <Performance/>
+            <Activity/>
+          </div>
+          <div style={{ display:"flex", flexDirection:"column", gap:24 }}>
+            <Suggested/>
+            <ActiveJobs/>
+          </div>
+        </div>
+      </main>
+      <TweaksPanel t={tw.t} set={tw.set} open={tw.open} onClose={()=>{tw.setOpen(false); window.parent.postMessage({type:"__edit_mode_dismissed"}, "*");}}/>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>

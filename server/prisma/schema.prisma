@@ -506,3 +506,20 @@ model OutreachProspect {
   @@index([status])
   @@index([region])
 }
+
+model Insight {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @db.Text
+  category    String   // UX | FEATURE | CONTENT | GROWTH | BUG | DATA
+  priority    String   // HIGH | MEDIUM | LOW
+  effort      String   // LOW | MEDIUM | HIGH
+  dataPoints  String   @db.Text  // JSON-array med stödjande datapunkter
+  status      String   @default("NEW") // NEW | IN_PROGRESS | DONE | DISMISSED
+  weekOf      String   // "2026-W20" — en körning per vecka
+  generatedAt DateTime @default(now())
+
+  @@index([status])
+  @@index([priority])
+  @@index([weekOf])
+}

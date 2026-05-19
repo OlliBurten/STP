@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STP – Jobbdetalj v3</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',system-ui,sans-serif;background:#060f0f;color:#f0faf9;min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#1F5F5C;border-radius:3px}
+input,select,button{font-family:inherit}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+// ─── Tweak defaults ────────────────────────────────────────────────────────
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "loggedIn": true,
+  "matchScore": 100,
+  "dataLevel": "full"
+}/*EDITMODE-END*/;
+
+// ─── Job data presets ──────────────────────────────────────────────────────
+// "full"    = åkeri som fyllt i allt
+// "medium"  = vanligt åkeri, lite fritextbeskrivning
+// "sparse"  = åkeri som knappt fyllt i något
+const JOB_PRESETS = {
+  full: {
+    title: "CE-chaufför fjärrkörning",
+    company: "Nordic Transport AB",
+    companyColor: "#1a3a5c",
+    companyInitials: "NT",
+    companyDesc: "Nordic Transport är ett av Sveriges ledande transportföretag med verksamhet i hela Norden. Vi omsätter 1,2 mdr SEK och har 340 anställda chaufförer.",
+    companyWebsite: "nordictransport.se",
+    location: "Malmö, Skåne",
+    published: "2 maj 2026",
+    updated: "3 maj 2026",
+    verified: true,
+    kollektivavtal: true,
+    urgent: false,
+    license: ["CE"],
+    certificates: ["YKB", "ADR klass 3", "Digitalt förarkort"],
+    employment: "Fast anställning",
+    schedule: "Heltid, måndag–fredag",
+    start: "1 juni 2026",
+    salaryMin: 36000,
+    salaryMax: 42000,
+    salaryNote: "Lön enligt SLA + OB-tillägg",
+    rating: 4.3,
+    reviewCount: 12,
+    aboutJob: "Vi söker en erfaren CE-chaufför till vår fjärrkörningsavdelning i Malmö. Du kör moderna lastbilar med automatväxellåda på rutter i Norden — Sverige, Danmark och Norge. Arbetet innebär övernattningar 2–3 gånger per vecka med full ersättning.",
+    tasks: ["Fjärrkörning inom Norden (SE/DK/NO)", "Hantering av gods vid last och lossning", "Daglig kontroll av fordon och utrustning", "Dokumentation i digitalt system"],
+    requirements: ["Giltigt CE-körkort och YKB", "ADR klass 3 (önskvärt)", "Minst 3 års erfarenhet av fjärrkörning", "God svenska i tal och skrift"],
+    offers: ["Kollektivavtal med Transport", "Nya Volvo FH 2024 med alla hjälpmedel", "Fullt betald övernattning + traktamente", "Friskvårdsbidrag 4 000 kr/år", "Fast anställning med 6 mån provanställning"],
+    contact: "rekrytering@nordictransport.se",
+    rolling: false,
+  },
+  medium: {
+    title: "CE-chaufför lokalt",
+    company: "Kaunis Iron Logistik AB",
+    companyColor: "#1a3a5c",
+    companyInitials: "KI",
+    companyDesc: "Sedan 2018 driver vi järnmalmsgruvan i Pajala. Vi producerar ca 2,3 miljoner ton järnmalmskoncentrat per år.",
+    companyWebsite: "kaunisiron.se",
+    location: "Junosuando, Norrbotten",
+    published: "13 mars 2026",
+    updated: "16 april 2026",
+    verified: true,
+    kollektivavtal: true,
+    urgent: true,
+    license: ["CE"],
+    certificates: ["YKB", "Digitalt förarkort"],
+    employment: "Vikariat",
+    schedule: "Heltid skiftgång",
+    start: "Enligt överenskommelse",
+    salaryMin: null,
+    salaryMax: null,
+    salaryNote: "Månadslön enligt kollektivavtal med Svenska Transportarbetareförbundet",
+    rating: null,
+    reviewCount: 0,
+    aboutJob: "Kaunis Iron driver järnmalmsgruvan i Pajala. Under sommarperioden juni–augusti behöver vi din hjälp när ordinarie personal går på semester. Du ökar din körerfarenhet — vi har personal för last och lossning, du behöver inte hantera godset. Lastbilsekipagen är nya Volvo Aero, 700 hk, 5-axlar — Europas tyngsta ekipage med 90 tons totalvikt.",
+    tasks: ["Frakta malm från Kaunisvaara till Pitkäjärvi", "Framföra ekipage med 90 tons totalvikt (dispens)", "Daglig kontroll av fordon"],
+    requirements: ["Giltigt CE-körkort och YKB", "Digitalt förarkort för färdskrivare", "Personbil krävs ej"],
+    offers: ["Dusch och bastu i nya lokaler", "Möjlighet till förlängning", "Kollektivavtal"],
+    contact: "rekrytering@kaunisiron.se",
+    rolling: true,
+  },
+  sparse: {
+    title: "CE-chaufför",
+    company: "Svenssons Åkeri AB",
+    companyColor: "#2a2a2a",
+    companyInitials: "SÅ",
+    companyDesc: null,
+    companyWebsite: null,
+    location: "Borås, Västra Götaland",
+    published: "28 april 2026",
+    updated: null,
+    verified: false,
+    kollektivavtal: false,
+    urgent: false,
+    license: ["CE"],
+    certificates: ["YKB"],
+    employment: "Vikariat",
+    schedule: null,
+    start: null,
+    salaryMin: null,
+    salaryMax: null,
+    salaryNote: null,
+    rating: null,
+    reviewCount: 0,
+    aboutJob: "Vi söker chaufför med CE till vår verksamhet i Borås.",
+    tasks: [],
+    requirements: ["CE-körkort", "YKB"],
+    offers: [],
+    contact: "info@svenssonsåkeri.se",
+    rolling: false,
+  },
+};
+
+// ─── Icons ─────────────────────────────────────────────────────────────────
+const IC = {
+  arrowLeft:    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>,
+  location:     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
+  check:        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
+  x:            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+  star:         <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
+  starO:        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
+  starHalf:     <svg viewBox="0 0 24 24" stroke="none"><defs><linearGradient id="half"><stop offset="50%" stopColor="#F5A623"/><stop offset="50%" stopColor="none"/></linearGradient></defs><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="url(#half)" stroke="#F5A623" strokeWidth="1.5"/></svg>,
+  share:        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>,
+  clock:        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+  briefcase:    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>,
+  calendar:     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
+  money:        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>,
+  truck:        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>,
+  externalLink: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>,
+  lock:         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>,
+  chevronRight: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>,
+  alert:        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>,
+  sparkle:      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.6H22l-6.2 4.5 2.4 7.6L12 17.2l-6.2 4.5 2.4-7.6L2 9.6h7.6z"/></svg>,
+  info:         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>,
+};
+function Icon({ name, size=18, color="currentColor" }) {
+  return <span style={{ display:"inline-flex", width:size, height:size, color, flexShrink:0 }}>{IC[name]}</span>;
+}
+
+// ─── Nav ───────────────────────────────────────────────────────────────────
+function Nav() {
+  return (
+    <nav style={{ position:"fixed", top:0, left:0, right:0, zIndex:100, background:"rgba(6,15,15,0.94)", backdropFilter:"blur(14px)", borderBottom:"1px solid rgba(255,255,255,0.06)", height:64, display:"flex", alignItems:"center", padding:"0 40px", justifyContent:"space-between" }}>
+      <div style={{ display:"flex", alignItems:"center", gap:32 }}>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 32" style={{ height:28 }}>
+          <text x="0" y="26" fontFamily="'DM Sans',sans-serif" fontWeight="800" letterSpacing="-1" fontSize="26" fill="#fff">STP</text>
+        </svg>
+        <div style={{ display:"flex", gap:24 }}>
+          {["Hem","Jobb","För förare","För åkerier","Om STP"].map((l,i) => (
+            <a key={l} href="#" style={{ fontSize:14, fontWeight:i===1?700:500, color:i===1?"#F5A623":"rgba(255,255,255,0.65)", textDecoration:"none" }}>{l}</a>
+          ))}
+        </div>
+      </div>
+      <div style={{ display:"flex", gap:10, alignItems:"center" }}>
+        <a href="#" style={{ fontSize:14, fontWeight:500, color:"rgba(255,255,255,0.65)", textDecoration:"none" }}>Logga in</a>
+        <a href="#" style={{ padding:"9px 18px", borderRadius:10, background:"#F5A623", color:"#000", fontWeight:700, fontSize:13, textDecoration:"none" }}>Skapa konto</a>
+      </div>
+    </nav>
+  );
+}
+
+// ─── Chip ─────────────────────────────────────────────────────────────────
+function Chip({ label, color, bg, border }) {
+  return (
+    <span style={{ display:"inline-flex", alignItems:"center", padding:"4px 11px", borderRadius:99, background:bg||"rgba(255,255,255,0.05)", border:`1px solid ${border||"rgba(255,255,255,0.1)"}`, fontSize:12, fontWeight:600, color:color||"rgba(240,250,249,0.65)", whiteSpace:"nowrap" }}>
+      {label}
+    </span>
+  );
+}
+
+// ─── Star rating ───────────────────────────────────────────────────────────
+function StarRating({ rating }) {
+  return (
+    <span style={{ display:"inline-flex", gap:2, alignItems:"center" }}>
+      {[1,2,3,4,5].map(i => (
+        <span key={i} style={{ width:13, height:13, color:"#F5A623", display:"inline-flex" }}>
+          {rating >= i ? IC.star : IC.starO}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+// ─── Match ring ────────────────────────────────────────────────────────────
+function MatchRing({ pct }) {
+  const r = 28, circ = 2 * Math.PI * r;
+  const [color, label, desc] =
+    pct >= 85 ? ["#4ade80","Stark match","Din profil matchar jobbet mycket väl"] :
+    pct >= 65 ? ["#F5A623","God match","Din profil matchar jobbet bra"] :
+                ["#63b3ed","Möjlig match","Din profil matchar delar av jobbet"];
+  const [animated, setAnimated] = React.useState(false);
+  React.useEffect(() => { const t = setTimeout(() => setAnimated(true), 120); return () => clearTimeout(t); }, [pct]);
+
+  // match breakdown based on score
+  const breakdown = pct >= 85
+    ? [{ l:"CE-körkort", ok:true }, { l:"YKB", ok:true }, { l:"Region Skåne", ok:true }, { l:"Fjärrkörning 3+ år", ok:true }]
+    : pct >= 65
+    ? [{ l:"CE-körkort", ok:true }, { l:"YKB", ok:true }, { l:"Region Norrbotten", ok:false }, { l:"Erfarenhet tung lastbil", ok:false }]
+    : [{ l:"CE-körkort", ok:true }, { l:"YKB", ok:false }, { l:"Region matchar ej", ok:false }, { l:"Erfarenhet saknas", ok:false }];
+
+  return (
+    <div style={{ paddingBottom:16, borderBottom:"1px solid rgba(255,255,255,0.06)", marginBottom:4 }}>
+      <div style={{ fontSize:11, fontWeight:800, color:"rgba(240,250,249,0.35)", textTransform:"uppercase", letterSpacing:1.5, marginBottom:14 }}>Din matchning</div>
+      <div style={{ display:"flex", alignItems:"center", gap:18, marginBottom:16 }}>
+        <div style={{ position:"relative", width:72, height:72, flexShrink:0 }}>
+          <svg width="72" height="72" style={{ transform:"rotate(-90deg)" }}>
+            <circle cx="36" cy="36" r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="6" />
+            <circle cx="36" cy="36" r={r} fill="none" stroke={color} strokeWidth="6" strokeLinecap="round"
+              strokeDasharray={`${animated ? (pct/100)*circ : 0} ${circ}`}
+              style={{ transition:"stroke-dasharray 1s cubic-bezier(.4,0,.2,1)", filter:`drop-shadow(0 0 7px ${color}55)` }}
+            />
+          </svg>
+          <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center", flexDirection:"column" }}>
+            <span style={{ fontSize:17, fontWeight:900, color, lineHeight:1, letterSpacing:-0.5 }}>{pct}</span>
+            <span style={{ fontSize:9, fontWeight:700, color:"rgba(240,250,249,0.35)" }}>%</span>
+          </div>
+        </div>
+        <div>
+          <div style={{ fontSize:16, fontWeight:800, color, marginBottom:3 }}>{label}</div>
+          <div style={{ fontSize:12, color:"rgba(240,250,249,0.5)", lineHeight:1.6 }}>{desc}</div>
+        </div>
+      </div>
+      <div style={{ display:"flex", flexDirection:"column", gap:7 }}>
+        {breakdown.map(({ l, ok }) => (
+          <div key={l} style={{ display:"flex", alignItems:"center", gap:8 }}>
+            <span style={{ width:18, height:18, borderRadius:99, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", background:ok?"rgba(74,222,128,0.12)":"rgba(255,255,255,0.04)", border:`1px solid ${ok?"rgba(74,222,128,0.25)":"rgba(255,255,255,0.09)"}` }}>
+              {ok
+                ? <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                : <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="rgba(240,250,249,0.2)" strokeWidth="3" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              }
+            </span>
+            <span style={{ fontSize:12, color:ok?"rgba(240,250,249,0.75)":"rgba(240,250,249,0.3)", fontWeight:ok?600:400 }}>{l}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Fact row ─────────────────────────────────────────────────────────────
+function FactRow({ icon, label, value, highlight, missing }) {
+  return (
+    <div style={{ display:"flex", alignItems:"flex-start", gap:12, padding:"13px 0", borderBottom:"1px solid rgba(255,255,255,0.04)" }}>
+      <span style={{ width:34, height:34, borderRadius:9, background: missing ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.05)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, color: missing ? "rgba(240,250,249,0.2)" : "rgba(240,250,249,0.4)", border:`1px solid ${missing ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.07)"}` }}>
+        <Icon name={icon} size={15} />
+      </span>
+      <div>
+        <div style={{ fontSize:11, fontWeight:600, color:"rgba(240,250,249,0.3)", letterSpacing:0.4, marginBottom:2 }}>{label}</div>
+        <div style={{ fontSize:13, fontWeight: missing ? 400 : 700, color: missing ? "rgba(240,250,249,0.25)" : highlight ? "#F5A623" : "#f0faf9", fontStyle: missing ? "italic" : "normal" }}>
+          {value}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Section heading ───────────────────────────────────────────────────────
+function SectionHeading({ children, icon }) {
+  return (
+    <div style={{ display:"flex", alignItems:"center", gap:10, margin:"36px 0 16px" }}>
+      <div style={{ width:3, height:20, borderRadius:2, background:"#1F5F5C", flexShrink:0 }} />
+      <h2 style={{ fontSize:17, fontWeight:800, color:"#f0faf9", letterSpacing:-0.3 }}>{children}</h2>
+    </div>
+  );
+}
+
+// ─── Normalised body text ──────────────────────────────────────────────────
+// Splits raw text into paragraphs; never shows nothing
+function BodyText({ text, fallback }) {
+  if (!text || text.trim().length < 10) {
+    return <p style={{ fontSize:15, color:"rgba(240,250,249,0.3)", lineHeight:1.8, fontStyle:"italic" }}>{fallback || "Information ej angiven — kontakta företaget för mer info."}</p>;
+  }
+  const paras = text.split(/\n{2,}/).map(p => p.trim()).filter(Boolean);
+  return (
+    <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+      {paras.map((p, i) => <p key={i} style={{ fontSize:15, color:"rgba(240,250,249,0.75)", lineHeight:1.85 }}>{p}</p>)}
+    </div>
+  );
+}
+
+// ─── Bullet list ───────────────────────────────────────────────────────────
+function BulletList({ items, fallback, color }) {
+  if (!items || items.length === 0) {
+    return <p style={{ fontSize:15, color:"rgba(240,250,249,0.3)", lineHeight:1.8, fontStyle:"italic" }}>{fallback || "Information ej angiven."}</p>;
+  }
+  return (
+    <ul style={{ listStyle:"none", display:"flex", flexDirection:"column", gap:10 }}>
+      {items.map((item, i) => (
+        <li key={i} style={{ display:"flex", gap:12, alignItems:"flex-start" }}>
+          <span style={{ width:20, height:20, borderRadius:99, background: color === "green" ? "rgba(74,222,128,0.12)" : "rgba(31,95,92,0.2)", border:`1px solid ${color === "green" ? "rgba(74,222,128,0.2)" : "rgba(31,95,92,0.3)"}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, marginTop:2 }}>
+            <Icon name="check" size={11} color={color === "green" ? "#4ade80" : "#6ee7e7"} />
+          </span>
+          <span style={{ fontSize:15, color:"rgba(240,250,249,0.75)", lineHeight:1.7 }}>{item}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+// ─── Salary display ────────────────────────────────────────────────────────
+function SalaryDisplay({ job, loggedIn }) {
+  if (!loggedIn) {
+    return (
+      <div style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 14px", background:"rgba(255,255,255,0.03)", borderRadius:11, border:"1px solid rgba(255,255,255,0.08)", cursor:"pointer" }}>
+        <Icon name="lock" size={14} color="rgba(240,250,249,0.25)" />
+        <span style={{ fontSize:13, color:"rgba(240,250,249,0.4)" }}>Logga in för att se lönen</span>
+        <span style={{ marginLeft:"auto", fontSize:12, fontWeight:700, color:"#4ade80" }}>Logga in →</span>
+      </div>
+    );
+  }
+  if (job.salaryMin && job.salaryMax) {
+    return (
+      <div>
+        <div style={{ fontSize:22, fontWeight:900, color:"#F5A623", letterSpacing:-0.6, lineHeight:1.2 }}>
+          {job.salaryMin.toLocaleString("sv-SE")} – {job.salaryMax.toLocaleString("sv-SE")} kr/mån
+        </div>
+        {job.salaryNote && <div style={{ fontSize:13, color:"rgba(240,250,249,0.45)", marginTop:4 }}>{job.salaryNote}</div>}
+      </div>
+    );
+  }
+  if (job.salaryNote) {
+    return <div style={{ fontSize:16, fontWeight:700, color:"#f0faf9", lineHeight:1.4 }}>{job.salaryNote}</div>;
+  }
+  return (
+    <div style={{ display:"flex", alignItems:"center", gap:8, padding:"12px 14px", background:"rgba(245,166,35,0.05)", borderRadius:11, border:"1px solid rgba(245,166,35,0.12)" }}>
+      <Icon name="info" size={14} color="rgba(245,166,35,0.5)" />
+      <span style={{ fontSize:13, color:"rgba(240,250,249,0.45)", fontStyle:"italic" }}>Lön ej angiven — fråga vid kontakt</span>
+    </div>
+  );
+}
+
+// ─── Main app ──────────────────────────────────────────────────────────────
+function App() {
+  const [loggedIn, setLoggedIn] = React.useState(TWEAK_DEFAULTS.loggedIn);
+  const [matchScore, setMatchScore] = React.useState(TWEAK_DEFAULTS.matchScore);
+  const [dataLevel, setDataLevel] = React.useState(TWEAK_DEFAULTS.dataLevel);
+  const [saved, setSaved] = React.useState(false);
+  const [tweaksOpen, setTweaksOpen] = React.useState(false);
+
+  const job = JOB_PRESETS[dataLevel];
+
+  React.useEffect(() => {
+    window.addEventListener("message", e => {
+      if (e.data?.type === "__activate_edit_mode") setTweaksOpen(true);
+      if (e.data?.type === "__deactivate_edit_mode") setTweaksOpen(false);
+    });
+    window.parent.postMessage({ type:"__edit_mode_available" }, "*");
+  }, []);
+
+  const salaryFactValue = !loggedIn
+    ? "Logga in för att se"
+    : job.salaryMin && job.salaryMax
+    ? `${job.salaryMin.toLocaleString("sv-SE")}–${job.salaryMax.toLocaleString("sv-SE")} kr/mån`
+    : job.salaryNote
+    ? "Enl. kollektivavtal"
+    : "Ej angiven — fråga vid kontakt";
+
+  return (
+    <div style={{ minHeight:"100vh", background:"#060f0f" }}>
+      <Nav />
+      <div style={{ paddingTop:64 }}>
+
+        {/* Breadcrumb */}
+        <div style={{ maxWidth:1240, margin:"0 auto", padding:"22px 40px 0" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:13, color:"rgba(240,250,249,0.3)", marginBottom:14 }}>
+            <a href="#" style={{ color:"rgba(240,250,249,0.3)", textDecoration:"none" }}>Jobb</a>
+            <Icon name="chevronRight" size={13} />
+            <span style={{ color:"rgba(240,250,249,0.55)" }}>{job.title}</span>
+          </div>
+          <a href="#" style={{ display:"inline-flex", alignItems:"center", gap:6, fontSize:13, fontWeight:600, color:"rgba(240,250,249,0.45)", textDecoration:"none" }}
+            onMouseEnter={e=>e.currentTarget.style.color="#f0faf9"} onMouseLeave={e=>e.currentTarget.style.color="rgba(240,250,249,0.45)"}>
+            <Icon name="arrowLeft" size={14} /> Tillbaka till jobb
+          </a>
+        </div>
+
+        {/* Two-column grid */}
+        <div style={{ maxWidth:1240, margin:"0 auto", padding:"28px 40px 120px", display:"grid", gridTemplateColumns:"1fr 368px", gap:36, alignItems:"start" }}>
+
+          {/* ── LEFT ─────────────────────────────────────────────── */}
+          <div>
+
+            {/* Header card */}
+            <div style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:24, padding:"36px 40px", position:"relative", overflow:"hidden", marginBottom:2 }}>
+              <div style={{ position:"absolute", top:0, left:0, right:0, height:2, background:"linear-gradient(to right,#1F5F5C,rgba(31,95,92,0))" }} />
+
+              {/* Company + title */}
+              <div style={{ display:"flex", gap:20, alignItems:"flex-start", marginBottom:24 }}>
+                <div style={{ width:58, height:58, borderRadius:15, background:job.companyColor, display:"flex", alignItems:"center", justifyContent:"center", fontSize:17, fontWeight:800, color:"rgba(255,255,255,0.9)", flexShrink:0, border:"1px solid rgba(255,255,255,0.1)", letterSpacing:-0.5 }}>
+                  {job.companyInitials}
+                </div>
+                <div style={{ flex:1 }}>
+                  <h1 style={{ fontSize:30, fontWeight:900, letterSpacing:-1, color:"#f0faf9", lineHeight:1.1, marginBottom:8 }}>{job.title}</h1>
+                  <div style={{ display:"flex", alignItems:"center", gap:10, flexWrap:"wrap" }}>
+                    <span style={{ fontSize:15, fontWeight:700, color:"rgba(240,250,249,0.85)" }}>{job.company}</span>
+                    <span style={{ opacity:.3 }}>·</span>
+                    <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:14, color:"rgba(240,250,249,0.5)" }}>
+                      <Icon name="location" size={13} color="rgba(240,250,249,0.3)" /> {job.location}
+                    </span>
+                    {job.rating && (
+                      <>
+                        <span style={{ opacity:.3 }}>·</span>
+                        <span style={{ display:"inline-flex", alignItems:"center", gap:5 }}>
+                          <StarRating rating={job.rating} />
+                          <span style={{ fontSize:13, color:"rgba(240,250,249,0.45)" }}>{job.rating} ({job.reviewCount} omdömen)</span>
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Trust badges */}
+              <div style={{ display:"flex", gap:7, flexWrap:"wrap", marginBottom:20 }}>
+                {job.verified && <Chip label="✓ Verifierat företag" color="#4ade80" bg="rgba(74,222,128,0.08)" border="rgba(74,222,128,0.18)" />}
+                {job.kollektivavtal && <Chip label="Kollektivavtal" color="#63b3ed" bg="rgba(99,179,237,0.08)" border="rgba(99,179,237,0.18)" />}
+                {job.urgent && <Chip label="⚡ Rekrytering pågår" color="#F5A623" bg="rgba(245,166,35,0.08)" border="rgba(245,166,35,0.18)" />}
+                {!job.verified && <Chip label="Ej verifierat" color="rgba(240,250,249,0.3)" bg="rgba(255,255,255,0.03)" border="rgba(255,255,255,0.07)" />}
+              </div>
+
+              {/* Tags */}
+              <div style={{ display:"flex", gap:7, flexWrap:"wrap", marginBottom:20 }}>
+                {job.license.map(l => <Chip key={l} label={l} color="#4ade80" bg="rgba(31,95,92,0.2)" border="rgba(31,95,92,0.35)" />)}
+                {job.certificates.map(c => <Chip key={c} label={c} />)}
+                <Chip label={job.employment} color="#F5A623" bg="rgba(245,166,35,0.08)" border="rgba(245,166,35,0.18)" />
+                {job.schedule && <Chip label={job.schedule} />}
+              </div>
+
+              {/* Meta */}
+              <div style={{ paddingTop:16, borderTop:"1px solid rgba(255,255,255,0.05)", fontSize:12, color:"rgba(240,250,249,0.28)", display:"flex", gap:14, flexWrap:"wrap" }}>
+                <span>Publicerad {job.published}</span>
+                {job.updated && <><span style={{ opacity:.4 }}>·</span><span>Uppdaterad {job.updated}</span></>}
+              </div>
+            </div>
+
+            {/* Company box */}
+            <div style={{ background:"rgba(31,95,92,0.06)", border:"1px solid rgba(31,95,92,0.18)", borderRadius:18, padding:"20px 24px", margin:"12px 0 0" }}>
+              <div style={{ fontSize:11, fontWeight:800, letterSpacing:1.5, textTransform:"uppercase", color:"rgba(240,250,249,0.3)", marginBottom:10 }}>Om {job.company}</div>
+              {job.companyDesc
+                ? <p style={{ fontSize:14, color:"rgba(240,250,249,0.6)", lineHeight:1.75, marginBottom:12 }}>{job.companyDesc}</p>
+                : <p style={{ fontSize:14, color:"rgba(240,250,249,0.25)", lineHeight:1.75, fontStyle:"italic", marginBottom:12 }}>Ingen företagsbeskrivning tillagd ännu.</p>
+              }
+              <div style={{ display:"flex", gap:16, flexWrap:"wrap" }}>
+                {job.companyWebsite && (
+                  <a href="#" style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:13, fontWeight:600, color:"#4ade80", textDecoration:"none" }}>
+                    Webbplats <Icon name="externalLink" size={13} />
+                  </a>
+                )}
+                <a href="#" style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:13, fontWeight:600, color:"#4ade80", textDecoration:"none" }}>
+                  Hela företagsprofilen <Icon name="chevronRight" size={13} />
+                </a>
+              </div>
+            </div>
+
+            {/* ── Job body — ALWAYS same 4 sections ── */}
+
+            {/* 1. Om jobbet */}
+            <SectionHeading>Om jobbet</SectionHeading>
+            <BodyText text={job.aboutJob} fallback="Mer information om tjänsten ges vid kontakt med företaget." />
+
+            {/* 2. Arbetsuppgifter */}
+            <SectionHeading>Arbetsuppgifter</SectionHeading>
+            <BulletList items={job.tasks} fallback="Arbetsuppgifter specificeras vid intervju — kontakta företaget för mer info." />
+
+            {/* 3. Vi söker dig som */}
+            <SectionHeading>Vi söker dig som</SectionHeading>
+            <BulletList items={job.requirements} fallback="Krav specificeras vid kontakt." color="green" />
+
+            {/* 4. Vi erbjuder */}
+            <SectionHeading>Vi erbjuder</SectionHeading>
+            <BulletList items={job.offers} fallback="Mer om vad vi erbjuder berättar vi gärna vid en intervju." />
+
+            {/* Ersättning section */}
+            <SectionHeading>Ersättning</SectionHeading>
+            <SalaryDisplay job={job} loggedIn={loggedIn} />
+
+            {/* Info grid */}
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:12, marginTop:28, padding:"20px 22px", background:"rgba(255,255,255,0.025)", border:"1px solid rgba(255,255,255,0.06)", borderRadius:16 }}>
+              {[
+                { icon:"briefcase", label:"Anställningsform", val:job.employment },
+                { icon:"clock",     label:"Arbetstider",      val:job.schedule || null },
+                { icon:"calendar",  label:"Tillträde",        val:job.start || null },
+              ].map(({ icon, label, val }) => (
+                <div key={label}>
+                  <div style={{ display:"flex", alignItems:"center", gap:5, marginBottom:5 }}>
+                    <Icon name={icon} size={13} color="rgba(240,250,249,0.3)" />
+                    <span style={{ fontSize:11, fontWeight:700, color:"rgba(240,250,249,0.3)", textTransform:"uppercase", letterSpacing:0.7 }}>{label}</span>
+                  </div>
+                  <div style={{ fontSize:13, fontWeight: val ? 700 : 400, color: val ? "#f0faf9" : "rgba(240,250,249,0.25)", fontStyle: val ? "normal" : "italic" }}>
+                    {val || "Ej angiven"}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Contact */}
+            <div style={{ margin:"28px 0 0", padding:"18px 22px", background:"rgba(255,255,255,0.025)", border:"1px solid rgba(255,255,255,0.06)", borderRadius:15, display:"flex", gap:12, alignItems:"flex-start" }}>
+              <Icon name="alert" size={15} color="rgba(240,250,249,0.25)" />
+              <div style={{ fontSize:13, color:"rgba(240,250,249,0.45)", lineHeight:1.7 }}>
+                <span style={{ fontWeight:700, color:"rgba(240,250,249,0.65)", display:"block", marginBottom:3 }}>Frågor om tjänsten?</span>
+                Kontakta <a href={`mailto:${job.contact}`} style={{ color:"#4ade80", textDecoration:"none" }}>{job.contact}</a>.
+                {job.rolling && " Rekrytering sker löpande — ansök gärna så snart som möjligt."}
+                {" "}Annons- och rekryteringsföretag undanbedes.
+              </div>
+            </div>
+
+          </div>
+
+          {/* ── RIGHT SIDEBAR ─────────────────────────────────────── */}
+          <div style={{ position:"sticky", top:88 }}>
+
+            {/* CTA card */}
+            <div style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.09)", borderRadius:22, padding:"22px 22px", marginBottom:10, overflow:"hidden" }}>
+
+              {/* Match ring — logged in only */}
+              {loggedIn && <MatchRing pct={matchScore} />}
+
+              {/* Salary in sidebar */}
+              <div style={{ margin:"18px 0 16px" }}>
+                <div style={{ fontSize:11, fontWeight:700, color:"rgba(240,250,249,0.3)", textTransform:"uppercase", letterSpacing:1, marginBottom:8 }}>Ersättning</div>
+                <SalaryDisplay job={job} loggedIn={loggedIn} />
+              </div>
+
+              {/* Apply CTA */}
+              {loggedIn ? (
+                <a href="STP Ansökan.html" style={{ width:"100%", padding:"15px", borderRadius:13, background:"#F5A623", border:"none", color:"#000", fontSize:15, fontWeight:800, cursor:"pointer", letterSpacing:-0.3, transition:"opacity .15s", display:"block", textAlign:"center", textDecoration:"none" }}
+                  onMouseEnter={e=>e.currentTarget.style.opacity=".88"} onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+                  Ansök nu →
+                </a>
+              ) : (
+                <button onClick={()=>setLoggedIn(true)} style={{ width:"100%", padding:"15px", borderRadius:13, background:"#F5A623", border:"none", color:"#000", fontSize:15, fontWeight:800, cursor:"pointer", letterSpacing:-0.3, transition:"opacity .15s" }}
+                  onMouseEnter={e=>e.currentTarget.style.opacity=".88"} onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+                  Logga in för att ansöka
+                </button>
+              )}
+
+              {loggedIn && (
+                <p style={{ fontSize:12, color:"rgba(240,250,249,0.3)", textAlign:"center", marginTop:8, lineHeight:1.5 }}>
+                  Din profil är ditt CV — inget att ladda upp
+                </p>
+              )}
+
+              {/* Save + share */}
+              <div style={{ display:"flex", gap:8, marginTop:10 }}>
+                <button onClick={()=>setSaved(v=>!v)} style={{ flex:1, padding:"10px", borderRadius:11, background:saved?"rgba(245,166,35,0.1)":"rgba(255,255,255,0.04)", border:saved?"1px solid rgba(245,166,35,0.25)":"1px solid rgba(255,255,255,0.07)", color:saved?"#F5A623":"rgba(240,250,249,0.45)", fontSize:12, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6, transition:"all .15s" }}>
+                  <Icon name={saved?"star":"starO"} size={13} />{saved?"Sparad":"Spara"}
+                </button>
+                <button style={{ flex:1, padding:"10px", borderRadius:11, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.07)", color:"rgba(240,250,249,0.45)", fontSize:12, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}
+                  onMouseEnter={e=>e.currentTarget.style.color="#f0faf9"} onMouseLeave={e=>e.currentTarget.style.color="rgba(240,250,249,0.45)"}>
+                  <Icon name="share" size={13} />Dela
+                </button>
+              </div>
+            </div>
+
+            {/* Snabbfakta */}
+            <div style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:20, padding:"18px 20px", marginBottom:10 }}>
+              <div style={{ fontSize:11, fontWeight:800, color:"rgba(240,250,249,0.3)", textTransform:"uppercase", letterSpacing:1.5, marginBottom:4 }}>Snabbfakta</div>
+              <FactRow icon="briefcase" label="Anställningsform"  value={job.employment} />
+              <FactRow icon="clock"     label="Arbetstider"       value={job.schedule || "Ej angiven"} missing={!job.schedule} />
+              <FactRow icon="calendar"  label="Tillträde"         value={job.start || "Ej angiven"} missing={!job.start} />
+              <FactRow icon="location"  label="Ort"               value={job.location} />
+              <FactRow icon="truck"     label="Körkort"           value={[...job.license, ...job.certificates].join(", ")} />
+              <FactRow icon="money"     label="Lön"
+                value={
+                  !loggedIn ? "Logga in för att se" :
+                  job.salaryMin ? `${job.salaryMin.toLocaleString("sv-SE")}–${job.salaryMax?.toLocaleString("sv-SE")} kr/mån` :
+                  job.salaryNote ? "Enl. kollektivavtal" : "Ej angiven"
+                }
+                highlight={loggedIn && !!(job.salaryMin || job.salaryNote)}
+                missing={loggedIn && !job.salaryMin && !job.salaryNote}
+              />
+
+              {/* Urgency */}
+              {job.rolling && (
+                <div style={{ marginTop:14, padding:"10px 12px", background:"rgba(245,166,35,0.06)", border:"1px solid rgba(245,166,35,0.13)", borderRadius:10, display:"flex", gap:8, alignItems:"flex-start" }}>
+                  <Icon name="alert" size={14} color="#F5A623" />
+                  <span style={{ fontSize:12, color:"rgba(240,250,249,0.55)", lineHeight:1.6 }}>
+                    <strong style={{ color:"#F5A623" }}>Löpande rekrytering.</strong> Ansök snarast.
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Similar jobs */}
+            <div style={{ padding:"14px 18px", background:"rgba(255,255,255,0.025)", border:"1px solid rgba(255,255,255,0.06)", borderRadius:15, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+              <div>
+                <div style={{ fontSize:13, fontWeight:700, color:"#f0faf9", marginBottom:2 }}>Liknande jobb</div>
+                <div style={{ fontSize:12, color:"rgba(240,250,249,0.35)" }}>6 CE-jobb i {job.location.split(",")[1]?.trim() || "din region"}</div>
+              </div>
+              <a href="#" style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:12, fontWeight:700, color:"#4ade80", textDecoration:"none" }}>
+                Se alla <Icon name="chevronRight" size={13} />
+              </a>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      {/* ── Tweaks panel ─────────────────────────────────────────── */}
+      {tweaksOpen && (
+        <div style={{ position:"fixed", bottom:24, right:24, zIndex:9999, background:"#0a1818", borderRadius:18, padding:"22px 24px", boxShadow:"0 20px 80px rgba(0,0,0,0.7)", width:248, border:"1px solid rgba(255,255,255,0.1)" }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
+            <span style={{ fontSize:14, fontWeight:800, color:"#f0faf9" }}>Tweaks</span>
+            <button onClick={()=>{ setTweaksOpen(false); window.parent.postMessage({type:"__edit_mode_dismissed"},"*"); }} style={{ width:28, height:28, borderRadius:8, background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", cursor:"pointer", color:"rgba(240,250,249,0.5)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:13 }}>✕</button>
+          </div>
+
+          {/* Dataläge */}
+          <div style={{ marginBottom:20 }}>
+            <div style={{ fontSize:11, fontWeight:700, color:"rgba(240,250,249,0.35)", textTransform:"uppercase", letterSpacing:1, marginBottom:10 }}>Annonsens datanivå</div>
+            {[["full","Allt ifyllt"],["medium","Normalt"],["sparse","Minimalt"]].map(([val, lbl]) => (
+              <div key={val} onClick={()=>{ setDataLevel(val); window.parent.postMessage({type:"__edit_mode_set_keys",edits:{dataLevel:val}},"*"); }}
+                style={{ display:"flex", alignItems:"center", gap:8, marginBottom:8, cursor:"pointer" }}>
+                <span style={{ width:16, height:16, borderRadius:99, border:`2px solid ${dataLevel===val?"#F5A623":"rgba(255,255,255,0.2)"}`, background:dataLevel===val?"#F5A623":"transparent", flexShrink:0, transition:"all .15s" }} />
+                <span style={{ fontSize:13, color: dataLevel===val ? "#f0faf9" : "rgba(240,250,249,0.5)", fontWeight:dataLevel===val?700:400 }}>{lbl}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Inloggad */}
+          <div onClick={()=>{ setLoggedIn(v=>!v); window.parent.postMessage({type:"__edit_mode_set_keys",edits:{loggedIn:!loggedIn}},"*"); }}
+            style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:18, cursor:"pointer" }}>
+            <span style={{ fontSize:13, color:"rgba(240,250,249,0.7)" }}>Inloggad som förare</span>
+            <div style={{ width:38, height:22, borderRadius:11, background:loggedIn?"#1F5F5C":"rgba(255,255,255,0.1)", position:"relative", transition:"background .2s", flexShrink:0 }}>
+              <div style={{ position:"absolute", top:3, left:loggedIn?19:3, width:16, height:16, borderRadius:8, background:"#fff", transition:"left .2s", boxShadow:"0 1px 4px rgba(0,0,0,0.3)" }} />
+            </div>
+          </div>
+
+          {/* Match score slider */}
+          <div>
+            <div style={{ fontSize:11, fontWeight:700, color:"rgba(240,250,249,0.35)", textTransform:"uppercase", letterSpacing:1, marginBottom:8 }}>Matchningsscore</div>
+            <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+              <input type="range" min={0} max={100} value={matchScore}
+                onChange={e=>{ const v=Number(e.target.value); setMatchScore(v); window.parent.postMessage({type:"__edit_mode_set_keys",edits:{matchScore:v}},"*"); }}
+                style={{ flex:1, accentColor:"#1F5F5C" }} />
+              <span style={{ fontSize:13, fontWeight:800, color:"#f0faf9", minWidth:32, textAlign:"right" }}>{matchScore}%</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Footer */}
+      <footer style={{ background:"#040c0c", borderTop:"1px solid rgba(255,255,255,0.05)", padding:"36px 40px" }}>
+        <div style={{ maxWidth:1240, margin:"0 auto", display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:16 }}>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 32" style={{ height:24 }}>
+            <text x="0" y="26" fontFamily="'DM Sans',sans-serif" fontWeight="800" letterSpacing="-1" fontSize="26" fill="rgba(240,250,249,0.35)">STP</text>
+          </svg>
+          <span style={{ fontSize:12, color:"rgba(240,250,249,0.2)" }}>© 2026 Sveriges Transportplattform AB</span>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

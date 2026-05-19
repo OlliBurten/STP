@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>STP – Mobilprototyp</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; background: #0f172a; font-family: 'DM Sans', system-ui, sans-serif; }
+    body { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+    #root { width: 100%; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+    ::-webkit-scrollbar { width: 0; }
+    button { font-family: inherit; }
+    input { font-family: inherit; }
+
+    /* Tweaks panel */
+    #tweaks-panel {
+      position: fixed; bottom: 80px; right: 16px; z-index: 9999;
+      background: white; border-radius: 16px; padding: 16px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.25);
+      width: 200px; display: none;
+    }
+    #tweaks-panel.open { display: block; }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<div id="tweaks-panel">
+  <div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:12px">Tweaks</div>
+</div>
+
+<script type="text/babel" src="stp-data.jsx"></script>
+<script type="text/babel" src="stp-screens.jsx"></script>
+<script type="text/babel">
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "theme": "standard",
+  "showMatchPct": true,
+  "startTab": "jobb"
+}/*EDITMODE-END*/;
+
+const THEMES = {
+  standard: {
+    name: "Standard",
+    bg: "#f8fafc",
+    card: "#ffffff",
+    primary: "#1F5F5C",
+    accent: "#F5A623",
+    text: "#0f172a",
+    subtext: "#64748b",
+    tabBg: "#ffffff",
+    tabActive: "#1F5F5C",
+    tabInactive: "#94a3b8",
+    statusBar: "dark",
+  },
+  dark: {
+    name: "Mörkt",
+    bg: "#0d1f1e",
+    card: "#1a2e2d",
+    primary: "#4ade80",
+    accent: "#F5A623",
+    text: "#f0fdf4",
+    subtext: "#6ee7b7",
+    tabBg: "#111f1e",
+    tabActive: "#4ade80",
+    tabInactive: "#4d7a75",
+    statusBar: "light",
+  },
+  bold: {
+    name: "Bold",
+    bg: "#ffffff",
+    card: "#ffffff",
+    primary: "#1F5F5C",
+    accent: "#F5A623",
+    text: "#030712",
+    subtext: "#374151",
+    tabBg: "#1F5F5C",
+    tabActive: "#F5A623",
+    tabInactive: "rgba(255,255,255,0.5)",
+    statusBar: "light",
+  },
+};
+
+const TABS = [
+  { id:"jobb",     icon: tab => tab==="jobb"    ? "💼" : "💼", label:"Jobb" },
+  { id:"utforska", icon: tab => tab==="utforska" ? "🔍" : "🔍", label:"Utforska" },
+  { id:"notiser",  icon: tab => tab==="notiser"  ? "🔔" : "🔔", label:"Notiser" },
+  { id:"profil",   icon: tab => tab==="profil"   ? "👤" : "👤", label:"Profil" },
+];
+
+function PhoneFrame({ children, theme }) {
+  const t = THEMES[theme];
+  return (
+    <div style={{
+      position: "relative",
+      width: 390,
+      height: 844,
+      borderRadius: 50,
+      background: "#1a1a2e",
+      boxShadow: "0 0 0 2px #333, 0 0 0 6px #1a1a2e, 0 30px 80px rgba(0,0,0,0.6), inset 0 0 0 2px rgba(255,255,255,0.05)",
+      overflow: "hidden",
+      flexShrink: 0,
+    }}>
+      {/* Screen */}
+      <div style={{ position:"absolute", inset:0, borderRadius:48, overflow:"hidden", background: t.bg, display:"flex", flexDirection:"column" }}>
+        {/* Status bar */}
+        <div style={{ height:50, background: theme==="dark" ? "#0d1f1e" : theme==="bold" ? "#1F5F5C" : "#fff", display:"flex", alignItems:"flex-end", justifyContent:"space-between", padding:"0 28px 8px", flexShrink:0 }}>
+          <span style={{ fontSize:13, fontWeight:700, color: t.statusBar==="light" ? "#fff" : "#0f172a" }}>9:41</span>
+          <div style={{ display:"flex", gap:6, alignItems:"center" }}>
+            <span style={{ fontSize:11, color: t.statusBar==="light" ? "rgba(255,255,255,0.8)" : "#64748b" }}>●●●</span>
+            <span style={{ fontSize:11, color: t.statusBar==="light" ? "rgba(255,255,255,0.8)" : "#64748b" }}>WiFi</span>
+            <span style={{ fontSize:11, color: t.statusBar==="light" ? "rgba(255,255,255,0.8)" : "#64748b" }}>🔋</span>
+          </div>
+        </div>
+        {/* Dynamic island */}
+        <div style={{ position:"absolute", top:12, left:"50%", transform:"translateX(-50%)", width:120, height:34, borderRadius:20, background:"#000", zIndex:10 }} />
+
+        {children}
+      </div>
+      {/* Side buttons */}
+      <div style={{ position:"absolute", right:-3, top:160, width:4, height:70, background:"#333", borderRadius:2 }} />
+      <div style={{ position:"absolute", left:-3, top:130, width:4, height:45, background:"#333", borderRadius:2 }} />
+      <div style={{ position:"absolute", left:-3, top:190, width:4, height:45, background:"#333", borderRadius:2 }} />
+      <div style={{ position:"absolute", left:-3, top:250, width:4, height:70, background:"#333", borderRadius:2 }} />
+    </div>
+  );
+}
+
+function BottomNav({ tab, setTab, theme, unreadNotifs }) {
+  const t = THEMES[theme];
+  return (
+    <div style={{ height:80, background: t.tabBg, borderTop: theme==="bold" ? "none" : "1px solid rgba(0,0,0,0.06)", display:"flex", alignItems:"flex-start", justifyContent:"space-around", padding:"10px 0 0", flexShrink:0 }}>
+      {TABS.map(item => {
+        const active = tab === item.id;
+        return (
+          <button key={item.id} onClick={() => setTab(item.id)} style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:3, background:"none", border:"none", cursor:"pointer", padding:"6px 12px", position:"relative", minWidth:60 }}>
+            <span style={{ fontSize:22 }}>{item.icon(tab)}</span>
+            <span style={{ fontSize:10, fontWeight: active ? 700 : 500, color: active ? t.tabActive : t.tabInactive, transition:"color 0.2s" }}>{item.label}</span>
+            {item.id==="notiser" && unreadNotifs > 0 && (
+              <span style={{ position:"absolute", top:2, right:10, width:16, height:16, borderRadius:8, background:"#ef4444", color:"#fff", fontSize:9, fontWeight:800, display:"flex", alignItems:"center", justifyContent:"center" }}>{unreadNotifs}</span>
+            )}
+            {active && (
+              <div style={{ position:"absolute", bottom:-4, left:"50%", transform:"translateX(-50%)", width:20, height:3, borderRadius:2, background: t.tabActive }} />
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function HomeScreen({ theme, onSwipe, onExplore }) {
+  const t = THEMES[theme];
+  const todayMatches = JOBS.filter(j => j.match >= 75);
+  return (
+    <div style={{ flex:1, overflowY:"auto", background: t.bg }}>
+      {/* Greeting header */}
+      <div style={{ padding:"16px 20px 14px", background: theme==="dark" ? "#1a2e2d" : theme==="bold" ? "#1F5F5C" : "#fff", borderBottom: theme==="bold" ? "none" : "1px solid #f1f5f9" }}>
+        <div style={{ fontSize:22, fontWeight:800, color: theme==="bold" || theme==="dark" ? "#fff" : t.text }}>Hej, Oskar 👋</div>
+        <div style={{ fontSize:14, color: theme==="bold" ? "rgba(255,255,255,0.75)" : theme==="dark" ? t.subtext : "#64748b", marginTop:2 }}>Du har 3 nya matcher idag</div>
+      </div>
+
+      <div style={{ padding:"14px 16px" }}>
+        {/* Quick stats */}
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:10, marginBottom:18 }}>
+          {[["3", "Nya matcher", "🎯"], ["12", "Profilvisn.", "👁"], ["1", "Meddelande", "💬"]].map(([val, lbl, ico]) => (
+            <div key={lbl} style={{ background: theme==="dark" ? "#1a2e2d" : theme==="bold" ? "rgba(31,95,92,0.07)" : "#fff", borderRadius:14, border: theme==="dark" ? "none" : "1px solid #e2e8f0", padding:"12px 8px", textAlign:"center" }}>
+              <div style={{ fontSize:18, marginBottom:2 }}>{ico}</div>
+              <div style={{ fontSize:20, fontWeight:800, color: theme==="bold" ? "#1F5F5C" : t.primary }}>{val}</div>
+              <div style={{ fontSize:10, color: t.subtext, marginTop:1 }}>{lbl}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Top matches today */}
+        <div style={{ marginBottom:18 }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
+            <span style={{ fontSize:15, fontWeight:700, color: t.text }}>Bästa matcher idag</span>
+            <button onClick={onSwipe} style={{ fontSize:12, color: t.primary, fontWeight:600, background:"none", border:"none", cursor:"pointer" }}>Se alla →</button>
+          </div>
+          <div style={{ display:"flex", gap:12, overflowX:"auto", paddingBottom:4 }}>
+            {todayMatches.map(job => (
+              <div key={job.id} style={{ flexShrink:0, width:160, background: theme==="dark" ? "#1a2e2d" : "#fff", borderRadius:16, border: theme==="dark" ? "none" : "1px solid #e2e8f0", overflow:"hidden" }}>
+                <div style={{ height:70, background: `linear-gradient(135deg, ${job.color}, ${job.color}aa)`, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  <div style={{ width:38, height:38, borderRadius:10, background:"rgba(255,255,255,0.25)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, fontWeight:800, color:"#fff" }}>{job.company.slice(0,2)}</div>
+                </div>
+                <div style={{ padding:"10px 10px 12px" }}>
+                  <div style={{ fontSize:12, fontWeight:700, color: t.text, marginBottom:2, lineHeight:1.3 }}>{job.title}</div>
+                  <div style={{ fontSize:11, color: t.subtext, marginBottom:6 }}>{job.location}</div>
+                  <div style={{ display:"inline-flex", alignItems:"center", padding:"2px 7px", borderRadius:99, background: job.match >= 85 ? "#dcfce7" : "#fef9c3", color: job.match >= 85 ? "#16a34a" : "#ca8a04", fontSize:10, fontWeight:700 }}>{job.match}% match</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Recent activity feed */}
+        <div style={{ marginBottom:12 }}>
+          <div style={{ fontSize:15, fontWeight:700, color: t.text, marginBottom:10 }}>Aktivitet</div>
+          {[
+            { icon:"⭐", text:"Preem AB super-matchade dig", time:"1 h", color:"#fef9c3" },
+            { icon:"👁", text:"Nordic Transport tittade på din profil", time:"3 h", color:"#f0fdf4" },
+            { icon:"📋", text:"2 nya jobb matchar CE i Skåne", time:"igår", color:"#e0f2fe" },
+          ].map((item, i) => (
+            <div key={i} style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 12px", background: theme==="dark" ? "#1a2e2d" : item.color, borderRadius:12, marginBottom:8, cursor:"pointer" }}>
+              <span style={{ fontSize:18 }}>{item.icon}</span>
+              <span style={{ flex:1, fontSize:13, color: t.text, fontWeight:500 }}>{item.text}</span>
+              <span style={{ fontSize:11, color: t.subtext }}>{item.time}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* CTA */}
+        <button onClick={onSwipe} style={{ width:"100%", padding:"14px", borderRadius:14, background: t.primary, color:"#fff", fontWeight:700, fontSize:15, border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
+          <span>💼</span> Se dagens jobb
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  const [tab, setTab] = React.useState(TWEAK_DEFAULTS.startTab || "hem");
+  const [jobMode, setJobMode] = React.useState("swipe"); // "swipe" | "list"
+  const [theme, setTheme] = React.useState(TWEAK_DEFAULTS.theme || "standard");
+  const [tweaksOpen, setTweaksOpen] = React.useState(false);
+  const unreadNotifs = NOTIFICATIONS.filter(n=>n.unread).length;
+  const t = THEMES[theme];
+
+  // Tweaks panel registration
+  React.useEffect(() => {
+    window.addEventListener("message", e => {
+      if (e.data?.type === "__activate_edit_mode") setTweaksOpen(true);
+      if (e.data?.type === "__deactivate_edit_mode") setTweaksOpen(false);
+    });
+    window.parent.postMessage({ type: "__edit_mode_available" }, "*");
+  }, []);
+
+  const updateTheme = (newTheme) => {
+    setTheme(newTheme);
+    window.parent.postMessage({ type: "__edit_mode_set_keys", edits: { theme: newTheme } }, "*");
+  };
+
+  const tabStyle = t => ({ background: t.bg, display:"flex", flexDirection:"column", height:"100%", overflow:"hidden" });
+
+  return (
+    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"100vh", gap:24, padding:24 }}>
+      {/* Canvas label */}
+      <div style={{ color:"rgba(255,255,255,0.4)", fontSize:12, fontWeight:600, letterSpacing:2, textTransform:"uppercase" }}>STP — Mobilprototyp</div>
+
+      {/* Phone */}
+      <PhoneFrame theme={theme}>
+        <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden", background: t.bg, marginTop:0 }}>
+
+          {/* Screens */}
+          {tab === "hem" && <HomeScreen theme={theme} onSwipe={() => { setTab("jobb"); setJobMode("swipe"); }} onExplore={() => setTab("utforska")} />}
+
+          {tab === "jobb" && jobMode === "swipe" && (
+            <SwipeScreen jobs={JOBS} onViewList={() => setJobMode("list")} theme={theme} />
+          )}
+          {tab === "jobb" && jobMode === "list" && (
+            <JobListScreen jobs={JOBS} onViewSwipe={() => setJobMode("swipe")} theme={theme} />
+          )}
+
+          {tab === "utforska" && <ExploreScreen companies={COMPANIES} theme={theme} />}
+          {tab === "notiser" && <NotifsScreen notifs={NOTIFICATIONS} theme={theme} />}
+          {tab === "profil" && <ProfileScreen theme={theme} />}
+
+          {/* Bottom nav */}
+          <BottomNav tab={tab} setTab={t => { setTab(t); if(t==="jobb") setJobMode("swipe"); }} theme={theme} unreadNotifs={unreadNotifs} />
+        </div>
+      </PhoneFrame>
+
+      {/* Variant switcher below phone */}
+      <div style={{ display:"flex", gap:10, alignItems:"center" }}>
+        {Object.entries(THEMES).map(([key, th]) => (
+          <button key={key} onClick={() => updateTheme(key)} style={{ padding:"7px 16px", borderRadius:99, background: theme===key ? "#fff" : "rgba(255,255,255,0.1)", color: theme===key ? "#0f172a" : "rgba(255,255,255,0.6)", fontSize:12, fontWeight:700, border: theme===key ? "none" : "1px solid rgba(255,255,255,0.1)", cursor:"pointer", transition:"all 0.2s" }}>{th.name}</button>
+        ))}
+      </div>
+
+      {/* Tweaks panel */}
+      {tweaksOpen && (
+        <div style={{ position:"fixed", bottom:80, right:20, width:220, background:"#fff", borderRadius:16, padding:18, boxShadow:"0 8px 40px rgba(0,0,0,0.25)", zIndex:9999 }}>
+          <div style={{ fontSize:13, fontWeight:800, color:"#0f172a", marginBottom:14 }}>Tweaks</div>
+
+          <div style={{ marginBottom:14 }}>
+            <div style={{ fontSize:11, color:"#64748b", fontWeight:600, marginBottom:8, textTransform:"uppercase", letterSpacing:1 }}>Tema</div>
+            {Object.entries(THEMES).map(([key, th]) => (
+              <button key={key} onClick={() => updateTheme(key)} style={{ display:"block", width:"100%", textAlign:"left", padding:"8px 10px", borderRadius:8, background: theme===key ? "#f0fdf4" : "transparent", color: theme===key ? "#1F5F5C" : "#374151", fontWeight: theme===key ? 700 : 500, fontSize:13, border: theme===key ? "1px solid #bbf7d0" : "1px solid transparent", marginBottom:4, cursor:"pointer" }}>
+                {theme===key ? "✓ " : "  "}{th.name}
+              </button>
+            ))}
+          </div>
+
+          <div>
+            <div style={{ fontSize:11, color:"#64748b", fontWeight:600, marginBottom:8, textTransform:"uppercase", letterSpacing:1 }}>Startvy</div>
+            {[["hem","Hem"], ["jobb","Jobb / Swipe"], ["utforska","Utforska"], ["profil","Profil"]].map(([id, lbl]) => (
+              <button key={id} onClick={() => setTab(id)} style={{ display:"block", width:"100%", textAlign:"left", padding:"8px 10px", borderRadius:8, background: tab===id ? "#f0fdf4" : "transparent", color: tab===id ? "#1F5F5C" : "#374151", fontWeight: tab===id ? 700 : 500, fontSize:13, border: tab===id ? "1px solid #bbf7d0" : "1px solid transparent", marginBottom:4, cursor:"pointer" }}>
+                {tab===id ? "✓ " : "  "}{lbl}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
