@@ -269,7 +269,7 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
       )}
 
       {/* Messages */}
-      <div style={{ flex: 1, overflowY: "auto", padding: isMobile ? "16px 16px" : "24px 28px" }}>
+      <div style={{ flex: 1, overflowY: "auto", padding: isMobile ? "16px 16px" : "24px 28px", paddingBottom: isMobile ? "calc(env(safe-area-inset-bottom, 0px) + 80px)" : undefined }}>
         {groups.map(({ day, msgs }) => (
           <div key={day}>
             <div style={{ textAlign: "center", margin: "12px 0 18px", fontSize: 11, fontWeight: 700, color: "rgba(240,250,249,0.4)", letterSpacing: 0.5 }}>
@@ -497,7 +497,7 @@ export default function Messages() {
   };
 
   return (
-    <main style={{ background: "#060f0f", height: isMobile ? "calc(100dvh - 65px)" : "calc(100vh - 64px)", marginTop: isMobile ? 0 : "-64px", paddingTop: isMobile ? 0 : 64, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+    <main style={{ background: "#060f0f", height: isMobile ? "100dvh" : "calc(100vh - 64px)", marginTop: isMobile ? 0 : "-64px", paddingTop: isMobile ? 0 : 64, display: "flex", flexDirection: "column", overflow: "hidden" }}>
 
       {/* Banners */}
       {!isDriver && companyUnreadConversationCount > 0 && (
@@ -570,7 +570,7 @@ export default function Messages() {
               )}
             </div>
 
-            <div style={{ flex: 1, overflowY: "auto" }}>
+            <div style={{ flex: 1, overflowY: "auto", paddingBottom: isMobile ? "calc(env(safe-area-inset-bottom, 0px) + 80px)" : 0 }}>
               {conversationsLoading ? (
                 <div style={{ padding: "24px 16px" }}><LoadingBlock message="Hämtar..." /></div>
               ) : conversations.length === 0 ? (
