@@ -637,6 +637,14 @@ export default function Profile() {
   const onboardingSteps = useMemo(() => getDriverMinimumChecklist(profile), [profile]);
 
   const startEditing = () => { setDraft(profile); setEditing(true); };
+  const startEditingAt = (sectionId) => {
+    setDraft(profile);
+    setEditing(true);
+    setTimeout(() => {
+      const el = document.getElementById(sectionId);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 80);
+  };
   const cancelEditing = () => { setDraft(profile); setEditing(false); setAddingExp(false); setEditingExpId(null); };
   const saveProfile = async () => {
     try {
@@ -745,8 +753,8 @@ export default function Profile() {
       color: "#fff", fontSize: 15, fontFamily: "'DM Sans', system-ui, sans-serif",
       outline: "none",
     };
-    const SectionLabel = ({ children }) => (
-      <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginBottom: 10, marginTop: 24 }}>
+    const SectionLabel = ({ children, id }) => (
+      <div id={id} style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginBottom: 10, marginTop: 24 }}>
         {children}
       </div>
     );
@@ -779,7 +787,7 @@ export default function Profile() {
         <div style={{ flex: 1, overflowY: "auto", padding: "4px 20px", paddingBottom: "max(env(safe-area-inset-bottom), 40px)" }}>
 
           {/* Presentation */}
-          <SectionLabel>Presentation</SectionLabel>
+          <SectionLabel id="edit-presentation">Presentation</SectionLabel>
           <textarea
             value={current.summary || ""}
             onChange={(e) => updateDraft({ summary: e.target.value })}
@@ -792,7 +800,7 @@ export default function Profile() {
           </p>
 
           {/* Personuppgifter */}
-          <SectionLabel>Personuppgifter</SectionLabel>
+          <SectionLabel id="edit-personuppgifter">Personuppgifter</SectionLabel>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             <input
               type="text"
@@ -818,7 +826,7 @@ export default function Profile() {
           </div>
 
           {/* Körkort */}
-          <SectionLabel>Körkort</SectionLabel>
+          <SectionLabel id="edit-korkort">Körkort</SectionLabel>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {licenseTypes.filter(l => l.value !== "B").map((l) => {
               const active = (current.licenses || []).includes(l.value);
@@ -834,7 +842,7 @@ export default function Profile() {
           )}
 
           {/* Certifikat */}
-          <SectionLabel>Certifikat</SectionLabel>
+          <SectionLabel id="edit-certifikat">Certifikat</SectionLabel>
           {certificateGroups.map((group) => (
             <div key={group.id} style={{ marginBottom: 14 }}>
               <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.45)", fontWeight: 600, marginBottom: 7 }}>{group.label}</div>
@@ -865,7 +873,7 @@ export default function Profile() {
           </div>
 
           {/* Regioner jag vill köra i */}
-          <SectionLabel>Vill köra i</SectionLabel>
+          <SectionLabel id="edit-regioner">Vill köra i</SectionLabel>
           <p style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 10, marginTop: -4 }}>Välj alla regioner du är öppen för</p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 20 }}>
             {regions.map((r) => {
@@ -907,8 +915,8 @@ export default function Profile() {
       ? current.regionsWilling.slice(0, 2).join(" · ") + (current.regionsWilling.length > 2 ? ` +${current.regionsWilling.length - 2}` : "")
       : current?.region || "Ej angivet";
 
-    const RowLink = ({ href, icon, label, value, danger, accent }) => (
-      <Link to={href || "#"} onClick={href ? undefined : startEditing} style={{ display: "flex", width: "100%", padding: "14px 18px", background: "transparent", border: "none", borderBottom: "1px solid rgba(255,255,255,0.04)", cursor: "pointer", alignItems: "center", gap: 14, minHeight: 54, textDecoration: "none", color: danger ? "#f87171" : "#fff" }}>
+    const RowLink = ({ href, icon, label, value, danger, accent, section }) => (
+      <Link to={href || "#"} onClick={href ? undefined : section ? () => startEditingAt(section) : startEditing} style={{ display: "flex", width: "100%", padding: "14px 18px", background: "transparent", border: "none", borderBottom: "1px solid rgba(255,255,255,0.04)", cursor: "pointer", alignItems: "center", gap: 14, minHeight: 54, textDecoration: "none", color: danger ? "#f87171" : "#fff" }}>
         <div style={{ width: 34, height: 34, borderRadius: 9, background: accent ? "rgba(245,166,35,0.1)" : danger ? "rgba(248,113,113,0.08)" : "rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
           {icon}
         </div>
@@ -1005,10 +1013,10 @@ export default function Profile() {
         <div style={{ marginBottom: 20 }}>
           <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "rgba(255,255,255,0.45)", padding: "0 20px", marginBottom: 10 }}>Mina uppgifter</div>
           <div style={{ background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 14, overflow: "hidden", margin: "0 20px" }}>
-            <RowLink icon={<svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>} label="Personuppgifter" />
-            <RowLink icon={<svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><rect x="1" y="3" width="15" height="13" rx="1"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>} label="Körkort & certifikat" value={`${licenses.length + certs.length} st`} />
+            <RowLink section="edit-personuppgifter" icon={<svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>} label="Personuppgifter" />
+            <RowLink section="edit-korkort" icon={<svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><rect x="1" y="3" width="15" height="13" rx="1"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>} label="Körkort & certifikat" value={`${licenses.length + certs.length} st`} />
             <RowLink icon={<svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>} label="Arbetslivserfarenhet" value={current?.experience?.length > 0 ? `${current.experience.length} st` : undefined} />
-            <RowLink icon={<svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>} label="Var jag vill köra" value={regions} />
+            <RowLink section="edit-regioner" icon={<svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>} label="Var jag vill köra" value={regions} />
           </div>
         </div>
 
