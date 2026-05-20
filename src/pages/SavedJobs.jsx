@@ -275,16 +275,8 @@ export default function SavedJobs() {
       <div style={{ background: "#060f0f", minHeight: "100vh", color: "#fff", paddingBottom: 90, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
         <PageMeta title="Favoriter – STP" />
 
-        {/* Header */}
-        <div style={{ padding: "10px 18px 4px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontWeight: 800, letterSpacing: -0.8, fontSize: 22, color: "#fff" }}>STP</div>
-          <div style={{ width: 34, height: 34, borderRadius: 99, background: "linear-gradient(135deg,#F5A623,#d97706)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 12, color: "#000" }}>
-            {avatarInitials(profile?.name || "")}
-          </div>
-        </div>
-
         {/* Title */}
-        <div style={{ padding: "4px 20px 14px" }}>
+        <div style={{ padding: "4px 20px 14px", paddingTop: 64 }}>
           <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: -1, marginBottom: 4 }}>Sparat</h1>
           <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.55)" }}>Dina sparade jobb och åkerier</div>
         </div>

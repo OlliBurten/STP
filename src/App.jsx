@@ -13,6 +13,7 @@ import OnboardingGate, { useOnboardingRequired } from "./components/OnboardingGa
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import BottomNav from "./components/BottomNav";
+import MobileHeader from "./components/MobileHeader";
 import { useAuth } from "./context/AuthContext";
 import { useProfile } from "./context/ProfileContext";
 import { useIsMobile } from "./hooks/useIsMobile";
@@ -203,6 +204,10 @@ function AppLayout() {
   // Show bottom nav on mobile for driver-relevant routes
   const showBottomNav = isMobile && isDriver &&
     BOTTOM_NAV_PATHS.some((p) => pathname === p || pathname.startsWith(p));
+
+  // Show global fixed header on the 4 main tabs only (not sub-routes like /meddelanden/:id)
+  const showMobileHeader = isMobile && isDriver &&
+    ["/jobb", "/favoriter", "/meddelanden", "/profil"].includes(pathname);
 
   // On mobile + driver pages: hide the desktop header and footer
   const hideChromeOnMobile = isMobile && isDriver &&
@@ -441,6 +446,7 @@ function AppLayout() {
               {!hideChromeOnMobile && <FeedbackButton />}
               <InstallPrompt />
               <CookieBanner />
+              {showMobileHeader && <MobileHeader />}
               {showBottomNav && <BottomNav />}
             </div>
   );

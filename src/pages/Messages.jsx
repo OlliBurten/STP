@@ -520,15 +520,7 @@ export default function Messages() {
             style={{ display: id ? "none" : "flex", width: isMobile ? "100%" : "clamp(300px, 38%, 400px)", background: isMobile ? "#060f0f" : "#070d0d", borderRight: "1px solid rgba(255,255,255,0.06)", flexDirection: "column", overflow: "hidden", flexShrink: 0 }}
             className="sidebar-panel"
           >
-            {isMobile && isDriver && (
-              <div style={{ padding: "10px 18px 4px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
-                <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontWeight: 800, letterSpacing: -0.8, fontSize: 22, color: "#fff" }}>STP</div>
-                <div style={{ width: 34, height: 34, borderRadius: 99, background: "linear-gradient(135deg,#F5A623,#d97706)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 12, color: "#000" }}>
-                  {avatarInitials(user?.name || "")}
-                </div>
-              </div>
-            )}
-            <div style={{ padding: isMobile ? "4px 20px 12px" : "22px 22px 14px", borderBottom: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}>
+            <div style={{ padding: isMobile ? "4px 20px 12px" : "22px 22px 14px", paddingTop: isMobile ? 68 : undefined, borderBottom: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: isMobile ? 6 : 14 }}>
                 <h1 style={{ fontSize: isMobile ? 26 : 20, fontWeight: isMobile ? 800 : 900, color: "#f0faf9", letterSpacing: isMobile ? -1 : -0.5 }}>
                   {isDriver ? "Inkorg" : "Konversationer"}

@@ -760,7 +760,7 @@ export default function Profile() {
     );
 
     return (
-      <div style={{ position: "fixed", inset: 0, background: "#060f0f", color: "#fff", display: "flex", flexDirection: "column", zIndex: 50, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+      <div style={{ position: "fixed", inset: 0, background: "#060f0f", color: "#fff", display: "flex", flexDirection: "column", zIndex: 200, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
         {/* Top bar */}
         <div style={{ padding: "48px 18px 12px", display: "flex", alignItems: "center", gap: 12, background: "rgba(6,15,15,0.96)", backdropFilter: "blur(14px)", borderBottom: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}>
           <button onClick={cancelEditing} style={{ padding: "8px 14px", borderRadius: 99, background: "rgba(255,255,255,0.05)", border: "none", color: "rgba(255,255,255,0.75)", fontSize: 13.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
@@ -927,14 +927,7 @@ export default function Profile() {
     );
 
     return (
-      <div style={{ background: "#060f0f", minHeight: "100vh", color: "#fff", paddingBottom: 100, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
-        {/* Top bar */}
-        <div style={{ padding: "10px 18px 12px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: -0.7 }}>Min profil</h1>
-          <Link to="/installningar" style={{ width: 42, height: 42, borderRadius: 99, background: "rgba(255,255,255,0.05)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(255,255,255,0.8)", textDecoration: "none" }}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-          </Link>
-        </div>
+      <div style={{ background: "#060f0f", minHeight: "100vh", color: "#fff", paddingBottom: 100, paddingTop: 60, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
 
         {/* Hero card */}
         <div style={{ padding: "4px 20px 20px" }}>

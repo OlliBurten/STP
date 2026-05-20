@@ -22,14 +22,19 @@ export default function MobileHeader({ title, showBack = false, onBack, transpar
 
   return (
     <div style={{
-      padding: "10px 18px 12px",
+      position: "fixed",
+      top: 0, left: 0, right: 0,
+      zIndex: 100,
+      paddingTop: "max(env(safe-area-inset-top, 0px), 10px)",
+      paddingBottom: 10,
+      paddingLeft: 18,
+      paddingRight: 18,
       display: "flex",
       alignItems: "center",
       justifyContent: "space-between",
       background: transparent ? "transparent" : "rgba(6,15,15,0.92)",
       backdropFilter: transparent ? "none" : "blur(14px)",
       WebkitBackdropFilter: transparent ? "none" : "blur(14px)",
-      flexShrink: 0,
     }}>
       {showBack ? (
         <button

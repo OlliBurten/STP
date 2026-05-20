@@ -5,7 +5,6 @@ import { mockJobs } from "../data/mockJobs";
 import JobCard from "../components/JobCard";
 import FilterDrawer from "../components/FilterDrawer";
 import BottomSheet from "../components/BottomSheet";
-import MobileHeader from "../components/MobileHeader";
 import { useAuth } from "../context/AuthContext";
 import { useProfile } from "../context/ProfileContext";
 import { calcYearsExperience } from "../utils/profileUtils";
@@ -297,10 +296,9 @@ export default function JobList() {
 
   if (isMobile) return (
     <div style={{ background: "#060f0f", minHeight: "100vh", color: "#fff", display: "flex", flexDirection: "column" }}>
-      <MobileHeader />
 
       {/* Title */}
-      <div style={{ padding: "4px 20px 14px" }}>
+      <div style={{ padding: "4px 20px 14px", paddingTop: 64 }}>
         <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: -1, marginBottom: 4, margin: "0 0 4px" }}>
           {isGymnasieelev ? "Praktikplatser" : "Lediga jobb"}
         </h1>
