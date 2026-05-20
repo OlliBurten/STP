@@ -262,6 +262,151 @@ export default function SavedJobs() {
     { k: "companies", l: "Åkerier jag följer",  c: companies.length },
   ];
 
+  // ── Mobile layout ─────────────────────────────────────────────────────────
+  if (isMobile) {
+    const mobileTabs = [
+      { v: "jobs", l: "Jobb", c: jobs.length },
+      { v: "companies", l: "Åkerier", c: companies.length },
+    ];
+    const isLoading = tab === "jobs" ? jobsLoading : companiesLoading;
+    const hasError = tab === "jobs" ? jobsError : companiesError;
+
+    return (
+      <div style={{ background: "#060f0f", minHeight: "100vh", color: "#fff", paddingBottom: 90, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+        <PageMeta title="Favoriter – STP" />
+
+        {/* Header */}
+        <div style={{ padding: "10px 18px 4px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontWeight: 800, letterSpacing: -0.8, fontSize: 22, color: "#fff" }}>STP</div>
+          <div style={{ width: 34, height: 34, borderRadius: 99, background: "linear-gradient(135deg,#F5A623,#d97706)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 12, color: "#000" }}>
+            {avatarInitials(profile?.name || "")}
+          </div>
+        </div>
+
+        {/* Title */}
+        <div style={{ padding: "4px 20px 14px" }}>
+          <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: -1, marginBottom: 4 }}>Sparat</h1>
+          <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.55)" }}>Dina sparade jobb och åkerier</div>
+        </div>
+
+        {/* Sub-tabs */}
+        <div style={{ padding: "0 20px 0", display: "flex", gap: 0, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+          {mobileTabs.map((t) => {
+            const on = tab === t.v;
+            return (
+              <button key={t.v} onClick={() => setTab(t.v)} style={{ flex: 1, padding: "12px 0", marginBottom: -1, background: "transparent", border: "none", color: on ? "#F5A623" : "rgba(255,255,255,0.55)", fontSize: 14, fontWeight: on ? 800 : 600, cursor: "pointer", borderBottom: on ? "2px solid #F5A623" : "2px solid transparent", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, fontFamily: "inherit" }}>
+                {t.l}
+                <span style={{ padding: "1px 7px", borderRadius: 99, background: on ? "rgba(245,166,35,0.15)" : "rgba(255,255,255,0.05)", fontSize: 10.5, fontWeight: 800 }}>{t.c}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Content */}
+        <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 10 }}>
+          {isLoading ? (
+            <div style={{ padding: "40px 0", textAlign: "center", color: "rgba(255,255,255,0.4)", fontSize: 14 }}>Hämtar...</div>
+          ) : hasError ? (
+            <div style={{ padding: "12px 16px", borderRadius: 10, background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)", color: "#f87171", fontSize: 13 }}>{hasError}</div>
+          ) : tab === "jobs" ? (
+            <>
+              {expiredCount > 0 && (
+                <div style={{ padding: "11px 14px", background: "rgba(245,166,35,0.06)", border: "1px solid rgba(245,166,35,0.18)", borderRadius: 11, display: "flex", alignItems: "center", gap: 9 }}>
+                  <Icon n="alert" s={14} c="#F5A623"/>
+                  <span style={{ fontSize: 12, color: "rgba(255,255,255,0.75)", flex: 1 }}><strong style={{ color: "#F5A623" }}>{expiredCount} avslutade jobb</strong></span>
+                  <button onClick={handleRemoveExpired} style={{ fontSize: 11.5, color: "#F5A623", fontWeight: 700, background: "transparent", border: "none", cursor: "pointer", fontFamily: "inherit" }}>Ta bort</button>
+                </div>
+              )}
+              {jobs.length === 0 ? (
+                <div style={{ padding: "60px 24px", textAlign: "center", marginTop: 8 }}>
+                  <div style={{ width: 60, height: 60, margin: "0 auto 16px", borderRadius: 99, background: "rgba(245,166,35,0.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <Icon n="star" s={26} c="#F5A623"/>
+                  </div>
+                  <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>Inga sparade jobb</div>
+                  <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.55)", marginBottom: 18 }}>Tryck på stjärnan för att spara — så hittar du tillbaka.</div>
+                  <Link to="/jobb" style={{ padding: "11px 20px", borderRadius: 99, background: "linear-gradient(135deg,#F5A623,#d97706)", color: "#000", fontSize: 13, fontWeight: 800, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 7 }}>
+                    Bläddra jobb <Icon n="arrow" s={13}/>
+                  </Link>
+                </div>
+              ) : jobs.map((job) => {
+                const matchData = driverForMatch ? matchScore(driverForMatch, job) : null;
+                const pct = matchData ? Math.round(matchData.score > 1 ? matchData.score : matchData.score * 100) : null;
+                const matchColor = pct == null ? null : pct >= 80 ? "#4ade80" : pct >= 65 ? "#F5A623" : "rgba(255,255,255,0.5)";
+                const expired = job.status !== "ACTIVE";
+                const initials = avatarInitials(job.company);
+                const bg = avatarBg(job.company);
+                const salaryDisplay = job.salaryMin ? (job.salaryMax ? `${job.salaryMin.toLocaleString("sv-SE")} – ${job.salaryMax.toLocaleString("sv-SE")} kr/mån` : `Från ${job.salaryMin.toLocaleString("sv-SE")} kr/mån`) : job.salary || null;
+                return (
+                  <Link key={job.id} to={`/jobb/${job.id}`} style={{ display: "block", textDecoration: "none", background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 14, padding: "16px", opacity: expired ? 0.55 : 1, position: "relative" }}>
+                    {expired && <div style={{ position: "absolute", top: 14, right: 14, padding: "3px 8px", borderRadius: 5, background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.55)", fontSize: 9.5, fontWeight: 800, letterSpacing: 0.4 }}>AVSLUTAD</div>}
+                    <div style={{ display: "flex", alignItems: "flex-start", gap: 11, marginBottom: 12 }}>
+                      <div style={{ width: 42, height: 42, borderRadius: 11, background: bg, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 13, color: "#F5A623", flexShrink: 0 }}>{initials}</div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 13.5, fontWeight: 700, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: 3 }}>{job.title}</div>
+                        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.55)" }}>{job.company}</div>
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", gap: 8, marginBottom: 12, fontSize: 12, color: "rgba(255,255,255,0.6)", flexWrap: "wrap", alignItems: "center" }}>
+                      {job.location && <span style={{ display: "inline-flex", alignItems: "center", gap: 3 }}><Icon n="pin" s={10}/>{job.location}</span>}
+                      {salaryDisplay && <><span style={{ color: "rgba(255,255,255,0.2)" }}>·</span><span>{salaryDisplay}</span></>}
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 10, borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+                      <span style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>{relativeTime(job.savedAt)}</span>
+                      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                        {pct != null && <div style={{ padding: "4px 9px", borderRadius: 7, background: `${matchColor}1a`, color: matchColor, fontSize: 12, fontWeight: 800 }}>{pct}%</div>}
+                        <button
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleUnsaveJob(job.id); }}
+                          style={{ width: 34, height: 34, borderRadius: 99, background: "rgba(245,166,35,0.08)", border: "none", color: "#F5A623", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                        >
+                          <Icon n="star" s={13}/>
+                        </button>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </>
+          ) : (
+            <>
+              {companies.length === 0 ? (
+                <div style={{ padding: "60px 24px", textAlign: "center", marginTop: 8 }}>
+                  <div style={{ width: 60, height: 60, margin: "0 auto 16px", borderRadius: 99, background: "rgba(245,166,35,0.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <Icon n="star" s={26} c="#F5A623"/>
+                  </div>
+                  <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>Inga sparade åkerier</div>
+                  <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.55)", marginBottom: 18 }}>Tryck på stjärnan för att följa ett åkeri.</div>
+                  <Link to="/akerier" style={{ padding: "11px 20px", borderRadius: 99, background: "linear-gradient(135deg,#F5A623,#d97706)", color: "#000", fontSize: 13, fontWeight: 800, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 7 }}>
+                    Hitta åkerier <Icon n="arrow" s={13}/>
+                  </Link>
+                </div>
+              ) : companies.map((company) => {
+                const initials = avatarInitials(company.name || company.companyName);
+                const bg = avatarBg(company.name || company.companyName);
+                const name = company.name || company.companyName;
+                return (
+                  <Link key={company.id} to={`/akerier/${company.id || company.userId}`} style={{ display: "flex", alignItems: "center", gap: 12, textDecoration: "none", background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 14, padding: "16px" }}>
+                    <div style={{ width: 48, height: 48, borderRadius: 12, background: bg, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 14, color: "#F5A623", flexShrink: 0 }}>{initials}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: "#fff", marginBottom: 3 }}>{name}</div>
+                      <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.5)" }}>{company.location || company.city || ""}</div>
+                    </div>
+                    <button
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleUnsaveCompany(company.id); }}
+                      style={{ width: 34, height: 34, borderRadius: 99, background: "rgba(245,166,35,0.08)", border: "none", color: "#F5A623", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
+                    >
+                      <Icon n="star" s={13}/>
+                    </button>
+                  </Link>
+                );
+              })}
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
+  // ── End mobile layout ──────────────────────────────────────────────────────
+
   return (
     <main style={{ background: "#060f0f", minHeight: "100vh", marginTop: "-64px", paddingTop: 64 }}>
       <PageMeta title="Favoriter – STP" />

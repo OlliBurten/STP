@@ -930,6 +930,72 @@ export default function DriverOnboardingWizard() {
 
   const showSidebar = step > 0;
 
+  if (isMobile) {
+    const totalSteps = 4;
+    const progress = step / totalSteps;
+
+    return (
+      <div style={{ position: "fixed", inset: 0, background: "#060f0f", color: "#fff", display: "flex", flexDirection: "column", zIndex: 1, fontFamily: "inherit" }}>
+        {/* Top bar: back + progress */}
+        <div style={{ padding: "48px 20px 8px", display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
+          {step > 0 ? (
+            <button onClick={() => setStep(s => s - 1)} style={{ width: 42, height: 42, borderRadius: 99, background: "rgba(255,255,255,0.05)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", flexShrink: 0, fontFamily: "inherit" }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 18, height: 18 }}><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            </button>
+          ) : (
+            <div style={{ width: 42, flexShrink: 0 }} />
+          )}
+          <div style={{ flex: 1, height: 4, background: "rgba(255,255,255,0.06)", borderRadius: 99, overflow: "hidden" }}>
+            <div style={{ height: "100%", width: `${progress * 100}%`, background: "linear-gradient(90deg,#F5A623,#d97706)", borderRadius: 99, transition: "width .3s" }} />
+          </div>
+        </div>
+
+        {/* Scrollable step content */}
+        <div style={{ flex: 1, overflowY: "auto", padding: "12px 24px 100px" }}>
+          {/* Step label */}
+          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "#F5A623", marginBottom: 10 }}>
+            {step === 0 ? "Välkommen till STP" : `Steg ${step} av ${totalSteps}`}
+          </div>
+
+          {/* Error */}
+          {error && (
+            <div style={{ marginBottom: 16, padding: "12px 16px", borderRadius: 10, background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.3)" }}>
+              <p style={{ fontSize: 13, color: "#f87171", margin: 0 }}>{error}</p>
+            </div>
+          )}
+
+          {renderStep()}
+        </div>
+
+        {/* Sticky footer CTA */}
+        <div style={{ padding: "12px 24px", paddingBottom: "max(env(safe-area-inset-bottom), 24px)", background: "rgba(6,15,15,0.96)", backdropFilter: "blur(14px)", borderTop: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}>
+          {step === 0 && (
+            <p style={{ fontSize: 11.5, color: "rgba(255,255,255,0.4)", textAlign: "center", marginBottom: 10 }}>
+              Gratis för förare · Alltid
+            </p>
+          )}
+          <button
+            onClick={step < 4 ? () => setStep(s => s + 1) : saveAndFinish}
+            disabled={!canContinue() || saving}
+            style={{
+              width: "100%", padding: "16px", borderRadius: 14,
+              background: canContinue() && !saving ? "linear-gradient(135deg,#F5A623,#d97706)" : "rgba(255,255,255,0.06)",
+              border: "none",
+              color: canContinue() && !saving ? "#000" : "rgba(255,255,255,0.3)",
+              fontSize: 15, fontWeight: 800,
+              cursor: canContinue() && !saving ? "pointer" : "default",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+              boxShadow: canContinue() && !saving ? "0 4px 20px rgba(245,166,35,0.3)" : "none",
+              minHeight: 54, fontFamily: "inherit",
+            }}
+          >
+            {saving ? "Sparar…" : step < 4 ? (step === 0 ? "Kom igång →" : "Fortsätt →") : "Skapa min profil →"}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{ minHeight: "100vh", background: "#050e0e", color: T.text, fontFamily: "inherit", marginTop: "-64px", paddingTop: 64 }}>
       <div style={{

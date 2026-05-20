@@ -495,6 +495,176 @@ export default function JobDetail() {
 
   const empLabel = job.employment === "fast" ? "Fast anställning" : job.employment === "vikariat" ? "Vikariat" : "Timanställning";
 
+  // ── Mobile render ──────────────────────────────────────────────────────────
+  const [mobileTab, setMobileTab] = useState("about");
+  const [mobileScrolled, setMobileScrolled] = useState(false);
+
+  if (isMobile) {
+    const matchPct = driverMatchScore != null ? Math.min(100, Math.round((driverMatchScore / 9) * 100)) : null;
+    const matchColor = matchPct >= 85 ? "#4ade80" : matchPct >= 70 ? "#F5A623" : matchPct >= 55 ? "#60a5fa" : "rgba(255,255,255,0.4)";
+    const matchLabel = matchPct >= 85 ? "Stark match" : matchPct >= 70 ? "God match" : matchPct != null ? "Delvis match" : null;
+    const reqMet = (driverForMatch ? (job.license || []).filter((l) => driverForMatch.licenses?.includes(l)).length : 0) + (driverForMatch ? (job.certificates || []).filter((c) => driverForMatch.certificates?.includes(c)).length : 0);
+    const reqTotal = (job.license || []).length + (job.certificates || []).length;
+    const r = 22; const circ = 2 * Math.PI * r;
+
+    return (
+      <div style={{ background: "#060f0f", minHeight: "100vh", color: "#fff", display: "flex", flexDirection: "column" }}>
+        <PageMeta title={`${job.title} – ${job.company}`} description={metaDescription} canonical={`/jobb/${job.id}`} />
+
+        {/* Scroll area */}
+        <div onScroll={(e) => setMobileScrolled(e.target.scrollTop > 80)} style={{ flex: 1, overflowY: "auto", paddingBottom: 100 }}>
+
+          {/* Top bar */}
+          <div style={{ position: "sticky", top: 0, zIndex: 20, padding: "6px 16px 10px", display: "flex", alignItems: "center", justifyContent: "space-between", background: mobileScrolled ? "rgba(6,15,15,0.92)" : "transparent", backdropFilter: mobileScrolled ? "blur(14px)" : "none", WebkitBackdropFilter: mobileScrolled ? "blur(14px)" : "none", borderBottom: mobileScrolled ? "1px solid rgba(255,255,255,0.06)" : "1px solid transparent", transition: "all .2s" }}>
+            <Link to="/jobb" style={{ width: 42, height: 42, borderRadius: 99, background: "rgba(255,255,255,0.07)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", flexShrink: 0 }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            </Link>
+            {mobileScrolled && <div style={{ flex: 1, padding: "0 12px", fontSize: 13, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{job.title}</div>}
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={() => { const saved2 = !isSaved; setIsSaved(saved2); if (saved2) saveJob(job.id).catch(() => setIsSaved(false)); else unsaveJob(job.id).catch(() => setIsSaved(true)); }} style={{ width: 42, height: 42, borderRadius: 99, background: "rgba(255,255,255,0.07)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: isSaved ? "#F5A623" : "#fff" }}>
+                {isSaved ? <svg viewBox="0 0 24 24" fill="currentColor" width="17" height="17"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>
+                         : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="17" height="17"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>}
+              </button>
+            </div>
+          </div>
+
+          {/* Hero */}
+          <div style={{ padding: "6px 20px 0" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+              <div style={{ width: 52, height: 52, borderRadius: 13, background: avatarColor(job.company), display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 16, color: "#F5A623", flexShrink: 0 }}>{companyInitials}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "rgba(255,255,255,0.9)", marginBottom: 1 }}>{job.company}</div>
+                <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.5)", display: "flex", alignItems: "center", gap: 4 }}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="10" height="10"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  {job.location || job.region}
+                </div>
+              </div>
+            </div>
+            <h1 style={{ fontSize: 24, fontWeight: 800, letterSpacing: -0.8, lineHeight: 1.15, marginBottom: 14, margin: "0 0 14px" }}>{job.title}</h1>
+            {/* Tags */}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
+              {(job.license || []).map((l) => <span key={l} style={{ padding: "5px 11px", borderRadius: 99, background: "rgba(31,95,92,0.3)", color: "#7dd3c8", fontSize: 11.5, fontWeight: 700 }}>{l}</span>)}
+              {job.employment && <span style={{ padding: "5px 11px", borderRadius: 99, background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.7)", fontSize: 11.5, fontWeight: 600 }}>{empLabel}</span>}
+              {job.jobType && <span style={{ padding: "5px 11px", borderRadius: 99, background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.7)", fontSize: 11.5, fontWeight: 600 }}>{job.jobType}</span>}
+            </div>
+            {/* Salary card */}
+            <div style={{ background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 14, padding: "14px 16px", marginBottom: 10 }}>
+              <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: 1.2, textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginBottom: 4 }}>Lön</div>
+              <div style={{ fontSize: 16, fontWeight: 800 }}>{salaryFactVal}</div>
+            </div>
+            {/* Match card */}
+            {matchPct != null && (
+              <div style={{ background: "linear-gradient(135deg, rgba(74,222,128,0.06), rgba(74,222,128,0.02))", border: "1px solid rgba(74,222,128,0.2)", borderRadius: 14, padding: 16, display: "flex", alignItems: "center", gap: 14, marginBottom: 4 }}>
+                {/* Match ring */}
+                <div style={{ width: 56, height: 56, position: "relative", flexShrink: 0 }}>
+                  <svg width="56" height="56" viewBox="0 0 56 56" style={{ transform: "rotate(-90deg)" }}>
+                    <circle cx="28" cy="28" r={r} stroke="rgba(255,255,255,0.08)" strokeWidth="4" fill="none"/>
+                    <circle cx="28" cy="28" r={r} stroke={matchColor} strokeWidth="4" fill="none" strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={circ - (matchPct/100)*circ}/>
+                  </svg>
+                  <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, color: matchColor }}>{matchPct}<span style={{ fontSize: 9 }}>%</span></div>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13.5, fontWeight: 800, color: matchColor, marginBottom: 2 }}>{matchLabel}</div>
+                  <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.6)" }}>
+                    {reqTotal > 0 ? `Du uppfyller ${reqMet} av ${reqTotal} krav` : "Baserat på din profil"}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Sticky tabs */}
+          <div style={{ position: "sticky", top: 56, zIndex: 10, background: "rgba(6,15,15,0.96)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", padding: "4px 20px 0", display: "flex", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+            {[{ v: "about", l: "Om jobbet" }, { v: "req", l: "Krav" }, { v: "company", l: "Företaget" }].map((t) => {
+              const on = mobileTab === t.v;
+              return <button key={t.v} onClick={() => setMobileTab(t.v)} style={{ padding: "14px 0", marginRight: 24, background: "transparent", border: "none", color: on ? "#F5A623" : "rgba(255,255,255,0.55)", fontSize: 13.5, fontWeight: on ? 800 : 600, cursor: "pointer", borderBottom: on ? "2px solid #F5A623" : "2px solid transparent", marginBottom: -1, fontFamily: "inherit", flexShrink: 0 }}>{t.l}</button>;
+            })}
+          </div>
+
+          {/* Tab content */}
+          <div style={{ padding: "20px 20px 0" }}>
+            {mobileTab === "about" && (
+              <>
+                {job.description && <p style={{ fontSize: 14, lineHeight: 1.65, color: "rgba(255,255,255,0.8)", marginBottom: 24 }}>{job.description}</p>}
+                {(job.benefits || []).length > 0 && (
+                  <>
+                    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginBottom: 12 }}>Vad vi erbjuder</div>
+                    {job.benefits.map((b, i) => (
+                      <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 10, fontSize: 14, color: "rgba(255,255,255,0.85)" }}>
+                        <div style={{ width: 18, height: 18, borderRadius: 99, background: "rgba(74,222,128,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
+                          <svg viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" width="10" height="10"><polyline points="20 6 9 17 4 12"/></svg>
+                        </div>
+                        <span style={{ lineHeight: 1.45 }}>{b}</span>
+                      </div>
+                    ))}
+                  </>
+                )}
+              </>
+            )}
+            {mobileTab === "req" && (
+              <>
+                {(job.requirements || []).length > 0 && (
+                  <>
+                    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginBottom: 12 }}>Krav på dig</div>
+                    {job.requirements.map((req, i) => (
+                      <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 10, fontSize: 14, color: "rgba(255,255,255,0.85)" }}>
+                        <div style={{ width: 18, height: 18, borderRadius: 99, background: "rgba(74,222,128,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
+                          <svg viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" width="10" height="10"><polyline points="20 6 9 17 4 12"/></svg>
+                        </div>
+                        <span style={{ lineHeight: 1.45 }}>{req}</span>
+                      </div>
+                    ))}
+                  </>
+                )}
+                {driverForMatch && (
+                  <>
+                    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "rgba(255,255,255,0.45)", margin: "20px 0 12px" }}>Din matchning</div>
+                    {[...(job.license || []).map((l) => ({ l: `${l}-körkort`, on: driverForMatch.licenses?.includes(l) })),
+                      ...(job.certificates || []).map((c) => ({ l: c, on: driverForMatch.certificates?.includes(c) }))
+                    ].map((item, i) => (
+                      <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8, fontSize: 13.5 }}>
+                        <div style={{ width: 20, height: 20, borderRadius: 99, background: item.on ? "rgba(74,222,128,0.15)" : "rgba(248,113,113,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <svg viewBox="0 0 24 24" fill="none" stroke={item.on ? "#4ade80" : "rgba(248,113,113,0.7)"} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" width="11" height="11"><polyline points="20 6 9 17 4 12"/></svg>
+                        </div>
+                        <span style={{ color: item.on ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.4)" }}>{item.l}</span>
+                      </div>
+                    ))}
+                  </>
+                )}
+              </>
+            )}
+            {mobileTab === "company" && (
+              <>
+                {job.companyDescription && <p style={{ fontSize: 14, lineHeight: 1.65, color: "rgba(255,255,255,0.8)", marginBottom: 20 }}>{job.companyDescription}</p>}
+                <Link to={`/foretag/${job.userId || job.companyId || ""}`} style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "#F5A623", fontSize: 13, fontWeight: 700, textDecoration: "none", marginBottom: 16 }}>
+                  Se hela företagsprofilen
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="12" height="12"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Sticky bottom CTA */}
+        <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, padding: "12px 20px max(env(safe-area-inset-bottom), 24px)", background: "rgba(6,15,15,0.95)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", gap: 10 }}>
+          <button
+            onClick={() => { const saved2 = !isSaved; setIsSaved(saved2); if (saved2) saveJob(job.id).catch(() => setIsSaved(false)); else unsaveJob(job.id).catch(() => setIsSaved(true)); }}
+            style={{ width: 52, height: 52, borderRadius: 14, background: "rgba(255,255,255,0.04)", border: `1px solid ${isSaved ? "rgba(245,166,35,0.4)" : "rgba(255,255,255,0.07)"}`, color: isSaved ? "#F5A623" : "rgba(255,255,255,0.7)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            {isSaved ? <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>
+                     : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>}
+          </button>
+          <Link
+            to={`/jobb/${job.id}/ansok`}
+            style={{ flex: 1, padding: 15, borderRadius: 14, background: "linear-gradient(135deg,#F5A623,#d97706)", color: "#000", fontSize: 15, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, textDecoration: "none", boxShadow: "0 4px 18px rgba(245,166,35,0.3)" }}
+          >
+            Ansök nu
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <main style={{ background: "#060f0f", minHeight: "100vh", marginTop: "-64px", paddingTop: 80, overflowX: "clip" }}>

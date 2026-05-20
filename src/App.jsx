@@ -12,8 +12,10 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import OnboardingGate, { useOnboardingRequired } from "./components/OnboardingGate";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import BottomNav from "./components/BottomNav";
 import { useAuth } from "./context/AuthContext";
 import { useProfile } from "./context/ProfileContext";
+import { useIsMobile } from "./hooks/useIsMobile";
 import ProfileCompletionBanner from "./components/ProfileCompletionBanner";
 import FeedbackButton from "./components/FeedbackButton";
 import InstallPrompt from "./components/InstallPrompt";
@@ -186,13 +188,33 @@ function DriverCompletionNudge() {
   );
 }
 
+// Routes where the mobile bottom nav should appear (driver-only pages)
+const BOTTOM_NAV_PATHS = [
+  "/jobb", "/favoriter", "/meddelanden", "/mina-ansokningar", "/profil",
+  "/akerier", "/foretag/",  // akerier browse + company public profiles
+];
+
 function AppLayout() {
-  const { user, isCompany, isImpersonating } = useAuth();
+  const { user, isCompany, isDriver, isImpersonating } = useAuth();
   const onboarding = useOnboardingRequired();
+  const isMobile = useIsMobile();
+  const { pathname } = useLocation();
+
+  // Show bottom nav on mobile for driver-relevant routes
+  const showBottomNav = isMobile && isDriver &&
+    BOTTOM_NAV_PATHS.some((p) => pathname === p || pathname.startsWith(p));
+
+  // On mobile + driver pages: hide the desktop header and footer
+  const hideChromeOnMobile = isMobile && isDriver &&
+    (pathname.startsWith("/jobb") || pathname.startsWith("/favoriter") ||
+     pathname.startsWith("/meddelanden") || pathname.startsWith("/mina-ansokningar") ||
+     pathname.startsWith("/profil") || pathname.startsWith("/akerier") ||
+     pathname.startsWith("/onboarding/forare"));
+
   return (
     <div className="min-h-screen flex flex-col" style={{ overflowX: "clip" }}>
-      <Header onboarding={onboarding} />
-      <div className={`flex-1 ${isImpersonating ? "pt-[104px]" : "pt-16"}`}>
+      {!hideChromeOnMobile && <Header onboarding={onboarding} />}
+      <div className={hideChromeOnMobile ? "flex-1" : `flex-1 ${isImpersonating ? "pt-[104px]" : "pt-16"}`}>
         <DriverCompletionNudge />
         <OnboardingGate>
         <Suspense fallback={<div className="min-h-[60vh]" />}>
@@ -415,10 +437,11 @@ function AppLayout() {
         </Suspense>
         </OnboardingGate>
               </div>
-              <Footer />
-              <FeedbackButton />
+              {!hideChromeOnMobile && <Footer />}
+              {!hideChromeOnMobile && <FeedbackButton />}
               <InstallPrompt />
               <CookieBanner />
+              {showBottomNav && <BottomNav />}
             </div>
   );
 }

@@ -370,6 +370,121 @@ export default function AkerierSearch() {
 
   const hasActiveFilters = bransch || region || search || onlyWithJobs || onlyPraktik;
   const clearAll = () => { setBransch(""); setRegion(""); setSearch(""); setOnlyWithJobs(false); setOnlyPraktik(false); };
+  const [mobileFilter, setMobileFilter] = useState("all");
+
+  // ── Mobile layout ─────────────────────────────────────────────────────────
+  if (isMobile) {
+    const mobileFilters = [
+      { v: "all", l: "Alla", c: displayed.length },
+      { v: "hiring", l: "Anställer", c: displayed.filter((c) => c.activeJobCount > 0).length },
+    ];
+    const mobileListed = mobileFilter === "hiring" ? displayed.filter((c) => c.activeJobCount > 0) : displayed;
+
+    return (
+      <div style={{ background: "#060f0f", minHeight: "100vh", color: "#fff", paddingBottom: 90 }}>
+        <PageMeta title="Hitta ditt nästa åkeri – Transportplattformen" canonical="/akerier" />
+
+        {/* Header */}
+        <div style={{ padding: "10px 18px 4px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontWeight: 800, letterSpacing: -0.8, fontSize: 22, color: "#fff" }}>STP</div>
+          <div style={{ width: 34, height: 34, borderRadius: 99, background: "linear-gradient(135deg,#F5A623,#d97706)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 12, color: "#000" }}>
+            {(user?.name || "?").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()}
+          </div>
+        </div>
+
+        {/* Title */}
+        <div style={{ padding: "4px 20px 14px" }}>
+          <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: -1, marginBottom: 4 }}>Åkerier</h1>
+          <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.55)" }}>{list.length} verifierade åkerier i Sverige</div>
+        </div>
+
+        {/* Search + filter button */}
+        <div style={{ padding: "0 20px 12px", display: "flex", gap: 8 }}>
+          <div style={{ flex: 1, position: "relative" }}>
+            <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.45)", pointerEvents: "none" }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </span>
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Sök åkeri eller ort"
+              style={{ width: "100%", padding: "12px 14px 12px 40px", background: "#0a1414", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, fontSize: 14, outline: "none", color: "#fff", minHeight: 44, fontFamily: "inherit" }}
+            />
+          </div>
+        </div>
+
+        {/* Filter chips */}
+        <div style={{ padding: "0 20px 14px", display: "flex", gap: 6 }}>
+          {mobileFilters.map((f) => {
+            const on = mobileFilter === f.v;
+            return (
+              <button key={f.v} onClick={() => setMobileFilter(f.v)} style={{ flexShrink: 0, padding: "8px 14px", borderRadius: 99, background: on ? "rgba(245,166,35,0.12)" : "rgba(255,255,255,0.04)", border: `1px solid ${on ? "rgba(245,166,35,0.35)" : "rgba(255,255,255,0.06)"}`, color: on ? "#F5A623" : "rgba(255,255,255,0.7)", fontSize: 12.5, fontWeight: 700, cursor: "pointer", minHeight: 36, display: "flex", alignItems: "center", gap: 5, fontFamily: "inherit" }}>
+                {f.l}
+                <span style={{ padding: "1px 6px", borderRadius: 99, background: on ? "rgba(245,166,35,0.2)" : "rgba(255,255,255,0.06)", fontSize: 10, fontWeight: 800 }}>{f.c}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Company list */}
+        <div style={{ padding: "0 20px", display: "flex", flexDirection: "column", gap: 10 }}>
+          {loading ? (
+            <div style={{ padding: "40px 0", textAlign: "center", color: "rgba(255,255,255,0.4)", fontSize: 14 }}>Hämtar åkerier...</div>
+          ) : mobileListed.map((company) => {
+            const initials = (company.name || "?").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+            const bg = (() => {
+              const palette = ["#1F5F5C","#1a3a5c","#3a2a5c","#3a2a1a","#1a2a3a","#1a3a2a"];
+              let h = 0;
+              for (let i = 0; i < (company.name || "").length; i++) h = (h * 31 + company.name.charCodeAt(i)) & 0xffff;
+              return palette[h % palette.length];
+            })();
+            return (
+              <Link key={company.id} to={`/akerier/${company.id}`} style={{ display: "block", textDecoration: "none", background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 14, padding: "16px", position: "relative", overflow: "hidden" }}>
+                <div style={{ display: "flex", gap: 12, alignItems: "flex-start", marginBottom: 10 }}>
+                  <div style={{ width: 48, height: 48, borderRadius: 12, background: bg, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 14, color: "#F5A623", flexShrink: 0 }}>{initials}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 3 }}>
+                      <span style={{ fontSize: 14, fontWeight: 800, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>{company.name}</span>
+                      {company.isVerified && <svg viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" width="12" height="12"><polyline points="20 6 9 17 4 12"/></svg>}
+                    </div>
+                    <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.55)", display: "flex", alignItems: "center", gap: 4 }}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="10" height="10"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                      {company.location}{company.region ? `, ${company.region}` : ""}
+                    </div>
+                  </div>
+                </div>
+
+                {company.segments?.length > 0 && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
+                    {company.hasCollectiveAgreement && <span style={{ padding: "3px 8px", borderRadius: 99, background: "rgba(99,179,237,0.1)", border: "1px solid rgba(99,179,237,0.2)", fontSize: 10.5, fontWeight: 700, color: "#63b3ed" }}>Kollektivavtal</span>}
+                    {company.segments.slice(0, 2).map((s) => <span key={s} style={{ padding: "3px 8px", borderRadius: 99, background: "rgba(31,95,92,0.25)", border: "1px solid rgba(31,95,92,0.4)", fontSize: 10.5, fontWeight: 600, color: "#7dd3c8" }}>{s}</span>)}
+                  </div>
+                )}
+
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 10, borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+                  {company.activeJobCount > 0 ? (
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <span style={{ width: 6, height: 6, borderRadius: 99, background: "#4ade80" }}/>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: "#4ade80" }}>{company.activeJobCount} {company.activeJobCount === 1 ? "ledigt jobb" : "lediga jobb"}</span>
+                    </div>
+                  ) : (
+                    <span style={{ fontSize: 11.5, color: "rgba(255,255,255,0.4)" }}>Inga lediga jobb</span>
+                  )}
+                  {company.rating > 0 && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                      <svg viewBox="0 0 24 24" fill="#F5A623" width="11" height="11"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>
+                      <span style={{ fontSize: 13, fontWeight: 800 }}>{company.rating?.toFixed(1)}</span>
+                    </div>
+                  )}
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+  // ── End mobile layout ──────────────────────────────────────────────────────
 
   return (
     <main style={{ background: "#060f0f", minHeight: "100vh", marginTop: "-64px", paddingTop: 64 }}>

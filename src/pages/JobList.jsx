@@ -1,9 +1,11 @@
 import { useState, useMemo, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { mockJobs } from "../data/mockJobs";
 import JobCard from "../components/JobCard";
 import FilterDrawer from "../components/FilterDrawer";
+import BottomSheet from "../components/BottomSheet";
+import MobileHeader from "../components/MobileHeader";
 import { useAuth } from "../context/AuthContext";
 import { useProfile } from "../context/ProfileContext";
 import { calcYearsExperience } from "../utils/profileUtils";
@@ -15,6 +17,68 @@ import { regionPages } from "../data/regions";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { useDriverTour } from "../hooks/useDriverTour";
 import { getProfileCompletion, getDriverMinimumChecklist } from "../utils/driverProfileRequirements";
+
+// ─── Mobile job card ─────────────────────────────────────────────────────────
+function MobileJobCard({ job, matchPct, isSaved, onToggleSave }) {
+  const navigate = useNavigate();
+  const matchColor = matchPct >= 85 ? "#4ade80" : matchPct >= 70 ? "#F5A623" : matchPct >= 55 ? "#60a5fa" : "rgba(255,255,255,0.4)";
+  return (
+    <div
+      onClick={() => navigate(`/jobb/${job.id}`)}
+      style={{
+        background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)",
+        borderRadius: 14, padding: 16, cursor: "pointer",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 10 }}>
+        {/* Logo */}
+        <div style={{
+          width: 42, height: 42, borderRadius: 11, flexShrink: 0,
+          background: "#1F5F5C", display: "flex", alignItems: "center",
+          justifyContent: "center", fontWeight: 800, fontSize: 13, color: "#F5A623",
+        }}>
+          {(job.company || "").slice(0, 2).toUpperCase()}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 13.5, fontWeight: 700, color: "#fff", lineHeight: 1.25, marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{job.title}</div>
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.55)" }}>{job.company}</div>
+        </div>
+        <button
+          onClick={(e) => { e.stopPropagation(); onToggleSave(job.id, !isSaved); }}
+          style={{ width: 36, height: 36, borderRadius: 99, background: "transparent", border: "none", display: "flex", alignItems: "center", justifyContent: "center", color: isSaved ? "#F5A623" : "rgba(255,255,255,0.35)", cursor: "pointer", flexShrink: 0, marginTop: -4, marginRight: -6 }}
+        >
+          {isSaved
+            ? <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>
+            : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>
+          }
+        </button>
+      </div>
+      <div style={{ fontSize: 12, color: "rgba(255,255,255,0.55)", marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="11" height="11"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        {job.location || job.region}
+        {job.jobType && <><span style={{ color: "rgba(255,255,255,0.2)" }}>·</span>{job.jobType}</>}
+      </div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 10, borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{job.salary || "Lön ej angiven"}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          {matchPct != null && (
+            <div style={{ padding: "3px 9px", borderRadius: 7, background: `${matchColor}1a`, color: matchColor, fontSize: 12, fontWeight: 800 }}>
+              {matchPct}%
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Mobile filter sheet content ─────────────────────────────────────────────
+const FILTER_SECTIONS = [
+  { title: "Körkort", key: "license", items: [{ l: "B", v: "B" }, { l: "C", v: "C" }, { l: "CE", v: "CE" }, { l: "D", v: "D" }] },
+  { title: "Anställning", key: "employment", items: [{ l: "Fast", v: "fast" }, { l: "Vikariat", v: "vikariat" }, { l: "Tim", v: "tim" }] },
+  { title: "Jobbtyp", key: "jobType", items: [{ l: "Fjärrkörning", v: "fjärrkörning" }, { l: "Distribution", v: "distribution" }, { l: "Lokalt", v: "lokalt" }] },
+  { title: "Region", key: "region", items: [{ l: "Skåne", v: "Skåne" }, { l: "Stockholm", v: "Stockholm" }, { l: "V. Götaland", v: "Västra Götaland" }, { l: "Halland", v: "Halland" }, { l: "Norrbotten", v: "Norrbotten" }] },
+];
 
 const QUICK_FILTERS = [
   { label: "CE-körkort", key: "license", value: "CE" },
@@ -209,6 +273,129 @@ export default function JobList() {
     if (tab === "saved") return filteredJobs.filter((j) => savedJobIds.has(j.id));
     return null;
   }, [isDriver, tab, filteredJobs, matchDataMap, savedJobIds]);
+
+  // ── Mobile layout ──────────────────────────────────────────────────────────
+  const [filterSheetOpen, setFilterSheetOpen] = useState(false);
+  const [mobileFilters, setMobileFilters] = useState({ license: "", employment: "", jobType: "", region: "" });
+
+  const mobileJobs = useMemo(() => {
+    const base = tab === "recommended"
+      ? filteredJobs.filter((j) => (matchDataMap[j.id]?.score ?? 0) >= 70).sort((a, b) => (matchDataMap[b.id]?.score ?? 0) - (matchDataMap[a.id]?.score ?? 0))
+      : tab === "saved"
+        ? filteredJobs.filter((j) => savedJobIds.has(j.id))
+        : filteredJobs;
+    return base.filter((j) => {
+      if (mobileFilters.license && !j.license?.includes(mobileFilters.license)) return false;
+      if (mobileFilters.employment && j.employment !== mobileFilters.employment) return false;
+      if (mobileFilters.jobType && j.jobType !== mobileFilters.jobType) return false;
+      if (mobileFilters.region && j.region !== mobileFilters.region) return false;
+      return true;
+    });
+  }, [tab, filteredJobs, matchDataMap, savedJobIds, mobileFilters]);
+
+  const activeMobileFilterCount = Object.values(mobileFilters).filter(Boolean).length;
+
+  if (isMobile) return (
+    <div style={{ background: "#060f0f", minHeight: "100vh", color: "#fff", display: "flex", flexDirection: "column" }}>
+      <MobileHeader />
+
+      {/* Title */}
+      <div style={{ padding: "4px 20px 14px" }}>
+        <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: -1, marginBottom: 4, margin: "0 0 4px" }}>
+          {isGymnasieelev ? "Praktikplatser" : "Lediga jobb"}
+        </h1>
+        <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.55)" }}>
+          {jobsLoading ? "Hämtar…" : `${filteredJobs.length} jobb just nu`}
+        </div>
+      </div>
+
+      {/* Search + filter */}
+      <div style={{ padding: "0 20px 12px", display: "flex", gap: 8 }}>
+        <div style={{ flex: 1, position: "relative" }}>
+          <span style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.4)", pointerEvents: "none", display: "flex" }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </span>
+          <input
+            value={filters.search}
+            onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
+            placeholder="Sök jobb eller ort"
+            style={{ width: "100%", padding: "12px 14px 12px 40px", background: "#0a1414", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, fontSize: 14, outline: "none", color: "#fff", fontFamily: "inherit", boxSizing: "border-box", minHeight: 44 }}
+          />
+        </div>
+        <button
+          onClick={() => setFilterSheetOpen(true)}
+          style={{ width: 48, height: 48, borderRadius: 12, background: activeMobileFilterCount > 0 ? "rgba(245,166,35,0.12)" : "#0a1414", border: `1px solid ${activeMobileFilterCount > 0 ? "rgba(245,166,35,0.4)" : "rgba(255,255,255,0.07)"}`, color: activeMobileFilterCount > 0 ? "#F5A623" : "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="17" height="17"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="20" y2="12"/><line x1="12" y1="18" x2="20" y2="18"/><circle cx="4" cy="12" r="1.5"/><circle cx="16" cy="6" r="1.5"/><circle cx="8" cy="18" r="1.5"/></svg>
+        </button>
+      </div>
+
+      {/* Tabs */}
+      {isDriver && (
+        <div style={{ padding: "0 20px 14px", display: "flex", gap: 6, overflowX: "auto" }}>
+          {[
+            { v: "all", l: "Alla", c: filteredJobs.length },
+            { v: "recommended", l: "För dig", c: filteredJobs.filter((j) => (matchDataMap[j.id]?.score ?? 0) >= 70).length },
+            { v: "saved", l: "Sparade", c: savedJobIds.size },
+          ].map((t) => {
+            const on = tab === t.v;
+            return (
+              <button key={t.v} onClick={() => setTab(t.v)} style={{ padding: "8px 16px", borderRadius: 99, background: on ? "rgba(245,166,35,0.12)" : "rgba(255,255,255,0.04)", border: `1px solid ${on ? "rgba(245,166,35,0.35)" : "rgba(255,255,255,0.06)"}`, color: on ? "#F5A623" : "rgba(255,255,255,0.7)", fontSize: 13, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 6, minHeight: 36, fontFamily: "inherit" }}>
+                {t.l}
+                <span style={{ padding: "1px 7px", borderRadius: 99, background: on ? "rgba(245,166,35,0.2)" : "rgba(255,255,255,0.06)", fontSize: 10.5, fontWeight: 800 }}>{t.c}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Job list */}
+      <div style={{ flex: 1, overflowY: "auto", padding: "4px 20px 100px", display: "flex", flexDirection: "column", gap: 10 }}>
+        {jobsLoading && [...Array(4)].map((_, i) => (
+          <div key={i} style={{ height: 100, borderRadius: 14, background: "rgba(255,255,255,0.04)", opacity: 1 - i * 0.15 }}/>
+        ))}
+        {!jobsLoading && mobileJobs.map((job) => (
+          <MobileJobCard
+            key={job.id}
+            job={job}
+            matchPct={isDriver && driverForMatch ? (matchDataMap[job.id]?.score ?? null) : null}
+            isSaved={savedJobIds.has(job.id)}
+            onToggleSave={handleToggleSave}
+          />
+        ))}
+        {!jobsLoading && mobileJobs.length === 0 && (
+          <div style={{ padding: "40px 20px", textAlign: "center", background: "#0a1414", border: "1px dashed rgba(255,255,255,0.07)", borderRadius: 14 }}>
+            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.55)" }}>Inga jobb hittades</div>
+          </div>
+        )}
+      </div>
+
+      {/* Filter bottom sheet */}
+      <BottomSheet
+        open={filterSheetOpen}
+        onClose={() => setFilterSheetOpen(false)}
+        title="Filter"
+        footerLeft={{ label: "Rensa", onClick: () => setMobileFilters({ license: "", employment: "", jobType: "", region: "" }) }}
+        footerRight={{ label: "Visa resultat", onClick: () => setFilterSheetOpen(false) }}
+      >
+        {FILTER_SECTIONS.map((sec) => (
+          <div key={sec.key} style={{ marginBottom: 24 }}>
+            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "rgba(255,255,255,0.5)", marginBottom: 10 }}>{sec.title}</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+              {sec.items.map((item) => {
+                const on = mobileFilters[sec.key] === item.v;
+                return (
+                  <button key={item.v} onClick={() => setMobileFilters((f) => ({ ...f, [sec.key]: f[sec.key] === item.v ? "" : item.v }))} style={{ padding: "9px 16px", borderRadius: 99, background: on ? "rgba(245,166,35,0.12)" : "rgba(255,255,255,0.04)", border: `1px solid ${on ? "rgba(245,166,35,0.4)" : "rgba(255,255,255,0.07)"}`, color: on ? "#F5A623" : "rgba(255,255,255,0.75)", fontSize: 13, fontWeight: on ? 700 : 600, cursor: "pointer", minHeight: 44, fontFamily: "inherit" }}>
+                    {item.l}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </BottomSheet>
+    </div>
+  );
 
   return (
     <div style={{ minHeight: "100vh", background: "#060f0f", marginTop: "-64px" }}>

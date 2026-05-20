@@ -120,6 +120,8 @@ export default function CompanyPublicProfile() {
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [messaging, setMessaging] = useState(false);
+  const [mobileTab, setMobileTab] = useState("about");
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -213,6 +215,243 @@ export default function CompanyPublicProfile() {
     ...(displayLocation ? { address: { "@type": "PostalAddress", addressLocality: company.location || undefined, addressRegion: company.region || undefined, addressCountry: "SE" } } : {}),
     ...(reviewCount > 0 ? { aggregateRating: { "@type": "AggregateRating", ratingValue: rating, reviewCount, bestRating: 5, worstRating: 1 } } : {}),
   };
+
+  if (isMobile) {
+    const mobileTabs = [
+      { v: "about", l: "Om" },
+      { v: "jobs", l: `Lediga (${company.jobs.length})` },
+      { v: "reviews", l: `Omdömen (${reviewCount})` },
+    ];
+
+    const StatBox = ({ v, l, sub, accent, accent2 }) => (
+      <div style={{ flex: 1, padding: "10px 8px", background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 11, textAlign: "center" }}>
+        <div style={{ fontSize: 16, fontWeight: 800, color: accent ? "#F5A623" : accent2 ? "#4ade80" : "#fff", marginBottom: 2 }}>{v}</div>
+        <div style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", fontWeight: 600 }}>{l}</div>
+        {sub && <div style={{ fontSize: 9, color: "rgba(255,255,255,0.35)", marginTop: 1 }}>{sub}</div>}
+      </div>
+    );
+
+    return (
+      <div style={{ position: "fixed", inset: 0, background: "#060f0f", color: "#fff", display: "flex", flexDirection: "column", zIndex: 1 }}>
+        <PageMeta
+          title={`${company.name} – STP`}
+          description={metaDescription}
+          canonical={`/foretag/${company.id}`}
+          jsonLd={jsonLd}
+        />
+        <div
+          onScroll={(e) => setScrolled(e.currentTarget.scrollTop > 80)}
+          style={{ flex: 1, overflowY: "auto", paddingBottom: "max(env(safe-area-inset-bottom), 80px)" }}
+        >
+          {/* Cover with sticky top bar */}
+          <div style={{ position: "relative", height: 120, background: `linear-gradient(135deg, ${color} 0%, #1F5F5C 100%)` }}>
+            <div style={{
+              position: "sticky", top: 0, padding: "48px 14px 6px",
+              display: "flex", alignItems: "center", justifyContent: "space-between", zIndex: 10,
+              background: scrolled ? "rgba(6,15,15,0.92)" : "transparent",
+              backdropFilter: scrolled ? "blur(14px)" : "none",
+              borderBottom: scrolled ? "1px solid rgba(255,255,255,0.06)" : "none",
+              transition: "all .2s",
+            }}>
+              <button onClick={() => navigate(-1)} style={{ width: 40, height: 40, borderRadius: 99, background: "rgba(0,0,0,0.4)", backdropFilter: "blur(10px)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", flexShrink: 0 }}>
+                <Icon n="back" s={18} />
+              </button>
+              {scrolled && (
+                <div style={{ flex: 1, padding: "0 12px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 14, fontWeight: 800 }}>
+                  {company.name}
+                </div>
+              )}
+              <div style={{ display: "flex", gap: 7 }}>
+                {user && (
+                  <button onClick={handleToggleSave} disabled={saving} style={{ width: 40, height: 40, borderRadius: 99, background: "rgba(0,0,0,0.4)", backdropFilter: "blur(10px)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: saved ? "#F5A623" : "#fff" }}>
+                    <Icon n="heart" s={16} filled={saved} c={saved ? "#F5A623" : "#fff"} />
+                  </button>
+                )}
+                <button
+                  onClick={() => navigator.share?.({ title: company.name, url: window.location.href }).catch(() => navigator.clipboard?.writeText(window.location.href))}
+                  style={{ width: 40, height: 40, borderRadius: 99, background: "rgba(0,0,0,0.4)", backdropFilter: "blur(10px)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff" }}
+                >
+                  <Icon n="share" s={15} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Identity */}
+          <div style={{ padding: "0 20px", marginTop: -40 }}>
+            <div style={{ marginBottom: 14 }}>
+              <div style={{ width: 78, height: 78, borderRadius: 18, background: color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 24, color: "#F5A623", letterSpacing: -1, border: "4px solid #060f0f", boxShadow: "0 8px 24px rgba(0,0,0,0.5)" }}>
+                {companyInitials(company.name)}
+              </div>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 4 }}>
+              <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: -0.7, color: "#f0faf9", margin: 0 }}>{company.name}</h1>
+              {company.verified && <Icon n="check" s={14} c="#4ade80" />}
+            </div>
+            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", display: "flex", alignItems: "center", gap: 6, marginBottom: 14, flexWrap: "wrap" }}>
+              {displayLocation && <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}><Icon n="pin" s={11} /> {displayLocation}</span>}
+              {company.foundedYear && (
+                <><span style={{ color: "rgba(255,255,255,0.2)" }}>·</span><span>grundat {company.foundedYear}</span></>
+              )}
+            </div>
+
+            {/* Stats strip */}
+            <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+              <StatBox v={rating ?? "—"} l="Betyg" sub={reviewCount > 0 ? `${reviewCount} omd.` : "0 omd."} accent />
+              {company.employeeCount ? <StatBox v={company.employeeCount} l="Förare" /> : null}
+              {company.fleet ? <StatBox v={company.fleet} l="Fordon" /> : null}
+              <StatBox v={company.jobs.length} l="Lediga" accent2 />
+            </div>
+
+            {/* CTAs */}
+            <div style={{ display: "flex", gap: 8, marginBottom: 18 }}>
+              {user && (
+                <button onClick={handleToggleSave} disabled={saving} style={{ flex: 1, padding: "13px", borderRadius: 12, background: saved ? "rgba(245,166,35,0.1)" : "rgba(255,255,255,0.04)", border: `1px solid ${saved ? "rgba(245,166,35,0.35)" : "rgba(255,255,255,0.08)"}`, color: saved ? "#F5A623" : "rgba(255,255,255,0.85)", fontSize: 13, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, minHeight: 46, fontFamily: "inherit" }}>
+                  <Icon n="heart" s={13} filled={saved} c={saved ? "#F5A623" : "rgba(255,255,255,0.85)"} />{saved ? "Följer" : "Följ"}
+                </button>
+              )}
+              {!user && (
+                <Link to="/login" state={{ from: `/foretag/${company.id}` }} style={{ flex: 1, padding: "13px", borderRadius: 12, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.85)", fontSize: 13, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, minHeight: 46, textDecoration: "none" }}>
+                  Logga in för kontakt
+                </Link>
+              )}
+              {isDriver && (
+                <button onClick={handleMessage} disabled={messaging} style={{ flex: 1, padding: "13px", borderRadius: 12, background: "linear-gradient(135deg,#F5A623,#d97706)", border: "none", color: "#000", fontSize: 13, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, boxShadow: "0 4px 18px rgba(245,166,35,0.25)", minHeight: 46, fontFamily: "inherit" }}>
+                  <Icon n="msg" s={13} c="#000" />Skicka meddelande
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Sticky tab bar */}
+          <div style={{ display: "flex", borderBottom: "1px solid rgba(255,255,255,0.06)", position: "sticky", top: scrolled ? 52 : 0, background: "rgba(6,15,15,0.96)", backdropFilter: "blur(14px)", zIndex: 5, padding: "0 20px" }}>
+            {mobileTabs.map(tab => {
+              const on = mobileTab === tab.v;
+              return (
+                <button key={tab.v} onClick={() => setMobileTab(tab.v)} style={{ padding: "12px 0", marginRight: 22, background: "transparent", border: "none", color: on ? "#F5A623" : "rgba(255,255,255,0.55)", fontSize: 13.5, fontWeight: on ? 800 : 600, cursor: "pointer", borderBottom: on ? "2px solid #F5A623" : "2px solid transparent", marginBottom: -1, fontFamily: "inherit" }}>
+                  {tab.l}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Tab content */}
+          <div style={{ padding: "20px" }}>
+            {mobileTab === "about" && (
+              <>
+                <p style={{ fontSize: 14, lineHeight: 1.6, color: "rgba(255,255,255,0.8)", marginBottom: 18, whiteSpace: "pre-line" }}>
+                  {company.description || "Företaget har inte lagt till någon presentation ännu."}
+                </p>
+                {company.bransch?.length > 0 && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 24 }}>
+                    {company.bransch.map(b => (
+                      <span key={b} style={{ padding: "6px 12px", borderRadius: 99, background: "rgba(31,95,92,0.3)", color: "#7dd3c8", fontSize: 12, fontWeight: 700 }}>
+                        {getBranschLabel(b)}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginBottom: 12 }}>Fakta</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {[
+                    company.employeeCount ? { t: `${company.employeeCount} anställda`, d: "Personal" } : null,
+                    company.fleet ? { t: `${company.fleet} fordon`, d: "Fordonsflotta" } : null,
+                    company.foundedYear ? { t: `Grundat ${company.foundedYear}`, d: "Etablerat" } : null,
+                    displayLocation ? { t: displayLocation, d: "Ort" } : null,
+                    company.website ? { t: company.website.replace(/^https?:\/\//, "").split("/")[0], d: "Webbplats" } : null,
+                  ].filter(Boolean).map((b, i) => (
+                    <div key={i} style={{ display: "flex", gap: 12, padding: "14px 16px", background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 12 }}>
+                      <div style={{ width: 32, height: 32, borderRadius: 10, background: "rgba(74,222,128,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <Icon n="check" s={14} c="#4ade80" />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 13.5, fontWeight: 700, marginBottom: 2 }}>{b.t}</div>
+                        <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.55)" }}>{b.d}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {mobileTab === "jobs" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {company.jobs.length === 0 ? (
+                  <div style={{ padding: "40px 0", textAlign: "center" }}>
+                    <p style={{ fontSize: 13, color: "rgba(255,255,255,0.4)" }}>Inga aktiva jobb just nu.</p>
+                  </div>
+                ) : company.jobs.map(job => {
+                  const match = (isDriver && profile) ? matchScore(profile, job) : null;
+                  const pct = match?.pct ?? null;
+                  const mc = pct !== null ? (pct >= 85 ? "#4ade80" : pct >= 70 ? "#F5A623" : "rgba(255,255,255,0.5)") : null;
+                  return (
+                    <Link key={job.id} to={`/jobb/${job.id}`} style={{ display: "block", background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 12, padding: "14px 16px", textDecoration: "none", color: "inherit" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10, marginBottom: 8 }}>
+                        <div style={{ fontSize: 14, fontWeight: 800, flex: 1, color: "#f0faf9" }}>{job.title}</div>
+                        {pct !== null && <div style={{ padding: "3px 8px", borderRadius: 6, background: `${mc}1a`, color: mc, fontSize: 11.5, fontWeight: 800, flexShrink: 0 }}>{pct}%</div>}
+                      </div>
+                      <div style={{ fontSize: 12, color: "rgba(255,255,255,0.55)", display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                        {(job.location || job.region) && (
+                          <span style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                            <Icon n="pin" s={10} />{[job.location, job.region].filter(Boolean).join(", ")}
+                          </span>
+                        )}
+                        {job.salaryMin && (
+                          <><span style={{ color: "rgba(255,255,255,0.2)" }}>·</span><span style={{ fontWeight: 700, color: "#fff" }}>{job.salaryMin}–{job.salaryMax} kr/mån</span></>
+                        )}
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+
+            {mobileTab === "reviews" && (
+              <>
+                {rating && (
+                  <div style={{ padding: "16px 18px", background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 14, display: "flex", alignItems: "center", gap: 14, marginBottom: 14 }}>
+                    <div style={{ fontSize: 34, fontWeight: 800, color: "#F5A623", lineHeight: 1 }}>{rating}</div>
+                    <div>
+                      <Stars rating={rating} size={13} />
+                      <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.5)", marginTop: 3 }}>{reviewCount} omdömen från förare</div>
+                    </div>
+                  </div>
+                )}
+                {reviewSummary?.recent?.length > 0 ? (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    {reviewSummary.recent.map(r => (
+                      <div key={r.id} style={{ background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 12, padding: "14px 16px" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, gap: 10 }}>
+                          <div>
+                            <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2 }}>{r.authorName || "Verifierad förare"}</div>
+                            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }}>
+                              Förare · {new Date(r.createdAt).toLocaleDateString("sv-SE", { month: "short", year: "numeric" })}
+                            </div>
+                          </div>
+                          <Stars rating={r.rating} size={11} />
+                        </div>
+                        {r.comment && <p style={{ fontSize: 12.5, color: "rgba(255,255,255,0.75)", lineHeight: 1.55, margin: 0 }}>{r.comment}</p>}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ padding: "40px 0", textAlign: "center" }}>
+                    <p style={{ fontSize: 13, color: "rgba(255,255,255,0.4)" }}>Inga omdömen ännu.</p>
+                    {isDriver && (
+                      <p style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", marginTop: 6 }}>
+                        Har du jobbat här?{" "}
+                        <Link to="/meddelanden" style={{ color: "#6ee7e7", textDecoration: "none" }}>Lämna ett omdöme →</Link>
+                      </p>
+                    )}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <main style={{ background: "#060f0f", minHeight: "100vh", marginTop: "-64px", paddingTop: 64, paddingBottom: 80 }}>

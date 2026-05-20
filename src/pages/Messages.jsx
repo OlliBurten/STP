@@ -497,7 +497,7 @@ export default function Messages() {
   };
 
   return (
-    <main style={{ background: "#060f0f", height: "calc(100vh - 64px)", marginTop: "-64px", paddingTop: 64, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+    <main style={{ background: "#060f0f", height: isMobile ? "100vh" : "calc(100vh - 64px)", marginTop: isMobile ? 0 : "-64px", paddingTop: isMobile ? 0 : 64, display: "flex", flexDirection: "column", overflow: "hidden" }}>
 
       {/* Banners */}
       {!isDriver && companyUnreadConversationCount > 0 && (
@@ -517,16 +517,27 @@ export default function Messages() {
 
           {/* ── Sidebar ── */}
           <div
-            style={{ display: id ? "none" : "flex", width: isMobile ? "100%" : "clamp(300px, 38%, 400px)", background: "#070d0d", borderRight: "1px solid rgba(255,255,255,0.06)", flexDirection: "column", overflow: "hidden", flexShrink: 0 }}
+            style={{ display: id ? "none" : "flex", width: isMobile ? "100%" : "clamp(300px, 38%, 400px)", background: isMobile ? "#060f0f" : "#070d0d", borderRight: "1px solid rgba(255,255,255,0.06)", flexDirection: "column", overflow: "hidden", flexShrink: 0 }}
             className="sidebar-panel"
           >
-            <div style={{ padding: "22px 22px 14px", borderBottom: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-                <h1 style={{ fontSize: 20, fontWeight: 900, color: "#f0faf9", letterSpacing: -0.5 }}>
+            {isMobile && isDriver && (
+              <div style={{ padding: "10px 18px 4px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
+                <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontWeight: 800, letterSpacing: -0.8, fontSize: 22, color: "#fff" }}>STP</div>
+                <div style={{ width: 34, height: 34, borderRadius: 99, background: "linear-gradient(135deg,#F5A623,#d97706)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 12, color: "#000" }}>
+                  {avatarInitials(user?.name || "")}
+                </div>
+              </div>
+            )}
+            <div style={{ padding: isMobile ? "4px 20px 12px" : "22px 22px 14px", borderBottom: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: isMobile ? 6 : 14 }}>
+                <h1 style={{ fontSize: isMobile ? 26 : 20, fontWeight: isMobile ? 800 : 900, color: "#f0faf9", letterSpacing: isMobile ? -1 : -0.5 }}>
                   {isDriver ? "Inkorg" : "Konversationer"}
                 </h1>
-                <span style={{ fontSize: 12, color: "rgba(240,250,249,0.4)" }}>{allConversations.length} totalt</span>
+                {!isMobile && <span style={{ fontSize: 12, color: "rgba(240,250,249,0.4)" }}>{allConversations.length} totalt</span>}
               </div>
+              {isMobile && isDriver && (
+                <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.55)", marginBottom: 10 }}>{unreadCount > 0 ? `${unreadCount} olästa meddelanden` : "Inga olästa meddelanden"}</div>
+              )}
 
               {/* Company filter */}
               {!isDriver && companies.length > 1 && (
@@ -541,16 +552,17 @@ export default function Messages() {
 
               {/* Stage filter pills */}
               {isDriver && (
-                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                <div style={{ display: "flex", gap: 6, flexWrap: isMobile ? "nowrap" : "wrap", overflowX: isMobile ? "auto" : "visible" }}>
                   {STAGE_FILTERS.map(({ k, l, c }) => {
                     const active = stageFilter === k;
                     return (
                       <button
                         key={k}
                         onClick={() => setStageFilter(k)}
-                        style={{ padding: "6px 11px", borderRadius: 99, background: active ? "rgba(245,166,35,0.12)" : "rgba(255,255,255,0.04)", border: active ? "1px solid rgba(245,166,35,0.3)" : "1px solid rgba(255,255,255,0.05)", color: active ? "#F5A623" : "rgba(240,250,249,0.6)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}
+                        style={{ padding: isMobile ? "8px 14px" : "6px 11px", borderRadius: 99, background: active ? "rgba(245,166,35,0.12)" : "rgba(255,255,255,0.04)", border: active ? "1px solid rgba(245,166,35,0.35)" : "1px solid rgba(255,255,255,0.06)", color: active ? "#F5A623" : "rgba(240,250,249,0.6)", fontSize: isMobile ? 12.5 : 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", flexShrink: 0, display: "flex", alignItems: "center", gap: 5, minHeight: isMobile ? 36 : "auto" }}
                       >
-                        {l}{c > 0 && ` · ${c}`}
+                        {l}
+                        {isMobile ? <span style={{ padding: "1px 6px", borderRadius: 99, background: active ? "rgba(245,166,35,0.2)" : "rgba(255,255,255,0.06)", fontSize: 10, fontWeight: 800 }}>{c}</span> : (c > 0 && ` · ${c}`)}
                       </button>
                     );
                   })}

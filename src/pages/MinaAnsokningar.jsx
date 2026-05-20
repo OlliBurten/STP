@@ -213,6 +213,93 @@ function StatCard({ label, value, color, hint }) {
   );
 }
 
+// ─── Mobile mini-funnel ───────────────────────────────────────────────────────
+function MiniProgressBar({ stage }) {
+  const stageIdx = stage === "rejected" || stage === "selected" ? 3
+    : stage === "review" ? 2 : stage === "seen" ? 1 : 0;
+  const isRejected = stage === "rejected";
+  const steps = ["applied", "seen", "review", "decision"];
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+      {steps.map((s, i) => {
+        const reached = i <= stageIdx;
+        const isLast = i === steps.length - 1;
+        const color = !reached ? "rgba(255,255,255,0.1)"
+          : isLast && stage === "selected" ? "#4ade80"
+          : isLast && isRejected ? "rgba(255,255,255,0.2)"
+          : i <= 1 ? "#60a5fa" : "#F5A623";
+        return (
+          <div key={s} style={{ display: "flex", alignItems: "center", flex: isLast ? 0 : 1, gap: 4 }}>
+            <div style={{ width: 14, height: 14, borderRadius: 99, background: reached ? color : "transparent", border: reached ? "none" : "1.5px dashed rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              {reached && !isRejected && <svg viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" width="8" height="8"><polyline points="20 6 9 17 4 12"/></svg>}
+            </div>
+            {!isLast && <div style={{ flex: 1, height: 2, background: i < stageIdx ? color : "rgba(255,255,255,0.06)", borderRadius: 99 }}/>}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── Mobile app card ───────────────────────────────────────────────────────────
+function MobileAppCard({ conv }) {
+  const stage = getStage(conv);
+  const isSelected = stage === "selected";
+  const isRejected = stage === "rejected";
+  const lastMsg = conv.messages?.[conv.messages.length - 1];
+  const hasUnread = !conv.readByDriverAt && lastMsg?.sender !== "driver" && !!lastMsg;
+  const STAGE_LABEL = { applied: "Skickad", seen: "Sedd", review: "I urval", selected: "Utvald", rejected: "Ej aktuell" };
+  const STAGE_COLOR = { applied: "rgba(255,255,255,0.4)", seen: "#60a5fa", review: "#F5A623", selected: "#4ade80", rejected: "rgba(255,255,255,0.3)" };
+
+  return (
+    <Link
+      to={`/meddelanden/${conv.id}`}
+      style={{
+        display: "block", textDecoration: "none",
+        background: isSelected ? "linear-gradient(135deg, rgba(74,222,128,0.06), rgba(74,222,128,0.01))" : "#0a1414",
+        border: `1px solid ${isSelected ? "rgba(74,222,128,0.25)" : "rgba(255,255,255,0.05)"}`,
+        borderRadius: 14, padding: "16px", opacity: isRejected ? 0.65 : 1,
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 11, marginBottom: 12 }}>
+        <div style={{ position: "relative", flexShrink: 0 }}>
+          <div style={{ width: 42, height: 42, borderRadius: 11, background: avatarBg(conv.companyName), display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 13, color: "#F5A623" }}>{avatarInitials(conv.companyName)}</div>
+          {hasUnread && <div style={{ position: "absolute", top: -3, right: -3, width: 16, height: 16, borderRadius: 99, background: "#F5A623", border: "2px solid #060f0f" }}/>}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
+            <div style={{ fontSize: 13.5, fontWeight: 700, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>{conv.jobTitle || "Okänd tjänst"}</div>
+            <span style={{ padding: "2px 7px", borderRadius: 5, background: `${STAGE_COLOR[stage]}1a`, color: STAGE_COLOR[stage], fontSize: 9.5, fontWeight: 800, letterSpacing: 0.3, flexShrink: 0 }}>{(STAGE_LABEL[stage] || "").toUpperCase()}</span>
+          </div>
+          <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.55)" }}>{conv.companyName}</div>
+        </div>
+      </div>
+
+      <div style={{ marginBottom: 10 }}>
+        <MiniProgressBar stage={stage}/>
+      </div>
+
+      {hasUnread && lastMsg && (
+        <div style={{ padding: "10px 12px", background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.2)", borderRadius: 10, display: "flex", alignItems: "flex-start", gap: 9 }}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="12" height="12" style={{ flexShrink: 0, marginTop: 1 }}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 10.5, fontWeight: 800, color: "#4ade80", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 }}>Nytt meddelande</div>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.85)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lastMsg.content}</div>
+          </div>
+        </div>
+      )}
+      {!hasUnread && (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 11, color: "rgba(255,255,255,0.4)" }}>
+          <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="10" height="10"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Sökt {formatRel(conv.createdAt)}
+          </span>
+        </div>
+      )}
+    </Link>
+  );
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function MinaAnsokningar() {
   usePageTitle("Mina ansökningar");
@@ -221,6 +308,7 @@ export default function MinaAnsokningar() {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [mobileFilter, setMobileFilter] = useState("all");
 
   useEffect(() => {
     if (!hasApi) { setLoading(false); return; }
@@ -237,6 +325,98 @@ export default function MinaAnsokningar() {
   const rejected = useMemo(() => applications.filter((a) => a._stage === "rejected"), [applications]);
 
   const seenCount = applications.filter((a) => a.readByCompanyAt).length;
+
+  // Mobile filter logic
+  const mobileFiltered = useMemo(() => {
+    if (mobileFilter === "action") return applications.filter((a) => {
+      const lm = a.messages?.[a.messages?.length - 1];
+      return a._stage === "selected" || (!a.readByDriverAt && lm?.sender !== "driver" && !!lm);
+    });
+    if (mobileFilter === "active") return applications.filter((a) => a._stage !== "rejected");
+    if (mobileFilter === "closed") return applications.filter((a) => a._stage === "rejected");
+    return applications;
+  }, [applications, mobileFilter]);
+
+  const actionCount = useMemo(() => applications.filter((a) => {
+    const lm = a.messages?.[a.messages?.length - 1];
+    return a._stage === "selected" || (!a.readByDriverAt && lm?.sender !== "driver" && !!lm);
+  }).length, [applications]);
+
+  // ── Mobile layout ────────────────────────────────────────────────────────
+  if (isMobile) {
+    const mobileFilters = [
+      { v: "all", l: "Alla", c: applications.length },
+      { v: "action", l: "Åtgärd", c: actionCount },
+      { v: "active", l: "Aktiva", c: active.length + selected.length },
+      { v: "closed", l: "Avslutade", c: rejected.length },
+    ];
+
+    return (
+      <div style={{ background: "#060f0f", minHeight: "100vh", color: "#fff", paddingBottom: 80 }}>
+        <PageMeta title="Mina ansökningar – STP" />
+
+        {/* Header */}
+        <div style={{ padding: "10px 18px 4px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontWeight: 800, letterSpacing: -0.8, fontSize: 22, color: "#fff" }}>STP</div>
+          <div style={{ width: 34, height: 34, borderRadius: 99, background: "linear-gradient(135deg,#F5A623,#d97706)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 12, color: "#000" }}>
+            {avatarInitials("")}
+          </div>
+        </div>
+
+        {/* Title */}
+        <div style={{ padding: "4px 20px 14px" }}>
+          <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: -1, marginBottom: 4 }}>Mina ansökningar</h1>
+          <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.55)" }}>{applications.length} totalt · {active.length + selected.length} aktiva</div>
+        </div>
+
+        {/* Action banner */}
+        {selected.length > 0 && (
+          <div style={{ margin: "0 20px 14px", padding: "14px 16px", borderRadius: 14, background: "linear-gradient(135deg, rgba(74,222,128,0.12), rgba(74,222,128,0.02))", border: "1px solid rgba(74,222,128,0.3)", display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ width: 38, height: 38, borderRadius: 99, background: "rgba(74,222,128,0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.8, color: "#4ade80", textTransform: "uppercase", marginBottom: 2 }}>Åtgärd krävs</div>
+              <div style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.3 }}>
+                {selected.length === 1 ? `${selected[0].companyName} vill träffa dig` : `${selected.length} åkerier vill träffa dig`}
+              </div>
+            </div>
+            <svg viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </div>
+        )}
+
+        {/* Filter chips */}
+        <div style={{ padding: "0 20px 14px", display: "flex", gap: 6, overflowX: "auto" }}>
+          {mobileFilters.map((f) => {
+            const on = mobileFilter === f.v;
+            return (
+              <button key={f.v} onClick={() => setMobileFilter(f.v)} style={{ flexShrink: 0, padding: "8px 14px", borderRadius: 99, background: on ? "rgba(245,166,35,0.12)" : "rgba(255,255,255,0.04)", border: `1px solid ${on ? "rgba(245,166,35,0.35)" : "rgba(255,255,255,0.06)"}`, color: on ? "#F5A623" : "rgba(255,255,255,0.7)", fontSize: 12.5, fontWeight: 700, cursor: "pointer", minHeight: 36, display: "flex", alignItems: "center", gap: 5, fontFamily: "inherit" }}>
+                {f.l}
+                <span style={{ padding: "1px 6px", borderRadius: 99, background: on ? "rgba(245,166,35,0.2)" : "rgba(255,255,255,0.06)", fontSize: 10, fontWeight: 800 }}>{f.c}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* List */}
+        <div style={{ padding: "0 20px", display: "flex", flexDirection: "column", gap: 10 }}>
+          {loading ? (
+            <div style={{ padding: "40px 0", textAlign: "center", color: "rgba(255,255,255,0.4)", fontSize: 14 }}>Hämtar dina ansökningar...</div>
+          ) : error ? (
+            <div style={{ padding: "12px 16px", borderRadius: 10, background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)", color: "#f87171", fontSize: 13 }}>{error}</div>
+          ) : mobileFiltered.length === 0 ? (
+            <div style={{ padding: "60px 20px", textAlign: "center", background: "#0a1414", border: "1px dashed rgba(255,255,255,0.07)", borderRadius: 14, marginTop: 8 }}>
+              <div style={{ fontSize: 13.5, fontWeight: 700, marginBottom: 4 }}>Inga ansökningar här</div>
+              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>Hitta lediga jobb som passar dig</div>
+            </div>
+          ) : (
+            mobileFiltered.map((conv) => <MobileAppCard key={conv.id} conv={conv} />)
+          )}
+        </div>
+      </div>
+    );
+  }
+  // ── End mobile layout ────────────────────────────────────────────────────
 
   return (
     <main style={{ background: "#060f0f", minHeight: "100vh", marginTop: "-64px", paddingTop: 64 }}>

@@ -257,7 +257,7 @@ export default function Apply() {
   const [jobLoading, setJobLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [startDate, setStartDate] = useState("month");
-  const [salaryExp, setSalaryExp] = useState("");
+  const [salaryExp, setSalaryExp] = useState(null);
   const [allowMatch, setAllowMatch] = useState(true);
   const [sending, setSending] = useState(false);
   const [suggesting, setSuggesting] = useState(false);
@@ -342,6 +342,262 @@ export default function Apply() {
   };
 
   const darkPage = { background: "#060f0f", minHeight: "100vh", marginTop: "-64px", color: "#f0faf9" };
+
+  // ── Mobile layout ──────────────────────────────────────────────────────────
+  if (isMobile) {
+    const initials = (job?.company || "?").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+    const salaryDisplay = job?.salaryMin
+      ? job?.salaryMax
+        ? `${job.salaryMin.toLocaleString("sv-SE")} – ${job.salaryMax.toLocaleString("sv-SE")} kr/mån`
+        : `Från ${job.salaryMin.toLocaleString("sv-SE")} kr/mån`
+      : job?.salary || null;
+    const driverInitials = (profile?.name || user?.name || "?").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+    const licenses = profile?.licenses || [];
+    const certsLabels = (profile?.certificates || []).map(getCertificateLabel).filter(Boolean);
+    const pctColor = pct == null ? null : pct >= 85 ? "#4ade80" : pct >= 70 ? "#F5A623" : "#60a5fa";
+    const pctBg = pct == null ? null : pct >= 85 ? "rgba(74,222,128,0.12)" : pct >= 70 ? "rgba(245,166,35,0.12)" : "rgba(96,165,250,0.12)";
+    const pctBorder = pct == null ? null : pct >= 85 ? "rgba(74,222,128,0.3)" : pct >= 70 ? "rgba(245,166,35,0.3)" : "rgba(96,165,250,0.3)";
+
+    if (jobLoading) {
+      return (
+        <div style={{ background: "#060f0f", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(255,255,255,0.4)", fontSize: 14 }}>
+          Hämtar jobb...
+        </div>
+      );
+    }
+
+    if (submitted) {
+      return (
+        <div style={{ background: "#060f0f", height: "100vh", display: "flex", flexDirection: "column", color: "#f0faf9", position: "fixed", inset: 0, zIndex: 10 }}>
+          {/* Header */}
+          <div style={{ padding: "8px 14px 10px", display: "flex", alignItems: "center", flexShrink: 0 }}>
+            <Link to="/jobb" style={{ width: 42, height: 42, borderRadius: 99, background: "rgba(255,255,255,0.05)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff" }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            </Link>
+          </div>
+
+          {/* Scrollable content */}
+          <div style={{ flex: 1, overflowY: "auto", padding: "16px 24px 140px" }}>
+            {/* Checkmark */}
+            <div style={{ textAlign: "center", marginBottom: 28 }}>
+              <div style={{ width: 84, height: 84, borderRadius: 99, background: "rgba(74,222,128,0.12)", border: "2px solid rgba(74,222,128,0.35)", display: "flex", alignItems: "center", justifyContent: "center", margin: "24px auto 18px", animation: "checkBounce .55s cubic-bezier(.34,1.56,.64,1) both" }}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" width="40" height="40"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: -0.8, marginBottom: 10, lineHeight: 1.2 }}>Ansökan skickad!</h1>
+              <p style={{ fontSize: 14, color: "rgba(255,255,255,0.65)", lineHeight: 1.55, maxWidth: 280, margin: "0 auto" }}>
+                {job?.company} har fått din ansökan. Du hör vanligtvis tillbaka inom 2 dagar.
+              </p>
+            </div>
+
+            {/* What now */}
+            <div style={{ background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 14, padding: "4px", marginBottom: 16 }}>
+              {[
+                { num: 1, title: "Vi notifierar dig direkt", desc: "Push och e-post när åkeriet öppnar ansökan" },
+                { num: 2, title: "Åkeriet granskar", desc: "Tar vanligen 1–2 arbetsdagar" },
+                { num: 3, title: "Ni får kontakt", desc: "Via Inkorgen om de vill träffas" },
+              ].map((s, i, arr) => (
+                <div key={s.num} style={{ display: "flex", gap: 14, padding: "14px 14px", borderBottom: i < arr.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none", alignItems: "flex-start" }}>
+                  <div style={{ width: 24, height: 24, borderRadius: 99, background: "rgba(245,166,35,0.12)", color: "#F5A623", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, flexShrink: 0 }}>{s.num}</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 700, marginBottom: 2 }}>{s.title}</div>
+                    <div style={{ fontSize: 12, color: "rgba(255,255,255,0.55)" }}>{s.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Tips */}
+            <div style={{ background: "linear-gradient(135deg, rgba(245,166,35,0.05), rgba(245,166,35,0.01))", border: "1px solid rgba(245,166,35,0.2)", borderRadius: 13, padding: "14px 16px", display: "flex", gap: 10, alignItems: "flex-start" }}>
+              <svg viewBox="0 0 24 24" fill="#F5A623" width="14" height="14" style={{ flexShrink: 0, marginTop: 1 }}><path d="M12 2l2.4 7.6H22l-6.2 4.5 2.4 7.6L12 17.2l-6.2 4.5 2.4-7.6L2 9.6h7.6z"/></svg>
+              <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.7)", lineHeight: 1.55 }}>
+                <strong style={{ color: "#F5A623" }}>Tips:</strong> Kolla in fler jobb som matchar din profil.
+              </div>
+            </div>
+          </div>
+
+          {/* Sticky CTAs */}
+          <div style={{ padding: "12px 20px max(env(safe-area-inset-bottom), 24px)", background: "rgba(6,15,15,0.95)", backdropFilter: "blur(16px)", borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", flexDirection: "column", gap: 8, flexShrink: 0 }}>
+            <Link to="/jobb" style={{ width: "100%", padding: "15px", borderRadius: 14, background: "linear-gradient(135deg,#F5A623,#d97706)", color: "#000", fontSize: 14.5, fontWeight: 800, textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
+              Fortsätt sök fler jobb
+              <svg viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </Link>
+            <Link to="/mina-ansokningar" style={{ width: "100%", padding: "13px", borderRadius: 14, background: "transparent", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.85)", fontSize: 13.5, fontWeight: 700, textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              Se mina ansökningar
+            </Link>
+          </div>
+          <style>{`@keyframes checkBounce{0%{transform:scale(0)}60%{transform:scale(1.15)}100%{transform:scale(1)}}`}</style>
+        </div>
+      );
+    }
+
+    return (
+      <div style={{ background: "#060f0f", height: "100vh", display: "flex", flexDirection: "column", color: "#f0faf9", position: "fixed", inset: 0, zIndex: 10 }}>
+        {/* Header */}
+        <div style={{ padding: "8px 14px 12px", display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+          <button
+            onClick={() => navigate(`/jobb/${id}`)}
+            style={{ width: 42, height: 42, borderRadius: 99, background: "rgba(255,255,255,0.05)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", flexShrink: 0 }}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          </button>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginBottom: 2 }}>Ansök till</div>
+            <div style={{ fontSize: 14, fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{job?.title}</div>
+          </div>
+        </div>
+
+        {/* Scrollable body */}
+        <div style={{ flex: 1, overflowY: "auto", padding: "4px 20px 130px" }}>
+          {/* Job summary card */}
+          <div style={{ background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 14, padding: "14px 16px", marginBottom: 20, display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ width: 44, height: 44, borderRadius: 11, background: "#1F5F5C", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 13, color: "#F5A623", flexShrink: 0 }}>{initials}</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 13.5, fontWeight: 700 }}>{job?.company}</div>
+              <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.55)", display: "flex", alignItems: "center", gap: 4, marginTop: 2 }}>
+                {job?.location && <><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="10" height="10"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>{job.location}</>}
+                {salaryDisplay && <span style={{ color: "rgba(255,255,255,0.4)" }}>{job?.location ? " · " : ""}{salaryDisplay}</span>}
+              </div>
+            </div>
+            {pct != null && (
+              <div style={{ width: 42, height: 42, borderRadius: 99, background: pctBg, border: `1.5px solid ${pctBorder}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: pctColor, flexShrink: 0 }}>{pct}%</div>
+            )}
+          </div>
+
+          {/* Profile preview */}
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginBottom: 10, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <span>Din profil — så ser åkeriet dig</span>
+              <Link to="/profil" style={{ background: "transparent", border: "none", color: "#F5A623", fontSize: 11, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 4, textDecoration: "none", letterSpacing: 0 }}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="11" height="11"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                Ändra
+              </Link>
+            </div>
+            <div style={{ background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 14, padding: "16px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+                <div style={{ width: 48, height: 48, borderRadius: 99, background: "linear-gradient(135deg,#F5A623,#d97706)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 14, color: "#000", flexShrink: 0 }}>{driverInitials}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 14.5, fontWeight: 800 }}>{profile?.name || user?.name}</div>
+                  <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.55)" }}>
+                    {[profile?.region, profile?.experience && `${calcYearsExperience(profile.experience)} år erf.`].filter(Boolean).join(" · ")}
+                  </div>
+                </div>
+              </div>
+              {(licenses.length > 0 || certsLabels.length > 0) && (
+                <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                  {licenses.map((l) => <span key={l} style={{ padding: "3px 9px", borderRadius: 99, background: "rgba(31,95,92,0.3)", color: "#7dd3c8", fontSize: 11, fontWeight: 700 }}>{l}</span>)}
+                  {certsLabels.map((c) => <span key={c} style={{ padding: "3px 9px", borderRadius: 99, background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.7)", fontSize: 11, fontWeight: 600 }}>{c}</span>)}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Personal message */}
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginBottom: 8 }}>
+              Personligt meddelande <span style={{ color: "rgba(255,255,255,0.3)", fontWeight: 600, textTransform: "none", letterSpacing: 0 }}>(valfritt)</span>
+            </div>
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value.slice(0, MAX_MSG))}
+              placeholder="Berätta kort varför du söker detta jobb. Åkerier som får ett personligt meddelande svarar 2× snabbare."
+              rows={4}
+              style={{ width: "100%", padding: "14px 16px", borderRadius: 13, background: "#0a1414", border: "1px solid rgba(255,255,255,0.07)", color: "#fff", fontSize: 14, lineHeight: 1.5, fontFamily: "inherit", resize: "none", outline: "none" }}
+            />
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 6 }}>
+              <button
+                type="button"
+                onClick={handleSuggest}
+                disabled={suggesting}
+                style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 11px", borderRadius: 99, background: "rgba(31,95,92,0.2)", border: "1px solid rgba(31,95,92,0.35)", color: suggesting ? "rgba(110,231,231,0.35)" : "#6ee7e7", fontSize: 11.5, fontWeight: 600, cursor: suggesting ? "not-allowed" : "pointer", fontFamily: "inherit" }}
+              >
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="#6ee7e7"><path d="M12 2l2.4 7.6H22l-6.2 4.5 2.4 7.6L12 17.2l-6.2 4.5 2.4-7.6L2 9.6h7.6z"/></svg>
+                {suggesting ? "Skriver..." : "AI-förslag"}
+              </button>
+              <span style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>{message.length} / {MAX_MSG}</span>
+            </div>
+          </div>
+
+          {/* When can you start */}
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginBottom: 8 }}>När kan du börja?</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+              {[
+                { k: "now", l: "Direkt" },
+                { k: "2w", l: "Om 2 veckor" },
+                { k: "month", l: "Om 1 månad" },
+                { k: "date", l: "Efter ök." },
+              ].map((o) => {
+                const on = startDate === o.k;
+                return (
+                  <button
+                    key={o.k}
+                    type="button"
+                    onClick={() => setStartDate(o.k)}
+                    style={{ padding: "14px 12px", borderRadius: 12, background: on ? "rgba(245,166,35,0.1)" : "#0a1414", border: `1px solid ${on ? "rgba(245,166,35,0.4)" : "rgba(255,255,255,0.07)"}`, color: on ? "#F5A623" : "rgba(255,255,255,0.8)", fontSize: 13.5, fontWeight: 700, cursor: "pointer", minHeight: 48, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, fontFamily: "inherit" }}
+                  >
+                    {on && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" width="11" height="11"><polyline points="20 6 9 17 4 12"/></svg>}
+                    {o.l}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Salary (optional) */}
+          <div style={{ marginBottom: 24 }}>
+            <button
+              type="button"
+              onClick={() => setSalaryExp(salaryExp === null ? "" : null)}
+              style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 16px", width: "100%", borderRadius: 13, background: "#0a1414", border: `1px solid ${salaryExp !== null ? "rgba(245,166,35,0.3)" : "rgba(255,255,255,0.07)"}`, color: "#fff", cursor: "pointer", textAlign: "left", minHeight: 48, fontFamily: "inherit" }}
+            >
+              <div style={{ width: 20, height: 20, borderRadius: 6, border: `2px solid ${salaryExp !== null ? "#F5A623" : "rgba(255,255,255,0.2)"}`, background: salaryExp !== null ? "#F5A623" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                {salaryExp !== null && <svg viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" width="10" height="10"><polyline points="20 6 9 17 4 12"/></svg>}
+              </div>
+              <span style={{ flex: 1, fontSize: 13.5, fontWeight: 600 }}>Inkludera mitt lönekrav</span>
+            </button>
+            {salaryExp !== null && (
+              <div style={{ marginTop: 10 }}>
+                <input
+                  value={salaryExp}
+                  onChange={(e) => setSalaryExp(e.target.value)}
+                  placeholder="t.ex. 38 000 kr/mån"
+                  style={{ width: "100%", padding: "14px 16px", borderRadius: 13, background: "#0a1414", border: "1px solid rgba(255,255,255,0.07)", color: "#fff", fontSize: 14, outline: "none", minHeight: 48, fontFamily: "inherit" }}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Info banner */}
+          <div style={{ background: "rgba(96,165,250,0.06)", border: "1px solid rgba(96,165,250,0.2)", borderRadius: 13, padding: "14px 16px", display: "flex", gap: 11, alignItems: "flex-start", marginBottom: 8 }}>
+            <svg viewBox="0 0 24 24" fill="#60a5fa" width="14" height="14" style={{ flexShrink: 0, marginTop: 1 }}><path d="M12 2l2.4 7.6H22l-6.2 4.5 2.4 7.6L12 17.2l-6.2 4.5 2.4-7.6L2 9.6h7.6z"/></svg>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", lineHeight: 1.5 }}>
+              Din profil skickas till {job?.company}. Du hör tillbaka via Inkorgen — vanligtvis inom 2 dagar.
+            </div>
+          </div>
+
+          {error && (
+            <div style={{ marginTop: 12, padding: "12px 16px", borderRadius: 10, background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)", color: "#f87171", fontSize: 13 }}>
+              {error}
+            </div>
+          )}
+        </div>
+
+        {/* Sticky submit */}
+        <div style={{ padding: "12px 20px max(env(safe-area-inset-bottom), 24px)", background: "rgba(6,15,15,0.95)", backdropFilter: "blur(16px)", borderTop: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={sending || !job?.userId}
+            style={{ width: "100%", padding: "16px", borderRadius: 14, background: !sending ? "linear-gradient(135deg,#F5A623,#d97706)" : "rgba(255,255,255,0.06)", color: !sending ? "#000" : "rgba(255,255,255,0.3)", fontSize: 15, fontWeight: 800, cursor: sending ? "not-allowed" : "pointer", border: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: !sending ? "0 4px 18px rgba(245,166,35,0.3)" : "none", fontFamily: "inherit" }}
+          >
+            {sending ? "Skickar..." : "Skicka ansökan"}
+            {!sending && <svg viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>}
+          </button>
+        </div>
+      </div>
+    );
+  }
+  // ── End mobile layout ──────────────────────────────────────────────────────
 
   if (jobLoading) {
     return (
@@ -474,7 +730,7 @@ export default function Apply() {
                 </div>
                 <input
                   type="text"
-                  value={salaryExp}
+                  value={salaryExp ?? ""}
                   onChange={(e) => setSalaryExp(e.target.value)}
                   placeholder="t.ex. 38 000 kr/mån"
                   style={{ width: "100%", padding: "12px 14px", background: "#0c1818", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 10, fontSize: 14, outline: "none", color: "#f0faf9", fontFamily: "inherit" }}

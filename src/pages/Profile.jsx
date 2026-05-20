@@ -9,7 +9,7 @@ import { fetchProfileTips } from "../api/ai.js";
 import { fetchDriverMarket } from "../api/stats.js";
 import { fetchJobs } from "../api/jobs.js";
 import { licenseTypes, regions } from "../data/mockJobs";
-import { certificateTypes, availabilityTypes } from "../data/profileData";
+import { certificateTypes, certificateGroups, availabilityTypes } from "../data/profileData";
 import { segmentOptions } from "../data/segments";
 import { useToast } from "../context/ToastContext";
 import {
@@ -17,6 +17,7 @@ import {
   isDriverMinimumProfileComplete,
   SUMMARY_MIN_LENGTH,
 } from "../utils/driverProfileRequirements";
+import { calcYearsExperience } from "../utils/profileUtils";
 
 /* ── Design tokens ── */
 const T = {
@@ -735,6 +736,306 @@ export default function Profile() {
     background: T.card, border: `1px solid ${T.border2}`,
     color: T.text, fontSize: 14, fontFamily: T.font, outline: "none",
   };
+
+  // ── Mobile profile view ─────────────────────────────────────────────────
+  if (isMobile && editing) {
+    const mobileInput = {
+      width: "100%", padding: "13px 14px", borderRadius: 12,
+      background: "#0a1414", border: "1px solid rgba(255,255,255,0.08)",
+      color: "#fff", fontSize: 15, fontFamily: "'DM Sans', system-ui, sans-serif",
+      outline: "none",
+    };
+    const SectionLabel = ({ children }) => (
+      <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginBottom: 10, marginTop: 24 }}>
+        {children}
+      </div>
+    );
+
+    return (
+      <div style={{ position: "fixed", inset: 0, background: "#060f0f", color: "#fff", display: "flex", flexDirection: "column", zIndex: 50, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+        {/* Top bar */}
+        <div style={{ padding: "48px 18px 12px", display: "flex", alignItems: "center", gap: 12, background: "rgba(6,15,15,0.96)", backdropFilter: "blur(14px)", borderBottom: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}>
+          <button onClick={cancelEditing} style={{ padding: "8px 14px", borderRadius: 99, background: "rgba(255,255,255,0.05)", border: "none", color: "rgba(255,255,255,0.75)", fontSize: 13.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+            Avbryt
+          </button>
+          <h1 style={{ flex: 1, fontSize: 17, fontWeight: 800, textAlign: "center", margin: 0 }}>Redigera profil</h1>
+          <button
+            onClick={saveProfile}
+            disabled={profileSaving}
+            style={{ padding: "8px 16px", borderRadius: 99, background: profileSaving ? "rgba(245,166,35,0.3)" : "linear-gradient(135deg,#F5A623,#d97706)", border: "none", color: "#000", fontSize: 13.5, fontWeight: 800, cursor: profileSaving ? "default" : "pointer", fontFamily: "inherit" }}
+          >
+            {profileSaving ? "Sparar…" : "Spara"}
+          </button>
+        </div>
+
+        {/* Error */}
+        {profileSaveError && (
+          <div style={{ padding: "10px 18px", background: "rgba(248,113,113,0.1)", borderBottom: "1px solid rgba(248,113,113,0.3)", flexShrink: 0 }}>
+            <p style={{ fontSize: 13, color: "#f87171", margin: 0 }}>{profileSaveError}</p>
+          </div>
+        )}
+
+        {/* Scrollable form */}
+        <div style={{ flex: 1, overflowY: "auto", padding: "4px 20px", paddingBottom: "max(env(safe-area-inset-bottom), 40px)" }}>
+
+          {/* Presentation */}
+          <SectionLabel>Presentation</SectionLabel>
+          <textarea
+            value={current.summary || ""}
+            onChange={(e) => updateDraft({ summary: e.target.value })}
+            rows={4}
+            placeholder="Beskriv dig kort — vad du kört, hur länge, vad du söker. Visas för åkerier."
+            style={{ ...mobileInput, resize: "none", lineHeight: 1.6 }}
+          />
+          <p style={{ fontSize: 11.5, color: "rgba(255,255,255,0.35)", marginTop: 6 }}>
+            {(current.summary || "").length} tecken
+          </p>
+
+          {/* Personuppgifter */}
+          <SectionLabel>Personuppgifter</SectionLabel>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <input
+              type="text"
+              value={current.name || ""}
+              onChange={(e) => updateDraft({ name: e.target.value })}
+              placeholder="Namn"
+              style={mobileInput}
+            />
+            <input
+              type="tel"
+              value={current.phone || ""}
+              onChange={(e) => updateDraft({ phone: e.target.value })}
+              placeholder="Telefonnummer, t.ex. 0701234567"
+              style={mobileInput}
+            />
+            <input
+              type="text"
+              value={current.location || ""}
+              onChange={(e) => updateDraft({ location: e.target.value })}
+              placeholder="Stad, t.ex. Malmö"
+              style={mobileInput}
+            />
+          </div>
+
+          {/* Körkort */}
+          <SectionLabel>Körkort</SectionLabel>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {licenseTypes.filter(l => l.value !== "B").map((l) => {
+              const active = (current.licenses || []).includes(l.value);
+              return (
+                <button key={l.value} onClick={() => toggleLicense(l.value)} style={{ padding: "10px 18px", borderRadius: 99, background: active ? "rgba(245,166,35,0.12)" : "#0a1414", border: `1px solid ${active ? "rgba(245,166,35,0.4)" : "rgba(255,255,255,0.08)"}`, color: active ? "#F5A623" : "rgba(255,255,255,0.7)", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", minHeight: 44 }}>
+                  {l.label}
+                </button>
+              );
+            })}
+          </div>
+          {((current.licenses || []).includes("C") || (current.licenses || []).includes("CE")) && (
+            <p style={{ fontSize: 11.5, color: "rgba(255,255,255,0.35)", marginTop: 6 }}>B ingår automatiskt med C/CE</p>
+          )}
+
+          {/* Certifikat */}
+          <SectionLabel>Certifikat</SectionLabel>
+          {certificateGroups.map((group) => (
+            <div key={group.id} style={{ marginBottom: 14 }}>
+              <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.45)", fontWeight: 600, marginBottom: 7 }}>{group.label}</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+                {group.options.map((ct) => {
+                  const active = (current.certificates || []).includes(ct.value);
+                  return (
+                    <button key={ct.value} onClick={() => toggleCertificate(ct.value)} style={{ padding: "8px 13px", borderRadius: 99, background: active ? "rgba(74,222,128,0.1)" : "#0a1414", border: `1px solid ${active ? "rgba(74,222,128,0.35)" : "rgba(255,255,255,0.08)"}`, color: active ? "#4ade80" : "rgba(255,255,255,0.7)", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", minHeight: 38 }}>
+                      {ct.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+
+          {/* Region */}
+          <SectionLabel>Hemregion</SectionLabel>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 20 }}>
+            {regions.map((r) => {
+              const active = current.region === r;
+              return (
+                <button key={r} onClick={() => updateDraft({ region: current.region === r ? "" : r })} style={{ padding: "8px 13px", borderRadius: 99, background: active ? "rgba(245,166,35,0.12)" : "#0a1414", border: `1px solid ${active ? "rgba(245,166,35,0.4)" : "rgba(255,255,255,0.08)"}`, color: active ? "#F5A623" : "rgba(255,255,255,0.7)", fontSize: 12.5, fontWeight: active ? 700 : 500, cursor: "pointer", fontFamily: "inherit", minHeight: 36 }}>
+                  {r}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Regioner jag vill köra i */}
+          <SectionLabel>Vill köra i</SectionLabel>
+          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 10, marginTop: -4 }}>Välj alla regioner du är öppen för</p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 20 }}>
+            {regions.map((r) => {
+              const rw = current.regionsWilling || [];
+              const on = rw.includes(r);
+              return (
+                <button key={r} onClick={() => updateDraft({ regionsWilling: on ? rw.filter((x) => x !== r) : [...rw, r] })} style={{ padding: "8px 13px", borderRadius: 99, background: on ? "rgba(125,211,200,0.1)" : "#0a1414", border: `1px solid ${on ? "rgba(125,211,200,0.35)" : "rgba(255,255,255,0.08)"}`, color: on ? "#7dd3c8" : "rgba(255,255,255,0.7)", fontSize: 12.5, fontWeight: on ? 700 : 500, cursor: "pointer", fontFamily: "inherit", minHeight: 36 }}>
+                  {r}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Söker */}
+          <SectionLabel>Jag söker</SectionLabel>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 24 }}>
+            {availabilityTypes.map((a) => {
+              const active = current.availability === a.value;
+              return (
+                <button key={a.value} onClick={() => updateDraft({ availability: a.value })} style={{ padding: "14px 16px", borderRadius: 12, background: active ? "rgba(245,166,35,0.08)" : "#0a1414", border: `1px solid ${active ? "rgba(245,166,35,0.4)" : "rgba(255,255,255,0.08)"}`, color: "#fff", fontSize: 14, fontWeight: active ? 700 : 500, cursor: "pointer", textAlign: "left", display: "flex", alignItems: "center", gap: 10, fontFamily: "inherit" }}>
+                  <div style={{ width: 20, height: 20, borderRadius: 99, border: `2px solid ${active ? "#F5A623" : "rgba(255,255,255,0.25)"}`, background: active ? "#F5A623" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    {active && <svg viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" width="11" height="11"><polyline points="20 6 9 17 4 12"/></svg>}
+                  </div>
+                  {a.label}
+                </button>
+              );
+            })}
+          </div>
+
+        </div>
+      </div>
+    );
+  }
+
+  if (isMobile && !editing) {
+    const licenses = current?.licenses || [];
+    const certs = current?.certificates || [];
+    const regions = current?.regionsWilling?.length > 0
+      ? current.regionsWilling.slice(0, 2).join(" · ") + (current.regionsWilling.length > 2 ? ` +${current.regionsWilling.length - 2}` : "")
+      : current?.region || "Ej angivet";
+
+    const RowLink = ({ href, icon, label, value, danger, accent }) => (
+      <Link to={href || "#"} onClick={href ? undefined : startEditing} style={{ display: "flex", width: "100%", padding: "14px 18px", background: "transparent", border: "none", borderBottom: "1px solid rgba(255,255,255,0.04)", cursor: "pointer", alignItems: "center", gap: 14, minHeight: 54, textDecoration: "none", color: danger ? "#f87171" : "#fff" }}>
+        <div style={{ width: 34, height: 34, borderRadius: 9, background: accent ? "rgba(245,166,35,0.1)" : danger ? "rgba(248,113,113,0.08)" : "rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          {icon}
+        </div>
+        <span style={{ flex: 1, fontSize: 14, fontWeight: 600 }}>{label}</span>
+        {value && <span style={{ fontSize: 12.5, color: "rgba(255,255,255,0.5)" }}>{value}</span>}
+        {!danger && <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="13" height="13"><polyline points="9 18 15 12 9 6"/></svg>}
+      </Link>
+    );
+
+    return (
+      <div style={{ background: "#060f0f", minHeight: "100vh", color: "#fff", paddingBottom: 100, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+        {/* Top bar */}
+        <div style={{ padding: "10px 18px 12px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: -0.7 }}>Min profil</h1>
+          <Link to="/installningar" style={{ width: 42, height: 42, borderRadius: 99, background: "rgba(255,255,255,0.05)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(255,255,255,0.8)", textDecoration: "none" }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </Link>
+        </div>
+
+        {/* Hero card */}
+        <div style={{ padding: "4px 20px 20px" }}>
+          <div style={{ background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 18, padding: "20px", textAlign: "center" }}>
+            <div style={{ width: 84, height: 84, borderRadius: 99, background: "linear-gradient(135deg,#F5A623,#d97706)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 26, color: "#000", margin: "0 auto 12px", position: "relative" }}>
+              {initials}
+              {current?.isVerified && (
+                <div style={{ position: "absolute", bottom: 0, right: 0, width: 24, height: 24, borderRadius: 99, background: "#4ade80", border: "3px solid #0a1414", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" width="11" height="11"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+              )}
+            </div>
+            <h2 style={{ fontSize: 20, fontWeight: 800, letterSpacing: -0.5, marginBottom: 4 }}>{current?.name || "Din profil"}</h2>
+            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", marginBottom: 14 }}>
+              {[current?.location, current?.experience?.length > 0 && `${calcYearsExperience(current.experience)} år erfarenhet`].filter(Boolean).join(" · ") || "Lägg till plats & erfarenhet"}
+            </div>
+            <button onClick={startEditing} style={{ padding: "10px 20px", borderRadius: 99, background: "rgba(245,166,35,0.1)", border: "1px solid rgba(245,166,35,0.3)", color: "#F5A623", fontSize: 13, fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6, minHeight: 40, fontFamily: "inherit" }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="12" height="12"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Redigera profil
+            </button>
+          </div>
+
+          {/* Stats */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginTop: 12 }}>
+            <div style={{ padding: "12px 10px", background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 11, textAlign: "center" }}>
+              <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 2 }}>{profileStats?.views30 ?? 0}</div>
+              <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.5)", fontWeight: 600 }}>Visningar (30d)</div>
+            </div>
+            <div style={{ padding: "12px 10px", background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 11, textAlign: "center" }}>
+              <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 2, color: "#F5A623" }}>{profileStats?.views7 ?? 0}</div>
+              <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.5)", fontWeight: 600 }}>Visningar (7d)</div>
+            </div>
+            <div style={{ padding: "12px 10px", background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 11, textAlign: "center" }}>
+              <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 2, color: "#4ade80" }}>{profileStats?.conversationCount ?? 0}</div>
+              <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.5)", fontWeight: 600 }}>Kontaktade dig</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Visibility toggle */}
+        <div style={{ padding: "0 20px 20px" }}>
+          <div style={{ padding: "14px 16px", background: current?.isVisible ? "rgba(74,222,128,0.05)" : "rgba(255,255,255,0.03)", border: `1px solid ${current?.isVisible ? "rgba(74,222,128,0.2)" : "rgba(255,255,255,0.07)"}`, borderRadius: 13, display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ width: 38, height: 38, borderRadius: 10, background: current?.isVisible ? "rgba(74,222,128,0.15)" : "rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke={current?.isVisible ? "#4ade80" : "rgba(255,255,255,0.6)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2 }}>Synlig för åkerier</div>
+              <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.55)" }}>{current?.isVisible ? "Åkerier kan hitta dig och skicka jobb" : "Endast du ser din profil"}</div>
+            </div>
+            <button
+              onClick={() => updateProfile({ ...profile, isVisible: !current?.isVisible })}
+              style={{ width: 48, height: 28, borderRadius: 99, background: current?.isVisible ? "#4ade80" : "rgba(255,255,255,0.15)", border: "none", position: "relative", cursor: "pointer", flexShrink: 0, transition: "background .2s" }}
+            >
+              <div style={{ position: "absolute", top: 3, left: current?.isVisible ? 23 : 3, width: 22, height: 22, borderRadius: 99, background: "#fff", transition: "left .2s" }}/>
+            </button>
+          </div>
+        </div>
+
+        {/* Profile completion */}
+        {progressPct < 100 && (
+          <div style={{ padding: "0 20px 20px" }}>
+            <div style={{ background: "linear-gradient(135deg, rgba(245,166,35,0.06), rgba(245,166,35,0.01))", border: "1px solid rgba(245,166,35,0.2)", borderRadius: 13, padding: "14px 16px" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                <span style={{ fontSize: 13, fontWeight: 700 }}>Profil {progressPct}% klar</span>
+                <span style={{ fontSize: 11.5, color: "#F5A623", fontWeight: 700 }}>{totalSteps - completedSteps} steg kvar</span>
+              </div>
+              <div style={{ height: 6, background: "rgba(255,255,255,0.06)", borderRadius: 99, overflow: "hidden", marginBottom: 12 }}>
+                <div style={{ height: "100%", width: `${progressPct}%`, background: "linear-gradient(90deg,#F5A623,#d97706)", borderRadius: 99 }}/>
+              </div>
+              <button onClick={startEditing} style={{ padding: "9px 16px", borderRadius: 99, background: "rgba(245,166,35,0.12)", border: "1px solid rgba(245,166,35,0.3)", color: "#F5A623", fontSize: 12.5, fontWeight: 700, cursor: "pointer", minHeight: 36, fontFamily: "inherit" }}>Komplettera nu →</button>
+            </div>
+          </div>
+        )}
+
+        {/* Mina uppgifter */}
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "rgba(255,255,255,0.45)", padding: "0 20px", marginBottom: 10 }}>Mina uppgifter</div>
+          <div style={{ background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 14, overflow: "hidden", margin: "0 20px" }}>
+            <RowLink icon={<svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>} label="Personuppgifter" />
+            <RowLink icon={<svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><rect x="1" y="3" width="15" height="13" rx="1"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>} label="Körkort & certifikat" value={`${licenses.length + certs.length} st`} />
+            <RowLink icon={<svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>} label="Arbetslivserfarenhet" value={current?.experience?.length > 0 ? `${current.experience.length} st` : undefined} />
+            <RowLink icon={<svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>} label="Var jag vill köra" value={regions} />
+          </div>
+        </div>
+
+        {/* Settings */}
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "rgba(255,255,255,0.45)", padding: "0 20px", marginBottom: 10 }}>Inställningar</div>
+          <div style={{ background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 14, overflow: "hidden", margin: "0 20px" }}>
+            <RowLink href="/installningar" icon={<svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>} label="Notiser" value="På" />
+            <RowLink href="/installningar" icon={<svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>} label="Integritet" />
+            <RowLink href="/installningar" icon={<svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>} label="Konto & säkerhet" />
+          </div>
+        </div>
+
+        {/* Logout */}
+        <div style={{ margin: "0 20px 20px" }}>
+          <div style={{ background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 14, overflow: "hidden" }}>
+            <RowLink href="/installningar" icon={<svg viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>} label="Logga ut" danger />
+          </div>
+        </div>
+
+        <div style={{ textAlign: "center", padding: "4px 20px 20px", fontSize: 11, color: "rgba(255,255,255,0.25)" }}>
+          Inloggad som {user?.email}
+        </div>
+      </div>
+    );
+  }
+  // ── End mobile profile view ──────────────────────────────────────────────
 
   return (
     <div style={{ minHeight: "100vh", background: "#060f0f", color: T.text, fontFamily: T.font, marginTop: "-64px", paddingTop: 64 }}>
