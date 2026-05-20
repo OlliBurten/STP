@@ -199,6 +199,11 @@ select {
   }
 }
 
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
 .animate-spin {
   animation: spin 0.8s linear infinite;
 }

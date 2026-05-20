@@ -65,3 +65,9 @@ export function groupCompany(orgId, orgName) {
   if (!ph || !orgId) return;
   ph.group("company", orgId, { name: orgName });
 }
+
+/** Sätt person-egenskaper — t.ex. profile_completion_pct, onboarding_completed */
+export function setPersonProperties(props) {
+  if (!ph || !props) return;
+  ph.capture("$set", { $set: props });
+}

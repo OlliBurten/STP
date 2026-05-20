@@ -2,6 +2,8 @@ import { createContext, useContext, useState, useEffect } from "react";
 import { defaultProfile, PROFILE_STORAGE_KEY } from "../data/profileData";
 import { useAuth } from "./AuthContext";
 import { fetchProfile as apiFetchProfile, updateProfile as apiUpdateProfile } from "../api/profile.js";
+import { setPersonProperties } from "../utils/posthog.js";
+import { getDriverMinimumChecklist } from "../utils/driverProfileRequirements.js";
 
 const ProfileContext = createContext(null);
 
@@ -136,6 +138,9 @@ export function ProfileProvider({ children }) {
     try {
       const saved = await apiUpdateProfile(nextProfile);
       mergeSavedProfile(saved);
+      const checklist = getDriverMinimumChecklist(saved);
+      const pct = Math.round(checklist.filter((c) => c.done).length / checklist.length * 100);
+      setPersonProperties({ profile_completion_pct: pct });
       return saved;
     } catch (error) {
       setProfileSaveError(error?.message || "Kunde inte spara profilen.");

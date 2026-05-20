@@ -195,296 +195,403 @@ export default function AdminUsersTab({
     } catch (e) { setError(e.message || "Kunde inte skicka påminnelser"); }
   };
 
+  const [quickFilter, setQuickFilter] = React.useState("all");
+
+  // Apply quick filter on top of API filters
+  const filteredUsers = users.filter((u) => {
+    if (quickFilter === "driver")      return u.role === "DRIVER";
+    if (quickFilter === "company")     return u.role === "COMPANY" || u.role === "RECRUITER";
+    if (quickFilter === "unverified")  return !u.emailVerifiedAt;
+    if (quickFilter === "suspended")   return !!u.suspendedAt;
+    if (quickFilter === "warnings")    return (u.warningCount || 0) > 0;
+    return true;
+  });
+
+  const FILTER_PILLS = [
+    { id: "all",        label: "Alla",           count: users.length },
+    { id: "driver",     label: "Förare",          count: users.filter(u => u.role === "DRIVER").length },
+    { id: "company",    label: "Åkerier",          count: users.filter(u => u.role === "COMPANY" || u.role === "RECRUITER").length },
+    { id: "unverified", label: "Ej verifierade",   count: users.filter(u => !u.emailVerifiedAt).length },
+    { id: "warnings",   label: "Med varningar",    count: users.filter(u => (u.warningCount || 0) > 0).length },
+    { id: "suspended",  label: "Suspenderade",     count: users.filter(u => !!u.suspendedAt).length },
+  ];
+
+  const selectedUser = users.find((x) => x.id === selectedUserId);
+
   return (
-    <SectionCard>
-      <p style={{ fontSize: 16, fontWeight: 700, color: T.text, marginBottom: 6 }}>Användare</p>
-      <p style={{ fontSize: 13, color: T.muted, marginBottom: 20 }}>
-        Sök och filtrera. Öga-ikonen startar view-as (read-only).
-      </p>
-
-      {/* Filters */}
-      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "2fr 1fr 1fr", gap: 10, marginBottom: 12 }}>
-        <input
-          value={userFilters.q}
-          onChange={(e) => setUserFilters((p) => ({ ...p, q: e.target.value }))}
-          onKeyDown={(e) => { if (e.key === "Enter") loadUsers(); }}
-          placeholder="Sök namn / e-post / företag"
-          style={INP}
-        />
-        <select
-          value={userFilters.role}
-          onChange={(e) => setUserFilters((p) => ({ ...p, role: e.target.value }))}
-          style={INP}
-        >
-          <option value="">Alla roller</option>
-          <option value="DRIVER">Förare</option>
-          <option value="COMPANY">Åkeri</option>
-          <option value="RECRUITER">Rekryterare</option>
-        </select>
-        <select
-          value={userFilters.suspended}
-          onChange={(e) => setUserFilters((p) => ({ ...p, suspended: e.target.value }))}
-          style={INP}
-        >
-          <option value="">Alla konton</option>
-          <option value="no">Aktiva</option>
-          <option value="yes">Avstängda</option>
-        </select>
-      </div>
-      <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-        <Btn variant="primary" size="md" disabled={loading} onClick={loadUsers}>Filtrera</Btn>
-        <Btn disabled={loading} onClick={handleSendReminders} title="Skickar verifieringslänk till ej verifierade (max 1/24h)">
-          Skicka e-postpåminnelser
-        </Btn>
-      </div>
-
-      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 300px", gap: 16 }}>
-        {/* User table */}
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-            <thead>
-              <tr style={{ borderBottom: `1px solid ${T.border}` }}>
-                {["Användare", "Roll", "Status", "Inloggad", ""].map((h) => (
-                  <th key={h} style={{ textAlign: "left", padding: "10px 12px", fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.muted }}>
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {users.length === 0 ? (
-                <tr>
-                  <td colSpan={5} style={{ padding: "40px 12px", textAlign: "center", color: T.muted, fontSize: 13 }}>
-                    Inga användare för filtret.
-                  </td>
-                </tr>
-              ) : users.map((u) => {
-                const isSelected = selectedUserId === u.id;
-                const detail = isSelected ? selectedUserDetail : null;
-                return (
-                  <React.Fragment key={u.id}>
-                    <tr
-                      onClick={() => loadUserDetail(u.id).catch((e) => setError(e.message || "Kunde inte öppna"))}
-                      style={{
-                        borderBottom: `1px solid ${T.border}`,
-                        background: isSelected ? "rgba(165,180,252,0.06)" : "transparent",
-                        cursor: "pointer",
-                      }}
-                    >
-                      <td style={{ padding: "11px 12px" }}>
-                        <p style={{ fontWeight: 600, color: T.text, margin: 0, maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                          {u.name || "–"}
-                        </p>
-                        <p style={{ fontSize: 11, color: T.muted, margin: "2px 0 0", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                          {u.email}
-                        </p>
-                        {(u.role === "COMPANY" || u.role === "RECRUITER") && u.companyName ? (
-                          <p style={{ fontSize: 10, color: T.muted, margin: "1px 0 0", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                            {u.companyName}
-                          </p>
-                        ) : null}
-                      </td>
-                      <td style={{ padding: "11px 12px" }}>
-                        <StatusBadge value={u.isAdmin ? "Admin" : u.role} />
-                      </td>
-                      <td style={{ padding: "11px 12px" }}>
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
-                          {u.emailVerifiedAt ? (
-                            <span style={{ fontSize: 10, color: T.green }}>✓ Verifierad</span>
-                          ) : (
-                            <span style={{ fontSize: 10, color: T.amber }}>⚠ Ej verifierad</span>
-                          )}
-                          {u.suspendedAt && (
-                            <span style={{ fontSize: 10, padding: "2px 6px", borderRadius: 99, background: T.redBg, color: T.red, border: `1px solid ${T.redBorder}` }}>Avstängd</span>
-                          )}
-                          {u.warningCount > 0 && (
-                            <span style={{ fontSize: 10, padding: "2px 6px", borderRadius: 99, background: T.amberBg, color: T.amber, border: `1px solid ${T.amberBorder}` }}>
-                              {u.warningCount}⚠
-                            </span>
-                          )}
-                          {(() => {
-                            const c = getProfileCompletion(u);
-                            if (!c) return null;
-                            const pctColor = c.pct === 100 ? T.green : c.pct >= 75 ? T.tealBright : c.pct >= 50 ? T.amber : T.red;
-                            const items = u.role === "DRIVER" ? getDriverChecklist(u) : getCompanyChecklist(u);
-                            const missing = items.filter(i => !i.done);
-                            return (
-                              <span
-                                title={missing.length > 0 ? `Saknar: ${missing.map(i => i.label).join(", ")}` : "Komplett profil"}
-                                style={{ fontSize: 10, padding: "2px 6px", borderRadius: 99, background: `${pctColor}18`, border: `1px solid ${pctColor}44`, color: pctColor, cursor: "help" }}
-                              >
-                                {c.pct}%
-                              </span>
-                            );
-                          })()}
-                        </div>
-                      </td>
-                      <td style={{ padding: "11px 12px", color: T.muted, fontSize: 11, whiteSpace: "nowrap" }}>
-                        {u.lastLoginAt ? fmtDate(u.lastLoginAt) : "Aldrig"}
-                      </td>
-                      <td style={{ padding: "8px 12px", textAlign: "right" }} onClick={(e) => e.stopPropagation()}>
-                        <button
-                          type="button"
-                          onClick={() => handleViewAs(u.id)}
-                          disabled={loading || viewAsLoading === u.id || u.isAdmin}
-                          title={u.isAdmin ? "View as avstängt för admin" : "Visa som den här användaren"}
-                          style={{
-                            width: 30, height: 30, borderRadius: "50%", border: `1px solid ${T.border}`,
-                            background: "rgba(255,255,255,0.07)", color: T.sub, cursor: u.isAdmin ? "not-allowed" : "pointer",
-                            display: "inline-flex", alignItems: "center", justifyContent: "center",
-                            opacity: (loading || u.isAdmin) ? 0.3 : 1,
-                          }}
-                        >
-                          {viewAsLoading === u.id ? "…" : <EyeIcon style={{ width: 13, height: 13 }} />}
-                        </button>
-                      </td>
-                    </tr>
-                    {/* Mobile inline expand */}
-                    {isSelected && (
-                      <tr key={`${u.id}-expand`} style={{ borderBottom: `1px solid ${T.border}` }}>
-                        <td colSpan={5} style={{ padding: "0 12px 12px" }}>
-                          {!detail ? (
-                            <p style={{ fontSize: 12, color: T.muted, paddingTop: 8 }}>Laddar...</p>
-                          ) : (
-                            <div style={{ background: "rgba(255,255,255,0.02)", border: `1px solid ${T.border}`, borderRadius: 10, overflow: "hidden", marginTop: 4 }}>
-                              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4, 1fr)", borderBottom: `1px solid ${T.border}` }}>
-                                {[
-                                  { label: "Skapad", value: fmtDate(detail.createdAt) },
-                                  { label: "Inloggad", value: detail.lastLoginAt ? fmtDate(detail.lastLoginAt) : "Aldrig" },
-                                  { label: "Jobb", value: detail._count?.jobs ?? 0 },
-                                  { label: "Msg", value: detail._count?.messages ?? 0 },
-                                ].map(({ label, value }) => (
-                                  <div key={label} style={{ padding: "10px 12px", textAlign: "center", borderRight: `1px solid ${T.border}` }}>
-                                    <p style={{ fontSize: 10, color: T.muted, margin: 0 }}>{label}</p>
-                                    <p style={{ fontSize: 12, fontWeight: 600, color: T.text, margin: "2px 0 0", overflow: "hidden", textOverflow: "ellipsis" }}>{value}</p>
-                                  </div>
-                                ))}
-                              </div>
-                              <div style={{ padding: "10px 12px", display: "flex", flexWrap: "wrap", gap: 6 }}>
-                                {!u.emailVerifiedAt && <Btn size="sm" variant="default" onClick={() => handleVerifyEmail(u.id)}>Verifiera e-post</Btn>}
-                                {u.suspendedAt
-                                  ? <Btn size="sm" variant="success" onClick={() => handleSuspendUser(u.id, false)}>Återaktivera</Btn>
-                                  : <Btn size="sm" variant="danger" onClick={() => handleSuspendUser(u.id, true)}>Stäng av</Btn>
-                                }
-                                <Btn size="sm" variant="warning" onClick={() => handleWarningAction(u.id, "ADD")}>Ge varning</Btn>
-                                {u.warningCount > 0 && <Btn size="sm" onClick={() => handleWarningAction(u.id, "RESET")}>Nollställ ({u.warningCount})</Btn>}
-                                {!u.isAdmin && <Btn size="sm" variant="danger" onClick={() => handleDeleteUser(u.id, u.email)}>Ta bort konto</Btn>}
-                              </div>
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    )}
-                  </React.Fragment>
-                );
-              })}
-            </tbody>
-          </table>
+    <div>
+      {/* ── Header + filters ── */}
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, flexWrap: "wrap", gap: 10 }}>
+          <div>
+            <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: -0.6, margin: 0, color: T.text }}>Användare</h1>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginTop: 3 }}>
+              {filteredUsers.length} av {users.length} · Öga-ikonen startar view-as (read-only)
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <Btn disabled={loading} onClick={handleSendReminders} title="Skickar verifieringslänk till ej verifierade (max 1/24h)">
+              Skicka påminnelser
+            </Btn>
+            <Btn variant="primary" disabled={loading} onClick={loadUsers}>Uppdatera</Btn>
+          </div>
         </div>
 
-        {/* Desktop detail panel */}
-        {!isMobile && <div style={{
-          background: "rgba(255,255,255,0.02)", border: `1px solid ${T.border}`,
-          borderRadius: 14, position: "sticky", top: 88, alignSelf: "start", overflow: "hidden",
+        {/* Search + filter pills */}
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+          <input
+            value={userFilters.q}
+            onChange={(e) => setUserFilters((p) => ({ ...p, q: e.target.value }))}
+            onKeyDown={(e) => { if (e.key === "Enter") loadUsers(); }}
+            placeholder="Sök namn / e-post..."
+            style={{
+              height: 32, padding: "0 11px", borderRadius: 7, fontSize: 12.5,
+              background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
+              color: T.text, outline: "none", width: 200,
+            }}
+          />
+          <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+            {FILTER_PILLS.map((pill) => (
+              <button
+                key={pill.id}
+                onClick={() => setQuickFilter(pill.id)}
+                style={{
+                  padding: "5px 10px", borderRadius: 99, fontSize: 12, fontWeight: 600, cursor: "pointer",
+                  background: quickFilter === pill.id ? "rgba(245,166,35,0.12)" : "rgba(255,255,255,0.04)",
+                  border: `1px solid ${quickFilter === pill.id ? "rgba(245,166,35,0.3)" : "rgba(255,255,255,0.07)"}`,
+                  color: quickFilter === pill.id ? "#F5A623" : "rgba(255,255,255,0.65)",
+                  display: "flex", alignItems: "center", gap: 5,
+                }}
+              >
+                {pill.label}
+                {pill.count > 0 && (
+                  <span style={{
+                    fontSize: 10, fontWeight: 800, minWidth: 16, height: 16, borderRadius: 99,
+                    background: quickFilter === pill.id ? "rgba(245,166,35,0.2)" : "rgba(255,255,255,0.08)",
+                    color: quickFilter === pill.id ? "#F5A623" : "rgba(255,255,255,0.45)",
+                    display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px",
+                  }}>{pill.count}</span>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Main: table + detail panel ── */}
+      <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+        {/* Table */}
+        <div style={{
+          flex: 1, background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)",
+          borderRadius: 12, overflow: "hidden", minWidth: 0,
         }}>
-          {!selectedUserDetail ? (
-            <div style={{ padding: "24px 20px" }}>
-              <p style={{ fontSize: 13, fontWeight: 600, color: T.sub, margin: 0 }}>Ingen vald</p>
-              <p style={{ fontSize: 12, color: T.muted, marginTop: 6 }}>Klicka på en rad för detaljer och åtgärder.</p>
+          {/* Table header */}
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: selectedUser ? "40px 1fr 90px 100px 80px 40px" : "40px 1fr 90px 100px 80px 100px 90px 40px",
+            gap: 12, padding: "10px 16px",
+            borderBottom: "1px solid rgba(255,255,255,0.05)",
+            background: "rgba(255,255,255,0.02)",
+            fontSize: 10, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase",
+            color: "rgba(255,255,255,0.4)",
+          }}>
+            <div />
+            <div>Användare</div>
+            <div>Roll</div>
+            <div>Status</div>
+            <div>Profil</div>
+            {!selectedUser && <div>Senast inne</div>}
+            {!selectedUser && <div>Skapad</div>}
+            <div />
+          </div>
+
+          {filteredUsers.length === 0 ? (
+            <div style={{ padding: "50px 20px", textAlign: "center", color: "rgba(255,255,255,0.4)", fontSize: 13 }}>
+              Inga användare matchar filtret.
             </div>
-          ) : (
-            <>
-              <div style={{ padding: "14px 18px", borderBottom: `1px solid ${T.border}` }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
-                  <div style={{ minWidth: 0 }}>
-                    <p style={{ fontWeight: 700, color: T.text, fontSize: 14, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {selectedUserDetail.name || selectedUserDetail.email}
-                    </p>
-                    <p style={{ fontSize: 11, color: T.muted, margin: "3px 0 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {selectedUserDetail.email}
-                    </p>
-                    {selectedUserDetail.companyName && (
-                      <p style={{ fontSize: 11, color: T.muted, margin: "2px 0 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {selectedUserDetail.companyName}
-                      </p>
-                    )}
+          ) : filteredUsers.map((u) => {
+            const isRowSelected = selectedUserId === u.id;
+            const c = getProfileCompletion(u);
+            const pctColor = !c ? null : c.pct >= 75 ? "#4ade80" : c.pct >= 50 ? "#F5A623" : "#f87171";
+
+            return (
+              <div
+                key={u.id}
+                onClick={() => loadUserDetail(u.id).catch((e) => setError(e.message || "Kunde inte öppna"))}
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: selectedUser ? "40px 1fr 90px 100px 80px 40px" : "40px 1fr 90px 100px 80px 100px 90px 40px",
+                  gap: 12, padding: "11px 16px", alignItems: "center",
+                  borderBottom: "1px solid rgba(255,255,255,0.04)",
+                  background: isRowSelected ? "rgba(245,166,35,0.04)" : "transparent",
+                  borderLeft: `2px solid ${isRowSelected ? "#F5A623" : "transparent"}`,
+                  cursor: "pointer", transition: "background 0.1s",
+                }}
+                onMouseEnter={(e) => { if (!isRowSelected) e.currentTarget.style.background = "rgba(255,255,255,0.02)"; }}
+                onMouseLeave={(e) => { if (!isRowSelected) e.currentTarget.style.background = "transparent"; }}
+              >
+                {/* Avatar */}
+                <div style={{ display: "flex", justifyContent: "center" }}>
+                  <div style={{
+                    width: 32, height: 32, borderRadius: 8,
+                    background: u.role === "DRIVER" ? "rgba(96,165,250,0.15)" : "rgba(245,166,35,0.15)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 11, fontWeight: 800, color: u.role === "DRIVER" ? "#60a5fa" : "#F5A623",
+                  }}>
+                    {(u.name || u.email || "?").slice(0, 2).toUpperCase()}
                   </div>
-                  {(() => {
-                    const u = users.find((x) => x.id === selectedUserDetail.id) || selectedUserDetail;
-                    const c = getProfileCompletion(u);
-                    if (!c) return null;
-                    return <span style={{ fontSize: 11, padding: "3px 8px", borderRadius: 99, background: T.card, border: `1px solid ${T.border}`, color: T.sub, flexShrink: 0 }}>{c.pct}%</span>;
-                  })()}
+                </div>
+
+                {/* Name */}
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: T.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {u.name || "–"}
+                  </div>
+                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {u.email}
+                  </div>
+                </div>
+
+                {/* Role badge */}
+                <div>
+                  <span style={{
+                    padding: "2px 7px", borderRadius: 4, fontSize: 9.5, fontWeight: 800, letterSpacing: 0.4, fontFamily: "monospace",
+                    background: u.role === "DRIVER" ? "rgba(96,165,250,0.12)" : "rgba(245,166,35,0.12)",
+                    color: u.role === "DRIVER" ? "#60a5fa" : "#F5A623",
+                  }}>{u.isAdmin ? "ADMIN" : u.role}</span>
+                </div>
+
+                {/* Status */}
+                <div>
+                  {u.suspendedAt ? (
+                    <span style={{ padding: "2px 7px", borderRadius: 4, background: "rgba(248,113,113,0.1)", color: "#f87171", fontSize: 9.5, fontWeight: 800, fontFamily: "monospace" }}>SUSPENDERAD</span>
+                  ) : u.emailVerifiedAt ? (
+                    <span style={{ padding: "2px 7px", borderRadius: 4, background: "rgba(74,222,128,0.08)", color: "#4ade80", fontSize: 9.5, fontWeight: 800, fontFamily: "monospace" }}>VERIFIERAD</span>
+                  ) : (
+                    <span style={{ padding: "2px 7px", borderRadius: 4, background: "rgba(245,166,35,0.08)", color: "#F5A623", fontSize: 9.5, fontWeight: 800, fontFamily: "monospace" }}>EJ VERIFR.</span>
+                  )}
+                </div>
+
+                {/* Profile bar */}
+                <div>
+                  {c ? (
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <div style={{ flex: 1, height: 4, background: "rgba(255,255,255,0.07)", borderRadius: 99, overflow: "hidden" }}>
+                        <div style={{ height: "100%", width: `${c.pct}%`, background: pctColor, borderRadius: 99 }} />
+                      </div>
+                      <span style={{ fontSize: 11, fontWeight: 800, color: pctColor, fontFamily: "monospace", minWidth: 28 }}>{c.pct}%</span>
+                    </div>
+                  ) : null}
+                </div>
+
+                {/* Last login */}
+                {!selectedUser && (
+                  <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.4)", fontFamily: "monospace" }}>
+                    {u.lastLoginAt ? fmtDate(u.lastLoginAt).slice(0, 10) : "Aldrig"}
+                  </div>
+                )}
+
+                {/* Created */}
+                {!selectedUser && (
+                  <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.35)", fontFamily: "monospace" }}>
+                    {fmtDate(u.createdAt).slice(0, 10)}
+                  </div>
+                )}
+
+                {/* View-as eye button */}
+                <div style={{ display: "flex", justifyContent: "center" }} onClick={(e) => e.stopPropagation()}>
+                  <button
+                    type="button"
+                    onClick={() => handleViewAs(u.id)}
+                    disabled={loading || viewAsLoading === u.id || u.isAdmin}
+                    title={u.isAdmin ? "View as avstängt för admin" : "Visa som den här användaren"}
+                    style={{
+                      width: 28, height: 28, borderRadius: 7, border: `1px solid rgba(255,255,255,0.08)`,
+                      background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.5)",
+                      cursor: u.isAdmin ? "not-allowed" : "pointer",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      opacity: (loading || u.isAdmin) ? 0.3 : 1,
+                    }}
+                  >
+                    {viewAsLoading === u.id ? "…" : <EyeIcon style={{ width: 12, height: 12 }} />}
+                  </button>
                 </div>
               </div>
+            );
+          })}
+        </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", borderBottom: `1px solid ${T.border}` }}>
-                {[
-                  { label: "Skapad", value: fmtDate(selectedUserDetail.createdAt) },
-                  { label: "Inloggad", value: fmtDate(selectedUserDetail.lastLoginAt) },
-                  { label: "Jobb", value: selectedUserDetail._count?.jobs ?? 0 },
-                  { label: "Meddelanden", value: selectedUserDetail._count?.messages ?? 0 },
-                ].map(({ label, value }) => (
-                  <div key={label} style={{ padding: "10px 14px", borderBottom: `1px solid ${T.border}` }}>
-                    <p style={{ fontSize: 10, color: T.muted, margin: 0 }}>{label}</p>
-                    <p style={{ fontSize: 12, fontWeight: 600, color: T.text, margin: "2px 0 0", overflow: "hidden", textOverflow: "ellipsis" }}>{value}</p>
+        {/* ── Detail panel ── */}
+        {!isMobile && (
+          <div style={{
+            width: 360, flexShrink: 0, background: "#070f0f",
+            border: "1px solid rgba(255,255,255,0.05)", borderRadius: 12, overflow: "hidden",
+            position: "sticky", top: 0, maxHeight: "calc(100vh - 120px)", overflowY: "auto",
+          }}>
+            {/* Panel header */}
+            <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 1.4, textTransform: "uppercase", color: "rgba(255,255,255,0.45)" }}>Detalj</span>
+              {selectedUserDetail && (
+                <button onClick={() => loadUserDetail(null)} style={{ width: 26, height: 26, borderRadius: 6, background: "rgba(255,255,255,0.04)", border: "none", color: "rgba(255,255,255,0.5)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>✕</button>
+              )}
+            </div>
+
+            {!selectedUserDetail ? (
+              <div style={{ padding: "32px 20px", textAlign: "center" }}>
+                <div style={{ fontSize: 24, marginBottom: 10, opacity: 0.3 }}>👤</div>
+                <p style={{ fontSize: 13, fontWeight: 600, color: T.sub, margin: 0 }}>Ingen vald</p>
+                <p style={{ fontSize: 12, color: T.muted, marginTop: 6, lineHeight: 1.5 }}>Klicka på en rad för detaljer och åtgärder.</p>
+              </div>
+            ) : (
+              <>
+                {/* Hero */}
+                <div style={{ padding: "18px 18px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 14 }}>
+                    {(() => {
+                      const u = users.find((x) => x.id === selectedUserDetail.id) || selectedUserDetail;
+                      return (
+                        <>
+                          <div style={{
+                            width: 46, height: 46, borderRadius: 11, flexShrink: 0,
+                            background: u.role === "DRIVER" ? "rgba(96,165,250,0.15)" : "rgba(245,166,35,0.15)",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            fontSize: 14, fontWeight: 800,
+                            color: u.role === "DRIVER" ? "#60a5fa" : "#F5A623",
+                          }}>
+                            {(selectedUserDetail.name || selectedUserDetail.email || "?").slice(0, 2).toUpperCase()}
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 15, fontWeight: 800, color: "#f0faf9", marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                              {selectedUserDetail.name || selectedUserDetail.email}
+                            </div>
+                            <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.5)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                              {selectedUserDetail.email}
+                            </div>
+                            <div style={{ display: "flex", gap: 5, marginTop: 6 }}>
+                              <span style={{ padding: "2px 7px", borderRadius: 4, background: u.role === "DRIVER" ? "rgba(96,165,250,0.12)" : "rgba(245,166,35,0.12)", color: u.role === "DRIVER" ? "#60a5fa" : "#F5A623", fontSize: 9, fontWeight: 800, fontFamily: "monospace" }}>
+                                {u.isAdmin ? "ADMIN" : u.role}
+                              </span>
+                              {u.suspendedAt ? (
+                                <span style={{ padding: "2px 7px", borderRadius: 4, background: "rgba(248,113,113,0.1)", color: "#f87171", fontSize: 9, fontWeight: 800, fontFamily: "monospace" }}>SUSPENDERAD</span>
+                              ) : u.emailVerifiedAt ? (
+                                <span style={{ padding: "2px 7px", borderRadius: 4, background: "rgba(74,222,128,0.08)", color: "#4ade80", fontSize: 9, fontWeight: 800, fontFamily: "monospace" }}>VERIFIERAD</span>
+                              ) : (
+                                <span style={{ padding: "2px 7px", borderRadius: 4, background: "rgba(245,166,35,0.08)", color: "#F5A623", fontSize: 9, fontWeight: 800, fontFamily: "monospace" }}>EJ VERIFR.</span>
+                              )}
+                            </div>
+                          </div>
+                        </>
+                      );
+                    })()}
                   </div>
-                ))}
-              </div>
 
-              {selectedUserDetail.driverProfile && (
-                <ProfileChecklist user={selectedUserDetail} />
-              )}
-
-              {selectedUserDetail.organizations?.length > 0 && (
-                <div style={{ padding: "12px 16px", borderBottom: `1px solid ${T.border}`, fontSize: 12 }}>
-                  <p style={{ fontWeight: 700, color: T.sub, marginBottom: 6 }}>Organisationer</p>
-                  {selectedUserDetail.organizations.map((org) => (
-                    <p key={org.id} style={{ color: T.muted, margin: "2px 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {org.name} · {org.role} · {org.status}
-                    </p>
-                  ))}
+                  {/* Quick actions */}
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                    {(() => {
+                      const u = users.find((x) => x.id === selectedUserDetail.id) || selectedUserDetail;
+                      return (
+                        <>
+                          <button
+                            disabled={loading || viewAsLoading === u.id || u.isAdmin}
+                            onClick={() => handleViewAs(u.id)}
+                            style={{ padding: "8px 10px", borderRadius: 8, background: "linear-gradient(135deg,#F5A623,#d97706)", border: "none", color: "#000", fontSize: 11.5, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5, opacity: u.isAdmin ? 0.4 : 1 }}
+                          >
+                            <EyeIcon style={{ width: 11, height: 11 }} /> View-as
+                          </button>
+                          {!u.emailVerifiedAt ? (
+                            <button onClick={() => handleVerifyEmail(u.id)} style={{ padding: "8px 10px", borderRadius: 8, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", color: "#fff", fontSize: 11.5, fontWeight: 700, cursor: "pointer" }}>
+                              Verifiera
+                            </button>
+                          ) : (
+                            <button style={{ padding: "8px 10px", borderRadius: 8, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.6)", fontSize: 11.5, fontWeight: 700, cursor: "default" }}>
+                              E-post OK
+                            </button>
+                          )}
+                        </>
+                      );
+                    })()}
+                  </div>
                 </div>
-              )}
 
-              <div style={{ padding: "12px 16px", borderBottom: `1px solid ${T.border}`, fontSize: 12 }}>
-                <p style={{ fontWeight: 700, color: T.sub, marginBottom: 6 }}>Senaste konversationer</p>
-                {(selectedUserDetail.latestConversations || []).length === 0 ? (
-                  <p style={{ color: T.muted }}>Inga ännu.</p>
-                ) : selectedUserDetail.latestConversations.map((item) => (
-                  <p key={item.id} style={{ color: T.muted, margin: "2px 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {item.jobTitle || "Utan jobbkoppling"} · {fmtDate(item.updatedAt)}
-                  </p>
-                ))}
-              </div>
-
-              <div style={{ padding: "14px 16px" }}>
-                <p style={{ fontSize: 11, fontWeight: 700, color: T.muted, marginBottom: 8 }}>Åtgärder</p>
+                {/* Profile completion */}
                 {(() => {
                   const u = users.find((x) => x.id === selectedUserDetail.id) || selectedUserDetail;
+                  const c = getProfileCompletion(u);
+                  if (!c) return null;
+                  const pctColor = c.pct >= 75 ? "#4ade80" : c.pct >= 50 ? "#F5A623" : "#f87171";
                   return (
-                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                      {!u.emailVerifiedAt && <Btn fullWidth size="md" onClick={() => handleVerifyEmail(u.id)}>Verifiera e-post</Btn>}
-                      {u.suspendedAt
-                        ? <Btn fullWidth size="md" variant="success" onClick={() => handleSuspendUser(u.id, false)}>Återaktivera konto</Btn>
-                        : <Btn fullWidth size="md" variant="danger" onClick={() => handleSuspendUser(u.id, true)}>Stäng av konto</Btn>
-                      }
-                      <Btn fullWidth size="md" variant="warning" onClick={() => handleWarningAction(u.id, "ADD")}>Ge varning</Btn>
-                      {u.warningCount > 0 && <Btn fullWidth size="md" onClick={() => handleWarningAction(u.id, "RESET")}>Nollställ varningar ({u.warningCount})</Btn>}
-                      {!u.isAdmin && (
-                        <>
-                          <div style={{ borderTop: `1px solid ${T.border}`, margin: "4px 0" }} />
-                          <Btn fullWidth size="md" variant="danger" onClick={() => handleDeleteUser(u.id, u.email)}>Ta bort konto permanent</Btn>
-                        </>
-                      )}
+                    <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                      <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginBottom: 8 }}>Profil</div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 12 }}>
+                        <div style={{ flex: 1, height: 5, background: "rgba(255,255,255,0.06)", borderRadius: 99, overflow: "hidden" }}>
+                          <div style={{ height: "100%", width: `${c.pct}%`, background: pctColor, borderRadius: 99 }} />
+                        </div>
+                        <span style={{ fontSize: 13, fontWeight: 800, color: pctColor, fontFamily: "monospace" }}>{c.pct}%</span>
+                      </div>
+                      {/* Quick checklist */}
+                      <ProfileChecklist user={selectedUserDetail} />
                     </div>
                   );
                 })()}
-              </div>
-            </>
-          )}
-        </div>}
+
+                {/* Stats */}
+                <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                  <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginBottom: 8 }}>Uppgifter</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 12 }}>
+                    {[
+                      { l: "Skapad", v: fmtDate(selectedUserDetail.createdAt) },
+                      { l: "Senast inne", v: selectedUserDetail.lastLoginAt ? fmtDate(selectedUserDetail.lastLoginAt) : "Aldrig" },
+                      { l: "Jobb", v: selectedUserDetail._count?.jobs ?? 0 },
+                      { l: "Meddelanden", v: selectedUserDetail._count?.messages ?? 0 },
+                    ].map(({ l, v }) => (
+                      <div key={l} style={{ display: "flex", justifyContent: "space-between" }}>
+                        <span style={{ color: "rgba(255,255,255,0.45)" }}>{l}</span>
+                        <span style={{ color: "rgba(255,255,255,0.85)", fontWeight: 600, fontFamily: "monospace", fontSize: 11.5 }}>{v}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Conversations */}
+                {(selectedUserDetail.latestConversations || []).length > 0 && (
+                  <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                    <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginBottom: 8 }}>Konversationer</div>
+                    {selectedUserDetail.latestConversations.map((item) => (
+                      <div key={item.id} style={{ fontSize: 11.5, color: "rgba(255,255,255,0.55)", margin: "3px 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {item.jobTitle || "Utan jobbkoppling"} · {fmtDate(item.updatedAt).slice(0, 10)}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Danger zone */}
+                <div style={{ padding: "14px 18px" }}>
+                  <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "#f87171", marginBottom: 8 }}>Åtgärder</div>
+                  {(() => {
+                    const u = users.find((x) => x.id === selectedUserDetail.id) || selectedUserDetail;
+                    return (
+                      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                        <Btn size="sm" variant="warning" fullWidth onClick={() => handleWarningAction(u.id, "ADD")}>Skicka varning</Btn>
+                        {u.warningCount > 0 && <Btn size="sm" fullWidth onClick={() => handleWarningAction(u.id, "RESET")}>Nollställ varningar ({u.warningCount})</Btn>}
+                        {u.suspendedAt
+                          ? <Btn size="sm" variant="success" fullWidth onClick={() => handleSuspendUser(u.id, false)}>Återaktivera konto</Btn>
+                          : <Btn size="sm" variant="danger" fullWidth onClick={() => handleSuspendUser(u.id, true)}>Suspendera konto</Btn>
+                        }
+                        {!u.isAdmin && (
+                          <>
+                            <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", margin: "2px 0" }} />
+                            <Btn size="sm" variant="danger" fullWidth onClick={() => handleDeleteUser(u.id, u.email)}>Ta bort konto permanent</Btn>
+                          </>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </div>
-    </SectionCard>
+    </div>
   );
 }

@@ -29,6 +29,7 @@ import { T, INP, Btn, StatusBadge, SectionCard, useIsMobile, fmtDate } from "../
 import AdminOverviewTab from "../components/admin/AdminOverviewTab";
 import AdminUsersTab from "../components/admin/AdminUsersTab";
 import AdminOutreachTab from "../components/admin/AdminOutreachTab";
+import { AdminSidebar, AdminTopBar, AdminCmdK } from "../components/admin/AdminShell";
 
 
 export default function Admin() {
@@ -81,6 +82,8 @@ export default function Admin() {
   const [feedbackFilter, setFeedbackFilter] = useState("NEW");
   const [feedbackLoading, setFeedbackLoading] = useState(false);
   const [expandedFeedback, setExpandedFeedback] = useState(null);
+
+  const [cmdK, setCmdK] = useState(false);
 
   const [reasonModal, setReasonModal] = useState(null);
   const [reasonInput, setReasonInput] = useState("");
@@ -285,6 +288,14 @@ export default function Admin() {
   }
 
   useEffect(() => {
+    const onKey = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") { e.preventDefault(); setCmdK(true); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  useEffect(() => {
     refreshCurrentTab();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
@@ -377,45 +388,22 @@ export default function Admin() {
   };
 
   const pendingCount = summary?.verification?.pendingCompanies ?? 0;
-
-  const TABS = [
-    { id: "overview",   label: "Översikt" },
-    { id: "users",      label: "Användare" },
-    { id: "companies",  label: pendingCount > 0 ? `Väntande (${pendingCount})` : "Väntande företag" },
-    { id: "jobs",       label: "Jobb" },
-    { id: "reports",    label: "Rapporter" },
-    { id: "reviews",    label: "Omdömen" },
-    { id: "schools",    label: "Skolor" },
-    { id: "outreach",   label: "Outreach" },
-    { id: "feedback",   label: feedbackItems.filter(f => f.status === "NEW").length > 0 ? `Feedback (${feedbackItems.filter(f => f.status === "NEW").length})` : "Feedback" },
-    { id: "insights",   label: insights.filter(i => i.status === "NEW").length > 0 ? `Insikter ✦ ${insights.filter(i => i.status === "NEW").length}` : "Insikter" },
-  ];
+  const insightNewCount = insights.filter(i => i.status === "NEW").length;
+  const feedbackNewCount = feedbackItems.filter(f => f.status === "NEW").length;
 
   return (
-    <main style={{ minHeight: "100vh", background: T.bg, padding: "40px 24px 80px", marginTop: "-64px", paddingTop: "calc(64px + 40px)" }}>
-      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-
-        {/* ── Header ── */}
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 16, marginBottom: 28 }}>
-          <div>
-            <h1 style={{ fontSize: 22, fontWeight: 800, color: T.text, margin: 0, letterSpacing: -0.5 }}>Admin</h1>
-            <p style={{ fontSize: 13, color: T.muted, marginTop: 4 }}>Transportplattformen — intern administrationspanel</p>
-          </div>
-          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            <Link to="/admin/status" style={{
-              padding: "9px 16px", borderRadius: 10, border: `1px solid ${T.border}`,
-              color: T.sub, fontSize: 12, fontWeight: 600, textDecoration: "none",
-            }}>
-              Systemstatus
-            </Link>
-            <Btn
-              onClick={refreshCurrentTab}
-              disabled={activeTab === "overview" ? summaryLoading : loading}
-            >
-              Uppdatera
-            </Btn>
-          </div>
-        </div>
+    <div style={{ position: "fixed", inset: 0, zIndex: 51, display: "flex", background: "#040a0a", color: "#f0faf9" }}>
+      <AdminSidebar
+        section={activeTab}
+        onChange={setActiveTab}
+        pendingCount={pendingCount}
+        insightNewCount={insightNewCount}
+        feedbackNewCount={feedbackNewCount}
+      />
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
+        <AdminTopBar openCmd={() => setCmdK(true)} />
+        <div style={{ flex: 1, overflowY: "auto" }}>
+          <div style={{ padding: "22px 26px 40px", maxWidth: 1440, margin: "0 auto" }}>
 
         {/* ── Flash ── */}
         {error && (
@@ -428,30 +416,6 @@ export default function Admin() {
             {success}
           </div>
         )}
-
-        {/* ── Tab nav ── */}
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 24 }}>
-          {TABS.map((tab) => {
-            const isActive = activeTab === tab.id;
-            const isUrgent = tab.id === "companies" && pendingCount > 0;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveTab(tab.id)}
-                style={{
-                  padding: "8px 16px", borderRadius: 10, fontSize: 13, fontWeight: 700,
-                  border: `1px solid ${isActive ? (isUrgent ? T.amberBorder : "rgba(255,255,255,0.18)") : (isUrgent ? T.amberBorder : T.border)}`,
-                  background: isActive ? (isUrgent ? T.amberBg : "rgba(255,255,255,0.1)") : (isUrgent ? T.amberBg : T.card),
-                  color: isActive ? (isUrgent ? T.amber : T.text) : (isUrgent ? T.amber : T.sub),
-                  cursor: "pointer",
-                }}
-              >
-                {tab.label}
-              </button>
-            );
-          })}
-        </div>
 
         {/* ════════════════════════════════════════
             OVERVIEW TAB
@@ -1232,40 +1196,44 @@ export default function Admin() {
           </div>
         )}
 
-      </div>
+          </div>{/* /padding wrapper */}
 
-      {/* ── Reason modal ── */}
-      {reasonModal && (
-        <div style={{
-          position: "fixed", inset: 0, zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center",
-          padding: 24, background: "rgba(0,0,0,0.7)",
-        }}>
-          <div style={{
-            background: "#0d1f1f", border: `1px solid ${T.border}`, borderRadius: 18,
-            width: "100%", maxWidth: 380, padding: 28, boxShadow: "0 24px 60px rgba(0,0,0,0.6)",
-          }}>
-            <p style={{ fontWeight: 700, color: T.text, fontSize: 14, marginBottom: 14 }}>{reasonModal.label}</p>
-            <textarea
-              autoFocus
-              value={reasonInput}
-              onChange={(e) => setReasonInput(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); confirmReasonModal(); } }}
-              rows={3}
-              style={{ ...INP, resize: "none", marginBottom: 12 }}
-            />
-            {reasonModal.withWarning && (
-              <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: T.sub, cursor: "pointer", marginBottom: 16 }}>
-                <input type="checkbox" checked={warningChecked} onChange={(e) => setWarningChecked(e.target.checked)} />
-                Ge varning till det rapporterade kontot
-              </label>
-            )}
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-              <Btn size="md" onClick={cancelReasonModal}>Avbryt</Btn>
-              <Btn size="md" variant="primary" onClick={confirmReasonModal}>Bekräfta</Btn>
+          {/* ── Reason modal ── */}
+          {reasonModal && (
+            <div style={{
+              position: "fixed", inset: 0, zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center",
+              padding: 24, background: "rgba(0,0,0,0.7)",
+            }}>
+              <div style={{
+                background: "#0d1f1f", border: `1px solid ${T.border}`, borderRadius: 18,
+                width: "100%", maxWidth: 380, padding: 28, boxShadow: "0 24px 60px rgba(0,0,0,0.6)",
+              }}>
+                <p style={{ fontWeight: 700, color: T.text, fontSize: 14, marginBottom: 14 }}>{reasonModal.label}</p>
+                <textarea
+                  autoFocus
+                  value={reasonInput}
+                  onChange={(e) => setReasonInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); confirmReasonModal(); } }}
+                  rows={3}
+                  style={{ ...INP, resize: "none", marginBottom: 12 }}
+                />
+                {reasonModal.withWarning && (
+                  <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: T.sub, cursor: "pointer", marginBottom: 16 }}>
+                    <input type="checkbox" checked={warningChecked} onChange={(e) => setWarningChecked(e.target.checked)} />
+                    Ge varning till det rapporterade kontot
+                  </label>
+                )}
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+                  <Btn size="md" onClick={cancelReasonModal}>Avbryt</Btn>
+                  <Btn size="md" variant="primary" onClick={confirmReasonModal}>Bekräfta</Btn>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
-    </main>
+          )}
+
+        </div>{/* /scrollable */}
+      </div>{/* /right col */}
+      <AdminCmdK open={cmdK} onClose={() => setCmdK(false)} onChange={setActiveTab} />
+    </div>
   );
 }

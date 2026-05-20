@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { useParams, Link } from "react-router-dom";
+import { track } from "../utils/posthog.js";
 import PageMeta from "../components/PageMeta";
 import { mockJobs } from "../data/mockJobs";
 import { mockDrivers } from "../data/mockDrivers";
@@ -213,6 +214,7 @@ export default function JobDetail() {
   useEffect(() => {
     if (!hasApi || !job?.id || isMyJob) return;
     trackJobView(job.id).catch(() => {});
+    track("job_viewed", { jobId: job.id, jobTitle: job.title, jobType: job.jobType, license: job.license, region: job.region });
   }, [hasApi, job?.id, isMyJob]);
 
   useEffect(() => {
@@ -654,6 +656,7 @@ export default function JobDetail() {
           </button>
           <Link
             to={`/jobb/${job.id}/ansok`}
+            onClick={() => track("apply_initiated", { jobId: job.id, jobTitle: job.title, source: "sidebar" })}
             style={{ flex: 1, padding: 15, borderRadius: 14, background: "linear-gradient(135deg,#F5A623,#d97706)", color: "#000", fontSize: 15, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, textDecoration: "none", boxShadow: "0 4px 18px rgba(245,166,35,0.3)" }}
           >
             Ansök nu
@@ -971,11 +974,11 @@ export default function JobDetail() {
             {isDriver ? (
               <>
                 {job.externalApplyUrl ? (
-                  <a href={job.externalApplyUrl} target="_blank" rel="noopener noreferrer" style={{ display: "block", width: "100%", padding: "15px", borderRadius: 13, background: "#F5A623", color: "#000", fontSize: 15, fontWeight: 800, textDecoration: "none", textAlign: "center", letterSpacing: -0.3, boxSizing: "border-box" }}>
+                  <a href={job.externalApplyUrl} target="_blank" rel="noopener noreferrer" onClick={() => track("apply_initiated", { jobId: job.id, jobTitle: job.title, source: "panel_external" })} style={{ display: "block", width: "100%", padding: "15px", borderRadius: 13, background: "#F5A623", color: "#000", fontSize: 15, fontWeight: 800, textDecoration: "none", textAlign: "center", letterSpacing: -0.3, boxSizing: "border-box" }}>
                     Ansök på företagets hemsida ↗
                   </a>
                 ) : (
-                  <Link to={`/jobb/${id}/ansok`} style={{ display: "block", width: "100%", padding: "15px", borderRadius: 13, background: "#F5A623", color: "#000", fontSize: 15, fontWeight: 800, textDecoration: "none", textAlign: "center", letterSpacing: -0.3, boxSizing: "border-box" }}>
+                  <Link to={`/jobb/${id}/ansok`} onClick={() => track("apply_initiated", { jobId: job.id, jobTitle: job.title, source: "panel" })} style={{ display: "block", width: "100%", padding: "15px", borderRadius: 13, background: "#F5A623", color: "#000", fontSize: 15, fontWeight: 800, textDecoration: "none", textAlign: "center", letterSpacing: -0.3, boxSizing: "border-box" }}>
                     Ansök nu →
                   </Link>
                 )}
@@ -1055,11 +1058,11 @@ export default function JobDetail() {
           {isDriver ? (
             <>
               {job.externalApplyUrl ? (
-                <a href={job.externalApplyUrl} target="_blank" rel="noopener noreferrer" style={{ flex: 1, padding: "14px", borderRadius: 13, background: "#F5A623", color: "#000", fontSize: 15, fontWeight: 800, textDecoration: "none", textAlign: "center" }}>
+                <a href={job.externalApplyUrl} target="_blank" rel="noopener noreferrer" onClick={() => track("apply_initiated", { jobId: job.id, jobTitle: job.title, source: "sticky_external" })} style={{ flex: 1, padding: "14px", borderRadius: 13, background: "#F5A623", color: "#000", fontSize: 15, fontWeight: 800, textDecoration: "none", textAlign: "center" }}>
                   Ansök ↗
                 </a>
               ) : (
-                <Link to={`/jobb/${id}/ansok`} style={{ flex: 1, padding: "14px", borderRadius: 13, background: "#F5A623", color: "#000", fontSize: 15, fontWeight: 800, textDecoration: "none", textAlign: "center" }}>
+                <Link to={`/jobb/${id}/ansok`} onClick={() => track("apply_initiated", { jobId: job.id, jobTitle: job.title, source: "sticky" })} style={{ flex: 1, padding: "14px", borderRadius: 13, background: "#F5A623", color: "#000", fontSize: 15, fontWeight: 800, textDecoration: "none", textAlign: "center" }}>
                   Ansök nu →
                 </Link>
               )}

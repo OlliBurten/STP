@@ -7,6 +7,7 @@ import { fetchMyJobs } from "../api/jobs.js";
 import { fetchMyCompanyProfile, fetchJobViewStats, fetchMatchingDrivers } from "../api/companies.js";
 import { usePageTitle } from "../hooks/usePageTitle.js";
 import { useCompanyTour } from "../hooks/useCompanyTour.js";
+import CompanyBottomNav from "../components/CompanyBottomNav";
 
 // ─── Icons ───────────────────────────────────────────────────────────────────
 function Icon({ n, size = 18, color = "currentColor" }) {
@@ -486,9 +487,143 @@ export default function ForCompanies() {
     { label: "Profilvisningar",        value: "—",                            delta: "Senaste 30 dagarna",                                                   positive: null,                                                  icon: "eye",       glow: "#7dd3c8" },
   ];
 
+  if (isMobile) {
+    const companyInitials = companyName.trim().split(/\s+/).map(w => w[0]).join("").slice(0, 2).toUpperCase();
+    const mobileKpis = [
+      { label: "Nya ansökningar", value: newApplications, sub: newApplications > 0 ? "+idag" : "Inga nya", color: "#F5A623", icon: "user", to: "/foretag/annonser" },
+      { label: "Olästa meddelanden", value: companyUnreadConversationCount, sub: companyUnreadConversationCount > 0 ? "Kräver svar" : "Alla klara", color: "#f87171", icon: "msg", to: "/foretag/meddelanden" },
+      { label: "Aktiva annonser", value: activeJobs.length, sub: `av ${jobs.length} totalt`, color: "#4ade80", icon: "briefcase", to: "/foretag/annonser" },
+      { label: "Profilvisningar", value: "—", sub: "Senaste 30 dgr", color: "#60a5fa", icon: "eye" },
+    ];
+    return (
+      <div style={{ minHeight: "100vh", background: "#060f0f", color: "#f0faf9", marginTop: "-64px", paddingTop: 0 }}>
+        {/* Mobile header */}
+        <div style={{ padding: "52px 20px 12px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ width: 34, height: 34, borderRadius: 9, background: "#1F5F5C", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 11, color: "#F5A623", flexShrink: 0 }}>{companyInitials}</div>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 800, lineHeight: 1.2 }}>{companyName.length > 22 ? companyName.slice(0, 22) + "…" : companyName}</div>
+              <div style={{ fontSize: 10.5, color: isVerified ? "#4ade80" : "rgba(255,255,255,0.5)" }}>{isVerified ? "✓ Verifierat" : "Verifiering pågår"}</div>
+            </div>
+          </div>
+          <button style={{ width: 40, height: 40, borderRadius: 99, background: "rgba(255,255,255,0.05)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
+            <Icon n="bell" size={18} color="rgba(255,255,255,0.85)" />
+            {(newApplications + companyUnreadConversationCount) > 0 && (
+              <span style={{ position: "absolute", top: 7, right: 8, width: 8, height: 8, borderRadius: 99, background: "#F5A623", border: "2px solid #060f0f" }} />
+            )}
+          </button>
+        </div>
+
+        <div style={{ overflowY: "auto", paddingBottom: 100 }}>
+          {/* Greeting */}
+          <div style={{ padding: "4px 20px 20px" }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "#F5A623", letterSpacing: 1.3, textTransform: "uppercase", marginBottom: 6 }}>{timeGreeting()}, {companyShort}</div>
+            <h1 style={{ fontSize: 24, fontWeight: 800, letterSpacing: -0.8, lineHeight: 1.2 }}>
+              {newApplications > 0 ? <>Du har <span style={{ color: "#F5A623" }}>{newApplications} nya kandidater</span> att granska.</> : <>Välkommen tillbaka, <span style={{ color: "#F5A623" }}>{companyShort}</span>.</>}
+            </h1>
+          </div>
+
+          {/* Verification gate */}
+          {!loading && !isVerified && (
+            <div style={{ margin: "0 20px 20px", padding: 16, background: "rgba(245,166,35,0.06)", border: "1px solid rgba(245,166,35,0.25)", borderRadius: 13 }}>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 11, marginBottom: 12 }}>
+                <div style={{ width: 32, height: 32, borderRadius: 99, background: "rgba(245,166,35,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <Icon n="shield" size={16} color="#F5A623" />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13.5, fontWeight: 800, marginBottom: 2 }}>Slutför verifiering</div>
+                  <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.65)", lineHeight: 1.45 }}>2 av 4 steg klara. Tar ~1 arbetsdag.</div>
+                </div>
+              </div>
+              <Link to="/installningar?section=verifiering" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, width: "100%", padding: 11, borderRadius: 11, background: "#F5A623", border: "none", color: "#000", fontSize: 13, fontWeight: 800, textDecoration: "none", minHeight: 42 }}>
+                Fortsätt verifiering <Icon n="chev" size={13} color="#000" />
+              </Link>
+            </div>
+          )}
+
+          {/* KPI grid */}
+          <div style={{ padding: "0 20px 18px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            {mobileKpis.map((k, i) => {
+              const card = (
+                <div key={i} style={{ padding: "14px", background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 13 }}>
+                  <div style={{ width: 30, height: 30, borderRadius: 9, background: `${k.color}1a`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 10 }}>
+                    <Icon n={k.icon} size={14} color={k.color} />
+                  </div>
+                  <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: -0.8, lineHeight: 1, marginBottom: 4 }}>{k.value}</div>
+                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", fontWeight: 600 }}>{k.label}</div>
+                  {k.sub && <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", marginTop: 3 }}>{k.sub}</div>}
+                </div>
+              );
+              return k.to ? <Link key={i} to={k.to} style={{ textDecoration: "none", color: "inherit" }}>{card}</Link> : card;
+            })}
+          </div>
+
+          {/* Quick actions */}
+          <div style={{ padding: "0 20px 24px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <Link to="/foretag/annonsera" style={{ padding: "14px 16px", borderRadius: 13, background: "linear-gradient(135deg,#F5A623,#d97706)", color: "#000", fontSize: 13, fontWeight: 800, textDecoration: "none", display: "flex", alignItems: "center", gap: 9, boxShadow: "0 4px 18px rgba(245,166,35,0.25)" }}>
+              <Icon n="plus" size={15} color="#000" /> Publicera jobb
+            </Link>
+            <Link to="/foretag/chaufforer" style={{ padding: "14px 16px", borderRadius: 13, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "#fff", fontSize: 13, fontWeight: 700, textDecoration: "none", display: "flex", alignItems: "center", gap: 9 }}>
+              <Icon n="user" size={14} /> Hitta förare
+            </Link>
+          </div>
+
+          {/* Activity feed */}
+          <div style={{ padding: "0 20px 20px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <h3 style={{ fontSize: 14, fontWeight: 800, letterSpacing: -0.3 }}>Senaste aktivitet</h3>
+              <Link to="/foretag/meddelanden" style={{ fontSize: 11.5, color: "#F5A623", textDecoration: "none", fontWeight: 700 }}>Se alla →</Link>
+            </div>
+            <div style={{ background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 13, overflow: "hidden" }}>
+              {conversations.slice(0, 4).length === 0 ? (
+                <div style={{ padding: "24px 16px", textAlign: "center", fontSize: 13, color: "rgba(255,255,255,0.4)" }}>Ingen aktivitet ännu.</div>
+              ) : conversations.slice(0, 4).map((c, i) => {
+                const job = jobs.find(j => j.id === c.jobId);
+                const name = c.driverName || c.driverEmail?.split("@")[0] || "Förare";
+                const isNew = !c.readByCompanyAt;
+                const avatar = name.slice(0, 2).toUpperCase();
+                const color = isNew ? "#F5A623" : "#4ade80";
+                return (
+                  <div key={c.id || i} style={{ display: "flex", alignItems: "center", gap: 11, padding: "12px 14px", borderTop: i > 0 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 99, background: color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: "#000", flexShrink: 0 }}>{avatar}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 12.5, color: "#fff", lineHeight: 1.35 }}>
+                        <strong style={{ fontWeight: 700 }}>{name}</strong> <span style={{ color: "rgba(255,255,255,0.5)" }}>{isNew ? "sökte" : "svarade i"}</span> <strong style={{ fontWeight: 700 }}>{job?.title || "en annons"}</strong>
+                      </div>
+                      <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>{daysAgo(c.lastMessageAt || c.createdAt)}</div>
+                    </div>
+                    <Icon n="chev" size={13} color="rgba(255,255,255,0.3)" />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Suggested drivers */}
+          {matchingDrivers.length > 0 && (
+            <div style={{ padding: "0 20px 20px" }}>
+              <div style={{ background: "linear-gradient(135deg, rgba(245,166,35,0.06), rgba(245,166,35,0.01))", border: "1px solid rgba(245,166,35,0.2)", borderRadius: 13, padding: 16 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                  <Icon n="spark" size={14} color="#F5A623" />
+                  <span style={{ fontSize: 13, fontWeight: 800 }}>{matchingDrivers.length} förare matchar era jobb</span>
+                </div>
+                <p style={{ fontSize: 11.5, color: "rgba(255,255,255,0.55)", marginBottom: 14, lineHeight: 1.5 }}>Baserat på era öppna annonser och förare som söker aktivt i området.</p>
+                <Link to="/foretag/chaufforer" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, width: "100%", padding: 11, borderRadius: 11, background: "rgba(245,166,35,0.12)", border: "1px solid rgba(245,166,35,0.3)", color: "#F5A623", fontSize: 12.5, fontWeight: 800, textDecoration: "none", minHeight: 40 }}>
+                  Visa matchande förare <Icon n="chev" size={12} color="#F5A623" />
+                </Link>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <CompanyBottomNav unreadCount={companyUnreadConversationCount} />
+      </div>
+    );
+  }
+
   return (
     <div style={{ minHeight: "100vh", background: "#060f0f", color: "#f0faf9", marginTop: "-64px", paddingTop: "64px" }}>
-      <main style={{ maxWidth: 1280, margin: "0 auto", padding: isMobile ? "24px 20px 60px" : "32px 40px 60px" }}>
+      <main style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 40px 60px" }}>
 
         {/* Hero */}
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 28, gap: 24, flexWrap: "wrap" }}>
@@ -526,12 +661,12 @@ export default function ForCompanies() {
         {!loading && !isVerified && <VerificationGate isMobile={isMobile} />}
 
         {/* KPI-grid */}
-        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4,1fr)", gridAutoRows: "1fr", gap: 14, marginBottom: 28 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gridAutoRows: "1fr", gap: 14, marginBottom: 28 }}>
           {kpis.map((k, i) => <KpiCard key={i} {...k} />)}
         </div>
 
         {/* 2-kol layout */}
-        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 360px", gap: 24, alignItems: "flex-start" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 24, alignItems: "flex-start" }}>
           <div>
             <PerformanceChart weeks={jobViewStats.weeks} total={jobViewStats.total} />
             <ActivityFeed conversations={conversations} jobs={jobs} />

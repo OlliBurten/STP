@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { useProfile } from "../context/ProfileContext";
 import { useAuth } from "../context/AuthContext";
+import CompanyBottomNav from "../components/CompanyBottomNav";
 import { calcYearsExperience } from "../utils/profileUtils";
 import { getMatchCriteria, getMatchingDriversForJob } from "../utils/matchUtils";
 import { DriverListSkeleton } from "../components/LoadingBlock";
@@ -54,7 +55,7 @@ function Icon({ name, size = 18 }) {
 }
 
 /* ── Driver row ── */
-function DriverRow({ driver, pct, onClick }) {
+function DriverRow({ driver, pct, onClick, isMobile }) {
   const [hover, setHover] = useState(false);
   const mc = pct != null ? matchColor(pct) : null;
   const color = driverColor(driver);
@@ -64,11 +65,11 @@ function DriverRow({ driver, pct, onClick }) {
   return (
     <div
       onClick={onClick}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
+      onMouseEnter={isMobile ? undefined : () => setHover(true)}
+      onMouseLeave={isMobile ? undefined : () => setHover(false)}
       style={{
-        display: "flex", alignItems: "center", gap: 18,
-        padding: "18px 22px", background: "#0a1414",
+        display: "flex", alignItems: "center", gap: isMobile ? 13 : 18,
+        padding: isMobile ? "14px 16px" : "18px 22px", background: "#0a1414",
         border: `1px solid ${hover ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.05)"}`,
         borderRadius: 14, cursor: "pointer", transition: "border-color .15s",
       }}
@@ -96,8 +97,8 @@ function DriverRow({ driver, pct, onClick }) {
   );
 }
 
-/* ── Filter sheet (right overlay) ── */
-function FilterSheet({ open, filters, setFilters, onClose }) {
+/* ── Filter sheet (right panel on desktop, bottom sheet on mobile) ── */
+function FilterSheet({ open, filters, setFilters, onClose, isMobile }) {
   if (!open) return null;
   const toggle = (key, val) => setFilters(p => ({ ...p, [key]: p[key] === val ? "" : val }));
 
@@ -114,8 +115,76 @@ function FilterSheet({ open, filters, setFilters, onClose }) {
       border: `1px solid ${on ? "rgba(245,166,35,0.4)" : "rgba(255,255,255,0.07)"}`,
       color: on ? "#F5A623" : "rgba(255,255,255,0.65)",
       fontSize: 12.5, fontWeight: 600, transition: "all .15s",
+      minHeight: 40,
     }}>{children}</button>
   );
+
+  const filterContent = (
+    <>
+      <Section title="Tillgänglighet">
+        {availabilityTypes.slice(0, 3).map(a => (
+          <Chip key={a.value} on={filters.availability === a.value} onClick={() => toggle("availability", a.value)}>{a.label}</Chip>
+        ))}
+      </Section>
+      <Section title="Körkort">
+        {["B", "C", "CE", "D"].map(l => (
+          <Chip key={l} on={filters.license === l} onClick={() => toggle("license", l)}>{l}</Chip>
+        ))}
+      </Section>
+      <Section title="Segment">
+        {segmentOptions.map(s => (
+          <Chip key={s.value} on={filters.segment === s.value} onClick={() => toggle("segment", s.value)}>{s.label}</Chip>
+        ))}
+      </Section>
+      <Section title="Region">
+        {regions.slice(0, 9).map(r => (
+          <Chip key={r} on={filters.region === r} onClick={() => toggle("region", r)}>{r}</Chip>
+        ))}
+      </Section>
+      <Section title="Certifikat">
+        {["YKB", "ADR", "ADR_Tank", "Kran", "Truck_B"].map(c => (
+          <Chip key={c} on={filters.certificate === c} onClick={() => toggle("certificate", c)}>{c.replace(/_/g, " ")}</Chip>
+        ))}
+      </Section>
+      <Section title="Minsta erfarenhet">
+        {[["1-3", "1+ år"], ["3-5", "3+ år"], ["5-10", "5+ år"], ["10+", "10+ år"]].map(([val, label]) => (
+          <Chip key={val} on={filters.experience === val} onClick={() => toggle("experience", val)}>{label}</Chip>
+        ))}
+      </Section>
+    </>
+  );
+
+  if (isMobile) {
+    return (
+      <>
+        <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 60 }} />
+        <div style={{
+          position: "fixed", left: 0, right: 0, bottom: 0,
+          background: "#0a1414", borderTopLeftRadius: 24, borderTopRightRadius: 24,
+          zIndex: 70, maxHeight: "80vh", display: "flex", flexDirection: "column",
+          animation: "slideUp .25s ease",
+        }}>
+          <div style={{ display: "flex", justifyContent: "center", padding: "10px 0 6px" }}>
+            <div style={{ width: 38, height: 4, borderRadius: 99, background: "rgba(255,255,255,0.15)" }} />
+          </div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "4px 20px 14px" }}>
+            <h3 style={{ fontSize: 18, fontWeight: 800, letterSpacing: -0.4, color: "#f0faf9" }}>Filter</h3>
+            <button onClick={onClose} style={{ width: 36, height: 36, borderRadius: 99, background: "rgba(255,255,255,0.05)", border: "none", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="x" size={16} /></button>
+          </div>
+          <div style={{ flex: 1, overflowY: "auto", padding: "0 20px" }}>
+            {filterContent}
+          </div>
+          <div style={{ padding: "16px 20px 36px", display: "flex", gap: 10 }}>
+            <button
+              onClick={() => setFilters({ search: "", region: "", license: "", certificate: "", segment: "", availability: "", experience: "" })}
+              style={{ flex: 1, padding: "14px", borderRadius: 99, background: "transparent", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.75)", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}
+            >Rensa</button>
+            <button onClick={onClose} style={{ flex: 1.5, padding: "14px", borderRadius: 99, background: "linear-gradient(135deg,#F5A623,#d97706)", border: "none", color: "#000", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>Visa resultat</button>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -126,36 +195,7 @@ function FilterSheet({ open, filters, setFilters, onClose }) {
           <button onClick={onClose} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.6)", cursor: "pointer", display: "flex" }}><Icon name="x" size={20} /></button>
         </div>
         <div style={{ flex: 1, overflowY: "auto", padding: "24px" }}>
-          <Section title="Tillgänglighet">
-            {availabilityTypes.slice(0, 3).map(a => (
-              <Chip key={a.value} on={filters.availability === a.value} onClick={() => toggle("availability", a.value)}>{a.label}</Chip>
-            ))}
-          </Section>
-          <Section title="Körkort">
-            {["B", "C", "CE", "D"].map(l => (
-              <Chip key={l} on={filters.license === l} onClick={() => toggle("license", l)}>{l}</Chip>
-            ))}
-          </Section>
-          <Section title="Segment">
-            {segmentOptions.map(s => (
-              <Chip key={s.value} on={filters.segment === s.value} onClick={() => toggle("segment", s.value)}>{s.label}</Chip>
-            ))}
-          </Section>
-          <Section title="Region">
-            {regions.slice(0, 9).map(r => (
-              <Chip key={r} on={filters.region === r} onClick={() => toggle("region", r)}>{r}</Chip>
-            ))}
-          </Section>
-          <Section title="Certifikat">
-            {["YKB", "ADR", "ADR_Tank", "Kran", "Truck_B"].map(c => (
-              <Chip key={c} on={filters.certificate === c} onClick={() => toggle("certificate", c)}>{c.replace(/_/g, " ")}</Chip>
-            ))}
-          </Section>
-          <Section title="Minsta erfarenhet">
-            {[["1-3", "1+ år"], ["3-5", "3+ år"], ["5-10", "5+ år"], ["10+", "10+ år"]].map(([val, label]) => (
-              <Chip key={val} on={filters.experience === val} onClick={() => toggle("experience", val)}>{label}</Chip>
-            ))}
-          </Section>
+          {filterContent}
         </div>
         <div style={{ padding: "18px 24px", borderTop: "1px solid rgba(255,255,255,0.05)", display: "flex", gap: 10 }}>
           <button
@@ -463,7 +503,7 @@ export default function DriverSearch() {
 
   return (
     <div style={{ minHeight: "100vh", background: "#060f0f", color: "#f0faf9", fontFamily: "'DM Sans', system-ui, sans-serif", marginTop: "-64px", paddingTop: 64 }}>
-      <main style={{ maxWidth: 720, margin: "0 auto", padding: isMobile ? "24px 16px 80px" : "32px 32px 80px" }}>
+      <main style={{ maxWidth: 720, margin: "0 auto", padding: isMobile ? "24px 16px 120px" : "32px 32px 80px" }}>
         {/* Title */}
         <div style={{ marginBottom: 24 }}>
           <h1 style={{ fontSize: 30, fontWeight: 800, letterSpacing: -1, marginBottom: 6, color: "#f0faf9" }}>Hitta förare</h1>
@@ -531,6 +571,7 @@ export default function DriverSearch() {
                 driver={driver}
                 pct={matchJob ? pct : null}
                 onClick={() => setSelectedDriverId(driver.id)}
+                isMobile={isMobile}
               />
             ))}
           </div>
@@ -551,7 +592,10 @@ export default function DriverSearch() {
         filters={filters}
         setFilters={setFilters}
         onClose={() => setFiltersOpen(false)}
+        isMobile={isMobile}
       />
+
+      {isMobile && <CompanyBottomNav />}
 
       {selectedEntry && (
         <DetailModal

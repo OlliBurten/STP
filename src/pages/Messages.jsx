@@ -9,6 +9,7 @@ import { getMyConversationReview, submitCompanyReview } from "../api/reviews.js"
 import LoadingBlock from "../components/LoadingBlock";
 import { useToast } from "../context/ToastContext";
 import { useIsMobile } from "../hooks/useIsMobile";
+import CompanyBottomNav from "../components/CompanyBottomNav";
 
 // ─── Quick replies ────────────────────────────────────────────────────────────
 const DRIVER_QUICK = [
@@ -49,7 +50,7 @@ function avatarBg(name) {
 }
 
 // ─── Conversation list item ───────────────────────────────────────────────────
-function ConvItem({ conv, isDriver, isActive, basePath }) {
+function ConvItem({ conv, isDriver, isActive, basePath, isMobile }) {
   const other = isDriver ? conv.companyName : conv.driverName;
   const lastMsg = conv.messages?.[conv.messages.length - 1];
   const relTime = lastMsg ? (() => {
@@ -66,6 +67,46 @@ function ConvItem({ conv, isDriver, isActive, basePath }) {
     ? (!conv.readByDriverAt && lastMsg?.sender !== "driver")
     : (!conv.readByCompanyAt);
   const s = stage ? (STAGE[stage] ?? STAGE.applied) : null;
+
+  // Mobile company: compact row matching åkeri inkorg design
+  if (isMobile && !isDriver) {
+    const stageColor = conv.selectedByCompanyAt ? "#4ade80" : conv.readByCompanyAt ? "#a78bfa" : "#F5A623";
+    const stageLabel = conv.selectedByCompanyAt ? "UTVALD" : conv.readByCompanyAt ? "KONTAKTAD" : "NY";
+    return (
+      <Link
+        to={`${basePath}/${conv.id}`}
+        style={{ display: "block", padding: "14px 18px", textDecoration: "none", borderBottom: "1px solid rgba(255,255,255,0.04)", minHeight: 74 }}
+      >
+        <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+          <div style={{ position: "relative", flexShrink: 0 }}>
+            <div style={{ width: 46, height: 46, borderRadius: 99, background: avatarBg(other), display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 14, color: "#fff" }}>
+              {avatarInitials(other)}
+            </div>
+            {unread && (
+              <div style={{ position: "absolute", top: -3, right: -3, minWidth: 18, height: 18, padding: "0 5px", borderRadius: 99, background: "#F5A623", color: "#000", fontSize: 10, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid #060f0f" }}>1</div>
+            )}
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 2 }}>
+              <span style={{ fontSize: 14, fontWeight: unread ? 800 : 700, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{other}</span>
+              <span style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", flexShrink: 0 }}>{relTime}</span>
+            </div>
+            {conv.jobTitle && (
+              <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.5)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: 5 }}>{conv.jobTitle}</div>
+            )}
+            <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+              <span style={{ padding: "2px 6px", borderRadius: 5, background: `${stageColor}1a`, color: stageColor, fontSize: 9.5, fontWeight: 800, letterSpacing: 0.3 }}>{stageLabel}</span>
+              {typeof conv.matchScore === "number" && <span style={{ fontSize: 11, color: "#F5A623", fontWeight: 700 }}>{conv.matchScore}%</span>}
+              <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
+                {lastMsg?.sender === "company" && <span style={{ color: "rgba(255,255,255,0.35)" }}>Du: </span>}
+                {lastMsg?.content || "—"}
+              </span>
+            </div>
+          </div>
+        </div>
+      </Link>
+    );
+  }
 
   return (
     <Link
@@ -523,15 +564,17 @@ export default function Messages() {
             <div style={{ padding: isMobile ? "4px 20px 12px" : "22px 22px 14px", paddingTop: isMobile ? 68 : undefined, borderBottom: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: isMobile ? 6 : 14 }}>
                 <h1 style={{ fontSize: isMobile ? 26 : 20, fontWeight: isMobile ? 800 : 900, color: "#f0faf9", letterSpacing: isMobile ? -1 : -0.5 }}>
-                  {isDriver ? "Inkorg" : "Konversationer"}
+                  Inkorg
                 </h1>
                 {!isMobile && <span style={{ fontSize: 12, color: "rgba(240,250,249,0.4)" }}>{allConversations.length} totalt</span>}
               </div>
-              {isMobile && isDriver && (
-                <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.55)", marginBottom: 10 }}>{unreadCount > 0 ? `${unreadCount} olästa meddelanden` : "Inga olästa meddelanden"}</div>
+              {isMobile && (
+                <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.55)", marginBottom: 10 }}>
+                  {unreadCount > 0 ? `${unreadCount} olästa meddelanden` : "Inga olästa meddelanden"}
+                </div>
               )}
 
-              {/* Company filter */}
+              {/* Company filter (multi-org) */}
               {!isDriver && companies.length > 1 && (
                 <select
                   value={companyFilter}
@@ -542,10 +585,10 @@ export default function Messages() {
                 </select>
               )}
 
-              {/* Stage filter pills */}
-              {isDriver && (
+              {/* Stage filter pills — driver and company mobile */}
+              {(isDriver || isMobile) && (
                 <div style={{ display: "flex", gap: 6, flexWrap: isMobile ? "nowrap" : "wrap", overflowX: isMobile ? "auto" : "visible" }}>
-                  {STAGE_FILTERS.map(({ k, l, c }) => {
+                  {STAGE_FILTERS.filter(({ k }) => isDriver || ["all", "unread", "selected"].includes(k)).map(({ k, l, c }) => {
                     const active = stageFilter === k;
                     return (
                       <button
@@ -562,7 +605,7 @@ export default function Messages() {
               )}
             </div>
 
-            <div style={{ flex: 1, overflowY: "auto", paddingBottom: isMobile ? "calc(env(safe-area-inset-bottom, 0px) + 80px)" : 0 }}>
+            <div style={{ flex: 1, overflowY: "auto", paddingBottom: isMobile ? "calc(env(safe-area-inset-bottom, 0px) + 120px)" : 0 }}>
               {conversationsLoading ? (
                 <div style={{ padding: "24px 16px" }}><LoadingBlock message="Hämtar..." /></div>
               ) : conversations.length === 0 ? (
@@ -578,11 +621,14 @@ export default function Messages() {
                 </div>
               ) : (
                 conversations.map((c) => (
-                  <ConvItem key={c.id} conv={c} isDriver={isDriver} isActive={c.id === id} basePath={basePath} />
+                  <ConvItem key={c.id} conv={c} isDriver={isDriver} isActive={c.id === id} basePath={basePath} isMobile={isMobile} />
                 ))
               )}
             </div>
           </div>
+
+          {/* ── Åkeri BottomNav (list only) ── */}
+          {!isDriver && isMobile && !id && <CompanyBottomNav unreadCount={unreadCount} />}
 
           {/* ── Chat panel ── */}
           <div style={{ flex: 1, background: "#080f0f", display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0 }}>

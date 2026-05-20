@@ -809,39 +809,91 @@ export default function Settings() {
   };
 
   return (
-    <main style={{ background: "#060f0f", minHeight: "100vh", marginTop: "-64px", paddingTop: isMobile ? 88 : 112 }}>
+    <main style={{ background: "#060f0f", minHeight: "100vh", marginTop: "-64px", paddingTop: isMobile ? 72 : 112 }}>
       <PageMeta title="Inställningar – STP" />
-      <div style={{ maxWidth: 1080, margin: "0 auto", padding: isMobile ? "0 20px 80px" : "0 32px 100px" }}>
+      <div style={{ maxWidth: 1080, margin: "0 auto", padding: isMobile ? "0 16px 80px" : "0 32px 100px" }}>
 
-        {/* Page header */}
-        <div style={{ marginBottom: isMobile ? 24 : 48 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(245,166,35,0.85)", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>
-            {isCompany ? "Företagskonto" : "Förarkonto"}
+        {/* Page header — desktop only */}
+        {!isMobile && (
+          <div style={{ marginBottom: 48 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(245,166,35,0.85)", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>
+              {isCompany ? "Företagskonto" : "Förarkonto"}
+            </div>
+            <h1 style={{ fontSize: 36, fontWeight: 900, letterSpacing: -1.2, margin: 0, color: "#f0faf9" }}>Inställningar</h1>
           </div>
-          <h1 style={{ fontSize: isMobile ? 28 : 36, fontWeight: 900, letterSpacing: -1.2, margin: 0, color: "#f0faf9" }}>Inställningar</h1>
-        </div>
+        )}
+
+        {/* Mobile title bar */}
+        {isMobile && (
+          <div style={{ marginBottom: 20 }}>
+            <h1 style={{ fontSize: 26, fontWeight: 900, letterSpacing: -0.8, margin: 0, color: "#f0faf9" }}>Inställningar</h1>
+          </div>
+        )}
 
         {isMobile ? (
-          /* Mobile: horizontal tab bar + content below */
+          /* Mobile: iOS-style settings list → detail push */
           <div>
-            <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 12, marginBottom: 20, WebkitOverflowScrolling: "touch" }}>
-              {sections.map((s) => {
-                const active = section === s.k;
-                return (
-                  <button key={s.k} type="button" onClick={() => setSection(s.k)}
-                    style={{ flexShrink: 0, padding: "9px 14px", borderRadius: 99, display: "flex", alignItems: "center", gap: 7, background: active ? "rgba(245,166,35,0.12)" : "rgba(255,255,255,0.04)", border: `1px solid ${active ? "rgba(245,166,35,0.3)" : "rgba(255,255,255,0.07)"}`, color: active ? "#F5A623" : "rgba(240,250,249,0.7)", fontSize: 13, fontWeight: active ? 700 : 600, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
-                    <Icon n={s.i} s={14} c="currentColor" />
-                    {s.l}
-                  </button>
-                );
-              })}
-            </div>
-            <div>{renderContent()}</div>
-            <div style={{ marginTop: 16 }}>
-              <Link to={isCompany ? "/foretag" : "/profil"} style={{ fontSize: 13, fontWeight: 600, color: "rgba(240,250,249,0.5)", textDecoration: "none" }}>
-                ← Tillbaka till {isCompany ? "dashboard" : "profil"}
-              </Link>
-            </div>
+            {section !== null ? (
+              /* Detail view */
+              <div>
+                <button type="button" onClick={() => setSection(null)} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0", background: "none", border: "none", cursor: "pointer", color: "#F5A623", fontSize: 14, fontWeight: 700, fontFamily: "inherit", marginBottom: 20 }}>
+                  ← Tillbaka
+                </button>
+                {renderContent()}
+              </div>
+            ) : (
+              /* Index view */
+              <div>
+                {/* Profile card */}
+                <div style={{ background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 14, padding: 16, display: "flex", alignItems: "center", gap: 14, marginBottom: 8 }}>
+                  {isCompany ? (
+                    <div style={{ width: 56, height: 56, borderRadius: 14, background: "#1F5F5C", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 17, color: "#F5A623", flexShrink: 0 }}>
+                      {(user?.name || "?").split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()}
+                    </div>
+                  ) : (
+                    <div style={{ position: "relative", flexShrink: 0 }}>
+                      <div style={{ width: 56, height: 56, borderRadius: 99, background: "linear-gradient(135deg,#F5A623,#d97706)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 18, color: "#000" }}>
+                        {(user?.name || "?").split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()}
+                      </div>
+                      <div style={{ position: "absolute", bottom: -2, right: -2, width: 18, height: 18, borderRadius: 99, background: "#4ade80", border: "3px solid #0a1414", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <Icon n="check" s={9} c="#000" />
+                      </div>
+                    </div>
+                  )}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 2 }}>{user?.name || "—"}</div>
+                    <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.55)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user?.email || ""}</div>
+                    {user?.status === "VERIFIED" && (
+                      <div style={{ marginTop: 4, padding: "2px 8px", borderRadius: 99, background: "rgba(74,222,128,0.12)", border: "1px solid rgba(74,222,128,0.3)", display: "inline-block", fontSize: 10, fontWeight: 800, color: "#4ade80", letterSpacing: 0.5 }}>✓ VERIFIERAD</div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Settings groups */}
+                <div style={{ background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 14, overflow: "hidden", marginBottom: 8 }}>
+                  {sections.map((s, i) => (
+                    <button key={s.k} type="button" onClick={() => setSection(s.k)} style={{ width: "100%", padding: "14px 16px", background: "transparent", border: "none", borderBottom: i < sections.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 13, minHeight: 54, textAlign: "left", fontFamily: "inherit" }}>
+                      <div style={{ width: 30, height: 30, borderRadius: 8, background: "rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <Icon n={s.i} s={14} c="rgba(255,255,255,0.75)" />
+                      </div>
+                      <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: "#fff" }}>{s.l}</span>
+                      <span style={{ color: "rgba(255,255,255,0.3)", fontSize: 12 }}>›</span>
+                    </button>
+                  ))}
+                </div>
+
+                <div style={{ background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 14, overflow: "hidden", marginBottom: 24 }}>
+                  <Link to="/loggaut" style={{ display: "flex", alignItems: "center", gap: 13, padding: "14px 16px", textDecoration: "none", minHeight: 54 }}>
+                    <div style={{ width: 30, height: 30, borderRadius: 8, background: "rgba(248,113,113,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <Icon n="trash" s={14} c="#f87171" />
+                    </div>
+                    <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: "#f87171" }}>Logga ut</span>
+                  </Link>
+                </div>
+
+                <div style={{ textAlign: "center", fontSize: 11, color: "rgba(255,255,255,0.25)", paddingBottom: 8 }}>STP v2.4.1</div>
+              </div>
+            )}
           </div>
         ) : (
           /* Desktop: sidebar + content grid */

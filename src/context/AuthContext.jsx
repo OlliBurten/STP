@@ -3,7 +3,7 @@ import { apiPost, AUTH_INVALID_EVENT, getActiveOrgId, setActiveOrgId } from "../
 import { fetchMe } from "../api/auth.js";
 import { startViewAs as apiStartViewAs, stopViewAs as apiStopViewAs } from "../api/admin.js";
 import { fetchMyOrganizations } from "../api/organizations.js";
-import { identifyUser, resetUser, track } from "../utils/posthog.js";
+import { identifyUser, resetUser, track, groupCompany } from "../utils/posthog.js";
 
 const AUTH_STORAGE_KEY = "drivermatch-auth";
 const SESSION_MAX_MS = 24 * 60 * 60 * 1000; // 24h
@@ -210,6 +210,7 @@ export function AuthProvider({ children }) {
       impersonation: normalizeImpersonation(data.impersonation),
     });
     identifyUser(u);
+    track("user_login", { method: "email", role: u.rawRole || u.role });
     return u;
   }, [commitAuthState]);
 
@@ -227,6 +228,7 @@ export function AuthProvider({ children }) {
         verificationBaseUrl,
       });
       const u = normalizeUser(data.user);
+      identifyUser(u);
       track("user_registered", { role: u.rawRole || u.role });
       return { user: u, emailVerificationSent: data.emailVerificationSent === true };
     },
@@ -269,6 +271,7 @@ export function AuthProvider({ children }) {
       impersonation: normalizeImpersonation(u?.impersonation),
     });
     identifyUser(normalized);
+    track(u?.shouldShowOnboarding ? "user_registered" : "user_login", { method: "oauth", role: normalized.rawRole || normalized.role });
     return normalized;
   }, [commitAuthState]);
 
@@ -363,6 +366,10 @@ export function AuthProvider({ children }) {
   }, [user?.id, token]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const activeOrg = userOrgs.find((o) => o.id === activeOrgId) || userOrgs[0] || null;
+
+  useEffect(() => {
+    if (activeOrg?.id) groupCompany(activeOrg.id, activeOrg.name);
+  }, [activeOrg?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const isDriver = user?.role === "driver";
   const isRecruiter = user?.role === "recruiter";

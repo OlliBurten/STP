@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useProfile } from "../context/ProfileContext";
 import { useAuth } from "../context/AuthContext";
+import { track, setPersonProperties } from "../utils/posthog.js";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { segmentOptions, internshipTypeOptions, encodeSchoolName } from "../data/segments";
 import { licenseTypes, regions } from "../data/mockJobs";
@@ -468,6 +469,22 @@ export default function DriverOnboardingWizard() {
     return true;
   };
 
+  const goNext = () => {
+    const props = { step: STEP_LABELS[step], stepIndex: step };
+    if (step === 0) {
+      props.segment = draft.isGymnasieelev ? "INTERNSHIP" : draft.primarySegment;
+      props.is_student = Boolean(draft.isGymnasieelev);
+    } else if (step === 2) {
+      props.license_count = (draft.licenses || []).length;
+      props.region = draft.region;
+    } else if (step === 3) {
+      props.experience_count = (draft.experience || []).length;
+      props.skipped_experience = (draft.experience || []).length === 0;
+    }
+    track("onboarding_step_completed", props);
+    setStep((s) => s + 1);
+  };
+
   const analyzeDebounceRef = useRef(null);
 
   useEffect(() => {
@@ -529,6 +546,20 @@ export default function DriverOnboardingWizard() {
         experience: draft.experience,
       });
       trackDriverOnboardingComplete(primarySegment);
+      track("onboarding_step_completed", { step: STEP_LABELS[4], stepIndex: 4 });
+      track("onboarding_completed", {
+        segment: primarySegment,
+        license_count: (draft.licenses || []).length,
+        region: draft.region,
+        has_experience: (draft.experience || []).length > 0,
+        has_summary: draft.summary.trim().length >= SUMMARY_MIN_LENGTH,
+      });
+      setPersonProperties({
+        onboarding_completed: true,
+        driver_segment: primarySegment,
+        driver_region: draft.region,
+        driver_license_count: (draft.licenses || []).length,
+      });
       sessionStorage.removeItem("stp_school");
       setDone(true);
       setTimeout(() => navigate("/profil", { replace: true }), 2500);
@@ -844,7 +875,7 @@ export default function DriverOnboardingWizard() {
 
     // ── Step 3: Erfarenhet ─────────────────────────────────────────────────────
     if (step === 3) return (
-      <ExperienceStep draft={draft} setDraft={setDraft} onSkip={() => setStep(4)} />
+      <ExperienceStep draft={draft} setDraft={setDraft} onSkip={goNext} />
     );
 
     // ── Step 4: Avsluta / Presentation ─────────────────────────────────────────
@@ -975,7 +1006,7 @@ export default function DriverOnboardingWizard() {
             </p>
           )}
           <button
-            onClick={step < 4 ? () => setStep(s => s + 1) : saveAndFinish}
+            onClick={step < 4 ? goNext : saveAndFinish}
             disabled={!canContinue() || saving}
             style={{
               width: "100%", padding: "16px", borderRadius: 14,
@@ -1057,7 +1088,7 @@ export default function DriverOnboardingWizard() {
               )}
               {step < 4 ? (
                 <Btn
-                  onClick={() => setStep((s) => s + 1)}
+                  onClick={goNext}
                   style={{ flex: step > 0 ? 1 : undefined, minWidth: step === 0 ? 200 : undefined }}
                   disabled={!canContinue()}
                 >

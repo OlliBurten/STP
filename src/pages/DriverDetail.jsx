@@ -7,6 +7,7 @@ import { availabilityTypes, getCertificateLabel } from "../data/profileData";
 import ReachOutModal from "../components/ReachOutModal";
 import { segmentLabel } from "../data/segments";
 import { fetchDriver, trackDriverProfileView } from "../api/drivers.js";
+import { track } from "../utils/posthog.js";
 import { fetchMyJobs } from "../api/jobs.js";
 import { fetchDriverSummary } from "../api/ai.js";
 import { matchScore, getMatchCriteria } from "../utils/matchUtils.js";
@@ -121,6 +122,7 @@ export default function DriverDetail() {
   useEffect(() => {
     if (!hasApi || !id) return;
     trackDriverProfileView(id).catch(() => {});
+    track("driver_profile_viewed", { driverId: id });
   }, [hasApi, id]);
 
   useEffect(() => {
@@ -199,32 +201,57 @@ export default function DriverDetail() {
         </Link>
 
         {/* Hero */}
-        <div style={{ display: "flex", gap: 20, alignItems: "flex-start", marginBottom: 20 }}>
-          <div style={{ position: "relative", flexShrink: 0 }}>
-            <div style={{ width: isMobile ? 56 : 72, height: isMobile ? 56 : 72, borderRadius: 99, background: color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: isMobile ? 18 : 22, color: "#000" }}>
-              {initials}
+        {isMobile ? (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", marginBottom: 24, position: "relative" }}>
+            <div style={{ position: "relative", marginBottom: 14 }}>
+              <div style={{ width: 84, height: 84, borderRadius: 99, background: color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 28, color: "#000" }}>
+                {initials}
+              </div>
+              <div style={{ position: "absolute", bottom: 2, right: 2, width: 20, height: 20, borderRadius: 99, background: availColor, border: "3px solid #060f0f" }} />
             </div>
-            <div style={{ position: "absolute", bottom: -1, right: -1, width: 18, height: 18, borderRadius: 99, background: availColor, border: "3px solid #060f0f" }} />
-          </div>
-          <div style={{ flex: 1 }}>
-            <h1 style={{ fontSize: isMobile ? 22 : 28, fontWeight: 800, letterSpacing: -0.8, marginBottom: 5, color: "#fff" }}>{driver.name}</h1>
-            <div style={{ fontSize: 13.5, color: "rgba(255,255,255,0.6)", marginBottom: 8 }}>
+            <h1 style={{ fontSize: 24, fontWeight: 800, letterSpacing: -0.8, marginBottom: 6, color: "#fff" }}>{driver.name}</h1>
+            <div style={{ fontSize: 13.5, color: "rgba(255,255,255,0.6)", marginBottom: 10 }}>
               {[driver.age && `${driver.age} år`, driver.location, yearsExp && `${yearsExp} år som chaufför`].filter(Boolean).join(" · ")}
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12.5 }}>
-              <span style={{ color: availColor, fontWeight: 600, display: "flex", alignItems: "center", gap: 5 }}>
-                <span style={{ width: 6, height: 6, borderRadius: 99, background: availColor, display: "inline-block" }} />
-                {availabilityLabel}
-              </span>
-            </div>
+            <span style={{ color: availColor, fontWeight: 600, fontSize: 13, display: "inline-flex", alignItems: "center", gap: 5 }}>
+              <span style={{ width: 6, height: 6, borderRadius: 99, background: availColor, display: "inline-block" }} />
+              {availabilityLabel}
+            </span>
+            <button
+              onClick={() => setStarred((s) => !s)}
+              style={{ position: "absolute", top: 0, right: 0, width: 42, height: 42, borderRadius: 11, background: starred ? "rgba(245,166,35,0.12)" : "rgba(255,255,255,0.04)", border: `1px solid ${starred ? "rgba(245,166,35,0.3)" : "rgba(255,255,255,0.08)"}`, color: starred ? "#F5A623" : "rgba(255,255,255,0.5)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+            >
+              <StarIcon filled={starred} />
+            </button>
           </div>
-          <button
-            onClick={() => setStarred((s) => !s)}
-            style={{ width: 42, height: 42, borderRadius: 11, background: starred ? "rgba(245,166,35,0.12)" : "rgba(255,255,255,0.04)", border: `1px solid ${starred ? "rgba(245,166,35,0.3)" : "rgba(255,255,255,0.08)"}`, color: starred ? "#F5A623" : "rgba(255,255,255,0.5)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
-          >
-            <StarIcon filled={starred} />
-          </button>
-        </div>
+        ) : (
+          <div style={{ display: "flex", gap: 20, alignItems: "flex-start", marginBottom: 20 }}>
+            <div style={{ position: "relative", flexShrink: 0 }}>
+              <div style={{ width: 72, height: 72, borderRadius: 99, background: color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 22, color: "#000" }}>
+                {initials}
+              </div>
+              <div style={{ position: "absolute", bottom: -1, right: -1, width: 18, height: 18, borderRadius: 99, background: availColor, border: "3px solid #060f0f" }} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: -0.8, marginBottom: 5, color: "#fff" }}>{driver.name}</h1>
+              <div style={{ fontSize: 13.5, color: "rgba(255,255,255,0.6)", marginBottom: 8 }}>
+                {[driver.age && `${driver.age} år`, driver.location, yearsExp && `${yearsExp} år som chaufför`].filter(Boolean).join(" · ")}
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12.5 }}>
+                <span style={{ color: availColor, fontWeight: 600, display: "flex", alignItems: "center", gap: 5 }}>
+                  <span style={{ width: 6, height: 6, borderRadius: 99, background: availColor, display: "inline-block" }} />
+                  {availabilityLabel}
+                </span>
+              </div>
+            </div>
+            <button
+              onClick={() => setStarred((s) => !s)}
+              style={{ width: 42, height: 42, borderRadius: 11, background: starred ? "rgba(245,166,35,0.12)" : "rgba(255,255,255,0.04)", border: `1px solid ${starred ? "rgba(245,166,35,0.3)" : "rgba(255,255,255,0.08)"}`, color: starred ? "#F5A623" : "rgba(255,255,255,0.5)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+            >
+              <StarIcon filled={starred} />
+            </button>
+          </div>
+        )}
 
         {/* Match strip */}
         {apiJobs.length > 0 && (
@@ -392,21 +419,38 @@ export default function DriverDetail() {
       </div>
 
       {/* Sticky action bar */}
-      <div style={{ position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", display: "flex", gap: 10, padding: "10px 12px", background: "rgba(10,20,20,0.92)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 99, backdropFilter: "blur(14px)", boxShadow: "0 12px 40px rgba(0,0,0,0.5)", zIndex: 40 }}>
-        <button
-          onClick={() => setStarred((s) => !s)}
-          style={{ padding: "10px 14px", borderRadius: 99, background: "transparent", border: "none", color: starred ? "#F5A623" : "rgba(255,255,255,0.7)", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600 }}
-        >
-          <StarIcon filled={starred} /> {starred ? "Sparad" : "Spara"}
-        </button>
-        <div style={{ width: 1, background: "rgba(255,255,255,0.08)" }} />
-        <button
-          onClick={() => setShowReachOut(true)}
-          style={{ padding: "10px 22px", borderRadius: 99, background: "linear-gradient(135deg,#F5A623,#d97706)", border: "none", color: "#000", fontSize: 13, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", gap: 7 }}
-        >
-          <MsgIcon /> Skicka meddelande
-        </button>
-      </div>
+      {isMobile ? (
+        <div style={{ position: "fixed", left: 0, right: 0, bottom: 0, padding: "12px 20px 32px", background: "rgba(6,15,15,0.95)", backdropFilter: "blur(16px)", borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", gap: 10, zIndex: 40 }}>
+          <button
+            onClick={() => setStarred((s) => !s)}
+            style={{ width: 52, height: 52, flexShrink: 0, borderRadius: 14, background: starred ? "rgba(245,166,35,0.12)" : "rgba(255,255,255,0.06)", border: `1px solid ${starred ? "rgba(245,166,35,0.3)" : "rgba(255,255,255,0.1)"}`, color: starred ? "#F5A623" : "rgba(255,255,255,0.6)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+          >
+            <StarIcon filled={starred} />
+          </button>
+          <button
+            onClick={() => { setShowReachOut(true); track("reach_out_modal_opened", { driverId: id }); }}
+            style={{ flex: 1, height: 52, borderRadius: 14, background: "linear-gradient(135deg,#F5A623,#d97706)", border: "none", color: "#000", fontSize: 15, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+          >
+            <MsgIcon /> Skicka meddelande
+          </button>
+        </div>
+      ) : (
+        <div style={{ position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", display: "flex", gap: 10, padding: "10px 12px", background: "rgba(10,20,20,0.92)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 99, backdropFilter: "blur(14px)", boxShadow: "0 12px 40px rgba(0,0,0,0.5)", zIndex: 40 }}>
+          <button
+            onClick={() => setStarred((s) => !s)}
+            style={{ padding: "10px 14px", borderRadius: 99, background: "transparent", border: "none", color: starred ? "#F5A623" : "rgba(255,255,255,0.7)", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600 }}
+          >
+            <StarIcon filled={starred} /> {starred ? "Sparad" : "Spara"}
+          </button>
+          <div style={{ width: 1, background: "rgba(255,255,255,0.08)" }} />
+          <button
+            onClick={() => { setShowReachOut(true); track("reach_out_modal_opened", { driverId: id }); }}
+            style={{ padding: "10px 22px", borderRadius: 99, background: "linear-gradient(135deg,#F5A623,#d97706)", border: "none", color: "#000", fontSize: 13, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", gap: 7 }}
+          >
+            <MsgIcon /> Skicka meddelande
+          </button>
+        </div>
+      )}
 
       {showReachOut && (
         <ReachOutModal

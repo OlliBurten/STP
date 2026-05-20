@@ -436,21 +436,34 @@ export default function CompanyOnboardingWizard() {
     <div style={wrapStyle}>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
 
-      {/* Minimal header */}
+      {/* Minimal header — on mobile: progress bar instead of step dots */}
       <header style={{ height: 64, display: "flex", alignItems: "center", justifyContent: "space-between", padding: isMobile ? "0 16px" : "0 32px", borderBottom: "1px solid rgba(255,255,255,0.04)", position: "sticky", top: 0, background: "rgba(6,15,15,0.96)", backdropFilter: "blur(14px)", zIndex: 50, marginTop: -64 }}>
-        <div style={{ fontWeight: 800, letterSpacing: -0.8, fontSize: 21 }}>STP</div>
-        <Link to="/loggaut" style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", textDecoration: "none", fontWeight: 600 }}>Avbryt och logga ut</Link>
+        {isMobile && step !== "done" && step > 1 ? (
+          <button type="button" onClick={() => setStep(s => s - 1)} style={{ width: 40, height: 40, borderRadius: 99, background: "rgba(255,255,255,0.05)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", flexShrink: 0 }}>
+            <Icon n="back" s={18} />
+          </button>
+        ) : (
+          <div style={{ fontWeight: 800, letterSpacing: -0.8, fontSize: 21 }}>STP</div>
+        )}
+        {isMobile && step !== "done" ? (
+          <div style={{ flex: 1, height: 4, background: "rgba(255,255,255,0.06)", borderRadius: 99, overflow: "hidden", margin: "0 16px" }}>
+            <div style={{ height: "100%", width: `${(step / 3) * 100}%`, background: "linear-gradient(90deg,#F5A623,#d97706)", borderRadius: 99, transition: "width .3s" }} />
+          </div>
+        ) : (
+          <div style={{ flex: 1 }} />
+        )}
+        <Link to="/loggaut" style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", textDecoration: "none", fontWeight: 600 }}>Avbryt</Link>
       </header>
 
-      <main style={{ maxWidth: 520, margin: "0 auto", padding: isMobile ? "24px 16px 80px" : "40px 24px 80px" }}>
-        {step !== "done" && <StepDots step={step} total={3} />}
+      <main style={{ maxWidth: 520, margin: "0 auto", padding: isMobile ? "24px 20px 120px" : "40px 24px 80px" }}>
+        {step !== "done" && !isMobile && <StepDots step={step} total={3} />}
 
         {step === 1 && <Step1 form={form} setForm={setForm} orgLookup={orgLookup} onLookup={handleOrgLookup} error={error} />}
         {step === 2 && <Step2 form={form} setForm={setForm} />}
         {step === 3 && <Step3 form={form} setForm={setForm} />}
         {step === "done" && <DoneScreen form={form} />}
 
-        {step !== "done" && (
+        {step !== "done" && !isMobile && (
           <>
             <div style={{ display: "flex", gap: 10, marginTop: 32 }}>
               {step > 1 && (
@@ -477,6 +490,20 @@ export default function CompanyOnboardingWizard() {
           </>
         )}
       </main>
+
+      {/* Mobile sticky bottom CTA */}
+      {isMobile && step !== "done" && (
+        <div style={{ position: "fixed", left: 0, right: 0, bottom: 0, padding: "14px 20px 32px", background: "rgba(6,15,15,0.95)", backdropFilter: "blur(14px)", borderTop: "1px solid rgba(255,255,255,0.06)", zIndex: 40 }}>
+          <button
+            type="button"
+            onClick={handleNext}
+            disabled={!canContinue() || saving}
+            style={{ width: "100%", padding: 16, borderRadius: 14, background: canContinue() && !saving ? "linear-gradient(135deg,#F5A623,#d97706)" : "rgba(255,255,255,0.06)", border: "none", color: canContinue() && !saving ? "#000" : "rgba(255,255,255,0.3)", fontSize: 15, fontWeight: 800, cursor: canContinue() && !saving ? "pointer" : "default", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: canContinue() && !saving ? "0 4px 20px rgba(245,166,35,0.3)" : "none", minHeight: 54, fontFamily: "inherit" }}
+          >
+            {saving ? "Sparar…" : step === 3 ? "Skapa konto" : "Fortsätt"} {!saving && <Icon n="arrow" s={14} />}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
