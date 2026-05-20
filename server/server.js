@@ -131,7 +131,14 @@ const internalLimiter = rateLimit({
 
 app.use(requestIdMiddleware);
 app.use(cors({ origin: corsOrigin, credentials: true }));
-app.use(express.json({ limit: "1mb" }));
+app.use(express.json({
+  limit: "1mb",
+  verify: (req, _res, buf) => {
+    if (req.path === "/api/webhooks/sentry") {
+      req.rawBody = buf.toString("utf8");
+    }
+  },
+}));
 app.use((req, res, next) => {
   if (!["POST", "PUT", "PATCH", "DELETE"].includes(req.method)) return next();
   if (req.path === "/api/admin/impersonation/stop") return next();
