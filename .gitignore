@@ -50,8 +50,8 @@ design_handoff_auth_flows/
 design_handoff_stp_landing/
 document.yaml
 hero image.png
-api/
-scripts/
+/api/
+/scripts/
 
 # Playwright auth state (contains OAuth tokens — never commit)
 playwright/.auth/

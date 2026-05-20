@@ -1,4 +1,5 @@
 import { apiDelete, apiGet, apiPatch, apiPost } from "./client.js";
+import { track } from "../utils/posthog.js";
 
 export function fetchJobs(params = {}) {
   const q = new URLSearchParams();
@@ -22,7 +23,9 @@ export async function fetchJobApplicants(jobId) {
 }
 
 export async function createJob(data) {
-  return apiPost("/api/jobs", data);
+  const result = await apiPost("/api/jobs", data);
+  track("job_posted", { region: data.region, jobType: data.jobType, license: data.license });
+  return result;
 }
 
 export async function fetchSavedJobs() {
@@ -30,7 +33,9 @@ export async function fetchSavedJobs() {
 }
 
 export async function saveJob(jobId) {
-  return apiPost(`/api/jobs/${jobId}/save`, {});
+  const result = await apiPost(`/api/jobs/${jobId}/save`, {});
+  track("job_saved", { jobId });
+  return result;
 }
 
 export async function unsaveJob(jobId) {

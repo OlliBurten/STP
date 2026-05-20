@@ -31,6 +31,8 @@ export default function CookieBanner() {
     setVisible(false);
 
     if (choice === "accepted") {
+      // Initiera PostHog
+      window.dispatchEvent(new CustomEvent("stp:cookie-consent"));
       // Initiera Sentry nu om det inte redan skett
       if (typeof window.__sentryInitialized === "undefined") {
         window.__sentryInitialized = true;

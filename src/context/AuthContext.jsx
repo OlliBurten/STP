@@ -3,6 +3,7 @@ import { apiPost, AUTH_INVALID_EVENT, getActiveOrgId, setActiveOrgId } from "../
 import { fetchMe } from "../api/auth.js";
 import { startViewAs as apiStartViewAs, stopViewAs as apiStopViewAs } from "../api/admin.js";
 import { fetchMyOrganizations } from "../api/organizations.js";
+import { identifyUser, resetUser, track } from "../utils/posthog.js";
 
 const AUTH_STORAGE_KEY = "drivermatch-auth";
 const SESSION_MAX_MS = 24 * 60 * 60 * 1000; // 24h
@@ -208,6 +209,7 @@ export function AuthProvider({ children }) {
       adminUser: data.adminUser ? normalizeUser(data.adminUser) : null,
       impersonation: normalizeImpersonation(data.impersonation),
     });
+    identifyUser(u);
     return u;
   }, [commitAuthState]);
 
@@ -225,6 +227,7 @@ export function AuthProvider({ children }) {
         verificationBaseUrl,
       });
       const u = normalizeUser(data.user);
+      track("user_registered", { role: u.rawRole || u.role });
       return { user: u, emailVerificationSent: data.emailVerificationSent === true };
     },
     []
@@ -255,6 +258,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   const logout = useCallback(() => {
+    resetUser();
     clearAuthState();
   }, [clearAuthState]);
 
@@ -264,6 +268,7 @@ export function AuthProvider({ children }) {
       adminUser: u?.adminUser ? normalizeUser(u.adminUser) : null,
       impersonation: normalizeImpersonation(u?.impersonation),
     });
+    identifyUser(normalized);
     return normalized;
   }, [commitAuthState]);
 
@@ -303,6 +308,11 @@ export function AuthProvider({ children }) {
   }, [commitAuthState]);
 
   // Uppdatera senaste aktivitet vid interaktion. Skriv inte på varje pixelrörelse.
+  // Identifiera användare i PostHog vid sidladdning om redan inloggad
+  useEffect(() => {
+    if (user && !user.isAdmin) identifyUser(user);
+  }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     if (!user || !token) return;
     let lastMarkedAt = 0;

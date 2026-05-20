@@ -7,6 +7,7 @@ import App from './App.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
 import { registerServiceWorker } from './utils/pushNotifications.js'
 import { hasCookieConsent } from './components/CookieBanner.jsx'
+import { initPostHog } from './utils/posthog.js'
 
 // Always dark theme — light theme not optimized yet
 document.documentElement.setAttribute("data-theme", "dark");
@@ -79,3 +80,15 @@ setTimeout(() => {
 
 // Register service worker after page load
 registerServiceWorker().catch(() => {});
+
+// Initiera PostHog enbart om användaren har accepterat analytics-cookies (GDPR).
+// Körs med 2s fördröjning för att hålla det utanför critical path.
+setTimeout(() => {
+  if (!hasCookieConsent()) return;
+  initPostHog().catch(() => {});
+}, 2000);
+
+// Lyssna på cookie-samtycke-event så PostHog startas direkt om användaren accepterar
+window.addEventListener("stp:cookie-consent", () => {
+  initPostHog().catch(() => {});
+});

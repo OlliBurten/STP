@@ -1,4 +1,5 @@
 import { apiGet, apiPost, apiPatch } from "./client.js";
+import { track } from "../utils/posthog.js";
 
 export async function fetchConversations() {
   return apiGet("/api/conversations");
@@ -9,11 +10,15 @@ export async function fetchConversation(id) {
 }
 
 export async function createConversation(body) {
-  return apiPost("/api/conversations", body);
+  const result = await apiPost("/api/conversations", body);
+  track("job_applied", { jobId: body.jobId });
+  return result;
 }
 
 export async function sendMessage(conversationId, content) {
-  return apiPost(`/api/conversations/${conversationId}/messages`, { content });
+  const result = await apiPost(`/api/conversations/${conversationId}/messages`, { content });
+  track("message_sent");
+  return result;
 }
 
 export async function selectConversation(conversationId) {
