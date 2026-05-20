@@ -497,7 +497,7 @@ export default function Messages() {
   };
 
   return (
-    <main style={{ background: "#060f0f", height: isMobile ? "100vh" : "calc(100vh - 64px)", marginTop: isMobile ? 0 : "-64px", paddingTop: isMobile ? 0 : 64, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+    <main style={{ background: "#060f0f", height: isMobile ? "calc(100dvh - 65px)" : "calc(100vh - 64px)", marginTop: isMobile ? 0 : "-64px", paddingTop: isMobile ? 0 : 64, display: "flex", flexDirection: "column", overflow: "hidden" }}>
 
       {/* Banners */}
       {!isDriver && companyUnreadConversationCount > 0 && (
