@@ -39,13 +39,19 @@ playwright/.auth/
 Bolagsverket API/
 Handoff redesigns/
 STP (1)/
+STP LOGO/
 STP Jobbdetalj v3.html
 STP Lediga Jobb.html
 STP PostJob.html
+STP Mobil Förare/
+STP New Design Handoff/
 connection-establishment-guide-for-vardefulla-datamangder-test-and-production.pdf
 design_handoff_auth_flows/
 design_handoff_stp_landing/
 document.yaml
+hero image.png
+api/
+scripts/
 
 # Playwright auth state (contains OAuth tokens — never commit)
 playwright/.auth/
