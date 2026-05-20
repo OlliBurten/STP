@@ -1,597 +1,467 @@
-import React from "react";
-import { T, INP, Btn, StatusBadge, SectionCard, fmtDate } from "./adminShared.jsx";
-import { getProfileCompletion } from "../../utils/driverProfileRequirements.js";
-import { SUMMARY_MIN_LENGTH } from "../../utils/driverProfileRequirements.js";
-import { EyeIcon } from "../../components/Icons.jsx";
+import React, { useState } from "react";
+import { Icon } from "./AdminShell.jsx";
+import { updateCompanyStatus, setUserSuspended, updateUserWarnings, verifyUserEmail } from "../../api/admin.js";
 
-function getDriverChecklist(user) {
-  const p = user.driverProfile || {};
-  function t(v) { return String(v || "").trim(); }
-  function digits(v) { return t(v).replace(/\D/g, ""); }
-  return [
-    { key: "name",            label: "Namn",                    required: true,  done: t(user.name).length >= 2 },
-    { key: "phone",           label: "Telefonnummer",           required: true,  done: digits(p.phone).length >= 7 },
-    { key: "primarySegment",  label: "Primärt segment",         required: true,  done: t(p.primarySegment).length > 0 },
-    { key: "location",        label: "Ort",                     required: true,  done: t(p.location).length > 0 },
-    { key: "region",          label: "Region",                  required: true,  done: t(p.region).length > 0 },
-    { key: "licenses",        label: "Körkort",                 required: true,  done: Array.isArray(p.licenses) && p.licenses.length > 0 },
-    { key: "availability",    label: "Tillgänglighet",          required: true,  done: t(p.availability).length > 0 },
-    { key: "summary",         label: `Profiltext (${SUMMARY_MIN_LENGTH}+ tecken)`, required: true, done: t(p.summary).length >= SUMMARY_MIN_LENGTH },
-    { key: "certificates",    label: "Certifikat (YKB, ADR…)",  required: false, done: Array.isArray(p.certificates) && p.certificates.length > 0 },
-    { key: "experience",      label: "Arbetslivserfarenhet",    required: false, done: Array.isArray(p.experience) && p.experience.length > 0 },
-    { key: "regionsWilling",  label: "Regioner man kan tänka sig", required: false, done: Array.isArray(p.regionsWilling) && p.regionsWilling.length > 0 },
-    { key: "visible",         label: "Synlig för åkerier",      required: false, done: p.visibleToCompanies === true },
+const mono = { fontFamily: "'JetBrains Mono',monospace", fontFeatureSettings: '"tnum"' };
+
+// ─── Filter pill ───────────────────────────────────────────────────────────────
+const FilterPill = ({ on, count, children, onClick, color }) => (
+  <button onClick={onClick} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 10px", borderRadius: 99, background: on ? `${color || "#F5A623"}1a` : "rgba(255,255,255,0.03)", border: `1px solid ${on ? (color || "#F5A623") + "55" : "rgba(255,255,255,0.06)"}`, color: on ? (color || "#F5A623") : "rgba(255,255,255,0.65)", fontSize: 11.5, fontWeight: 700, cursor: "pointer" }}>
+    {children}
+    {count !== undefined && <span style={{ padding: "1px 6px", borderRadius: 99, background: on ? `${color || "#F5A623"}25` : "rgba(255,255,255,0.05)", fontSize: 10, fontWeight: 800, ...mono }}>{count}</span>}
+  </button>
+);
+
+// ─── Users header ──────────────────────────────────────────────────────────────
+function UsersHeader({ users, selectedCount, filter, setFilter }) {
+  const isCompany = u => u.role === "COMPANY" || u.role === "RECRUITER";
+  const isVerified = u => isCompany(u) ? u.status === "VERIFIED" : u.emailVerified;
+  const filters = [
+    { v: "all",       l: "Alla",           c: users.length },
+    { v: "driver",    l: "Förare",         c: users.filter(u => !isCompany(u)).length },
+    { v: "company",   l: "Åkerier",        c: users.filter(u => isCompany(u)).length },
+    { v: "unverified",l: "Ej verifierade", c: users.filter(u => !isVerified(u) && isCompany(u)).length, color: "#F5A623" },
+    { v: "stuck",     l: "Stuck (<25%)",   c: users.filter(u => (u.profileCompletion ?? 0) < 25).length, color: "#F5A623" },
+    { v: "warnings",  l: "Med varningar",  c: users.filter(u => (u.warnings || 0) > 0).length, color: "#f87171" },
+    { v: "suspended", l: "Suspenderade",   c: users.filter(u => u.status === "SUSPENDED").length, color: "#f87171" },
   ];
-}
-
-function getCompanyChecklist(user) {
-  function t(v) { return String(v || "").trim(); }
-  return [
-    { key: "name",        label: "Företagsnamn",     required: true,  done: t(user.companyName).length > 0 || t(user.name).length > 0 },
-    { key: "orgNumber",   label: "Org.nummer",       required: true,  done: t(user.companyOrgNumber).length > 0 },
-    { key: "segments",    label: "Segment",           required: true,  done: Array.isArray(user.companySegmentDefaults) && user.companySegmentDefaults.length > 0 },
-    { key: "description", label: "Företagsbeskrivning", required: false, done: t(user.companyDescription).length > 0 },
-    { key: "website",     label: "Webbplats",         required: false, done: t(user.companyWebsite).length > 0 },
-    { key: "location",    label: "Ort",               required: false, done: t(user.companyLocation).length > 0 },
-    { key: "bransch",     label: "Bransch",            required: false, done: Array.isArray(user.companyBransch) && user.companyBransch.length > 0 },
-    { key: "region",      label: "Region",             required: false, done: t(user.companyRegion).length > 0 },
-  ];
-}
-
-function ProfileChecklist({ user }) {
-  const isDriver = user.role === "DRIVER";
-  const isCompany = user.role === "COMPANY" || user.role === "RECRUITER";
-  if (!isDriver && !isCompany) return null;
-
-  const items = isDriver ? getDriverChecklist(user) : getCompanyChecklist(user);
-  const required = items.filter((i) => i.required);
-  const optional = items.filter((i) => !i.required);
-  const missingRequired = required.filter((i) => !i.done);
-  const missingOptional = optional.filter((i) => !i.done);
-  const total = items.length;
-  const filled = items.filter((i) => i.done).length;
-  const pct = Math.round((filled / total) * 100);
-  const pctColor = pct === 100 ? T.green : pct >= 75 ? T.tealBright : pct >= 50 ? T.amber : T.red;
-
   return (
-    <div style={{ padding: "14px 16px", borderBottom: `1px solid ${T.border}`, fontSize: 12 }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <p style={{ fontWeight: 700, color: T.sub, margin: 0 }}>Profilfyllnad</p>
-        <span style={{ fontSize: 13, fontWeight: 800, color: pctColor }}>{pct}%</span>
-      </div>
-
-      {/* Progress bar */}
-      <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: 99, height: 5, marginBottom: 14, overflow: "hidden" }}>
-        <div style={{ width: `${pct}%`, height: "100%", background: pctColor, borderRadius: 99, transition: "width 0.3s" }} />
-      </div>
-
-      {/* Required criteria */}
-      <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.muted, marginBottom: 6 }}>Obligatoriska ({required.filter(i => i.done).length}/{required.length})</p>
-      <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 12 }}>
-        {required.map((item) => (
-          <div key={item.key} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: 12, color: item.done ? T.green : T.red, flexShrink: 0, width: 14 }}>{item.done ? "✓" : "✗"}</span>
-            <span style={{ color: item.done ? T.sub : T.text, fontWeight: item.done ? 400 : 600 }}>{item.label}</span>
-          </div>
-        ))}
-      </div>
-
-      {/* Optional criteria */}
-      <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.muted, marginBottom: 6 }}>Valfria ({optional.filter(i => i.done).length}/{optional.length})</p>
-      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-        {optional.map((item) => (
-          <div key={item.key} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: 12, color: item.done ? T.green : "rgba(255,255,255,0.2)", flexShrink: 0, width: 14 }}>{item.done ? "✓" : "○"}</span>
-            <span style={{ color: item.done ? T.sub : T.muted }}>{item.label}</span>
-          </div>
-        ))}
-      </div>
-
-      {/* Summary of what's missing */}
-      {(missingRequired.length > 0 || missingOptional.length > 0) && (
-        <div style={{ marginTop: 12, padding: "8px 10px", borderRadius: 8, background: missingRequired.length > 0 ? T.redBg : T.amberBg, border: `1px solid ${missingRequired.length > 0 ? T.redBorder : T.amberBorder}` }}>
-          <p style={{ fontSize: 11, fontWeight: 700, color: missingRequired.length > 0 ? T.red : T.amber, margin: "0 0 4px" }}>
-            {missingRequired.length > 0 ? `Saknar ${missingRequired.length} obligatorisk${missingRequired.length > 1 ? "a" : ""}:` : `Saknar ${missingOptional.length} valfri${missingOptional.length > 1 ? "a" : ""}:`}
-          </p>
-          <p style={{ fontSize: 11, color: missingRequired.length > 0 ? "rgba(248,113,113,0.8)" : "rgba(245,166,35,0.8)", margin: 0 }}>
-            {(missingRequired.length > 0 ? missingRequired : missingOptional).map(i => i.label).join(", ")}
-          </p>
+    <div style={{ padding: "22px 26px 14px" }}>
+      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 18, gap: 14 }}>
+        <div>
+          <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: -0.6, marginBottom: 3 }}>Användare</h1>
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>{users.length} totalt · {selectedCount} valda</div>
         </div>
-      )}
+        <div style={{ display: "flex", gap: 7 }}>
+          <button style={{ padding: "7px 12px", borderRadius: 7, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.85)", fontSize: 11.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+            <Icon n="download" s={12} /> Exportera CSV
+          </button>
+          <button style={{ padding: "7px 12px", borderRadius: 7, background: "rgba(245,166,35,0.1)", border: "1px solid rgba(245,166,35,0.3)", color: "#F5A623", fontSize: 11.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+            <Icon n="zap" s={12} /> Skicka påminnelse till stuck
+          </button>
+        </div>
+      </div>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+        {filters.map(f => (
+          <FilterPill key={f.v} on={filter === f.v} count={f.c} color={f.color} onClick={() => setFilter(f.v)}>{f.l}</FilterPill>
+        ))}
+      </div>
     </div>
   );
 }
 
+// ─── Bulk action bar ───────────────────────────────────────────────────────────
+function BulkBar({ count, onClear }) {
+  if (count === 0) return null;
+  return (
+    <div style={{ margin: "0 26px 14px", padding: "10px 14px", background: "rgba(245,166,35,0.08)", border: "1px solid rgba(245,166,35,0.3)", borderRadius: 10, display: "flex", alignItems: "center", gap: 12 }}>
+      <span style={{ fontSize: 12, color: "#F5A623", fontWeight: 700 }}><span style={mono}>{count}</span> valda</span>
+      <div style={{ width: 1, height: 18, background: "rgba(245,166,35,0.3)" }} />
+      <button style={{ padding: "5px 10px", borderRadius: 6, background: "rgba(255,255,255,0.06)", border: "none", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}><Icon n="mail" s={11} /> Maila</button>
+      <button style={{ padding: "5px 10px", borderRadius: 6, background: "rgba(255,255,255,0.06)", border: "none", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}><Icon n="bell" s={11} /> Skicka påminnelse</button>
+      <button style={{ padding: "5px 10px", borderRadius: 6, background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.3)", color: "#f87171", fontSize: 11, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}><Icon n="ban" s={11} /> Suspendera</button>
+      <button onClick={onClear} style={{ marginLeft: "auto", fontSize: 11, color: "rgba(255,255,255,0.5)", background: "transparent", border: "none", cursor: "pointer" }}>Avbryt</button>
+    </div>
+  );
+}
+
+// ─── Table header ──────────────────────────────────────────────────────────────
+function TableHeader({ allSelected, onSelectAll, compact }) {
+  const cols = compact ? "36px 1fr 78px 96px 80px 36px" : "40px 1fr 90px 100px 80px 100px 90px 40px";
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: cols, gap: 14, alignItems: "center", padding: "10px 18px", borderBottom: "1px solid rgba(255,255,255,0.05)", borderLeft: "2px solid transparent", background: "rgba(255,255,255,0.02)", fontSize: 10, fontWeight: 800, letterSpacing: 1.3, textTransform: "uppercase", color: "rgba(255,255,255,0.4)", position: "sticky", top: 0, zIndex: 5 }}>
+      <div onClick={onSelectAll}>
+        <div style={{ width: 18, height: 18, borderRadius: 5, border: `1.5px solid ${allSelected ? "#F5A623" : "rgba(255,255,255,0.2)"}`, background: allSelected ? "#F5A623" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+          {allSelected && <Icon n="check" s={11} c="#000" />}
+        </div>
+      </div>
+      <div>Användare</div>
+      <div>Roll</div>
+      <div>Status</div>
+      <div>Profil</div>
+      {!compact && <div>Senast inne</div>}
+      {!compact && <div>Skapad</div>}
+      <div></div>
+    </div>
+  );
+}
+
+// ─── User row ──────────────────────────────────────────────────────────────────
+function UserRow({ u, selected, isSelectedRow, onCheck, onSelect, compact }) {
+  const profile = u.profileCompletion ?? 0;
+  const isComp = u.role === "COMPANY" || u.role === "RECRUITER";
+  const verified = isComp ? u.status === "VERIFIED" : u.emailVerified;
+  const suspended = u.status === "SUSPENDED";
+  const warnings = u.warnings || 0;
+  const lastLogin = u.lastLoginAt ? fmtRelative(u.lastLoginAt) : "Aldrig";
+  const created = u.createdAt ? u.createdAt.slice(0, 10) : "";
+  const initials = u.name ? u.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : u.email?.[0]?.toUpperCase() || "?";
+  const color = isComp ? "#F5A623" : "#7dd3c8";
+
+  const statusBadge = suspended
+    ? { l: "SUSPENDERAD", c: "#f87171", bg: "rgba(248,113,113,0.1)" }
+    : warnings > 0
+    ? { l: `${warnings} VARN.`, c: "#F5A623", bg: "rgba(245,166,35,0.08)" }
+    : !verified
+    ? { l: "EJ VERIFIERAD", c: "#F5A623", bg: "rgba(245,166,35,0.08)" }
+    : { l: "OK", c: "#4ade80", bg: "rgba(74,222,128,0.08)" };
+
+  const cols = compact ? "36px 1fr 78px 96px 80px 36px" : "40px 1fr 90px 100px 80px 100px 90px 40px";
+
+  return (
+    <div
+      onClick={onSelect}
+      style={{ display: "grid", gridTemplateColumns: cols, gap: 14, alignItems: "center", padding: "10px 18px", background: isSelectedRow ? "rgba(245,166,35,0.05)" : "transparent", borderLeft: isSelectedRow ? "2px solid #F5A623" : "2px solid transparent", borderBottom: "1px solid rgba(255,255,255,0.03)", cursor: "pointer" }}
+      onMouseEnter={e => !isSelectedRow && (e.currentTarget.style.background = "rgba(255,255,255,0.02)")}
+      onMouseLeave={e => !isSelectedRow && (e.currentTarget.style.background = "transparent")}
+    >
+      <div onClick={e => { e.stopPropagation(); onCheck(); }}>
+        <div style={{ width: 18, height: 18, borderRadius: 5, border: `1.5px solid ${selected ? "#F5A623" : "rgba(255,255,255,0.2)"}`, background: selected ? "#F5A623" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+          {selected && <Icon n="check" s={11} c="#000" />}
+        </div>
+      </div>
+
+      <div style={{ display: "flex", alignItems: "center", gap: 11, minWidth: 0 }}>
+        <div style={{ width: 36, height: 36, borderRadius: 9, background: color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 11.5, color: "#000", flexShrink: 0 }}>{initials}</div>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.name || u.email}</div>
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.email}</div>
+        </div>
+      </div>
+
+      <div>
+        <span style={{ padding: "3px 9px", borderRadius: 5, background: !isComp ? "rgba(96,165,250,0.1)" : "rgba(245,166,35,0.1)", color: !isComp ? "#60a5fa" : "#F5A623", fontSize: 10, fontWeight: 800, letterSpacing: 0.4, ...mono }}>
+          {isComp ? "COMPANY" : "DRIVER"}
+        </span>
+      </div>
+
+      <div>
+        <span style={{ padding: "3px 9px", borderRadius: 5, background: statusBadge.bg, color: statusBadge.c, fontSize: 9.5, fontWeight: 800, letterSpacing: 0.4, ...mono }}>{statusBadge.l}</span>
+      </div>
+
+      <div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <div style={{ flex: 1, height: 4, background: "rgba(255,255,255,0.06)", borderRadius: 99, overflow: "hidden" }}>
+            <div style={{ height: "100%", width: `${profile}%`, background: profile >= 75 ? "#4ade80" : profile >= 50 ? "#F5A623" : "#f87171", borderRadius: 99 }} />
+          </div>
+          <span style={{ fontSize: 10.5, color: "rgba(255,255,255,0.6)", fontWeight: 700, minWidth: 32, textAlign: "right", ...mono }}>{profile}%</span>
+        </div>
+      </div>
+
+      {!compact && (
+        <div style={{ fontSize: 11, color: lastLogin === "Aldrig" ? "#f87171" : "rgba(255,255,255,0.55)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", ...mono }}>
+          {lastLogin}
+        </div>
+      )}
+
+      {!compact && (
+        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", ...mono }}>{created}</div>
+      )}
+
+      <div onClick={e => e.stopPropagation()} style={{ display: "flex", justifyContent: "flex-end" }}>
+        <button title="Visa detalj" style={{ width: 30, height: 30, borderRadius: 7, background: "rgba(255,255,255,0.04)", border: "none", color: "rgba(255,255,255,0.6)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <Icon n="eye" s={13} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Detail panel ──────────────────────────────────────────────────────────────
+function DetailPanel({ u, detail, onClose, onVerify, onSuspend, onViewAs }) {
+  if (!u) return null;
+  const isComp = u.role === "COMPANY" || u.role === "RECRUITER";
+  const verified = isComp ? u.status === "VERIFIED" : u.emailVerified;
+  const suspended = u.status === "SUSPENDED";
+  const profile = u.profileCompletion ?? 0;
+  const initials = u.name ? u.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : u.email?.[0]?.toUpperCase() || "?";
+  const color = isComp ? "#F5A623" : "#7dd3c8";
+
+  const statusBadge = suspended
+    ? { l: "SUSPENDERAD", c: "#f87171", bg: "rgba(248,113,113,0.1)" }
+    : !verified
+    ? { l: "EJ VERIFIERAD", c: "#F5A623", bg: "rgba(245,166,35,0.08)" }
+    : { l: "VERIFIERAD", c: "#4ade80", bg: "rgba(74,222,128,0.08)" };
+
+  return (
+    <aside style={{ width: 380, background: "#070f0f", borderLeft: "1px solid rgba(255,255,255,0.05)", flexShrink: 0, display: "flex", flexDirection: "column", overflowY: "auto" }}>
+      <div style={{ padding: "16px 20px", borderBottom: "1px solid rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "rgba(255,255,255,0.5)" }}>Detalj</span>
+        <button onClick={onClose} style={{ width: 28, height: 28, borderRadius: 6, background: "rgba(255,255,255,0.04)", border: "none", color: "rgba(255,255,255,0.6)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><Icon n="x" s={14} /></button>
+      </div>
+
+      <div style={{ padding: 20, borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 13, marginBottom: 14 }}>
+          <div style={{ width: 54, height: 54, borderRadius: 13, background: color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 17, color: "#000", flexShrink: 0 }}>{initials}</div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 3 }}>{u.name || u.email}</div>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.email}</div>
+            <div style={{ display: "flex", gap: 5, marginTop: 6 }}>
+              <span style={{ padding: "2px 7px", borderRadius: 4, background: !isComp ? "rgba(96,165,250,0.12)" : "rgba(245,166,35,0.12)", color: !isComp ? "#60a5fa" : "#F5A623", fontSize: 9.5, fontWeight: 800, letterSpacing: 0.4, ...mono }}>{isComp ? "COMPANY" : "DRIVER"}</span>
+              <span style={{ padding: "2px 7px", borderRadius: 4, background: statusBadge.bg, color: statusBadge.c, fontSize: 9.5, fontWeight: 800, letterSpacing: 0.4, ...mono }}>{statusBadge.l}</span>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+          <button onClick={onViewAs} style={{ padding: "9px 10px", borderRadius: 8, background: "linear-gradient(135deg,#F5A623,#d97706)", border: "none", color: "#000", fontSize: 11.5, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+            <Icon n="eye" s={12} /> View-as
+          </button>
+          <button style={{ padding: "9px 10px", borderRadius: 8, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", color: "#fff", fontSize: 11.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+            <Icon n="mail" s={12} /> Maila
+          </button>
+        </div>
+      </div>
+
+      <div style={{ padding: "16px 20px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+        <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 1.3, textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginBottom: 10 }}>Profil</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+          <div style={{ flex: 1, height: 6, background: "rgba(255,255,255,0.05)", borderRadius: 99, overflow: "hidden" }}>
+            <div style={{ height: "100%", width: `${profile}%`, background: profile >= 75 ? "#4ade80" : profile >= 50 ? "#F5A623" : "#f87171", borderRadius: 99 }} />
+          </div>
+          <span style={{ fontSize: 13, fontWeight: 800, ...mono }}>{profile}%</span>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+          <StatBox label="Ansökningar" value={detail?.applicationCount || 0} />
+          <StatBox label="Anställd via" value={detail?.hireCount || 0} color="#4ade80" />
+          {isComp && <StatBox label="Anställda" value={detail?.employeeCount || 0} />}
+          {isComp && <StatBox label="Aktiva annonser" value={detail?.jobCount || 0} color="#F5A623" />}
+        </div>
+      </div>
+
+      <div style={{ padding: "16px 20px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+        <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 1.3, textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginBottom: 10 }}>Uppgifter</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 7, fontSize: 12 }}>
+          <InfoRow label="Region"     value={u.region || detail?.region || "—"} />
+          <InfoRow label="Telefon"    value={u.phone || detail?.phone || "—"} />
+          <InfoRow label="Skapad"     value={u.createdAt ? u.createdAt.slice(0, 10) : "—"} useMono />
+          <InfoRow label="Senast inne"value={u.lastLoginAt ? fmtRelative(u.lastLoginAt) : "Aldrig"} />
+          <InfoRow label="Verifierad" value={verified ? "Ja" : "Nej"} valueColor={verified ? "#4ade80" : "#F5A623"} />
+        </div>
+      </div>
+
+      {((u.warnings || 0) > 0 || suspended) && (
+        <div style={{ padding: "16px 20px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+          <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 1.3, textTransform: "uppercase", color: "#f87171", marginBottom: 10 }}>Disciplin</div>
+          {u.suspensionReason && (
+            <div style={{ padding: "10px 12px", background: "rgba(248,113,113,0.06)", border: "1px solid rgba(248,113,113,0.18)", borderRadius: 8, fontSize: 11.5, color: "rgba(255,255,255,0.8)", lineHeight: 1.5, marginBottom: 8 }}>
+              <strong style={{ color: "#f87171" }}>Suspenderad:</strong> {u.suspensionReason}
+            </div>
+          )}
+          {(u.warnings || 0) > 0 && (
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)" }}>
+              <span style={{ color: "#F5A623", fontWeight: 800, ...mono }}>{u.warnings}</span> varning(ar) i historiken
+            </div>
+          )}
+        </div>
+      )}
+
+      <div style={{ padding: "16px 20px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+        <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 1.3, textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginBottom: 10 }}>Senaste aktivitet</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+          {[
+            { t: "Skapad konto",   time: u.createdAt ? u.createdAt.slice(0, 10) : "—", c: "#4ade80" },
+            { t: "Senast inloggad",time: u.lastLoginAt ? fmtRelative(u.lastLoginAt) : "Aldrig", c: "#60a5fa" },
+          ].map((a, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 11.5 }}>
+              <div style={{ width: 6, height: 6, borderRadius: 99, background: a.c, flexShrink: 0 }} />
+              <span style={{ flex: 1, color: "rgba(255,255,255,0.7)" }}>{a.t}</span>
+              <span style={{ color: "rgba(255,255,255,0.4)", ...mono }}>{a.time}</span>
+            </div>
+          ))}
+        </div>
+        <button style={{ marginTop: 10, padding: "5px 0", background: "transparent", border: "none", color: "#F5A623", fontSize: 11, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}>
+          <Icon n="history" s={11} /> Visa full audit log →
+        </button>
+      </div>
+
+      <div style={{ padding: "16px 20px", marginTop: "auto" }}>
+        <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 1.3, textTransform: "uppercase", color: "#f87171", marginBottom: 10 }}>Åtgärder</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          {isComp && !verified && (
+            <button onClick={onVerify} style={{ padding: "10px 12px", borderRadius: 8, background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.25)", color: "#4ade80", fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
+              <Icon n="check" s={12} /> Verifiera företag
+            </button>
+          )}
+          {!suspended ? (
+            <>
+              <button style={{ padding: "10px 12px", borderRadius: 8, background: "rgba(245,166,35,0.08)", border: "1px solid rgba(245,166,35,0.25)", color: "#F5A623", fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
+                <Icon n="alert" s={12} /> Skicka varning
+              </button>
+              <button onClick={onSuspend} style={{ padding: "10px 12px", borderRadius: 8, background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.25)", color: "#f87171", fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
+                <Icon n="ban" s={12} /> Suspendera konto
+              </button>
+            </>
+          ) : (
+            <button style={{ padding: "10px 12px", borderRadius: 8, background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.25)", color: "#4ade80", fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
+              <Icon n="check" s={12} /> Återställ konto
+            </button>
+          )}
+          <button style={{ padding: "10px 12px", borderRadius: 8, background: "transparent", border: "1px solid rgba(248,113,113,0.2)", color: "#f87171", fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
+            <Icon n="trash" s={12} /> Ta bort konto permanent
+          </button>
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+// ─── Helpers ───────────────────────────────────────────────────────────────────
+const StatBox = ({ label, value, color = "#fff" }) => (
+  <div style={{ padding: "10px 12px", background: "rgba(255,255,255,0.02)", borderRadius: 8 }}>
+    <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.45)", fontWeight: 700, letterSpacing: 0.3, marginBottom: 3 }}>{label}</div>
+    <div style={{ fontSize: 18, fontWeight: 800, color, lineHeight: 1, ...mono }}>{value}</div>
+  </div>
+);
+
+const InfoRow = ({ label, value, useMono, valueColor }) => (
+  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+    <span style={{ color: "rgba(255,255,255,0.45)" }}>{label}</span>
+    <span style={{ color: valueColor || "rgba(255,255,255,0.85)", fontWeight: 600, ...(useMono ? mono : {}) }}>{value}</span>
+  </div>
+);
+
+function fmtRelative(dateStr) {
+  if (!dateStr) return "Aldrig";
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  const diff = Date.now() - d.getTime();
+  const min = Math.floor(diff / 60000);
+  if (min < 1) return "Just nu";
+  if (min < 60) return `${min} min sen`;
+  const h = Math.floor(min / 60);
+  if (h < 24) return `${h}h sen`;
+  const days = Math.floor(h / 24);
+  if (days === 1) return "Igår";
+  if (days < 7) return `${days} dgr sen`;
+  return d.toISOString().slice(0, 10);
+}
+
+// ─── Main export ───────────────────────────────────────────────────────────────
 export default function AdminUsersTab({
   users,
-  userFilters,
-  setUserFilters,
   loading,
   selectedUserId,
   selectedUserDetail,
-  viewAsLoading,
-  setViewAsLoading,
   loadUserDetail,
   loadUsers,
   setError,
   setSuccess,
   showReasonModal,
-  isMobile,
   startViewAs,
   navigate,
 }) {
-  const handleViewAs = async (userId) => {
-    setViewAsLoading(userId);
-    try {
-      const targetUser = await startViewAs(userId);
-      setSuccess("View as startad.");
-      navigate(targetUser?.role === "recruiter" ? "/foretag" : "/profil");
-    } catch (e) {
-      setError(e.message || "Kunde inte starta view as");
-    } finally {
-      setViewAsLoading("");
-    }
+  const [selected, setSelected] = useState(new Set());
+  const [filter, setFilter] = useState("all");
+
+  const allUsers = Array.isArray(users) ? users : [];
+
+  const toggle = (id) => {
+    const next = new Set(selected);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    setSelected(next);
   };
 
-  const handleVerifyEmail = async (id) => {
-    try {
-      const { verifyUserEmail } = await import("../../api/admin");
-      await verifyUserEmail(id);
-      await loadUsers();
-      setSuccess("E-post markerad som verifierad.");
-    } catch (e) { setError(e.message || "Kunde inte verifiera e-post"); }
-  };
+  const isCompany = u => u.role === "COMPANY" || u.role === "RECRUITER";
+  const isVerified = u => isCompany(u) ? u.status === "VERIFIED" : u.emailVerified;
 
-  const handleSuspendUser = async (id, shouldSuspend) => {
-    let reason = "";
-    if (shouldSuspend) {
-      const result = await showReasonModal("Anledning till avstängning:", "Policyöverträdelse");
-      if (!result) return;
-      reason = result.reason;
-    }
-    try {
-      const { setUserSuspended } = await import("../../api/admin");
-      await setUserSuspended(id, shouldSuspend, reason || null);
-      await loadUsers();
-      setSuccess(shouldSuspend ? "Användaren stängdes av." : "Avstängningen togs bort.");
-    } catch (e) { setError(e.message || "Kunde inte uppdatera användare"); }
-  };
-
-  const handleDeleteUser = async (id, email) => {
-    const confirmed = window.confirm(
-      `Ta bort kontot för ${email}?\n\nDetta raderar ALLT: profil, jobb, meddelanden och konversationer. Åtgärden kan inte ångras.`
-    );
-    if (!confirmed) return;
-    try {
-      const { deleteUser } = await import("../../api/admin");
-      await deleteUser(id);
-      await loadUsers();
-      loadUserDetail(null);
-      setSuccess(`Kontot för ${email} har tagits bort.`);
-    } catch (e) { setError(e.message || "Kunde inte ta bort kontot"); }
-  };
-
-  const handleWarningAction = async (id, action) => {
-    let reason = "Reset av varningar";
-    if (action === "ADD") {
-      const result = await showReasonModal("Anledning till varning:", "Brott mot plattformens regler");
-      if (!result || !result.reason) return;
-      reason = result.reason;
-    }
-    try {
-      const { updateUserWarnings } = await import("../../api/admin");
-      await updateUserWarnings(id, action, reason || null);
-      await loadUsers();
-      setSuccess(action === "ADD" ? "Varning tillagd." : "Varningar återställda.");
-    } catch (e) { setError(e.message || "Kunde inte uppdatera varningar"); }
-  };
-
-  const handleSendReminders = async () => {
-    try {
-      const { sendVerificationReminders } = await import("../../api/admin");
-      const data = await sendVerificationReminders();
-      await loadUsers();
-      setSuccess(data.message || `Skickade ${data.sent} påminnelser.`);
-    } catch (e) { setError(e.message || "Kunde inte skicka påminnelser"); }
-  };
-
-  const [quickFilter, setQuickFilter] = React.useState("all");
-
-  // Apply quick filter on top of API filters
-  const filteredUsers = users.filter((u) => {
-    if (quickFilter === "driver")      return u.role === "DRIVER";
-    if (quickFilter === "company")     return u.role === "COMPANY" || u.role === "RECRUITER";
-    if (quickFilter === "unverified")  return !u.emailVerifiedAt;
-    if (quickFilter === "suspended")   return !!u.suspendedAt;
-    if (quickFilter === "warnings")    return (u.warningCount || 0) > 0;
+  const filtered = allUsers.filter(u => {
+    const profile = u.profileCompletion ?? 0;
+    if (filter === "driver") return !isCompany(u);
+    if (filter === "company") return isCompany(u);
+    if (filter === "unverified") return !isVerified(u) && isCompany(u);
+    if (filter === "stuck") return profile < 25;
+    if (filter === "warnings") return (u.warnings || 0) > 0;
+    if (filter === "suspended") return u.status === "SUSPENDED";
     return true;
   });
 
-  const FILTER_PILLS = [
-    { id: "all",        label: "Alla",           count: users.length },
-    { id: "driver",     label: "Förare",          count: users.filter(u => u.role === "DRIVER").length },
-    { id: "company",    label: "Åkerier",          count: users.filter(u => u.role === "COMPANY" || u.role === "RECRUITER").length },
-    { id: "unverified", label: "Ej verifierade",   count: users.filter(u => !u.emailVerifiedAt).length },
-    { id: "warnings",   label: "Med varningar",    count: users.filter(u => (u.warningCount || 0) > 0).length },
-    { id: "suspended",  label: "Suspenderade",     count: users.filter(u => !!u.suspendedAt).length },
-  ];
+  const allSelected = filtered.length > 0 && filtered.every(u => selected.has(u.id));
+  const toggleAll = () => {
+    if (allSelected) {
+      const next = new Set(selected);
+      filtered.forEach(u => next.delete(u.id));
+      setSelected(next);
+    } else {
+      const next = new Set(selected);
+      filtered.forEach(u => next.add(u.id));
+      setSelected(next);
+    }
+  };
 
-  const selectedUser = users.find((x) => x.id === selectedUserId);
+  const selectedUser = allUsers.find(u => u.id === selectedUserId) || null;
+
+  const handleVerify = async () => {
+    if (!selectedUser) return;
+    try {
+      await updateCompanyStatus(selectedUser.id, "VERIFIED");
+      await loadUsers();
+      setSuccess("Företaget verifierades.");
+    } catch (e) {
+      setError(e.message || "Kunde inte verifiera");
+    }
+  };
+
+  const handleSuspend = async () => {
+    if (!selectedUser) return;
+    const result = await showReasonModal("Anledning till suspension:");
+    if (!result || !result.reason) return;
+    try {
+      await setUserSuspended(selectedUser.id, true, result.reason);
+      await loadUsers();
+      setSuccess("Kontot suspenderades.");
+    } catch (e) {
+      setError(e.message || "Kunde inte suspendera");
+    }
+  };
+
+  const handleViewAs = async () => {
+    if (!selectedUser || !startViewAs) return;
+    try {
+      await startViewAs(selectedUser.id);
+      navigate("/");
+    } catch (e) {
+      setError(e.message || "Kunde inte starta view-as");
+    }
+  };
+
+  if (loading) {
+    return (
+      <div style={{ display: "flex", flex: 1, alignItems: "center", justifyContent: "center", color: "rgba(255,255,255,0.4)", fontSize: 13 }}>
+        Laddar användare...
+      </div>
+    );
+  }
 
   return (
-    <div>
-      {/* ── Header + filters ── */}
-      <div style={{ marginBottom: 16 }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, flexWrap: "wrap", gap: 10 }}>
-          <div>
-            <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: -0.6, margin: 0, color: T.text }}>Användare</h1>
-            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginTop: 3 }}>
-              {filteredUsers.length} av {users.length} · Öga-ikonen startar view-as (read-only)
-            </div>
-          </div>
-          <div style={{ display: "flex", gap: 8 }}>
-            <Btn disabled={loading} onClick={handleSendReminders} title="Skickar verifieringslänk till ej verifierade (max 1/24h)">
-              Skicka påminnelser
-            </Btn>
-            <Btn variant="primary" disabled={loading} onClick={loadUsers}>Uppdatera</Btn>
-          </div>
-        </div>
-
-        {/* Search + filter pills */}
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-          <input
-            value={userFilters.q}
-            onChange={(e) => setUserFilters((p) => ({ ...p, q: e.target.value }))}
-            onKeyDown={(e) => { if (e.key === "Enter") loadUsers(); }}
-            placeholder="Sök namn / e-post..."
-            style={{
-              height: 32, padding: "0 11px", borderRadius: 7, fontSize: 12.5,
-              background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
-              color: T.text, outline: "none", width: 200,
-            }}
+    <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
+      <div style={{ flex: 1, overflowY: "auto", minWidth: 0 }}>
+        <UsersHeader users={allUsers} selectedCount={selected.size} filter={filter} setFilter={setFilter} />
+        <BulkBar count={selected.size} onClear={() => setSelected(new Set())} />
+        <TableHeader allSelected={allSelected} onSelectAll={toggleAll} compact={!!selectedUser} />
+        {filtered.map(u => (
+          <UserRow
+            key={u.id}
+            u={u}
+            selected={selected.has(u.id)}
+            isSelectedRow={selectedUserId === u.id}
+            onCheck={() => toggle(u.id)}
+            onSelect={() => loadUserDetail(selectedUserId === u.id ? null : u.id)}
+            compact={!!selectedUser}
           />
-          <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-            {FILTER_PILLS.map((pill) => (
-              <button
-                key={pill.id}
-                onClick={() => setQuickFilter(pill.id)}
-                style={{
-                  padding: "5px 10px", borderRadius: 99, fontSize: 12, fontWeight: 600, cursor: "pointer",
-                  background: quickFilter === pill.id ? "rgba(245,166,35,0.12)" : "rgba(255,255,255,0.04)",
-                  border: `1px solid ${quickFilter === pill.id ? "rgba(245,166,35,0.3)" : "rgba(255,255,255,0.07)"}`,
-                  color: quickFilter === pill.id ? "#F5A623" : "rgba(255,255,255,0.65)",
-                  display: "flex", alignItems: "center", gap: 5,
-                }}
-              >
-                {pill.label}
-                {pill.count > 0 && (
-                  <span style={{
-                    fontSize: 10, fontWeight: 800, minWidth: 16, height: 16, borderRadius: 99,
-                    background: quickFilter === pill.id ? "rgba(245,166,35,0.2)" : "rgba(255,255,255,0.08)",
-                    color: quickFilter === pill.id ? "#F5A623" : "rgba(255,255,255,0.45)",
-                    display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px",
-                  }}>{pill.count}</span>
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* ── Main: table + detail panel ── */}
-      <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
-        {/* Table */}
-        <div style={{
-          flex: 1, background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)",
-          borderRadius: 12, overflow: "hidden", minWidth: 0,
-        }}>
-          {/* Table header */}
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: selectedUser ? "40px 1fr 90px 100px 80px 40px" : "40px 1fr 90px 100px 80px 100px 90px 40px",
-            gap: 12, padding: "10px 16px",
-            borderBottom: "1px solid rgba(255,255,255,0.05)",
-            background: "rgba(255,255,255,0.02)",
-            fontSize: 10, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase",
-            color: "rgba(255,255,255,0.4)",
-          }}>
-            <div />
-            <div>Användare</div>
-            <div>Roll</div>
-            <div>Status</div>
-            <div>Profil</div>
-            {!selectedUser && <div>Senast inne</div>}
-            {!selectedUser && <div>Skapad</div>}
-            <div />
-          </div>
-
-          {filteredUsers.length === 0 ? (
-            <div style={{ padding: "50px 20px", textAlign: "center", color: "rgba(255,255,255,0.4)", fontSize: 13 }}>
-              Inga användare matchar filtret.
-            </div>
-          ) : filteredUsers.map((u) => {
-            const isRowSelected = selectedUserId === u.id;
-            const c = getProfileCompletion(u);
-            const pctColor = !c ? null : c.pct >= 75 ? "#4ade80" : c.pct >= 50 ? "#F5A623" : "#f87171";
-
-            return (
-              <div
-                key={u.id}
-                onClick={() => loadUserDetail(u.id).catch((e) => setError(e.message || "Kunde inte öppna"))}
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: selectedUser ? "40px 1fr 90px 100px 80px 40px" : "40px 1fr 90px 100px 80px 100px 90px 40px",
-                  gap: 12, padding: "11px 16px", alignItems: "center",
-                  borderBottom: "1px solid rgba(255,255,255,0.04)",
-                  background: isRowSelected ? "rgba(245,166,35,0.04)" : "transparent",
-                  borderLeft: `2px solid ${isRowSelected ? "#F5A623" : "transparent"}`,
-                  cursor: "pointer", transition: "background 0.1s",
-                }}
-                onMouseEnter={(e) => { if (!isRowSelected) e.currentTarget.style.background = "rgba(255,255,255,0.02)"; }}
-                onMouseLeave={(e) => { if (!isRowSelected) e.currentTarget.style.background = "transparent"; }}
-              >
-                {/* Avatar */}
-                <div style={{ display: "flex", justifyContent: "center" }}>
-                  <div style={{
-                    width: 32, height: 32, borderRadius: 8,
-                    background: u.role === "DRIVER" ? "rgba(96,165,250,0.15)" : "rgba(245,166,35,0.15)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: 11, fontWeight: 800, color: u.role === "DRIVER" ? "#60a5fa" : "#F5A623",
-                  }}>
-                    {(u.name || u.email || "?").slice(0, 2).toUpperCase()}
-                  </div>
-                </div>
-
-                {/* Name */}
-                <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: T.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {u.name || "–"}
-                  </div>
-                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {u.email}
-                  </div>
-                </div>
-
-                {/* Role badge */}
-                <div>
-                  <span style={{
-                    padding: "2px 7px", borderRadius: 4, fontSize: 9.5, fontWeight: 800, letterSpacing: 0.4, fontFamily: "monospace",
-                    background: u.role === "DRIVER" ? "rgba(96,165,250,0.12)" : "rgba(245,166,35,0.12)",
-                    color: u.role === "DRIVER" ? "#60a5fa" : "#F5A623",
-                  }}>{u.isAdmin ? "ADMIN" : u.role}</span>
-                </div>
-
-                {/* Status */}
-                <div>
-                  {u.suspendedAt ? (
-                    <span style={{ padding: "2px 7px", borderRadius: 4, background: "rgba(248,113,113,0.1)", color: "#f87171", fontSize: 9.5, fontWeight: 800, fontFamily: "monospace" }}>SUSPENDERAD</span>
-                  ) : u.emailVerifiedAt ? (
-                    <span style={{ padding: "2px 7px", borderRadius: 4, background: "rgba(74,222,128,0.08)", color: "#4ade80", fontSize: 9.5, fontWeight: 800, fontFamily: "monospace" }}>VERIFIERAD</span>
-                  ) : (
-                    <span style={{ padding: "2px 7px", borderRadius: 4, background: "rgba(245,166,35,0.08)", color: "#F5A623", fontSize: 9.5, fontWeight: 800, fontFamily: "monospace" }}>EJ VERIFR.</span>
-                  )}
-                </div>
-
-                {/* Profile bar */}
-                <div>
-                  {c ? (
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <div style={{ flex: 1, height: 4, background: "rgba(255,255,255,0.07)", borderRadius: 99, overflow: "hidden" }}>
-                        <div style={{ height: "100%", width: `${c.pct}%`, background: pctColor, borderRadius: 99 }} />
-                      </div>
-                      <span style={{ fontSize: 11, fontWeight: 800, color: pctColor, fontFamily: "monospace", minWidth: 28 }}>{c.pct}%</span>
-                    </div>
-                  ) : null}
-                </div>
-
-                {/* Last login */}
-                {!selectedUser && (
-                  <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.4)", fontFamily: "monospace" }}>
-                    {u.lastLoginAt ? fmtDate(u.lastLoginAt).slice(0, 10) : "Aldrig"}
-                  </div>
-                )}
-
-                {/* Created */}
-                {!selectedUser && (
-                  <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.35)", fontFamily: "monospace" }}>
-                    {fmtDate(u.createdAt).slice(0, 10)}
-                  </div>
-                )}
-
-                {/* View-as eye button */}
-                <div style={{ display: "flex", justifyContent: "center" }} onClick={(e) => e.stopPropagation()}>
-                  <button
-                    type="button"
-                    onClick={() => handleViewAs(u.id)}
-                    disabled={loading || viewAsLoading === u.id || u.isAdmin}
-                    title={u.isAdmin ? "View as avstängt för admin" : "Visa som den här användaren"}
-                    style={{
-                      width: 28, height: 28, borderRadius: 7, border: `1px solid rgba(255,255,255,0.08)`,
-                      background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.5)",
-                      cursor: u.isAdmin ? "not-allowed" : "pointer",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      opacity: (loading || u.isAdmin) ? 0.3 : 1,
-                    }}
-                  >
-                    {viewAsLoading === u.id ? "…" : <EyeIcon style={{ width: 12, height: 12 }} />}
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* ── Detail panel ── */}
-        {!isMobile && (
-          <div style={{
-            width: 360, flexShrink: 0, background: "#070f0f",
-            border: "1px solid rgba(255,255,255,0.05)", borderRadius: 12, overflow: "hidden",
-            position: "sticky", top: 0, maxHeight: "calc(100vh - 120px)", overflowY: "auto",
-          }}>
-            {/* Panel header */}
-            <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 1.4, textTransform: "uppercase", color: "rgba(255,255,255,0.45)" }}>Detalj</span>
-              {selectedUserDetail && (
-                <button onClick={() => loadUserDetail(null)} style={{ width: 26, height: 26, borderRadius: 6, background: "rgba(255,255,255,0.04)", border: "none", color: "rgba(255,255,255,0.5)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>✕</button>
-              )}
-            </div>
-
-            {!selectedUserDetail ? (
-              <div style={{ padding: "32px 20px", textAlign: "center" }}>
-                <div style={{ fontSize: 24, marginBottom: 10, opacity: 0.3 }}>👤</div>
-                <p style={{ fontSize: 13, fontWeight: 600, color: T.sub, margin: 0 }}>Ingen vald</p>
-                <p style={{ fontSize: 12, color: T.muted, marginTop: 6, lineHeight: 1.5 }}>Klicka på en rad för detaljer och åtgärder.</p>
-              </div>
-            ) : (
-              <>
-                {/* Hero */}
-                <div style={{ padding: "18px 18px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                  <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 14 }}>
-                    {(() => {
-                      const u = users.find((x) => x.id === selectedUserDetail.id) || selectedUserDetail;
-                      return (
-                        <>
-                          <div style={{
-                            width: 46, height: 46, borderRadius: 11, flexShrink: 0,
-                            background: u.role === "DRIVER" ? "rgba(96,165,250,0.15)" : "rgba(245,166,35,0.15)",
-                            display: "flex", alignItems: "center", justifyContent: "center",
-                            fontSize: 14, fontWeight: 800,
-                            color: u.role === "DRIVER" ? "#60a5fa" : "#F5A623",
-                          }}>
-                            {(selectedUserDetail.name || selectedUserDetail.email || "?").slice(0, 2).toUpperCase()}
-                          </div>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: 15, fontWeight: 800, color: "#f0faf9", marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                              {selectedUserDetail.name || selectedUserDetail.email}
-                            </div>
-                            <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.5)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                              {selectedUserDetail.email}
-                            </div>
-                            <div style={{ display: "flex", gap: 5, marginTop: 6 }}>
-                              <span style={{ padding: "2px 7px", borderRadius: 4, background: u.role === "DRIVER" ? "rgba(96,165,250,0.12)" : "rgba(245,166,35,0.12)", color: u.role === "DRIVER" ? "#60a5fa" : "#F5A623", fontSize: 9, fontWeight: 800, fontFamily: "monospace" }}>
-                                {u.isAdmin ? "ADMIN" : u.role}
-                              </span>
-                              {u.suspendedAt ? (
-                                <span style={{ padding: "2px 7px", borderRadius: 4, background: "rgba(248,113,113,0.1)", color: "#f87171", fontSize: 9, fontWeight: 800, fontFamily: "monospace" }}>SUSPENDERAD</span>
-                              ) : u.emailVerifiedAt ? (
-                                <span style={{ padding: "2px 7px", borderRadius: 4, background: "rgba(74,222,128,0.08)", color: "#4ade80", fontSize: 9, fontWeight: 800, fontFamily: "monospace" }}>VERIFIERAD</span>
-                              ) : (
-                                <span style={{ padding: "2px 7px", borderRadius: 4, background: "rgba(245,166,35,0.08)", color: "#F5A623", fontSize: 9, fontWeight: 800, fontFamily: "monospace" }}>EJ VERIFR.</span>
-                              )}
-                            </div>
-                          </div>
-                        </>
-                      );
-                    })()}
-                  </div>
-
-                  {/* Quick actions */}
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
-                    {(() => {
-                      const u = users.find((x) => x.id === selectedUserDetail.id) || selectedUserDetail;
-                      return (
-                        <>
-                          <button
-                            disabled={loading || viewAsLoading === u.id || u.isAdmin}
-                            onClick={() => handleViewAs(u.id)}
-                            style={{ padding: "8px 10px", borderRadius: 8, background: "linear-gradient(135deg,#F5A623,#d97706)", border: "none", color: "#000", fontSize: 11.5, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5, opacity: u.isAdmin ? 0.4 : 1 }}
-                          >
-                            <EyeIcon style={{ width: 11, height: 11 }} /> View-as
-                          </button>
-                          {!u.emailVerifiedAt ? (
-                            <button onClick={() => handleVerifyEmail(u.id)} style={{ padding: "8px 10px", borderRadius: 8, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", color: "#fff", fontSize: 11.5, fontWeight: 700, cursor: "pointer" }}>
-                              Verifiera
-                            </button>
-                          ) : (
-                            <button style={{ padding: "8px 10px", borderRadius: 8, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.6)", fontSize: 11.5, fontWeight: 700, cursor: "default" }}>
-                              E-post OK
-                            </button>
-                          )}
-                        </>
-                      );
-                    })()}
-                  </div>
-                </div>
-
-                {/* Profile completion */}
-                {(() => {
-                  const u = users.find((x) => x.id === selectedUserDetail.id) || selectedUserDetail;
-                  const c = getProfileCompletion(u);
-                  if (!c) return null;
-                  const pctColor = c.pct >= 75 ? "#4ade80" : c.pct >= 50 ? "#F5A623" : "#f87171";
-                  return (
-                    <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                      <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginBottom: 8 }}>Profil</div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 12 }}>
-                        <div style={{ flex: 1, height: 5, background: "rgba(255,255,255,0.06)", borderRadius: 99, overflow: "hidden" }}>
-                          <div style={{ height: "100%", width: `${c.pct}%`, background: pctColor, borderRadius: 99 }} />
-                        </div>
-                        <span style={{ fontSize: 13, fontWeight: 800, color: pctColor, fontFamily: "monospace" }}>{c.pct}%</span>
-                      </div>
-                      {/* Quick checklist */}
-                      <ProfileChecklist user={selectedUserDetail} />
-                    </div>
-                  );
-                })()}
-
-                {/* Stats */}
-                <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                  <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginBottom: 8 }}>Uppgifter</div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 12 }}>
-                    {[
-                      { l: "Skapad", v: fmtDate(selectedUserDetail.createdAt) },
-                      { l: "Senast inne", v: selectedUserDetail.lastLoginAt ? fmtDate(selectedUserDetail.lastLoginAt) : "Aldrig" },
-                      { l: "Jobb", v: selectedUserDetail._count?.jobs ?? 0 },
-                      { l: "Meddelanden", v: selectedUserDetail._count?.messages ?? 0 },
-                    ].map(({ l, v }) => (
-                      <div key={l} style={{ display: "flex", justifyContent: "space-between" }}>
-                        <span style={{ color: "rgba(255,255,255,0.45)" }}>{l}</span>
-                        <span style={{ color: "rgba(255,255,255,0.85)", fontWeight: 600, fontFamily: "monospace", fontSize: 11.5 }}>{v}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Conversations */}
-                {(selectedUserDetail.latestConversations || []).length > 0 && (
-                  <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                    <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginBottom: 8 }}>Konversationer</div>
-                    {selectedUserDetail.latestConversations.map((item) => (
-                      <div key={item.id} style={{ fontSize: 11.5, color: "rgba(255,255,255,0.55)", margin: "3px 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {item.jobTitle || "Utan jobbkoppling"} · {fmtDate(item.updatedAt).slice(0, 10)}
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Danger zone */}
-                <div style={{ padding: "14px 18px" }}>
-                  <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "#f87171", marginBottom: 8 }}>Åtgärder</div>
-                  {(() => {
-                    const u = users.find((x) => x.id === selectedUserDetail.id) || selectedUserDetail;
-                    return (
-                      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                        <Btn size="sm" variant="warning" fullWidth onClick={() => handleWarningAction(u.id, "ADD")}>Skicka varning</Btn>
-                        {u.warningCount > 0 && <Btn size="sm" fullWidth onClick={() => handleWarningAction(u.id, "RESET")}>Nollställ varningar ({u.warningCount})</Btn>}
-                        {u.suspendedAt
-                          ? <Btn size="sm" variant="success" fullWidth onClick={() => handleSuspendUser(u.id, false)}>Återaktivera konto</Btn>
-                          : <Btn size="sm" variant="danger" fullWidth onClick={() => handleSuspendUser(u.id, true)}>Suspendera konto</Btn>
-                        }
-                        {!u.isAdmin && (
-                          <>
-                            <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", margin: "2px 0" }} />
-                            <Btn size="sm" variant="danger" fullWidth onClick={() => handleDeleteUser(u.id, u.email)}>Ta bort konto permanent</Btn>
-                          </>
-                        )}
-                      </div>
-                    );
-                  })()}
-                </div>
-              </>
-            )}
-          </div>
+        ))}
+        {filtered.length === 0 && (
+          <div style={{ padding: "60px 20px", textAlign: "center", color: "rgba(255,255,255,0.5)" }}>Inga användare matchar filtret.</div>
         )}
       </div>
+      <DetailPanel
+        u={selectedUser}
+        detail={selectedUserDetail}
+        onClose={() => loadUserDetail(null)}
+        onVerify={handleVerify}
+        onSuspend={handleSuspend}
+        onViewAs={handleViewAs}
+      />
     </div>
   );
 }

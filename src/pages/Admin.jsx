@@ -402,7 +402,54 @@ export default function Admin() {
       />
       <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
         <AdminTopBar openCmd={() => setCmdK(true)} />
-        <div style={{ flex: 1, overflowY: "auto" }}>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
+
+        {/* ════════════════════════════════════════
+            OVERVIEW TAB — manages own padding/scroll
+        ════════════════════════════════════════ */}
+        {activeTab === "overview" && (
+          <div style={{ flex: 1, overflowY: "auto" }}>
+            <AdminOverviewTab
+              summary={summary}
+              summaryLoading={summaryLoading}
+              onboarding={onboarding}
+              pendingCount={pendingCount}
+              setActiveTab={setActiveTab}
+              loadUserDetail={loadUserDetail}
+              setError={setError}
+            />
+          </div>
+        )}
+
+        {/* ════════════════════════════════════════
+            USERS TAB — flex split-view layout
+        ════════════════════════════════════════ */}
+        {activeTab === "users" && (
+          <AdminUsersTab
+            users={users}
+            userFilters={userFilters}
+            setUserFilters={setUserFilters}
+            loading={loading}
+            selectedUserId={selectedUserId}
+            selectedUserDetail={selectedUserDetail}
+            viewAsLoading={viewAsLoading}
+            setViewAsLoading={setViewAsLoading}
+            loadUserDetail={loadUserDetail}
+            loadUsers={loadUsers}
+            setError={setError}
+            setSuccess={setSuccess}
+            showReasonModal={showReasonModal}
+            isMobile={isMobile}
+            startViewAs={startViewAs}
+            navigate={navigate}
+          />
+        )}
+
+        {/* ════════════════════════════════════════
+            ALL OTHER TABS — scrollable with padding
+        ════════════════════════════════════════ */}
+        {activeTab !== "overview" && activeTab !== "users" && (
+          <div style={{ flex: 1, overflowY: "auto" }}>
           <div style={{ padding: "22px 26px 40px", maxWidth: 1440, margin: "0 auto" }}>
 
         {/* ── Flash ── */}
@@ -415,22 +462,6 @@ export default function Admin() {
           <div style={{ background: T.greenBg, border: `1px solid ${T.greenBorder}`, borderRadius: 12, padding: "12px 18px", marginBottom: 16, color: T.green, fontSize: 13, fontWeight: 600 }}>
             {success}
           </div>
-        )}
-
-        {/* ════════════════════════════════════════
-            OVERVIEW TAB
-        ════════════════════════════════════════ */}
-        {activeTab === "overview" && (
-          <AdminOverviewTab
-            summary={summary}
-            summaryLoading={summaryLoading}
-            onboarding={onboarding}
-            pendingCount={pendingCount}
-            isMobile={isMobile}
-            setActiveTab={setActiveTab}
-            loadUserDetail={loadUserDetail}
-            setError={setError}
-          />
         )}
 
         {/* ════════════════════════════════════════
@@ -484,30 +515,6 @@ export default function Admin() {
               </table>
             </div>
           </SectionCard>
-        )}
-
-        {/* ════════════════════════════════════════
-            USERS TAB
-        ════════════════════════════════════════ */}
-        {activeTab === "users" && (
-          <AdminUsersTab
-            users={users}
-            userFilters={userFilters}
-            setUserFilters={setUserFilters}
-            loading={loading}
-            selectedUserId={selectedUserId}
-            selectedUserDetail={selectedUserDetail}
-            viewAsLoading={viewAsLoading}
-            setViewAsLoading={setViewAsLoading}
-            loadUserDetail={loadUserDetail}
-            loadUsers={loadUsers}
-            setError={setError}
-            setSuccess={setSuccess}
-            showReasonModal={showReasonModal}
-            isMobile={isMobile}
-            startViewAs={startViewAs}
-            navigate={navigate}
-          />
         )}
 
         {/* ════════════════════════════════════════
@@ -1196,7 +1203,9 @@ export default function Admin() {
           </div>
         )}
 
-          </div>{/* /padding wrapper */}
+          </div>
+          </div>
+          )}
 
           {/* ── Reason modal ── */}
           {reasonModal && (
@@ -1231,7 +1240,7 @@ export default function Admin() {
             </div>
           )}
 
-        </div>{/* /scrollable */}
+        </div>{/* /flex column wrapper */}
       </div>{/* /right col */}
       <AdminCmdK open={cmdK} onClose={() => setCmdK(false)} onChange={setActiveTab} />
     </div>
