@@ -29,10 +29,11 @@ function notifDotColor(type) {
 export default function MobileHeader() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { unreadCount } = useChat();
 
   const [notifOpen, setNotifOpen] = useState(false);
+  const [avatarOpen, setAvatarOpen] = useState(false);
   const [notifications, setNotifications] = useState({ list: [], unreadCount: 0 });
   const panelRef = useRef(null);
 
@@ -92,9 +93,9 @@ export default function MobileHeader() {
 
   const totalBadge = (notifications.unreadCount || 0) + (unreadCount || 0);
 
-  // Avatar: go to settings if already on profile, else go to profile
-  const handleAvatar = () => {
-    navigate(pathname === "/profil" ? "/installningar" : "/profil");
+  const handleLogout = () => {
+    setAvatarOpen(false);
+    logout();
   };
 
   return (
@@ -129,7 +130,7 @@ export default function MobileHeader() {
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           {/* Notification bell */}
           <button
-            onClick={() => setNotifOpen((v) => !v)}
+            onClick={() => { setNotifOpen((v) => !v); setAvatarOpen(false); }}
             style={{
               width: 42, height: 42, borderRadius: 99,
               background: "transparent", border: "none", cursor: "pointer",
@@ -153,7 +154,7 @@ export default function MobileHeader() {
 
           {/* Avatar */}
           <div
-            onClick={handleAvatar}
+            onClick={() => { setAvatarOpen((v) => !v); setNotifOpen(false); }}
             style={{
               width: 34, height: 34, borderRadius: 99,
               background: "linear-gradient(135deg,#F5A623,#d97706)",
@@ -167,6 +168,27 @@ export default function MobileHeader() {
           </div>
         </div>
       </div>
+
+      {/* Avatar menu */}
+      {avatarOpen && (
+        <div style={{ background: "#0a1414", border: "1px solid rgba(255,255,255,0.07)", borderTop: "none", boxShadow: "0 8px 32px rgba(0,0,0,0.5)" }}>
+          <div style={{ padding: "10px 6px" }}>
+            {[
+              { label: "Min profil", icon: "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z", to: "/profil" },
+              { label: "Inställningar", icon: "M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z", to: "/installningar" },
+            ].map(({ label, icon, to }) => (
+              <Link key={to} to={to} onClick={() => setAvatarOpen(false)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 16px", borderRadius: 10, textDecoration: "none", color: "#f0faf9" }}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="17" height="17"><path d={icon}/></svg>
+                <span style={{ fontSize: 15, fontWeight: 600 }}>{label}</span>
+              </Link>
+            ))}
+            <button onClick={handleLogout} style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 16px", width: "100%", background: "none", border: "none", borderRadius: 10, cursor: "pointer", fontFamily: "inherit" }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="17" height="17"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              <span style={{ fontSize: 15, fontWeight: 600, color: "#f87171" }}>Logga ut</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Notification panel — slides down */}
       {notifOpen && (
