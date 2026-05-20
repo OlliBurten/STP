@@ -15,6 +15,7 @@ export function useDriverTour({ isDriver, user, profileLoaded }) {
   useEffect(() => {
     if (!isDriver || !user || !profileLoaded) return;
     if (localStorage.getItem(STORAGE_KEY)) return;
+    if (window.innerWidth < 768) return;
 
     // Vänta lite så att sidan hinner rendera klart
     const timer = setTimeout(() => {

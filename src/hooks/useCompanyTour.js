@@ -14,6 +14,7 @@ export function useCompanyTour({ isCompany, user, ready = true }) {
   useEffect(() => {
     if (!isCompany || !user || !ready) return;
     if (localStorage.getItem(STORAGE_KEY)) return;
+    if (window.innerWidth < 768) return;
 
     const timer = setTimeout(() => {
       const driverObj = driver({
