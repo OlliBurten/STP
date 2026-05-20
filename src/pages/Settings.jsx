@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { useAuth } from "../context/AuthContext";
 import { useProfile } from "../context/ProfileContext";
@@ -736,7 +736,8 @@ export default function Settings() {
   const { user, hasApi, isDriver, isCompany } = useAuth();
   const { profile } = useProfile();
 
-  const [section, setSection] = useState("konto");
+  const [searchParams] = useSearchParams();
+  const [section, setSection] = useState(searchParams.get("tab") || "konto");
   const [notifSettings, setNotifSettings] = useState({});
   const [notifSaving, setNotifSaving] = useState(false);
   const [settingsLoading, setSettingsLoading] = useState(true);
