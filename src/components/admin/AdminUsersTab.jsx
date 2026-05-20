@@ -1,7 +1,106 @@
 import React from "react";
 import { T, INP, Btn, StatusBadge, SectionCard, fmtDate } from "./adminShared.jsx";
 import { getProfileCompletion } from "../../utils/driverProfileRequirements.js";
+import { SUMMARY_MIN_LENGTH } from "../../utils/driverProfileRequirements.js";
 import { EyeIcon } from "../../components/Icons.jsx";
+
+function getDriverChecklist(user) {
+  const p = user.driverProfile || {};
+  function t(v) { return String(v || "").trim(); }
+  function digits(v) { return t(v).replace(/\D/g, ""); }
+  return [
+    { key: "name",            label: "Namn",                    required: true,  done: t(user.name).length >= 2 },
+    { key: "phone",           label: "Telefonnummer",           required: true,  done: digits(p.phone).length >= 7 },
+    { key: "primarySegment",  label: "Primärt segment",         required: true,  done: t(p.primarySegment).length > 0 },
+    { key: "location",        label: "Ort",                     required: true,  done: t(p.location).length > 0 },
+    { key: "region",          label: "Region",                  required: true,  done: t(p.region).length > 0 },
+    { key: "licenses",        label: "Körkort",                 required: true,  done: Array.isArray(p.licenses) && p.licenses.length > 0 },
+    { key: "availability",    label: "Tillgänglighet",          required: true,  done: t(p.availability).length > 0 },
+    { key: "summary",         label: `Profiltext (${SUMMARY_MIN_LENGTH}+ tecken)`, required: true, done: t(p.summary).length >= SUMMARY_MIN_LENGTH },
+    { key: "certificates",    label: "Certifikat (YKB, ADR…)",  required: false, done: Array.isArray(p.certificates) && p.certificates.length > 0 },
+    { key: "experience",      label: "Arbetslivserfarenhet",    required: false, done: Array.isArray(p.experience) && p.experience.length > 0 },
+    { key: "regionsWilling",  label: "Regioner man kan tänka sig", required: false, done: Array.isArray(p.regionsWilling) && p.regionsWilling.length > 0 },
+    { key: "visible",         label: "Synlig för åkerier",      required: false, done: p.visibleToCompanies === true },
+  ];
+}
+
+function getCompanyChecklist(user) {
+  function t(v) { return String(v || "").trim(); }
+  return [
+    { key: "name",        label: "Företagsnamn",     required: true,  done: t(user.companyName).length > 0 || t(user.name).length > 0 },
+    { key: "orgNumber",   label: "Org.nummer",       required: true,  done: t(user.companyOrgNumber).length > 0 },
+    { key: "segments",    label: "Segment",           required: true,  done: Array.isArray(user.companySegmentDefaults) && user.companySegmentDefaults.length > 0 },
+    { key: "description", label: "Företagsbeskrivning", required: false, done: t(user.companyDescription).length > 0 },
+    { key: "website",     label: "Webbplats",         required: false, done: t(user.companyWebsite).length > 0 },
+    { key: "location",    label: "Ort",               required: false, done: t(user.companyLocation).length > 0 },
+    { key: "bransch",     label: "Bransch",            required: false, done: Array.isArray(user.companyBransch) && user.companyBransch.length > 0 },
+    { key: "region",      label: "Region",             required: false, done: t(user.companyRegion).length > 0 },
+  ];
+}
+
+function ProfileChecklist({ user }) {
+  const isDriver = user.role === "DRIVER";
+  const isCompany = user.role === "COMPANY" || user.role === "RECRUITER";
+  if (!isDriver && !isCompany) return null;
+
+  const items = isDriver ? getDriverChecklist(user) : getCompanyChecklist(user);
+  const required = items.filter((i) => i.required);
+  const optional = items.filter((i) => !i.required);
+  const missingRequired = required.filter((i) => !i.done);
+  const missingOptional = optional.filter((i) => !i.done);
+  const total = items.length;
+  const filled = items.filter((i) => i.done).length;
+  const pct = Math.round((filled / total) * 100);
+  const pctColor = pct === 100 ? T.green : pct >= 75 ? T.tealBright : pct >= 50 ? T.amber : T.red;
+
+  return (
+    <div style={{ padding: "14px 16px", borderBottom: `1px solid ${T.border}`, fontSize: 12 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+        <p style={{ fontWeight: 700, color: T.sub, margin: 0 }}>Profilfyllnad</p>
+        <span style={{ fontSize: 13, fontWeight: 800, color: pctColor }}>{pct}%</span>
+      </div>
+
+      {/* Progress bar */}
+      <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: 99, height: 5, marginBottom: 14, overflow: "hidden" }}>
+        <div style={{ width: `${pct}%`, height: "100%", background: pctColor, borderRadius: 99, transition: "width 0.3s" }} />
+      </div>
+
+      {/* Required criteria */}
+      <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.muted, marginBottom: 6 }}>Obligatoriska ({required.filter(i => i.done).length}/{required.length})</p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 12 }}>
+        {required.map((item) => (
+          <div key={item.key} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: 12, color: item.done ? T.green : T.red, flexShrink: 0, width: 14 }}>{item.done ? "✓" : "✗"}</span>
+            <span style={{ color: item.done ? T.sub : T.text, fontWeight: item.done ? 400 : 600 }}>{item.label}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Optional criteria */}
+      <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.muted, marginBottom: 6 }}>Valfria ({optional.filter(i => i.done).length}/{optional.length})</p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        {optional.map((item) => (
+          <div key={item.key} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: 12, color: item.done ? T.green : "rgba(255,255,255,0.2)", flexShrink: 0, width: 14 }}>{item.done ? "✓" : "○"}</span>
+            <span style={{ color: item.done ? T.sub : T.muted }}>{item.label}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Summary of what's missing */}
+      {(missingRequired.length > 0 || missingOptional.length > 0) && (
+        <div style={{ marginTop: 12, padding: "8px 10px", borderRadius: 8, background: missingRequired.length > 0 ? T.redBg : T.amberBg, border: `1px solid ${missingRequired.length > 0 ? T.redBorder : T.amberBorder}` }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: missingRequired.length > 0 ? T.red : T.amber, margin: "0 0 4px" }}>
+            {missingRequired.length > 0 ? `Saknar ${missingRequired.length} obligatorisk${missingRequired.length > 1 ? "a" : ""}:` : `Saknar ${missingOptional.length} valfri${missingOptional.length > 1 ? "a" : ""}:`}
+          </p>
+          <p style={{ fontSize: 11, color: missingRequired.length > 0 ? "rgba(248,113,113,0.8)" : "rgba(245,166,35,0.8)", margin: 0 }}>
+            {(missingRequired.length > 0 ? missingRequired : missingOptional).map(i => i.label).join(", ")}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function AdminUsersTab({
   users,
@@ -206,7 +305,17 @@ export default function AdminUsersTab({
                           {(() => {
                             const c = getProfileCompletion(u);
                             if (!c) return null;
-                            return <span style={{ fontSize: 10, padding: "2px 6px", borderRadius: 99, background: T.card, border: `1px solid ${T.border}`, color: T.sub }}>{c.pct}%</span>;
+                            const pctColor = c.pct === 100 ? T.green : c.pct >= 75 ? T.tealBright : c.pct >= 50 ? T.amber : T.red;
+                            const items = u.role === "DRIVER" ? getDriverChecklist(u) : getCompanyChecklist(u);
+                            const missing = items.filter(i => !i.done);
+                            return (
+                              <span
+                                title={missing.length > 0 ? `Saknar: ${missing.map(i => i.label).join(", ")}` : "Komplett profil"}
+                                style={{ fontSize: 10, padding: "2px 6px", borderRadius: 99, background: `${pctColor}18`, border: `1px solid ${pctColor}44`, color: pctColor, cursor: "help" }}
+                              >
+                                {c.pct}%
+                              </span>
+                            );
                           })()}
                         </div>
                       </td>
@@ -324,12 +433,7 @@ export default function AdminUsersTab({
               </div>
 
               {selectedUserDetail.driverProfile && (
-                <div style={{ padding: "12px 16px", borderBottom: `1px solid ${T.border}`, fontSize: 12 }}>
-                  <p style={{ fontWeight: 700, color: T.sub, marginBottom: 6 }}>Förarprofil</p>
-                  <p style={{ color: T.muted, margin: "2px 0" }}>Synlig: {selectedUserDetail.driverProfile.visibleToCompanies ? "Ja" : "Nej"}</p>
-                  <p style={{ color: T.muted, margin: "2px 0" }}>Körkort: {(selectedUserDetail.driverProfile.licenses || []).join(", ") || "–"}</p>
-                  <p style={{ color: T.muted, margin: "2px 0" }}>Region: {selectedUserDetail.driverProfile.region || "–"}</p>
-                </div>
+                <ProfileChecklist user={selectedUserDetail} />
               )}
 
               {selectedUserDetail.organizations?.length > 0 && (
