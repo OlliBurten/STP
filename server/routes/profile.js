@@ -322,7 +322,7 @@ profileRouter.put("/", async (req, res, next) => {
         primarySegment: previous?.primarySegment || null,
         secondarySegments: previous?.secondarySegments || [],
         privateMatchNotes: previous?.privateMatchNotes || "",
-        visibleToCompanies: previous?.visibleToCompanies || false,
+        visibleToCompanies: previous?.visibleToCompanies ?? true,
         regionsWilling: previous?.regionsWilling || [],
         experience: previous?.experience || [],
       }) !==
@@ -334,7 +334,7 @@ profileRouter.put("/", async (req, res, next) => {
           primarySegment: profile.primarySegment || null,
           secondarySegments: profile.secondarySegments || [],
           privateMatchNotes: profile.privateMatchNotes || "",
-          visibleToCompanies: profile.visibleToCompanies || false,
+          visibleToCompanies: profile.visibleToCompanies ?? true,
           regionsWilling: profile.regionsWilling || [],
           experience: profile.experience || [],
         });

@@ -229,7 +229,7 @@ model DriverProfile {
   availability        String?  // open, vikariat, tim, fast, inactive
   primarySegment      String?  // FULLTIME | FLEX | INTERNSHIP
   secondarySegments   String[] @default([])
-  visibleToCompanies  Boolean  @default(false)
+  visibleToCompanies  Boolean  @default(true)
   regionsWilling      String[] // ["Skåne", "Halland"]
   showEmailToCompanies Boolean @default(false)
   showPhoneToCompanies Boolean @default(false)
