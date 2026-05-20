@@ -968,19 +968,19 @@ export default function Profile() {
 
         {/* Visibility toggle */}
         <div style={{ padding: "0 20px 20px" }}>
-          <div style={{ padding: "14px 16px", background: current?.isVisible ? "rgba(74,222,128,0.05)" : "rgba(255,255,255,0.03)", border: `1px solid ${current?.isVisible ? "rgba(74,222,128,0.2)" : "rgba(255,255,255,0.07)"}`, borderRadius: 13, display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ width: 38, height: 38, borderRadius: 10, background: current?.isVisible ? "rgba(74,222,128,0.15)" : "rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <svg viewBox="0 0 24 24" fill="none" stroke={current?.isVisible ? "#4ade80" : "rgba(255,255,255,0.6)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <div style={{ padding: "14px 16px", background: current?.visibleToCompanies ? "rgba(74,222,128,0.05)" : "rgba(255,255,255,0.03)", border: `1px solid ${current?.visibleToCompanies ? "rgba(74,222,128,0.2)" : "rgba(255,255,255,0.07)"}`, borderRadius: 13, display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ width: 38, height: 38, borderRadius: 10, background: current?.visibleToCompanies ? "rgba(74,222,128,0.15)" : "rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke={current?.visibleToCompanies ? "#4ade80" : "rgba(255,255,255,0.6)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2 }}>Synlig för åkerier</div>
-              <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.55)" }}>{current?.isVisible ? "Åkerier kan hitta dig och skicka jobb" : "Endast du ser din profil"}</div>
+              <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.55)" }}>{current?.visibleToCompanies ? "Åkerier kan hitta dig och skicka jobb" : "Endast du ser din profil"}</div>
             </div>
             <button
-              onClick={() => updateProfile({ ...profile, isVisible: !current?.isVisible })}
-              style={{ width: 48, height: 28, borderRadius: 99, background: current?.isVisible ? "#4ade80" : "rgba(255,255,255,0.15)", border: "none", position: "relative", cursor: "pointer", flexShrink: 0, transition: "background .2s" }}
+              onClick={() => updateProfile({ ...profile, visibleToCompanies: !current?.visibleToCompanies })}
+              style={{ width: 48, height: 28, borderRadius: 99, background: current?.visibleToCompanies ? "#4ade80" : "rgba(255,255,255,0.15)", border: "none", position: "relative", cursor: "pointer", flexShrink: 0, transition: "background .2s" }}
             >
-              <div style={{ position: "absolute", top: 3, left: current?.isVisible ? 23 : 3, width: 22, height: 22, borderRadius: 99, background: "#fff", transition: "left .2s" }}/>
+              <div style={{ position: "absolute", top: 3, left: current?.visibleToCompanies ? 23 : 3, width: 22, height: 22, borderRadius: 99, background: "#fff", transition: "left .2s" }}/>
             </button>
           </div>
         </div>
