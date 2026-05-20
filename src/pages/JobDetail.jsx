@@ -168,6 +168,8 @@ export default function JobDetail() {
   const [matchExplanationLoading, setMatchExplanationLoading] = useState(false);
   const [screenings, setScreenings] = useState({});
   const [screeningsLoading, setScreeningsLoading] = useState(false);
+  const [mobileTab, setMobileTab] = useState("about");
+  const [mobileScrolled, setMobileScrolled] = useState(false);
 
   const isMyJob =
     hasApi &&
@@ -496,9 +498,6 @@ export default function JobDetail() {
   const empLabel = job.employment === "fast" ? "Fast anställning" : job.employment === "vikariat" ? "Vikariat" : "Timanställning";
 
   // ── Mobile render ──────────────────────────────────────────────────────────
-  const [mobileTab, setMobileTab] = useState("about");
-  const [mobileScrolled, setMobileScrolled] = useState(false);
-
   if (isMobile) {
     const matchPct = driverMatchScore != null ? Math.min(100, Math.round((driverMatchScore / 9) * 100)) : null;
     const matchColor = matchPct >= 85 ? "#4ade80" : matchPct >= 70 ? "#F5A623" : matchPct >= 55 ? "#60a5fa" : "rgba(255,255,255,0.4)";
