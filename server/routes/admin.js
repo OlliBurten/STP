@@ -417,7 +417,7 @@ adminRouter.get("/summary", async (req, res, next) => {
         ...job,
         published: toIso(job.published),
       })),
-      latestApplications: latestApplications.map((c) => ({
+      latestApplications: (latestApplications ?? []).map((c) => ({
         id: c.id,
         jobTitle: c.jobTitle,
         driverName: c.driver?.name || c.driver?.email || "Okänd förare",
