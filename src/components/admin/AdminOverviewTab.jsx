@@ -19,7 +19,7 @@ function SectionHeader({ title, sub, action }) {
 
 // ─── Metric card with sparkline ────────────────────────────────────────────────
 function Metric({ label, value, delta, trend, sparkline, color = "#F5A623" }) {
-  const positive = delta && delta.startsWith("+");
+  const positive = delta && (delta.startsWith("+") || (!delta.startsWith("−") && !delta.startsWith("-")));
   const data = sparkline && sparkline.length > 1 ? sparkline : [12, 14, 11, 16, 13, 18, 15, 22, 19, 24, 21, 27];
   const max = Math.max(...data);
   const min = Math.min(...data);
@@ -57,16 +57,55 @@ function Metric({ label, value, delta, trend, sparkline, color = "#F5A623" }) {
 }
 
 // ─── Action queue ──────────────────────────────────────────────────────────────
-function ActionQueue({ pendingCount, onGoToCompanies }) {
+function ActionQueue({ pendingCount, openReportsCount, stuckCount, feedbackNewCount, onGoToCompanies, setActiveTab }) {
+  const noData = <span style={{ color: "rgba(255,255,255,0.3)", fontStyle: "italic" }}>—</span>;
+
   const items = [
-    { sev: "red",   count: pendingCount || 3, l: "Företag väntar verifiering", action: "Granska", icon: "building", onClick: onGoToCompanies },
-    { sev: "red",   count: 5,  l: "Rapporter att granska",              action: "Öppna",            icon: "shield" },
-    { sev: "amber", count: 7,  l: "Förare stuck i onboarding < 50%",    action: "Skicka påminnelse", icon: "users" },
-    { sev: "amber", count: 2,  l: "Omdömen flaggade för granskning",    action: "Modera",            icon: "star" },
-    { sev: "blue",  count: 12, l: "Nya feedback-meddelanden",           action: "Läs",              icon: "feedback" },
+    {
+      sev: pendingCount > 0 ? "red" : "blue",
+      count: pendingCount,
+      l: "Företag väntar verifiering",
+      action: "Granska",
+      icon: "building",
+      onClick: onGoToCompanies,
+    },
+    {
+      sev: openReportsCount == null ? "blue" : openReportsCount > 0 ? "red" : "blue",
+      count: openReportsCount,
+      l: "Rapporter att granska",
+      action: "Öppna",
+      icon: "shield",
+      onClick: () => setActiveTab && setActiveTab("reports"),
+    },
+    {
+      sev: stuckCount == null ? "blue" : stuckCount > 0 ? "amber" : "blue",
+      count: stuckCount,
+      l: "Förare stuck i onboarding < 50%",
+      action: "Skicka påminnelse",
+      icon: "users",
+    },
+    {
+      sev: "blue",
+      count: null, // CompanyReview has no PENDING status
+      l: "Omdömen flaggade för granskning",
+      action: "Modera",
+      icon: "star",
+      onClick: () => setActiveTab && setActiveTab("reviews"),
+    },
+    {
+      sev: feedbackNewCount == null ? "blue" : feedbackNewCount > 0 ? "blue" : "blue",
+      count: feedbackNewCount,
+      l: "Nya feedback-meddelanden",
+      action: "Läs",
+      icon: "feedback",
+      onClick: () => setActiveTab && setActiveTab("feedback"),
+    },
   ];
+
   const sevColor = { red: "#f87171", amber: "#F5A623", blue: "#60a5fa" };
-  const total = items.reduce((s, i) => s + i.count, 0);
+  const knownCounts = items.filter(i => i.count != null).map(i => i.count);
+  const total = knownCounts.reduce((s, n) => s + n, 0);
+
   return (
     <div style={{ background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 12, overflow: "hidden" }}>
       <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -76,40 +115,67 @@ function ActionQueue({ pendingCount, onGoToCompanies }) {
         </div>
         <span style={{ fontSize: 11, fontWeight: 700, color: "#F5A623", ...mono }}>{total}</span>
       </div>
-      {items.map((it, i) => (
-        <div key={i}
-          onClick={it.onClick}
-          style={{ padding: "12px 18px", display: "flex", alignItems: "center", gap: 12, borderBottom: i < items.length - 1 ? "1px solid rgba(255,255,255,0.03)" : "none", cursor: "pointer" }}
-          onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.02)"}
-          onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-        >
-          <div style={{ width: 28, height: 28, borderRadius: 7, background: `${sevColor[it.sev]}15`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <Icon n={it.icon} s={13} c={sevColor[it.sev]} />
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 12.5, fontWeight: 600, marginBottom: 1 }}>
-              <span style={{ color: sevColor[it.sev], fontWeight: 800, ...mono }}>{it.count}</span> {it.l}
+      {items.map((it, i) => {
+        const c = sevColor[it.sev];
+        return (
+          <div key={i}
+            onClick={it.onClick}
+            style={{ padding: "12px 18px", display: "flex", alignItems: "center", gap: 12, borderBottom: i < items.length - 1 ? "1px solid rgba(255,255,255,0.03)" : "none", cursor: it.onClick ? "pointer" : "default" }}
+            onMouseEnter={e => { if (it.onClick) e.currentTarget.style.background = "rgba(255,255,255,0.02)"; }}
+            onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+          >
+            <div style={{ width: 28, height: 28, borderRadius: 7, background: `${c}15`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <Icon n={it.icon} s={13} c={c} />
             </div>
-            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)" }}>{it.action} →</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 12.5, fontWeight: 600, marginBottom: 1 }}>
+                {it.count != null
+                  ? <span style={{ color: c, fontWeight: 800, ...mono }}>{it.count}</span>
+                  : noData
+                }{" "}{it.l}
+              </div>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)" }}>{it.action} →</div>
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
 
 // ─── System pulse ──────────────────────────────────────────────────────────────
-function SystemPulse() {
+function SystemPulse({ health }) {
+  // health shape: { ok, db, dbLatencyMs, emailConfigured, emailFromConfigured, oauth: { google, microsoft }, reminders: { ready } }
+  const loaded = health != null;
+
+  function svc(name, ok, value) {
+    const c = !loaded ? "rgba(255,255,255,0.2)" : ok ? "#4ade80" : "#f87171";
+    const v = !loaded ? "—" : value;
+    const s = !loaded ? "loading" : ok ? "ok" : "error";
+    return { n: name, s, v, c };
+  }
+
+  const dbLatency = health?.dbLatencyMs != null ? `${health.dbLatencyMs}ms` : "ok";
+  const emailVal = health ? (health.emailConfigured && health.emailFromConfigured ? "Resend" : "Ej konfig") : "—";
+  const ssoVal = health ? (
+    health.oauth?.google && health.oauth?.microsoft ? "Google+MS" :
+    health.oauth?.google ? "Google" :
+    health.oauth?.microsoft ? "Microsoft" : "Ej konfig"
+  ) : "—";
+  const remindersOk = health ? Boolean(health.reminders?.ready) : false;
+  const cooldown = health?.reminders?.cooldownHours ? `${health.reminders.cooldownHours}h cd` : "redo";
+
   const services = [
-    { n: "API",       s: "ok",   v: "250 min",  c: "#4ade80" },
-    { n: "DB",        s: "ok",   v: "6ms",      c: "#4ade80" },
-    { n: "Email",     s: "ok",   v: "Resend",   c: "#4ade80" },
-    { n: "SSO",       s: "ok",   v: "Google+MS",c: "#4ade80" },
-    { n: "Reminders", s: "ok",   v: "24h cd",   c: "#4ade80" },
-    { n: "Live web",  s: "ok",   v: "Uppe",     c: "#4ade80" },
-    { n: "Demo web",  s: "ok",   v: "Uppe",     c: "#4ade80" },
-    { n: "MCP",       s: "warn", v: "Konfig",   c: "#F5A623" },
+    svc("API",       true,                                   `${health?.uptimeSec != null ? Math.floor(health.uptimeSec / 60) + " min" : "redo"}`),
+    svc("DB",        !health || health.db === "ok",          dbLatency),
+    svc("Email",     !health || (health.emailConfigured && health.emailFromConfigured), emailVal),
+    svc("SSO",       !health || (health.oauth?.google || health.oauth?.microsoft), ssoVal),
+    svc("Reminders", !health || remindersOk,                 remindersOk ? cooldown : "Ej konfig"),
+    svc("Live web",  true,                                   "Uppe"),
+    svc("Demo web",  true,                                   "Uppe"),
+    { n: "MCP", s: "warn", v: "Konfig", c: "#F5A623" },
   ];
+
   return (
     <div style={{ background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 12, overflow: "hidden" }}>
       <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -139,7 +205,6 @@ function ActivityFeed({ latestUsers, latestApplications, onOpenUser }) {
   const [tab, setTab] = React.useState("Alla");
   const tabs = ["Alla", "Förare", "Åkeri", "Jobb"];
 
-  // Build activity items from real data
   const items = [];
   (latestUsers || []).slice(0, 5).forEach((u) => {
     items.push({
@@ -165,17 +230,7 @@ function ActivityFeed({ latestUsers, latestApplications, onOpenUser }) {
     });
   });
 
-  // If no real data, show prototype mock items
-  const displayItems = items.length > 0 ? items : [
-    { t: "signup", who: "Lina Pettersson",   a: "registrerade som förare",                    time: "4 min",  icon: "user",     color: "#4ade80", type: "Förare" },
-    { t: "job",    who: "Nordic Transport AB",a: "publicerade CE-chaufför fjärr",               time: "18 min", icon: "briefcase",color: "#60a5fa", type: "Åkeri" },
-    { t: "app",    who: "Erik Johansson",     a: "sökte CE-chaufför fjärrkörning",              time: "32 min", icon: "users",    color: "#F5A623", type: "Förare" },
-    { t: "verify", who: "Petroltrans Nordic", a: "verifierat (F-skatt + trafiktillstånd)",      time: "1h",     icon: "shield",   color: "#4ade80", type: "Åkeri" },
-    { t: "report", who: "Anna K.",            a: "rapporterade FlexiDriv för spam",             time: "2h",     icon: "alert",    color: "#f87171", type: "Förare" },
-    { t: "hire",   who: "Mikael Stenberg",    a: "anställdes av Kaunis Iron Logistik",          time: "3h",     icon: "check",    color: "#4ade80", type: "Förare" },
-    { t: "feedback",who:"Tomas Karlsson",     a: "lämnade feedback (4/5)",                     time: "5h",     icon: "feedback", color: "#60a5fa", type: "Förare" },
-    { t: "signup", who: "Jonas Wikström",     a: "registrerade som förare",                    time: "6h",     icon: "user",     color: "#4ade80", type: "Förare" },
-  ];
+  const displayItems = items;
 
   const filtered = tab === "Alla" ? displayItems : displayItems.filter(it => it.type === tab || (tab === "Jobb" && it.t === "job"));
 
@@ -216,59 +271,90 @@ function ActivityFeed({ latestUsers, latestApplications, onOpenUser }) {
 
 // ─── Onboarding funnel ─────────────────────────────────────────────────────────
 function OnboardingFunnel({ onboarding }) {
-  const total = onboarding?.total30d || 312;
-  const stages = [
-    { l: "Besökare",              v: 1284, p: 100,  c: "#60a5fa" },
-    { l: "Klickat 'Skapa konto'", v: 482,  p: 37.5, c: "#7dd3c8" },
-    { l: "Slutfört signup",       v: total, p: Math.round((total / 1284) * 100) || 24.3, c: "#F5A623" },
-    { l: "Profil > 50%",          v: (onboarding?.buckets?.["50-75"] || 0) + (onboarding?.buckets?.["75-100"] || 0) || 148, p: null, c: "#a78bfa" },
-    { l: "Profil > 75% (matchbar)", v: onboarding?.buckets?.["75-100"] || 97, p: null, c: "#4ade80" },
-  ].map((s, _, arr) => ({ ...s, p: s.p ?? Math.round((s.v / arr[0].v) * 100) }));
+  const over50 = (onboarding?.buckets?.["50-75"] ?? 0) + (onboarding?.buckets?.["75-100"] ?? 0);
+  const over75 = onboarding?.buckets?.["75-100"] ?? 0;
+  const signups = onboarding?.total30d ?? null;
+
+  // Rows 1-2 (besökare/klick) have no tracking data — no pageview analytics
+  const stages = signups != null ? [
+    { l: "Slutfört signup",         v: signups, p: 100,                                         c: "#F5A623" },
+    { l: "Profil > 50%",            v: over50,  p: Math.round((over50 / (signups || 1)) * 100), c: "#a78bfa" },
+    { l: "Profil > 75% (matchbar)", v: over75,  p: Math.round((over75 / (signups || 1)) * 100), c: "#4ade80" },
+  ] : null;
 
   return (
     <div style={{ background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 12, padding: 18 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
         <div>
           <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: -0.2 }}>Onboarding-tratt — 30d</div>
-          <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>Från landing till matchbar profil</div>
+          <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>Från signup till matchbar profil</div>
         </div>
         <select style={{ padding: "5px 26px 5px 9px", borderRadius: 6, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", color: "#fff", fontSize: 11, fontWeight: 600, outline: "none", cursor: "pointer", appearance: "none" }}>
           <option style={{ background: "#0a1414" }}>Förare</option>
           <option style={{ background: "#0a1414" }}>Åkeri</option>
         </select>
       </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {stages.map((s, i) => (
-          <div key={s.l}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4, fontSize: 11.5 }}>
-              <span style={{ color: "rgba(255,255,255,0.7)", fontWeight: 600 }}>{s.l}</span>
-              <span style={{ color: "#fff", fontWeight: 800, ...mono }}>{s.v.toLocaleString()} <span style={{ color: "rgba(255,255,255,0.4)", fontWeight: 500 }}>· {s.p}%</span></span>
-            </div>
-            <div style={{ height: 6, borderRadius: 99, background: "rgba(255,255,255,0.04)", overflow: "hidden" }}>
-              <div style={{ height: "100%", width: `${s.p}%`, background: s.c, borderRadius: 99 }} />
-            </div>
-            {i < stages.length - 1 && (
-              <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 4, fontSize: 10, color: "rgba(248,113,113,0.7)", paddingLeft: 4, ...mono }}>
-                <Icon n="down" s={9} /> {Math.round((1 - stages[i + 1].v / stages[i].v) * 100)}% drop-off
-              </div>
-            )}
+
+      {/* Rows without tracking data */}
+      {[
+        { l: "Besökare",              c: "#60a5fa" },
+        { l: "Klickat 'Skapa konto'", c: "#7dd3c8" },
+      ].map(s => (
+        <div key={s.l} style={{ marginBottom: 12 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4, fontSize: 11.5 }}>
+            <span style={{ color: "rgba(255,255,255,0.4)", fontWeight: 600 }}>{s.l}</span>
+            <span style={{ color: "rgba(255,255,255,0.25)", fontSize: 10.5, ...mono }}>Ingen data</span>
           </div>
-        ))}
-      </div>
+          <div style={{ height: 6, borderRadius: 99, background: "rgba(255,255,255,0.04)", overflow: "hidden" }}>
+            <div style={{ height: "100%", width: "0%", background: s.c, borderRadius: 99 }} />
+          </div>
+        </div>
+      ))}
+
+      {!stages ? (
+        <div style={{ padding: "16px 0", textAlign: "center", fontSize: 12, color: "rgba(255,255,255,0.35)" }}>Laddar data...</div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {stages.map((s, i) => (
+            <div key={s.l}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4, fontSize: 11.5 }}>
+                <span style={{ color: "rgba(255,255,255,0.7)", fontWeight: 600 }}>{s.l}</span>
+                <span style={{ color: "#fff", fontWeight: 800, ...mono }}>{s.v.toLocaleString()} <span style={{ color: "rgba(255,255,255,0.4)", fontWeight: 500 }}>· {s.p}%</span></span>
+              </div>
+              <div style={{ height: 6, borderRadius: 99, background: "rgba(255,255,255,0.04)", overflow: "hidden" }}>
+                <div style={{ height: "100%", width: `${s.p}%`, background: s.c, borderRadius: 99 }} />
+              </div>
+              {i < stages.length - 1 && (
+                <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 4, fontSize: 10, color: "rgba(248,113,113,0.7)", paddingLeft: 4, ...mono }}>
+                  <Icon n="down" s={9} /> {Math.round((1 - stages[i + 1].v / (stages[i].v || 1)) * 100)}% drop-off
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
 // ─── Integrations card ─────────────────────────────────────────────────────────
-function IntegrationsCard() {
+function IntegrationsCard({ health }) {
+  const emailOk = health ? (health.emailConfigured && health.emailFromConfigured) : null;
+
+  function integrationStatus(ok) {
+    if (ok == null) return { s: "connected", c: "#4ade80" }; // assume connected if no data
+    return ok ? { s: "connected", c: "#4ade80" } : { s: "ej konfig", c: "#f87171" };
+  }
+
   const integrations = [
-    { l: "Resend",      s: "connected", c: "#4ade80" },
-    { l: "Bolagsverket",s: "connected", c: "#4ade80" },
-    { l: "Plausible",   s: "connected", c: "#4ade80" },
-    { l: "Claude MCP",  s: "setup",     c: "#F5A623" },
-    { l: "Slack",       s: "available", c: "rgba(255,255,255,0.3)" },
-    { l: "Zapier",      s: "available", c: "rgba(255,255,255,0.3)" },
+    { l: "Resend",       ...integrationStatus(emailOk) },
+    { l: "Bolagsverket", s: "available", c: "rgba(255,255,255,0.3)" },
+    { l: "Plausible",    s: "available", c: "rgba(255,255,255,0.3)" },
+    { l: "Claude MCP",   s: "setup",     c: "#F5A623" },
+    { l: "Slack",        s: "available", c: "rgba(255,255,255,0.3)" },
+    { l: "Zapier",       s: "available", c: "rgba(255,255,255,0.3)" },
   ];
+
   return (
     <div style={{ background: "linear-gradient(135deg,rgba(167,139,250,0.06),rgba(167,139,250,0.01))", border: "1px solid rgba(167,139,250,0.18)", borderRadius: 12, overflow: "hidden" }}>
       <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -310,28 +396,37 @@ export default function AdminOverviewTab({
   summary,
   summaryLoading,
   onboarding,
+  health,
   pendingCount,
+  feedbackNewCount,
   setActiveTab,
   loadUserDetail,
   setError,
 }) {
   const [period, setPeriod] = React.useState("30d");
 
-  const drivers = summary?.users?.driversTotal ?? 312;
-  const companies = summary?.users?.recruitersTotal ?? 22;
-  const activeJobs = summary?.jobs?.active ?? 14;
-  const conversations = summary?.activity?.conversations ?? 48;
+  const drivers      = summary?.users?.driversTotal ?? null;
+  const companies    = summary?.users?.recruitersTotal ?? null;
+  const activeJobs   = summary?.jobs?.active ?? null;
+  const conversations = summary?.activity?.conversations ?? null;
 
-  const driverSpark = summary
-    ? [140, 180, 210, 240, 260, 275, 290, 300, 305, 310, 308, drivers]
-    : [140, 180, 210, 240, 260, 275, 290, 300, 305, 310, 308, 312];
-  const companySpark = summary
-    ? [14, 15, 16, 17, 18, 18, 19, 20, 20, 21, 21, companies]
-    : [14, 15, 16, 17, 18, 18, 19, 20, 20, 21, 21, 22];
-  const jobSpark = summary
-    ? [8, 9, 10, 9, 11, 12, 11, 13, 12, 13, 14, activeJobs]
-    : [8, 9, 10, 9, 11, 12, 11, 13, 12, 13, 14, 14];
-  const appsSpark = [62, 68, 72, 68, 58, 54, 50, 48, 48, 46, 48, conversations];
+  // Deltas — use period to pick the right window
+  const newUsersInPeriod = period === "7d" ? summary?.users?.new7d : period === "30d" ? summary?.users?.new30d : null;
+  const driverDelta = newUsersInPeriod != null ? `+${newUsersInPeriod}` : null;
+  const periodLabel = period === "7d" ? "senaste 7 dagarna" : period === "30d" ? "senaste 30 dagarna" : "senaste 90 dagarna";
+
+  // Sparklines — approximate shape ending at current total
+  const driverSpark   = drivers   != null ? [140, 180, 210, 240, 260, 275, 290, 300, 305, 310, 308, drivers]   : null;
+  const companySpark  = companies != null ? [14,  15,  16,  17,  18,  18,  19,  20,  20,  21,  21,  companies] : null;
+  const jobSpark      = activeJobs != null ? [8, 9, 10, 9, 11, 12, 11, 13, 12, 13, 14, activeJobs]            : null;
+  const appsSpark     = conversations != null ? [62, 68, 72, 68, 58, 54, 50, 48, 48, 46, 48, conversations]   : null;
+
+  // ActionQueue counts from real data
+  const openReportsCount = summary?.actionQueue?.openReports ?? null;
+  const newFeedbackCount = feedbackNewCount ?? summary?.actionQueue?.newFeedback ?? null;
+  const stuckCount = onboarding?.stuck != null ? onboarding.stuck.length : null;
+
+  const noDataStr = "—";
 
   if (summaryLoading) {
     return (
@@ -352,10 +447,38 @@ export default function AdminOverviewTab({
 
       {/* Hero metrics */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 20 }}>
-        <Metric label="Förare totalt"  value={String(drivers)}       delta={summary?.users?.new30d > 0 ? `+${summary.users.new30d}` : "+11.3%"} trend="vs föregående 30d"    sparkline={driverSpark}  color="#4ade80" />
-        <Metric label="Åkerier totalt" value={String(companies)}      delta="+22.2%"                                                               trend="6 verifierade i månaden" sparkline={companySpark} color="#F5A623" />
-        <Metric label="Aktiva annonser"value={String(activeJobs)}     delta="+4"                                                                   trend="40 matchningar/dag"  sparkline={jobSpark}     color="#a78bfa" />
-        <Metric label="Ansökningar/v"  value={String(conversations)}  delta="−12%"                                                                  trend="Drop senaste 7d"    sparkline={appsSpark}    color="#60a5fa" />
+        <Metric
+          label="Förare totalt"
+          value={drivers != null ? String(drivers) : noDataStr}
+          delta={driverDelta}
+          trend={driverDelta ? `${driverDelta} nya ${periodLabel}` : "Inga nya registrerade"}
+          sparkline={driverSpark}
+          color="#4ade80"
+        />
+        <Metric
+          label="Åkerier totalt"
+          value={companies != null ? String(companies) : noDataStr}
+          delta={null}
+          trend={companies != null ? `${summary?.verification?.verifiedCompanies ?? "?"} verifierade` : "Ingen data"}
+          sparkline={companySpark}
+          color="#F5A623"
+        />
+        <Metric
+          label="Aktiva annonser"
+          value={activeJobs != null ? String(activeJobs) : noDataStr}
+          delta={null}
+          trend={activeJobs != null ? `${summary?.jobs?.total ?? "?"} totalt (inkl. dolda)` : "Ingen data"}
+          sparkline={jobSpark}
+          color="#a78bfa"
+        />
+        <Metric
+          label="Konversationer"
+          value={conversations != null ? String(conversations) : noDataStr}
+          delta={null}
+          trend={conversations != null ? `${summary?.activity?.messages ?? "?"} meddelanden totalt` : "Ingen data"}
+          sparkline={appsSpark}
+          color="#60a5fa"
+        />
       </div>
 
       {/* Two-column main */}
@@ -372,9 +495,16 @@ export default function AdminOverviewTab({
           <OnboardingFunnel onboarding={onboarding} />
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          <ActionQueue pendingCount={pendingCount} onGoToCompanies={() => setActiveTab("companies")} />
-          <SystemPulse />
-          <IntegrationsCard />
+          <ActionQueue
+            pendingCount={pendingCount}
+            openReportsCount={openReportsCount}
+            stuckCount={stuckCount}
+            feedbackNewCount={newFeedbackCount}
+            onGoToCompanies={() => setActiveTab("companies")}
+            setActiveTab={setActiveTab}
+          />
+          <SystemPulse health={health} />
+          <IntegrationsCard health={health} />
         </div>
       </div>
     </div>

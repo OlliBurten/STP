@@ -306,6 +306,8 @@ adminRouter.get("/summary", async (req, res, next) => {
       pendingLegacyCompanies,
       pendingOrganizations,
       acceptsPraktikCompanies,
+      openReportsCount,
+      newFeedbackCount,
       latestApplications,
     ] = await Promise.all([
       prisma.user.count({ where: { createdAt: { gte: since24h } } }),
@@ -366,6 +368,8 @@ adminRouter.get("/summary", async (req, res, next) => {
       }),
       prisma.organization.count({ where: { status: "PENDING" } }),
       prisma.organization.count({ where: { acceptsPraktik: true } }),
+      prisma.report.count({ where: { status: "OPEN" } }),
+      prisma.feedback.count({ where: { status: "NEW" } }),
       prisma.conversation.findMany({
         where: { jobId: { not: null } },
         orderBy: { createdAt: "desc" },
@@ -424,6 +428,10 @@ adminRouter.get("/summary", async (req, res, next) => {
         companyName: c.company?.companyName || c.company?.name || "Okänt åkeri",
         createdAt: toIso(c.createdAt),
       })),
+      actionQueue: {
+        openReports: openReportsCount,
+        newFeedback: newFeedbackCount,
+      },
     });
   } catch (e) {
     next(e);
