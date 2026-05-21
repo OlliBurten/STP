@@ -127,7 +127,15 @@ export function AdminSidebar({ section, onChange }) {
 }
 
 // ─── TopBar ───────────────────────────────────────────────────────────────────
-export function AdminTopBar({ openCmd }) {
+export function AdminTopBar({ openCmd, health }) {
+  const dbOk = !health || health.db === "ok";
+  const latency = health?.dbLatencyMs != null ? `${health.dbLatencyMs}ms` : null;
+  const systemOk = !health || (health.db === "ok");
+  const pillColor = systemOk ? "#4ade80" : "#f87171";
+  const pillBg = systemOk ? "rgba(74,222,128,0.08)" : "rgba(248,113,113,0.08)";
+  const pillBorder = systemOk ? "rgba(74,222,128,0.2)" : "rgba(248,113,113,0.2)";
+  const pillLabel = systemOk ? "System OK" : "Systemfel";
+
   return (
     <div style={{ height: 54, borderBottom: "1px solid rgba(255,255,255,0.05)", display: "flex", alignItems: "center", padding: "0 22px", gap: 14, background: "#040a0a", flexShrink: 0 }}>
       <button onClick={openCmd} style={{ flex: 1, maxWidth: 480, display: "flex", alignItems: "center", gap: 9, padding: "7px 12px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)", fontSize: 12.5, cursor: "pointer" }}>
@@ -137,10 +145,10 @@ export function AdminTopBar({ openCmd }) {
       </button>
 
       <div style={{ display: "flex", alignItems: "center", gap: 7, marginLeft: "auto" }}>
-        <button style={{ display: "flex", alignItems: "center", gap: 7, padding: "5px 11px", borderRadius: 99, background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.2)", cursor: "pointer" }}>
-          <span style={{ width: 7, height: 7, borderRadius: 99, background: "#4ade80", animation: "pulse 2s infinite" }} />
-          <span style={{ fontSize: 11, fontWeight: 700, color: "#4ade80" }}>System OK</span>
-          <span style={{ fontSize: 10, color: "rgba(74,222,128,0.55)", fontFamily: "'JetBrains Mono',monospace" }}>99.98%</span>
+        <button style={{ display: "flex", alignItems: "center", gap: 7, padding: "5px 11px", borderRadius: 99, background: pillBg, border: `1px solid ${pillBorder}`, cursor: "pointer" }}>
+          <span style={{ width: 7, height: 7, borderRadius: 99, background: pillColor, animation: systemOk ? "pulse 2s infinite" : "none" }} />
+          <span style={{ fontSize: 11, fontWeight: 700, color: pillColor }}>{pillLabel}</span>
+          {latency && <span style={{ fontSize: 10, color: `${pillColor}88`, fontFamily: "'JetBrains Mono',monospace" }}>{latency}</span>}
         </button>
 
         <button style={{ padding: "7px 12px", borderRadius: 8, background: "rgba(245,166,35,0.1)", border: "1px solid rgba(245,166,35,0.25)", color: "#F5A623", fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>

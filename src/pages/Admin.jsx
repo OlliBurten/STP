@@ -38,6 +38,7 @@ export default function Admin() {
   const isMobile = useIsMobile();
   const [summary, setSummary] = useState(null);
   const [onboarding, setOnboarding] = useState(null);
+  const [health, setHealth] = useState(null);
   const [insights, setInsights] = useState([]);
   const [insightsRunning, setInsightsRunning] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
@@ -136,6 +137,13 @@ export default function Admin() {
   async function loadOnboarding() {
     const data = await getOnboardingStats();
     setOnboarding(data || null);
+  }
+
+  async function loadHealth() {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/health`);
+      if (res.ok) setHealth(await res.json());
+    } catch { /* health is best-effort */ }
   }
 
   async function loadInsights() {
@@ -302,7 +310,7 @@ export default function Admin() {
 
   useEffect(() => {
     setSummaryLoading(true);
-    Promise.all([loadSummary(), loadOnboarding()]).catch(() => setSummary(null)).finally(() => setSummaryLoading(false));
+    Promise.all([loadSummary(), loadOnboarding(), loadHealth()]).catch(() => setSummary(null)).finally(() => setSummaryLoading(false));
   }, []);
 
   const handleCompanyStatus = async (id, status) => {
@@ -401,7 +409,7 @@ export default function Admin() {
         feedbackNewCount={feedbackNewCount}
       />
       <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
-        <AdminTopBar openCmd={() => setCmdK(true)} />
+        <AdminTopBar openCmd={() => setCmdK(true)} health={health} />
         <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
 
         {/* ════════════════════════════════════════
@@ -413,7 +421,9 @@ export default function Admin() {
               summary={summary}
               summaryLoading={summaryLoading}
               onboarding={onboarding}
+              health={health}
               pendingCount={pendingCount}
+              feedbackNewCount={feedbackNewCount}
               setActiveTab={setActiveTab}
               loadUserDetail={loadUserDetail}
               setError={setError}
