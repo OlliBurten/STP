@@ -24,6 +24,7 @@ export async function initPostHog() {
       session_recording: {
         maskAllInputs: true,         // Dölj lösenord och känsliga fält
         maskInputOptions: { password: true },
+        maskTextSelector: "*",       // Meddelanden/profiler renderas som textnoder, inte inputs
         recordCrossOriginIframes: false,
       },
       autocapture: true,             // Automatisk klick/formulär-tracking

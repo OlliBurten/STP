@@ -131,10 +131,15 @@ export function ProfileProvider({ children }) {
       setProfileSaveError("");
       return nextProfile;
     }
+    if (!profileLoaded) {
+      const error = new Error("Profilen laddas fortfarande.");
+      setProfileSaveError(error.message);
+      throw error;
+    }
     setProfileSaving(true);
     setProfileSaveError("");
     try {
-      const saved = await apiUpdateProfile(nextProfile);
+      const saved = await apiUpdateProfile(updates);
       mergeSavedProfile(saved);
       return saved;
     } catch (error) {
