@@ -936,14 +936,6 @@ export default function Profile() {
         {!danger && <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="13" height="13"><polyline points="9 18 15 12 9 6"/></svg>}
       </Link>
     );
-    const RowButton = ({ icon, label, danger, onClick }) => (
-      <button type="button" onClick={onClick} style={{ display: "flex", width: "100%", padding: "14px 18px", background: "transparent", border: "none", borderBottom: "1px solid rgba(255,255,255,0.04)", cursor: "pointer", alignItems: "center", gap: 14, minHeight: 54, textDecoration: "none", color: danger ? "#f87171" : "#fff", fontFamily: "inherit", textAlign: "left" }}>
-        <div style={{ width: 34, height: 34, borderRadius: 9, background: danger ? "rgba(248,113,113,0.08)" : "rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          {icon}
-        </div>
-        <span style={{ flex: 1, fontSize: 14, fontWeight: 600 }}>{label}</span>
-      </button>
-    );
 
     return (
       <div style={{ background: "#060f0f", minHeight: "100vh", color: "#fff", paddingBottom: 100, paddingTop: 60, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
@@ -1046,15 +1038,19 @@ export default function Profile() {
         {/* Logout */}
         <div style={{ margin: "0 20px 20px" }}>
           <div style={{ background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 14, overflow: "hidden" }}>
-            <RowButton
-              icon={<svg viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>}
-              label="Logga ut"
-              danger
+            <button
+              type="button"
               onClick={() => {
                 logout();
                 navigate("/login", { replace: true });
               }}
-            />
+              style={{ display: "flex", width: "100%", padding: "14px 18px", background: "transparent", border: "none", borderBottom: "1px solid rgba(255,255,255,0.04)", cursor: "pointer", alignItems: "center", gap: 14, minHeight: 54, textDecoration: "none", color: "#f87171", fontFamily: "inherit", textAlign: "left" }}
+            >
+              <div style={{ width: 34, height: 34, borderRadius: 9, background: "rgba(248,113,113,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              </div>
+              <span style={{ flex: 1, fontSize: 14, fontWeight: 600 }}>Logga ut</span>
+            </button>
           </div>
         </div>
 

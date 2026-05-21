@@ -412,20 +412,17 @@ const VISIBILITY_OPTS = [
 ];
 
 function SekretessSection({ profile: initialProfile, profileLoaded, onUpdateProfile }) {
-  const [visibility, setVisibility] = useState("open");
-
-  useEffect(() => {
-    if (!profileLoaded) return;
-    setVisibility(initialProfile?.visibleToCompanies === false ? "hidden" : "open");
-  }, [profileLoaded, initialProfile?.visibleToCompanies]);
+  const persistedVisibility = initialProfile?.visibleToCompanies === false ? "hidden" : "open";
+  const [pendingVisibility, setPendingVisibility] = useState(null);
+  const visibility = pendingVisibility || persistedVisibility;
 
   const save = async (val) => {
     if (!profileLoaded) return;
-    setVisibility(val);
+    setPendingVisibility(val);
     try {
       await onUpdateProfile({ visibleToCompanies: val !== "hidden" });
     } catch {
-      // silent
+      setPendingVisibility(null);
     }
   };
 
