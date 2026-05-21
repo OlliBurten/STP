@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { useProfile } from "../context/ProfileContext";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { changePassword, deleteMyAccount } from "../api/auth.js";
-import { updateNotificationSettings, fetchProfile, updateProfile } from "../api/profile.js";
+import { updateNotificationSettings, fetchProfile, updateProfile as apiUpdateProfile } from "../api/profile.js";
 import { updateCompanyNotificationSettings, fetchMyCompanyProfile, updateMyCompanyProfile, listInvites, createInvite, revokeInvite } from "../api/companies.js";
 import PageMeta from "../components/PageMeta";
 
@@ -272,7 +272,7 @@ function DriverAnstallningsSection({ profile }) {
   const handleSave = async () => {
     setSaving(true); setError("");
     try {
-      await updateProfile({ preferredEmployment: employment });
+      await apiUpdateProfile({ preferredEmployment: employment });
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } catch (err) {
@@ -408,17 +408,22 @@ function NotifSection({ isDriver, initialSettings, onToggle }) {
 // ─── Driver Sekretess ─────────────────────────────────────────────────────────
 const VISIBILITY_OPTS = [
   { v: "open",    l: "Synlig för alla verifierade åkerier", d: "Åkerier kan hitta dig via STP:s förardatabas och kontakta dig direkt. Snabbaste vägen till jobb." },
-  { v: "limited", l: "Endast åkerier jag ansökt till",      d: "Bara åkerier där du själv tagit första steget kan se din profil." },
   { v: "hidden",  l: "Helt dold",                           d: "Din profil är inte synlig för någon. Du kan fortfarande söka jobb, men åkerier kan inte söka upp dig." },
 ];
 
-function SekretessSection({ profile: initialProfile }) {
-  const [visibility, setVisibility] = useState(initialProfile?.visible === false ? "hidden" : "open");
+function SekretessSection({ profile: initialProfile, profileLoaded, onUpdateProfile }) {
+  const [visibility, setVisibility] = useState("open");
+
+  useEffect(() => {
+    if (!profileLoaded) return;
+    setVisibility(initialProfile?.visibleToCompanies === false ? "hidden" : "open");
+  }, [profileLoaded, initialProfile?.visibleToCompanies]);
 
   const save = async (val) => {
+    if (!profileLoaded) return;
     setVisibility(val);
     try {
-      await updateProfile({ visibleToCompanies: val !== "hidden" });
+      await onUpdateProfile({ visibleToCompanies: val !== "hidden" });
     } catch {
       // silent
     }
@@ -430,7 +435,7 @@ function SekretessSection({ profile: initialProfile }) {
         {VISIBILITY_OPTS.map((o) => {
           const on = visibility === o.v;
           return (
-            <button key={o.v} type="button" onClick={() => save(o.v)} style={{ textAlign: "left", padding: "16px 18px", borderRadius: 13, background: on ? "rgba(245,166,35,0.06)" : "rgba(255,255,255,0.03)", border: `1px solid ${on ? "rgba(245,166,35,0.3)" : "rgba(255,255,255,0.07)"}`, display: "flex", gap: 14, alignItems: "flex-start", cursor: "pointer", fontFamily: "inherit", color: "inherit" }}>
+            <button key={o.v} type="button" disabled={!profileLoaded} onClick={() => save(o.v)} style={{ textAlign: "left", padding: "16px 18px", borderRadius: 13, background: on ? "rgba(245,166,35,0.06)" : "rgba(255,255,255,0.03)", border: `1px solid ${on ? "rgba(245,166,35,0.3)" : "rgba(255,255,255,0.07)"}`, display: "flex", gap: 14, alignItems: "flex-start", cursor: profileLoaded ? "pointer" : "default", opacity: profileLoaded ? 1 : 0.6, fontFamily: "inherit", color: "inherit" }}>
               <div style={{ width: 18, height: 18, borderRadius: 99, border: `2px solid ${on ? "#F5A623" : "rgba(255,255,255,0.3)"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
                 {on && <div style={{ width: 8, height: 8, borderRadius: 99, background: "#F5A623" }} />}
               </div>
@@ -734,7 +739,7 @@ export default function Settings() {
   usePageTitle("Inställningar");
   const isMobile = useIsMobile();
   const { user, hasApi, isDriver, isCompany } = useAuth();
-  const { profile } = useProfile();
+  const { profile, profileLoaded, updateProfile: updateDriverProfile } = useProfile();
 
   const [searchParams] = useSearchParams();
   const [section, setSection] = useState(searchParams.get("tab") || "konto");
@@ -804,7 +809,15 @@ export default function Settings() {
         <NotifSection isDriver={isDriver} initialSettings={notifSettings} onToggle={handleToggle} />
       );
     }
-    if (section === "sekretess" && isDriver) return <SekretessSection profile={profile} />;
+    if (section === "sekretess" && isDriver) {
+      return (
+        <SekretessSection
+          profile={profile}
+          profileLoaded={profileLoaded}
+          onUpdateProfile={updateDriverProfile}
+        />
+      );
+    }
     return null;
   };
 

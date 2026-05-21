@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useProfile } from "../context/ProfileContext";
 import { useAuth } from "../context/AuthContext";
 import { usePageTitle } from "../hooks/usePageTitle";
@@ -570,9 +570,10 @@ function computeSimpleMatch(profile, job) {
 /* ══════════ MAIN ══════════ */
 export default function Profile() {
   usePageTitle("Min profil");
-  const { user, token, hasApi, isAdmin } = useAuth();
+  const { user, token, hasApi, isAdmin, logout } = useAuth();
   const { profile, profileLoaded, updateProfile, profileSaving, profileSaveError } = useProfile();
   const toast = useToast();
+  const navigate = useNavigate();
 
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(profile);
@@ -633,11 +634,17 @@ export default function Profile() {
     experience: (draft.experience || []).map((e) => ({ ...e })),
   }), [draft]);
   const hasUnsavedChanges = editing && profileComparable !== draftComparable;
+  const canEditProfile = !hasApi || profileLoaded;
 
   const onboardingSteps = useMemo(() => getDriverMinimumChecklist(profile), [profile]);
 
-  const startEditing = () => { setDraft(profile); setEditing(true); };
+  const startEditing = () => {
+    if (!canEditProfile) return;
+    setDraft(profile);
+    setEditing(true);
+  };
   const startEditingAt = (sectionId) => {
+    if (!canEditProfile) return;
     setDraft(profile);
     setEditing(true);
     setTimeout(() => {
@@ -647,6 +654,10 @@ export default function Profile() {
   };
   const cancelEditing = () => { setDraft(profile); setEditing(false); setAddingExp(false); setEditingExpId(null); };
   const saveProfile = async () => {
+    if (!canEditProfile) {
+      toast.error("Profilen laddas fortfarande. Försök igen strax.");
+      return;
+    }
     try {
       await updateProfile(draft);
       setEditing(false);
@@ -925,6 +936,14 @@ export default function Profile() {
         {!danger && <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="13" height="13"><polyline points="9 18 15 12 9 6"/></svg>}
       </Link>
     );
+    const RowButton = ({ icon, label, danger, onClick }) => (
+      <button type="button" onClick={onClick} style={{ display: "flex", width: "100%", padding: "14px 18px", background: "transparent", border: "none", borderBottom: "1px solid rgba(255,255,255,0.04)", cursor: "pointer", alignItems: "center", gap: 14, minHeight: 54, textDecoration: "none", color: danger ? "#f87171" : "#fff", fontFamily: "inherit", textAlign: "left" }}>
+        <div style={{ width: 34, height: 34, borderRadius: 9, background: danger ? "rgba(248,113,113,0.08)" : "rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          {icon}
+        </div>
+        <span style={{ flex: 1, fontSize: 14, fontWeight: 600 }}>{label}</span>
+      </button>
+    );
 
     return (
       <div style={{ background: "#060f0f", minHeight: "100vh", color: "#fff", paddingBottom: 100, paddingTop: 60, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
@@ -978,8 +997,9 @@ export default function Profile() {
               <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.55)" }}>{current?.visibleToCompanies ? "Åkerier kan hitta dig och skicka jobb" : "Endast du ser din profil"}</div>
             </div>
             <button
-              onClick={() => updateProfile({ ...profile, visibleToCompanies: !current?.visibleToCompanies })}
-              style={{ width: 48, height: 28, borderRadius: 99, background: current?.visibleToCompanies ? "#4ade80" : "rgba(255,255,255,0.15)", border: "none", position: "relative", cursor: "pointer", flexShrink: 0, transition: "background .2s" }}
+              disabled={!profileLoaded || profileSaving}
+              onClick={() => updateProfile({ visibleToCompanies: !current?.visibleToCompanies })}
+              style={{ width: 48, height: 28, borderRadius: 99, background: current?.visibleToCompanies ? "#4ade80" : "rgba(255,255,255,0.15)", border: "none", position: "relative", cursor: profileLoaded && !profileSaving ? "pointer" : "default", opacity: profileLoaded && !profileSaving ? 1 : 0.6, flexShrink: 0, transition: "background .2s" }}
             >
               <div style={{ position: "absolute", top: 3, left: current?.visibleToCompanies ? 23 : 3, width: 22, height: 22, borderRadius: 99, background: "#fff", transition: "left .2s" }}/>
             </button>
@@ -1026,7 +1046,15 @@ export default function Profile() {
         {/* Logout */}
         <div style={{ margin: "0 20px 20px" }}>
           <div style={{ background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 14, overflow: "hidden" }}>
-            <RowLink href="/installningar" icon={<svg viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>} label="Logga ut" danger />
+            <RowButton
+              icon={<svg viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>}
+              label="Logga ut"
+              danger
+              onClick={() => {
+                logout();
+                navigate("/login", { replace: true });
+              }}
+            />
           </div>
         </div>
 

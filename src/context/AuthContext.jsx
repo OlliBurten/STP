@@ -91,6 +91,7 @@ export function AuthProvider({ children }) {
   });
 
   const clearAuthState = useCallback(() => {
+    resetUser();
     writeStoredAuth(null);
     setUser(null);
     setAdminUser(null);
@@ -258,7 +259,6 @@ export function AuthProvider({ children }) {
   }, []);
 
   const logout = useCallback(() => {
-    resetUser();
     clearAuthState();
   }, [clearAuthState]);
 
