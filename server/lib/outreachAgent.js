@@ -132,18 +132,27 @@ async function _scrapeHittaHtmlFallback(region, query) {
   const text = stripHtml(html).slice(0, 12000);
   console.log(`[OutreachAgent] Hitta.se HTML fallback ${region}: ${html.length} bytes → Claude parse`);
 
-  const message = await anthropic.messages.create({
-    model: "claude-haiku-4-5-20251001",
-    max_tokens: 2000,
-    messages: [{
-      role: "user",
-      content: `Sökresultatsida på Hitta.se för "${query}" i ${region}, Sverige.
+  let message;
+  try {
+    message = await anthropic.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 2000,
+      messages: [{
+        role: "user",
+        content: `Sökresultatsida på Hitta.se för "${query}" i ${region}, Sverige.
 Extrahera alla företag som JSON-array: [{companyName, phone, website, city}]
 Returnera BARA JSON-arrayen, inga förklaringar.
 ---
 ${text}`,
-    }],
-  });
+      }],
+    });
+  } catch (e) {
+    if (e?.status === 529) {
+      console.log(`[OutreachAgent] Claude överbelastad för ${region} (HTML fallback), returnerar tom lista`);
+      return [];
+    }
+    throw e;
+  }
 
   let companies = [];
   try {
