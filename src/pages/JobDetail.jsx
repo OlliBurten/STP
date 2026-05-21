@@ -499,10 +499,10 @@ export default function JobDetail() {
 
   // ── Mobile render ──────────────────────────────────────────────────────────
   if (isMobile) {
-    const matchPct = driverMatchScore != null ? Math.min(100, Math.round((driverMatchScore / 9) * 100)) : null;
+    const matchPct = driverMatch != null ? driverMatch.pct : null;
     const matchColor = matchPct >= 85 ? "#4ade80" : matchPct >= 70 ? "#F5A623" : matchPct >= 55 ? "#60a5fa" : "rgba(255,255,255,0.4)";
     const matchLabel = matchPct >= 85 ? "Stark match" : matchPct >= 70 ? "God match" : matchPct != null ? "Delvis match" : null;
-    const reqMet = (driverForMatch ? (job.license || []).filter((l) => driverForMatch.licenses?.includes(l)).length : 0) + (driverForMatch ? (job.certificates || []).filter((c) => driverForMatch.certificates?.includes(c)).length : 0);
+    const reqMet = (profile ? (job.license || []).filter((l) => profile.licenses?.includes(l)).length : 0) + (profile ? (job.certificates || []).filter((c) => profile.certificates?.includes(c)).length : 0);
     const reqTotal = (job.license || []).length + (job.certificates || []).length;
     const r = 22; const circ = 2 * Math.PI * r;
 
@@ -615,11 +615,11 @@ export default function JobDetail() {
                     ))}
                   </>
                 )}
-                {driverForMatch && (
+                {profile && (
                   <>
                     <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "rgba(255,255,255,0.45)", margin: "20px 0 12px" }}>Din matchning</div>
-                    {[...(job.license || []).map((l) => ({ l: `${l}-körkort`, on: driverForMatch.licenses?.includes(l) })),
-                      ...(job.certificates || []).map((c) => ({ l: c, on: driverForMatch.certificates?.includes(c) }))
+                    {[...(job.license || []).map((l) => ({ l: `${l}-körkort`, on: profile.licenses?.includes(l) })),
+                      ...(job.certificates || []).map((c) => ({ l: c, on: profile.certificates?.includes(c) }))
                     ].map((item, i) => (
                       <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8, fontSize: 13.5 }}>
                         <div style={{ width: 20, height: 20, borderRadius: 99, background: item.on ? "rgba(74,222,128,0.15)" : "rgba(248,113,113,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
