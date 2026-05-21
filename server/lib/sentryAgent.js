@@ -41,12 +41,14 @@ export async function handleSentryEvent(payload) {
 
     const anthropic = getAnthropic();
 
-    const message = await anthropic.messages.create({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 600,
-      messages: [{
-        role: "user",
-        content: `Du är en senior STP-plattformsingenjör. Analysera detta produktionsfel och svara på svenska.
+    let message;
+    try {
+      message = await anthropic.messages.create({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 600,
+        messages: [{
+          role: "user",
+          content: `Du är en senior STP-plattformsingenjör. Analysera detta produktionsfel och svara på svenska.
 
 FEL: ${errorTitle}
 TYP: ${errorType}: ${errorValue}
@@ -64,8 +66,15 @@ SAMMANFATTNING: [1 mening vad som gick fel]
 PÅVERKAN: [vad påverkas för användarna]
 TROLIG ORSAK: [vad är sannolikt fel]
 ÅTGÄRD: [konkret nästa steg, max 2 meningar]`,
-      }],
-    });
+        }],
+      });
+    } catch (e) {
+      if (e?.status === 529) {
+        console.warn("[SentryAgent] Claude överbelastad — hoppar över AI-analys");
+        return { severity: "WARNING", skipped: true };
+      }
+      throw e;
+    }
 
     const analysis = message.content[0].text.trim();
     const severityMatch = analysis.match(/ALLVARLIGHET:\s*(CRITICAL|WARNING|INFO)/i);
