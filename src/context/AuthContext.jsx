@@ -3,7 +3,7 @@ import { apiPost, AUTH_INVALID_EVENT, getActiveOrgId, setActiveOrgId } from "../
 import { fetchMe } from "../api/auth.js";
 import { startViewAs as apiStartViewAs, stopViewAs as apiStopViewAs } from "../api/admin.js";
 import { fetchMyOrganizations } from "../api/organizations.js";
-import { identifyUser, resetUser, track, groupCompany } from "../utils/posthog.js";
+import { identifyUser, resetUser, track, groupCompany, setAnalyticsSuspended } from "../utils/posthog.js";
 
 const AUTH_STORAGE_KEY = "drivermatch-auth";
 const SESSION_MAX_MS = 24 * 60 * 60 * 1000; // 24h
@@ -291,7 +291,14 @@ export function AuthProvider({ children }) {
   }, [token]);
 
   const startViewAs = useCallback(async (userId) => {
-    const data = await apiStartViewAs(userId);
+    setAnalyticsSuspended(true);
+    let data;
+    try {
+      data = await apiStartViewAs(userId);
+    } catch (err) {
+      setAnalyticsSuspended(false);
+      throw err;
+    }
     const normalized = normalizeUser(data.user);
     commitAuthState(normalized, data.token, {
       adminUser: data.adminUser ? normalizeUser(data.adminUser) : null,
@@ -307,14 +314,19 @@ export function AuthProvider({ children }) {
       adminUser: null,
       impersonation: null,
     });
+    setAnalyticsSuspended(false);
     return normalized;
   }, [commitAuthState]);
 
   // Uppdatera senaste aktivitet vid interaktion. Skriv inte på varje pixelrörelse.
+  useEffect(() => {
+    setAnalyticsSuspended(Boolean(impersonation?.active));
+  }, [impersonation?.active]);
+
   // Identifiera användare i PostHog vid sidladdning om redan inloggad
   useEffect(() => {
-    if (user && !user.isAdmin) identifyUser(user);
-  }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (user && !user.isAdmin && !impersonation?.active) identifyUser(user);
+  }, [user?.id, impersonation?.active]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!user || !token) return;
