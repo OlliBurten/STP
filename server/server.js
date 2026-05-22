@@ -457,8 +457,9 @@ export { app };
 async function shutdown(signal) {
   console.log(`[shutdown] ${signal} — stänger ned...`);
   // Close HTTP server first so Railway can reuse the port immediately.
-  // Race against 8 s timeout so open keep-alive connections don't block port release.
+  // closeAllConnections() drops keep-alive sockets so the port is freed at once.
   if (app._httpServer) {
+    app._httpServer.closeAllConnections();
     await Promise.race([
       new Promise((resolve) => app._httpServer.close(resolve)),
       new Promise((resolve) => setTimeout(resolve, 8000)),
