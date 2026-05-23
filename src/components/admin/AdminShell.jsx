@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 export const IC = {
@@ -57,7 +57,7 @@ const NAV_GROUPS = [
     { id: "users",      l: "Användare", n: "users",     count: 248 },
     { id: "companies",  l: "Företag",   n: "building",  count: 22, alert: 3 },
     { id: "jobs",       l: "Jobb",      n: "briefcase", count: 14 },
-    { id: "moderation", l: "Moderering",n: "shield",    alert: 5 },
+    { id: "reports",    l: "Moderering",n: "shield",    alert: 5 },
     { id: "reviews",    l: "Omdömen",   n: "star" },
     { id: "schools",    l: "Skolor",    n: "school" },
   ]},
@@ -128,7 +128,6 @@ export function AdminSidebar({ section, onChange }) {
 
 // ─── TopBar ───────────────────────────────────────────────────────────────────
 export function AdminTopBar({ openCmd, health }) {
-  const dbOk = !health || health.db === "ok";
   const latency = health?.dbLatencyMs != null ? `${health.dbLatencyMs}ms` : null;
   const systemOk = !health || (health.db === "ok");
   const pillColor = systemOk ? "#4ade80" : "#f87171";

@@ -82,6 +82,7 @@ export default function Admin() {
   const [feedbackItems, setFeedbackItems] = useState([]);
   const [feedbackFilter, setFeedbackFilter] = useState("NEW");
   const [feedbackLoading, setFeedbackLoading] = useState(false);
+  const [feedbackLoaded, setFeedbackLoaded] = useState(false);
   const [expandedFeedback, setExpandedFeedback] = useState(null);
 
   const [cmdK, setCmdK] = useState(false);
@@ -183,6 +184,7 @@ export default function Admin() {
     try {
       const data = await listFeedback({ status: filter === "ALL" ? undefined : filter });
       setFeedbackItems(Array.isArray(data?.items) ? data.items : []);
+      setFeedbackLoaded(true);
     } catch (e) { console.error(e); }
     finally { setFeedbackLoading(false); }
   }
@@ -397,7 +399,7 @@ export default function Admin() {
 
   const pendingCount = summary?.verification?.pendingCompanies ?? 0;
   const insightNewCount = insights.filter(i => i.status === "NEW").length;
-  const feedbackNewCount = feedbackItems.filter(f => f.status === "NEW").length;
+  const feedbackNewCount = feedbackLoaded ? feedbackItems.filter(f => f.status === "NEW").length : null;
 
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 51, display: "flex", background: "#040a0a", color: "#f0faf9" }}>
