@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 export const IC = {
@@ -128,7 +128,6 @@ export function AdminSidebar({ section, onChange }) {
 
 // ─── TopBar ───────────────────────────────────────────────────────────────────
 export function AdminTopBar({ openCmd, health }) {
-  const dbOk = !health || health.db === "ok";
   const latency = health?.dbLatencyMs != null ? `${health.dbLatencyMs}ms` : null;
   const systemOk = !health || (health.db === "ok");
   const pillColor = systemOk ? "#4ade80" : "#f87171";
