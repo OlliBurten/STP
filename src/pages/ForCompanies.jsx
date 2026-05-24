@@ -535,7 +535,7 @@ export default function ForCompanies() {
                   <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.65)", lineHeight: 1.45 }}>2 av 4 steg klara. Tar ~1 arbetsdag.</div>
                 </div>
               </div>
-              <Link to="/installningar?section=verifiering" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, width: "100%", padding: 11, borderRadius: 11, background: "#F5A623", border: "none", color: "#000", fontSize: 13, fontWeight: 800, textDecoration: "none", minHeight: 42 }}>
+              <Link to="/installningar?tab=verifiering" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, width: "100%", padding: 11, borderRadius: 11, background: "#F5A623", border: "none", color: "#000", fontSize: 13, fontWeight: 800, textDecoration: "none", minHeight: 42 }}>
                 Fortsätt verifiering <Icon n="chev" size={13} color="#000" />
               </Link>
             </div>
