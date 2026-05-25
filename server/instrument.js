@@ -12,6 +12,14 @@ Sentry.init({
 
   // Strip SQL query parameters and email addresses from Sentry breadcrumbs
   beforeSend(event) {
+    // EADDRINUSE is a Railway deployment race condition (old process hasn't released
+    // the port before the new one starts). It's already handled with process.exit —
+    // suppress it so it doesn't flood Sentry as a recurring fatal regression.
+    const errValue = event.exception?.values?.[0]?.value ?? "";
+    if (errValue.includes("EADDRINUSE")) {
+      return null;
+    }
+
     if (Array.isArray(event.breadcrumbs?.values)) {
       event.breadcrumbs.values = event.breadcrumbs.values.map((b) => {
         if (b.category === "db.sql.query" && b.message) {
