@@ -474,8 +474,8 @@ async function shutdown(signal) {
   } catch (_) {}
   process.exit(0);
 }
-process.on("SIGTERM", () => shutdown("SIGTERM"));
-process.on("SIGINT", () => shutdown("SIGINT"));
+process.on("SIGTERM", () => shutdown("SIGTERM").catch((e) => { console.error("[shutdown] Oväntat fel:", e); process.exit(1); }));
+process.on("SIGINT", () => shutdown("SIGINT").catch((e) => { console.error("[shutdown] Oväntat fel:", e); process.exit(1); }));
 
 if (process.env.APP_LISTEN !== "false") {
   if (IS_PRODUCTION && !process.env.RESEND_API_KEY) {
