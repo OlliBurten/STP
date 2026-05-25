@@ -412,13 +412,21 @@ const VISIBILITY_OPTS = [
   { v: "hidden",  l: "Helt dold",                           d: "Din profil är inte synlig för någon. Du kan fortfarande söka jobb, men åkerier kan inte söka upp dig." },
 ];
 
+function getProfileVisibility(profile) {
+  return profile?.visibleToCompanies === false || profile?.visible === false ? "hidden" : "open";
+}
+
 function SekretessSection({ profile: initialProfile }) {
-  const [visibility, setVisibility] = useState(initialProfile?.visible === false ? "hidden" : "open");
+  const [visibility, setVisibility] = useState(() => getProfileVisibility(initialProfile));
+
+  useEffect(() => {
+    setVisibility(getProfileVisibility(initialProfile));
+  }, [initialProfile?.visibleToCompanies, initialProfile?.visible]);
 
   const save = async (val) => {
     setVisibility(val);
     try {
-      await updateProfile({ visibleToCompanies: val !== "hidden" });
+      await updateProfile({ visibleToCompanies: val === "open" });
     } catch {
       // silent
     }

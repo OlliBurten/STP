@@ -617,7 +617,7 @@ export default function JobDetail() {
                     ))}
                   </>
                 )}
-                {profile && (
+                {isDriver && profile && (
                   <>
                     <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "rgba(255,255,255,0.45)", margin: "20px 0 12px" }}>Din matchning</div>
                     {[...(job.license || []).map((l) => ({ l: `${l}-körkort`, on: profile.licenses?.includes(l) })),
