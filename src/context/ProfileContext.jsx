@@ -35,6 +35,13 @@ export function ProfileProvider({ children }) {
   }, [hasApi, profile]);
 
   useEffect(() => {
+    if (!hasApi || (isDriver && user?.id)) return;
+    setProfile(defaultProfile);
+    setProfileLoaded(true);
+    setProfileSaveError("");
+  }, [hasApi, isDriver, user?.id]);
+
+  useEffect(() => {
     if (!hasApi || !isDriver || !user?.id) return;
     // Avoid showing previous account's local/demo profile while API profile loads.
     setProfile((prev) => ({

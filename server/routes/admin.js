@@ -1367,14 +1367,20 @@ adminRouter.delete("/users/:id", async (req, res, next) => {
       },
     });
 
+    const survivingOwnedOrg = ownedOrgs.find((membership) =>
+      membership.organization.userOrganizations.some((m) => m.userId !== targetId)
+    );
+    if (survivingOwnedOrg) {
+      return res.status(409).json({
+        error:
+          "Användaren äger en organisation med andra medlemmar. Flytta ägarskapet innan kontot tas bort.",
+      });
+    }
+
     for (const membership of ownedOrgs) {
       const org = membership.organization;
-      const otherMembers = org.userOrganizations.filter((m) => m.userId !== targetId);
-      if (otherMembers.length === 0) {
-        // Sole member — delete the org entirely
-        await prisma.organization.delete({ where: { id: org.id } });
-      }
-      // If other members exist, removing the user via cascade is fine — org survives
+      // Sole member — delete the org entirely.
+      await prisma.organization.delete({ where: { id: org.id } });
     }
 
     // Log before deleting (targetUser will be set to null via SetNull after deletion)
@@ -1415,8 +1421,9 @@ adminRouter.post("/jobs", async (req, res, next) => {
       if (!body[f]) return res.status(400).json({ error: `Fältet '${f}' krävs` });
     }
 
-    // Use the admin's own userId as the owner (jobs will appear under admin account)
-    const adminUserId = req.user.id;
+    // Use the admin actor's userId as the owner (jobs will appear under admin account).
+    const adminUserId = getAdminActorId(req);
+    if (!adminUserId) return res.status(401).json({ error: "Ej inloggad" });
 
     const job = await prisma.job.create({
       data: {
