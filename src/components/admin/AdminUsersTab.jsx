@@ -3,6 +3,54 @@ import { Icon } from "./AdminShell.jsx";
 import { updateCompanyStatus, setUserSuspended, updateUserWarnings, verifyUserEmail } from "../../api/admin.js";
 
 const mono = { fontFamily: "'JetBrains Mono',monospace", fontFeatureSettings: '"tnum"' };
+const SUMMARY_MIN_LENGTH = 20;
+
+const isCompanyUser = (u) => u.role === "COMPANY" || u.role === "RECRUITER";
+const isSuspendedUser = (u) => Boolean(u.suspendedAt) || u.status === "SUSPENDED";
+const getWarningCount = (u) => Number(u.warningCount ?? u.warnings ?? 0) || 0;
+const isVerifiedUser = (u) => (
+  isCompanyUser(u)
+    ? u.companyStatus === "VERIFIED"
+    : Boolean(u.emailVerifiedAt || u.emailVerified)
+);
+
+function getProfileCompletion(u) {
+  if (typeof u.profileCompletion === "number") {
+    return Math.max(0, Math.min(100, Math.round(u.profileCompletion)));
+  }
+
+  if (isCompanyUser(u)) {
+    const fields = [
+      u.companyName,
+      u.companyOrgNumber,
+      u.companyStatus === "VERIFIED",
+      u.companyDescription,
+      u.companyWebsite,
+      u.companyLocation || u.companyRegion,
+      u.companyBransch,
+    ];
+    return Math.round((fields.filter(Boolean).length / fields.length) * 100);
+  }
+
+  const p = u.driverProfile || {};
+  const text = (value) => String(value || "").trim();
+  const digits = (value) => text(value).replace(/\D/g, "");
+  const fields = [
+    text(u.name).length >= 2,
+    digits(p.phone).length >= 7,
+    text(p.primarySegment).length > 0,
+    text(p.location).length > 0,
+    text(p.region).length > 0,
+    Array.isArray(p.licenses) && p.licenses.length > 0,
+    text(p.availability).length > 0,
+    text(p.summary).length >= SUMMARY_MIN_LENGTH,
+    Array.isArray(p.certificates) && p.certificates.length > 0,
+    p.experience != null && (Array.isArray(p.experience) ? p.experience.length > 0 : true),
+    Array.isArray(p.regionsWilling) && p.regionsWilling.length > 0,
+    p.visibleToCompanies === true,
+  ];
+  return Math.round((fields.filter(Boolean).length / fields.length) * 100);
+}
 
 // ─── Filter pill ───────────────────────────────────────────────────────────────
 const FilterPill = ({ on, count, children, onClick, color }) => (
@@ -14,16 +62,14 @@ const FilterPill = ({ on, count, children, onClick, color }) => (
 
 // ─── Users header ──────────────────────────────────────────────────────────────
 function UsersHeader({ users, selectedCount, filter, setFilter }) {
-  const isCompany = u => u.role === "COMPANY" || u.role === "RECRUITER";
-  const isVerified = u => isCompany(u) ? u.status === "VERIFIED" : u.emailVerified;
   const filters = [
     { v: "all",       l: "Alla",           c: users.length },
-    { v: "driver",    l: "Förare",         c: users.filter(u => !isCompany(u)).length },
-    { v: "company",   l: "Åkerier",        c: users.filter(u => isCompany(u)).length },
-    { v: "unverified",l: "Ej verifierade", c: users.filter(u => !isVerified(u) && isCompany(u)).length, color: "#F5A623" },
-    { v: "stuck",     l: "Stuck (<25%)",   c: users.filter(u => (u.profileCompletion ?? 0) < 25).length, color: "#F5A623" },
-    { v: "warnings",  l: "Med varningar",  c: users.filter(u => (u.warnings || 0) > 0).length, color: "#f87171" },
-    { v: "suspended", l: "Suspenderade",   c: users.filter(u => u.status === "SUSPENDED").length, color: "#f87171" },
+    { v: "driver",    l: "Förare",         c: users.filter(u => !isCompanyUser(u)).length },
+    { v: "company",   l: "Åkerier",        c: users.filter(u => isCompanyUser(u)).length },
+    { v: "unverified",l: "Ej verifierade", c: users.filter(u => !isVerifiedUser(u) && isCompanyUser(u)).length, color: "#F5A623" },
+    { v: "stuck",     l: "Stuck (<25%)",   c: users.filter(u => !isCompanyUser(u) && getProfileCompletion(u) < 25).length, color: "#F5A623" },
+    { v: "warnings",  l: "Med varningar",  c: users.filter(u => getWarningCount(u) > 0).length, color: "#f87171" },
+    { v: "suspended", l: "Suspenderade",   c: users.filter(isSuspendedUser).length, color: "#f87171" },
   ];
   return (
     <div style={{ padding: "22px 26px 14px" }}>
@@ -88,11 +134,11 @@ function TableHeader({ allSelected, onSelectAll, compact }) {
 
 // ─── User row ──────────────────────────────────────────────────────────────────
 function UserRow({ u, selected, isSelectedRow, onCheck, onSelect, compact }) {
-  const profile = u.profileCompletion ?? 0;
-  const isComp = u.role === "COMPANY" || u.role === "RECRUITER";
-  const verified = isComp ? u.status === "VERIFIED" : u.emailVerified;
-  const suspended = u.status === "SUSPENDED";
-  const warnings = u.warnings || 0;
+  const profile = getProfileCompletion(u);
+  const isComp = isCompanyUser(u);
+  const verified = isVerifiedUser(u);
+  const suspended = isSuspendedUser(u);
+  const warnings = getWarningCount(u);
   const lastLogin = u.lastLoginAt ? fmtRelative(u.lastLoginAt) : "Aldrig";
   const created = u.createdAt ? u.createdAt.slice(0, 10) : "";
   const initials = u.name ? u.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : u.email?.[0]?.toUpperCase() || "?";
@@ -170,10 +216,11 @@ function UserRow({ u, selected, isSelectedRow, onCheck, onSelect, compact }) {
 // ─── Detail panel ──────────────────────────────────────────────────────────────
 function DetailPanel({ u, detail, onClose, onVerify, onSuspend, onViewAs }) {
   if (!u) return null;
-  const isComp = u.role === "COMPANY" || u.role === "RECRUITER";
-  const verified = isComp ? u.status === "VERIFIED" : u.emailVerified;
-  const suspended = u.status === "SUSPENDED";
-  const profile = u.profileCompletion ?? 0;
+  const isComp = isCompanyUser(u);
+  const verified = isVerifiedUser(u);
+  const suspended = isSuspendedUser(u);
+  const warnings = getWarningCount(u);
+  const profile = getProfileCompletion(u);
   const initials = u.name ? u.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : u.email?.[0]?.toUpperCase() || "?";
   const color = isComp ? "#F5A623" : "#7dd3c8";
 
@@ -240,7 +287,7 @@ function DetailPanel({ u, detail, onClose, onVerify, onSuspend, onViewAs }) {
         </div>
       </div>
 
-      {((u.warnings || 0) > 0 || suspended) && (
+      {(warnings > 0 || suspended) && (
         <div style={{ padding: "16px 20px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
           <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 1.3, textTransform: "uppercase", color: "#f87171", marginBottom: 10 }}>Disciplin</div>
           {u.suspensionReason && (
@@ -248,9 +295,9 @@ function DetailPanel({ u, detail, onClose, onVerify, onSuspend, onViewAs }) {
               <strong style={{ color: "#f87171" }}>Suspenderad:</strong> {u.suspensionReason}
             </div>
           )}
-          {(u.warnings || 0) > 0 && (
+          {warnings > 0 && (
             <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)" }}>
-              <span style={{ color: "#F5A623", fontWeight: 800, ...mono }}>{u.warnings}</span> varning(ar) i historiken
+              <span style={{ color: "#F5A623", fontWeight: 800, ...mono }}>{warnings}</span> varning(ar) i historiken
             </div>
           )}
         </div>
@@ -362,17 +409,14 @@ export default function AdminUsersTab({
     setSelected(next);
   };
 
-  const isCompany = u => u.role === "COMPANY" || u.role === "RECRUITER";
-  const isVerified = u => isCompany(u) ? u.status === "VERIFIED" : u.emailVerified;
-
   const filtered = allUsers.filter(u => {
-    const profile = u.profileCompletion ?? 0;
-    if (filter === "driver") return !isCompany(u);
-    if (filter === "company") return isCompany(u);
-    if (filter === "unverified") return !isVerified(u) && isCompany(u);
-    if (filter === "stuck") return profile < 25;
-    if (filter === "warnings") return (u.warnings || 0) > 0;
-    if (filter === "suspended") return u.status === "SUSPENDED";
+    const profile = getProfileCompletion(u);
+    if (filter === "driver") return !isCompanyUser(u);
+    if (filter === "company") return isCompanyUser(u);
+    if (filter === "unverified") return !isVerifiedUser(u) && isCompanyUser(u);
+    if (filter === "stuck") return !isCompanyUser(u) && profile < 25;
+    if (filter === "warnings") return getWarningCount(u) > 0;
+    if (filter === "suspended") return isSuspendedUser(u);
     return true;
   });
 

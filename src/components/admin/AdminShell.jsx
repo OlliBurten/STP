@@ -51,13 +51,12 @@ export const Icon = ({ n, s = 18, c = "currentColor" }) => (
 const NAV_GROUPS = [
   { l: "Plattform", items: [
     { id: "overview", l: "Översikt",      n: "grid" },
-    { id: "pulse",    l: "System & pulse", n: "pulse" },
   ]},
   { l: "Hantera", items: [
     { id: "users",      l: "Användare", n: "users",     count: 248 },
     { id: "companies",  l: "Företag",   n: "building",  count: 22, alert: 3 },
     { id: "jobs",       l: "Jobb",      n: "briefcase", count: 14 },
-    { id: "moderation", l: "Moderering",n: "shield",    alert: 5 },
+    { id: "reports",    l: "Moderering",n: "shield",    alert: 5 },
     { id: "reviews",    l: "Omdömen",   n: "star" },
     { id: "schools",    l: "Skolor",    n: "school" },
   ]},
@@ -65,10 +64,6 @@ const NAV_GROUPS = [
     { id: "outreach",  l: "Outreach",   n: "outreach" },
     { id: "insights",  l: "AI-insikter",n: "spark" },
     { id: "feedback",  l: "Feedback",   n: "feedback", alert: 2 },
-  ]},
-  { l: "System", items: [
-    { id: "integrations", l: "Integrationer", n: "plug", badge: "MCP" },
-    { id: "settings",     l: "Inställningar", n: "cog" },
   ]},
 ];
 
@@ -176,16 +171,16 @@ export function AdminCmdK({ open, onClose, onChange }) {
   if (!open) return null;
 
   const items = [
-    { i: "users",     l: "Användare",                              group: "Sektion" },
-    { i: "building",  l: "Företag",                               group: "Sektion" },
-    { i: "briefcase", l: "Jobb",                                   group: "Sektion" },
-    { i: "user",      l: "Erik Johansson — erik.j@gmail.com",      group: "Användare" },
-    { i: "user",      l: "Lina Pettersson — cadillaclina@outlook.com", group: "Användare" },
-    { i: "building",  l: "Nordic Transport AB",                    group: "Företag" },
-    { i: "building",  l: "Kaunis Iron Logistik AB",                group: "Företag" },
-    { i: "briefcase", l: "CE-chaufför lokalt — Junosuando",        group: "Jobb" },
-    { i: "zap",       l: "Skicka påminnelse till alla < 50% profil", group: "Åtgärd" },
-    { i: "zap",       l: "Kör AI-insights nu",                    group: "Åtgärd" },
+    { id: "users",     icon: "users",     l: "Användare",                              group: "Sektion" },
+    { id: "companies", icon: "building",  l: "Företag",                               group: "Sektion" },
+    { id: "jobs",      icon: "briefcase", l: "Jobb",                                  group: "Sektion" },
+    { id: "reports",   icon: "shield",    l: "Moderering",                            group: "Sektion" },
+    { id: "users",     icon: "user",      l: "Erik Johansson — erik.j@gmail.com",      group: "Användare" },
+    { id: "users",     icon: "user",      l: "Lina Pettersson — cadillaclina@outlook.com", group: "Användare" },
+    { id: "companies", icon: "building",  l: "Nordic Transport AB",                    group: "Företag" },
+    { id: "companies", icon: "building",  l: "Kaunis Iron Logistik AB",                group: "Företag" },
+    { id: "jobs",      icon: "briefcase", l: "CE-chaufför lokalt — Junosuando",        group: "Jobb" },
+    { id: "insights",  icon: "zap",       l: "Kör AI-insights nu",                     group: "Åtgärd" },
   ];
 
   let lastGroup = null;
@@ -206,12 +201,12 @@ export function AdminCmdK({ open, onClose, onChange }) {
               <React.Fragment key={i}>
                 {showHeader && <div style={{ padding: "10px 18px 4px", fontSize: 9.5, fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "rgba(255,255,255,0.35)" }}>{it.group}</div>}
                 <button
-                  onClick={() => { onChange && onChange(it.i); onClose(); }}
+                  onClick={() => { onChange && onChange(it.id); onClose(); }}
                   style={{ width: "100%", padding: "9px 18px", background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 11, color: "#fff", textAlign: "left" }}
                   onMouseEnter={e => e.currentTarget.style.background = "rgba(245,166,35,0.06)"}
                   onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                 >
-                  <Icon n={it.i} s={13} c="rgba(255,255,255,0.5)" />
+                  <Icon n={it.icon} s={13} c="rgba(255,255,255,0.5)" />
                   <span style={{ flex: 1, fontSize: 13 }}>{it.l}</span>
                 </button>
               </React.Fragment>
