@@ -93,10 +93,15 @@ async function requireCompanyOwner(userId) {
   }
 }
 
-async function resolveInviteScopeByOwner(companyOwnerId) {
-  const ownerOrg = await prisma.userOrganization.findFirst({
-    where: { userId: companyOwnerId, role: "OWNER" },
+export async function resolveInviteScopeByOwner(companyOwnerId, requestedOrgId = null, db = prisma) {
+  const ownerOrg = await db.userOrganization.findFirst({
+    where: {
+      userId: companyOwnerId,
+      role: "OWNER",
+      ...(requestedOrgId ? { organizationId: requestedOrgId } : {}),
+    },
     select: { organizationId: true, organization: { select: { name: true } } },
+    ...(requestedOrgId ? {} : { orderBy: { joinedAt: "asc" } }),
   });
   if (ownerOrg?.organizationId) {
     return {
@@ -104,6 +109,11 @@ async function resolveInviteScopeByOwner(companyOwnerId) {
       organizationId: ownerOrg.organizationId,
       companyName: ownerOrg.organization?.name || "Företaget",
     };
+  }
+  if (requestedOrgId) {
+    const err = new Error("Ingen åtkomst till valt åkeri.");
+    err.status = 403;
+    throw err;
   }
   return { type: "legacy" };
 }
@@ -116,9 +126,10 @@ async function resolveInviteScopeByOwner(companyOwnerId) {
  * @param {string} params.invitedById - Inviter user ID (must be owner for now)
  * @param {string} params.companyName - For email
  * @param {string} [params.frontendBaseUrl] - Base URL for invite link
+ * @param {string} [params.organizationId] - Active organization selected by the owner
  * @returns {Promise<{invite: object, token: string, emailSent: boolean, devInviteLink?: string}>}
  */
-export async function createInvite({ email, companyOwnerId, invitedById, companyName, frontendBaseUrl }) {
+export async function createInvite({ email, companyOwnerId, invitedById, companyName, frontendBaseUrl, organizationId }) {
   const normalizedEmail = normalizeEmail(email);
   if (!normalizedEmail) {
     const err = new Error("E-postadress krävs.");
@@ -126,7 +137,7 @@ export async function createInvite({ email, companyOwnerId, invitedById, company
     throw err;
   }
 
-  const scope = await resolveInviteScopeByOwner(companyOwnerId);
+  const scope = await resolveInviteScopeByOwner(companyOwnerId, organizationId);
   const count = await (scope.type === "organization"
     ? prisma.organizationInvite.count({
         where: {
@@ -262,7 +273,7 @@ export async function createInvite({ email, companyOwnerId, invitedById, company
 
   const { emailSent, inviteLink } = await sendInviteEmail({
     to: normalizedEmail,
-    companyName: companyName || scope.companyName || "Företaget",
+    companyName: scope.type === "organization" ? scope.companyName : companyName || scope.companyName || "Företaget",
     inviteToken: token,
     frontendBaseUrl,
   });
@@ -277,10 +288,11 @@ export async function createInvite({ email, companyOwnerId, invitedById, company
 /**
  * List invites for a company (owner only).
  * @param {string} companyOwnerId
+ * @param {string} [organizationId] - Active organization selected by the owner
  * @returns {Promise<object[]>}
  */
-export async function listInvites(companyOwnerId) {
-  const scope = await resolveInviteScopeByOwner(companyOwnerId);
+export async function listInvites(companyOwnerId, organizationId = null) {
+  const scope = await resolveInviteScopeByOwner(companyOwnerId, organizationId);
   const invites = await (scope.type === "organization"
     ? prisma.organizationInvite.findMany({
         where: { organizationId: scope.organizationId },
@@ -320,9 +332,10 @@ export async function listInvites(companyOwnerId) {
  * Revoke a pending invite.
  * @param {string} inviteId
  * @param {string} companyOwnerId - Must own the company
+ * @param {string} [organizationId] - Active organization selected by the owner
  */
-export async function revokeInvite(inviteId, companyOwnerId) {
-  const scope = await resolveInviteScopeByOwner(companyOwnerId);
+export async function revokeInvite(inviteId, companyOwnerId, organizationId = null) {
+  const scope = await resolveInviteScopeByOwner(companyOwnerId, organizationId);
   const invite = await (scope.type === "organization"
     ? prisma.organizationInvite.findUnique({
         where: { id: inviteId },
