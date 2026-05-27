@@ -147,11 +147,22 @@ ${text}`,
       }],
     });
   } catch (e) {
-    if (e?.status === 529) {
+    const isOverloaded =
+      e?.status === 529 ||
+      e?.error?.type === "overloaded_error" ||
+      String(e?.message).includes("529") ||
+      String(e?.message).toLowerCase().includes("overloaded");
+    if (isOverloaded) {
       console.log(`[OutreachAgent] Claude överbelastad för ${region} (HTML fallback), returnerar tom lista`);
       return [];
     }
-    throw e;
+    // Treat other transient API errors (rate limit, server error) as non-fatal for this fallback
+    if (e?.status === 429 || e?.status === 503 || e?.status === 502) {
+      console.log(`[OutreachAgent] Claude API fel ${e.status} för ${region} (HTML fallback), returnerar tom lista`);
+      return [];
+    }
+    console.error(`[OutreachAgent] Claude parse fel för ${region} (HTML fallback):`, e?.message);
+    return [];
   }
 
   let companies = [];
