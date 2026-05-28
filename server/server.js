@@ -49,6 +49,9 @@ import * as Sentry from "@sentry/node";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const SHUTDOWN_TIMEOUT_MS = 8000;
+const LISTEN_RETRY_DELAY_MS = 2000;
+const LISTEN_EADDRINUSE_RETRIES = 6;
 app.set("trust proxy", 1);
 
 // Security headers — API doesn't serve HTML so CSP lives in Vercel/frontend config
@@ -131,7 +134,14 @@ const internalLimiter = rateLimit({
 
 app.use(requestIdMiddleware);
 app.use(cors({ origin: corsOrigin, credentials: true }));
-app.use(express.json({ limit: "1mb" }));
+app.use(express.json({
+  limit: "1mb",
+  verify: (req, _res, buf) => {
+    if (req.originalUrl?.startsWith("/api/webhooks/sentry")) {
+      req.rawBody = Buffer.from(buf);
+    }
+  },
+}));
 app.use((req, res, next) => {
   if (!["POST", "PUT", "PATCH", "DELETE"].includes(req.method)) return next();
   if (req.path === "/api/admin/impersonation/stop") return next();
@@ -462,7 +472,7 @@ async function shutdown(signal) {
     app._httpServer.closeAllConnections();
     await Promise.race([
       new Promise((resolve) => app._httpServer.close(resolve)),
-      new Promise((resolve) => setTimeout(resolve, 8000)),
+      new Promise((resolve) => setTimeout(resolve, SHUTDOWN_TIMEOUT_MS)),
     ]);
   }
   try {
@@ -498,10 +508,13 @@ if (process.env.APP_LISTEN !== "false") {
       app._httpServer = httpServer;
       startReminderScheduler();
     }).on("error", (err) => {
-      if (err.code === "EADDRINUSE" && attempt < 3) {
-        console.warn(`[startup] Port ${PORT} upptagen, försöker igen om 2s... (försök ${attempt + 1}/3)`);
+      if (err.code === "EADDRINUSE" && attempt < LISTEN_EADDRINUSE_RETRIES) {
+        console.warn(
+          `[startup] Port ${PORT} upptagen, försöker igen om ${LISTEN_RETRY_DELAY_MS / 1000}s... ` +
+          `(försök ${attempt + 1}/${LISTEN_EADDRINUSE_RETRIES})`
+        );
         httpServer.close();
-        setTimeout(() => startListening(attempt + 1), 2000);
+        setTimeout(() => startListening(attempt + 1), LISTEN_RETRY_DELAY_MS);
       } else {
         console.error(`[startup] Kunde inte lyssna på port ${PORT}:`, err.message);
         process.exit(1);
