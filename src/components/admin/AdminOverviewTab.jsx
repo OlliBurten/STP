@@ -155,7 +155,7 @@ function SystemPulse({ health }) {
     return { n: name, s, v, c };
   }
 
-  const dbLatency = health?.dbLatencyMs != null ? `${health.dbLatencyMs}ms` : "ok";
+  const dbLatency = health?.dbLatencyMs != null ? `${health.dbLatencyMs}ms` : health ? "fel" : "ok";
   const emailVal = health ? (health.emailConfigured && health.emailFromConfigured ? "Resend" : "Ej konfig") : "—";
   const ssoVal = health ? (
     health.oauth?.google && health.oauth?.microsoft ? "Google+MS" :
@@ -166,11 +166,11 @@ function SystemPulse({ health }) {
   const cooldown = health?.reminders?.cooldownHours ? `${health.reminders.cooldownHours}h cd` : "redo";
 
   const services = [
-    svc("API",       true,                                   `${health?.uptimeSec != null ? Math.floor(health.uptimeSec / 60) + " min" : "redo"}`),
-    svc("DB",        !health || health.db === "ok",          dbLatency),
-    svc("Email",     !health || (health.emailConfigured && health.emailFromConfigured), emailVal),
-    svc("SSO",       !health || (health.oauth?.google || health.oauth?.microsoft), ssoVal),
-    svc("Reminders", !health || remindersOk,                 remindersOk ? cooldown : "Ej konfig"),
+    svc("API",       health?.ok === true,                                      `${health?.uptimeSec != null ? Math.floor(health.uptimeSec / 60) + " min" : "redo"}`),
+    svc("DB",        health?.db === "ok",                                      dbLatency),
+    svc("Email",     Boolean(health?.emailConfigured && health?.emailFromConfigured), emailVal),
+    svc("SSO",       Boolean(health?.oauth?.google || health?.oauth?.microsoft), ssoVal),
+    svc("Reminders", remindersOk,                                              remindersOk ? cooldown : "Ej konfig"),
     svc("Live web",  true,                                   "Uppe"),
     svc("Demo web",  true,                                   "Uppe"),
     { n: "MCP", s: "warn", v: "Konfig", c: "#F5A623" },

@@ -1,6 +1,14 @@
 import React, { useState } from "react";
 import { Icon } from "./AdminShell.jsx";
-import { updateCompanyStatus, setUserSuspended, updateUserWarnings, verifyUserEmail } from "../../api/admin.js";
+import { updateCompanyStatus, setUserSuspended } from "../../api/admin.js";
+import {
+  getAdminUserProfileCompletion,
+  getAdminUserWarningCount,
+  getCompanyVerificationTargetId,
+  isAdminCompanyUser,
+  isAdminUserSuspended,
+  isAdminUserVerified,
+} from "./adminUserViewModel.js";
 
 const mono = { fontFamily: "'JetBrains Mono',monospace", fontFeatureSettings: '"tnum"' };
 
@@ -14,16 +22,14 @@ const FilterPill = ({ on, count, children, onClick, color }) => (
 
 // ─── Users header ──────────────────────────────────────────────────────────────
 function UsersHeader({ users, selectedCount, filter, setFilter }) {
-  const isCompany = u => u.role === "COMPANY" || u.role === "RECRUITER";
-  const isVerified = u => isCompany(u) ? u.status === "VERIFIED" : u.emailVerified;
   const filters = [
     { v: "all",       l: "Alla",           c: users.length },
-    { v: "driver",    l: "Förare",         c: users.filter(u => !isCompany(u)).length },
-    { v: "company",   l: "Åkerier",        c: users.filter(u => isCompany(u)).length },
-    { v: "unverified",l: "Ej verifierade", c: users.filter(u => !isVerified(u) && isCompany(u)).length, color: "#F5A623" },
-    { v: "stuck",     l: "Stuck (<25%)",   c: users.filter(u => (u.profileCompletion ?? 0) < 25).length, color: "#F5A623" },
-    { v: "warnings",  l: "Med varningar",  c: users.filter(u => (u.warnings || 0) > 0).length, color: "#f87171" },
-    { v: "suspended", l: "Suspenderade",   c: users.filter(u => u.status === "SUSPENDED").length, color: "#f87171" },
+    { v: "driver",    l: "Förare",         c: users.filter(u => !isAdminCompanyUser(u)).length },
+    { v: "company",   l: "Åkerier",        c: users.filter(u => isAdminCompanyUser(u)).length },
+    { v: "unverified",l: "Ej verifierade", c: users.filter(u => !isAdminUserVerified(u) && isAdminCompanyUser(u)).length, color: "#F5A623" },
+    { v: "stuck",     l: "Stuck (<25%)",   c: users.filter(u => getAdminUserProfileCompletion(u) < 25).length, color: "#F5A623" },
+    { v: "warnings",  l: "Med varningar",  c: users.filter(u => getAdminUserWarningCount(u) > 0).length, color: "#f87171" },
+    { v: "suspended", l: "Suspenderade",   c: users.filter(u => isAdminUserSuspended(u)).length, color: "#f87171" },
   ];
   return (
     <div style={{ padding: "22px 26px 14px" }}>
@@ -88,11 +94,11 @@ function TableHeader({ allSelected, onSelectAll, compact }) {
 
 // ─── User row ──────────────────────────────────────────────────────────────────
 function UserRow({ u, selected, isSelectedRow, onCheck, onSelect, compact }) {
-  const profile = u.profileCompletion ?? 0;
-  const isComp = u.role === "COMPANY" || u.role === "RECRUITER";
-  const verified = isComp ? u.status === "VERIFIED" : u.emailVerified;
-  const suspended = u.status === "SUSPENDED";
-  const warnings = u.warnings || 0;
+  const profile = getAdminUserProfileCompletion(u);
+  const isComp = isAdminCompanyUser(u);
+  const verified = isAdminUserVerified(u);
+  const suspended = isAdminUserSuspended(u);
+  const warnings = getAdminUserWarningCount(u);
   const lastLogin = u.lastLoginAt ? fmtRelative(u.lastLoginAt) : "Aldrig";
   const created = u.createdAt ? u.createdAt.slice(0, 10) : "";
   const initials = u.name ? u.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : u.email?.[0]?.toUpperCase() || "?";
@@ -170,10 +176,11 @@ function UserRow({ u, selected, isSelectedRow, onCheck, onSelect, compact }) {
 // ─── Detail panel ──────────────────────────────────────────────────────────────
 function DetailPanel({ u, detail, onClose, onVerify, onSuspend, onViewAs }) {
   if (!u) return null;
-  const isComp = u.role === "COMPANY" || u.role === "RECRUITER";
-  const verified = isComp ? u.status === "VERIFIED" : u.emailVerified;
-  const suspended = u.status === "SUSPENDED";
-  const profile = u.profileCompletion ?? 0;
+  const displayUser = detail ? { ...u, ...detail } : u;
+  const isComp = isAdminCompanyUser(displayUser);
+  const verified = isAdminUserVerified(displayUser);
+  const suspended = isAdminUserSuspended(displayUser);
+  const profile = getAdminUserProfileCompletion(displayUser);
   const initials = u.name ? u.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : u.email?.[0]?.toUpperCase() || "?";
   const color = isComp ? "#F5A623" : "#7dd3c8";
 
@@ -240,7 +247,7 @@ function DetailPanel({ u, detail, onClose, onVerify, onSuspend, onViewAs }) {
         </div>
       </div>
 
-      {((u.warnings || 0) > 0 || suspended) && (
+      {(getAdminUserWarningCount(displayUser) > 0 || suspended) && (
         <div style={{ padding: "16px 20px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
           <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 1.3, textTransform: "uppercase", color: "#f87171", marginBottom: 10 }}>Disciplin</div>
           {u.suspensionReason && (
@@ -248,9 +255,9 @@ function DetailPanel({ u, detail, onClose, onVerify, onSuspend, onViewAs }) {
               <strong style={{ color: "#f87171" }}>Suspenderad:</strong> {u.suspensionReason}
             </div>
           )}
-          {(u.warnings || 0) > 0 && (
+          {getAdminUserWarningCount(displayUser) > 0 && (
             <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)" }}>
-              <span style={{ color: "#F5A623", fontWeight: 800, ...mono }}>{u.warnings}</span> varning(ar) i historiken
+              <span style={{ color: "#F5A623", fontWeight: 800, ...mono }}>{getAdminUserWarningCount(displayUser)}</span> varning(ar) i historiken
             </div>
           )}
         </div>
@@ -362,17 +369,14 @@ export default function AdminUsersTab({
     setSelected(next);
   };
 
-  const isCompany = u => u.role === "COMPANY" || u.role === "RECRUITER";
-  const isVerified = u => isCompany(u) ? u.status === "VERIFIED" : u.emailVerified;
-
   const filtered = allUsers.filter(u => {
-    const profile = u.profileCompletion ?? 0;
-    if (filter === "driver") return !isCompany(u);
-    if (filter === "company") return isCompany(u);
-    if (filter === "unverified") return !isVerified(u) && isCompany(u);
+    const profile = getAdminUserProfileCompletion(u);
+    if (filter === "driver") return !isAdminCompanyUser(u);
+    if (filter === "company") return isAdminCompanyUser(u);
+    if (filter === "unverified") return !isAdminUserVerified(u) && isAdminCompanyUser(u);
     if (filter === "stuck") return profile < 25;
-    if (filter === "warnings") return (u.warnings || 0) > 0;
-    if (filter === "suspended") return u.status === "SUSPENDED";
+    if (filter === "warnings") return getAdminUserWarningCount(u) > 0;
+    if (filter === "suspended") return isAdminUserSuspended(u);
     return true;
   });
 
@@ -394,7 +398,8 @@ export default function AdminUsersTab({
   const handleVerify = async () => {
     if (!selectedUser) return;
     try {
-      await updateCompanyStatus(selectedUser.id, "VERIFIED");
+      const companyId = getCompanyVerificationTargetId(selectedUser, selectedUserDetail);
+      await updateCompanyStatus(companyId, "VERIFIED");
       await loadUsers();
       setSuccess("Företaget verifierades.");
     } catch (e) {

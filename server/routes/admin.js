@@ -464,26 +464,30 @@ adminRouter.get("/users", async (req, res, next) => {
     const companyStatus = String(req.query.companyStatus || "").toUpperCase();
     const suspended = String(req.query.suspended || "").toLowerCase();
 
-    const where = {
-      ...(q
-        ? {
-            OR: [
-              { email: { contains: q, mode: "insensitive" } },
-              { name: { contains: q, mode: "insensitive" } },
-              { companyName: { contains: q, mode: "insensitive" } },
-            ],
-          }
-        : {}),
-      ...(role && ["DRIVER", "COMPANY", "RECRUITER"].includes(role) ? { role } : {}),
-      ...(companyStatus && ["PENDING", "VERIFIED", "REJECTED"].includes(companyStatus)
-        ? { companyStatus }
-        : {}),
-      ...(suspended === "yes"
-        ? { suspendedAt: { not: null } }
-        : suspended === "no"
-          ? { suspendedAt: null }
-          : {}),
-    };
+    const whereParts = [];
+    if (q) {
+      whereParts.push({
+        OR: [
+          { email: { contains: q, mode: "insensitive" } },
+          { name: { contains: q, mode: "insensitive" } },
+          { companyName: { contains: q, mode: "insensitive" } },
+          { userOrganizations: { some: { organization: { name: { contains: q, mode: "insensitive" } } } } },
+        ],
+      });
+    }
+    if (role && ["DRIVER", "COMPANY", "RECRUITER"].includes(role)) whereParts.push({ role });
+    if (companyStatus && ["PENDING", "VERIFIED", "REJECTED"].includes(companyStatus)) {
+      whereParts.push({
+        OR: [
+          { AND: [{ role: "COMPANY" }, { companyStatus }] },
+          { userOrganizations: { some: { organization: { status: companyStatus } } } },
+        ],
+      });
+    }
+    if (suspended === "yes") whereParts.push({ suspendedAt: { not: null } });
+    if (suspended === "no") whereParts.push({ suspendedAt: null });
+
+    const where = whereParts.length ? { AND: whereParts } : {};
 
     const users = await prisma.user.findMany({
       where,
@@ -526,19 +530,64 @@ adminRouter.get("/users", async (req, res, next) => {
             experience: true,
           },
         },
+        userOrganizations: {
+          select: {
+            role: true,
+            organization: {
+              select: {
+                id: true,
+                name: true,
+                orgNumber: true,
+                description: true,
+                website: true,
+                location: true,
+                segmentDefaults: true,
+                bransch: true,
+                region: true,
+                status: true,
+              },
+            },
+          },
+        },
       },
     });
 
     res.json(
-      users.map((u) => ({
-        ...u,
-        isAdmin: isAdminEmail(u.email),
-        emailVerifiedAt: u.emailVerifiedAt?.toISOString() ?? null,
-        suspendedAt: u.suspendedAt?.toISOString() ?? null,
-        lastWarnedAt: u.lastWarnedAt?.toISOString() ?? null,
-        lastLoginAt: u.lastLoginAt?.toISOString() ?? null,
-        createdAt: u.createdAt.toISOString(),
-      }))
+      users.map((u) => {
+        const primaryMembership =
+          u.userOrganizations.find((membership) => membership.role === "OWNER") ||
+          u.userOrganizations[0] ||
+          null;
+        const org = primaryMembership?.organization || null;
+        const { userOrganizations, ...baseUser } = u;
+        return {
+          ...baseUser,
+          companyName: org?.name ?? u.companyName,
+          companyOrgNumber: org?.orgNumber ?? u.companyOrgNumber,
+          companyDescription: org?.description ?? u.companyDescription,
+          companyWebsite: org?.website ?? u.companyWebsite,
+          companyLocation: org?.location ?? u.companyLocation,
+          companyBransch: org?.bransch ?? u.companyBransch,
+          companyRegion: org?.region ?? u.companyRegion,
+          companySegmentDefaults: org?.segmentDefaults ?? u.companySegmentDefaults,
+          companyStatus: org?.status ?? u.companyStatus,
+          organizationId: org?.id ?? null,
+          organizations: userOrganizations.map((membership) => ({
+            id: membership.organization.id,
+            role: membership.role,
+            name: membership.organization.name,
+            orgNumber: membership.organization.orgNumber,
+            status: membership.organization.status,
+            region: membership.organization.region,
+          })),
+          isAdmin: isAdminEmail(u.email),
+          emailVerifiedAt: u.emailVerifiedAt?.toISOString() ?? null,
+          suspendedAt: u.suspendedAt?.toISOString() ?? null,
+          lastWarnedAt: u.lastWarnedAt?.toISOString() ?? null,
+          lastLoginAt: u.lastLoginAt?.toISOString() ?? null,
+          createdAt: u.createdAt.toISOString(),
+        };
+      })
     );
   } catch (e) {
     next(e);

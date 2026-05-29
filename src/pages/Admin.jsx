@@ -142,8 +142,11 @@ export default function Admin() {
   async function loadHealth() {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/health`);
-      if (res.ok) setHealth(await res.json());
-    } catch { /* health is best-effort */ }
+      const data = await res.json().catch(() => null);
+      setHealth(data || { ok: false, db: "error" });
+    } catch {
+      setHealth({ ok: false, db: "error" });
+    }
   }
 
   async function loadInsights() {
