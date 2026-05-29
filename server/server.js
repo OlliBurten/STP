@@ -492,16 +492,18 @@ if (process.env.APP_LISTEN !== "false") {
     if (r.count > 0) console.log(`[Startup] Städade ${r.count} tomma companyOrgNumber → null`);
   }).catch(() => {});
 
+  const MAX_LISTEN_ATTEMPTS = 8;
   function startListening(attempt = 0) {
     const httpServer = app.listen(PORT, () => {
       console.log(`Server running at http://localhost:${PORT}`);
       app._httpServer = httpServer;
       startReminderScheduler();
     }).on("error", (err) => {
-      if (err.code === "EADDRINUSE" && attempt < 3) {
-        console.warn(`[startup] Port ${PORT} upptagen, försöker igen om 2s... (försök ${attempt + 1}/3)`);
+      if (err.code === "EADDRINUSE" && attempt < MAX_LISTEN_ATTEMPTS) {
+        const delay = Math.min(2000 * Math.pow(2, attempt), 30000);
+        console.warn(`[startup] Port ${PORT} upptagen, försöker igen om ${delay / 1000}s... (försök ${attempt + 1}/${MAX_LISTEN_ATTEMPTS})`);
         httpServer.close();
-        setTimeout(() => startListening(attempt + 1), 2000);
+        setTimeout(() => startListening(attempt + 1), delay);
       } else {
         console.error(`[startup] Kunde inte lyssna på port ${PORT}:`, err.message);
         process.exit(1);
