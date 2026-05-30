@@ -77,7 +77,7 @@ function BrandPanel() {
       </div>
 
       <div style={{ fontSize: 12, color: "rgba(255,255,255,0.35)" }}>
-        Välkomnat av Transportföretagen & Sveriges Åkeriföretag
+        Sveriges matchningsplattform för yrkesförare och åkerier
       </div>
     </aside>
   );
