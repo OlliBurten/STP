@@ -177,7 +177,7 @@ a:hover { text-decoration: underline; }
 }
 .dm-company-actions > * { flex: 1 1 220px; }
 
-@media (min-width: 1024px) {
+@media (min-width: 768px) {
   .dm-desktop-nav        { display: flex !important; }
   .dm-mobile-menu-button { display: none !important; }
   .dm-mobile-menu-panel  { display: none !important; }

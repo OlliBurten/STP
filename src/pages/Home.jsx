@@ -140,7 +140,7 @@ export default function Home() {
   const pad = isMobile ? sectionPadMobile : sectionPad;
 
   return (
-    <main style={{ background: "var(--paper)" }}>
+    <main style={{ background: "var(--paper)", marginTop: -64 }}>
       <PageMeta
         title="STP – Sveriges Transportplattform | Lastbilsjobb & förarrekrytering"
         description="Sveriges Transportplattform – hitta lastbilsjobb eller rekrytera yrkesförare direkt. Inga bemanningsföretag, ingen mellanskapare."
