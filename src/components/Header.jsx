@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useChat } from "../context/ChatContext";
 import { fetchNotifications, markNotificationRead, markAllNotificationsRead } from "../api/notifications.js";
@@ -48,6 +48,9 @@ export default function Header({ onboarding = false }) {
   const { user, isDriver, isCompany, isAdmin, isImpersonating, logout, stopViewAs, userOrgs, activeOrg, switchOrg } = useAuth();
   const { selectedNotificationCount, unreadCount = 0, companyUnreadConversationCount = 0 } = useChat();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isLanding = !user && location.pathname === "/";
+  const [scrolled, setScrolled] = useState(false);
   const [mobileOpen,       setMobileOpen]       = useState(false);
   const [notifOpen,        setNotifOpen]         = useState(false);
   const [navDropdownOpen,  setNavDropdownOpen]   = useState(false);
@@ -90,6 +93,14 @@ export default function Header({ onboarding = false }) {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [mobileOpen]);
+
+  useEffect(() => {
+    if (!isLanding) { setScrolled(false); return; }
+    const fn = () => setScrolled(window.scrollY > 30);
+    window.addEventListener("scroll", fn, { passive: true });
+    fn();
+    return () => window.removeEventListener("scroll", fn);
+  }, [isLanding]);
 
   const closeMobile = () => setMobileOpen(false);
   const handleLogout = () => { closeMobile(); logout(); };
@@ -136,14 +147,20 @@ export default function Header({ onboarding = false }) {
     return d.toLocaleDateString("sv-SE", { day: "numeric", month: "short" });
   };
 
-  // ── Header — mörk asfalt-stripe (alltid, även utloggad) ───────────────────
+  // ── Header — transparent på landing, mörk på inre sidor ──────────────────
   const headerBg = isImpersonating
     ? "rgba(10,20,20,0.97)"
-    : "var(--ink-900)";
+    : isLanding
+      ? scrolled ? "rgba(245,242,236,0.94)" : "transparent"
+      : "var(--ink-900)";
 
   const headerBorder = isImpersonating
     ? "1px solid rgba(199,122,14,0.45)"
-    : "1px solid rgba(255,255,255,0.06)";
+    : isLanding
+      ? scrolled ? "1px solid var(--line)" : "1px solid transparent"
+      : "1px solid rgba(255,255,255,0.06)";
+
+  const headerTransition = isLanding ? "background .25s, border-color .25s" : undefined;
 
   // ── Nav link style (på mörk bakgrund) ────────────────────────────────────
   const navLinkClass = ({ isActive }) => isActive ? "dm-dark-nav-link active-dark" : "dm-dark-nav-link";
@@ -153,17 +170,46 @@ export default function Header({ onboarding = false }) {
     borderRadius: 8,
     fontSize: 13.5,
     fontWeight: isActive ? 700 : 500,
-    color: isActive ? "#fff" : "rgba(232,237,237,0.65)",
+    color: isLanding
+      ? scrolled ? "var(--ink-700)" : "rgba(255,255,255,0.82)"
+      : isActive ? "#fff" : "rgba(232,237,237,0.65)",
     textDecoration: "none",
-    background: isActive ? "rgba(255,255,255,0.09)" : "transparent",
+    background: isActive && !isLanding ? "rgba(255,255,255,0.09)" : "transparent",
     display: "inline-block",
-    transition: "color .15s, background .15s",
+    transition: "color .25s, background .15s",
   });
 
   // ── Nav links ─────────────────────────────────────────────────────────────
   const navLinks = (
     <>
-      {!user && (
+      {!user && isLanding && (
+        <>
+          {[
+            { to: "/jobb",             label: "För förare" },
+            { to: "/for-akerier",      label: "För åkerier" },
+            { to: "/#sa-fungerar-det", label: "Så fungerar det" },
+            { to: "/om-oss",           label: "Om STP" },
+          ].map(item => (
+            <li key={item.label}>
+              <Link
+                to={item.to}
+                onClick={closeMobile}
+                style={{
+                  fontSize: 14, fontWeight: 500,
+                  color: scrolled ? "var(--ink-700)" : "rgba(255,255,255,0.82)",
+                  textDecoration: "none",
+                  padding: "6px 14px",
+                  transition: "color .25s",
+                }}
+              >
+                {item.label}
+              </Link>
+            </li>
+          ))}
+        </>
+      )}
+
+      {!user && !isLanding && (
         <>
           {PUBLIC_NAV_LINKS.map(item => (
             <li key={item.label}>
@@ -312,13 +358,25 @@ export default function Header({ onboarding = false }) {
         />
       )}
 
-      <header className="fixed left-0 right-0 top-0 z-50" style={{ background: headerBg, borderBottom: headerBorder }}>
-        <nav className="flex items-center h-16 relative" style={{ maxWidth: 1280, margin: "0 auto", padding: isMobile ? "0 20px" : "0 40px", width: "100%" }}>
+      <header className="fixed left-0 right-0 top-0 z-50" style={{ background: headerBg, borderBottom: headerBorder, backdropFilter: isLanding && scrolled ? "blur(12px)" : undefined, WebkitBackdropFilter: isLanding && scrolled ? "blur(12px)" : undefined, transition: headerTransition }}>
+        <nav className="flex items-center relative" style={{ maxWidth: 1280, margin: "0 auto", padding: isMobile ? "0 20px" : "0 32px", width: "100%", height: isLanding ? 68 : 64 }}>
 
           {/* Logo */}
           <div className="flex items-center shrink-0 overflow-visible">
-            <Link to={platformAdminSession ? "/admin" : "/"} className="flex items-center focus:outline-none rounded overflow-visible">
-              <Logo height={36} variant="light" />
+            <Link to={platformAdminSession ? "/admin" : "/"} style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
+              <div style={{
+                width: 30, height: 30, borderRadius: 7,
+                background: "var(--green)", color: "#fff",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontWeight: 900, fontSize: 13,
+                boxShadow: "inset 0 -2px 0 rgba(0,0,0,0.20)",
+                flexShrink: 0,
+              }}>S</div>
+              <span style={{
+                fontWeight: 800, fontSize: 17, letterSpacing: 0.5,
+                color: isLanding ? (scrolled ? "var(--ink-900)" : "#fff") : "#fff",
+                transition: "color .25s",
+              }}>STP</span>
             </Link>
           </div>
 
@@ -631,9 +689,9 @@ export default function Header({ onboarding = false }) {
               type="button"
               onClick={() => setMobileOpen(!mobileOpen)}
               className="dm-mobile-menu-button p-2 -mr-2 rounded-lg min-h-[44px] min-w-[44px] flex items-center justify-center transition-colors"
-              style={{ color: "rgba(232,237,237,0.7)", background: "none", border: "none", cursor: "pointer" }}
+              style={{ color: isLanding && !scrolled ? "rgba(255,255,255,0.85)" : "rgba(232,237,237,0.7)", background: "none", border: "none", cursor: "pointer" }}
               onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.08)"; e.currentTarget.style.color = "#fff"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = ""; e.currentTarget.style.color = "rgba(232,237,237,0.7)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = ""; e.currentTarget.style.color = isLanding && !scrolled ? "rgba(255,255,255,0.85)" : "rgba(232,237,237,0.7)"; }}
               aria-label={mobileOpen ? "Stäng meny" : "Öppna meny"}
               aria-expanded={mobileOpen}
             >
@@ -646,9 +704,12 @@ export default function Header({ onboarding = false }) {
                 <Link
                   to="/login"
                   className="dm-header-primary-cta text-sm font-medium"
-                  style={{ color: "rgba(232,237,237,0.75)", textDecoration: "none", padding: "8px 12px" }}
-                  onMouseEnter={e => { e.currentTarget.style.color = "#fff"; }}
-                  onMouseLeave={e => { e.currentTarget.style.color = "rgba(232,237,237,0.75)"; }}
+                  style={{
+                    color: isLanding ? (scrolled ? "var(--ink-900)" : "#fff") : "rgba(232,237,237,0.75)",
+                    textDecoration: "none", padding: "7px 14px",
+                    fontSize: 13.5, fontWeight: 600,
+                    transition: "color .25s",
+                  }}
                 >
                   Logga in
                 </Link>
@@ -658,7 +719,7 @@ export default function Header({ onboarding = false }) {
                   className="dm-header-primary-cta"
                   style={{
                     background: "var(--green)", color: "#fff",
-                    padding: "9px 18px", borderRadius: 9,
+                    padding: "8px 18px", borderRadius: 9,
                     fontSize: 13.5, fontWeight: 700, textDecoration: "none",
                     boxShadow: "0 1px 0 var(--green-deep)",
                     transition: "background .15s",
@@ -666,7 +727,7 @@ export default function Header({ onboarding = false }) {
                   onMouseEnter={e => { e.currentTarget.style.background = "var(--green-deep)"; }}
                   onMouseLeave={e => { e.currentTarget.style.background = "var(--green)"; }}
                 >
-                  Skapa konto
+                  Kom igång
                 </Link>
               </>
             )}
