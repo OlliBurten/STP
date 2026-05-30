@@ -4,28 +4,11 @@ import { useAuth } from "../context/AuthContext";
 import { fetchOrgMembers, removeOrgMember } from "../api/organizations.js";
 import { listCompanyInvites, createCompanyInvite, revokeCompanyInvite } from "../api/invites.js";
 
-const T = {
-  bg:      "#050e0e",
-  bg2:     "#0a1818",
-  bg3:     "#0d2b2b",
-  primary: "#1F5F5C",
-  pLight:  "#2a7a76",
-  amber:   "#F5A623",
-  text:    "#f0faf9",
-  sub:     "rgba(240,250,249,0.55)",
-  muted:   "rgba(240,250,249,0.3)",
-  border:  "rgba(255,255,255,0.08)",
-  border2: "rgba(255,255,255,0.14)",
-  card:    "rgba(255,255,255,0.04)",
-  green:   "#4ade80",
-  red:     "#f87171",
-};
-
 const ROLE_LABEL = { OWNER: "Ägare", ADMIN: "Admin", MEMBER: "Teammedlem" };
 const ROLE_COLOR = {
-  OWNER:  { background: "rgba(31,95,92,0.25)", color: "#7dd3c8" },
-  ADMIN:  { background: "rgba(245,166,35,0.15)", color: "#F5A623" },
-  MEMBER: { background: "rgba(255,255,255,0.06)", color: T.sub },
+  OWNER:  { background: "var(--green-tint)", color: "var(--green-text)" },
+  ADMIN:  { background: "var(--amber-tint)", color: "var(--amber-text)" },
+  MEMBER: { background: "var(--paper-2)", color: "var(--ink-500)" },
 };
 
 function formatDate(iso) {
@@ -38,14 +21,14 @@ function MemberRow({ member, isOwner, onRemove, removing }) {
     <div style={{
       display: "flex", alignItems: "center", gap: 14,
       padding: "14px 20px",
-      borderBottom: `1px solid ${T.border}`,
+      borderBottom: "1px solid var(--line)",
     }}>
       {/* Avatar */}
       <div style={{
         width: 38, height: 38, borderRadius: 99, flexShrink: 0,
-        background: member.role === "OWNER" ? "linear-gradient(135deg,#1F5F5C,#2a7a76)" : "rgba(255,255,255,0.08)",
+        background: member.role === "OWNER" ? "linear-gradient(135deg, var(--green), var(--green-text))" : "var(--paper-2)",
         display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: 14, fontWeight: 800, color: member.role === "OWNER" ? "#7dd3c8" : T.muted,
+        fontSize: 14, fontWeight: 800, color: member.role === "OWNER" ? "#fff" : "var(--ink-400)",
       }}>
         {(member.name || member.email || "?").slice(0, 1).toUpperCase()}
       </div>
@@ -53,11 +36,11 @@ function MemberRow({ member, isOwner, onRemove, removing }) {
       {/* Info */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 14, fontWeight: 700, color: T.text }}>
+          <span style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)" }}>
             {member.name || member.email}
           </span>
           {member.isYou && (
-            <span style={{ fontSize: 11, color: T.muted, fontWeight: 600 }}>(du)</span>
+            <span style={{ fontSize: 11, color: "var(--ink-400)", fontWeight: 600 }}>(du)</span>
           )}
           <span style={{
             fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 99,
@@ -66,7 +49,7 @@ function MemberRow({ member, isOwner, onRemove, removing }) {
             {ROLE_LABEL[member.role] || member.role}
           </span>
         </div>
-        <div style={{ fontSize: 12, color: T.muted, marginTop: 2 }}>
+        <div style={{ fontSize: 12, color: "var(--ink-400)", marginTop: 2 }}>
           {member.email}
           {member.joinedAt && (
             <span style={{ marginLeft: 10 }}>Gick med {formatDate(member.joinedAt)}</span>
@@ -82,13 +65,13 @@ function MemberRow({ member, isOwner, onRemove, removing }) {
           disabled={removing === member.id}
           style={{
             padding: "6px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600,
-            background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)",
-            color: T.red, cursor: removing === member.id ? "default" : "pointer",
+            background: "var(--danger-tint)", border: "1px solid rgba(239,68,68,0.2)",
+            color: "var(--danger)", cursor: removing === member.id ? "default" : "pointer",
             opacity: removing === member.id ? 0.5 : 1, fontFamily: "inherit",
             transition: "background .15s",
           }}
-          onMouseEnter={(e) => { if (removing !== member.id) e.currentTarget.style.background = "rgba(248,113,113,0.16)"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(248,113,113,0.08)"; }}
+          onMouseEnter={(e) => { if (removing !== member.id) e.currentTarget.style.background = "rgba(239,68,68,0.16)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = "var(--danger-tint)"; }}
         >
           {removing === member.id ? "Tar bort…" : "Ta bort"}
         </button>
@@ -100,26 +83,30 @@ function MemberRow({ member, isOwner, onRemove, removing }) {
 function InviteRow({ invite, isOwner, onRevoke, revoking }) {
   const expired = new Date(invite.expiresAt) < new Date();
   const statusLabel = invite.status === "ACCEPTED" ? "Accepterad" : expired ? "Utgången" : "Väntar";
-  const statusColor = invite.status === "ACCEPTED" ? T.green : expired ? T.red : T.amber;
+  const statusColor = invite.status === "ACCEPTED"
+    ? "var(--green-text)"
+    : expired
+      ? "var(--danger)"
+      : "var(--amber-text)";
 
   return (
     <div style={{
       display: "flex", alignItems: "center", gap: 14,
       padding: "13px 20px",
-      borderBottom: `1px solid ${T.border}`,
+      borderBottom: "1px solid var(--line)",
       opacity: invite.status !== "PENDING" ? 0.6 : 1,
     }}>
       <div style={{
         width: 38, height: 38, borderRadius: 99, flexShrink: 0,
-        background: "rgba(255,255,255,0.05)",
+        background: "var(--paper-2)",
         display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: 16, color: T.muted,
+        fontSize: 16, color: "var(--ink-400)",
       }}>
         ✉
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 14, fontWeight: 600, color: T.text }}>{invite.email}</div>
-        <div style={{ fontSize: 12, color: T.muted, marginTop: 2, display: "flex", gap: 10 }}>
+        <div style={{ fontSize: 14, fontWeight: 600, color: "var(--ink-900)" }}>{invite.email}</div>
+        <div style={{ fontSize: 12, color: "var(--ink-400)", marginTop: 2, display: "flex", gap: 10 }}>
           <span style={{ color: statusColor, fontWeight: 700 }}>{statusLabel}</span>
           {invite.createdAt && <span>Skickad {formatDate(invite.createdAt)}</span>}
           {invite.status === "PENDING" && !expired && invite.expiresAt && (
@@ -134,13 +121,13 @@ function InviteRow({ invite, isOwner, onRevoke, revoking }) {
           disabled={revoking === invite.id}
           style={{
             padding: "6px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600,
-            background: "rgba(255,255,255,0.04)", border: `1px solid ${T.border2}`,
-            color: T.muted, cursor: revoking === invite.id ? "default" : "pointer",
+            background: "var(--paper-2)", border: "1px solid var(--line-2)",
+            color: "var(--ink-500)", cursor: revoking === invite.id ? "default" : "pointer",
             opacity: revoking === invite.id ? 0.5 : 1, fontFamily: "inherit",
             transition: "background .15s",
           }}
-          onMouseEnter={(e) => { if (revoking !== invite.id) e.currentTarget.style.background = "rgba(255,255,255,0.08)"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
+          onMouseEnter={(e) => { if (revoking !== invite.id) e.currentTarget.style.background = "var(--card)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = "var(--paper-2)"; }}
         >
           {revoking === invite.id ? "Återkallar…" : "Återkalla"}
         </button>
@@ -237,10 +224,10 @@ export default function CompanyTeam() {
 
   if (!orgId) {
     return (
-      <div style={{ minHeight: "100vh", background: T.bg, color: T.text, display: "flex", alignItems: "center", justifyContent: "center", marginTop: "-64px", paddingTop: "64px" }}>
+      <div style={{ minHeight: "100vh", background: "var(--paper)", color: "var(--ink-900)", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ textAlign: "center" }}>
-          <p style={{ color: T.sub, marginBottom: 16 }}>Inget åkeri valt.</p>
-          <Link to="/foretag/lagg-till-akeri" style={{ color: T.amber, fontWeight: 700 }}>Lägg till ett åkeri</Link>
+          <p style={{ color: "var(--ink-500)", marginBottom: 16 }}>Inget åkeri valt.</p>
+          <Link to="/foretag/lagg-till-akeri" style={{ color: "var(--amber-text)", fontWeight: 700 }}>Lägg till ett åkeri</Link>
         </div>
       </div>
     );
@@ -248,24 +235,23 @@ export default function CompanyTeam() {
 
   return (
     <div style={{
-      minHeight: "100vh", background: T.bg, color: T.text,
-      fontFamily: "inherit", marginTop: "-64px", paddingTop: "64px",
-      paddingBottom: "80px",
+      minHeight: "100vh", background: "var(--paper)", color: "var(--ink-900)",
+      fontFamily: "inherit", paddingBottom: "80px",
     }}>
       <div style={{ maxWidth: 680, margin: "0 auto", padding: "48px 24px 0" }}>
 
         {/* Breadcrumb */}
-        <Link to="/foretag" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: T.muted, textDecoration: "none", marginBottom: 36 }}>
+        <Link to="/foretag" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--ink-400)", textDecoration: "none", marginBottom: 36 }}>
           ← Tillbaka till översikt
         </Link>
 
         {/* Header */}
         <div style={{ marginBottom: 40 }}>
-          <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.amber, marginBottom: 10 }}>
+          <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--amber-text)", marginBottom: 10 }}>
             {activeOrg?.name}
           </p>
           <h1 style={{ fontSize: 32, fontWeight: 900, lineHeight: 1.1, marginBottom: 10 }}>Team</h1>
-          <p style={{ fontSize: 15, color: T.sub, lineHeight: 1.7 }}>
+          <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.7 }}>
             {isOwner
               ? "Bjud in kollegor och hantera teamet för detta åkeri."
               : "Teammedlemmar för detta åkeri."}
@@ -273,7 +259,7 @@ export default function CompanyTeam() {
         </div>
 
         {error && (
-          <div style={{ padding: "12px 16px", borderRadius: 10, background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.25)", marginBottom: 24, fontSize: 13, color: T.red }}>
+          <div style={{ padding: "12px 16px", borderRadius: 10, background: "var(--danger-tint)", border: "1px solid rgba(239,68,68,0.2)", marginBottom: 24, fontSize: 13, color: "var(--danger)" }}>
             {error}
           </div>
         )}
@@ -281,7 +267,7 @@ export default function CompanyTeam() {
         {/* Invite form — owner only */}
         {isOwner && (
           <div style={{ marginBottom: 40 }}>
-            <p style={{ fontSize: 14, fontWeight: 700, color: T.text, marginBottom: 14 }}>Bjud in en kollega</p>
+            <p style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)", marginBottom: 14 }}>Bjud in en kollega</p>
             <form onSubmit={handleInvite} style={{ display: "flex", gap: 10 }}>
               <input
                 type="email"
@@ -291,8 +277,8 @@ export default function CompanyTeam() {
                 required
                 style={{
                   flex: 1, padding: "12px 16px", borderRadius: 10,
-                  background: T.bg2, border: `1.5px solid ${T.border2}`,
-                  color: T.text, fontSize: 14, fontFamily: "inherit", outline: "none",
+                  background: "var(--paper-2)", border: "1.5px solid var(--line-2)",
+                  color: "var(--ink-900)", fontSize: 14, fontFamily: "inherit", outline: "none",
                 }}
               />
               <button
@@ -300,7 +286,7 @@ export default function CompanyTeam() {
                 disabled={inviting || !inviteEmail.trim()}
                 style={{
                   padding: "12px 20px", borderRadius: 10, border: "none",
-                  background: T.primary, color: "#fff", fontWeight: 700, fontSize: 14,
+                  background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: 14,
                   fontFamily: "inherit", cursor: inviting || !inviteEmail.trim() ? "default" : "pointer",
                   opacity: inviting || !inviteEmail.trim() ? 0.4 : 1, whiteSpace: "nowrap",
                   transition: "opacity .15s",
@@ -312,13 +298,13 @@ export default function CompanyTeam() {
             {inviteMsg && (
               <div style={{
                 marginTop: 10, padding: "10px 14px", borderRadius: 8, fontSize: 13,
-                background: inviteMsg.ok ? "rgba(74,222,128,0.08)" : "rgba(248,113,113,0.08)",
-                border: `1px solid ${inviteMsg.ok ? "rgba(74,222,128,0.2)" : "rgba(248,113,113,0.2)"}`,
-                color: inviteMsg.ok ? T.green : T.red,
+                background: inviteMsg.ok ? "var(--success-tint)" : "var(--danger-tint)",
+                border: `1px solid ${inviteMsg.ok ? "var(--success)" : "rgba(239,68,68,0.2)"}`,
+                color: inviteMsg.ok ? "var(--green-text)" : "var(--danger)",
               }}>
                 {inviteMsg.text}
                 {inviteMsg.devLink && (
-                  <a href={inviteMsg.devLink} target="_blank" rel="noreferrer" style={{ display: "block", marginTop: 6, color: T.amber, fontWeight: 600, fontSize: 12, wordBreak: "break-all" }}>
+                  <a href={inviteMsg.devLink} target="_blank" rel="noreferrer" style={{ display: "block", marginTop: 6, color: "var(--amber-text)", fontWeight: 600, fontSize: 12, wordBreak: "break-all" }}>
                     Dev-länk: {inviteMsg.devLink}
                   </a>
                 )}
@@ -329,14 +315,14 @@ export default function CompanyTeam() {
 
         {/* Members list */}
         <div style={{ marginBottom: 32 }}>
-          <p style={{ fontSize: 14, fontWeight: 700, color: T.text, marginBottom: 12 }}>
+          <p style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)", marginBottom: 12 }}>
             Teammedlemmar ({members.length})
           </p>
-          <div style={{ borderRadius: 14, border: `1px solid ${T.border2}`, overflow: "hidden", background: T.bg2 }}>
+          <div style={{ borderRadius: 14, border: "1px solid var(--line-2)", overflow: "hidden", background: "var(--card)" }}>
             {loading ? (
-              <div style={{ padding: "28px", textAlign: "center", fontSize: 13, color: T.muted }}>Laddar…</div>
+              <div style={{ padding: "28px", textAlign: "center", fontSize: 13, color: "var(--ink-400)" }}>Laddar…</div>
             ) : members.length === 0 ? (
-              <div style={{ padding: "28px", textAlign: "center", fontSize: 13, color: T.muted }}>Inga medlemmar ännu.</div>
+              <div style={{ padding: "28px", textAlign: "center", fontSize: 13, color: "var(--ink-400)" }}>Inga medlemmar ännu.</div>
             ) : (
               members.map((m) => (
                 <MemberRow key={m.id} member={m} isOwner={isOwner} onRemove={handleRemove} removing={removing} />
@@ -348,10 +334,10 @@ export default function CompanyTeam() {
         {/* Pending invites */}
         {isOwner && (pendingInvites.length > 0 || otherInvites.length > 0) && (
           <div>
-            <p style={{ fontSize: 14, fontWeight: 700, color: T.text, marginBottom: 12 }}>
+            <p style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)", marginBottom: 12 }}>
               Inbjudningar
             </p>
-            <div style={{ borderRadius: 14, border: `1px solid ${T.border2}`, overflow: "hidden", background: T.bg2 }}>
+            <div style={{ borderRadius: 14, border: "1px solid var(--line-2)", overflow: "hidden", background: "var(--card)" }}>
               {pendingInvites.map((i) => (
                 <InviteRow key={i.id} invite={i} isOwner={isOwner} onRevoke={handleRevoke} revoking={revoking} />
               ))}
@@ -365,9 +351,9 @@ export default function CompanyTeam() {
         {/* Role explanation */}
         <div style={{
           marginTop: 48, padding: "20px 24px", borderRadius: 14,
-          background: T.card, border: `1px solid ${T.border}`,
+          background: "var(--paper-2)", border: "1px solid var(--line)",
         }}>
-          <p style={{ fontSize: 13, fontWeight: 700, color: T.sub, marginBottom: 14, textTransform: "uppercase", letterSpacing: "0.08em" }}>Roller</p>
+          <p style={{ fontSize: 13, fontWeight: 700, color: "var(--ink-500)", marginBottom: 14, textTransform: "uppercase", letterSpacing: "0.08em" }}>Roller</p>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {[
               { role: "OWNER", desc: "Skapade åkeriet. Kan bjuda in, ta bort och hantera allt." },
@@ -382,7 +368,7 @@ export default function CompanyTeam() {
                 }}>
                   {ROLE_LABEL[role]}
                 </span>
-                <span style={{ fontSize: 13, color: T.sub, lineHeight: 1.5 }}>{desc}</span>
+                <span style={{ fontSize: 13, color: "var(--ink-500)", lineHeight: 1.5 }}>{desc}</span>
               </div>
             ))}
           </div>

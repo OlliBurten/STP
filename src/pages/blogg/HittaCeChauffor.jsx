@@ -52,16 +52,7 @@ export default function HittaCeChauffor() {
           <li>Ange tydliga krav (körkort, YKB, eventuell ADR) utan att överdriva</li>
           <li>Beskriva typen av körning och rutt (fjärr, lokal, natt, dagtid)</li>
           <li>
-            Nämna om{" "}
-            <a
-              href="https://www.transportforetagen.se/kollektivavtal/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[var(--color-primary)] hover:underline"
-            >
-              kollektivavtal
-            </a>{" "}
-            finns — det är ett viktigt filtreringskriterium för seriösa sökande
+            Nämna om kollektivavtal finns — det är ett viktigt filtreringskriterium för seriösa sökande
           </li>
           <li>Vara ärlig om OB-tid och arbetsschema</li>
           <li>Lyfta fram förmåner: modern utrustning, parkering, friskvård, utbildning</li>
@@ -143,7 +134,6 @@ export default function HittaCeChauffor() {
           <p><strong>Källor:</strong></p>
           <ul className="space-y-1">
             <li><a href="https://www.tya.se/trendindikator" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">TYA — Trendindikator Åkeri</a></li>
-            <li><a href="https://www.transportforetagen.se/kollektivavtal/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">Transportföretagen — Kollektivavtal</a></li>
             <li><a href="https://www.tya.se/rapporter" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">TYA — Rapporter om kompetensförsörjning</a></li>
           </ul>
         </div>

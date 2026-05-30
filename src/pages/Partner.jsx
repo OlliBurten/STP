@@ -1,56 +1,37 @@
 import { Link } from "react-router-dom";
 import PageMeta from "../components/PageMeta";
 
-const T = {
-  bg:          "#060f0f",
-  card:        "rgba(255,255,255,0.03)",
-  cardHover:   "rgba(255,255,255,0.05)",
-  border:      "rgba(255,255,255,0.07)",
-  text:        "#f0faf9",
-  sub:         "rgba(240,250,249,0.55)",
-  muted:       "rgba(240,250,249,0.3)",
-  green:       "#4ade80",
-  greenDim:    "rgba(74,222,128,0.1)",
-  greenBorder: "rgba(74,222,128,0.2)",
-  amber:       "#F5A623",
-  amberDim:    "rgba(245,166,35,0.1)",
-  amberBorder: "rgba(245,166,35,0.2)",
-  teal:        "#7dd3c8",
-  tealDim:     "rgba(125,211,200,0.1)",
-  tealBorder:  "rgba(125,211,200,0.2)",
-};
-
 const PARTNER_TYPES = [
   {
     icon: "🏛",
     label: "Arbetsförmedlingen",
-    color: T.amber,
-    colorDim: T.amberDim,
-    colorBorder: T.amberBorder,
+    color: "var(--amber-text)",
+    bg: "var(--amber-tint)",
+    border: "rgba(245,166,35,0.2)",
     body: "Vi kopplar ihop AF-deltagare med åkerier som aktivt söker förare — inklusive de som precis avslutat arbetsmarknadsutbildning. STP är ett komplement till platsbanken, anpassat för transportbranschen.",
   },
   {
     icon: "🎓",
     label: "Gymnasieskolor & YH",
-    color: T.teal,
-    colorDim: T.tealDim,
-    colorBorder: T.tealBorder,
+    color: "var(--info)",
+    bg: "var(--info-tint)",
+    border: "rgba(96,165,250,0.2)",
     body: "Vi hjälper elever på transport- och fordonsprogram att hitta APL-platser och extrajobb. Skolan kan länka direkt till STP via en anpassad URL med skolnamnet — eleverna hamnar rätt direkt.",
   },
   {
     icon: "🏢",
     label: "Kommuner & regioner",
-    color: T.green,
-    colorDim: T.greenDim,
-    colorBorder: T.greenBorder,
+    color: "var(--success)",
+    bg: "var(--success-tint)",
+    border: "rgba(74,222,128,0.2)",
     body: "Kommuner som vill stärka lokal sysselsättning och minska brist på yrkesförare kan rekommendera STP i sina arbetsmarknadsinsatser. Vi är en neutral plattform utan bemanningsavgifter.",
   },
   {
     icon: "📚",
     label: "Utbildningsanordnare",
-    color: T.amber,
-    colorDim: T.amberDim,
-    colorBorder: T.amberBorder,
+    color: "var(--amber-text)",
+    bg: "var(--amber-tint)",
+    border: "rgba(245,166,35,0.2)",
     body: "Folkhögskolor, komvux och privata utbildningsföretag med förarkurser kan samarbeta med STP så att deras elever har en tydlig väg ut i arbetslivet direkt efter examen.",
   },
 ];
@@ -83,23 +64,23 @@ const HOW_IT_WORKS = [
 const SEGMENTS = [
   {
     label: "Heltid",
-    color: T.green,
-    bg: T.greenDim,
-    border: T.greenBorder,
+    color: "var(--success)",
+    bg: "var(--success-tint)",
+    border: "rgba(74,222,128,0.2)",
     text: "Fasta tjänster för förare som vill ha en långsiktig anställning.",
   },
   {
     label: "Vikariat & Deltid",
-    color: T.amber,
-    bg: T.amberDim,
-    border: T.amberBorder,
+    color: "var(--amber-text)",
+    bg: "var(--amber-tint)",
+    border: "rgba(245,166,35,0.2)",
     text: "Flexibla uppdrag — åkerier som behöver snabb förstärkning eller extrapass.",
   },
   {
     label: "Praktik & APL",
-    color: T.teal,
-    bg: T.tealDim,
-    border: T.tealBorder,
+    color: "var(--info)",
+    bg: "var(--info-tint)",
+    border: "rgba(96,165,250,0.2)",
     text: "Elever och AMU-deltagare som söker sin första erfarenhet i branschen.",
   },
 ];
@@ -133,7 +114,7 @@ const FAQ = [
 
 export default function Partner() {
   return (
-    <main style={{ background: T.bg, minHeight: "100vh", marginTop: "-64px", paddingTop: 64 }}>
+    <main style={{ background: "var(--paper)", minHeight: "100vh" }}>
       <PageMeta
         title="Partnersida – STP Sveriges Transportplattform"
         description="STP samarbetar med Arbetsförmedlingen, gymnasieskolor, YH-utbildningar och kommuner för att koppla ihop förare med åkerier. Läs om partnerskap och hör av dig."
@@ -141,25 +122,25 @@ export default function Partner() {
 
       {/* Hero */}
       <section style={{ padding: "80px 24px 72px", maxWidth: 800, margin: "0 auto", textAlign: "center" }}>
-        <div style={{ display: "inline-block", fontSize: 12, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: T.teal, marginBottom: 20 }}>
+        <div style={{ display: "inline-block", fontSize: 12, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--green-text)", marginBottom: 20 }}>
           Partnerinformation
         </div>
-        <h1 style={{ fontSize: "clamp(28px, 5vw, 52px)", fontWeight: 900, color: T.text, lineHeight: 1.1, letterSpacing: "-1px", margin: "0 0 22px" }}>
+        <h1 style={{ fontSize: "clamp(28px, 5vw, 52px)", fontWeight: 900, color: "var(--ink-900)", lineHeight: 1.1, letterSpacing: "-1px", margin: "0 0 22px" }}>
           En jobbplattform byggd<br />för transportbranschen
         </h1>
-        <p style={{ fontSize: 19, color: T.sub, lineHeight: 1.7, maxWidth: 600, margin: "0 auto 40px" }}>
+        <p style={{ fontSize: 19, color: "var(--ink-500)", lineHeight: 1.7, maxWidth: 600, margin: "0 auto 40px" }}>
           STP — Sveriges Transportplattform — kopplar ihop yrkesförare med åkerier direkt, utan bemanningsföretag. Vi söker samarbeten med organisationer som arbetar med utbildning, rekrytering och sysselsättning inom transport.
         </p>
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
           <a
             href="mailto:partner@transportplattformen.se"
-            style={{ display: "inline-block", padding: "15px 32px", borderRadius: 12, background: T.teal, color: "#060f0f", fontWeight: 800, fontSize: 16, textDecoration: "none" }}
+            style={{ display: "inline-block", padding: "15px 32px", borderRadius: 12, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: 16, textDecoration: "none" }}
           >
             Kontakta oss →
           </a>
           <Link
             to="/partner/presentation"
-            style={{ display: "inline-block", padding: "15px 28px", borderRadius: 12, background: "transparent", border: `1px solid ${T.border}`, color: T.text, fontWeight: 600, fontSize: 15, textDecoration: "none" }}
+            style={{ display: "inline-block", padding: "15px 28px", borderRadius: 12, background: "transparent", border: "1px solid var(--line)", color: "var(--ink-700)", fontWeight: 600, fontSize: 15, textDecoration: "none" }}
           >
             Ladda ner presentation
           </Link>
@@ -170,10 +151,10 @@ export default function Partner() {
       <section style={{ maxWidth: 800, margin: "0 auto", padding: "0 24px 72px" }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 12 }}>
           {NUMBERS.map((n) => (
-            <div key={n.label} style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 14, padding: "22px 18px", textAlign: "center" }}>
-              <div style={{ fontSize: 32, fontWeight: 900, color: T.text, lineHeight: 1 }}>{n.value}</div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: T.sub, marginTop: 6 }}>{n.label}</div>
-              <div style={{ fontSize: 12, color: T.muted, marginTop: 3 }}>{n.sub}</div>
+            <div key={n.label} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "22px 18px", textAlign: "center" }}>
+              <div style={{ fontSize: 32, fontWeight: 900, color: "var(--ink-900)", lineHeight: 1 }}>{n.value}</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink-500)", marginTop: 6 }}>{n.label}</div>
+              <div style={{ fontSize: 12, color: "var(--ink-400)", marginTop: 3 }}>{n.sub}</div>
             </div>
           ))}
         </div>
@@ -181,14 +162,14 @@ export default function Partner() {
 
       {/* Vad är STP */}
       <section style={{ maxWidth: 800, margin: "0 auto", padding: "0 24px 72px" }}>
-        <h2 style={{ fontSize: 22, fontWeight: 800, color: T.text, marginBottom: 32, textAlign: "center" }}>Hur plattformen fungerar</h2>
+        <h2 style={{ fontSize: 22, fontWeight: 800, color: "var(--ink-900)", marginBottom: 32, textAlign: "center" }}>Hur plattformen fungerar</h2>
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           {HOW_IT_WORKS.map((s) => (
-            <div key={s.n} style={{ display: "flex", gap: 20, alignItems: "flex-start", background: T.card, border: `1px solid ${T.border}`, borderRadius: 14, padding: "20px 22px" }}>
-              <span style={{ fontSize: 13, fontWeight: 800, color: T.teal, background: T.tealDim, border: `1px solid ${T.tealBorder}`, borderRadius: 8, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{s.n}</span>
+            <div key={s.n} style={{ display: "flex", gap: 20, alignItems: "flex-start", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "20px 22px" }}>
+              <span style={{ fontSize: 13, fontWeight: 800, color: "var(--green-text)", background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.2)", borderRadius: 8, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{s.n}</span>
               <div>
-                <div style={{ fontWeight: 700, color: T.text, fontSize: 15, marginBottom: 4 }}>{s.title}</div>
-                <div style={{ fontSize: 14, color: T.sub, lineHeight: 1.6 }}>{s.body}</div>
+                <div style={{ fontWeight: 700, color: "var(--ink-900)", fontSize: 15, marginBottom: 4 }}>{s.title}</div>
+                <div style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.6 }}>{s.body}</div>
               </div>
             </div>
           ))}
@@ -197,12 +178,12 @@ export default function Partner() {
 
       {/* Segment */}
       <section style={{ maxWidth: 800, margin: "0 auto", padding: "0 24px 72px" }}>
-        <h2 style={{ fontSize: 22, fontWeight: 800, color: T.text, marginBottom: 24, textAlign: "center" }}>Tre segment — ett ekosystem</h2>
+        <h2 style={{ fontSize: 22, fontWeight: 800, color: "var(--ink-900)", marginBottom: 24, textAlign: "center" }}>Tre segment — ett ekosystem</h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12 }}>
           {SEGMENTS.map((s) => (
             <div key={s.label} style={{ background: s.bg, border: `1px solid ${s.border}`, borderRadius: 14, padding: "22px 20px" }}>
               <div style={{ fontWeight: 800, color: s.color, fontSize: 15, marginBottom: 8 }}>{s.label}</div>
-              <div style={{ fontSize: 13, color: T.sub, lineHeight: 1.6 }}>{s.text}</div>
+              <div style={{ fontSize: 13, color: "var(--ink-500)", lineHeight: 1.6 }}>{s.text}</div>
             </div>
           ))}
         </div>
@@ -210,16 +191,16 @@ export default function Partner() {
 
       {/* Partnertyper */}
       <section style={{ maxWidth: 800, margin: "0 auto", padding: "0 24px 72px" }}>
-        <h2 style={{ fontSize: 22, fontWeight: 800, color: T.text, marginBottom: 8, textAlign: "center" }}>Vem samarbetar vi med?</h2>
-        <p style={{ fontSize: 15, color: T.sub, textAlign: "center", marginBottom: 32 }}>Vi söker organisationer som möter yrkesförare i olika faser — utbildning, omställning och karriär.</p>
+        <h2 style={{ fontSize: 22, fontWeight: 800, color: "var(--ink-900)", marginBottom: 8, textAlign: "center" }}>Vem samarbetar vi med?</h2>
+        <p style={{ fontSize: 15, color: "var(--ink-500)", textAlign: "center", marginBottom: 32 }}>Vi söker organisationer som möter yrkesförare i olika faser — utbildning, omställning och karriär.</p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 14 }}>
           {PARTNER_TYPES.map((p) => (
-            <div key={p.label} style={{ background: p.colorDim, border: `1px solid ${p.colorBorder}`, borderRadius: 16, padding: "24px 22px" }}>
+            <div key={p.label} style={{ background: p.bg, border: `1px solid ${p.border}`, borderRadius: 16, padding: "24px 22px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
                 <span style={{ fontSize: 22 }}>{p.icon}</span>
                 <span style={{ fontWeight: 800, color: p.color, fontSize: 15 }}>{p.label}</span>
               </div>
-              <p style={{ fontSize: 14, color: T.sub, lineHeight: 1.65, margin: 0 }}>{p.body}</p>
+              <p style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.65, margin: 0 }}>{p.body}</p>
             </div>
           ))}
         </div>
@@ -227,8 +208,8 @@ export default function Partner() {
 
       {/* Varför STP */}
       <section style={{ maxWidth: 800, margin: "0 auto", padding: "0 24px 72px" }}>
-        <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 16, padding: "32px 28px" }}>
-          <h2 style={{ fontSize: 18, fontWeight: 800, color: T.text, margin: "0 0 22px" }}>Varför STP?</h2>
+        <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, padding: "32px 28px" }}>
+          <h2 style={{ fontSize: 18, fontWeight: 800, color: "var(--ink-900)", margin: "0 0 22px" }}>Varför STP?</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             {[
               { icon: "→", text: "Branschspecifik — transport och logistik, inte ett generellt jobbbolag." },
@@ -238,8 +219,8 @@ export default function Partner() {
               { icon: "→", text: "Gratis för individen — förare och elever betalar ingenting, alltid." },
             ].map((r, i) => (
               <div key={i} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-                <span style={{ color: T.teal, fontWeight: 700, flexShrink: 0, marginTop: 2 }}>{r.icon}</span>
-                <span style={{ fontSize: 14, color: T.sub, lineHeight: 1.65 }}>{r.text}</span>
+                <span style={{ color: "var(--green-text)", fontWeight: 700, flexShrink: 0, marginTop: 2 }}>{r.icon}</span>
+                <span style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.65 }}>{r.text}</span>
               </div>
             ))}
           </div>
@@ -248,12 +229,12 @@ export default function Partner() {
 
       {/* FAQ */}
       <section style={{ maxWidth: 800, margin: "0 auto", padding: "0 24px 80px" }}>
-        <h2 style={{ fontSize: 22, fontWeight: 800, color: T.text, marginBottom: 24, textAlign: "center" }}>Vanliga frågor</h2>
+        <h2 style={{ fontSize: 22, fontWeight: 800, color: "var(--ink-900)", marginBottom: 24, textAlign: "center" }}>Vanliga frågor</h2>
         <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
           {FAQ.map((f) => (
-            <div key={f.q} style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 12, padding: "16px 20px" }}>
-              <div style={{ fontWeight: 700, color: T.text, fontSize: 14, marginBottom: 6 }}>{f.q}</div>
-              <div style={{ fontSize: 13, color: T.sub, lineHeight: 1.65 }}>{f.a}</div>
+            <div key={f.q} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, padding: "16px 20px" }}>
+              <div style={{ fontWeight: 700, color: "var(--ink-900)", fontSize: 14, marginBottom: 6 }}>{f.q}</div>
+              <div style={{ fontSize: 13, color: "var(--ink-500)", lineHeight: 1.65 }}>{f.a}</div>
             </div>
           ))}
         </div>
@@ -261,20 +242,20 @@ export default function Partner() {
 
       {/* CTA */}
       <section style={{ maxWidth: 800, margin: "0 auto", padding: "0 24px 100px", textAlign: "center" }}>
-        <h2 style={{ fontSize: 26, fontWeight: 800, color: T.text, marginBottom: 12 }}>Redo att samarbeta?</h2>
-        <p style={{ fontSize: 15, color: T.sub, marginBottom: 12, lineHeight: 1.7, maxWidth: 500, margin: "0 auto 28px" }}>
+        <h2 style={{ fontSize: 26, fontWeight: 800, color: "var(--ink-900)", marginBottom: 12 }}>Redo att samarbeta?</h2>
+        <p style={{ fontSize: 15, color: "var(--ink-500)", marginBottom: 12, lineHeight: 1.7, maxWidth: 500, margin: "0 auto 28px" }}>
           Hör av dig till oss — vi svarar inom en arbetsdag och berättar hur ett samarbete kan se ut för just er organisation.
         </p>
         <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
           <a
             href="mailto:partner@transportplattformen.se"
-            style={{ display: "inline-block", padding: "15px 32px", borderRadius: 12, background: T.teal, color: "#060f0f", fontWeight: 800, fontSize: 16, textDecoration: "none" }}
+            style={{ display: "inline-block", padding: "15px 32px", borderRadius: 12, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: 16, textDecoration: "none" }}
           >
             Skicka mejl →
           </a>
           <Link
             to="/kontakt"
-            style={{ display: "inline-block", padding: "15px 32px", borderRadius: 12, background: "transparent", border: `1px solid ${T.border}`, color: T.text, fontWeight: 600, fontSize: 15, textDecoration: "none" }}
+            style={{ display: "inline-block", padding: "15px 32px", borderRadius: 12, background: "transparent", border: "1px solid var(--line)", color: "var(--ink-700)", fontWeight: 600, fontSize: 15, textDecoration: "none" }}
           >
             Kontaktformulär
           </Link>

@@ -29,19 +29,19 @@ const Icon = ({ n, s = 16, c = "currentColor" }) => <span style={{ display: "inl
 // ─── Primitives ───────────────────────────────────────────────────────────────
 function Toggle({ checked, onChange, disabled }) {
   return (
-    <div onClick={disabled ? undefined : onChange} style={{ width: 44, height: 24, borderRadius: 12, background: checked ? "#F5A623" : "rgba(255,255,255,0.1)", cursor: disabled ? "default" : "pointer", position: "relative", transition: "background .2s", border: "1px solid rgba(255,255,255,0.08)", flexShrink: 0 }}>
-      <div style={{ position: "absolute", top: 2, left: checked ? 22 : 2, width: 18, height: 18, borderRadius: 9, background: "#fff", transition: "left .2s", boxShadow: "0 1px 4px rgba(0,0,0,0.3)" }} />
+    <div onClick={disabled ? undefined : onChange} style={{ width: 44, height: 24, borderRadius: 12, background: checked ? "var(--green)" : "var(--paper-2)", cursor: disabled ? "default" : "pointer", position: "relative", transition: "background .2s", border: "1px solid var(--line)", flexShrink: 0 }}>
+      <div style={{ position: "absolute", top: 2, left: checked ? 22 : 2, width: 18, height: 18, borderRadius: 9, background: "#fff", transition: "left .2s", boxShadow: "0 1px 4px rgba(0,0,0,0.2)" }} />
     </div>
   );
 }
 
-const inputStyle = { width: "100%", padding: "11px 14px", borderRadius: 10, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "#f0faf9", fontSize: 14, outline: "none", fontFamily: "inherit", boxSizing: "border-box" };
+const inputStyle = { width: "100%", padding: "11px 14px", borderRadius: 10, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-900)", fontSize: 14, outline: "none", fontFamily: "inherit", boxSizing: "border-box" };
 
 function Field({ label, sub, children }) {
   return (
     <div style={{ marginBottom: 18 }}>
-      <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: "rgba(240,250,249,0.85)", marginBottom: sub ? 2 : 7 }}>{label}</label>
-      {sub && <div style={{ fontSize: 12, color: "rgba(240,250,249,0.45)", marginBottom: 7 }}>{sub}</div>}
+      <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--ink-700)", marginBottom: sub ? 2 : 7 }}>{label}</label>
+      {sub && <div style={{ fontSize: 12, color: "var(--ink-400)", marginBottom: 7 }}>{sub}</div>}
       {children}
     </div>
   );
@@ -49,11 +49,11 @@ function Field({ label, sub, children }) {
 
 function Card({ title, sub, children, danger }) {
   return (
-    <div style={{ background: danger ? "rgba(239,68,68,0.04)" : "rgba(255,255,255,0.03)", border: `1px solid ${danger ? "rgba(239,68,68,0.2)" : "rgba(255,255,255,0.07)"}`, borderRadius: 16, padding: "24px 28px", marginBottom: 16 }}>
+    <div style={{ background: danger ? "var(--danger-tint)" : "var(--card)", border: `1px solid ${danger ? "rgba(239,68,68,0.25)" : "var(--line)"}`, borderRadius: 16, padding: "24px 28px", marginBottom: 16, boxShadow: "var(--sh-sm)" }}>
       {title && (
         <div style={{ marginBottom: sub ? 4 : 18 }}>
-          <h3 style={{ fontSize: 16, fontWeight: 800, color: danger ? "#ef4444" : "#f0faf9", letterSpacing: -0.3, margin: 0 }}>{title}</h3>
-          {sub && <p style={{ fontSize: 13, color: "rgba(240,250,249,0.5)", marginTop: 5, lineHeight: 1.5 }}>{sub}</p>}
+          <h3 style={{ fontSize: 16, fontWeight: 800, color: danger ? "var(--danger)" : "var(--ink-900)", letterSpacing: -0.3, margin: 0 }}>{title}</h3>
+          {sub && <p style={{ fontSize: 13, color: "var(--ink-500)", marginTop: 5, lineHeight: 1.5 }}>{sub}</p>}
         </div>
       )}
       {sub && <div style={{ marginTop: 14 }} />}
@@ -64,10 +64,10 @@ function Card({ title, sub, children, danger }) {
 
 function ToggleRow({ label, sub, on, onChange, first }) {
   return (
-    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", padding: "13px 0", borderTop: first ? "none" : "1px solid rgba(255,255,255,0.04)", gap: 24 }}>
+    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", padding: "13px 0", borderTop: first ? "none" : "1px solid var(--line)", gap: 24 }}>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 14, fontWeight: 600, color: "#f0faf9" }}>{label}</div>
-        {sub && <div style={{ fontSize: 12, color: "rgba(240,250,249,0.5)", marginTop: 2 }}>{sub}</div>}
+        <div style={{ fontSize: 14, fontWeight: 600, color: "var(--ink-900)" }}>{label}</div>
+        {sub && <div style={{ fontSize: 12, color: "var(--ink-500)", marginTop: 2 }}>{sub}</div>}
       </div>
       <Toggle checked={on} onChange={onChange} />
     </div>
@@ -81,16 +81,16 @@ function DeleteAccountDialog({ isCompany, onClose, onConfirm, loading }) {
 
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
-      <div style={{ background: "#0d1f1f", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 16, padding: "32px 28px", maxWidth: 440, width: "100%" }}>
-        <h2 style={{ fontSize: 20, fontWeight: 900, color: "#ef4444", margin: "0 0 10px", letterSpacing: -0.5 }}>
+      <div style={{ background: "var(--card)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 16, padding: "32px 28px", maxWidth: 440, width: "100%", boxShadow: "var(--sh)" }}>
+        <h2 style={{ fontSize: 20, fontWeight: 900, color: "var(--danger)", margin: "0 0 10px", letterSpacing: -0.5 }}>
           {isCompany ? "Ta bort företagskonto" : "Ta bort mitt konto"}
         </h2>
-        <p style={{ fontSize: 14, color: "rgba(240,250,249,0.65)", lineHeight: 1.6, margin: "0 0 22px" }}>
-          Detta är <strong style={{ color: "#f0faf9" }}>permanent och kan inte ångras</strong>. All data — {isCompany ? "annonser, konversationer och teammedlemmar" : "ansökningar, meddelanden och din profil"} — raderas omedelbart.
+        <p style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.6, margin: "0 0 22px" }}>
+          Detta är <strong style={{ color: "var(--ink-900)" }}>permanent och kan inte ångras</strong>. All data — {isCompany ? "annonser, konversationer och teammedlemmar" : "ansökningar, meddelanden och din profil"} — raderas omedelbart.
         </p>
         <Field label='Skriv "RADERA" för att bekräfta'>
           <input
-            style={{ ...inputStyle, border: confirmed ? "1px solid rgba(239,68,68,0.5)" : "1px solid rgba(255,255,255,0.1)" }}
+            style={{ ...inputStyle, border: confirmed ? "1px solid rgba(239,68,68,0.5)" : "1px solid var(--line)" }}
             value={input}
             onChange={e => setInput(e.target.value)}
             placeholder="RADERA"
@@ -102,7 +102,7 @@ function DeleteAccountDialog({ isCompany, onClose, onConfirm, loading }) {
             type="button"
             onClick={onClose}
             disabled={loading}
-            style={{ flex: 1, padding: "11px 16px", borderRadius: 10, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(240,250,249,0.8)", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}
+            style={{ flex: 1, padding: "11px 16px", borderRadius: 10, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-700)", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}
           >
             Avbryt
           </button>
@@ -110,7 +110,7 @@ function DeleteAccountDialog({ isCompany, onClose, onConfirm, loading }) {
             type="button"
             onClick={onConfirm}
             disabled={!confirmed || loading}
-            style={{ flex: 1, padding: "11px 16px", borderRadius: 10, background: confirmed ? "rgba(239,68,68,0.2)" : "rgba(239,68,68,0.06)", border: `1px solid ${confirmed ? "rgba(239,68,68,0.5)" : "rgba(239,68,68,0.15)"}`, color: confirmed ? "#ef4444" : "rgba(239,68,68,0.4)", fontWeight: 700, fontSize: 13, cursor: confirmed && !loading ? "pointer" : "not-allowed", fontFamily: "inherit", transition: "all .15s" }}
+            style={{ flex: 1, padding: "11px 16px", borderRadius: 10, background: confirmed ? "rgba(239,68,68,0.15)" : "rgba(239,68,68,0.05)", border: `1px solid ${confirmed ? "rgba(239,68,68,0.5)" : "rgba(239,68,68,0.15)"}`, color: confirmed ? "var(--danger)" : "rgba(239,68,68,0.4)", fontWeight: 700, fontSize: 13, cursor: confirmed && !loading ? "pointer" : "not-allowed", fontFamily: "inherit", transition: "all .15s" }}
           >
             {loading ? "Raderar…" : "Radera permanent"}
           </button>
@@ -149,26 +149,26 @@ function PasswordCard() {
   return (
     <Card title="Lösenord">
       <form onSubmit={handleSubmit} style={{ maxWidth: 400 }}>
-        {error && <div style={{ padding: "10px 14px", borderRadius: 10, background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)", fontSize: 13, color: "#f87171", marginBottom: 14 }}>{error}</div>}
-        {success && <div style={{ padding: "10px 14px", borderRadius: 10, background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.2)", fontSize: 13, color: "#4ade80", marginBottom: 14 }}>{success}</div>}
+        {error && <div style={{ padding: "10px 14px", borderRadius: 10, background: "var(--danger-tint)", border: "1px solid rgba(239,68,68,0.2)", fontSize: 13, color: "var(--danger)", marginBottom: 14 }}>{error}</div>}
+        {success && <div style={{ padding: "10px 14px", borderRadius: 10, background: "var(--success-tint)", border: "1px solid rgba(31,122,58,0.2)", fontSize: 13, color: "var(--success)", marginBottom: 14 }}>{success}</div>}
         <Field label="Nuvarande lösenord">
           <div style={{ position: "relative" }}>
             <input type={showCurrent ? "text" : "password"} value={form.current} onChange={e => setForm(p => ({ ...p, current: e.target.value }))} style={{ ...inputStyle, paddingRight: 44 }} />
-            <button type="button" onClick={() => setShowCurrent(v => !v)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "rgba(240,250,249,0.4)", display: "flex" }}><Icon n={showCurrent ? "eyeoff" : "eye"} s={16} /></button>
+            <button type="button" onClick={() => setShowCurrent(v => !v)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "var(--ink-400)", display: "flex" }}><Icon n={showCurrent ? "eyeoff" : "eye"} s={16} /></button>
           </div>
         </Field>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
           <Field label="Nytt lösenord">
             <div style={{ position: "relative" }}>
               <input type={showNext ? "text" : "password"} value={form.next} onChange={e => setForm(p => ({ ...p, next: e.target.value }))} placeholder="Minst 8 tecken" style={{ ...inputStyle, paddingRight: 44 }} />
-              <button type="button" onClick={() => setShowNext(v => !v)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "rgba(240,250,249,0.4)", display: "flex" }}><Icon n={showNext ? "eyeoff" : "eye"} s={16} /></button>
+              <button type="button" onClick={() => setShowNext(v => !v)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "var(--ink-400)", display: "flex" }}><Icon n={showNext ? "eyeoff" : "eye"} s={16} /></button>
             </div>
           </Field>
           <Field label="Bekräfta nytt">
             <input type={showNext ? "text" : "password"} value={form.confirm} onChange={e => setForm(p => ({ ...p, confirm: e.target.value }))} style={inputStyle} />
           </Field>
         </div>
-        <button type="submit" disabled={loading} style={{ padding: "10px 18px", borderRadius: 10, background: "#1F5F5C", color: "#fff", fontWeight: 700, fontSize: 13, border: "none", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.6 : 1, fontFamily: "inherit", marginTop: 4 }}>
+        <button type="submit" disabled={loading} style={{ padding: "10px 18px", borderRadius: 10, background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: 13, border: "none", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.6 : 1, fontFamily: "inherit", marginTop: 4 }}>
           {loading ? "Sparar…" : "Uppdatera lösenord"}
         </button>
       </form>
@@ -210,17 +210,17 @@ function DriverKontoSection({ user, profile }) {
       <Card title="Personuppgifter" sub="Grundläggande kontoinformation. Kontakta /profil för att redigera telefon, ort och mer.">
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
           <Field label="Förnamn">
-            <input style={{ ...inputStyle, color: "rgba(240,250,249,0.6)" }} value={nameParts[0] || ""} disabled title="Ändra via Support" />
+            <input style={{ ...inputStyle, color: "var(--ink-400)" }} value={nameParts[0] || ""} disabled title="Ändra via Support" />
           </Field>
           <Field label="Efternamn">
-            <input style={{ ...inputStyle, color: "rgba(240,250,249,0.6)" }} value={nameParts.slice(1).join(" ") || ""} disabled title="Ändra via Support" />
+            <input style={{ ...inputStyle, color: "var(--ink-400)" }} value={nameParts.slice(1).join(" ") || ""} disabled title="Ändra via Support" />
           </Field>
         </div>
         <Field label="E-post" sub="Kontakta support om du behöver byta e-post.">
-          <input style={{ ...inputStyle, color: "rgba(240,250,249,0.5)" }} value={user?.email || ""} disabled />
+          <input style={{ ...inputStyle, color: "var(--ink-400)" }} value={user?.email || ""} disabled />
         </Field>
         <div style={{ marginTop: 4 }}>
-          <Link to="/profil" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 16px", borderRadius: 10, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", fontSize: 13, fontWeight: 600, color: "rgba(240,250,249,0.75)", textDecoration: "none" }}>
+          <Link to="/profil" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 16px", borderRadius: 10, background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.2)", fontSize: 13, fontWeight: 600, color: "var(--green-text)", textDecoration: "none" }}>
             Redigera profil (telefon, ort, erfarenhet m.m.) →
           </Link>
         </div>
@@ -234,7 +234,7 @@ function DriverKontoSection({ user, profile }) {
         <button
           type="button"
           onClick={() => { localStorage.removeItem("stp_driver_tour_done"); window.location.href = "/jobb"; }}
-          style={{ padding: "10px 18px", borderRadius: 10, background: "rgba(31,95,92,0.15)", border: "1px solid rgba(31,95,92,0.4)", color: "#4ade80", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}
+          style={{ padding: "10px 18px", borderRadius: 10, background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.2)", color: "var(--green-text)", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}
         >
           Starta om guiden
         </button>
@@ -244,7 +244,7 @@ function DriverKontoSection({ user, profile }) {
         <button
           type="button"
           onClick={() => setShowDeleteDialog(true)}
-          style={{ padding: "10px 18px", borderRadius: 10, background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.3)", color: "#ef4444", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}
+          style={{ padding: "10px 18px", borderRadius: 10, background: "var(--danger-tint)", border: "1px solid rgba(239,68,68,0.3)", color: "var(--danger)", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}
         >
           Ta bort mitt konto
         </button>
@@ -284,7 +284,7 @@ function DriverAnstallningsSection({ profile }) {
 
   return (
     <Card title="Vad letar du efter?" sub="Vilken typ av anställning är du intresserad av?">
-      {error && <div style={{ padding: "10px 14px", borderRadius: 10, background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)", fontSize: 13, color: "#f87171", marginBottom: 14 }}>{error}</div>}
+      {error && <div style={{ padding: "10px 14px", borderRadius: 10, background: "var(--danger-tint)", border: "1px solid rgba(239,68,68,0.2)", fontSize: 13, color: "var(--danger)", marginBottom: 14 }}>{error}</div>}
       <Field label="Anställningsform">
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {EMPLOY_OPTS.map(([v, l]) => {
@@ -294,7 +294,7 @@ function DriverAnstallningsSection({ profile }) {
                 key={v}
                 type="button"
                 onClick={() => setEmployment(toggle(employment, v))}
-                style={{ padding: "8px 16px", borderRadius: 99, background: on ? "rgba(245,166,35,0.12)" : "rgba(255,255,255,0.04)", border: `1px solid ${on ? "rgba(245,166,35,0.4)" : "rgba(255,255,255,0.08)"}`, fontSize: 13, fontWeight: 600, color: on ? "#F5A623" : "rgba(240,250,249,0.7)", cursor: "pointer", fontFamily: "inherit" }}
+                style={{ padding: "8px 16px", borderRadius: 99, background: on ? "var(--green-tint)" : "var(--paper-2)", border: `1px solid ${on ? "rgba(31,95,92,0.3)" : "var(--line)"}`, fontSize: 13, fontWeight: 600, color: on ? "var(--green-text)" : "var(--ink-500)", cursor: "pointer", fontFamily: "inherit" }}
               >
                 {on ? "✓ " : ""}{l}
               </button>
@@ -306,7 +306,7 @@ function DriverAnstallningsSection({ profile }) {
         type="button"
         onClick={handleSave}
         disabled={saving}
-        style={{ padding: "10px 18px", borderRadius: 10, background: "#1F5F5C", color: "#fff", fontWeight: 700, fontSize: 13, border: "none", cursor: saving ? "not-allowed" : "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 8 }}
+        style={{ padding: "10px 18px", borderRadius: 10, background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: 13, border: "none", cursor: saving ? "not-allowed" : "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 8 }}
       >
         {saved ? <><Icon n="check" s={14} /> Sparat!</> : saving ? "Sparar…" : "Spara preferens"}
       </button>
@@ -330,15 +330,15 @@ function DriverVerifieringSection({ profile }) {
   return (
     <>
       <Card title="Verifiering" sub="Verifierade förare får svar 2× snabbare och syns högre i sökresultat.">
-        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", background: verifiedCount > 0 ? "rgba(74,222,128,0.06)" : "rgba(245,166,35,0.06)", border: `1px solid ${verifiedCount > 0 ? "rgba(74,222,128,0.2)" : "rgba(245,166,35,0.2)"}`, borderRadius: 11 }}>
-          <div style={{ width: 36, height: 36, borderRadius: 99, background: verifiedCount > 0 ? "rgba(74,222,128,0.2)" : "rgba(245,166,35,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <Icon n={verifiedCount > 0 ? "check" : "shield"} s={17} c={verifiedCount > 0 ? "#4ade80" : "#F5A623"} />
+        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", background: verifiedCount > 0 ? "var(--success-tint)" : "var(--amber-tint)", border: `1px solid ${verifiedCount > 0 ? "rgba(31,122,58,0.2)" : "rgba(199,122,14,0.2)"}`, borderRadius: 11 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 99, background: verifiedCount > 0 ? "rgba(31,122,58,0.15)" : "rgba(199,122,14,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <Icon n={verifiedCount > 0 ? "check" : "shield"} s={17} c={verifiedCount > 0 ? "var(--success)" : "var(--amber)"} />
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 14, fontWeight: 800, color: verifiedCount > 0 ? "#4ade80" : "#F5A623" }}>
+            <div style={{ fontSize: 14, fontWeight: 800, color: verifiedCount > 0 ? "var(--success)" : "var(--amber)" }}>
               {verifiedCount > 0 ? "Du har dokument registrerade" : "Inga dokument uppladdade"}
             </div>
-            <div style={{ fontSize: 12, color: "rgba(240,250,249,0.6)" }}>
+            <div style={{ fontSize: 12, color: "var(--ink-500)" }}>
               {verifiedCount} av 3 verifieringssteg slutförda
             </div>
           </div>
@@ -348,27 +348,27 @@ function DriverVerifieringSection({ profile }) {
       <Card title="Mina dokument">
         <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 18 }}>
           {docs.map(it => (
-            <div key={it.k} style={{ padding: "14px 16px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 11, display: "flex", alignItems: "center", gap: 14 }}>
-              <div style={{ width: 38, height: 38, borderRadius: 10, background: it.verified ? "rgba(74,222,128,0.12)" : "rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <Icon n={it.verified ? "check" : "shield"} s={16} c={it.verified ? "#4ade80" : "rgba(240,250,249,0.4)"} />
+            <div key={it.k} style={{ padding: "14px 16px", background: "var(--paper-2)", border: "1px solid var(--line)", borderRadius: 11, display: "flex", alignItems: "center", gap: 14 }}>
+              <div style={{ width: 38, height: 38, borderRadius: 10, background: it.verified ? "var(--success-tint)" : "var(--paper-2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Icon n={it.verified ? "check" : "shield"} s={16} c={it.verified ? "var(--success)" : "var(--ink-400)"} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
-                  <span style={{ fontSize: 14, fontWeight: 700 }}>{it.l}</span>
-                  {it.verified && <span style={{ padding: "2px 8px", borderRadius: 99, background: "rgba(74,222,128,0.12)", border: "1px solid rgba(74,222,128,0.25)", fontSize: 10, fontWeight: 800, color: "#4ade80", letterSpacing: 0.5 }}>REGISTRERAT</span>}
+                  <span style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)" }}>{it.l}</span>
+                  {it.verified && <span style={{ padding: "2px 8px", borderRadius: 99, background: "var(--success-tint)", border: "1px solid rgba(31,122,58,0.2)", fontSize: 10, fontWeight: 800, color: "var(--success)", letterSpacing: 0.5 }}>REGISTRERAT</span>}
                 </div>
-                <div style={{ fontSize: 12, color: "rgba(240,250,249,0.5)" }}>{it.sub}</div>
+                <div style={{ fontSize: 12, color: "var(--ink-500)" }}>{it.sub}</div>
               </div>
             </div>
           ))}
         </div>
 
-        <div style={{ padding: "16px 18px", borderRadius: 12, background: "rgba(245,166,35,0.06)", border: "1px solid rgba(245,166,35,0.2)", display: "flex", alignItems: "flex-start", gap: 14 }}>
-          <Icon n="mail" s={18} c="#F5A623" />
-          <div style={{ fontSize: 13, color: "rgba(240,250,249,0.75)", lineHeight: 1.6 }}>
-            <strong style={{ color: "#F5A623" }}>Verifiering sker via support.</strong>{" "}
+        <div style={{ padding: "16px 18px", borderRadius: 12, background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.2)", display: "flex", alignItems: "flex-start", gap: 14 }}>
+          <Icon n="mail" s={18} c="var(--amber)" />
+          <div style={{ fontSize: 13, color: "var(--ink-700)", lineHeight: 1.6 }}>
+            <strong style={{ color: "var(--amber)" }}>Verifiering sker via support.</strong>{" "}
             Skicka dina dokument till{" "}
-            <a href="mailto:support@transportplattformen.se" style={{ color: "#F5A623", textDecoration: "underline" }}>
+            <a href="mailto:support@transportplattformen.se" style={{ color: "var(--amber)", textDecoration: "underline" }}>
               support@transportplattformen.se
             </a>{" "}
             så hjälper vi dig.
@@ -430,18 +430,95 @@ function SekretessSection({ profile: initialProfile }) {
         {VISIBILITY_OPTS.map((o) => {
           const on = visibility === o.v;
           return (
-            <button key={o.v} type="button" onClick={() => save(o.v)} style={{ textAlign: "left", padding: "16px 18px", borderRadius: 13, background: on ? "rgba(245,166,35,0.06)" : "rgba(255,255,255,0.03)", border: `1px solid ${on ? "rgba(245,166,35,0.3)" : "rgba(255,255,255,0.07)"}`, display: "flex", gap: 14, alignItems: "flex-start", cursor: "pointer", fontFamily: "inherit", color: "inherit" }}>
-              <div style={{ width: 18, height: 18, borderRadius: 99, border: `2px solid ${on ? "#F5A623" : "rgba(255,255,255,0.3)"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
-                {on && <div style={{ width: 8, height: 8, borderRadius: 99, background: "#F5A623" }} />}
+            <button key={o.v} type="button" onClick={() => save(o.v)} style={{ textAlign: "left", padding: "16px 18px", borderRadius: 13, background: on ? "var(--green-tint)" : "var(--paper-2)", border: `1px solid ${on ? "rgba(31,95,92,0.3)" : "var(--line)"}`, display: "flex", gap: 14, alignItems: "flex-start", cursor: "pointer", fontFamily: "inherit", color: "inherit" }}>
+              <div style={{ width: 18, height: 18, borderRadius: 99, border: `2px solid ${on ? "var(--green)" : "var(--line-2)"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
+                {on && <div style={{ width: 8, height: 8, borderRadius: 99, background: "var(--green)" }} />}
               </div>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: "#f0faf9", marginBottom: 3 }}>{o.l}</div>
-                <div style={{ fontSize: 12, color: "rgba(240,250,249,0.55)", lineHeight: 1.5 }}>{o.d}</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)", marginBottom: 3 }}>{o.l}</div>
+                <div style={{ fontSize: 12, color: "var(--ink-500)", lineHeight: 1.5 }}>{o.d}</div>
               </div>
             </button>
           );
         })}
       </div>
+    </Card>
+  );
+}
+
+// ─── Driver Sökpreferenser ────────────────────────────────────────────────────
+function SokprefSection({ profile: initialProfile }) {
+  const [localProfile, setLocalProfile] = useState(initialProfile || {});
+  const [saving, setSaving] = useState(false);
+
+  const toggle = (field, val) => {
+    setLocalProfile((p) => {
+      const arr = Array.isArray(p[field]) ? p[field] : [];
+      const next = arr.includes(val) ? arr.filter((x) => x !== val) : [...arr, val];
+      const updated = { ...p, [field]: next };
+      setSaving(true);
+      updateProfile({ [field]: next }).catch(() => {}).finally(() => setSaving(false));
+      return updated;
+    });
+  };
+
+  const licenses = Array.isArray(localProfile.licenses) ? localProfile.licenses : [];
+  const segments = Array.isArray(localProfile.secondarySegments) ? localProfile.secondarySegments : [];
+  const avail = localProfile.availability || "";
+
+  const EMPLOYMENTS = [
+    ["fast", "Fast anställning"],
+    ["vikariat", "Vikariat"],
+    ["tim", "Timjobb"],
+  ];
+  const SEGMENTS = ["Fjärr", "Distribution", "Tank", "Bygg", "Skog", "Container", "Internationell", "Bemanning"];
+
+  return (
+    <Card title="Vad letar du efter?" sub="Används för att beräkna din matchning mot lediga jobb. Ju mer specifik, desto bättre matchning.">
+      <Field label="Körkort jag har">
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {["B", "C", "CE", "D", "DE"].map((l) => {
+            const on = licenses.includes(l);
+            return (
+              <button key={l} type="button" onClick={() => toggle("licenses", l)}
+                style={{ padding: "8px 16px", borderRadius: 99, background: on ? "var(--success-tint)" : "var(--paper-2)", border: `1px solid ${on ? "var(--success)" : "var(--line)"}`, fontSize: 13, fontWeight: 700, color: on ? "var(--success)" : "var(--ink-500)", cursor: "pointer", fontFamily: "inherit" }}>
+                {on && "✓ "}{l}
+              </button>
+            );
+          })}
+        </div>
+      </Field>
+      <Field label="Anställningsform">
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {EMPLOYMENTS.map(([v, l]) => {
+            const on = avail === v;
+            return (
+              <button key={v} type="button" onClick={() => {
+                const next = on ? "" : v;
+                setLocalProfile((p) => ({ ...p, availability: next }));
+                updateProfile({ availability: next }).catch(() => {});
+              }}
+                style={{ padding: "8px 16px", borderRadius: 99, background: on ? "var(--amber-tint)" : "var(--paper-2)", border: `1px solid ${on ? "var(--amber)" : "var(--line)"}`, fontSize: 13, fontWeight: 600, color: on ? "var(--amber-text)" : "var(--ink-500)", cursor: "pointer", fontFamily: "inherit" }}>
+                {l}
+              </button>
+            );
+          })}
+        </div>
+      </Field>
+      <Field label="Segment du är intresserad av">
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {SEGMENTS.map((s) => {
+            const on = segments.includes(s);
+            return (
+              <button key={s} type="button" onClick={() => toggle("secondarySegments", s)}
+                style={{ padding: "7px 14px", borderRadius: 99, background: on ? "var(--green-tint)" : "var(--paper-2)", border: `1px solid ${on ? "var(--green)" : "var(--line)"}`, fontSize: 13, fontWeight: 600, color: on ? "var(--green-text)" : "var(--ink-500)", cursor: "pointer", fontFamily: "inherit" }}>
+                {s}
+              </button>
+            );
+          })}
+        </div>
+      </Field>
+      {saving && <div style={{ fontSize: 11.5, color: "var(--ink-400)", marginTop: 8 }}>Sparar…</div>}
     </Card>
   );
 }
@@ -497,8 +574,8 @@ function InviteSection() {
 
   return (
     <Card title="Bjud in kollega" sub="Skicka en inbjudan till en kollega så kan de logga in på ert STP-konto.">
-      {error && <div style={{ padding: "10px 14px", borderRadius: 10, background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)", fontSize: 13, color: "#f87171", marginBottom: 14 }}>{error}</div>}
-      {success && <div style={{ padding: "10px 14px", borderRadius: 10, background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.2)", fontSize: 13, color: "#4ade80", marginBottom: 14 }}>{success}</div>}
+      {error && <div style={{ padding: "10px 14px", borderRadius: 10, background: "var(--danger-tint)", border: "1px solid rgba(239,68,68,0.2)", fontSize: 13, color: "var(--danger)", marginBottom: 14 }}>{error}</div>}
+      {success && <div style={{ padding: "10px 14px", borderRadius: 10, background: "var(--success-tint)", border: "1px solid rgba(31,122,58,0.2)", fontSize: 13, color: "var(--success)", marginBottom: 14 }}>{success}</div>}
       <form onSubmit={handleSend} style={{ display: "flex", gap: 8, marginBottom: 18 }}>
         <input
           style={{ ...inputStyle, flex: 1 }}
@@ -511,28 +588,28 @@ function InviteSection() {
         <button
           type="submit"
           disabled={sending}
-          style={{ padding: "11px 18px", borderRadius: 10, background: "#1F5F5C", border: "none", color: "#fff", fontWeight: 700, fontSize: 13, cursor: sending ? "not-allowed" : "pointer", fontFamily: "inherit", whiteSpace: "nowrap", opacity: sending ? 0.6 : 1 }}
+          style={{ padding: "11px 18px", borderRadius: 10, background: "var(--green)", border: "none", color: "#fff", fontWeight: 700, fontSize: 13, cursor: sending ? "not-allowed" : "pointer", fontFamily: "inherit", whiteSpace: "nowrap", opacity: sending ? 0.6 : 1 }}
         >
           {sending ? "Skickar…" : "Skicka inbjudan"}
         </button>
       </form>
 
       {loading ? (
-        <p style={{ fontSize: 13, color: "rgba(240,250,249,0.4)", margin: 0 }}>Laddar inbjudningar…</p>
+        <p style={{ fontSize: 13, color: "var(--ink-400)", margin: 0 }}>Laddar inbjudningar…</p>
       ) : invites.length === 0 ? (
-        <p style={{ fontSize: 13, color: "rgba(240,250,249,0.4)", margin: 0 }}>Inga väntande inbjudningar.</p>
+        <p style={{ fontSize: 13, color: "var(--ink-400)", margin: 0 }}>Inga väntande inbjudningar.</p>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          <p style={{ fontSize: 12, fontWeight: 700, color: "rgba(240,250,249,0.4)", textTransform: "uppercase", letterSpacing: 0.8, margin: "0 0 4px" }}>Väntande inbjudningar</p>
+          <p style={{ fontSize: 12, fontWeight: 700, color: "var(--ink-400)", textTransform: "uppercase", letterSpacing: 0.8, margin: "0 0 4px" }}>Väntande inbjudningar</p>
           {invites.map(inv => (
-            <div key={inv.id} style={{ padding: "12px 14px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10, display: "flex", alignItems: "center", gap: 12 }}>
-              <Icon n="mail" s={15} c="rgba(240,250,249,0.4)" />
-              <span style={{ flex: 1, fontSize: 13, color: "rgba(240,250,249,0.8)" }}>{inv.email}</span>
-              <span style={{ fontSize: 11, color: "rgba(240,250,249,0.35)", marginRight: 8 }}>Väntar</span>
+            <div key={inv.id} style={{ padding: "12px 14px", background: "var(--paper-2)", border: "1px solid var(--line)", borderRadius: 10, display: "flex", alignItems: "center", gap: 12 }}>
+              <Icon n="mail" s={15} c="var(--ink-400)" />
+              <span style={{ flex: 1, fontSize: 13, color: "var(--ink-700)" }}>{inv.email}</span>
+              <span style={{ fontSize: 11, color: "var(--ink-400)", marginRight: 8 }}>Väntar</span>
               <button
                 type="button"
                 onClick={() => handleRevoke(inv.id)}
-                style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 10px", borderRadius: 8, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#ef4444", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}
+                style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 10px", borderRadius: 8, background: "var(--danger-tint)", border: "1px solid rgba(239,68,68,0.2)", color: "var(--danger)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}
               >
                 <Icon n="trash" s={12} /> Återkalla
               </button>
@@ -581,21 +658,21 @@ function CompanyKontoSection({ user }) {
             ["Roll", "Admin"],
             ["Status", user?.emailVerifiedAt ? "E-post verifierad" : "E-post ej verifierad"],
           ].map(([label, val]) => (
-            <div key={label} style={{ padding: "14px 16px", borderRadius: 12, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)" }}>
-              <p style={{ fontSize: 11, fontWeight: 600, color: "rgba(240,250,249,0.35)", textTransform: "uppercase", letterSpacing: "0.8px", margin: "0 0 4px" }}>{label}</p>
-              <p style={{ fontSize: 14, fontWeight: 600, color: label === "Status" ? (user?.emailVerifiedAt ? "#4ade80" : "#F5A623") : "#f0faf9", margin: 0, wordBreak: "break-all" }}>{val}</p>
+            <div key={label} style={{ padding: "14px 16px", borderRadius: 12, background: "var(--paper-2)", border: "1px solid var(--line)" }}>
+              <p style={{ fontSize: 11, fontWeight: 600, color: "var(--ink-400)", textTransform: "uppercase", letterSpacing: "0.8px", margin: "0 0 4px" }}>{label}</p>
+              <p style={{ fontSize: 14, fontWeight: 600, color: label === "Status" ? (user?.emailVerifiedAt ? "var(--success)" : "var(--amber)") : "var(--ink-900)", margin: 0, wordBreak: "break-all" }}>{val}</p>
             </div>
           ))}
         </div>
         <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 8 }}>
-          <Link to="/foretag/profil" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderRadius: 12, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)", textDecoration: "none" }}
+          <Link to="/foretag/profil" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderRadius: 12, background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.2)", textDecoration: "none" }}
             onMouseEnter={e => e.currentTarget.style.borderColor = "rgba(31,95,92,0.4)"}
-            onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)"}>
+            onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(31,95,92,0.2)"}>
             <div>
-              <p style={{ fontSize: 14, fontWeight: 600, color: "#f0faf9", margin: "0 0 2px" }}>Redigera företagsprofil</p>
-              <p style={{ fontSize: 12, color: "rgba(240,250,249,0.4)", margin: 0 }}>Beskrivning, kontaktuppgifter, bransch</p>
+              <p style={{ fontSize: 14, fontWeight: 600, color: "var(--ink-900)", margin: "0 0 2px" }}>Redigera företagsprofil</p>
+              <p style={{ fontSize: 12, color: "var(--ink-500)", margin: 0 }}>Beskrivning, kontaktuppgifter, bransch</p>
             </div>
-            <span style={{ color: "#F5A623", fontSize: 16 }}>→</span>
+            <span style={{ color: "var(--green-text)", fontSize: 16 }}>→</span>
           </Link>
         </div>
       </Card>
@@ -607,15 +684,15 @@ function CompanyKontoSection({ user }) {
           {[
             { n: user?.name || "Admin", e: user?.email || "", r: "Admin" },
           ].map(m => (
-            <div key={m.e} style={{ padding: "12px 14px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10, display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{ width: 36, height: 36, borderRadius: 99, background: "#1F5F5C", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 13 }}>
+            <div key={m.e} style={{ padding: "12px 14px", background: "var(--paper-2)", border: "1px solid var(--line)", borderRadius: 10, display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ width: 36, height: 36, borderRadius: 99, background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 13, color: "#fff" }}>
                 {(m.n || "?").split(" ").map(x => x[0]).join("").slice(0, 2).toUpperCase()}
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 700 }}>{m.n}</div>
-                <div style={{ fontSize: 12, color: "rgba(240,250,249,0.5)" }}>{m.e}</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink-900)" }}>{m.n}</div>
+                <div style={{ fontSize: 12, color: "var(--ink-500)" }}>{m.e}</div>
               </div>
-              <span style={{ padding: "3px 9px", borderRadius: 99, background: "rgba(245,166,35,0.1)", border: "1px solid rgba(245,166,35,0.25)", fontSize: 11, fontWeight: 700, color: "#F5A623" }}>{m.r}</span>
+              <span style={{ padding: "3px 9px", borderRadius: 99, background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.2)", fontSize: 11, fontWeight: 700, color: "var(--amber)" }}>{m.r}</span>
             </div>
           ))}
         </div>
@@ -627,7 +704,7 @@ function CompanyKontoSection({ user }) {
         <button
           type="button"
           onClick={() => { localStorage.removeItem("stp_company_tour_done"); window.location.href = "/foretag"; }}
-          style={{ padding: "10px 18px", borderRadius: 10, background: "rgba(31,95,92,0.15)", border: "1px solid rgba(31,95,92,0.4)", color: "#4ade80", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}
+          style={{ padding: "10px 18px", borderRadius: 10, background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.2)", color: "var(--green-text)", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}
         >
           Starta om guiden
         </button>
@@ -637,7 +714,7 @@ function CompanyKontoSection({ user }) {
         <button
           type="button"
           onClick={() => setShowDeleteDialog(true)}
-          style={{ padding: "10px 18px", borderRadius: 10, background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.3)", color: "#ef4444", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}
+          style={{ padding: "10px 18px", borderRadius: 10, background: "var(--danger-tint)", border: "1px solid rgba(239,68,68,0.3)", color: "var(--danger)", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}
         >
           Ta bort företagskonto
         </button>
@@ -686,8 +763,8 @@ function PraktikToggleCard() {
         first
       />
       {saved && (
-        <div style={{ marginTop: 10, fontSize: 12, color: "#4ade80", display: "flex", alignItems: "center", gap: 6 }}>
-          <Icon n="check" s={13} c="#4ade80" /> Sparat
+        <div style={{ marginTop: 10, fontSize: 12, color: "var(--success)", display: "flex", alignItems: "center", gap: 6 }}>
+          <Icon n="check" s={13} c="var(--success)" /> Sparat
         </div>
       )}
     </Card>
@@ -700,15 +777,15 @@ function CompanyVerifieringSection({ user }) {
 
   return (
     <Card title="Företagsverifiering" sub="Verifierade åkerier får 3× fler ansökningar i snitt.">
-      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", background: isVerified ? "rgba(74,222,128,0.06)" : "rgba(245,166,35,0.06)", border: `1px solid ${isVerified ? "rgba(74,222,128,0.2)" : "rgba(245,166,35,0.2)"}`, borderRadius: 11, marginBottom: 18 }}>
-        <div style={{ width: 36, height: 36, borderRadius: 99, background: isVerified ? "rgba(74,222,128,0.2)" : "rgba(245,166,35,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <Icon n={isVerified ? "check" : "shield"} s={17} c={isVerified ? "#4ade80" : "#F5A623"} />
+      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", background: isVerified ? "var(--success-tint)" : "var(--amber-tint)", border: `1px solid ${isVerified ? "rgba(31,122,58,0.2)" : "rgba(199,122,14,0.2)"}`, borderRadius: 11, marginBottom: 18 }}>
+        <div style={{ width: 36, height: 36, borderRadius: 99, background: isVerified ? "rgba(31,122,58,0.15)" : "rgba(199,122,14,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <Icon n={isVerified ? "check" : "shield"} s={17} c={isVerified ? "var(--success)" : "var(--amber)"} />
         </div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 14, fontWeight: 800, color: isVerified ? "#4ade80" : "#F5A623" }}>
+          <div style={{ fontSize: 14, fontWeight: 800, color: isVerified ? "var(--success)" : "var(--amber)" }}>
             {isVerified ? "Verifierat företag" : "Verifiering pågår"}
           </div>
-          <div style={{ fontSize: 12, color: "rgba(240,250,249,0.6)" }}>
+          <div style={{ fontSize: 12, color: "var(--ink-500)" }}>
             {isVerified
               ? "Ert företag är granskat och godkänt av STP."
               : "Vår granskare kontrollerar era uppgifter. Detta tar vanligtvis 1–2 arbetsdagar."}
@@ -717,9 +794,9 @@ function CompanyVerifieringSection({ user }) {
       </div>
 
       {!isVerified && (
-        <div style={{ padding: "14px 16px", borderRadius: 11, background: "rgba(245,166,35,0.04)", border: "1px solid rgba(245,166,35,0.12)", fontSize: 13, color: "rgba(240,250,249,0.65)", lineHeight: 1.6 }}>
+        <div style={{ padding: "14px 16px", borderRadius: 11, background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.2)", fontSize: 13, color: "var(--ink-700)", lineHeight: 1.6 }}>
           Har du frågor om verifieringen?{" "}
-          <a href="mailto:support@transportplattformen.se" style={{ color: "#F5A623", textDecoration: "underline" }}>
+          <a href="mailto:support@transportplattformen.se" style={{ color: "var(--amber)", textDecoration: "underline" }}>
             Kontakta support
           </a>
           .
@@ -771,10 +848,11 @@ export default function Settings() {
   if (!user) return <Navigate to="/login" state={{ from: "/installningar" }} replace />;
 
   const driverSections = [
-    { k: "konto",       l: "Konto",       i: "user"   },
-    { k: "verifiering", l: "Verifiering", i: "shield" },
-    { k: "notiser",     l: "Notiser",     i: "bell"   },
-    { k: "sekretess",   l: "Sekretess",   i: "lock"   },
+    { k: "konto",       l: "Konto",           i: "user"   },
+    { k: "verifiering", l: "Verifiering",     i: "shield" },
+    { k: "sokpref",     l: "Sökpreferenser",  i: "search" },
+    { k: "notiser",     l: "Notiser",         i: "bell"   },
+    { k: "sekretess",   l: "Sekretess",       i: "lock"   },
   ];
   const companySections = [
     { k: "konto",       l: "Konto & team",  i: "building" },
@@ -799,34 +877,35 @@ export default function Settings() {
     }
     if (section === "notiser") {
       return settingsLoading ? (
-        <Card><p style={{ fontSize: 13, color: "rgba(240,250,249,0.4)", margin: 0 }}>Laddar inställningar…</p></Card>
+        <Card><p style={{ fontSize: 13, color: "var(--ink-400)", margin: 0 }}>Laddar inställningar…</p></Card>
       ) : (
         <NotifSection isDriver={isDriver} initialSettings={notifSettings} onToggle={handleToggle} />
       );
     }
+    if (section === "sokpref" && isDriver) return <SokprefSection profile={profile} />;
     if (section === "sekretess" && isDriver) return <SekretessSection profile={profile} />;
     return null;
   };
 
   return (
-    <main style={{ background: "#060f0f", minHeight: "100vh", marginTop: "-64px", paddingTop: isMobile ? 72 : 112 }}>
+    <main style={{ background: "var(--paper)", minHeight: "100vh", paddingTop: isMobile ? 72 : 48 }}>
       <PageMeta title="Inställningar – STP" />
       <div style={{ maxWidth: 1080, margin: "0 auto", padding: isMobile ? "0 16px 80px" : "0 32px 100px" }}>
 
         {/* Page header — desktop only */}
         {!isMobile && (
           <div style={{ marginBottom: 48 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(245,166,35,0.85)", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--amber)", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>
               {isCompany ? "Företagskonto" : "Förarkonto"}
             </div>
-            <h1 style={{ fontSize: 36, fontWeight: 900, letterSpacing: -1.2, margin: 0, color: "#f0faf9" }}>Inställningar</h1>
+            <h1 style={{ fontSize: 36, fontWeight: 900, letterSpacing: -1.2, margin: 0, color: "var(--ink-900)" }}>Inställningar</h1>
           </div>
         )}
 
         {/* Mobile title bar */}
         {isMobile && (
           <div style={{ marginBottom: 20 }}>
-            <h1 style={{ fontSize: 26, fontWeight: 900, letterSpacing: -0.8, margin: 0, color: "#f0faf9" }}>Inställningar</h1>
+            <h1 style={{ fontSize: 26, fontWeight: 900, letterSpacing: -0.8, margin: 0, color: "var(--ink-900)" }}>Inställningar</h1>
           </div>
         )}
 
@@ -836,7 +915,7 @@ export default function Settings() {
             {section !== null ? (
               /* Detail view */
               <div>
-                <button type="button" onClick={() => setSection(null)} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0", background: "none", border: "none", cursor: "pointer", color: "#F5A623", fontSize: 14, fontWeight: 700, fontFamily: "inherit", marginBottom: 20 }}>
+                <button type="button" onClick={() => setSection(null)} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0", background: "none", border: "none", cursor: "pointer", color: "var(--green-text)", fontSize: 14, fontWeight: 700, fontFamily: "inherit", marginBottom: 20 }}>
                   ← Tillbaka
                 </button>
                 {renderContent()}
@@ -845,71 +924,71 @@ export default function Settings() {
               /* Index view */
               <div>
                 {/* Profile card */}
-                <div style={{ background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 14, padding: 16, display: "flex", alignItems: "center", gap: 14, marginBottom: 8 }}>
+                <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: 16, display: "flex", alignItems: "center", gap: 14, marginBottom: 8, boxShadow: "var(--sh-sm)" }}>
                   {isCompany ? (
-                    <div style={{ width: 56, height: 56, borderRadius: 14, background: "#1F5F5C", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 17, color: "#F5A623", flexShrink: 0 }}>
+                    <div style={{ width: 56, height: 56, borderRadius: 14, background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 17, color: "#fff", flexShrink: 0 }}>
                       {(user?.name || "?").split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()}
                     </div>
                   ) : (
                     <div style={{ position: "relative", flexShrink: 0 }}>
-                      <div style={{ width: 56, height: 56, borderRadius: 99, background: "linear-gradient(135deg,#F5A623,#d97706)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 18, color: "#000" }}>
+                      <div style={{ width: 56, height: 56, borderRadius: 99, background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 18, color: "#fff" }}>
                         {(user?.name || "?").split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()}
                       </div>
-                      <div style={{ position: "absolute", bottom: -2, right: -2, width: 18, height: 18, borderRadius: 99, background: "#4ade80", border: "3px solid #0a1414", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <Icon n="check" s={9} c="#000" />
+                      <div style={{ position: "absolute", bottom: -2, right: -2, width: 18, height: 18, borderRadius: 99, background: "var(--success)", border: "3px solid var(--card)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <Icon n="check" s={9} c="#fff" />
                       </div>
                     </div>
                   )}
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 2 }}>{user?.name || "—"}</div>
-                    <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.55)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user?.email || ""}</div>
+                    <div style={{ fontSize: 16, fontWeight: 800, color: "var(--ink-900)", marginBottom: 2 }}>{user?.name || "—"}</div>
+                    <div style={{ fontSize: 11.5, color: "var(--ink-500)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user?.email || ""}</div>
                     {user?.status === "VERIFIED" && (
-                      <div style={{ marginTop: 4, padding: "2px 8px", borderRadius: 99, background: "rgba(74,222,128,0.12)", border: "1px solid rgba(74,222,128,0.3)", display: "inline-block", fontSize: 10, fontWeight: 800, color: "#4ade80", letterSpacing: 0.5 }}>✓ VERIFIERAD</div>
+                      <div style={{ marginTop: 4, padding: "2px 8px", borderRadius: 99, background: "var(--success-tint)", border: "1px solid rgba(31,122,58,0.2)", display: "inline-block", fontSize: 10, fontWeight: 800, color: "var(--success)", letterSpacing: 0.5 }}>✓ VERIFIERAD</div>
                     )}
                   </div>
                 </div>
 
                 {/* Settings groups */}
-                <div style={{ background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 14, overflow: "hidden", marginBottom: 8 }}>
+                <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, overflow: "hidden", marginBottom: 8, boxShadow: "var(--sh-sm)" }}>
                   {sections.map((s, i) => (
-                    <button key={s.k} type="button" onClick={() => setSection(s.k)} style={{ width: "100%", padding: "14px 16px", background: "transparent", border: "none", borderBottom: i < sections.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 13, minHeight: 54, textAlign: "left", fontFamily: "inherit" }}>
-                      <div style={{ width: 30, height: 30, borderRadius: 8, background: "rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <Icon n={s.i} s={14} c="rgba(255,255,255,0.75)" />
+                    <button key={s.k} type="button" onClick={() => setSection(s.k)} style={{ width: "100%", padding: "14px 16px", background: "transparent", border: "none", borderBottom: i < sections.length - 1 ? "1px solid var(--line)" : "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 13, minHeight: 54, textAlign: "left", fontFamily: "inherit" }}>
+                      <div style={{ width: 30, height: 30, borderRadius: 8, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <Icon n={s.i} s={14} c="var(--green-text)" />
                       </div>
-                      <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: "#fff" }}>{s.l}</span>
-                      <span style={{ color: "rgba(255,255,255,0.3)", fontSize: 12 }}>›</span>
+                      <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: "var(--ink-900)" }}>{s.l}</span>
+                      <span style={{ color: "var(--ink-300)", fontSize: 12 }}>›</span>
                     </button>
                   ))}
                 </div>
 
-                <div style={{ background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 14, overflow: "hidden", marginBottom: 24 }}>
+                <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, overflow: "hidden", marginBottom: 24, boxShadow: "var(--sh-sm)" }}>
                   <Link to="/loggaut" style={{ display: "flex", alignItems: "center", gap: 13, padding: "14px 16px", textDecoration: "none", minHeight: 54 }}>
-                    <div style={{ width: 30, height: 30, borderRadius: 8, background: "rgba(248,113,113,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <Icon n="trash" s={14} c="#f87171" />
+                    <div style={{ width: 30, height: 30, borderRadius: 8, background: "var(--danger-tint)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <Icon n="trash" s={14} c="var(--danger)" />
                     </div>
-                    <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: "#f87171" }}>Logga ut</span>
+                    <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: "var(--danger)" }}>Logga ut</span>
                   </Link>
                 </div>
 
-                <div style={{ textAlign: "center", fontSize: 11, color: "rgba(255,255,255,0.25)", paddingBottom: 8 }}>STP v2.4.1</div>
+                <div style={{ textAlign: "center", fontSize: 11, color: "var(--ink-300)", paddingBottom: 8 }}>STP v2.4.1</div>
               </div>
             )}
           </div>
         ) : (
           /* Desktop: sidebar + content grid */
           <div style={{ display: "grid", gridTemplateColumns: "260px 1fr", gap: 32, alignItems: "flex-start" }}>
-            <aside style={{ position: "sticky", top: 88, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 8 }}>
+            <aside style={{ position: "sticky", top: 88, background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: 8, boxShadow: "var(--sh-sm)" }}>
               {sections.map((s) => {
                 const active = section === s.k;
                 return (
-                  <button key={s.k} type="button" onClick={() => setSection(s.k)} style={{ width: "100%", padding: "11px 14px", borderRadius: 9, display: "flex", alignItems: "center", gap: 11, background: active ? "rgba(245,166,35,0.1)" : "transparent", color: active ? "#F5A623" : "rgba(240,250,249,0.7)", fontSize: 14, fontWeight: active ? 700 : 600, textAlign: "left", marginBottom: 2, border: "none", cursor: "pointer", fontFamily: "inherit" }}>
+                  <button key={s.k} type="button" onClick={() => setSection(s.k)} style={{ width: "100%", padding: "11px 14px", borderRadius: 9, display: "flex", alignItems: "center", gap: 11, background: active ? "var(--green-tint)" : "transparent", color: active ? "var(--green-text)" : "var(--ink-500)", fontSize: 14, fontWeight: active ? 700 : 600, textAlign: "left", marginBottom: 2, border: "none", cursor: "pointer", fontFamily: "inherit" }}>
                     <Icon n={s.i} s={16} c="currentColor" />
                     {s.l}
                   </button>
                 );
               })}
-              <div style={{ height: 1, background: "rgba(255,255,255,0.05)", margin: "8px 0" }} />
-              <Link to={isCompany ? "/foretag" : "/profil"} style={{ display: "block", padding: "11px 14px", borderRadius: 9, fontSize: 13, fontWeight: 600, color: "rgba(240,250,249,0.55)", textDecoration: "none" }}>
+              <div style={{ height: 1, background: "var(--line)", margin: "8px 0" }} />
+              <Link to={isCompany ? "/foretag" : "/profil"} style={{ display: "block", padding: "11px 14px", borderRadius: 9, fontSize: 13, fontWeight: 600, color: "var(--ink-400)", textDecoration: "none" }}>
                 ← Tillbaka till {isCompany ? "dashboard" : "profil"}
               </Link>
             </aside>

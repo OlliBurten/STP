@@ -15,13 +15,11 @@ export default function KollektivavtalAkeri() {
 
 
       <h1 className="text-3xl font-bold text-slate-900 mb-4">{TITLE}</h1>
-      <p className="text-slate-500 text-sm mb-8">Publicerad 20 april 2025 · Källa: Transportföretagen, Svenska Transportarbetareförbundet</p>
+      <p className="text-slate-500 text-sm mb-8">Publicerad 20 april 2025 · Källa: Svenska Transportarbetareförbundet</p>
 
       <div className="space-y-6 text-slate-700 leading-relaxed">
         <p>
-          Kollektivavtal är ett avtal mellan arbetsgivarorganisationen{" "}
-          <a href="https://www.transportforetagen.se/kollektivavtal/" target="_blank" rel="noopener noreferrer" className="text-[var(--color-primary)] hover:underline">Transportföretagen</a>{" "}
-          och{" "}
+          Kollektivavtal är ett avtal mellan arbetsgivare och{" "}
           <a href="https://www.transport.se/lon-och-avtal/" target="_blank" rel="noopener noreferrer" className="text-[var(--color-primary)] hover:underline">Svenska Transportarbetareförbundet</a>.
           Det reglerar miniminivåer för lön, arbetstid, övertid och anställningsvillkor. Ungefär
           60–70% av åkerierna i Sverige är anslutna.
@@ -96,7 +94,6 @@ export default function KollektivavtalAkeri() {
         <div className="mt-10 pt-6 border-t border-slate-100 text-xs text-slate-400 space-y-1">
           <p><strong>Källor:</strong></p>
           <ul className="space-y-1">
-            <li><a href="https://www.transportforetagen.se/kollektivavtal/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">Transportföretagen — Kollektivavtal</a></li>
             <li><a href="https://www.transport.se/lon-och-avtal/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">Svenska Transportarbetareförbundet — Lön och avtal</a></li>
           </ul>
         </div>

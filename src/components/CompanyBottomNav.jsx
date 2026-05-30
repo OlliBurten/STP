@@ -27,8 +27,9 @@ export default function CompanyBottomNav({ unreadCount = 0 }) {
   return (
     <div style={{
       position: "fixed", left: 0, right: 0, bottom: 0,
-      background: "rgba(6,15,15,0.92)", backdropFilter: "blur(20px)",
-      borderTop: "1px solid rgba(255,255,255,0.06)",
+      background: "rgba(255,255,255,0.95)", backdropFilter: "blur(20px)",
+      WebkitBackdropFilter: "blur(20px)",
+      borderTop: "1px solid var(--line)",
       padding: "8px 8px 28px",
       display: "flex", justifyContent: "space-around",
       zIndex: 50,
@@ -47,20 +48,20 @@ export default function CompanyBottomNav({ unreadCount = 0 }) {
             }}
           >
             <div style={{ position: "relative" }}>
-              <span style={{ display: "inline-flex", width: 22, height: 22, color: on ? "#F5A623" : "rgba(255,255,255,0.45)" }}>
+              <span style={{ display: "inline-flex", width: 22, height: 22, color: on ? "var(--green)" : "var(--ink-400)" }}>
                 <Icon />
               </span>
               {id === "inkorg" && unreadCount > 0 && (
                 <span style={{
                   position: "absolute", top: -4, right: -7,
                   minWidth: 16, height: 16, padding: "0 4px", borderRadius: 99,
-                  background: "#F5A623", color: "#000", fontSize: 9.5, fontWeight: 800,
+                  background: "var(--amber)", color: "#000", fontSize: 9.5, fontWeight: 800,
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  border: "2px solid #060f0f",
+                  border: "2px solid var(--card)",
                 }}>{unreadCount}</span>
               )}
             </div>
-            <span style={{ fontSize: 10.5, fontWeight: on ? 800 : 600, color: on ? "#F5A623" : "rgba(255,255,255,0.5)" }}>
+            <span style={{ fontSize: 10.5, fontWeight: on ? 800 : 600, color: on ? "var(--green)" : "var(--ink-400)" }}>
               {label}
             </span>
           </button>

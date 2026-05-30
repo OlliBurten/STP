@@ -7,28 +7,10 @@ import { apiGet } from "../api/client.js";
 
 const DUPLICATE_ORG_MSG = "Organisationsnumret används redan av ett annat åkeri.";
 
-// ── Design tokens ────────────────────────────────────────────────────────────
-const T = {
-  bg:      "#050e0e",
-  bg2:     "#0a1818",
-  bg3:     "#0d2b2b",
-  primary: "#1F5F5C",
-  pLight:  "#2a7a76",
-  amber:   "#F5A623",
-  text:    "#f0faf9",
-  sub:     "rgba(240,250,249,0.55)",
-  muted:   "rgba(240,250,249,0.3)",
-  border:  "rgba(255,255,255,0.08)",
-  border2: "rgba(255,255,255,0.14)",
-  card:    "rgba(255,255,255,0.04)",
-  green:   "#4ade80",
-  red:     "#f87171",
-};
-
 const inputStyle = {
   width: "100%", padding: "14px 16px", borderRadius: 12,
-  background: T.bg2, border: `1.5px solid ${T.border2}`,
-  color: T.text, fontSize: 15, fontFamily: "inherit",
+  background: "var(--paper-2)", border: "1.5px solid var(--line-2)",
+  color: "var(--ink-900)", fontSize: 15, fontFamily: "inherit",
   outline: "none", transition: "border-color .2s", boxSizing: "border-box",
 };
 
@@ -129,38 +111,37 @@ export default function AddCompany() {
 
   return (
     <div style={{
-      minHeight: "100vh", background: T.bg, color: T.text,
-      fontFamily: "inherit", marginTop: "-64px", paddingTop: "64px",
-      paddingBottom: "80px",
+      minHeight: "100vh", background: "var(--paper)", color: "var(--ink-900)",
+      fontFamily: "inherit", paddingBottom: "80px",
     }}>
       {/* Progress-bar */}
-      <div style={{ height: 3, background: "rgba(255,255,255,0.06)" }}>
-        <div style={{ height: 3, background: T.primary, width: "50%" }} />
+      <div style={{ height: 3, background: "var(--line)" }}>
+        <div style={{ height: 3, background: "var(--green)", width: "50%" }} />
       </div>
 
       <div style={{ maxWidth: 560, margin: "0 auto", padding: "48px 24px 0" }}>
         {/* Tillbaka */}
         <Link to="/foretag" style={{
           display: "inline-flex", alignItems: "center", gap: 6,
-          fontSize: 13, color: T.muted, textDecoration: "none", marginBottom: 36,
+          fontSize: 13, color: "var(--ink-400)", textDecoration: "none", marginBottom: 36,
         }}>
           ← Tillbaka
         </Link>
 
-        <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.amber, marginBottom: 12 }}>
+        <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--amber-text)", marginBottom: 12 }}>
           Lägg till åkeri
         </p>
         <h1 style={{ fontSize: 34, fontWeight: 900, lineHeight: 1.1, marginBottom: 12 }}>
           Ange ert<br />
-          <span style={{ color: "#7dd3c8" }}>organisationsnummer.</span>
+          <span style={{ color: "var(--green-text)" }}>organisationsnummer.</span>
         </h1>
-        <p style={{ fontSize: 15, color: T.sub, lineHeight: 1.7, marginBottom: 36 }}>
+        <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.7, marginBottom: 36 }}>
           Vi hämtar företagsuppgifter automatiskt från Bolagsverket — ni behöver bara ert organisationsnummer.
         </p>
 
         {/* Orgnummer */}
         <div style={{ marginBottom: 24 }}>
-          <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 8 }}>
+          <p style={{ fontSize: 12, fontWeight: 600, color: "var(--ink-500)", marginBottom: 8 }}>
             Organisationsnummer *
           </p>
           <div style={{ position: "relative" }}>
@@ -171,20 +152,20 @@ export default function AddCompany() {
               style={{
                 ...inputStyle,
                 borderColor: orgLookup.valid === false
-                  ? "rgba(248,113,113,0.6)"
+                  ? "var(--danger)"
                   : orgLookup.valid === true
-                    ? "rgba(74,222,128,0.5)"
-                    : T.border2,
+                    ? "var(--success)"
+                    : undefined,
                 paddingRight: 120,
               }}
             />
             {orgLookup.loading && (
-              <span style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", fontSize: 12, color: T.muted }}>
+              <span style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", fontSize: 12, color: "var(--ink-400)" }}>
                 Kontrollerar…
               </span>
             )}
             {orgLookup.valid === true && !orgLookup.loading && (
-              <span style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", fontSize: 12, fontWeight: 600, color: T.green }}>
+              <span style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", fontSize: 12, fontWeight: 600, color: "var(--green-text)" }}>
                 ✓ Giltigt
               </span>
             )}
@@ -192,20 +173,20 @@ export default function AddCompany() {
 
           {/* Bolagsverket-feedback */}
           {orgLookup.error && (
-            <p style={{ marginTop: 8, fontSize: 12, color: T.red }}>{orgLookup.error}</p>
+            <p style={{ marginTop: 8, fontSize: 12, color: "var(--danger)" }}>{orgLookup.error}</p>
           )}
           {orgLookup.valid === true && !orgLookup.loading && orgLookup.isTransport !== false && (
             <div style={{
               marginTop: 12, padding: "12px 16px", borderRadius: 12,
-              background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.2)",
+              background: "var(--success-tint)", border: "1px solid var(--success)",
               display: "flex", alignItems: "center", gap: 10,
             }}>
-              <span style={{ color: T.green, fontSize: 16 }}>✓</span>
+              <span style={{ color: "var(--green-text)", fontSize: 16 }}>✓</span>
               <div>
-                <p style={{ fontSize: 13, fontWeight: 700, color: T.green }}>
+                <p style={{ fontSize: 13, fontWeight: 700, color: "var(--green-text)" }}>
                   {form.name || "Företag hittades"}
                 </p>
-                <p style={{ fontSize: 12, color: T.sub, marginTop: 2 }}>
+                <p style={{ fontSize: 12, color: "var(--ink-500)", marginTop: 2 }}>
                   Registrerat transportföretag — verifieras automatiskt.
                   {form.location ? ` 📍 ${form.location}${form.region ? `, ${form.region}` : ""}` : ""}
                   {form.foundedYear ? ` · Grundat ${form.foundedYear}` : ""}
@@ -216,9 +197,9 @@ export default function AddCompany() {
           {orgLookup.valid === true && !orgLookup.loading && orgLookup.isTransport === false && (
             <div style={{
               marginTop: 12, padding: "12px 16px", borderRadius: 12,
-              background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)",
+              background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)",
             }}>
-              <p style={{ fontSize: 12, color: T.red, fontWeight: 600 }}>
+              <p style={{ fontSize: 12, color: "var(--danger)", fontWeight: 600 }}>
                 Ert företag är inte registrerat som transportverksamhet hos Bolagsverket.
                 STP är till för åkerier och transportföretag.
               </p>
@@ -229,7 +210,7 @@ export default function AddCompany() {
         {/* Företagsnamn — visas när orgnr är validerat */}
         {orgLookup.valid === true && !orgLookup.loading && orgLookup.isTransport !== false && (
           <div style={{ marginBottom: 24 }}>
-            <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 8 }}>
+            <p style={{ fontSize: 12, fontWeight: 600, color: "var(--ink-500)", marginBottom: 8 }}>
               Företagsnamn *
             </p>
             <input
@@ -238,11 +219,11 @@ export default function AddCompany() {
               placeholder="Ert åkeri AB"
               style={{
                 ...inputStyle,
-                borderColor: form.name.trim().length > 0 ? "rgba(74,222,128,0.5)" : T.border2,
+                borderColor: form.name.trim().length > 0 ? "var(--success)" : undefined,
               }}
             />
             {!form.name.trim() && (
-              <p style={{ marginTop: 6, fontSize: 12, color: T.muted }}>
+              <p style={{ marginTop: 6, fontSize: 12, color: "var(--ink-400)" }}>
                 Bolagsverket returnerade inget namn — ange det manuellt.
               </p>
             )}
@@ -253,22 +234,22 @@ export default function AddCompany() {
         {duplicate && (
           <div style={{
             marginBottom: 20, padding: "16px 18px", borderRadius: 12,
-            background: "rgba(245,166,35,0.08)", border: "1px solid rgba(245,166,35,0.25)",
+            background: "var(--amber-tint)", border: "1px solid var(--amber)",
           }}>
-            <p style={{ fontSize: 13, fontWeight: 700, color: T.amber, marginBottom: 6 }}>
+            <p style={{ fontSize: 13, fontWeight: 700, color: "var(--amber-text)", marginBottom: 6 }}>
               Det här åkeriet finns redan på STP.
             </p>
-            <p style={{ fontSize: 13, color: T.sub, lineHeight: 1.6 }}>
+            <p style={{ fontSize: 13, color: "var(--ink-500)", lineHeight: 1.6 }}>
               Varje åkeri kan bara läggas till av en person. Det finns två alternativ:
             </p>
             <ul style={{ marginTop: 8, paddingLeft: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 6 }}>
-              <li style={{ fontSize: 13, color: T.sub }}>
-                → <strong style={{ color: T.text }}>Redan ett konto?</strong>{" "}
-                <Link to="/login" style={{ color: T.amber, textDecoration: "underline" }}>Logga in</Link>{" "}
+              <li style={{ fontSize: 13, color: "var(--ink-500)" }}>
+                → <strong style={{ color: "var(--ink-900)" }}>Redan ett konto?</strong>{" "}
+                <Link to="/login" style={{ color: "var(--amber-text)", textDecoration: "underline" }}>Logga in</Link>{" "}
                 med det kontot som skapade åkeriet.
               </li>
-              <li style={{ fontSize: 13, color: T.sub }}>
-                → <strong style={{ color: T.text }}>Anställd på åkeriet?</strong>{" "}
+              <li style={{ fontSize: 13, color: "var(--ink-500)" }}>
+                → <strong style={{ color: "var(--ink-900)" }}>Anställd på åkeriet?</strong>{" "}
                 Be den som äger kontot bjuda in dig via <em>Headern → Team</em>.
               </li>
             </ul>
@@ -277,7 +258,7 @@ export default function AddCompany() {
 
         {/* Övriga fel */}
         {error && (
-          <p style={{ marginBottom: 20, fontSize: 13, color: T.red }}>{error}</p>
+          <p style={{ marginBottom: 20, fontSize: 13, color: "var(--danger)" }}>{error}</p>
         )}
 
         {/* Spara */}
@@ -288,7 +269,7 @@ export default function AddCompany() {
           style={{
             display: "inline-flex", alignItems: "center", justifyContent: "center",
             padding: "14px 32px", borderRadius: 12, border: "none",
-            background: T.primary, color: "#fff", fontWeight: 700, fontSize: 15,
+            background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: 15,
             fontFamily: "inherit", cursor: saving || !canSave ? "default" : "pointer",
             opacity: saving || !canSave ? 0.4 : 1, transition: "opacity .15s",
             minWidth: 200,
@@ -296,7 +277,7 @@ export default function AddCompany() {
         >
           {saving ? "Lägger till…" : "Lägg till åkeri →"}
         </button>
-        <p style={{ fontSize: 12, color: T.muted, marginTop: 12 }}>
+        <p style={{ fontSize: 12, color: "var(--ink-400)", marginTop: 12 }}>
           Gratis för åkerier · Ingen bindningstid
         </p>
       </div>

@@ -85,8 +85,11 @@ const _legacyOptions = [
   { value: "Truck_D", label: "Truck D" },
 ];
 
-/** Platt lista för kryssrutor/dropdown */
+/** Platt lista för kryssrutor/dropdown — inkl. legacy för getCertificateLabel-lookup */
 export const certificateTypes = [...certGroups.flatMap((g) => g.options), ..._legacyOptions];
+
+/** Platt lista för UI-visning — utan legacy-dubbletter */
+export const certificateTypesForUI = certGroups.flatMap((g) => g.options);
 
 /** Grupperade för UI (t.ex. profil med rubriker) */
 export const certificateGroups = certGroups;

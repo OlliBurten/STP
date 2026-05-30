@@ -59,20 +59,20 @@ export default function CookieBanner() {
       aria-label="Cookie-inställningar"
       style={{
         position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 10000,
-        background: "#0d2b2b",
-        borderTop: "1px solid rgba(31,95,92,0.5)",
+        background: "var(--card)",
+        borderTop: "1px solid var(--line)",
         padding: "20px 24px",
-        boxShadow: "0 -8px 32px rgba(0,0,0,0.4)",
+        boxShadow: "var(--sh-md)",
       }}
     >
       <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
         {/* Text */}
         <div style={{ flex: 1, minWidth: 260 }}>
-          <p style={{ margin: 0, fontSize: 14, color: "rgba(240,250,249,0.85)", lineHeight: 1.6 }}>
+          <p style={{ margin: 0, fontSize: 14, color: "var(--ink-700)", lineHeight: 1.6 }}>
             Vi använder cookies för felrapportering (Sentry) och inloggning (OAuth). Anonymiserad besöksstatistik via{" "}
-            <a href="https://plausible.io" target="_blank" rel="noopener noreferrer" style={{ color: "#7dd3c8", textDecoration: "underline" }}>Plausible</a>
+            <a href="https://plausible.io" target="_blank" rel="noopener noreferrer" style={{ color: "var(--green-text)", textDecoration: "underline" }}>Plausible</a>
             {" "}är cookiefri och kräver inget samtycke.{" "}
-            <Link to="/privacy" style={{ color: "#7dd3c8", textDecoration: "underline", whiteSpace: "nowrap" }}>
+            <Link to="/privacy" style={{ color: "var(--green-text)", textDecoration: "underline", whiteSpace: "nowrap" }}>
               Läs vår integritetspolicy
             </Link>
           </p>
@@ -84,8 +84,8 @@ export default function CookieBanner() {
             onClick={() => respond("declined")}
             style={{
               padding: "10px 20px", borderRadius: 10,
-              background: "transparent", border: "1px solid rgba(255,255,255,0.15)",
-              color: "rgba(240,250,249,0.6)", fontSize: 13, fontWeight: 600,
+              background: "var(--paper-2)", border: "1px solid var(--line)",
+              color: "var(--ink-500)", fontSize: 13, fontWeight: 600,
               cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap",
             }}
           >
@@ -95,7 +95,7 @@ export default function CookieBanner() {
             onClick={() => respond("accepted")}
             style={{
               padding: "10px 24px", borderRadius: 10,
-              background: "#1F5F5C", border: "none",
+              background: "var(--green)", border: "none",
               color: "#fff", fontSize: 13, fontWeight: 700,
               cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap",
             }}

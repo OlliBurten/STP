@@ -4,19 +4,19 @@ import PageMeta from "../components/PageMeta";
 import { usePageTitle } from "../hooks/usePageTitle";
 
 const T = {
-  bg:     "#060f0f",
-  card:   "rgba(255,255,255,0.03)",
-  border: "rgba(255,255,255,0.08)",
-  text:   "#f0faf9",
-  sub:    "rgba(240,250,249,0.5)",
-  muted:  "rgba(240,250,249,0.3)",
-  amber:  "#F5A623",
-  green:  "#4ade80",
-  teal:   "#7dd3c8",
+  bg:     "var(--paper)",
+  card:   "var(--card)",
+  border: "var(--line)",
+  text:   "var(--ink-900)",
+  sub:    "var(--ink-500)",
+  muted:  "var(--ink-400)",
+  amber:  "var(--amber)",
+  green:  "var(--success)",
+  teal:   "var(--green-text)",
 };
 
 /**
- * Löner baserade på Transportavtalet 2025–2027 (SÅ + Svenska Transportarbetareförbundet).
+ * Löner baserade på Transportavtalet 2025–2027 (Svenska Transportarbetareförbundet).
  * Lönebottnar gäller fr.o.m. 1 april 2025.
  *
  * Avtalets lönebottnar:
@@ -148,7 +148,7 @@ function ChipGroup({ label, value, options, multi, onChange, note }) {
             }} style={{
               padding: "8px 16px", borderRadius: 8,
               border: `1px solid ${active ? T.amber : T.border}`,
-              background: active ? "rgba(245,166,35,0.1)" : "rgba(255,255,255,0.03)",
+              background: active ? "var(--amber-tint)" : "var(--paper-2)",
               color: active ? T.amber : T.sub,
               fontSize: 13, fontWeight: active ? 700 : 500, cursor: "pointer",
             }}>
@@ -201,7 +201,7 @@ export default function LoneKalkylator() {
   };
 
   return (
-    <main style={{ minHeight: "100vh", background: T.bg, marginTop: "-64px", paddingTop: 96 }}>
+    <main style={{ minHeight: "100vh", background: T.bg, paddingTop: 96 }}>
       <PageMeta
         title="Lönekalkylatorn – vad borde en lastbilschaufför tjäna?"
         description={`Räkna ut vad du borde tjäna som lastbilschaufför i Sverige. Baserat på Transportavtalet 2025–2027. Avtalets lönebotten: ${contractMin.toLocaleString("sv-SE")} kr/mån.`}
@@ -221,9 +221,9 @@ export default function LoneKalkylator() {
             Lönekalkylatorn
           </h1>
           <p style={{ fontSize: 15, color: T.sub, lineHeight: 1.6, margin: "0 0 14px" }}>
-            Baserad på Transportavtalet 2025–2027 (Sveriges Åkeriföretag + Svenska Transportarbetareförbundet). Ange dina uppgifter och få avtalets lönebotten och en uppskattad marknadslön.
+            Baserad på Transportavtalet 2025–2027. Ange dina uppgifter och få avtalets lönebotten och en uppskattad marknadslön.
           </p>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.15)", borderRadius: 99, padding: "4px 12px" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "var(--success-tint)", border: "1px solid var(--success)", borderRadius: 99, padding: "4px 12px" }}>
             <div style={{ width: 6, height: 6, borderRadius: "50%", background: T.green }} />
             <span style={{ fontSize: 11, fontWeight: 700, color: T.green }}>Avtal gäller 1 april 2025 – 31 mars 2027</span>
           </div>
@@ -267,8 +267,8 @@ export default function LoneKalkylator() {
               onChange={(e) => setRegion(e.target.value)}
               style={{
                 width: "100%", padding: "10px 14px", borderRadius: 8,
-                border: `1px solid ${T.border}`, background: "rgba(255,255,255,0.05)",
-                color: T.text, fontSize: 14, colorScheme: "dark",
+                border: `1px solid ${T.border}`, background: T.card,
+                color: T.text, fontSize: 14,
               }}
             >
               {Object.keys(REGION_MARKET_FACTOR).map((r) => <option key={r} value={r}>{r}</option>)}
@@ -320,7 +320,7 @@ export default function LoneKalkylator() {
               </p>
             </div>
 
-            <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 18, marginBottom: 18 }}>
+            <div style={{ borderTop: "1px solid var(--line)", paddingTop: 18, marginBottom: 18 }}>
               <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.amber, marginBottom: 4 }}>
                 Uppskattad marknadslön
               </p>
@@ -334,7 +334,7 @@ export default function LoneKalkylator() {
 
             {/* OB-tillägg om aktivt */}
             {obAmount != null && obAmount > 0 && (
-              <div style={{ background: "rgba(245,166,35,0.08)", border: "1px solid rgba(245,166,35,0.2)", borderRadius: 10, padding: "14px 16px", marginBottom: 18 }}>
+              <div style={{ background: "var(--amber-tint)", border: "1px solid rgba(245,166,35,0.2)", borderRadius: 10, padding: "14px 16px", marginBottom: 18 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
                   <div>
                     <p style={{ fontSize: 12, fontWeight: 700, color: T.amber, marginBottom: 2 }}>+ OB-tillägg</p>
@@ -377,11 +377,11 @@ export default function LoneKalkylator() {
           </div>
 
           {/* Källhänvisning och transparens */}
-          <div style={{ background: "rgba(125,211,200,0.05)", border: "1px solid rgba(125,211,200,0.12)", borderRadius: 12, padding: "16px 18px" }}>
+          <div style={{ background: "var(--green-tint)", border: "1px solid var(--line)", borderRadius: 12, padding: "16px 18px" }}>
             <p style={{ fontSize: 12, fontWeight: 700, color: T.teal, marginBottom: 8 }}>Om lönedatan</p>
             <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 6 }}>
               {[
-                "Lönebottnar hämtade från Transportavtalet 2025–2027 (Sveriges Åkeriföretag + Svenska Transportarbetareförbundet). Gäller ca 55 300 anställda.",
+                "Lönebottnar hämtade från Transportavtalet 2025–2027. Gäller ca 55 300 anställda.",
                 "OB-procentsatserna (25 %, 50 %, 100 %) är avtalsenliga och gäller för alla som omfattas av avtalet.",
                 "Marknadslön och regionfaktor baseras på marknadsdata — inte avtalstexten. Avtalets lönebottnar är nationellt enhetliga.",
                 "Faktisk lön sätts av arbetsgivaren och kan vara högre än avtalets minimum. Avtalet sätter golvet, inte taket.",
@@ -417,7 +417,7 @@ export default function LoneKalkylator() {
             </div>
             <Link to="/ykb-timer" style={{
               padding: "9px 16px", borderRadius: 9, border: `1px solid ${T.border}`,
-              background: "rgba(255,255,255,0.04)", color: T.sub, fontSize: 13, fontWeight: 600, textDecoration: "none", whiteSpace: "nowrap",
+              background: "var(--paper-2)", color: T.sub, fontSize: 13, fontWeight: 600, textDecoration: "none", whiteSpace: "nowrap",
             }}>YKB-timer →</Link>
           </div>
 

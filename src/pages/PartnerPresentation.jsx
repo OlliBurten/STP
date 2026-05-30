@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import PageMeta from "../components/PageMeta";
 
-const ACCENT  = "#4ade80";
-const AMBER   = "#F5A623";
+const ACCENT  = "var(--success)";
+const AMBER   = "var(--amber)";
 const TEAL    = "#7dd3c8";
 const BG      = "#060f0f";
 const TEXT    = "#f0faf9";

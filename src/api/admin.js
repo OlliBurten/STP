@@ -1,4 +1,4 @@
-import { apiGet, apiPatch, apiPost } from "./client.js";
+import { apiGet, apiPatch, apiPost, apiDelete } from "./client.js";
 
 function toQuery(params = {}) {
   const entries = Object.entries(params).filter(([, v]) => v != null && String(v).trim() !== "");

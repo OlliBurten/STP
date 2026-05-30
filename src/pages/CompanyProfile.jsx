@@ -5,6 +5,7 @@ import { listCompanyInvites, createCompanyInvite, revokeCompanyInvite } from "..
 import { changePassword } from "../api/auth.js";
 import { useAuth } from "../context/AuthContext";
 import { useIsMobile } from "../hooks/useIsMobile";
+import { usePageTitle } from "../hooks/usePageTitle";
 import { segmentOptions } from "../data/segments";
 import { branschValues } from "../data/bransch.js";
 import BranschSearch from "../components/BranschSearch.jsx";
@@ -16,12 +17,12 @@ import { EyeIcon, EyeOffIcon } from "../components/Icons";
 // ─── Shared styles ────────────────────────────────────────────────────────────
 const inp = {
   width: "100%", padding: "12px 14px", borderRadius: 11,
-  background: "#0a1414", border: "1px solid rgba(255,255,255,0.08)",
-  color: "#fff", fontSize: 14, outline: "none", fontFamily: "inherit",
+  background: "var(--paper-2)", border: "1px solid var(--line)",
+  color: "var(--ink-900)", fontSize: 14, outline: "none", fontFamily: "inherit",
   boxSizing: "border-box",
 };
-const lbl = { fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.7)", marginBottom: 7, display: "block" };
-const hint = { fontSize: 11.5, color: "rgba(255,255,255,0.45)", marginTop: 6, lineHeight: 1.55 };
+const lbl = { fontSize: 12, fontWeight: 700, color: "var(--ink-700)", marginBottom: 7, display: "block" };
+const hint = { fontSize: 11.5, color: "var(--ink-400)", marginTop: 6, lineHeight: 1.55 };
 
 function Field({ label, hintText, children }) {
   return (
@@ -36,7 +37,7 @@ function Field({ label, hintText, children }) {
 function Toggle({ checked, onChange, disabled }) {
   return (
     <div onClick={disabled ? undefined : onChange}
-      style={{ width: 44, height: 24, borderRadius: 12, background: checked ? "#F5A623" : "rgba(255,255,255,0.1)", cursor: disabled ? "default" : "pointer", position: "relative", transition: "background .2s", flexShrink: 0 }}>
+      style={{ width: 44, height: 24, borderRadius: 12, background: checked ? "var(--green)" : "var(--paper-2)", cursor: disabled ? "default" : "pointer", position: "relative", transition: "background .2s", border: "1px solid var(--line)", flexShrink: 0 }}>
       <div style={{ position: "absolute", top: 3, left: checked ? 23 : 3, width: 18, height: 18, borderRadius: 9, background: "#fff", transition: "left .2s", boxShadow: "0 1px 4px rgba(0,0,0,0.3)" }} />
     </div>
   );
@@ -94,8 +95,8 @@ function GrundInfo({ draft, setDraft, isMobile }) {
 
   return (
     <div>
-      <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 6, letterSpacing: -0.3 }}>Grundinfo</h2>
-      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", marginBottom: 24 }}>Den här informationen visas högst upp på er publika profil.</p>
+      <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 6, letterSpacing: -0.3, color: "var(--ink-900)" }}>Grundinfo</h2>
+      <p style={{ fontSize: 13, color: "var(--ink-500)", marginBottom: 24 }}>Den här informationen visas högst upp på er publika profil.</p>
 
       <Field label="Företagsnamn">
         <input style={inp} value={draft?.companyName || ""} onChange={(e) => setDraft((p) => ({ ...p, companyName: e.target.value }))} />
@@ -123,7 +124,7 @@ function GrundInfo({ draft, setDraft, isMobile }) {
             const on = (draft?.companySegmentDefaults || []).includes(seg.value);
             return (
               <button key={seg.value} type="button" onClick={() => toggleSeg(seg.value)}
-                style={{ padding: "8px 14px", borderRadius: 99, background: on ? "rgba(245,166,35,0.1)" : "#0a1414", border: `1px solid ${on ? "rgba(245,166,35,0.35)" : "rgba(255,255,255,0.08)"}`, color: on ? "#F5A623" : "rgba(255,255,255,0.7)", fontSize: 12.5, fontWeight: 600, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 5 }}>
+                style={{ padding: "8px 14px", borderRadius: 99, background: on ? "var(--green-tint)" : "var(--paper-2)", border: `1px solid ${on ? "rgba(31,95,92,0.3)" : "var(--line)"}`, color: on ? "var(--green-text)" : "var(--ink-500)", fontSize: 12.5, fontWeight: 600, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 5 }}>
                 {on && <CheckIcon />}{seg.label}
               </button>
             );
@@ -165,8 +166,8 @@ function OmOss({ draft, setDraft }) {
 
   return (
     <div>
-      <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 6, letterSpacing: -0.3 }}>Om oss</h2>
-      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", marginBottom: 24 }}>Berätta vad som gör er till en bra arbetsgivare. Detta är ofta det första förare läser.</p>
+      <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 6, letterSpacing: -0.3, color: "var(--ink-900)" }}>Om oss</h2>
+      <p style={{ fontSize: 13, color: "var(--ink-500)", marginBottom: 24 }}>Berätta vad som gör er till en bra arbetsgivare. Detta är ofta det första förare läser.</p>
 
       <Field label="Företagsnamn (kontaktperson)">
         <input style={inp} value={draft?.name || ""} onChange={(e) => setDraft((p) => ({ ...p, name: e.target.value }))} placeholder="Ditt namn" />
@@ -181,14 +182,14 @@ function OmOss({ draft, setDraft }) {
           placeholder="Berätta er historia, värderingar, varför förare trivs hos er..."
         />
         {bvHint && !about.trim() && (
-          <div style={{ marginTop: 10, padding: "10px 14px", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 10, fontSize: 12, color: "rgba(255,255,255,0.4)", lineHeight: 1.5 }}>
-            <span style={{ fontWeight: 700, color: "rgba(255,255,255,0.3)" }}>Från Bolagsverket: </span>{bvHint}
+          <div style={{ marginTop: 10, padding: "10px 14px", background: "var(--paper-2)", border: "1px solid var(--line)", borderRadius: 10, fontSize: 12, color: "var(--ink-400)", lineHeight: 1.5 }}>
+            <span style={{ fontWeight: 700, color: "var(--ink-400)" }}>Från Bolagsverket: </span>{bvHint}
           </div>
         )}
       </Field>
 
-      <div style={{ marginTop: 8, padding: "12px 16px", background: "rgba(245,166,35,0.05)", border: "1px solid rgba(245,166,35,0.18)", borderRadius: 11, fontSize: 12, color: "rgba(255,255,255,0.7)", lineHeight: 1.55 }}>
-        <strong style={{ color: "#F5A623" }}>Tips:</strong> Nämn om ni har kollektivavtal, hur bilflottan ser ut, och om förare är hemma kvällarna.
+      <div style={{ marginTop: 8, padding: "12px 16px", background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.2)", borderRadius: 11, fontSize: 12, color: "var(--ink-700)", lineHeight: 1.55 }}>
+        <strong style={{ color: "var(--amber-text)" }}>Tips:</strong> Nämn om ni har kollektivavtal, hur bilflottan ser ut, och om förare är hemma kvällarna.
       </div>
     </div>
   );
@@ -203,27 +204,27 @@ function Formaner({ draft, setDraft }) {
 
   return (
     <div>
-      <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 6, letterSpacing: -0.3 }}>Vad ni erbjuder</h2>
-      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", marginBottom: 24 }}>Förmåner och villkor som lockar förare. Lägg till 3–6 punkter.</p>
+      <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 6, letterSpacing: -0.3, color: "var(--ink-900)" }}>Vad ni erbjuder</h2>
+      <p style={{ fontSize: 13, color: "var(--ink-500)", marginBottom: 24 }}>Förmåner och villkor som lockar förare. Lägg till 3–6 punkter.</p>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {benefits.map((b, i) => (
           <div key={i} style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            <span style={{ color: "rgba(255,255,255,0.3)", display: "inline-flex" }}><DragIcon /></span>
+            <span style={{ color: "var(--ink-300)", display: "inline-flex" }}><DragIcon /></span>
             <input value={b} onChange={(e) => update(i, e.target.value)} placeholder="t.ex. Kollektivavtal med Transport" style={{ ...inp, flex: 1 }} />
-            <button onClick={() => remove(i)} style={{ padding: 8, borderRadius: 9, background: "transparent", border: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)", cursor: "pointer", display: "flex" }}>
+            <button onClick={() => remove(i)} style={{ padding: 8, borderRadius: 9, background: "transparent", border: "1px solid var(--line)", color: "var(--ink-400)", cursor: "pointer", display: "flex" }}>
               <XIcon />
             </button>
           </div>
         ))}
       </div>
 
-      <button onClick={add} style={{ marginTop: 12, padding: "10px 16px", borderRadius: 99, background: "transparent", border: "1px dashed rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.7)", fontSize: 12.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 7 }}>
+      <button onClick={add} style={{ marginTop: 12, padding: "10px 16px", borderRadius: 99, background: "transparent", border: "1px dashed var(--line-2)", color: "var(--ink-500)", fontSize: 12.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 7 }}>
         <PlusIcon /> Lägg till förmån
       </button>
 
-      <div style={{ marginTop: 24, padding: "14px 16px", background: "rgba(245,166,35,0.05)", border: "1px solid rgba(245,166,35,0.18)", borderRadius: 11, fontSize: 12, color: "rgba(255,255,255,0.7)", lineHeight: 1.55 }}>
-        <strong style={{ color: "#F5A623" }}>Tips:</strong> "Kollektivavtal", "Hemma varje kväll" och "Nya bilar" är de tre vanligaste sakerna förare letar efter.
+      <div style={{ marginTop: 24, padding: "14px 16px", background: "var(--amber-tint-2)", border: "1px solid rgba(245,166,35,0.18)", borderRadius: 11, fontSize: 12, color: "var(--ink-500)", lineHeight: 1.55 }}>
+        <strong style={{ color: "var(--amber-text)" }}>Tips:</strong> "Kollektivavtal", "Hemma varje kväll" och "Nya bilar" är de tre vanligaste sakerna förare letar efter.
       </div>
     </div>
   );
@@ -235,8 +236,8 @@ function Verifiering({ draft, setDraft }) {
 
   return (
     <div>
-      <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 6, letterSpacing: -0.3 }}>Verifiering</h2>
-      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", marginBottom: 24 }}>Era verifierade märken visas publikt. Hantera filer och status via Verifierings-sidan.</p>
+      <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 6, letterSpacing: -0.3, color: "var(--ink-900)" }}>Verifiering</h2>
+      <p style={{ fontSize: 13, color: "var(--ink-500)", marginBottom: 24 }}>Era verifierade märken visas publikt. Hantera filer och status via Verifierings-sidan.</p>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
         {[
@@ -245,60 +246,60 @@ function Verifiering({ draft, setDraft }) {
           { label: "Branschorganisation", verified: kollektiv, sub: draft?.industryOrgName || (kollektiv ? "Bekräftat" : "Ej bekräftat") },
           { label: "Bolagsverket", verified: false, sub: "Kräver organisationsnummer" },
         ].map((item, i) => (
-          <div key={i} style={{ padding: "14px 16px", background: "#0a1414", border: `1px solid ${item.verified ? "rgba(74,222,128,0.18)" : "rgba(255,255,255,0.06)"}`, borderRadius: 11, display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 99, background: item.verified ? "rgba(74,222,128,0.15)" : "rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              {item.verified ? <span style={{ color: "#4ade80" }}><CheckIconMd /></span> : <ShieldIcon />}
+          <div key={i} style={{ padding: "14px 16px", background: "var(--card)", border: `1px solid ${item.verified ? "rgba(31,122,58,0.2)" : "var(--line)"}`, borderRadius: 11, display: "flex", alignItems: "center", gap: 12, boxShadow: "var(--sh-sm)" }}>
+            <div style={{ width: 32, height: 32, borderRadius: 99, background: item.verified ? "var(--success-tint)" : "var(--paper-2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              {item.verified ? <span style={{ color: "var(--success)" }}><CheckIconMd /></span> : <ShieldIcon />}
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 13.5, fontWeight: 700 }}>{item.label}</div>
-              <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.5)" }}>{item.sub}</div>
+              <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--ink-900)" }}>{item.label}</div>
+              <div style={{ fontSize: 11.5, color: "var(--ink-500)" }}>{item.sub}</div>
             </div>
             {item.verified && (
-              <span style={{ padding: "3px 9px", borderRadius: 6, background: "rgba(74,222,128,0.12)", color: "#4ade80", fontSize: 10, fontWeight: 800, letterSpacing: 0.4 }}>VERIFIERAD</span>
+              <span style={{ padding: "3px 9px", borderRadius: 6, background: "var(--success-tint)", color: "var(--success)", fontSize: 10, fontWeight: 800, letterSpacing: 0.4 }}>VERIFIERAD</span>
             )}
           </div>
         ))}
       </div>
 
       <div style={{ marginBottom: 24 }}>
-        <label style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "14px 0", borderBottom: "1px solid rgba(255,255,255,0.04)", cursor: "pointer" }}>
+        <label style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "14px 0", borderBottom: "1px solid var(--line)", cursor: "pointer" }}>
           <div onClick={() => setDraft((p) => ({ ...p, fSkattsedel: !p?.fSkattsedel }))}
-            style={{ width: 20, height: 20, borderRadius: 6, border: `2px solid ${fSkatt ? "#F5A623" : "rgba(255,255,255,0.2)"}`, background: fSkatt ? "#F5A623" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1, cursor: "pointer" }}>
-            {fSkatt && <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
+            style={{ width: 20, height: 20, borderRadius: 6, border: `2px solid ${fSkatt ? "var(--green)" : "var(--line-2)"}`, background: fSkatt ? "var(--green)" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1, cursor: "pointer" }}>
+            {fSkatt && <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 14, fontWeight: 600, color: "#f0faf9", marginBottom: 2 }}>Vi innehar F-skattsedel</div>
-            <div style={{ fontSize: 12, color: "rgba(240,250,249,0.45)", lineHeight: 1.5 }}>Intygar att ni betalar arbetsgivaravgifter och följer Skatteverkets regler.</div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: "var(--ink-900)", marginBottom: 2 }}>Vi innehar F-skattsedel</div>
+            <div style={{ fontSize: 12, color: "var(--ink-400)", lineHeight: 1.5 }}>Intygar att ni betalar arbetsgivaravgifter och följer Skatteverkets regler.</div>
           </div>
         </label>
-        <label style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "14px 0", borderBottom: "1px solid rgba(255,255,255,0.04)", cursor: "pointer" }}>
+        <label style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "14px 0", borderBottom: "1px solid var(--line)", cursor: "pointer" }}>
           <div onClick={() => setDraft((p) => ({ ...p, industryOrgMember: !p?.industryOrgMember }))}
-            style={{ width: 20, height: 20, borderRadius: 6, border: `2px solid ${kollektiv ? "#F5A623" : "rgba(255,255,255,0.2)"}`, background: kollektiv ? "#F5A623" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1, cursor: "pointer" }}>
-            {kollektiv && <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
+            style={{ width: 20, height: 20, borderRadius: 6, border: `2px solid ${kollektiv ? "var(--green)" : "var(--line-2)"}`, background: kollektiv ? "var(--green)" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1, cursor: "pointer" }}>
+            {kollektiv && <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 14, fontWeight: 600, color: "#f0faf9", marginBottom: 2 }}>Medlem i branschorganisation</div>
-            <div style={{ fontSize: 12, color: "rgba(240,250,249,0.45)", lineHeight: 1.5 }}>T.ex. Transportföretagen, Sveriges Åkeriföretag (SÅ), TYA eller liknande.</div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: "var(--ink-900)", marginBottom: 2 }}>Medlem i branschorganisation</div>
+            <div style={{ fontSize: 12, color: "var(--ink-400)", lineHeight: 1.5 }}>T.ex. TYA eller annan branschorganisation.</div>
           </div>
         </label>
         {kollektiv && (
           <div style={{ marginLeft: 32, marginTop: 8 }}>
-            <input style={inp} value={draft?.industryOrgName || ""} onChange={(e) => setDraft((p) => ({ ...p, industryOrgName: e.target.value }))} placeholder="t.ex. Sveriges Åkeriföretag" />
+            <input style={inp} value={draft?.industryOrgName || ""} onChange={(e) => setDraft((p) => ({ ...p, industryOrgName: e.target.value }))} placeholder="t.ex. TYA" />
           </div>
         )}
         <label style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "14px 0", cursor: "pointer" }}>
           <div onClick={() => setDraft((p) => ({ ...p, policyAgreedAt: p?.policyAgreedAt ? null : new Date().toISOString() }))}
-            style={{ width: 20, height: 20, borderRadius: 6, border: `2px solid ${draft?.policyAgreedAt ? "#F5A623" : "rgba(255,255,255,0.2)"}`, background: draft?.policyAgreedAt ? "#F5A623" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1, cursor: "pointer" }}>
-            {draft?.policyAgreedAt && <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
+            style={{ width: 20, height: 20, borderRadius: 6, border: `2px solid ${draft?.policyAgreedAt ? "var(--green)" : "var(--line-2)"}`, background: draft?.policyAgreedAt ? "var(--green)" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1, cursor: "pointer" }}>
+            {draft?.policyAgreedAt && <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 14, fontWeight: 600, color: "#f0faf9", marginBottom: 2 }}>Vi förbinder oss att följa STP:s uppförandekod</div>
-            <div style={{ fontSize: 12, color: "rgba(240,250,249,0.45)", lineHeight: 1.5 }}>Intygar att ni inte diskriminerar, villfarar eller missbrukar plattformen.</div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: "var(--ink-900)", marginBottom: 2 }}>Vi förbinder oss att följa STP:s uppförandekod</div>
+            <div style={{ fontSize: 12, color: "var(--ink-400)", lineHeight: 1.5 }}>Intygar att ni inte diskriminerar, villfarar eller missbrukar plattformen.</div>
           </div>
         </label>
       </div>
 
-      <Link to="/foretag/verifiering" style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 99, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff", fontSize: 12.5, fontWeight: 700, textDecoration: "none" }}>
+      <Link to="/foretag/verifiering" style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 99, background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.2)", color: "var(--green-text)", fontSize: 12.5, fontWeight: 700, textDecoration: "none" }}>
         Hantera verifiering →
       </Link>
     </div>
@@ -313,7 +314,7 @@ function TeamTab({ isOwner, invites, setInvites, toast }) {
 
   if (!isOwner) {
     return (
-      <div style={{ padding: "40px 0", textAlign: "center", color: "rgba(255,255,255,0.4)", fontSize: 14 }}>
+      <div style={{ padding: "40px 0", textAlign: "center", color: "var(--ink-400)", fontSize: 14 }}>
         Endast ägaren kan hantera teammedlemmar.
       </div>
     );
@@ -321,18 +322,18 @@ function TeamTab({ isOwner, invites, setInvites, toast }) {
 
   return (
     <div>
-      <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 6, letterSpacing: -0.3 }}>Team</h2>
-      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", marginBottom: 24 }}>Kollegor som har åtkomst till kontot. Visas inte publikt.</p>
+      <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 6, letterSpacing: -0.3, color: "var(--ink-900)" }}>Team</h2>
+      <p style={{ fontSize: 13, color: "var(--ink-500)", marginBottom: 24 }}>Kollegor som har åtkomst till kontot. Visas inte publikt.</p>
 
       {invites.length > 0 && (
         <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>Skickade inbjudningar</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-400)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>Skickade inbjudningar</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {invites.map((inv) => (
-              <div key={inv.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderRadius: 11, background: "#0a1414", border: "1px solid rgba(255,255,255,0.06)" }}>
+              <div key={inv.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderRadius: 11, background: "var(--paper-2)", border: "1px solid var(--line)" }}>
                 <div>
-                  <span style={{ fontSize: 13, fontWeight: 600 }}>{inv.email}</span>
-                  <span style={{ marginLeft: 10, fontSize: 11, color: inv.status === "ACCEPTED" ? "#4ade80" : "rgba(255,255,255,0.4)" }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: "var(--ink-900)" }}>{inv.email}</span>
+                  <span style={{ marginLeft: 10, fontSize: 11, color: inv.status === "ACCEPTED" ? "var(--success)" : "var(--ink-400)" }}>
                     {inv.status === "PENDING" ? "Väntar" : inv.status === "ACCEPTED" ? "Accepterad" : "Återkallad"}
                   </span>
                 </div>
@@ -342,7 +343,7 @@ function TeamTab({ isOwner, invites, setInvites, toast }) {
                       try { await revokeCompanyInvite(inv.id); setInvites(await listCompanyInvites()); }
                       catch (err) { setInviteError(err.message); }
                     }}
-                    style={{ fontSize: 12, fontWeight: 600, color: "#f87171", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
+                    style={{ fontSize: 12, fontWeight: 600, color: "var(--danger)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
                     Återkalla
                   </button>
                 )}
@@ -352,7 +353,7 @@ function TeamTab({ isOwner, invites, setInvites, toast }) {
         </div>
       )}
 
-      <div style={{ marginBottom: 6, fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: 1 }}>Bjud in kollega</div>
+      <div style={{ marginBottom: 6, fontSize: 11, fontWeight: 700, color: "var(--ink-400)", textTransform: "uppercase", letterSpacing: 1 }}>Bjud in kollega</div>
       <form onSubmit={async (e) => {
         e.preventDefault();
         if (!inviteEmail.trim()) return;
@@ -373,28 +374,28 @@ function TeamTab({ isOwner, invites, setInvites, toast }) {
         <div style={{ display: "flex", gap: 10 }}>
           <input style={{ ...inp, flex: 1 }} type="email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="kollega@foretag.se" disabled={inviteLoading} />
           <button type="submit" disabled={inviteLoading || !inviteEmail.trim()}
-            style={{ padding: "11px 22px", borderRadius: 11, background: "linear-gradient(135deg,#F5A623,#d97706)", color: "#000", fontSize: 13, fontWeight: 800, border: "none", cursor: inviteLoading || !inviteEmail.trim() ? "not-allowed" : "pointer", opacity: inviteLoading || !inviteEmail.trim() ? 0.5 : 1, whiteSpace: "nowrap", fontFamily: "inherit" }}>
+            style={{ padding: "11px 22px", borderRadius: 11, background: "var(--green)", color: "#fff", fontSize: 13, fontWeight: 800, border: "none", cursor: inviteLoading || !inviteEmail.trim() ? "not-allowed" : "pointer", opacity: inviteLoading || !inviteEmail.trim() ? 0.5 : 1, whiteSpace: "nowrap", fontFamily: "inherit" }}>
             {inviteLoading ? "Skickar..." : "Bjud in"}
           </button>
         </div>
       </form>
 
-      {inviteError && <div style={{ marginTop: 10, padding: "10px 14px", borderRadius: 10, background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)", color: "#f87171", fontSize: 13 }}>{inviteError}</div>}
+      {inviteError && <div style={{ marginTop: 10, padding: "10px 14px", borderRadius: 10, background: "rgba(220,38,38,0.06)", border: "1px solid rgba(220,38,38,0.15)", color: "var(--danger)", fontSize: 13 }}>{inviteError}</div>}
 
       {lastDevInviteLink && (
-        <div style={{ marginTop: 12, padding: "14px 16px", borderRadius: 12, background: "rgba(245,166,35,0.06)", border: "1px solid rgba(245,166,35,0.2)" }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: "#F5A623", marginBottom: 8 }}>Länk att dela manuellt</div>
-          <code style={{ display: "block", fontSize: 11, color: "rgba(255,255,255,0.7)", wordBreak: "break-all", lineHeight: 1.6 }}>{lastDevInviteLink}</code>
+        <div style={{ marginTop: 12, padding: "14px 16px", borderRadius: 12, background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.2)" }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "var(--amber-text)", marginBottom: 8 }}>Länk att dela manuellt</div>
+          <code style={{ display: "block", fontSize: 11, color: "var(--ink-700)", wordBreak: "break-all", lineHeight: 1.6 }}>{lastDevInviteLink}</code>
           <button type="button" onClick={() => navigator.clipboard.writeText(lastDevInviteLink).then(() => toast.success("Kopierad"), () => {})}
-            style={{ marginTop: 8, fontSize: 12, fontWeight: 700, color: "#F5A623", background: "none", border: "none", cursor: "pointer", padding: 0, fontFamily: "inherit" }}>
+            style={{ marginTop: 8, fontSize: 12, fontWeight: 700, color: "var(--amber-text)", background: "none", border: "none", cursor: "pointer", padding: 0, fontFamily: "inherit" }}>
             Kopiera länk
           </button>
         </div>
       )}
 
       {/* Lösenord + notiser under team */}
-      <div style={{ marginTop: 32, paddingTop: 28, borderTop: "1px solid rgba(255,255,255,0.05)" }}>
-        <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: -0.3, marginBottom: 20 }}>Kontoinställningar</div>
+      <div style={{ marginTop: 32, paddingTop: 28, borderTop: "1px solid var(--line)" }}>
+        <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: -0.3, marginBottom: 20, color: "var(--ink-900)" }}>Kontoinställningar</div>
         <PasswordSection />
       </div>
     </div>
@@ -412,7 +413,7 @@ function PasswordSection() {
 
   return (
     <div>
-      <div style={{ fontSize: 13.5, fontWeight: 700, marginBottom: 14, color: "rgba(255,255,255,0.7)" }}>Ändra lösenord</div>
+      <div style={{ fontSize: 13.5, fontWeight: 700, marginBottom: 14, color: "var(--ink-700)" }}>Ändra lösenord</div>
       <form onSubmit={async (e) => {
         e.preventDefault();
         setPwError(""); setPwSuccess("");
@@ -429,8 +430,8 @@ function PasswordSection() {
           setPwLoading(false);
         }
       }} style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 400 }}>
-        {pwError && <div style={{ padding: "10px 14px", borderRadius: 10, background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)", color: "#f87171", fontSize: 13 }}>{pwError}</div>}
-        {pwSuccess && <div style={{ padding: "10px 14px", borderRadius: 10, background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.2)", color: "#4ade80", fontSize: 13 }}>{pwSuccess}</div>}
+        {pwError && <div style={{ padding: "10px 14px", borderRadius: 10, background: "rgba(220,38,38,0.06)", border: "1px solid rgba(220,38,38,0.15)", color: "var(--danger)", fontSize: 13 }}>{pwError}</div>}
+        {pwSuccess && <div style={{ padding: "10px 14px", borderRadius: 10, background: "var(--success-tint)", border: "1px solid rgba(31,122,58,0.2)", color: "var(--success)", fontSize: 13 }}>{pwSuccess}</div>}
         {[
           { id: "cp-current", label: "Nuvarande lösenord", key: "current", show: showPwCurrent, setShow: setShowPwCurrent },
           { id: "cp-next", label: "Nytt lösenord", key: "next", show: showPwNext, setShow: setShowPwNext },
@@ -442,7 +443,7 @@ function PasswordSection() {
               <input id={id} type={show ? "text" : "password"} value={pwForm[key]} onChange={(e) => setPwForm((p) => ({ ...p, [key]: e.target.value }))} required style={{ ...inp, paddingRight: setShow ? 44 : 14 }} />
               {setShow && (
                 <button type="button" onClick={() => setShow((v) => !v)}
-                  style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.4)", display: "flex" }}>
+                  style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "var(--ink-400)", display: "flex" }}>
                   {show ? <EyeOffIcon style={{ width: 18, height: 18 }} /> : <EyeIcon style={{ width: 18, height: 18 }} />}
                 </button>
               )}
@@ -450,7 +451,7 @@ function PasswordSection() {
           </div>
         ))}
         <button type="submit" disabled={pwLoading}
-          style={{ alignSelf: "flex-start", padding: "11px 24px", borderRadius: 11, background: pwLoading ? "rgba(255,255,255,0.05)" : "linear-gradient(135deg,#F5A623,#d97706)", color: pwLoading ? "rgba(255,255,255,0.3)" : "#000", fontSize: 13.5, fontWeight: 800, border: "none", cursor: pwLoading ? "not-allowed" : "pointer", fontFamily: "inherit" }}>
+          style={{ alignSelf: "flex-start", padding: "11px 24px", borderRadius: 11, background: pwLoading ? "var(--paper-2)" : "var(--green)", color: pwLoading ? "var(--ink-300)" : "#fff", fontSize: 13.5, fontWeight: 800, border: "none", cursor: pwLoading ? "not-allowed" : "pointer", fontFamily: "inherit" }}>
           {pwLoading ? "Sparar…" : "Spara nytt lösenord"}
         </button>
       </form>
@@ -472,6 +473,8 @@ export default function CompanyProfile() {
   const { hasApi, user } = useAuth();
   const toast = useToast();
   const [tab, setTab] = useState("basic");
+  const tabTitles = { basic: "Företagsprofil", about: "Om oss", team: "Team" };
+  usePageTitle(tabTitles[tab] || "Företagsprofil");
   const [profile, setProfile] = useState(null);
   const [draft, setDraft] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -534,64 +537,64 @@ export default function CompanyProfile() {
     }
   };
 
-  const darkPage = { background: "#060f0f", minHeight: "100vh", marginTop: "-64px", paddingTop: 64, color: "#f0faf9" };
+  const lightPage = { background: "var(--paper)", minHeight: "100vh", paddingTop: 32, color: "var(--ink-900)" };
 
-  if (loading) return <main style={darkPage}><div style={{ maxWidth: 880, margin: "0 auto", padding: "60px 24px" }}><LoadingBlock message="Hämtar företagsprofil..." /></div></main>;
+  if (loading) return <main style={lightPage}><div style={{ maxWidth: 880, margin: "0 auto", padding: "60px 24px" }}><LoadingBlock message="Hämtar företagsprofil..." /></div></main>;
 
   if (!hasApi) return (
-    <main style={darkPage}>
-      <div style={{ maxWidth: 880, margin: "0 auto", padding: "60px 24px", textAlign: "center", color: "rgba(255,255,255,0.4)" }}>
+    <main style={lightPage}>
+      <div style={{ maxWidth: 880, margin: "0 auto", padding: "60px 24px", textAlign: "center", color: "var(--ink-400)" }}>
         Företagsprofil kräver API-läge.
       </div>
     </main>
   );
 
   return (
-    <main style={darkPage}>
+    <main style={lightPage}>
       {/* Floating save bar */}
       {changed && (
-        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 50, background: "rgba(6,15,15,0.96)", backdropFilter: "blur(14px)", borderTop: "1px solid rgba(245,166,35,0.3)", padding: isMobile ? "14px 20px 18px" : "14px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
-          <span style={{ fontSize: 13, color: "#F5A623", fontWeight: 600 }}>Osparade ändringar</span>
+        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 50, background: "var(--card)", backdropFilter: "blur(14px)", borderTop: "1px solid var(--amber)", padding: isMobile ? "14px 20px 18px" : "14px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, boxShadow: "var(--sh-md)" }}>
+          <span style={{ fontSize: 13, color: "var(--amber-text)", fontWeight: 600 }}>Osparade ändringar</span>
           <button type="button" onClick={save} disabled={saving}
-            style={{ padding: "10px 22px", borderRadius: 99, background: saving ? "rgba(255,255,255,0.06)" : "linear-gradient(135deg,#F5A623,#d97706)", color: saving ? "rgba(255,255,255,0.3)" : "#000", fontSize: 13.5, fontWeight: 800, border: "none", cursor: saving ? "not-allowed" : "pointer", fontFamily: "inherit" }}>
+            style={{ padding: "10px 22px", borderRadius: 99, background: saving ? "var(--paper-2)" : "var(--green)", color: saving ? "var(--ink-300)" : "#fff", fontSize: 13.5, fontWeight: 800, border: "none", cursor: saving ? "not-allowed" : "pointer", fontFamily: "inherit" }}>
             {saving ? "Sparar..." : "Spara ändringar"}
           </button>
         </div>
       )}
 
       <div style={{ maxWidth: 880, margin: "0 auto", padding: isMobile ? "24px 20px 100px" : "32px 32px 100px" }}>
-        <Link to="/foretag" style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "6px 0", color: "rgba(255,255,255,0.55)", fontSize: 13, fontWeight: 600, textDecoration: "none", marginBottom: 20 }}>
+        <Link to="/foretag" style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "6px 0", color: "var(--ink-500)", fontSize: 13, fontWeight: 600, textDecoration: "none", marginBottom: 20 }}>
           <BackIcon /> Tillbaka till översikt
         </Link>
 
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 28, gap: 16, flexWrap: "wrap" }}>
           <div>
-            <h1 style={{ fontSize: 30, fontWeight: 800, letterSpacing: -1, marginBottom: 6 }}>Företagsprofil</h1>
-            <div style={{ fontSize: 13.5, color: "rgba(255,255,255,0.55)" }}>Hur ni visas för förare på STP</div>
+            <h1 style={{ fontSize: 30, fontWeight: 800, letterSpacing: -1, marginBottom: 6, color: "var(--ink-900)" }}>Företagsprofil</h1>
+            <div style={{ fontSize: 13.5, color: "var(--ink-500)" }}>Hur ni visas för förare på STP</div>
           </div>
-          <Link to={`/foretag/${user?.companyOwnerId || user?.id}`} style={{ padding: "10px 18px", borderRadius: 99, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff", fontSize: 12.5, fontWeight: 700, textDecoration: "none", display: "flex", alignItems: "center", gap: 7 }}>
+          <Link to={`/foretag/${user?.companyOwnerId || user?.id}`} style={{ padding: "10px 18px", borderRadius: 99, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-700)", fontSize: 12.5, fontWeight: 700, textDecoration: "none", display: "flex", alignItems: "center", gap: 7 }}>
             <EyeExtIcon /> Förhandsgranska profil
           </Link>
         </div>
 
         {/* Varning */}
         {draft && (!Array.isArray(draft.companyBransch) || draft.companyBransch.length === 0 || !draft.companyRegion) && (
-          <div style={{ marginBottom: 20, padding: "14px 18px", borderRadius: 14, background: "rgba(245,166,35,0.07)", border: "1px solid rgba(245,166,35,0.25)", display: "flex", gap: 12, alignItems: "flex-start" }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5A623" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+          <div style={{ marginBottom: 20, padding: "14px 18px", borderRadius: 14, background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.25)", display: "flex", gap: 12, alignItems: "flex-start" }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
             <div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "#F5A623", marginBottom: 3 }}>Syns inte i Hitta åkerier ännu</div>
-              <div style={{ fontSize: 12, color: "rgba(245,166,35,0.75)", lineHeight: 1.5 }}>Fyll i <strong>bransch</strong> och <strong>region</strong> så att förare kan hitta er.</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "var(--amber-text)", marginBottom: 3 }}>Syns inte i Hitta åkerier ännu</div>
+              <div style={{ fontSize: 12, color: "var(--ink-700)", lineHeight: 1.5 }}>Fyll i <strong>bransch</strong> och <strong>region</strong> så att förare kan hitta er.</div>
             </div>
           </div>
         )}
 
         {/* Tabs */}
-        <div style={{ display: "flex", gap: 0, marginBottom: 28, borderBottom: "1px solid rgba(255,255,255,0.06)", overflowX: "auto" }}>
+        <div style={{ display: "flex", gap: 0, marginBottom: 28, borderBottom: "1px solid var(--line)", overflowX: "auto" }}>
           {TABS.map((t) => {
             const active = tab === t.id;
             return (
               <button key={t.id} onClick={() => setTab(t.id)}
-                style={{ padding: "12px 18px", background: "transparent", border: "none", color: active ? "#F5A623" : "rgba(255,255,255,0.6)", fontSize: 13, fontWeight: active ? 800 : 600, cursor: "pointer", borderBottom: active ? "2px solid #F5A623" : "2px solid transparent", marginBottom: -1, whiteSpace: "nowrap", fontFamily: "inherit" }}>
+                style={{ padding: "12px 18px", background: "transparent", border: "none", color: active ? "var(--green-text)" : "var(--ink-400)", fontSize: 13, fontWeight: active ? 800 : 600, cursor: "pointer", borderBottom: active ? "2px solid var(--green)" : "2px solid transparent", marginBottom: -1, whiteSpace: "nowrap", fontFamily: "inherit" }}>
                 {t.label}
               </button>
             );
@@ -604,9 +607,9 @@ export default function CompanyProfile() {
             <>
               <GrundInfo draft={draft} setDraft={setDraft} isMobile={isMobile} />
               {/* E-postnotiser */}
-              <div style={{ marginTop: 32, paddingTop: 28, borderTop: "1px solid rgba(255,255,255,0.05)" }}>
-                <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: -0.3, marginBottom: 6 }}>E-postnotiser</div>
-                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", marginBottom: 20 }}>Välj vilka påminnelser ni vill få via e-post.</div>
+              <div style={{ marginTop: 32, paddingTop: 28, borderTop: "1px solid var(--line)" }}>
+                <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: -0.3, marginBottom: 6, color: "var(--ink-900)" }}>E-postnotiser</div>
+                <div style={{ fontSize: 13, color: "var(--ink-500)", marginBottom: 20 }}>Välj vilka påminnelser ni vill få via e-post.</div>
                 {[
                   { key: "profileReminder", label: "Profilpåminnelser", desc: "Påminnelse när er företagsprofil inte är komplett." },
                   { key: "jobMatch", label: "Förarrekommendationer", desc: "När nya förare matchar era krav publiceras." },
@@ -615,10 +618,10 @@ export default function CompanyProfile() {
                 ].map(({ key, label, desc }, i) => {
                   const enabled = notifSettings ? notifSettings[key] !== false : true;
                   return (
-                    <div key={key} style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", padding: "13px 0", borderTop: i === 0 ? "none" : "1px solid rgba(255,255,255,0.04)", gap: 20 }}>
+                    <div key={key} style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", padding: "13px 0", borderTop: i === 0 ? "none" : "1px solid var(--line)", gap: 20 }}>
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 14, fontWeight: 600, color: "#f0faf9" }}>{label}</div>
-                        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginTop: 2 }}>{desc}</div>
+                        <div style={{ fontSize: 14, fontWeight: 600, color: "var(--ink-900)" }}>{label}</div>
+                        <div style={{ fontSize: 12, color: "var(--ink-400)", marginTop: 2 }}>{desc}</div>
                       </div>
                       <Toggle checked={enabled} disabled={notifSaving} onChange={async () => {
                         const next = { ...(notifSettings || {}), [key]: !enabled };

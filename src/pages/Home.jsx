@@ -68,18 +68,18 @@ const MARQUEE_ITEMS = [
 
 function WhySTPCard() {
   const rows = [
-    { icon: "✓", label: "Direktkontakt — inga mellanhänder", color: "#4ade80" },
-    { icon: "✓", label: "Verifierade åkerier mot Bolagsverket", color: "#4ade80" },
-    { icon: "✓", label: "Gratis under beta — för förare och åkerier", color: "#4ade80" },
-    { icon: "✓", label: "Matchning på körkort, region & tillgänglighet", color: "#4ade80" },
+    { icon: "✓", label: "Direktkontakt — inga mellanhänder" },
+    { icon: "✓", label: "Verifierade åkerier mot Bolagsverket" },
+    { icon: "✓", label: "Gratis under beta — för förare och åkerier" },
+    { icon: "✓", label: "Matchning på körkort, region & tillgänglighet" },
   ];
   return (
-    <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "24px 28px", backdropFilter: "blur(16px)" }}>
-      <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(240,250,249,0.6)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 20 }}>Varför STP?</div>
+    <div style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 20, padding: "24px 28px", backdropFilter: "blur(16px)" }}>
+      <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.55)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 20 }}>Varför STP?</div>
       {rows.map((r, i) => (
-        <div key={r.label} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 0", borderTop: i > 0 ? "1px solid rgba(255,255,255,0.06)" : "none" }}>
-          <span style={{ fontSize: 14, fontWeight: 800, color: r.color, flexShrink: 0 }}>{r.icon}</span>
-          <div style={{ fontSize: 13, color: "rgba(240,250,249,0.8)", lineHeight: 1.5 }}>{r.label}</div>
+        <div key={r.label} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 0", borderTop: i > 0 ? "1px solid rgba(255,255,255,0.08)" : "none" }}>
+          <span style={{ fontSize: 14, fontWeight: 800, color: "var(--success)", flexShrink: 0 }}>{r.icon}</span>
+          <div style={{ fontSize: 13, color: "rgba(255,255,255,0.82)", lineHeight: 1.5 }}>{r.label}</div>
         </div>
       ))}
     </div>
@@ -170,7 +170,7 @@ export default function Home() {
   }
 
   return (
-    <main style={{ background: "#fff", marginTop: "-64px" }}>
+    <main style={{ background: "var(--paper)" }}>
       <PageMeta
         title="STP – Sveriges Transportplattform | Lastbilsjobb & förarrekrytering"
         description="Sveriges Transportplattform – hitta lastbilsjobb eller rekrytera yrkesförare direkt. Inga bemanningsföretag, ingen mellanskapare."
@@ -189,16 +189,16 @@ export default function Home() {
         <div className="relative w-full max-w-[1280px] mx-auto" style={{ padding: isMobile ? "100px 20px 60px" : "120px 40px 80px" }}>
           <div className="grid lg:grid-cols-2 gap-20 items-center">
             <div>
-              <div className="inline-flex items-center gap-2 mb-9" style={{ padding: "6px 16px", borderRadius: 99, background: "rgba(245,166,35,0.15)", border: "1px solid rgba(245,166,35,0.3)" }}>
-                <span style={{ width: 6, height: 6, borderRadius: 3, background: "#F5A623", flexShrink: 0, display: "inline-block" }} />
-                <span style={{ fontSize: 12, fontWeight: 700, color: "#F5A623", letterSpacing: 1, textTransform: "uppercase" }}>Beta · Gratis att använda</span>
+              <div className="inline-flex items-center gap-2 mb-9" style={{ padding: "6px 16px", borderRadius: 99, background: "var(--amber-tint)", border: "1px solid rgba(245,166,35,0.3)" }}>
+                <span style={{ width: 6, height: 6, borderRadius: 3, background: "var(--amber)", flexShrink: 0, display: "inline-block" }} />
+                <span style={{ fontSize: 12, fontWeight: 700, color: "var(--amber)", letterSpacing: 1, textTransform: "uppercase" }}>Beta · Gratis att använda</span>
               </div>
               <p style={{ fontSize: isMobile ? 16 : 18, fontWeight: 600, color: "rgba(255,255,255,0.55)", letterSpacing: 0.2, marginBottom: 16, lineHeight: 1.4 }}>
                 Sveriges matchningsplattform för lastbilsförare och åkerier
               </p>
               <h1 style={{ fontSize: "clamp(56px,6vw,86px)", fontWeight: 900, lineHeight: 0.9, letterSpacing: -4, color: "#fff", marginBottom: 28, overflow: "visible" }}>
                 <span style={{ display: "block", paddingBottom: "0.1em" }}>Rätt</span>
-                <span style={{ display: "block", paddingTop: "0.05em", paddingBottom: "0.1em", color: "#F5A623", transition: "opacity 0.25s ease, transform 0.25s ease", opacity: wordVisible ? 1 : 0, transform: wordVisible ? "translateY(0)" : "translateY(8px)" }}>
+                <span style={{ display: "block", paddingTop: "0.05em", paddingBottom: "0.1em", color: "var(--amber)", transition: "opacity 0.25s ease, transform 0.25s ease", opacity: wordVisible ? 1 : 0, transform: wordVisible ? "translateY(0)" : "translateY(8px)" }}>
                   {ROTATE_WORDS[wordIdx]}
                 </span>
                 <span style={{ display: "block", paddingTop: "0.05em", fontWeight: 300, opacity: 0.2 }}>Direkt.</span>
@@ -207,7 +207,7 @@ export default function Home() {
                 Inga bemanningsföretag. Inga mellanhänder. Direktkontakt utan avgifter.
               </p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 12, flexDirection: isMobile ? "column" : "row" }}>
-                <Link to="/jobb" style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "#F5A623", color: "#000", fontWeight: 800, fontSize: 15, padding: "16px 34px", borderRadius: 12, textDecoration: "none" }}>
+                <Link to="/jobb" style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "var(--amber)", color: "#000", fontWeight: 800, fontSize: 15, padding: "16px 34px", borderRadius: 12, textDecoration: "none" }}>
                   Se lediga jobb →
                 </Link>
                 <Link to="/for-akerier" state={{ initialMode: "register", requiredRole: "company" }} style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,0.08)", color: "#fff", border: "1px solid rgba(255,255,255,0.18)", fontSize: 15, padding: "16px 34px", borderRadius: 12, textDecoration: "none", fontWeight: 600 }}>
@@ -229,7 +229,7 @@ export default function Home() {
             </div>
             <div className="hidden lg:flex flex-col gap-3.5">
               <WhySTPCard />
-              <div style={{ background: "#F5A623", borderRadius: 20, padding: "24px 28px", display: "grid", gridTemplateColumns: "auto 1fr", alignItems: "center", gap: 20 }}>
+              <div style={{ background: "var(--amber)", borderRadius: 20, padding: "24px 28px", display: "grid", gridTemplateColumns: "auto 1fr", alignItems: "center", gap: 20 }}>
                 <div style={{ fontSize: 52, fontWeight: 900, color: "#000", lineHeight: 1, letterSpacing: -2, whiteSpace: "nowrap" }}>5 662</div>
                 <div style={{ fontSize: 13, color: "rgba(0,0,0,0.62)", lineHeight: 1.6, fontWeight: 500 }}>Lastbilsförare nyanställda de senaste 12 månaderna</div>
               </div>
@@ -251,23 +251,21 @@ export default function Home() {
         <div className="animate-marquee" style={{ display: "flex", width: "max-content" }}>
           {[...MARQUEE_ITEMS, ...MARQUEE_ITEMS].map((item, i) => (
             <span key={i} style={{ flexShrink: 0, padding: "0 40px", fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.82)", display: "flex", alignItems: "center", gap: 40, whiteSpace: "nowrap" }}>
-              {item} <span style={{ color: "#F5A623", fontSize: 8 }}>●</span>
+              {item} <span style={{ color: "var(--amber)", fontSize: 8 }}>●</span>
             </span>
           ))}
         </div>
       </div>
 
-      {/* ── PROBLEM — mörk sektion (kontrast mot hero → ljus solution) ──── */}
-      <section ref={problemRef} style={{ background: "#0d2b2b", padding: sectionPad, position: "relative", overflow: "hidden" }} className={reveal(problemInView)}>
-        {/* Subtil amber glow */}
-        <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 60% 50% at 10% 50%, rgba(245,166,35,0.05) 0%, transparent 70%)", pointerEvents: "none" }} />
+      {/* ── PROBLEM — ljus sektion ───────────────────────────────────────── */}
+      <section ref={problemRef} style={{ background: "var(--paper-2)", padding: sectionPad, position: "relative", overflow: "hidden" }} className={reveal(problemInView)}>
         <div style={{ maxWidth: 1200, margin: "0 auto", position: "relative" }}>
           <div style={{ maxWidth: 520, marginBottom: 72 }}>
-            <div style={{ display: "inline-block", padding: "4px 12px", borderRadius: 99, background: "rgba(245,166,35,0.15)", color: "#F5A623", fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 16 }}>Bakgrund</div>
-            <h2 style={{ fontSize: "clamp(36px,4vw,56px)", fontWeight: 900, letterSpacing: -2, color: "#f0faf9", lineHeight: 1.05, marginBottom: 20 }}>
+            <div style={{ display: "inline-block", padding: "4px 12px", borderRadius: 99, background: "var(--amber-tint)", color: "var(--amber-text)", fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 16 }}>Bakgrund</div>
+            <h2 style={{ fontSize: "clamp(36px,4vw,56px)", fontWeight: 900, letterSpacing: -2, color: "var(--ink-900)", lineHeight: 1.05, marginBottom: 20 }}>
               Branschen förtjänar bättre.
             </h2>
-            <p style={{ fontSize: 18, color: "rgba(240,250,249,0.6)", lineHeight: 1.7 }}>
+            <p style={{ fontSize: 18, color: "var(--ink-500)", lineHeight: 1.7 }}>
               Idag matchas förare och åkerier via Facebook-grupper, generiska jobbsajter och bemanningsbolag som tar en del av lönen.
             </p>
           </div>
@@ -277,34 +275,34 @@ export default function Home() {
               { no: "02", title: "Mellanhänder äter lönen", body: "Bemanningsbolag tar mellan 25–40% av lönen. Föraren förlorar. Åkeriet betalar mer. Ingen vinner.", icon: "banknote" },
               { no: "03", title: "Bra kandidater försvinner", body: "En jobbannons lever 24 timmar på sociala medier. Rätt förare ser den aldrig. Åkeriet upprepade processen.", icon: "hourglass" },
             ].map((item) => (
-              <div key={item.no} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "36px 32px", position: "relative", overflow: "hidden" }}>
-                <div style={{ position: "absolute", bottom: -8, right: 16, opacity: 0.06 }}><Icon name={item.icon} size={80} color="#F5A623" /></div>
-                <div style={{ fontSize: 40, fontWeight: 900, color: "#F5A623", opacity: 0.25, lineHeight: 1, marginBottom: 20, letterSpacing: -2 }}>{item.no}</div>
-                <h3 style={{ fontSize: 22, fontWeight: 800, color: "#f0faf9", marginBottom: 14, letterSpacing: -0.4 }}>{item.title}</h3>
-                <p style={{ fontSize: 15, color: "rgba(240,250,249,0.55)", lineHeight: 1.7 }}>{item.body}</p>
+              <div key={item.no} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 20, padding: "36px 32px", position: "relative", overflow: "hidden", boxShadow: "var(--sh-sm)" }}>
+                <div style={{ position: "absolute", bottom: -8, right: 16, opacity: 0.04 }}><Icon name={item.icon} size={80} color="var(--amber)" /></div>
+                <div style={{ fontSize: 40, fontWeight: 900, color: "var(--amber)", opacity: 0.35, lineHeight: 1, marginBottom: 20, letterSpacing: -2 }}>{item.no}</div>
+                <h3 style={{ fontSize: 22, fontWeight: 800, color: "var(--ink-900)", marginBottom: 14, letterSpacing: -0.4 }}>{item.title}</h3>
+                <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.7 }}>{item.body}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── SOLUTION — vit, upplyft (kontrast mot mörk problem) ──────────── */}
-      <section ref={solutionRef} style={{ background: "#fff", padding: sectionPad }} className="scroll-reveal">
+      {/* ── SOLUTION ─────────────────────────────────────────────────────── */}
+      <section ref={solutionRef} style={{ background: "var(--paper)", padding: sectionPad }} className="scroll-reveal">
         <div style={{ maxWidth: 1200, margin: "0 auto", opacity: solutionInView ? 1 : 0, transition: "opacity 0.7s ease-out" }}>
           <div className="grid lg:grid-cols-2" style={{ gap: 80, alignItems: "start" }}>
             <div className="lg:sticky" style={{ top: 88 }}>
-              <div style={{ display: "inline-block", padding: "4px 12px", borderRadius: 99, background: "rgba(31,95,92,0.1)", color: "#1F5F5C", fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 16 }}>Lösningen</div>
-              <h2 style={{ fontSize: "clamp(36px,4vw,52px)", fontWeight: 900, letterSpacing: -2, color: "#0f172a", lineHeight: 1.05, marginBottom: 20 }}>
+              <div style={{ display: "inline-block", padding: "4px 12px", borderRadius: 99, background: "var(--green-tint)", color: "var(--green-text)", fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 16 }}>Lösningen</div>
+              <h2 style={{ fontSize: "clamp(36px,4vw,52px)", fontWeight: 900, letterSpacing: -2, color: "var(--ink-900)", lineHeight: 1.05, marginBottom: 20 }}>
                 En samlande plattform för hela branschen.
               </h2>
-              <p style={{ fontSize: 17, color: "#64748b", lineHeight: 1.7, marginBottom: 40 }}>
+              <p style={{ fontSize: 17, color: "var(--ink-500)", lineHeight: 1.7, marginBottom: 40 }}>
                 STP samlar förare och åkerier i en transparent och kvalitetssäkrad plattform. Direkt kontakt. Inga mellanhänder. Inga avgifter.
               </p>
               <div className="flex flex-wrap gap-3">
-                <Link to="/login" state={{ initialMode: "register", requiredRole: "driver" }} style={{ display: "inline-flex", alignItems: "center", background: "#1F5F5C", color: "#fff", fontWeight: 700, fontSize: 15, padding: "14px 28px", borderRadius: 12, textDecoration: "none" }}>
+                <Link to="/login" state={{ initialMode: "register", requiredRole: "driver" }} style={{ display: "inline-flex", alignItems: "center", background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: 15, padding: "14px 28px", borderRadius: 12, textDecoration: "none" }}>
                   Skapa förarprofil →
                 </Link>
-                <Link to="/for-akerier" style={{ display: "inline-flex", alignItems: "center", background: "#fff", color: "#1F5F5C", border: "2px solid #1F5F5C", fontSize: 15, padding: "14px 28px", borderRadius: 12, textDecoration: "none", fontWeight: 600 }}>
+                <Link to="/for-akerier" style={{ display: "inline-flex", alignItems: "center", background: "var(--card)", color: "var(--green-text)", border: "1px solid var(--line-2)", fontSize: 15, padding: "14px 28px", borderRadius: 12, textDecoration: "none", fontWeight: 600 }}>
                   Registrera åkeri
                 </Link>
               </div>
@@ -318,13 +316,13 @@ export default function Home() {
                 { icon: "calendar", title: "Tillgänglighetskalender",  body: "Förare sätter sina tillgängliga dagar. Åkerier ser direkt när du är redo att ta uppdrag." },
                 { icon: "award",    title: "Profiler som visar din styrka", body: "Bygg en profil med körkort, certifikat, erfarenhet och matchningstext. Inget göms." },
               ].map((f) => (
-                <div key={f.title} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 16, padding: "24px 28px", display: "flex", gap: 20, alignItems: "flex-start", boxShadow: "0 4px 24px rgba(31,95,92,0.08), 0 1px 4px rgba(0,0,0,0.04)" }}>
-                  <div style={{ width: 48, height: 48, borderRadius: 12, background: "#1F5F5C", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "#fff" }}>
+                <div key={f.title} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, padding: "24px 28px", display: "flex", gap: 20, alignItems: "flex-start", boxShadow: "var(--sh-sm)" }}>
+                  <div style={{ width: 48, height: 48, borderRadius: 12, background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "#fff" }}>
                     <Icon name={f.icon} size={22} />
                   </div>
                   <div>
-                    <div style={{ fontSize: 16, fontWeight: 700, color: "#0f172a", marginBottom: 6 }}>{f.title}</div>
-                    <div style={{ fontSize: 14, color: "#64748b", lineHeight: 1.65 }}>{f.body}</div>
+                    <div style={{ fontSize: 16, fontWeight: 700, color: "var(--ink-900)", marginBottom: 6 }}>{f.title}</div>
+                    <div style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.65 }}>{f.body}</div>
                   </div>
                 </div>
               ))}
@@ -333,19 +331,18 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── HOW IT WORKS — mörk (andra mörka zonen, skapar rytm) ────────── */}
-      <section ref={howRef} id="sa-fungerar-det" style={{ background: "#050e0e", padding: sectionPad, position: "relative", overflow: "hidden" }} className={reveal(howInView)}>
-        <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 70% 50% at 50% 0%, rgba(31,95,92,0.2) 0%, transparent 60%)", pointerEvents: "none" }} />
-        <div style={{ maxWidth: 1200, margin: "0 auto", position: "relative" }}>
+      {/* ── HOW IT WORKS ─────────────────────────────────────────────────── */}
+      <section ref={howRef} id="sa-fungerar-det" style={{ background: "var(--paper)", padding: sectionPad }} className={reveal(howInView)}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 64 }}>
-            <div style={{ display: "inline-block", padding: "4px 12px", borderRadius: 99, background: "rgba(31,95,92,0.2)", color: "#7dd3c8", fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 16 }}>Kom igång</div>
-            <h2 style={{ fontSize: "clamp(32px,4vw,52px)", fontWeight: 900, letterSpacing: -2, color: "#f0faf9", lineHeight: 1.05, marginBottom: 16 }}>Tre steg. Det är allt.</h2>
-            <p style={{ fontSize: 17, color: "rgba(240,250,249,0.55)", maxWidth: 480, margin: "0 auto" }}>Kom igång på tre steg — oavsett om du är förare eller åkeri.</p>
+            <div style={{ display: "inline-block", padding: "4px 12px", borderRadius: 99, background: "var(--green-tint)", color: "var(--green-text)", fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 16 }}>Kom igång</div>
+            <h2 style={{ fontSize: "clamp(32px,4vw,52px)", fontWeight: 900, letterSpacing: -2, color: "var(--ink-900)", lineHeight: 1.05, marginBottom: 16 }}>Tre steg. Det är allt.</h2>
+            <p style={{ fontSize: 17, color: "var(--ink-500)", maxWidth: 480, margin: "0 auto" }}>Kom igång på tre steg — oavsett om du är förare eller åkeri.</p>
           </div>
 
-          <div style={{ display: "flex", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 14, padding: 6, gap: 4, width: "fit-content", margin: "0 auto 64px" }}>
+          <div style={{ display: "flex", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: 6, gap: 4, width: "fit-content", margin: "0 auto 64px" }}>
             {[["driver", "truck", "Jag är förare"], ["company", "building", "Jag är ett åkeri"]].map(([k, iconName, label]) => (
-              <button key={k} type="button" onClick={() => setHowTab(k)} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 28px", borderRadius: 10, background: howTab === k ? "#1F5F5C" : "transparent", color: howTab === k ? "#fff" : "rgba(240,250,249,0.5)", fontWeight: 700, fontSize: 14, border: "none", cursor: "pointer", fontFamily: "inherit", transition: "all .2s" }}>
+              <button key={k} type="button" onClick={() => setHowTab(k)} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 28px", borderRadius: 10, background: howTab === k ? "var(--green)" : "transparent", color: howTab === k ? "#fff" : "var(--ink-400)", fontWeight: 700, fontSize: 14, border: "none", cursor: "pointer", fontFamily: "inherit", transition: "all .2s" }}>
                 <Icon name={iconName} size={16} color="currentColor" />{label}
               </button>
             ))}
@@ -361,24 +358,24 @@ export default function Home() {
               { n: 2, title: "Publicera eller sök", body: "Lägg upp en jobbannons eller bläddra bland förare med rätt behörigheter i din region." },
               { n: 3, title: "Kontakta direkt", body: "Ta kontakt utan mellanhänder. Ingen provision. Ingen avgift per kontakt." },
             ]).map((s) => (
-              <div key={s.n} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "36px 32px", position: "relative", overflow: "hidden" }}>
-                <div style={{ fontSize: 80, fontWeight: 900, color: "#1F5F5C", opacity: 0.15, position: "absolute", top: 8, right: 20, lineHeight: 1, letterSpacing: -4, userSelect: "none" }}>{s.n}</div>
-                <div style={{ width: 40, height: 40, borderRadius: 12, background: "#1F5F5C", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 28 }}>
+              <div key={s.n} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 20, padding: "36px 32px", position: "relative", overflow: "hidden", boxShadow: "var(--sh-sm)" }}>
+                <div style={{ fontSize: 80, fontWeight: 900, color: "var(--green)", opacity: 0.12, position: "absolute", top: 8, right: 20, lineHeight: 1, letterSpacing: -4, userSelect: "none" }}>{s.n}</div>
+                <div style={{ width: 40, height: 40, borderRadius: 12, background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 28 }}>
                   <span style={{ fontSize: 18, fontWeight: 900, color: "#fff" }}>{s.n}</span>
                 </div>
-                <h3 style={{ fontSize: 20, fontWeight: 800, color: "#f0faf9", marginBottom: 12, letterSpacing: -0.3 }}>{s.title}</h3>
-                <p style={{ fontSize: 14, color: "rgba(240,250,249,0.55)", lineHeight: 1.7 }}>{s.body}</p>
+                <h3 style={{ fontSize: 20, fontWeight: 800, color: "var(--ink-900)", marginBottom: 12, letterSpacing: -0.3 }}>{s.title}</h3>
+                <p style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.7 }}>{s.body}</p>
               </div>
             ))}
           </div>
 
-          <div style={{ marginTop: 56, padding: "24px 32px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
+          <div style={{ marginTop: 56, padding: "24px 32px", background: "var(--paper-2)", border: "1px solid var(--line)", borderRadius: 16, display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
             {[
-              { icon: "check", text: "Gratis under hela betafasen", color: "#4ade80" },
-              { icon: "lock",  text: "Verifierat mot Bolagsverket", color: "#7dd3c8" },
-              { icon: "chat",  text: "Direktkontakt utan provision", color: "#F5A623" },
+              { icon: "check", text: "Gratis under hela betafasen", color: "var(--success)" },
+              { icon: "lock",  text: "Verifierat mot Bolagsverket", color: "var(--green-text)" },
+              { icon: "chat",  text: "Direktkontakt utan provision", color: "var(--amber)" },
             ].map((item) => (
-              <span key={item.text} style={{ fontSize: 13, fontWeight: 600, color: "#f0faf9", display: "inline-flex", alignItems: "center", gap: 8 }}>
+              <span key={item.text} style={{ fontSize: 13, fontWeight: 600, color: "var(--ink-700)", display: "inline-flex", alignItems: "center", gap: 8 }}>
                 <Icon name={item.icon} size={14} color={item.color} />{item.text}
               </span>
             ))}
@@ -387,14 +384,14 @@ export default function Home() {
       </section>
 
       {/* ── SEGMENTS — vit, kort med färgat toppband ─────────────────────── */}
-      <section ref={segRef} style={{ background: "#fff", padding: sectionPad }} className={reveal(segInView)}>
+      <section ref={segRef} style={{ background: "var(--paper-2)", padding: sectionPad }} className={reveal(segInView)}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 64 }}>
-            <div style={{ display: "inline-block", padding: "4px 12px", borderRadius: 99, background: "rgba(31,95,92,0.1)", color: "#1F5F5C", fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 16 }}>Tre vägar in</div>
-            <h2 style={{ fontSize: "clamp(32px,4vw,48px)", fontWeight: 900, letterSpacing: -2, color: "#0f172a", lineHeight: 1.05, marginBottom: 16 }}>
+            <div style={{ display: "inline-block", padding: "4px 12px", borderRadius: 99, background: "var(--green-tint)", color: "var(--green-text)", fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 16 }}>Tre vägar in</div>
+            <h2 style={{ fontSize: "clamp(32px,4vw,48px)", fontWeight: 900, letterSpacing: -2, color: "var(--ink-900)", lineHeight: 1.05, marginBottom: 16 }}>
               Alla förare söker inte samma sak.
             </h2>
-            <p style={{ fontSize: 17, color: "#64748b", maxWidth: 480, margin: "0 auto" }}>
+            <p style={{ fontSize: 17, color: "var(--ink-500)", maxWidth: 480, margin: "0 auto" }}>
               STP är byggt runt tre segment som gör det enkelt att matcha rätt behov med rätt profil.
             </p>
           </div>
@@ -402,10 +399,10 @@ export default function Home() {
           <div className="grid grid-cols-1 sm:grid-cols-3" style={{ gap: 24, maxWidth: 960, margin: "0 auto" }}>
             {[
               { title: "Heltid",          desc: "Långsiktig roll, fast anställning. Visa erfarenhet, behörigheter och vad du söker hos ett åkeri.", tag: "Fast anst.", icon: "truck",      accent: "#16a34a", stripe: "linear-gradient(90deg,#16a34a,#22c55e)" },
-              { title: "Vikariat / Deltid", desc: "Flexibelt. Hoppa in snabbt, extrapass, deltid eller kortare uppdrag när det passar dig.", tag: "Flexibelt",  icon: "clock",      accent: "#c8790a", stripe: "linear-gradient(90deg,#c8790a,#F5A623)" },
+              { title: "Vikariat / Deltid", desc: "Flexibelt. Hoppa in snabbt, extrapass, deltid eller kortare uppdrag när det passar dig.", tag: "Flexibelt",  icon: "clock",      accent: "#c8790a", stripe: "linear-gradient(90deg,#c8790a,var(--amber))" },
               { title: "Praktik",          desc: "Elever, nybörjare och de i start av karriären som söker seriösa aktörer att växa hos.", tag: "Utbildning", icon: "graduation", accent: "#2563eb", stripe: "linear-gradient(90deg,#2563eb,#3b82f6)" },
             ].map((s) => (
-              <div key={s.title} style={{ background: "#fff", borderRadius: 20, overflow: "hidden", boxShadow: "0 8px 40px rgba(15,23,42,0.1), 0 2px 8px rgba(15,23,42,0.05)", border: "1px solid #e2e8f0" }}>
+              <div key={s.title} style={{ background: "var(--card)", borderRadius: 20, overflow: "hidden", boxShadow: "var(--sh)", border: "1px solid var(--line)" }}>
                 {/* Färgat toppband */}
                 <div style={{ height: 5, background: s.stripe }} />
                 <div style={{ padding: "28px 28px 32px" }}>
@@ -413,8 +410,8 @@ export default function Home() {
                     <Icon name={s.icon} size={22} color={s.accent} />
                   </div>
                   <div style={{ fontSize: 11, fontWeight: 700, color: s.accent, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 10 }}>{s.tag}</div>
-                  <h3 style={{ fontSize: 20, fontWeight: 800, color: "#0f172a", marginBottom: 12, letterSpacing: -0.3 }}>{s.title}</h3>
-                  <p style={{ fontSize: 14, color: "#64748b", lineHeight: 1.7 }}>{s.desc}</p>
+                  <h3 style={{ fontSize: 20, fontWeight: 800, color: "var(--ink-900)", marginBottom: 12, letterSpacing: -0.3 }}>{s.title}</h3>
+                  <p style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.7 }}>{s.desc}</p>
                 </div>
               </div>
             ))}
@@ -422,29 +419,29 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── FAQ — teal-tintad bakgrund, kort per fråga ───────────────────── */}
-      <section ref={faqRef} style={{ background: "#f0faf9", padding: sectionPad }} className={reveal(faqInView)}>
+      {/* ── FAQ ──────────────────────────────────────────────────────────── */}
+      <section ref={faqRef} style={{ background: "var(--paper)", padding: sectionPad }} className={reveal(faqInView)}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <div className="grid lg:grid-cols-[1fr_1.6fr]" style={{ gap: 80, alignItems: "start" }}>
             <div className="lg:sticky" style={{ top: 100 }}>
-              <div style={{ display: "inline-block", padding: "4px 12px", borderRadius: 99, background: "rgba(31,95,92,0.1)", color: "#1F5F5C", fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 16 }}>FAQ</div>
-              <h2 style={{ fontSize: "clamp(28px,3vw,44px)", fontWeight: 900, letterSpacing: -1.5, color: "#0f172a", lineHeight: 1.1, marginBottom: 16 }}>Vanliga frågor</h2>
-              <p style={{ fontSize: 16, color: "#64748b", lineHeight: 1.7, marginBottom: 32 }}>Saknar du något? Hör av dig direkt.</p>
-              <a href="mailto:hello@transportplattformen.se" style={{ fontSize: 14, fontWeight: 600, color: "#1F5F5C", textDecoration: "none" }}>hello@transportplattformen.se →</a>
+              <div style={{ display: "inline-block", padding: "4px 12px", borderRadius: 99, background: "var(--green-tint)", color: "var(--green-text)", fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 16 }}>FAQ</div>
+              <h2 style={{ fontSize: "clamp(28px,3vw,44px)", fontWeight: 900, letterSpacing: -1.5, color: "var(--ink-900)", lineHeight: 1.1, marginBottom: 16 }}>Vanliga frågor</h2>
+              <p style={{ fontSize: 16, color: "var(--ink-500)", lineHeight: 1.7, marginBottom: 32 }}>Saknar du något? Hör av dig direkt.</p>
+              <a href="mailto:hello@transportplattformen.se" style={{ fontSize: 14, fontWeight: 600, color: "var(--green-text)", textDecoration: "none" }}>hello@transportplattformen.se →</a>
             </div>
 
             {/* Kort per fråga — lyfts av bakgrunden */}
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {FAQ_ITEMS.map((faq, i) => (
-                <div key={i} style={{ background: "#fff", borderRadius: 16, border: "1px solid #e2e8f0", overflow: "hidden", boxShadow: faqOpen === i ? "0 8px 32px rgba(31,95,92,0.1)" : "0 2px 8px rgba(15,23,42,0.04)", transition: "box-shadow 0.2s" }}>
+                <div key={i} style={{ background: "var(--card)", borderRadius: 16, border: "1px solid var(--line)", overflow: "hidden", boxShadow: faqOpen === i ? "var(--sh)" : "var(--sh-sm)", transition: "box-shadow 0.2s" }}>
                   <button type="button" onClick={() => setFaqOpen(faqOpen === i ? null : i)} style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "22px 24px", gap: 16, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
-                    <span style={{ fontSize: 15, fontWeight: 700, color: "#0f172a", textAlign: "left", lineHeight: 1.4 }}>{faq.question}</span>
-                    <span style={{ width: 28, height: 28, borderRadius: 8, background: faqOpen === i ? "#1F5F5C" : "#f0faf9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 18, color: faqOpen === i ? "#fff" : "#1F5F5C", transition: "all .2s", fontWeight: 400 }}>
+                    <span style={{ fontSize: 15, fontWeight: 700, color: "var(--ink-900)", textAlign: "left", lineHeight: 1.4 }}>{faq.question}</span>
+                    <span style={{ width: 28, height: 28, borderRadius: 8, background: faqOpen === i ? "var(--green)" : "var(--paper-2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 18, color: faqOpen === i ? "#fff" : "var(--green-text)", transition: "all .2s", fontWeight: 400 }}>
                       {faqOpen === i ? "−" : "+"}
                     </span>
                   </button>
                   <div style={{ maxHeight: faqOpen === i ? 300 : 0, overflow: "hidden", transition: "max-height .3s ease" }}>
-                    <p style={{ fontSize: 15, color: "#64748b", lineHeight: 1.7, padding: "0 24px 24px" }}>{faq.answer}</p>
+                    <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.7, padding: "0 24px 24px" }}>{faq.answer}</p>
                   </div>
                 </div>
               ))}
@@ -453,71 +450,69 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── CTA — platform warm-dark gradient ────────────────────────────── */}
-      <section ref={ctaRef} style={{ position: "relative", overflow: "hidden", background: "linear-gradient(160deg, #0d2b2b 0%, #060f0f 100%)" }} className={reveal(ctaInView)}>
-        <div className="absolute inset-0" style={{ backgroundImage: "url('/hero-driver.webp')", backgroundSize: "cover", backgroundPosition: "center 30%", opacity: 0.12 }} />
-        <div className="absolute inset-0" style={{ background: "linear-gradient(to right, rgba(6,15,15,0.97) 35%, rgba(6,15,15,0.7) 100%)" }} />
-        <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 55% 80% at 85% 50%, rgba(245,166,35,0.07) 0%, transparent 65%)" }} />
-
-        <div className="relative grid lg:grid-cols-2" style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div style={{ padding: isMobile ? "48px 20px 32px" : "100px 60px 100px 40px", borderRight: isMobile ? "none" : "1px solid rgba(255,255,255,0.06)", borderBottom: isMobile ? "1px solid rgba(255,255,255,0.06)" : "none", display: "flex", flexDirection: "column" }}>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 12px", borderRadius: 99, background: "rgba(245,166,35,0.12)", border: "1px solid rgba(245,166,35,0.2)", marginBottom: 32 }}>
-              <Icon name="truck" size={14} color="#F5A623" />
-              <span style={{ fontSize: 11, fontWeight: 700, color: "#F5A623", letterSpacing: 1.5, textTransform: "uppercase" }}>För förare</span>
+      {/* ── CTA ──────────────────────────────────────────────────────────── */}
+      <section ref={ctaRef} style={{ overflow: "hidden" }} className={reveal(ctaInView)}>
+        <div className="grid lg:grid-cols-2">
+          {/* Förare — grön kolumn */}
+          <div style={{ background: "var(--green)", padding: isMobile ? "48px 20px 40px" : "96px 60px 96px 40px", display: "flex", flexDirection: "column" }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 12px", borderRadius: 99, background: "rgba(255,255,255,0.15)", marginBottom: 32, width: "fit-content" }}>
+              <Icon name="truck" size={14} color="#fff" />
+              <span style={{ fontSize: 11, fontWeight: 700, color: "#fff", letterSpacing: 1.5, textTransform: "uppercase" }}>För förare</span>
             </div>
             <h2 style={{ fontSize: "clamp(32px,3.5vw,52px)", fontWeight: 900, letterSpacing: -2, color: "#fff", lineHeight: 1.0, marginBottom: 20 }}>
-              Hitta rätt jobb.<br /><span style={{ color: "#F5A623" }}>Direkt.</span>
+              Hitta rätt jobb.<br /><span style={{ opacity: 0.85 }}>Direkt.</span>
             </h2>
-            <p style={{ fontSize: 16, color: "rgba(255,255,255,0.55)", lineHeight: 1.75, marginBottom: 36, maxWidth: 380, flex: 1 }}>
+            <p style={{ fontSize: 16, color: "rgba(255,255,255,0.75)", lineHeight: 1.75, marginBottom: 36, maxWidth: 380, flex: 1 }}>
               Skapa din profil gratis. Bli hittad av seriösa åkerier baserat på körkort, region och tillgänglighet.
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 40 }}>
               {["Gratis att skapa profil", "Styr din synlighet helt själv", "Direktkontakt utan mellanhänder"].map((p) => (
                 <div key={p} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <div style={{ width: 22, height: 22, borderRadius: 6, background: "rgba(34,197,94,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <Icon name="check" size={13} color="#22c55e" />
+                  <div style={{ width: 22, height: 22, borderRadius: 6, background: "rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <Icon name="check" size={13} color="#fff" />
                   </div>
-                  <span style={{ fontSize: 14, color: "rgba(255,255,255,0.7)", fontWeight: 500 }}>{p}</span>
+                  <span style={{ fontSize: 14, color: "rgba(255,255,255,0.85)", fontWeight: 500 }}>{p}</span>
                 </div>
               ))}
             </div>
-            <Link to="/login" state={{ initialMode: "register", requiredRole: "driver" }} style={{ display: "inline-flex", alignItems: "center", background: "#F5A623", color: "#000", fontWeight: 800, fontSize: 15, padding: "15px 32px", borderRadius: 12, textDecoration: "none" }}>
+            <Link to="/login" state={{ initialMode: "register", requiredRole: "driver" }} style={{ display: "inline-flex", alignItems: "center", background: "#fff", color: "var(--green)", fontWeight: 800, fontSize: 15, padding: "15px 32px", borderRadius: 12, textDecoration: "none" }}>
               Skapa förarprofil
             </Link>
           </div>
 
-          <div style={{ padding: isMobile ? "32px 20px 48px" : "100px 40px 100px 60px", display: "flex", flexDirection: "column" }}>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 12px", borderRadius: 99, background: "rgba(31,95,92,0.2)", border: "1px solid rgba(31,95,92,0.4)", marginBottom: 32 }}>
-              <Icon name="building" size={14} color="#4ade80" />
-              <span style={{ fontSize: 11, fontWeight: 700, color: "#4ade80", letterSpacing: 1.5, textTransform: "uppercase" }}>För åkerier</span>
+          {/* Åkeri — ljus kolumn */}
+          <div style={{ background: "var(--paper-2)", padding: isMobile ? "40px 20px 48px" : "96px 40px 96px 60px", display: "flex", flexDirection: "column", borderLeft: isMobile ? "none" : "1px solid var(--line)" }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 12px", borderRadius: 99, background: "var(--green-tint)", marginBottom: 32, width: "fit-content" }}>
+              <Icon name="building" size={14} color="var(--green-text)" />
+              <span style={{ fontSize: 11, fontWeight: 700, color: "var(--green-text)", letterSpacing: 1.5, textTransform: "uppercase" }}>För åkerier</span>
             </div>
-            <h2 style={{ fontSize: "clamp(32px,3.5vw,52px)", fontWeight: 900, letterSpacing: -2, color: "#fff", lineHeight: 1.0, marginBottom: 20 }}>
-              Hitta rätt förare.<br /><span style={{ color: "#4ade80" }}>Utan provision.</span>
+            <h2 style={{ fontSize: "clamp(32px,3.5vw,52px)", fontWeight: 900, letterSpacing: -2, color: "var(--ink-900)", lineHeight: 1.0, marginBottom: 20 }}>
+              Hitta rätt förare.<br /><span style={{ color: "var(--green-text)" }}>Utan provision.</span>
             </h2>
-            <p style={{ fontSize: 16, color: "rgba(255,255,255,0.55)", lineHeight: 1.75, marginBottom: 36, maxWidth: 380, flex: 1 }}>
+            <p style={{ fontSize: 16, color: "var(--ink-500)", lineHeight: 1.75, marginBottom: 36, maxWidth: 380, flex: 1 }}>
               Publicera jobb eller sök direkt bland förare med rätt behörigheter i din region. Verifiera ditt företag en gång.
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 40 }}>
               {["Verifiering mot Bolagsverket", "Sök bland CE, C, ADR och YKB", "Inga provisioner — aldrig"].map((p) => (
                 <div key={p} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <div style={{ width: 22, height: 22, borderRadius: 6, background: "rgba(74,222,128,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <Icon name="check" size={13} color="#4ade80" />
+                  <div style={{ width: 22, height: 22, borderRadius: 6, background: "var(--success-tint)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <Icon name="check" size={13} color="var(--success)" />
                   </div>
-                  <span style={{ fontSize: 14, color: "rgba(255,255,255,0.7)", fontWeight: 500 }}>{p}</span>
+                  <span style={{ fontSize: 14, color: "var(--ink-700)", fontWeight: 500 }}>{p}</span>
                 </div>
               ))}
             </div>
-            <Link to="/login" state={{ initialMode: "register", requiredRole: "company" }} style={{ display: "inline-flex", alignItems: "center", background: "rgba(255,255,255,0.08)", color: "#fff", border: "1px solid rgba(255,255,255,0.15)", fontSize: 15, fontWeight: 600, padding: "15px 32px", borderRadius: 12, textDecoration: "none" }}>
+            <Link to="/login" state={{ initialMode: "register", requiredRole: "company" }} style={{ display: "inline-flex", alignItems: "center", background: "var(--card)", color: "var(--ink-900)", border: "1px solid var(--line-2)", fontSize: 15, fontWeight: 600, padding: "15px 32px", borderRadius: 12, textDecoration: "none" }}>
               Registrera åkeri
             </Link>
           </div>
         </div>
 
-        <div className="relative" style={{ borderTop: "1px solid rgba(255,255,255,0.05)", padding: isMobile ? "20px 20px" : "20px 40px", display: "flex", justifyContent: "center", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+        <div style={{ background: "var(--paper)", borderTop: "1px solid var(--line)", padding: isMobile ? "16px 20px" : "16px 40px", display: "flex", justifyContent: "center", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
           {["Gratis under beta", "Inga kreditkort", "transportplattformen.se"].map((t, i) => (
             <span key={t} style={{ display: "flex", alignItems: "center", gap: 16 }}>
-              {i > 0 && <span style={{ color: "rgba(255,255,255,0.1)" }}>·</span>}
-              <span style={{ fontSize: 12, color: "rgba(255,255,255,0.25)", fontWeight: 500 }}>{t}</span>
+              {i > 0 && <span style={{ color: "var(--ink-200)" }}>·</span>}
+              <span style={{ fontSize: 12, color: "var(--ink-400)", fontWeight: 500 }}>{t}</span>
             </span>
           ))}
         </div>

@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 
 /**
- * Dark-themed wrapper for all blog article pages.
+ * Light-themed wrapper for all blog article pages.
  *
  * Props:
  *  - breadcrumb: string  — displayed after "Blogg ›" in the nav
@@ -9,15 +9,12 @@ import { Link } from "react-router-dom";
  */
 export default function BlogPost({ breadcrumb, children }) {
   return (
-    <main
-      style={{ background: "#060f0f", minHeight: "100vh", marginTop: "-64px", paddingTop: 96 }}
-      className="dark-prose"
-    >
+    <main style={{ background: "var(--paper)", minHeight: "100vh", paddingTop: 32 }}>
       <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px 80px" }}>
-        <nav style={{ fontSize: 13, color: "rgba(240,250,249,0.4)", marginBottom: 28 }}>
-          <Link to="/blogg" style={{ color: "#4ade80", textDecoration: "none" }}>Blogg</Link>
+        <nav style={{ fontSize: 13, color: "var(--ink-400)", marginBottom: 28 }}>
+          <Link to="/blogg" style={{ color: "var(--green-text)", textDecoration: "none" }}>Blogg</Link>
           <span style={{ margin: "0 8px" }}>›</span>
-          <span style={{ color: "rgba(240,250,249,0.6)" }}>{breadcrumb}</span>
+          <span style={{ color: "var(--ink-500)" }}>{breadcrumb}</span>
         </nav>
         {children}
       </div>

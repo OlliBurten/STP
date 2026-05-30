@@ -18,17 +18,28 @@ import {
   SUMMARY_MIN_LENGTH,
 } from "../utils/driverProfileRequirements";
 import { calcYearsExperience } from "../utils/profileUtils";
+import { matchScore } from "../utils/matchUtils";
 
 /* ── Design tokens ── */
 const T = {
-  bg: "var(--t-bg)", bg2: "var(--t-bg2)", bg3: "var(--t-bg3)",
-  primary: "var(--t-primary)", pLight: "var(--t-p-light)",
-  pGlow: "var(--t-p-glow)", pDim: "var(--t-p-dim)",
-  amber: "var(--t-amber)", amberDim: "var(--t-amber-dim)",
-  text: "var(--t-text)", sub: "var(--t-sub)", muted: "var(--t-muted)",
-  border: "var(--t-border)", border2: "var(--t-border2)",
-  card: "var(--t-card)", green: "var(--t-green)", red: "var(--t-red)",
-  font: "'DM Sans', system-ui, sans-serif",
+  bg:      "var(--paper)",
+  bg2:     "var(--card)",
+  bg3:     "var(--paper-2)",
+  primary: "var(--green)",
+  pLight:  "var(--green-soft)",
+  pGlow:   "var(--green-tint)",
+  pDim:    "var(--green-tint)",
+  amber:   "var(--amber)",
+  amberDim:"var(--amber-tint)",
+  text:    "var(--ink-900)",
+  sub:     "var(--ink-500)",
+  muted:   "var(--ink-400)",
+  border:  "var(--line)",
+  border2: "var(--line-2)",
+  card:    "var(--card-2)",
+  green:   "var(--success)",
+  red:     "var(--danger)",
+  font:    "'DM Sans', system-ui, sans-serif",
 };
 
 /* ── Cert expiry helper ── */
@@ -46,11 +57,11 @@ function expiryStatus(dateStr) {
 /* ── Tag atom ── */
 function Tag({ c = "p", children, onRemove }) {
   const map = {
-    p:     { bg: "rgba(31,95,92,0.18)",   color: "#7dd3c8", border: "rgba(31,95,92,0.4)" },
-    amber: { bg: "rgba(245,166,35,0.14)", color: T.amber,   border: "rgba(245,166,35,0.35)" },
-    green: { bg: "rgba(74,222,128,0.1)",  color: T.green,   border: "rgba(74,222,128,0.25)" },
-    red:   { bg: "rgba(248,113,113,0.1)", color: T.red,     border: "rgba(248,113,113,0.25)" },
-    muted: { bg: "rgba(255,255,255,0.06)", color: T.sub,    border: "rgba(255,255,255,0.1)" },
+    p:     { bg: "var(--green-tint)",   color: "var(--green-text)", border: "var(--green-tint-2)" },
+    amber: { bg: "var(--amber-tint)",   color: "var(--amber-text)", border: "var(--amber-tint-2)" },
+    green: { bg: "var(--success-tint)", color: "var(--success)",    border: "var(--success-tint)" },
+    red:   { bg: "var(--danger-tint)",  color: "var(--danger)",     border: "var(--danger-tint)" },
+    muted: { bg: "var(--paper-2)",      color: "var(--ink-700)",    border: "var(--line)" },
   };
   const s = map[c] || map.p;
   return (
@@ -77,7 +88,7 @@ function Toggle({ checked, onChange }) {
       onClick={onChange}
       style={{
         width: 36, height: 20, borderRadius: 10, position: "relative", cursor: "pointer", flexShrink: 0,
-        background: checked ? T.primary : "rgba(255,255,255,0.12)", transition: "background .2s",
+        background: checked ? "var(--green)" : "var(--ink-200)", transition: "background .2s",
       }}
     >
       <div style={{
@@ -146,7 +157,7 @@ function ScoreCard({ score, profile, onEdit }) {
           {score}<span style={{ fontSize: 12, fontWeight: 400, color: T.sub }}>/100</span>
         </span>
       </div>
-      <div style={{ height: 6, borderRadius: 6, background: "rgba(255,255,255,0.08)", marginBottom: 8 }}>
+      <div style={{ height: 6, borderRadius: 6, background: "var(--paper-2)", marginBottom: 8 }}>
         <div style={{ height: 6, borderRadius: 6, background: barColor, width: `${score}%`, transition: "width .5s" }} />
       </div>
       <p style={{ fontSize: 12, color: T.sub, marginBottom: 14 }}>{label}</p>
@@ -155,10 +166,10 @@ function ScoreCard({ score, profile, onEdit }) {
           <div key={c.label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{
               width: 16, height: 16, borderRadius: "50%", flexShrink: 0,
-              background: c.done ? "rgba(74,222,128,0.15)" : "transparent",
-              border: `1.5px solid ${c.done ? "rgba(74,222,128,0.3)" : T.border2}`,
+              background: c.done ? "var(--success-tint)" : "transparent",
+              border: `1.5px solid ${c.done ? "var(--success)" : "var(--line-2)"}`,
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 9, color: T.green, fontWeight: 800, transition: "all .2s",
+              fontSize: 9, color: "var(--success)", fontWeight: 800, transition: "all .2s",
             }}>{c.done ? "✓" : ""}</div>
             <span style={{ fontSize: 12, color: c.done ? T.sub : T.muted, lineHeight: 1.5,
               textDecoration: c.done ? "none" : "none",
@@ -173,7 +184,7 @@ function ScoreCard({ score, profile, onEdit }) {
       ) : onEdit && (
         <button onClick={onEdit} style={{
           width: "100%", padding: "8px", borderRadius: 8, border: "none",
-          background: T.pDim, color: "#7dd3c8", fontSize: 12, fontWeight: 700,
+          background: T.pDim, color: "var(--green-text)", fontSize: 12, fontWeight: 700,
           cursor: "pointer", fontFamily: T.font,
         }}>Stärk profilen →</button>
       )}
@@ -230,7 +241,7 @@ function MarketSidebar({ driverMarket, user, linkCopied, onCopyLink, profileStat
 
       {/* Certifikatvarningar */}
       {certWarnings.length > 0 && (
-        <Card style={{ border: `1px solid rgba(245,166,35,0.3)`, background: "rgba(245,166,35,0.05)" }}>
+        <Card style={{ border: `1px solid var(--amber-tint-2)`, background: "var(--amber-tint)" }}>
           <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.amber, marginBottom: 12 }}>
             ⚠ Certifikat löper ut
           </p>
@@ -258,8 +269,8 @@ function MarketSidebar({ driverMarket, user, linkCopied, onCopyLink, profileStat
                 <span style={{ fontSize: 12, color: T.sub }}>{l.name}</span>
                 <span style={{ fontSize: 12, fontWeight: 600, color: T.text }}>{l.pct}%</span>
               </div>
-              <div style={{ height: 4, borderRadius: 4, background: "rgba(255,255,255,0.06)" }}>
-                <div style={{ height: 4, borderRadius: 4, background: T.primary, width: `${l.pct}%` }} />
+              <div style={{ height: 4, borderRadius: 4, background: "var(--paper-2)" }}>
+                <div style={{ height: 4, borderRadius: 4, background: "var(--green)", width: `${l.pct}%` }} />
               </div>
             </div>
           ))}
@@ -269,8 +280,8 @@ function MarketSidebar({ driverMarket, user, linkCopied, onCopyLink, profileStat
                 <span style={{ fontSize: 12, color: T.sub }}>{c.name}</span>
                 <span style={{ fontSize: 12, fontWeight: 600, color: T.text }}>{c.pct}%</span>
               </div>
-              <div style={{ height: 4, borderRadius: 4, background: "rgba(255,255,255,0.06)" }}>
-                <div style={{ height: 4, borderRadius: 4, background: T.pLight, width: `${c.pct}%` }} />
+              <div style={{ height: 4, borderRadius: 4, background: "var(--paper-2)" }}>
+                <div style={{ height: 4, borderRadius: 4, background: "var(--green-soft)", width: `${c.pct}%` }} />
               </div>
             </div>
           ))}
@@ -294,8 +305,8 @@ function MarketSidebar({ driverMarket, user, linkCopied, onCopyLink, profileStat
                 <span style={{ fontSize: 12, color: T.sub }}>{l.name}</span>
                 <span style={{ fontSize: 12, fontWeight: 600, color: T.text }}>{l.pct}%</span>
               </div>
-              <div style={{ height: 4, borderRadius: 4, background: "rgba(255,255,255,0.06)" }}>
-                <div style={{ height: 4, borderRadius: 4, background: T.primary, width: `${l.pct}%` }} />
+              <div style={{ height: 4, borderRadius: 4, background: "var(--paper-2)" }}>
+                <div style={{ height: 4, borderRadius: 4, background: "var(--green)", width: `${l.pct}%` }} />
               </div>
             </div>
           ))}
@@ -430,8 +441,9 @@ function ExpForm({ initial, onSave, onCancel, isMobile }) {
 
   return (
     <div style={{
-      background: T.bg2, border: `1.5px solid ${T.primary}`,
+      background: "var(--card)", border: `1.5px solid var(--green-tint-2)`,
       borderRadius: 14, padding: isMobile ? 16 : 20, marginLeft: isMobile ? 0 : 28, marginBottom: 8,
+      boxShadow: "var(--sh-sm)",
     }}>
       <p style={{ fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 16 }}>
         {initial ? "Redigera erfarenhet" : "Lägg till erfarenhet"}
@@ -494,8 +506,8 @@ function ExpForm({ initial, onSave, onCancel, isMobile }) {
             return (
               <button key={j.value} type="button" onClick={() => upd("jobType", on ? "" : j.value)} style={{
                 padding: "6px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer",
-                fontFamily: T.font, border: `1.5px solid ${on ? "#7dd3c8" : T.border}`,
-                background: on ? "rgba(125,211,200,0.15)" : T.card, color: on ? "#7dd3c8" : T.sub, transition: "all .12s",
+                fontFamily: T.font, border: `1.5px solid ${on ? "var(--green)" : T.border}`,
+                background: on ? "var(--green-tint)" : T.card, color: on ? "var(--green-text)" : T.sub, transition: "all .12s",
               }}>{j.label}</button>
             );
           })}
@@ -514,8 +526,8 @@ function ExpForm({ initial, onSave, onCancel, isMobile }) {
           cursor: "pointer", fontFamily: T.font, opacity: (!d.company || !d.role) ? 0.4 : 1,
         }}>{initial ? "Spara ändringar" : "Lägg till"}</button>
         <button type="button" onClick={onCancel} style={{
-          padding: "10px 22px", borderRadius: 9, border: "none",
-          background: "rgba(255,255,255,0.07)", color: T.sub, fontSize: 14, fontWeight: 600,
+          padding: "10px 22px", borderRadius: 9, border: `1px solid ${T.border}`,
+          background: "var(--paper-2)", color: T.sub, fontSize: 14, fontWeight: 600,
           cursor: "pointer", fontFamily: T.font,
         }}>Avbryt</button>
       </div>
@@ -523,49 +535,6 @@ function ExpForm({ initial, onSave, onCancel, isMobile }) {
   );
 }
 
-/* ── Simple match score for a job (used in Matchningar tab) ── */
-function computeSimpleMatch(profile, job) {
-  let score = 0;
-  let total = 0;
-
-  // License match (40 pts)
-  const jobLics = job.licenseRequired ? [job.licenseRequired] : [];
-  if (jobLics.length > 0) {
-    total += 40;
-    const hasLic = jobLics.some((l) => (profile.licenses || []).includes(l));
-    if (hasLic) score += 40;
-  }
-
-  // Region match (20 pts)
-  if (job.region) {
-    total += 20;
-    const inRegion = profile.region === job.region || (profile.regionsWilling || []).includes(job.region);
-    if (inRegion) score += 20;
-  }
-
-  // Cert match (20 pts)
-  if (job.certificatesRequired && job.certificatesRequired.length > 0) {
-    total += 20;
-    const hasCerts = job.certificatesRequired.every((c) => (profile.certificates || []).includes(c));
-    if (hasCerts) score += 20;
-    else {
-      const partial = job.certificatesRequired.filter((c) => (profile.certificates || []).includes(c)).length;
-      score += Math.round((partial / job.certificatesRequired.length) * 20);
-    }
-  }
-
-  // Availability match (20 pts)
-  if (job.employmentType && profile.availability) {
-    total += 20;
-    const avMap = { fast: "fast", vikariat: "vikariat", tim: "tim" };
-    if (profile.availability === "open" || profile.availability === job.employmentType || avMap[profile.availability] === job.employmentType) {
-      score += 20;
-    }
-  }
-
-  if (total === 0) return 50; // neutral default
-  return Math.min(100, Math.round((score / total) * 100));
-}
 
 /* ══════════ MAIN ══════════ */
 export default function Profile() {
@@ -606,7 +575,7 @@ export default function Profile() {
       .then((data) => {
         const jobs = Array.isArray(data) ? data : (data?.jobs || []);
         const withScore = jobs
-          .map((j) => ({ ...j, matchScore: computeSimpleMatch(profile, j) }))
+          .map((j) => ({ ...j, matchScore: matchScore(profile, j).pct }))
           .sort((a, b) => b.matchScore - a.matchScore)
           .slice(0, 20);
         setMatchedJobs(withScore);
@@ -735,8 +704,8 @@ export default function Profile() {
   const chipBtn = (active, colorOverride) => ({
     padding: "7px 14px", borderRadius: 8, fontSize: 12, fontWeight: 500, cursor: "pointer",
     fontFamily: T.font, border: `1.5px solid ${active ? (colorOverride || T.primary) : T.border}`,
-    background: active ? (colorOverride ? `${colorOverride}22` : T.primary) : T.card,
-    color: active ? (colorOverride || "#fff") : T.sub, transition: "all .12s",
+    background: active ? (colorOverride ? "var(--green-tint)" : T.primary) : T.card,
+    color: active ? (colorOverride ? "var(--green-text)" : "#fff") : T.sub, transition: "all .12s",
   });
 
   const inputStyle = {
@@ -749,28 +718,28 @@ export default function Profile() {
   if (isMobile && editing) {
     const mobileInput = {
       width: "100%", padding: "13px 14px", borderRadius: 12,
-      background: "#0a1414", border: "1px solid rgba(255,255,255,0.08)",
-      color: "#fff", fontSize: 15, fontFamily: "'DM Sans', system-ui, sans-serif",
+      background: "var(--card)", border: "1px solid var(--line-2)",
+      color: "var(--ink-900)", fontSize: 15, fontFamily: "'DM Sans', system-ui, sans-serif",
       outline: "none",
     };
     const SectionLabel = ({ children, id }) => (
-      <div id={id} style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginBottom: 10, marginTop: 24 }}>
+      <div id={id} style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 10, marginTop: 24 }}>
         {children}
       </div>
     );
 
     return (
-      <div style={{ position: "fixed", inset: 0, background: "#060f0f", color: "#fff", display: "flex", flexDirection: "column", zIndex: 200, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+      <div style={{ position: "fixed", inset: 0, background: "var(--paper)", color: "var(--ink-900)", display: "flex", flexDirection: "column", zIndex: 200, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
         {/* Top bar */}
-        <div style={{ padding: "48px 18px 12px", display: "flex", alignItems: "center", gap: 12, background: "rgba(6,15,15,0.96)", backdropFilter: "blur(14px)", borderBottom: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}>
-          <button onClick={cancelEditing} style={{ padding: "8px 14px", borderRadius: 99, background: "rgba(255,255,255,0.05)", border: "none", color: "rgba(255,255,255,0.75)", fontSize: 13.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+        <div style={{ padding: "48px 18px 12px", display: "flex", alignItems: "center", gap: 12, background: "var(--card)", borderBottom: "1px solid var(--line)", flexShrink: 0, boxShadow: "var(--sh-sm)" }}>
+          <button onClick={cancelEditing} style={{ padding: "8px 14px", borderRadius: 99, background: "var(--paper-2)", border: "1px solid var(--line-2)", color: "var(--ink-700)", fontSize: 13.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
             Avbryt
           </button>
-          <h1 style={{ flex: 1, fontSize: 17, fontWeight: 800, textAlign: "center", margin: 0 }}>Redigera profil</h1>
+          <h1 style={{ flex: 1, fontSize: 17, fontWeight: 800, textAlign: "center", margin: 0, color: "var(--ink-900)" }}>Redigera profil</h1>
           <button
             onClick={saveProfile}
             disabled={profileSaving}
-            style={{ padding: "8px 16px", borderRadius: 99, background: profileSaving ? "rgba(245,166,35,0.3)" : "linear-gradient(135deg,#F5A623,#d97706)", border: "none", color: "#000", fontSize: 13.5, fontWeight: 800, cursor: profileSaving ? "default" : "pointer", fontFamily: "inherit" }}
+            style={{ padding: "8px 16px", borderRadius: 99, background: profileSaving ? "var(--green-tint)" : "var(--green)", border: "none", color: "#fff", fontSize: 13.5, fontWeight: 800, cursor: profileSaving ? "default" : "pointer", fontFamily: "inherit" }}
           >
             {profileSaving ? "Sparar…" : "Spara"}
           </button>
@@ -778,8 +747,8 @@ export default function Profile() {
 
         {/* Error */}
         {profileSaveError && (
-          <div style={{ padding: "10px 18px", background: "rgba(248,113,113,0.1)", borderBottom: "1px solid rgba(248,113,113,0.3)", flexShrink: 0 }}>
-            <p style={{ fontSize: 13, color: "#f87171", margin: 0 }}>{profileSaveError}</p>
+          <div style={{ padding: "10px 18px", background: "var(--danger-tint)", borderBottom: "1px solid var(--danger-tint)", flexShrink: 0 }}>
+            <p style={{ fontSize: 13, color: "var(--danger)", margin: 0 }}>{profileSaveError}</p>
           </div>
         )}
 
@@ -831,26 +800,26 @@ export default function Profile() {
             {licenseTypes.filter(l => l.value !== "B").map((l) => {
               const active = (current.licenses || []).includes(l.value);
               return (
-                <button key={l.value} onClick={() => toggleLicense(l.value)} style={{ padding: "10px 18px", borderRadius: 99, background: active ? "rgba(245,166,35,0.12)" : "#0a1414", border: `1px solid ${active ? "rgba(245,166,35,0.4)" : "rgba(255,255,255,0.08)"}`, color: active ? "#F5A623" : "rgba(255,255,255,0.7)", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", minHeight: 44 }}>
+                <button key={l.value} onClick={() => toggleLicense(l.value)} style={{ padding: "10px 18px", borderRadius: 99, background: active ? "var(--green)" : "var(--card)", border: `1px solid ${active ? "var(--green-deep)" : "var(--line-2)"}`, color: active ? "#fff" : "var(--ink-700)", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", minHeight: 44 }}>
                   {l.label}
                 </button>
               );
             })}
           </div>
           {((current.licenses || []).includes("C") || (current.licenses || []).includes("CE")) && (
-            <p style={{ fontSize: 11.5, color: "rgba(255,255,255,0.35)", marginTop: 6 }}>B ingår automatiskt med C/CE</p>
+            <p style={{ fontSize: 11.5, color: "var(--ink-400)", marginTop: 6 }}>B ingår automatiskt med C/CE</p>
           )}
 
           {/* Certifikat */}
           <SectionLabel id="edit-certifikat">Certifikat</SectionLabel>
           {certificateGroups.map((group) => (
             <div key={group.id} style={{ marginBottom: 14 }}>
-              <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.45)", fontWeight: 600, marginBottom: 7 }}>{group.label}</div>
+              <div style={{ fontSize: 11.5, color: "var(--ink-500)", fontWeight: 600, marginBottom: 7 }}>{group.label}</div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
                 {group.options.map((ct) => {
                   const active = (current.certificates || []).includes(ct.value);
                   return (
-                    <button key={ct.value} onClick={() => toggleCertificate(ct.value)} style={{ padding: "8px 13px", borderRadius: 99, background: active ? "rgba(74,222,128,0.1)" : "#0a1414", border: `1px solid ${active ? "rgba(74,222,128,0.35)" : "rgba(255,255,255,0.08)"}`, color: active ? "#4ade80" : "rgba(255,255,255,0.7)", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", minHeight: 38 }}>
+                    <button key={ct.value} onClick={() => toggleCertificate(ct.value)} style={{ padding: "8px 13px", borderRadius: 99, background: active ? "var(--success-tint)" : "var(--card)", border: `1px solid ${active ? "var(--success)" : "var(--line-2)"}`, color: active ? "var(--success)" : "var(--ink-700)", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", minHeight: 38 }}>
                       {ct.label}
                     </button>
                   );
@@ -865,7 +834,7 @@ export default function Profile() {
             {regions.map((r) => {
               const active = current.region === r;
               return (
-                <button key={r} onClick={() => updateDraft({ region: current.region === r ? "" : r })} style={{ padding: "8px 13px", borderRadius: 99, background: active ? "rgba(245,166,35,0.12)" : "#0a1414", border: `1px solid ${active ? "rgba(245,166,35,0.4)" : "rgba(255,255,255,0.08)"}`, color: active ? "#F5A623" : "rgba(255,255,255,0.7)", fontSize: 12.5, fontWeight: active ? 700 : 500, cursor: "pointer", fontFamily: "inherit", minHeight: 36 }}>
+                <button key={r} onClick={() => updateDraft({ region: current.region === r ? "" : r })} style={{ padding: "8px 13px", borderRadius: 99, background: active ? "var(--amber-tint)" : "var(--card)", border: `1px solid ${active ? "var(--amber-tint-2)" : "var(--line-2)"}`, color: active ? "var(--amber-text)" : "var(--ink-700)", fontSize: 12.5, fontWeight: active ? 700 : 500, cursor: "pointer", fontFamily: "inherit", minHeight: 36 }}>
                   {r}
                 </button>
               );
@@ -874,13 +843,13 @@ export default function Profile() {
 
           {/* Regioner jag vill köra i */}
           <SectionLabel id="edit-regioner">Vill köra i</SectionLabel>
-          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 10, marginTop: -4 }}>Välj alla regioner du är öppen för</p>
+          <p style={{ fontSize: 12, color: "var(--ink-400)", marginBottom: 10, marginTop: -4 }}>Välj alla regioner du är öppen för</p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 20 }}>
             {regions.map((r) => {
               const rw = current.regionsWilling || [];
               const on = rw.includes(r);
               return (
-                <button key={r} onClick={() => updateDraft({ regionsWilling: on ? rw.filter((x) => x !== r) : [...rw, r] })} style={{ padding: "8px 13px", borderRadius: 99, background: on ? "rgba(125,211,200,0.1)" : "#0a1414", border: `1px solid ${on ? "rgba(125,211,200,0.35)" : "rgba(255,255,255,0.08)"}`, color: on ? "#7dd3c8" : "rgba(255,255,255,0.7)", fontSize: 12.5, fontWeight: on ? 700 : 500, cursor: "pointer", fontFamily: "inherit", minHeight: 36 }}>
+                <button key={r} onClick={() => updateDraft({ regionsWilling: on ? rw.filter((x) => x !== r) : [...rw, r] })} style={{ padding: "8px 13px", borderRadius: 99, background: on ? "var(--green-tint)" : "var(--card)", border: `1px solid ${on ? "var(--green-tint-2)" : "var(--line-2)"}`, color: on ? "var(--green-text)" : "var(--ink-700)", fontSize: 12.5, fontWeight: on ? 700 : 500, cursor: "pointer", fontFamily: "inherit", minHeight: 36 }}>
                   {r}
                 </button>
               );
@@ -893,9 +862,9 @@ export default function Profile() {
             {availabilityTypes.map((a) => {
               const active = current.availability === a.value;
               return (
-                <button key={a.value} onClick={() => updateDraft({ availability: a.value })} style={{ padding: "14px 16px", borderRadius: 12, background: active ? "rgba(245,166,35,0.08)" : "#0a1414", border: `1px solid ${active ? "rgba(245,166,35,0.4)" : "rgba(255,255,255,0.08)"}`, color: "#fff", fontSize: 14, fontWeight: active ? 700 : 500, cursor: "pointer", textAlign: "left", display: "flex", alignItems: "center", gap: 10, fontFamily: "inherit" }}>
-                  <div style={{ width: 20, height: 20, borderRadius: 99, border: `2px solid ${active ? "#F5A623" : "rgba(255,255,255,0.25)"}`, background: active ? "#F5A623" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    {active && <svg viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" width="11" height="11"><polyline points="20 6 9 17 4 12"/></svg>}
+                <button key={a.value} onClick={() => updateDraft({ availability: a.value })} style={{ padding: "14px 16px", borderRadius: 12, background: active ? "var(--green-tint)" : "var(--card)", border: `1px solid ${active ? "var(--green-tint-2)" : "var(--line-2)"}`, color: "var(--ink-900)", fontSize: 14, fontWeight: active ? 700 : 500, cursor: "pointer", textAlign: "left", display: "flex", alignItems: "center", gap: 10, fontFamily: "inherit" }}>
+                  <div style={{ width: 20, height: 20, borderRadius: 99, border: `2px solid ${active ? "var(--green)" : "var(--line-2)"}`, background: active ? "var(--green)" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    {active && <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" width="11" height="11"><polyline points="20 6 9 17 4 12"/></svg>}
                   </div>
                   {a.label}
                 </button>
@@ -916,35 +885,35 @@ export default function Profile() {
       : current?.region || "Ej angivet";
 
     const RowLink = ({ href, icon, label, value, danger, accent, section }) => (
-      <Link to={href || "#"} onClick={href ? undefined : section ? () => startEditingAt(section) : startEditing} style={{ display: "flex", width: "100%", padding: "14px 18px", background: "transparent", border: "none", borderBottom: "1px solid rgba(255,255,255,0.04)", cursor: "pointer", alignItems: "center", gap: 14, minHeight: 54, textDecoration: "none", color: danger ? "#f87171" : "#fff" }}>
-        <div style={{ width: 34, height: 34, borderRadius: 9, background: accent ? "rgba(245,166,35,0.1)" : danger ? "rgba(248,113,113,0.08)" : "rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      <Link to={href || "#"} onClick={href ? undefined : section ? () => startEditingAt(section) : startEditing} style={{ display: "flex", width: "100%", padding: "14px 18px", background: "transparent", border: "none", borderBottom: "1px solid var(--line)", cursor: "pointer", alignItems: "center", gap: 14, minHeight: 54, textDecoration: "none", color: danger ? "var(--danger)" : "var(--ink-900)" }}>
+        <div style={{ width: 34, height: 34, borderRadius: 9, background: accent ? "var(--amber-tint)" : danger ? "var(--danger-tint)" : "var(--paper-2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
           {icon}
         </div>
         <span style={{ flex: 1, fontSize: 14, fontWeight: 600 }}>{label}</span>
-        {value && <span style={{ fontSize: 12.5, color: "rgba(255,255,255,0.5)" }}>{value}</span>}
-        {!danger && <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="13" height="13"><polyline points="9 18 15 12 9 6"/></svg>}
+        {value && <span style={{ fontSize: 12.5, color: "var(--ink-400)" }}>{value}</span>}
+        {!danger && <svg viewBox="0 0 24 24" fill="none" stroke="var(--ink-300)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="13" height="13"><polyline points="9 18 15 12 9 6"/></svg>}
       </Link>
     );
 
     return (
-      <div style={{ background: "#060f0f", minHeight: "100vh", color: "#fff", paddingBottom: 100, paddingTop: 60, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+      <div style={{ background: "var(--paper)", minHeight: "100vh", color: "var(--ink-900)", paddingBottom: 100, paddingTop: 60, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
 
         {/* Hero card */}
         <div style={{ padding: "4px 20px 20px" }}>
-          <div style={{ background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 18, padding: "20px", textAlign: "center" }}>
-            <div style={{ width: 84, height: 84, borderRadius: 99, background: "linear-gradient(135deg,#F5A623,#d97706)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 26, color: "#000", margin: "0 auto 12px", position: "relative" }}>
+          <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 18, padding: "20px", textAlign: "center", boxShadow: "var(--sh-sm)" }}>
+            <div style={{ width: 84, height: 84, borderRadius: 99, background: "linear-gradient(135deg, var(--green) 0%, var(--green-soft) 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 26, color: "#fff", margin: "0 auto 12px", position: "relative" }}>
               {initials}
               {current?.isVerified && (
-                <div style={{ position: "absolute", bottom: 0, right: 0, width: 24, height: 24, borderRadius: 99, background: "#4ade80", border: "3px solid #0a1414", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" width="11" height="11"><polyline points="20 6 9 17 4 12"/></svg>
+                <div style={{ position: "absolute", bottom: 0, right: 0, width: 24, height: 24, borderRadius: 99, background: "var(--success)", border: "3px solid var(--card)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" width="11" height="11"><polyline points="20 6 9 17 4 12"/></svg>
                 </div>
               )}
             </div>
-            <h2 style={{ fontSize: 20, fontWeight: 800, letterSpacing: -0.5, marginBottom: 4 }}>{current?.name || "Din profil"}</h2>
-            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", marginBottom: 14 }}>
+            <h2 style={{ fontSize: 20, fontWeight: 800, letterSpacing: -0.5, marginBottom: 4, color: "var(--ink-900)" }}>{current?.name || "Din profil"}</h2>
+            <div style={{ fontSize: 13, color: "var(--ink-500)", marginBottom: 14 }}>
               {[current?.location, current?.experience?.length > 0 && `${calcYearsExperience(current.experience)} år erfarenhet`].filter(Boolean).join(" · ") || "Lägg till plats & erfarenhet"}
             </div>
-            <button onClick={startEditing} style={{ padding: "10px 20px", borderRadius: 99, background: "rgba(245,166,35,0.1)", border: "1px solid rgba(245,166,35,0.3)", color: "#F5A623", fontSize: 13, fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6, minHeight: 40, fontFamily: "inherit" }}>
+            <button onClick={startEditing} style={{ padding: "10px 20px", borderRadius: 99, background: "var(--green-tint)", border: "1px solid var(--green-tint-2)", color: "var(--green-text)", fontSize: 13, fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6, minHeight: 40, fontFamily: "inherit" }}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="12" height="12"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
               Redigera profil
             </button>
@@ -952,34 +921,34 @@ export default function Profile() {
 
           {/* Stats */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginTop: 12 }}>
-            <div style={{ padding: "12px 10px", background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 11, textAlign: "center" }}>
-              <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 2 }}>{profileStats?.views30 ?? 0}</div>
-              <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.5)", fontWeight: 600 }}>Visningar (30d)</div>
+            <div style={{ padding: "12px 10px", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 11, textAlign: "center", boxShadow: "var(--sh-sm)" }}>
+              <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 2, color: "var(--ink-900)", fontFamily: "var(--mono)" }}>{profileStats?.views30 ?? 0}</div>
+              <div style={{ fontSize: 10.5, color: "var(--ink-400)", fontWeight: 600 }}>Visningar (30d)</div>
             </div>
-            <div style={{ padding: "12px 10px", background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 11, textAlign: "center" }}>
-              <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 2, color: "#F5A623" }}>{profileStats?.views7 ?? 0}</div>
-              <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.5)", fontWeight: 600 }}>Visningar (7d)</div>
+            <div style={{ padding: "12px 10px", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 11, textAlign: "center", boxShadow: "var(--sh-sm)" }}>
+              <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 2, color: "var(--amber)", fontFamily: "var(--mono)" }}>{profileStats?.views7 ?? 0}</div>
+              <div style={{ fontSize: 10.5, color: "var(--ink-400)", fontWeight: 600 }}>Visningar (7d)</div>
             </div>
-            <div style={{ padding: "12px 10px", background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 11, textAlign: "center" }}>
-              <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 2, color: "#4ade80" }}>{profileStats?.conversationCount ?? 0}</div>
-              <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.5)", fontWeight: 600 }}>Kontaktade dig</div>
+            <div style={{ padding: "12px 10px", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 11, textAlign: "center", boxShadow: "var(--sh-sm)" }}>
+              <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 2, color: "var(--success)", fontFamily: "var(--mono)" }}>{profileStats?.conversationCount ?? 0}</div>
+              <div style={{ fontSize: 10.5, color: "var(--ink-400)", fontWeight: 600 }}>Kontaktade dig</div>
             </div>
           </div>
         </div>
 
         {/* Visibility toggle */}
         <div style={{ padding: "0 20px 20px" }}>
-          <div style={{ padding: "14px 16px", background: current?.visibleToCompanies ? "rgba(74,222,128,0.05)" : "rgba(255,255,255,0.03)", border: `1px solid ${current?.visibleToCompanies ? "rgba(74,222,128,0.2)" : "rgba(255,255,255,0.07)"}`, borderRadius: 13, display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ width: 38, height: 38, borderRadius: 10, background: current?.visibleToCompanies ? "rgba(74,222,128,0.15)" : "rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <svg viewBox="0 0 24 24" fill="none" stroke={current?.visibleToCompanies ? "#4ade80" : "rgba(255,255,255,0.6)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <div style={{ padding: "14px 16px", background: current?.visibleToCompanies ? "var(--success-tint)" : "var(--card)", border: `1px solid ${current?.visibleToCompanies ? "var(--success)" : "var(--line)"}`, borderRadius: 13, display: "flex", alignItems: "center", gap: 12, boxShadow: "var(--sh-sm)" }}>
+            <div style={{ width: 38, height: 38, borderRadius: 10, background: current?.visibleToCompanies ? "var(--success-tint)" : "var(--paper-2)", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid var(--line)" }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke={current?.visibleToCompanies ? "var(--success)" : "var(--ink-400)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2 }}>Synlig för åkerier</div>
-              <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.55)" }}>{current?.visibleToCompanies ? "Åkerier kan hitta dig och skicka jobb" : "Endast du ser din profil"}</div>
+              <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2, color: "var(--ink-900)" }}>Synlig för åkerier</div>
+              <div style={{ fontSize: 11.5, color: "var(--ink-500)" }}>{current?.visibleToCompanies ? "Åkerier kan hitta dig och skicka jobb" : "Endast du ser din profil"}</div>
             </div>
             <button
               onClick={() => updateProfile({ ...profile, visibleToCompanies: !current?.visibleToCompanies })}
-              style={{ width: 48, height: 28, borderRadius: 99, background: current?.visibleToCompanies ? "#4ade80" : "rgba(255,255,255,0.15)", border: "none", position: "relative", cursor: "pointer", flexShrink: 0, transition: "background .2s" }}
+              style={{ width: 48, height: 28, borderRadius: 99, background: current?.visibleToCompanies ? "var(--success)" : "var(--ink-200)", border: "none", position: "relative", cursor: "pointer", flexShrink: 0, transition: "background .2s" }}
             >
               <div style={{ position: "absolute", top: 3, left: current?.visibleToCompanies ? 23 : 3, width: 22, height: 22, borderRadius: 99, background: "#fff", transition: "left .2s" }}/>
             </button>
@@ -989,48 +958,48 @@ export default function Profile() {
         {/* Profile completion */}
         {progressPct < 100 && (
           <div style={{ padding: "0 20px 20px" }}>
-            <div style={{ background: "linear-gradient(135deg, rgba(245,166,35,0.06), rgba(245,166,35,0.01))", border: "1px solid rgba(245,166,35,0.2)", borderRadius: 13, padding: "14px 16px" }}>
+            <div style={{ background: "var(--amber-tint)", border: "1px solid var(--amber-tint-2)", borderRadius: 13, padding: "14px 16px" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                <span style={{ fontSize: 13, fontWeight: 700 }}>Profil {progressPct}% klar</span>
-                <span style={{ fontSize: 11.5, color: "#F5A623", fontWeight: 700 }}>{totalSteps - completedSteps} steg kvar</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "var(--ink-900)" }}>Profil {progressPct}% klar</span>
+                <span style={{ fontSize: 11.5, color: "var(--amber)", fontWeight: 700 }}>{totalSteps - completedSteps} steg kvar</span>
               </div>
-              <div style={{ height: 6, background: "rgba(255,255,255,0.06)", borderRadius: 99, overflow: "hidden", marginBottom: 12 }}>
-                <div style={{ height: "100%", width: `${progressPct}%`, background: "linear-gradient(90deg,#F5A623,#d97706)", borderRadius: 99 }}/>
+              <div style={{ height: 6, background: "var(--amber-tint-2)", borderRadius: 99, overflow: "hidden", marginBottom: 12 }}>
+                <div style={{ height: "100%", width: `${progressPct}%`, background: "var(--amber)", borderRadius: 99 }}/>
               </div>
-              <button onClick={startEditing} style={{ padding: "9px 16px", borderRadius: 99, background: "rgba(245,166,35,0.12)", border: "1px solid rgba(245,166,35,0.3)", color: "#F5A623", fontSize: 12.5, fontWeight: 700, cursor: "pointer", minHeight: 36, fontFamily: "inherit" }}>Komplettera nu →</button>
+              <button onClick={startEditing} style={{ padding: "9px 16px", borderRadius: 99, background: "var(--amber)", border: "none", color: "#fff", fontSize: 12.5, fontWeight: 700, cursor: "pointer", minHeight: 36, fontFamily: "inherit" }}>Komplettera nu →</button>
             </div>
           </div>
         )}
 
         {/* Mina uppgifter */}
         <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "rgba(255,255,255,0.45)", padding: "0 20px", marginBottom: 10 }}>Mina uppgifter</div>
-          <div style={{ background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 14, overflow: "hidden", margin: "0 20px" }}>
-            <RowLink section="edit-personuppgifter" icon={<svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>} label="Personuppgifter" />
-            <RowLink section="edit-korkort" icon={<svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><rect x="1" y="3" width="15" height="13" rx="1"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>} label="Körkort & certifikat" value={`${licenses.length + certs.length} st`} />
-            <RowLink icon={<svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>} label="Arbetslivserfarenhet" value={current?.experience?.length > 0 ? `${current.experience.length} st` : undefined} />
-            <RowLink section="edit-regioner" icon={<svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>} label="Var jag vill köra" value={regions} />
+          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)", padding: "0 20px", marginBottom: 10 }}>Mina uppgifter</div>
+          <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, overflow: "hidden", margin: "0 20px", boxShadow: "var(--sh-sm)" }}>
+            <RowLink section="edit-personuppgifter" icon={<svg viewBox="0 0 24 24" fill="none" stroke="var(--ink-500)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>} label="Personuppgifter" />
+            <RowLink section="edit-korkort" icon={<svg viewBox="0 0 24 24" fill="none" stroke="var(--ink-500)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><rect x="1" y="3" width="15" height="13" rx="1"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>} label="Körkort & certifikat" value={`${licenses.length + certs.length} st`} />
+            <RowLink icon={<svg viewBox="0 0 24 24" fill="none" stroke="var(--ink-500)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>} label="Arbetslivserfarenhet" value={current?.experience?.length > 0 ? `${current.experience.length} st` : undefined} />
+            <RowLink section="edit-regioner" icon={<svg viewBox="0 0 24 24" fill="none" stroke="var(--ink-500)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>} label="Var jag vill köra" value={regions} />
           </div>
         </div>
 
         {/* Settings */}
         <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "rgba(255,255,255,0.45)", padding: "0 20px", marginBottom: 10 }}>Inställningar</div>
-          <div style={{ background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 14, overflow: "hidden", margin: "0 20px" }}>
-            <RowLink href="/installningar?tab=notiser" icon={<svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>} label="Notiser" value="På" />
-            <RowLink href="/installningar?tab=sekretess" icon={<svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>} label="Integritet" />
-            <RowLink href="/installningar?tab=konto" icon={<svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>} label="Konto & säkerhet" />
+          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)", padding: "0 20px", marginBottom: 10 }}>Inställningar</div>
+          <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, overflow: "hidden", margin: "0 20px", boxShadow: "var(--sh-sm)" }}>
+            <RowLink href="/installningar?tab=notiser" icon={<svg viewBox="0 0 24 24" fill="none" stroke="var(--ink-500)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>} label="Notiser" value="På" />
+            <RowLink href="/installningar?tab=sekretess" icon={<svg viewBox="0 0 24 24" fill="none" stroke="var(--ink-500)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>} label="Integritet" />
+            <RowLink href="/installningar?tab=konto" icon={<svg viewBox="0 0 24 24" fill="none" stroke="var(--ink-500)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>} label="Konto & säkerhet" />
           </div>
         </div>
 
         {/* Logout */}
         <div style={{ margin: "0 20px 20px" }}>
-          <div style={{ background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 14, overflow: "hidden" }}>
-            <RowLink href="/installningar" icon={<svg viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>} label="Logga ut" danger />
+          <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, overflow: "hidden", boxShadow: "var(--sh-sm)" }}>
+            <RowLink href="/installningar" icon={<svg viewBox="0 0 24 24" fill="none" stroke="var(--danger)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>} label="Logga ut" danger />
           </div>
         </div>
 
-        <div style={{ textAlign: "center", padding: "4px 20px 20px", fontSize: 11, color: "rgba(255,255,255,0.25)" }}>
+        <div style={{ textAlign: "center", padding: "4px 20px 20px", fontSize: 11, color: "var(--ink-300)" }}>
           Inloggad som {user?.email}
         </div>
       </div>
@@ -1039,24 +1008,25 @@ export default function Profile() {
   // ── End mobile profile view ──────────────────────────────────────────────
 
   return (
-    <div style={{ minHeight: "100vh", background: "#060f0f", color: T.text, fontFamily: T.font, marginTop: "-64px", paddingTop: 64 }}>
+    <div style={{ minHeight: "100vh", background: "var(--paper)", color: "var(--ink-900)", fontFamily: "var(--font)" }}>
 
       {/* ── Hero ── */}
       <div style={{
-        background: `linear-gradient(160deg, #061414 0%, ${T.bg3} 50%, #061414 100%)`,
-        borderBottom: `1px solid ${T.border}`,
+        background: "var(--card)",
+        borderBottom: "1px solid var(--line)",
+        boxShadow: "var(--sh-sm)",
       }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", padding: isMobile ? "24px 20px 0" : "36px 40px 0" }}>
 
           {/* Edit toolbar — top: only show Redigera / editing indicator */}
           <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8, marginBottom: 20 }}>
             {editing ? (
-              <span style={{ fontSize: 12, color: T.amber, fontWeight: 600 }}>● Redigeringsläge — spara längst ned</span>
+              <span style={{ fontSize: 12, color: "var(--amber)", fontWeight: 600 }}>● Redigeringsläge — spara längst ned</span>
             ) : (
               <button onClick={startEditing} style={{
-                padding: "6px 14px", borderRadius: 9, border: `1.5px solid ${T.border2}`,
-                background: "transparent", color: T.text, fontSize: 12, fontWeight: 600,
-                cursor: "pointer", fontFamily: T.font,
+                padding: "6px 14px", borderRadius: 9, border: "1px solid var(--line-2)",
+                background: "transparent", color: "var(--ink-700)", fontSize: 12, fontWeight: 600,
+                cursor: "pointer", fontFamily: "var(--font)",
               }}>Redigera profil</button>
             )}
           </div>
@@ -1065,11 +1035,11 @@ export default function Profile() {
             {/* Avatar */}
             <div style={{
               width: 76, height: 76, borderRadius: "50%", flexShrink: 0,
-              background: `linear-gradient(135deg, ${T.primary} 0%, ${T.pLight} 100%)`,
+              background: "linear-gradient(135deg, var(--green) 0%, var(--green-soft) 100%)",
               display: "flex", alignItems: "center", justifyContent: "center",
               fontSize: 24, fontWeight: 700, color: "#fff",
-              border: "3px solid rgba(255,255,255,0.12)",
-              boxShadow: `0 0 0 1px ${T.border}, 0 8px 32px ${T.pGlow}`,
+              border: "3px solid var(--card)",
+              boxShadow: "0 0 0 2px var(--green-tint-2), var(--sh-md)",
             }}>{initials}</div>
 
             {/* Info */}
@@ -1081,8 +1051,8 @@ export default function Profile() {
                     onChange={(e) => updateDraft({ name: e.target.value })}
                     style={{
                       flex: 1, padding: "8px 12px", borderRadius: 9,
-                      background: "rgba(255,255,255,0.08)", border: `1px solid ${T.border2}`,
-                      color: T.text, fontSize: 20, fontWeight: 700, outline: "none", fontFamily: T.font,
+                      background: "var(--card)", border: "1px solid var(--line-2)",
+                      color: "var(--ink-900)", fontSize: 20, fontWeight: 700, outline: "none", fontFamily: "var(--font)",
                     }}
                   />
                 </div>
@@ -1120,7 +1090,7 @@ export default function Profile() {
                 padding: "13px 20px", border: "none", background: "transparent", cursor: "pointer",
                 fontFamily: T.font, fontSize: 13, fontWeight: tab === t ? 700 : 400,
                 color: tab === t ? T.text : T.sub,
-                borderBottom: tab === t ? `2px solid ${T.amber}` : "2px solid transparent",
+                borderBottom: tab === t ? "2px solid var(--green)" : "2px solid transparent",
                 transition: "all .15s", textTransform: "capitalize",
               }}>{t.charAt(0).toUpperCase() + t.slice(1)}</button>
             ))}
@@ -1177,7 +1147,7 @@ export default function Profile() {
                             }} style={{
                               padding: "7px 14px", borderRadius: 8, fontSize: 12, fontWeight: 500, cursor: "pointer",
                               fontFamily: T.font, border: `1.5px solid ${on ? T.primary : T.border}`,
-                              background: on ? T.pDim : T.card, color: on ? "#7dd3c8" : T.sub, transition: "all .12s",
+                              background: on ? T.pDim : T.card, color: on ? "var(--green-text)" : T.sub, transition: "all .12s",
                             }}>{r}</button>
                           );
                         })}
@@ -1261,7 +1231,7 @@ export default function Profile() {
                                     fontFamily: T.font, flexShrink: 0,
                                     border: `1.5px solid ${selected ? T.primary : T.border}`,
                                     background: selected ? T.pDim : T.card,
-                                    color: selected ? "#7dd3c8" : T.sub, transition: "all .12s",
+                                    color: selected ? "var(--green-text)" : T.sub, transition: "all .12s",
                                   }}>{ct.label}</button>
                                   {selected && (
                                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -1304,7 +1274,7 @@ export default function Profile() {
                             <div key={cid} style={{
                               display: "flex", alignItems: "center", justifyContent: "space-between",
                               padding: "10px 14px", borderRadius: 10, background: T.card,
-                              border: `1px solid ${warn ? (st.days < 90 ? "rgba(248,113,113,0.2)" : "rgba(245,166,35,0.2)") : T.border}`,
+                              border: `1px solid ${warn ? (st.days < 90 ? "rgba(239,68,68,0.2)" : "rgba(245,166,35,0.2)") : T.border}`,
                             }}>
                               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                                 {warn && (
@@ -1327,7 +1297,7 @@ export default function Profile() {
                         {certWarnings.length > 0 && (
                           <button onClick={startEditing} style={{
                             marginTop: 4, padding: "7px 14px", borderRadius: 8, border: "none",
-                            background: T.pDim, color: "#7dd3c8",
+                            background: T.pDim, color: "var(--green-text)",
                             fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: T.font, textAlign: "left",
                           }}>Uppdatera utgångsdatum →</button>
                         )}
@@ -1407,7 +1377,7 @@ export default function Profile() {
                               padding: "7px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer",
                               fontFamily: T.font,
                               border: `1.5px solid ${on ? T.green : T.border}`,
-                              background: on ? "rgba(74,222,128,0.1)" : T.card,
+                              background: on ? "var(--success-tint)" : T.card,
                               color: on ? T.green : T.sub, transition: "all .12s",
                             }}>{label}</button>
                           );
@@ -1520,7 +1490,7 @@ export default function Profile() {
                   editing && !addingExp && editingExpId === null && (
                     <button onClick={() => setAddingExp(true)} style={{
                       padding: "6px 14px", borderRadius: 8, border: "none",
-                      background: T.pDim, color: "#7dd3c8", fontSize: 12, fontWeight: 700,
+                      background: T.pDim, color: "var(--green-text)", fontSize: 12, fontWeight: 700,
                       cursor: "pointer", fontFamily: T.font,
                     }}>+ Lägg till</button>
                   )
@@ -1553,7 +1523,7 @@ export default function Profile() {
                         <div style={{
                           position: "absolute", left: 0, top: 4,
                           width: 20, height: 20, borderRadius: "50%",
-                          background: exp.current ? "rgba(74,222,128,0.15)" : T.card,
+                          background: exp.current ? "var(--success-tint)" : T.card,
                           border: `2px solid ${exp.current ? T.green : T.border2}`,
                           display: "flex", alignItems: "center", justifyContent: "center",
                           fontSize: 8, color: exp.current ? T.green : T.border2, flexShrink: 0,
@@ -1587,8 +1557,8 @@ export default function Profile() {
                                   display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14,
                                 }}>✎</button>
                                 <button onClick={() => removeExperience(exp.id)} style={{
-                                  width: 30, height: 30, borderRadius: 8, border: "1px solid rgba(248,113,113,0.2)",
-                                  background: "rgba(248,113,113,0.06)", color: T.red, cursor: "pointer",
+                                  width: 30, height: 30, borderRadius: 8, border: "1px solid rgba(239,68,68,0.2)",
+                                  background: "var(--danger-tint)", color: T.red, cursor: "pointer",
                                   display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14,
                                 }}>×</button>
                               </div>
@@ -1648,9 +1618,9 @@ export default function Profile() {
                   <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                     {matchedJobs.map((job) => {
                       const match = job.matchScore;
-                      const matchColor = match >= 90 ? T.green : match >= 75 ? "#7dd3c8" : T.amber;
-                      const matchBg = match >= 90 ? "rgba(74,222,128,0.1)" : match >= 75 ? T.pDim : T.amberDim;
-                      const matchBorder = match >= 90 ? "rgba(74,222,128,0.25)" : match >= 75 ? "rgba(31,95,92,0.35)" : "rgba(245,166,35,0.25)";
+                      const matchColor = match >= 90 ? "var(--success)" : match >= 75 ? "var(--green-text)" : T.amber;
+                      const matchBg = match >= 90 ? "var(--success-tint)" : match >= 75 ? "var(--green-tint)" : T.amberDim;
+                      const matchBorder = match >= 90 ? "rgba(31,122,58,0.25)" : match >= 75 ? "rgba(31,95,92,0.25)" : "rgba(199,122,14,0.25)";
                       return (
                         <Link
                           key={job.id}
@@ -1758,7 +1728,7 @@ export default function Profile() {
                         background: r.type === "warning" ? T.amberDim : T.card,
                         border: `1px solid ${r.type === "warning" ? "rgba(245,166,35,0.2)" : T.border}`,
                       }}>
-                        <span style={{ color: r.type === "warning" ? T.amber : "#7dd3c8", marginTop: 2 }}>
+                        <span style={{ color: r.type === "warning" ? T.amber : "var(--green-text)", marginTop: 2 }}>
                           {r.type === "warning" ? "⚠" : "✦"}
                         </span>
                         <span style={{ fontSize: 13, color: T.sub, lineHeight: 1.55 }}>{r.text}</span>
@@ -1796,7 +1766,7 @@ export default function Profile() {
                 disabled={profileTipsLoading}
                 style={{
                   padding: "10px 22px", borderRadius: 9, border: "none",
-                  background: T.pDim, color: "#7dd3c8", fontSize: 13, fontWeight: 600,
+                  background: T.pDim, color: "var(--green-text)", fontSize: 13, fontWeight: 600,
                   cursor: "pointer", fontFamily: T.font, opacity: profileTipsLoading ? 0.5 : 1,
                   marginBottom: 20,
                 }}
@@ -1810,7 +1780,7 @@ export default function Profile() {
                     display: "flex", alignItems: "flex-start", gap: 12,
                     padding: "14px 18px", borderRadius: 12, background: T.card, border: `1px solid ${T.border}`,
                   }}>
-                    <span style={{ color: "#7dd3c8", marginTop: 2 }}>✦</span>
+                    <span style={{ color: "var(--green-text)", marginTop: 2 }}>✦</span>
                     <span style={{ fontSize: 13, color: T.sub, lineHeight: 1.55 }}>{tip}</span>
                   </div>
                 ))}
@@ -1836,8 +1806,9 @@ export default function Profile() {
       {editing && (
         <div style={{
           position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 50,
-          background: "rgba(6,15,15,0.96)", backdropFilter: "blur(12px)",
-          borderTop: `1px solid ${T.border2}`,
+          background: "var(--card)", backdropFilter: "blur(12px)",
+          borderTop: "1px solid var(--line)",
+          boxShadow: "var(--sh-md)",
           padding: "14px 24px",
           display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 10,
         }}>
@@ -1845,14 +1816,14 @@ export default function Profile() {
             <span style={{ fontSize: 12, color: T.red, marginRight: 8 }}>{profileSaveError}</span>
           )}
           <button onClick={cancelEditing} style={{
-            padding: "9px 20px", borderRadius: 9, border: "none",
-            background: "rgba(255,255,255,0.08)", color: T.sub, fontSize: 13, fontWeight: 600,
+            padding: "9px 20px", borderRadius: 9, border: "1px solid var(--line-2)",
+            background: "var(--paper-2)", color: T.sub, fontSize: 13, fontWeight: 600,
             cursor: "pointer", fontFamily: T.font,
           }}>Avbryt</button>
           <button onClick={saveProfile} disabled={profileSaving} style={{
             padding: "9px 24px", borderRadius: 9, border: "none", minWidth: 160,
             background: hasUnsavedChanges ? T.amber : T.primary,
-            color: hasUnsavedChanges ? "#0a1010" : "#fff",
+            color: "#fff",
             fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: T.font,
             opacity: profileSaving ? 0.6 : 1,
           }}>

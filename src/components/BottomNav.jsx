@@ -67,10 +67,10 @@ export default function BottomNav() {
     <div style={{
       position: "fixed",
       left: 0, right: 0, bottom: 0,
-      background: "rgba(6,15,15,0.95)",
+      background: "rgba(255,255,255,0.95)",
       backdropFilter: "blur(20px)",
       WebkitBackdropFilter: "blur(20px)",
-      borderTop: "1px solid rgba(255,255,255,0.06)",
+      borderTop: "1px solid var(--line)",
       padding: "8px 0 max(env(safe-area-inset-bottom), 16px)",
       display: "flex",
       justifyContent: "space-around",
@@ -97,16 +97,16 @@ export default function BottomNav() {
               WebkitTapHighlightColor: "transparent",
             }}
           >
-            <div style={{ position: "relative", color: on ? "#F5A623" : "rgba(255,255,255,0.45)" }}>
+            <div style={{ position: "relative", color: on ? "var(--green)" : "var(--ink-400)" }}>
               {IC[tab.icon]}
               {badge > 0 && (
                 <span style={{
                   position: "absolute", top: -4, right: -8,
                   minWidth: 16, height: 16, padding: "0 4px",
-                  borderRadius: 99, background: "#F5A623", color: "#000",
+                  borderRadius: 99, background: "var(--amber)", color: "#000",
                   fontSize: 9.5, fontWeight: 800,
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  border: "2px solid #060f0f",
+                  border: "2px solid var(--card)",
                   lineHeight: 1,
                 }}>
                   {badge > 9 ? "9+" : badge}
@@ -116,7 +116,7 @@ export default function BottomNav() {
             <span style={{
               fontSize: 10.5,
               fontWeight: on ? 800 : 600,
-              color: on ? "#F5A623" : "rgba(255,255,255,0.5)",
+              color: on ? "var(--green)" : "var(--ink-400)",
               letterSpacing: 0.1,
             }}>
               {tab.label}

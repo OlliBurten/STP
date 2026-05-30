@@ -24,7 +24,7 @@ export const defaultProfile = {
 };
 
 // Re-export från competencies (YKB, ADR, APV, Truck, Kran, övriga)
-export { certificateTypes, certificateGroups, getCertificateLabel } from "./competencies.js";
+export { certificateTypes, certificateTypesForUI, certificateGroups, getCertificateLabel } from "./competencies.js";
 
 export const availabilityTypes = [
   { value: "open", label: "Öppen för förfrågningar" },

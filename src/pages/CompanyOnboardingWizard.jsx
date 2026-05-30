@@ -32,7 +32,7 @@ function StepDots({ step, total }) {
         const done = step > num;
         const active = step === num;
         return (
-          <div key={i} style={{ width: active ? 28 : 8, height: 8, borderRadius: 99, background: done ? "#4ade80" : active ? "#F5A623" : "rgba(255,255,255,0.1)", transition: "all .3s" }} />
+          <div key={i} style={{ width: active ? 28 : 8, height: 8, borderRadius: 99, background: done ? "var(--success)" : active ? "var(--amber)" : "var(--line)", transition: "all .3s" }} />
         );
       })}
     </div>
@@ -41,24 +41,24 @@ function StepDots({ step, total }) {
 
 const inp = {
   width: "100%", padding: "12px 14px", borderRadius: 11,
-  background: "#0a1414", border: "1px solid rgba(255,255,255,0.08)",
-  color: "#fff", fontSize: 14, outline: "none", fontFamily: "inherit",
+  background: "var(--paper-2)", border: "1px solid var(--line)",
+  color: "var(--ink-900)", fontSize: 14, outline: "none", fontFamily: "inherit",
 };
 
 // ─── Step 1: Company ──────────────────────────────────────────────────────────
 function Step1({ form, setForm, orgLookup, onLookup, error }) {
   return (
     <div>
-      <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "#F5A623", marginBottom: 10, textAlign: "center" }}>Steg 1 av 3</div>
+      <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "var(--amber-text)", marginBottom: 10, textAlign: "center" }}>Steg 1 av 3</div>
       <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: -0.8, marginBottom: 8, lineHeight: 1.2, textAlign: "center" }}>
         Hej! Vilket åkeri jobbar du på?
       </h1>
-      <p style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", lineHeight: 1.55, maxWidth: 440, margin: "0 auto 28px", textAlign: "center" }}>
+      <p style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.55, maxWidth: 440, margin: "0 auto 28px", textAlign: "center" }}>
         Vi hämtar uppgifterna från Bolagsverket så slipper du fylla i allt manuellt.
       </p>
 
       <div style={{ marginBottom: 16 }}>
-        <label style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.7)", marginBottom: 7, display: "block" }}>
+        <label style={{ fontSize: 12, fontWeight: 700, color: "var(--ink-700)", marginBottom: 7, display: "block" }}>
           Organisationsnummer
         </label>
         <div style={{ display: "flex", gap: 8 }}>
@@ -66,17 +66,17 @@ function Step1({ form, setForm, orgLookup, onLookup, error }) {
             value={form.orgNumber}
             onChange={(e) => onLookup(e.target.value)}
             placeholder="556677-8899"
-            style={{ ...inp, flex: 1, fontSize: 16, letterSpacing: 0.5, borderColor: orgLookup.valid === false ? "rgba(248,113,113,0.6)" : orgLookup.valid === true ? "rgba(74,222,128,0.5)" : "rgba(255,255,255,0.08)" }}
+            style={{ ...inp, flex: 1, fontSize: 16, letterSpacing: 0.5, borderColor: orgLookup.valid === false ? "rgba(239,68,68,0.6)" : orgLookup.valid === true ? "rgba(74,222,128,0.5)" : "var(--line)" }}
           />
           <button
             type="button"
             onClick={() => onLookup(form.orgNumber, true)}
             disabled={orgLookup.loading || form.orgNumber.replace(/\D/g, "").length < 10}
-            style={{ padding: "0 18px", borderRadius: 11, background: orgLookup.loading ? "rgba(245,166,35,0.5)" : "#F5A623", border: "none", color: "#000", fontSize: 13, fontWeight: 800, cursor: orgLookup.loading ? "default" : "pointer", display: "flex", alignItems: "center", gap: 7, whiteSpace: "nowrap", opacity: form.orgNumber.replace(/\D/g, "").length < 10 ? 0.5 : 1, fontFamily: "inherit" }}
+            style={{ padding: "0 18px", borderRadius: 11, background: "var(--green)", border: "none", color: "#fff", fontSize: 13, fontWeight: 800, cursor: orgLookup.loading ? "default" : "pointer", display: "flex", alignItems: "center", gap: 7, whiteSpace: "nowrap", opacity: form.orgNumber.replace(/\D/g, "").length < 10 ? 0.5 : 1, fontFamily: "inherit" }}
           >
             {orgLookup.loading ? (
               <>
-                <span style={{ display: "inline-block", width: 13, height: 13, border: "2px solid rgba(0,0,0,0.3)", borderTopColor: "#000", borderRadius: 99, animation: "spin 1s linear infinite" }} />
+                <span style={{ display: "inline-block", width: 13, height: 13, border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: 99, animation: "spin 1s linear infinite" }} />
                 Hämtar...
               </>
             ) : (
@@ -84,37 +84,37 @@ function Step1({ form, setForm, orgLookup, onLookup, error }) {
             )}
           </button>
         </div>
-        <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.45)", marginTop: 6 }}>Format: 556677-8899</div>
+        <div style={{ fontSize: 11.5, color: "var(--ink-400)", marginTop: 6 }}>Format: 556677-8899</div>
       </div>
 
       {orgLookup.error && (
-        <div style={{ padding: "10px 14px", borderRadius: 11, background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)", color: "#f87171", fontSize: 13, marginBottom: 14 }}>
+        <div style={{ padding: "10px 14px", borderRadius: 11, background: "var(--danger-tint)", border: "1px solid rgba(239,68,68,0.2)", color: "var(--danger)", fontSize: 13, marginBottom: 14 }}>
           {orgLookup.error}
         </div>
       )}
 
       {orgLookup.valid === true && !orgLookup.loading && form.companyName && (
-        <div style={{ padding: "18px 20px", background: "rgba(74,222,128,0.06)", border: "1px solid rgba(74,222,128,0.25)", borderRadius: 13, marginBottom: 18 }}>
+        <div style={{ padding: "18px 20px", background: "var(--success-tint)", border: "1px solid rgba(74,222,128,0.25)", borderRadius: 13, marginBottom: 18 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-            <div style={{ width: 30, height: 30, borderRadius: 99, background: "rgba(74,222,128,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <Icon n="check" s={14} c="#4ade80" />
+            <div style={{ width: 30, height: 30, borderRadius: 99, background: "var(--success-tint)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <Icon n="check" s={14} c="var(--success)" />
             </div>
-            <div style={{ fontSize: 12.5, fontWeight: 700, color: "#4ade80" }}>Hämtat från Bolagsverket</div>
+            <div style={{ fontSize: 12.5, fontWeight: 700, color: "var(--success)" }}>Hämtat från Bolagsverket</div>
           </div>
           <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 4 }}>{form.companyName}</div>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 4 }}>
-            {form.city && <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.6)" }}>{form.city}</div>}
-            {form.companyType && <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.4)" }}>·</div>}
-            {form.companyType && <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.6)" }}>{form.companyType}</div>}
-            {form.foundedYear && <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.4)" }}>·</div>}
-            {form.foundedYear && <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.6)" }}>Grundat {form.foundedYear}</div>}
+            {form.city && <div style={{ fontSize: 12.5, color: "var(--ink-500)" }}>{form.city}</div>}
+            {form.companyType && <div style={{ fontSize: 12.5, color: "var(--ink-400)" }}>·</div>}
+            {form.companyType && <div style={{ fontSize: 12.5, color: "var(--ink-500)" }}>{form.companyType}</div>}
+            {form.foundedYear && <div style={{ fontSize: 12.5, color: "var(--ink-400)" }}>·</div>}
+            {form.foundedYear && <div style={{ fontSize: 12.5, color: "var(--ink-500)" }}>Grundat {form.foundedYear}</div>}
           </div>
         </div>
       )}
 
       {orgLookup.valid === true && !orgLookup.loading && orgLookup.isTransport === false && (
-        <div style={{ padding: "12px 16px", borderRadius: 12, background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)", marginBottom: 14 }}>
-          <p style={{ fontSize: 12, color: "#f87171", fontWeight: 600 }}>
+        <div style={{ padding: "12px 16px", borderRadius: 12, background: "var(--danger-tint)", border: "1px solid rgba(239,68,68,0.2)", marginBottom: 14 }}>
+          <p style={{ fontSize: 12, color: "var(--danger)", fontWeight: 600 }}>
             Ert företag är inte registrerat som transportverksamhet hos Bolagsverket.
             STP är till för åkerier och transportföretag.
           </p>
@@ -122,7 +122,7 @@ function Step1({ form, setForm, orgLookup, onLookup, error }) {
       )}
 
       {error && (
-        <div style={{ padding: "10px 14px", borderRadius: 10, background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)", color: "#f87171", fontSize: 13, marginBottom: 14 }}>
+        <div style={{ padding: "10px 14px", borderRadius: 10, background: "var(--danger-tint)", border: "1px solid rgba(239,68,68,0.2)", color: "var(--danger)", fontSize: 13, marginBottom: 14 }}>
           {error}
         </div>
       )}
@@ -134,46 +134,46 @@ function Step1({ form, setForm, orgLookup, onLookup, error }) {
 function Step2({ form, setForm }) {
   return (
     <div>
-      <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "#F5A623", marginBottom: 10, textAlign: "center" }}>Steg 2 av 3</div>
+      <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "var(--amber-text)", marginBottom: 10, textAlign: "center" }}>Steg 2 av 3</div>
       <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: -0.8, marginBottom: 8, lineHeight: 1.2, textAlign: "center" }}>Vem är du i företaget?</h1>
-      <p style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", lineHeight: 1.55, maxWidth: 440, margin: "0 auto 28px", textAlign: "center" }}>
+      <p style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.55, maxWidth: 440, margin: "0 auto 28px", textAlign: "center" }}>
         Du blir kontoadministratör. Du kan bjuda in kollegor senare.
       </p>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 16 }}>
         <div>
-          <label style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.7)", marginBottom: 7, display: "block" }}>Förnamn</label>
+          <label style={{ fontSize: 12, fontWeight: 700, color: "var(--ink-700)", marginBottom: 7, display: "block" }}>Förnamn</label>
           <input value={form.firstName || ""} onChange={(e) => setForm((p) => ({ ...p, firstName: e.target.value }))} placeholder="t.ex. Anna" style={inp} />
         </div>
         <div>
-          <label style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.7)", marginBottom: 7, display: "block" }}>Efternamn</label>
+          <label style={{ fontSize: 12, fontWeight: 700, color: "var(--ink-700)", marginBottom: 7, display: "block" }}>Efternamn</label>
           <input value={form.lastName || ""} onChange={(e) => setForm((p) => ({ ...p, lastName: e.target.value }))} placeholder="t.ex. Karlsson" style={inp} />
         </div>
       </div>
 
       <div style={{ marginBottom: 16 }}>
-        <label style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.7)", marginBottom: 7, display: "block" }}>Din roll på företaget</label>
+        <label style={{ fontSize: 12, fontWeight: 700, color: "var(--ink-700)", marginBottom: 7, display: "block" }}>Din roll på företaget</label>
         <div style={{ position: "relative" }}>
           <select value={form.contactRole || ""} onChange={(e) => setForm((p) => ({ ...p, contactRole: e.target.value }))} style={{ ...inp, paddingRight: 40, appearance: "none", cursor: "pointer" }}>
-            <option value="" style={{ background: "#0a1414" }}>Välj roll...</option>
-            <option value="vd" style={{ background: "#0a1414" }}>VD / ägare</option>
-            <option value="trafikledare" style={{ background: "#0a1414" }}>Trafikledare</option>
-            <option value="hr" style={{ background: "#0a1414" }}>HR / rekrytering</option>
-            <option value="annat" style={{ background: "#0a1414" }}>Annan roll</option>
+            <option value="">Välj roll...</option>
+            <option value="vd">VD / ägare</option>
+            <option value="trafikledare">Trafikledare</option>
+            <option value="hr">HR / rekrytering</option>
+            <option value="annat">Annan roll</option>
           </select>
-          <div style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "rgba(255,255,255,0.5)", fontSize: 11 }}>▼</div>
+          <div style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "var(--ink-400)", fontSize: 11 }}>▼</div>
         </div>
       </div>
 
       <div style={{ marginBottom: 16 }}>
-        <label style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.7)", marginBottom: 7, display: "block" }}>Telefonnummer</label>
+        <label style={{ fontSize: 12, fontWeight: 700, color: "var(--ink-700)", marginBottom: 7, display: "block" }}>Telefonnummer</label>
         <input value={form.phone || ""} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} placeholder="070-123 45 67" type="tel" style={inp} />
-        <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.45)", marginTop: 6 }}>Används bara av STP — visas inte för förare</div>
+        <div style={{ fontSize: 11.5, color: "var(--ink-400)", marginTop: 6 }}>Används bara av STP — visas inte för förare</div>
       </div>
 
-      <div style={{ marginTop: 20, padding: "14px 16px", background: "rgba(96,165,250,0.06)", border: "1px solid rgba(96,165,250,0.18)", borderRadius: 12, display: "flex", alignItems: "flex-start", gap: 11 }}>
-        <Icon n="shield" s={15} c="#60a5fa" />
-        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", lineHeight: 1.5 }}>
+      <div style={{ marginTop: 20, padding: "14px 16px", background: "var(--info-tint)", border: "1px solid var(--info)", borderRadius: 12, display: "flex", alignItems: "flex-start", gap: 11 }}>
+        <Icon n="shield" s={15} c="var(--info)" />
+        <div style={{ fontSize: 12, color: "var(--ink-500)", lineHeight: 1.5 }}>
           Vi delar aldrig dina kontaktuppgifter med tredje part. Endast verifierade förare som söker dina jobb kan kontakta er.
         </div>
       </div>
@@ -202,14 +202,14 @@ function Step3({ form, setForm }) {
 
   return (
     <div>
-      <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "#F5A623", marginBottom: 10, textAlign: "center" }}>Steg 3 av 3</div>
+      <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "var(--amber-text)", marginBottom: 10, textAlign: "center" }}>Steg 3 av 3</div>
       <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: -0.8, marginBottom: 8, lineHeight: 1.2, textAlign: "center" }}>Berätta om er verksamhet</h1>
-      <p style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", lineHeight: 1.55, maxWidth: 440, margin: "0 auto 28px", textAlign: "center" }}>
+      <p style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.55, maxWidth: 440, margin: "0 auto 28px", textAlign: "center" }}>
         Vi använder detta för att matcha er med förare som söker rätt typ av jobb.
       </p>
 
       <div style={{ marginBottom: 20 }}>
-        <label style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.7)", marginBottom: 10, display: "block" }}>
+        <label style={{ fontSize: 12, fontWeight: 700, color: "var(--ink-700)", marginBottom: 10, display: "block" }}>
           Vilken typ av transport kör ni? Välj en eller flera
         </label>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
@@ -217,7 +217,7 @@ function Step3({ form, setForm }) {
             const on = (form.segmentDefaults || []).includes(s.value);
             return (
               <button key={s.value} type="button" onClick={() => toggleSeg(s.value)}
-                style={{ padding: "12px 14px", borderRadius: 11, background: on ? "rgba(245,166,35,0.08)" : "#0a1414", border: `1px solid ${on ? "rgba(245,166,35,0.35)" : "rgba(255,255,255,0.08)"}`, color: on ? "#F5A623" : "#fff", textAlign: "left", cursor: "pointer", transition: "all .15s", fontFamily: "inherit" }}>
+                style={{ padding: "12px 14px", borderRadius: 11, background: on ? "var(--amber-tint)" : "var(--paper-2)", border: `1px solid ${on ? "var(--amber)" : "var(--line)"}`, color: on ? "var(--amber-text)" : "var(--ink-700)", textAlign: "left", cursor: "pointer", transition: "all .15s", fontFamily: "inherit" }}>
                 <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2 }}>{s.label}</div>
               </button>
             );
@@ -226,7 +226,7 @@ function Step3({ form, setForm }) {
       </div>
 
       <div style={{ marginBottom: 20 }}>
-        <label style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.7)", marginBottom: 10, display: "block" }}>
+        <label style={{ fontSize: 12, fontWeight: 700, color: "var(--ink-700)", marginBottom: 10, display: "block" }}>
           Hur stort är ert åkeri?
         </label>
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
@@ -234,7 +234,7 @@ function Step3({ form, setForm }) {
             const on = form.companySize === s.v;
             return (
               <button key={s.v} type="button" onClick={() => setForm((p) => ({ ...p, companySize: s.v }))}
-                style={{ padding: "9px 14px", borderRadius: 99, background: on ? "rgba(245,166,35,0.12)" : "#0a1414", border: `1px solid ${on ? "rgba(245,166,35,0.4)" : "rgba(255,255,255,0.08)"}`, color: on ? "#F5A623" : "rgba(255,255,255,0.75)", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+                style={{ padding: "9px 14px", borderRadius: 99, background: on ? "var(--amber-tint)" : "var(--paper-2)", border: `1px solid ${on ? "var(--amber)" : "var(--line)"}`, color: on ? "var(--amber-text)" : "var(--ink-500)", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
                 {s.l}
               </button>
             );
@@ -243,7 +243,7 @@ function Step3({ form, setForm }) {
       </div>
 
       <div>
-        <label style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.7)", marginBottom: 10, display: "block" }}>
+        <label style={{ fontSize: 12, fontWeight: 700, color: "var(--ink-700)", marginBottom: 10, display: "block" }}>
           Vilka regioner kör ni i? Välj alla som gäller
         </label>
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
@@ -251,7 +251,7 @@ function Step3({ form, setForm }) {
             const on = (form.companyRegions || []).includes(r);
             return (
               <button key={r} type="button" onClick={() => toggleRegion(r)}
-                style={{ padding: "7px 13px", borderRadius: 99, background: on ? "rgba(31,95,92,0.3)" : "#0a1414", border: `1px solid ${on ? "rgba(31,95,92,0.5)" : "rgba(255,255,255,0.08)"}`, color: on ? "#7dd3c8" : "rgba(255,255,255,0.7)", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 5, fontFamily: "inherit" }}>
+                style={{ padding: "7px 13px", borderRadius: 99, background: on ? "var(--green-tint)" : "var(--paper-2)", border: `1px solid ${on ? "var(--green)" : "var(--line)"}`, color: on ? "var(--green-text)" : "var(--ink-500)", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 5, fontFamily: "inherit" }}>
                 {on && <Icon n="check" s={10} />} {r}
               </button>
             );
@@ -266,38 +266,38 @@ function Step3({ form, setForm }) {
 function DoneScreen({ form }) {
   return (
     <div style={{ textAlign: "center" }}>
-      <div style={{ width: 72, height: 72, borderRadius: 99, background: "rgba(74,222,128,0.12)", border: "2px solid rgba(74,222,128,0.3)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
-        <Icon n="check" s={32} c="#4ade80" />
+      <div style={{ width: 72, height: 72, borderRadius: 99, background: "var(--success-tint)", border: "2px solid var(--success)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
+        <Icon n="check" s={32} c="var(--success)" />
       </div>
-      <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "#4ade80", marginBottom: 10 }}>Klart!</div>
-      <h1 style={{ fontSize: 32, fontWeight: 800, letterSpacing: -1, marginBottom: 10 }}>
+      <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "var(--success)", marginBottom: 10 }}>Klart!</div>
+      <h1 style={{ fontSize: 32, fontWeight: 800, letterSpacing: -1, marginBottom: 10, color: "var(--ink-900)" }}>
         Välkommen till STP{form.firstName ? `, ${form.firstName}` : ""}
       </h1>
-      <p style={{ fontSize: 14, color: "rgba(255,255,255,0.65)", lineHeight: 1.55, maxWidth: 440, margin: "0 auto 32px" }}>
+      <p style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.55, maxWidth: 440, margin: "0 auto 32px" }}>
         Ert konto är skapat. För att börja anställa behöver ni verifiera er och publicera er första annons.
       </p>
 
-      <div style={{ background: "#0a1414", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 6, textAlign: "left", marginBottom: 24 }}>
+      <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: 6, textAlign: "left", marginBottom: 24 }}>
         {[
           { icon: "shield", title: "Verifiera ert åkeri", desc: "Ladda upp F-skatt och trafiktillstånd · 4 min", to: "/foretag/verifiering", primary: true },
           { icon: "truck", title: "Publicera er första annons", desc: "Beskriv tjänsten — vi matchar förare automatiskt · 5 min", to: "/foretag/annonser/ny" },
           { icon: "user", title: "Komplettera företagsprofilen", desc: "Lägg till om-text, förmåner · 2 min", to: "/foretag/profil" },
         ].map((item, i) => (
           <Link key={i} to={item.to}
-            style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 14px", borderRadius: 11, background: item.primary ? "rgba(245,166,35,0.05)" : "transparent", textDecoration: "none", color: "#fff", transition: "background .15s", border: item.primary ? "1px solid rgba(245,166,35,0.2)" : "1px solid transparent", marginBottom: i < 2 ? 4 : 0 }}>
-            <div style={{ width: 38, height: 38, borderRadius: 10, background: item.primary ? "rgba(245,166,35,0.1)" : "rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <Icon n={item.icon} s={16} c={item.primary ? "#F5A623" : "rgba(255,255,255,0.7)"} />
+            style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 14px", borderRadius: 11, background: item.primary ? "var(--amber-tint)" : "transparent", textDecoration: "none", color: "var(--ink-900)", transition: "background .15s", border: item.primary ? "1px solid rgba(245,166,35,0.2)" : "1px solid transparent", marginBottom: i < 2 ? 4 : 0 }}>
+            <div style={{ width: 38, height: 38, borderRadius: 10, background: item.primary ? "var(--amber-tint)" : "var(--paper-2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <Icon n={item.icon} s={16} c={item.primary ? "var(--amber-text)" : "var(--ink-400)"} />
             </div>
             <div style={{ flex: 1, minWidth: 0, textAlign: "left" }}>
-              <div style={{ fontSize: 13.5, fontWeight: 700, marginBottom: 2 }}>{item.title}</div>
-              <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.55)" }}>{item.desc}</div>
+              <div style={{ fontSize: 13.5, fontWeight: 700, marginBottom: 2, color: "var(--ink-900)" }}>{item.title}</div>
+              <div style={{ fontSize: 11.5, color: "var(--ink-400)" }}>{item.desc}</div>
             </div>
-            <Icon n="arrow" s={14} c="rgba(255,255,255,0.4)" />
+            <Icon n="arrow" s={14} c="var(--ink-300)" />
           </Link>
         ))}
       </div>
 
-      <Link to="/foretag" style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "12px 22px", borderRadius: 99, background: "linear-gradient(135deg,#F5A623,#d97706)", color: "#000", fontSize: 13.5, fontWeight: 800, textDecoration: "none", boxShadow: "0 4px 18px rgba(245,166,35,0.25)" }}>
+      <Link to="/foretag" style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "12px 22px", borderRadius: 99, background: "var(--green)", color: "#fff", fontSize: 13.5, fontWeight: 800, textDecoration: "none", boxShadow: "var(--sh-sm)" }}>
         Gå till översikten <Icon n="arrow" s={14} />
       </Link>
     </div>
@@ -428,8 +428,8 @@ export default function CompanyOnboardingWizard() {
   };
 
   const wrapStyle = {
-    minHeight: "100vh", background: "#060f0f", color: "#f0faf9",
-    fontFamily: "'DM Sans', system-ui, sans-serif", marginTop: "-64px", paddingTop: "64px",
+    minHeight: "100vh", background: "var(--paper)", color: "var(--ink-900)",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
   };
 
   return (
@@ -437,22 +437,22 @@ export default function CompanyOnboardingWizard() {
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
 
       {/* Minimal header — on mobile: progress bar instead of step dots */}
-      <header style={{ height: 64, display: "flex", alignItems: "center", justifyContent: "space-between", padding: isMobile ? "0 16px" : "0 32px", borderBottom: "1px solid rgba(255,255,255,0.04)", position: "sticky", top: 0, background: "rgba(6,15,15,0.96)", backdropFilter: "blur(14px)", zIndex: 50, marginTop: -64 }}>
+      <header style={{ height: 64, display: "flex", alignItems: "center", justifyContent: "space-between", padding: isMobile ? "0 16px" : "0 32px", borderBottom: "1px solid var(--line)", position: "sticky", top: 0, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", zIndex: 50 }}>
         {isMobile && step !== "done" && step > 1 ? (
-          <button type="button" onClick={() => setStep(s => s - 1)} style={{ width: 40, height: 40, borderRadius: 99, background: "rgba(255,255,255,0.05)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", flexShrink: 0 }}>
+          <button type="button" onClick={() => setStep(s => s - 1)} style={{ width: 40, height: 40, borderRadius: 99, background: "var(--paper-2)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-700)", flexShrink: 0 }}>
             <Icon n="back" s={18} />
           </button>
         ) : (
-          <div style={{ fontWeight: 800, letterSpacing: -0.8, fontSize: 21 }}>STP</div>
+          <div style={{ fontWeight: 800, letterSpacing: -0.8, fontSize: 21, color: "var(--ink-900)" }}>STP</div>
         )}
         {isMobile && step !== "done" ? (
-          <div style={{ flex: 1, height: 4, background: "rgba(255,255,255,0.06)", borderRadius: 99, overflow: "hidden", margin: "0 16px" }}>
-            <div style={{ height: "100%", width: `${(step / 3) * 100}%`, background: "linear-gradient(90deg,#F5A623,#d97706)", borderRadius: 99, transition: "width .3s" }} />
+          <div style={{ flex: 1, height: 4, background: "var(--line)", borderRadius: 99, overflow: "hidden", margin: "0 16px" }}>
+            <div style={{ height: "100%", width: `${(step / 3) * 100}%`, background: "var(--green)", borderRadius: 99, transition: "width .3s" }} />
           </div>
         ) : (
           <div style={{ flex: 1 }} />
         )}
-        <Link to="/loggaut" style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", textDecoration: "none", fontWeight: 600 }}>Avbryt</Link>
+        <Link to="/loggaut" style={{ fontSize: 13, color: "var(--ink-400)", textDecoration: "none", fontWeight: 600 }}>Avbryt</Link>
       </header>
 
       <main style={{ maxWidth: 520, margin: "0 auto", padding: isMobile ? "24px 20px 120px" : "40px 24px 80px" }}>
@@ -470,7 +470,7 @@ export default function CompanyOnboardingWizard() {
                 <button
                   type="button"
                   onClick={() => setStep((s) => s - 1)}
-                  style={{ padding: "13px 22px", borderRadius: 99, background: "transparent", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.75)", fontSize: 13.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 7, fontFamily: "inherit" }}
+                  style={{ padding: "13px 22px", borderRadius: 99, background: "transparent", border: "1px solid var(--line)", color: "var(--ink-500)", fontSize: 13.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 7, fontFamily: "inherit" }}
                 >
                   <Icon n="back" s={13} /> Tillbaka
                 </button>
@@ -479,12 +479,12 @@ export default function CompanyOnboardingWizard() {
                 type="button"
                 onClick={handleNext}
                 disabled={!canContinue() || saving}
-                style={{ flex: 1, padding: "13px 22px", borderRadius: 99, background: canContinue() && !saving ? "linear-gradient(135deg,#F5A623,#d97706)" : "rgba(255,255,255,0.05)", border: "none", color: canContinue() && !saving ? "#000" : "rgba(255,255,255,0.3)", fontSize: 13.5, fontWeight: 800, cursor: canContinue() && !saving ? "pointer" : "default", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: canContinue() && !saving ? "0 4px 18px rgba(245,166,35,0.25)" : "none", transition: "all .15s", fontFamily: "inherit" }}
+                style={{ flex: 1, padding: "13px 22px", borderRadius: 99, background: canContinue() && !saving ? "var(--green)" : "var(--paper-2)", border: "none", color: canContinue() && !saving ? "#fff" : "var(--ink-300)", fontSize: 13.5, fontWeight: 800, cursor: canContinue() && !saving ? "pointer" : "default", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: canContinue() && !saving ? "var(--sh-sm)" : "none", transition: "all .15s", fontFamily: "inherit" }}
               >
                 {saving ? "Sparar…" : step === 3 ? "Skapa konto" : "Fortsätt"} {!saving && <Icon n="arrow" s={14} />}
               </button>
             </div>
-            <div style={{ marginTop: 24, textAlign: "center", fontSize: 11.5, color: "rgba(255,255,255,0.4)" }}>
+            <div style={{ marginTop: 24, textAlign: "center", fontSize: 11.5, color: "var(--ink-400)" }}>
               Gratis för åkerier · Ingen bindningstid
             </div>
           </>
@@ -493,12 +493,12 @@ export default function CompanyOnboardingWizard() {
 
       {/* Mobile sticky bottom CTA */}
       {isMobile && step !== "done" && (
-        <div style={{ position: "fixed", left: 0, right: 0, bottom: 0, padding: "14px 20px 32px", background: "rgba(6,15,15,0.95)", backdropFilter: "blur(14px)", borderTop: "1px solid rgba(255,255,255,0.06)", zIndex: 40 }}>
+        <div style={{ position: "fixed", left: 0, right: 0, bottom: 0, padding: "14px 20px 32px", background: "rgba(255,255,255,0.95)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", borderTop: "1px solid var(--line)", zIndex: 40 }}>
           <button
             type="button"
             onClick={handleNext}
             disabled={!canContinue() || saving}
-            style={{ width: "100%", padding: 16, borderRadius: 14, background: canContinue() && !saving ? "linear-gradient(135deg,#F5A623,#d97706)" : "rgba(255,255,255,0.06)", border: "none", color: canContinue() && !saving ? "#000" : "rgba(255,255,255,0.3)", fontSize: 15, fontWeight: 800, cursor: canContinue() && !saving ? "pointer" : "default", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: canContinue() && !saving ? "0 4px 20px rgba(245,166,35,0.3)" : "none", minHeight: 54, fontFamily: "inherit" }}
+            style={{ width: "100%", padding: 16, borderRadius: 14, background: canContinue() && !saving ? "var(--green)" : "var(--paper-2)", border: "none", color: canContinue() && !saving ? "#fff" : "var(--ink-300)", fontSize: 15, fontWeight: 800, cursor: canContinue() && !saving ? "pointer" : "default", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: canContinue() && !saving ? "var(--sh-sm)" : "none", minHeight: 54, fontFamily: "inherit" }}
           >
             {saving ? "Sparar…" : step === 3 ? "Skapa konto" : "Fortsätt"} {!saving && <Icon n="arrow" s={14} />}
           </button>

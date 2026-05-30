@@ -4,9 +4,9 @@ import { usePageTitle } from "../hooks/usePageTitle";
 export default function Terms() {
   usePageTitle("Användarvillkor");
   return (
-    <main style={{ minHeight: "100vh", background: "#060f0f", marginTop: "-64px", paddingTop: 96 }} className="dark-prose">
+    <main style={{ minHeight: "100vh", background: "var(--paper)", paddingTop: 96 }}>
       <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px 80px" }}>
-        <Link to="/" style={{ display: "inline-block", fontSize: 13, color: "rgba(240,250,249,0.4)", textDecoration: "none", marginBottom: 32 }}>
+        <Link to="/" style={{ display: "inline-block", fontSize: 13, color: "var(--ink-400)", textDecoration: "none", marginBottom: 32 }}>
           ← Tillbaka
         </Link>
         <h1 className="text-3xl font-bold text-slate-900">Användarvillkor</h1>

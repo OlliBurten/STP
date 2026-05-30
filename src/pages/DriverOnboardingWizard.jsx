@@ -20,21 +20,21 @@ import {
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const T = {
-  bg: "var(--t-bg)", bg2: "var(--t-bg2)", bg3: "var(--t-bg3)",
-  primary: "var(--t-primary)", pLight: "var(--t-p-light)",
-  pGlow: "var(--t-p-glow)", pDim: "var(--t-p-dim)",
-  amber: "var(--t-amber)", amberDim: "var(--t-amber-dim)",
-  text: "var(--t-text)", sub: "var(--t-sub)", muted: "var(--t-muted)",
-  border: "var(--t-border)", border2: "var(--t-border2)",
-  card: "var(--t-card)", green: "var(--t-green)", red: "var(--t-red)",
+  bg: "var(--paper)", bg2: "var(--paper-2)", bg3: "var(--card)",
+  primary: "var(--green)", pLight: "var(--green)",
+  pGlow: "rgba(31,95,92,0.2)", pDim: "var(--green-tint)",
+  amber: "var(--amber)", amberDim: "var(--amber-tint)",
+  text: "var(--ink-900)", sub: "var(--ink-500)", muted: "var(--ink-400)",
+  border: "var(--line)", border2: "var(--line-2)",
+  card: "var(--card)", green: "var(--success)", red: "var(--danger)",
 };
 
 // ── Atoms ──────────────────────────────────────────────────────────────────────
 const Tag = ({ c = "p", children }) => {
   const map = {
-    p:     { bg: "rgba(31,95,92,0.18)",   color: "#7dd3c8", border: "rgba(31,95,92,0.4)" },
-    amber: { bg: "rgba(245,166,35,0.14)", color: T.amber, border: "rgba(245,166,35,0.35)" },
-    green: { bg: "rgba(74,222,128,0.1)",  color: T.green, border: "rgba(74,222,128,0.25)" },
+    p:     { bg: "var(--green-tint)",  color: "var(--green-text)", border: "rgba(31,95,92,0.25)" },
+    amber: { bg: "var(--amber-tint)", color: "var(--amber-text)", border: "rgba(245,166,35,0.3)" },
+    green: { bg: "var(--success-tint)", color: "var(--success)", border: "rgba(74,222,128,0.25)" },
     muted: { bg: T.card, color: T.sub, border: T.border },
   };
   const s = map[c] || map.p;
@@ -53,8 +53,8 @@ const Btn = ({ children, v = "primary", onClick, style, disabled, type = "button
     primary: { bg: T.primary, color: "#fff", border: "none" },
     amber:   { bg: T.amber, color: "#0a1010", border: "none" },
     outline: { bg: "transparent", color: T.text, border: `1.5px solid ${T.border2}` },
-    dim:     { bg: "rgba(255,255,255,0.07)", color: T.sub, border: "none" },
-    green:   { bg: "rgba(74,222,128,0.12)", color: T.green, border: "1px solid rgba(74,222,128,0.25)" },
+    dim:     { bg: "var(--paper-2)", color: T.sub, border: "none" },
+    green:   { bg: "var(--success-tint)", color: T.green, border: "1px solid rgba(74,222,128,0.25)" },
   };
   const s = vs[v] || vs.primary;
   return (
@@ -155,7 +155,7 @@ function ProfilePreview({ name, licenses, region, segment, summary }) {
       borderRadius: 16, overflow: "hidden", position: "sticky", top: 80,
     }}>
       {/* Mini hero */}
-      <div style={{ background: `linear-gradient(135deg, ${T.bg3} 0%, #061414 100%)`, padding: "18px 18px 14px" }}>
+      <div style={{ background: "var(--green-tint)", padding: "18px 18px 14px" }}>
         <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.muted, marginBottom: 10 }}>
           Din profil
         </p>
@@ -189,7 +189,7 @@ function ProfilePreview({ name, licenses, region, segment, summary }) {
           <span style={{ fontSize: 11, color: T.sub }}>Profilkompletion</span>
           <span style={{ fontSize: 11, fontWeight: 700, color: pct >= 80 ? T.green : pct >= 60 ? T.amber : T.sub }}>{pct}%</span>
         </div>
-        <div style={{ height: 4, borderRadius: 4, background: "rgba(255,255,255,0.08)" }}>
+        <div style={{ height: 4, borderRadius: 4, background: "var(--line)" }}>
           <div style={{
             height: 4, borderRadius: 4, transition: "width .4s",
             background: pct >= 80 ? T.green : pct >= 60 ? T.amber : T.primary,
@@ -203,12 +203,12 @@ function ProfilePreview({ name, licenses, region, segment, summary }) {
         {checks.map(({ label, done }) => (
           <div key={label} style={{
             display: "flex", alignItems: "center", gap: 8,
-            padding: "5px 0", borderBottom: "1px solid rgba(255,255,255,0.04)",
+            padding: "5px 0", borderBottom: "1px solid var(--line)",
           }}>
             <div style={{
               width: 16, height: 16, borderRadius: "50%", flexShrink: 0,
-              background: done ? "rgba(74,222,128,0.15)" : "transparent",
-              border: `1.5px solid ${done ? T.green : T.border2}`,
+              background: done ? "var(--success-tint)" : "transparent",
+              border: `1.5px solid ${done ? "var(--success)" : "var(--line-2)"}`,
               display: "flex", alignItems: "center", justifyContent: "center",
               fontSize: 9, color: T.green,
             }}>{done ? "✓" : ""}</div>
@@ -270,7 +270,7 @@ function ExperienceStep({ draft, setDraft, onSkip }) {
       </p>
       <h2 style={{ fontSize: 28, fontWeight: 800, lineHeight: 1.2, marginBottom: 10 }}>
         Din jobbhistorik<br />
-        <span style={{ color: "#7dd3c8" }}>är guld värd.</span>
+        <span style={{ color: "var(--green-text)" }}>är guld värd.</span>
       </h2>
       <p style={{ fontSize: 14, color: T.sub, marginBottom: 28, lineHeight: 1.65 }}>
         Valfritt — men åkerier tittar alltid på erfarenhet först. Du kan lägga till mer på din profil efteråt.
@@ -370,9 +370,9 @@ function ExperienceStep({ draft, setDraft, onSkip }) {
                 onClick={() => setNewExp((p) => ({ ...p, jobType: p.jobType === j.value ? "" : j.value }))}
                 style={{
                   padding: "5px 11px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer",
-                  fontFamily: "inherit", border: `1.5px solid ${newExp.jobType === j.value ? "#7dd3c8" : T.border}`,
-                  background: newExp.jobType === j.value ? "rgba(125,211,200,0.15)" : T.card,
-                  color: newExp.jobType === j.value ? "#7dd3c8" : T.sub, transition: "all .12s",
+                  fontFamily: "inherit", border: `1.5px solid ${newExp.jobType === j.value ? "var(--green-text)" : T.border}`,
+                  background: newExp.jobType === j.value ? "var(--green-tint)" : T.card,
+                  color: newExp.jobType === j.value ? "var(--green-text)" : T.sub, transition: "all .12s",
                 }}>{j.label}</button>
             ))}
           </div>
@@ -573,17 +573,17 @@ export default function DriverOnboardingWizard() {
   // ── Done screen ──────────────────────────────────────────────────────────────
   if (done) {
     return (
-      <div style={{ minHeight: "100vh", background: "#050e0e", color: T.text, fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, marginTop: "-64px", paddingTop: 64 }}>
+      <div style={{ minHeight: "100vh", background: "var(--paper)", color: T.text, fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
         <div style={{ maxWidth: 480, width: "100%", textAlign: "center" }}>
           <div style={{
             width: 72, height: 72, borderRadius: "50%",
-            background: "rgba(74,222,128,0.1)", border: "2px solid rgba(74,222,128,0.3)",
+            background: "var(--success-tint)", border: "2px solid rgba(74,222,128,0.3)",
             display: "flex", alignItems: "center", justifyContent: "center",
             fontSize: 28, margin: "0 auto 24px", color: T.green,
           }}>✓</div>
           <h1 style={{ fontSize: 36, fontWeight: 900, lineHeight: 1.15, marginBottom: 14 }}>
             Du är live<br />
-            <span style={{ color: T.green }}>på STP!</span>
+            <span style={{ color: "var(--success)" }}>på STP!</span>
           </h1>
           <p style={{ fontSize: 15, color: T.sub, lineHeight: 1.7, marginBottom: 32 }}>
             Åkerier i {draft.region || "din region"} kan nu hitta dig och ta kontakt direkt. Håll ögonen öppna för notifikationer.
@@ -645,7 +645,7 @@ export default function DriverOnboardingWizard() {
         </p>
         <h1 style={{ fontSize: 36, fontWeight: 900, lineHeight: 1.1, marginBottom: 12 }}>
           Hej {draft.name?.split(" ")[0] || user?.name?.split(" ")[0] || ""}!<br />
-          <span style={{ color: "#7dd3c8" }}>Vad söker du?</span>
+          <span style={{ color: "var(--green-text)" }}>Vad söker du?</span>
         </h1>
         <p style={{ fontSize: 15, color: T.sub, lineHeight: 1.65, marginBottom: 28, maxWidth: 500 }}>
           Det tar 3 minuter. Välj vad som stämmer bäst — vi anpassar matchningen.
@@ -779,7 +779,7 @@ export default function DriverOnboardingWizard() {
         </p>
         <h2 style={{ fontSize: 30, fontWeight: 800, lineHeight: 1.2, marginBottom: 10 }}>
           Bekräfta dina<br />
-          <span style={{ color: "#7dd3c8" }}>kontaktuppgifter.</span>
+          <span style={{ color: "var(--green-text)" }}>kontaktuppgifter.</span>
         </h2>
         <p style={{ fontSize: 14, color: T.sub, marginBottom: 28, lineHeight: 1.65 }}>
           Ditt namn och telefonnummer behövs för att åkerier ska kunna nå dig.
@@ -813,7 +813,7 @@ export default function DriverOnboardingWizard() {
         </p>
         <h2 style={{ fontSize: 30, fontWeight: 800, lineHeight: 1.2, marginBottom: 10 }}>
           Fler körkort =<br />
-          <span style={{ color: "#7dd3c8" }}>fler matchningar.</span>
+          <span style={{ color: "var(--green-text)" }}>fler matchningar.</span>
         </h2>
         <p style={{ fontSize: 14, color: T.sub, marginBottom: 28, lineHeight: 1.65 }}>
           Välj alla körkort du har och var du bor — det styr vilka jobb du matchas mot.
@@ -886,7 +886,7 @@ export default function DriverOnboardingWizard() {
         </p>
         <h2 style={{ fontSize: 30, fontWeight: 800, lineHeight: 1.2, marginBottom: 10 }}>
           10 sekunder är allt<br />
-          <span style={{ color: "#7dd3c8" }}>ett åkeri lägger på dig.</span>
+          <span style={{ color: "var(--green-text)" }}>ett åkeri lägger på dig.</span>
         </h2>
         <p style={{ fontSize: 14, color: T.sub, marginBottom: 28, lineHeight: 1.65 }}>
           Skriv kort och konkret: vad du har kört, hur länge, och vad du söker nu. Visas publikt för åkerier.
@@ -908,7 +908,7 @@ export default function DriverOnboardingWizard() {
               style={{
                 width: "100%", padding: "14px 16px", borderRadius: 12,
                 background: T.bg2,
-                border: `1.5px solid ${aiAnalysis?.ok ? "rgba(74,222,128,0.4)" : aiAnalysis && !aiAnalysis.ok ? "rgba(245,166,35,0.4)" : T.border2}`,
+                border: `1.5px solid ${aiAnalysis?.ok ? "var(--success)" : aiAnalysis && !aiAnalysis.ok ? "var(--amber)" : "var(--line-2)"}`,
                 color: T.text, fontSize: 14, fontFamily: "inherit",
                 outline: "none", resize: "none", lineHeight: 1.6,
                 transition: "border-color .3s",
@@ -928,7 +928,7 @@ export default function DriverOnboardingWizard() {
             </div>
           )}
           {aiAnalysis?.ok && (
-            <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", borderRadius: 10, background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.2)", marginBottom: 10 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", borderRadius: 10, background: "var(--success-tint)", border: "1px solid rgba(74,222,128,0.2)", marginBottom: 10 }}>
               <span style={{ color: T.green }}>✓</span>
               <span style={{ fontSize: 13, color: T.green, fontWeight: 600 }}>Bra! Texten är tydlig och professionell.</span>
             </div>
@@ -966,32 +966,32 @@ export default function DriverOnboardingWizard() {
     const progress = step / totalSteps;
 
     return (
-      <div style={{ position: "fixed", inset: 0, background: "#060f0f", color: "#fff", display: "flex", flexDirection: "column", zIndex: 1, fontFamily: "inherit" }}>
+      <div style={{ position: "fixed", inset: 0, background: "var(--paper)", color: "var(--ink-900)", display: "flex", flexDirection: "column", zIndex: 1, fontFamily: "inherit" }}>
         {/* Top bar: back + progress */}
         <div style={{ padding: "48px 20px 8px", display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
           {step > 0 ? (
-            <button onClick={() => setStep(s => s - 1)} style={{ width: 42, height: 42, borderRadius: 99, background: "rgba(255,255,255,0.05)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", flexShrink: 0, fontFamily: "inherit" }}>
+            <button onClick={() => setStep(s => s - 1)} style={{ width: 42, height: 42, borderRadius: 99, background: "var(--paper-2)", border: "1px solid var(--line)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-700)", flexShrink: 0, fontFamily: "inherit" }}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 18, height: 18 }}><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
             </button>
           ) : (
             <div style={{ width: 42, flexShrink: 0 }} />
           )}
-          <div style={{ flex: 1, height: 4, background: "rgba(255,255,255,0.06)", borderRadius: 99, overflow: "hidden" }}>
-            <div style={{ height: "100%", width: `${progress * 100}%`, background: "linear-gradient(90deg,#F5A623,#d97706)", borderRadius: 99, transition: "width .3s" }} />
+          <div style={{ flex: 1, height: 4, background: "var(--line)", borderRadius: 99, overflow: "hidden" }}>
+            <div style={{ height: "100%", width: `${progress * 100}%`, background: "var(--green)", borderRadius: 99, transition: "width .3s" }} />
           </div>
         </div>
 
         {/* Scrollable step content */}
         <div style={{ flex: 1, overflowY: "auto", padding: "12px 24px 100px" }}>
           {/* Step label */}
-          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "#F5A623", marginBottom: 10 }}>
+          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "var(--amber-text)", marginBottom: 10 }}>
             {step === 0 ? "Välkommen till STP" : `Steg ${step} av ${totalSteps}`}
           </div>
 
           {/* Error */}
           {error && (
-            <div style={{ marginBottom: 16, padding: "12px 16px", borderRadius: 10, background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.3)" }}>
-              <p style={{ fontSize: 13, color: "#f87171", margin: 0 }}>{error}</p>
+            <div style={{ marginBottom: 16, padding: "12px 16px", borderRadius: 10, background: "var(--danger-tint)", border: "1px solid rgba(239,68,68,0.3)" }}>
+              <p style={{ fontSize: 13, color: "var(--danger)", margin: 0 }}>{error}</p>
             </div>
           )}
 
@@ -999,9 +999,9 @@ export default function DriverOnboardingWizard() {
         </div>
 
         {/* Sticky footer CTA */}
-        <div style={{ padding: "12px 24px", paddingBottom: "max(env(safe-area-inset-bottom), 24px)", background: "rgba(6,15,15,0.96)", backdropFilter: "blur(14px)", borderTop: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}>
+        <div style={{ padding: "12px 24px", paddingBottom: "max(env(safe-area-inset-bottom), 24px)", background: "rgba(255,255,255,0.95)", WebkitBackdropFilter: "blur(14px)", backdropFilter: "blur(14px)", borderTop: "1px solid var(--line)", flexShrink: 0 }}>
           {step === 0 && (
-            <p style={{ fontSize: 11.5, color: "rgba(255,255,255,0.4)", textAlign: "center", marginBottom: 10 }}>
+            <p style={{ fontSize: 11.5, color: "var(--ink-400)", textAlign: "center", marginBottom: 10 }}>
               Gratis för förare · Alltid
             </p>
           )}
@@ -1010,13 +1010,13 @@ export default function DriverOnboardingWizard() {
             disabled={!canContinue() || saving}
             style={{
               width: "100%", padding: "16px", borderRadius: 14,
-              background: canContinue() && !saving ? "linear-gradient(135deg,#F5A623,#d97706)" : "rgba(255,255,255,0.06)",
+              background: canContinue() && !saving ? "var(--green)" : "var(--paper-2)",
               border: "none",
-              color: canContinue() && !saving ? "#000" : "rgba(255,255,255,0.3)",
+              color: canContinue() && !saving ? "#fff" : "var(--ink-400)",
               fontSize: 15, fontWeight: 800,
               cursor: canContinue() && !saving ? "pointer" : "default",
               display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-              boxShadow: canContinue() && !saving ? "0 4px 20px rgba(245,166,35,0.3)" : "none",
+              boxShadow: canContinue() && !saving ? "var(--sh)" : "none",
               minHeight: 54, fontFamily: "inherit",
             }}
           >
@@ -1028,7 +1028,7 @@ export default function DriverOnboardingWizard() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#050e0e", color: T.text, fontFamily: "inherit", marginTop: "-64px", paddingTop: 64 }}>
+    <div style={{ minHeight: "100vh", background: "var(--paper)", color: T.text, fontFamily: "inherit" }}>
       <div style={{
         maxWidth: 1080, margin: "0 auto",
         padding: isMobile ? "24px 20px 80px" : "40px 32px 80px",
@@ -1051,7 +1051,7 @@ export default function DriverOnboardingWizard() {
                     <div style={{
                       display: "flex", alignItems: "center", gap: 6,
                       padding: "5px 12px", borderRadius: 20,
-                      background: active ? T.pDim : done ? "rgba(74,222,128,0.1)" : "transparent",
+                      background: active ? T.pDim : done ? "var(--success-tint)" : "transparent",
                       border: `1px solid ${active ? "rgba(31,95,92,0.5)" : done ? "rgba(74,222,128,0.25)" : T.border}`,
                       transition: "all .2s",
                     }}>
@@ -1060,7 +1060,7 @@ export default function DriverOnboardingWizard() {
                         background: done ? T.green : active ? T.amber : T.border2,
                         display: "flex", alignItems: "center", justifyContent: "center",
                         fontSize: 8, fontWeight: 800,
-                        color: done ? "#052e16" : active ? "#0a1010" : T.muted,
+                        color: done ? "#fff" : active ? "#fff" : T.muted,
                       }}>{done ? "✓" : idx}</div>
                       <span style={{ fontSize: 12, fontWeight: active ? 700 : 400, color: active ? T.text : done ? T.green : T.muted, whiteSpace: "nowrap" }}>{label}</span>
                     </div>
@@ -1073,7 +1073,7 @@ export default function DriverOnboardingWizard() {
 
           {/* Error */}
           {error && (
-            <div style={{ marginBottom: 20, padding: "12px 16px", borderRadius: 10, background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.3)" }}>
+            <div style={{ marginBottom: 20, padding: "12px 16px", borderRadius: 10, background: "var(--danger-tint)", border: "1px solid rgba(239,68,68,0.3)" }}>
               <p style={{ fontSize: 13, color: T.red }}>{error}</p>
             </div>
           )}

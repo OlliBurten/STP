@@ -7,28 +7,15 @@ import { getSlugByName } from "../data/regions";
 import JobCard from "../components/JobCard";
 import { useIsMobile } from "../hooks/useIsMobile";
 
-const T = {
-  bg:      "#060f0f",
-  card:    "rgba(255,255,255,0.03)",
-  border:  "rgba(255,255,255,0.07)",
-  text:    "#f0faf9",
-  sub:     "rgba(240,250,249,0.5)",
-  muted:   "rgba(240,250,249,0.28)",
-  amber:   "#F5A623",
-  teal:    "#1F5F5C",
-  tealBright: "#7dd3c8",
-  green:   "#4ade80",
-};
-
 function Chip({ children }) {
   return (
     <span style={{
       display: "inline-flex", alignItems: "center", gap: 6,
-      background: "rgba(31,95,92,0.2)", border: "1px solid rgba(31,95,92,0.35)",
+      background: "var(--green-tint)", border: "1px solid var(--green)",
       borderRadius: 99, padding: "4px 12px",
-      fontSize: 12, fontWeight: 600, color: T.tealBright,
+      fontSize: 12, fontWeight: 600, color: "var(--green-text)",
     }}>
-      <span style={{ width: 5, height: 5, borderRadius: "50%", background: T.tealBright, flexShrink: 0 }} />
+      <span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--green-text)", flexShrink: 0 }} />
       {children}
     </span>
   );
@@ -64,41 +51,40 @@ export default function CityJobList() {
 
   if (!city) return <Navigate to="/jobb" replace />;
 
-  // Nearby cities = same region, excluding current
   const nearbyCities = cityPages.filter(
     (c) => c.regionSlug === city.regionSlug && c.slug !== citySlug
   );
 
   return (
-    <div style={{ minHeight: "100vh", background: T.bg, marginTop: "-64px" }}>
+    <div style={{ minHeight: "100vh", background: "var(--paper)" }}>
 
       {/* ── Hero ──────────────────────────────────────────────────────────────── */}
       <div style={{
-        background: "linear-gradient(160deg, #0d1f1f 0%, #060f0f 60%)",
-        borderBottom: `1px solid ${T.border}`,
-        padding: isMobile ? "88px 20px 32px" : "112px 40px 48px",
+        background: "var(--card)",
+        borderBottom: "1px solid var(--line)",
+        padding: isMobile ? "24px 20px 32px" : "40px 40px 48px",
       }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
 
           {/* Breadcrumb */}
-          <nav style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: T.muted, marginBottom: 20 }}>
-            <Link to="/jobb" style={{ color: T.muted, textDecoration: "none" }}>Alla jobb</Link>
+          <nav style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--ink-400)", marginBottom: 20 }}>
+            <Link to="/jobb" style={{ color: "var(--ink-400)", textDecoration: "none" }}>Alla jobb</Link>
             <span>›</span>
-            <Link to={`/lastbilsjobb/${city.regionSlug}`} style={{ color: T.muted, textDecoration: "none" }}>{city.region}</Link>
+            <Link to={`/lastbilsjobb/${city.regionSlug}`} style={{ color: "var(--ink-400)", textDecoration: "none" }}>{city.region}</Link>
             <span>›</span>
-            <span style={{ color: T.sub }}>{city.name}</span>
+            <span style={{ color: "var(--ink-500)" }}>{city.name}</span>
           </nav>
 
           <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", alignItems: isMobile ? "flex-start" : "flex-end", justifyContent: "space-between", gap: 20 }}>
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12, flexWrap: "wrap" }}>
                 <Chip>CE-jobb</Chip>
-                <span style={{ fontSize: 12, color: T.muted }}>{city.tagline}</span>
+                <span style={{ fontSize: 12, color: "var(--ink-400)" }}>{city.tagline}</span>
               </div>
-              <h1 style={{ fontSize: isMobile ? 28 : 42, fontWeight: 900, letterSpacing: -1.2, color: T.text, lineHeight: 1.1, margin: "0 0 10px" }}>
+              <h1 style={{ fontSize: isMobile ? 28 : 42, fontWeight: 900, letterSpacing: -1.2, color: "var(--ink-900)", lineHeight: 1.1, margin: "0 0 10px" }}>
                 CE-jobb i {city.name}
               </h1>
-              <p style={{ fontSize: 14, color: T.sub, margin: 0, maxWidth: 520, lineHeight: 1.65 }}>
+              <p style={{ fontSize: 14, color: "var(--ink-500)", margin: 0, maxWidth: 520, lineHeight: 1.65 }}>
                 {city.desc}
               </p>
             </div>
@@ -106,17 +92,17 @@ export default function CityJobList() {
             {/* Job count badge */}
             <div style={{
               flexShrink: 0,
-              background: "rgba(255,255,255,0.03)", border: `1px solid ${T.border}`,
+              background: "var(--paper-2)", border: "1px solid var(--line)",
               borderRadius: 16, padding: "18px 24px", textAlign: "center", minWidth: 140,
             }}>
               {loading ? (
-                <div style={{ width: 60, height: 36, borderRadius: 8, background: "rgba(255,255,255,0.06)", margin: "0 auto 8px" }} />
+                <div style={{ width: 60, height: 36, borderRadius: 8, background: "var(--line)", margin: "0 auto 8px" }} />
               ) : (
-                <p style={{ fontSize: 38, fontWeight: 900, color: jobs.length > 0 ? T.amber : T.muted, lineHeight: 1, margin: "0 0 6px" }}>
+                <p style={{ fontSize: 38, fontWeight: 900, color: jobs.length > 0 ? "var(--amber)" : "var(--ink-400)", lineHeight: 1, margin: "0 0 6px" }}>
                   {jobs.length}
                 </p>
               )}
-              <p style={{ fontSize: 11, fontWeight: 700, color: T.muted, letterSpacing: "0.08em", textTransform: "uppercase", margin: 0 }}>
+              <p style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-400)", letterSpacing: "0.08em", textTransform: "uppercase", margin: 0 }}>
                 {loading ? "Hämtar…" : jobs.length === 1 ? "ledig tjänst" : "lediga tjänster"}
               </p>
             </div>
@@ -134,7 +120,7 @@ export default function CityJobList() {
             {loading ? (
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 {[1, 2, 3].map((i) => (
-                  <div key={i} style={{ height: 112, borderRadius: 16, background: "rgba(255,255,255,0.04)" }} />
+                  <div key={i} style={{ height: 112, borderRadius: 16, background: "var(--paper-2)" }} />
                 ))}
               </div>
             ) : jobs.length > 0 ? (
@@ -143,25 +129,25 @@ export default function CityJobList() {
               </div>
             ) : (
               <div style={{
-                borderRadius: 18, border: `1px solid ${T.border}`,
-                background: T.card, padding: "48px 28px", textAlign: "center",
+                borderRadius: 18, border: "1px solid var(--line)",
+                background: "var(--card)", padding: "48px 28px", textAlign: "center",
               }}>
-                <p style={{ fontSize: 15, fontWeight: 700, color: T.sub, marginBottom: 8 }}>
+                <p style={{ fontSize: 15, fontWeight: 700, color: "var(--ink-500)", marginBottom: 8 }}>
                   Inga lediga tjänster i {city.name} just nu
                 </p>
-                <p style={{ fontSize: 13, color: T.muted, marginBottom: 24, lineHeight: 1.6 }}>
+                <p style={{ fontSize: 13, color: "var(--ink-400)", marginBottom: 24, lineHeight: 1.6 }}>
                   Skapa en profil så kontaktar åkerier dig direkt när de söker förare i {city.region}.
                 </p>
                 <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
                   <Link to="/login" style={{
                     display: "inline-block", padding: "10px 20px", borderRadius: 10,
-                    background: T.amber, color: "#000", fontSize: 13, fontWeight: 800, textDecoration: "none",
+                    background: "var(--green)", color: "#fff", fontSize: 13, fontWeight: 800, textDecoration: "none",
                   }}>
                     Skapa profil gratis
                   </Link>
                   <Link to="/jobb" style={{
                     display: "inline-block", padding: "10px 20px", borderRadius: 10,
-                    border: `1px solid ${T.border}`, color: T.sub, fontSize: 13, fontWeight: 600, textDecoration: "none",
+                    border: "1px solid var(--line)", color: "var(--ink-500)", fontSize: 13, fontWeight: 600, textDecoration: "none",
                   }}>
                     Sök i hela Sverige
                   </Link>
@@ -169,18 +155,17 @@ export default function CityJobList() {
               </div>
             )}
 
-            {/* More jobs CTA */}
             {!loading && jobs.length > 0 && (
               <div style={{ marginTop: 16, display: "flex", gap: 10, flexWrap: "wrap" }}>
                 <Link to={`/lastbilsjobb/${city.regionSlug}`} style={{
                   display: "inline-block", padding: "10px 18px", borderRadius: 10,
-                  border: `1px solid ${T.border}`, color: T.sub, fontSize: 13, fontWeight: 600, textDecoration: "none",
+                  border: "1px solid var(--line)", color: "var(--ink-500)", fontSize: 13, fontWeight: 600, textDecoration: "none",
                 }}>
                   Fler jobb i {city.region} →
                 </Link>
                 <Link to="/jobb" style={{
                   display: "inline-block", padding: "10px 18px", borderRadius: 10,
-                  border: `1px solid ${T.border}`, color: T.sub, fontSize: 13, fontWeight: 600, textDecoration: "none",
+                  border: "1px solid var(--line)", color: "var(--ink-500)", fontSize: 13, fontWeight: 600, textDecoration: "none",
                 }}>
                   Alla jobb i Sverige →
                 </Link>
@@ -193,20 +178,20 @@ export default function CityJobList() {
 
             {/* Transport context */}
             <div style={{
-              background: "linear-gradient(135deg, rgba(31,95,92,0.18) 0%, rgba(31,95,92,0.06) 100%)",
-              border: "1px solid rgba(31,95,92,0.3)", borderRadius: 16, padding: "22px",
+              background: "var(--green-tint)",
+              border: "1px solid rgba(31,95,92,0.2)", borderRadius: 16, padding: "22px",
             }}>
-              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.tealBright, marginBottom: 10 }}>
+              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--green-text)", marginBottom: 10 }}>
                 Transport i {city.name}
               </p>
-              <p style={{ fontSize: 13, color: T.sub, lineHeight: 1.7, marginBottom: 16 }}>
+              <p style={{ fontSize: 13, color: "var(--ink-500)", lineHeight: 1.7, marginBottom: 16 }}>
                 {city.transport}
               </p>
               <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
                 {city.highlights.map((h) => (
                   <div key={h} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-                    <span style={{ color: T.tealBright, fontSize: 12, marginTop: 2, flexShrink: 0 }}>→</span>
-                    <span style={{ fontSize: 13, color: T.sub, lineHeight: 1.5 }}>{h}</span>
+                    <span style={{ color: "var(--green-text)", fontSize: 12, marginTop: 2, flexShrink: 0 }}>→</span>
+                    <span style={{ fontSize: 13, color: "var(--ink-500)", lineHeight: 1.5 }}>{h}</span>
                   </div>
                 ))}
               </div>
@@ -214,17 +199,17 @@ export default function CityJobList() {
 
             {/* Sign up CTA */}
             <div style={{
-              background: T.card, border: `1px solid ${T.border}`, borderRadius: 16, padding: "22px",
+              background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, padding: "22px",
             }}>
-              <p style={{ fontSize: 14, fontWeight: 700, color: T.text, marginBottom: 6 }}>
+              <p style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)", marginBottom: 6 }}>
                 Sök utan bemanningsbolag
               </p>
-              <p style={{ fontSize: 13, color: T.sub, lineHeight: 1.6, marginBottom: 16 }}>
+              <p style={{ fontSize: 13, color: "var(--ink-500)", lineHeight: 1.6, marginBottom: 16 }}>
                 Skapa en förarprofil på STP — verifierade åkerier i {city.name} hittar dig direkt. Alltid gratis för förare.
               </p>
               <Link to="/login" style={{
                 display: "block", textAlign: "center", padding: "11px 18px", borderRadius: 10,
-                background: T.amber, color: "#000", fontSize: 13, fontWeight: 800, textDecoration: "none",
+                background: "var(--green)", color: "#fff", fontSize: 13, fontWeight: 800, textDecoration: "none",
               }}>
                 Skapa profil gratis →
               </Link>
@@ -232,18 +217,18 @@ export default function CityJobList() {
 
             {/* Nearby cities */}
             {nearbyCities.length > 0 && (
-              <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 16, padding: "20px 22px" }}>
-                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.muted, marginBottom: 12 }}>
+              <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, padding: "20px 22px" }}>
+                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 12 }}>
                   Andra städer i {city.region}
                 </p>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                   {nearbyCities.map((c) => (
                     <Link key={c.slug} to={`/ce-jobb/${c.slug}`} style={{
-                      padding: "6px 14px", borderRadius: 8, border: `1px solid ${T.border}`,
-                      fontSize: 13, color: T.sub, textDecoration: "none",
+                      padding: "6px 14px", borderRadius: 8, border: "1px solid var(--line)",
+                      fontSize: 13, color: "var(--ink-500)", textDecoration: "none",
                     }}
-                      onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(245,166,35,0.4)"; e.currentTarget.style.color = T.amber; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.color = T.sub; }}
+                      onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--green)"; e.currentTarget.style.color = "var(--green-text)"; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--line)"; e.currentTarget.style.color = "var(--ink-500)"; }}
                     >
                       {c.name}
                     </Link>
@@ -253,8 +238,8 @@ export default function CityJobList() {
             )}
 
             {/* Tools cross-links */}
-            <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 16, padding: "20px 22px" }}>
-              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.muted, marginBottom: 14 }}>
+            <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, padding: "20px 22px" }}>
+              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 14 }}>
                 Branschverktyg
               </p>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -264,14 +249,14 @@ export default function CityJobList() {
                 ].map(({ to, label, desc }) => (
                   <Link key={to} to={to} style={{ textDecoration: "none" }}>
                     <div style={{
-                      padding: "12px 14px", borderRadius: 10, border: `1px solid ${T.border}`,
-                      background: "rgba(255,255,255,0.02)",
+                      padding: "12px 14px", borderRadius: 10, border: "1px solid var(--line)",
+                      background: "var(--paper-2)",
                     }}
-                      onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(245,166,35,0.25)"; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.borderColor = T.border; }}
+                      onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--green)"; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--line)"; }}
                     >
-                      <p style={{ fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 2 }}>{label}</p>
-                      <p style={{ fontSize: 12, color: T.muted }}>{desc}</p>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: "var(--ink-900)", marginBottom: 2 }}>{label}</p>
+                      <p style={{ fontSize: 12, color: "var(--ink-400)", margin: 0 }}>{desc}</p>
                     </div>
                   </Link>
                 ))}
@@ -281,8 +266,8 @@ export default function CityJobList() {
         </div>
 
         {/* ── All cities grid ──────────────────────────────────────────────────── */}
-        <div style={{ marginTop: 56, borderTop: `1px solid ${T.border}`, paddingTop: 36 }}>
-          <h2 style={{ fontSize: 15, fontWeight: 700, color: T.sub, marginBottom: 16 }}>
+        <div style={{ marginTop: 56, borderTop: "1px solid var(--line)", paddingTop: 36 }}>
+          <h2 style={{ fontSize: 15, fontWeight: 700, color: "var(--ink-500)", marginBottom: 16 }}>
             CE-jobb i fler städer
           </h2>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -290,11 +275,11 @@ export default function CityJobList() {
               .filter((c) => c.slug !== citySlug)
               .map((c) => (
                 <Link key={c.slug} to={`/ce-jobb/${c.slug}`} style={{
-                  padding: "7px 16px", borderRadius: 9, border: `1px solid ${T.border}`,
-                  fontSize: 13, color: T.sub, textDecoration: "none", transition: "all .15s",
+                  padding: "7px 16px", borderRadius: 9, border: "1px solid var(--line)",
+                  fontSize: 13, color: "var(--ink-500)", textDecoration: "none", transition: "all .15s",
                 }}
-                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(245,166,35,0.35)"; e.currentTarget.style.color = T.amber; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.color = T.sub; }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--green)"; e.currentTarget.style.color = "var(--green-text)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--line)"; e.currentTarget.style.color = "var(--ink-500)"; }}
                 >
                   {c.name}
                 </Link>

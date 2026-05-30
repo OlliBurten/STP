@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 export const IC = {
@@ -75,36 +76,36 @@ const NAV_GROUPS = [
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
 export function AdminSidebar({ section, onChange }) {
   return (
-    <aside style={{ width: 240, background: "#070f0f", borderRight: "1px solid rgba(255,255,255,0.05)", display: "flex", flexDirection: "column", flexShrink: 0 }}>
-      <div style={{ padding: "18px 18px 14px", display: "flex", alignItems: "center", gap: 10, borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-        <div style={{ width: 32, height: 32, borderRadius: 9, background: "linear-gradient(135deg,#F5A623,#d97706)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 13, color: "#000", letterSpacing: -0.5 }}>STP</div>
+    <aside style={{ width: 240, background: "var(--card)", borderRight: "1px solid var(--line)", display: "flex", flexDirection: "column", flexShrink: 0 }}>
+      <Link to="/admin" style={{ padding: "18px 18px 14px", display: "flex", alignItems: "center", gap: 10, borderBottom: "1px solid var(--line)", textDecoration: "none" }}>
+        <div style={{ width: 32, height: 32, borderRadius: 9, background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 13, color: "#fff", letterSpacing: -0.5 }}>STP</div>
         <div>
-          <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: -0.2, lineHeight: 1.2 }}>Admin</div>
-          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", marginTop: 1 }}>v2.4.1 · prod</div>
+          <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: -0.2, lineHeight: 1.2, color: "var(--ink-900)" }}>Admin</div>
+          <div style={{ fontSize: 10, color: "var(--ink-400)", marginTop: 1 }}>v2.4.1 · prod</div>
         </div>
-      </div>
+      </Link>
 
       <div style={{ flex: 1, overflowY: "auto", padding: "12px 8px" }}>
         {NAV_GROUPS.map((g, gi) => (
           <div key={g.l} style={{ marginBottom: gi < NAV_GROUPS.length - 1 ? 18 : 0 }}>
-            <div style={{ padding: "6px 10px 8px", fontSize: 9.5, fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "rgba(255,255,255,0.3)" }}>{g.l}</div>
+            <div style={{ padding: "6px 10px 8px", fontSize: 9.5, fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "var(--ink-400)" }}>{g.l}</div>
             {g.items.map(it => {
               const on = section === it.id;
               return (
                 <button key={it.id} onClick={() => onChange(it.id)} style={{
                   width: "100%", padding: "8px 10px", borderRadius: 8,
-                  background: on ? "rgba(245,166,35,0.1)" : "transparent",
+                  background: on ? "var(--green-tint)" : "transparent",
                   border: "none", cursor: "pointer",
                   display: "flex", alignItems: "center", gap: 11,
-                  color: on ? "#F5A623" : "rgba(255,255,255,0.7)",
+                  color: on ? "var(--green-text)" : "var(--ink-500)",
                   fontSize: 13, fontWeight: on ? 700 : 500,
                   textAlign: "left", marginBottom: 2, position: "relative",
                 }}>
                   <Icon n={it.n} s={15} />
                   <span style={{ flex: 1 }}>{it.l}</span>
-                  {it.alert > 0 && <span style={{ minWidth: 18, height: 18, padding: "0 5px", borderRadius: 99, background: "#f87171", color: "#fff", fontSize: 9.5, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center" }}>{it.alert}</span>}
-                  {it.count > 0 && !it.alert && <span style={{ fontSize: 10.5, color: "rgba(255,255,255,0.4)", fontWeight: 700 }}>{it.count}</span>}
-                  {it.badge && <span style={{ padding: "1px 6px", borderRadius: 4, background: "rgba(167,139,250,0.15)", color: "#a78bfa", fontSize: 9, fontWeight: 800, letterSpacing: 0.5 }}>{it.badge}</span>}
+                  {it.alert > 0 && <span style={{ minWidth: 18, height: 18, padding: "0 5px", borderRadius: 99, background: "var(--danger)", color: "#fff", fontSize: 9.5, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center" }}>{it.alert}</span>}
+                  {it.count > 0 && !it.alert && <span style={{ fontSize: 10.5, color: "var(--ink-400)", fontWeight: 700 }}>{it.count}</span>}
+                  {it.badge && <span style={{ padding: "1px 6px", borderRadius: 4, background: "var(--info-tint)", color: "var(--info)", fontSize: 9, fontWeight: 800, letterSpacing: 0.5 }}>{it.badge}</span>}
                 </button>
               );
             })}
@@ -112,13 +113,13 @@ export function AdminSidebar({ section, onChange }) {
         ))}
       </div>
 
-      <div style={{ padding: "10px 14px 14px", borderTop: "1px solid rgba(255,255,255,0.04)", display: "flex", alignItems: "center", gap: 10 }}>
-        <div style={{ width: 32, height: 32, borderRadius: 99, background: "linear-gradient(135deg,#1F5F5C,#0e3a37)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: "#7dd3c8" }}>OH</div>
+      <div style={{ padding: "10px 14px 14px", borderTop: "1px solid var(--line)", display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{ width: 32, height: 32, borderRadius: 99, background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: "#fff" }}>OH</div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>Oliver Harburt</div>
-          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)" }}>Super admin</div>
+          <div style={{ fontSize: 12, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "var(--ink-900)" }}>Oliver Harburt</div>
+          <div style={{ fontSize: 10, color: "var(--ink-400)" }}>Super admin</div>
         </div>
-        <button style={{ width: 28, height: 28, borderRadius: 7, background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(255,255,255,0.5)" }}>
+        <button style={{ width: 28, height: 28, borderRadius: 7, background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-400)" }}>
           <Icon n="cog" s={13} />
         </button>
       </div>
@@ -131,17 +132,17 @@ export function AdminTopBar({ openCmd, health }) {
   const dbOk = !health || health.db === "ok";
   const latency = health?.dbLatencyMs != null ? `${health.dbLatencyMs}ms` : null;
   const systemOk = !health || (health.db === "ok");
-  const pillColor = systemOk ? "#4ade80" : "#f87171";
-  const pillBg = systemOk ? "rgba(74,222,128,0.08)" : "rgba(248,113,113,0.08)";
-  const pillBorder = systemOk ? "rgba(74,222,128,0.2)" : "rgba(248,113,113,0.2)";
+  const pillColor = systemOk ? "var(--success)" : "var(--danger)";
+  const pillBg = systemOk ? "var(--success-tint)" : "var(--danger-tint)";
+  const pillBorder = systemOk ? "rgba(74,222,128,0.2)" : "rgba(239,68,68,0.2)";
   const pillLabel = systemOk ? "System OK" : "Systemfel";
 
   return (
-    <div style={{ height: 54, borderBottom: "1px solid rgba(255,255,255,0.05)", display: "flex", alignItems: "center", padding: "0 22px", gap: 14, background: "#040a0a", flexShrink: 0 }}>
-      <button onClick={openCmd} style={{ flex: 1, maxWidth: 480, display: "flex", alignItems: "center", gap: 9, padding: "7px 12px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)", fontSize: 12.5, cursor: "pointer" }}>
-        <Icon n="search" s={14} />
+    <div style={{ height: 54, borderBottom: "1px solid var(--line)", display: "flex", alignItems: "center", padding: "0 22px", gap: 14, background: "var(--card)", flexShrink: 0 }}>
+      <button onClick={openCmd} style={{ flex: 1, maxWidth: 480, display: "flex", alignItems: "center", gap: 9, padding: "7px 12px", borderRadius: 8, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-400)", fontSize: 12.5, cursor: "pointer" }}>
+        <Icon n="search" s={14} c="var(--ink-400)" />
         <span style={{ flex: 1, textAlign: "left" }}>Sök användare, företag, jobb...</span>
-        <span style={{ padding: "1px 6px", borderRadius: 4, background: "rgba(255,255,255,0.05)", fontSize: 10, color: "rgba(255,255,255,0.5)", fontFamily: "'JetBrains Mono',monospace" }}>⌘K</span>
+        <span style={{ padding: "1px 6px", borderRadius: 4, background: "var(--paper-2)", fontSize: 10, color: "var(--ink-400)", fontFamily: "'JetBrains Mono',monospace" }}>⌘K</span>
       </button>
 
       <div style={{ display: "flex", alignItems: "center", gap: 7, marginLeft: "auto" }}>
@@ -151,13 +152,13 @@ export function AdminTopBar({ openCmd, health }) {
           {latency && <span style={{ fontSize: 10, color: `${pillColor}88`, fontFamily: "'JetBrains Mono',monospace" }}>{latency}</span>}
         </button>
 
-        <button style={{ padding: "7px 12px", borderRadius: 8, background: "rgba(245,166,35,0.1)", border: "1px solid rgba(245,166,35,0.25)", color: "#F5A623", fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
-          <Icon n="zap" s={12} /> Quick action
+        <button style={{ padding: "7px 12px", borderRadius: 8, background: "var(--amber-tint)", border: "1px solid var(--amber)", color: "var(--amber-text)", fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+          <Icon n="zap" s={12} c="var(--amber-text)" /> Quick action
         </button>
 
         <button style={{ width: 36, height: 36, borderRadius: 99, background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
-          <Icon n="bell" s={16} c="rgba(255,255,255,0.7)" />
-          <span style={{ position: "absolute", top: 7, right: 7, width: 7, height: 7, borderRadius: 99, background: "#F5A623", border: "2px solid #040a0a" }} />
+          <Icon n="bell" s={16} c="var(--ink-500)" />
+          <span style={{ position: "absolute", top: 7, right: 7, width: 7, height: 7, borderRadius: 99, background: "var(--amber)", border: "2px solid var(--card)" }} />
         </button>
       </div>
     </div>
@@ -191,12 +192,12 @@ export function AdminCmdK({ open, onClose, onChange }) {
   let lastGroup = null;
   return (
     <>
-      <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(6px)", zIndex: 100 }} />
-      <div style={{ position: "fixed", top: 80, left: "50%", transform: "translateX(-50%)", width: 580, maxWidth: "calc(100vw - 40px)", background: "#0a1414", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 14, boxShadow: "0 24px 60px rgba(0,0,0,0.6)", zIndex: 110, overflow: "hidden", maxHeight: "70vh", display: "flex", flexDirection: "column", animation: "fadeIn .25s cubic-bezier(.22,1,.36,1) both" }}>
-        <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.05)", display: "flex", alignItems: "center", gap: 11 }}>
-          <Icon n="search" s={15} c="rgba(255,255,255,0.5)" />
-          <input autoFocus placeholder="Sök eller utför åtgärd..." style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "#fff", fontSize: 15, fontFamily: "inherit" }} />
-          <span style={{ padding: "2px 7px", borderRadius: 4, background: "rgba(255,255,255,0.05)", fontSize: 10, color: "rgba(255,255,255,0.5)", fontFamily: "'JetBrains Mono',monospace" }}>esc</span>
+      <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(6px)", zIndex: 100 }} />
+      <div style={{ position: "fixed", top: 80, left: "50%", transform: "translateX(-50%)", width: 580, maxWidth: "calc(100vw - 40px)", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, boxShadow: "var(--sh-md)", zIndex: 110, overflow: "hidden", maxHeight: "70vh", display: "flex", flexDirection: "column", animation: "fadeIn .25s cubic-bezier(.22,1,.36,1) both" }}>
+        <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--line)", display: "flex", alignItems: "center", gap: 11 }}>
+          <Icon n="search" s={15} c="var(--ink-400)" />
+          <input autoFocus placeholder="Sök eller utför åtgärd..." style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "var(--ink-900)", fontSize: 15, fontFamily: "inherit" }} />
+          <span style={{ padding: "2px 7px", borderRadius: 4, background: "var(--paper-2)", fontSize: 10, color: "var(--ink-400)", fontFamily: "'JetBrains Mono',monospace" }}>esc</span>
         </div>
         <div style={{ flex: 1, overflowY: "auto", padding: "6px 0" }}>
           {items.map((it, i) => {
@@ -204,23 +205,23 @@ export function AdminCmdK({ open, onClose, onChange }) {
             lastGroup = it.group;
             return (
               <React.Fragment key={i}>
-                {showHeader && <div style={{ padding: "10px 18px 4px", fontSize: 9.5, fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "rgba(255,255,255,0.35)" }}>{it.group}</div>}
+                {showHeader && <div style={{ padding: "10px 18px 4px", fontSize: 9.5, fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "var(--ink-400)" }}>{it.group}</div>}
                 <button
                   onClick={() => { onChange && onChange(it.i); onClose(); }}
-                  style={{ width: "100%", padding: "9px 18px", background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 11, color: "#fff", textAlign: "left" }}
-                  onMouseEnter={e => e.currentTarget.style.background = "rgba(245,166,35,0.06)"}
+                  style={{ width: "100%", padding: "9px 18px", background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 11, color: "var(--ink-900)", textAlign: "left" }}
+                  onMouseEnter={e => e.currentTarget.style.background = "var(--green-tint)"}
                   onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                 >
-                  <Icon n={it.i} s={13} c="rgba(255,255,255,0.5)" />
+                  <Icon n={it.i} s={13} c="var(--ink-400)" />
                   <span style={{ flex: 1, fontSize: 13 }}>{it.l}</span>
                 </button>
               </React.Fragment>
             );
           })}
         </div>
-        <div style={{ padding: "10px 18px", borderTop: "1px solid rgba(255,255,255,0.05)", display: "flex", gap: 14, fontSize: 11, color: "rgba(255,255,255,0.4)" }}>
-          <span><span style={{ padding: "1px 5px", borderRadius: 3, background: "rgba(255,255,255,0.05)", fontFamily: "'JetBrains Mono',monospace" }}>↵</span> öppna</span>
-          <span><span style={{ padding: "1px 5px", borderRadius: 3, background: "rgba(255,255,255,0.05)", fontFamily: "'JetBrains Mono',monospace" }}>↑↓</span> navigera</span>
+        <div style={{ padding: "10px 18px", borderTop: "1px solid var(--line)", display: "flex", gap: 14, fontSize: 11, color: "var(--ink-400)" }}>
+          <span><span style={{ padding: "1px 5px", borderRadius: 3, background: "var(--paper-2)", fontFamily: "'JetBrains Mono',monospace" }}>↵</span> öppna</span>
+          <span><span style={{ padding: "1px 5px", borderRadius: 3, background: "var(--paper-2)", fontFamily: "'JetBrains Mono',monospace" }}>↑↓</span> navigera</span>
         </div>
       </div>
     </>

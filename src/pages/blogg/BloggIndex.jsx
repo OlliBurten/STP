@@ -9,7 +9,7 @@ const articles = [
     date: "1 mars 2025",
     readTime: "6 min",
     tag: "Körkort",
-    tagStyle: { background: "rgba(31,95,92,0.25)", color: "#6ee7e7", border: "1px solid rgba(31,95,92,0.4)" },
+    tagStyle: { background: "var(--green-tint)", color: "var(--green-text)", border: "1px solid var(--green)" },
     for: "Förare",
   },
   {
@@ -19,7 +19,7 @@ const articles = [
     date: "8 mars 2025",
     readTime: "5 min",
     tag: "Utbildning",
-    tagStyle: { background: "rgba(99,179,237,0.15)", color: "#63b3ed", border: "1px solid rgba(99,179,237,0.3)" },
+    tagStyle: { background: "var(--info-tint)", color: "var(--info)", border: "1px solid var(--info)" },
     for: "Förare",
   },
   {
@@ -29,7 +29,7 @@ const articles = [
     date: "15 mars 2025",
     readTime: "5 min",
     tag: "Certifikat",
-    tagStyle: { background: "rgba(245,166,35,0.12)", color: "#F5A623", border: "1px solid rgba(245,166,35,0.25)" },
+    tagStyle: { background: "var(--amber-tint)", color: "var(--amber-text)", border: "1px solid var(--amber)" },
     for: "Förare",
   },
   {
@@ -39,7 +39,7 @@ const articles = [
     date: "22 mars 2025",
     readTime: "5 min",
     tag: "Lön",
-    tagStyle: { background: "rgba(245,166,35,0.12)", color: "#F5A623", border: "1px solid rgba(245,166,35,0.25)" },
+    tagStyle: { background: "var(--amber-tint)", color: "var(--amber-text)", border: "1px solid var(--amber)" },
     for: "Förare",
   },
   {
@@ -49,7 +49,7 @@ const articles = [
     date: "1 april 2025",
     readTime: "5 min",
     tag: "Jobbsökning",
-    tagStyle: { background: "rgba(31,95,92,0.25)", color: "#6ee7e7", border: "1px solid rgba(31,95,92,0.4)" },
+    tagStyle: { background: "var(--green-tint)", color: "var(--green-text)", border: "1px solid var(--green)" },
     for: "Förare",
   },
   {
@@ -59,7 +59,7 @@ const articles = [
     date: "8 april 2025",
     readTime: "6 min",
     tag: "Rekrytering",
-    tagStyle: { background: "rgba(74,222,128,0.12)", color: "#4ade80", border: "1px solid rgba(74,222,128,0.25)" },
+    tagStyle: { background: "var(--success-tint)", color: "var(--green-text)", border: "1px solid var(--success)" },
     for: "Åkerier",
   },
   {
@@ -69,7 +69,7 @@ const articles = [
     date: "20 april 2025",
     readTime: "4 min",
     tag: "Utbildning",
-    tagStyle: { background: "rgba(99,179,237,0.15)", color: "#63b3ed", border: "1px solid rgba(99,179,237,0.3)" },
+    tagStyle: { background: "var(--info-tint)", color: "var(--info)", border: "1px solid var(--info)" },
     for: "Förare",
   },
   {
@@ -79,7 +79,7 @@ const articles = [
     date: "20 april 2025",
     readTime: "4 min",
     tag: "Certifikat",
-    tagStyle: { background: "rgba(245,166,35,0.12)", color: "#F5A623", border: "1px solid rgba(245,166,35,0.25)" },
+    tagStyle: { background: "var(--amber-tint)", color: "var(--amber-text)", border: "1px solid var(--amber)" },
     for: "Förare",
   },
   {
@@ -89,7 +89,7 @@ const articles = [
     date: "20 april 2025",
     readTime: "4 min",
     tag: "Villkor",
-    tagStyle: { background: "rgba(74,222,128,0.12)", color: "#4ade80", border: "1px solid rgba(74,222,128,0.25)" },
+    tagStyle: { background: "var(--success-tint)", color: "var(--green-text)", border: "1px solid var(--success)" },
     for: "Förare & åkerier",
   },
   {
@@ -99,7 +99,7 @@ const articles = [
     date: "20 april 2025",
     readTime: "5 min",
     tag: "Karriär",
-    tagStyle: { background: "rgba(31,95,92,0.25)", color: "#6ee7e7", border: "1px solid rgba(31,95,92,0.4)" },
+    tagStyle: { background: "var(--green-tint)", color: "var(--green-text)", border: "1px solid var(--green)" },
     for: "Förare",
   },
   {
@@ -109,7 +109,7 @@ const articles = [
     date: "20 april 2025",
     readTime: "5 min",
     tag: "Regler",
-    tagStyle: { background: "rgba(255,255,255,0.08)", color: "rgba(240,250,249,0.6)", border: "1px solid rgba(255,255,255,0.12)" },
+    tagStyle: { background: "var(--paper-2)", color: "var(--ink-500)", border: "1px solid var(--line)" },
     for: "Förare",
   },
   {
@@ -119,7 +119,7 @@ const articles = [
     date: "20 april 2025",
     readTime: "5 min",
     tag: "Yrket",
-    tagStyle: { background: "rgba(99,179,237,0.15)", color: "#63b3ed", border: "1px solid rgba(99,179,237,0.3)" },
+    tagStyle: { background: "var(--info-tint)", color: "var(--info)", border: "1px solid var(--info)" },
     for: "Förare",
   },
 ];
@@ -134,24 +134,24 @@ export default function BloggIndex() {
   });
 
   return (
-    <main style={{ background: "#0a1818", minHeight: "100vh", marginTop: "-64px", paddingTop: 96 }}>
+    <main style={{ background: "var(--paper)", minHeight: "100vh", paddingTop: 48 }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px 96px" }}>
 
         {/* Header */}
         <div style={{ marginBottom: 48 }}>
-          <span style={{ display: "inline-block", fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "#4ade80", marginBottom: 12 }}>
+          <span style={{ display: "inline-block", fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--green-text)", marginBottom: 12 }}>
             Transportplattformen
           </span>
-          <h1 style={{ fontSize: 40, fontWeight: 900, color: "#f0faf9", letterSpacing: "-0.5px", margin: "0 0 12px" }}>
+          <h1 style={{ fontSize: 40, fontWeight: 900, color: "var(--ink-900)", letterSpacing: "-0.5px", margin: "0 0 12px" }}>
             Guider &amp; insikter
           </h1>
-          <p style={{ fontSize: 17, color: "rgba(240,250,249,0.55)", maxWidth: 560, lineHeight: 1.6, margin: 0 }}>
+          <p style={{ fontSize: 17, color: "var(--ink-500)", maxWidth: 560, lineHeight: 1.6, margin: 0 }}>
             Praktiska guider om körkort, certifikat, löner och rekrytering — baserade på officiella
             källor från Trafikverket, SCB och TYA.
           </p>
         </div>
 
-        {/* Featured article */}
+        {/* Featured article — intentional dark branded gradient bg */}
         <Link
           to={featured.to}
           style={{ display: "block", marginBottom: 32, borderRadius: 20, overflow: "hidden", textDecoration: "none", border: "1px solid rgba(31,95,92,0.35)" }}
@@ -170,7 +170,7 @@ export default function BloggIndex() {
             <p style={{ fontSize: 15, color: "rgba(255,255,255,0.7)", lineHeight: 1.65, maxWidth: 640, margin: "0 0 20px" }}>
               {featured.desc}
             </p>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, color: "#4ade80" }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, color: "var(--success)" }}>
               Läs guide →
             </span>
           </div>
@@ -182,48 +182,48 @@ export default function BloggIndex() {
             <Link
               key={a.to}
               to={a.to}
-              style={{ display: "flex", flexDirection: "column", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: "22px 24px", textDecoration: "none", transition: "border-color 0.2s" }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = "rgba(31,95,92,0.5)"}
-              onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)"}
+              style={{ display: "flex", flexDirection: "column", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, padding: "22px 24px", textDecoration: "none", transition: "border-color 0.2s" }}
+              onMouseEnter={e => e.currentTarget.style.borderColor = "var(--line-2)"}
+              onMouseLeave={e => e.currentTarget.style.borderColor = "var(--line)"}
             >
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
                 <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 999, ...a.tagStyle }}>
                   {a.tag}
                 </span>
-                <span style={{ fontSize: 11, color: "rgba(240,250,249,0.35)" }}>{a.readTime} läsning</span>
+                <span style={{ fontSize: 11, color: "var(--ink-400)" }}>{a.readTime} läsning</span>
               </div>
-              <h2 style={{ fontSize: 14, fontWeight: 700, color: "#f0faf9", lineHeight: 1.45, margin: "0 0 8px", flex: 1 }}>
+              <h2 style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)", lineHeight: 1.45, margin: "0 0 8px", flex: 1 }}>
                 {a.title}
               </h2>
-              <p style={{ fontSize: 13, color: "rgba(240,250,249,0.5)", lineHeight: 1.6, margin: "0 0 16px", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+              <p style={{ fontSize: 13, color: "var(--ink-500)", lineHeight: 1.6, margin: "0 0 16px", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
                 {a.desc}
               </p>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 14, borderTop: "1px solid rgba(255,255,255,0.07)", marginTop: "auto" }}>
-                <span style={{ fontSize: 11, color: "rgba(240,250,249,0.3)" }}>{a.date}</span>
-                <span style={{ fontSize: 12, fontWeight: 600, color: "#4ade80" }}>Läs mer →</span>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 14, borderTop: "1px solid var(--line)", marginTop: "auto" }}>
+                <span style={{ fontSize: 11, color: "var(--ink-400)" }}>{a.date}</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--green-text)" }}>Läs mer →</span>
               </div>
             </Link>
           ))}
         </div>
 
         {/* Bottom CTA */}
-        <div style={{ marginTop: 56, background: "linear-gradient(135deg, rgba(31,95,92,0.25) 0%, rgba(31,95,92,0.1) 100%)", border: "1px solid rgba(31,95,92,0.3)", borderRadius: 20, padding: "36px 40px", display: "flex", flexWrap: "wrap", alignItems: "center", gap: 24 }}>
+        <div style={{ marginTop: 56, background: "var(--green-tint)", border: "1px solid var(--green)", borderRadius: 20, padding: "36px 40px", display: "flex", flexWrap: "wrap", alignItems: "center", gap: 24 }}>
           <div style={{ flex: 1, minWidth: 200 }}>
-            <h3 style={{ fontSize: 18, fontWeight: 800, color: "#f0faf9", margin: "0 0 6px" }}>Redo att hitta nästa steg?</h3>
-            <p style={{ fontSize: 14, color: "rgba(240,250,249,0.55)", margin: 0, lineHeight: 1.6 }}>
+            <h3 style={{ fontSize: 18, fontWeight: 800, color: "var(--ink-900)", margin: "0 0 6px" }}>Redo att hitta nästa steg?</h3>
+            <p style={{ fontSize: 14, color: "var(--ink-500)", margin: 0, lineHeight: 1.6 }}>
               Bläddra bland lediga tjänster eller lägg upp din profil och bli synlig för hundratals åkerier.
             </p>
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
             <Link
               to="/jobb"
-              style={{ display: "inline-block", background: "#F5A623", color: "#000", padding: "11px 22px", borderRadius: 12, fontSize: 14, fontWeight: 800, textDecoration: "none" }}
+              style={{ display: "inline-block", background: "var(--green)", color: "#fff", padding: "11px 22px", borderRadius: 12, fontSize: 14, fontWeight: 800, textDecoration: "none" }}
             >
               Se lediga jobb
             </Link>
             <Link
               to="/forare"
-              style={{ display: "inline-block", border: "1px solid rgba(255,255,255,0.15)", color: "rgba(240,250,249,0.8)", padding: "11px 22px", borderRadius: 12, fontSize: 14, fontWeight: 600, textDecoration: "none" }}
+              style={{ display: "inline-block", border: "1px solid var(--line-2)", color: "var(--ink-700)", padding: "11px 22px", borderRadius: 12, fontSize: 14, fontWeight: 600, textDecoration: "none" }}
             >
               Hitta förare
             </Link>

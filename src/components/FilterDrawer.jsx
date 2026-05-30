@@ -16,21 +16,21 @@ const selectStyle = {
   width: "100%",
   padding: "10px 12px",
   borderRadius: 10,
-  background: "rgba(255,255,255,0.05)",
-  border: "1px solid rgba(255,255,255,0.1)",
-  color: "#f0faf9",
+  background: "var(--paper-2)",
+  border: "1px solid var(--line)",
+  color: "var(--ink-900)",
   fontSize: 14,
   outline: "none",
   appearance: "none",
   fontFamily: "inherit",
 };
 
-const optStyle = { background: "#0a1818" };
+const optStyle = { background: "var(--card)" };
 
 function Field({ label, children }) {
   return (
     <div>
-      <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(240,250,249,0.4)", textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: 8 }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-400)", textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: 8 }}>
         {label}
       </div>
       {children}
@@ -57,25 +57,26 @@ export default function FilterDrawer({ filters, setFilters, onClose }) {
     <div style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex" }}>
       <div
         onClick={onClose}
-        style={{ flex: 1, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)" }}
+        style={{ flex: 1, background: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)" }}
       />
       <div
         style={{
           width: 380,
           maxWidth: "90vw",
-          background: "#0a1818",
-          borderLeft: "1px solid rgba(255,255,255,0.08)",
+          background: "var(--card)",
+          borderLeft: "1px solid var(--line)",
           padding: "32px 28px",
           overflowY: "auto",
           display: "flex",
           flexDirection: "column",
+          boxShadow: "var(--sh-md)",
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32 }}>
-          <span style={{ fontSize: 18, fontWeight: 800, color: "#f0faf9" }}>Fler filter</span>
+          <span style={{ fontSize: 18, fontWeight: 800, color: "var(--ink-900)" }}>Fler filter</span>
           <button
             onClick={onClose}
-            style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "rgba(240,250,249,0.6)" }}
+            style={{ width: 36, height: 36, borderRadius: 10, background: "var(--paper-2)", border: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--ink-400)" }}
           >
             <CloseIcon className="w-4 h-4" />
           </button>
@@ -138,13 +139,13 @@ export default function FilterDrawer({ filters, setFilters, onClose }) {
         <div style={{ marginTop: 32, display: "flex", gap: 10 }}>
           <button
             onClick={clearFilters}
-            style={{ flex: 1, padding: "12px", borderRadius: 12, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(240,250,249,0.6)", fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}
+            style={{ flex: 1, padding: "12px", borderRadius: 12, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-500)", fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}
           >
             Rensa
           </button>
           <button
             onClick={onClose}
-            style={{ flex: 2, padding: "12px", borderRadius: 12, background: "#1F5F5C", border: "none", color: "#fff", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}
+            style={{ flex: 2, padding: "12px", borderRadius: 12, background: "var(--green)", border: "none", color: "#fff", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}
           >
             Visa resultat
           </button>

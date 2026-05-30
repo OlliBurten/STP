@@ -32,10 +32,10 @@ function getStage(conv) {
 }
 
 const STAGE = {
-  applied:  { label: "Skickad",  color: "#63b3ed", bg: "rgba(99,179,237,0.12)",   border: "rgba(99,179,237,0.25)"  },
-  seen:     { label: "Sedd",     color: "#a78bfa", bg: "rgba(167,139,250,0.12)",  border: "rgba(167,139,250,0.25)" },
-  selected: { label: "Utvald",   color: "#4ade80", bg: "rgba(74,222,128,0.12)",   border: "rgba(74,222,128,0.25)"  },
-  rejected: { label: "Avslutad", color: "rgba(240,250,249,0.3)", bg: "rgba(255,255,255,0.04)", border: "rgba(255,255,255,0.1)" },
+  applied:  { label: "Skickad",  color: "var(--info)",    bg: "var(--info-tint)",    border: "rgba(37,99,235,0.2)"   },
+  seen:     { label: "Sedd",     color: "var(--amber)",   bg: "var(--amber-tint)",   border: "rgba(199,122,14,0.2)"  },
+  selected: { label: "Utvald",   color: "var(--success)", bg: "var(--success-tint)", border: "rgba(31,122,58,0.2)"   },
+  rejected: { label: "Avslutad", color: "var(--ink-400)", bg: "var(--paper-2)",      border: "var(--line)"           },
 };
 
 function avatarInitials(name) {
@@ -43,7 +43,7 @@ function avatarInitials(name) {
   return name.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
 }
 function avatarBg(name) {
-  const palette = ["#1F5F5C", "#1a3a5c", "#3a2a5c", "#3a2a1a", "#1a2a3a", "#1a3a2a"];
+  const palette = ["#1F5F5C", "#1a3a5c", "#b45309", "#16a34a", "#1d4ed8", "#6d28d9"];
   let h = 0;
   for (let i = 0; i < (name || "").length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xffff;
   return palette[h % palette.length];
@@ -70,12 +70,13 @@ function ConvItem({ conv, isDriver, isActive, basePath, isMobile }) {
 
   // Mobile company: compact row matching åkeri inkorg design
   if (isMobile && !isDriver) {
-    const stageColor = conv.selectedByCompanyAt ? "#4ade80" : conv.readByCompanyAt ? "#a78bfa" : "#F5A623";
+    const stageColor = conv.selectedByCompanyAt ? "var(--success)" : conv.readByCompanyAt ? "var(--amber)" : "var(--info)";
+    const stageBg = conv.selectedByCompanyAt ? "var(--success-tint)" : conv.readByCompanyAt ? "var(--amber-tint)" : "var(--info-tint)";
     const stageLabel = conv.selectedByCompanyAt ? "UTVALD" : conv.readByCompanyAt ? "KONTAKTAD" : "NY";
     return (
       <Link
         to={`${basePath}/${conv.id}`}
-        style={{ display: "block", padding: "14px 18px", textDecoration: "none", borderBottom: "1px solid rgba(255,255,255,0.04)", minHeight: 74 }}
+        style={{ display: "block", padding: "14px 18px", textDecoration: "none", borderBottom: "1px solid var(--line)", minHeight: 74 }}
       >
         <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
           <div style={{ position: "relative", flexShrink: 0 }}>
@@ -83,22 +84,22 @@ function ConvItem({ conv, isDriver, isActive, basePath, isMobile }) {
               {avatarInitials(other)}
             </div>
             {unread && (
-              <div style={{ position: "absolute", top: -3, right: -3, minWidth: 18, height: 18, padding: "0 5px", borderRadius: 99, background: "#F5A623", color: "#000", fontSize: 10, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid #060f0f" }}>1</div>
+              <div style={{ position: "absolute", top: -3, right: -3, minWidth: 18, height: 18, padding: "0 5px", borderRadius: 99, background: "var(--amber)", color: "#fff", fontSize: 10, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid var(--card)" }}>1</div>
             )}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 2 }}>
-              <span style={{ fontSize: 14, fontWeight: unread ? 800 : 700, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{other}</span>
-              <span style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", flexShrink: 0 }}>{relTime}</span>
+              <span style={{ fontSize: 14, fontWeight: unread ? 800 : 700, color: "var(--ink-900)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{other}</span>
+              <span style={{ fontSize: 11, color: "var(--ink-400)", flexShrink: 0 }}>{relTime}</span>
             </div>
             {conv.jobTitle && (
-              <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.5)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: 5 }}>{conv.jobTitle}</div>
+              <div style={{ fontSize: 11.5, color: "var(--ink-500)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: 5 }}>{conv.jobTitle}</div>
             )}
             <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-              <span style={{ padding: "2px 6px", borderRadius: 5, background: `${stageColor}1a`, color: stageColor, fontSize: 9.5, fontWeight: 800, letterSpacing: 0.3 }}>{stageLabel}</span>
-              {typeof conv.matchScore === "number" && <span style={{ fontSize: 11, color: "#F5A623", fontWeight: 700 }}>{conv.matchScore}%</span>}
-              <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
-                {lastMsg?.sender === "company" && <span style={{ color: "rgba(255,255,255,0.35)" }}>Du: </span>}
+              <span style={{ padding: "2px 6px", borderRadius: 5, background: stageBg, color: stageColor, fontSize: 9.5, fontWeight: 800, letterSpacing: 0.3 }}>{stageLabel}</span>
+              {typeof conv.matchScore === "number" && <span style={{ fontSize: 11, color: "var(--amber)", fontWeight: 700 }}>{conv.matchScore}%</span>}
+              <span style={{ fontSize: 12, color: "var(--ink-400)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
+                {lastMsg?.sender === "company" && <span style={{ color: "var(--ink-300)" }}>Du: </span>}
                 {lastMsg?.content || "—"}
               </span>
             </div>
@@ -113,12 +114,12 @@ function ConvItem({ conv, isDriver, isActive, basePath, isMobile }) {
       to={`${basePath}/${conv.id}`}
       style={{
         display: "block", padding: "16px 18px", textDecoration: "none",
-        background: isActive ? "rgba(245,166,35,0.06)" : "transparent",
-        borderLeft: isActive ? "3px solid #F5A623" : "3px solid transparent",
-        borderBottom: "1px solid rgba(255,255,255,0.04)",
+        background: isActive ? "var(--green-tint)" : "transparent",
+        borderLeft: isActive ? "3px solid var(--green)" : "3px solid transparent",
+        borderBottom: "1px solid var(--line)",
         transition: "background .15s",
       }}
-      onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = "rgba(255,255,255,0.025)"; }}
+      onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = "var(--paper-2)"; }}
       onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
     >
       <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
@@ -127,18 +128,18 @@ function ConvItem({ conv, isDriver, isActive, basePath, isMobile }) {
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
-            <span style={{ fontSize: 13, fontWeight: unread ? 800 : 600, color: unread ? "#f0faf9" : "rgba(240,250,249,0.85)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
+            <span style={{ fontSize: 13, fontWeight: unread ? 800 : 600, color: unread ? "var(--ink-900)" : "var(--ink-700)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
               {other}
             </span>
-            <span style={{ fontSize: 11, color: "rgba(240,250,249,0.4)", flexShrink: 0 }}>{relTime}</span>
+            <span style={{ fontSize: 11, color: "var(--ink-400)", flexShrink: 0 }}>{relTime}</span>
           </div>
           {conv.jobTitle && (
-            <div style={{ fontSize: 12, color: "rgba(240,250,249,0.55)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: 4 }}>
+            <div style={{ fontSize: 12, color: "var(--ink-500)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: 4 }}>
               {conv.jobTitle}
             </div>
           )}
-          <div style={{ fontSize: 12, color: unread ? "rgba(240,250,249,0.8)" : "rgba(240,250,249,0.4)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", lineHeight: 1.4 }}>
-            {lastMsg?.sender === (isDriver ? "driver" : "company") && <span style={{ color: "rgba(240,250,249,0.35)" }}>Du: </span>}
+          <div style={{ fontSize: 12, color: unread ? "var(--ink-700)" : "var(--ink-400)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", lineHeight: 1.4 }}>
+            {lastMsg?.sender === (isDriver ? "driver" : "company") && <span style={{ color: "var(--ink-300)" }}>Du: </span>}
             {lastMsg?.content || "—"}
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
@@ -148,7 +149,7 @@ function ConvItem({ conv, isDriver, isActive, basePath, isMobile }) {
               </span>
             )}
             {unread && (
-              <span style={{ marginLeft: "auto", minWidth: 18, height: 18, padding: "0 5px", borderRadius: 99, background: "#F5A623", color: "#000", fontSize: 10, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ marginLeft: "auto", minWidth: 18, height: 18, padding: "0 5px", borderRadius: 99, background: "var(--amber)", color: "#fff", fontSize: 10, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 1
               </span>
             )}
@@ -234,9 +235,9 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       {/* Job context header */}
-      <div style={{ padding: isMobile ? "12px 16px" : "18px 28px", borderBottom: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", gap: isMobile ? 10 : 16, flexShrink: 0 }}>
+      <div style={{ padding: isMobile ? "12px 16px" : "18px 28px", borderBottom: "1px solid var(--line)", background: "var(--card)", display: "flex", alignItems: "center", gap: isMobile ? 10 : 16, flexShrink: 0 }}>
         {isMobile && (
-          <button type="button" onClick={onBack} style={{ background: "none", border: "none", color: "rgba(240,250,249,0.6)", cursor: "pointer", fontSize: 20, padding: "2px 4px", lineHeight: 1, flexShrink: 0 }}>
+          <button type="button" onClick={onBack} style={{ background: "none", border: "none", color: "var(--ink-500)", cursor: "pointer", fontSize: 20, padding: "2px 4px", lineHeight: 1, flexShrink: 0 }}>
             ←
           </button>
         )}
@@ -244,15 +245,15 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
           {avatarInitials(other)}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: isMobile ? 14 : 16, fontWeight: 800, marginBottom: 2, letterSpacing: -0.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          <div style={{ fontSize: isMobile ? 14 : 16, fontWeight: 800, color: "var(--ink-900)", marginBottom: 2, letterSpacing: -0.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {conv.jobTitle || other}
           </div>
-          <div style={{ fontSize: 11, color: "rgba(240,250,249,0.5)", display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+          <div style={{ fontSize: 11, color: "var(--ink-500)", display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
             <span>{other}</span>
-            {!isMobile && conv.location && <><span style={{ color: "rgba(255,255,255,0.2)" }}>·</span><span>{conv.location}</span></>}
-            {!isMobile && conv.salary && <><span style={{ color: "rgba(255,255,255,0.2)" }}>·</span><span>{conv.salary}</span></>}
+            {!isMobile && conv.location && <><span style={{ color: "var(--ink-200)" }}>·</span><span>{conv.location}</span></>}
+            {!isMobile && conv.salary && <><span style={{ color: "var(--ink-200)" }}>·</span><span>{conv.salary}</span></>}
             {typeof conv.matchScore === "number" && (
-              <><span style={{ color: "rgba(255,255,255,0.2)" }}>·</span><span style={{ color: "#4ade80", fontWeight: 700 }}>{conv.matchScore}% match</span></>
+              <><span style={{ color: "var(--ink-200)" }}>·</span><span style={{ color: "var(--success)", fontWeight: 700 }}>{conv.matchScore}% match</span></>
             )}
           </div>
         </div>
@@ -263,18 +264,18 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
           {conv.jobId && (
             <Link
               to={`/jobb/${conv.jobId}`}
-              style={{ padding: isMobile ? "6px 9px" : "7px 12px", borderRadius: 9, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", color: "rgba(240,250,249,0.8)", fontSize: 11, fontWeight: 700, textDecoration: "none", display: "flex", alignItems: "center", gap: 4, whiteSpace: "nowrap" }}
+              style={{ padding: isMobile ? "6px 9px" : "7px 12px", borderRadius: 9, background: "var(--paper-2)", border: "1px solid var(--line-2)", color: "var(--ink-700)", fontSize: 11, fontWeight: 700, textDecoration: "none", display: "flex", alignItems: "center", gap: 4, whiteSpace: "nowrap" }}
             >
               {isMobile ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg> : <>Se annons <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></>}
             </Link>
           )}
           {!isMobile && isDriver && (
-            <button type="button" onClick={onReview} disabled={!canReview} style={{ padding: "6px 10px", borderRadius: 8, background: "rgba(245,166,35,0.07)", border: "1px solid rgba(245,166,35,0.15)", color: !canReview ? "rgba(240,250,249,0.2)" : "#F5A623", fontSize: 11, fontWeight: 600, cursor: canReview ? "pointer" : "not-allowed", fontFamily: "inherit", whiteSpace: "nowrap" }}>
+            <button type="button" onClick={onReview} disabled={!canReview} style={{ padding: "6px 10px", borderRadius: 8, background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.2)", color: !canReview ? "var(--ink-300)" : "var(--amber)", fontSize: 11, fontWeight: 600, cursor: canReview ? "pointer" : "not-allowed", fontFamily: "inherit", whiteSpace: "nowrap" }}>
               {reviewLabel}
             </button>
           )}
           {!isMobile && (
-            <button type="button" onClick={onReport} style={{ padding: "6px 10px", borderRadius: 8, background: "rgba(248,113,113,0.05)", border: "1px solid rgba(248,113,113,0.12)", color: "rgba(248,113,113,0.5)", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
+            <button type="button" onClick={onReport} style={{ padding: "6px 10px", borderRadius: 8, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-400)", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
               Rapportera
             </button>
           )}
@@ -283,27 +284,27 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
 
       {/* Selected banner */}
       {isDriver && conv.selectedByCompanyAt && (
-        <div style={{ padding: isMobile ? "12px 16px" : "14px 28px", background: "linear-gradient(135deg,rgba(74,222,128,0.1),rgba(74,222,128,0.02))", borderBottom: "1px solid rgba(74,222,128,0.2)", display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={{ width: 32, height: 32, borderRadius: 99, background: "rgba(74,222,128,0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        <div style={{ padding: isMobile ? "12px 16px" : "14px 28px", background: "var(--success-tint)", borderBottom: "1px solid rgba(31,122,58,0.2)", display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ width: 32, height: 32, borderRadius: 99, background: "rgba(31,122,58,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 13, fontWeight: 800, color: "#4ade80" }}>Du är utvald — åtgärd krävs</div>
-            <div style={{ fontSize: 12, color: "rgba(240,250,249,0.65)", marginTop: 2 }}>{other} har valt ut din profil.</div>
+            <div style={{ fontSize: 13, fontWeight: 800, color: "var(--success)" }}>Du är utvald — åtgärd krävs</div>
+            <div style={{ fontSize: 12, color: "var(--ink-500)", marginTop: 2 }}>{other} har valt ut din profil.</div>
           </div>
         </div>
       )}
 
       {/* Rejected banner */}
       {isRejected && (
-        <div style={{ padding: isMobile ? "10px 16px" : "12px 28px", background: "rgba(255,255,255,0.02)", borderBottom: "1px solid rgba(255,255,255,0.05)", fontSize: 12, color: "rgba(240,250,249,0.45)", fontStyle: "italic" }}>
+        <div style={{ padding: isMobile ? "10px 16px" : "12px 28px", background: "var(--paper-2)", borderBottom: "1px solid var(--line)", fontSize: 12, color: "var(--ink-400)", fontStyle: "italic" }}>
           Konversationen är avslutad.
         </div>
       )}
 
       {/* Company contact info */}
       {!isDriver && (conv.driverEmail || conv.driverPhone) && (
-        <div style={{ padding: "10px 24px", background: "rgba(255,255,255,0.02)", borderBottom: "1px solid rgba(255,255,255,0.05)", fontSize: 13, color: "rgba(240,250,249,0.5)", display: "flex", gap: 16 }}>
+        <div style={{ padding: "10px 24px", background: "var(--paper-2)", borderBottom: "1px solid var(--line)", fontSize: 13, color: "var(--ink-500)", display: "flex", gap: 16 }}>
           {conv.driverEmail && <span>📧 {conv.driverEmail}</span>}
           {conv.driverPhone && <span>📞 {conv.driverPhone}</span>}
         </div>
@@ -313,8 +314,8 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
       <div style={{ flex: 1, overflowY: "auto", padding: isMobile ? "16px 16px" : "24px 28px", paddingBottom: isMobile ? "calc(env(safe-area-inset-bottom, 0px) + 80px)" : undefined }}>
         {groups.map(({ day, msgs }) => (
           <div key={day}>
-            <div style={{ textAlign: "center", margin: "12px 0 18px", fontSize: 11, fontWeight: 700, color: "rgba(240,250,249,0.4)", letterSpacing: 0.5 }}>
-              <span style={{ padding: "4px 12px", background: "rgba(255,255,255,0.04)", borderRadius: 99 }}>
+            <div style={{ textAlign: "center", margin: "12px 0 18px", fontSize: 11, fontWeight: 700, color: "var(--ink-400)", letterSpacing: 0.5 }}>
+              <span style={{ padding: "4px 12px", background: "var(--paper-2)", borderRadius: 99 }}>
                 {formatDateLabel(msgs[0].timestamp)}
               </span>
             </div>
@@ -332,21 +333,21 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
                       <div style={{
                         padding: "12px 16px",
                         borderRadius: isOwn ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
-                        background: isOwn ? "linear-gradient(135deg,#F5A623,#d97706)" : "rgba(255,255,255,0.05)",
-                        border: isOwn ? "none" : "1px solid rgba(255,255,255,0.06)",
-                        color: isOwn ? "#000" : "#f0faf9",
+                        background: isOwn ? "var(--green)" : "var(--card)",
+                        border: isOwn ? "none" : "1px solid var(--line)",
+                        color: isOwn ? "#fff" : "var(--ink-900)",
                         fontWeight: isOwn ? 600 : 400,
                       }}>
                         <p style={{ fontSize: 14, lineHeight: 1.5, margin: 0, whiteSpace: "pre-wrap" }}>{msg.content}</p>
                       </div>
-                      <div style={{ fontSize: 10, color: "rgba(240,250,249,0.35)", marginTop: 4, textAlign: isOwn ? "right" : "left", paddingLeft: isOwn ? 0 : 4, paddingRight: isOwn ? 4 : 0 }}>
+                      <div style={{ fontSize: 10, color: "var(--ink-400)", marginTop: 4, textAlign: isOwn ? "right" : "left", paddingLeft: isOwn ? 0 : 4, paddingRight: isOwn ? 4 : 0 }}>
                         {formatTime(msg.timestamp)}
                         {isOwn && <span style={{ marginLeft: 5 }}>· Levererat</span>}
                       </div>
                     </div>
                   </div>
                   {readReceiptMsgId === msg.id && (
-                    <p style={{ textAlign: "right", fontSize: 11, color: "rgba(240,250,249,0.25)", marginTop: 2 }}>
+                    <p style={{ textAlign: "right", fontSize: 11, color: "var(--ink-300)", marginTop: 2 }}>
                       Läst {new Date(conv.readByDriverAt).toLocaleString("sv-SE", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
                     </p>
                   )}
@@ -360,8 +361,8 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
 
       {/* Composer */}
       {!isRejected && (
-        <div style={{ padding: isMobile ? "12px 16px 16px" : "16px 28px 22px", borderTop: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}>
-          <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 14, padding: "14px 16px", display: "flex", alignItems: "flex-end", gap: 10 }}>
+        <div style={{ padding: isMobile ? "12px 16px 16px" : "16px 28px 22px", borderTop: "1px solid var(--line)", background: "var(--card)", flexShrink: 0 }}>
+          <div style={{ background: "var(--paper-2)", border: "1px solid var(--line)", borderRadius: 14, padding: "14px 16px", display: "flex", alignItems: "flex-end", gap: 10 }}>
             <textarea
               ref={textareaRef}
               value={input}
@@ -369,13 +370,13 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
               onKeyDown={handleKeyDown}
               placeholder={`Skriv till ${other}...`}
               rows={1}
-              style={{ flex: 1, fontSize: 14, color: "#f0faf9", background: "transparent", outline: "none", resize: "none", lineHeight: 1.5, paddingTop: 6, paddingBottom: 6, minHeight: 24, maxHeight: 120, fontFamily: "inherit", border: "none" }}
+              style={{ flex: 1, fontSize: 14, color: "var(--ink-900)", background: "transparent", outline: "none", resize: "none", lineHeight: 1.5, paddingTop: 6, paddingBottom: 6, minHeight: 24, maxHeight: 120, fontFamily: "inherit", border: "none" }}
             />
             <button
               type="button"
               onClick={handleSend}
               disabled={!input.trim()}
-              style={{ padding: "8px 16px", borderRadius: 10, background: input.trim() ? "linear-gradient(135deg,#F5A623,#d97706)" : "rgba(255,255,255,0.05)", color: input.trim() ? "#000" : "rgba(240,250,249,0.3)", fontWeight: 800, fontSize: 13, display: "flex", alignItems: "center", gap: 7, flexShrink: 0, transition: "all .15s", fontFamily: "inherit", cursor: input.trim() ? "pointer" : "not-allowed", border: "none" }}
+              style={{ padding: "8px 16px", borderRadius: 10, background: input.trim() ? "var(--green)" : "var(--paper-2)", color: input.trim() ? "#fff" : "var(--ink-300)", fontWeight: 800, fontSize: 13, display: "flex", alignItems: "center", gap: 7, flexShrink: 0, transition: "all .15s", fontFamily: "inherit", cursor: input.trim() ? "pointer" : "not-allowed", border: "none" }}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
               Skicka
@@ -384,9 +385,9 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
           {/* Quick replies — always visible when selected */}
           {stage === "selected" && (
             <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap", alignItems: "center" }}>
-              <span style={{ fontSize: 11, color: "rgba(240,250,249,0.4)", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>Snabbsvar:</span>
+              <span style={{ fontSize: 11, color: "var(--ink-400)", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>Snabbsvar:</span>
               {quickReplies.map((r) => (
-                <button key={r} type="button" onClick={() => setInput(r)} style={{ padding: "6px 12px", borderRadius: 99, background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.25)", color: "#4ade80", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+                <button key={r} type="button" onClick={() => setInput(r)} style={{ padding: "6px 12px", borderRadius: 99, background: "var(--success-tint)", border: "1px solid rgba(31,122,58,0.2)", color: "var(--success)", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
                   {r.length > 36 ? r.slice(0, 36) + "…" : r}
                 </button>
               ))}
@@ -396,11 +397,11 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
           {stage !== "selected" && (
             <div style={{ marginTop: 6, display: "flex", gap: 6, flexWrap: "wrap" }}>
               {showQuick && quickReplies.map((r) => (
-                <button key={r} type="button" onClick={() => { setInput(r); setShowQuick(false); }} style={{ padding: "6px 12px", borderRadius: 99, background: "rgba(245,166,35,0.08)", border: "1px solid rgba(245,166,35,0.2)", color: "#F5A623", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+                <button key={r} type="button" onClick={() => { setInput(r); setShowQuick(false); }} style={{ padding: "6px 12px", borderRadius: 99, background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.2)", color: "var(--amber)", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
                   {r.length > 40 ? r.slice(0, 40) + "…" : r}
                 </button>
               ))}
-              <button type="button" onClick={() => setShowQuick((v) => !v)} style={{ padding: "5px 10px", borderRadius: 99, background: "transparent", border: "1px solid rgba(255,255,255,0.07)", color: "rgba(240,250,249,0.35)", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+              <button type="button" onClick={() => setShowQuick((v) => !v)} style={{ padding: "5px 10px", borderRadius: 99, background: "transparent", border: "1px solid var(--line)", color: "var(--ink-400)", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
                 {showQuick ? "Dölj" : "Snabbsvar"}
               </button>
             </div>
@@ -538,17 +539,17 @@ export default function Messages() {
   };
 
   return (
-    <main style={{ background: "#060f0f", height: isMobile ? "100dvh" : "calc(100vh - 64px)", marginTop: isMobile ? 0 : "-64px", paddingTop: isMobile ? 0 : 64, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+    <main style={{ background: "var(--paper)", height: isMobile ? "100dvh" : "calc(100vh - 64px)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
 
       {/* Banners */}
       {!isDriver && companyUnreadConversationCount > 0 && (
-        <div style={{ padding: "10px 24px", background: "rgba(245,166,35,0.06)", borderBottom: "1px solid rgba(245,166,35,0.12)", fontSize: 13, color: "#F5A623", flexShrink: 0 }}>
+        <div style={{ padding: "10px 24px", background: "var(--amber-tint)", borderBottom: "1px solid rgba(199,122,14,0.2)", fontSize: 13, color: "var(--amber-text)", flexShrink: 0 }}>
           Ni har <strong>{companyUnreadConversationCount}</strong> nya ansökningar att granska. Svarar ni inom 24h ökar chansen att hitta rätt kandidat.
         </div>
       )}
       {isDriver && selectedCount > 0 && (
-        <div style={{ padding: "10px 24px", background: "rgba(74,222,128,0.06)", borderBottom: "1px solid rgba(74,222,128,0.12)", fontSize: 13, color: "#4ade80", display: "flex", gap: 10, alignItems: "center", flexShrink: 0 }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polyline points="20 6 9 17 4 12"/></svg>
+        <div style={{ padding: "10px 24px", background: "var(--success-tint)", borderBottom: "1px solid rgba(31,122,58,0.2)", fontSize: 13, color: "var(--success)", display: "flex", gap: 10, alignItems: "center", flexShrink: 0 }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polyline points="20 6 9 17 4 12"/></svg>
           <span>Du är utvald i <strong>{selectedCount}</strong> ansökan{selectedCount > 1 ? "er" : ""}. Svara snabbt — det visar intresse!</span>
         </div>
       )}
@@ -558,18 +559,18 @@ export default function Messages() {
 
           {/* ── Sidebar ── */}
           <div
-            style={{ display: id ? "none" : "flex", width: isMobile ? "100%" : "clamp(300px, 38%, 400px)", background: isMobile ? "#060f0f" : "#070d0d", borderRight: "1px solid rgba(255,255,255,0.06)", flexDirection: "column", overflow: "hidden", flexShrink: 0 }}
+            style={{ display: id ? "none" : "flex", width: isMobile ? "100%" : "clamp(300px, 38%, 400px)", background: "var(--card)", borderRight: "1px solid var(--line)", flexDirection: "column", overflow: "hidden", flexShrink: 0 }}
             className="sidebar-panel"
           >
-            <div style={{ padding: isMobile ? "4px 20px 12px" : "22px 22px 14px", paddingTop: isMobile ? 68 : undefined, borderBottom: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}>
+            <div style={{ padding: isMobile ? "4px 20px 12px" : "22px 22px 14px", paddingTop: isMobile ? 68 : undefined, borderBottom: "1px solid var(--line)", flexShrink: 0 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: isMobile ? 6 : 14 }}>
-                <h1 style={{ fontSize: isMobile ? 26 : 20, fontWeight: isMobile ? 800 : 900, color: "#f0faf9", letterSpacing: isMobile ? -1 : -0.5 }}>
+                <h1 style={{ fontSize: isMobile ? 26 : 20, fontWeight: isMobile ? 800 : 900, color: "var(--ink-900)", letterSpacing: isMobile ? -1 : -0.5 }}>
                   Inkorg
                 </h1>
-                {!isMobile && <span style={{ fontSize: 12, color: "rgba(240,250,249,0.4)" }}>{allConversations.length} totalt</span>}
+                {!isMobile && <span style={{ fontSize: 12, color: "var(--ink-400)" }}>{allConversations.length} totalt</span>}
               </div>
               {isMobile && (
-                <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.55)", marginBottom: 10 }}>
+                <div style={{ fontSize: 12.5, color: "var(--ink-500)", marginBottom: 10 }}>
                   {unreadCount > 0 ? `${unreadCount} olästa meddelanden` : "Inga olästa meddelanden"}
                 </div>
               )}
@@ -579,9 +580,9 @@ export default function Messages() {
                 <select
                   value={companyFilter}
                   onChange={(e) => setCompanyFilter(e.target.value)}
-                  style={{ width: "100%", padding: "8px 10px", borderRadius: 9, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "#f0faf9", fontSize: 13, outline: "none", marginBottom: 10, fontFamily: "inherit", appearance: "none" }}
+                  style={{ width: "100%", padding: "8px 10px", borderRadius: 9, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-900)", fontSize: 13, outline: "none", marginBottom: 10, fontFamily: "inherit", appearance: "none" }}
                 >
-                  {companies.map((c) => <option key={c} value={c} style={{ background: "#0a1414" }}>{c}</option>)}
+                  {companies.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
               )}
 
@@ -594,10 +595,10 @@ export default function Messages() {
                       <button
                         key={k}
                         onClick={() => setStageFilter(k)}
-                        style={{ padding: isMobile ? "8px 14px" : "6px 11px", borderRadius: 99, background: active ? "rgba(245,166,35,0.12)" : "rgba(255,255,255,0.04)", border: active ? "1px solid rgba(245,166,35,0.35)" : "1px solid rgba(255,255,255,0.06)", color: active ? "#F5A623" : "rgba(240,250,249,0.6)", fontSize: isMobile ? 12.5 : 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", flexShrink: 0, display: "flex", alignItems: "center", gap: 5, minHeight: isMobile ? 36 : "auto" }}
+                        style={{ padding: isMobile ? "8px 14px" : "6px 11px", borderRadius: 99, background: active ? "var(--green-tint)" : "var(--paper-2)", border: active ? "1px solid rgba(31,95,92,0.3)" : "1px solid var(--line)", color: active ? "var(--green-text)" : "var(--ink-500)", fontSize: isMobile ? 12.5 : 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", flexShrink: 0, display: "flex", alignItems: "center", gap: 5, minHeight: isMobile ? 36 : "auto" }}
                       >
                         {l}
-                        {isMobile ? <span style={{ padding: "1px 6px", borderRadius: 99, background: active ? "rgba(245,166,35,0.2)" : "rgba(255,255,255,0.06)", fontSize: 10, fontWeight: 800 }}>{c}</span> : (c > 0 && ` · ${c}`)}
+                        {isMobile ? <span style={{ padding: "1px 6px", borderRadius: 99, background: active ? "var(--green-tint)" : "var(--paper-2)", fontSize: 10, fontWeight: 800 }}>{c}</span> : (c > 0 && ` · ${c}`)}
                       </button>
                     );
                   })}
@@ -610,11 +611,11 @@ export default function Messages() {
                 <div style={{ padding: "24px 16px" }}><LoadingBlock message="Hämtar..." /></div>
               ) : conversations.length === 0 ? (
                 <div style={{ padding: "32px 20px", textAlign: "center" }}>
-                  <p style={{ fontSize: 13, color: "rgba(240,250,249,0.4)", marginBottom: 16 }}>
+                  <p style={{ fontSize: 13, color: "var(--ink-400)", marginBottom: 16 }}>
                     {stageFilter !== "all" ? "Inga konversationer i denna kategori." : isDriver ? "Inga konversationer ännu." : "Inga konversationer."}
                   </p>
                   {stageFilter === "all" && (
-                    <Link to={isDriver ? "/jobb" : "/foretag/chaufforer"} style={{ display: "inline-block", padding: "8px 16px", borderRadius: 10, background: "#1F5F5C", color: "#fff", fontWeight: 700, fontSize: 13, textDecoration: "none" }}>
+                    <Link to={isDriver ? "/jobb" : "/foretag/chaufforer"} style={{ display: "inline-block", padding: "8px 16px", borderRadius: 10, background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: 13, textDecoration: "none" }}>
                       {isDriver ? "Hitta jobb →" : "Hitta förare →"}
                     </Link>
                   )}
@@ -631,7 +632,7 @@ export default function Messages() {
           {!isDriver && isMobile && !id && <CompanyBottomNav unreadCount={unreadCount} />}
 
           {/* ── Chat panel ── */}
-          <div style={{ flex: 1, background: "#080f0f", display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0 }}>
+          <div style={{ flex: 1, background: "var(--paper)", display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0 }}>
             {conversation ? (
               <ChatWindow
                 conv={conversation}
@@ -646,26 +647,26 @@ export default function Messages() {
             ) : (
               <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, padding: "40px", textAlign: "center" }}>
                 {id ? (
-                  <p style={{ fontSize: 14, color: "rgba(240,250,249,0.4)" }}>Konversationen hittades inte.</p>
+                  <p style={{ fontSize: 14, color: "var(--ink-400)" }}>Konversationen hittades inte.</p>
                 ) : allConversations.length > 0 ? (
                   <>
-                    <div style={{ width: 72, height: 72, borderRadius: 99, background: "rgba(245,166,35,0.08)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 6 }}>
-                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#F5A623" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+                    <div style={{ width: 72, height: 72, borderRadius: 99, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 6 }}>
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--green-text)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
                     </div>
-                    <h2 style={{ fontSize: 20, fontWeight: 900, color: "#f0faf9", letterSpacing: -0.5, marginBottom: 4 }}>Välj en konversation</h2>
-                    <p style={{ fontSize: 13, color: "rgba(240,250,249,0.5)", maxWidth: 340, lineHeight: 1.6 }}>Här samlas alla dina ansökningar och meddelanden från åkerier på ett ställe.</p>
+                    <h2 style={{ fontSize: 20, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -0.5, marginBottom: 4 }}>Välj en konversation</h2>
+                    <p style={{ fontSize: 13, color: "var(--ink-500)", maxWidth: 340, lineHeight: 1.6 }}>Här samlas alla dina ansökningar och meddelanden från åkerier på ett ställe.</p>
                   </>
                 ) : isDriver ? (
                   <>
-                    <p style={{ fontSize: 14, color: "rgba(240,250,249,0.4)" }}>Ansök till ett jobb för att starta en konversation.</p>
-                    <Link to="/jobb" style={{ padding: "10px 22px", borderRadius: 11, background: "#1F5F5C", color: "#fff", fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
+                    <p style={{ fontSize: 14, color: "var(--ink-400)" }}>Ansök till ett jobb för att starta en konversation.</p>
+                    <Link to="/jobb" style={{ padding: "10px 22px", borderRadius: 11, background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
                       Se lediga jobb
                     </Link>
                   </>
                 ) : (
                   <>
-                    <p style={{ fontSize: 14, color: "rgba(240,250,249,0.4)" }}>Kontakta en förare för att starta en konversation.</p>
-                    <Link to="/foretag/chaufforer" style={{ padding: "10px 22px", borderRadius: 11, background: "#1F5F5C", color: "#fff", fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
+                    <p style={{ fontSize: 14, color: "var(--ink-400)" }}>Kontakta en förare för att starta en konversation.</p>
+                    <Link to="/foretag/chaufforer" style={{ padding: "10px 22px", borderRadius: 11, background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
                       Hitta förare
                     </Link>
                   </>

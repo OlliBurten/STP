@@ -15,7 +15,7 @@ export default function Fjarrkörning() {
 
 
       <h1 className="text-3xl font-bold text-slate-900 mb-4">{TITLE}</h1>
-      <p className="text-slate-500 text-sm mb-8">Publicerad 20 april 2025 · Källa: Transportföretagen, Svenska Transportarbetareförbundet</p>
+      <p className="text-slate-500 text-sm mb-8">Publicerad 20 april 2025 · Källa: Svenska Transportarbetareförbundet, Transportstyrelsen</p>
 
       <div className="space-y-6 text-slate-700 leading-relaxed">
         <p>
@@ -123,7 +123,6 @@ export default function Fjarrkörning() {
         <div className="mt-10 pt-6 border-t border-slate-100 text-xs text-slate-400 space-y-1">
           <p><strong>Källor:</strong></p>
           <ul className="space-y-1">
-            <li><a href="https://www.transportforetagen.se" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">Transportföretagen</a></li>
             <li><a href="https://www.transport.se/lon-och-avtal/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">Svenska Transportarbetareförbundet — Lön och avtal</a></li>
             <li><a href="https://www.transportstyrelsen.se/sv/vagtrafik/yrkestrafik/kor-och-vilotider/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">Transportstyrelsen — Kör- och vilotider</a></li>
           </ul>

@@ -99,7 +99,7 @@ export default function AdminOutreachTab({
         ].map((t) => (
           <button key={t.id} type="button" onClick={() => setOutreachSubTab(t.id)} style={{
             padding: "7px 14px", borderRadius: 9, fontSize: 12, fontWeight: 700, cursor: "pointer", border: "none",
-            background: outreachSubTab === t.id ? T.amber : "rgba(255,255,255,0.06)",
+            background: outreachSubTab === t.id ? T.amber : T.card,
             color: outreachSubTab === t.id ? "#000" : T.sub,
           }}>
             {t.label}
@@ -143,7 +143,7 @@ export default function AdminOutreachTab({
                   <div key={i} onClick={() => setScrapeSelected((s) => { const n = new Set(s); n.has(i) ? n.delete(i) : n.add(i); return n; })}
                     style={{
                       display: "flex", alignItems: "center", gap: 12, padding: "10px 14px",
-                      background: scrapeSelected.has(i) ? "rgba(165,180,252,0.08)" : "rgba(255,255,255,0.02)",
+                      background: scrapeSelected.has(i) ? T.indigoBg : T.card,
                       border: `1px solid ${scrapeSelected.has(i) ? T.indigoBorder : T.border}`,
                       borderRadius: 10, cursor: "pointer",
                     }}
@@ -249,7 +249,7 @@ export default function AdminOutreachTab({
 
                 return (
                   <div key={p.id} style={{
-                    background: "rgba(255,255,255,0.02)", border: `1px solid ${T.border}`,
+                    background: T.card, border: `1px solid ${T.border}`,
                     borderRadius: 12, overflow: "hidden",
                   }}>
                     {/* Row */}
@@ -304,7 +304,7 @@ export default function AdminOutreachTab({
 
                         {/* Generated email preview */}
                         {p.generatedEmail && (
-                          <div style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${T.border}`, borderRadius: 8, padding: 12 }}>
+                          <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 8, padding: 12 }}>
                             <p style={{ fontSize: 10, fontWeight: 700, color: T.muted, marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.08em" }}>
                               Ämne: {p.generatedSubject || "–"}
                             </p>

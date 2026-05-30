@@ -23,19 +23,19 @@ const DRIVER_SEGMENTS = [
     title: "Heltid",
     text: "För dig som söker en långsiktig roll och vill vara tydlig med erfarenhet, behörigheter och vilken typ av tjänst som passar dig.",
     icon: TruckIcon,
-    stripe: "linear-gradient(90deg, #4ade80, #22c55e)",
+    stripe: "linear-gradient(90deg, var(--success), #22c55e)",
     label: "Fast anställning",
-    labelColor: "#16a34a",
-    labelBg: "#f0fdf4",
+    labelColor: "var(--green-text)",
+    labelBg: "var(--green-tint)",
   },
   {
     title: "Vikarie / Deltid",
     text: "För dig som vill vara flexibel, hoppa in snabbt och matchas mot kortare behov, vikariat, extrapass eller deltid.",
     icon: ClockIcon,
-    stripe: "linear-gradient(90deg, #F5A623, #f59e0b)",
+    stripe: "linear-gradient(90deg, var(--amber), #f59e0b)",
     label: "Flexibelt",
-    labelColor: "#b45309",
-    labelBg: "#fffbeb",
+    labelColor: "var(--amber-text)",
+    labelBg: "var(--amber-tint)",
   },
   {
     title: "Praktik",
@@ -98,39 +98,39 @@ const DRIVER_PROMISES = [
 // Dark palette for hero/CTA/how-it-works
 const D = {
   section:      { maxWidth: 1280, margin: "0 auto", padding: "0 40px" },
-  label:        { fontSize: 12, fontWeight: 700, color: "rgba(245,166,35,0.85)", letterSpacing: "1.5px", textTransform: "uppercase" },
+  label:        { fontSize: 12, fontWeight: 700, color: "var(--amber)", letterSpacing: "1.5px", textTransform: "uppercase" },
   h2:           { fontSize: "clamp(28px,4vw,40px)", fontWeight: 900, letterSpacing: "-1.5px", color: "#f0faf9", lineHeight: 1.15, margin: 0 },
   body:         { fontSize: 16, color: "rgba(240,250,249,0.55)", lineHeight: 1.7 },
-  btnPrimary:   { display: "inline-flex", alignItems: "center", gap: 8, background: "#F5A623", color: "#000", fontWeight: 800, fontSize: 15, padding: "14px 28px", borderRadius: 12, textDecoration: "none" },
+  btnPrimary:   { display: "inline-flex", alignItems: "center", gap: 8, background: "var(--amber)", color: "#000", fontWeight: 800, fontSize: 15, padding: "14px 28px", borderRadius: 12, textDecoration: "none" },
   btnSecondary: { display: "inline-flex", alignItems: "center", background: "rgba(255,255,255,0.1)", color: "#fff", border: "1px solid rgba(255,255,255,0.18)", fontSize: 15, padding: "14px 28px", borderRadius: 12, textDecoration: "none", fontWeight: 600 },
 };
 
 // Light editorial palette
 const E = {
   section:   { maxWidth: 1280, margin: "0 auto", padding: "0 40px" },
-  label:     { fontSize: 12, fontWeight: 700, color: "#1F5F5C", letterSpacing: "1.5px", textTransform: "uppercase" },
-  h2:        { fontSize: "clamp(28px,4vw,40px)", fontWeight: 900, letterSpacing: "-1.5px", color: "#0f172a", lineHeight: 1.15, margin: 0 },
-  body:      { fontSize: 16, color: "#64748b", lineHeight: 1.7 },
-  btnPrimary: { display: "inline-flex", alignItems: "center", gap: 8, background: "#F5A623", color: "#000", fontWeight: 800, fontSize: 15, padding: "14px 28px", borderRadius: 12, textDecoration: "none" },
-  btnSecondary: { display: "inline-flex", alignItems: "center", background: "#fff", color: "#1F5F5C", border: "1px solid #d1e8e6", fontSize: 15, padding: "14px 28px", borderRadius: 12, textDecoration: "none", fontWeight: 600 },
+  label:     { fontSize: 12, fontWeight: 700, color: "var(--green-text)", letterSpacing: "1.5px", textTransform: "uppercase" },
+  h2:        { fontSize: "clamp(28px,4vw,40px)", fontWeight: 900, letterSpacing: "-1.5px", color: "var(--ink-900)", lineHeight: 1.15, margin: 0 },
+  body:      { fontSize: 16, color: "var(--ink-500)", lineHeight: 1.7 },
+  btnPrimary: { display: "inline-flex", alignItems: "center", gap: 8, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: 15, padding: "14px 28px", borderRadius: 12, textDecoration: "none" },
+  btnSecondary: { display: "inline-flex", alignItems: "center", background: "var(--card)", color: "var(--green-text)", border: "1px solid var(--line)", fontSize: 15, padding: "14px 28px", borderRadius: 12, textDecoration: "none", fontWeight: 600 },
 };
 
 function FaqItem({ item, isOpen, onToggle }) {
   return (
-    <div style={{ borderRadius: 16, background: "#fff", border: "1px solid #e2e8f0", overflow: "hidden", boxShadow: isOpen ? "0 8px 32px rgba(31,95,92,0.1)" : "0 2px 8px rgba(15,23,42,0.04)", transition: "box-shadow 0.2s" }}>
+    <div style={{ borderRadius: 16, background: "var(--card)", border: "1px solid var(--line)", overflow: "hidden", boxShadow: isOpen ? "var(--sh)" : "var(--sh-sm)", transition: "box-shadow 0.2s" }}>
       <button
         type="button"
         onClick={onToggle}
         style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, padding: "18px 24px", textAlign: "left", background: "transparent", border: "none", cursor: "pointer", fontFamily: "inherit" }}
         aria-expanded={isOpen}
       >
-        <span style={{ fontSize: 15, fontWeight: 600, color: "#0f172a" }}>{item.question}</span>
-        <span style={{ flexShrink: 0, color: "#1F5F5C", transition: "transform 0.2s", transform: isOpen ? "rotate(45deg)" : "none", display: "inline-flex" }}>
+        <span style={{ fontSize: 15, fontWeight: 600, color: "var(--ink-900)" }}>{item.question}</span>
+        <span style={{ flexShrink: 0, color: "var(--green-text)", transition: "transform 0.2s", transform: isOpen ? "rotate(45deg)" : "none", display: "inline-flex" }}>
           <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
         </span>
       </button>
       {isOpen && (
-        <div style={{ padding: "0 24px 18px", fontSize: 14, color: "#64748b", lineHeight: 1.7, borderTop: "1px solid #e2e8f0", paddingTop: 16 }}>
+        <div style={{ padding: "0 24px 18px", fontSize: 14, color: "var(--ink-500)", lineHeight: 1.7, borderTop: "1px solid var(--line)", paddingTop: 16 }}>
           {item.answer}
         </div>
       )}
@@ -170,7 +170,7 @@ export default function ForDrivers() {
   }
 
   return (
-    <main style={{ background: "#fff", minHeight: "100vh", marginTop: "-64px" }}>
+    <main style={{ background: "var(--paper)", minHeight: "100vh" }}>
       <PageMeta
         title="För yrkesförare – Hitta lastbilsjobb på STP"
         description="Skapa en kostnadsfri förarprofil på Sveriges Transportplattform. Bli hittad av seriösa åkerier eller sök bland lastbilsjobb med CE, C och C1-körkort."
@@ -218,8 +218,8 @@ export default function ForDrivers() {
               <ul style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                 {DRIVER_POINTS.map((point) => (
                   <li key={point} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-                    <span style={{ marginTop: 2, width: 22, height: 22, borderRadius: "50%", background: "rgba(245,166,35,0.18)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <CheckIcon className="w-3.5 h-3.5" style={{ color: "#F5A623" }} />
+                    <span style={{ marginTop: 2, width: 22, height: 22, borderRadius: "50%", background: "var(--amber-tint)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <CheckIcon className="w-3.5 h-3.5" style={{ color: "var(--amber)" }} />
                     </span>
                     <span style={{ fontSize: 14, color: "rgba(240,250,249,0.8)", lineHeight: 1.6 }}>{point}</span>
                   </li>
@@ -231,16 +231,16 @@ export default function ForDrivers() {
       </section>
 
       {/* ── Feature cards (white) ─────────────────────────────────────────────── */}
-      <section style={{ background: "#fff", padding: vp }}>
+      <section style={{ background: "var(--paper)", padding: vp }}>
         <div style={{ maxWidth: 1040, margin: "0 auto", padding: sp }}>
           <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3,1fr)", gap: 16 }}>
             {FEATURE_CARDS.map(({ icon: Icon, title, text }) => (
-              <div key={title} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 20, padding: "28px 32px", boxShadow: "0 4px 24px rgba(31,95,92,0.07)" }}>
-                <span style={{ display: "inline-flex", width: 44, height: 44, borderRadius: 13, background: "#1F5F5C", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
+              <div key={title} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 20, padding: "28px 32px", boxShadow: "var(--sh-sm)" }}>
+                <span style={{ display: "inline-flex", width: 44, height: 44, borderRadius: 13, background: "var(--green)", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
                   <Icon className="w-5 h-5" style={{ color: "#fff" }} />
                 </span>
-                <h2 style={{ fontSize: 18, fontWeight: 800, color: "#0f172a", marginBottom: 10, letterSpacing: "-0.3px" }}>{title}</h2>
-                <p style={{ fontSize: 14, color: "#64748b", lineHeight: 1.65 }}>{text}</p>
+                <h2 style={{ fontSize: 18, fontWeight: 800, color: "var(--ink-900)", marginBottom: 10, letterSpacing: "-0.3px" }}>{title}</h2>
+                <p style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.65 }}>{text}</p>
               </div>
             ))}
           </div>
@@ -248,7 +248,7 @@ export default function ForDrivers() {
       </section>
 
       {/* ── Segments (teal-tinted alt) ────────────────────────────────────────── */}
-      <section style={{ background: "#f0faf9", borderTop: "1px solid #d1e8e6", padding: vp }}>
+      <section style={{ background: "var(--green-tint)", borderTop: "1px solid var(--line)", padding: vp }}>
         <div style={{ maxWidth: 1040, margin: "0 auto", padding: sp }}>
           <div style={{ marginBottom: 32 }}>
             <div style={{ ...E.label, marginBottom: 12 }}>Tre vägar in</div>
@@ -259,17 +259,17 @@ export default function ForDrivers() {
           </div>
           <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3,1fr)", gap: 16 }}>
             {DRIVER_SEGMENTS.map(({ title, text, icon: Icon, stripe, label, labelColor, labelBg }) => (
-              <div key={title} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 20, overflow: "hidden", boxShadow: "0 8px 40px rgba(15,23,42,0.08)" }}>
+              <div key={title} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 20, overflow: "hidden", boxShadow: "var(--sh-sm)" }}>
                 <div style={{ height: 5, background: stripe }} />
                 <div style={{ padding: "24px 24px 28px" }}>
                   <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16 }}>
-                    <span style={{ display: "inline-flex", width: 42, height: 42, borderRadius: 12, background: "#f0faf9", border: "1px solid #d1e8e6", alignItems: "center", justifyContent: "center" }}>
-                      <Icon className="w-5 h-5" style={{ color: "#1F5F5C" }} />
+                    <span style={{ display: "inline-flex", width: 42, height: 42, borderRadius: 12, background: "var(--green-tint)", border: "1px solid var(--line)", alignItems: "center", justifyContent: "center" }}>
+                      <Icon className="w-5 h-5" style={{ color: "var(--green-text)" }} />
                     </span>
                     <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 99, background: labelBg, color: labelColor }}>{label}</span>
                   </div>
-                  <h3 style={{ fontSize: 18, fontWeight: 800, color: "#0f172a", marginBottom: 8, letterSpacing: "-0.3px" }}>{title}</h3>
-                  <p style={{ fontSize: 13, color: "#64748b", lineHeight: 1.65 }}>{text}</p>
+                  <h3 style={{ fontSize: 18, fontWeight: 800, color: "var(--ink-900)", marginBottom: 8, letterSpacing: "-0.3px" }}>{title}</h3>
+                  <p style={{ fontSize: 13, color: "var(--ink-500)", lineHeight: 1.65 }}>{text}</p>
                 </div>
               </div>
             ))}
@@ -290,7 +290,7 @@ export default function ForDrivers() {
           <ol style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {DRIVER_STEPS.map((step, i) => (
               <li key={step} style={{ display: "flex", gap: 14, alignItems: "flex-start", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 14, padding: "16px 20px" }}>
-                <span style={{ fontSize: 14, fontWeight: 800, color: "#F5A623", flexShrink: 0, minWidth: 22 }}>{i + 1}.</span>
+                <span style={{ fontSize: 14, fontWeight: 800, color: "var(--amber)", flexShrink: 0, minWidth: 22 }}>{i + 1}.</span>
                 <span style={{ fontSize: 14, color: "rgba(240,250,249,0.7)", lineHeight: 1.55 }}>{step}</span>
               </li>
             ))}
@@ -299,7 +299,7 @@ export default function ForDrivers() {
       </section>
 
       {/* ── Why STP (white) ───────────────────────────────────────────────────── */}
-      <section style={{ background: "#fff", borderBottom: "1px solid #e2e8f0", padding: vp }}>
+      <section style={{ background: "var(--paper)", borderBottom: "1px solid var(--line)", padding: vp }}>
         <div style={{ maxWidth: 1040, margin: "0 auto", padding: sp, display: "grid", gridTemplateColumns: isMobile ? "1fr" : "0.95fr 1.05fr", gap: isMobile ? 24 : 64, alignItems: "start" }}>
           <div>
             <div style={{ ...E.label, marginBottom: 12 }}>Varför STP</div>
@@ -310,11 +310,11 @@ export default function ForDrivers() {
           </div>
           <ul style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {DRIVER_PROMISES.map((item) => (
-              <li key={item} style={{ display: "flex", gap: 12, alignItems: "flex-start", background: "#f8fffe", border: "1px solid #d1e8e6", borderRadius: 14, padding: "16px 20px" }}>
-                <span style={{ marginTop: 2, width: 22, height: 22, borderRadius: "50%", background: "#1F5F5C", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <li key={item} style={{ display: "flex", gap: 12, alignItems: "flex-start", background: "var(--green-tint)", border: "1px solid var(--line)", borderRadius: 14, padding: "16px 20px" }}>
+                <span style={{ marginTop: 2, width: 22, height: 22, borderRadius: "50%", background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   <CheckIcon className="w-3.5 h-3.5" style={{ color: "#fff" }} />
                 </span>
-                <span style={{ fontSize: 14, color: "#334155", lineHeight: 1.6 }}>{item}</span>
+                <span style={{ fontSize: 14, color: "var(--ink-700)", lineHeight: 1.6 }}>{item}</span>
               </li>
             ))}
           </ul>
@@ -322,7 +322,7 @@ export default function ForDrivers() {
       </section>
 
       {/* ── FAQ (teal-tinted) ─────────────────────────────────────────────────── */}
-      <section style={{ background: "#f0faf9", padding: vp }}>
+      <section style={{ background: "var(--paper-2)", padding: vp }}>
         <div style={{ maxWidth: 720, margin: "0 auto", padding: sp }}>
           <div style={{ ...E.label, marginBottom: 12 }}>Vanliga frågor</div>
           <h2 style={{ ...E.h2, marginBottom: 32 }}>Frågor och svar</h2>

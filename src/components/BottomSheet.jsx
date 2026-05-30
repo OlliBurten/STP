@@ -34,7 +34,7 @@ export default function BottomSheet({ open, onClose, title, children, footerLeft
       {/* Sheet */}
       <div style={{
         position: "absolute", left: 0, right: 0, bottom: 0,
-        background: "#0a1414",
+        background: "var(--card)",
         borderTopLeftRadius: 24, borderTopRightRadius: 24,
         maxHeight: "80vh",
         display: "flex", flexDirection: "column",
@@ -44,7 +44,7 @@ export default function BottomSheet({ open, onClose, title, children, footerLeft
         <div style={{ display: "flex", justifyContent: "center", padding: "10px 0 4px" }}>
           <div style={{
             width: 38, height: 4, borderRadius: 99,
-            background: "rgba(255,255,255,0.15)",
+            background: "var(--line-2)",
           }}/>
         </div>
 
@@ -55,15 +55,15 @@ export default function BottomSheet({ open, onClose, title, children, footerLeft
             display: "flex", alignItems: "center", justifyContent: "space-between",
             flexShrink: 0,
           }}>
-            <h3 style={{ fontSize: 18, fontWeight: 800, letterSpacing: -0.4, color: "#fff", margin: 0 }}>
+            <h3 style={{ fontSize: 18, fontWeight: 800, letterSpacing: -0.4, color: "var(--ink-900)", margin: 0 }}>
               {title}
             </h3>
             <button
               onClick={onClose}
               style={{
                 width: 36, height: 36, borderRadius: 99,
-                background: "rgba(255,255,255,0.05)", border: "none",
-                color: "#fff", cursor: "pointer",
+                background: "var(--paper-2)", border: "none",
+                color: "var(--ink-500)", cursor: "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center",
               }}
             >
@@ -85,8 +85,8 @@ export default function BottomSheet({ open, onClose, title, children, footerLeft
           <div style={{
             padding: "14px 20px max(env(safe-area-inset-bottom), 20px)",
             display: "flex", gap: 10,
-            background: "#0a1414",
-            borderTop: "1px solid rgba(255,255,255,0.05)",
+            background: "var(--card)",
+            borderTop: "1px solid var(--line)",
             flexShrink: 0,
           }}>
             {footerLeft && (
@@ -94,8 +94,8 @@ export default function BottomSheet({ open, onClose, title, children, footerLeft
                 onClick={footerLeft.onClick}
                 style={{
                   flex: 1, padding: "14px", borderRadius: 99,
-                  background: "transparent", border: "1px solid rgba(255,255,255,0.1)",
-                  color: "rgba(255,255,255,0.75)", fontSize: 14, fontWeight: 700, cursor: "pointer",
+                  background: "transparent", border: "1px solid var(--line-2)",
+                  color: "var(--ink-500)", fontSize: 14, fontWeight: 700, cursor: "pointer",
                   fontFamily: "inherit",
                 }}
               >
@@ -107,8 +107,8 @@ export default function BottomSheet({ open, onClose, title, children, footerLeft
                 onClick={footerRight.onClick}
                 style={{
                   flex: 1.5, padding: "14px", borderRadius: 99,
-                  background: "linear-gradient(135deg,#F5A623,#d97706)",
-                  border: "none", color: "#000", fontSize: 14, fontWeight: 800, cursor: "pointer",
+                  background: "var(--green)",
+                  border: "none", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer",
                   fontFamily: "inherit",
                 }}
               >

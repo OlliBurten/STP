@@ -20,9 +20,9 @@ function formatNotifDate(ts) {
 }
 
 function notifDotColor(type) {
-  if (type === "MATCH_JOBS" || type === "MATCH_DRIVERS") return "#F5A623";
-  if (type === "MESSAGE") return "#4ade80";
-  if (type === "APPLICATION") return "#60a5fa";
+  if (type === "MATCH_JOBS" || type === "MATCH_DRIVERS") return "var(--amber)";
+  if (type === "MESSAGE") return "var(--success)";
+  if (type === "APPLICATION") return "var(--info)";
   return "rgba(255,255,255,0.3)";
 }
 
@@ -113,15 +113,16 @@ export default function MobileHeader() {
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        background: "rgba(6,15,15,0.92)",
+        background: "rgba(255,255,255,0.92)",
         backdropFilter: "blur(14px)",
         WebkitBackdropFilter: "blur(14px)",
+        borderBottom: "1px solid var(--line)",
       }}>
         {/* Logo */}
         <div style={{
           fontFamily: "'DM Sans', system-ui, sans-serif",
           fontWeight: 800, letterSpacing: -0.8,
-          fontSize: 22, color: "#fff",
+          fontSize: 22, color: "var(--ink-900)",
         }}>
           STP
         </div>
@@ -138,7 +139,7 @@ export default function MobileHeader() {
               position: "relative", WebkitTapHighlightColor: "transparent",
             }}
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="19" height="19">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--ink-500)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="19" height="19">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
               <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
             </svg>
@@ -146,8 +147,8 @@ export default function MobileHeader() {
               <span style={{
                 position: "absolute", top: 8, right: 8,
                 width: 8, height: 8, borderRadius: 99,
-                background: "#F5A623",
-                border: "2px solid #060f0f",
+                background: "var(--amber)",
+                border: "2px solid var(--card)",
               }}/>
             )}
           </button>
@@ -157,7 +158,7 @@ export default function MobileHeader() {
             onClick={() => { setAvatarOpen((v) => !v); setNotifOpen(false); }}
             style={{
               width: 34, height: 34, borderRadius: 99,
-              background: "linear-gradient(135deg,#F5A623,#d97706)",
+              background: "linear-gradient(135deg,var(--amber),#d97706)",
               display: "flex", alignItems: "center", justifyContent: "center",
               fontWeight: 800, fontSize: 12, color: "#000",
               cursor: "pointer", flexShrink: 0,
@@ -171,20 +172,20 @@ export default function MobileHeader() {
 
       {/* Avatar menu */}
       {avatarOpen && (
-        <div style={{ background: "#0a1414", border: "1px solid rgba(255,255,255,0.07)", borderTop: "none", boxShadow: "0 8px 32px rgba(0,0,0,0.5)" }}>
+        <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderTop: "none", boxShadow: "var(--sh-md)" }}>
           <div style={{ padding: "10px 6px" }}>
             {[
               { label: "Min profil", icon: "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z", to: "/profil" },
               { label: "Inställningar", icon: "M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z", to: "/installningar" },
             ].map(({ label, icon, to }) => (
-              <Link key={to} to={to} onClick={() => setAvatarOpen(false)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 16px", borderRadius: 10, textDecoration: "none", color: "#f0faf9" }}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="17" height="17"><path d={icon}/></svg>
+              <Link key={to} to={to} onClick={() => setAvatarOpen(false)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 16px", borderRadius: 10, textDecoration: "none", color: "var(--ink-900)" }}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="var(--ink-400)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="17" height="17"><path d={icon}/></svg>
                 <span style={{ fontSize: 15, fontWeight: 600 }}>{label}</span>
               </Link>
             ))}
             <button onClick={handleLogout} style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 16px", width: "100%", background: "none", border: "none", borderRadius: 10, cursor: "pointer", fontFamily: "inherit" }}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="17" height="17"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-              <span style={{ fontSize: 15, fontWeight: 600, color: "#f87171" }}>Logga ut</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--danger)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="17" height="17"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              <span style={{ fontSize: 15, fontWeight: 600, color: "var(--danger)" }}>Logga ut</span>
             </button>
           </div>
         </div>
@@ -193,16 +194,16 @@ export default function MobileHeader() {
       {/* Notification panel — slides down */}
       {notifOpen && (
         <div style={{
-          background: "#0a1414",
-          border: "1px solid rgba(255,255,255,0.07)",
+          background: "var(--card)",
+          border: "1px solid var(--line)",
           borderTop: "none",
-          boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
+          boxShadow: "var(--sh-md)",
         }}>
           {/* Panel header */}
-          <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={{ fontSize: 14, fontWeight: 800, color: "#f0faf9" }}>Notiser</span>
+          <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span style={{ fontSize: 14, fontWeight: 800, color: "var(--ink-900)" }}>Notiser</span>
             {notifications.unreadCount > 0 && (
-              <button type="button" onClick={handleMarkAllRead} style={{ fontSize: 12, color: "#F5A623", fontWeight: 700, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
+              <button type="button" onClick={handleMarkAllRead} style={{ fontSize: 12, color: "var(--green-text)", fontWeight: 700, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
                 Markera alla lästa
               </button>
             )}
@@ -211,7 +212,7 @@ export default function MobileHeader() {
           {/* Items */}
           <div style={{ maxHeight: "60vh", overflowY: "auto" }}>
             {notifications.list.length === 0 ? (
-              <div style={{ padding: "28px 18px", textAlign: "center", fontSize: 13, color: "rgba(240,250,249,0.4)" }}>
+              <div style={{ padding: "28px 18px", textAlign: "center", fontSize: 13, color: "var(--ink-400)" }}>
                 Inga notiser just nu
               </div>
             ) : (
@@ -222,18 +223,17 @@ export default function MobileHeader() {
                   onClick={() => handleNotifClick(n)}
                   style={{
                     width: "100%", padding: "12px 18px",
-                    borderBottom: "1px solid rgba(255,255,255,0.03)",
                     display: "flex", gap: 11, alignItems: "flex-start",
-                    background: !n.readAt ? "rgba(255,255,255,0.02)" : "transparent",
-                    border: "none", borderBottom: "1px solid rgba(255,255,255,0.03)",
+                    background: !n.readAt ? "var(--paper-2)" : "transparent",
+                    border: "none", borderBottom: "1px solid var(--line)",
                     cursor: "pointer", textAlign: "left", fontFamily: "inherit",
                   }}
                 >
                   <span style={{ width: 7, height: 7, borderRadius: 99, background: notifDotColor(n.type), marginTop: 6, flexShrink: 0 }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, lineHeight: 1.4, color: "#f0faf9", fontWeight: !n.readAt ? 700 : 400 }}>{n.title}</div>
-                    {n.body && <div style={{ fontSize: 11.5, color: "rgba(240,250,249,0.5)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{n.body}</div>}
-                    <div style={{ fontSize: 11, color: "rgba(240,250,249,0.35)", marginTop: 3 }}>{formatNotifDate(n.createdAt)}</div>
+                    <div style={{ fontSize: 13, lineHeight: 1.4, color: "var(--ink-900)", fontWeight: !n.readAt ? 700 : 400 }}>{n.title}</div>
+                    {n.body && <div style={{ fontSize: 11.5, color: "var(--ink-500)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{n.body}</div>}
+                    <div style={{ fontSize: 11, color: "var(--ink-400)", marginTop: 3 }}>{formatNotifDate(n.createdAt)}</div>
                   </div>
                 </button>
               ))
@@ -244,7 +244,7 @@ export default function MobileHeader() {
           <Link
             to="/meddelanden"
             onClick={() => setNotifOpen(false)}
-            style={{ display: "block", padding: "12px 18px", textAlign: "center", fontSize: 13, color: "#F5A623", fontWeight: 700, textDecoration: "none", borderTop: "1px solid rgba(255,255,255,0.05)" }}
+            style={{ display: "block", padding: "12px 18px", textAlign: "center", fontSize: 13, color: "var(--green-text)", fontWeight: 700, textDecoration: "none", borderTop: "1px solid var(--line)" }}
           >
             Gå till inkorg →
           </Link>

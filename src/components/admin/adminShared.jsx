@@ -1,35 +1,35 @@
 import React, { useEffect, useState } from "react";
 
 export const T = {
-  bg:          "#060f0f",
-  card:        "rgba(255,255,255,0.03)",
-  cardHover:   "rgba(255,255,255,0.055)",
-  border:      "rgba(255,255,255,0.08)",
-  text:        "#f0faf9",
-  sub:         "rgba(240,250,249,0.5)",
-  muted:       "rgba(240,250,249,0.28)",
-  amber:       "#F5A623",
-  amberBg:     "rgba(245,166,35,0.10)",
-  amberBorder: "rgba(245,166,35,0.30)",
-  green:       "#4ade80",
-  greenBg:     "rgba(74,222,128,0.10)",
-  greenBorder: "rgba(74,222,128,0.25)",
-  tealBright:  "#7dd3c8",
-  tealBg:      "rgba(125,211,200,0.10)",
-  tealBorder:  "rgba(125,211,200,0.25)",
-  red:         "#f87171",
-  redBg:       "rgba(248,113,113,0.10)",
-  redBorder:   "rgba(248,113,113,0.25)",
-  indigo:      "#a5b4fc",
-  indigoBg:    "rgba(165,180,252,0.10)",
-  indigoBorder:"rgba(165,180,252,0.25)",
+  bg:          "var(--paper)",
+  card:        "var(--paper-2)",
+  cardHover:   "var(--line)",
+  border:      "var(--line)",
+  text:        "var(--ink-900)",
+  sub:         "var(--ink-500)",
+  muted:       "var(--ink-400)",
+  amber:       "var(--amber)",
+  amberBg:     "var(--amber-tint)",
+  amberBorder: "var(--amber)",
+  green:       "var(--success)",
+  greenBg:     "var(--success-tint)",
+  greenBorder: "var(--success)",
+  tealBright:  "var(--green-text)",
+  tealBg:      "var(--green-tint)",
+  tealBorder:  "var(--green)",
+  red:         "var(--danger)",
+  redBg:       "rgba(220,38,38,0.08)",
+  redBorder:   "rgba(220,38,38,0.2)",
+  indigo:      "var(--info)",
+  indigoBg:    "var(--info-tint)",
+  indigoBorder:"var(--info)",
 };
 
 export const INP = {
-  background: "rgba(255,255,255,0.05)",
-  border: `1px solid rgba(255,255,255,0.1)`,
+  background: "var(--paper-2)",
+  border: "1px solid var(--line)",
   borderRadius: 10,
-  color: T.text,
+  color: "var(--ink-900)",
   padding: "9px 12px",
   fontSize: 13,
   outline: "none",
@@ -69,8 +69,8 @@ export function Btn({ variant = "default", size = "sm", disabled, onClick, child
     display: fullWidth ? "block" : "inline-block",
   };
   const v = {
-    default: { background: "rgba(255,255,255,0.07)", color: T.sub, border: `1px solid ${T.border}` },
-    primary: { background: T.amber, color: "#000" },
+    default: { background: "var(--paper-2)", color: "var(--ink-500)", border: `1px solid var(--line)` },
+    primary: { background: "var(--green)", color: "#fff" },
     success: { background: T.greenBg, color: T.green, border: `1px solid ${T.greenBorder}` },
     danger:  { background: T.redBg,   color: T.red,   border: `1px solid ${T.redBorder}` },
     warning: { background: T.amberBg, color: T.amber,  border: `1px solid ${T.amberBorder}` },
@@ -131,7 +131,7 @@ export function SectionCard({ children }) {
   const isMobile = useIsMobile();
   return (
     <div style={{
-      background: T.card, border: `1px solid ${T.border}`, borderRadius: 20,
+      background: "var(--card)", border: "1px solid var(--line)", borderRadius: 20,
       padding: isMobile ? "16px" : "28px 32px",
     }}>
       {children}

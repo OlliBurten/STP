@@ -20,7 +20,7 @@ export default function LonLastbilschauffor() {
 
 
       <h1 className="text-3xl font-bold text-slate-900 mb-4">{TITLE}</h1>
-      <p className="text-slate-500 text-sm mb-2">Publicerad 22 mars 2025 · Källa: SCB, Medlingsinstitutet, Transportföretagen</p>
+      <p className="text-slate-500 text-sm mb-2">Publicerad 22 mars 2025 · Källa: SCB, Medlingsinstitutet, Svenska Transportarbetareförbundet</p>
 
       <div className="text-sm text-slate-500 bg-amber-50 border border-amber-200 rounded-lg p-3 mb-8">
         <strong>Obs:</strong> Lönesiffrorna nedan är uppskattningar baserade på statistik från SCB:s
@@ -100,23 +100,14 @@ export default function LonLastbilschauffor() {
 
         <h2 className="text-xl font-semibold text-slate-900 mt-8">Kollektivavtal — stor skillnad</h2>
         <p>
-          Åkerier anslutna till{" "}
-          <a
-            href="https://www.transportforetagen.se/kollektivavtal/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[var(--color-primary)] hover:underline"
-          >
-            Transportföretagens kollektivavtal
-          </a>{" "}
-          med{" "}
+          Åkerier med{" "}
           <a
             href="https://www.transport.se/lon-och-avtal/"
             target="_blank"
             rel="noopener noreferrer"
             className="text-[var(--color-primary)] hover:underline"
           >
-            Svenska Transportarbetareförbundet
+            kollektivavtal via Svenska Transportarbetareförbundet
           </a>{" "}
           har lönegolv, OB-tillägg och rätt till övertidsersättning. Utan kollektivavtal kan lönen
           vara lägre — fråga alltid om kollektivavtal vid anställning.
@@ -146,7 +137,6 @@ export default function LonLastbilschauffor() {
           <ul className="space-y-1">
             <li><a href="https://www.scb.se/hitta-statistik/statistik-efter-amne/arbetsmarknad/loner-och-arbetskostnader/lonestrukturstatistik-hela-ekonomin/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">SCB — Lönestrukturstatistik hela ekonomin</a></li>
             <li><a href="https://www.mi.se/loner-och-avtalsrorelsen/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">Medlingsinstitutet — Löner och avtalsrörelsen</a></li>
-            <li><a href="https://www.transportforetagen.se/kollektivavtal/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">Transportföretagen — Kollektivavtal åkeri</a></li>
             <li><a href="https://www.transport.se/lon-och-avtal/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">Svenska Transportarbetareförbundet — Lön och avtal</a></li>
           </ul>
         </div>

@@ -16,6 +16,7 @@ import {
   updateCompanyStatus,
   updateJobStatus,
   updateReport,
+  sendVerificationReminders,
 } from "../api/admin";
 import { regions as REGIONS } from "../data/mockJobs.js";
 import { listReviewsForAdmin, moderateReview } from "../api/reviews.js";
@@ -400,7 +401,7 @@ export default function Admin() {
   const feedbackNewCount = feedbackItems.filter(f => f.status === "NEW").length;
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 51, display: "flex", background: "#040a0a", color: "#f0faf9" }}>
+    <div style={{ position: "fixed", inset: 0, zIndex: 51, display: "flex", background: "var(--paper)", color: "var(--ink-900)" }}>
       <AdminSidebar
         section={activeTab}
         onChange={setActiveTab}
@@ -427,6 +428,10 @@ export default function Admin() {
               setActiveTab={setActiveTab}
               loadUserDetail={loadUserDetail}
               setError={setError}
+              onStuckReminder={async () => {
+                try { await sendVerificationReminders(); setSuccess("Påminnelser skickade till stuck-förare."); }
+                catch (e) { setError(e.message || "Kunde inte skicka påminnelser"); }
+              }}
             />
           </div>
         )}
@@ -541,7 +546,7 @@ export default function Admin() {
 
             {showCreateJob && (
               <form onSubmit={handleAdminCreateJob} style={{
-                background: "rgba(255,255,255,0.02)", border: `1px solid ${T.border}`,
+                background: "var(--paper-2)", border: `1px solid ${T.border}`,
                 borderRadius: 14, padding: "24px", marginBottom: 24,
               }}>
                 <p style={{ fontSize: 13, fontWeight: 700, color: T.sub, marginBottom: 16 }}>Skapa jobb åt ett åkeri (utan att de behöver ett konto)</p>
@@ -897,9 +902,9 @@ export default function Admin() {
                 {["NEW", "REVIEWED", "DONE", "ALL"].map((f) => (
                   <button key={f} onClick={() => { setFeedbackFilter(f); loadFeedback(f); }} style={{
                     padding: "5px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer",
-                    background: feedbackFilter === f ? T.teal : "transparent",
-                    color: feedbackFilter === f ? "#fff" : T.muted,
-                    border: `1px solid ${feedbackFilter === f ? T.teal : T.border}`,
+                    background: feedbackFilter === f ? "var(--green-tint)" : "transparent",
+                    color: feedbackFilter === f ? "var(--green-text)" : T.muted,
+                    border: `1px solid ${feedbackFilter === f ? "var(--green)" : T.border}`,
                   }}>{f === "NEW" ? "Nya" : f === "REVIEWED" ? "Granskade" : f === "DONE" ? "Klara" : "Alla"}</button>
                 ))}
               </div>
@@ -914,7 +919,7 @@ export default function Admin() {
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {feedbackItems.map((fb) => {
-                  const priorityColor = fb.priority === "HIGH" ? "#ef4444" : fb.priority === "MEDIUM" ? "#f59e0b" : "#22c55e";
+                  const priorityColor = fb.priority === "HIGH" ? "var(--danger)" : fb.priority === "MEDIUM" ? "var(--amber)" : "var(--success)";
                   const isExpanded = expandedFeedback?.id === fb.id;
                   return (
                     <div key={fb.id} style={{
@@ -932,7 +937,7 @@ export default function Admin() {
                         {fb.category && (
                           <span style={{
                             padding: "2px 8px", borderRadius: 6, fontSize: 11, fontWeight: 600,
-                            background: "rgba(255,255,255,0.05)", color: T.muted,
+                            background: "var(--paper-2)", color: T.muted,
                           }}>{fb.category}</span>
                         )}
                         <span style={{ fontSize: 13, color: T.text, flex: 1 }}>
@@ -946,12 +951,12 @@ export default function Admin() {
                       {/* Expanded content */}
                       {isExpanded && (
                         <div style={{ borderTop: `1px solid ${T.border}`, padding: "16px" }} onClick={(e) => e.stopPropagation()}>
-                          <p style={{ fontSize: 13, color: T.textMuted, marginBottom: 12, lineHeight: 1.6 }}>
+                          <p style={{ fontSize: 13, color: T.muted, marginBottom: 12, lineHeight: 1.6 }}>
                             {fb.message}
                           </p>
                           {fb.aiAction && (
-                            <div style={{ background: "rgba(45,212,191,0.08)", border: `1px solid ${T.teal}33`, borderRadius: 8, padding: "10px 14px", marginBottom: 12 }}>
-                              <span style={{ fontSize: 11, color: T.teal, fontWeight: 700 }}>ÅTGÄRD: </span>
+                            <div style={{ background: "var(--green-tint)", border: "1px solid var(--green)", borderRadius: 8, padding: "10px 14px", marginBottom: 12 }}>
+                              <span style={{ fontSize: 11, color: "var(--green-text)", fontWeight: 700 }}>ÅTGÄRD: </span>
                               <span style={{ fontSize: 12, color: T.text }}>{fb.aiAction}</span>
                             </div>
                           )}
@@ -959,7 +964,7 @@ export default function Admin() {
                             {fb.senderEmail && (
                               <span style={{ fontSize: 12, color: T.muted }}>
                                 {fb.senderName ? `${fb.senderName} — ` : ""}{fb.senderEmail}
-                                {fb.autoReplySentAt && <span style={{ color: T.teal, marginLeft: 6 }}>✓ Auto-svar skickat</span>}
+                                {fb.autoReplySentAt && <span style={{ color: "var(--green-text)", marginLeft: 6 }}>✓ Auto-svar skickat</span>}
                               </span>
                             )}
                             <div style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
@@ -972,7 +977,7 @@ export default function Admin() {
                               {fb.status !== "DONE" && (
                                 <button onClick={() => handleFeedbackStatus(fb.id, "DONE")} style={{
                                   padding: "5px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer",
-                                  background: T.teal, color: "#fff", border: "none",
+                                  background: "var(--green)", color: "#fff", border: "none",
                                 }}>Klar</button>
                               )}
                               {fb.status === "DONE" && (
@@ -1019,7 +1024,7 @@ export default function Admin() {
                     <div key={s.schoolName} style={{
                       display: "flex", alignItems: "center", justifyContent: "space-between",
                       flexWrap: "wrap", gap: 12,
-                      background: "rgba(255,255,255,0.02)", border: `1px solid ${T.border}`,
+                      background: "var(--paper-2)", border: `1px solid ${T.border}`,
                       borderRadius: 12, padding: "14px 18px",
                     }}>
                       <div>
@@ -1114,7 +1119,7 @@ export default function Admin() {
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                   {insights.filter(i => i.status !== "DISMISSED").map((insight) => {
                     const priorityColor = insight.priority === "HIGH" ? T.red : insight.priority === "MEDIUM" ? T.amber : T.muted;
-                    const priorityBg   = insight.priority === "HIGH" ? T.redBg : insight.priority === "MEDIUM" ? T.amberBg : "rgba(255,255,255,0.04)";
+                    const priorityBg   = insight.priority === "HIGH" ? T.redBg : insight.priority === "MEDIUM" ? T.amberBg : "var(--paper-2)";
                     const catColors = { UX: T.tealBright, FEATURE: T.indigo, CONTENT: T.amber, GROWTH: T.green, BUG: T.red, DATA: T.sub };
                     const catColor = catColors[insight.category] || T.sub;
                     const effortLabel = { LOW: "Låg insats", MEDIUM: "Medium insats", HIGH: "Hög insats" }[insight.effort] || insight.effort;
@@ -1124,7 +1129,7 @@ export default function Admin() {
 
                     return (
                       <div key={insight.id} style={{
-                        background: isDone ? "rgba(74,222,128,0.04)" : T.card,
+                        background: isDone ? "var(--success-tint)" : T.card,
                         border: `1px solid ${isDone ? T.greenBorder : isInProgress ? T.tealBorder : T.border}`,
                         borderRadius: 14, padding: "18px 20px",
                         opacity: isDone ? 0.65 : 1,
@@ -1135,7 +1140,7 @@ export default function Admin() {
                               <span style={{ fontSize: 10, fontWeight: 800, padding: "2px 8px", borderRadius: 99, background: priorityBg, color: priorityColor, border: `1px solid ${priorityColor}40` }}>
                                 {insight.priority}
                               </span>
-                              <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 99, background: "rgba(255,255,255,0.06)", color: catColor }}>
+                              <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 99, background: "var(--paper-2)", color: catColor }}>
                                 {insight.category}
                               </span>
                               <span style={{ fontSize: 10, color: T.muted }}>
@@ -1155,7 +1160,7 @@ export default function Admin() {
                             {dataPoints.length > 0 && (
                               <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                                 {dataPoints.map((dp, i) => (
-                                  <span key={i} style={{ fontSize: 11, padding: "3px 9px", borderRadius: 99, background: "rgba(255,255,255,0.05)", border: `1px solid ${T.border}`, color: T.muted }}>
+                                  <span key={i} style={{ fontSize: 11, padding: "3px 9px", borderRadius: 99, background: "var(--paper-2)", border: `1px solid ${T.border}`, color: T.muted }}>
                                     {dp}
                                   </span>
                                 ))}
@@ -1224,7 +1229,7 @@ export default function Admin() {
               padding: 24, background: "rgba(0,0,0,0.7)",
             }}>
               <div style={{
-                background: "#0d1f1f", border: `1px solid ${T.border}`, borderRadius: 18,
+                background: "var(--card)", border: `1px solid ${T.border}`, borderRadius: 18,
                 width: "100%", maxWidth: 380, padding: 28, boxShadow: "0 24px 60px rgba(0,0,0,0.6)",
               }}>
                 <p style={{ fontWeight: 700, color: T.text, fontSize: 14, marginBottom: 14 }}>{reasonModal.label}</p>

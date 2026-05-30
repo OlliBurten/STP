@@ -25,11 +25,11 @@ function Icon({ n, size = 18, color = "currentColor" }) {
 }
 
 const PIPELINE_STAGES = [
-  { key: "new",        label: "Nya",        color: "#F5A623" },
-  { key: "contacted",  label: "Kontaktade", color: "#60a5fa" },
+  { key: "new",        label: "Nya",        color: "var(--amber)" },
+  { key: "contacted",  label: "Kontaktade", color: "var(--info)" },
   { key: "interviewed",label: "Intervjuade",color: "#a78bfa" },
-  { key: "hired",      label: "Anställda",  color: "#4ade80" },
-  { key: "rejected",   label: "Avslagna",   color: "#71717a" },
+  { key: "hired",      label: "Anställda",  color: "var(--success)" },
+  { key: "rejected",   label: "Avslagna",   color: "var(--ink-300)" },
 ];
 
 function getStage(conv) {
@@ -64,15 +64,16 @@ function JobCard({ job, pipeline, onOpen, onPause, onClose, isMobile }) {
   const [hovered, setHovered] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const status = normalizeStatus(job.status);
-  const statusColor = status === "active" ? "#4ade80" : status === "paused" ? "#F5A623" : "#71717a";
+  const statusColor = status === "active" ? "var(--success)" : status === "paused" ? "var(--amber-text)" : "var(--ink-400)";
+  const statusBg    = status === "active" ? "var(--success-tint)" : status === "paused" ? "var(--amber-tint)" : "var(--paper-2)";
   const statusLabel = status === "active" ? "Aktiv" : status === "paused" ? "Pausad" : "Avslutad";
 
   const total = pipeline.total;
   const pipelineSegs = [
-    { count: pipeline.new,         color: "#F5A623" },
-    { count: pipeline.contacted,   color: "#60a5fa" },
+    { count: pipeline.new,         color: "var(--amber)" },
+    { count: pipeline.contacted,   color: "var(--info)" },
     { count: pipeline.interviewed, color: "#a78bfa" },
-    { count: pipeline.hired,       color: "#4ade80" },
+    { count: pipeline.hired,       color: "var(--success)" },
   ];
 
   const dl = deadlineLabel(job);
@@ -82,37 +83,37 @@ function JobCard({ job, pipeline, onOpen, onPause, onClose, isMobile }) {
   // ── Mobil: kompakt rad-layout ──
   if (isMobile) {
     return (
-      <div onClick={() => onOpen(job.id)} style={{ background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 14, padding: "14px 16px", cursor: "pointer", opacity: status === "closed" ? 0.65 : 1 }}>
+      <div onClick={() => onOpen(job.id)} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "14px 16px", cursor: "pointer", opacity: status === "closed" ? 0.65 : 1, boxShadow: "var(--sh-sm)" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 8 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4, flexWrap: "wrap" }}>
-              <span style={{ padding: "2px 7px", borderRadius: 5, background: status === "active" ? "rgba(74,222,128,0.12)" : "rgba(245,166,35,0.12)", color: status === "active" ? "#4ade80" : "#F5A623", fontSize: 9.5, fontWeight: 800, letterSpacing: 0.3 }}>
+              <span style={{ padding: "2px 7px", borderRadius: 5, background: statusBg, color: statusColor, fontSize: 9.5, fontWeight: 800, letterSpacing: 0.3 }}>
                 {statusLabel.toUpperCase()}
               </span>
-              {hot && <span style={{ padding: "2px 7px", borderRadius: 5, background: "rgba(245,166,35,0.15)", color: "#F5A623", fontSize: 9.5, fontWeight: 800 }}>HÖGT TRYCK</span>}
-              {lowTraffic && <span style={{ padding: "2px 7px", borderRadius: 5, background: "rgba(248,113,113,0.12)", color: "#f87171", fontSize: 9.5, fontWeight: 800 }}>LÅGT INTRESSE</span>}
+              {hot && <span style={{ padding: "2px 7px", borderRadius: 5, background: "var(--amber-tint)", color: "var(--amber-text)", fontSize: 9.5, fontWeight: 800 }}>HÖGT TRYCK</span>}
+              {lowTraffic && <span style={{ padding: "2px 7px", borderRadius: 5, background: "var(--danger-tint)", color: "var(--danger)", fontSize: 9.5, fontWeight: 800 }}>LÅGT INTRESSE</span>}
             </div>
             <h3 style={{ fontSize: 14.5, fontWeight: 800, marginBottom: 4, lineHeight: 1.25 }}>{job.title}</h3>
-            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", display: "flex", gap: 7, alignItems: "center", flexWrap: "wrap" }}>
+            <div style={{ fontSize: 11, color: "var(--ink-500)", display: "flex", gap: 7, alignItems: "center", flexWrap: "wrap" }}>
               {(job.region || job.location) && <span style={{ display: "flex", alignItems: "center", gap: 3 }}><Icon n="pin" size={10} />{job.region || job.location}</span>}
-              {dl && <><span style={{ color: "rgba(255,255,255,0.2)" }}>·</span><span style={{ display: "flex", alignItems: "center", gap: 3 }}><Icon n="clock" size={10} />{dl}</span></>}
+              {dl && <><span style={{ color: "var(--ink-200)" }}>·</span><span style={{ display: "flex", alignItems: "center", gap: 3 }}><Icon n="clock" size={10} />{dl}</span></>}
             </div>
           </div>
-          <Icon n="arrow" size={14} color="rgba(255,255,255,0.3)" />
+          <Icon n="arrow" size={14} color="var(--ink-300)" />
         </div>
-        <div style={{ paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+        <div style={{ paddingTop: 12, borderTop: "1px solid var(--line)" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 7 }}>
-            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", fontWeight: 600 }}>Kandidatpipeline</span>
-            <span style={{ fontSize: 11.5, fontWeight: 700 }}>{total} totalt</span>
+            <span style={{ fontSize: 11, color: "var(--ink-400)", fontWeight: 600 }}>Kandidatpipeline</span>
+            <span style={{ fontSize: 11.5, fontWeight: 700, color: "var(--ink-900)" }}>{total} totalt</span>
           </div>
           {total > 0 ? (
-            <div style={{ display: "flex", gap: 2, height: 6, borderRadius: 99, overflow: "hidden", background: "rgba(255,255,255,0.05)" }}>
+            <div style={{ display: "flex", gap: 2, height: 6, borderRadius: 99, overflow: "hidden", background: "var(--line)" }}>
               {pipelineSegs.filter(s => s.count > 0).map((s, i) => <div key={i} style={{ flex: s.count, background: s.color }} />)}
             </div>
-          ) : <div style={{ height: 6, borderRadius: 99, background: "rgba(255,255,255,0.05)" }} />}
+          ) : <div style={{ height: 6, borderRadius: 99, background: "var(--line)" }} />}
           <div style={{ display: "flex", gap: 12, marginTop: 8, fontSize: 10.5 }}>
-            {pipeline.new > 0 && <span style={{ color: "#F5A623", fontWeight: 700 }}>{pipeline.new} nya</span>}
-            <span style={{ color: "rgba(255,255,255,0.4)" }}><strong style={{ color: "#fff" }}>{job.viewCount ?? 0}</strong> visningar</span>
+            {pipeline.new > 0 && <span style={{ color: "var(--amber-text)", fontWeight: 700 }}>{pipeline.new} nya</span>}
+            <span style={{ color: "var(--ink-400)" }}><strong style={{ color: "var(--ink-900)" }}>{job.viewCount ?? 0}</strong> visningar</span>
           </div>
         </div>
       </div>
@@ -125,20 +126,20 @@ function JobCard({ job, pipeline, onOpen, onPause, onClose, isMobile }) {
       onClick={() => onOpen(job.id)}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      style={{ background: "#0a1414", border: `1px solid ${hovered ? "rgba(245,166,35,0.25)" : "rgba(255,255,255,0.05)"}`, borderRadius: 16, padding: 20, cursor: "pointer", transition: "all .15s", opacity: status === "closed" ? 0.65 : 1, transform: hovered ? "translateY(-1px)" : "none" }}
+      style={{ background: "var(--card)", border: `1px solid ${hovered ? "var(--amber)" : "var(--line)"}`, borderRadius: 16, padding: 20, cursor: "pointer", transition: "all .15s", opacity: status === "closed" ? 0.65 : 1, transform: hovered ? "translateY(-1px)" : "none", boxShadow: "var(--sh-sm)" }}
     >
       <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr 1fr auto", gap: 24, alignItems: "center" }}>
         {/* Titelblock */}
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "3px 9px", borderRadius: 5, background: `${statusColor}1f`, color: statusColor, fontSize: 10.5, fontWeight: 800, letterSpacing: 0.4 }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "3px 9px", borderRadius: 5, background: statusBg, color: statusColor, fontSize: 10.5, fontWeight: 800, letterSpacing: 0.4 }}>
               <span style={{ width: 5, height: 5, borderRadius: 99, background: statusColor }} />{statusLabel.toUpperCase()}
             </span>
-            {hot && <span style={{ padding: "3px 9px", borderRadius: 5, background: "rgba(245,166,35,0.15)", color: "#F5A623", fontSize: 9.5, fontWeight: 800, letterSpacing: 0.5 }}>HÖGT TRYCK</span>}
-            {lowTraffic && <span style={{ padding: "3px 9px", borderRadius: 5, background: "rgba(248,113,113,0.12)", color: "#f87171", fontSize: 9.5, fontWeight: 800, letterSpacing: 0.5 }}>LÅGT INTRESSE</span>}
+            {hot && <span style={{ padding: "3px 9px", borderRadius: 5, background: "var(--amber-tint)", color: "var(--amber-text)", fontSize: 9.5, fontWeight: 800, letterSpacing: 0.5 }}>HÖGT TRYCK</span>}
+            {lowTraffic && <span style={{ padding: "3px 9px", borderRadius: 5, background: "var(--danger-tint)", color: "var(--danger)", fontSize: 9.5, fontWeight: 800, letterSpacing: 0.5 }}>LÅGT INTRESSE</span>}
           </div>
           <h3 style={{ fontSize: 17, fontWeight: 800, letterSpacing: -0.4, marginBottom: 6, lineHeight: 1.2 }}>{job.title}</h3>
-          <div style={{ display: "flex", gap: 12, fontSize: 12, color: "rgba(255,255,255,0.5)", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: 12, fontSize: 12, color: "var(--ink-500)", flexWrap: "wrap" }}>
             {(job.region || job.location) && <span style={{ display: "flex", alignItems: "center", gap: 4 }}><Icon n="pin" size={11} /> {job.region || job.location}</span>}
             {job.segment && <><span>·</span><span>{job.segment}</span></>}
             {dl && <><span>·</span><span style={{ display: "flex", alignItems: "center", gap: 4 }}><Icon n="clock" size={11} /> {dl}</span></>}
@@ -148,22 +149,22 @@ function JobCard({ job, pipeline, onOpen, onPause, onClose, isMobile }) {
         {/* Pipeline-bar */}
         <div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 7 }}>
-            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", fontWeight: 600 }}>Kandidatpipeline</span>
-            <span style={{ fontSize: 11, fontWeight: 700 }}>{total} totalt</span>
+            <span style={{ fontSize: 11, color: "var(--ink-500)", fontWeight: 600 }}>Kandidatpipeline</span>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-900)" }}>{total} totalt</span>
           </div>
           {total > 0 ? (
-            <div style={{ display: "flex", gap: 2, height: 8, borderRadius: 99, overflow: "hidden", background: "rgba(255,255,255,0.05)" }}>
+            <div style={{ display: "flex", gap: 2, height: 8, borderRadius: 99, overflow: "hidden", background: "var(--line)" }}>
               {pipelineSegs.filter((s) => s.count > 0).map((s, i) => (
                 <div key={i} title={`${s.count}`} style={{ flex: s.count, background: s.color }} />
               ))}
             </div>
           ) : (
-            <div style={{ height: 8, borderRadius: 99, background: "rgba(255,255,255,0.05)" }} />
+            <div style={{ height: 8, borderRadius: 99, background: "var(--line)" }} />
           )}
           <div style={{ display: "flex", gap: 10, marginTop: 8, fontSize: 11 }}>
-            {pipeline.new > 0 && <span style={{ color: "#F5A623", fontWeight: 700 }}>{pipeline.new} nya</span>}
-            {pipeline.contacted > 0 && <span style={{ color: "rgba(255,255,255,0.55)" }}>{pipeline.contacted} kontaktade</span>}
-            {pipeline.interviewed > 0 && <span style={{ color: "rgba(255,255,255,0.55)" }}>{pipeline.interviewed} intervjuade</span>}
+            {pipeline.new > 0 && <span style={{ color: "var(--amber-text)", fontWeight: 700 }}>{pipeline.new} nya</span>}
+            {pipeline.contacted > 0 && <span style={{ color: "var(--ink-500)" }}>{pipeline.contacted} kontaktade</span>}
+            {pipeline.interviewed > 0 && <span style={{ color: "var(--ink-500)" }}>{pipeline.interviewed} intervjuade</span>}
           </div>
         </div>
 
@@ -171,13 +172,13 @@ function JobCard({ job, pipeline, onOpen, onPause, onClose, isMobile }) {
         <div style={{ display: "flex", gap: 28 }}>
           <div>
             <div style={{ fontSize: 18, fontWeight: 800, lineHeight: 1, marginBottom: 3 }}>{job.viewCount ?? 0}</div>
-            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", display: "flex", alignItems: "center", gap: 4 }}>
+            <div style={{ fontSize: 11, color: "var(--ink-400)", display: "flex", alignItems: "center", gap: 4 }}>
               <Icon n="eye" size={10} /> visningar
             </div>
           </div>
           <div>
-            <div style={{ fontSize: 18, fontWeight: 800, lineHeight: 1, marginBottom: 3 }}>{total}</div>
-            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", display: "flex", alignItems: "center", gap: 4 }}>
+            <div style={{ fontSize: 18, fontWeight: 800, lineHeight: 1, marginBottom: 3, color: "var(--ink-900)" }}>{total}</div>
+            <div style={{ fontSize: 11, color: "var(--ink-400)", display: "flex", alignItems: "center", gap: 4 }}>
               <Icon n="user" size={10} /> ansökningar
             </div>
           </div>
@@ -186,33 +187,33 @@ function JobCard({ job, pipeline, onOpen, onPause, onClose, isMobile }) {
         {/* Åtgärder */}
         <div style={{ display: "flex", gap: 6, position: "relative" }} onClick={(e) => e.stopPropagation()}>
           <Link to={`/foretag/annonsera/${job.id}/edit`}
-            style={{ width: 34, height: 34, borderRadius: 99, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", textDecoration: "none", color: "rgba(255,255,255,0.7)" }}
+            style={{ width: 34, height: 34, borderRadius: 99, background: "var(--paper-2)", border: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", textDecoration: "none", color: "var(--ink-700)" }}
             title="Redigera">
             <Icon n="edit" size={13} />
           </Link>
           <div style={{ position: "relative" }}>
             <button
               onClick={() => setMenuOpen((o) => !o)}
-              style={{ width: 34, height: 34, borderRadius: 99, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+              style={{ width: 34, height: 34, borderRadius: 99, background: "var(--paper-2)", border: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
               title="Mer">
-              <Icon n="more" size={13} color="rgba(255,255,255,0.7)" />
+              <Icon n="more" size={13} color="var(--ink-700)" />
             </button>
             {menuOpen && (
-              <div style={{ position: "absolute", right: 0, top: "calc(100% + 6px)", width: 180, background: "#0c1a1a", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, overflow: "hidden", zIndex: 10, boxShadow: "0 8px 32px rgba(0,0,0,0.4)" }}>
+              <div style={{ position: "absolute", right: 0, top: "calc(100% + 6px)", width: 180, background: "var(--card)", border: "1px solid var(--line-2)", borderRadius: 12, overflow: "hidden", zIndex: 10, boxShadow: "var(--sh)" }}>
                 {status === "active" && (
                   <button onClick={() => { onPause(job.id); setMenuOpen(false); }}
-                    style={{ width: "100%", padding: "11px 16px", textAlign: "left", background: "none", border: "none", color: "rgba(255,255,255,0.8)", fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>
+                    style={{ width: "100%", padding: "11px 16px", textAlign: "left", background: "none", border: "none", color: "var(--ink-700)", fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>
                     Pausa annons
                   </button>
                 )}
                 {status === "paused" && (
                   <button onClick={() => { onPause(job.id, "ACTIVE"); setMenuOpen(false); }}
-                    style={{ width: "100%", padding: "11px 16px", textAlign: "left", background: "none", border: "none", color: "rgba(255,255,255,0.8)", fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>
+                    style={{ width: "100%", padding: "11px 16px", textAlign: "left", background: "none", border: "none", color: "var(--ink-700)", fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>
                     Återaktivera
                   </button>
                 )}
                 <button onClick={() => { onClose(job.id); setMenuOpen(false); }}
-                  style={{ width: "100%", padding: "11px 16px", textAlign: "left", background: "none", border: "none", color: "#f87171", fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>
+                  style={{ width: "100%", padding: "11px 16px", textAlign: "left", background: "none", border: "none", color: "var(--danger)", fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>
                   Stäng annons
                 </button>
               </div>
@@ -297,21 +298,21 @@ export default function MinaJobb() {
   ];
 
   const jobList = loading ? (
-    <div style={{ textAlign: "center", padding: "60px 0", color: "rgba(255,255,255,0.4)" }}>Laddar annonser…</div>
+    <div style={{ textAlign: "center", padding: "60px 0", color: "var(--ink-400)" }}>Laddar annonser…</div>
   ) : filtered.length === 0 ? (
-    <div style={{ padding: "60px 20px", textAlign: "center", background: "#0a1414", border: "1px dashed rgba(255,255,255,0.08)", borderRadius: 16 }}>
+    <div style={{ padding: "60px 20px", textAlign: "center", background: "var(--paper-2)", border: "1px dashed var(--line-2)", borderRadius: 16 }}>
       <div style={{ fontSize: 32, marginBottom: 16 }}>
-        <Icon n="spark" size={32} color="rgba(245,166,35,0.4)" />
+        <Icon n="spark" size={32} color="var(--amber-tint)" />
       </div>
-      <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 8 }}>
+      <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 8, color: "var(--ink-900)" }}>
         {search ? "Inga annonser matchade din sökning" : tab === "active" ? "Inga aktiva annonser" : "Inga annonser"}
       </div>
-      <div style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", marginBottom: 24 }}>
+      <div style={{ fontSize: 13, color: "var(--ink-400)", marginBottom: 24 }}>
         {search ? "Prova en annan sökning." : "Publicera ett jobb för att börja hitta förare."}
       </div>
       {!search && (
         <Link to="/foretag/annonsera"
-          style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "10px 20px", borderRadius: 99, background: "#F5A623", color: "#000", fontSize: 13, fontWeight: 800, textDecoration: "none" }}>
+          style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "10px 20px", borderRadius: 99, background: "var(--amber)", color: "#000", fontSize: 13, fontWeight: 800, textDecoration: "none" }}>
           <Icon n="plus" size={13} /> Publicera jobb
         </Link>
       )}
@@ -334,18 +335,18 @@ export default function MinaJobb() {
 
   if (isMobile) {
     return (
-      <div style={{ minHeight: "100vh", background: "#060f0f", color: "#f0faf9", marginTop: "-64px", paddingTop: 64 }}>
+      <div style={{ minHeight: "100vh", background: "var(--paper)", color: "var(--ink-900)", paddingTop: 64 }}>
         <main style={{ padding: "20px 20px 120px" }}>
           {/* Rubrik + Ny-knapp */}
           <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 10, marginBottom: 14 }}>
             <div>
               <h1 style={{ fontSize: 24, fontWeight: 800, letterSpacing: -0.8, marginBottom: 4 }}>Annonser</h1>
-              <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.55)" }}>
+              <div style={{ fontSize: 12.5, color: "var(--ink-500)" }}>
                 {totalCandidates} kandidater
-                {newSince > 0 && <span style={{ color: "#F5A623", fontWeight: 700 }}> · {newSince} nya</span>}
+                {newSince > 0 && <span style={{ color: "var(--amber-text)", fontWeight: 700 }}> · {newSince} nya</span>}
               </div>
             </div>
-            <Link to="/foretag/annonsera" style={{ padding: "10px 14px", borderRadius: 99, background: "linear-gradient(135deg,#F5A623,#d97706)", color: "#000", fontSize: 12.5, fontWeight: 800, textDecoration: "none", display: "flex", alignItems: "center", gap: 6, boxShadow: "0 4px 18px rgba(245,166,35,0.25)", flexShrink: 0 }}>
+            <Link to="/foretag/annonsera" style={{ padding: "10px 14px", borderRadius: 99, background: "linear-gradient(135deg,var(--amber),#d97706)", color: "#000", fontSize: 12.5, fontWeight: 800, textDecoration: "none", display: "flex", alignItems: "center", gap: 6, boxShadow: "0 4px 18px rgba(245,166,35,0.25)", flexShrink: 0 }}>
               <Icon n="plus" size={13} />Ny
             </Link>
           </div>
@@ -355,9 +356,9 @@ export default function MinaJobb() {
             {mobileTabs.map((t) => {
               const on = tab === t.k;
               return (
-                <button key={t.k} onClick={() => setTab(t.k)} style={{ flexShrink: 0, padding: "8px 14px", borderRadius: 99, background: on ? "rgba(245,166,35,0.12)" : "rgba(255,255,255,0.04)", border: `1px solid ${on ? "rgba(245,166,35,0.35)" : "rgba(255,255,255,0.06)"}`, color: on ? "#F5A623" : "rgba(255,255,255,0.7)", fontSize: 12.5, fontWeight: 700, cursor: "pointer", minHeight: 36, display: "flex", alignItems: "center", gap: 5 }}>
+                <button key={t.k} onClick={() => setTab(t.k)} style={{ flexShrink: 0, padding: "8px 14px", borderRadius: 99, background: on ? "var(--amber-tint)" : "var(--paper-2)", border: `1px solid ${on ? "var(--amber)" : "var(--line)"}`, color: on ? "var(--amber-text)" : "var(--ink-700)", fontSize: 12.5, fontWeight: 700, cursor: "pointer", minHeight: 36, display: "flex", alignItems: "center", gap: 5 }}>
                   {t.l}
-                  <span style={{ padding: "1px 6px", borderRadius: 99, background: on ? "rgba(245,166,35,0.2)" : "rgba(255,255,255,0.06)", fontSize: 10, fontWeight: 800 }}>{t.c}</span>
+                  <span style={{ padding: "1px 6px", borderRadius: 99, background: on ? "var(--amber-tint)" : "var(--paper-2)", fontSize: 10, fontWeight: 800 }}>{t.c}</span>
                 </button>
               );
             })}
@@ -371,27 +372,27 @@ export default function MinaJobb() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#060f0f", color: "#f0faf9" }}>
+    <div style={{ minHeight: "100vh", background: "var(--paper)", color: "var(--ink-900)" }}>
       <main style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 40px 60px" }}>
 
         {/* Sidhuvud */}
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 24, gap: 16 }}>
           <div>
             <h1 style={{ fontSize: 30, fontWeight: 800, letterSpacing: -1, marginBottom: 6 }}>Mina annonser</h1>
-            <div style={{ fontSize: 13.5, color: "rgba(255,255,255,0.55)" }}>
+            <div style={{ fontSize: 13.5, color: "var(--ink-500)" }}>
               {counts.active} aktiva annonser · {totalCandidates} kandidater totalt
-              {newSince > 0 && <span style={{ color: "#F5A623", fontWeight: 700 }}> · {newSince} nya sedan igår</span>}
+              {newSince > 0 && <span style={{ color: "var(--amber-text)", fontWeight: 700 }}> · {newSince} nya sedan igår</span>}
             </div>
           </div>
           <Link to="/foretag/annonsera"
-            style={{ padding: "11px 20px", borderRadius: 99, background: "linear-gradient(135deg,#F5A623,#d97706)", color: "#000", fontSize: 13.5, fontWeight: 800, textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, boxShadow: "0 4px 18px rgba(245,166,35,0.25)" }}>
+            style={{ padding: "11px 20px", borderRadius: 99, background: "linear-gradient(135deg,var(--amber),#d97706)", color: "#000", fontSize: 13.5, fontWeight: 800, textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, boxShadow: "0 4px 18px rgba(245,166,35,0.25)" }}>
             <Icon n="plus" size={14} /> Publicera ny annons
           </Link>
         </div>
 
         {/* Tabs + sök */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22, gap: 12 }}>
-          <div style={{ display: "flex", gap: 4, background: "#0a1414", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 99, padding: 4, overflowX: "auto" }}>
+          <div style={{ display: "flex", gap: 4, background: "var(--paper-2)", border: "1px solid var(--line)", borderRadius: 99, padding: 4, overflowX: "auto" }}>
             {[
               { k: "active", l: "Aktiva",    c: counts.active },
               { k: "paused", l: "Pausade",   c: counts.paused },
@@ -399,21 +400,21 @@ export default function MinaJobb() {
               { k: "all",    l: "Alla",      c: counts.all    },
             ].map((t) => (
               <button key={t.k} onClick={() => setTab(t.k)}
-                style={{ padding: "8px 16px", borderRadius: 99, background: tab === t.k ? "#F5A623" : "transparent", border: "none", color: tab === t.k ? "#000" : "rgba(255,255,255,0.7)", fontSize: 12.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, transition: "all .15s", whiteSpace: "nowrap", flexShrink: 0 }}>
+                style={{ padding: "8px 16px", borderRadius: 99, background: tab === t.k ? "var(--amber)" : "transparent", border: "none", color: tab === t.k ? "#000" : "var(--ink-700)", fontSize: 12.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, transition: "all .15s", whiteSpace: "nowrap", flexShrink: 0 }}>
                 {t.l}
-                <span style={{ padding: "1px 7px", borderRadius: 99, background: tab === t.k ? "rgba(0,0,0,0.15)" : "rgba(255,255,255,0.08)", fontSize: 10.5, fontWeight: 800 }}>{t.c}</span>
+                <span style={{ padding: "1px 7px", borderRadius: 99, background: tab === t.k ? "rgba(0,0,0,0.15)" : "var(--line)", fontSize: 10.5, fontWeight: 800 }}>{t.c}</span>
               </button>
             ))}
           </div>
           <div style={{ position: "relative" }}>
             <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
-              <Icon n="search" size={14} color="rgba(255,255,255,0.4)" />
+              <Icon n="search" size={14} color="var(--ink-400)" />
             </span>
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Sök annons"
-              style={{ padding: "9px 14px 9px 36px", background: "#0a1414", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 99, fontSize: 12.5, width: 240, outline: "none", color: "#f0faf9", boxSizing: "border-box" }}
+              style={{ padding: "9px 14px 9px 36px", background: "var(--paper-2)", border: "1px solid var(--line)", borderRadius: 99, fontSize: 12.5, width: 240, outline: "none", color: "var(--ink-900)", boxSizing: "border-box" }}
             />
           </div>
         </div>

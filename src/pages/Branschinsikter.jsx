@@ -5,29 +5,29 @@ import PageMeta from "../components/PageMeta";
 export default function Branschinsikter() {
   usePageTitle("Branschinsikter för transport");
   return (
-    <main style={{ background: "#0a1818", minHeight: "100vh", marginTop: "-64px", paddingTop: 96 }}>
+    <main style={{ background: "var(--paper)", minHeight: "100vh", paddingTop: 48 }}>
       <PageMeta
         title="Branschinsikter – transport & åkeri"
         description="Statistik och sammanställningar om kompetensläget i svensk transportbransch. Baserat på TYA Trendindikator Åkeri och SCB-data."
         canonical="/branschinsikter"
       />
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 24px 96px" }}>
-        <h1 style={{ fontSize: "clamp(28px,4vw,38px)", fontWeight: 900, color: "#f0faf9", letterSpacing: "-1px", lineHeight: 1.15, margin: "0 0 16px" }}>
+        <h1 style={{ fontSize: "clamp(28px,4vw,38px)", fontWeight: 900, color: "var(--ink-900)", letterSpacing: "-1px", lineHeight: 1.15, margin: "0 0 16px" }}>
           Branschinsikter
         </h1>
-        <p style={{ fontSize: 16, color: "rgba(240,250,249,0.6)", lineHeight: 1.65, margin: "0 0 40px", maxWidth: 560 }}>
+        <p style={{ fontSize: 16, color: "var(--ink-500)", lineHeight: 1.65, margin: "0 0 40px", maxWidth: 560 }}>
           Sammanställningar och statistik kring kompetensläget i svensk transport. Innehåll byggs ut utifrån tillgängliga källor som TYA Trendindikator Åkeri.
         </p>
         <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 12 }}>
           <li>
             <Link
               to="/branschinsikter/kompetenslaget-2025"
-              style={{ display: "block", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 14, padding: "18px 22px", textDecoration: "none" }}
+              style={{ display: "block", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "18px 22px", textDecoration: "none" }}
             >
-              <span style={{ fontSize: 15, fontWeight: 700, color: "#4ade80" }}>
+              <span style={{ fontSize: 15, fontWeight: 700, color: "var(--green-text)" }}>
                 Kompetensläget 2025/2026
               </span>
-              <p style={{ fontSize: 13, color: "rgba(240,250,249,0.5)", margin: "4px 0 0", lineHeight: 1.5 }}>
+              <p style={{ fontSize: 13, color: "var(--ink-500)", margin: "4px 0 0", lineHeight: 1.5 }}>
                 Nyckeltal om rekryteringsbehov och matchningsutmaningar.
               </p>
             </Link>

@@ -33,7 +33,7 @@ function UploadZone({ onUpload, disabled }) {
 
   if (disabled) {
     return (
-      <div style={{ padding: "24px", border: "2px dashed rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.01)", borderRadius: 14, textAlign: "center", color: "rgba(255,255,255,0.3)", fontSize: 13 }}>
+      <div style={{ padding: "24px", border: "2px dashed var(--line)", background: "var(--paper-2)", borderRadius: 14, textAlign: "center", color: "var(--ink-400)", fontSize: 13 }}>
         Lås upp detta steg genom att slutföra föregående steg.
       </div>
     );
@@ -44,16 +44,16 @@ function UploadZone({ onUpload, disabled }) {
       onDragOver={(e) => { e.preventDefault(); setHover(true); }}
       onDragLeave={() => setHover(false)}
       onDrop={(e) => { e.preventDefault(); setHover(false); onUpload(); }}
-      style={{ padding: "32px 24px", border: `2px dashed ${hover ? "rgba(245,166,35,0.5)" : "rgba(255,255,255,0.1)"}`, background: hover ? "rgba(245,166,35,0.04)" : "rgba(255,255,255,0.02)", borderRadius: 14, textAlign: "center", transition: "all .15s", cursor: "pointer" }}
+      style={{ padding: "32px 24px", border: `2px dashed ${hover ? "var(--green)" : "var(--line-2)"}`, background: hover ? "var(--green-tint)" : "var(--paper-2)", borderRadius: 14, textAlign: "center", transition: "all .15s", cursor: "pointer" }}
     >
-      <div style={{ width: 44, height: 44, borderRadius: 99, background: "rgba(245,166,35,0.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
-        <Icon n="upload" s={18} c="#F5A623" />
+      <div style={{ width: 44, height: 44, borderRadius: 99, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
+        <Icon n="upload" s={18} c="var(--green)" />
       </div>
-      <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 5 }}>Dra och släpp filen här</div>
-      <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 16 }}>eller — PDF, JPG, PNG · max 10 MB</div>
+      <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)", marginBottom: 5 }}>Dra och släpp filen här</div>
+      <div style={{ fontSize: 12, color: "var(--ink-500)", marginBottom: 16 }}>eller — PDF, JPG, PNG · max 10 MB</div>
       <button
         onClick={onUpload}
-        style={{ padding: "9px 18px", borderRadius: 99, background: "rgba(245,166,35,0.12)", border: "1px solid rgba(245,166,35,0.3)", color: "#F5A623", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}
+        style={{ padding: "9px 18px", borderRadius: 99, background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.3)", color: "var(--green-text)", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}
       >
         Välj fil från datorn
       </button>
@@ -64,22 +64,22 @@ function UploadZone({ onUpload, disabled }) {
 // ─── Step circle ──────────────────────────────────────────────────────────────
 function StepCircle({ status, num }) {
   if (status === "done") return (
-    <div style={{ width: 32, height: 32, borderRadius: 99, background: "rgba(74,222,128,0.15)", border: "1.5px solid rgba(74,222,128,0.4)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-      <Icon n="check" s={14} c="#4ade80" />
+    <div style={{ width: 32, height: 32, borderRadius: 99, background: "var(--success-tint)", border: "1.5px solid rgba(31,122,58,0.3)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      <Icon n="check" s={14} c="var(--success)" />
     </div>
   );
   if (status === "review") return (
-    <div style={{ width: 32, height: 32, borderRadius: 99, background: "rgba(96,165,250,0.12)", border: "1.5px solid rgba(96,165,250,0.4)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-      <Icon n="clock" s={14} c="#60a5fa" />
+    <div style={{ width: 32, height: 32, borderRadius: 99, background: "var(--info-tint)", border: "1.5px solid rgba(37,99,235,0.3)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      <Icon n="clock" s={14} c="var(--info)" />
     </div>
   );
   if (status === "next") return (
-    <div style={{ width: 32, height: 32, borderRadius: 99, background: "#F5A623", border: "1.5px solid #F5A623", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "#000", fontWeight: 800, fontSize: 13, boxShadow: "0 0 0 0 rgba(245,166,35,0.4)", animation: "pulseGlow 2s infinite" }}>
+    <div style={{ width: 32, height: 32, borderRadius: 99, background: "var(--green)", border: "1.5px solid var(--green)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "#fff", fontWeight: 800, fontSize: 13, animation: "pulseGlow 2s infinite" }}>
       {num}
     </div>
   );
   return (
-    <div style={{ width: 32, height: 32, borderRadius: 99, background: "transparent", border: "1.5px solid rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "rgba(255,255,255,0.35)", fontWeight: 700, fontSize: 13 }}>
+    <div style={{ width: 32, height: 32, borderRadius: 99, background: "transparent", border: "1.5px solid var(--line-2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "var(--ink-300)", fontWeight: 700, fontSize: 13 }}>
       {num}
     </div>
   );
@@ -93,7 +93,7 @@ function StepCard({ step, num, expanded, onToggle, onComplete, isLast }) {
   return (
     <div style={{ position: "relative", display: "flex", gap: 18, paddingBottom: isLast ? 0 : 14 }}>
       {!isLast && (
-        <div style={{ position: "absolute", left: 16, top: 32, bottom: 0, width: 1.5, background: step.status === "done" ? "rgba(74,222,128,0.25)" : "rgba(255,255,255,0.06)" }} />
+        <div style={{ position: "absolute", left: 16, top: 32, bottom: 0, width: 1.5, background: step.status === "done" ? "rgba(31,122,58,0.25)" : "var(--line)" }} />
       )}
       <StepCircle status={step.status} num={num} />
 
@@ -104,18 +104,18 @@ function StepCard({ step, num, expanded, onToggle, onComplete, isLast }) {
         >
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
-              <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: -0.2, color: step.status === "locked" ? "rgba(255,255,255,0.4)" : "#fff" }}>
+              <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: -0.2, color: step.status === "locked" ? "var(--ink-400)" : "var(--ink-900)" }}>
                 {step.title}
               </span>
               {!step.required && (
-                <span style={{ fontSize: 10.5, color: "rgba(255,255,255,0.45)", padding: "2px 7px", borderRadius: 5, background: "rgba(255,255,255,0.04)", fontWeight: 600 }}>VALFRITT</span>
+                <span style={{ fontSize: 10.5, color: "var(--ink-400)", padding: "2px 7px", borderRadius: 5, background: "var(--paper-2)", fontWeight: 600 }}>VALFRITT</span>
               )}
             </div>
-            <div style={{ fontSize: 12.5, color: step.status === "locked" ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.6)", lineHeight: 1.5 }}>
+            <div style={{ fontSize: 12.5, color: step.status === "locked" ? "var(--ink-300)" : "var(--ink-500)", lineHeight: 1.5 }}>
               {step.desc}
             </div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11.5, color: "rgba(255,255,255,0.5)", flexShrink: 0, paddingTop: 2 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11.5, color: "var(--ink-400)", flexShrink: 0, paddingTop: 2 }}>
             <Icon n="clock" s={11} />
             <span>{step.time}</span>
           </div>
@@ -127,9 +127,9 @@ function StepCard({ step, num, expanded, onToggle, onComplete, isLast }) {
             {step.type === "upload" && (
               <>
                 <UploadZone onUpload={() => onComplete(step.id)} />
-                <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginTop: 14, padding: "10px 12px", background: "rgba(96,165,250,0.06)", border: "1px solid rgba(96,165,250,0.18)", borderRadius: 10 }}>
-                  <Icon n="info" s={13} c="#60a5fa" />
-                  <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.7)", lineHeight: 1.5 }}>
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginTop: 14, padding: "10px 12px", background: "var(--info-tint)", border: "1px solid rgba(37,99,235,0.2)", borderRadius: 10 }}>
+                  <Icon n="info" s={13} c="var(--info)" />
+                  <div style={{ fontSize: 11.5, color: "var(--ink-700)", lineHeight: 1.5 }}>
                     Vi granskar dokumentet manuellt — vanligtvis godkänt inom 1 arbetsdag. Du får e-post när det är klart.
                   </div>
                 </div>
@@ -138,27 +138,27 @@ function StepCard({ step, num, expanded, onToggle, onComplete, isLast }) {
             {step.type === "choice" && (
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {[
-                  { v: "YES_TRANSPORT", l: "Ja — vi har kollektivavtal", desc: "Med Transport, Sveriges Åkeriföretag eller liknande" },
+                  { v: "YES_TRANSPORT", l: "Ja — vi har kollektivavtal", desc: "Med Transport eller liknande branschavtal" },
                   { v: "INDIVIDUAL", l: "Ja — individuella avtal", desc: "Liknande villkor utan branschavtal" },
                   { v: "NO", l: "Nej", desc: "Visas ej på er åkeriprofil" },
                 ].map((o) => (
                   <button
                     key={o.v}
                     onClick={() => { setKollektivVal(o.v); onComplete(step.id, o.v); }}
-                    style={{ padding: "13px 16px", borderRadius: 12, background: kollektivVal === o.v ? "rgba(245,166,35,0.08)" : "rgba(255,255,255,0.03)", border: `1px solid ${kollektivVal === o.v ? "rgba(245,166,35,0.35)" : "rgba(255,255,255,0.07)"}`, textAlign: "left", cursor: "pointer", transition: "all .15s", fontFamily: "inherit" }}
+                    style={{ padding: "13px 16px", borderRadius: 12, background: kollektivVal === o.v ? "var(--green-tint)" : "var(--paper-2)", border: `1px solid ${kollektivVal === o.v ? "rgba(31,95,92,0.3)" : "var(--line)"}`, textAlign: "left", cursor: "pointer", transition: "all .15s", fontFamily: "inherit" }}
                   >
-                    <div style={{ fontSize: 13.5, fontWeight: 700, color: "#fff", marginBottom: 3 }}>{o.l}</div>
-                    <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.55)" }}>{o.desc}</div>
+                    <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--ink-900)", marginBottom: 3 }}>{o.l}</div>
+                    <div style={{ fontSize: 11.5, color: "var(--ink-500)" }}>{o.desc}</div>
                   </button>
                 ))}
               </div>
             )}
             {step.type === "later" && (
               <div style={{ display: "flex", gap: 10 }}>
-                <button onClick={() => onComplete(step.id)} style={{ padding: "10px 18px", borderRadius: 99, background: "#F5A623", border: "none", color: "#000", fontSize: 12.5, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
+                <button onClick={() => onComplete(step.id)} style={{ padding: "10px 18px", borderRadius: 99, background: "var(--green)", border: "none", color: "#fff", fontSize: 12.5, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
                   Konfigurera fakturering
                 </button>
-                <button onClick={onToggle} style={{ padding: "10px 18px", borderRadius: 99, background: "transparent", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.7)", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+                <button onClick={onToggle} style={{ padding: "10px 18px", borderRadius: 99, background: "transparent", border: "1px solid var(--line-2)", color: "var(--ink-500)", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
                   Gör det senare
                 </button>
               </div>
@@ -167,9 +167,9 @@ function StepCard({ step, num, expanded, onToggle, onComplete, isLast }) {
         )}
 
         {step.status === "review" && (
-          <div style={{ marginTop: 10, padding: "9px 14px", background: "rgba(96,165,250,0.06)", border: "1px solid rgba(96,165,250,0.18)", borderRadius: 10, display: "flex", alignItems: "center", gap: 9, fontSize: 12 }}>
-            <Icon n="clock" s={13} c="#60a5fa" />
-            <span style={{ color: "rgba(255,255,255,0.75)" }}>Under granskning — svar inom 1 arbetsdag</span>
+          <div style={{ marginTop: 10, padding: "9px 14px", background: "var(--info-tint)", border: "1px solid rgba(37,99,235,0.2)", borderRadius: 10, display: "flex", alignItems: "center", gap: 9, fontSize: 12 }}>
+            <Icon n="clock" s={13} c="var(--info)" />
+            <span style={{ color: "var(--ink-700)" }}>Under granskning — svar inom 1 arbetsdag</span>
           </div>
         )}
       </div>
@@ -238,18 +238,18 @@ export default function CompanyVerification() {
   const allRequiredDone = done === total;
 
   return (
-    <main style={{ background: "#060f0f", minHeight: "100vh", marginTop: "-64px", paddingTop: 64, color: "#f0faf9" }}>
+    <main style={{ background: "var(--paper)", minHeight: "100vh", paddingTop: 32, color: "var(--ink-900)" }}>
       <style>{`
         @keyframes pulseGlow {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(245,166,35,0.4); }
-          50% { box-shadow: 0 0 0 8px rgba(245,166,35,0); }
+          0%, 100% { box-shadow: 0 0 0 0 rgba(31,95,92,0.4); }
+          50% { box-shadow: 0 0 0 8px rgba(31,95,92,0); }
         }
       `}</style>
 
       <div style={{ maxWidth: 720, margin: "0 auto", padding: isMobile ? "24px 16px 80px" : "24px 32px 80px" }}>
         <Link
           to="/foretag"
-          style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "6px 0", color: "rgba(255,255,255,0.55)", fontSize: 13, fontWeight: 600, textDecoration: "none", marginBottom: 20 }}
+          style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "6px 0", color: "var(--ink-500)", fontSize: 13, fontWeight: 600, textDecoration: "none", marginBottom: 20 }}
         >
           <Icon n="back" s={13} /> Tillbaka till översikt
         </Link>
@@ -257,35 +257,35 @@ export default function CompanyVerification() {
         {/* Hero */}
         <div style={{ marginBottom: 28 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
-            <div style={{ width: 54, height: 54, borderRadius: 14, background: "rgba(245,166,35,0.1)", border: "1px solid rgba(245,166,35,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Icon n="shield" s={22} c="#F5A623" />
+            <div style={{ width: 54, height: 54, borderRadius: 14, background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Icon n="shield" s={22} c="var(--green)" />
             </div>
             <div>
-              <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: -0.8, marginBottom: 4 }}>Verifiera ert åkeri</h1>
-              <div style={{ fontSize: 13.5, color: "rgba(255,255,255,0.6)" }}>4 snabba steg så ni kan börja anställa</div>
+              <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: -0.8, marginBottom: 4, color: "var(--ink-900)" }}>Verifiera ert åkeri</h1>
+              <div style={{ fontSize: 13.5, color: "var(--ink-500)" }}>4 snabba steg så ni kan börja anställa</div>
             </div>
           </div>
 
           {/* Progress */}
-          <div style={{ background: "#0a1414", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 18 }}>
+          <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: 18, boxShadow: "var(--sh-sm)" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-              <div style={{ fontSize: 12.5, fontWeight: 700, color: "rgba(255,255,255,0.85)" }}>{done} av {total} klara</div>
-              <div style={{ fontSize: 12.5, color: "#F5A623", fontWeight: 800 }}>{pct}%</div>
+              <div style={{ fontSize: 12.5, fontWeight: 700, color: "var(--ink-700)" }}>{done} av {total} klara</div>
+              <div style={{ fontSize: 12.5, color: "var(--green-text)", fontWeight: 800 }}>{pct}%</div>
             </div>
-            <div style={{ height: 6, background: "rgba(255,255,255,0.05)", borderRadius: 99, overflow: "hidden" }}>
-              <div style={{ height: "100%", width: `${pct}%`, background: "linear-gradient(90deg,#F5A623,#d97706)", borderRadius: 99, transition: "width .4s ease" }} />
+            <div style={{ height: 6, background: "var(--paper-2)", borderRadius: 99, overflow: "hidden" }}>
+              <div style={{ height: "100%", width: `${pct}%`, background: "var(--green)", borderRadius: 99, transition: "width .4s ease" }} />
             </div>
           </div>
         </div>
 
         {/* Why verify */}
-        <div style={{ background: "linear-gradient(135deg, rgba(74,222,128,0.05) 0%, rgba(74,222,128,0.01) 100%)", border: "1px solid rgba(74,222,128,0.18)", borderRadius: 14, padding: "16px 20px", marginBottom: 24 }}>
+        <div style={{ background: "var(--success-tint)", border: "1px solid rgba(31,122,58,0.2)", borderRadius: 14, padding: "16px 20px", marginBottom: 24 }}>
           <div style={{ display: "flex", alignItems: "flex-start", gap: 11 }}>
-            <Icon n="info" s={15} c="#4ade80" />
+            <Icon n="info" s={15} c="var(--success)" />
             <div>
-              <div style={{ fontSize: 12.5, fontWeight: 700, color: "#4ade80", marginBottom: 4 }}>Varför verifiera?</div>
-              <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.7)", lineHeight: 1.55 }}>
-                Verifierade åkerier får <strong style={{ color: "#fff" }}>3× fler kvalificerade ansökningar</strong> och visas högre upp i förares sökningar.
+              <div style={{ fontSize: 12.5, fontWeight: 700, color: "var(--success)", marginBottom: 4 }}>Varför verifiera?</div>
+              <div style={{ fontSize: 12.5, color: "var(--ink-700)", lineHeight: 1.55 }}>
+                Verifierade åkerier får <strong style={{ color: "var(--ink-900)" }}>3× fler kvalificerade ansökningar</strong> och visas högre upp i förares sökningar.
                 Förare litar mer på åkerier med synliga F-skatt och kollektivavtals-status.
               </div>
             </div>
@@ -293,7 +293,7 @@ export default function CompanyVerification() {
         </div>
 
         {/* Steps */}
-        <div style={{ background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 16, padding: "24px 22px" }}>
+        <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, padding: "24px 22px", boxShadow: "var(--sh-sm)" }}>
           {steps.map((s, i) => (
             <StepCard
               key={s.id}
@@ -314,8 +314,8 @@ export default function CompanyVerification() {
             { icon: "shield", text: "GDPR-säkert" },
             { icon: "users", text: "Endast STP-team granskar" },
           ].map(({ icon, text }) => (
-            <div key={text} style={{ display: "flex", alignItems: "center", gap: 7, color: "rgba(255,255,255,0.45)", fontSize: 11.5, fontWeight: 600 }}>
-              <Icon n={icon} s={13} c="rgba(255,255,255,0.45)" />
+            <div key={text} style={{ display: "flex", alignItems: "center", gap: 7, color: "var(--ink-400)", fontSize: 11.5, fontWeight: 600 }}>
+              <Icon n={icon} s={13} c="var(--ink-400)" />
               {text}
             </div>
           ))}
@@ -323,17 +323,17 @@ export default function CompanyVerification() {
 
         {/* All done */}
         {allRequiredDone && (
-          <div style={{ marginTop: 28, padding: "22px 24px", background: "linear-gradient(135deg, rgba(74,222,128,0.12) 0%, rgba(74,222,128,0.03) 100%)", border: "1px solid rgba(74,222,128,0.3)", borderRadius: 14, textAlign: "center" }}>
-            <div style={{ width: 48, height: 48, borderRadius: 99, background: "rgba(74,222,128,0.2)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
-              <Icon n="check" s={20} c="#4ade80" />
+          <div style={{ marginTop: 28, padding: "22px 24px", background: "var(--success-tint)", border: "1px solid rgba(31,122,58,0.25)", borderRadius: 14, textAlign: "center" }}>
+            <div style={{ width: 48, height: 48, borderRadius: 99, background: "var(--success-tint)", border: "1px solid rgba(31,122,58,0.3)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
+              <Icon n="check" s={20} c="var(--success)" />
             </div>
-            <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 5 }}>Alla obligatoriska steg klara</div>
-            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.65)", marginBottom: 16 }}>
+            <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 5, color: "var(--ink-900)" }}>Alla obligatoriska steg klara</div>
+            <div style={{ fontSize: 13, color: "var(--ink-500)", marginBottom: 16 }}>
               Vi granskar era dokument och hör av oss inom 1 arbetsdag.
             </div>
             <Link
               to="/foretag"
-              style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "11px 22px", borderRadius: 99, background: "linear-gradient(135deg,#F5A623,#d97706)", color: "#000", fontSize: 13, fontWeight: 800, textDecoration: "none", boxShadow: "0 4px 18px rgba(245,166,35,0.25)" }}
+              style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "11px 22px", borderRadius: 99, background: "var(--green)", color: "#fff", fontSize: 13, fontWeight: 800, textDecoration: "none" }}
             >
               Gå till översikten <Icon n="arrow" s={13} />
             </Link>

@@ -38,29 +38,32 @@ function avatarColor(name) {
 function SectionHeading({ children }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "32px 0 14px" }}>
-      <div style={{ width: 3, height: 20, borderRadius: 2, background: "#1F5F5C", flexShrink: 0 }} />
-      <h2 style={{ fontSize: 17, fontWeight: 800, color: "#f0faf9", letterSpacing: -0.3, margin: 0 }}>{children}</h2>
+      <div style={{ width: 3, height: 20, borderRadius: 2, background: "var(--green)", flexShrink: 0 }} />
+      <h2 style={{ fontSize: 18, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.3, margin: 0 }}>{children}</h2>
     </div>
   );
 }
 
-function BulletList({ items, fallback, color }) {
-  const dotBg  = color === "green" ? "rgba(74,222,128,0.12)" : "rgba(31,95,92,0.2)";
-  const dotBdr = color === "green" ? "rgba(74,222,128,0.2)"  : "rgba(31,95,92,0.3)";
-  const dotClr = color === "green" ? "#4ade80" : "#6ee7e7";
+function BulletList({ items, fallback, accent = "primary" }) {
+  const color = accent === "success" ? "var(--success)" : "var(--green)";
+  const tint  = accent === "success" ? "var(--success-tint)" : "var(--green-tint)";
   if (!items || items.length === 0) {
     return fallback
-      ? <p style={{ fontSize: 15, color: "rgba(240,250,249,0.3)", lineHeight: 1.8, fontStyle: "italic", margin: 0 }}>{fallback}</p>
+      ? <p style={{ fontSize: 14.5, color: "var(--ink-400)", lineHeight: 1.8, fontStyle: "italic", margin: 0 }}>{fallback}</p>
       : null;
   }
   return (
     <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 10 }}>
       {items.map((item, i) => (
         <li key={i} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-          <span style={{ width: 20, height: 20, borderRadius: 99, background: dotBg, border: `1px solid ${dotBdr}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={dotClr} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          <span style={{
+            width: 22, height: 22, borderRadius: 11,
+            background: tint, flexShrink: 0, marginTop: 1,
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           </span>
-          <span style={{ fontSize: 15, color: "rgba(240,250,249,0.75)", lineHeight: 1.7 }}>{item}</span>
+          <span style={{ fontSize: 15, color: "var(--ink-700)", lineHeight: 1.65, fontWeight: 500 }}>{item}</span>
         </li>
       ))}
     </ul>
@@ -69,13 +72,25 @@ function BulletList({ items, fallback, color }) {
 
 function FactRow({ iconEl, label, value, highlight, missing }) {
   return (
-    <div style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "12px 0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-      <span style={{ width: 32, height: 32, borderRadius: 9, background: missing ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: missing ? "rgba(240,250,249,0.2)" : "rgba(240,250,249,0.4)", border: `1px solid ${missing ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.07)"}` }}>
+    <div style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "11px 0", borderBottom: "1px solid var(--line)" }}>
+      <span style={{
+        width: 32, height: 32, borderRadius: 9,
+        background: missing ? "var(--paper-2)" : "var(--green-tint)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        flexShrink: 0,
+        color: missing ? "var(--ink-300)" : "var(--green)",
+        border: `1px solid ${missing ? "var(--line)" : "var(--green-tint-2)"}`,
+      }}>
         {iconEl}
       </span>
       <div>
-        <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(240,250,249,0.3)", letterSpacing: 0.4, marginBottom: 2 }}>{label}</div>
-        <div style={{ fontSize: 13, fontWeight: missing ? 400 : 700, color: missing ? "rgba(240,250,249,0.25)" : highlight ? "#F5A623" : "#f0faf9", fontStyle: missing ? "italic" : "normal" }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-400)", letterSpacing: 0.4, textTransform: "uppercase", marginBottom: 2 }}>{label}</div>
+        <div style={{
+          fontSize: 13, fontWeight: missing ? 400 : 700,
+          color: missing ? "var(--ink-300)" : highlight ? "var(--amber)" : "var(--ink-900)",
+          fontStyle: missing ? "italic" : "normal",
+          fontFamily: highlight ? "var(--mono)" : "inherit",
+        }}>
           {value}
         </div>
       </div>
@@ -91,11 +106,11 @@ function MatchRing({ pct, job, details }) {
     return () => clearTimeout(t);
   }, [pct]);
 
-  const [color, label, desc] =
-    pct >= 85 ? ["#4ade80", "Stark match",   "Din profil matchar jobbet mycket väl"] :
-    pct >= 65 ? ["#F5A623", "God match",     "Din profil matchar jobbet bra"] :
-    pct >= 20 ? ["#63b3ed", "Möjlig match",  "Din profil matchar delar av jobbet"] :
-                ["#f87171", "Låg match",     "Din profil matchar inte kravprofilen fullt ut"];
+  const [color, label, bg] =
+    pct >= 90 ? ["var(--success)",   "Stark match",  "var(--success-tint)"] :
+    pct >= 80 ? ["var(--green)",     "Bra match",    "var(--green-tint)"]   :
+    pct >= 70 ? ["var(--amber)",     "OK match",     "var(--amber-tint)"]   :
+               ["var(--ink-500)",   "Låg match",    "var(--paper-2)"];
 
   const segmentLabels = { FULLTIME: "Heltid", FLEX: "Flex/tim", INTERNSHIP: "Praktik/lärling" };
   const breakdown = [
@@ -111,37 +126,42 @@ function MatchRing({ pct, job, details }) {
   ].filter(Boolean);
 
   return (
-    <div style={{ paddingBottom: 16, borderBottom: "1px solid rgba(255,255,255,0.06)", marginBottom: 4 }}>
-      <div style={{ fontSize: 11, fontWeight: 800, color: "rgba(240,250,249,0.35)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 14 }}>Din matchning</div>
+    <div style={{ paddingBottom: 16, borderBottom: "1px solid var(--line)", marginBottom: 4 }}>
+      <div style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-400)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 14 }}>Din matchning</div>
       <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 14 }}>
         <div style={{ position: "relative", width: 72, height: 72, flexShrink: 0 }}>
           <svg width="72" height="72" style={{ transform: "rotate(-90deg)" }}>
-            <circle cx="36" cy="36" r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="6" />
+            <circle cx="36" cy="36" r={r} fill="none" stroke="var(--paper-2)" strokeWidth="6" />
             <circle cx="36" cy="36" r={r} fill="none" stroke={color} strokeWidth="6" strokeLinecap="round"
               strokeDasharray={`${animated ? (pct / 100) * circ : 0} ${circ}`}
-              style={{ transition: "stroke-dasharray 1s cubic-bezier(.4,0,.2,1)", filter: `drop-shadow(0 0 7px ${color}55)` }}
+              style={{ transition: "stroke-dasharray 1s cubic-bezier(.4,0,.2,1)" }}
             />
           </svg>
           <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column" }}>
-            <span style={{ fontSize: 17, fontWeight: 900, color, lineHeight: 1, letterSpacing: -0.5 }}>{pct}</span>
-            <span style={{ fontSize: 9, fontWeight: 700, color: "rgba(240,250,249,0.35)" }}>%</span>
+            <span style={{ fontSize: 17, fontWeight: 900, color, lineHeight: 1, letterSpacing: -0.5, fontFamily: "var(--mono)" }}>{pct}</span>
+            <span style={{ fontSize: 9, fontWeight: 700, color: "var(--ink-400)" }}>%</span>
           </div>
         </div>
         <div>
           <div style={{ fontSize: 15, fontWeight: 800, color, marginBottom: 3 }}>{label}</div>
-          <div style={{ fontSize: 12, color: "rgba(240,250,249,0.5)", lineHeight: 1.6 }}>{desc}</div>
+          <div style={{ fontSize: 12, color: "var(--ink-500)", lineHeight: 1.6 }}>Baserat på din profil</div>
         </div>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
         {breakdown.map(({ l, ok }) => (
           <div key={l} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ width: 18, height: 18, borderRadius: 99, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: ok ? "rgba(74,222,128,0.12)" : "rgba(255,255,255,0.04)", border: `1px solid ${ok ? "rgba(74,222,128,0.25)" : "rgba(255,255,255,0.09)"}` }}>
+            <span style={{
+              width: 18, height: 18, borderRadius: 99, flexShrink: 0,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              background: ok ? "var(--success-tint)" : "var(--paper-2)",
+              border: `1px solid ${ok ? "var(--success)" : "var(--line-2)"}`,
+            }}>
               {ok
-                ? <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                : <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="rgba(240,250,249,0.2)" strokeWidth="3" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                ? <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                : <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="var(--ink-300)" strokeWidth="3" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               }
             </span>
-            <span style={{ fontSize: 12, color: ok ? "rgba(240,250,249,0.75)" : "rgba(240,250,249,0.3)", fontWeight: ok ? 600 : 400 }}>{l}</span>
+            <span style={{ fontSize: 12, color: ok ? "var(--ink-700)" : "var(--ink-400)", fontWeight: ok ? 600 : 400 }}>{l}</span>
           </div>
         ))}
       </div>
@@ -259,18 +279,17 @@ export default function JobDetail() {
 
   const matchPct = driverMatch?.pct ?? 0;
 
-  // Prefer new direct fields; fall back to legacy extraRequirements JSON for old jobs
   const parsedExtra = useMemo(() => {
     if (!job?.extraRequirements) return null;
     try {
       const parsed = JSON.parse(job.extraRequirements);
       if (parsed && (Array.isArray(parsed.tasks) || Array.isArray(parsed.offers))) return parsed;
-    } catch { /* invalid JSON, fall through */ }
+    } catch { /* invalid JSON */ }
     return null;
   }, [job?.extraRequirements]);
 
-  const jobAbout = job?.aboutJob || job?.description || "";
-  const jobTasks = (job?.tasks?.length > 0 ? job.tasks : null) ?? parsedExtra?.tasks ?? [];
+  const jobAbout  = job?.aboutJob || job?.description || "";
+  const jobTasks  = (job?.tasks?.length > 0 ? job.tasks : null) ?? parsedExtra?.tasks ?? [];
   const jobOffers = (job?.offers?.length > 0 ? job.offers : null) ?? parsedExtra?.offers ?? [];
 
   const [apiDrivers, setApiDrivers] = useState([]);
@@ -329,12 +348,10 @@ export default function JobDetail() {
   const jobIsOld = job ? isJobOlderThan30Days(job) : false;
 
   // ── Loading / not found ────────────────────────────────────────────────────
-  const darkPage = { background: "#060f0f", minHeight: "100vh", marginTop: "-64px", paddingTop: 80 };
-
   if (jobLoading) {
     return (
-      <main style={darkPage}>
-        <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px 80px" }}>
+      <main style={{ background: "var(--paper)", minHeight: "100vh" }}>
+        <div style={{ maxWidth: 760, margin: "0 auto", padding: "60px 24px 80px" }}>
           <LoadingBlock message="Hämtar jobb..." />
         </div>
       </main>
@@ -342,15 +359,15 @@ export default function JobDetail() {
   }
   if (!job) {
     return (
-      <main style={darkPage}>
+      <main style={{ background: "var(--paper)", minHeight: "100vh" }}>
         <div style={{ maxWidth: 560, margin: "0 auto", padding: "80px 24px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, color: "rgba(240,250,249,0.3)", textTransform: "uppercase", marginBottom: 24 }}>Annons hittades ej · 404</div>
-          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="rgba(245,166,35,0.4)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 20 }}><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-          <h1 style={{ fontSize: 22, fontWeight: 900, marginBottom: 10, letterSpacing: -0.5, color: "#f0faf9" }}>Annonsen finns inte längre</h1>
-          <p style={{ fontSize: 14, color: "rgba(240,250,249,0.5)", lineHeight: 1.6, marginBottom: 28, maxWidth: 340 }}>Den här annonsen är antingen avpublicerad, tillsatt eller har upphört. Vi har hundratals CE-jobb i Sverige just nu.</p>
+          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, color: "var(--ink-400)", textTransform: "uppercase", marginBottom: 24 }}>Annons hittades ej · 404</div>
+          <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="var(--line-2)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 20 }}><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+          <h1 style={{ fontSize: 22, fontWeight: 900, marginBottom: 10, letterSpacing: -0.5, color: "var(--ink-900)" }}>Annonsen finns inte längre</h1>
+          <p style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.6, marginBottom: 28, maxWidth: 340 }}>Den här annonsen är antingen avpublicerad, tillsatt eller har upphört. Vi har hundratals CE-jobb i Sverige just nu.</p>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
-            <Link to="/jobb" style={{ padding: "12px 22px", borderRadius: 11, background: "#F5A623", color: "#000", fontWeight: 800, fontSize: 13, textDecoration: "none" }}>Visa lediga jobb</Link>
-            <Link to="/jobb" onClick={() => window.history.back()} style={{ padding: "12px 22px", borderRadius: 11, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.09)", color: "rgba(240,250,249,0.7)", fontWeight: 600, fontSize: 13, textDecoration: "none" }}>Tillbaka</Link>
+            <Link to="/jobb" style={{ padding: "12px 22px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: 13, textDecoration: "none" }}>Visa lediga jobb</Link>
+            <button onClick={() => window.history.back()} style={{ padding: "12px 22px", borderRadius: "var(--r-md)", background: "var(--card)", border: "1px solid var(--line-2)", color: "var(--ink-700)", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>Tillbaka</button>
           </div>
         </div>
       </main>
@@ -369,7 +386,6 @@ export default function JobDetail() {
     jobAbout ? `– ${jobAbout.replace(/\n+/g, " ")}` : null,
   ].filter(Boolean).join(" ").slice(0, 160);
 
-  // Build a rich plain-text description for Google for Jobs — includes all sections
   const ldDescription = (() => {
     const parts = [];
     if (jobAbout) parts.push(jobAbout);
@@ -380,7 +396,6 @@ export default function JobDetail() {
     return parts.join("\n\n") || metaDescription;
   })();
 
-  // Parse text salary like "290 kr/tim" or "32 000 kr/mån" into structured baseSalary
   const ldSalary = (() => {
     if (job.salaryMin) {
       return { "@type": "MonetaryAmount", currency: "SEK", value: { "@type": "QuantitativeValue", minValue: job.salaryMin, ...(job.salaryMax ? { maxValue: job.salaryMax } : {}), unitText: "MONTH" } };
@@ -388,14 +403,8 @@ export default function JobDetail() {
     if (job.salary) {
       const hourMatch = job.salary.match(/(\d[\d\s]*)\s*kr\s*\/\s*tim/i);
       const monthMatch = job.salary.match(/(\d[\d\s]*)\s*kr\s*\/\s*m[åa]n/i);
-      if (hourMatch) {
-        const val = parseInt(hourMatch[1].replace(/\s/g, ""), 10);
-        return { "@type": "MonetaryAmount", currency: "SEK", value: { "@type": "QuantitativeValue", value: val, unitText: "HOUR" } };
-      }
-      if (monthMatch) {
-        const val = parseInt(monthMatch[1].replace(/\s/g, ""), 10);
-        return { "@type": "MonetaryAmount", currency: "SEK", value: { "@type": "QuantitativeValue", value: val, unitText: "MONTH" } };
-      }
+      if (hourMatch) { const val = parseInt(hourMatch[1].replace(/\s/g, ""), 10); return { "@type": "MonetaryAmount", currency: "SEK", value: { "@type": "QuantitativeValue", value: val, unitText: "HOUR" } }; }
+      if (monthMatch) { const val = parseInt(monthMatch[1].replace(/\s/g, ""), 10); return { "@type": "MonetaryAmount", currency: "SEK", value: { "@type": "QuantitativeValue", value: val, unitText: "MONTH" } }; }
     }
     return null;
   })();
@@ -430,175 +439,221 @@ export default function JobDetail() {
     ...(ldSalary ? { baseSalary: ldSalary } : {}),
   };
 
-  // ── Design tokens ──────────────────────────────────────────────────────────
-  const D = {
-    tag:      { display: "inline-flex", alignItems: "center", padding: "4px 10px", borderRadius: 20, fontSize: 12, fontWeight: 600 },
-    tagGreen: { background: "rgba(74,222,128,0.1)",  color: "#4ade80", border: "1px solid rgba(74,222,128,0.2)" },
-    tagAmber: { background: "rgba(245,166,35,0.1)",  color: "#F5A623", border: "1px solid rgba(245,166,35,0.2)" },
-    tagMuted: { background: "rgba(255,255,255,0.06)",color: "rgba(240,250,249,0.6)", border: "1px solid rgba(255,255,255,0.1)" },
-    tagTeal:  { background: "rgba(31,95,92,0.25)",   color: "#6ee7e7", border: "1px solid rgba(31,95,92,0.4)" },
-    section:  { borderTop: "1px solid rgba(255,255,255,0.07)", marginTop: 32, paddingTop: 32 },
-    body:     { fontSize: 15, color: "rgba(240,250,249,0.65)", lineHeight: 1.7 },
-    h2:       { fontSize: 16, fontWeight: 700, color: "#f0faf9", margin: "0 0 12px" },
-    label:    { fontSize: 11, fontWeight: 700, color: "rgba(245,166,35,0.8)", letterSpacing: "1.2px", textTransform: "uppercase", marginBottom: 8 },
+  // ── Pill helper ─────────────────────────────────────────────────────────────
+  const pillStyles = {
+    primary: { background: "var(--green)",        color: "#fff" },
+    soft:    { background: "var(--green-tint)",   color: "var(--green-text)" },
+    info:    { background: "var(--info-tint)",    color: "var(--info)" },
+    neutral: { background: "var(--paper-2)",      color: "var(--ink-700)" },
+    success: { background: "var(--success-tint)", color: "var(--success)" },
+    amber:   { background: "var(--amber-tint)",   color: "var(--amber-text)" },
+    danger:  { background: "var(--danger-tint)",  color: "var(--danger)" },
   };
+  function Pill({ tone = "neutral", children }) {
+    const s = pillStyles[tone] || pillStyles.neutral;
+    return (
+      <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 999, fontSize: 11.5, fontWeight: 600, whiteSpace: "nowrap", ...s }}>
+        {children}
+      </span>
+    );
+  }
 
-  // ── Company initials ───────────────────────────────────────────────────────
+  // ── Company initials ──────────────────────────────────────────────────────
   const companyInitials = job.company
     ? job.company.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()
     : "?";
 
-  // ── Salary display helper ──────────────────────────────────────────────────
+  // ── Salary display ────────────────────────────────────────────────────────
   function SalaryDisplay({ sidebar }) {
     if (!user) {
       return (
-        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", background: "rgba(255,255,255,0.03)", borderRadius: 11, border: "1px solid rgba(255,255,255,0.08)" }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(240,250,249,0.25)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          <span style={{ fontSize: 13, color: "rgba(240,250,249,0.4)" }}>Logga in för att se lönen</span>
-          <Link to="/login" state={{ from: `/jobb/${id}` }} style={{ marginLeft: "auto", fontSize: 12, fontWeight: 700, color: "#4ade80", textDecoration: "none" }}>Logga in →</Link>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", background: "var(--paper-2)", borderRadius: "var(--r-md)", border: "1px solid var(--line-2)" }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ink-300)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <span style={{ fontSize: 13, color: "var(--ink-500)" }}>Logga in för att se lönen</span>
+          <Link to="/login" state={{ from: `/jobb/${id}` }} style={{ marginLeft: "auto", fontSize: 12, fontWeight: 700, color: "var(--green)", textDecoration: "none" }}>Logga in →</Link>
         </div>
       );
     }
     if (job.salaryMin) {
       return (
         <div>
-          <div style={{ fontSize: sidebar ? 20 : 22, fontWeight: 900, color: "#F5A623", letterSpacing: -0.6, lineHeight: 1.2 }}>
+          <div style={{ fontSize: sidebar ? 20 : 22, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -0.6, lineHeight: 1.2, fontFamily: "var(--mono)" }}>
             {job.salaryMin.toLocaleString("sv-SE")}
             {job.salaryMax ? ` – ${job.salaryMax.toLocaleString("sv-SE")}` : "+"} kr/mån
           </div>
-          {job.salary && <div style={{ fontSize: 13, color: "rgba(240,250,249,0.45)", marginTop: 4 }}>{job.salary}</div>}
+          {job.salary && <div style={{ fontSize: 13, color: "var(--ink-500)", marginTop: 4 }}>{job.salary}</div>}
         </div>
       );
     }
-    if (job.salary) return <div style={{ fontSize: 16, fontWeight: 700, color: "#f0faf9", lineHeight: 1.4 }}>{job.salary}</div>;
+    if (job.salary) return <div style={{ fontSize: 16, fontWeight: 700, color: "var(--ink-900)", lineHeight: 1.4 }}>{job.salary}</div>;
     return (
-      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 14px", background: "rgba(245,166,35,0.05)", borderRadius: 11, border: "1px solid rgba(245,166,35,0.12)" }}>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(245,166,35,0.5)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-        <span style={{ fontSize: 13, color: "rgba(240,250,249,0.45)", fontStyle: "italic" }}>Lön ej angiven — fråga vid kontakt</span>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 14px", background: "var(--amber-tint)", borderRadius: "var(--r-md)", border: "1px solid var(--amber-tint-2)" }}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        <span style={{ fontSize: 13, color: "var(--amber-text)", fontStyle: "italic" }}>Lön ej angiven — fråga vid kontakt</span>
       </div>
     );
   }
 
-  // Fact row icon SVGs
-  const briefcaseIcon = <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>;
-  const clockIcon     = <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
-  const calendarIcon  = <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>;
-  const locationIcon  = <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>;
-  const truckIcon     = <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>;
-  const moneyIcon     = <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>;
+  // Fact row icons
+  const briefcaseIcon = <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>;
+  const clockIcon     = <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
+  const calendarIcon  = <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>;
+  const locationIcon  = <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>;
+  const truckIcon     = <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>;
+  const moneyIcon     = <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>;
+
+  const empLabel = job.employment === "fast" ? "Fast anställning" : job.employment === "vikariat" ? "Vikariat" : "Timanställning";
+  const scheduleLabel = job.schedule ? (scheduleTypes.find((s) => s.value === job.schedule)?.label ?? job.schedule) : null;
 
   const salaryFactVal = !user
     ? "Logga in för att se"
     : job.salaryMin
       ? `${job.salaryMin.toLocaleString("sv-SE")}${job.salaryMax ? `–${job.salaryMax.toLocaleString("sv-SE")}` : "+"} kr/mån`
-      : job.salary ? "Enl. lönebesked" : "Ej angiven — fråga vid kontakt";
-
-  const scheduleLabel = job.schedule
-    ? (scheduleTypes.find((s) => s.value === job.schedule)?.label ?? job.schedule)
-    : null;
-
-  const empLabel = job.employment === "fast" ? "Fast anställning" : job.employment === "vikariat" ? "Vikariat" : "Timanställning";
+      : job.salary ? "Enl. lönebesked" : "Ej angiven";
 
   // ── Mobile render ──────────────────────────────────────────────────────────
   if (isMobile) {
-    const matchPct = driverMatch != null ? driverMatch.pct : null;
-    const matchColor = matchPct >= 85 ? "#4ade80" : matchPct >= 70 ? "#F5A623" : matchPct >= 55 ? "#60a5fa" : "rgba(255,255,255,0.4)";
-    const matchLabel = matchPct >= 85 ? "Stark match" : matchPct >= 70 ? "God match" : matchPct != null ? "Delvis match" : null;
-    const reqMet = (profile ? (job.license || []).filter((l) => profile.licenses?.includes(l)).length : 0) + (profile ? (job.certificates || []).filter((c) => profile.certificates?.includes(c)).length : 0);
+    const mPct = driverMatch != null ? driverMatch.pct : null;
+    const mColor =
+      mPct >= 90 ? "var(--success)" :
+      mPct >= 80 ? "var(--green)"   :
+      mPct >= 70 ? "var(--amber)"   : "var(--ink-400)";
+    const mLabel =
+      mPct >= 90 ? "Stark match" :
+      mPct >= 80 ? "Bra match"   :
+      mPct >= 70 ? "OK match"    :
+      mPct != null ? "Delvis match" : null;
+    const mBg =
+      mPct >= 90 ? "var(--success-tint)" :
+      mPct >= 80 ? "var(--green-tint)"   :
+      mPct >= 70 ? "var(--amber-tint)"   : "var(--paper-2)";
+    const reqMet   = (profile ? (job.license || []).filter((l) => profile.licenses?.includes(l)).length : 0) + (profile ? (job.certificates || []).filter((c) => profile.certificates?.includes(c)).length : 0);
     const reqTotal = (job.license || []).length + (job.certificates || []).length;
     const r = 22; const circ = 2 * Math.PI * r;
 
     return (
-      <div style={{ background: "#060f0f", minHeight: "100vh", color: "#fff", display: "flex", flexDirection: "column" }}>
+      <div style={{ background: "var(--paper)", minHeight: "100vh", color: "var(--ink-900)", display: "flex", flexDirection: "column" }}>
         <PageMeta title={`${job.title} – ${job.company}`} description={metaDescription} canonical={`/jobb/${job.id}`} />
 
-        {/* Scroll area */}
         <div onScroll={(e) => setMobileScrolled(e.target.scrollTop > 80)} style={{ flex: 1, overflowY: "auto", paddingBottom: 100 }}>
 
           {/* Top bar */}
-          <div style={{ position: "sticky", top: 0, zIndex: 20, padding: "6px 16px 10px", display: "flex", alignItems: "center", justifyContent: "space-between", background: mobileScrolled ? "rgba(6,15,15,0.92)" : "transparent", backdropFilter: mobileScrolled ? "blur(14px)" : "none", WebkitBackdropFilter: mobileScrolled ? "blur(14px)" : "none", borderBottom: mobileScrolled ? "1px solid rgba(255,255,255,0.06)" : "1px solid transparent", transition: "all .2s" }}>
-            <Link to="/jobb" style={{ width: 42, height: 42, borderRadius: 99, background: "rgba(255,255,255,0.07)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", flexShrink: 0 }}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          <div style={{
+            position: "sticky", top: 0, zIndex: 20, padding: "4px 12px 10px",
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            background: mobileScrolled ? "rgba(245,242,236,0.94)" : "var(--paper)",
+            backdropFilter: mobileScrolled ? "blur(14px)" : "none",
+            WebkitBackdropFilter: mobileScrolled ? "blur(14px)" : "none",
+            borderBottom: mobileScrolled ? "1px solid var(--line)" : "1px solid transparent",
+            transition: "all .2s",
+          }}>
+            <Link to="/jobb" style={{ width: 38, height: 38, borderRadius: 999, background: "var(--card)", border: "1px solid var(--line)", boxShadow: "var(--sh-sm)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-900)", flexShrink: 0 }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
             </Link>
-            {mobileScrolled && <div style={{ flex: 1, padding: "0 12px", fontSize: 13, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{job.title}</div>}
+            {mobileScrolled && (
+              <div style={{ flex: 1, padding: "0 12px", fontSize: 13, fontWeight: 700, color: "var(--ink-900)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{job.title}</div>
+            )}
             <div style={{ display: "flex", gap: 8 }}>
-              <button onClick={() => { const saved2 = !isSaved; setIsSaved(saved2); if (saved2) saveJob(job.id).catch(() => setIsSaved(false)); else unsaveJob(job.id).catch(() => setIsSaved(true)); }} style={{ width: 42, height: 42, borderRadius: 99, background: "rgba(255,255,255,0.07)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: isSaved ? "#F5A623" : "#fff" }}>
-                {isSaved ? <svg viewBox="0 0 24 24" fill="currentColor" width="17" height="17"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>
-                         : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="17" height="17"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>}
+              <button
+                onClick={() => { const s2 = !isSaved; setIsSaved(s2); if (s2) saveJob(job.id).catch(() => setIsSaved(false)); else unsaveJob(job.id).catch(() => setIsSaved(true)); }}
+                style={{ width: 38, height: 38, borderRadius: 999, background: isSaved ? "var(--amber-tint)" : "var(--card)", border: `1px solid ${isSaved ? "rgba(199,122,14,0.3)" : "var(--line)"}`, boxShadow: "var(--sh-sm)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: isSaved ? "var(--amber-deep)" : "var(--ink-500)" }}
+              >
+                <svg viewBox="0 0 24 24" fill={isSaved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" width="15" height="15"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
               </button>
             </div>
           </div>
 
           {/* Hero */}
-          <div style={{ padding: "6px 20px 0" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-              <div style={{ width: 52, height: 52, borderRadius: 13, background: avatarColor(job.company), display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 16, color: "#F5A623", flexShrink: 0 }}>{companyInitials}</div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 14, fontWeight: 700, color: "rgba(255,255,255,0.9)", marginBottom: 1 }}>{job.company}</div>
-                <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.5)", display: "flex", alignItems: "center", gap: 4 }}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="10" height="10"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                  {job.location || job.region}
+          <div style={{ padding: "6px 18px 0" }}>
+            <div style={{ display: "flex", gap: 14, alignItems: "flex-start", marginBottom: 14 }}>
+              <div style={{ width: 56, height: 56, borderRadius: 14, background: "var(--paper-2)", border: "1px solid var(--line-2)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 17, color: "var(--ink-700)", flexShrink: 0 }}>
+                {companyInitials}
+              </div>
+              <div style={{ flex: 1 }}>
+                <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: -0.6, lineHeight: 1.2, marginBottom: 6, color: "var(--ink-900)" }}>{job.title}</h1>
+                <div style={{ fontSize: 13.5, color: "var(--ink-500)", display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" }}>
+                  <span style={{ fontWeight: 600, color: "var(--ink-700)" }}>{job.company}</span>
+                  {job.companyVerified && (
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 12 10 18 20 6"/></svg>
+                  )}
+                  {job.location && (
+                    <>
+                      <span style={{ color: "var(--ink-300)" }}>·</span>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 3 }}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="11" height="11"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        {job.location}
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
-            <h1 style={{ fontSize: 24, fontWeight: 800, letterSpacing: -0.8, lineHeight: 1.15, marginBottom: 14, margin: "0 0 14px" }}>{job.title}</h1>
-            {/* Tags */}
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
-              {(job.license || []).map((l) => <span key={l} style={{ padding: "5px 11px", borderRadius: 99, background: "rgba(31,95,92,0.3)", color: "#7dd3c8", fontSize: 11.5, fontWeight: 700 }}>{l}</span>)}
-              {job.employment && <span style={{ padding: "5px 11px", borderRadius: 99, background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.7)", fontSize: 11.5, fontWeight: 600 }}>{empLabel}</span>}
-              {job.jobType && <span style={{ padding: "5px 11px", borderRadius: 99, background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.7)", fontSize: 11.5, fontWeight: 600 }}>{job.jobType}</span>}
-            </div>
-            {/* Salary card */}
-            <div style={{ background: "#0a1414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 14, padding: "14px 16px", marginBottom: 10 }}>
-              <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: 1.2, textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginBottom: 4 }}>Lön</div>
-              <div style={{ fontSize: 16, fontWeight: 800 }}>{salaryFactVal}</div>
-            </div>
-            {/* Match card */}
-            {matchPct != null && (
-              <div style={{ background: "linear-gradient(135deg, rgba(74,222,128,0.06), rgba(74,222,128,0.02))", border: "1px solid rgba(74,222,128,0.2)", borderRadius: 14, padding: 16, display: "flex", alignItems: "center", gap: 14, marginBottom: 4 }}>
-                {/* Match ring */}
-                <div style={{ width: 56, height: 56, position: "relative", flexShrink: 0 }}>
-                  <svg width="56" height="56" viewBox="0 0 56 56" style={{ transform: "rotate(-90deg)" }}>
-                    <circle cx="28" cy="28" r={r} stroke="rgba(255,255,255,0.08)" strokeWidth="4" fill="none"/>
-                    <circle cx="28" cy="28" r={r} stroke={matchColor} strokeWidth="4" fill="none" strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={circ - (matchPct/100)*circ}/>
-                  </svg>
-                  <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, color: matchColor }}>{matchPct}<span style={{ fontSize: 9 }}>%</span></div>
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13.5, fontWeight: 800, color: matchColor, marginBottom: 2 }}>{matchLabel}</div>
-                  <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.6)" }}>
+
+            {/* Match banner */}
+            {mPct != null && (
+              <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", background: mBg, borderRadius: 12, marginBottom: 14 }}>
+                <span style={{ fontSize: 20, fontWeight: 800, color: mColor, fontFamily: "var(--mono)" }}>{mPct}%</span>
+                <div>
+                  <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--ink-900)" }}>{mLabel}</div>
+                  <div style={{ fontSize: 12, color: "var(--ink-500)" }}>
                     {reqTotal > 0 ? `Du uppfyller ${reqMet} av ${reqTotal} krav` : "Baserat på din profil"}
                   </div>
                 </div>
               </div>
             )}
+
+            {/* Pills */}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
+              {(job.license || []).map((l) => <Pill key={l} tone="primary">{l}</Pill>)}
+              <Pill tone="soft">{empLabel}</Pill>
+              {job.kollektivavtal === true && <Pill tone="info">Kollektivavtal</Pill>}
+              {job.rolling && <Pill tone="amber">Rekrytering pågår</Pill>}
+            </div>
+
+            {/* Facts grid */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, overflow: "hidden", marginBottom: 14 }}>
+              {[
+                ["Ort",       job.location || job.region],
+                ["Tillträde", job.start    || "—"],
+                ["Anst.",     empLabel],
+                ["Lön",       job.salaryMin ? `${job.salaryMin.toLocaleString("sv-SE")}+ kr` : (job.salary || "—")],
+              ].map(([l, v], i) => (
+                <div key={l} style={{ padding: "11px 13px", borderRight: i % 2 === 0 ? "1px solid var(--line)" : "none", borderBottom: i < 2 ? "1px solid var(--line)" : "none" }}>
+                  <div style={{ fontSize: 11, color: "var(--ink-500)", marginBottom: 3 }}>{l}</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: "var(--ink-900)" }}>{v}</div>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Sticky tabs */}
-          <div style={{ position: "sticky", top: 56, zIndex: 10, background: "rgba(6,15,15,0.96)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", padding: "4px 20px 0", display: "flex", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+          {/* Tabs */}
+          <div style={{ position: "sticky", top: 52, zIndex: 10, background: "var(--card)", borderBottom: "1px solid var(--line)", padding: "0 18px", display: "flex" }}>
             {[{ v: "about", l: "Om jobbet" }, { v: "req", l: "Krav" }, { v: "company", l: "Företaget" }].map((t) => {
               const on = mobileTab === t.v;
-              return <button key={t.v} onClick={() => setMobileTab(t.v)} style={{ padding: "14px 0", marginRight: 24, background: "transparent", border: "none", color: on ? "#F5A623" : "rgba(255,255,255,0.55)", fontSize: 13.5, fontWeight: on ? 800 : 600, cursor: "pointer", borderBottom: on ? "2px solid #F5A623" : "2px solid transparent", marginBottom: -1, fontFamily: "inherit", flexShrink: 0 }}>{t.l}</button>;
+              return (
+                <button key={t.v} onClick={() => setMobileTab(t.v)} style={{ padding: "14px 0", marginRight: 22, background: "transparent", border: "none", color: on ? "var(--green)" : "var(--ink-500)", fontSize: 13.5, fontWeight: on ? 800 : 600, cursor: "pointer", borderBottom: on ? "2px solid var(--green)" : "2px solid transparent", marginBottom: -1, fontFamily: "inherit", flexShrink: 0 }}>
+                  {t.l}
+                </button>
+              );
             })}
           </div>
 
           {/* Tab content */}
-          <div style={{ padding: "20px 20px 0" }}>
+          <div style={{ padding: "20px 18px 0" }}>
             {mobileTab === "about" && (
               <>
-                {job.description && <p style={{ fontSize: 14, lineHeight: 1.65, color: "rgba(255,255,255,0.8)", marginBottom: 24 }}>{job.description}</p>}
-                {(job.benefits || []).length > 0 && (
+                {jobAbout && <p style={{ fontSize: 14.5, lineHeight: 1.65, color: "var(--ink-700)", marginBottom: 24, whiteSpace: "pre-line" }}>{jobAbout}</p>}
+                {jobTasks.length > 0 && (
                   <>
-                    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginBottom: 12 }}>Vad vi erbjuder</div>
-                    {job.benefits.map((b, i) => (
-                      <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 10, fontSize: 14, color: "rgba(255,255,255,0.85)" }}>
-                        <div style={{ width: 18, height: 18, borderRadius: 99, background: "rgba(74,222,128,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
-                          <svg viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" width="10" height="10"><polyline points="20 6 9 17 4 12"/></svg>
-                        </div>
-                        <span style={{ lineHeight: 1.45 }}>{b}</span>
-                      </div>
-                    ))}
+                    <h2 style={{ fontSize: 16, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.3, marginBottom: 12 }}>Arbetsuppgifter</h2>
+                    <BulletList items={jobTasks} />
                   </>
+                )}
+                {jobOffers.length > 0 && (
+                  <div style={{ marginTop: 22 }}>
+                    <h2 style={{ fontSize: 16, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.3, marginBottom: 12 }}>Vi erbjuder</h2>
+                    <BulletList items={jobOffers} accent="success" />
+                  </div>
                 )}
               </>
             )}
@@ -606,76 +661,95 @@ export default function JobDetail() {
               <>
                 {(job.requirements || []).length > 0 && (
                   <>
-                    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginBottom: 12 }}>Krav på dig</div>
-                    {job.requirements.map((req, i) => (
-                      <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 10, fontSize: 14, color: "rgba(255,255,255,0.85)" }}>
-                        <div style={{ width: 18, height: 18, borderRadius: 99, background: "rgba(74,222,128,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
-                          <svg viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" width="10" height="10"><polyline points="20 6 9 17 4 12"/></svg>
-                        </div>
-                        <span style={{ lineHeight: 1.45 }}>{req}</span>
-                      </div>
-                    ))}
+                    <h2 style={{ fontSize: 16, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.3, marginBottom: 12 }}>Krav på dig</h2>
+                    <BulletList items={job.requirements} />
                   </>
                 )}
                 {profile && (
-                  <>
-                    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "rgba(255,255,255,0.45)", margin: "20px 0 12px" }}>Din matchning</div>
+                  <div style={{ marginTop: 22 }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 12 }}>Din matchning</div>
                     {[...(job.license || []).map((l) => ({ l: `${l}-körkort`, on: profile.licenses?.includes(l) })),
-                      ...(job.certificates || []).map((c) => ({ l: c, on: profile.certificates?.includes(c) }))
+                      ...(job.certificates || []).map((c) => ({ l: getCertificateLabel(c), on: profile.certificates?.includes(c) }))
                     ].map((item, i) => (
                       <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8, fontSize: 13.5 }}>
-                        <div style={{ width: 20, height: 20, borderRadius: 99, background: item.on ? "rgba(74,222,128,0.15)" : "rgba(248,113,113,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                          <svg viewBox="0 0 24 24" fill="none" stroke={item.on ? "#4ade80" : "rgba(248,113,113,0.7)"} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" width="11" height="11"><polyline points="20 6 9 17 4 12"/></svg>
+                        <div style={{ width: 20, height: 20, borderRadius: 99, background: item.on ? "var(--success-tint)" : "var(--danger-tint)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <svg viewBox="0 0 24 24" fill="none" stroke={item.on ? "var(--success)" : "var(--danger)"} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" width="11" height="11"><polyline points="20 6 9 17 4 12"/></svg>
                         </div>
-                        <span style={{ color: item.on ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.4)" }}>{item.l}</span>
+                        <span style={{ color: item.on ? "var(--ink-900)" : "var(--ink-400)", fontWeight: item.on ? 600 : 400 }}>{item.l}</span>
                       </div>
                     ))}
-                  </>
+                  </div>
                 )}
               </>
             )}
             {mobileTab === "company" && (
               <>
-                {job.companyDescription && <p style={{ fontSize: 14, lineHeight: 1.65, color: "rgba(255,255,255,0.8)", marginBottom: 20 }}>{job.companyDescription}</p>}
-                <Link to={`/foretag/${job.userId || job.companyId || ""}`} style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "#F5A623", fontSize: 13, fontWeight: 700, textDecoration: "none", marginBottom: 16 }}>
-                  Se hela företagsprofilen
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="12" height="12"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                </Link>
+                {job.companyDescriptionShort
+                  ? <p style={{ fontSize: 14.5, lineHeight: 1.65, color: "var(--ink-700)", marginBottom: 18 }}>{job.companyDescriptionShort}</p>
+                  : <p style={{ fontSize: 14, color: "var(--ink-400)", fontStyle: "italic", marginBottom: 18 }}>Ingen företagsbeskrivning tillagd ännu.</p>
+                }
+                {job.userId && (
+                  <Link to={`/foretag/${job.userId}`} style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "var(--green)", fontSize: 13.5, fontWeight: 700, textDecoration: "none" }}>
+                    Se hela företagsprofilen
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="13" height="13"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                  </Link>
+                )}
               </>
             )}
           </div>
         </div>
 
-        {/* Sticky bottom CTA */}
-        <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, padding: "12px 20px max(env(safe-area-inset-bottom), 24px)", background: "rgba(6,15,15,0.95)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", gap: 10 }}>
+        {/* Sticky bottom apply bar */}
+        <div style={{ background: "var(--card)", borderTop: "1px solid var(--line)", padding: "12px 18px max(env(safe-area-inset-bottom, 16px), 16px)", display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ flex: 1 }}>
+            {job.salaryMin ? (
+              <>
+                <div style={{ fontSize: 15, fontWeight: 800, color: "var(--ink-900)", fontFamily: "var(--mono)", lineHeight: 1 }}>
+                  {job.salaryMin.toLocaleString("sv-SE")}–{(job.salaryMax || job.salaryMin).toLocaleString("sv-SE")}
+                </div>
+                <div style={{ fontSize: 11.5, color: "var(--ink-500)", marginTop: 2 }}>kr/mån</div>
+              </>
+            ) : (
+              <div style={{ fontSize: 13, color: "var(--ink-500)" }}>{empLabel}</div>
+            )}
+          </div>
           <button
-            onClick={() => { const saved2 = !isSaved; setIsSaved(saved2); if (saved2) saveJob(job.id).catch(() => setIsSaved(false)); else unsaveJob(job.id).catch(() => setIsSaved(true)); }}
-            style={{ width: 52, height: 52, borderRadius: 14, background: "rgba(255,255,255,0.04)", border: `1px solid ${isSaved ? "rgba(245,166,35,0.4)" : "rgba(255,255,255,0.07)"}`, color: isSaved ? "#F5A623" : "rgba(255,255,255,0.7)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            {isSaved ? <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>
-                     : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>}
-          </button>
-          <Link
-            to={`/jobb/${job.id}/ansok`}
-            onClick={() => track("apply_initiated", { jobId: job.id, jobTitle: job.title, source: "sidebar" })}
-            style={{ flex: 1, padding: 15, borderRadius: 14, background: "linear-gradient(135deg,#F5A623,#d97706)", color: "#000", fontSize: 15, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, textDecoration: "none", boxShadow: "0 4px 18px rgba(245,166,35,0.3)" }}
+            onClick={() => { const s2 = !isSaved; setIsSaved(s2); if (s2) saveJob(job.id).catch(() => setIsSaved(false)); else unsaveJob(job.id).catch(() => setIsSaved(true)); }}
+            style={{ width: 48, height: 48, borderRadius: 12, background: isSaved ? "var(--amber-tint)" : "var(--paper-2)", border: `1px solid ${isSaved ? "rgba(199,122,14,0.3)" : "var(--line-2)"}`, color: isSaved ? "var(--amber-deep)" : "var(--ink-500)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
           >
-            Ansök nu
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-          </Link>
+            <svg viewBox="0 0 24 24" fill={isSaved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" width="17" height="17"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+          </button>
+          {isDriver ? (
+            job.externalApplyUrl ? (
+              <a href={job.externalApplyUrl} target="_blank" rel="noopener noreferrer"
+                onClick={() => track("apply_initiated", { jobId: job.id, jobTitle: job.title, source: "sticky_external" })}
+                style={{ flex: 1.4, padding: "14px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: 15, fontWeight: 800, textDecoration: "none", textAlign: "center", boxShadow: "0 4px 14px rgba(31,95,92,0.3)" }}
+              >Ansök ↗</a>
+            ) : (
+              <Link to={`/jobb/${id}/ansok`}
+                onClick={() => track("apply_initiated", { jobId: job.id, jobTitle: job.title, source: "sticky" })}
+                style={{ flex: 1.4, padding: "14px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: 15, fontWeight: 800, textDecoration: "none", textAlign: "center", boxShadow: "0 4px 14px rgba(31,95,92,0.3)" }}
+              >Ansök nu →</Link>
+            )
+          ) : (
+            <Link to="/login" state={{ from: `/jobb/${id}`, requiredRole: "driver" }}
+              style={{ flex: 1.4, padding: "14px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: 15, fontWeight: 800, textDecoration: "none", textAlign: "center" }}
+            >Logga in för att ansöka</Link>
+          )}
         </div>
       </div>
     );
   }
 
-  // ── Render ─────────────────────────────────────────────────────────────────
+  // ── Desktop render ─────────────────────────────────────────────────────────
   return (
-    <main style={{ background: "#060f0f", minHeight: "100vh", marginTop: "-64px", paddingTop: 80, overflowX: "clip" }}>
+    <main style={{ background: "var(--paper)", minHeight: "100vh", overflowX: "clip" }}>
       <PageMeta title={`${job.title} – ${job.company}`} description={metaDescription} canonical={`/jobb/${job.id}`} jsonLd={jobLd} />
 
-      <div style={{ maxWidth: 1280, margin: "0 auto", padding: isMobile ? "0 20px" : "0 40px" }}>
-        <Breadcrumbs items={breadcrumbs} className="mb-4" dark />
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 40px" }}>
+        <Breadcrumbs items={breadcrumbs} className="mb-4" />
         <div style={{ marginBottom: 14 }}>
-          <Link to={isCompany ? "/foretag/annonser" : "/jobb"} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600, color: "rgba(240,250,249,0.45)", textDecoration: "none" }}>
+          <Link to={isCompany ? "/foretag/annonser" : "/jobb"} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600, color: "var(--ink-500)", textDecoration: "none" }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
             {isCompany ? "Tillbaka till Mina jobb" : "Tillbaka till jobb"}
           </Link>
@@ -683,37 +757,35 @@ export default function JobDetail() {
       </div>
 
       {/* Two-column grid */}
-      <div style={{ maxWidth: 1280, margin: "0 auto", padding: isMobile ? "0 20px 100px" : "0 40px 120px", display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 368px", gap: isMobile ? 16 : 36, alignItems: "start" }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 40px 120px", display: "grid", gridTemplateColumns: "1fr 368px", gap: 28, alignItems: "start" }}>
 
         {/* ── LEFT COLUMN ──────────────────────────────────────────────────── */}
-        <div style={{ order: isMobile ? 1 : 0, minWidth: 0 }}>
+        <div style={{ minWidth: 0 }}>
 
           {/* Header card */}
-          <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: isMobile ? 16 : 24, padding: isMobile ? "20px 16px" : "36px 40px", position: "relative", overflow: "hidden", marginBottom: 12 }}>
-            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(to right, #1F5F5C, rgba(31,95,92,0))" }} />
-
-            <div style={{ display: "flex", gap: isMobile ? 12 : 20, alignItems: "flex-start", marginBottom: isMobile ? 14 : 20 }}>
-              <div style={{ width: isMobile ? 44 : 58, height: isMobile ? 44 : 58, borderRadius: isMobile ? 12 : 15, background: avatarColor(job.company), display: "flex", alignItems: "center", justifyContent: "center", fontSize: isMobile ? 15 : 17, fontWeight: 800, color: "rgba(255,255,255,0.9)", flexShrink: 0, border: "1px solid rgba(255,255,255,0.1)", letterSpacing: -0.5 }}>
+          <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: "var(--r-lg)", padding: "32px 36px", marginBottom: 14, boxShadow: "var(--sh-sm)" }}>
+            <div style={{ display: "flex", gap: 20, alignItems: "flex-start", marginBottom: 20 }}>
+              <div style={{ width: 64, height: 64, borderRadius: 14, background: "var(--paper-2)", border: "1px solid var(--line-2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 19, fontWeight: 800, color: "var(--ink-700)", flexShrink: 0 }}>
                 {companyInitials}
               </div>
               <div style={{ flex: 1 }}>
-                <h1 style={{ fontSize: "clamp(22px,3vw,30px)", fontWeight: 900, letterSpacing: -0.8, color: "#f0faf9", lineHeight: 1.1, margin: "0 0 8px" }}>{job.title}</h1>
+                <h1 style={{ fontSize: "clamp(22px,3vw,30px)", fontWeight: 900, letterSpacing: -0.8, color: "var(--ink-900)", lineHeight: 1.1, margin: "0 0 8px" }}>{job.title}</h1>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                   {job.userId
-                    ? <Link to={`/foretag/${job.userId}`} style={{ fontSize: 15, fontWeight: 700, color: "rgba(240,250,249,0.85)", textDecoration: "none" }}>{job.company}</Link>
-                    : <span style={{ fontSize: 15, fontWeight: 700, color: "rgba(240,250,249,0.85)" }}>{job.company}</span>
+                    ? <Link to={`/foretag/${job.userId}`} style={{ fontSize: 15, fontWeight: 700, color: "var(--ink-900)", textDecoration: "none" }}>{job.company}</Link>
+                    : <span style={{ fontSize: 15, fontWeight: 700, color: "var(--ink-900)" }}>{job.company}</span>
                   }
-                  <span style={{ opacity: 0.3 }}>·</span>
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 14, color: "rgba(240,250,249,0.5)" }}>
+                  <span style={{ color: "var(--ink-300)" }}>·</span>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 14, color: "var(--ink-500)" }}>
                     <LocationIcon style={{ width: 13, height: 13, flexShrink: 0 }} />
                     {job.location}{job.region && job.location !== job.region ? `, ${job.region}` : ""}
                   </span>
                   {reviewSummary?.reviewCount > 0 && (
                     <>
-                      <span style={{ opacity: 0.3 }}>·</span>
+                      <span style={{ color: "var(--ink-300)" }}>·</span>
                       <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
-                        <StarFilledIcon style={{ width: 13, height: 13, color: "#F5A623" }} />
-                        <span style={{ fontSize: 13, color: "rgba(240,250,249,0.45)" }}>{reviewSummary.averageRating}/5 ({reviewSummary.reviewCount} omdömen)</span>
+                        <StarFilledIcon style={{ width: 13, height: 13, color: "var(--amber)" }} />
+                        <span style={{ fontSize: 13, color: "var(--ink-500)" }}>{reviewSummary.averageRating}/5 ({reviewSummary.reviewCount} omdömen)</span>
                       </span>
                     </>
                   )}
@@ -722,46 +794,54 @@ export default function JobDetail() {
             </div>
 
             {/* Trust badges */}
-            <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginBottom: 16 }}>
-              {job.companyVerified && <span style={{ ...D.tag, ...D.tagGreen }}><CheckIcon style={{ width: 12, height: 12, marginRight: 5 }} /> Verifierat företag</span>}
-              {job.kollektivavtal === true && <span style={{ ...D.tag, background: "rgba(99,179,237,0.08)", color: "#63b3ed", border: "1px solid rgba(99,179,237,0.18)" }}>Kollektivavtal</span>}
-              {job.rolling && <span style={{ ...D.tag, ...D.tagAmber }}>⚡ Rekrytering pågår</span>}
-              {!job.companyVerified && <span style={{ ...D.tag, ...D.tagMuted }}>Ej verifierat</span>}
+            <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginBottom: 14 }}>
+              {job.companyVerified && (
+                <Pill tone="success">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 12 10 18 20 6"/></svg>
+                  Verifierat företag
+                </Pill>
+              )}
+              {job.kollektivavtal === true && <Pill tone="info">Kollektivavtal</Pill>}
+              {job.rolling && <Pill tone="amber">⚡ Rekrytering pågår</Pill>}
+              {!job.companyVerified && <Pill tone="neutral">Ej verifierat</Pill>}
             </div>
 
             {/* Tags */}
-            <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginBottom: 16 }}>
-              {(job.license || []).map((lic) => <span key={lic} style={{ ...D.tag, ...D.tagTeal }}>{lic}</span>)}
-              {(job.certificates || []).map((c) => <span key={c} style={{ ...D.tag, ...D.tagMuted }}>{getCertificateLabel(c)}</span>)}
-              <span style={{ ...D.tag, ...D.tagAmber }}>{empLabel}</span>
-              {scheduleLabel && <span style={{ ...D.tag, ...D.tagMuted }}>{scheduleLabel}</span>}
-              {job.bransch && <span style={{ ...D.tag, ...D.tagMuted }}>{getBranschLabel(job.bransch)}</span>}
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 16 }}>
+              {(job.license || []).map((lic) => <Pill key={lic} tone="primary">{lic}</Pill>)}
+              {(job.certificates || []).map((c) => <Pill key={c} tone="neutral">{getCertificateLabel(c)}</Pill>)}
+              <Pill tone="soft">{empLabel}</Pill>
+              {scheduleLabel && <Pill tone="neutral">{scheduleLabel}</Pill>}
+              {job.bransch && <Pill tone="neutral">{getBranschLabel(job.bransch)}</Pill>}
             </div>
 
             {/* Dates */}
-            <div style={{ paddingTop: 14, borderTop: "1px solid rgba(255,255,255,0.05)", fontSize: 12, color: "rgba(240,250,249,0.28)", display: "flex", gap: 14, flexWrap: "wrap" }}>
+            <div style={{ paddingTop: 14, borderTop: "1px solid var(--line)", fontSize: 12, color: "var(--ink-400)", display: "flex", gap: 14, flexWrap: "wrap" }}>
               <span>Publicerad {formatDate(job.published)}</span>
-              {showUpdatedSeparately && <><span style={{ opacity: 0.4 }}>·</span><span>Uppdaterad {formatDate(job.updatedAt)}</span></>}
+              {showUpdatedSeparately && <><span style={{ color: "var(--ink-300)" }}>·</span><span>Uppdaterad {formatDate(job.updatedAt)}</span></>}
             </div>
           </div>
 
           {/* Om företaget */}
           {(job.companyDescriptionShort || job.companyWebsite || job.userId) && (
-            <div style={{ background: "rgba(31,95,92,0.06)", border: "1px solid rgba(31,95,92,0.18)", borderRadius: 18, padding: "20px 24px", marginBottom: 0 }}>
-              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "rgba(240,250,249,0.3)", marginBottom: 10 }}>Om {job.company}</div>
+            <div style={{ background: "var(--card-2)", border: "1px solid var(--line)", borderRadius: "var(--r-lg)", padding: "20px 24px", marginBottom: 14 }}>
+              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 10 }}>Om {job.company}</div>
               {job.companyDescriptionShort
-                ? <p style={{ fontSize: 14, color: "rgba(240,250,249,0.6)", lineHeight: 1.75, marginBottom: 12 }}>{job.companyDescriptionShort}</p>
-                : <p style={{ fontSize: 14, color: "rgba(240,250,249,0.25)", lineHeight: 1.75, fontStyle: "italic", marginBottom: 12 }}>Ingen företagsbeskrivning tillagd ännu.</p>
+                ? <p style={{ fontSize: 14.5, color: "var(--ink-700)", lineHeight: 1.75, marginBottom: 12 }}>{job.companyDescriptionShort}</p>
+                : <p style={{ fontSize: 14, color: "var(--ink-400)", lineHeight: 1.75, fontStyle: "italic", marginBottom: 12 }}>Ingen företagsbeskrivning tillagd ännu.</p>
               }
               <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
                 {job.companyWebsite && (
-                  <a href={job.companyWebsite.startsWith("http") ? job.companyWebsite : `https://${job.companyWebsite}`} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 13, fontWeight: 600, color: "#4ade80", textDecoration: "none" }}>
-                    Webbplats ↗
+                  <a href={job.companyWebsite.startsWith("http") ? job.companyWebsite : `https://${job.companyWebsite}`} target="_blank" rel="noopener noreferrer"
+                    style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 13, fontWeight: 700, color: "var(--green)", textDecoration: "none" }}>
+                    Webbplats
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                   </a>
                 )}
                 {job.userId && (
-                  <Link to={`/foretag/${job.userId}`} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 13, fontWeight: 600, color: "#4ade80", textDecoration: "none" }}>
-                    Hela företagsprofilen →
+                  <Link to={`/foretag/${job.userId}`} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 13, fontWeight: 700, color: "var(--green)", textDecoration: "none" }}>
+                    Hela företagsprofilen
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                   </Link>
                 )}
               </div>
@@ -770,17 +850,17 @@ export default function JobDetail() {
 
           {/* Old job warning */}
           {jobIsOld && (
-            <div style={{ marginTop: 20, padding: "14px 18px", borderRadius: 14, border: "1px solid rgba(245,166,35,0.25)", background: "rgba(245,166,35,0.07)" }} role="alert">
-              <p style={{ fontSize: 14, fontWeight: 600, color: "#F5A623", margin: 0 }}>Denna annons är äldre än 30 dagar</p>
-              <p style={{ fontSize: 14, color: "rgba(245,166,35,0.7)", margin: "4px 0 0" }}>Kontakta företaget för att höra om tjänsten fortfarande är ledig.</p>
+            <div style={{ padding: "14px 18px", borderRadius: "var(--r-md)", border: "1px solid var(--amber-tint-2)", background: "var(--amber-tint)", marginBottom: 14 }} role="alert">
+              <p style={{ fontSize: 14, fontWeight: 700, color: "var(--amber)", margin: 0 }}>Denna annons är äldre än 30 dagar</p>
+              <p style={{ fontSize: 13.5, color: "var(--amber-text)", margin: "4px 0 0" }}>Kontakta företaget för att höra om tjänsten fortfarande är ledig.</p>
             </div>
           )}
 
           {/* ── Content sections ── */}
           <SectionHeading>Om jobbet</SectionHeading>
           {jobAbout && jobAbout.trim().length >= 10
-            ? <p style={{ ...D.body, whiteSpace: "pre-line", overflowWrap: "break-word", margin: 0 }}>{jobAbout}</p>
-            : <p style={{ fontSize: 15, color: "rgba(240,250,249,0.3)", lineHeight: 1.8, fontStyle: "italic", margin: 0 }}>Mer information om tjänsten ges vid kontakt med företaget.</p>
+            ? <p style={{ fontSize: 15, color: "var(--ink-700)", lineHeight: 1.75, whiteSpace: "pre-line", overflowWrap: "break-word", margin: 0 }}>{jobAbout}</p>
+            : <p style={{ fontSize: 15, color: "var(--ink-400)", lineHeight: 1.8, fontStyle: "italic", margin: 0 }}>Mer information om tjänsten ges vid kontakt med företaget.</p>
           }
 
           <SectionHeading>Arbetsuppgifter</SectionHeading>
@@ -788,20 +868,20 @@ export default function JobDetail() {
 
           <SectionHeading>Vi söker dig som</SectionHeading>
           {job.requirements?.length > 0
-            ? <BulletList items={job.requirements} color="green" />
+            ? <BulletList items={job.requirements} />
             : job.experience
-              ? <BulletList items={[`Min. erfarenhet: ${job.experience === "0-1" ? "0–1 år" : job.experience === "1-2" ? "1–2 år" : job.experience === "2-5" ? "2–5 år" : job.experience === "5-10" ? "5–10 år" : "10+ år"}`]} color="green" />
-              : <p style={{ fontSize: 15, color: "rgba(240,250,249,0.3)", lineHeight: 1.8, fontStyle: "italic", margin: 0 }}>Krav specificeras vid kontakt.</p>
+              ? <BulletList items={[`Min. erfarenhet: ${job.experience === "0-1" ? "0–1 år" : job.experience === "1-2" ? "1–2 år" : job.experience === "2-5" ? "2–5 år" : job.experience === "5-10" ? "5–10 år" : "10+ år"}`]} />
+              : <p style={{ fontSize: 15, color: "var(--ink-400)", lineHeight: 1.8, fontStyle: "italic", margin: 0 }}>Krav specificeras vid kontakt.</p>
           }
 
           <SectionHeading>Vi erbjuder</SectionHeading>
-          <BulletList items={jobOffers} fallback="Mer om vad vi erbjuder berättar vi gärna vid en intervju." />
+          <BulletList items={jobOffers} accent="success" fallback="Mer om vad vi erbjuder berättar vi gärna vid en intervju." />
 
           <SectionHeading>Ersättning</SectionHeading>
           <SalaryDisplay />
 
           {/* Info grid */}
-          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr 1fr", gap: 12, marginTop: 28, padding: "20px 22px", background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 16 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginTop: 28, padding: "20px 22px", background: "var(--card)", border: "1px solid var(--line)", borderRadius: "var(--r-lg)", boxShadow: "var(--sh-sm)" }}>
             {[
               { icon: briefcaseIcon, label: "Anställningsform", val: empLabel },
               { icon: clockIcon,     label: "Arbetstider",      val: scheduleLabel },
@@ -809,10 +889,10 @@ export default function JobDetail() {
             ].map(({ icon, label, val }) => (
               <div key={label}>
                 <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 5 }}>
-                  <span style={{ color: "rgba(240,250,249,0.3)", display: "inline-flex" }}>{icon}</span>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(240,250,249,0.3)", textTransform: "uppercase", letterSpacing: 0.7 }}>{label}</span>
+                  <span style={{ color: "var(--ink-400)", display: "inline-flex" }}>{icon}</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-400)", textTransform: "uppercase", letterSpacing: 0.7 }}>{label}</span>
                 </div>
-                <div style={{ fontSize: 13, fontWeight: val ? 700 : 400, color: val ? "#f0faf9" : "rgba(240,250,249,0.25)", fontStyle: val ? "normal" : "italic" }}>
+                <div style={{ fontSize: 13, fontWeight: val ? 700 : 400, color: val ? "var(--ink-900)" : "var(--ink-300)", fontStyle: val ? "normal" : "italic" }}>
                   {val || "Ej angiven"}
                 </div>
               </div>
@@ -820,43 +900,72 @@ export default function JobDetail() {
           </div>
 
           {/* Contact note */}
-          <div style={{ margin: "20px 0 0", padding: "16px 20px", background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, display: "flex", gap: 12, alignItems: "flex-start" }}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(240,250,249,0.25)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            <div style={{ fontSize: 13, color: "rgba(240,250,249,0.45)", lineHeight: 1.7 }}>
-              <span style={{ fontWeight: 700, color: "rgba(240,250,249,0.65)", display: "block", marginBottom: 3 }}>Frågor om tjänsten?</span>
+          <div style={{ margin: "16px 0 0", padding: "16px 20px", background: "var(--card)", border: "1px solid var(--line)", borderRadius: "var(--r-md)", display: "flex", gap: 12, alignItems: "flex-start" }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--ink-300)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <div style={{ fontSize: 13, color: "var(--ink-500)", lineHeight: 1.7 }}>
+              <span style={{ fontWeight: 700, color: "var(--ink-700)", display: "block", marginBottom: 3 }}>Frågor om tjänsten?</span>
               Kontakta{" "}
               {job.contact
-                ? <a href={`mailto:${job.contact}`} style={{ color: "#4ade80", textDecoration: "none" }}>{job.contact}</a>
+                ? <a href={`mailto:${job.contact}`} style={{ color: "var(--green)", textDecoration: "none" }}>{job.contact}</a>
                 : "företaget direkt"
               }.{" "}
               Annons- och rekryteringsföretag undanbedes.
             </div>
           </div>
 
+          {/* Bottom apply rail */}
+          <div style={{ marginTop: 28, padding: "22px 26px", background: "var(--green-tint)", border: "1px solid var(--green-tint-2)", borderRadius: "var(--r-lg)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 18, flexWrap: "wrap" }}>
+            <div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: "var(--ink-900)", marginBottom: 4 }}>Redo att ansöka?</div>
+              <div style={{ fontSize: 13, color: "var(--ink-500)" }}>Din profil är ditt CV — inget att ladda upp.</div>
+            </div>
+            {isDriver ? (
+              job.externalApplyUrl ? (
+                <a href={job.externalApplyUrl} target="_blank" rel="noopener noreferrer"
+                  onClick={() => track("apply_initiated", { jobId: job.id, jobTitle: job.title, source: "bottom_external" })}
+                  style={{ padding: "13px 24px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: 15, fontWeight: 800, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 7, whiteSpace: "nowrap" }}>
+                  Ansök på företagets hemsida ↗
+                </a>
+              ) : (
+                <Link to={`/jobb/${id}/ansok`}
+                  onClick={() => track("apply_initiated", { jobId: job.id, jobTitle: job.title, source: "bottom" })}
+                  style={{ padding: "13px 24px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: 15, fontWeight: 800, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 7, whiteSpace: "nowrap" }}>
+                  Ansök nu
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </Link>
+              )
+            ) : !user ? (
+              <Link to="/login" state={{ from: `/jobb/${id}`, requiredRole: "driver" }}
+                style={{ padding: "13px 24px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: 15, fontWeight: 800, textDecoration: "none" }}>
+                Logga in för att ansöka
+              </Link>
+            ) : null}
+          </div>
+
           {/* ── Stats (company owner only) ── */}
           {isMyJob && jobStats && (
-            <div style={D.section}>
-              <h2 style={D.h2}>Annonsstatistik</h2>
-              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(3,1fr)", gap: 10, marginBottom: 16 }}>
+            <div style={{ marginTop: 36, paddingTop: 32, borderTop: "1px solid var(--line)" }}>
+              <h2 style={{ fontSize: 18, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.3, margin: "0 0 18px" }}>Annonsstatistik</h2>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10, marginBottom: 16 }}>
                 {[
-                  { value: jobStats.viewCount, label: "Visningar" },
-                  { value: jobStats.savedCount, label: "Sparade" },
-                  { value: jobStats.conversationCount, label: "Ansökningar" },
+                  { value: jobStats.viewCount,         label: "Visningar"    },
+                  { value: jobStats.savedCount,        label: "Sparade"      },
+                  { value: jobStats.conversationCount, label: "Ansökningar"  },
                 ].map(({ value, label }) => (
-                  <div key={label} style={{ borderRadius: 14, border: "1px solid rgba(255,255,255,0.07)", background: "rgba(255,255,255,0.03)", padding: "16px 12px", textAlign: "center" }}>
-                    <p style={{ fontSize: 26, fontWeight: 800, color: "#f0faf9", margin: "0 0 4px" }}>{value}</p>
-                    <p style={{ fontSize: 12, color: "rgba(240,250,249,0.4)", margin: 0 }}>{label}</p>
+                  <div key={label} style={{ borderRadius: "var(--r-md)", border: "1px solid var(--line)", background: "var(--card)", padding: "16px 12px", textAlign: "center", boxShadow: "var(--sh-sm)" }}>
+                    <p style={{ fontSize: 26, fontWeight: 800, color: "var(--ink-900)", margin: "0 0 4px", fontFamily: "var(--mono)" }}>{value}</p>
+                    <p style={{ fontSize: 12, color: "var(--ink-400)", margin: 0 }}>{label}</p>
                   </div>
                 ))}
               </div>
               {jobStats.recommendations?.length > 0 && (
                 <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 8 }}>
-                  {jobStats.recommendations.map((r, i) => (
-                    <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, borderRadius: 12, padding: "12px 16px", fontSize: 14, ...(r.type === "warning" ? { background: "rgba(245,166,35,0.07)", border: "1px solid rgba(245,166,35,0.2)", color: "rgba(245,166,35,0.9)" } : { background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", color: "rgba(240,250,249,0.65)" }) }}>
+                  {jobStats.recommendations.map((rec, i) => (
+                    <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, borderRadius: "var(--r-md)", padding: "12px 16px", fontSize: 14, ...(rec.type === "warning" ? { background: "var(--amber-tint)", border: "1px solid var(--amber-tint-2)", color: "var(--amber-text)" } : { background: "var(--card)", border: "1px solid var(--line)", color: "var(--ink-600)" }) }}>
                       <span style={{ flexShrink: 0, marginTop: 2 }}>
-                        {r.type === "warning" ? <WarningIcon style={{ width: 14, height: 14 }} /> : <span style={{ fontWeight: 700, fontSize: 11 }}>✦</span>}
+                        {rec.type === "warning" ? <WarningIcon style={{ width: 14, height: 14 }} /> : <span style={{ fontWeight: 700, fontSize: 11 }}>✦</span>}
                       </span>
-                      {r.text}
+                      {rec.text}
                     </li>
                   ))}
                 </ul>
@@ -866,47 +975,47 @@ export default function JobDetail() {
 
           {/* ── Applicants (company owner only) ── */}
           {isMyJob && (
-            <div style={D.section}>
-              <h2 style={D.h2}>Sökande till detta jobb</h2>
-              <p style={{ ...D.body, fontSize: 14, marginBottom: 16 }}>Sorterade efter match (bäst match först).</p>
+            <div style={{ marginTop: 36, paddingTop: 32, borderTop: "1px solid var(--line)" }}>
+              <h2 style={{ fontSize: 18, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.3, margin: "0 0 6px" }}>Sökande till detta jobb</h2>
+              <p style={{ fontSize: 14, color: "var(--ink-500)", marginBottom: 16 }}>Sorterade efter match (bäst match först).</p>
               {applicantsLoading ? (
-                <p style={D.body}>Laddar sökande...</p>
+                <p style={{ fontSize: 14, color: "var(--ink-500)" }}>Laddar sökande...</p>
               ) : applicants.length === 0 ? (
-                <p style={D.body}>Inga sökande ännu.</p>
+                <p style={{ fontSize: 14, color: "var(--ink-500)" }}>Inga sökande ännu.</p>
               ) : (
                 <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 10 }}>
                   {applicants.map((a) => (
-                    <li key={a.conversationId} style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "16px 18px", borderRadius: 14, border: "1px solid rgba(255,255,255,0.07)", background: "rgba(255,255,255,0.02)" }}>
+                    <li key={a.conversationId} style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "16px 18px", borderRadius: "var(--r-lg)", border: "1px solid var(--line)", background: "var(--card)", boxShadow: "var(--sh-sm)" }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
-                          <span style={{ fontSize: 15, fontWeight: 600, color: "#f0faf9" }}>{a.driverName}</span>
-                          <span style={{ ...D.tag, ...D.tagTeal, fontSize: 11 }}>{a.matchScore} match</span>
+                          <span style={{ fontSize: 15, fontWeight: 700, color: "var(--ink-900)" }}>{a.driverName}</span>
+                          <Pill tone="soft">{a.matchScore} match</Pill>
                           {screenings[a.driverId] && (
-                            <span style={{ ...D.tag, fontSize: 11, ...(screenings[a.driverId].matchStrength === "strong" ? D.tagGreen : screenings[a.driverId].matchStrength === "weak" ? D.tagMuted : D.tagTeal) }}>
+                            <Pill tone={screenings[a.driverId].matchStrength === "strong" ? "success" : screenings[a.driverId].matchStrength === "weak" ? "neutral" : "soft"}>
                               {screenings[a.driverId].matchStrength === "strong" ? "Stark match" : screenings[a.driverId].matchStrength === "weak" ? "Svag match" : "God match"}
-                            </span>
+                            </Pill>
                           )}
-                          {a.rejectedByCompanyAt && <span style={{ ...D.tag, fontSize: 11, background: "rgba(239,68,68,0.1)", color: "#f87171", border: "1px solid rgba(239,68,68,0.2)" }}>Avvisad</span>}
-                          {a.selectedByCompanyAt && !a.rejectedByCompanyAt && <span style={{ ...D.tag, ...D.tagGreen, fontSize: 11 }}>Utvald</span>}
+                          {a.rejectedByCompanyAt && <Pill tone="danger">Avvisad</Pill>}
+                          {a.selectedByCompanyAt && !a.rejectedByCompanyAt && <Pill tone="success">Utvald</Pill>}
                         </div>
-                        <p style={{ fontSize: 13, color: "rgba(240,250,249,0.4)", margin: "4px 0 0" }}>
+                        <p style={{ fontSize: 13, color: "var(--ink-400)", margin: "4px 0 0" }}>
                           {[a.licenses?.join(", "), a.region, a.yearsExperience != null && `${a.yearsExperience} år`].filter(Boolean).join(" · ")}
                         </p>
-                        {screeningsLoading && !screenings[a.driverId] && <p style={{ fontSize: 12, color: "rgba(240,250,249,0.3)", margin: "4px 0 0" }}>Analyserar sökande...</p>}
-                        {screenings[a.driverId]?.summary && <p style={{ fontSize: 13, color: "rgba(240,250,249,0.5)", margin: "6px 0 0", fontStyle: "italic" }}>{screenings[a.driverId].summary}</p>}
+                        {screeningsLoading && !screenings[a.driverId] && <p style={{ fontSize: 12, color: "var(--ink-400)", margin: "4px 0 0" }}>Analyserar sökande...</p>}
+                        {screenings[a.driverId]?.summary && <p style={{ fontSize: 13, color: "var(--ink-500)", margin: "6px 0 0", fontStyle: "italic" }}>{screenings[a.driverId].summary}</p>}
                         {screenings[a.driverId]?.highlights?.length > 0 && (
                           <div style={{ marginTop: 8, display: "flex", flexWrap: "wrap", gap: 6 }}>
-                            {screenings[a.driverId].highlights.map((h) => <span key={h} style={{ ...D.tag, ...D.tagGreen, fontSize: 11 }}>✓ {h}</span>)}
-                            {screenings[a.driverId].gaps.map((g) => <span key={g} style={{ ...D.tag, ...D.tagMuted, fontSize: 11 }}>✗ {g}</span>)}
+                            {screenings[a.driverId].highlights.map((h) => <Pill key={h} tone="success">✓ {h}</Pill>)}
+                            {screenings[a.driverId].gaps?.map((g) => <Pill key={g} tone="neutral">✗ {g}</Pill>)}
                           </div>
                         )}
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <Link to={`/foretag/chaufforer/${a.driverId}`} style={{ display: "inline-flex", alignItems: "center", padding: "8px 14px", borderRadius: 10, fontSize: 13, fontWeight: 500, border: "1px solid rgba(255,255,255,0.12)", color: "rgba(240,250,249,0.7)", textDecoration: "none" }}>Visa profil</Link>
+                        <Link to={`/foretag/chaufforer/${a.driverId}`} style={{ display: "inline-flex", alignItems: "center", padding: "8px 14px", borderRadius: "var(--r)", fontSize: 13, fontWeight: 600, border: "1px solid var(--line-2)", color: "var(--ink-700)", textDecoration: "none" }}>Visa profil</Link>
                         {!a.selectedByCompanyAt && !a.rejectedByCompanyAt && (
                           <>
-                            <button type="button" onClick={() => handleMarkSelected(a.conversationId)} style={{ display: "inline-flex", alignItems: "center", padding: "8px 14px", borderRadius: 10, fontSize: 13, fontWeight: 600, background: "#1F5F5C", color: "#f0faf9", border: "none", cursor: "pointer" }}>Markera som utvald</button>
-                            <button type="button" onClick={() => handleReject(a.conversationId)} style={{ display: "inline-flex", alignItems: "center", padding: "8px 14px", borderRadius: 10, fontSize: 13, fontWeight: 500, border: "1px solid rgba(239,68,68,0.25)", color: "#f87171", background: "transparent", cursor: "pointer" }}>Avvisa</button>
+                            <button type="button" onClick={() => handleMarkSelected(a.conversationId)} style={{ display: "inline-flex", alignItems: "center", padding: "8px 14px", borderRadius: "var(--r)", fontSize: 13, fontWeight: 600, background: "var(--green)", color: "#fff", border: "none", cursor: "pointer" }}>Markera som utvald</button>
+                            <button type="button" onClick={() => handleReject(a.conversationId)} style={{ display: "inline-flex", alignItems: "center", padding: "8px 14px", borderRadius: "var(--r)", fontSize: 13, fontWeight: 600, border: "1px solid var(--danger-tint)", color: "var(--danger)", background: "transparent", cursor: "pointer" }}>Avvisa</button>
                           </>
                         )}
                       </div>
@@ -919,9 +1028,9 @@ export default function JobDetail() {
 
           {/* ── Matching drivers (other company users) ── */}
           {isCompany && !isMyJob && matchingDrivers.length > 0 && (
-            <div style={D.section}>
-              <h2 style={D.h2}>Förare som matchar detta jobb</h2>
-              <p style={{ ...D.body, fontSize: 14, marginBottom: 16 }}>Baserat på körkort, certifikat, region och erfarenhet.</p>
+            <div style={{ marginTop: 36, paddingTop: 32, borderTop: "1px solid var(--line)" }}>
+              <h2 style={{ fontSize: 18, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.3, margin: "0 0 6px" }}>Förare som matchar detta jobb</h2>
+              <p style={{ fontSize: 14, color: "var(--ink-500)", marginBottom: 16 }}>Baserat på körkort, certifikat, region och erfarenhet.</p>
               <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                 {matchingDrivers.map(({ driver, score, details }) => (
                   <div key={driver.id}>
@@ -929,7 +1038,7 @@ export default function JobDetail() {
                   </div>
                 ))}
               </div>
-              <Link to="/foretag/chaufforer" state={{ forJobId: job.id, forJobTitle: job.title }} style={{ display: "inline-block", marginTop: 16, fontSize: 14, fontWeight: 500, color: "#4ade80", textDecoration: "none" }}>
+              <Link to="/foretag/chaufforer" state={{ forJobId: job.id, forJobTitle: job.title }} style={{ display: "inline-block", marginTop: 16, fontSize: 14, fontWeight: 600, color: "var(--green)", textDecoration: "none" }}>
                 Hitta fler förare →
               </Link>
             </div>
@@ -937,15 +1046,15 @@ export default function JobDetail() {
 
           {/* ── AI match explanation (drivers) ── */}
           {isDriver && (matchExplanationLoading || matchExplanation) && (
-            <div style={D.section}>
-              <div style={{ padding: "16px 20px", borderRadius: 14, border: "1px solid rgba(31,95,92,0.35)", background: "rgba(31,95,92,0.12)" }}>
-                <p style={{ ...D.label, marginBottom: 8 }}>Varför detta jobb passar dig</p>
+            <div style={{ marginTop: 36, paddingTop: 32, borderTop: "1px solid var(--line)" }}>
+              <div style={{ padding: "16px 20px", borderRadius: "var(--r-md)", border: "1px solid var(--green-tint-2)", background: "var(--green-tint)" }}>
+                <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--green)", marginBottom: 8 }}>Varför detta jobb passar dig</div>
                 {matchExplanationLoading
-                  ? <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: "rgba(240,250,249,0.5)" }}>
-                      <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: "rgba(110,231,231,0.4)" }} />
+                  ? <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: "var(--ink-500)" }}>
+                      <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: "var(--green-tint-2)" }} />
                       Kollar din profil mot jobbet...
                     </div>
-                  : <p style={{ fontSize: 14, color: "rgba(240,250,249,0.7)", lineHeight: 1.65, margin: 0 }}>{matchExplanation}</p>
+                  : <p style={{ fontSize: 14, color: "var(--ink-700)", lineHeight: 1.65, margin: 0 }}>{matchExplanation}</p>
                 }
               </div>
             </div>
@@ -954,19 +1063,19 @@ export default function JobDetail() {
         </div>
 
         {/* ── RIGHT SIDEBAR ─────────────────────────────────────────────────── */}
-        <div style={{ position: isMobile ? "static" : "sticky", top: 88, order: isMobile ? 0 : 1, minWidth: 0 }}>
+        <div style={{ position: "sticky", top: 88, minWidth: 0 }}>
 
           {/* CTA card */}
-          <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.09)", borderRadius: isMobile ? 16 : 22, padding: isMobile ? "16px" : "22px", marginBottom: 10, overflow: "hidden" }}>
+          <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: "var(--r-lg)", padding: "22px", marginBottom: 12, boxShadow: "var(--sh-sm)" }}>
 
-            {/* Match ring — logged-in drivers only */}
+            {/* Match ring */}
             {isDriver && hasApi && driverMatch && (
               <MatchRing pct={matchPct} job={job} details={driverMatch.details} />
             )}
 
             {/* Salary */}
-            <div style={{ margin: isMobile ? "12px 0 12px" : "18px 0 16px" }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(240,250,249,0.3)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>Ersättning</div>
+            <div style={{ margin: "18px 0 16px" }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-400)", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 6 }}>Ersättning</div>
               <SalaryDisplay sidebar />
             </div>
 
@@ -974,34 +1083,41 @@ export default function JobDetail() {
             {isDriver ? (
               <>
                 {job.externalApplyUrl ? (
-                  <a href={job.externalApplyUrl} target="_blank" rel="noopener noreferrer" onClick={() => track("apply_initiated", { jobId: job.id, jobTitle: job.title, source: "panel_external" })} style={{ display: "block", width: "100%", padding: "15px", borderRadius: 13, background: "#F5A623", color: "#000", fontSize: 15, fontWeight: 800, textDecoration: "none", textAlign: "center", letterSpacing: -0.3, boxSizing: "border-box" }}>
+                  <a href={job.externalApplyUrl} target="_blank" rel="noopener noreferrer"
+                    onClick={() => track("apply_initiated", { jobId: job.id, jobTitle: job.title, source: "panel_external" })}
+                    style={{ display: "block", width: "100%", padding: "15px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: 15, fontWeight: 800, textDecoration: "none", textAlign: "center", letterSpacing: -0.3, boxSizing: "border-box" }}>
                     Ansök på företagets hemsida ↗
                   </a>
                 ) : (
-                  <Link to={`/jobb/${id}/ansok`} onClick={() => track("apply_initiated", { jobId: job.id, jobTitle: job.title, source: "panel" })} style={{ display: "block", width: "100%", padding: "15px", borderRadius: 13, background: "#F5A623", color: "#000", fontSize: 15, fontWeight: 800, textDecoration: "none", textAlign: "center", letterSpacing: -0.3, boxSizing: "border-box" }}>
+                  <Link to={`/jobb/${id}/ansok`}
+                    onClick={() => track("apply_initiated", { jobId: job.id, jobTitle: job.title, source: "panel" })}
+                    style={{ display: "block", width: "100%", padding: "15px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: 15, fontWeight: 800, textDecoration: "none", textAlign: "center", letterSpacing: -0.3, boxSizing: "border-box" }}>
                     Ansök nu →
                   </Link>
                 )}
-                {!isMobile && <p style={{ fontSize: 12, color: "rgba(240,250,249,0.3)", textAlign: "center", marginTop: 8, lineHeight: 1.5 }}>Din profil är ditt CV — inget att ladda upp</p>}
+                <p style={{ fontSize: 12, color: "var(--ink-400)", textAlign: "center", marginTop: 8, lineHeight: 1.5 }}>Din profil är ditt CV — inget att ladda upp</p>
               </>
             ) : isCompany ? (
-              <div style={{ padding: "12px 14px", borderRadius: 11, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
-                <p style={{ fontSize: 13, color: "rgba(240,250,249,0.45)", margin: 0, lineHeight: 1.6 }}>Företagsläge — ansökningsknappen visas enbart för förare.</p>
+              <div style={{ padding: "12px 14px", borderRadius: "var(--r)", background: "var(--paper-2)", border: "1px solid var(--line)" }}>
+                <p style={{ fontSize: 13, color: "var(--ink-500)", margin: 0, lineHeight: 1.6 }}>Företagsläge — ansökningsknappen visas enbart för förare.</p>
               </div>
             ) : (
-              <Link to="/login" state={{ from: `/jobb/${id}`, requiredRole: "driver" }} style={{ display: "block", width: "100%", padding: "15px", borderRadius: 13, background: "#F5A623", color: "#000", fontSize: 15, fontWeight: 800, textDecoration: "none", textAlign: "center", letterSpacing: -0.3, boxSizing: "border-box" }}>
+              <Link to="/login" state={{ from: `/jobb/${id}`, requiredRole: "driver" }}
+                style={{ display: "block", width: "100%", padding: "15px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: 15, fontWeight: 800, textDecoration: "none", textAlign: "center", letterSpacing: -0.3, boxSizing: "border-box" }}>
                 Logga in för att ansöka
               </Link>
             )}
 
-            {/* Save + Share — drivers only */}
+            {/* Save + Share */}
             {isDriver && (
               <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-                <button type="button" onClick={handleToggleSave} style={{ flex: 1, padding: "10px", borderRadius: 11, background: isSaved ? "rgba(245,166,35,0.1)" : "rgba(255,255,255,0.04)", border: isSaved ? "1px solid rgba(245,166,35,0.25)" : "1px solid rgba(255,255,255,0.07)", color: isSaved ? "#F5A623" : "rgba(240,250,249,0.45)", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, transition: "all .15s" }}>
+                <button type="button" onClick={handleToggleSave}
+                  style={{ flex: 1, padding: "10px", borderRadius: "var(--r)", background: isSaved ? "var(--amber-tint)" : "var(--paper-2)", border: isSaved ? "1px solid var(--amber-tint-2)" : "1px solid var(--line-2)", color: isSaved ? "var(--amber-deep)" : "var(--ink-500)", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, transition: "all .15s" }}>
                   {isSaved ? <StarFilledIcon style={{ width: 13, height: 13 }} /> : <StarOutlineIcon style={{ width: 13, height: 13 }} />}
                   {isSaved ? "Sparad" : "Spara"}
                 </button>
-                <a href={`https://wa.me/?text=${encodeURIComponent(`Kolla in det här jobbet på STP: ${job.title} hos ${job.company} – https://transportplattformen.se/jobb/${job.id}`)}`} target="_blank" rel="noopener noreferrer" style={{ flex: 1, padding: "10px", borderRadius: 11, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", color: "rgba(240,250,249,0.45)", fontSize: 12, fontWeight: 600, textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                <a href={`https://wa.me/?text=${encodeURIComponent(`Kolla in det här jobbet på STP: ${job.title} hos ${job.company} – https://transportplattformen.se/jobb/${job.id}`)}`} target="_blank" rel="noopener noreferrer"
+                  style={{ flex: 1, padding: "10px", borderRadius: "var(--r)", background: "var(--paper-2)", border: "1px solid var(--line-2)", color: "var(--ink-500)", fontSize: 12, fontWeight: 600, textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
                   Dela
                 </a>
@@ -1009,74 +1125,44 @@ export default function JobDetail() {
             )}
           </div>
 
-          {/* Snabbfakta — desktop only */}
-          {!isMobile && (
-            <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 20, padding: "18px 20px", marginBottom: 10 }}>
-              <div style={{ fontSize: 11, fontWeight: 800, color: "rgba(240,250,249,0.3)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 4 }}>Snabbfakta</div>
-              <FactRow iconEl={briefcaseIcon} label="Anställningsform" value={empLabel} />
-              <FactRow iconEl={clockIcon}     label="Arbetstider"      value={scheduleLabel || "Ej angiven"} missing={!scheduleLabel} />
-              <FactRow iconEl={calendarIcon}  label="Tillträde"        value={job.start || "Ej angiven"} missing={!job.start} />
-              <FactRow iconEl={locationIcon}  label="Ort"              value={job.location} />
-              <FactRow iconEl={truckIcon}     label="Körkort"          value={[...(job.license || []), ...(job.certificates || []).map(getCertificateLabel)].join(", ") || "—"} />
-              <FactRow iconEl={moneyIcon}     label="Lön"
-                value={salaryFactVal}
-                highlight={!!user && !!(job.salaryMin || job.salary)}
-                missing={!!user && !job.salaryMin && !job.salary}
-              />
-              {job.rolling && (
-                <div style={{ marginTop: 14, padding: "10px 12px", background: "rgba(245,166,35,0.06)", border: "1px solid rgba(245,166,35,0.13)", borderRadius: 10, display: "flex", gap: 8, alignItems: "flex-start" }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F5A623" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                  <span style={{ fontSize: 12, color: "rgba(240,250,249,0.55)", lineHeight: 1.6 }}>
-                    <strong style={{ color: "#F5A623" }}>Löpande rekrytering.</strong> Ansök snarast.
-                  </span>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Liknande jobb — desktop only */}
-          {!isMobile && (
-            <div style={{ padding: "14px 18px", background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 15, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: "#f0faf9", marginBottom: 2 }}>Liknande jobb</div>
-                <div style={{ fontSize: 12, color: "rgba(240,250,249,0.35)" }}>
-                  {(job.license || []).join("+")}-jobb i {job.region || "din region"}
-                </div>
+          {/* Snabbfakta */}
+          <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: "var(--r-lg)", padding: "18px 20px", marginBottom: 12, boxShadow: "var(--sh-sm)" }}>
+            <div style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-400)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 4 }}>Snabbfakta</div>
+            <FactRow iconEl={briefcaseIcon} label="Anställningsform" value={empLabel} />
+            <FactRow iconEl={clockIcon}     label="Arbetstider"      value={scheduleLabel || "Ej angiven"} missing={!scheduleLabel} />
+            <FactRow iconEl={calendarIcon}  label="Tillträde"        value={job.start || "Ej angiven"} missing={!job.start} />
+            <FactRow iconEl={locationIcon}  label="Ort"              value={job.location || "—"} />
+            <FactRow iconEl={truckIcon}     label="Körkort"          value={[...(job.license || []), ...(job.certificates || []).map(getCertificateLabel)].join(", ") || "—"} />
+            <FactRow iconEl={moneyIcon}     label="Lön"
+              value={salaryFactVal}
+              highlight={!!user && !!(job.salaryMin || job.salary)}
+              missing={!!user && !job.salaryMin && !job.salary}
+            />
+            {job.rolling && (
+              <div style={{ marginTop: 14, padding: "10px 12px", background: "var(--amber-tint)", border: "1px solid var(--amber-tint-2)", borderRadius: "var(--r)", display: "flex", gap: 8, alignItems: "flex-start" }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span style={{ fontSize: 12, color: "var(--amber-text)", lineHeight: 1.6 }}>
+                  <strong style={{ color: "var(--amber)" }}>Löpande rekrytering.</strong> Ansök snarast.
+                </span>
               </div>
-              <Link to="/jobb" style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 700, color: "#4ade80", textDecoration: "none" }}>
-                Se alla <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-              </Link>
+            )}
+          </div>
+
+          {/* Liknande jobb */}
+          <div style={{ padding: "14px 18px", background: "var(--card)", border: "1px solid var(--line)", borderRadius: "var(--r-lg)", display: "flex", justifyContent: "space-between", alignItems: "center", boxShadow: "var(--sh-sm)" }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink-900)", marginBottom: 2 }}>Liknande jobb</div>
+              <div style={{ fontSize: 12, color: "var(--ink-400)" }}>
+                {(job.license || []).join("+")||"CE"}-jobb i {job.region || "din region"}
+              </div>
             </div>
-          )}
+            <Link to="/jobb" style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 700, color: "var(--green)", textDecoration: "none" }}>
+              Se alla <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </Link>
+          </div>
 
         </div>
       </div>
-
-      {/* ── Sticky bottom apply bar (mobile, drivers + logged-out) ── */}
-      {isMobile && (isDriver || !user) && (
-        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 40, padding: "12px 20px 20px", background: "rgba(6,15,15,0.96)", backdropFilter: "blur(12px)", borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", gap: 10 }}>
-          {isDriver ? (
-            <>
-              {job.externalApplyUrl ? (
-                <a href={job.externalApplyUrl} target="_blank" rel="noopener noreferrer" onClick={() => track("apply_initiated", { jobId: job.id, jobTitle: job.title, source: "sticky_external" })} style={{ flex: 1, padding: "14px", borderRadius: 13, background: "#F5A623", color: "#000", fontSize: 15, fontWeight: 800, textDecoration: "none", textAlign: "center" }}>
-                  Ansök ↗
-                </a>
-              ) : (
-                <Link to={`/jobb/${id}/ansok`} onClick={() => track("apply_initiated", { jobId: job.id, jobTitle: job.title, source: "sticky" })} style={{ flex: 1, padding: "14px", borderRadius: 13, background: "#F5A623", color: "#000", fontSize: 15, fontWeight: 800, textDecoration: "none", textAlign: "center" }}>
-                  Ansök nu →
-                </Link>
-              )}
-              <button type="button" onClick={handleToggleSave} style={{ width: 52, borderRadius: 13, background: isSaved ? "rgba(245,166,35,0.15)" : "rgba(255,255,255,0.06)", border: isSaved ? "1px solid rgba(245,166,35,0.3)" : "1px solid rgba(255,255,255,0.1)", color: isSaved ? "#F5A623" : "rgba(240,250,249,0.5)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
-                {isSaved ? <StarFilledIcon style={{ width: 18, height: 18 }} /> : <StarOutlineIcon style={{ width: 18, height: 18 }} />}
-              </button>
-            </>
-          ) : (
-            <Link to="/login" state={{ from: `/jobb/${id}`, requiredRole: "driver" }} style={{ flex: 1, padding: "14px", borderRadius: 13, background: "#F5A623", color: "#000", fontSize: 15, fontWeight: 800, textDecoration: "none", textAlign: "center" }}>
-              Logga in för att ansöka
-            </Link>
-          )}
-        </div>
-      )}
 
       {showApplyModal && (
         <ApplyModal job={job} onClose={() => setShowApplyModal(false)} onSuccess={() => setShowApplyModal(false)} />

@@ -15,7 +15,7 @@ export default function LastbilschaufforUtbildning() {
 
 
       <h1 className="text-3xl font-bold text-slate-900 mb-4">{TITLE}</h1>
-      <p className="text-slate-500 text-sm mb-8">Publicerad 20 april 2025 · Källa: Transportstyrelsen, TYA, Transportföretagen</p>
+      <p className="text-slate-500 text-sm mb-8">Publicerad 20 april 2025 · Källa: Transportstyrelsen, TYA</p>
 
       <div className="space-y-6 text-slate-700 leading-relaxed">
         <p>

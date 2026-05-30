@@ -36,18 +36,18 @@ export default function DriverAcquisitionLanding() {
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
 
-      <div style={{ minHeight: "100vh", background: "#060f0f", color: "#f0faf9", fontFamily: "inherit" }}>
+      <div style={{ minHeight: "100vh", background: "var(--paper)", fontFamily: "inherit" }}>
 
         {/* Top bar — logo + trust pill */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 24px", maxWidth: 680, margin: "0 auto" }}>
           <Link to="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
-            <Logo height={30} variant="light" />
+            <Logo height={30} />
           </Link>
           <span style={{
             fontSize: 12, fontWeight: 700, letterSpacing: "0.04em",
             padding: "5px 12px", borderRadius: 99,
-            background: "rgba(31,95,92,0.25)", border: "1px solid rgba(125,211,200,0.25)",
-            color: "#7dd3c8",
+            background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.25)",
+            color: "var(--green-text)",
           }}>
             Gratis · Beta · Ingen app
           </span>
@@ -57,12 +57,12 @@ export default function DriverAcquisitionLanding() {
         <div style={{ maxWidth: 680, margin: "0 auto", padding: "40px 24px 0" }}>
           <h1 style={{
             fontSize: "clamp(28px, 6vw, 44px)", fontWeight: 900, lineHeight: 1.15,
-            letterSpacing: "-0.02em", marginBottom: 20,
+            letterSpacing: "-0.02em", marginBottom: 20, color: "var(--ink-900)",
           }}>
             Hitta lastbilsjobb direkt —{" "}
-            <span style={{ color: "#7dd3c8" }}>utan bemanningsbolag</span>
+            <span style={{ color: "var(--green-text)" }}>utan bemanningsbolag</span>
           </h1>
-          <p style={{ fontSize: 18, color: "rgba(240,250,249,0.7)", lineHeight: 1.6, marginBottom: 36, maxWidth: 520 }}>
+          <p style={{ fontSize: 18, color: "var(--ink-500)", lineHeight: 1.6, marginBottom: 36, maxWidth: 520 }}>
             Skapa en gratis förarprofil. Bli hittad av åkerier. Söka jobb som matchar dina behörigheter och erfarenhet.
             Det är allt som krävs.
           </p>
@@ -74,9 +74,9 @@ export default function DriverAcquisitionLanding() {
             style={{
               display: "inline-flex", alignItems: "center", justifyContent: "center",
               padding: "16px 36px", borderRadius: 14,
-              background: "#F5A623", color: "#000",
+              background: "var(--green)", color: "#fff",
               fontSize: 17, fontWeight: 900, textDecoration: "none",
-              boxShadow: "0 4px 24px rgba(245,166,35,0.35)",
+              boxShadow: "var(--sh-md)",
               transition: "opacity .15s, transform .15s",
             }}
             onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.9"; e.currentTarget.style.transform = "translateY(-1px)"; }}
@@ -84,26 +84,24 @@ export default function DriverAcquisitionLanding() {
           >
             Skapa gratis profil →
           </Link>
-          <p style={{ marginTop: 12, fontSize: 13, color: "rgba(240,250,249,0.35)" }}>
+          <p style={{ marginTop: 12, fontSize: 13, color: "var(--ink-400)" }}>
             Tar 2 minuter. Inget kreditkort.
           </p>
         </div>
 
         {/* Trust signals */}
         <div style={{ maxWidth: 680, margin: "40px auto 0", padding: "0 24px" }}>
-          <div style={{
-            display: "flex", flexWrap: "wrap", gap: 10,
-          }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
             {TRUST.map((t) => (
               <span key={t.label} style={{
                 display: "inline-flex", alignItems: "center", gap: 6,
                 fontSize: 13, fontWeight: 600,
                 padding: "6px 12px", borderRadius: 8,
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
-                color: "rgba(240,250,249,0.65)",
+                background: "var(--paper-2)",
+                border: "1px solid var(--line)",
+                color: "var(--ink-500)",
               }}>
-                <span style={{ color: "#4ade80", fontSize: 11 }}>✓</span> {t.label}
+                <span style={{ color: "var(--success)", fontSize: 11 }}>✓</span> {t.label}
               </span>
             ))}
           </div>
@@ -111,12 +109,12 @@ export default function DriverAcquisitionLanding() {
 
         {/* Divider */}
         <div style={{ maxWidth: 680, margin: "48px auto 0", padding: "0 24px" }}>
-          <div style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }} />
+          <div style={{ borderTop: "1px solid var(--line)" }} />
         </div>
 
         {/* Benefits */}
         <div style={{ maxWidth: 680, margin: "0 auto", padding: "40px 24px 0" }}>
-          <h2 style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(240,250,249,0.35)", marginBottom: 24 }}>
+          <h2 style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--ink-400)", marginBottom: 24 }}>
             Vad du får
           </h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
@@ -124,13 +122,13 @@ export default function DriverAcquisitionLanding() {
               <div key={b.title} style={{
                 display: "flex", gap: 18, alignItems: "flex-start",
                 padding: "20px 22px", borderRadius: 14,
-                background: "rgba(255,255,255,0.03)",
-                border: "1px solid rgba(255,255,255,0.07)",
+                background: "var(--card)",
+                border: "1px solid var(--line)",
               }}>
                 <span style={{ fontSize: 28, flexShrink: 0, marginTop: 2 }}>{b.icon}</span>
                 <div>
-                  <div style={{ fontSize: 16, fontWeight: 800, color: "#f0faf9", marginBottom: 6 }}>{b.title}</div>
-                  <div style={{ fontSize: 14, color: "rgba(240,250,249,0.6)", lineHeight: 1.6 }}>{b.desc}</div>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: "var(--ink-900)", marginBottom: 6 }}>{b.title}</div>
+                  <div style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.6 }}>{b.desc}</div>
                 </div>
               </div>
             ))}
@@ -146,16 +144,16 @@ export default function DriverAcquisitionLanding() {
               display: "inline-flex", alignItems: "center", justifyContent: "center",
               width: "100%", maxWidth: 400,
               padding: "16px 36px", borderRadius: 14,
-              background: "#F5A623", color: "#000",
+              background: "var(--green)", color: "#fff",
               fontSize: 16, fontWeight: 900, textDecoration: "none",
-              boxShadow: "0 4px 24px rgba(245,166,35,0.3)",
+              boxShadow: "var(--sh-md)",
             }}
           >
             Skapa gratis profil →
           </Link>
-          <p style={{ marginTop: 14, fontSize: 14, color: "rgba(240,250,249,0.4)" }}>
+          <p style={{ marginTop: 14, fontSize: 14, color: "var(--ink-500)" }}>
             Har du redan ett konto?{" "}
-            <Link to="/login" style={{ color: "#7dd3c8", textDecoration: "none", fontWeight: 600 }}>
+            <Link to="/login" style={{ color: "var(--green-text)", textDecoration: "none", fontWeight: 600 }}>
               Logga in
             </Link>
           </p>
@@ -165,14 +163,14 @@ export default function DriverAcquisitionLanding() {
         <div style={{ maxWidth: 680, margin: "48px auto 0", padding: "0 24px" }}>
           <div style={{
             padding: "22px 24px", borderRadius: 14,
-            background: "rgba(31,95,92,0.1)", border: "1px solid rgba(31,95,92,0.3)",
+            background: "var(--info-tint)", border: "1px solid rgba(96,165,250,0.2)",
           }}>
-            <p style={{ fontSize: 13, color: "rgba(240,250,249,0.6)", lineHeight: 1.7, margin: 0 }}>
-              <strong style={{ color: "rgba(240,250,249,0.85)" }}>Vem är vi?</strong>{" "}
+            <p style={{ fontSize: 13, color: "var(--ink-500)", lineHeight: 1.7, margin: 0 }}>
+              <strong style={{ color: "var(--ink-700)" }}>Vem är vi?</strong>{" "}
               Sveriges Transportplattform (STP) är ett projekt byggt i Sverige av Oliver Harburt,
               med målet att göra det enklare för lastbilsförare att hitta jobb utan mellanhänder.
               Vi är i beta — plattformen är gratis och vi tar inga provisioner. Frågor?{" "}
-              <a href="mailto:support@transportplattformen.se" style={{ color: "#7dd3c8", textDecoration: "none" }}>
+              <a href="mailto:support@transportplattformen.se" style={{ color: "var(--green-text)", textDecoration: "none" }}>
                 support@transportplattformen.se
               </a>
             </p>
@@ -180,9 +178,9 @@ export default function DriverAcquisitionLanding() {
         </div>
 
         {/* Footer */}
-        <div style={{ maxWidth: 680, margin: "48px auto 0", padding: "24px 24px 48px", borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+        <div style={{ maxWidth: 680, margin: "48px auto 0", padding: "24px 24px 48px", borderTop: "1px solid var(--line)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-            <span style={{ fontSize: 12, color: "rgba(240,250,249,0.25)" }}>
+            <span style={{ fontSize: 12, color: "var(--ink-300)" }}>
               © 2026 Sveriges Transportplattform
             </span>
             <div style={{ display: "flex", gap: 16 }}>
@@ -191,7 +189,7 @@ export default function DriverAcquisitionLanding() {
                 { to: "/villkor", label: "Villkor" },
                 { to: "/integritet", label: "Integritet" },
               ].map((l) => (
-                <Link key={l.to} to={l.to} style={{ fontSize: 12, color: "rgba(240,250,249,0.3)", textDecoration: "none" }}>
+                <Link key={l.to} to={l.to} style={{ fontSize: 12, color: "var(--ink-400)", textDecoration: "none" }}>
                   {l.label}
                 </Link>
               ))}

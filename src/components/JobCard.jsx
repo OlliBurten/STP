@@ -1,35 +1,48 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { StarFilledIcon, StarOutlineIcon, CheckIcon, LocationIcon } from "./Icons";
 import { useIsMobile } from "../hooks/useIsMobile";
 
-/** Derive a consistent dark color from company name */
-function companyAvatarColor(name) {
-  const palette = [
-    "#1F5F5C", "#1a3a5c", "#2D4A3E", "#3a2a1a",
-    "#1a2a3a", "#1a3a2a", "#2a1a3a", "#3a1a2a",
-    "#0d3d4f", "#2a3a1a",
-  ];
-  let h = 0;
-  for (let i = 0; i < (name || "").length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xffff;
-  return palette[h % palette.length];
-}
-
+/* ── Match badge ─────────────────────────────────────────────────────────── */
 function MatchBadge({ score }) {
-  // score can be 0–1 or 0–100
   const pct = Math.round(score > 1 ? score : score * 100);
-  const [color, bg, label] =
-    pct >= 85 ? ["#4ade80", "rgba(74,222,128,0.12)", "Stark match"] :
-    pct >= 65 ? ["#F5A623", "rgba(245,166,35,0.12)", "God match"] :
-    ["rgba(255,255,255,0.5)", "rgba(255,255,255,0.06)", "Möjlig match"];
+  const [bg, fg, label] =
+    pct >= 90 ? ["var(--success-tint)", "var(--success)",  "Stark match"] :
+    pct >= 80 ? ["var(--green-tint)",   "var(--green-text)","Bra match"]  :
+    pct >= 70 ? ["var(--amber-tint)",   "var(--amber-text)","OK match"]   :
+               ["var(--paper-2)",       "var(--ink-500)",   "Möjlig match"];
   return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "3px 10px", borderRadius: 99, background: bg, border: `1px solid ${color}30`, fontSize: 11, fontWeight: 700, color, whiteSpace: "nowrap" }}>
-      <span style={{ width: 6, height: 6, borderRadius: 3, background: color, display: "inline-block", flexShrink: 0 }} />
-      {pct}% · {label}
+    <span style={{
+      display: "inline-flex", alignItems: "center", gap: 7,
+      padding: "5px 11px", borderRadius: 999,
+      background: bg,
+    }}>
+      <span style={{ fontSize: 14, fontWeight: 800, color: fg, fontFamily: "var(--mono)", lineHeight: 1 }}>{pct}%</span>
+      <span style={{ fontSize: 11, fontWeight: 700, color: fg, letterSpacing: 0.3 }}>{label}</span>
     </span>
   );
 }
 
+/* ── Pill ────────────────────────────────────────────────────────────────── */
+function Pill({ children, tone = "neutral" }) {
+  const tones = {
+    primary: { bg: "var(--green)",      color: "#fff" },
+    soft:    { bg: "var(--green-tint)", color: "var(--green-text)" },
+    info:    { bg: "var(--info-tint)",  color: "var(--info)" },
+    neutral: { bg: "var(--paper-2)",    color: "var(--ink-700)" },
+    success: { bg: "var(--success-tint)", color: "var(--success)" },
+  };
+  const s = tones[tone] || tones.neutral;
+  return (
+    <span style={{
+      display: "inline-flex", alignItems: "center", gap: 4,
+      padding: "3px 9px", borderRadius: 999,
+      background: s.bg, color: s.color,
+      fontSize: 11, fontWeight: 600, whiteSpace: "nowrap",
+    }}>{children}</span>
+  );
+}
+
+/* ── Main component ──────────────────────────────────────────────────────── */
 export default function JobCard({
   job,
   matchScore = null,
@@ -42,9 +55,8 @@ export default function JobCard({
   const [hovered, setHovered] = useState(false);
   const isMobile = useIsMobile();
 
-  const initials = (job.company || "?").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
-  const avatarColor = companyAvatarColor(job.company);
-  const isMatch = matchScore != null && matchScore > 0;
+  const initials = (job.company || "?").split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+  const isMatch  = matchScore != null && matchScore > 0;
 
   const formatDate = (dateStr) => {
     const d = new Date(dateStr);
@@ -52,8 +64,8 @@ export default function JobCard({
   };
 
   const employmentLabel =
-    job.employment === "fast" ? "Fast anst." :
-    job.employment === "vikariat" ? "Vikariat" : "Timjobb";
+    job.employment === "fast"     ? "Fast anst." :
+    job.employment === "vikariat" ? "Vikariat"   : "Timjobb";
 
   const salaryDisplay = job.salaryMin
     ? job.salaryMax
@@ -69,173 +81,151 @@ export default function JobCard({
       style={{
         display: "block",
         textDecoration: "none",
-        background: featured
-          ? "rgba(245,166,35,0.04)"
-          : hovered
-          ? "rgba(255,255,255,0.05)"
-          : "rgba(255,255,255,0.03)",
-        border: `1px solid ${
-          featured
-            ? "rgba(245,166,35,0.2)"
-            : hovered
-            ? "rgba(255,255,255,0.14)"
-            : "rgba(255,255,255,0.07)"
-        }`,
-        borderRadius: isMobile ? 16 : 20,
-        padding: isMobile ? "16px 16px" : "24px 28px",
-        transition: "all .2s",
+        background: featured ? "var(--amber-tint)" : "var(--card)",
+        border: `1px solid ${featured ? "rgba(199,122,14,0.25)" : hovered ? "var(--line-2)" : "var(--line)"}`,
+        borderRadius: "var(--r-lg)",
+        padding: isMobile ? "16px" : "22px 24px",
+        boxShadow: hovered ? "var(--sh)" : "var(--sh-sm)",
+        transition: "box-shadow .15s, border-color .15s",
         position: "relative",
         overflow: "hidden",
       }}
     >
-      {/* Featured top-border accent */}
+      {/* Featured accent bar */}
       {featured && (
-        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(to right, #F5A623, rgba(245,166,35,0))" }} />
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: "var(--amber)", borderRadius: "var(--r-lg) var(--r-lg) 0 0" }} />
       )}
 
       <div style={{ display: "flex", gap: isMobile ? 12 : 18, alignItems: "flex-start" }}>
         {/* Company avatar */}
-        <div style={{ width: isMobile ? 44 : 52, height: isMobile ? 44 : 52, borderRadius: isMobile ? 12 : 14, background: avatarColor, display: "flex", alignItems: "center", justifyContent: "center", fontSize: isMobile ? 15 : 17, fontWeight: 800, color: "rgba(255,255,255,0.9)", flexShrink: 0, border: "1px solid rgba(255,255,255,0.1)" }}>
+        <div style={{
+          width: isMobile ? 44 : 52, height: isMobile ? 44 : 52,
+          borderRadius: 12, flexShrink: 0,
+          background: "var(--paper-2)", border: "1px solid var(--line)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontWeight: 800, fontSize: isMobile ? 14 : 16,
+          color: "var(--ink-700)",
+        }}>
           {initials}
         </div>
 
-        {/* Main content */}
+        {/* Content */}
         <div style={{ flex: 1, minWidth: 0 }}>
-
-          {isMobile ? (
-            /* ── Mobile layout ── */
-            <>
-              {/* Title */}
-              <div style={{ fontSize: 16, fontWeight: 800, color: "#f0faf9", letterSpacing: "-0.2px", lineHeight: 1.25, marginBottom: 3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {/* Title row */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10, marginBottom: isMobile ? 4 : 6 }}>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div style={{
+                fontSize: isMobile ? 15 : 17, fontWeight: 800,
+                color: "var(--ink-900)", letterSpacing: -0.3,
+                lineHeight: 1.25, marginBottom: 3,
+                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+              }}>
                 {job.title}
               </div>
-              {/* Company · Location · Salary on one line */}
-              <div style={{ fontSize: 12, color: "rgba(240,250,249,0.5)", display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap", marginBottom: salaryDisplay ? 2 : 10 }}>
-                <span>{job.company}</span>
-                <span style={{ opacity: 0.4 }}>·</span>
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 2 }}>
-                  <LocationIcon className="w-3 h-3" style={{ color: "rgba(240,250,249,0.35)" }} />
-                  {job.location}
-                </span>
-              </div>
-              {salaryDisplay && (
-                <div style={{ fontSize: 13, fontWeight: 800, color: "#F5A623", marginBottom: 10 }}>{salaryDisplay}</div>
-              )}
-              {/* Tags row + save button */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
-                <div style={{ display: "flex", gap: 5, flexWrap: "wrap", alignItems: "center", minWidth: 0 }}>
-                  {isMatch && <MatchBadge score={matchScore} />}
-                  {job.companyVerified && (
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 3, padding: "2px 8px", borderRadius: 99, background: "rgba(74,222,128,0.1)", border: "1px solid rgba(74,222,128,0.2)", fontSize: 10.5, fontWeight: 600, color: "#4ade80", whiteSpace: "nowrap" }}>
-                      <CheckIcon className="w-2.5 h-2.5" /> Verifierat
-                    </span>
-                  )}
-                  {(job.license || []).map((l) => (
-                    <span key={l} style={{ padding: "2px 8px", borderRadius: 99, background: "rgba(31,95,92,0.25)", border: "1px solid rgba(31,95,92,0.4)", fontSize: 10.5, fontWeight: 700, color: "#4ade80" }}>
-                      {l}
-                    </span>
-                  ))}
-                  <span style={{ padding: "2px 8px", borderRadius: 99, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", fontSize: 10.5, fontWeight: 500, color: "rgba(240,250,249,0.45)", whiteSpace: "nowrap" }}>
-                    {employmentLabel}
-                  </span>
-                </div>
-                {showSave && (
-                  <button
-                    type="button"
-                    onClick={(e) => { e.preventDefault(); onToggleSave?.(job.id, !isSaved); }}
-                    style={{ width: 32, height: 32, borderRadius: 9, background: isSaved ? "rgba(245,166,35,0.15)" : "rgba(255,255,255,0.05)", border: isSaved ? "1px solid rgba(245,166,35,0.3)" : "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: isSaved ? "#F5A623" : "rgba(240,250,249,0.3)", flexShrink: 0 }}
-                    aria-label={isSaved ? "Ta bort från favoriter" : "Spara jobb"}
-                  >
-                    {isSaved ? <StarFilledIcon className="w-4 h-4" /> : <StarOutlineIcon className="w-4 h-4" />}
-                  </button>
-                )}
-              </div>
-            </>
-          ) : (
-            /* ── Desktop layout ── */
-            <>
-              {/* Title row */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 6 }}>
-                <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: "#f0faf9", letterSpacing: "-0.3px", lineHeight: 1.2, marginBottom: 3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {job.title}
-                  </div>
-                  <div style={{ fontSize: 13, color: "rgba(240,250,249,0.55)", display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-                    <span>{job.company}</span>
-                    <span style={{ opacity: 0.4 }}>·</span>
+              <div style={{ fontSize: 13, color: "var(--ink-500)", display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                <span style={{ fontWeight: 600, color: "var(--ink-700)" }}>{job.company}</span>
+                {job.location && (
+                  <>
+                    <span style={{ color: "var(--ink-300)" }}>·</span>
                     <span style={{ display: "inline-flex", alignItems: "center", gap: 3 }}>
-                      <LocationIcon className="w-3 h-3" style={{ color: "rgba(240,250,249,0.4)" }} />
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
                       {job.location}
                     </span>
-                  </div>
-                </div>
-                <div style={{ textAlign: "right", flexShrink: 0 }}>
-                  {salaryDisplay && (
-                    <div style={{ fontSize: 15, fontWeight: 800, color: "#f0faf9", whiteSpace: "nowrap" }}>{salaryDisplay}</div>
-                  )}
-                  {job.published && (
-                    <div style={{ fontSize: 11, color: "rgba(240,250,249,0.35)", marginTop: 2 }}>Publ. {formatDate(job.published)}</div>
-                  )}
-                </div>
-              </div>
-
-              {/* Description */}
-              {job.description && (
-                <p style={{ fontSize: 13, color: "rgba(240,250,249,0.45)", lineHeight: 1.6, marginBottom: 14, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
-                  {job.description}
-                </p>
-              )}
-
-              {/* Tags + save button */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
-                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
-                  {isMatch && <MatchBadge score={matchScore} />}
-                  {job.companyVerified && (
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 9px", borderRadius: 99, background: "rgba(74,222,128,0.1)", border: "1px solid rgba(74,222,128,0.2)", fontSize: 11, fontWeight: 600, color: "#4ade80", whiteSpace: "nowrap" }}>
-                      <CheckIcon className="w-2.5 h-2.5" /> Verifierat
+                  </>
+                )}
+                {job.companyVerified && (
+                  <>
+                    <span style={{ color: "var(--ink-300)" }}>·</span>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 12, color: "var(--success)", fontWeight: 600 }}>
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 12 10 18 20 6"/></svg>
+                      Verifierat
                     </span>
-                  )}
-                  {job.kollektivavtal === true && (
-                    <span style={{ padding: "3px 9px", borderRadius: 99, background: "rgba(99,179,237,0.1)", border: "1px solid rgba(99,179,237,0.2)", fontSize: 11, fontWeight: 600, color: "#63b3ed", whiteSpace: "nowrap" }}>
-                      Kollektivavtal
-                    </span>
-                  )}
-                  {(job.license || []).map((l) => (
-                    <span key={l} style={{ padding: "3px 9px", borderRadius: 99, background: "rgba(31,95,92,0.25)", border: "1px solid rgba(31,95,92,0.4)", fontSize: 11, fontWeight: 700, color: "#4ade80" }}>
-                      {l}
-                    </span>
-                  ))}
-                  <span style={{ padding: "3px 9px", borderRadius: 99, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", fontSize: 11, fontWeight: 500, color: "rgba(240,250,249,0.5)", whiteSpace: "nowrap" }}>
-                    {employmentLabel}
-                  </span>
-                </div>
-                {showSave && (
-                  <button
-                    type="button"
-                    onClick={(e) => { e.preventDefault(); onToggleSave?.(job.id, !isSaved); }}
-                    style={{ width: 36, height: 36, borderRadius: 10, background: isSaved ? "rgba(245,166,35,0.15)" : "rgba(255,255,255,0.05)", border: isSaved ? "1px solid rgba(245,166,35,0.3)" : "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: isSaved ? "#F5A623" : "rgba(240,250,249,0.35)", transition: "all .15s", flexShrink: 0 }}
-                    aria-label={isSaved ? "Ta bort från favoriter" : "Spara jobb"}
-                  >
-                    {isSaved ? <StarFilledIcon className="w-4 h-4" /> : <StarOutlineIcon className="w-4 h-4" />}
-                  </button>
+                  </>
                 )}
               </div>
+            </div>
 
-              {/* Match criteria chips */}
-              {matchCriteria.length > 0 && (
-                <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(74,222,128,0.1)", display: "flex", flexWrap: "wrap", gap: 6 }}>
-                  {matchCriteria.map((c) => (
-                    <span
-                      key={c.label}
-                      style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 8px", borderRadius: 99, fontSize: 11, fontWeight: 500, background: c.met ? "rgba(74,222,128,0.08)" : "rgba(255,255,255,0.04)", border: `1px solid ${c.met ? "rgba(74,222,128,0.2)" : "rgba(255,255,255,0.07)"}`, color: c.met ? "#4ade80" : "rgba(240,250,249,0.35)" }}
-                    >
-                      {c.met ? <CheckIcon className="w-2.5 h-2.5" /> : <span style={{ opacity: 0.5 }}>–</span>}
-                      {c.label}
-                    </span>
-                  ))}
+            {/* Right: salary + save */}
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6, flexShrink: 0 }}>
+              {salaryDisplay && !isMobile && (
+                <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)", fontFamily: "var(--mono)", whiteSpace: "nowrap" }}>
+                  {salaryDisplay}
                 </div>
               )}
-            </>
+              {showSave && (
+                <button
+                  type="button"
+                  onClick={(e) => { e.preventDefault(); onToggleSave?.(job.id, !isSaved); }}
+                  style={{
+                    width: 34, height: 34, borderRadius: 8,
+                    background: isSaved ? "var(--amber-tint)" : "var(--card-2)",
+                    border: `1px solid ${isSaved ? "rgba(199,122,14,0.30)" : "var(--line-2)"}`,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    cursor: "pointer", color: isSaved ? "var(--amber-deep)" : "var(--ink-400)",
+                    transition: "all .15s",
+                  }}
+                  aria-label={isSaved ? "Ta bort från favoriter" : "Spara jobb"}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill={isSaved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+                  </svg>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Pills row */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
+            {isMatch && <MatchBadge score={matchScore} />}
+            {(job.license || []).map(l => <Pill key={l} tone="primary">{l}</Pill>)}
+            <Pill tone="neutral">{employmentLabel}</Pill>
+            {job.kollektivavtal === true && <Pill tone="info">Kollektivavtal</Pill>}
+          </div>
+
+          {/* Description (desktop only) */}
+          {!isMobile && job.description && (
+            <p style={{
+              fontSize: 13.5, color: "var(--ink-500)", lineHeight: 1.6,
+              marginBottom: 12,
+              overflow: "hidden", display: "-webkit-box",
+              WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+            }}>
+              {job.description}
+            </p>
+          )}
+
+          {/* Footer */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 10, borderTop: "1px solid var(--line)" }}>
+            {isMobile && salaryDisplay
+              ? <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink-900)", fontFamily: "var(--mono)" }}>{salaryDisplay}</div>
+              : <div />
+            }
+            {job.published && (
+              <span style={{ fontSize: 11.5, color: "var(--ink-400)" }}>Publ. {formatDate(job.published)}</span>
+            )}
+          </div>
+
+          {/* Match criteria chips */}
+          {matchCriteria.length > 0 && (
+            <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap", gap: 5 }}>
+              {matchCriteria.map(c => (
+                <span
+                  key={c.label}
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: 4,
+                    padding: "2px 8px", borderRadius: 99, fontSize: 11, fontWeight: 500,
+                    background: c.met ? "var(--success-tint)" : "var(--paper-2)",
+                    color: c.met ? "var(--success)" : "var(--ink-400)",
+                  }}
+                >
+                  {c.met
+                    ? <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 12 10 18 20 6"/></svg>
+                    : <span style={{ opacity: 0.5 }}>–</span>
+                  }
+                  {c.label}
+                </span>
+              ))}
+            </div>
           )}
         </div>
       </div>
