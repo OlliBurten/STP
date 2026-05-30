@@ -151,7 +151,7 @@ export default function Header({ onboarding = false }) {
   const headerBg = isImpersonating
     ? "rgba(10,20,20,0.97)"
     : isLanding
-      ? scrolled ? "rgba(245,242,236,0.94)" : "transparent"
+      ? scrolled ? "rgba(245,242,236,0.92)" : "transparent"
       : "var(--ink-900)";
 
   const headerBorder = isImpersonating
@@ -200,7 +200,10 @@ export default function Header({ onboarding = false }) {
                   textDecoration: "none",
                   padding: "6px 14px",
                   transition: "color .25s",
+                  display: "inline-block",
                 }}
+                onMouseEnter={e => { e.currentTarget.style.color = scrolled ? "var(--ink-900)" : "#fff"; }}
+                onMouseLeave={e => { e.currentTarget.style.color = scrolled ? "var(--ink-700)" : "rgba(255,255,255,0.82)"; }}
               >
                 {item.label}
               </Link>
@@ -358,8 +361,8 @@ export default function Header({ onboarding = false }) {
         />
       )}
 
-      <header className="fixed left-0 right-0 top-0 z-50" style={{ background: headerBg, borderBottom: headerBorder, backdropFilter: isLanding && scrolled ? "blur(12px)" : undefined, WebkitBackdropFilter: isLanding && scrolled ? "blur(12px)" : undefined, transition: headerTransition }}>
-        <nav className="flex items-center relative" style={{ maxWidth: 1280, margin: "0 auto", padding: isMobile ? "0 20px" : "0 32px", width: "100%", height: isLanding ? 68 : 64 }}>
+      <header className="fixed left-0 right-0 top-0 z-50" style={{ background: headerBg, borderBottom: headerBorder, backdropFilter: isLanding && scrolled ? "blur(12px)" : "none", WebkitBackdropFilter: isLanding && scrolled ? "blur(12px)" : "none", transition: headerTransition }}>
+        <nav className="flex items-center relative" style={{ maxWidth: 1200, margin: "0 auto", padding: isMobile ? "0 24px" : "0 32px", width: "100%", height: isLanding ? 68 : 64 }}>
 
           {/* Logo */}
           <div className="flex items-center shrink-0 overflow-visible">
