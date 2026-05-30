@@ -1016,34 +1016,44 @@ export default function Profile() {
         borderBottom: "1px solid var(--line)",
         boxShadow: "var(--sh-sm)",
       }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: isMobile ? "24px 20px 0" : "36px 40px 0" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: isMobile ? "24px 20px 0" : "32px 32px 0" }}>
 
-          {/* Edit toolbar — top: only show Redigera / editing indicator */}
-          <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 8, marginBottom: 20 }}>
-            {editing ? (
+          {editing && (
+            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
               <span style={{ fontSize: 12, color: "var(--amber)", fontWeight: 600 }}>● Redigeringsläge — spara längst ned</span>
-            ) : (
-              <button onClick={startEditing} style={{
-                padding: "6px 14px", borderRadius: 9, border: "1px solid var(--line-2)",
-                background: "transparent", color: "var(--ink-700)", fontSize: 12, fontWeight: 600,
-                cursor: "pointer", fontFamily: "var(--font)",
-              }}>Redigera profil</button>
-            )}
-          </div>
+            </div>
+          )}
 
-          <div style={{ display: "flex", alignItems: "flex-start", gap: 22, marginBottom: 28 }}>
-            {/* Avatar */}
-            <div style={{
-              width: 76, height: 76, borderRadius: "50%", flexShrink: 0,
-              background: "linear-gradient(135deg, var(--green) 0%, var(--green-soft) 100%)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 24, fontWeight: 700, color: "#fff",
-              border: "3px solid var(--card)",
-              boxShadow: "0 0 0 2px var(--green-tint-2), var(--sh-md)",
-            }}>{initials}</div>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 24, marginBottom: 28 }}>
+            {/* Avatar with openToWork ring */}
+            <div style={{ position: "relative", flexShrink: 0 }}>
+              <div style={{
+                padding: current.openToWork ? 3 : 0,
+                borderRadius: "50%",
+                background: current.openToWork ? "conic-gradient(var(--success), var(--green-soft), var(--success))" : "transparent",
+              }}>
+                <div style={{ padding: current.openToWork ? 2 : 0, borderRadius: "50%", background: "var(--card)" }}>
+                  <div style={{
+                    width: 84, height: 84, borderRadius: "50%",
+                    background: "linear-gradient(135deg, var(--green) 0%, var(--green-soft) 100%)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 26, fontWeight: 700, color: "#fff",
+                  }}>{initials}</div>
+                </div>
+              </div>
+              {current.openToWork && (
+                <span style={{
+                  position: "absolute", bottom: 2, left: "50%", transform: "translateX(-50%)",
+                  background: "var(--success)", color: "#fff",
+                  fontSize: 10, fontWeight: 800, letterSpacing: 0.4,
+                  padding: "2px 10px", borderRadius: 999, whiteSpace: "nowrap",
+                  border: "2px solid var(--card)",
+                }}>SÖKER JOBB</span>
+              )}
+            </div>
 
             {/* Info */}
-            <div style={{ flex: 1 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
               {editing ? (
                 <div style={{ display: "flex", gap: 12, marginBottom: 12, maxWidth: 500 }}>
                   <input
@@ -1057,17 +1067,21 @@ export default function Profile() {
                   />
                 </div>
               ) : (
-                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
-                  <h1 style={{ fontSize: 26, fontWeight: 800 }}>{current.name || "—"}</h1>
-                </div>
+                <h1 style={{ fontSize: 30, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.6, marginBottom: 6 }}>
+                  {current.name || "—"}
+                </h1>
               )}
-              <p style={{ fontSize: 14, color: T.sub, marginBottom: 12 }}>
-                📍 {current.location || "—"}, {current.region || "—"}
-                {(current.experience || []).length > 0 && (
-                  <> · {new Date().getFullYear() - ((current.experience[current.experience.length - 1]?.startYear) || new Date().getFullYear())} års erfarenhet</>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--ink-500)", fontSize: 14, marginBottom: 16 }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span style={{ fontWeight: 500 }}>{current.location || "—"}{current.region && current.location !== current.region ? `, ${current.region}` : ""}</span>
+                {calcYearsExperience(current.experience) > 0 && (
+                  <>
+                    <span style={{ color: "var(--ink-300)" }}>·</span>
+                    <span style={{ fontWeight: 500 }}>{calcYearsExperience(current.experience)} års erfarenhet</span>
+                  </>
                 )}
-              </p>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 16 }}>
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
                 {(current.licenses || []).map((l) => <Tag key={l} c="p">{l}</Tag>)}
                 {(current.certificates || []).slice(0, 3).map((cid) => {
                   const st = expiryStatus((current.certExpiry || {})[cid]);
@@ -1081,6 +1095,23 @@ export default function Profile() {
                   : <Tag c="red">Dold</Tag>}
               </div>
             </div>
+
+            {/* Action buttons */}
+            {!editing && (
+              <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                <button
+                  onClick={() => { const url = `${window.location.origin}/profil`; navigator.clipboard.writeText(url).then(() => setLinkCopied(true)).catch(() => {}); setTimeout(() => setLinkCopied(false), 2000); }}
+                  style={{ padding: "8px 16px", borderRadius: 9, border: "1px solid var(--line-2)", background: "var(--card)", color: "var(--ink-700)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font)", display: "flex", alignItems: "center", gap: 6 }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                  {linkCopied ? "Kopierat!" : "Dela profil"}
+                </button>
+                <button onClick={startEditing} style={{ padding: "8px 16px", borderRadius: 9, border: "1px solid var(--green)", background: "var(--green)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font)", display: "flex", alignItems: "center", gap: 6 }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  Redigera profil
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Tabs — 3 tabs matching design */}
@@ -1099,7 +1130,7 @@ export default function Profile() {
       </div>
 
       {/* ── Content ── */}
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: isMobile ? "24px 20px 80px" : "32px 40px 80px" }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: isMobile ? "24px 20px 80px" : "32px 32px 80px" }}>
 
         {/* PROFIL TAB */}
         {tab === "profil" && (
@@ -1260,37 +1291,46 @@ export default function Profile() {
                   </div>
                 ) : (
                   <div>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
-                      {(current.licenses || []).map((l) => <Tag key={l} c="p">{l}</Tag>)}
+                    {/* License boxes: B/C1/C1E/C/CE as 54×54 grid */}
+                    <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+                      {["B","C1","C1E","C","CE"].map(l => {
+                        const owned = (current.licenses || []).includes(l);
+                        return (
+                          <div key={l} style={{
+                            width: 54, height: 54, borderRadius: 12,
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            background: owned ? "var(--green)" : "transparent",
+                            border: owned ? "1px solid var(--green-deep)" : "1px dashed var(--line-2)",
+                            color: owned ? "#fff" : "var(--ink-300)",
+                            fontWeight: 800, fontSize: 15, letterSpacing: 0.3,
+                            boxShadow: owned ? "0 2px 6px rgba(31,95,92,0.20), inset 0 -2px 0 rgba(0,0,0,0.15)" : "none",
+                          }}>{l}</div>
+                        );
+                      })}
                     </div>
                     {(current.certificates || []).length > 0 ? (
-                      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                         {(current.certificates || []).map((cid) => {
                           const expiry = (current.certExpiry || {})[cid];
                           const st = expiryStatus(expiry);
                           const warn = st && st.days < 180;
                           const certLabel = certificateTypes.find((c) => c.value === cid)?.label || cid.replace(/_/g, " ");
+                          const dotColor = st ? (st.days < 0 ? "var(--danger)" : st.days < 90 ? "var(--danger)" : st.days < 180 ? "var(--amber)" : "var(--success)") : "var(--ink-300)";
+                          const bg = st ? (st.days < 0 ? "var(--danger-tint)" : st.days < 90 ? "var(--danger-tint)" : st.days < 180 ? "var(--amber-tint)" : "var(--card-2)") : "var(--card-2)";
+                          const borderColor = st ? (st.days < 0 ? "rgba(185,28,59,0.18)" : st.days < 90 ? "rgba(185,28,59,0.18)" : st.days < 180 ? "rgba(199,122,14,0.20)" : "var(--line)") : "var(--line)";
                           return (
                             <div key={cid} style={{
                               display: "flex", alignItems: "center", justifyContent: "space-between",
-                              padding: "10px 14px", borderRadius: 10, background: T.card,
-                              border: `1px solid ${warn ? (st.days < 90 ? "rgba(239,68,68,0.2)" : "rgba(245,166,35,0.2)") : T.border}`,
+                              padding: "14px 18px", borderRadius: 11,
+                              background: bg, border: `1px solid ${borderColor}`,
                             }}>
-                              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                                {warn && (
-                                  <span style={{ fontSize: 13, color: st.days < 90 ? T.red : T.amber }}>
-                                    {st.days < 90 ? "●" : "◐"}
-                                  </span>
-                                )}
-                                <span style={{ fontSize: 13, fontWeight: 600, color: T.text }}>{certLabel}</span>
+                              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                                <span style={{ width: 8, height: 8, borderRadius: 4, background: dotColor, flexShrink: 0 }} />
+                                <span style={{ fontSize: 14.5, fontWeight: 700, color: "var(--ink-900)" }}>{certLabel}</span>
                               </div>
-                              {st ? (
-                                <span style={{ fontSize: 12, color: warn ? (st.days < 90 ? T.red : T.amber) : T.muted, fontWeight: warn ? 600 : 400 }}>
-                                  {st.label}
-                                </span>
-                              ) : (
-                                <span style={{ fontSize: 12, color: T.muted }}>Lägg till datum</span>
-                              )}
+                              <span style={{ fontSize: 13, color: warn ? dotColor : "var(--ink-500)", fontWeight: warn ? 600 : 500, fontFamily: !warn && st ? "var(--mono)" : "var(--font)" }}>
+                                {st ? st.label : "Lägg till datum"}
+                              </span>
                             </div>
                           );
                         })}

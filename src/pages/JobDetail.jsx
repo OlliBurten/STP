@@ -37,10 +37,9 @@ function avatarColor(name) {
 
 function SectionHeading({ children }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "32px 0 14px" }}>
-      <div style={{ width: 3, height: 20, borderRadius: 2, background: "var(--green)", flexShrink: 0 }} />
-      <h2 style={{ fontSize: 18, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.3, margin: 0 }}>{children}</h2>
-    </div>
+    <h2 style={{ fontSize: 20, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.4, marginTop: 36, marginBottom: 14 }}>
+      {children}
+    </h2>
   );
 }
 
@@ -746,7 +745,7 @@ export default function JobDetail() {
     <main style={{ background: "var(--paper)", minHeight: "100vh", overflowX: "clip" }}>
       <PageMeta title={`${job.title} – ${job.company}`} description={metaDescription} canonical={`/jobb/${job.id}`} jsonLd={jobLd} />
 
-      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 40px" }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px" }}>
         <Breadcrumbs items={breadcrumbs} className="mb-4" />
         <div style={{ marginBottom: 14 }}>
           <Link to={isCompany ? "/foretag/annonser" : "/jobb"} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600, color: "var(--ink-500)", textDecoration: "none" }}>
@@ -757,7 +756,7 @@ export default function JobDetail() {
       </div>
 
       {/* Two-column grid */}
-      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 40px 120px", display: "grid", gridTemplateColumns: "1fr 368px", gap: 28, alignItems: "start" }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px 80px", display: "grid", gridTemplateColumns: "1fr 360px", gap: 28, alignItems: "start" }}>
 
         {/* ── LEFT COLUMN ──────────────────────────────────────────────────── */}
         <div style={{ minWidth: 0 }}>

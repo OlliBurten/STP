@@ -162,6 +162,11 @@ a:hover { text-decoration: underline; }
   to   { transform: translateY(0); }
 }
 
+/* ── Jobs grid ─────────────────────────────────────────────────────────────── */
+.stp-jobs-grid { display: grid; grid-template-columns: 1fr 320px; gap: 24px; align-items: start; }
+@media (max-width: 1080px) { .stp-jobs-grid { grid-template-columns: 1fr; } }
+@media (max-width: 1080px) { .stp-jobs-grid > aside { display: none; } }
+
 /* ── Header responsive helpers ─────────────────────────────────────────────── */
 .dm-desktop-nav { display: none; }
 .dm-mobile-menu-button { display: inline-flex; }
