@@ -1739,28 +1739,6 @@ export default function Profile() {
                 </div>
               )}
 
-              {/* Profile stats (from backend) */}
-              {profileStats && (
-                <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "22px 24px" }}>
-                  <div style={{ marginBottom: 14 }}>
-                    <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-500)" }}>Profilvisningar</p>
-                  </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
-                    {[{ val: profileStats.views7 ?? 0, label: "Senaste 7 dagar" }, { val: profileStats.views30 ?? 0, label: "Senaste 30 dagar" }].map(({ val, label }) => (
-                      <div key={label} style={{ background: "var(--card-2)", border: "1px solid var(--line)", borderRadius: 10, padding: "12px 10px", textAlign: "center" }}>
-                        <div style={{ fontSize: 26, fontWeight: 900, color: val > 0 ? T.amber : T.muted, lineHeight: 1, marginBottom: 4 }}>{val}</div>
-                        <div style={{ fontSize: 10, color: T.muted, lineHeight: 1.3 }}>{label}</div>
-                      </div>
-                    ))}
-                  </div>
-                  {profileStats.conversationCount > 0 && (
-                    <p style={{ fontSize: 12, color: "var(--success)", fontWeight: 600 }}>
-                      {profileStats.conversationCount} {profileStats.conversationCount === 1 ? "åkeri" : "åkerier"} har kontaktat dig
-                    </p>
-                  )}
-                </div>
-              )}
-
             </aside>
           </div>
         )}
