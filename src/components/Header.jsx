@@ -362,7 +362,7 @@ export default function Header({ onboarding = false }) {
       )}
 
       <header className="fixed left-0 right-0 top-0 z-50" style={{ background: headerBg, borderBottom: headerBorder, backdropFilter: isLanding && scrolled ? "blur(12px)" : "none", WebkitBackdropFilter: isLanding && scrolled ? "blur(12px)" : "none", transition: headerTransition }}>
-        <nav className="flex items-center relative" style={{ maxWidth: 1200, margin: "0 auto", padding: isMobile ? "0 24px" : "0 32px", width: "100%", height: isLanding ? 68 : 64 }}>
+        <nav className="flex items-center relative" style={{ maxWidth: 1264, margin: "0 auto", padding: isMobile ? "0 24px" : "0 32px", width: "100%", height: isLanding ? 68 : 64 }}>
 
           {/* Logo */}
           <div className="flex items-center shrink-0 overflow-visible">
