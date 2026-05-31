@@ -4,6 +4,8 @@ const prisma = new PrismaClient();
 
 const columnMigrations = [
   `ALTER TABLE "DriverProfile" ADD COLUMN IF NOT EXISTS "openToWork" BOOLEAN NOT NULL DEFAULT false`,
+  `ALTER TABLE "DriverProfile" ADD COLUMN IF NOT EXISTS "slug" TEXT`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS "DriverProfile_slug_key" ON "DriverProfile"("slug")`,
 ];
 
 async function main() {
