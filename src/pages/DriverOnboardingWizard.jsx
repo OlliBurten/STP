@@ -124,8 +124,8 @@ export default function DriverOnboardingWizard() {
     summary: profile.summary || "",
   }));
 
-  // Redirect if profile already complete
-  if (profileLoaded && isDriverMinimumProfileComplete(profile)) {
+  // Redirect if profile already complete (skip if we're showing the done screen)
+  if (!done && profileLoaded && isDriverMinimumProfileComplete(profile)) {
     return <Navigate to="/profil" replace />;
   }
 
