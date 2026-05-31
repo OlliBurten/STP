@@ -237,8 +237,6 @@ export default function Login() {
   const [info,                  setInfo]                  = useState("");
   const [showResendVerification,setShowResendVerification]= useState(false);
   const [loading,               setLoading]               = useState(false);
-  const [orgNumber,             setOrgNumber]             = useState("");
-  const [companyName,           setCompanyName]           = useState("");
   const [acceptTerms,           setAcceptTerms]           = useState(false);
   const [oauthPickingRole,      setOauthPickingRole]      = useState(false);
   const [showPassword,          setShowPassword]          = useState(false);
@@ -295,7 +293,7 @@ export default function Login() {
       if (isRegister) {
         if (!name.trim())  { setError("Namn krävs"); return; }
         if (!acceptTerms)  { setError("Du måste godkänna användarvillkoren och integritetspolicyn."); return; }
-        const result = await registerWithApi({ email: email.trim(), password, role, name: name.trim(), companyName: role === "company" ? companyName.trim() : undefined, companyOrgNumber: role === "company" ? orgNumber.trim() : undefined });
+        const result = await registerWithApi({ email: email.trim(), password, role, name: name.trim() });
         if (result?.emailVerificationSent === false) {
           setInfo("Kontot skapades men vi kunde tyvärr inte skicka verifieringsmail just nu. Kontakta oss med din e-postadress så verifierar vi dig manuellt.");
           setShowResendVerification(true);
@@ -498,25 +496,6 @@ export default function Login() {
               <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column" }}>
                 {error && <Notice type="error">{error}</Notice>}
                 {info  && <Notice type="info">{info}</Notice>}
-
-                {isRegister && !isDriver && (
-                  <>
-                    <InputField
-                      label="Företagsnamn"
-                      placeholder="Nordic Transport AB"
-                      value={companyName}
-                      onChange={e => setCompanyName(e.target.value)}
-                      autoComplete="organization"
-                    />
-                    <InputField
-                      label="Organisationsnummer"
-                      placeholder="556677-8899"
-                      value={orgNumber}
-                      onChange={e => setOrgNumber(e.target.value)}
-                      autoComplete="off"
-                    />
-                  </>
-                )}
 
                 <InputField
                   label={isDriver ? "Namn" : "Kontaktperson"}
