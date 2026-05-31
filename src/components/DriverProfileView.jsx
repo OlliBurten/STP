@@ -627,11 +627,21 @@ export default function DriverProfileView({
                 </div>
               )}
 
-              {/* Presentation */}
-              {profile.summary && (
+              {/* Om mig */}
+              {(profile.summary || mode === "self") && (
                 <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, padding: "20px 24px", boxShadow: "var(--sh-sm)" }}>
-                  <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 14 }}>Presentation</div>
-                  <p style={{ fontSize: 15, color: "var(--ink-700)", lineHeight: 1.7, margin: 0 }}>{profile.summary}</p>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)" }}>Om mig</div>
+                    {mode === "self" && onEdit && (
+                      <button onClick={onEdit} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, background: "transparent", border: "1px solid var(--line-2)", fontSize: 12.5, fontWeight: 600, color: "var(--ink-700)", cursor: "pointer", fontFamily: "inherit" }}>
+                        Redigera
+                      </button>
+                    )}
+                  </div>
+                  {profile.summary
+                    ? <p style={{ fontSize: 15, color: "var(--ink-700)", lineHeight: 1.7, margin: 0 }}>{profile.summary}</p>
+                    : <p style={{ fontSize: 14, color: "var(--ink-400)", margin: 0 }}>Ingen presentation ännu — lägg till för att synas mer.</p>
+                  }
                 </div>
               )}
 

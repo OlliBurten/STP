@@ -1531,6 +1531,24 @@ export default function Profile() {
                 </>
               )}
 
+              {/* ── Om mig ── */}
+              <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "22px 24px" }}>
+                <div style={{ marginBottom: 16 }}>
+                  <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-500)" }}>Om mig</p>
+                </div>
+                <textarea
+                  value={current.summary || ""}
+                  onChange={(e) => e.target.value.length <= 400 && updateDraft({ summary: e.target.value })}
+                  rows={4}
+                  placeholder="Beskriv din erfarenhet och vad du söker. Visas för åkerier."
+                  style={{ ...inputStyle, resize: "none", lineHeight: 1.6 }}
+                />
+                <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6 }}>
+                  <p style={{ fontSize: 11, color: T.muted }}>Minst {SUMMARY_MIN_LENGTH} tecken</p>
+                  <p style={{ fontSize: 11, color: T.muted }}>{(current.summary || "").length}/400</p>
+                </div>
+              </div>
+
               {/* ── Erfarenhet ── */}
               <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "22px 24px" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
@@ -1602,37 +1620,6 @@ export default function Profile() {
                       <ExpForm onSave={handleAddExperience} onCancel={() => setAddingExp(false)} isMobile={isMobile} />
                     )}
                   </div>
-                )}
-              </div>
-
-              {/* ── Om mig ── */}
-              <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "22px 24px" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-                  <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-500)" }}>Om mig</p>
-                  {!editing && (
-                    <button onClick={startEditing} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, background: "transparent", border: "1px solid var(--line-2)", fontSize: 12.5, fontWeight: 600, color: "var(--ink-700)", cursor: "pointer", fontFamily: "inherit" }}>
-                      Redigera
-                    </button>
-                  )}
-                </div>
-                {editing ? (
-                  <>
-                    <textarea
-                      value={current.summary || ""}
-                      onChange={(e) => e.target.value.length <= 400 && updateDraft({ summary: e.target.value })}
-                      rows={4}
-                      placeholder="Beskriv din erfarenhet och vad du söker. Visas för åkerier."
-                      style={{ ...inputStyle, resize: "none", lineHeight: 1.6 }}
-                    />
-                    <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6 }}>
-                      <p style={{ fontSize: 11, color: T.muted }}>Minst {SUMMARY_MIN_LENGTH} tecken</p>
-                      <p style={{ fontSize: 11, color: T.muted }}>{(current.summary || "").length}/400</p>
-                    </div>
-                  </>
-                ) : (
-                  <p style={{ fontSize: 15, lineHeight: 1.65, color: "var(--ink-700)", textWrap: "pretty" }}>
-                    {current.summary || <span style={{ color: "var(--ink-400)" }}>Ingen presentation ännu — lägg till för att synas mer.</span>}
-                  </p>
                 )}
               </div>
 
