@@ -38,7 +38,8 @@ function Field({ label, children }) {
   );
 }
 
-export default function FilterDrawer({ filters, setFilters, onClose }) {
+export default function FilterDrawer({ open, filters, onChange: setFilters, onClose }) {
+  if (!open) return null;
   const handleChange = (key, value) => setFilters((f) => ({ ...f, [key]: value }));
 
   const clearFilters = () =>
