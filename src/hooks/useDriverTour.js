@@ -54,16 +54,6 @@ export function useDriverTour({ isDriver, user, profileLoaded }) {
             },
           },
           {
-            element: "[data-tour='job-filters']",
-            popover: {
-              title: "Filtrera jobb",
-              description:
-                "Välj region, körkort (CE/C), anställningstyp och mer. Plattformen visar automatiskt jobb som matchar din profil högst upp.",
-              side: "bottom",
-              align: "start",
-            },
-          },
-          {
             element: "[data-tour='user-menu']",
             popover: {
               title: "Din profil — viktigast av allt",
