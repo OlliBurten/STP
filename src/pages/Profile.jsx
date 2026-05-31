@@ -1041,7 +1041,7 @@ export default function Profile() {
   if (!editing) {
     return (
       <div style={{ minHeight: "100vh", background: "var(--paper)", color: "var(--ink-900)", fontFamily: "var(--font)" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 32px 80px" }}>
+        <div style={{ maxWidth: 1264, margin: "0 auto", padding: "28px 32px 80px" }}>
           <DriverProfileView
             profile={current}
             owner={user}
@@ -1069,7 +1069,7 @@ export default function Profile() {
     <div style={{ minHeight: "100vh", background: "var(--paper)", color: "var(--ink-900)", fontFamily: "var(--font)" }}>
 
       {/* ── Hero card ── */}
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 32px 0" }}>
+      <div style={{ maxWidth: 1264, margin: "0 auto", padding: "28px 32px 0" }}>
         <div style={{
           background: "var(--card)",
           border: "1px solid var(--line)",
@@ -1223,7 +1223,7 @@ export default function Profile() {
       </div>
 
       {/* ── Content ── */}
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "20px 32px 80px" }}>
+      <div style={{ maxWidth: 1264, margin: "0 auto", padding: "20px 32px 80px" }}>
 
         {/* PROFIL TAB */}
         {tab === "profil" && (
