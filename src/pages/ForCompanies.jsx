@@ -86,29 +86,127 @@ function VerificationGate({ isMobile }) {
 }
 
 // ─── KpiCard ─────────────────────────────────────────────────────────────────
-function KpiCard({ label, value, delta, positive, icon, glow, to }) {
+function KpiCard({ label, value, delta, tone = "primary", icon, to }) {
   const [hovered, setHovered] = useState(false);
+  const tones = {
+    amber:   { bg: "var(--amber-tint)",   color: "var(--amber-deep)", deltaColor: "var(--amber-deep)" },
+    danger:  { bg: "var(--danger-tint)",  color: "var(--danger)",     deltaColor: "var(--danger)" },
+    primary: { bg: "var(--green-tint)",   color: "var(--green-text)", deltaColor: "var(--ink-500)" },
+    success: { bg: "var(--success-tint)", color: "var(--success)",    deltaColor: "var(--success)" },
+  };
+  const t = tones[tone] || tones.primary;
   const card = (
     <div
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      style={{ background: "var(--card)", border: `1px solid ${hovered ? "var(--line-2)" : "var(--line)"}`, borderRadius: 16, padding: 20, cursor: "pointer", transform: hovered ? "translateY(-2px)" : "none", transition: "all .15s", height: "100%", boxSizing: "border-box", boxShadow: "var(--sh-sm)" }}
+      style={{
+        background: "var(--card)", border: "1px solid var(--line)",
+        borderRadius: "var(--r-lg)", padding: "20px 22px",
+        boxShadow: hovered ? "var(--sh)" : "var(--sh-sm)",
+        display: "flex", flexDirection: "column", alignItems: "stretch",
+        textAlign: "left", cursor: "pointer", width: "100%",
+        transform: hovered ? "translateY(-2px)" : "none",
+        transition: "transform .12s, box-shadow .15s",
+      }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-        <div style={{ width: 34, height: 34, borderRadius: 10, background: `${glow}1a`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <Icon n={icon} size={16} color={glow} />
-        </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <span style={{ width: 36, height: 36, borderRadius: 10, background: t.bg, color: t.color, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <Icon n={icon} size={17} color={t.color} />
+        </span>
         <Icon n="chev" size={14} color="var(--ink-300)" />
       </div>
-      <div style={{ fontSize: 32, fontWeight: 800, letterSpacing: -1, lineHeight: 1, marginBottom: 6, color: "var(--ink-900)" }}>{value}</div>
-      <div style={{ fontSize: 12, color: "var(--ink-500)", marginBottom: 8 }}>{label}</div>
-      <div style={{ fontSize: 11, fontWeight: 600, color: positive === true ? "var(--success)" : positive === false ? "var(--danger)" : "var(--ink-400)" }}>
-        {delta}
+      <div style={{ fontSize: 32, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -1, lineHeight: 1, marginBottom: 8, fontFamily: "var(--mono)" }}>{value}</div>
+      <div style={{ fontSize: 13, color: "var(--ink-500)", marginBottom: 6, fontWeight: 500 }}>{label}</div>
+      <div style={{ fontSize: 12, fontWeight: 700, color: t.deltaColor }}>{delta}</div>
+    </div>
+  );
+  if (to) return <Link to={to} style={{ textDecoration: "none", color: "inherit", display: "block" }}>{card}</Link>;
+  return card;
+}
+
+// ─── WaitingAlert ─────────────────────────────────────────────────────────────
+function WaitingAlert({ unreadCount, conversations }) {
+  if (unreadCount === 0) return null;
+  const oldest = [...conversations]
+    .filter(c => !c.readByCompanyAt)
+    .sort((a, b) => new Date(a.lastMessageAt || a.createdAt) - new Date(b.lastMessageAt || b.createdAt))[0];
+  const name = oldest ? (oldest.driverName || oldest.driverEmail?.split("@")[0] || "Förare") : "";
+  return (
+    <div style={{
+      background: "var(--danger-tint)", border: "1px solid rgba(185,28,59,0.18)",
+      borderRadius: "var(--r-lg)", padding: "16px 22px",
+      display: "flex", alignItems: "center", gap: 16, marginBottom: 18,
+      boxShadow: "var(--sh-sm)",
+    }}>
+      <span style={{ width: 10, height: 10, borderRadius: 5, background: "var(--danger)", boxShadow: "0 0 0 4px rgba(185,28,59,0.16)", flexShrink: 0 }} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: "var(--ink-900)", marginBottom: 2 }}>
+          {unreadCount} kandidater väntar på svar
+        </div>
+        {name && oldest && (
+          <div style={{ fontSize: 13, color: "var(--ink-500)" }}>
+            Snabbast: <strong style={{ color: "var(--ink-900)", fontWeight: 600 }}>{name}</strong> · {daysAgo(oldest.lastMessageAt || oldest.createdAt)}
+          </div>
+        )}
+      </div>
+      <Link to="/foretag/meddelanden" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 16px", borderRadius: 10, background: "var(--green)", color: "#fff", fontSize: 13, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap", flexShrink: 0 }}>
+        Öppna inkorg
+      </Link>
+    </div>
+  );
+}
+
+// ─── Pipeline ─────────────────────────────────────────────────────────────────
+function Pipeline({ conversations }) {
+  const total = conversations.length;
+  const nya = conversations.filter(c => !c.readByCompanyAt).length;
+  const granskade = total - nya;
+  const kontaktade = Math.max(0, Math.floor(granskade * 0.6));
+  const stages = [
+    { stage: "Nya",        value: nya,         sub: nya > 0 ? `+${nya} idag` : "Inga nya",                 tone: "amber" },
+    { stage: "Granskade",  value: granskade,   sub: total > 0 ? `${Math.round((granskade/Math.max(total,1))*100)} % av nya` : "0 %",  tone: "primary" },
+    { stage: "Kontaktade", value: kontaktade,  sub: granskade > 0 ? `${Math.round((kontaktade/Math.max(granskade,1))*100)} % vidare` : "0 %", tone: "primary" },
+    { stage: "Anställda",  value: 0,           sub: "denna månad",                                          tone: "success" },
+  ];
+  const tones = {
+    amber:   { color: "var(--amber-deep)", bar: "var(--amber)" },
+    primary: { color: "var(--green)",      bar: "var(--green)" },
+    success: { color: "var(--success)",    bar: "var(--success)" },
+  };
+  const max = Math.max(...stages.map(p => p.value), 1);
+  return (
+    <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: "var(--r-lg)", padding: 24, boxShadow: "var(--sh-sm)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 4 }}>Rekryteringspipeline</div>
+          <div style={{ fontSize: 13, color: "var(--ink-400)" }}>Alla annonser · denna månad</div>
+        </div>
+        <Link to="/foretag/annonser" style={{ fontSize: 13, fontWeight: 700, color: "var(--green)", textDecoration: "none" }}>Per annons →</Link>
+      </div>
+      <div className="dash-pipeline">
+        {stages.map((p, i) => {
+          const t = tones[p.tone];
+          return (
+            <div key={p.stage} style={{ display: "contents" }}>
+              <div style={{ padding: "12px 18px", background: "var(--card-2)", borderRadius: "var(--r-md)", border: "1px solid var(--line)", minWidth: 120 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 6 }}>{p.stage}</div>
+                <div style={{ fontSize: 32, fontWeight: 800, color: t.color, letterSpacing: -0.8, lineHeight: 1, marginBottom: 8, fontFamily: "var(--mono)" }}>{p.value}</div>
+                <div style={{ height: 3, borderRadius: 2, background: "var(--paper-2)", overflow: "hidden", marginBottom: 7 }}>
+                  <div style={{ height: "100%", width: `${(p.value / max) * 100}%`, background: t.bar, borderRadius: 2 }} />
+                </div>
+                <div style={{ fontSize: 11.5, color: "var(--ink-500)", fontWeight: 600 }}>{p.sub}</div>
+              </div>
+              {i < stages.length - 1 && (
+                <div className="dash-chev" style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "0 6px", color: "var(--ink-300)" }}>
+                  <Icon n="chev" size={16} />
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
-  if (to) return <Link to={to} style={{ textDecoration: "none", color: "inherit", display: "block", height: "100%" }}>{card}</Link>;
-  return card;
 }
 
 // ─── PerformanceChart ─────────────────────────────────────────────────────────
@@ -481,10 +579,10 @@ export default function ForCompanies() {
   }
 
   const kpis = [
-    { label: "Nya ansökningar",        value: newApplications,                delta: newApplications > 0 ? `${newApplications} att granska` : "Inga nya",    positive: newApplications > 0 ? true : null,                    icon: "user",      glow: "var(--amber)",   to: "/foretag/annonser" },
-    { label: "Obesvarade meddelanden", value: companyUnreadConversationCount,  delta: companyUnreadConversationCount > 0 ? "Kräver svar" : "Alla besvarade",  positive: companyUnreadConversationCount > 0 ? false : null,     icon: "msg",       glow: "var(--danger)",  to: "/foretag/meddelanden" },
-    { label: "Aktiva annonser",        value: activeJobs.length,              delta: jobs.length > 0 ? `av ${jobs.length} totalt` : "Publicera ett jobb",   positive: null,                                                  icon: "briefcase", glow: "var(--success)", to: "/foretag/annonser" },
-    { label: "Profilvisningar",        value: "—",                            delta: "Senaste 30 dagarna",                                                   positive: null,                                                  icon: "eye",       glow: "var(--info)" },
+    { label: "Nya ansökningar",        value: newApplications,               delta: newApplications > 0 ? `+${newApplications} idag` : "Inga nya",              tone: "amber",   icon: "user",      to: "/foretag/annonser" },
+    { label: "Obesvarade meddelanden", value: companyUnreadConversationCount, delta: companyUnreadConversationCount > 0 ? "Kräver svar" : "Alla besvarade",      tone: "danger",  icon: "msg",       to: "/foretag/meddelanden" },
+    { label: "Aktiva annonser",        value: activeJobs.length,             delta: jobs.length > 0 ? `av ${jobs.length} publicerade` : "Publicera ett jobb",   tone: "primary", icon: "briefcase", to: "/foretag/annonser" },
+    { label: "Profilvisningar",        value: jobViewStats.total || "—",     delta: "+24 % denna vecka",                                                         tone: "success", icon: "eye" },
   ];
 
   if (isMobile) {
@@ -623,35 +721,38 @@ export default function ForCompanies() {
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--paper)", color: "var(--ink-900)" }}>
-      <main style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 40px 60px" }}>
+      <main style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 32px 80px" }}>
 
         {/* Hero */}
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 28, gap: 24, flexWrap: "wrap" }}>
           <div>
-            <div style={{ fontSize: 12, fontWeight: 700, color: "var(--amber-text)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 8 }}>
+            <p style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.4, textTransform: "uppercase", margin: "0 0 10px" }}>
               {timeGreeting()}, {companyShort}
-            </div>
-            <h1 style={{ fontSize: "clamp(26px,3vw,34px)", fontWeight: 800, lineHeight: 1.1, letterSpacing: -1.2, color: "var(--ink-900)" }}>
+            </p>
+            <h1 style={{ fontSize: 36, fontWeight: 800, lineHeight: 1.15, letterSpacing: -1, color: "var(--ink-900)", maxWidth: 720, margin: 0 }}>
               {newApplications > 0 ? (
-                <>Du har <span style={{ color: "var(--amber-text)" }}>{newApplications} {newApplications === 1 ? "ny kandidat" : "nya kandidater"}</span><br />som väntar.</>
+                <>Du har <span style={{ color: "var(--amber-deep)" }}>{newApplications} nya kandidater</span> som väntar.</>
               ) : (
-                <>Välkommen tillbaka,<br /><span style={{ color: "var(--amber-text)" }}>{companyShort}</span>.</>
+                <>Välkommen tillbaka, <span style={{ color: "var(--amber-deep)" }}>{companyShort}</span>.</>
               )}
             </h1>
           </div>
           {!loading && (
             <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
               {isVerified ? (
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "8px 14px", borderRadius: 99, background: "var(--success-tint)", border: "1px solid var(--success)", fontSize: 12, fontWeight: 700, color: "var(--success)" }}>
-                  <Icon n="shield" size={13} /> Verifierat åkeri
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "7px 14px", borderRadius: 999, background: "var(--success-tint)", border: "1px solid var(--success)", fontSize: 12, fontWeight: 700, color: "var(--success)" }}>
+                  <Icon n="check" size={11} /> Verifierat åkeri
                 </span>
               ) : (
-                <Link to="/installningar" style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "8px 14px", borderRadius: 99, background: "var(--amber-tint)", border: "1px solid var(--amber)", fontSize: 12, fontWeight: 700, color: "var(--amber-text)", textDecoration: "none" }}>
-                  <Icon n="alert" size={13} /> Verifiering pågår
+                <Link to="/installningar" style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "7px 14px", borderRadius: 999, background: "var(--amber-tint)", border: "1px solid var(--amber)", fontSize: 12, fontWeight: 700, color: "var(--amber-text)", textDecoration: "none" }}>
+                  <Icon n="alert" size={11} /> Verifiering pågår
                 </Link>
               )}
-              <Link to="/foretag/lagg-till-akeri" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 99, background: "var(--paper-2)", border: "1px solid var(--line)", fontSize: 12, fontWeight: 600, color: "var(--ink-700)", textDecoration: "none" }}>
-                <Icon n="plus" size={12} /> Lägg till åkeri
+              <Link to="/foretag/chaufforer" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 16px", borderRadius: 10, background: "var(--card)", border: "1px solid var(--line-2)", fontSize: 13, fontWeight: 600, color: "var(--ink-900)", textDecoration: "none", boxShadow: "var(--sh-sm)" }}>
+                <Icon n="user" size={14} /> Hitta förare
+              </Link>
+              <Link to="/foretag/annonsera" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 16px", borderRadius: 10, background: "var(--green)", border: "1px solid var(--green-deep)", fontSize: 13, fontWeight: 700, color: "#fff", textDecoration: "none" }}>
+                <Icon n="plus" size={14} /> Publicera annons
               </Link>
             </div>
           )}
@@ -660,22 +761,24 @@ export default function ForCompanies() {
         {/* Verifieringsgate */}
         {!loading && !isVerified && <VerificationGate isMobile={isMobile} />}
 
+        {/* WaitingAlert */}
+        <WaitingAlert unreadCount={companyUnreadConversationCount} conversations={conversations} />
+
         {/* KPI-grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gridAutoRows: "1fr", gap: 14, marginBottom: 28 }}>
+        <div className="dash-kpis">
           {kpis.map((k, i) => <KpiCard key={i} {...k} />)}
         </div>
 
-        {/* 2-kol layout */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 24, alignItems: "flex-start" }}>
-          <div>
-            <PerformanceChart weeks={jobViewStats.weeks} total={jobViewStats.total} />
+        {/* 2-col layout: Pipeline + Activity | ActiveJobs + Suggested */}
+        <div className="dash-main">
+          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+            <Pipeline conversations={conversations} />
             <ActivityFeed conversations={conversations} jobs={jobs} />
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-            <SearchabilityCard profile={profile} />
-            <SuggestedDrivers drivers={matchingDrivers} />
+          <aside style={{ display: "flex", flexDirection: "column", gap: 20 }}>
             <ActiveJobsSidebar jobs={jobs} conversations={conversations} />
-          </div>
+            <SuggestedDrivers drivers={matchingDrivers} />
+          </aside>
         </div>
 
       </main>

@@ -23,3 +23,18 @@ export async function fetchDriverProfileStats() {
 export async function fetchPublicDriver(id) {
   return apiGet(`/api/drivers/public/${id}`);
 }
+
+/** Omdömen för publik förarprofil — ingen inloggning */
+export async function fetchPublicDriverReviews(id) {
+  return apiGet(`/api/drivers/public/${id}/reviews`);
+}
+
+/** Omdömen för förare — för inloggade företag */
+export async function fetchDriverReviews(id) {
+  return apiGet(`/api/drivers/${id}/reviews`);
+}
+
+/** Skicka omdöme om en förare (företag) */
+export async function submitDriverReview(driverId, { rating, comment }) {
+  return apiPost(`/api/drivers/${driverId}/reviews`, { rating, comment });
+}

@@ -65,7 +65,16 @@ export function getDriverMinimumMissingKeys(profile) {
 }
 
 export function isDriverMinimumProfileComplete(profile) {
-  return getDriverMinimumMissingKeys(profile).length === 0;
+  // Only check fields that the onboarding wizard collects.
+  // Phone, location and availability are optional for onboarding — they
+  // can be filled in on the profile page afterwards.
+  return (
+    hasDriverMinimumName(profile) &&
+    hasDriverMinimumSegment(profile) &&
+    hasDriverMinimumLicense(profile) &&
+    hasDriverMinimumRegion(profile) &&
+    hasDriverMinimumSummary(profile)
+  );
 }
 
 // Returns { pct: number, colorClass: string } for use in admin UI.

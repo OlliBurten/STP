@@ -33,19 +33,26 @@ function Icon({ n, s = 18, c = "currentColor" }) {
 }
 
 // ─── Section card ─────────────────────────────────────────────────────────────
-function Section({ title, subtitle, icon, children }) {
+function Card({ children, style }) {
   return (
-    <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: 24, boxShadow: "var(--sh-sm)" }}>
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 11, marginBottom: subtitle ? 14 : 16 }}>
-        <div style={{ width: 32, height: 32, borderRadius: 9, background: "var(--amber-tint)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
-          <Icon n={icon} s={15} c="var(--amber)" />
-        </div>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 15, fontWeight: 700, letterSpacing: -0.2, color: "var(--ink-900)" }}>{title}</div>
-          {subtitle && <div style={{ fontSize: 12, color: "var(--ink-500)", marginTop: 3 }}>{subtitle}</div>}
-        </div>
-      </div>
+    <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: 24, boxShadow: "var(--sh-sm)", ...style }}>
       {children}
+    </div>
+  );
+}
+function SectionLabel({ children }) {
+  return (
+    <div style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-500)", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 14 }}>
+      {children}
+    </div>
+  );
+}
+function FieldRow({ label, value, mono }) {
+  if (!value) return null;
+  return (
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "9px 0", borderBottom: "1px solid var(--line)" }}>
+      <span style={{ fontSize: 12.5, color: "var(--ink-500)" }}>{label}</span>
+      <span style={{ fontSize: 13, fontWeight: 600, color: "var(--ink-900)", fontFamily: mono ? "var(--mono)" : "inherit" }}>{value}</span>
     </div>
   );
 }
@@ -56,21 +63,21 @@ function Toggle({ on, setOn, label, sub }) {
     <button
       type="button"
       onClick={() => setOn(!on)}
-      style={{ width: "100%", padding: "14px 16px", borderRadius: 12, background: on ? "var(--success-tint)" : "var(--paper-2)", border: `1px solid ${on ? "rgba(31,122,58,0.2)" : "var(--line-2)"}`, display: "flex", alignItems: "center", gap: 14, textAlign: "left", cursor: "pointer", transition: "all .15s" }}
+      style={{ width: "100%", padding: "14px 16px", borderRadius: 12, background: on ? "var(--green-tint)" : "var(--card-2)", border: `1px solid ${on ? "var(--green-tint-2)" : "var(--line-2)"}`, display: "flex", alignItems: "center", gap: 14, textAlign: "left", cursor: "pointer", transition: "all .15s" }}
     >
-      <div style={{ width: 36, height: 20, borderRadius: 99, background: on ? "var(--success)" : "var(--ink-200)", position: "relative", transition: "all .2s", flexShrink: 0 }}>
-        <div style={{ position: "absolute", top: 2, left: on ? 18 : 2, width: 16, height: 16, borderRadius: 99, background: "#fff", transition: "all .2s", boxShadow: "0 1px 3px rgba(0,0,0,0.15)" }} />
+      <div style={{ width: 38, height: 22, borderRadius: 11, background: on ? "var(--green)" : "var(--ink-200)", border: `1px solid ${on ? "var(--green-deep)" : "var(--line-2)"}`, position: "relative", transition: "background .2s", flexShrink: 0 }}>
+        <div style={{ position: "absolute", top: 2, left: on ? 18 : 2, width: 16, height: 16, borderRadius: 8, background: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,0.2)", transition: "left .2s" }} />
       </div>
       <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 2, color: "var(--ink-900)" }}>{label}</div>
-        <div style={{ fontSize: 11.5, color: "var(--ink-500)" }}>{sub}</div>
+        <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 2, color: "var(--ink-900)" }}>{label}</div>
+        {sub && <div style={{ fontSize: 12.5, color: "var(--ink-500)", marginTop: 2 }}>{sub}</div>}
       </div>
     </button>
   );
 }
 
-// ─── JobStrip ─────────────────────────────────────────────────────────────────
-function JobStrip({ job, pct, isMobile }) {
+// ─── JobContextSidebar ────────────────────────────────────────────────────────
+function JobContextSidebar({ job }) {
   if (!job) return null;
   const initials = (job.company || "?").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
   const salaryDisplay = job.salaryMin
@@ -78,166 +85,91 @@ function JobStrip({ job, pct, isMobile }) {
       ? `${job.salaryMin.toLocaleString("sv-SE")} – ${job.salaryMax.toLocaleString("sv-SE")} kr/mån`
       : `Från ${job.salaryMin.toLocaleString("sv-SE")} kr/mån`
     : job.salary || null;
-  const matchColor = pct == null ? null : pct >= 80 ? "var(--success)" : pct >= 65 ? "var(--amber)" : "var(--ink-500)";
-  const matchBg = pct == null ? null : pct >= 80 ? "var(--success-tint)" : pct >= 65 ? "var(--amber-tint)" : "var(--paper-2)";
-  const matchBorder = pct == null ? null : pct >= 80 ? "rgba(31,122,58,0.25)" : pct >= 65 ? "rgba(199,122,14,0.25)" : "var(--line-2)";
 
   return (
-    <div style={{ background: "var(--green-tint)", borderBottom: "1px solid var(--line)" }}>
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: isMobile ? "16px 20px" : "28px 32px 20px", display: "flex", alignItems: "center", gap: isMobile ? 12 : 18 }}>
-        <div style={{ width: isMobile ? 40 : 52, height: isMobile ? 40 : 52, borderRadius: isMobile ? 10 : 13, background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: isMobile ? 14 : 17, color: "#fff", letterSpacing: -0.5, flexShrink: 0 }}>
-          {initials}
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          {!isMobile && <div style={{ fontSize: 11, fontWeight: 700, color: "var(--green)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 4 }}>Du ansöker till</div>}
-          <div style={{ fontSize: isMobile ? 15 : 21, fontWeight: 800, lineHeight: 1.2, marginBottom: 3, color: "var(--ink-900)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{job.title}</div>
-          <div style={{ fontSize: 12, color: "var(--ink-500)", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-            <span>{job.company}</span>
-            {job.location && <><span style={{ color: "var(--ink-300)" }}>·</span><span>{job.location}</span></>}
-            {salaryDisplay && !isMobile && <><span style={{ color: "var(--ink-300)" }}>·</span><span style={{ fontFamily: "var(--mono)", fontWeight: 600, color: "var(--ink-700)" }}>{salaryDisplay}</span></>}
+    <aside style={{ display: "flex", flexDirection: "column", gap: 18, position: "sticky", top: 32 }}>
+      <Card>
+        <div style={{ display: "flex", gap: 14, alignItems: "flex-start", marginBottom: 16 }}>
+          <div style={{ width: 48, height: 48, borderRadius: 11, flexShrink: 0, background: "var(--paper-2)", border: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 800, color: "var(--ink-700)" }}>
+            {initials}
           </div>
-        </div>
-        {pct != null && !isMobile && (
-          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", borderRadius: 99, background: matchBg, border: `1px solid ${matchBorder}`, flexShrink: 0 }}>
-            <Icon n="spark" s={14} c={matchColor} />
-            <div>
-              <div style={{ fontSize: 18, fontWeight: 800, lineHeight: 1, color: matchColor, fontFamily: "var(--mono)" }}>{pct}%</div>
-              <div style={{ fontSize: 10, color: "var(--ink-400)", textTransform: "uppercase", letterSpacing: 1, marginTop: 1 }}>match</div>
+          <div>
+            <h3 style={{ fontSize: 16, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.3, lineHeight: 1.3, margin: 0 }}>{job.title}</h3>
+            <div style={{ fontSize: 13, color: "var(--ink-500)", marginTop: 3, display: "flex", alignItems: "center", gap: 5 }}>
+              {job.company}
+              <Icon n="check" s={11} c="var(--success)" />
             </div>
           </div>
-        )}
-      </div>
-    </div>
-  );
-}
+        </div>
+        <FieldRow label="Lön" value={salaryDisplay} mono />
+        <FieldRow label="Anställning" value={job.employmentType || job.type} />
+        <FieldRow label="Plats" value={job.location} />
+      </Card>
 
-// ─── PreviewCol ───────────────────────────────────────────────────────────────
-function PreviewCol({ profile, message }) {
-  if (!profile) return null;
-  const initials = (profile.name || "?").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
-  const licenses = profile.licenses || [];
-  const certs = (profile.certificates || []).map(getCertificateLabel).filter(Boolean);
-  const yearsExp = calcYearsExperience(profile.experience);
-
-  return (
-    <div style={{ position: "sticky", top: 88, display: "flex", flexDirection: "column", gap: 14 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 11, fontWeight: 700, color: "var(--green)", textTransform: "uppercase", letterSpacing: 1.5 }}>
-        <Icon n="eye" s={12} />
-        Så här ser åkeriet din ansökan
-      </div>
-
-      <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, overflow: "hidden", boxShadow: "var(--sh-sm)" }}>
-        {/* Profile header */}
-        <div style={{ padding: 24, borderBottom: "1px solid var(--line)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 14 }}>
-            <div style={{ width: 56, height: 56, borderRadius: 99, background: "linear-gradient(135deg,var(--green),var(--green-soft))", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 18, color: "#fff", flexShrink: 0 }}>
-              {initials}
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
-                <span style={{ fontSize: 16, fontWeight: 800, color: "var(--ink-900)" }}>{profile.name || "Ditt namn"}</span>
-                <Icon n="shield" s={13} c="var(--success)" />
+      {(job.responseRate != null || job.avgResponseDays != null) && (
+        <Card style={{ background: "var(--card-2)" }}>
+          <SectionLabel>Åkeriet svarar ofta</SectionLabel>
+          <div style={{ display: "flex", gap: 20 }}>
+            {job.responseRate != null && (
+              <div>
+                <div style={{ fontSize: 22, fontWeight: 800, color: "var(--green)", fontFamily: "var(--mono)", lineHeight: 1 }}>{job.responseRate}%</div>
+                <div style={{ fontSize: 11.5, color: "var(--ink-500)", marginTop: 4 }}>svarsfrekvens</div>
               </div>
-              <div style={{ fontSize: 12, color: "var(--ink-500)" }}>
-                {[profile.region, yearsExp > 0 && `${yearsExp} års erfarenhet`].filter(Boolean).join(" · ")}
+            )}
+            {job.avgResponseDays != null && (
+              <div>
+                <div style={{ fontSize: 22, fontWeight: 800, color: "var(--ink-900)", fontFamily: "var(--mono)", lineHeight: 1 }}>~{job.avgResponseDays}d</div>
+                <div style={{ fontSize: 11.5, color: "var(--ink-500)", marginTop: 4 }}>svarstid</div>
               </div>
-            </div>
+            )}
           </div>
-        </div>
-
-        {/* Body */}
-        <div style={{ padding: 24, display: "flex", flexDirection: "column", gap: 18 }}>
-          {(licenses.length > 0 || certs.length > 0) && (
-            <div>
-              <div style={{ fontSize: 10, fontWeight: 700, color: "var(--ink-400)", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 8 }}>Körkort & certifikat</div>
-              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                {licenses.map((l) => (
-                  <span key={l} style={{ padding: "5px 10px", borderRadius: 99, background: "var(--green)", fontSize: 11, fontWeight: 700, color: "#fff" }}>{l}</span>
-                ))}
-                {certs.map((c) => (
-                  <span key={c} style={{ padding: "5px 10px", borderRadius: 99, background: "var(--paper-2)", border: "1px solid var(--line-2)", fontSize: 11, color: "var(--ink-700)", fontWeight: 600 }}>{c}</span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {message && (
-            <div style={{ padding: "14px 14px", background: "var(--amber-tint)", border: "1px solid var(--amber-tint-2)", borderRadius: 11 }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: "var(--amber)", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 6 }}>Personligt meddelande</div>
-              <div style={{ fontSize: 12.5, lineHeight: 1.55, color: "var(--ink-700)" }}>{message}</div>
-            </div>
-          )}
-
-          <div style={{ display: "flex", gap: 10, paddingTop: 6, borderTop: "1px solid var(--line)" }}>
-            <Link to="/profil" style={{ flex: 1, padding: "10px 12px", background: "var(--paper-2)", border: "1px solid var(--line-2)", borderRadius: 9, fontSize: 12, fontWeight: 600, color: "var(--ink-700)", textAlign: "center", textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-              <Icon n="edit" s={11} /> Redigera profil
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* Trust signal */}
-      <div style={{ padding: "14px 16px", background: "var(--success-tint)", border: "1px solid rgba(31,122,58,0.2)", borderRadius: 14, display: "flex", gap: 11, alignItems: "flex-start" }}>
-        <Icon n="shield" s={15} c="var(--success)" />
-        <div>
-          <div style={{ fontSize: 12.5, fontWeight: 700, marginBottom: 3, color: "var(--ink-900)" }}>Din profil är verifierad</div>
-          <div style={{ fontSize: 11.5, color: "var(--ink-500)", lineHeight: 1.5 }}>Verifierade ansökningar får svar 2× snabbare.</div>
-        </div>
-      </div>
-    </div>
+        </Card>
+      )}
+    </aside>
   );
 }
 
 // ─── Submitted state ──────────────────────────────────────────────────────────
 function Submitted({ job, conversationId }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "60px 32px", minHeight: "60vh" }}>
-      <div style={{ maxWidth: 540, width: "100%", textAlign: "center" }}>
-        {/* Checkmark */}
-        <div style={{ width: 88, height: 88, margin: "0 auto 28px" }}>
-          <svg viewBox="0 0 60 60" style={{ width: "100%", height: "100%" }}>
-            <circle cx="30" cy="30" r="26" fill="var(--success-tint)" stroke="var(--success)" strokeWidth="2" />
-            <polyline points="20 30 27 37 41 23" fill="none" stroke="var(--success)" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+    <div style={{ maxWidth: 620, margin: "40px auto 80px", padding: "0 24px" }}>
+      <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "44px 40px", boxShadow: "var(--sh-sm)", textAlign: "center" }}>
+        <div style={{ width: 72, height: 72, borderRadius: 36, margin: "0 auto 24px", background: "var(--success-tint)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <Icon n="check" s={34} c="var(--success)" />
         </div>
+        <h1 style={{ fontSize: 26, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.6, marginBottom: 10 }}>Ansökan skickad!</h1>
+        <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.6, marginBottom: 28 }}>
+          Din profil och ditt meddelande har skickats till <strong style={{ color: "var(--ink-900)" }}>{job?.company}</strong>. Du får en notis så fort de svarar.
+        </p>
 
-        <div style={{ fontSize: 32, fontWeight: 800, letterSpacing: -1, lineHeight: 1.1, marginBottom: 12, color: "var(--ink-900)" }}>Ansökan skickad!</div>
-        <div style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.5, marginBottom: 36 }}>
-          Din ansökan till <strong style={{ color: "var(--ink-900)" }}>{job?.title}</strong> hos <strong style={{ color: "var(--ink-900)" }}>{job?.company}</strong> är nu hos rekryteraren.
-        </div>
-
-        {/* What happens next */}
-        <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: 24, textAlign: "left", marginBottom: 24, boxShadow: "var(--sh-sm)" }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "var(--amber)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 18 }}>Vad händer nu?</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-            {[
-              ["1", "Åkeriet får din ansökan", 'Vanligen läses den inom 1 arbetsdag. Du ser "Sedd" i Mina ansökningar när det händer.'],
-              ["2", "Beslut om urval", `${job?.company || "Åkeriet"} återkommer när de granskat din profil.`],
-              ["3", "Kontakt eller besked", "Du får alltid besked — antingen en tid för intervju eller en kort motivering."],
-            ].map(([n, title, sub]) => (
-              <div key={n} style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
-                <div style={{ width: 28, height: 28, borderRadius: 99, background: "var(--amber-tint)", border: "1px solid var(--amber-tint-2)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 12, color: "var(--amber)", flexShrink: 0 }}>{n}</div>
-                <div>
-                  <div style={{ fontSize: 13.5, fontWeight: 700, marginBottom: 3, color: "var(--ink-900)" }}>{title}</div>
-                  <div style={{ fontSize: 12, color: "var(--ink-500)", lineHeight: 1.5 }}>{sub}</div>
-                </div>
+        <div style={{ textAlign: "left", background: "var(--card-2)", borderRadius: 12, padding: "20px 22px", marginBottom: 28 }}>
+          <SectionLabel>Vad händer nu?</SectionLabel>
+          {[
+            { n: 1, t: "Åkeriet ser din ansökan", s: "De får din fullständiga profil med körkort och certifikat." },
+            { n: 2, t: "De hör av sig", s: `${job?.company || "Åkeriet"} svarar oftast inom 1–2 dagar.` },
+            { n: 3, t: "Ni pratar direkt", s: "All kontakt sker via plattformen — inga mellanhänder." },
+          ].map((s) => (
+            <div key={s.n} style={{ display: "flex", gap: 14, alignItems: "flex-start", padding: "10px 0", borderBottom: s.n < 3 ? "1px solid var(--line)" : "none" }}>
+              <span style={{ width: 26, height: 26, borderRadius: 13, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, flexShrink: 0, fontFamily: "var(--mono)" }}>{s.n}</span>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)" }}>{s.t}</div>
+                <div style={{ fontSize: 13, color: "var(--ink-500)", marginTop: 2, lineHeight: 1.5 }}>{s.s}</div>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
 
-        {/* CTA buttons */}
         <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+          <Link to="/mina-ansokningar" style={{ padding: "12px 22px", borderRadius: 10, background: "var(--paper-2)", border: "1px solid var(--line-2)", fontSize: 13.5, fontWeight: 600, color: "var(--ink-700)", textDecoration: "none" }}>
+            Visa mina ansökningar
+          </Link>
           {conversationId && (
-            <Link to={`/meddelanden/${conversationId}`} style={{ padding: "13px 22px", borderRadius: 99, background: "var(--green)", color: "#fff", fontSize: 13.5, fontWeight: 800, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 8, boxShadow: "var(--sh)" }}>
+            <Link to={`/meddelanden/${conversationId}`} style={{ padding: "12px 22px", borderRadius: 10, background: "var(--green)", color: "#fff", fontSize: 13.5, fontWeight: 800, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 8, boxShadow: "var(--sh)" }}>
               Öppna konversation <Icon n="arrow" s={14} c="#fff" />
             </Link>
           )}
-          <Link to="/mina-ansokningar" style={{ padding: "13px 22px", borderRadius: 99, background: "var(--green)", color: "#fff", fontSize: 13.5, fontWeight: 800, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 8, boxShadow: "var(--sh)" }}>
-            Mina ansökningar <Icon n="arrow" s={14} c="#fff" />
-          </Link>
-          <Link to="/jobb" style={{ padding: "13px 22px", borderRadius: 99, background: "var(--card)", border: "1px solid var(--line-2)", fontSize: 13.5, fontWeight: 600, color: "var(--ink-700)", textDecoration: "none" }}>
-            Hitta fler jobb
+          <Link to="/jobb" style={{ padding: "12px 22px", borderRadius: 10, background: "var(--green)", color: "#fff", fontSize: 13.5, fontWeight: 800, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 8, boxShadow: "var(--sh)" }}>
+            Sök fler jobb <Icon n="arrow" s={14} c="#fff" />
           </Link>
         </div>
       </div>
@@ -623,165 +555,157 @@ export default function Apply() {
     return (
       <main style={{ background: "var(--paper)", minHeight: "100vh" }}>
         <PageMeta title={`Ansökan skickad – ${job.title}`} />
-        {/* Sub-header */}
-        <div style={{ borderBottom: "1px solid var(--line)", background: "var(--card)", boxShadow: "var(--sh-sm)" }}>
-          <div style={{ maxWidth: 1200, margin: "0 auto", padding: isMobile ? "12px 20px" : "16px 32px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <Link to={`/jobb/${id}`} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--ink-500)", textDecoration: "none", fontWeight: 600 }}>
-              <Icon n="back" s={16} /> Tillbaka till jobbet
-            </Link>
-          </div>
-        </div>
         <Submitted job={job} conversationId={conversationId} />
       </main>
     );
   }
 
+  const driverInitials = (profile?.name || "?").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+  const licenses = profile?.licenses || [];
+  const certsLabels = (profile?.certificates || []).map(getCertificateLabel).filter(Boolean);
+  const yearsExp = calcYearsExperience(profile?.experience);
+  const pctColor = pct == null ? "var(--success)" : pct >= 80 ? "var(--success)" : pct >= 65 ? "var(--amber)" : "var(--ink-500)";
+  const pctBg = pct == null ? "var(--success-tint)" : pct >= 80 ? "var(--success-tint)" : pct >= 65 ? "var(--amber-tint)" : "var(--paper-2)";
+
   return (
-    <main style={{ background: "var(--paper)", minHeight: "100vh" }}>
+    <main style={{ background: "var(--paper)", minHeight: "100vh", paddingBottom: 80 }}>
       <PageMeta title={`Ansök – ${job.title} hos ${job.company}`} />
 
-      {/* Sub-header below site nav */}
-      <div style={{ borderBottom: "1px solid var(--line)", background: "var(--card)", boxShadow: "var(--sh-sm)" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: isMobile ? "12px 20px" : "16px 32px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <Link to={`/jobb/${id}`} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--ink-500)", textDecoration: "none", fontWeight: 600 }}>
-            <Icon n="back" s={16} /> Tillbaka till jobbet
-          </Link>
-          {!isMobile && <div style={{ fontSize: 12, color: "var(--ink-400)" }}>Steg 1 av 1 — granska &amp; skicka</div>}
-        </div>
+      {/* Breadcrumb */}
+      <div style={{ maxWidth: 1040, margin: "0 auto", padding: "24px 32px 0" }}>
+        <Link to={`/jobb/${id}`} style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 600, color: "var(--ink-500)", textDecoration: "none" }}>
+          <Icon n="back" s={14} /> Tillbaka till jobbet
+        </Link>
       </div>
 
-      {/* Job context strip */}
-      <JobStrip job={job} pct={pct} isMobile={isMobile} />
+      <div style={{ maxWidth: 1040, margin: "0 auto", padding: "20px 32px 0" }}>
+        <h1 style={{ fontSize: 30, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -1, marginBottom: 6 }}>Ansök till tjänsten</h1>
+        <p style={{ fontSize: 14.5, color: "var(--ink-500)", marginBottom: 28 }}>
+          Din profil bifogas automatiskt — du behöver inte fylla i något CV.
+        </p>
 
-      {/* Main content */}
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: isMobile ? "20px 20px 80px" : "32px 32px 120px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 380px", gap: isMobile ? 20 : 32, alignItems: "flex-start" }}>
-
+        <div className="apply-grid">
           {/* ── Left: form ── */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+          <div className="stp-fade-up" style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+
+            {/* Din profil bifogas */}
+            <Card>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                <SectionLabel style={{ marginBottom: 0 }}>Din profil bifogas</SectionLabel>
+                <Link to="/profil" style={{ fontSize: 13, fontWeight: 700, color: "var(--green)", textDecoration: "none" }}>Redigera profil →</Link>
+              </div>
+              <div style={{ display: "flex", gap: 14, alignItems: "center", marginBottom: 16 }}>
+                <div style={{ width: 52, height: 52, borderRadius: 99, background: "linear-gradient(135deg,var(--green),var(--green-soft))", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 16, color: "#fff", flexShrink: 0 }}>
+                  {driverInitials}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: "var(--ink-900)" }}>{profile?.name || "Din profil"}</div>
+                  <div style={{ fontSize: 13, color: "var(--ink-500)", marginTop: 2 }}>
+                    {[profile?.region, yearsExp > 0 && `${yearsExp} års erfarenhet`].filter(Boolean).join(" · ")}
+                  </div>
+                </div>
+                {pct != null && (
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 11px", borderRadius: 999, background: pctBg, fontSize: 13, fontWeight: 800, fontFamily: "var(--mono)", color: pctColor, flexShrink: 0 }}>
+                    {pct}% match
+                  </span>
+                )}
+              </div>
+              {(licenses.length > 0 || certsLabels.length > 0) && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {licenses.map((l) => <span key={l} style={{ padding: "4px 10px", borderRadius: 99, background: "var(--green)", color: "#fff", fontSize: 11, fontWeight: 700 }}>{l}</span>)}
+                  {certsLabels.map((c) => <span key={c} style={{ padding: "4px 10px", borderRadius: 99, background: "var(--paper-2)", border: "1px solid var(--line-2)", color: "var(--ink-700)", fontSize: 11, fontWeight: 600 }}>{c}</span>)}
+                </div>
+              )}
+            </Card>
 
             {/* Personligt meddelande */}
-            <Section title="Personligt meddelande" subtitle="Frivilligt — ansökningar med meddelande får 3× snabbare svar" icon="msg">
-              <div style={{ position: "relative" }}>
-                <textarea
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value.slice(0, MAX_MSG))}
-                  placeholder="Berätta kort varför du är intresserad och vad du kan tillföra. Åkeriet ser detta tillsammans med din profil."
-                  style={{ width: "100%", minHeight: 140, padding: "16px 18px", background: "var(--paper-2)", border: "1px solid var(--line-2)", borderRadius: 12, lineHeight: 1.55, fontSize: 14, outline: "none", color: "var(--ink-900)", fontFamily: "inherit", resize: "vertical" }}
-                  onFocus={(e) => { e.target.style.borderColor = "var(--green)"; }}
-                  onBlur={(e) => { e.target.style.borderColor = "var(--line-2)"; }}
-                />
-                <div style={{ position: "absolute", bottom: 10, right: 12, fontSize: 11, color: message.length > MAX_MSG * 0.9 ? "var(--amber)" : "var(--ink-400)" }}>
-                  {message.length}/{MAX_MSG}
-                </div>
-              </div>
-              <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 10 }}>
+            <Card>
+              <SectionLabel>Personligt meddelande <span style={{ fontWeight: 500, textTransform: "none", letterSpacing: 0, color: "var(--ink-400)" }}>(valfritt)</span></SectionLabel>
+              <textarea
+                value={message}
+                onChange={(e) => setMessage(e.target.value.slice(0, MAX_MSG))}
+                placeholder="Berätta kort varför du är intresserad av tjänsten. Ett par rader räcker — det gör skillnad."
+                rows={4}
+                style={{ width: "100%", padding: "14px 16px", background: "var(--card-2)", border: "1px solid var(--line-2)", borderRadius: 11, fontSize: 14.5, color: "var(--ink-900)", fontFamily: "inherit", lineHeight: 1.6, resize: "vertical", outline: "none" }}
+                onFocus={(e) => { e.target.style.borderColor = "var(--green)"; }}
+                onBlur={(e) => { e.target.style.borderColor = "var(--line-2)"; }}
+              />
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 8 }}>
+                <div style={{ fontSize: 12, color: "var(--ink-400)" }}>Tips: åkerier svarar oftare på ansökningar med ett personligt meddelande.</div>
                 <button
                   type="button"
                   onClick={handleSuggest}
                   disabled={suggesting}
-                  style={{ display: "flex", alignItems: "center", gap: 5, padding: "7px 12px", borderRadius: 99, background: "var(--green-tint)", border: "1px solid var(--green-tint-2)", color: suggesting ? "var(--ink-300)" : "var(--green-text)", fontSize: 12, fontWeight: 600, cursor: suggesting ? "not-allowed" : "pointer", fontFamily: "inherit" }}
+                  style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 11px", borderRadius: 99, background: "var(--green-tint)", border: "1px solid var(--green-tint-2)", color: suggesting ? "var(--ink-300)" : "var(--green-text)", fontSize: 11.5, fontWeight: 600, cursor: suggesting ? "not-allowed" : "pointer", fontFamily: "inherit", flexShrink: 0 }}
                 >
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="var(--green)"><path d="M12 2l2.4 7.6H22l-6.2 4.5 2.4 7.6L12 17.2l-6.2 4.5 2.4-7.6L2 9.6h7.6z"/></svg>
                   {suggesting ? "Skriver..." : "AI-förslag"}
                 </button>
-                <span style={{ fontSize: 11, color: "var(--ink-400)" }}>Om du lämnar tomt skickas ett standardmeddelande</span>
               </div>
-            </Section>
+            </Card>
 
             {/* När kan du börja? */}
-            <Section title="När kan du börja?" icon="calendar">
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
+            <Card>
+              <SectionLabel>När kan du börja?</SectionLabel>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 {[
-                  { k: "now",   l: "Omgående",       s: "Inom 1–2 veckor" },
-                  { k: "month", l: "Inom en månad",   s: "Måste avsluta nuvarande" },
-                  { k: "date",  l: "Specifikt datum", s: "Jag väljer själv" },
-                ].map((o) => (
-                  <button
-                    key={o.k}
-                    type="button"
-                    onClick={() => setStartDate(o.k)}
-                    style={{ padding: "14px 14px", borderRadius: 12, background: startDate === o.k ? "var(--green-tint)" : "var(--paper-2)", border: `1.5px solid ${startDate === o.k ? "var(--green)" : "var(--line-2)"}`, textAlign: "left", cursor: "pointer", transition: "all .15s" }}
-                  >
-                    <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 3, color: startDate === o.k ? "var(--green-text)" : "var(--ink-900)" }}>{o.l}</div>
-                    <div style={{ fontSize: 11, color: "var(--ink-500)" }}>{o.s}</div>
-                  </button>
-                ))}
+                  { k: "now",     l: "Omgående" },
+                  { k: "month",   l: "Inom 1 månad" },
+                  { k: "3months", l: "Inom 3 månader" },
+                  { k: "other",   l: "Annat" },
+                ].map((o) => {
+                  const on = startDate === o.k;
+                  return (
+                    <button
+                      key={o.k}
+                      type="button"
+                      onClick={() => setStartDate(o.k)}
+                      style={{ padding: "10px 16px", borderRadius: 10, background: on ? "var(--green)" : "var(--card)", color: on ? "#fff" : "var(--ink-700)", border: `1px solid ${on ? "var(--green-deep)" : "var(--line-2)"}`, fontSize: 13.5, fontWeight: 600, cursor: "pointer", boxShadow: "var(--sh-sm)", fontFamily: "inherit", transition: "all .15s" }}
+                    >
+                      {o.l}
+                    </button>
+                  );
+                })}
               </div>
-              {startDate === "date" && (
-                <input
-                  type="date"
-                  style={{ marginTop: 12, padding: "12px 14px", background: "var(--paper-2)", border: "1px solid var(--line-2)", borderRadius: 10, fontSize: 14, width: "100%", color: "var(--ink-900)", outline: "none", fontFamily: "inherit" }}
-                />
-              )}
-            </Section>
+            </Card>
 
-            {/* Lönekrav */}
-            {(job.salaryMin || job.salary) && (
-              <Section title="Lönekrav" subtitle="Frivilligt — visas bara för åkeriet om du fyller i" icon="trend">
-                <div style={{ padding: "12px 14px", background: "var(--paper-2)", border: "1px solid var(--line-2)", borderRadius: 10, fontSize: 13, color: "var(--ink-500)", marginBottom: 10 }}>
-                  Annonsens spann:{" "}
-                  <span style={{ color: "var(--ink-900)", fontWeight: 600, fontFamily: "var(--mono)" }}>
-                    {job.salaryMin
-                      ? `${job.salaryMin.toLocaleString("sv-SE")}${job.salaryMax ? ` – ${job.salaryMax.toLocaleString("sv-SE")}` : "+"} kr/mån`
-                      : job.salary}
-                  </span>
-                </div>
-                <input
-                  type="text"
-                  value={salaryExp ?? ""}
-                  onChange={(e) => setSalaryExp(e.target.value)}
-                  placeholder="t.ex. 38 000 kr/mån"
-                  style={{ width: "100%", padding: "12px 14px", background: "var(--paper-2)", border: "1px solid var(--line-2)", borderRadius: 10, fontSize: 14, outline: "none", color: "var(--ink-900)", fontFamily: "inherit" }}
-                />
-              </Section>
-            )}
-
-            {/* Inställningar */}
-            <Section title="Inställningar för denna ansökan" icon="lock">
+            {/* Vad åkeriet ser */}
+            <Card>
+              <SectionLabel>Vad åkeriet ser</SectionLabel>
               <Toggle
                 on={allowMatch}
                 setOn={setAllowMatch}
-                label="Låt åkeriet kontakta mig om andra liknande jobb"
-                sub="Även om de inte väljer dig för detta jobb, kan de tipsa om andra roller."
+                label="Visa mitt telefonnummer"
+                sub="Åkeriet kan ringa dig direkt istället för bara via plattformen."
               />
-            </Section>
+            </Card>
 
             {error && (
               <div style={{ padding: "12px 16px", borderRadius: 10, background: "var(--danger-tint)", border: "1px solid rgba(185,28,59,0.2)", color: "var(--danger)", fontSize: 13 }}>
                 {error}
               </div>
             )}
-          </div>
 
-          {/* ── Right: preview (desktop only) ── */}
-          {!isMobile && <PreviewCol profile={profile} message={message} />}
-        </div>
-      </div>
-
-      {/* Sticky CTA bar */}
-      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 40, background: "var(--card)", borderTop: "1px solid var(--line)", boxShadow: "0 -4px 20px rgba(15,22,22,0.06)" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: isMobile ? "12px 20px 16px" : "16px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
-          {!isMobile && (
-            <div style={{ fontSize: 12.5, color: "var(--ink-500)", display: "flex", alignItems: "center", gap: 8 }}>
-              <Icon n="lock" s={13} c="var(--ink-400)" />
-              Din profil och meddelande skickas krypterat
+            {/* Submit row */}
+            <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={sending || !job?.userId}
+                style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 28px", borderRadius: 10, background: !sending ? "var(--green)" : "var(--paper-2)", color: !sending ? "#fff" : "var(--ink-400)", fontSize: 15, fontWeight: 800, border: "none", cursor: sending ? "not-allowed" : "pointer", boxShadow: !sending ? "var(--sh)" : "none", fontFamily: "inherit", transition: "all .15s" }}
+              >
+                {sending ? "Skickar..." : "Skicka ansökan"}
+                {!sending && <Icon n="arrow" s={15} c="#fff" />}
+              </button>
+              <Link to={`/jobb/${id}`} style={{ padding: "14px 22px", borderRadius: 10, background: "transparent", border: "none", fontSize: 14, fontWeight: 600, color: "var(--ink-500)", textDecoration: "none" }}>
+                Avbryt
+              </Link>
+              <span style={{ fontSize: 12.5, color: "var(--ink-400)", marginLeft: "auto" }}>Du kan dra tillbaka ansökan när som helst.</span>
             </div>
-          )}
-          <div style={{ display: "flex", gap: 10, flex: isMobile ? 1 : "unset" }}>
-            <Link to={`/jobb/${id}`} style={{ padding: isMobile ? "13px 16px" : "13px 22px", borderRadius: 99, background: "var(--paper-2)", border: "1px solid var(--line-2)", fontSize: 13.5, fontWeight: 600, color: "var(--ink-700)", textDecoration: "none" }}>
-              Avbryt
-            </Link>
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={sending || !job?.userId}
-              style={{ flex: isMobile ? 1 : "unset", padding: isMobile ? "13px 16px" : "13px 26px", borderRadius: 99, background: !sending ? "var(--green)" : "var(--paper-2)", color: !sending ? "#fff" : "var(--ink-400)", fontSize: 13.5, fontWeight: 800, border: "none", cursor: sending ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: !sending ? "var(--sh)" : "none", fontFamily: "inherit", transition: "all .15s" }}
-            >
-              {sending ? "Skickar..." : "Skicka ansökan"}
-              {!sending && <Icon n="arrow" s={14} c="#fff" />}
-            </button>
           </div>
+
+          {/* ── Right: job context sidebar ── */}
+          <JobContextSidebar job={job} />
         </div>
       </div>
     </main>

@@ -241,32 +241,58 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
             ←
           </button>
         )}
-        <div style={{ width: isMobile ? 36 : 48, height: isMobile ? 36 : 48, borderRadius: isMobile ? 9 : 11, background: avatarBg(other), display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: isMobile ? 12 : 14, color: "#fff", flexShrink: 0 }}>
+        <div style={{ width: isMobile ? 36 : 42, height: isMobile ? 36 : 42, borderRadius: 99, background: avatarBg(other), display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: isMobile ? 12 : 14, color: "#fff", flexShrink: 0 }}>
           {avatarInitials(other)}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: isMobile ? 14 : 16, fontWeight: 800, color: "var(--ink-900)", marginBottom: 2, letterSpacing: -0.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-            {conv.jobTitle || other}
-          </div>
-          <div style={{ fontSize: 11, color: "var(--ink-500)", display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
-            <span>{other}</span>
-            {!isMobile && conv.location && <><span style={{ color: "var(--ink-200)" }}>·</span><span>{conv.location}</span></>}
-            {!isMobile && conv.salary && <><span style={{ color: "var(--ink-200)" }}>·</span><span>{conv.salary}</span></>}
-            {typeof conv.matchScore === "number" && (
-              <><span style={{ color: "var(--ink-200)" }}>·</span><span style={{ color: "var(--success)", fontWeight: 700 }}>{conv.matchScore}% match</span></>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 2 }}>
+            <span style={{ fontSize: isMobile ? 14 : 16, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {other}
+            </span>
+            {!isMobile && (
+              <span style={{ padding: "3px 9px", borderRadius: 99, background: s.bg, border: `1px solid ${s.border}`, fontSize: 10, fontWeight: 800, color: s.color, whiteSpace: "nowrap", flexShrink: 0 }}>
+                {s.label}
+              </span>
             )}
+            {!isMobile && typeof conv.matchScore === "number" && (
+              <span style={{ fontSize: 13, fontWeight: 700, color: conv.matchScore >= 90 ? "var(--success)" : conv.matchScore >= 75 ? "var(--green)" : "var(--amber-deep)", fontFamily: "var(--mono)", flexShrink: 0 }}>
+                {conv.matchScore}% match
+              </span>
+            )}
+          </div>
+          <div style={{ fontSize: 12, color: "var(--ink-500)", display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+            {!isDriver && conv.jobTitle && <span>{conv.jobTitle}</span>}
+            {isDriver && conv.companyName && <span>{conv.companyName}</span>}
+            {!isMobile && conv.location && <><span style={{ color: "var(--ink-200)" }}>·</span><span>{conv.location}</span></>}
+            {!isMobile && isDriver && conv.salary && <><span style={{ color: "var(--ink-200)" }}>·</span><span>{conv.salary}</span></>}
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-          <span style={{ padding: "4px 9px", borderRadius: 99, background: s.bg, border: `1px solid ${s.border}`, fontSize: 10, fontWeight: 800, color: s.color, whiteSpace: "nowrap" }}>
-            {s.label}
-          </span>
-          {conv.jobId && (
+          {isMobile && (
+            <span style={{ padding: "4px 9px", borderRadius: 99, background: s.bg, border: `1px solid ${s.border}`, fontSize: 10, fontWeight: 800, color: s.color, whiteSpace: "nowrap" }}>
+              {s.label}
+            </span>
+          )}
+          {!isDriver && !isMobile && conv.driverId && (
+            <Link
+              to={`/foretag/forare/${conv.driverId}`}
+              style={{ padding: "7px 12px", borderRadius: 9, background: "var(--paper-2)", border: "1px solid var(--line-2)", color: "var(--ink-700)", fontSize: 12, fontWeight: 700, textDecoration: "none", display: "flex", alignItems: "center", gap: 5, whiteSpace: "nowrap" }}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Visa profil
+            </Link>
+          )}
+          {!isDriver && !isMobile && (
+            <button type="button" style={{ padding: "7px 14px", borderRadius: 9, background: "var(--green)", color: "#fff", fontSize: 12, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
+              Boka intervju
+            </button>
+          )}
+          {isDriver && conv.jobId && !isMobile && (
             <Link
               to={`/jobb/${conv.jobId}`}
-              style={{ padding: isMobile ? "6px 9px" : "7px 12px", borderRadius: 9, background: "var(--paper-2)", border: "1px solid var(--line-2)", color: "var(--ink-700)", fontSize: 11, fontWeight: 700, textDecoration: "none", display: "flex", alignItems: "center", gap: 4, whiteSpace: "nowrap" }}
+              style={{ padding: "7px 12px", borderRadius: 9, background: "var(--paper-2)", border: "1px solid var(--line-2)", color: "var(--ink-700)", fontSize: 11, fontWeight: 700, textDecoration: "none", display: "flex", alignItems: "center", gap: 4, whiteSpace: "nowrap" }}
             >
-              {isMobile ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg> : <>Se annons <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></>}
+              Se annons <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
             </Link>
           )}
           {!isMobile && isDriver && (
@@ -555,20 +581,28 @@ export default function Messages() {
       )}
 
       {/* Two-column layout */}
-      <div style={{ flex: 1, display: "flex", overflow: "hidden", minHeight: 0 }}>
+      <div style={{ flex: 1, display: isMobile ? "flex" : "grid", gridTemplateColumns: "340px 1fr", overflow: "hidden", minHeight: 0 }}>
 
           {/* ── Sidebar ── */}
           <div
-            style={{ display: id ? "none" : "flex", width: isMobile ? "100%" : "clamp(300px, 38%, 400px)", background: "var(--card)", borderRight: "1px solid var(--line)", flexDirection: "column", overflow: "hidden", flexShrink: 0 }}
+            style={{ display: id && isMobile ? "none" : "flex", width: isMobile ? "100%" : undefined, background: "var(--card)", borderRight: "1px solid var(--line)", flexDirection: "column", overflow: "hidden", flexShrink: 0 }}
             className="sidebar-panel"
           >
-            <div style={{ padding: isMobile ? "4px 20px 12px" : "22px 22px 14px", paddingTop: isMobile ? 68 : undefined, borderBottom: "1px solid var(--line)", flexShrink: 0 }}>
+            <div style={{ padding: isMobile ? "4px 20px 12px" : "18px 18px 14px", paddingTop: isMobile ? 68 : undefined, borderBottom: "1px solid var(--line)", flexShrink: 0 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: isMobile ? 6 : 14 }}>
-                <h1 style={{ fontSize: isMobile ? 26 : 20, fontWeight: isMobile ? 800 : 900, color: "var(--ink-900)", letterSpacing: isMobile ? -1 : -0.5 }}>
-                  Inkorg
+                <h1 style={{ fontSize: isMobile ? 26 : 20, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.4 }}>
+                  {isDriver ? "Meddelanden" : "Inkorg"}
                 </h1>
-                {!isMobile && <span style={{ fontSize: 12, color: "var(--ink-400)" }}>{allConversations.length} totalt</span>}
+                {!isMobile && unreadCount > 0 && <span style={{ padding: "2px 9px", borderRadius: 999, background: "var(--success-tint)", border: "1px solid rgba(31,122,58,0.2)", fontSize: 11.5, fontWeight: 800, color: "var(--success)" }}>{unreadCount} nya</span>}
               </div>
+              {!isMobile && (
+                <div style={{ position: "relative" }}>
+                  <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--ink-400)", display: "inline-flex" }}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 15, height: 15 }}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  </span>
+                  <input placeholder="Sök konversation..." style={{ width: "100%", padding: "9px 14px 9px 36px", background: "var(--card-2)", border: "1px solid var(--line-2)", borderRadius: 9, fontSize: 13.5, color: "var(--ink-900)", outline: "none", fontFamily: "inherit", boxSizing: "border-box" }} readOnly />
+                </div>
+              )}
               {isMobile && (
                 <div style={{ fontSize: 12.5, color: "var(--ink-500)", marginBottom: 10 }}>
                   {unreadCount > 0 ? `${unreadCount} olästa meddelanden` : "Inga olästa meddelanden"}
@@ -586,10 +620,9 @@ export default function Messages() {
                 </select>
               )}
 
-              {/* Stage filter pills — driver and company mobile */}
-              {(isDriver || isMobile) && (
-                <div style={{ display: "flex", gap: 6, flexWrap: isMobile ? "nowrap" : "wrap", overflowX: isMobile ? "auto" : "visible" }}>
-                  {STAGE_FILTERS.filter(({ k }) => isDriver || ["all", "unread", "selected"].includes(k)).map(({ k, l, c }) => {
+              {/* Stage filter pills */}
+              <div style={{ display: "flex", gap: 6, flexWrap: isMobile ? "nowrap" : "wrap", overflowX: isMobile ? "auto" : "visible" }}>
+                  {STAGE_FILTERS.filter(({ k }) => isDriver ? true : ["all", "unread", "selected", "active"].includes(k)).map(({ k, l, c }) => {
                     const active = stageFilter === k;
                     return (
                       <button
@@ -602,8 +635,7 @@ export default function Messages() {
                       </button>
                     );
                   })}
-                </div>
-              )}
+              </div>
             </div>
 
             <div style={{ flex: 1, overflowY: "auto", paddingBottom: isMobile ? "calc(env(safe-area-inset-bottom, 0px) + 120px)" : 0 }}>

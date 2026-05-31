@@ -74,6 +74,8 @@ model User {
   onboardingDrip3SentAt     DateTime?
   onboardingDrip7SentAt     DateTime?
 
+  driverReviewsWritten   DriverReview[]   @relation("DriverReviewAuthor")
+
   // Team invites (deprecated - använd OrganizationInvite)
   companyInvites         CompanyInvite[]  @relation("CompanyInvites")
   companyInvitesSent     CompanyInvite[]  @relation("InviterInvites")
@@ -243,8 +245,12 @@ model DriverProfile {
   soloWorkOk          Boolean? // ensamarbete ok
   fastResponder       Boolean  @default(false) // svarar på meddelanden inom 24h
   preferredEmployment String[] @default([])   // ["fast", "vikariat", "timjobb", "egenanstald"]
+  openToWork          Boolean  @default(false) // styr "SÖKER JOBB"-ringen på profilen
+  slug                String?  @unique         // t.ex. "oliver-harburt-abc123" för publik URL
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
+
+  reviews             DriverReview[]
 }
 
 model Job {
@@ -522,4 +528,19 @@ model Insight {
   @@index([status])
   @@index([priority])
   @@index([weekOf])
+}
+
+model DriverReview {
+  id            String        @id @default(cuid())
+  driverId      String
+  driverProfile DriverProfile @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  authorId      String
+  author        User          @relation("DriverReviewAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  rating        Int           // 1–5
+  comment       String?
+  isVerified    Boolean       @default(true)  // "Riktigt åkeri föraren jobbat hos"
+  createdAt     DateTime      @default(now())
+
+  @@unique([driverId, authorId])  // one review per company per driver
+  @@index([driverId])
 }

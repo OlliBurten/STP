@@ -1,178 +1,124 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { fetchMyCompanyProfile } from "../api/companies.js";
-import { useIsMobile } from "../hooks/useIsMobile";
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
-const Icon = ({ n, s = 18, c = "currentColor" }) => {
+const Icon = ({ name, size = 18, color = "currentColor", stroke = 2 }) => {
   const icons = {
-    check: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>,
-    clock: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>,
-    upload: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>,
-    shield: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>,
-    lock: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>,
-    info: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>,
-    back: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></svg>,
-    truck: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13" rx="1" /><polygon points="16 8 20 8 23 11 23 16 16 16 16 8" /><circle cx="5.5" cy="18.5" r="2.5" /><circle cx="18.5" cy="18.5" r="2.5" /></svg>,
-    users: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>,
-    card: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2" /><line x1="2" y1="10" x2="22" y2="10" /></svg>,
-    building: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 21h18" /><path d="M5 21V7l8-4v18" /><path d="M19 21V11l-6-4" /></svg>,
-    arrow: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>,
+    check:     <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={stroke} strokeLinecap="round" strokeLinejoin="round" width={size} height={size}><polyline points="20 6 9 17 4 12"/></svg>,
+    mail:      <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={stroke} strokeLinecap="round" strokeLinejoin="round" width={size} height={size}><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,7 12,13 22,7"/></svg>,
+    building:  <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={stroke} strokeLinecap="round" strokeLinejoin="round" width={size} height={size}><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>,
+    info:      <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={stroke} strokeLinecap="round" strokeLinejoin="round" width={size} height={size}><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>,
+    truck:     <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={stroke} strokeLinecap="round" strokeLinejoin="round" width={size} height={size}><rect x="1" y="3" width="15" height="13" rx="1"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>,
+    user:      <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={stroke} strokeLinecap="round" strokeLinejoin="round" width={size} height={size}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+    settings:  <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={stroke} strokeLinecap="round" strokeLinejoin="round" width={size} height={size}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>,
+    eye:       <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={stroke} strokeLinecap="round" strokeLinejoin="round" width={size} height={size}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>,
+    plus:      <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={stroke} strokeLinecap="round" strokeLinejoin="round" width={size} height={size}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+    chevDown:  <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={stroke} strokeLinecap="round" strokeLinejoin="round" width={size} height={size}><polyline points="6 9 12 15 18 9"/></svg>,
+    chevRight: <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={stroke} strokeLinecap="round" strokeLinejoin="round" width={size} height={size}><polyline points="9 18 15 12 9 6"/></svg>,
+    arrow:     <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={stroke} strokeLinecap="round" strokeLinejoin="round" width={size} height={size}><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>,
   };
-  return (
-    <span style={{ display: "inline-flex", width: s, height: s, color: c, flexShrink: 0 }}>
-      {icons[n] || null}
-    </span>
-  );
+  return <span style={{ display: "inline-flex", width: size, height: size, flexShrink: 0 }}>{icons[name] || null}</span>;
 };
 
-// ─── Upload zone ──────────────────────────────────────────────────────────────
-function UploadZone({ onUpload, disabled }) {
-  const [hover, setHover] = useState(false);
-
-  if (disabled) {
-    return (
-      <div style={{ padding: "24px", border: "2px dashed var(--line)", background: "var(--paper-2)", borderRadius: 14, textAlign: "center", color: "var(--ink-400)", fontSize: 13 }}>
-        Lås upp detta steg genom att slutföra föregående steg.
-      </div>
-    );
-  }
-
-  return (
-    <div
-      onDragOver={(e) => { e.preventDefault(); setHover(true); }}
-      onDragLeave={() => setHover(false)}
-      onDrop={(e) => { e.preventDefault(); setHover(false); onUpload(); }}
-      style={{ padding: "32px 24px", border: `2px dashed ${hover ? "var(--green)" : "var(--line-2)"}`, background: hover ? "var(--green-tint)" : "var(--paper-2)", borderRadius: 14, textAlign: "center", transition: "all .15s", cursor: "pointer" }}
-    >
-      <div style={{ width: 44, height: 44, borderRadius: 99, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
-        <Icon n="upload" s={18} c="var(--green)" />
-      </div>
-      <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)", marginBottom: 5 }}>Dra och släpp filen här</div>
-      <div style={{ fontSize: 12, color: "var(--ink-500)", marginBottom: 16 }}>eller — PDF, JPG, PNG · max 10 MB</div>
-      <button
-        onClick={onUpload}
-        style={{ padding: "9px 18px", borderRadius: 99, background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.3)", color: "var(--green-text)", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}
-      >
-        Välj fil från datorn
-      </button>
-    </div>
-  );
-}
-
-// ─── Step circle ──────────────────────────────────────────────────────────────
-function StepCircle({ status, num }) {
-  if (status === "done") return (
-    <div style={{ width: 32, height: 32, borderRadius: 99, background: "var(--success-tint)", border: "1.5px solid rgba(31,122,58,0.3)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-      <Icon n="check" s={14} c="var(--success)" />
-    </div>
-  );
-  if (status === "review") return (
-    <div style={{ width: 32, height: 32, borderRadius: 99, background: "var(--info-tint)", border: "1.5px solid rgba(37,99,235,0.3)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-      <Icon n="clock" s={14} c="var(--info)" />
-    </div>
-  );
-  if (status === "next") return (
-    <div style={{ width: 32, height: 32, borderRadius: 99, background: "var(--green)", border: "1.5px solid var(--green)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "#fff", fontWeight: 800, fontSize: 13, animation: "pulseGlow 2s infinite" }}>
-      {num}
-    </div>
-  );
-  return (
-    <div style={{ width: 32, height: 32, borderRadius: 99, background: "transparent", border: "1.5px solid var(--line-2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "var(--ink-300)", fontWeight: 700, fontSize: 13 }}>
-      {num}
-    </div>
-  );
-}
+// ─── Status config ────────────────────────────────────────────────────────────
+const STATUS_META = {
+  done:   { label: "Klart",      pillBg: "var(--success-tint)", pillColor: "var(--success)",    iconBg: "var(--success-tint)", iconColor: "var(--success)" },
+  review: { label: "Granskas",   pillBg: "var(--amber-tint)",   pillColor: "var(--amber-deep)", iconBg: "var(--amber-tint)",   iconColor: "var(--amber-deep)" },
+  next:   { label: "Nästa steg", pillBg: "var(--info-tint)",    pillColor: "var(--info)",       iconBg: "var(--green-tint)",   iconColor: "var(--green-text)" },
+  locked: { label: "",           pillBg: "transparent",         pillColor: "transparent",       iconBg: "var(--paper-2)",      iconColor: "var(--ink-400)" },
+};
 
 // ─── Step card ────────────────────────────────────────────────────────────────
-function StepCard({ step, num, expanded, onToggle, onComplete, isLast }) {
-  const canExpand = step.status === "next";
-  const [kollektivVal, setKollektivVal] = useState(null);
+function StepCard({ step, expanded, onToggle, onComplete }) {
+  const meta = STATUS_META[step.status];
+  const isLocked = step.status === "locked";
+  const isOpen = expanded && !isLocked;
+  const isActionable = step.status === "next";
 
   return (
-    <div style={{ position: "relative", display: "flex", gap: 18, paddingBottom: isLast ? 0 : 14 }}>
-      {!isLast && (
-        <div style={{ position: "absolute", left: 16, top: 32, bottom: 0, width: 1.5, background: step.status === "done" ? "rgba(31,122,58,0.25)" : "var(--line)" }} />
-      )}
-      <StepCircle status={step.status} num={num} />
+    <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, overflow: "hidden", opacity: isLocked ? 0.6 : 1 }}>
+      <button
+        onClick={() => !isLocked && onToggle()}
+        style={{ width: "100%", display: "flex", alignItems: "center", gap: 14, padding: "18px 22px", textAlign: "left", cursor: isLocked ? "default" : "pointer", background: "none", border: "none", fontFamily: "inherit" }}
+      >
+        {/* Icon box */}
+        <span style={{
+          width: 42, height: 42, borderRadius: 11, flexShrink: 0,
+          background: meta.iconBg,
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}>
+          {step.status === "done"
+            ? <Icon name="check" size={18} color="var(--success)" stroke={3} />
+            : <Icon name={step.icon} size={18} color={meta.iconColor} stroke={2} />}
+        </span>
 
-      <div style={{ flex: 1, paddingBottom: 6 }}>
-        <div
-          onClick={canExpand ? onToggle : undefined}
-          style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10, cursor: canExpand ? "pointer" : "default", paddingTop: 5 }}
-        >
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
-              <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: -0.2, color: step.status === "locked" ? "var(--ink-400)" : "var(--ink-900)" }}>
-                {step.title}
-              </span>
-              {!step.required && (
-                <span style={{ fontSize: 10.5, color: "var(--ink-400)", padding: "2px 7px", borderRadius: 5, background: "var(--paper-2)", fontWeight: 600 }}>VALFRITT</span>
-              )}
-            </div>
-            <div style={{ fontSize: 12.5, color: step.status === "locked" ? "var(--ink-300)" : "var(--ink-500)", lineHeight: 1.5 }}>
-              {step.desc}
-            </div>
+        {/* Title + pills */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 15.5, fontWeight: 700, color: "var(--ink-900)" }}>{step.title}</span>
+            {!step.required && (
+              <span style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-500)", background: "var(--paper-2)", border: "1px solid var(--line-2)", borderRadius: 6, padding: "2px 7px" }}>Valfritt</span>
+            )}
+            {meta.label && (
+              <span style={{ fontSize: 11, fontWeight: 700, color: meta.pillColor, background: meta.pillBg, borderRadius: 6, padding: "2px 7px" }}>{meta.label}</span>
+            )}
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11.5, color: "var(--ink-400)", flexShrink: 0, paddingTop: 2 }}>
-            <Icon n="clock" s={11} />
-            <span>{step.time}</span>
-          </div>
+          {!isOpen && (
+            <div style={{ fontSize: 13, color: "var(--ink-500)", marginTop: 3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{step.desc}</div>
+          )}
         </div>
 
-        {/* Expanded content */}
-        {expanded && step.status === "next" && (
-          <div style={{ marginTop: 14 }}>
-            {step.type === "upload" && (
-              <>
-                <UploadZone onUpload={() => onComplete(step.id)} />
-                <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginTop: 14, padding: "10px 12px", background: "var(--info-tint)", border: "1px solid rgba(37,99,235,0.2)", borderRadius: 10 }}>
-                  <Icon n="info" s={13} c="var(--info)" />
-                  <div style={{ fontSize: 11.5, color: "var(--ink-700)", lineHeight: 1.5 }}>
-                    Vi granskar dokumentet manuellt — vanligtvis godkänt inom 1 arbetsdag. Du får e-post när det är klart.
-                  </div>
-                </div>
-              </>
-            )}
-            {step.type === "choice" && (
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {[
-                  { v: "YES_TRANSPORT", l: "Ja — vi har kollektivavtal", desc: "Med Transport eller liknande branschavtal" },
-                  { v: "INDIVIDUAL", l: "Ja — individuella avtal", desc: "Liknande villkor utan branschavtal" },
-                  { v: "NO", l: "Nej", desc: "Visas ej på er åkeriprofil" },
-                ].map((o) => (
-                  <button
-                    key={o.v}
-                    onClick={() => { setKollektivVal(o.v); onComplete(step.id, o.v); }}
-                    style={{ padding: "13px 16px", borderRadius: 12, background: kollektivVal === o.v ? "var(--green-tint)" : "var(--paper-2)", border: `1px solid ${kollektivVal === o.v ? "rgba(31,95,92,0.3)" : "var(--line)"}`, textAlign: "left", cursor: "pointer", transition: "all .15s", fontFamily: "inherit" }}
-                  >
-                    <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--ink-900)", marginBottom: 3 }}>{o.l}</div>
-                    <div style={{ fontSize: 11.5, color: "var(--ink-500)" }}>{o.desc}</div>
-                  </button>
-                ))}
-              </div>
-            )}
-            {step.type === "later" && (
-              <div style={{ display: "flex", gap: 10 }}>
-                <button onClick={() => onComplete(step.id)} style={{ padding: "10px 18px", borderRadius: 99, background: "var(--green)", border: "none", color: "#fff", fontSize: 12.5, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
-                  Konfigurera fakturering
-                </button>
-                <button onClick={onToggle} style={{ padding: "10px 18px", borderRadius: 99, background: "transparent", border: "1px solid var(--line-2)", color: "var(--ink-500)", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
-                  Gör det senare
-                </button>
-              </div>
-            )}
-          </div>
-        )}
+        {/* Time */}
+        <span style={{ fontSize: 12.5, color: "var(--ink-400)", fontFamily: "var(--mono)", flexShrink: 0 }}>{step.time}</span>
 
-        {step.status === "review" && (
-          <div style={{ marginTop: 10, padding: "9px 14px", background: "var(--info-tint)", border: "1px solid rgba(37,99,235,0.2)", borderRadius: 10, display: "flex", alignItems: "center", gap: 9, fontSize: 12 }}>
-            <Icon n="clock" s={13} c="var(--info)" />
-            <span style={{ color: "var(--ink-700)" }}>Under granskning — svar inom 1 arbetsdag</span>
-          </div>
-        )}
-      </div>
+        {/* Chevron */}
+        {!isLocked && <Icon name={isOpen ? "chevDown" : "chevRight"} size={16} color="var(--ink-300)" stroke={2} />}
+      </button>
+
+      {/* Expanded body */}
+      {isOpen && (
+        <div style={{ padding: "0 22px 22px 78px" }}>
+          <p style={{ fontSize: 14, color: "var(--ink-600)", lineHeight: 1.6, marginBottom: 16 }}>{step.desc}</p>
+
+          {isActionable && (
+            <>
+              {/* Upload zone */}
+              <div style={{ border: "1.5px dashed var(--line-strong)", borderRadius: 12, padding: "26px 20px", textAlign: "center", background: "var(--card-2)", marginBottom: 14 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 11, background: "var(--green-tint)", margin: "0 auto 12px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <Icon name="plus" size={20} color="var(--green-text)" stroke={2.4} />
+                </div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)", marginBottom: 4 }}>Ladda upp dokument</div>
+                <div style={{ fontSize: 12.5, color: "var(--ink-500)" }}>PDF, JPG eller PNG · max 10 MB</div>
+              </div>
+              <div style={{ display: "flex", gap: 10 }}>
+                <button
+                  onClick={() => onComplete(step.id)}
+                  style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 20px", borderRadius: 10, background: "var(--green)", color: "#fff", fontSize: 13.5, fontWeight: 800, border: "none", cursor: "pointer", fontFamily: "inherit" }}
+                >
+                  Skicka för granskning
+                  <Icon name="arrow" size={14} color="#fff" stroke={2.2} />
+                </button>
+                {!step.required && (
+                  <button
+                    onClick={onToggle}
+                    style={{ padding: "10px 20px", borderRadius: 10, background: "transparent", border: "1px solid var(--line-2)", color: "var(--ink-500)", fontSize: 13.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}
+                  >
+                    Hoppa över
+                  </button>
+                )}
+              </div>
+            </>
+          )}
+
+          {step.status === "review" && (
+            <div style={{ padding: "12px 16px", background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.2)", borderRadius: 10, fontSize: 13, color: "var(--amber-deep)", fontWeight: 600 }}>
+              Granskas av STP — vi återkommer inom 1–2 arbetsdagar.
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -180,166 +126,145 @@ function StepCard({ step, num, expanded, onToggle, onComplete, isLast }) {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function CompanyVerification() {
   const { hasApi } = useAuth();
-  const navigate = useNavigate();
-  const isMobile = useIsMobile();
-  const [profile, setProfile] = useState(null);
-  const [expandedStep, setExpandedStep] = useState(null);
+  const [expanded, setExpanded] = useState("fskatt");
   const [steps, setSteps] = useState([
-    { id: "email", title: "E-post bekräftad", time: "Klart", required: true, status: "done", desc: "Din e-postadress är verifierad.", type: null },
-    { id: "company", title: "Företagsuppgifter", time: "Klart", required: true, status: "done", desc: "Företagsnamn och organisationsnummer är registrerade.", type: null },
-    { id: "fskatt", title: "F-skattsedel", time: "~ 2 min", required: true, status: "next", desc: "Bekräftar att ni är registrerade hos Skatteverket och får ta emot uppdrag.", type: "upload" },
-    { id: "trafik", title: "Trafiktillstånd", time: "~ 2 min", required: true, status: "locked", desc: "Yrkesmässigt trafiktillstånd från Transportstyrelsen.", type: "upload" },
-    { id: "agreement", title: "Kollektivavtal", time: "~ 1 min", required: false, status: "locked", desc: "Visar förare att ni har avtal. Kraftig signal — höjer ansökningstakt med 40%.", type: "choice" },
-    { id: "billing", title: "Fakturering", time: "~ 3 min", required: false, status: "locked", desc: "Behövs först när ni vill publicera fler än 1 jobb samtidigt.", type: "later" },
+    { id: "email",     icon: "mail",     title: "E-post bekräftad",  time: "Klart",   required: true,  status: "done",   desc: "Din e-postadress är verifierad." },
+    { id: "company",   icon: "building", title: "Företagsuppgifter", time: "Klart",   required: true,  status: "done",   desc: "Företagsnamn och organisationsnummer är registrerade." },
+    { id: "fskatt",    icon: "info",     title: "F-skattsedel",      time: "~ 2 min", required: true,  status: "next",   desc: "Bekräftar att ni är registrerade hos Skatteverket och får ta emot uppdrag." },
+    { id: "trafik",    icon: "truck",    title: "Trafiktillstånd",   time: "~ 2 min", required: true,  status: "locked", desc: "Yrkesmässigt trafiktillstånd från Transportstyrelsen." },
+    { id: "agreement", icon: "user",     title: "Kollektivavtal",    time: "~ 1 min", required: false, status: "locked", desc: "Visar förare att ni har avtal. Höjer ansökningstakten med ~40 %." },
+    { id: "billing",   icon: "settings", title: "Fakturering",       time: "~ 3 min", required: false, status: "locked", desc: "Behövs först när ni vill publicera fler än 1 jobb samtidigt." },
   ]);
 
   useEffect(() => {
     if (!hasApi) return;
     fetchMyCompanyProfile()
       .then((data) => {
-        setProfile(data);
-        // Update steps based on profile verification status
-        if (data) {
-          setSteps((prev) => prev.map((s) => {
-            if (s.id === "email") return { ...s, status: "done", desc: data.email || s.desc };
-            if (s.id === "company") return { ...s, status: data.companyName ? "done" : "next", desc: data.companyName ? `${data.companyName} · ${data.orgNumber || ""}` : s.desc };
-            if (s.id === "fskatt") {
-              if (data.fSkattsedel) return { ...s, status: "done" };
-              // Check if company step is done to unlock
-              return { ...s, status: data.companyName ? "next" : "locked" };
-            }
-            return s;
-          }));
-        }
+        if (!data) return;
+        setSteps((prev) => prev.map((s) => {
+          if (s.id === "email") return { ...s, status: "done", desc: data.email || s.desc };
+          if (s.id === "company") return { ...s, status: data.companyName ? "done" : "next", desc: data.companyName ? `${data.companyName} · ${data.orgNumber || ""}` : s.desc };
+          if (s.id === "fskatt" && data.fSkattsedel) return { ...s, status: "done" };
+          return s;
+        }));
       })
       .catch(() => {});
   }, [hasApi]);
 
-  const handleToggle = (id) => {
-    setExpandedStep((prev) => (prev === id ? null : id));
-  };
-
   const handleComplete = (id) => {
     setSteps((prev) => {
-      const next = prev.map((s) => s.id === id ? { ...s, status: "review" } : s);
+      const next = prev.map((s) => s.id === id ? { ...s, status: "review", time: "Granskas" } : s);
       const idx = next.findIndex((s) => s.id === id);
       if (idx >= 0 && idx + 1 < next.length && next[idx + 1].status === "locked") {
         next[idx + 1] = { ...next[idx + 1], status: "next" };
+        setExpanded(next[idx + 1].id);
       }
       return next;
     });
-    setExpandedStep(null);
   };
 
-  const requiredSteps = steps.filter((s) => s.required);
-  const done = requiredSteps.filter((s) => s.status === "done" || s.status === "review").length;
-  const total = requiredSteps.length;
-  const pct = Math.round((done / total) * 100);
-  const allRequiredDone = done === total;
+  const requiredDone  = steps.filter((s) => s.required && (s.status === "done" || s.status === "review")).length;
+  const requiredTotal = steps.filter((s) => s.required).length;
+  const pct           = Math.round((requiredDone / requiredTotal) * 100);
+  const verified      = requiredDone === requiredTotal;
 
   return (
-    <main style={{ background: "var(--paper)", minHeight: "100vh", paddingTop: 32, color: "var(--ink-900)" }}>
-      <style>{`
-        @keyframes pulseGlow {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(31,95,92,0.4); }
-          50% { box-shadow: 0 0 0 8px rgba(31,95,92,0); }
-        }
-      `}</style>
-
-      <div style={{ maxWidth: 720, margin: "0 auto", padding: isMobile ? "24px 16px 80px" : "24px 32px 80px" }}>
-        <Link
-          to="/foretag"
-          style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "6px 0", color: "var(--ink-500)", fontSize: 13, fontWeight: 600, textDecoration: "none", marginBottom: 20 }}
-        >
-          <Icon n="back" s={13} /> Tillbaka till översikt
-        </Link>
-
-        {/* Hero */}
-        <div style={{ marginBottom: 28 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
-            <div style={{ width: 54, height: 54, borderRadius: 14, background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Icon n="shield" s={22} c="var(--green)" />
-            </div>
-            <div>
-              <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: -0.8, marginBottom: 4, color: "var(--ink-900)" }}>Verifiera ert åkeri</h1>
-              <div style={{ fontSize: 13.5, color: "var(--ink-500)" }}>4 snabba steg så ni kan börja anställa</div>
-            </div>
-          </div>
-
-          {/* Progress */}
-          <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: 18, boxShadow: "var(--sh-sm)" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-              <div style={{ fontSize: 12.5, fontWeight: 700, color: "var(--ink-700)" }}>{done} av {total} klara</div>
-              <div style={{ fontSize: 12.5, color: "var(--green-text)", fontWeight: 800 }}>{pct}%</div>
-            </div>
-            <div style={{ height: 6, background: "var(--paper-2)", borderRadius: 99, overflow: "hidden" }}>
-              <div style={{ height: "100%", width: `${pct}%`, background: "var(--green)", borderRadius: 99, transition: "width .4s ease" }} />
-            </div>
-          </div>
+    <div style={{ background: "var(--paper)", minHeight: "100vh" }}>
+      {/* Page header */}
+      <div style={{ background: "var(--paper)", borderBottom: "1px solid var(--line)", paddingTop: 32, paddingBottom: 24 }}>
+        <div style={{ maxWidth: 1000, margin: "0 auto", padding: "0 32px" }}>
+          <p style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 10 }}>För åkerier</p>
+          <h1 style={{ fontSize: 34, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.2, lineHeight: 1.15, marginBottom: 6 }}>Verifiering</h1>
+          <p style={{ fontSize: 14, color: "var(--ink-500)", fontWeight: 500 }}>
+            Verifierade åkerier får fler ansökningar. Det tar några minuter.
+          </p>
         </div>
+      </div>
 
-        {/* Why verify */}
-        <div style={{ background: "var(--success-tint)", border: "1px solid rgba(31,122,58,0.2)", borderRadius: 14, padding: "16px 20px", marginBottom: 24 }}>
-          <div style={{ display: "flex", alignItems: "flex-start", gap: 11 }}>
-            <Icon n="info" s={15} c="var(--success)" />
-            <div>
-              <div style={{ fontSize: 12.5, fontWeight: 700, color: "var(--success)", marginBottom: 4 }}>Varför verifiera?</div>
-              <div style={{ fontSize: 12.5, color: "var(--ink-700)", lineHeight: 1.55 }}>
-                Verifierade åkerier får <strong style={{ color: "var(--ink-900)" }}>3× fler kvalificerade ansökningar</strong> och visas högre upp i förares sökningar.
-                Förare litar mer på åkerier med synliga F-skatt och kollektivavtals-status.
+      <main style={{ maxWidth: 1000, margin: "0 auto", padding: "28px 32px 80px" }}>
+        <div className="ver-grid">
+          {/* LEFT: steps */}
+          <div className="stp-fade-up">
+            {/* Progress banner */}
+            <div style={{
+              background: verified ? "var(--success-tint)" : "var(--card)",
+              border: `1px solid ${verified ? "rgba(31,122,58,0.2)" : "var(--line)"}`,
+              borderRadius: 14,
+              padding: "22px 26px",
+              marginBottom: 18,
+            }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  {verified && (
+                    <span style={{ width: 32, height: 32, borderRadius: 8, background: "var(--success)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <Icon name="check" size={17} color="#fff" stroke={3} />
+                    </span>
+                  )}
+                  <div>
+                    <div style={{ fontSize: 16, fontWeight: 800, color: "var(--ink-900)" }}>{verified ? "Verifierat åkeri!" : "Verifiering pågår"}</div>
+                    <div style={{ fontSize: 13, color: "var(--ink-500)", marginTop: 1 }}>{requiredDone} av {requiredTotal} obligatoriska steg klara</div>
+                  </div>
+                </div>
+                <div style={{ fontSize: 26, fontWeight: 800, color: verified ? "var(--success)" : "var(--green)", fontFamily: "var(--mono)" }}>{pct}%</div>
+              </div>
+              <div style={{ height: 6, borderRadius: 3, background: "var(--paper-2)", overflow: "hidden" }}>
+                <div style={{
+                  height: "100%",
+                  width: `${pct}%`,
+                  background: verified ? "var(--success)" : "linear-gradient(to right, var(--green), var(--green-soft))",
+                  borderRadius: 3,
+                  transition: "width .5s",
+                }} />
               </div>
             </div>
+
+            {/* Step cards */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {steps.map((s) => (
+                <StepCard
+                  key={s.id}
+                  step={s}
+                  expanded={expanded === s.id}
+                  onToggle={() => setExpanded((prev) => (prev === s.id ? "" : s.id))}
+                  onComplete={handleComplete}
+                />
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Steps */}
-        <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, padding: "24px 22px", boxShadow: "var(--sh-sm)" }}>
-          {steps.map((s, i) => (
-            <StepCard
-              key={s.id}
-              step={s}
-              num={i + 1}
-              expanded={expandedStep === s.id}
-              onToggle={() => handleToggle(s.id)}
-              onComplete={handleComplete}
-              isLast={i === steps.length - 1}
-            />
-          ))}
-        </div>
+          {/* RIGHT: sidebar */}
+          <aside style={{ display: "flex", flexDirection: "column", gap: 18, position: "sticky", top: 32 }}>
+            {/* Why verify */}
+            <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "22px 24px" }}>
+              <p style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 14 }}>Varför verifiera?</p>
+              {[
+                { icon: "eye",   title: "Mer synlig",       text: "Verifierade åkerier rankas högre och får en blå bock." },
+                { icon: "user",  title: "Fler ansökningar", text: "Förare söker hellre hos verifierade arbetsgivare." },
+                { icon: "check", title: "Bygg förtroende",  text: "Visar att ni är en seriös och registrerad aktör." },
+              ].map((b, i) => (
+                <div key={b.title} style={{ display: "flex", gap: 12, alignItems: "flex-start", padding: "12px 0", borderBottom: i < 2 ? "1px solid var(--line)" : "none" }}>
+                  <span style={{ width: 34, height: 34, borderRadius: 9, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <Icon name={b.icon} size={16} color="var(--green-text)" stroke={2} />
+                  </span>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)" }}>{b.title}</div>
+                    <div style={{ fontSize: 12.5, color: "var(--ink-500)", marginTop: 2, lineHeight: 1.5 }}>{b.text}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
 
-        {/* Trust signals */}
-        <div style={{ marginTop: 24, display: "flex", alignItems: "center", justifyContent: "center", gap: 24, flexWrap: "wrap" }}>
-          {[
-            { icon: "lock", text: "Säker uppladdning" },
-            { icon: "shield", text: "GDPR-säkert" },
-            { icon: "users", text: "Endast STP-team granskar" },
-          ].map(({ icon, text }) => (
-            <div key={text} style={{ display: "flex", alignItems: "center", gap: 7, color: "var(--ink-400)", fontSize: 11.5, fontWeight: 600 }}>
-              <Icon n={icon} s={13} c="var(--ink-400)" />
-              {text}
+            {/* Support */}
+            <div style={{ background: "var(--card-2)", border: "1px solid var(--line)", borderRadius: 14, padding: "18px 22px" }}>
+              <div style={{ fontSize: 13, color: "var(--ink-500)", lineHeight: 1.6 }}>
+                Behöver du hjälp?{" "}
+                <Link to="/kontakt" style={{ color: "var(--green)", fontWeight: 600, textDecoration: "none" }}>Kontakta support</Link>
+                {" "}så guidar vi dig genom verifieringen.
+              </div>
             </div>
-          ))}
+          </aside>
         </div>
-
-        {/* All done */}
-        {allRequiredDone && (
-          <div style={{ marginTop: 28, padding: "22px 24px", background: "var(--success-tint)", border: "1px solid rgba(31,122,58,0.25)", borderRadius: 14, textAlign: "center" }}>
-            <div style={{ width: 48, height: 48, borderRadius: 99, background: "var(--success-tint)", border: "1px solid rgba(31,122,58,0.3)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
-              <Icon n="check" s={20} c="var(--success)" />
-            </div>
-            <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 5, color: "var(--ink-900)" }}>Alla obligatoriska steg klara</div>
-            <div style={{ fontSize: 13, color: "var(--ink-500)", marginBottom: 16 }}>
-              Vi granskar era dokument och hör av oss inom 1 arbetsdag.
-            </div>
-            <Link
-              to="/foretag"
-              style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "11px 22px", borderRadius: 99, background: "var(--green)", color: "#fff", fontSize: 13, fontWeight: 800, textDecoration: "none" }}
-            >
-              Gå till översikten <Icon n="arrow" s={13} />
-            </Link>
-          </div>
-        )}
-      </div>
-    </main>
+      </main>
+    </div>
   );
 }

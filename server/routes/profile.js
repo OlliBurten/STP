@@ -12,6 +12,14 @@ export const profileRouter = Router();
 const MATCH_ALERTS_ENABLED = process.env.MATCH_ALERTS_ENABLED !== "false";
 const MATCH_EMAIL_COOLDOWN_MS = 24 * 60 * 60 * 1000;
 
+function generateSlug(name, userId) {
+  return name.toLowerCase()
+    .replace(/[åä]/g, 'a').replace(/ö/g, 'o')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+    + '-' + userId.slice(-6);
+}
+
 profileRouter.use(authMiddleware, requireDriver);
 
 function normalizeProfileForMinimumCheck(profile, name) {
@@ -65,6 +73,8 @@ function formatProfileResponse(profile, user) {
     physicalWorkOk: profile.physicalWorkOk ?? null,
     soloWorkOk: profile.soloWorkOk ?? null,
     preferredEmployment: profile.preferredEmployment ?? [],
+    openToWork: profile.openToWork ?? false,
+    slug: profile.slug ?? null,
   };
 }
 
@@ -267,10 +277,24 @@ profileRouter.put("/", async (req, res, next) => {
     if (body.physicalWorkOk !== undefined) data.physicalWorkOk = body.physicalWorkOk === true ? true : body.physicalWorkOk === false ? false : null;
     if (body.soloWorkOk !== undefined) data.soloWorkOk = body.soloWorkOk === true ? true : body.soloWorkOk === false ? false : null;
     if (Array.isArray(body.preferredEmployment)) data.preferredEmployment = body.preferredEmployment;
+    if (body.openToWork !== undefined) data.openToWork = Boolean(body.openToWork);
     if (data.isGymnasieelev) {
       data.primarySegment = "INTERNSHIP";
       data.secondarySegments = [];
     }
+
+    // Auto-generate slug once (when name is first set and no slug exists yet)
+    if (body.name) {
+      const existingProfile = await prisma.driverProfile.findUnique({
+        where: { userId: req.userId },
+        select: { slug: true },
+      });
+      if (!existingProfile?.slug) {
+        const slug = generateSlug(String(body.name || "").trim(), req.userId);
+        data.slug = slug;
+      }
+    }
+
     const profile = await prisma.driverProfile.upsert({
       where: { userId: req.userId },
       update: data,

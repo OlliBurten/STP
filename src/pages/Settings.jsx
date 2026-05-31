@@ -406,43 +406,120 @@ function NotifSection({ isDriver, initialSettings, onToggle }) {
 }
 
 // ─── Driver Sekretess ─────────────────────────────────────────────────────────
-const VISIBILITY_OPTS = [
-  { v: "open",    l: "Synlig för alla verifierade åkerier", d: "Åkerier kan hitta dig via STP:s förardatabas och kontakta dig direkt. Snabbaste vägen till jobb." },
-  { v: "limited", l: "Endast åkerier jag ansökt till",      d: "Bara åkerier där du själv tagit första steget kan se din profil." },
-  { v: "hidden",  l: "Helt dold",                           d: "Din profil är inte synlig för någon. Du kan fortfarande söka jobb, men åkerier kan inte söka upp dig." },
-];
-
 function SekretessSection({ profile: initialProfile }) {
-  const [visibility, setVisibility] = useState(initialProfile?.visible === false ? "hidden" : "open");
+  const [visibleToCompanies, setVisibleToCompanies] = useState(
+    initialProfile?.visibleToCompanies !== false
+  );
+  const [openToWork, setOpenToWork] = useState(
+    initialProfile?.openToWork === true
+  );
+  const [showPhone, setShowPhone] = useState(
+    initialProfile?.showPhoneToCompanies === true
+  );
+  const [showEmail, setShowEmail] = useState(
+    initialProfile?.showEmailToCompanies === true
+  );
+  const [saving, setSaving] = useState(false);
 
-  const save = async (val) => {
-    setVisibility(val);
+  const save = async (patch) => {
+    setSaving(true);
     try {
-      await updateProfile({ visibleToCompanies: val !== "hidden" });
+      await updateProfile(patch);
     } catch {
-      // silent
+      // revert on error
+    } finally {
+      setSaving(false);
     }
   };
 
+  const toggleVisible = () => {
+    const next = !visibleToCompanies;
+    setVisibleToCompanies(next);
+    save({ visibleToCompanies: next });
+  };
+
+  const toggleOpenToWork = () => {
+    const next = !openToWork;
+    setOpenToWork(next);
+    save({ openToWork: next });
+  };
+
+  const togglePhone = () => {
+    const next = !showPhone;
+    setShowPhone(next);
+    save({ showPhoneToCompanies: next });
+  };
+
+  const toggleEmail = () => {
+    const next = !showEmail;
+    setShowEmail(next);
+    save({ showEmailToCompanies: next });
+  };
+
   return (
-    <Card title="Vem får se din profil?" sub="Du bestämmer själv hur synlig du är.">
-      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 8 }}>
-        {VISIBILITY_OPTS.map((o) => {
-          const on = visibility === o.v;
-          return (
-            <button key={o.v} type="button" onClick={() => save(o.v)} style={{ textAlign: "left", padding: "16px 18px", borderRadius: 13, background: on ? "var(--green-tint)" : "var(--paper-2)", border: `1px solid ${on ? "rgba(31,95,92,0.3)" : "var(--line)"}`, display: "flex", gap: 14, alignItems: "flex-start", cursor: "pointer", fontFamily: "inherit", color: "inherit" }}>
-              <div style={{ width: 18, height: 18, borderRadius: 99, border: `2px solid ${on ? "var(--green)" : "var(--line-2)"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
-                {on && <div style={{ width: 8, height: 8, borderRadius: 99, background: "var(--green)" }} />}
+    <>
+      {/* Synlighet */}
+      <Card
+        title="Synlighet i förardatabasen"
+        sub="Styr om åkerier kan hitta och kontakta dig via talangkartan."
+      >
+        <ToggleRow
+          first
+          label="Synlig för åkerier"
+          sub={visibleToCompanies
+            ? "Din profil visas för verifierade åkerier i Hitta förare."
+            : "Din profil är dold — åkerier kan inte söka upp dig. Du kan fortfarande ansöka till jobb."}
+          on={visibleToCompanies}
+          onChange={toggleVisible}
+        />
+
+        {visibleToCompanies && (
+          <div style={{ marginTop: 16, padding: "16px 18px", borderRadius: 12, background: openToWork ? "var(--success-tint)" : "var(--paper-2)", border: `1px solid ${openToWork ? "rgba(31,120,80,0.25)" : "var(--line)"}`, display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 20 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                <div style={{ width: 10, height: 10, borderRadius: "50%", background: openToWork ? "var(--success)" : "var(--ink-300)", flexShrink: 0 }} />
+                <span style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)" }}>Söker aktivt jobb</span>
+                {openToWork && (
+                  <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.5, textTransform: "uppercase", padding: "2px 8px", borderRadius: 99, background: "var(--success)", color: "#fff" }}>
+                    SÖKER JOBB
+                  </span>
+                )}
               </div>
-              <div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)", marginBottom: 3 }}>{o.l}</div>
-                <div style={{ fontSize: 12, color: "var(--ink-500)", lineHeight: 1.5 }}>{o.d}</div>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-    </Card>
+              <p style={{ fontSize: 12.5, color: "var(--ink-500)", lineHeight: 1.55, margin: 0 }}>
+                {openToWork
+                  ? "En grön ring visas runt din profilbild — åkerier ser att du aktivt söker."
+                  : "Slå på för att visa en grön ring runt din profilbild och signalera att du är öppen för erbjudanden."}
+              </p>
+            </div>
+            <Toggle checked={openToWork} onChange={toggleOpenToWork} disabled={saving} />
+          </div>
+        )}
+      </Card>
+
+      {/* Kontaktuppgifter */}
+      <Card
+        title="Kontaktuppgifter"
+        sub="Välj vad åkerier får se när de tittar på din profil."
+      >
+        <ToggleRow
+          first
+          label="Visa telefonnummer"
+          sub="Åkerier du inte kontaktat kan se ditt telefonnummer direkt på profilen."
+          on={showPhone}
+          onChange={togglePhone}
+        />
+        <ToggleRow
+          label="Visa e-postadress"
+          sub="Åkerier kan kontakta dig via e-post utan att skicka meddelande via STP."
+          on={showEmail}
+          onChange={toggleEmail}
+        />
+      </Card>
+
+      {saving && (
+        <p style={{ fontSize: 12, color: "var(--ink-500)", textAlign: "right", marginTop: -8 }}>Sparar…</p>
+      )}
+    </>
   );
 }
 
@@ -888,19 +965,20 @@ export default function Settings() {
   };
 
   return (
-    <main style={{ background: "var(--paper)", minHeight: "100vh", paddingTop: isMobile ? 72 : 48 }}>
+    <main style={{ background: "var(--paper)", minHeight: "100vh" }}>
       <PageMeta title="Inställningar – STP" />
-      <div style={{ maxWidth: 1080, margin: "0 auto", padding: isMobile ? "0 16px 80px" : "0 32px 100px" }}>
 
-        {/* Page header — desktop only */}
-        {!isMobile && (
-          <div style={{ marginBottom: 48 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--amber)", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>
-              {isCompany ? "Företagskonto" : "Förarkonto"}
-            </div>
-            <h1 style={{ fontSize: 36, fontWeight: 900, letterSpacing: -1.2, margin: 0, color: "var(--ink-900)" }}>Inställningar</h1>
+      {/* Page header */}
+      {!isMobile && (
+        <div style={{ background: "var(--paper)", borderBottom: "1px solid var(--line)", paddingTop: 32, paddingBottom: 24 }}>
+          <div style={{ maxWidth: 1040, margin: "0 auto", padding: "0 32px" }}>
+            <p style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 10 }}>Konto</p>
+            <h1 style={{ fontSize: 34, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.2, lineHeight: 1.15, margin: 0 }}>Inställningar</h1>
           </div>
-        )}
+        </div>
+      )}
+
+      <div style={{ maxWidth: 1040, margin: "0 auto", padding: isMobile ? "72px 16px 80px" : "28px 32px 100px" }}>
 
         {/* Mobile title bar */}
         {isMobile && (
@@ -976,23 +1054,26 @@ export default function Settings() {
           </div>
         ) : (
           /* Desktop: sidebar + content grid */
-          <div style={{ display: "grid", gridTemplateColumns: "260px 1fr", gap: 32, alignItems: "flex-start" }}>
-            <aside style={{ position: "sticky", top: 88, background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: 8, boxShadow: "var(--sh-sm)" }}>
+          <div className="set-grid">
+            <nav style={{ display: "flex", flexDirection: "column", gap: 4, position: "sticky", top: 28 }}>
               {sections.map((s) => {
                 const active = section === s.k;
                 return (
-                  <button key={s.k} type="button" onClick={() => setSection(s.k)} style={{ width: "100%", padding: "11px 14px", borderRadius: 9, display: "flex", alignItems: "center", gap: 11, background: active ? "var(--green-tint)" : "transparent", color: active ? "var(--green-text)" : "var(--ink-500)", fontSize: 14, fontWeight: active ? 700 : 600, textAlign: "left", marginBottom: 2, border: "none", cursor: "pointer", fontFamily: "inherit" }}>
-                    <Icon n={s.i} s={16} c="currentColor" />
+                  <button
+                    key={s.k}
+                    type="button"
+                    onClick={() => setSection(s.k)}
+                    style={{ display: "inline-flex", alignItems: "center", gap: 11, padding: "11px 14px", borderRadius: 10, textAlign: "left", background: active ? "var(--green-tint)" : "transparent", color: active ? "var(--green-text)" : "var(--ink-700)", fontSize: 14, fontWeight: active ? 700 : 500, border: "none", cursor: "pointer", fontFamily: "inherit", transition: "background .12s", whiteSpace: "nowrap" }}
+                    onMouseEnter={e => { if (!active) e.currentTarget.style.background = "var(--card-2)"; }}
+                    onMouseLeave={e => { if (!active) e.currentTarget.style.background = "transparent"; }}
+                  >
+                    <Icon n={s.i} s={17} c={active ? "var(--green-text)" : "var(--ink-500)"} />
                     {s.l}
                   </button>
                 );
               })}
-              <div style={{ height: 1, background: "var(--line)", margin: "8px 0" }} />
-              <Link to={isCompany ? "/foretag" : "/profil"} style={{ display: "block", padding: "11px 14px", borderRadius: 9, fontSize: 13, fontWeight: 600, color: "var(--ink-400)", textDecoration: "none" }}>
-                ← Tillbaka till {isCompany ? "dashboard" : "profil"}
-              </Link>
-            </aside>
-            <div style={{ minWidth: 0 }}>
+            </nav>
+            <div style={{ minWidth: 0 }} className="stp-fade-up">
               {renderContent()}
             </div>
           </div>

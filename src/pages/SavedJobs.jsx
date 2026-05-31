@@ -46,12 +46,14 @@ function Icon({ n, s = 18, c = "currentColor" }) {
 
 // ─── FavJobCard ───────────────────────────────────────────────────────────────
 function FavJobCard({ job, matchData, onUnsave }) {
+  const [hovered, setHovered] = useState(false);
   const expired = job.status !== "ACTIVE";
   const initials = avatarInitials(job.company);
-  const bg = avatarBg(job.company);
   const pct = matchData ? Math.round(matchData.score > 1 ? matchData.score : matchData.score * 100) : null;
-  const matchColor = pct == null ? null : pct >= 80 ? "var(--success)" : pct >= 65 ? "var(--amber)" : "var(--ink-400)";
-  const employmentLabel = job.employment === "fast" ? "Fast" : job.employment === "vikariat" ? "Vikariat" : "Tim";
+  const matchTextColor = pct == null ? null : pct >= 80 ? "var(--success)" : "var(--green-text)";
+  const matchBg = pct == null ? null : pct >= 80 ? "var(--success-tint)" : "var(--green-tint)";
+  const licenseStr = (job.licenseRequired || []).join(", ") || (job.license || "");
+  const employmentLabel = job.employment === "fast" ? "Fast" : job.employment === "vikariat" ? "Vikariat" : job.employment === "tim" ? "Tim" : job.employment || "Fast";
   const salaryDisplay = job.salaryMin
     ? job.salaryMax
       ? `${job.salaryMin.toLocaleString("sv-SE")} – ${job.salaryMax.toLocaleString("sv-SE")} kr/mån`
@@ -59,64 +61,53 @@ function FavJobCard({ job, matchData, onUnsave }) {
     : job.salary || null;
 
   return (
-    <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, padding: 22, opacity: expired ? 0.55 : 1, position: "relative", boxShadow: "var(--sh-sm)" }}>
-      {expired && (
-        <div style={{ position: "absolute", top: 14, right: 14, padding: "4px 9px", borderRadius: 99, background: "var(--paper-2)", fontSize: 10.5, fontWeight: 700, color: "var(--ink-400)", textTransform: "uppercase", letterSpacing: 1 }}>
-          Avslutad
-        </div>
-      )}
-
-      {/* Avatar + title */}
+    <article
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{ background: "var(--card)", border: `1px solid ${hovered ? "var(--line-2)" : "var(--line)"}`, borderRadius: "var(--r-lg)", padding: "20px 22px", boxShadow: hovered ? "var(--sh)" : "var(--sh-sm)", opacity: expired ? 0.6 : 1, cursor: "pointer", transition: "box-shadow .15s, border-color .15s" }}
+    >
       <div style={{ display: "flex", gap: 14, alignItems: "flex-start", marginBottom: 14 }}>
-        <div style={{ width: 48, height: 48, borderRadius: 11, background: bg, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 14, color: "#fff", flexShrink: 0 }}>
+        <div style={{ width: 46, height: 46, borderRadius: 11, background: "var(--paper-2)", border: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, color: "var(--ink-700)", flexShrink: 0 }}>
           {initials}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 3, flexWrap: "wrap" }}>
-            <h3 style={{ fontSize: 15, fontWeight: 800, letterSpacing: -0.3, color: "var(--ink-900)" }}>{job.title}</h3>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
+            <h3 style={{ fontSize: 16, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.3, lineHeight: 1.3 }}>{job.title}</h3>
+            <button onClick={(e) => { e.stopPropagation(); onUnsave(job.id); }} style={{ width: 32, height: 32, borderRadius: 8, flexShrink: 0, background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.3)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+              <Icon n="heart" s={14} c="var(--amber-deep)" />
+            </button>
           </div>
-          <div style={{ fontSize: 12.5, color: "var(--ink-500)" }}>{job.company}</div>
+          <div style={{ fontSize: 13, color: "var(--ink-500)", marginTop: 3 }}>
+            <span style={{ fontWeight: 600, color: "var(--ink-700)" }}>{job.company}</span> · {job.location}
+          </div>
         </div>
       </div>
 
-      {/* Meta row */}
-      <div style={{ display: "flex", gap: 14, fontSize: 12.5, color: "var(--ink-500)", marginBottom: 14, flexWrap: "wrap" }}>
-        {job.location && <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><Icon n="pin" s={12} />{job.location}</span>}
-        {salaryDisplay && <span>{salaryDisplay}</span>}
-        <span>{employmentLabel}</span>
+      {/* Pills */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
+        {licenseStr && <span style={{ padding: "3px 9px", borderRadius: 6, background: "var(--green-tint)", border: "1px solid var(--green-tint-2)", color: "var(--green-text)", fontSize: 11.5, fontWeight: 700 }}>{licenseStr}</span>}
+        <span style={{ padding: "3px 9px", borderRadius: 6, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-700)", fontSize: 11.5, fontWeight: 600 }}>{employmentLabel}</span>
+        {job.location && <span style={{ padding: "3px 9px", borderRadius: 6, background: "var(--card-2)", border: "1px solid var(--line)", color: "var(--ink-500)", fontSize: 11.5, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 4 }}><Icon n="pin" s={10} />{job.location}</span>}
       </div>
 
-      {/* Bottom row */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 14, borderTop: "1px solid var(--line)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      {/* Bottom */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 14, borderTop: "1px solid var(--line)" }}>
+        <div>
+          {salaryDisplay && <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--ink-900)", fontFamily: "'JetBrains Mono', monospace" }}>{salaryDisplay}</div>}
+          <div style={{ fontSize: 11.5, color: "var(--ink-400)", marginTop: 2 }}>Sparad {relativeTime(job.savedAt)}</div>
+        </div>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           {pct != null && (
-            <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 10px", borderRadius: 99, background: pct >= 80 ? "var(--success-tint)" : pct >= 65 ? "var(--amber-tint)" : "var(--paper-2)" }}>
-              <Icon n="spark" s={11} c={matchColor} />
-              <span style={{ fontSize: 12, fontWeight: 800, color: matchColor }}>{pct}% match</span>
-            </div>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 999, background: matchBg, fontSize: 13, fontWeight: 800, fontFamily: "'JetBrains Mono', monospace", color: matchTextColor }}>{pct}%</span>
           )}
-          {job.savedAt && <span style={{ fontSize: 11, color: "var(--ink-400)" }}>· Sparat {relativeTime(job.savedAt)}</span>}
-        </div>
-        <div style={{ display: "flex", gap: 7 }}>
-          <button
-            type="button"
-            onClick={() => onUnsave(job.id)}
-            title="Ta bort favorit"
-            style={{ width: 34, height: 34, borderRadius: 9, background: "var(--paper-2)", border: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
-          >
-            <Icon n="heart" s={13} c="var(--amber)" />
-          </button>
           {!expired && (
-            <Link
-              to={`/jobb/${job.id}`}
-              style={{ padding: "8px 14px", borderRadius: 9, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: 12, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5 }}
-            >
-              Visa <Icon n="arrow" s={11} c="#fff" />
+            <Link to={`/jobb/${job.id}`} style={{ padding: "8px 14px", borderRadius: 9, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: 12, textDecoration: "none", display: "inline-flex", alignItems: "center" }}>
+              Ansök
             </Link>
           )}
         </div>
       </div>
-    </div>
+    </article>
   );
 }
 
@@ -405,35 +396,36 @@ export default function SavedJobs() {
       <PageMeta title="Favoriter – STP" />
 
       {/* Page header */}
-      <div style={{ background: "var(--card)", borderBottom: "1px solid var(--line)", padding: isMobile ? "32px 20px 20px" : "48px 40px 28px" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <h1 style={{ fontSize: 32, fontWeight: 800, letterSpacing: -1, marginBottom: 6, color: "var(--ink-900)" }}>Favoriter</h1>
-          <p style={{ fontSize: 14, color: "var(--ink-400)", margin: 0 }}>Jobb och åkerier du sparat. Vi notifierar dig när något ändras.</p>
+      <div style={{ background: "var(--paper)", borderBottom: "1px solid var(--line)", paddingTop: 32, paddingBottom: 12 }}>
+        <div style={{ maxWidth: 1040, margin: "0 auto", padding: "0 32px" }}>
+          <p style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 10 }}>För förare</p>
+          <h1 style={{ fontSize: 38, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.5, lineHeight: 1.15, marginBottom: 6 }}>Sparat</h1>
+          <p style={{ fontSize: 14, color: "var(--ink-500)", fontWeight: 500, marginBottom: 24 }}>Jobb och åkerier du sparat för senare.</p>
+
+          {/* Tab bar */}
+          <div style={{ display: "flex", gap: 0, borderBottom: "1px solid var(--line)" }}>
+            {tabs.map(({ k, l, c }) => {
+              const active = tab === k;
+              return (
+                <button key={k} onClick={() => setTab(k)} style={{
+                  padding: "12px 18px 14px", position: "relative",
+                  fontSize: 14, fontWeight: active ? 700 : 500,
+                  color: active ? "var(--ink-900)" : "var(--ink-500)",
+                  display: "inline-flex", alignItems: "center", gap: 8,
+                  background: "none", border: "none", cursor: "pointer", fontFamily: "inherit",
+                }}>
+                  {l}
+                  <span style={{ padding: "1px 8px", borderRadius: 999, background: active ? "var(--green-tint)" : "var(--paper-2)", color: active ? "var(--green-text)" : "var(--ink-500)", fontSize: 11, fontWeight: 800 }}>{c}</span>
+                  {active && <span style={{ position: "absolute", left: 18, right: 18, bottom: -1, height: 3, background: "var(--green)", borderRadius: "3px 3px 0 0" }} />}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
-      <div style={{ maxWidth: 1280, margin: "0 auto", padding: isMobile ? "24px 20px 80px" : "28px 40px 100px" }}>
+      <div style={{ maxWidth: 1040, margin: "0 auto", padding: "24px 32px 80px" }}>
 
-        {/* Tab bar */}
-        <div style={{ display: "flex", gap: 6, marginBottom: 24, borderBottom: "1px solid var(--line)" }}>
-          {tabs.map(({ k, l, c }) => {
-            const active = tab === k;
-            return (
-              <button
-                key={k}
-                onClick={() => setTab(k)}
-                style={{ padding: "12px 18px", marginBottom: -1, background: "none", border: "none", borderBottom: active ? "2px solid var(--green)" : "2px solid transparent", color: active ? "var(--green-text)" : "var(--ink-400)", fontSize: 14, fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 8, fontFamily: "inherit", transition: "color .15s" }}
-              >
-                {l}
-                {c > 0 && (
-                  <span style={{ padding: "2px 8px", borderRadius: 99, background: active ? "var(--green-tint)" : "var(--paper-2)", fontSize: 11, fontWeight: 800, color: active ? "var(--green-text)" : "var(--ink-400)" }}>
-                    {c}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
 
         {/* ── Sparade jobb ── */}
         {tab === "jobs" && (
@@ -473,7 +465,7 @@ export default function SavedJobs() {
                     </button>
                   </div>
                 )}
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(380px, 1fr))", gap: 14 }}>
+                <div className="fav-grid">
                   {jobs.map((job) => {
                     const data = driverForMatch ? matchScore(driverForMatch, job) : null;
                     return (
@@ -512,7 +504,7 @@ export default function SavedJobs() {
                 </Link>
               </div>
             ) : (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))", gap: 14 }}>
+              <div className="fav-grid">
                 {companies.map((company) => (
                   <CompanyCard key={company.id} company={company} onUnsave={handleUnsaveCompany} />
                 ))}

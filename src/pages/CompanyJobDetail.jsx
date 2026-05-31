@@ -74,346 +74,70 @@ function Icon({ name, size = 16, color = "currentColor" }) {
   );
 }
 
-// ── MatchCircle ───────────────────────────────────────────────────────────────
+// ── KanbanCard ────────────────────────────────────────────────────────────────
 
-function MatchCircle({ pct, size = 42 }) {
-  const r = (size - 8) / 2;
-  const circ = 2 * Math.PI * r;
-  const color = pct >= 85 ? "var(--success)" : pct >= 65 ? "var(--amber)" : "var(--info)";
-  return (
-    <div style={{ position: "relative", width: size, height: size, flexShrink: 0 }}>
-      <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--line)" strokeWidth="3.5" />
-        <circle
-          cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth="3.5"
-          strokeLinecap="round"
-          strokeDasharray={`${(pct / 100) * circ} ${circ}`}
-          style={{ filter: `drop-shadow(0 0 4px ${color}55)` }}
-        />
-      </svg>
-      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 900, color }}>
-        {pct}
-      </div>
-    </div>
-  );
-}
+const matchColorFn = (m) => m >= 90 ? "var(--success)" : m >= 75 ? "var(--green)" : m >= 60 ? "var(--amber-deep)" : "var(--ink-500)";
 
-// ── StatCard ──────────────────────────────────────────────────────────────────
-
-function StatCard({ label, value, sub, trend, icon, accent, highlight }) {
-  return (
-    <div style={{ padding: "18px 20px", background: highlight ? "var(--amber-tint)" : "var(--paper-2)", border: `1px solid ${highlight ? "rgba(245,166,35,0.25)" : "var(--line)"}`, borderRadius: 16 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-        <div style={{ width: 32, height: 32, borderRadius: 9, background: `${accent}18`, border: `1px solid ${accent}30`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <Icon name={icon} size={15} color={accent} />
-        </div>
-        {trend !== undefined && trend !== null && (
-          <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 700, color: trend >= 0 ? "var(--success)" : "var(--danger)" }}>
-            <Icon name="trendUp" size={11} /> +{trend}
-          </div>
-        )}
-      </div>
-      <div style={{ fontSize: 28, fontWeight: 900, color: highlight ? "var(--amber-text)" : "var(--ink-900)", letterSpacing: -1, lineHeight: 1, marginBottom: 4 }}>{value}</div>
-      <div style={{ fontSize: 12, color: "var(--ink-500)", fontWeight: 600 }}>{label}</div>
-      {sub && <div style={{ fontSize: 11, color: "var(--ink-400)", marginTop: 4 }}>{sub}</div>}
-    </div>
-  );
-}
-
-// ── ApplicantCard ─────────────────────────────────────────────────────────────
-
-function ApplicantCard({ a, selected, onSelect, stage }) {
-  const s = STATUS_META[stage] || STATUS_META.new;
+function KanbanCard({ a }) {
   const licenseArr = Array.isArray(a.licenses) ? a.licenses : [];
   const certsArr = Array.isArray(a.certificates) ? a.certificates : [];
+  const mc = matchColorFn(a.matchScore || 0);
+
   return (
     <div
-      onClick={onSelect}
-      style={{
-        padding: "16px 18px",
-        background: selected ? "var(--green-tint)" : "var(--paper-2)",
-        border: `1px solid ${selected ? "rgba(31,95,92,0.4)" : "var(--line)"}`,
-        borderRadius: 14,
-        cursor: "pointer",
-        transition: "all .15s",
-        display: "flex", gap: 12, alignItems: "flex-start",
-      }}
+      style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, padding: "14px 15px", boxShadow: "var(--sh-sm)", cursor: "pointer", transition: "box-shadow .15s, border-color .15s" }}
+      onMouseEnter={(e) => { e.currentTarget.style.boxShadow = "var(--sh)"; e.currentTarget.style.borderColor = "var(--line-2)"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "var(--sh-sm)"; e.currentTarget.style.borderColor = "var(--line)"; }}
     >
-      <MatchCircle pct={a.matchScore || 0} />
-      <div style={{ width: 36, height: 36, borderRadius: 10, background: avatarColor(a.driverName), display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: "#fff", flexShrink: 0 }}>
-        {initials(a.driverName)}
-      </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 14, fontWeight: 800, color: "var(--ink-900)" }}>{a.driverName || "Förare"}</span>
-          <span style={{ padding: "2px 8px", borderRadius: 99, background: s.bg, border: `1px solid ${s.border}`, fontSize: 10, fontWeight: 700, color: s.color, textTransform: "uppercase", letterSpacing: 0.5 }}>
-            {s.label}
-          </span>
-        </div>
-        <div style={{ fontSize: 12, color: "var(--ink-500)", marginBottom: 8, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-          {a.region && <><span>{a.region}</span><span style={{ opacity: 0.4 }}>·</span></>}
-          {a.yearsExperience != null && <><span>{a.yearsExperience} år erfarenhet</span><span style={{ opacity: 0.4 }}>·</span></>}
-          <span>{relativeTime(a.appliedAt)}</span>
-        </div>
-        <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-          {licenseArr.map((l) => (
-            <span key={l} style={{ padding: "2px 8px", borderRadius: 99, background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.35)", fontSize: 10, fontWeight: 700, color: "var(--success)" }}>{l}</span>
-          ))}
-          {certsArr.slice(0, 2).map((c) => (
-            <span key={c} style={{ padding: "2px 8px", borderRadius: 99, background: "var(--paper-2)", border: "1px solid var(--line)", fontSize: 10, color: "var(--ink-500)" }}>{c}</span>
-          ))}
-          {certsArr.length > 2 && <span style={{ fontSize: 10, color: "var(--ink-400)" }}>+{certsArr.length - 2}</span>}
-        </div>
-        {a.note && (
-          <div style={{ marginTop: 8, padding: "7px 11px", background: "var(--info-tint)", borderLeft: "2px solid var(--info)", borderRadius: "0 6px 6px 0", fontSize: 11.5, color: "var(--ink-700)" }}>
-            {a.note}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ── CandidateDetail ───────────────────────────────────────────────────────────
-
-function CandidateDetail({ a, job, stage, onSelect, onReject, onHire }) {
-  const [acting, setActing] = useState(false);
-  if (!a) return (
-    <div style={{ background: "var(--paper-2)", border: "1px solid var(--line)", borderRadius: 20, padding: "40px 24px", textAlign: "center" }}>
-      <Icon name="user" size={32} color="var(--ink-400)" />
-      <p style={{ marginTop: 12, fontSize: 13, color: "var(--ink-400)" }}>Välj en sökande för att se detaljer</p>
-    </div>
-  );
-
-  const s = STATUS_META[stage] || STATUS_META.new;
-  const licenseArr = Array.isArray(a.licenses) ? a.licenses : [];
-  const certsArr = Array.isArray(a.certificates) ? a.certificates : [];
-  const matchColor = (a.matchScore || 0) >= 85 ? "var(--success)" : (a.matchScore || 0) >= 65 ? "var(--amber)" : "var(--info)";
-  const matchLabel = (a.matchScore || 0) >= 85 ? "Stark match" : (a.matchScore || 0) >= 65 ? "God match" : "Möjlig match";
-
-  // Build checklist from job requirements vs applicant data
-  const jobLicenses = Array.isArray(job?.licenseRequired) ? job.licenseRequired : (job?.licenseRequired ? [job.licenseRequired] : []);
-  const jobCerts = Array.isArray(job?.certificatesRequired) ? job.certificatesRequired : [];
-  const checklist = [
-    ...jobLicenses.map((lic) => [lic, licenseArr.includes(lic)]),
-    ...jobCerts.slice(0, 2).map((cert) => [cert, certsArr.includes(cert)]),
-    ...(licenseArr.length === 0 && jobLicenses.length === 0 ? [["YKB", certsArr.includes("YKB")]] : []),
-    a.region != null ? [`Region ${a.region}`, true] : null,
-    a.yearsExperience != null ? [`${a.yearsExperience}+ år erfarenhet`, a.yearsExperience >= 2] : null,
-  ].filter(Boolean);
-
-  const handleBook = async () => {
-    setActing(true);
-    try { await selectConversation(a.conversationId); onSelect(a.conversationId); }
-    catch { alert("Kunde inte uppdatera status"); }
-    finally { setActing(false); }
-  };
-
-  const handleReject = async () => {
-    setActing(true);
-    try { await rejectConversation(a.conversationId); onReject(a.conversationId); }
-    catch { alert("Kunde inte uppdatera status"); }
-    finally { setActing(false); }
-  };
-
-  const handleHire = () => { onHire?.(a.conversationId); };
-
-  return (
-    <div style={{ background: "var(--paper-2)", border: "1px solid var(--line)", borderRadius: 20, padding: "24px", overflow: "hidden" }}>
-      {/* Header */}
-      <div style={{ display: "flex", gap: 14, alignItems: "flex-start", marginBottom: 18 }}>
-        <div style={{ width: 54, height: 54, borderRadius: 14, background: avatarColor(a.driverName), display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, fontWeight: 800, color: "#fff", flexShrink: 0 }}>
+      <div style={{ display: "flex", gap: 11, alignItems: "center", marginBottom: 11 }}>
+        <div style={{ width: 40, height: 40, borderRadius: 99, background: avatarColor(a.driverName), display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: "#fff", flexShrink: 0 }}>
           {initials(a.driverName)}
         </div>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 17, fontWeight: 900, color: "var(--ink-900)", marginBottom: 4 }}>{a.driverName || "Förare"}</div>
-          <div style={{ fontSize: 12, color: "var(--ink-500)" }}>
-            {[a.region, a.yearsExperience != null ? `${a.yearsExperience} år erfarenhet` : null].filter(Boolean).join(" · ") || "Sökande"}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.driverName || "Förare"}</div>
+          <div style={{ fontSize: 12, color: "var(--ink-500)", marginTop: 1 }}>
+            {[a.region, a.yearsExperience != null ? `${a.yearsExperience} år` : null].filter(Boolean).join(" · ")}
           </div>
+        </div>
+        <div style={{ textAlign: "right", flexShrink: 0 }}>
+          <div style={{ fontSize: 15, fontWeight: 800, color: mc, fontFamily: "var(--mono)", lineHeight: 1 }}>{a.matchScore || 0}%</div>
         </div>
       </div>
 
-      {/* Match analysis */}
-      <div style={{ padding: "14px 16px", background: "rgba(167,139,250,0.06)", border: "1px solid rgba(167,139,250,0.18)", borderRadius: 13, marginBottom: 18 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-          <MatchCircle pct={a.matchScore || 0} size={36} />
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 800, color: matchColor }}>{matchLabel}</div>
-            <div style={{ fontSize: 11, color: "var(--ink-500)" }}>STP Matchningsanalys</div>
-          </div>
-        </div>
-        {checklist.length > 0 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-            {checklist.map(([label, ok]) => (
-              <div key={label} style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 12 }}>
-                <span style={{ width: 14, height: 14, borderRadius: 99, display: "flex", alignItems: "center", justifyContent: "center", background: ok ? "var(--success-tint)" : "var(--paper-2)", flexShrink: 0 }}>
-                  {ok
-                    ? <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                    : <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="var(--ink-400)" strokeWidth="3" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>}
-                </span>
-                <span style={{ color: ok ? "var(--ink-700)" : "var(--ink-400)", fontWeight: ok ? 600 : 400 }}>{label}</span>
-              </div>
-            ))}
-          </div>
-        )}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 11 }}>
+        {licenseArr.map((l) => (
+          <span key={l} style={{ padding: "3px 9px", borderRadius: 99, background: "var(--green)", fontSize: 10, fontWeight: 700, color: "#fff" }}>{l}</span>
+        ))}
+        {certsArr.slice(0, 2).map((c) => (
+          <span key={c} style={{ padding: "3px 9px", borderRadius: 99, background: "var(--paper-2)", border: "1px solid var(--line-2)", fontSize: 10, color: "var(--ink-700)", fontWeight: 600 }}>{c}</span>
+        ))}
       </div>
 
-      {/* License + certs */}
-      {(licenseArr.length > 0 || certsArr.length > 0) && (
-        <div style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-400)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 7 }}>Behörigheter</div>
-          <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-            {licenseArr.map((l) => (
-              <span key={l} style={{ padding: "3px 9px", borderRadius: 99, background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.35)", fontSize: 11, fontWeight: 700, color: "var(--success)" }}>{l}</span>
-            ))}
-            {certsArr.map((c) => (
-              <span key={c} style={{ padding: "3px 9px", borderRadius: 99, background: "var(--paper-2)", border: "1px solid var(--line)", fontSize: 11, color: "var(--ink-500)" }}>{c}</span>
-            ))}
-          </div>
+      {a.note && (
+        <div style={{ fontSize: 12, color: "var(--ink-500)", background: "var(--card-2)", borderRadius: 8, padding: "7px 10px", marginBottom: 11, lineHeight: 1.4 }}>
+          {a.note}
         </div>
       )}
 
-      {/* Status */}
-      <div style={{ marginBottom: 16 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-400)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Status</div>
-        <span style={{ padding: "6px 12px", background: s.bg, border: `1px solid ${s.border}`, borderRadius: 9, fontSize: 13, fontWeight: 700, color: s.color, display: "inline-block" }}>{s.label}</span>
-      </div>
-
-      {/* Applied */}
-      <div style={{ marginBottom: 20, fontSize: 12, color: "var(--ink-400)" }}>
-        Ansökte {relativeTime(a.appliedAt)}
-      </div>
-
-      {/* Actions */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        <Link
-          to={`/forare/${a.driverId}`}
-          style={{ padding: "12px", borderRadius: 11, background: "var(--amber)", color: "#000", fontSize: 14, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, textDecoration: "none" }}
-        >
-          <Icon name="user" size={14} /> Se hela förarprofilen
-        </Link>
-        <div style={{ display: "flex", gap: 8 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span style={{ fontSize: 11.5, color: "var(--ink-400)" }}>{relativeTime(a.appliedAt)}</span>
+        <div style={{ display: "flex", gap: 6 }}>
           <Link
             to={`/foretag/meddelanden/${a.conversationId}`}
-            style={{ flex: 1, padding: "10px", borderRadius: 11, background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.4)", color: "var(--green)", fontSize: 13, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, textDecoration: "none" }}
+            style={{ width: 28, height: 28, borderRadius: 7, background: "var(--card-2)", border: "1px solid var(--line-2)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-700)", textDecoration: "none" }}
+            title="Meddelande"
           >
-            <Icon name="message" size={13} /> Meddelande
+            <Icon name="message" size={13} />
           </Link>
-          {stage !== "interview" && stage !== "hired" && stage !== "rejected" && (
-            <button
-              onClick={handleBook}
-              disabled={acting}
-              style={{ flex: 1, padding: "10px", borderRadius: 11, background: "var(--success-tint)", border: "1px solid rgba(74,222,128,0.25)", color: "var(--success)", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, opacity: acting ? 0.6 : 1 }}
-            >
-              <Icon name="check" size={13} /> Boka intervju
-            </button>
-          )}
-          {stage === "interview" && (
-            <button
-              onClick={handleHire}
-              disabled={acting}
-              style={{ flex: 1, padding: "10px", borderRadius: 11, background: "var(--success-tint)", border: "1px solid rgba(74,222,128,0.35)", color: "var(--success)", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, opacity: acting ? 0.6 : 1 }}
-            >
-              <Icon name="check" size={13} /> Markera anställd
-            </button>
-          )}
-        </div>
-        {stage !== "rejected" && stage !== "hired" && (
-          <button
-            onClick={handleReject}
-            disabled={acting}
-            style={{ padding: "8px", borderRadius: 10, background: "transparent", border: "none", color: "var(--ink-400)", fontSize: 12, cursor: "pointer", fontFamily: "inherit", opacity: acting ? 0.6 : 1 }}
+          <Link
+            to={`/forare/${a.driverId}`}
+            style={{ width: 28, height: 28, borderRadius: 7, background: "var(--green)", border: "1px solid var(--green-deep)", display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none" }}
+            title="Visa profil"
           >
-            Avslå sökande
-          </button>
-        )}
+            <Icon name="arrowLeft" size={13} color="#fff" />
+          </Link>
+        </div>
       </div>
-    </div>
-  );
-}
-
-// ── ViewChart ─────────────────────────────────────────────────────────────────
-
-function ViewChart({ total }) {
-  const days = 7;
-  const avg = total ? total / days : 6;
-  // Deterministic variation based on total value
-  const seed = total || 42;
-  const data = Array.from({ length: days }, (_, i) => {
-    const v = avg * (0.5 + 0.7 * Math.abs(Math.sin(seed * 0.3 + i * 1.4)));
-    return Math.max(1, Math.round(v));
-  });
-  const max = Math.max(...data, 1);
-  const W = 300, H = 72, pad = 4;
-  const pts = data.map((v, i) => {
-    const x = pad + (i / (days - 1)) * (W - pad * 2);
-    const y = H - pad - (v / max) * (H - pad * 2);
-    return [x, y];
-  });
-  const polyline = pts.map(([x, y]) => `${x},${y}`).join(" ");
-  const area = `${pad},${H} ${polyline} ${W - pad},${H}`;
-  const labels = ["Mån","Tis","Ons","Tor","Fre","Lör","Sön"];
-  return (
-    <div>
-      <svg width="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ display: "block", height: 72 }}>
-        <defs>
-          <linearGradient id="vGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#63b3ed" stopOpacity="0.28" />
-            <stop offset="100%" stopColor="#63b3ed" stopOpacity="0.02" />
-          </linearGradient>
-        </defs>
-        <polygon points={area} fill="url(#vGrad)" />
-        <polyline points={polyline} fill="none" stroke="#63b3ed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        {pts.map(([x, y], i) => (
-          <circle key={i} cx={x} cy={y} r="2.5" fill="#63b3ed" opacity="0.7" />
-        ))}
-      </svg>
-      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6 }}>
-        {labels.map((l, i) => (
-          <span key={l} style={{ fontSize: 10, color: "var(--ink-400)", fontWeight: 600, textAlign: "center", minWidth: 0 }}>{l}</span>
-        ))}
-      </div>
-      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
-        {data.map((v, i) => (
-          <span key={i} style={{ fontSize: 10, color: "var(--ink-500)", fontWeight: 700, textAlign: "center", minWidth: 0 }}>{v}</span>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ── TabBar ────────────────────────────────────────────────────────────────────
-
-function TabBar({ tab, setTab, applicantCount }) {
-  const tabs = [
-    { id: "applicants", label: "Sökande", count: applicantCount },
-    { id: "stats",      label: "Statistik" },
-    { id: "preview",    label: "Föraransikt" },
-  ];
-  return (
-    <div style={{ display: "flex", gap: 0, borderBottom: "1px solid var(--line)", marginBottom: 24 }}>
-      {tabs.map((t) => (
-        <button
-          key={t.id}
-          onClick={() => setTab(t.id)}
-          style={{
-            padding: "14px 22px", background: "none", border: "none", cursor: "pointer",
-            fontSize: 14, fontWeight: tab === t.id ? 800 : 600,
-            color: tab === t.id ? "var(--amber-text)" : "var(--ink-500)",
-            borderBottom: `2px solid ${tab === t.id ? "var(--amber)" : "transparent"}`,
-            marginBottom: -1,
-            transition: "color .15s",
-            display: "flex", alignItems: "center", gap: 8, fontFamily: "inherit",
-          }}
-        >
-          {t.label}
-          {t.count !== undefined && (
-            <span style={{ padding: "1px 7px", borderRadius: 99, background: tab === t.id ? "var(--amber-tint)" : "var(--paper-2)", fontSize: 11, fontWeight: 700, color: tab === t.id ? "var(--amber-text)" : "var(--ink-400)" }}>
-              {t.count}
-            </span>
-          )}
-        </button>
-      ))}
     </div>
   );
 }
@@ -427,19 +151,15 @@ export default function CompanyJobDetail() {
   const { hasApi } = useAuth();
   const { conversations = [] } = useChat();
 
-  const [job, setJob]           = useState(null);
+  const [job, setJob]               = useState(null);
   const [applicants, setApplicants] = useState([]);
-  const [stats, setStats]       = useState(null);
-  const [loading, setLoading]   = useState(true);
-  const [tab, setTab]           = useState("applicants");
-  const [filter, setFilter]     = useState("all");
-  const [search, setSearch]     = useState("");
-  const [selectedId, setSelectedId] = useState(null);
+  const [stats, setStats]           = useState(null);
+  const [loading, setLoading]       = useState(true);
   const [overrides, setOverrides]   = useState({});
+  const [showRejected, setShowRejected] = useState(false);
 
   usePageTitle(job?.title ? `Kandidater – ${job.title}` : "Kandidater");
 
-  // Build readMap from ChatContext conversations
   const readMap = useMemo(() => {
     const m = {};
     conversations.forEach((c) => { if (c.readByCompanyAt) m[c.id] = true; });
@@ -457,36 +177,20 @@ export default function CompanyJobDetail() {
       setJob(jobData);
       setApplicants(applicantData || []);
       setStats(statsData);
-      if (applicantData?.length) setSelectedId(applicantData[0].conversationId);
     }).catch(() => setJob(null))
       .finally(() => setLoading(false));
   }, [hasApi, id]);
 
-  // Applicants with computed stage
   const enriched = useMemo(
     () => applicants.map((a) => ({ ...a, stage: getStage(a, readMap, overrides) })),
     [applicants, readMap, overrides]
   );
 
-  // Counts per stage (includes rejected for pipeline tab display)
   const counts = useMemo(() => {
     const c = { all: enriched.length, new: 0, reviewing: 0, interview: 0, hired: 0, rejected: 0 };
     enriched.forEach((a) => { c[a.stage] = (c[a.stage] || 0) + 1; });
     return c;
   }, [enriched]);
-
-  // Filtered + searched list
-  const displayList = useMemo(() => {
-    return enriched
-      .filter((a) => filter === "all" || a.stage === filter)
-      .filter((a) => !search || a.driverName?.toLowerCase().includes(search.toLowerCase()));
-  }, [enriched, filter, search]);
-
-  const selectedApplicant = enriched.find((a) => a.conversationId === selectedId) || null;
-
-  const handleSelect = (convId) => setOverrides((p) => ({ ...p, [convId]: "interview" }));
-  const handleReject = (convId) => setOverrides((p) => ({ ...p, [convId]: "rejected" }));
-  const handleHire   = (convId) => setOverrides((p) => ({ ...p, [convId]: "hired" }));
 
   const handlePause = async () => {
     if (!window.confirm("Pausa annonsen? Den blir osynlig för förare.")) return;
@@ -497,320 +201,153 @@ export default function CompanyJobDetail() {
   };
 
   const jobStatus = job?.status;
-  const statusBadge = jobStatus === "ACTIVE"
-    ? { label: "Aktiv annons", color: "var(--success)", bg: "var(--success-tint)", border: "rgba(74,222,128,0.25)" }
-    : jobStatus === "HIDDEN"
-    ? { label: "Pausad", color: "var(--amber-text)", bg: "var(--amber-tint)", border: "rgba(245,166,35,0.25)" }
-    : { label: jobStatus || "–", color: "var(--ink-400)", bg: "var(--paper-2)", border: "var(--line)" };
+  const isActive = jobStatus === "ACTIVE";
 
-  // Published date
-  const publishedStr = job?.published
-    ? new Date(job.published).toLocaleDateString("sv-SE", { day: "numeric", month: "long", year: "numeric" })
-    : null;
-
-  const daysActive = job?.published
-    ? Math.floor((Date.now() - new Date(job.published).getTime()) / 86400000)
-    : null;
-
-  // Avg match score
-  const avgMatch = applicants.length
-    ? Math.round(applicants.reduce((s, a) => s + (a.matchScore || 0), 0) / applicants.length)
-    : null;
-
-  // Pipeline stage tabs matching HTML prototype
-  const pipelineTabs = [
-    { id: "all",       label: "Alla",        color: "var(--ink-400)",   count: counts.all },
-    { id: "new",       label: "Nya",         color: "var(--amber)",     count: counts.new },
-    { id: "reviewing", label: "Granskar",    color: "var(--info)",      count: counts.reviewing },
-    { id: "interview", label: "Intervju",    color: "#a78bfa",          count: counts.interview },
-    { id: "hired",     label: "Anställda",   color: "var(--success)",   count: counts.hired },
-    { id: "rejected",  label: "Avslagna",    color: "var(--ink-300)",   count: counts.rejected },
+  const COLUMNS = [
+    { key: "new",       label: "Nya",      tone: "info" },
+    { key: "reviewing", label: "Granskar", tone: "amber" },
+    { key: "interview", label: "Intervju", tone: "amber" },
+    { key: "hired",     label: "Anställd", tone: "success" },
   ];
+
+  const TONE_COLORS = {
+    info:    { bg: "var(--info-tint)",    color: "var(--info)",    border: "rgba(27,90,138,0.2)" },
+    amber:   { bg: "var(--amber-tint)",   color: "var(--amber-text)", border: "rgba(199,122,14,0.2)" },
+    success: { bg: "var(--success-tint)", color: "var(--success)", border: "rgba(31,122,58,0.2)" },
+  };
+
+  const byCol = (key) => enriched.filter((a) => a.stage === key).sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
+  const rejected = enriched.filter((a) => a.stage === "rejected");
+
+  const viewCount = stats?.viewCount ?? 0;
+  const daysActive = job?.published ? Math.floor((Date.now() - new Date(job.published).getTime()) / 86400000) : null;
 
   return (
     <main style={{ background: "var(--paper)", minHeight: "100vh" }}>
-      <div style={{ maxWidth: 1280, margin: "0 auto", padding: isMobile ? "0 20px 80px" : "0 40px 100px" }}>
-
-        {/* Breadcrumb */}
-        <div style={{ padding: "22px 0 0" }}>
+      {/* Page header */}
+      <div style={{ background: "var(--paper)", borderBottom: "1px solid var(--line)", paddingTop: 24, paddingBottom: 22 }}>
+        <div style={{ maxWidth: 1240, margin: "0 auto", padding: "0 32px" }}>
           <Link
             to="/foretag/annonser"
-            style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600, color: "var(--ink-500)", textDecoration: "none" }}
+            style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 600, color: "var(--ink-500)", textDecoration: "none", marginBottom: 16 }}
           >
-            <Icon name="arrowLeft" size={14} /> Tillbaka till mina jobb
+            <Icon name="arrowLeft" size={14} /> Tillbaka till annonser
           </Link>
-        </div>
 
-        {/* Header card */}
-        {loading ? (
-          <div style={{ height: 100, borderRadius: 22, background: "var(--paper-2)", margin: "24px 0" }} />
-        ) : job ? (
-          <div style={{ background: "var(--paper-2)", border: "1px solid var(--line)", borderRadius: 22, padding: "28px 32px", margin: "24px 0", position: "relative", overflow: "hidden" }}>
-            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(to right, #1F5F5C, rgba(31,95,92,0))" }} />
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 24, flexWrap: "wrap" }}>
-              <div style={{ display: "flex", gap: 18, alignItems: "flex-start" }}>
-                <div style={{ width: 54, height: 54, borderRadius: 14, background: "#1a3a5c", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 800, color: "#fff", flexShrink: 0 }}>
-                  {initials(job.companyName || job.company || "?")}
-                </div>
+          {job && (
+            <>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 16 }}>
                 <div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6, flexWrap: "wrap" }}>
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "3px 10px", borderRadius: 99, background: statusBadge.bg, border: `1px solid ${statusBadge.border}`, fontSize: 11, fontWeight: 700, color: statusBadge.color }}>
-                      {jobStatus === "ACTIVE" && <span style={{ width: 6, height: 6, borderRadius: 99, background: "var(--success)" }} />}
-                      {statusBadge.label}
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                    <h1 style={{ fontSize: 28, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.8 }}>{job.title}</h1>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 99, background: isActive ? "var(--success-tint)" : "var(--amber-tint)", border: `1px solid ${isActive ? "rgba(31,122,58,0.2)" : "rgba(199,122,14,0.2)"}`, fontSize: 11, fontWeight: 700, color: isActive ? "var(--success)" : "var(--amber-text)" }}>
+                      <span style={{ width: 5, height: 5, borderRadius: 99, background: isActive ? "var(--success)" : "var(--amber)" }} />
+                      {isActive ? "Aktiv" : "Pausad"}
                     </span>
-                    {daysActive != null && (
-                      <span style={{ fontSize: 12, color: "var(--ink-400)" }}>{daysActive} dagar publicerad</span>
+                  </div>
+                  <div style={{ fontSize: 14, color: "var(--ink-500)", display: "flex", gap: 10, flexWrap: "wrap" }}>
+                    {job.location && (
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
+                        <Icon name="eye" size={13} color="var(--ink-500)" />
+                        {job.location}
+                      </span>
                     )}
-                  </div>
-                  <h1 style={{ fontSize: 26, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -0.8, lineHeight: 1.2, marginBottom: 6 }}>{job.title}</h1>
-                  <div style={{ fontSize: 13, color: "var(--ink-500)" }}>
-                    {[job.location, job.region].filter(Boolean).join(", ")}
-                    {publishedStr && ` · Publicerad ${publishedStr}`}
+                    {viewCount > 0 && <span>· {viewCount} visningar</span>}
+                    {daysActive != null && <span>· Publicerad {daysActive} dagar sedan</span>}
                   </div>
                 </div>
-              </div>
-
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <Link
-                  to={`/jobb/${id}`}
-                  style={{ padding: "10px 16px", borderRadius: 11, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-700)", fontSize: 13, fontWeight: 600, textDecoration: "none", display: "flex", alignItems: "center", gap: 6 }}
-                >
-                  <Icon name="external" size={13} /> Öppna publik vy
-                </Link>
-                {jobStatus === "ACTIVE" && (
-                  <button
-                    onClick={handlePause}
-                    style={{ padding: "10px 16px", borderRadius: 11, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-700)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 6 }}
+                <div style={{ display: "flex", gap: 8 }}>
+                  <Link
+                    to={`/jobb/${id}`}
+                    style={{ padding: "10px 16px", borderRadius: 10, background: "var(--card)", border: "1px solid var(--line-2)", color: "var(--ink-700)", fontSize: 13, fontWeight: 600, textDecoration: "none", display: "flex", alignItems: "center", gap: 6 }}
                   >
-                    <Icon name="pause" size={13} /> Pausa
-                  </button>
-                )}
-                <Link
-                  to={`/foretag/annonser/${id}/redigera`}
-                  style={{ padding: "10px 18px", borderRadius: 11, background: "var(--amber)", color: "#000", fontSize: 13, fontWeight: 800, textDecoration: "none", display: "flex", alignItems: "center", gap: 6 }}
-                >
-                  <Icon name="edit" size={13} /> Redigera
-                </Link>
-              </div>
-            </div>
-          </div>
-        ) : null}
-
-        {/* Stat strip */}
-        {(() => {
-          const viewCount = stats?.viewCount ?? 0;
-          const appCount = stats?.conversationCount ?? applicants.length;
-          const convPct = viewCount > 0 ? Math.round((appCount / viewCount) * 100) : null;
-          return (
-            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4,1fr)", gap: 14, marginBottom: 36 }}>
-              <StatCard icon="eye"     label="Visningar"          value={viewCount || "–"}  accent="var(--info)" />
-              <StatCard icon="user"    label="Ansökningar"        value={appCount || "–"}   sub={counts.new > 0 ? `${counts.new} nya att granska` : undefined} accent="var(--amber)" highlight />
-              <StatCard icon="trendUp" label="Konvertering"       value={convPct != null ? `${convPct}%` : "–"} sub="visning → ansökan" accent="var(--success)" />
-              <StatCard icon="sparkle" label="Genomsnittlig match" value={avgMatch != null ? `${avgMatch}%` : "–"} sub="Bland sökande hittills" accent="#a78bfa" />
-            </div>
-          );
-        })()}
-
-        {/* Tabs */}
-        <TabBar tab={tab} setTab={setTab} applicantCount={applicants.length} />
-
-        {/* APPLICANTS TAB */}
-        {tab === "applicants" && (
-          applicants.length === 0 && !loading ? (
-            <div style={{ padding: "48px 32px", borderRadius: 20, background: "var(--paper-2)", border: "1px solid var(--line)", textAlign: "center" }}>
-              <div style={{ fontSize: 17, fontWeight: 800, color: "var(--ink-900)", marginBottom: 8 }}>Inga ansökningar ännu</div>
-              <p style={{ fontSize: 13, color: "var(--ink-500)", marginBottom: 20 }}>Förare som söker det här jobbet dyker upp här. Du kan också kontakta förare aktivt via förarregistret.</p>
-              <Link to="/foretag/chaufforer" style={{ display: "inline-block", padding: "10px 22px", borderRadius: 12, background: "#1F5F5C", color: "#fff", fontWeight: 700, fontSize: 13, textDecoration: "none" }}>
-                Sök bland förare →
-              </Link>
-            </div>
-          ) : (
-            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 380px", gap: 24, alignItems: "start" }}>
-
-              {/* Left: list */}
-              <div>
-                {/* Pipeline stage tabs + search */}
-                <div style={{ display: "flex", gap: 8, marginBottom: 18, flexWrap: "wrap", alignItems: "center" }}>
-                  <div style={{ display: "flex", gap: 4, background: "var(--paper-2)", border: "1px solid var(--line)", borderRadius: 99, padding: 4, flexWrap: "wrap" }}>
-                    {pipelineTabs.map((f) => (
-                      <button
-                        key={f.id}
-                        onClick={() => setFilter(f.id)}
-                        style={{
-                          padding: "7px 14px", borderRadius: 99, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
-                          background: filter === f.id ? "var(--card)" : "transparent",
-                          border: "none",
-                          color: filter === f.id ? "var(--ink-900)" : "var(--ink-500)",
-                          display: "flex", alignItems: "center", gap: 6,
-                          boxShadow: filter === f.id ? "var(--sh-sm)" : "none",
-                        }}
-                      >
-                        <span style={{ width: 6, height: 6, borderRadius: 99, background: f.color, flexShrink: 0 }} />
-                        {f.label}
-                        <span style={{ padding: "1px 6px", borderRadius: 99, background: filter === f.id ? "var(--paper-2)" : "var(--line)", fontSize: 10, fontWeight: 800 }}>{f.count}</span>
-                      </button>
-                    ))}
-                  </div>
-                  <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8, padding: "7px 12px", background: "var(--paper-2)", border: "1px solid var(--line)", borderRadius: 99 }}>
-                    <Icon name="search" size={13} color="var(--ink-400)" />
-                    <input
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                      placeholder="Sök sökande..."
-                      style={{ background: "none", border: "none", outline: "none", color: "var(--ink-900)", fontSize: 12, width: 140, fontFamily: "inherit" }}
-                    />
-                  </div>
-                </div>
-
-                {/* Sort hint */}
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14, fontSize: 12, color: "var(--ink-400)" }}>
-                  <Icon name="sparkle" size={12} color="rgba(167,139,250,0.7)" />
-                  Sorterad efter matchningsscore — bästa kandidat överst
-                </div>
-
-                {/* Applicant list */}
-                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  {displayList.map((a) => (
-                    <ApplicantCard
-                      key={a.conversationId}
-                      a={a}
-                      stage={a.stage}
-                      selected={selectedId === a.conversationId}
-                      onSelect={() => setSelectedId(a.conversationId)}
-                    />
-                  ))}
-                  {displayList.length === 0 && (
-                    <div style={{ padding: "32px", textAlign: "center", color: "var(--ink-400)", fontSize: 13 }}>
-                      Inga sökande matchar filtret
-                    </div>
+                    <Icon name="eye" size={14} /> Visa annons
+                  </Link>
+                  {isActive && (
+                    <button
+                      onClick={handlePause}
+                      style={{ padding: "10px 16px", borderRadius: 10, background: "var(--card)", border: "1px solid var(--line-2)", color: "var(--ink-700)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 6 }}
+                    >
+                      <Icon name="pause" size={14} /> Hantera
+                    </button>
                   )}
                 </div>
               </div>
 
-              {/* Right: detail (desktop only — on mobile tap a candidate to open detail) */}
-              {!isMobile && <div style={{ position: "sticky", top: 84 }}>
-                <CandidateDetail
-                  a={selectedApplicant}
-                  job={job}
-                  stage={selectedApplicant?.stage || "new"}
-                  onSelect={handleSelect}
-                  onReject={handleReject}
-                  onHire={handleHire}
-                />
-              </div>}
-            </div>
-          )
-        )}
-
-        {/* STATS TAB */}
-        {tab === "stats" && (
-          <div>
-            {/* Views over time */}
-            <div style={{ padding: "24px", background: "var(--paper-2)", border: "1px solid var(--line)", borderRadius: 18, marginBottom: 18 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: "var(--ink-400)", textTransform: "uppercase", letterSpacing: 1 }}>Visningar över tid</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 700, color: "#63b3ed" }}>
-                  <Icon name="eye" size={13} color="#63b3ed" />
-                  {stats?.viewCount ?? 0} totalt
-                </div>
+              {/* Stat strip */}
+              <div style={{ display: "flex", gap: 28, marginTop: 20, paddingTop: 18, borderTop: "1px solid var(--line)" }}>
+                {[
+                  { v: counts.all,       l: "Sökande",        accent: false },
+                  { v: counts.new,       l: "Nya att granska", accent: counts.new > 0 },
+                  { v: counts.interview, l: "På intervju",     accent: false },
+                  { v: counts.hired,     l: "Anställda",       accent: false },
+                ].map((s) => (
+                  <div key={s.l}>
+                    <div style={{ fontSize: 24, fontWeight: 800, color: s.accent ? "var(--amber-deep)" : "var(--ink-900)", fontFamily: "var(--mono)", letterSpacing: -0.5, lineHeight: 1 }}>{s.v}</div>
+                    <div style={{ fontSize: 11.5, color: "var(--ink-500)", marginTop: 5, fontWeight: 600, letterSpacing: 0.2, textTransform: "uppercase" }}>{s.l}</div>
+                  </div>
+                ))}
               </div>
-              <ViewChart total={stats?.viewCount ?? 0} />
-            </div>
+            </>
+          )}
+        </div>
+      </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 18, marginBottom: 24 }}>
-              {/* Conversion funnel */}
-              <div style={{ padding: "24px", background: "var(--paper-2)", border: "1px solid var(--line)", borderRadius: 18 }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: "var(--ink-400)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 14 }}>Konverteringstratt</div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  {[
-                    ["Visningar",    stats?.viewCount ?? 0,         100,                                                          "#63b3ed"],
-                    ["Sparade",      stats?.savedCount ?? 0,        stats?.viewCount ? Math.round((stats.savedCount / stats.viewCount) * 100) : 0, "var(--amber)"],
-                    ["Ansökt",       stats?.conversationCount ?? 0, stats?.viewCount ? Math.round((stats.conversationCount / stats.viewCount) * 100) : 0, "var(--success)"],
-                  ].map(([label, value, pct, color]) => (
-                    <div key={label}>
-                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-                        <span style={{ fontSize: 12, color: "var(--ink-700)", fontWeight: 600 }}>{label}</span>
-                        <span style={{ fontSize: 12, fontWeight: 800, color }}>
-                          {value} <span style={{ fontWeight: 500, color: "var(--ink-400)" }}>· {pct}%</span>
-                        </span>
-                      </div>
-                      <div style={{ height: 6, borderRadius: 3, background: "var(--paper-2)", overflow: "hidden" }}>
-                        <div style={{ height: "100%", width: `${pct}%`, background: color, borderRadius: 3 }} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Stage breakdown */}
-              <div style={{ padding: "24px", background: "var(--paper-2)", border: "1px solid var(--line)", borderRadius: 18 }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: "var(--ink-400)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 14 }}>Kandidatstatus</div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  {[
-                    ["Nya",        counts.new,       "#63b3ed"],
-                    ["Granskar",   counts.reviewing, "var(--amber)"],
-                    ["Intervju",   counts.interview, "#a78bfa"],
-                    ["Anställda",  counts.hired,     "var(--success)"],
-                    ["Avslagna",   counts.rejected,  "#71717a"],
-                  ].map(([label, count, color]) => (
-                    <div key={label}>
-                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-                        <span style={{ fontSize: 12, color: "var(--ink-700)", fontWeight: 600 }}>{label}</span>
-                        <span style={{ fontSize: 12, fontWeight: 800, color }}>{count}</span>
-                      </div>
-                      <div style={{ height: 6, borderRadius: 3, background: "var(--paper-2)", overflow: "hidden" }}>
-                        <div style={{ height: "100%", width: `${counts.all ? Math.round((count / counts.all) * 100) : 0}%`, background: color, borderRadius: 3 }} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* STP recommendations */}
-            {stats?.recommendations?.length > 0 && (
-              <div style={{ padding: "24px", background: "var(--amber-tint-2)", border: "1px solid rgba(245,166,35,0.18)", borderRadius: 18 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-                  <Icon name="sparkle" size={16} color="var(--amber)" />
-                  <span style={{ fontSize: 14, fontWeight: 800, color: "var(--amber-text)" }}>STP-rekommendationer</span>
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  {stats.recommendations.map((r, i) => (
-                    <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                      <span style={{ width: 18, height: 18, borderRadius: 99, background: "var(--amber-tint)", border: "1px solid rgba(245,166,35,0.3)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
-                        <Icon name="trendUp" size={10} color="var(--amber)" />
-                      </span>
-                      <p style={{ fontSize: 13, color: "var(--ink-700)", lineHeight: 1.6, margin: 0 }}>{r.text}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {stats && !stats.recommendations?.length && (
-              <div style={{ padding: "32px", textAlign: "center", background: "var(--success-tint)", border: "1px solid rgba(74,222,128,0.15)", borderRadius: 18 }}>
-                <Icon name="check" size={24} color="var(--success)" />
-                <p style={{ marginTop: 10, fontSize: 14, color: "var(--ink-700)" }}>Inga förbättringsförslag — din annons ser bra ut!</p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* PREVIEW TAB */}
-        {tab === "preview" && (
-          <div style={{ padding: "48px 24px", background: "var(--paper-2)", border: "1px solid var(--line)", borderRadius: 18, textAlign: "center" }}>
-            <Icon name="eye" size={32} color="var(--ink-400)" />
-            <h3 style={{ fontSize: 18, fontWeight: 800, color: "var(--ink-900)", marginTop: 14, marginBottom: 8 }}>Föraransikt</h3>
-            <p style={{ fontSize: 14, color: "var(--ink-500)", marginBottom: 18 }}>Öppna annonsen exakt så som en förare ser den.</p>
-            <Link
-              to={`/jobb/${id}`}
-              style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "12px 22px", borderRadius: 11, background: "var(--amber)", color: "#000", fontSize: 14, fontWeight: 800, textDecoration: "none" }}
-            >
-              Öppna publik vy <Icon name="external" size={13} />
+      {/* Kanban body */}
+      <div style={{ maxWidth: 1240, margin: "0 auto", padding: "24px 32px 80px" }}>
+        {applicants.length === 0 && !loading ? (
+          <div style={{ padding: "48px 32px", borderRadius: 14, background: "var(--card)", border: "1px solid var(--line)", textAlign: "center", boxShadow: "var(--sh-sm)" }}>
+            <div style={{ fontSize: 17, fontWeight: 800, color: "var(--ink-900)", marginBottom: 8 }}>Inga ansökningar ännu</div>
+            <p style={{ fontSize: 13, color: "var(--ink-500)", marginBottom: 20 }}>Förare som söker det här jobbet dyker upp här. Du kan också kontakta förare aktivt via förarregistret.</p>
+            <Link to="/foretag/chaufforer" style={{ display: "inline-block", padding: "10px 22px", borderRadius: 10, background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: 13, textDecoration: "none" }}>
+              Sök bland förare →
             </Link>
           </div>
-        )}
+        ) : (
+          <>
+            <div className="kanban stp-fade-up">
+              {COLUMNS.map((col) => {
+                const cards = byCol(col.key);
+                const tc = TONE_COLORS[col.tone];
+                return (
+                  <div key={col.key}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12, padding: "0 2px" }}>
+                      <span style={{ padding: "3px 10px", borderRadius: 99, background: tc.bg, border: `1px solid ${tc.border}`, fontSize: 11, fontWeight: 700, color: tc.color }}>{col.label}</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: "var(--ink-400)", fontFamily: "var(--mono)" }}>{cards.length}</span>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10, background: "var(--paper-2)", borderRadius: 12, padding: 10, minHeight: 80 }}>
+                      {cards.length === 0
+                        ? <div style={{ fontSize: 12.5, color: "var(--ink-400)", textAlign: "center", padding: "20px 0" }}>Tom</div>
+                        : cards.map((a) => <KanbanCard key={a.conversationId} a={a} />)}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
 
+            {/* Rejected (collapsed) */}
+            {rejected.length > 0 && (
+              <div style={{ marginTop: 24 }}>
+                <button
+                  onClick={() => setShowRejected((s) => !s)}
+                  style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13.5, fontWeight: 600, color: "var(--ink-500)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15">
+                    {showRejected
+                      ? <polyline points="18 15 12 9 6 15"/>
+                      : <polyline points="9 18 15 12 9 6"/>}
+                  </svg>
+                  Avböjda ({rejected.length})
+                </button>
+                {showRejected && (
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 10, marginTop: 12, opacity: 0.7 }}>
+                    {rejected.map((a) => <KanbanCard key={a.conversationId} a={a} />)}
+                  </div>
+                )}
+              </div>
+            )}
+          </>
+        )}
       </div>
     </main>
   );

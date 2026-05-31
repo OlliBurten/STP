@@ -23,21 +23,11 @@ const Icon = ({ n, s = 18, c = "currentColor" }) => (
   <span style={{ display: "inline-flex", width: s, height: s, color: c, flexShrink: 0 }}>{IC[n]}</span>
 );
 
-// ─── StepDots ─────────────────────────────────────────────────────────────────
-function StepDots({ step, total }) {
-  return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, marginBottom: 32 }}>
-      {Array.from({ length: total }).map((_, i) => {
-        const num = i + 1;
-        const done = step > num;
-        const active = step === num;
-        return (
-          <div key={i} style={{ width: active ? 28 : 8, height: 8, borderRadius: 99, background: done ? "var(--success)" : active ? "var(--amber)" : "var(--line)", transition: "all .3s" }} />
-        );
-      })}
-    </div>
-  );
-}
+const WIZARD_STEPS = [
+  { id: "org",      label: "Välkommen" },
+  { id: "contact",  label: "Kontakt" },
+  { id: "ops",      label: "Verksamhet" },
+];
 
 const inp = {
   width: "100%", padding: "12px 14px", borderRadius: 11,
@@ -49,8 +39,7 @@ const inp = {
 function Step1({ form, setForm, orgLookup, onLookup, error }) {
   return (
     <div>
-      <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "var(--amber-text)", marginBottom: 10, textAlign: "center" }}>Steg 1 av 3</div>
-      <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: -0.8, marginBottom: 8, lineHeight: 1.2, textAlign: "center" }}>
+      <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: -0.8, marginBottom: 8, lineHeight: 1.2 }}>
         Hej! Vilket åkeri jobbar du på?
       </h1>
       <p style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.55, maxWidth: 440, margin: "0 auto 28px", textAlign: "center" }}>
@@ -134,9 +123,8 @@ function Step1({ form, setForm, orgLookup, onLookup, error }) {
 function Step2({ form, setForm }) {
   return (
     <div>
-      <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "var(--amber-text)", marginBottom: 10, textAlign: "center" }}>Steg 2 av 3</div>
-      <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: -0.8, marginBottom: 8, lineHeight: 1.2, textAlign: "center" }}>Vem är du i företaget?</h1>
-      <p style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.55, maxWidth: 440, margin: "0 auto 28px", textAlign: "center" }}>
+      <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: -0.8, marginBottom: 8, lineHeight: 1.2 }}>Vem är du i företaget?</h1>
+      <p style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.55, marginBottom: 28 }}>
         Du blir kontoadministratör. Du kan bjuda in kollegor senare.
       </p>
 
@@ -202,9 +190,8 @@ function Step3({ form, setForm }) {
 
   return (
     <div>
-      <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "var(--amber-text)", marginBottom: 10, textAlign: "center" }}>Steg 3 av 3</div>
-      <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: -0.8, marginBottom: 8, lineHeight: 1.2, textAlign: "center" }}>Berätta om er verksamhet</h1>
-      <p style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.55, maxWidth: 440, margin: "0 auto 28px", textAlign: "center" }}>
+      <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: -0.8, marginBottom: 8, lineHeight: 1.2 }}>Berätta om er verksamhet</h1>
+      <p style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.55, marginBottom: 28 }}>
         Vi använder detta för att matcha er med förare som söker rätt typ av jobb.
       </p>
 
@@ -427,78 +414,76 @@ export default function CompanyOnboardingWizard() {
     }
   };
 
-  const wrapStyle = {
-    minHeight: "100vh", background: "var(--paper)", color: "var(--ink-900)",
-    fontFamily: "'DM Sans', system-ui, sans-serif",
-  };
+  const stepIdx = typeof step === "number" ? step - 1 : null; // 0-indexed for array
 
   return (
-    <div style={wrapStyle}>
+    <div style={{ minHeight: "100vh", background: "var(--paper)", color: "var(--ink-900)", display: "flex", flexDirection: "column" }}>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
 
-      {/* Minimal header — on mobile: progress bar instead of step dots */}
-      <header style={{ height: 64, display: "flex", alignItems: "center", justifyContent: "space-between", padding: isMobile ? "0 16px" : "0 32px", borderBottom: "1px solid var(--line)", position: "sticky", top: 0, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", zIndex: 50 }}>
-        {isMobile && step !== "done" && step > 1 ? (
-          <button type="button" onClick={() => setStep(s => s - 1)} style={{ width: 40, height: 40, borderRadius: 99, background: "var(--paper-2)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-700)", flexShrink: 0 }}>
-            <Icon n="back" s={18} />
-          </button>
-        ) : (
-          <div style={{ fontWeight: 800, letterSpacing: -0.8, fontSize: 21, color: "var(--ink-900)" }}>STP</div>
-        )}
-        {isMobile && step !== "done" ? (
-          <div style={{ flex: 1, height: 4, background: "var(--line)", borderRadius: 99, overflow: "hidden", margin: "0 16px" }}>
-            <div style={{ height: "100%", width: `${(step / 3) * 100}%`, background: "var(--green)", borderRadius: 99, transition: "width .3s" }} />
-          </div>
-        ) : (
-          <div style={{ flex: 1 }} />
-        )}
-        <Link to="/loggaut" style={{ fontSize: 13, color: "var(--ink-400)", textDecoration: "none", fontWeight: 600 }}>Avbryt</Link>
-      </header>
+      {/* TopBar */}
+      <div style={{ height: 60, borderBottom: "1px solid var(--line)", background: "var(--card)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 24px", flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 28, height: 28, borderRadius: 7, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 12 }}>S</div>
+          <span style={{ fontWeight: 800, fontSize: 15, color: "var(--ink-900)", letterSpacing: 0.5 }}>STP</span>
+          <span style={{ fontSize: 11, color: "var(--ink-500)", paddingLeft: 8, marginLeft: 4, borderLeft: "1px solid var(--line-2)", fontWeight: 600, letterSpacing: 0.5 }}>Åkeri</span>
+        </div>
+        <Link to="/loggaut" style={{ fontSize: 13, color: "var(--ink-500)", fontWeight: 600, textDecoration: "none" }}>Spara &amp; avsluta</Link>
+      </div>
 
-      <main style={{ maxWidth: 520, margin: "0 auto", padding: isMobile ? "24px 20px 120px" : "40px 24px 80px" }}>
-        {step !== "done" && !isMobile && <StepDots step={step} total={3} />}
-
-        {step === 1 && <Step1 form={form} setForm={setForm} orgLookup={orgLookup} onLookup={handleOrgLookup} error={error} />}
-        {step === 2 && <Step2 form={form} setForm={setForm} />}
-        {step === 3 && <Step3 form={form} setForm={setForm} />}
-        {step === "done" && <DoneScreen form={form} />}
-
-        {step !== "done" && !isMobile && (
+      <div style={{ maxWidth: 620, width: "100%", margin: "0 auto", padding: "32px 24px 40px", flex: 1, display: "flex", flexDirection: "column" }}>
+        {step !== "done" && (
           <>
-            <div style={{ display: "flex", gap: 10, marginTop: 32 }}>
-              {step > 1 && (
-                <button
-                  type="button"
-                  onClick={() => setStep((s) => s - 1)}
-                  style={{ padding: "13px 22px", borderRadius: 99, background: "transparent", border: "1px solid var(--line)", color: "var(--ink-500)", fontSize: 13.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 7, fontFamily: "inherit" }}
-                >
-                  <Icon n="back" s={13} /> Tillbaka
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={handleNext}
-                disabled={!canContinue() || saving}
-                style={{ flex: 1, padding: "13px 22px", borderRadius: 99, background: canContinue() && !saving ? "var(--green)" : "var(--paper-2)", border: "none", color: canContinue() && !saving ? "#fff" : "var(--ink-300)", fontSize: 13.5, fontWeight: 800, cursor: canContinue() && !saving ? "pointer" : "default", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: canContinue() && !saving ? "var(--sh-sm)" : "none", transition: "all .15s", fontFamily: "inherit" }}
-              >
-                {saving ? "Sparar…" : step === 3 ? "Skapa konto" : "Fortsätt"} {!saving && <Icon n="arrow" s={14} />}
-              </button>
+            {/* Progress segments */}
+            <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+              {WIZARD_STEPS.map((s, i) => (
+                <div key={s.id} style={{ height: 4, flex: 1, borderRadius: 2, background: i < (step - 1) ? "var(--green)" : i === (step - 1) ? "var(--green)" : "var(--line-2)", transition: "background .3s" }} />
+              ))}
             </div>
-            <div style={{ marginTop: 24, textAlign: "center", fontSize: 11.5, color: "var(--ink-400)" }}>
-              Gratis för åkerier · Ingen bindningstid
+            <div style={{ fontSize: 12.5, color: "var(--ink-500)", fontWeight: 600, marginBottom: 32 }}>
+              Steg {step} av {WIZARD_STEPS.length} · {WIZARD_STEPS[step - 1]?.label}
             </div>
           </>
         )}
-      </main>
 
-      {/* Mobile sticky bottom CTA */}
+        <div className="stp-fade-up" key={step} style={{ flex: 1 }}>
+          {step === 1 && <Step1 form={form} setForm={setForm} orgLookup={orgLookup} onLookup={handleOrgLookup} error={error} />}
+          {step === 2 && <Step2 form={form} setForm={setForm} />}
+          {step === 3 && <Step3 form={form} setForm={setForm} />}
+          {step === "done" && <DoneScreen form={form} />}
+        </div>
+
+        {step !== "done" && (
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 32, paddingTop: 20, borderTop: "1px solid var(--line)" }}>
+            {step > 1 ? (
+              <button
+                type="button"
+                onClick={() => setStep((s) => s - 1)}
+                style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "11px 20px", borderRadius: 10, background: "transparent", border: "1px solid var(--line-2)", color: "var(--ink-500)", fontSize: 13.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}
+              >
+                <Icon n="back" s={14} /> Tillbaka
+              </button>
+            ) : <span />}
+            <button
+              type="button"
+              onClick={handleNext}
+              disabled={!canContinue() || saving}
+              style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 24px", borderRadius: 10, background: canContinue() && !saving ? "var(--green)" : "var(--paper-2)", border: "none", color: canContinue() && !saving ? "#fff" : "var(--ink-300)", fontSize: 13.5, fontWeight: 800, cursor: canContinue() && !saving ? "pointer" : "default", boxShadow: canContinue() && !saving ? "var(--sh-sm)" : "none", transition: "all .15s", fontFamily: "inherit" }}
+            >
+              {saving ? "Sparar…" : step === 3 ? "Skapa konto" : "Fortsätt"}
+              {!saving && <Icon n="arrow" s={14} />}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Mobile sticky CTA */}
       {isMobile && step !== "done" && (
-        <div style={{ position: "fixed", left: 0, right: 0, bottom: 0, padding: "14px 20px 32px", background: "rgba(255,255,255,0.95)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", borderTop: "1px solid var(--line)", zIndex: 40 }}>
+        <div style={{ position: "fixed", left: 0, right: 0, bottom: 0, padding: "14px 20px max(env(safe-area-inset-bottom), 24px)", background: "var(--card)", borderTop: "1px solid var(--line)", zIndex: 40 }}>
           <button
             type="button"
             onClick={handleNext}
             disabled={!canContinue() || saving}
-            style={{ width: "100%", padding: 16, borderRadius: 14, background: canContinue() && !saving ? "var(--green)" : "var(--paper-2)", border: "none", color: canContinue() && !saving ? "#fff" : "var(--ink-300)", fontSize: 15, fontWeight: 800, cursor: canContinue() && !saving ? "pointer" : "default", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: canContinue() && !saving ? "var(--sh-sm)" : "none", minHeight: 54, fontFamily: "inherit" }}
+            style={{ width: "100%", padding: 16, borderRadius: 14, background: canContinue() && !saving ? "var(--green)" : "var(--paper-2)", border: "none", color: canContinue() && !saving ? "#fff" : "var(--ink-300)", fontSize: 15, fontWeight: 800, cursor: canContinue() && !saving ? "pointer" : "default", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: "inherit" }}
           >
             {saving ? "Sparar…" : step === 3 ? "Skapa konto" : "Fortsätt"} {!saving && <Icon n="arrow" s={14} />}
           </button>

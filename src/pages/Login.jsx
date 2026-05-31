@@ -86,33 +86,30 @@ function BrandPanel() {
 /* ── BankID button (disabled – Kommer snart) ──────────────────────────────── */
 function BankIDButton() {
   return (
-    <div style={{ position: "relative", marginBottom: 12 }}>
-      <button
-        disabled
-        style={{
-          width: "100%", height: 48, borderRadius: 11,
-          background: "var(--paper-2)", border: "1px solid var(--line)",
-          boxShadow: "none",
-          display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
-          fontSize: 14.5, fontWeight: 700, color: "var(--ink-300)",
-          cursor: "not-allowed", opacity: 0.65,
-        }}
-      >
-        <span style={{ width: 22, height: 22, borderRadius: 5, background: "var(--ink-300)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800 }}>
-          ID
-        </span>
-        Logga in med BankID
-      </button>
+    <button
+      disabled
+      style={{
+        width: "100%", height: 48, borderRadius: 11, marginBottom: 10,
+        background: "var(--card)", border: "1px solid var(--line-2)",
+        boxShadow: "var(--sh-sm)",
+        display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+        fontSize: 14.5, fontWeight: 700, color: "var(--ink-400)",
+        cursor: "not-allowed",
+      }}
+    >
+      <span style={{ width: 22, height: 22, borderRadius: 5, background: "var(--ink-300)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800 }}>
+        ID
+      </span>
+      BankID
       <span style={{
-        position: "absolute", top: -8, right: 12,
-        fontSize: 10, fontWeight: 700, letterSpacing: 0.5,
+        fontSize: 10, fontWeight: 700, letterSpacing: 0.8, textTransform: "uppercase",
         background: "var(--amber-tint)", color: "var(--amber-text)",
-        border: "1px solid var(--amber-tint-2)",
-        padding: "2px 8px", borderRadius: 99,
+        border: "1px solid rgba(180,120,0,0.2)",
+        padding: "3px 8px", borderRadius: 99,
       }}>
         Kommer snart
       </span>
-    </div>
+    </button>
   );
 }
 
@@ -128,7 +125,14 @@ function OrDivider() {
 }
 
 /* ── InputField ───────────────────────────────────────────────────────────── */
-function InputField({ label, type = "text", id, value, onChange, placeholder, autoComplete, required, right, suffix }) {
+function MailIcon() {
+  return <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--ink-400)" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,7 12,13 22,7"/></svg>;
+}
+function KeyIcon() {
+  return <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--ink-400)" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><circle cx="7.5" cy="15.5" r="5.5"/><path d="M21 2l-9.6 9.6"/><path d="M15.5 7.5l3 3L21 8l-3-3"/></svg>;
+}
+
+function InputField({ label, type = "text", id, value, onChange, placeholder, autoComplete, required, right, suffix, icon }) {
   return (
     <label style={{ display: "block", marginBottom: 16 }}>
       <span style={{ fontSize: 13, fontWeight: 700, color: "var(--ink-700)", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
@@ -140,6 +144,8 @@ function InputField({ label, type = "text", id, value, onChange, placeholder, au
         background: "var(--card)", border: "1px solid var(--line-2)",
         borderRadius: 11, height: 48, boxShadow: "var(--sh-sm)", position: "relative",
       }}>
+        {icon === "mail" && <MailIcon />}
+        {icon === "key" && <KeyIcon />}
         <input
           id={id} type={type} value={value} onChange={onChange}
           placeholder={placeholder} autoComplete={autoComplete}
@@ -152,6 +158,31 @@ function InputField({ label, type = "text", id, value, onChange, placeholder, au
         {suffix}
       </div>
     </label>
+  );
+}
+
+/* ── Close button — back to homepage ─────────────────────────────────────── */
+function CloseButton() {
+  return (
+    <Link
+      to="/"
+      aria-label="Tillbaka till startsidan"
+      style={{
+        position: "absolute", top: 20, right: 20,
+        width: 36, height: 36, borderRadius: 10,
+        background: "var(--card)", border: "1px solid var(--line-2)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        color: "var(--ink-500)", textDecoration: "none",
+        boxShadow: "var(--sh-sm)",
+        transition: "background .15s, color .15s",
+      }}
+      onMouseEnter={e => { e.currentTarget.style.background = "var(--paper-2)"; e.currentTarget.style.color = "var(--ink-900)"; }}
+      onMouseLeave={e => { e.currentTarget.style.background = "var(--card)"; e.currentTarget.style.color = "var(--ink-500)"; }}
+    >
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </Link>
   );
 }
 
@@ -316,6 +347,7 @@ export default function Login() {
 
   // ── Shared form panel wrapper ──────────────────────────────────────────
   const formPanelStyle = {
+    position: "relative",
     display: "flex", alignItems: "center", justifyContent: "center",
     padding: isMobile ? "48px 24px 60px" : "40px 24px",
     background: "var(--paper)",
@@ -365,6 +397,7 @@ export default function Login() {
         }}>
           {!isMobile && <BrandPanel />}
           <div style={formPanelStyle}>
+            <CloseButton />
             <div style={transitionStyle}>
               <h1 style={{ fontSize: 28, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.8, marginBottom: 6 }}>Skapa konto</h1>
               <p style={{ fontSize: 14.5, color: "var(--ink-500)", marginBottom: 28 }}>Vem är du? Det avgör hur vi matchar.</p>
@@ -432,6 +465,7 @@ export default function Login() {
         }}>
           {!isMobile && <BrandPanel />}
           <div style={formPanelStyle}>
+            <CloseButton />
             <div style={transitionStyle}>
               <button
                 onClick={() => goTo("register_pick")}
@@ -490,6 +524,7 @@ export default function Login() {
                   onChange={e => setEmail(e.target.value)}
                   autoComplete="email"
                   required
+                  icon="mail"
                 />
 
                 <InputField
@@ -500,6 +535,7 @@ export default function Login() {
                   onChange={e => setPassword(e.target.value)}
                   autoComplete="new-password"
                   required
+                  icon="key"
                   suffix={
                     <button
                       type="button"
@@ -565,6 +601,7 @@ export default function Login() {
       }}>
         {!isMobile && <BrandPanel />}
         <div style={formPanelStyle}>
+          <CloseButton />
           <div style={transitionStyle}>
 
             {mode === "forgot" && (
@@ -588,7 +625,6 @@ export default function Login() {
 
             {mode === "login" && (
               <>
-                <BankIDButton />
                 <OAuthSection
                   onSuccess={handleOAuthSuccess}
                   onError={(msg) => { setError(msg); setInfo(""); setOauthPickingRole(false); }}
@@ -597,6 +633,7 @@ export default function Login() {
                   from={from}
                   mode="login"
                 />
+                <BankIDButton />
                 <OrDivider />
               </>
             )}
@@ -626,6 +663,7 @@ export default function Login() {
                     onChange={e => setEmail(e.target.value)}
                     autoComplete="email"
                     required
+                    icon="mail"
                   />
 
                   {mode !== "forgot" && (
@@ -637,6 +675,7 @@ export default function Login() {
                       onChange={e => setPassword(e.target.value)}
                       autoComplete="current-password"
                       required
+                      icon="key"
                       right={
                         <button
                           type="button"

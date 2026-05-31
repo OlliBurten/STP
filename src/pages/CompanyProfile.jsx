@@ -537,23 +537,27 @@ export default function CompanyProfile() {
     }
   };
 
-  const lightPage = { background: "var(--paper)", minHeight: "100vh", paddingTop: 32, color: "var(--ink-900)" };
-
-  if (loading) return <main style={lightPage}><div style={{ maxWidth: 880, margin: "0 auto", padding: "60px 24px" }}><LoadingBlock message="Hämtar företagsprofil..." /></div></main>;
+  if (loading) return <main style={{ background: "var(--paper)", minHeight: "100vh" }}><div style={{ maxWidth: 1040, margin: "0 auto", padding: "60px 24px" }}><LoadingBlock message="Hämtar företagsprofil..." /></div></main>;
 
   if (!hasApi) return (
-    <main style={lightPage}>
-      <div style={{ maxWidth: 880, margin: "0 auto", padding: "60px 24px", textAlign: "center", color: "var(--ink-400)" }}>
+    <main style={{ background: "var(--paper)", minHeight: "100vh" }}>
+      <div style={{ maxWidth: 1040, margin: "0 auto", padding: "60px 24px", textAlign: "center", color: "var(--ink-400)" }}>
         Företagsprofil kräver API-läge.
       </div>
     </main>
   );
 
+  const SECTIONS = [
+    { id: "basic", label: "Grundinfo", icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg> },
+    { id: "about", label: "Om oss",   icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> },
+    { id: "team",  label: "Team",     icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> },
+  ];
+
   return (
-    <main style={lightPage}>
+    <main style={{ background: "var(--paper)", minHeight: "100vh", color: "var(--ink-900)" }}>
       {/* Floating save bar */}
       {changed && (
-        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 50, background: "var(--card)", backdropFilter: "blur(14px)", borderTop: "1px solid var(--amber)", padding: isMobile ? "14px 20px 18px" : "14px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, boxShadow: "var(--sh-md)" }}>
+        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 50, background: "var(--card)", borderTop: "1px solid var(--amber)", padding: isMobile ? "14px 20px 18px" : "14px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, boxShadow: "var(--sh-md)" }}>
           <span style={{ fontSize: 13, color: "var(--amber-text)", fontWeight: 600 }}>Osparade ändringar</span>
           <button type="button" onClick={save} disabled={saving}
             style={{ padding: "10px 22px", borderRadius: 99, background: saving ? "var(--paper-2)" : "var(--green)", color: saving ? "var(--ink-300)" : "#fff", fontSize: 13.5, fontWeight: 800, border: "none", cursor: saving ? "not-allowed" : "pointer", fontFamily: "inherit" }}>
@@ -562,21 +566,27 @@ export default function CompanyProfile() {
         </div>
       )}
 
-      <div style={{ maxWidth: 880, margin: "0 auto", padding: isMobile ? "24px 20px 100px" : "32px 32px 100px" }}>
-        <Link to="/foretag" style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "6px 0", color: "var(--ink-500)", fontSize: 13, fontWeight: 600, textDecoration: "none", marginBottom: 20 }}>
-          <BackIcon /> Tillbaka till översikt
-        </Link>
-
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 28, gap: 16, flexWrap: "wrap" }}>
+      {/* Page header */}
+      <div style={{ background: "var(--paper)", borderBottom: "1px solid var(--line)", paddingTop: 32, paddingBottom: 24 }}>
+        <div style={{ maxWidth: 1040, margin: "0 auto", padding: "0 32px", display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 16 }}>
           <div>
-            <h1 style={{ fontSize: 30, fontWeight: 800, letterSpacing: -1, marginBottom: 6, color: "var(--ink-900)" }}>Företagsprofil</h1>
-            <div style={{ fontSize: 13.5, color: "var(--ink-500)" }}>Hur ni visas för förare på STP</div>
+            <p style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 10 }}>För åkerier</p>
+            <h1 style={{ fontSize: 34, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.2, lineHeight: 1.15 }}>Företagsprofil</h1>
           </div>
-          <Link to={`/foretag/${user?.companyOwnerId || user?.id}`} style={{ padding: "10px 18px", borderRadius: 99, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-700)", fontSize: 12.5, fontWeight: 700, textDecoration: "none", display: "flex", alignItems: "center", gap: 7 }}>
-            <EyeExtIcon /> Förhandsgranska profil
-          </Link>
+          <div style={{ display: "flex", gap: 8 }}>
+            <Link to={`/foretag/${user?.companyOwnerId || user?.id}`}
+              style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "9px 16px", borderRadius: 10, background: "var(--card)", border: "1px solid var(--line-2)", color: "var(--ink-700)", fontSize: 13, fontWeight: 600, textDecoration: "none", boxShadow: "var(--sh-sm)" }}>
+              <EyeExtIcon /> Förhandsgranska
+            </Link>
+            <button type="button" onClick={save} disabled={saving || !changed}
+              style={{ padding: "9px 18px", borderRadius: 10, background: changed ? "var(--green)" : "var(--paper-2)", border: changed ? "none" : "1px solid var(--line)", color: changed ? "#fff" : "var(--ink-300)", fontSize: 13, fontWeight: 700, cursor: changed ? "pointer" : "not-allowed", fontFamily: "inherit", boxShadow: changed ? "var(--sh-sm)" : "none" }}>
+              {saving ? "Sparar..." : "Spara ändringar"}
+            </button>
+          </div>
         </div>
+      </div>
 
+      <div style={{ maxWidth: 1040, margin: "0 auto", padding: isMobile ? "20px 20px 100px" : "28px 32px 80px" }}>
         {/* Varning */}
         {draft && (!Array.isArray(draft.companyBransch) || draft.companyBransch.length === 0 || !draft.companyRegion) && (
           <div style={{ marginBottom: 20, padding: "14px 18px", borderRadius: 14, background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.25)", display: "flex", gap: 12, alignItems: "flex-start" }}>
@@ -588,57 +598,82 @@ export default function CompanyProfile() {
           </div>
         )}
 
-        {/* Tabs */}
-        <div style={{ display: "flex", gap: 0, marginBottom: 28, borderBottom: "1px solid var(--line)", overflowX: "auto" }}>
-          {TABS.map((t) => {
-            const active = tab === t.id;
-            return (
-              <button key={t.id} onClick={() => setTab(t.id)}
-                style={{ padding: "12px 18px", background: "transparent", border: "none", color: active ? "var(--green-text)" : "var(--ink-400)", fontSize: 13, fontWeight: active ? 800 : 600, cursor: "pointer", borderBottom: active ? "2px solid var(--green)" : "2px solid transparent", marginBottom: -1, whiteSpace: "nowrap", fontFamily: "inherit" }}>
-                {t.label}
-              </button>
-            );
-          })}
-        </div>
+        {/* Mobile tabs */}
+        {isMobile && (
+          <div style={{ display: "flex", gap: 0, marginBottom: 20, borderBottom: "1px solid var(--line)", overflowX: "auto" }}>
+            {SECTIONS.map((s) => {
+              const active = tab === s.id;
+              return (
+                <button key={s.id} onClick={() => setTab(s.id)}
+                  style={{ padding: "10px 14px 12px", background: "none", border: "none", color: active ? "var(--ink-900)" : "var(--ink-400)", fontSize: 13, fontWeight: active ? 700 : 500, cursor: "pointer", position: "relative", whiteSpace: "nowrap", fontFamily: "inherit" }}>
+                  {s.label}
+                  {active && <span style={{ position: "absolute", left: 14, right: 14, bottom: -1, height: 3, background: "var(--green)", borderRadius: "3px 3px 0 0" }}/>}
+                </button>
+              );
+            })}
+          </div>
+        )}
 
-        {/* Tab content */}
-        <div>
-          {tab === "basic" && (
-            <>
-              <GrundInfo draft={draft} setDraft={setDraft} isMobile={isMobile} />
-              {/* E-postnotiser */}
-              <div style={{ marginTop: 32, paddingTop: 28, borderTop: "1px solid var(--line)" }}>
-                <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: -0.3, marginBottom: 6, color: "var(--ink-900)" }}>E-postnotiser</div>
-                <div style={{ fontSize: 13, color: "var(--ink-500)", marginBottom: 20 }}>Välj vilka påminnelser ni vill få via e-post.</div>
-                {[
-                  { key: "profileReminder", label: "Profilpåminnelser", desc: "Påminnelse när er företagsprofil inte är komplett." },
-                  { key: "jobMatch", label: "Förarrekommendationer", desc: "När nya förare matchar era krav publiceras." },
-                  { key: "messageReminder", label: "Obesvarade meddelanden", desc: "Påminnelse när ett meddelande väntar på svar." },
-                  { key: "inactivity", label: "Inaktivitetspåminnelse", desc: "Om ni inte loggat in på 30 dagar." },
-                ].map(({ key, label, desc }, i) => {
-                  const enabled = notifSettings ? notifSettings[key] !== false : true;
-                  return (
-                    <div key={key} style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", padding: "13px 0", borderTop: i === 0 ? "none" : "1px solid var(--line)", gap: 20 }}>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 14, fontWeight: 600, color: "var(--ink-900)" }}>{label}</div>
-                        <div style={{ fontSize: 12, color: "var(--ink-400)", marginTop: 2 }}>{desc}</div>
-                      </div>
-                      <Toggle checked={enabled} disabled={notifSaving} onChange={async () => {
-                        const next = { ...(notifSettings || {}), [key]: !enabled };
-                        setNotifSettings(next);
-                        setNotifSaving(true);
-                        try { await updateCompanyNotificationSettings(next); }
-                        catch { setNotifSettings((prev) => ({ ...prev, [key]: enabled })); }
-                        finally { setNotifSaving(false); }
-                      }} />
-                    </div>
-                  );
-                })}
-              </div>
-            </>
+        <div className={isMobile ? "" : "cp-grid"}>
+          {/* Section nav (desktop) */}
+          {!isMobile && (
+            <nav style={{ display: "flex", flexDirection: "column", gap: 4, position: "sticky", top: 28 }}>
+              {SECTIONS.map((s) => {
+                const active = tab === s.id;
+                return (
+                  <button key={s.id} onClick={() => setTab(s.id)} style={{
+                    display: "inline-flex", alignItems: "center", gap: 11, padding: "11px 14px", borderRadius: 10, textAlign: "left",
+                    background: active ? "var(--green-tint)" : "transparent",
+                    color: active ? "var(--green-text)" : "var(--ink-700)",
+                    fontSize: 14, fontWeight: active ? 700 : 500, whiteSpace: "nowrap",
+                    border: "none", cursor: "pointer", fontFamily: "inherit",
+                  }}>
+                    <span style={{ color: active ? "var(--green-text)" : "var(--ink-500)", display: "inline-flex", flexShrink: 0 }}>{s.icon}</span>
+                    {s.label}
+                  </button>
+                );
+              })}
+            </nav>
           )}
-          {tab === "about" && <OmOss draft={draft} setDraft={setDraft} />}
-          {tab === "team" && <TeamTab isOwner={isOwner} invites={invites} setInvites={setInvites} toast={toast} />}
+
+          {/* Content */}
+          <div className="stp-fade-up" key={tab}>
+            {tab === "basic" && (
+              <>
+                <GrundInfo draft={draft} setDraft={setDraft} isMobile={isMobile} />
+                <div style={{ marginTop: 24, padding: "20px 22px", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14 }}>
+                  <div style={{ fontSize: 14, fontWeight: 800, letterSpacing: -0.3, marginBottom: 4, color: "var(--ink-900)" }}>E-postnotiser</div>
+                  <div style={{ fontSize: 13, color: "var(--ink-500)", marginBottom: 16 }}>Välj vilka påminnelser ni vill få via e-post.</div>
+                  {[
+                    { key: "profileReminder", label: "Profilpåminnelser", desc: "Påminnelse när er företagsprofil inte är komplett." },
+                    { key: "jobMatch", label: "Förarrekommendationer", desc: "När nya förare matchar era krav publiceras." },
+                    { key: "messageReminder", label: "Obesvarade meddelanden", desc: "Påminnelse när ett meddelande väntar på svar." },
+                    { key: "inactivity", label: "Inaktivitetspåminnelse", desc: "Om ni inte loggat in på 30 dagar." },
+                  ].map(({ key, label, desc }, i) => {
+                    const enabled = notifSettings ? notifSettings[key] !== false : true;
+                    return (
+                      <div key={key} style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", padding: "13px 0", borderTop: i === 0 ? "none" : "1px solid var(--line)", gap: 20 }}>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: 14, fontWeight: 600, color: "var(--ink-900)" }}>{label}</div>
+                          <div style={{ fontSize: 12, color: "var(--ink-400)", marginTop: 2 }}>{desc}</div>
+                        </div>
+                        <Toggle checked={enabled} disabled={notifSaving} onChange={async () => {
+                          const next = { ...(notifSettings || {}), [key]: !enabled };
+                          setNotifSettings(next);
+                          setNotifSaving(true);
+                          try { await updateCompanyNotificationSettings(next); }
+                          catch { setNotifSettings((prev) => ({ ...prev, [key]: enabled })); }
+                          finally { setNotifSaving(false); }
+                        }} />
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+            {tab === "about" && <OmOss draft={draft} setDraft={setDraft} />}
+            {tab === "team" && <TeamTab isOwner={isOwner} invites={invites} setInvites={setInvites} toast={toast} />}
+          </div>
         </div>
       </div>
     </main>

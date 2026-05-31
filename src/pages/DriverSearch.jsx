@@ -54,46 +54,99 @@ function Icon({ name, size = 18 }) {
   return <span style={{ display: "inline-flex", width: size, height: size, flexShrink: 0 }}>{icons[name]}</span>;
 }
 
-/* ── Driver row ── */
-function DriverRow({ driver, pct, onClick, isMobile }) {
+/* ── Driver card ── */
+function DriverCard({ driver, pct, onClick }) {
   const [hover, setHover] = useState(false);
-  const mc = pct != null ? matchColor(pct) : null;
   const color = driverColor(driver);
   const exp = driver.yearsExperience ?? calcYearsExperience(driver.experience);
   const segLabel = segmentOptions.find(s => s.value === driver.primarySegment)?.label || driver.primarySegment || "";
+  const isActive = driver.availability === "open";
+  const mc = pct != null ? matchColor(pct) : null;
 
   return (
-    <div
+    <article
       onClick={onClick}
-      onMouseEnter={isMobile ? undefined : () => setHover(true)}
-      onMouseLeave={isMobile ? undefined : () => setHover(false)}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
       style={{
-        display: "flex", alignItems: "center", gap: isMobile ? 13 : 18,
-        padding: isMobile ? "14px 16px" : "18px 22px", background: hover ? "var(--paper-2)" : "var(--card)",
-        border: `1px solid ${hover ? "var(--line-2)" : "var(--line)"}`,
-        borderRadius: 14, cursor: "pointer", transition: "all .15s",
-        boxShadow: "var(--sh-sm)",
+        background: "var(--card)", border: `1px solid ${hover ? "var(--line-2)" : "var(--line)"}`,
+        borderRadius: "var(--r-lg)", padding: "18px 20px",
+        boxShadow: hover ? "var(--sh)" : "var(--sh-sm)",
+        transition: "box-shadow .15s, border-color .15s", cursor: "pointer",
       }}
     >
-      <div style={{ position: "relative", flexShrink: 0 }}>
-        <div style={{ width: 44, height: 44, borderRadius: 99, background: color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 13.5, color: "#fff" }}>
+      <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+        <div style={{ width: 46, height: 46, borderRadius: 99, background: color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 14, color: "#fff", flexShrink: 0 }}>
           {initials(driver.name)}
         </div>
-        <div style={{ position: "absolute", bottom: -1, right: -1, width: 12, height: 12, borderRadius: 99, background: availColor(driver.availability), border: "2.5px solid var(--card)" }} />
-      </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 15, fontWeight: 700, letterSpacing: -0.2, marginBottom: 3, color: "var(--ink-900)" }}>{driver.name}</div>
-        <div style={{ fontSize: 12.5, color: "var(--ink-500)" }}>
-          {[driver.location, exp > 0 && `${exp} år`, segLabel].filter(Boolean).join(" · ")}
-        </div>
-      </div>
-      {mc !== null && pct != null && (
-        <div style={{ textAlign: "right", minWidth: 50, flexShrink: 0 }}>
-          <div style={{ fontSize: 22, fontWeight: 800, color: mc, lineHeight: 1 }}>
-            {pct}<span style={{ fontSize: 13 }}>%</span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 2 }}>
+            <div>
+              <div style={{ fontSize: 15.5, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.2 }}>{driver.name}</div>
+              <div style={{ fontSize: 12.5, color: "var(--ink-500)", marginTop: 2 }}>
+                {[driver.location, exp > 0 && `${exp} års erfarenhet`].filter(Boolean).join(" · ")}
+              </div>
+            </div>
+          </div>
+
+          {/* Pills */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 10, marginBottom: 12 }}>
+            {(driver.licenses || []).slice(0, 2).map(l => (
+              <span key={l} style={{ padding: "3px 9px", borderRadius: 6, background: "var(--green-tint)", border: "1px solid var(--green-tint-2)", color: "var(--green-text)", fontSize: 11.5, fontWeight: 700 }}>{l}</span>
+            ))}
+            {(driver.certificates || []).slice(0, 2).map(c => (
+              <span key={c} style={{ padding: "3px 9px", borderRadius: 6, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-700)", fontSize: 11.5, fontWeight: 600 }}>{c.replace(/_/g, " ")}</span>
+            ))}
+            {segLabel && (
+              <span style={{ padding: "3px 9px", borderRadius: 6, background: "var(--card-2)", border: "1px solid var(--line)", color: "var(--ink-500)", fontSize: 11.5, fontWeight: 600 }}>{segLabel}</span>
+            )}
+          </div>
+
+          {/* Bottom bar */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 12, borderTop: "1px solid var(--line)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+              <span style={{ width: 7, height: 7, borderRadius: 99, background: isActive ? "var(--success)" : "var(--amber)", display: "inline-block" }} />
+              <span style={{ fontSize: 12.5, color: "var(--ink-700)", fontWeight: 600 }}>
+                {isActive ? "Söker aktivt" : "Öppen för förslag"}
+              </span>
+            </div>
+            {pct != null && mc && (
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 999, background: pct >= 85 ? "var(--success-tint)" : "var(--green-tint)" }}>
+                <span style={{ fontSize: 14, fontWeight: 800, fontFamily: "var(--mono)", color: pct >= 85 ? "var(--success)" : "var(--green-text)" }}>{pct}%</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: pct >= 85 ? "var(--success)" : "var(--green-text)" }}>match</span>
+              </div>
+            )}
           </div>
         </div>
-      )}
+      </div>
+    </article>
+  );
+}
+
+/* ── Inline FilterSelect ── */
+function FilterSelect({ value, onChange, options, placeholder }) {
+  return (
+    <div style={{ position: "relative" }}>
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        style={{
+          appearance: "none", WebkitAppearance: "none",
+          padding: "11px 32px 11px 14px",
+          background: value ? "var(--green-tint)" : "var(--card)",
+          border: `1px solid ${value ? "var(--green)" : "var(--line-2)"}`,
+          borderRadius: 10, fontSize: 13.5, fontWeight: value ? 700 : 500,
+          color: value ? "var(--green-text)" : "var(--ink-900)",
+          boxShadow: "var(--sh-sm)", cursor: "pointer", fontFamily: "var(--font)", outline: "none",
+          minWidth: 120,
+        }}
+      >
+        <option value="">{placeholder}</option>
+        {options.map(o => <option key={o} value={o}>{o}</option>)}
+      </select>
+      <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: value ? "var(--green-text)" : "var(--ink-500)", display: "inline-flex" }}>
+        <Icon name="chevDown" size={14} />
+      </span>
     </div>
   );
 }
@@ -504,99 +557,235 @@ export default function DriverSearch() {
 
   const availableJobs = (hasApi ? apiJobs : mockJobs).filter(j => j.status !== "REMOVED");
 
-  return (
-    <div style={{ minHeight: "100vh", background: "var(--paper)", color: "var(--ink-900)", fontFamily: "'DM Sans', system-ui, sans-serif", paddingTop: 32 }}>
-      <main style={{ maxWidth: 720, margin: "0 auto", padding: isMobile ? "24px 16px 120px" : "32px 32px 80px" }}>
-        {/* Title */}
-        <div style={{ marginBottom: 24 }}>
-          <h1 style={{ fontSize: 30, fontWeight: 800, letterSpacing: -1, marginBottom: 6, color: "var(--ink-900)" }}>Hitta förare</h1>
-          <div style={{ fontSize: 14, color: "var(--ink-500)" }}>Sök bland förare som söker jobb just nu</div>
-        </div>
+  const [view, setView] = useState("list");
 
-        {/* Match against selector */}
-        <div style={{ marginBottom: 18, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 12, color: "var(--ink-500)" }}>Sortera på match mot:</span>
-          <div style={{ position: "relative" }}>
-            <select
-              value={matchJobId || ""}
-              onChange={e => setMatchJobId(e.target.value || "")}
-              style={{ padding: "5px 26px 5px 12px", borderRadius: 99, background: "var(--amber-tint)", border: "1px solid var(--amber-tint-2)", color: "var(--amber-text)", fontSize: 12, fontWeight: 700, cursor: "pointer", outline: "none", appearance: "none", fontFamily: "inherit" }}
-            >
-              <option value="">Ingen annons</option>
-              {availableJobs.map(j => <option key={j.id} value={j.id}>{j.title}</option>)}
-            </select>
-            <div style={{ position: "absolute", right: 9, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "var(--amber-text)", fontSize: 9 }}>▼</div>
-          </div>
-        </div>
+  const activeChips = [];
+  if (filters.license)  activeChips.push({ key: "license",  label: filters.license + "-körkort" });
+  if (filters.segment)  activeChips.push({ key: "segment",  label: segmentOptions.find(s => s.value === filters.segment)?.label || filters.segment });
+  if (filters.region)   activeChips.push({ key: "region",   label: filters.region });
 
-        {/* Search + filter bar */}
-        <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
+  const licenseOptions = ["B", "C", "CE", "D"];
+  const segmentFilterOptions = segmentOptions.map(s => s.label);
+  const regionOptions = regions.slice(0, 9);
+
+  function setFilterKey(key, val) {
+    if (key === "segment") {
+      const sv = segmentOptions.find(s => s.label === val)?.value || val;
+      setFilters(f => ({ ...f, segment: sv }));
+    } else {
+      setFilters(f => ({ ...f, [key]: val }));
+    }
+  }
+  function clearFilterKey(key) { setFilters(f => ({ ...f, [key]: "" })); }
+
+  const segmentLabelValue = filters.segment ? (segmentOptions.find(s => s.value === filters.segment)?.label || filters.segment) : "";
+
+  if (isMobile) {
+    return (
+      <div style={{ minHeight: "100vh", background: "var(--paper)", color: "var(--ink-900)", paddingTop: 56, paddingBottom: 80 }}>
+        <div style={{ padding: "20px 20px 0" }}>
+          <p style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 6 }}>För åkerier</p>
+          <h1 style={{ fontSize: 28, fontWeight: 900, letterSpacing: -1, marginBottom: 4, color: "var(--ink-900)" }}>Hitta förare</h1>
+          <p style={{ fontSize: 13, color: "var(--ink-500)", marginBottom: 20 }}>{sortedDrivers.length} tillgängliga förare</p>
+        </div>
+        <div style={{ padding: "0 20px 14px", display: "flex", gap: 10 }}>
           <div style={{ flex: 1, position: "relative" }}>
-            <span style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", color: "var(--ink-400)", display: "inline-flex" }}><Icon name="search" size={15} /></span>
-            <input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Sök på namn eller ort"
-              style={{ width: "100%", padding: "14px 16px 14px 44px", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, fontSize: 14, outline: "none", color: "var(--ink-900)", fontFamily: "inherit" }}
-            />
+            <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "var(--ink-400)", display: "inline-flex" }}><Icon name="search" size={15} /></span>
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Sök namn, ort, kompetens..." style={{ width: "100%", padding: "12px 14px 12px 40px", background: "var(--card)", border: "1px solid var(--line-2)", borderRadius: 10, fontSize: 14, outline: "none", color: "var(--ink-900)", fontFamily: "inherit", boxSizing: "border-box" }} />
           </div>
-          <button
-            onClick={() => setFiltersOpen(true)}
-            style={{ position: "relative", padding: "0 18px", borderRadius: 12, background: "var(--card)", border: "1px solid var(--line)", color: "var(--ink-700)", fontSize: 13, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 8, fontFamily: "inherit" }}
-          >
-            <Icon name="filter" size={14} />
-            Filter
-            {activeFilterCount > 0 && (
-              <span style={{ position: "absolute", bottom: 9, left: 18, right: 18, height: 2, borderRadius: 2, background: "var(--green)" }} />
-            )}
+          <button onClick={() => setFiltersOpen(true)} style={{ padding: "0 16px", borderRadius: 10, background: activeFilterCount > 0 ? "var(--green-tint)" : "var(--card)", border: `1px solid ${activeFilterCount > 0 ? "var(--green)" : "var(--line-2)"}`, color: activeFilterCount > 0 ? "var(--green-text)" : "var(--ink-700)", fontSize: 13, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 7, fontFamily: "inherit", whiteSpace: "nowrap" }}>
+            <Icon name="filter" size={14} /> Filter{activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}
           </button>
         </div>
-
-        {/* Count */}
-        <div style={{ fontSize: 12, color: "var(--ink-400)", marginBottom: 14, fontWeight: 600 }}>
-          {loadingDrivers ? "Hämtar…" : `${sortedDrivers.length} förare`}
-          {matchJob ? " · sorterat på match" : ""}
+        <div style={{ padding: "0 20px 80px" }}>
+          {loadingDrivers ? <DriverListSkeleton count={4} /> : sortedDrivers.length === 0 ? (
+            <div style={{ padding: "40px 20px", textAlign: "center", background: "var(--paper-2)", border: "1px dashed var(--line-2)", borderRadius: 14 }}>
+              <div style={{ fontSize: 14, color: "var(--ink-500)" }}>Inga förare matchar filtren</div>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {sortedDrivers.map(({ driver, pct }) => (
+                <DriverCard key={driver.id} driver={driver} pct={matchJob ? pct : null} onClick={() => setSelectedDriverId(driver.id)} />
+              ))}
+            </div>
+          )}
         </div>
+        <FilterSheet open={filtersOpen} filters={filters} setFilters={setFilters} onClose={() => setFiltersOpen(false)} isMobile={true} />
+        <CompanyBottomNav />
+        {selectedEntry && (
+          <DetailModal driver={selectedEntry.driver} pct={selectedEntry.pct} matchJob={fullMatchJob} criteria={activeCriteria} isContacted={contactedDriverIds.has(selectedEntry.driver.id)} onClose={() => setSelectedDriverId(null)} onContact={d => setContactingDriver(d)} navigate={navigate} />
+        )}
+        {contactingDriver && (
+          <ContactModal driver={contactingDriver} jobs={apiJobs.filter(j => j.status === "ACTIVE" || j.status === "HIDDEN")} onClose={() => setContactingDriver(null)} onSent={driverId => { setContactedDriverIds(prev => new Set([...prev, driverId])); setTimeout(() => setContactingDriver(null), 2000); }} />
+        )}
+      </div>
+    );
+  }
 
-        {/* Driver list */}
-        {driversError ? (
-          <div style={{ padding: 24, background: "rgba(220,38,38,0.06)", border: "1px solid rgba(220,38,38,0.15)", borderRadius: 12 }}>
-            <p style={{ fontSize: 14, fontWeight: 600, color: "var(--danger)", marginBottom: 6 }}>Kunde inte hämta förare</p>
-            <p style={{ fontSize: 13, color: "var(--ink-500)" }}>{driversError}</p>
+  return (
+    <div style={{ minHeight: "100vh", background: "var(--paper)", color: "var(--ink-900)" }}>
+
+      {/* Page header */}
+      <div style={{ background: "var(--paper)", borderBottom: "1px solid var(--line)", paddingTop: 32, paddingBottom: 18 }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 16 }}>
+            <div>
+              <p style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 10 }}>För åkerier</p>
+              <h1 style={{ fontSize: 38, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.5, lineHeight: 1.15, marginBottom: 6 }}>Hitta förare</h1>
+              <p style={{ fontSize: 14, color: "var(--ink-500)", fontWeight: 500 }}>
+                {loadingDrivers ? "Hämtar…" : `${sortedDrivers.length} tillgängliga förare`} · Matchade mot era annonser
+              </p>
+            </div>
+            <div style={{ display: "flex", padding: 4, gap: 3, background: "var(--card)", border: "1px solid var(--line-2)", borderRadius: 10, boxShadow: "var(--sh-sm)" }}>
+              {[["list", "Lista"], ["map", "Karta"]].map(([k, label]) => (
+                <button key={k} onClick={() => setView(k)} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "7px 14px", borderRadius: 7, background: view === k ? "var(--green)" : "transparent", color: view === k ? "#fff" : "var(--ink-700)", fontSize: 13, fontWeight: 600, transition: "all .12s", cursor: "pointer", border: "none", fontFamily: "inherit" }}>
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
-        ) : loadingDrivers ? (
-          <DriverListSkeleton count={5} />
-        ) : sortedDrivers.length > 0 ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {sortedDrivers.map(({ driver, pct }) => (
-              <DriverRow
-                key={driver.id}
-                driver={driver}
-                pct={matchJob ? pct : null}
-                onClick={() => setSelectedDriverId(driver.id)}
-                isMobile={isMobile}
-              />
-            ))}
+        </div>
+      </div>
+
+      <main style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px 80px" }}>
+        {view === "map" ? (
+          <div style={{ paddingTop: 24 }}>
+            <p style={{ fontSize: 14, color: "var(--ink-500)", marginBottom: 20, fontWeight: 500, maxWidth: 600 }}>
+              Visa förare per region — klicka för att filtrera listan.
+            </p>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 20, alignItems: "start" }}>
+              <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: "var(--r-lg)", padding: 24, boxShadow: "var(--sh-sm)" }}>
+                <div style={{ fontSize: 16, fontWeight: 800, color: "var(--ink-900)", marginBottom: 16 }}>Välj region</div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10 }}>
+                  {regionOptions.map(r => (
+                    <button key={r} onClick={() => { setFilterKey("region", r); setView("list"); }} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 16px", borderRadius: 10, background: "var(--card-2)", border: `1px solid ${filters.region === r ? "var(--green)" : "var(--line)"}`, color: "var(--ink-900)", cursor: "pointer", fontFamily: "inherit", transition: "all .12s" }}>
+                      <span style={{ fontSize: 14, fontWeight: 700 }}>{r}</span>
+                      <span style={{ fontSize: 11, color: "var(--ink-400)", fontWeight: 600 }}>Visa förare →</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <aside style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+                <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: "var(--r-lg)", padding: 20, boxShadow: "var(--sh-sm)" }}>
+                  <div style={{ fontSize: 14.5, fontWeight: 700, color: "var(--ink-900)", marginBottom: 12 }}>Era öppna annonser</div>
+                  {availableJobs.slice(0, 4).map(j => (
+                    <div key={j.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid var(--line)" }}>
+                      <span style={{ fontSize: 13, color: "var(--ink-900)", fontWeight: 600 }}>{j.title}</span>
+                      <span style={{ padding: "3px 8px", borderRadius: 6, background: "var(--paper-2)", border: "1px solid var(--line)", fontSize: 11, color: "var(--ink-500)", fontWeight: 600 }}>Hitta match</span>
+                    </div>
+                  ))}
+                  {availableJobs.length === 0 && <div style={{ fontSize: 13, color: "var(--ink-400)", padding: "10px 0" }}>Inga aktiva annonser</div>}
+                </div>
+              </aside>
+            </div>
           </div>
         ) : (
-          <div style={{ padding: "60px 20px", textAlign: "center", background: "var(--paper-2)", border: "1px dashed var(--line-2)", borderRadius: 14 }}>
-            <div style={{ fontSize: 14, color: "var(--ink-500)", marginBottom: 12 }}>Inga förare matchar dina filter</div>
-            {(activeFilterCount > 0 || search) && (
-              <button onClick={() => { setFilters({ ...EMPTY_FILTERS }); setSearch(""); }} style={{ padding: "9px 18px", borderRadius: 99, background: "var(--amber-tint)", border: "1px solid var(--amber-tint-2)", color: "var(--amber-text)", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
-                Rensa filter
-              </button>
-            )}
-          </div>
+          <>
+            {/* Filter bar */}
+            <div style={{ paddingTop: 22, paddingBottom: 14 }}>
+              <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                <div style={{ position: "relative", flex: "1 1 260px", maxWidth: 440 }}>
+                  <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "var(--ink-400)", display: "inline-flex" }}>
+                    <Icon name="search" size={16} />
+                  </span>
+                  <input
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                    placeholder="Sök namn, ort, kompetens..."
+                    style={{ width: "100%", padding: "11px 16px 11px 42px", background: "var(--card)", border: "1px solid var(--line-2)", borderRadius: 10, fontSize: 14, color: "var(--ink-900)", outline: "none", boxShadow: "var(--sh-sm)", fontFamily: "var(--font)", boxSizing: "border-box" }}
+                  />
+                </div>
+                <div style={{ flex: 1, minWidth: 8 }} />
+                <FilterSelect value={filters.license} onChange={v => setFilterKey("license", v)} options={licenseOptions} placeholder="Körkort" />
+                <FilterSelect value={segmentLabelValue} onChange={v => setFilterKey("segment", v)} options={segmentFilterOptions} placeholder="Segment" />
+                <FilterSelect value={filters.region} onChange={v => setFilterKey("region", v)} options={regionOptions} placeholder="Region" />
+              </div>
+              {activeChips.length > 0 && (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 14 }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-500)", letterSpacing: 1.2, textTransform: "uppercase" }}>Aktiva filter</span>
+                  {activeChips.map(c => (
+                    <span key={c.key} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 10px 4px 12px", borderRadius: 99, background: "var(--green-tint)", border: "1px solid var(--green-tint-2)", fontSize: 12.5, fontWeight: 700, color: "var(--green-text)" }}>
+                      {c.label}
+                      <button onClick={() => clearFilterKey(c.key)} style={{ display: "inline-flex", alignItems: "center", background: "none", border: "none", color: "var(--green-text)", cursor: "pointer", padding: 0 }}>
+                        <Icon name="x" size={12} />
+                      </button>
+                    </span>
+                  ))}
+                  <button onClick={() => setFilters({ ...EMPTY_FILTERS })} style={{ fontSize: 12.5, fontWeight: 700, color: "var(--green)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>Rensa alla</button>
+                </div>
+              )}
+            </div>
+
+            <div className="find-grid">
+              <div className="stp-fade-up">
+                <div style={{ fontSize: 13, color: "var(--ink-500)", fontWeight: 600, marginBottom: 14 }}>
+                  {loadingDrivers ? "Hämtar…" : `${sortedDrivers.length} förare${filters.region ? ` i ${filters.region}` : " matchar"}`}
+                  {matchJob ? " · sorterat på match" : ""}
+                </div>
+                {driversError ? (
+                  <div style={{ padding: 24, background: "var(--danger-tint)", border: "1px solid rgba(185,28,59,0.2)", borderRadius: 12 }}>
+                    <p style={{ fontSize: 14, fontWeight: 600, color: "var(--danger)", marginBottom: 4 }}>Kunde inte hämta förare</p>
+                    <p style={{ fontSize: 13, color: "var(--ink-500)" }}>{driversError}</p>
+                  </div>
+                ) : loadingDrivers ? (
+                  <DriverListSkeleton count={6} />
+                ) : sortedDrivers.length === 0 ? (
+                  <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: "var(--r-lg)", padding: "56px 32px", textAlign: "center", boxShadow: "var(--sh-sm)" }}>
+                    <h3 style={{ fontSize: 16, fontWeight: 700, color: "var(--ink-900)", marginBottom: 6 }}>Inga förare matchar filtren</h3>
+                    <p style={{ fontSize: 14, color: "var(--ink-500)", marginBottom: 18 }}>Prova bredare filter eller kolla kartan för var förarna finns.</p>
+                    <button onClick={() => { setFilters({ ...EMPTY_FILTERS }); setSearch(""); }} style={{ padding: "9px 18px", borderRadius: 10, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-700)", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>Rensa filter</button>
+                  </div>
+                ) : (
+                  <div className="driver-grid">
+                    {sortedDrivers.map(({ driver, pct }) => (
+                      <DriverCard key={driver.id} driver={driver} pct={matchJob ? pct : null} onClick={() => setSelectedDriverId(driver.id)} />
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Sidebar */}
+              <aside style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+                <div style={{ background: "var(--card-2)", border: "1px solid var(--line)", borderRadius: "var(--r-lg)", padding: 20, boxShadow: "var(--sh-sm)" }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                    <span style={{ width: 36, height: 36, borderRadius: 9, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <Icon name="search" size={17} />
+                    </span>
+                    <div>
+                      <div style={{ fontSize: 14.5, fontWeight: 700, color: "var(--ink-900)", marginBottom: 4 }}>Var finns förarna?</div>
+                      <p style={{ fontSize: 13, color: "var(--ink-500)", lineHeight: 1.55, marginBottom: 12 }}>
+                        Se förare per region för att förstå var det finns flest talanger.
+                      </p>
+                      <button onClick={() => setView("map")} style={{ display: "flex", alignItems: "center", gap: 7, padding: "8px 14px", borderRadius: 9, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-700)", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", width: "100%", justifyContent: "center" }}>
+                        Öppna regionvy
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {availableJobs.length > 0 && (
+                  <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: "var(--r-lg)", padding: 20, boxShadow: "var(--sh-sm)" }}>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: "var(--ink-900)", marginBottom: 14, letterSpacing: -0.3 }}>Era öppna annonser</div>
+                    {availableJobs.slice(0, 4).map(j => {
+                      const isSelected = matchJobId === j.id;
+                      return (
+                        <div key={j.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid var(--line)" }}>
+                          <span style={{ fontSize: 13.5, color: "var(--ink-900)", fontWeight: 600 }}>{j.title}</span>
+                          <button onClick={() => setMatchJobId(isSelected ? "" : j.id)} style={{ padding: "3px 10px", borderRadius: 6, background: isSelected ? "var(--green-tint)" : "var(--paper-2)", border: `1px solid ${isSelected ? "var(--green)" : "var(--line)"}`, color: isSelected ? "var(--green-text)" : "var(--ink-500)", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+                            {isSelected ? "✓ Matchar" : "Matcha"}
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </aside>
+            </div>
+          </>
         )}
       </main>
 
-      <FilterSheet
-        open={filtersOpen}
-        filters={filters}
-        setFilters={setFilters}
-        onClose={() => setFiltersOpen(false)}
-        isMobile={isMobile}
-      />
+      <FilterSheet open={filtersOpen} filters={filters} setFilters={setFilters} onClose={() => setFiltersOpen(false)} isMobile={false} />
 
       {isMobile && <CompanyBottomNav />}
 

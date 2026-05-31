@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useProfile } from "../context/ProfileContext";
 import { useAuth } from "../context/AuthContext";
+import DriverProfileView from "../components/DriverProfileView.jsx";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { fetchDriverProfileStats } from "../api/drivers.js";
@@ -9,7 +10,7 @@ import { fetchProfileTips } from "../api/ai.js";
 import { fetchDriverMarket } from "../api/stats.js";
 import { fetchJobs } from "../api/jobs.js";
 import { licenseTypes, regions } from "../data/mockJobs";
-import { certificateTypes, certificateGroups, availabilityTypes } from "../data/profileData";
+import { certificateTypes, certificateGroups, availabilityTypes, getCertificateLabel } from "../data/profileData";
 import { segmentOptions } from "../data/segments";
 import { useToast } from "../context/ToastContext";
 import {
@@ -901,12 +902,16 @@ export default function Profile() {
         {/* Hero card */}
         <div style={{ padding: "4px 20px 20px" }}>
           <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 18, padding: "20px", textAlign: "center", boxShadow: "var(--sh-sm)" }}>
-            <div style={{ width: 84, height: 84, borderRadius: 99, background: "linear-gradient(135deg, var(--green) 0%, var(--green-soft) 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 26, color: "#fff", margin: "0 auto 12px", position: "relative" }}>
-              {initials}
-              {current?.isVerified && (
-                <div style={{ position: "absolute", bottom: 0, right: 0, width: 24, height: 24, borderRadius: 99, background: "var(--success)", border: "3px solid var(--card)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" width="11" height="11"><polyline points="20 6 9 17 4 12"/></svg>
+            <div style={{ position: "relative", display: "inline-block", margin: "0 auto 12px" }}>
+              <div style={{ padding: current?.openToWork ? 3 : 0, borderRadius: "50%", background: current?.openToWork ? "conic-gradient(var(--success), var(--green-soft), var(--success))" : "transparent" }}>
+                <div style={{ padding: current?.openToWork ? 2 : 0, borderRadius: "50%", background: "var(--card)" }}>
+                  <div style={{ width: 84, height: 84, borderRadius: "50%", background: "linear-gradient(135deg, var(--green) 0%, var(--green-soft) 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 26, color: "#fff" }}>
+                    {initials}
+                  </div>
                 </div>
+              </div>
+              {current?.openToWork && (
+                <span style={{ position: "absolute", bottom: 2, left: "50%", transform: "translateX(-50%)", background: "var(--success)", color: "#fff", fontSize: 9, fontWeight: 800, letterSpacing: 0.4, padding: "2px 8px", borderRadius: 999, whiteSpace: "nowrap", border: "2px solid var(--card)" }}>SÖKER JOBB</span>
               )}
             </div>
             <h2 style={{ fontSize: 20, fontWeight: 800, letterSpacing: -0.5, marginBottom: 4, color: "var(--ink-900)" }}>{current?.name || "Din profil"}</h2>
@@ -936,23 +941,48 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* Visibility toggle */}
-        <div style={{ padding: "0 20px 20px" }}>
-          <div style={{ padding: "14px 16px", background: current?.visibleToCompanies ? "var(--success-tint)" : "var(--card)", border: `1px solid ${current?.visibleToCompanies ? "var(--success)" : "var(--line)"}`, borderRadius: 13, display: "flex", alignItems: "center", gap: 12, boxShadow: "var(--sh-sm)" }}>
-            <div style={{ width: 38, height: 38, borderRadius: 10, background: current?.visibleToCompanies ? "var(--success-tint)" : "var(--paper-2)", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid var(--line)" }}>
+        {/* Visibility + openToWork toggles */}
+        <div style={{ padding: "0 20px 20px", display: "flex", flexDirection: "column", gap: 10 }}>
+          {/* Synlig för åkerier */}
+          <div style={{ padding: "14px 16px", background: current?.visibleToCompanies ? "var(--success-tint)" : "var(--card)", border: `1px solid ${current?.visibleToCompanies ? "rgba(31,120,80,0.25)" : "var(--line)"}`, borderRadius: 13, display: "flex", alignItems: "center", gap: 12, boxShadow: "var(--sh-sm)" }}>
+            <div style={{ width: 38, height: 38, borderRadius: 10, background: current?.visibleToCompanies ? "var(--success-tint)" : "var(--paper-2)", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid var(--line)", flexShrink: 0 }}>
               <svg viewBox="0 0 24 24" fill="none" stroke={current?.visibleToCompanies ? "var(--success)" : "var(--ink-400)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
             </div>
-            <div style={{ flex: 1 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2, color: "var(--ink-900)" }}>Synlig för åkerier</div>
-              <div style={{ fontSize: 11.5, color: "var(--ink-500)" }}>{current?.visibleToCompanies ? "Åkerier kan hitta dig och skicka jobb" : "Endast du ser din profil"}</div>
+              <div style={{ fontSize: 11.5, color: "var(--ink-500)" }}>{current?.visibleToCompanies ? "Åkerier kan hitta dig och kontakta dig direkt" : "Din profil är dold för åkerier"}</div>
             </div>
             <button
-              onClick={() => updateProfile({ ...profile, visibleToCompanies: !current?.visibleToCompanies })}
-              style={{ width: 48, height: 28, borderRadius: 99, background: current?.visibleToCompanies ? "var(--success)" : "var(--ink-200)", border: "none", position: "relative", cursor: "pointer", flexShrink: 0, transition: "background .2s" }}
+              onClick={() => updateProfile({ visibleToCompanies: !current?.visibleToCompanies })}
+              style={{ width: 44, height: 26, borderRadius: 99, background: current?.visibleToCompanies ? "var(--success)" : "var(--ink-200)", border: "none", position: "relative", cursor: "pointer", flexShrink: 0, transition: "background .2s" }}
             >
-              <div style={{ position: "absolute", top: 3, left: current?.visibleToCompanies ? 23 : 3, width: 22, height: 22, borderRadius: 99, background: "#fff", transition: "left .2s" }}/>
+              <div style={{ position: "absolute", top: 3, left: current?.visibleToCompanies ? 21 : 3, width: 20, height: 20, borderRadius: 99, background: "#fff", transition: "left .2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }}/>
             </button>
           </div>
+
+          {/* Söker aktivt jobb (openToWork) */}
+          {current?.visibleToCompanies && (
+            <div style={{ padding: "14px 16px", background: current?.openToWork ? "var(--green-tint)" : "var(--card)", border: `1px solid ${current?.openToWork ? "rgba(31,95,92,0.25)" : "var(--line)"}`, borderRadius: 13, display: "flex", alignItems: "center", gap: 12, boxShadow: "var(--sh-sm)" }}>
+              <div style={{ width: 38, height: 38, borderRadius: 10, background: current?.openToWork ? "var(--green-tint)" : "var(--paper-2)", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid var(--line)", flexShrink: 0 }}>
+                <div style={{ width: 14, height: 14, borderRadius: "50%", background: current?.openToWork ? "var(--green)" : "var(--ink-300)" }} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: "var(--ink-900)" }}>Söker aktivt jobb</span>
+                  {current?.openToWork && (
+                    <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: 0.5, textTransform: "uppercase", padding: "2px 7px", borderRadius: 99, background: "var(--green)", color: "#fff" }}>SÖKER JOBB</span>
+                  )}
+                </div>
+                <div style={{ fontSize: 11.5, color: "var(--ink-500)" }}>{current?.openToWork ? "Grön ring visas runt din profilbild" : "Slå på för att visa att du söker aktivt"}</div>
+              </div>
+              <button
+                onClick={() => updateProfile({ openToWork: !current?.openToWork })}
+                style={{ width: 44, height: 26, borderRadius: 99, background: current?.openToWork ? "var(--green)" : "var(--ink-200)", border: "none", position: "relative", cursor: "pointer", flexShrink: 0, transition: "background .2s" }}
+              >
+                <div style={{ position: "absolute", top: 3, left: current?.openToWork ? 21 : 3, width: 20, height: 20, borderRadius: 99, background: "#fff", transition: "left .2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }}/>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Profile completion */}
@@ -1007,16 +1037,47 @@ export default function Profile() {
   }
   // ── End mobile profile view ──────────────────────────────────────────────
 
+  // Desktop non-editing mode: use shared DriverProfileView
+  if (!editing) {
+    return (
+      <div style={{ minHeight: "100vh", background: "var(--paper)", color: "var(--ink-900)", fontFamily: "var(--font)" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "28px 32px 80px" }}>
+          <DriverProfileView
+            profile={current}
+            owner={user}
+            mode="self"
+            reviews={[]}
+            editing={false}
+            displayScore={displayScore}
+            driverMarket={driverMarket}
+            profileStats={profileStats}
+            linkCopied={linkCopied}
+            onEdit={startEditing}
+            onCopyLink={() => {
+              navigator.clipboard.writeText(`https://transportplattformen.se/forare/${user?.id || ""}`).then(() => {
+                setLinkCopied(true);
+                setTimeout(() => setLinkCopied(false), 2000);
+              });
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{ minHeight: "100vh", background: "var(--paper)", color: "var(--ink-900)", fontFamily: "var(--font)" }}>
 
-      {/* ── Hero ── */}
-      <div style={{
-        background: "var(--card)",
-        borderBottom: "1px solid var(--line)",
-        boxShadow: "var(--sh-sm)",
-      }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: isMobile ? "24px 20px 0" : "32px 32px 0" }}>
+      {/* ── Hero card ── */}
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "28px 32px 0" }}>
+        <div style={{
+          background: "var(--card)",
+          border: "1px solid var(--line)",
+          borderRadius: 14,
+          boxShadow: "var(--sh-sm)",
+          overflow: "hidden",
+          padding: "28px 32px 0",
+        }}>
 
           {editing && (
             <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
@@ -1024,8 +1085,9 @@ export default function Profile() {
             </div>
           )}
 
-          <div style={{ display: "flex", alignItems: "flex-start", gap: 24, marginBottom: 28 }}>
-            {/* Avatar with openToWork ring */}
+          {/* Hero row: avatar + info + action buttons */}
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 24 }}>
+            {/* Avatar with openToWork gradient ring */}
             <div style={{ position: "relative", flexShrink: 0 }}>
               <div style={{
                 padding: current.openToWork ? 3 : 0,
@@ -1052,7 +1114,7 @@ export default function Profile() {
               )}
             </div>
 
-            {/* Info */}
+            {/* Name + meta + pills */}
             <div style={{ flex: 1, minWidth: 0 }}>
               {editing ? (
                 <div style={{ display: "flex", gap: 12, marginBottom: 12, maxWidth: 500 }}>
@@ -1071,9 +1133,13 @@ export default function Profile() {
                   {current.name || "—"}
                 </h1>
               )}
+
+              {/* Location + region + years row */}
               <div style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--ink-500)", fontSize: 14, marginBottom: 16 }}>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                <span style={{ fontWeight: 500 }}>{current.location || "—"}{current.region && current.location !== current.region ? `, ${current.region}` : ""}</span>
+                <span style={{ fontWeight: 500 }}>
+                  {[current.location, current.region].filter(Boolean).join(", ") || "—"}
+                </span>
                 {calcYearsExperience(current.experience) > 0 && (
                   <>
                     <span style={{ color: "var(--ink-300)" }}>·</span>
@@ -1081,32 +1147,59 @@ export default function Profile() {
                   </>
                 )}
               </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
-                {(current.licenses || []).map((l) => <Tag key={l} c="p">{l}</Tag>)}
-                {(current.certificates || []).slice(0, 3).map((cid) => {
+
+              {/* License pills + cert pills + availability + visibility */}
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 26 }}>
+                {(current.licenses || []).map((l) => (
+                  <span key={l} style={{
+                    display: "inline-flex", alignItems: "center", padding: "4px 11px", borderRadius: 999,
+                    fontSize: 12.5, fontWeight: 600, lineHeight: 1.4,
+                    background: "var(--green)", color: "#fff",
+                    boxShadow: "0 1px 2px rgba(31,95,92,0.20), inset 0 -1px 0 rgba(0,0,0,0.10)",
+                  }}>{l}</span>
+                ))}
+                {(current.certificates || []).slice(0, 4).map((cid) => {
                   const st = expiryStatus((current.certExpiry || {})[cid]);
-                  return <Tag key={cid} c={st && st.days < 180 ? st.c : "muted"}>{cid.replace(/_/g, " ")}</Tag>;
+                  const label = getCertificateLabel(cid);
+                  if (!st) return <Tag key={cid} c="muted">{label}</Tag>;
+                  if (st.days < 0) return (
+                    <Tag key={cid} c="red">
+                      <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--danger)", flexShrink: 0, display: "inline-block" }} />
+                      {label} · Utgånget
+                    </Tag>
+                  );
+                  if (st.days < 180) return <Tag key={cid} c="amber">{label} · {st.label}</Tag>;
+                  return <Tag key={cid} c="muted">{label} · {st.label.replace("Gäller t.o.m. ", "")}</Tag>;
                 })}
                 {AVAIL.find((a) => a.value === current.availability) && (
                   <Tag c="muted">{AVAIL.find((a) => a.value === current.availability).label}</Tag>
                 )}
-                {current.visibleToCompanies
-                  ? <Tag c="green">Synlig</Tag>
-                  : <Tag c="red">Dold</Tag>}
+                {current.visibleToCompanies ? (
+                  <Tag c="green">
+                    <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--success)", flexShrink: 0, display: "inline-block" }} />
+                    Synlig
+                  </Tag>
+                ) : (
+                  <Tag c="red">Dold</Tag>
+                )}
               </div>
             </div>
 
-            {/* Action buttons */}
+            {/* Top-right action buttons */}
             {!editing && (
-              <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+              <div style={{ display: "flex", gap: 8, flexShrink: 0, paddingTop: 4 }}>
                 <button
-                  onClick={() => { const url = `${window.location.origin}/profil`; navigator.clipboard.writeText(url).then(() => setLinkCopied(true)).catch(() => {}); setTimeout(() => setLinkCopied(false), 2000); }}
-                  style={{ padding: "8px 16px", borderRadius: 9, border: "1px solid var(--line-2)", background: "var(--card)", color: "var(--ink-700)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font)", display: "flex", alignItems: "center", gap: 6 }}
+                  onClick={() => {
+                    const url = `https://transportplattformen.se/forare/${user?.id || ""}`;
+                    navigator.clipboard.writeText(url).then(() => setLinkCopied(true)).catch(() => {});
+                    setTimeout(() => setLinkCopied(false), 2000);
+                  }}
+                  style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 9, border: "1px solid var(--line-2)", background: "var(--card)", color: "var(--ink-700)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font)" }}
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
                   {linkCopied ? "Kopierat!" : "Dela profil"}
                 </button>
-                <button onClick={startEditing} style={{ padding: "8px 16px", borderRadius: 9, border: "1px solid var(--green)", background: "var(--green)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font)", display: "flex", alignItems: "center", gap: 6 }}>
+                <button onClick={startEditing} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 18px", borderRadius: 9, border: "1px solid var(--green)", background: "var(--green)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font)" }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                   Redigera profil
                 </button>
@@ -1114,15 +1207,15 @@ export default function Profile() {
             )}
           </div>
 
-          {/* Tabs — 3 tabs matching design */}
-          <div style={{ display: "flex", borderTop: `1px solid ${T.border}` }}>
+          {/* Tabs at bottom of hero card */}
+          <div style={{ display: "flex", borderTop: "1px solid var(--line)", marginTop: 4 }}>
             {["profil", "matchningar", "statistik"].map((t) => (
               <button key={t} onClick={() => setTab(t)} style={{
-                padding: "13px 20px", border: "none", background: "transparent", cursor: "pointer",
-                fontFamily: T.font, fontSize: 13, fontWeight: tab === t ? 700 : 400,
-                color: tab === t ? T.text : T.sub,
+                padding: "14px 22px", border: "none", background: "transparent", cursor: "pointer",
+                fontFamily: "var(--font)", fontSize: 13.5, fontWeight: tab === t ? 700 : 500,
+                color: tab === t ? "var(--ink-900)" : "var(--ink-500)",
                 borderBottom: tab === t ? "2px solid var(--green)" : "2px solid transparent",
-                transition: "all .15s", textTransform: "capitalize",
+                transition: "all .15s",
               }}>{t.charAt(0).toUpperCase() + t.slice(1)}</button>
             ))}
           </div>
@@ -1130,19 +1223,21 @@ export default function Profile() {
       </div>
 
       {/* ── Content ── */}
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: isMobile ? "24px 20px 80px" : "32px 32px 80px" }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "20px 32px 80px" }}>
 
         {/* PROFIL TAB */}
         {tab === "profil" && (
-          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 300px", gap: isMobile ? 16 : 32, alignItems: "start" }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 320px", gap: 24, alignItems: "start" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
 
-              {/* Grundläggande */}
-              <Card>
-                <SectionHeader label="Grundläggande" />
+              {/* ── Grundläggande ── */}
+              <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "22px 24px" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                  <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-500)" }}>Grundläggande</p>
+                </div>
                 {editing ? (
                   <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                    <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 14 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
                       <div>
                         <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 6 }}>Ort</p>
                         <input value={current.location || ""} onChange={(e) => updateDraft({ location: e.target.value })} placeholder="Malmö" style={inputStyle} />
@@ -1202,28 +1297,38 @@ export default function Profile() {
                     </div>
                   </div>
                 ) : (
-                  <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 0 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", columnGap: 32 }}>
                     {[
-                      ["Ort", current.location || "—"],
-                      ["Region", current.region || "—"],
-                      ["Telefon", current.phone || "—"],
-                      ["E-post", current.email || "—"],
-                      ["Tillgänglighet", AVAIL.find((a) => a.value === current.availability)?.label || "—"],
-                      ["Kan jobba i", (current.regionsWilling || []).join(", ") || "—"],
-                    ].map(([k, v]) => (
-                      <div key={k} style={{ padding: "10px 0", borderBottom: `1px solid ${T.border}` }}>
-                        <p style={{ fontSize: 11, color: T.muted, marginBottom: 4 }}>{k}</p>
-                        <p style={{ fontSize: 14, color: T.text, fontWeight: 500 }}>{v}</p>
+                      ["Ort", current.location || "—", false],
+                      ["Region", current.region || "—", false],
+                      ["Telefon", current.phone || "—", true],
+                      ["E-post", current.email || "—", false],
+                      ["Tillgänglighet", AVAIL.find((a) => a.value === current.availability)?.label || "—", false],
+                      ["Kan jobba i", (current.regionsWilling || []).join(", ") || "—", false],
+                    ].map(([k, v, mono]) => (
+                      <div key={k} style={{ padding: "12px 0", borderBottom: "1px solid var(--line)" }}>
+                        <p style={{ fontSize: 11, color: "var(--ink-400)", marginBottom: 4, fontWeight: 600 }}>{k}</p>
+                        <p style={{ fontSize: 14, color: "var(--ink-900)", fontWeight: 500, fontFamily: mono ? "var(--mono)" : "inherit" }}>{v}</p>
                       </div>
                     ))}
                   </div>
                 )}
-              </Card>
+              </div>
 
 
-              {/* Körkort & certifikat */}
-              <Card>
-                <SectionHeader label="Körkort & certifikat" />
+              {/* ── Körkort & certifikat ── */}
+              <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "22px 24px" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                  <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-500)" }}>Körkort &amp; certifikat</p>
+                  <button onClick={startEditing} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, background: "transparent", border: "1px solid var(--line-2)", fontSize: 12.5, fontWeight: 600, color: "var(--ink-700)", cursor: "pointer", fontFamily: "inherit" }}>
+                    + Lägg till
+                  </button>
+                </div>
+                {editing ? (
+                  <div style={{ marginBottom: -8 }}>
+                    <p style={{ fontSize: 11, color: T.sub, marginBottom: 14 }}>Redigera nedan och spara</p>
+                  </div>
+                ) : null}
                 {editing ? (
                   <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
                     <div>
@@ -1290,8 +1395,8 @@ export default function Profile() {
                     <CertSuggestionInline token={token} />
                   </div>
                 ) : (
-                  <div>
-                    {/* License boxes: B/C1/C1E/C/CE as 54×54 grid */}
+                  <>
+                    {/* License boxes row: B/C1/C1E/C/CE */}
                     <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
                       {["B","C1","C1E","C","CE"].map(l => {
                         const owned = (current.licenses || []).includes(l);
@@ -1300,7 +1405,7 @@ export default function Profile() {
                             width: 54, height: 54, borderRadius: 12,
                             display: "flex", alignItems: "center", justifyContent: "center",
                             background: owned ? "var(--green)" : "transparent",
-                            border: owned ? "1px solid var(--green-deep)" : "1px dashed var(--line-2)",
+                            border: owned ? "1px solid var(--green-deep, var(--green))" : "1px dashed var(--line-2)",
                             color: owned ? "#fff" : "var(--ink-300)",
                             fontWeight: 800, fontSize: 15, letterSpacing: 0.3,
                             boxShadow: owned ? "0 2px 6px rgba(31,95,92,0.20), inset 0 -2px 0 rgba(0,0,0,0.15)" : "none",
@@ -1308,6 +1413,7 @@ export default function Profile() {
                         );
                       })}
                     </div>
+                    {/* Cert rows */}
                     {(current.certificates || []).length > 0 ? (
                       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                         {(current.certificates || []).map((cid) => {
@@ -1334,315 +1440,340 @@ export default function Profile() {
                             </div>
                           );
                         })}
-                        {certWarnings.length > 0 && (
-                          <button onClick={startEditing} style={{
-                            marginTop: 4, padding: "7px 14px", borderRadius: 8, border: "none",
-                            background: T.pDim, color: "var(--green-text)",
-                            fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: T.font, textAlign: "left",
-                          }}>Uppdatera utgångsdatum →</button>
+                        {certWarnings.some((c) => c.status.days < 0) && (
+                          <div style={{ marginTop: 8, padding: "12px 16px", borderRadius: 10, background: "var(--danger-tint)", border: "1px solid rgba(185,28,59,0.18)" }}>
+                            <p style={{ fontSize: 13, color: "var(--danger)", fontWeight: 600, marginBottom: 4 }}>Certifikat har gått ut</p>
+                            <p style={{ fontSize: 12, color: "var(--ink-500)", marginBottom: 8 }}>Du missar matchningar tills det är förnyat.</p>
+                            <button onClick={startEditing} style={{ fontSize: 12, fontWeight: 700, color: "var(--danger)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", padding: 0 }}>
+                              Uppdatera utgångsdatum →
+                            </button>
+                          </div>
+                        )}
+                        {certWarnings.some((c) => c.status.days >= 0 && c.status.days < 180) && !certWarnings.some((c) => c.status.days < 0) && (
+                          <div style={{ marginTop: 8, padding: "12px 16px", borderRadius: 10, background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.20)" }}>
+                            <p style={{ fontSize: 13, color: "var(--amber-text)", fontWeight: 600, marginBottom: 4 }}>Certifikat löper snart ut</p>
+                            <button onClick={startEditing} style={{ fontSize: 12, fontWeight: 700, color: "var(--amber-text)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", padding: 0 }}>
+                              Uppdatera utgångsdatum →
+                            </button>
+                          </div>
                         )}
                       </div>
                     ) : (
-                      <div style={{ padding: 16, borderRadius: 10, border: `1.5px dashed ${T.border2}`, textAlign: "center" }}>
+                      <div style={{ padding: 16, borderRadius: 10, border: `1.5px dashed var(--line-2)`, textAlign: "center" }}>
                         <p style={{ fontSize: 13, color: T.muted }}>Inga certifikat tillagda</p>
-                        <button onClick={startEditing} style={{
-                          fontSize: 12, color: T.amber, background: "none", border: "none", cursor: "pointer", fontFamily: T.font, marginTop: 6,
-                        }}>+ Lägg till certifikat</button>
+                        <button onClick={startEditing} style={{ fontSize: 12, color: T.amber, background: "none", border: "none", cursor: "pointer", fontFamily: T.font, marginTop: 6 }}>+ Lägg till certifikat</button>
                       </div>
                     )}
-                  </div>
+                  </>
                 )}
-              </Card>
+              </div>
 
-              {/* Tillgänglighet */}
-              <Card>
-                <SectionHeader label="Tillgänglighet" />
-                {editing ? (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                    <div>
-                      <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 8 }}>Status</p>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
-                        {AVAIL.map((a) => (
-                          <button key={a.value} onClick={() => updateDraft({ availability: a.value })} style={{
-                            padding: "8px 16px", borderRadius: 9, fontSize: 13, fontWeight: 500, cursor: "pointer",
-                            fontFamily: T.font,
-                            border: `1.5px solid ${current.availability === a.value ? T.amber : T.border}`,
-                            background: current.availability === a.value ? T.amberDim : T.card,
-                            color: current.availability === a.value ? T.amber : T.sub, transition: "all .12s",
-                          }}>{a.label}</button>
-                        ))}
-                      </div>
+              {/* ── Editing-only panels: Tillgänglighet, Presentation, Privat ── */}
+              {editing && (
+                <>
+                  <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "22px 24px" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                      <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-500)" }}>Tillgänglighet</p>
                     </div>
-                    {!current.isGymnasieelev && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                       <div>
-                        <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 8 }}>Anställningsform</p>
+                        <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 8 }}>Status</p>
                         <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
-                          {segmentOptions.map((seg) => (
-                            <button key={seg.value} onClick={() => updateDraft({ primarySegment: seg.value })} style={chipBtn(current.primarySegment === seg.value)}>
-                              {seg.label}
-                            </button>
+                          {AVAIL.map((a) => (
+                            <button key={a.value} onClick={() => updateDraft({ availability: a.value })} style={{
+                              padding: "8px 16px", borderRadius: 9, fontSize: 13, fontWeight: 500, cursor: "pointer",
+                              fontFamily: T.font,
+                              border: `1.5px solid ${current.availability === a.value ? T.amber : T.border}`,
+                              background: current.availability === a.value ? T.amberDim : T.card,
+                              color: current.availability === a.value ? T.amber : T.sub, transition: "all .12s",
+                            }}>{a.label}</button>
                           ))}
                         </div>
                       </div>
-                    )}
-                    <div>
-                      <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 6 }}>Tillgänglig från (valfritt)</p>
-                      <input
-                        type="date"
-                        value={current.availableFrom || ""}
-                        onChange={(e) => updateDraft({ availableFrom: e.target.value })}
-                        style={{
-                          padding: "9px 12px", borderRadius: 9, background: T.card,
-                          border: `1px solid ${T.border2}`, color: T.text, fontSize: 13,
-                          fontFamily: T.font, cursor: "pointer",
-                        }}
-                      />
-                      <p style={{ fontSize: 11, color: T.muted, marginTop: 5 }}>Visa åkerier när du är ledig för ett nytt uppdrag</p>
-                    </div>
-                    <div>
-                      <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 8 }}>Lediga perioder</p>
-                      <p style={{ fontSize: 11, color: T.muted, marginBottom: 10 }}>Markera veckor du är tillgänglig för extrapass eller vikariat</p>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
-                        {Array.from({ length: 8 }, (_, i) => {
-                          const wk = new Date();
-                          wk.setDate(wk.getDate() + i * 7);
-                          const wkNum = Math.ceil((wk - new Date(wk.getFullYear(), 0, 1)) / (7 * 86400000));
-                          const label = `v.${wkNum}`;
-                          const on = (current.availableWeeks || []).includes(label);
-                          return (
-                            <button key={label} onClick={() => {
-                              const aw = current.availableWeeks || [];
-                              updateDraft({ availableWeeks: on ? aw.filter((x) => x !== label) : [...aw, label] });
-                            }} style={{
-                              padding: "7px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer",
-                              fontFamily: T.font,
-                              border: `1.5px solid ${on ? T.green : T.border}`,
-                              background: on ? "var(--success-tint)" : T.card,
-                              color: on ? T.green : T.sub, transition: "all .12s",
-                            }}>{label}</button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                    <div>
-                      <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 4 }}>Arbetsprofil</p>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
-                        {[
-                          { key: "physicalWorkOk", label: "Fysiskt tungt arbete ok" },
-                          { key: "soloWorkOk", label: "Ensamarbete ok" },
-                        ].map(({ key, label }) => (
-                          <label key={key} style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
-                            <Toggle checked={Boolean(current[key])} onChange={() => updateDraft({ [key]: !current[key] })} />
-                            <span style={{ fontSize: 13, color: T.sub }}>{label}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <span style={{ fontSize: 13, color: T.sub }}>Status</span>
-                      <Tag c={current.availability === "inactive" ? "red" : current.availability === "open" ? "green" : "amber"}>
-                        {AVAIL.find((a) => a.value === current.availability)?.label || "—"}
-                      </Tag>
-                    </div>
-                    {current.availableFrom && (
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                        <span style={{ fontSize: 13, color: T.sub }}>Tillgänglig från</span>
-                        <span style={{ fontSize: 13, color: T.text, fontWeight: 500 }}>{current.availableFrom}</span>
-                      </div>
-                    )}
-                    {(current.availableWeeks || []).length > 0 && (
+                      {!current.isGymnasieelev && (
+                        <div>
+                          <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 8 }}>Anställningsform</p>
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+                            {segmentOptions.map((seg) => (
+                              <button key={seg.value} onClick={() => updateDraft({ primarySegment: seg.value })} style={chipBtn(current.primarySegment === seg.value)}>
+                                {seg.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                       <div>
-                        <p style={{ fontSize: 12, color: T.muted, marginBottom: 7 }}>Lediga veckor</p>
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                          {(current.availableWeeks || []).map((w) => <Tag key={w} c="green">{w}</Tag>)}
+                        <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 6 }}>Tillgänglig från (valfritt)</p>
+                        <input type="date" value={current.availableFrom || ""} onChange={(e) => updateDraft({ availableFrom: e.target.value })} style={{ padding: "9px 12px", borderRadius: 9, background: T.card, border: `1px solid ${T.border2}`, color: T.text, fontSize: 13, fontFamily: T.font, cursor: "pointer" }} />
+                        <p style={{ fontSize: 11, color: T.muted, marginTop: 5 }}>Visa åkerier när du är ledig för ett nytt uppdrag</p>
+                      </div>
+                      <div>
+                        <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 4 }}>Arbetsprofil</p>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
+                          {[{ key: "physicalWorkOk", label: "Fysiskt tungt arbete ok" }, { key: "soloWorkOk", label: "Ensamarbete ok" }].map(({ key, label }) => (
+                            <label key={key} style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
+                              <Toggle checked={Boolean(current[key])} onChange={() => updateDraft({ [key]: !current[key] })} />
+                              <span style={{ fontSize: 13, color: T.sub }}>{label}</span>
+                            </label>
+                          ))}
                         </div>
                       </div>
-                    )}
-                    {(current.physicalWorkOk || current.soloWorkOk) && (
-                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                        {current.physicalWorkOk && <Tag c="muted">Fysiskt arbete ok</Tag>}
-                        {current.soloWorkOk && <Tag c="muted">Ensamarbete ok</Tag>}
-                      </div>
-                    )}
-                    {!current.availableFrom && (current.availableWeeks || []).length === 0 && !current.physicalWorkOk && !current.soloWorkOk && (
-                      <p style={{ fontSize: 12, color: T.muted }}>Inga specifika perioder angivna</p>
-                    )}
+                    </div>
                   </div>
-                )}
-              </Card>
 
-              {/* Publik presentation */}
-              <Card>
-                <SectionHeader label="Publik presentation" />
-                {editing ? (
-                  <div>
-                    <textarea
-                      value={current.summary || ""}
-                      onChange={(e) => e.target.value.length <= 400 && updateDraft({ summary: e.target.value })}
-                      rows={4}
-                      placeholder="Beskriv din erfarenhet och vad du söker. Visas för åkerier."
-                      style={{ ...inputStyle, resize: "none", lineHeight: 1.6 }}
-                    />
+                  <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "22px 24px" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                      <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-500)" }}>Publik presentation</p>
+                    </div>
+                    <textarea value={current.summary || ""} onChange={(e) => e.target.value.length <= 400 && updateDraft({ summary: e.target.value })} rows={4} placeholder="Beskriv din erfarenhet och vad du söker. Visas för åkerier." style={{ ...inputStyle, resize: "none", lineHeight: 1.6 }} />
                     <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6 }}>
                       <p style={{ fontSize: 11, color: T.muted }}>Minst {SUMMARY_MIN_LENGTH} tecken</p>
                       <p style={{ fontSize: 11, color: T.muted }}>{(current.summary || "").length}/400</p>
                     </div>
                   </div>
-                ) : (
-                  <p style={{ fontSize: 14, color: T.sub, lineHeight: 1.7 }}>
-                    {current.summary || <span style={{ color: T.muted }}>Ingen presentation ännu — lägg till för att synas mer</span>}
-                  </p>
-                )}
-              </Card>
 
-              {/* Privat matchningstext */}
-              <Card>
-                <SectionHeader label="Privat matchningstext" />
-                {editing ? (
-                  <div>
-                    <textarea
-                      value={current.privateMatchNotes || ""}
-                      onChange={(e) => updateDraft({ privateMatchNotes: e.target.value })}
-                      rows={3}
-                      placeholder="Skriv fritt vad du helst vill ha eller undvika. Exempel: vill helst köra distribution dagtid, undviker natt."
-                      style={{ ...inputStyle, resize: "none", lineHeight: 1.6 }}
-                    />
-                    <p style={{ fontSize: 11, color: T.muted, marginTop: 6 }}>
-                      Visas inte publikt — används bara som matchningssignal.
-                    </p>
-                  </div>
-                ) : (
-                  <div style={{ padding: "14px 16px", borderRadius: 10, background: T.card, border: `1px solid ${T.border}` }}>
-                    <p style={{ fontSize: 13, color: T.sub, lineHeight: 1.6 }}>
-                      {current.privateMatchNotes || <span style={{ color: T.muted }}>Ingen privat matchningstext sparad ännu.</span>}
-                    </p>
-                    <p style={{ fontSize: 11, color: T.muted, marginTop: 8 }}>Företag ser inte denna text.</p>
-                  </div>
-                )}
-              </Card>
-
-              {/* Erfarenhet */}
-              <Card>
-                <SectionHeader label="Erfarenhet" action={
-                  editing && !addingExp && editingExpId === null && (
-                    <button onClick={() => setAddingExp(true)} style={{
-                      padding: "6px 14px", borderRadius: 8, border: "none",
-                      background: T.pDim, color: "var(--green-text)", fontSize: 12, fontWeight: 700,
-                      cursor: "pointer", fontFamily: T.font,
-                    }}>+ Lägg till</button>
-                  )
-                } />
-
-                <div style={{ position: "relative" }}>
-                  {(current.experience || []).length > 0 && (
-                    <div style={{ position: "absolute", left: 9, top: 6, bottom: 20, width: 1.5, background: T.border2 }} />
-                  )}
-                  {(current.experience || []).length === 0 && !addingExp && (
-                    <div style={{ padding: 24, border: `1.5px dashed ${T.border2}`, borderRadius: 12, textAlign: "center", marginBottom: 12 }}>
-                      <p style={{ fontSize: 14, color: T.sub, marginBottom: 6 }}>Ingen erfarenhet tillagd ännu</p>
-                      <p style={{ fontSize: 12, color: T.muted, marginBottom: 12, lineHeight: 1.5 }}>
-                        Jobbhistorik är det åkerier tittar på först.
-                      </p>
-                      {editing && (
-                        <button onClick={() => setAddingExp(true)} style={{
-                          padding: "9px 20px", borderRadius: 9, border: "none",
-                          background: T.primary, color: "#fff", fontSize: 13, fontWeight: 600,
-                          cursor: "pointer", fontFamily: T.font,
-                        }}>+ Lägg till erfarenhet</button>
-                      )}
+                  <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "22px 24px" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                      <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-500)" }}>Privat matchningstext</p>
                     </div>
-                  )}
-                  {(current.experience || []).map((exp) => (
-                    editingExpId === exp.id ? (
-                      <ExpForm key={exp.id} initial={exp} onSave={handleSaveExp} onCancel={() => setEditingExpId(null)} isMobile={isMobile} />
-                    ) : (
-                      <div key={exp.id} style={{ display: "flex", gap: 0, paddingLeft: 28, paddingBottom: 20, position: "relative" }}>
-                        <div style={{
-                          position: "absolute", left: 0, top: 4,
-                          width: 20, height: 20, borderRadius: "50%",
-                          background: exp.current ? "var(--success-tint)" : T.card,
-                          border: `2px solid ${exp.current ? T.green : T.border2}`,
-                          display: "flex", alignItems: "center", justifyContent: "center",
-                          fontSize: 8, color: exp.current ? T.green : T.border2, flexShrink: 0,
-                        }}>{exp.current ? "●" : "○"}</div>
-                        <div style={{
-                          flex: 1, background: T.bg2, border: `1px solid ${T.border}`,
-                          borderRadius: 14, padding: "16px 18px",
+                    <textarea value={current.privateMatchNotes || ""} onChange={(e) => updateDraft({ privateMatchNotes: e.target.value })} rows={3} placeholder="Skriv fritt vad du helst vill ha eller undvika. Exempel: vill helst köra distribution dagtid, undviker natt." style={{ ...inputStyle, resize: "none", lineHeight: 1.6 }} />
+                    <p style={{ fontSize: 11, color: T.muted, marginTop: 6 }}>Visas inte publikt — används bara som matchningssignal.</p>
+                  </div>
+                </>
+              )}
+
+              {/* ── Erfarenhet ── */}
+              <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "22px 24px" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                  <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-500)" }}>Erfarenhet</p>
+                  <button onClick={() => { startEditing(); setAddingExp(true); }} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, background: "transparent", border: "1px solid var(--line-2)", fontSize: 12.5, fontWeight: 600, color: "var(--ink-700)", cursor: "pointer", fontFamily: "inherit" }}>
+                    + Lägg till
+                  </button>
+                </div>
+
+                {(current.experience || []).length === 0 && !addingExp ? (
+                  <div style={{ padding: 24, border: `1.5px dashed var(--line-2)`, borderRadius: 12, textAlign: "center" }}>
+                    <p style={{ fontSize: 14, color: T.sub, marginBottom: 6 }}>Ingen erfarenhet tillagd ännu</p>
+                    <p style={{ fontSize: 12, color: T.muted, lineHeight: 1.5 }}>Jobbhistorik är det åkerier tittar på först.</p>
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column" }}>
+                    {(current.experience || []).map((exp, i) => (
+                      editingExpId === exp.id ? (
+                        <ExpForm key={exp.id} initial={exp} onSave={handleSaveExp} onCancel={() => setEditingExpId(null)} isMobile={isMobile} />
+                      ) : (
+                        <div key={exp.id} style={{
+                          display: "grid", gridTemplateColumns: "16px 1fr auto", gap: 16,
+                          padding: "16px 0",
+                          borderBottom: i < (current.experience || []).length - 1 ? "1px solid var(--line)" : "none",
+                          alignItems: "start",
                         }}>
-                          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 4 }}>
-                                <p style={{ fontWeight: 700, fontSize: 15, color: T.text }}>{exp.role}</p>
-                                {exp.current && <Tag c="green">Pågående</Tag>}
-                              </div>
-                              <p style={{ fontSize: 13, color: T.sub, marginBottom: 10 }}>
-                                {exp.company} · {formatYearRange(exp)}
-                              </p>
-                              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                                {(exp.vehicleTypes || []).map((v) => (
-                                  <Tag key={v} c="muted">{EXP_VEHICLE_TYPES.find((x) => x.value === v)?.label || v}</Tag>
-                                ))}
+                          {/* Timeline dot + line */}
+                          <div style={{ position: "relative", height: "100%", paddingTop: 6 }}>
+                            <span style={{
+                              display: "block", width: 10, height: 10, borderRadius: 5,
+                              background: i === 0 ? "var(--green)" : "var(--ink-200)",
+                              boxShadow: i === 0 ? "0 0 0 3px var(--green-tint)" : "none",
+                            }} />
+                            {i < (current.experience || []).length - 1 && (
+                              <span style={{ position: "absolute", left: 4, top: 22, bottom: -16, width: 2, background: "var(--line-2)" }} />
+                            )}
+                          </div>
+                          {/* Role / company / tags / description */}
+                          <div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                              <span style={{ fontSize: 15, fontWeight: 700, color: "var(--ink-900)" }}>{exp.role}</span>
+                              {exp.current && <Tag c="green">Pågående</Tag>}
+                            </div>
+                            <div style={{ fontSize: 13.5, color: "var(--ink-500)", marginTop: 2, fontWeight: 500 }}>{exp.company}</div>
+                            {(exp.vehicleTypes?.length > 0 || exp.jobType) && (
+                              <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 6 }}>
+                                {(exp.vehicleTypes || []).map((v) => <Tag key={v} c="muted">{EXP_VEHICLE_TYPES.find((x) => x.value === v)?.label || v}</Tag>)}
                                 {exp.jobType && <Tag c="p">{EXP_JOB_TYPES.find((x) => x.value === exp.jobType)?.label || exp.jobType}</Tag>}
                               </div>
-                              {exp.description && <p style={{ fontSize: 13, color: T.sub, marginTop: 10, lineHeight: 1.55 }}>{exp.description}</p>}
-                            </div>
+                            )}
+                            {exp.description && <div style={{ fontSize: 13, color: "var(--ink-500)", marginTop: 6 }}>{exp.description}</div>}
+                          </div>
+                          {/* Date + edit controls */}
+                          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
+                            <span style={{ fontSize: 12.5, color: "var(--ink-500)", fontWeight: 600, fontFamily: "var(--mono)", whiteSpace: "nowrap", paddingTop: 4 }}>
+                              {formatYearRange(exp)}
+                            </span>
                             {editing && (
-                              <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
-                                <button onClick={() => setEditingExpId(exp.id)} style={{
-                                  width: 30, height: 30, borderRadius: 8, border: `1px solid ${T.border2}`,
-                                  background: T.card, color: T.sub, cursor: "pointer",
-                                  display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14,
-                                }}>✎</button>
-                                <button onClick={() => removeExperience(exp.id)} style={{
-                                  width: 30, height: 30, borderRadius: 8, border: "1px solid rgba(239,68,68,0.2)",
-                                  background: "var(--danger-tint)", color: T.red, cursor: "pointer",
-                                  display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14,
-                                }}>×</button>
+                              <div style={{ display: "flex", gap: 5 }}>
+                                <button onClick={() => setEditingExpId(exp.id)} style={{ width: 28, height: 28, borderRadius: 7, border: `1px solid var(--line-2)`, background: T.card, color: T.sub, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>✎</button>
+                                <button onClick={() => removeExperience(exp.id)} style={{ width: 28, height: 28, borderRadius: 7, border: "1px solid rgba(239,68,68,0.2)", background: "var(--danger-tint)", color: T.red, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>×</button>
                               </div>
                             )}
                           </div>
                         </div>
-                      </div>
-                    )
+                      )
+                    ))}
+                    {addingExp && (
+                      <ExpForm onSave={handleAddExperience} onCancel={() => setAddingExp(false)} isMobile={isMobile} />
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* ── Om mig ── */}
+              <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "22px 24px" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                  <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-500)" }}>Om mig</p>
+                  <button onClick={startEditing} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, background: "transparent", border: "1px solid var(--line-2)", fontSize: 12.5, fontWeight: 600, color: "var(--ink-700)", cursor: "pointer", fontFamily: "inherit" }}>
+                    Redigera
+                  </button>
+                </div>
+                <p style={{ fontSize: 15, lineHeight: 1.65, color: "var(--ink-700)", textWrap: "pretty" }}>
+                  {current.summary || <span style={{ color: "var(--ink-400)" }}>Ingen presentation ännu — lägg till för att synas mer.</span>}
+                </p>
+              </div>
+
+            </div>
+
+            {/* ── Right sidebar: 320px sticky ── */}
+            <aside style={{ display: "flex", flexDirection: "column", gap: 18, position: "sticky", top: 80 }}>
+
+              {/* Profilstyrka */}
+              <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "22px 24px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 12 }}>
+                  <h3 style={{ fontSize: 14.5, fontWeight: 700, color: "var(--ink-900)" }}>Profilstyrka</h3>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 2 }}>
+                    <span style={{ fontSize: 30, fontWeight: 800, color: "var(--green)", letterSpacing: -0.5 }}>{displayScore}</span>
+                    <span style={{ fontSize: 12, color: "var(--ink-500)", fontWeight: 600 }}>/100</span>
+                  </div>
+                </div>
+                <div style={{ height: 6, borderRadius: 3, background: "var(--paper-2)", overflow: "hidden", marginBottom: 14 }}>
+                  <div style={{ height: "100%", width: `${displayScore}%`, background: "linear-gradient(to right, var(--green) 0%, var(--green-soft) 100%)", borderRadius: 3, transition: "width .5s" }} />
+                </div>
+                <p style={{ fontSize: 13, color: "var(--ink-500)", marginBottom: 14, fontWeight: 500 }}>
+                  {displayScore >= 90 ? "Utmärkt profil" : displayScore >= 70 ? "Stark profil" : displayScore >= 50 ? "Bra profil" : displayScore >= 30 ? "Under uppbyggnad" : "Grundläggande profil"}
+                </p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {[
+                    { label: "Namn", done: Boolean(current?.name) },
+                    { label: "Ort & region", done: Boolean(current?.location && current?.region) },
+                    { label: "Körkort", done: (current?.licenses || []).length > 0 },
+                    { label: "Certifikat", done: (current?.certificates || []).length > 0 },
+                    { label: "Erfarenhet", done: (current?.experience || []).length > 0 },
+                    { label: "Presentation", done: (current?.summary || "").length >= SUMMARY_MIN_LENGTH },
+                    { label: "Tillgänglighet", done: Boolean(current?.availability) },
+                    { label: "Sökbara regioner", done: (current?.regionsWilling || []).length > 0 },
+                  ].map((c) => (
+                    <div key={c.label} style={{ display: "flex", alignItems: "center", gap: 9 }}>
+                      <span style={{ width: 18, height: 18, borderRadius: 9, background: c.done ? "var(--success-tint)" : "var(--paper-2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: `1.5px solid ${c.done ? "var(--success)" : "var(--line-2)"}` }}>
+                        {c.done && <span style={{ fontSize: 9, color: "var(--success)", fontWeight: 800 }}>✓</span>}
+                      </span>
+                      <span style={{ fontSize: 13.5, color: "var(--ink-700)", fontWeight: 500 }}>{c.label}</span>
+                    </div>
                   ))}
-                  {addingExp && (
-                    <ExpForm onSave={handleAddExperience} onCancel={() => setAddingExp(false)} isMobile={isMobile} />
+                </div>
+                {!editing && displayScore < 100 && (
+                  <button onClick={startEditing} style={{ marginTop: 14, width: "100%", padding: "8px", borderRadius: 8, border: "none", background: "var(--green-tint)", color: "var(--green-text)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>Stärk profilen →</button>
+                )}
+              </div>
+
+              {/* Marknad */}
+              {driverMarket && driverMarket.jobsInRegion >= 5 ? (
+                <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "22px 24px" }}>
+                  <div style={{ marginBottom: 16 }}>
+                    <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-500)" }}>
+                      Marknad i {driverMarket.region || current.region || "din region"}
+                    </p>
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                    {[...driverMarket.topLicenses, ...driverMarket.topCerts.slice(0, 2)].slice(0, 4).map((m) => (
+                      <div key={m.name}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
+                          <span style={{ fontSize: 13.5, color: "var(--ink-700)", fontWeight: 600 }}>{m.name}</span>
+                          <span style={{ fontSize: 13, color: "var(--ink-900)", fontWeight: 700, fontFamily: "var(--mono)" }}>{m.pct}%</span>
+                        </div>
+                        <div style={{ height: 4, borderRadius: 2, background: "var(--paper-2)", overflow: "hidden" }}>
+                          <div style={{ height: "100%", width: `${m.pct}%`, background: "var(--green)", opacity: 0.4 + (m.pct / 100) * 0.6, borderRadius: 2 }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <p style={{ fontSize: 12.5, color: "var(--ink-500)", marginTop: 14, lineHeight: 1.5 }}>Andel aktiva jobb som kräver respektive behörighet i din region.</p>
+                </div>
+              ) : (
+                <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "22px 24px" }}>
+                  <div style={{ marginBottom: 16 }}>
+                    <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-500)" }}>
+                      Marknad i {current.region || "din region"}
+                    </p>
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                    {[{ label: "CE-körkort", pct: 78 }, { label: "YKB", pct: 62 }, { label: "ADR", pct: 31 }, { label: "Truck B", pct: 24 }].map((m) => (
+                      <div key={m.label}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
+                          <span style={{ fontSize: 13.5, color: "var(--ink-700)", fontWeight: 600 }}>{m.label}</span>
+                          <span style={{ fontSize: 13, color: "var(--ink-900)", fontWeight: 700, fontFamily: "var(--mono)" }}>{m.pct}%</span>
+                        </div>
+                        <div style={{ height: 4, borderRadius: 2, background: "var(--paper-2)", overflow: "hidden" }}>
+                          <div style={{ height: "100%", width: `${m.pct}%`, background: "var(--green)", opacity: 0.4 + (m.pct / 100) * 0.6, borderRadius: 2 }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <p style={{ fontSize: 12.5, color: "var(--ink-500)", marginTop: 14, lineHeight: 1.5 }}>Andel aktiva jobb som kräver respektive behörighet i din region.</p>
+                </div>
+              )}
+
+              {/* Din profillänk */}
+              {user?.id && (
+                <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "22px 24px" }}>
+                  <div style={{ marginBottom: 12 }}>
+                    <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-500)" }}>Din profillänk</p>
+                  </div>
+                  <p style={{ fontSize: 13.5, color: "var(--ink-700)", marginBottom: 14, lineHeight: 1.5 }}>
+                    Dela med åkerier — de ser din profil utan inloggning.
+                  </p>
+                  <div style={{ display: "flex", alignItems: "center", gap: 0, background: "var(--card-2)", border: "1px solid var(--line-2)", borderRadius: 9, paddingLeft: 12, overflow: "hidden" }}>
+                    <span style={{ flex: 1, fontSize: 12.5, fontFamily: "var(--mono)", color: "var(--ink-700)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", paddingRight: 8 }}>
+                      transportplattformen.se/forare/{user.id}
+                    </span>
+                    <button onClick={() => {
+                      navigator.clipboard.writeText(`https://transportplattformen.se/forare/${user.id}`).then(() => {
+                        setLinkCopied(true);
+                        setTimeout(() => setLinkCopied(false), 2000);
+                      });
+                    }} style={{ background: linkCopied ? "var(--success)" : "var(--ink-900)", color: "#fff", padding: "10px 14px", fontSize: 12.5, fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 6, border: "none", cursor: "pointer", transition: "background .2s", fontFamily: "inherit" }}>
+                      {linkCopied ? "Kopierad ✓" : "Kopiera"}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Profile stats (from backend) */}
+              {profileStats && (
+                <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "22px 24px" }}>
+                  <div style={{ marginBottom: 14 }}>
+                    <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-500)" }}>Profilvisningar</p>
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
+                    {[{ val: profileStats.views7 ?? 0, label: "Senaste 7 dagar" }, { val: profileStats.views30 ?? 0, label: "Senaste 30 dagar" }].map(({ val, label }) => (
+                      <div key={label} style={{ background: "var(--card-2)", border: "1px solid var(--line)", borderRadius: 10, padding: "12px 10px", textAlign: "center" }}>
+                        <div style={{ fontSize: 26, fontWeight: 900, color: val > 0 ? T.amber : T.muted, lineHeight: 1, marginBottom: 4 }}>{val}</div>
+                        <div style={{ fontSize: 10, color: T.muted, lineHeight: 1.3 }}>{label}</div>
+                      </div>
+                    ))}
+                  </div>
+                  {profileStats.conversationCount > 0 && (
+                    <p style={{ fontSize: 12, color: "var(--success)", fontWeight: 600 }}>
+                      {profileStats.conversationCount} {profileStats.conversationCount === 1 ? "åkeri" : "åkerier"} har kontaktat dig
+                    </p>
                   )}
                 </div>
-              </Card>
+              )}
 
-            </div>
-
-            {/* Right sidebar */}
-            <div>
-              <ScoreCard
-                score={displayScore}
-                profile={current}
-                onEdit={startEditing}
-              />
-              <MarketSidebar
-                driverMarket={driverMarket}
-                user={user}
-                linkCopied={linkCopied}
-                profileStats={profileStats}
-                certExpiry={current.certExpiry}
-                onCopyLink={() => {
-                  navigator.clipboard.writeText(`https://transportplattformen.se/forare/${user.id}`).then(() => {
-                    setLinkCopied(true);
-                    setTimeout(() => setLinkCopied(false), 2000);
-                  });
-                }}
-              />
-            </div>
+            </aside>
           </div>
         )}
 
         {/* MATCHNINGAR TAB */}
         {tab === "matchningar" && (
-          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 300px", gap: isMobile ? 16 : 32, alignItems: "start" }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 320px", gap: 24, alignItems: "start" }}>
             <div>
               {matchedJobsLoading ? (
                 <div style={{ padding: 40, textAlign: "center" }}>

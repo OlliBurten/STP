@@ -35,15 +35,15 @@ function MicrosoftButton({ onSuccess, onError }) {
     <button
       type="button"
       onClick={handleClick}
-      className="flex-1 h-12 min-h-[48px] inline-flex items-center justify-center gap-2 px-4 rounded-xl border-2 border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 transition-colors text-slate-800 font-medium"
+      style={{ width: "100%", height: 48, borderRadius: 11, border: "1px solid var(--line-2)", background: "var(--card)", boxShadow: "var(--sh-sm)", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, fontSize: 14.5, fontWeight: 700, color: "var(--ink-900)", cursor: "pointer", fontFamily: "inherit" }}
     >
-      <svg className="w-5 h-5" viewBox="0 0 24 24">
+      <svg width="20" height="20" viewBox="0 0 24 24">
         <path fill="#F25022" d="M1 1h10v10H1z" />
         <path fill="#00A4EF" d="M1 13h10v10H1z" />
         <path fill="#7FBA00" d="M13 1h10v10H13z" />
         <path fill="#FFB900" d="M13 13h10v10H13z" />
       </svg>
-      Microsoft
+      Fortsätt med Microsoft
     </button>
   );
 }
@@ -208,7 +208,7 @@ export default function OAuthButtons({
   }
 
   return (
-    <div className="space-y-3">
+    <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 12 }}>
       {backendReachable === false && (
         <div className="rounded-xl border-2 border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
           <strong>Kunde inte nå backend.</strong> Starta backend med{" "}
@@ -218,50 +218,40 @@ export default function OAuthButtons({
           backend inkluderar din sajt-URL (CORS).
         </div>
       )}
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.12)" }} />
-        <span style={{ fontSize: 12, color: "rgba(240,250,249,0.4)", whiteSpace: "nowrap" }}>
-          {promptText || (authMode === "register" ? "eller skapa konto med" : "eller logga in med")}
-        </span>
-        <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.12)" }} />
-      </div>
-      <div className="flex flex-col gap-3">
-        {showGoogle && (
-          <div className="flex-1 h-12 min-h-[48px] relative rounded-xl border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-colors flex items-center justify-center overflow-hidden">
-            <div className="absolute inset-0 flex items-center justify-center">
-              <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={(e) => {
-                  if (e?.error === "popup_closed_by_user") return;
-                  onError?.("Kunde inte hämta inloggning från Google.");
-                }}
-                useOneTap={false}
-                theme="outline"
-                size="large"
-                type="standard"
-                shape="rectangular"
-                text="continue_with"
-                width={400}
-              />
-            </div>
-            <div
-              className="absolute inset-0 flex items-center justify-center gap-2 pointer-events-none text-slate-800 font-medium bg-white rounded-[10px]"
-              aria-hidden="true"
-            >
-              <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
-                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-              </svg>
-              Google
-            </div>
+      {showGoogle && (
+        <div style={{ position: "relative", height: 48, borderRadius: 11, border: "1px solid var(--line-2)", boxShadow: "var(--sh-sm)", overflow: "hidden", background: "var(--card)" }}>
+          {/* GoogleLogin iframe — visible and interactive, fills the container */}
+          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={(e) => {
+                if (e?.error === "popup_closed_by_user") return;
+                onError?.("Kunde inte hämta inloggning från Google.");
+              }}
+              useOneTap={false}
+              theme="outline"
+              size="large"
+              type="standard"
+              shape="rectangular"
+              text="continue_with"
+              width={400}
+            />
           </div>
-        )}
-        {showMicrosoft && (
-          <MicrosoftButton onSuccess={handleOAuthResult} onError={onError} />
-        )}
-      </div>
+          {/* Visual overlay — pointer-events none so clicks reach the iframe */}
+          <div aria-hidden="true" style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, fontSize: 14.5, fontWeight: 700, color: "var(--ink-900)", pointerEvents: "none", background: "var(--card)", borderRadius: 10 }}>
+            <svg width="20" height="20" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+            </svg>
+            Fortsätt med Google
+          </div>
+        </div>
+      )}
+      {showMicrosoft && (
+        <MicrosoftButton onSuccess={handleOAuthResult} onError={onError} />
+      )}
     </div>
   );
 }

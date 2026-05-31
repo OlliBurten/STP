@@ -146,39 +146,17 @@ function BulletEditor({ items, onChange, placeholder, color }) {
   );
 }
 
-function StepBar({ current, isMobile }) {
+function StepBar({ current, setStep }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", marginBottom: 40 }}>
+    <div style={{ display: "flex", gap: 8, marginBottom: 28 }}>
       {STEPS.map((s, i) => (
-        <div key={s.id} style={{ display: "flex", alignItems: "center", flex: i < STEPS.length - 1 ? 1 : 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: isMobile ? 0 : 8, flexShrink: 0 }}>
-            <span style={{
-              width: 32, height: 32, borderRadius: 99, display: "flex", alignItems: "center",
-              justifyContent: "center", fontSize: 13, fontWeight: 800, flexShrink: 0, transition: "all .2s",
-              background: i < current ? "var(--green)" : i === current ? "var(--amber)" : "var(--paper-2)",
-              color: i <= current ? "#fff" : "var(--ink-300)",
-              border: `2px solid ${i < current ? "var(--green)" : i === current ? "var(--amber)" : "var(--line-2)"}`,
-            }}>
-              {i < current
-                ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                : i + 1}
-            </span>
-            {!isMobile && (
-              <span style={{ fontSize: 13, fontWeight: i === current ? 700 : 500, color: i === current ? "var(--ink-900)" : i < current ? "var(--ink-500)" : "var(--ink-300)", whiteSpace: "nowrap" }}>
-                {s.label}
-              </span>
-            )}
+        <button key={s.id} onClick={() => i < current && setStep(i)} style={{ flex: 1, textAlign: "left", background: "none", border: "none", cursor: i < current ? "pointer" : "default", padding: 0, fontFamily: "inherit" }}>
+          <div style={{ height: 4, borderRadius: 2, background: i <= current ? "var(--green)" : "var(--line-2)", marginBottom: 8, transition: "background .3s" }}/>
+          <div style={{ fontSize: 12.5, fontWeight: i === current ? 700 : 500, color: i === current ? "var(--ink-900)" : "var(--ink-500)" }}>
+            {i + 1}. {s.label}
           </div>
-          {i < STEPS.length - 1 && (
-            <div style={{ flex: 1, height: 2, background: i < current ? "var(--green-tint-2)" : "var(--line)", margin: isMobile ? "0 8px" : "0 12px", minWidth: 12, transition: "background .3s" }} />
-          )}
-        </div>
+        </button>
       ))}
-      {isMobile && (
-        <span style={{ marginLeft: 12, fontSize: 13, fontWeight: 700, color: "var(--ink-900)", whiteSpace: "nowrap" }}>
-          {STEPS[current].label}
-        </span>
-      )}
     </div>
   );
 }
@@ -761,13 +739,24 @@ export default function PostJob() {
   );
 
   return (
-    <main style={{ background: "var(--paper)", minHeight: "100vh", paddingTop: 32 }}>
+    <main style={{ background: "var(--paper)", minHeight: "100vh" }}>
       <PageMeta title="Publicera jobb – STP" />
-      <div style={{ maxWidth: 1280, margin: "0 auto", padding: isMobile ? "24px 20px 80px" : "36px 40px 100px", display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 420px", gap: isMobile ? 24 : 48, alignItems: "start" }}>
+
+      {/* Page header */}
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: isMobile ? "16px 20px 0" : "28px 32px 0" }}>
+        <Link to="/foretag/annonser" style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 600, color: "var(--ink-500)", marginBottom: 18, textDecoration: "none" }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          Tillbaka till annonser
+        </Link>
+        <h1 style={{ fontSize: isMobile ? 24 : 30, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -1, marginBottom: 18 }}>Skapa annons</h1>
+      </div>
+
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: isMobile ? "0 20px 80px" : "0 32px 80px" }}>
+        <div className={isMobile ? "" : "pj-grid"}>
 
         {/* ── Left: form ── */}
         <div>
-          <StepBar current={step} isMobile={isMobile} />
+          <StepBar current={step} setStep={setStep} />
           <CompletenessBar form={form} />
 
           {step === 0 && <StepBasics form={form} setForm={setForm} isMobile={isMobile} />}
@@ -788,19 +777,24 @@ export default function PostJob() {
         </div>
 
         {/* ── Right: sticky preview / info (desktop only) ── */}
-        {!isMobile && <div style={{ position: "sticky", top: 84 }}>
-          {step < 3 ? (
-            <>
-              <div style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-300)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 14 }}>Live-förhandsvy</div>
-              <LivePreview form={form} />
-              <p style={{ fontSize: 12, color: "var(--ink-300)", marginTop: 10, textAlign: "center", lineHeight: 1.6 }}>
-                Uppdateras i realtid — exakt så ser föraren din annons
-              </p>
-            </>
-          ) : (
-            <RightInfoPanel />
-          )}
-        </div>}
+        {!isMobile && (
+          <aside className="pj-preview" style={{ position: "sticky", top: 32 }}>
+            <div style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 12 }}>
+              {step < 3 ? "Så ser annonsen ut" : "Vad händer när du publicerar?"}
+            </div>
+            {step < 3 ? (
+              <>
+                <LivePreview form={form} />
+                <p style={{ fontSize: 12, color: "var(--ink-300)", marginTop: 10, textAlign: "center", lineHeight: 1.6 }}>
+                  Uppdateras i realtid — exakt så ser föraren din annons
+                </p>
+              </>
+            ) : (
+              <RightInfoPanel />
+            )}
+          </aside>
+        )}
+        </div>
       </div>
     </main>
   );

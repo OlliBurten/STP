@@ -10,28 +10,17 @@ import CompanyBottomNav from "../components/CompanyBottomNav";
 function Icon({ n, size = 18, color = "currentColor" }) {
   const icons = {
     plus:   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
-    search: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
-    filter: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>,
     pin:    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
     clock:  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
-    eye:    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>,
-    user:   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+    arrow:  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>,
+    alert:  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,
     edit:   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
     more:   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>,
-    spark:  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L13.5 8.5 20 10l-6.5 1.5L12 18l-1.5-6.5L4 10l6.5-1.5z"/></svg>,
-    arrow:  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>,
   };
   return <span style={{ display: "inline-flex", width: size, height: size, color, flexShrink: 0 }}>{icons[n]}</span>;
 }
 
-const PIPELINE_STAGES = [
-  { key: "new",        label: "Nya",        color: "var(--amber)" },
-  { key: "contacted",  label: "Kontaktade", color: "var(--info)" },
-  { key: "interviewed",label: "Intervjuade",color: "#a78bfa" },
-  { key: "hired",      label: "Anställda",  color: "var(--success)" },
-  { key: "rejected",   label: "Avslagna",   color: "var(--ink-300)" },
-];
-
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 function getStage(conv) {
   if (conv.rejectedByCompanyAt) return "rejected";
   if (conv.selectedByCompanyAt) return "interviewed";
@@ -59,166 +48,188 @@ function normalizeStatus(status) {
   return "closed";
 }
 
-// ─── JobCard ─────────────────────────────────────────────────────────────────
-function JobCard({ job, pipeline, onOpen, onPause, onClose, isMobile }) {
-  const [hovered, setHovered] = useState(false);
+// ─── Mini Funnel ──────────────────────────────────────────────────────────────
+function Funnel({ pipeline }) {
+  const stages = [
+    { label: "Sökande",    value: pipeline.total },
+    { label: "Kontaktade", value: pipeline.contacted },
+    { label: "Intervju",   value: pipeline.interviewed },
+    { label: "Anställda",  value: pipeline.hired },
+  ];
+  return (
+    <div style={{ display: "flex", alignItems: "stretch", gap: 6 }}>
+      {stages.map((s) => (
+        <div key={s.label} style={{ flex: 1, minWidth: 0 }}>
+          <div style={{
+            background: "var(--card-2)", border: "1px solid var(--line)",
+            borderRadius: 9, padding: "9px 10px", textAlign: "center",
+          }}>
+            <div style={{ fontSize: 17, fontWeight: 800, color: s.value > 0 ? "var(--ink-900)" : "var(--ink-300)", fontFamily: "var(--mono)", lineHeight: 1 }}>
+              {s.value}
+            </div>
+            <div style={{ fontSize: 10, color: "var(--ink-500)", marginTop: 4, fontWeight: 600, letterSpacing: 0.2, textTransform: "uppercase" }}>
+              {s.label}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── AdCard ───────────────────────────────────────────────────────────────────
+function AdCard({ job, pipeline, onPause, onClose }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const status = normalizeStatus(job.status);
-  const statusColor = status === "active" ? "var(--success)" : status === "paused" ? "var(--amber-text)" : "var(--ink-400)";
-  const statusBg    = status === "active" ? "var(--success-tint)" : status === "paused" ? "var(--amber-tint)" : "var(--paper-2)";
-  const statusLabel = status === "active" ? "Aktiv" : status === "paused" ? "Pausad" : "Avslutad";
-
-  const total = pipeline.total;
-  const pipelineSegs = [
-    { count: pipeline.new,         color: "var(--amber)" },
-    { count: pipeline.contacted,   color: "var(--info)" },
-    { count: pipeline.interviewed, color: "#a78bfa" },
-    { count: pipeline.hired,       color: "var(--success)" },
-  ];
-
+  const statusMeta = {
+    active: { label: "Aktiv",  tone: "success", color: "var(--success)", bg: "var(--success-tint)" },
+    paused: { label: "Pausad", tone: "amber",   color: "var(--amber-deep)", bg: "var(--amber-tint)" },
+    closed: { label: "Stängd", tone: "neutral", color: "var(--ink-500)",  bg: "var(--paper-2)" },
+  };
+  const meta = statusMeta[status];
   const dl = deadlineLabel(job);
   const hot = pipeline.new >= 3;
-  const lowTraffic = daysActive(job) > 14 && total < 3;
+  const lowTraffic = daysActive(job) > 14 && pipeline.total < 3 && status === "active";
+  const days = daysActive(job);
 
-  // ── Mobil: kompakt rad-layout ──
-  if (isMobile) {
-    return (
-      <div onClick={() => onOpen(job.id)} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "14px 16px", cursor: "pointer", opacity: status === "closed" ? 0.65 : 1, boxShadow: "var(--sh-sm)" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 8 }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4, flexWrap: "wrap" }}>
-              <span style={{ padding: "2px 7px", borderRadius: 5, background: statusBg, color: statusColor, fontSize: 9.5, fontWeight: 800, letterSpacing: 0.3 }}>
-                {statusLabel.toUpperCase()}
-              </span>
-              {hot && <span style={{ padding: "2px 7px", borderRadius: 5, background: "var(--amber-tint)", color: "var(--amber-text)", fontSize: 9.5, fontWeight: 800 }}>HÖGT TRYCK</span>}
-              {lowTraffic && <span style={{ padding: "2px 7px", borderRadius: 5, background: "var(--danger-tint)", color: "var(--danger)", fontSize: 9.5, fontWeight: 800 }}>LÅGT INTRESSE</span>}
-            </div>
-            <h3 style={{ fontSize: 14.5, fontWeight: 800, marginBottom: 4, lineHeight: 1.25 }}>{job.title}</h3>
-            <div style={{ fontSize: 11, color: "var(--ink-500)", display: "flex", gap: 7, alignItems: "center", flexWrap: "wrap" }}>
-              {(job.region || job.location) && <span style={{ display: "flex", alignItems: "center", gap: 3 }}><Icon n="pin" size={10} />{job.region || job.location}</span>}
-              {dl && <><span style={{ color: "var(--ink-200)" }}>·</span><span style={{ display: "flex", alignItems: "center", gap: 3 }}><Icon n="clock" size={10} />{dl}</span></>}
-            </div>
-          </div>
-          <Icon n="arrow" size={14} color="var(--ink-300)" />
-        </div>
-        <div style={{ paddingTop: 12, borderTop: "1px solid var(--line)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 7 }}>
-            <span style={{ fontSize: 11, color: "var(--ink-400)", fontWeight: 600 }}>Kandidatpipeline</span>
-            <span style={{ fontSize: 11.5, fontWeight: 700, color: "var(--ink-900)" }}>{total} totalt</span>
-          </div>
-          {total > 0 ? (
-            <div style={{ display: "flex", gap: 2, height: 6, borderRadius: 99, overflow: "hidden", background: "var(--line)" }}>
-              {pipelineSegs.filter(s => s.count > 0).map((s, i) => <div key={i} style={{ flex: s.count, background: s.color }} />)}
-            </div>
-          ) : <div style={{ height: 6, borderRadius: 99, background: "var(--line)" }} />}
-          <div style={{ display: "flex", gap: 12, marginTop: 8, fontSize: 10.5 }}>
-            {pipeline.new > 0 && <span style={{ color: "var(--amber-text)", fontWeight: 700 }}>{pipeline.new} nya</span>}
-            <span style={{ color: "var(--ink-400)" }}><strong style={{ color: "var(--ink-900)" }}>{job.viewCount ?? 0}</strong> visningar</span>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ── Desktop: grid-layout ──
   return (
-    <div
-      onClick={() => onOpen(job.id)}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{ background: "var(--card)", border: `1px solid ${hovered ? "var(--amber)" : "var(--line)"}`, borderRadius: 16, padding: 20, cursor: "pointer", transition: "all .15s", opacity: status === "closed" ? 0.65 : 1, transform: hovered ? "translateY(-1px)" : "none", boxShadow: "var(--sh-sm)" }}
-    >
-      <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr 1fr auto", gap: 24, alignItems: "center" }}>
-        {/* Titelblock */}
-        <div>
+    <div style={{
+      background: lowTraffic ? "var(--amber-tint)" : "var(--card)",
+      border: `1px solid ${lowTraffic ? "rgba(199,122,14,0.22)" : "var(--line)"}`,
+      borderRadius: 14, padding: "20px 24px", boxShadow: "var(--sh-sm)",
+      opacity: status === "closed" ? 0.75 : 1,
+    }}>
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 14, marginBottom: 16 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "3px 9px", borderRadius: 5, background: statusBg, color: statusColor, fontSize: 10.5, fontWeight: 800, letterSpacing: 0.4 }}>
-              <span style={{ width: 5, height: 5, borderRadius: 99, background: statusColor }} />{statusLabel.toUpperCase()}
+            <h3 style={{ fontSize: 17, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.3 }}>{job.title}</h3>
+            <span style={{ padding: "3px 9px", borderRadius: 99, background: meta.bg, color: meta.color, fontSize: 11, fontWeight: 700 }}>
+              {meta.label}
             </span>
-            {hot && <span style={{ padding: "3px 9px", borderRadius: 5, background: "var(--amber-tint)", color: "var(--amber-text)", fontSize: 9.5, fontWeight: 800, letterSpacing: 0.5 }}>HÖGT TRYCK</span>}
-            {lowTraffic && <span style={{ padding: "3px 9px", borderRadius: 5, background: "var(--danger-tint)", color: "var(--danger)", fontSize: 9.5, fontWeight: 800, letterSpacing: 0.5 }}>LÅGT INTRESSE</span>}
+            {hot && (
+              <span style={{ padding: "3px 9px", borderRadius: 99, background: "var(--amber)", color: "#fff", fontSize: 10, fontWeight: 800, letterSpacing: 0.3 }}>HOT</span>
+            )}
+            {lowTraffic && (
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 9px", borderRadius: 99, background: "var(--amber-tint-2)", color: "var(--amber-deep)", fontSize: 10, fontWeight: 800 }}>
+                <Icon n="alert" size={10} color="var(--amber-deep)" /> Behöver attention
+              </span>
+            )}
           </div>
-          <h3 style={{ fontSize: 17, fontWeight: 800, letterSpacing: -0.4, marginBottom: 6, lineHeight: 1.2 }}>{job.title}</h3>
-          <div style={{ display: "flex", gap: 12, fontSize: 12, color: "var(--ink-500)", flexWrap: "wrap" }}>
-            {(job.region || job.location) && <span style={{ display: "flex", alignItems: "center", gap: 4 }}><Icon n="pin" size={11} /> {job.region || job.location}</span>}
-            {job.segment && <><span>·</span><span>{job.segment}</span></>}
-            {dl && <><span>·</span><span style={{ display: "flex", alignItems: "center", gap: 4 }}><Icon n="clock" size={11} /> {dl}</span></>}
+          <div style={{ fontSize: 13, color: "var(--ink-500)", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+            {(job.region || job.location) && (
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
+                <Icon n="pin" size={12} color="var(--ink-500)" />{job.region || job.location}
+              </span>
+            )}
+            {job.segment && <span>· {job.segment}</span>}
+            {job.salary && <span>· <span style={{ fontFamily: "var(--mono)", fontWeight: 600 }}>{job.salary} kr</span></span>}
+            {dl && <span>· {dl}</span>}
           </div>
         </div>
 
-        {/* Pipeline-bar */}
-        <div>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 7 }}>
-            <span style={{ fontSize: 11, color: "var(--ink-500)", fontWeight: 600 }}>Kandidatpipeline</span>
-            <span style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-900)" }}>{total} totalt</span>
-          </div>
-          {total > 0 ? (
-            <div style={{ display: "flex", gap: 2, height: 8, borderRadius: 99, overflow: "hidden", background: "var(--line)" }}>
-              {pipelineSegs.filter((s) => s.count > 0).map((s, i) => (
-                <div key={i} title={`${s.count}`} style={{ flex: s.count, background: s.color }} />
-              ))}
-            </div>
-          ) : (
-            <div style={{ height: 8, borderRadius: 99, background: "var(--line)" }} />
+        <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
+          {pipeline.new > 0 && (
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 99, background: "var(--danger-tint)", color: "var(--danger)", fontSize: 11, fontWeight: 800 }}>
+              <span style={{ width: 5, height: 5, borderRadius: 99, background: "var(--danger)" }} />
+              {pipeline.new} nya
+            </span>
           )}
-          <div style={{ display: "flex", gap: 10, marginTop: 8, fontSize: 11 }}>
-            {pipeline.new > 0 && <span style={{ color: "var(--amber-text)", fontWeight: 700 }}>{pipeline.new} nya</span>}
-            {pipeline.contacted > 0 && <span style={{ color: "var(--ink-500)" }}>{pipeline.contacted} kontaktade</span>}
-            {pipeline.interviewed > 0 && <span style={{ color: "var(--ink-500)" }}>{pipeline.interviewed} intervjuade</span>}
-          </div>
-        </div>
-
-        {/* Stats */}
-        <div style={{ display: "flex", gap: 28 }}>
-          <div>
-            <div style={{ fontSize: 18, fontWeight: 800, lineHeight: 1, marginBottom: 3 }}>{job.viewCount ?? 0}</div>
-            <div style={{ fontSize: 11, color: "var(--ink-400)", display: "flex", alignItems: "center", gap: 4 }}>
-              <Icon n="eye" size={10} /> visningar
-            </div>
-          </div>
-          <div>
-            <div style={{ fontSize: 18, fontWeight: 800, lineHeight: 1, marginBottom: 3, color: "var(--ink-900)" }}>{total}</div>
-            <div style={{ fontSize: 11, color: "var(--ink-400)", display: "flex", alignItems: "center", gap: 4 }}>
-              <Icon n="user" size={10} /> ansökningar
-            </div>
-          </div>
-        </div>
-
-        {/* Åtgärder */}
-        <div style={{ display: "flex", gap: 6, position: "relative" }} onClick={(e) => e.stopPropagation()}>
-          <Link to={`/foretag/annonsera/${job.id}/edit`}
-            style={{ width: 34, height: 34, borderRadius: 99, background: "var(--paper-2)", border: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", textDecoration: "none", color: "var(--ink-700)" }}
-            title="Redigera">
-            <Icon n="edit" size={13} />
+          <Link
+            to={`/foretag/annonser/${job.id}`}
+            onClick={(e) => e.stopPropagation()}
+            style={{ padding: "7px 14px", borderRadius: 9, background: "var(--paper-2)", border: "1px solid var(--line-2)", color: "var(--ink-700)", fontSize: 12, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" }}
+          >
+            Hantera
           </Link>
           <div style={{ position: "relative" }}>
             <button
-              onClick={() => setMenuOpen((o) => !o)}
-              style={{ width: 34, height: 34, borderRadius: 99, background: "var(--paper-2)", border: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
-              title="Mer">
-              <Icon n="more" size={13} color="var(--ink-700)" />
+              onClick={(e) => { e.stopPropagation(); setMenuOpen((o) => !o); }}
+              style={{ width: 34, height: 34, borderRadius: 99, background: "var(--paper-2)", border: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontFamily: "inherit" }}
+            >
+              <Icon n="more" size={14} color="var(--ink-700)" />
             </button>
             {menuOpen && (
-              <div style={{ position: "absolute", right: 0, top: "calc(100% + 6px)", width: 180, background: "var(--card)", border: "1px solid var(--line-2)", borderRadius: 12, overflow: "hidden", zIndex: 10, boxShadow: "var(--sh)" }}>
+              <div style={{ position: "absolute", right: 0, top: "calc(100% + 6px)", width: 180, background: "var(--card)", border: "1px solid var(--line-2)", borderRadius: 12, overflow: "hidden", zIndex: 10, boxShadow: "var(--sh)" }}
+                onClick={(e) => e.stopPropagation()}>
+                <Link to={`/foretag/annonsera/${job.id}/edit`}
+                  style={{ display: "block", width: "100%", padding: "11px 16px", background: "none", color: "var(--ink-700)", fontSize: 12.5, fontWeight: 600, textDecoration: "none" }}>
+                  Redigera annons
+                </Link>
                 {status === "active" && (
                   <button onClick={() => { onPause(job.id); setMenuOpen(false); }}
-                    style={{ width: "100%", padding: "11px 16px", textAlign: "left", background: "none", border: "none", color: "var(--ink-700)", fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>
+                    style={{ width: "100%", padding: "11px 16px", textAlign: "left", background: "none", border: "none", color: "var(--ink-700)", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
                     Pausa annons
                   </button>
                 )}
                 {status === "paused" && (
                   <button onClick={() => { onPause(job.id, "ACTIVE"); setMenuOpen(false); }}
-                    style={{ width: "100%", padding: "11px 16px", textAlign: "left", background: "none", border: "none", color: "var(--ink-700)", fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>
+                    style={{ width: "100%", padding: "11px 16px", textAlign: "left", background: "none", border: "none", color: "var(--ink-700)", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
                     Återaktivera
                   </button>
                 )}
                 <button onClick={() => { onClose(job.id); setMenuOpen(false); }}
-                  style={{ width: "100%", padding: "11px 16px", textAlign: "left", background: "none", border: "none", color: "var(--danger)", fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>
+                  style={{ width: "100%", padding: "11px 16px", textAlign: "left", background: "none", border: "none", color: "var(--danger)", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
                   Stäng annons
                 </button>
               </div>
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Funnel */}
+      <Funnel pipeline={pipeline} />
+
+      {/* Footer */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 14, paddingTop: 14, borderTop: "1px solid var(--line)" }}>
+        <div style={{ display: "flex", gap: 18, fontSize: 12.5, color: "var(--ink-500)" }}>
+          <span><strong style={{ color: "var(--ink-900)", fontFamily: "var(--mono)" }}>{job.viewCount ?? 0}</strong> visningar</span>
+          <span><strong style={{ color: "var(--ink-900)", fontFamily: "var(--mono)" }}>{days}</strong> dgr aktiv</span>
+        </div>
+        <Link
+          to={`/foretag/annonser/${job.id}`}
+          style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 9, background: "var(--green)", color: "#fff", fontSize: 12, fontWeight: 700, textDecoration: "none" }}
+        >
+          Se ansökningar <Icon n="arrow" size={12} color="#fff" />
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+// ─── Mobile JobCard ───────────────────────────────────────────────────────────
+function MobileJobCard({ job, pipeline, navigate }) {
+  const status = normalizeStatus(job.status);
+  const statusColor = status === "active" ? "var(--success)" : status === "paused" ? "var(--amber-deep)" : "var(--ink-400)";
+  const statusBg    = status === "active" ? "var(--success-tint)" : status === "paused" ? "var(--amber-tint)" : "var(--paper-2)";
+  const statusLabel = status === "active" ? "Aktiv" : status === "paused" ? "Pausad" : "Avslutad";
+  const dl = deadlineLabel(job);
+  const hot = pipeline.new >= 3;
+  const lowTraffic = daysActive(job) > 14 && pipeline.total < 3 && status === "active";
+
+  return (
+    <div onClick={() => navigate(`/foretag/annonser/${job.id}`)} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "14px 16px", cursor: "pointer", opacity: status === "closed" ? 0.65 : 1, boxShadow: "var(--sh-sm)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 8 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4, flexWrap: "wrap" }}>
+            <span style={{ padding: "2px 7px", borderRadius: 5, background: statusBg, color: statusColor, fontSize: 9.5, fontWeight: 800, letterSpacing: 0.3 }}>{statusLabel.toUpperCase()}</span>
+            {hot && <span style={{ padding: "2px 7px", borderRadius: 5, background: "var(--amber-tint)", color: "var(--amber-text)", fontSize: 9.5, fontWeight: 800 }}>HÖGT TRYCK</span>}
+            {lowTraffic && <span style={{ padding: "2px 7px", borderRadius: 5, background: "var(--danger-tint)", color: "var(--danger)", fontSize: 9.5, fontWeight: 800 }}>LÅGT INTRESSE</span>}
+          </div>
+          <h3 style={{ fontSize: 14.5, fontWeight: 800, marginBottom: 4, lineHeight: 1.25 }}>{job.title}</h3>
+          <div style={{ fontSize: 11, color: "var(--ink-500)", display: "flex", gap: 7, alignItems: "center", flexWrap: "wrap" }}>
+            {(job.region || job.location) && <span style={{ display: "flex", alignItems: "center", gap: 3 }}><Icon n="pin" size={10} />{job.region || job.location}</span>}
+            {dl && <><span style={{ color: "var(--ink-200)" }}>·</span><span>{dl}</span></>}
+          </div>
+        </div>
+        <Icon n="arrow" size={14} color="var(--ink-300)" />
+      </div>
+      <div style={{ paddingTop: 12, borderTop: "1px solid var(--line)" }}>
+        <div style={{ display: "flex", gap: 12, fontSize: 11 }}>
+          {pipeline.new > 0 && <span style={{ color: "var(--amber-text)", fontWeight: 700 }}>{pipeline.new} nya</span>}
+          <span style={{ color: "var(--ink-400)" }}><strong style={{ color: "var(--ink-900)" }}>{pipeline.total}</strong> sökande</span>
+          <span style={{ color: "var(--ink-400)" }}><strong style={{ color: "var(--ink-900)" }}>{job.viewCount ?? 0}</strong> visningar</span>
         </div>
       </div>
     </div>
@@ -227,14 +238,13 @@ function JobCard({ job, pipeline, onOpen, onPause, onClose, isMobile }) {
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function MinaJobb() {
-  usePageTitle("Mina annonser");
+  usePageTitle("Annonser");
   const navigate = useNavigate();
   const { conversations } = useChat();
   const isMobile = useIsMobile();
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState("active");
-  const [search, setSearch] = useState("");
 
   useEffect(() => {
     fetchMyJobs()
@@ -243,7 +253,6 @@ export default function MinaJobb() {
       .finally(() => setLoading(false));
   }, []);
 
-  // Pipeline per jobb från konversationer
   const pipelineByJob = useMemo(() => {
     const map = {};
     conversations.forEach((c) => {
@@ -263,22 +272,14 @@ export default function MinaJobb() {
   }), [jobs]);
 
   const filtered = useMemo(() => {
-    let list = jobs;
-    if (tab === "active") list = list.filter((j) => j.status === "ACTIVE");
-    else if (tab === "paused") list = list.filter((j) => j.status === "HIDDEN");
-    else if (tab === "closed") list = list.filter((j) => j.status === "REMOVED");
-    if (search) {
-      const q = search.toLowerCase();
-      list = list.filter((j) => j.title?.toLowerCase().includes(q) || j.location?.toLowerCase().includes(q) || j.region?.toLowerCase().includes(q));
-    }
-    return list;
-  }, [jobs, tab, search]);
+    if (tab === "active") return jobs.filter((j) => j.status === "ACTIVE");
+    if (tab === "paused") return jobs.filter((j) => j.status === "HIDDEN");
+    if (tab === "closed") return jobs.filter((j) => j.status === "REMOVED");
+    return jobs;
+  }, [jobs, tab]);
 
-  const totalCandidates = conversations.length;
-  const newSince = conversations.filter((c) => {
-    const diff = Date.now() - new Date(c.createdAt).getTime();
-    return diff < 86400000 * 2 && !c.readByCompanyAt;
-  }).length;
+  const totalApplicants = conversations.length;
+  const totalNew = conversations.filter((c) => !c.readByCompanyAt).length;
 
   async function handlePause(jobId, targetStatus) {
     const status = targetStatus || (jobs.find((j) => j.id === jobId)?.status === "ACTIVE" ? "HIDDEN" : "ACTIVE");
@@ -291,79 +292,87 @@ export default function MinaJobb() {
     setJobs((prev) => prev.map((j) => j.id === jobId ? { ...j, status: "REMOVED" } : j));
   }
 
-  const mobileTabs = [
+  const tabs = [
     { k: "active", l: "Aktiva",  c: counts.active },
     { k: "paused", l: "Pausade", c: counts.paused },
-    { k: "all",    l: "Alla",    c: counts.all    },
+    { k: "closed", l: "Stängda", c: counts.closed },
+    { k: "all",    l: "Alla",    c: counts.all },
   ];
 
   const jobList = loading ? (
     <div style={{ textAlign: "center", padding: "60px 0", color: "var(--ink-400)" }}>Laddar annonser…</div>
   ) : filtered.length === 0 ? (
-    <div style={{ padding: "60px 20px", textAlign: "center", background: "var(--paper-2)", border: "1px dashed var(--line-2)", borderRadius: 16 }}>
-      <div style={{ fontSize: 32, marginBottom: 16 }}>
-        <Icon n="spark" size={32} color="var(--amber-tint)" />
-      </div>
-      <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 8, color: "var(--ink-900)" }}>
-        {search ? "Inga annonser matchade din sökning" : tab === "active" ? "Inga aktiva annonser" : "Inga annonser"}
-      </div>
-      <div style={{ fontSize: 13, color: "var(--ink-400)", marginBottom: 24 }}>
-        {search ? "Prova en annan sökning." : "Publicera ett jobb för att börja hitta förare."}
-      </div>
-      {!search && (
-        <Link to="/foretag/annonsera"
-          style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "10px 20px", borderRadius: 99, background: "var(--amber)", color: "#000", fontSize: 13, fontWeight: 800, textDecoration: "none" }}>
-          <Icon n="plus" size={13} /> Publicera jobb
+    <div style={{ padding: "56px 32px", textAlign: "center", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14 }}>
+      <h3 style={{ fontSize: 16, fontWeight: 700, color: "var(--ink-900)", marginBottom: 6 }}>Inga annonser här</h3>
+      <p style={{ fontSize: 14, color: "var(--ink-500)", marginBottom: 20 }}>Annonser med den här statusen visas här.</p>
+      {tab === "active" && (
+        <Link to="/foretag/annonsera" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "10px 20px", borderRadius: 10, background: "var(--green)", color: "#fff", fontSize: 13, fontWeight: 700, textDecoration: "none" }}>
+          Publicera annons
         </Link>
       )}
     </div>
   ) : (
-    <div style={{ display: "flex", flexDirection: "column", gap: isMobile ? 10 : 12 }}>
+    <div className="stp-fade-up" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       {filtered.map((j) => (
-        <JobCard
-          key={j.id}
-          job={j}
-          pipeline={pipelineByJob[j.id] || { total: 0, new: 0, contacted: 0, interviewed: 0, hired: 0, rejected: 0 }}
-          onOpen={() => navigate(`/foretag/annonser/${j.id}`)}
-          onPause={handlePause}
-          onClose={handleClose}
-          isMobile={isMobile}
-        />
+        isMobile ? (
+          <MobileJobCard
+            key={j.id}
+            job={j}
+            pipeline={pipelineByJob[j.id] || { total: 0, new: 0, contacted: 0, interviewed: 0, hired: 0, rejected: 0 }}
+            navigate={navigate}
+          />
+        ) : (
+          <AdCard
+            key={j.id}
+            job={j}
+            pipeline={pipelineByJob[j.id] || { total: 0, new: 0, contacted: 0, interviewed: 0, hired: 0, rejected: 0 }}
+            onPause={handlePause}
+            onClose={handleClose}
+          />
+        )
       ))}
     </div>
   );
 
+  // ── Mobile ───────────────────────────────────────────────────────────────
   if (isMobile) {
     return (
-      <div style={{ minHeight: "100vh", background: "var(--paper)", color: "var(--ink-900)", paddingTop: 64 }}>
-        <main style={{ padding: "20px 20px 120px" }}>
-          {/* Rubrik + Ny-knapp */}
+      <div style={{ minHeight: "100vh", background: "var(--paper)" }}>
+        <div style={{ background: "var(--paper)", borderBottom: "1px solid var(--line)", padding: "20px 20px 0", paddingTop: 68 }}>
           <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 10, marginBottom: 14 }}>
             <div>
-              <h1 style={{ fontSize: 24, fontWeight: 800, letterSpacing: -0.8, marginBottom: 4 }}>Annonser</h1>
+              <h1 style={{ fontSize: 26, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1, marginBottom: 4 }}>Annonser</h1>
               <div style={{ fontSize: 12.5, color: "var(--ink-500)" }}>
-                {totalCandidates} kandidater
-                {newSince > 0 && <span style={{ color: "var(--amber-text)", fontWeight: 700 }}> · {newSince} nya</span>}
+                {totalApplicants} kandidater
+                {totalNew > 0 && <span style={{ color: "var(--amber-deep)", fontWeight: 700 }}> · {totalNew} nya</span>}
               </div>
             </div>
-            <Link to="/foretag/annonsera" style={{ padding: "10px 14px", borderRadius: 99, background: "linear-gradient(135deg,var(--amber),#d97706)", color: "#000", fontSize: 12.5, fontWeight: 800, textDecoration: "none", display: "flex", alignItems: "center", gap: 6, boxShadow: "0 4px 18px rgba(245,166,35,0.25)", flexShrink: 0 }}>
-              <Icon n="plus" size={13} />Ny
+            <Link to="/foretag/annonsera" style={{ padding: "9px 14px", borderRadius: 99, background: "var(--green)", color: "#fff", fontSize: 12.5, fontWeight: 800, textDecoration: "none", display: "flex", alignItems: "center", gap: 5, flexShrink: 0 }}>
+              <Icon n="plus" size={13} color="#fff" /> Ny
             </Link>
           </div>
 
-          {/* Tabs */}
-          <div style={{ display: "flex", gap: 5, overflowX: "auto", marginBottom: 16 }}>
-            {mobileTabs.map((t) => {
-              const on = tab === t.k;
+          <div style={{ display: "flex", gap: 0, overflowX: "auto" }}>
+            {tabs.map((t) => {
+              const isActive = tab === t.k;
               return (
-                <button key={t.k} onClick={() => setTab(t.k)} style={{ flexShrink: 0, padding: "8px 14px", borderRadius: 99, background: on ? "var(--amber-tint)" : "var(--paper-2)", border: `1px solid ${on ? "var(--amber)" : "var(--line)"}`, color: on ? "var(--amber-text)" : "var(--ink-700)", fontSize: 12.5, fontWeight: 700, cursor: "pointer", minHeight: 36, display: "flex", alignItems: "center", gap: 5 }}>
+                <button key={t.k} onClick={() => setTab(t.k)} style={{
+                  padding: "10px 14px 12px", position: "relative", flexShrink: 0,
+                  fontSize: 13, fontWeight: isActive ? 700 : 500,
+                  color: isActive ? "var(--ink-900)" : "var(--ink-500)",
+                  background: "none", border: "none", cursor: "pointer", fontFamily: "inherit",
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                }}>
                   {t.l}
-                  <span style={{ padding: "1px 6px", borderRadius: 99, background: on ? "var(--amber-tint)" : "var(--paper-2)", fontSize: 10, fontWeight: 800 }}>{t.c}</span>
+                  <span style={{ padding: "1px 7px", borderRadius: 999, background: isActive ? "var(--green-tint)" : "var(--paper-2)", color: isActive ? "var(--green-text)" : "var(--ink-500)", fontSize: 10, fontWeight: 800 }}>{t.c}</span>
+                  {isActive && <span style={{ position: "absolute", left: 14, right: 14, bottom: -1, height: 3, background: "var(--green)", borderRadius: "3px 3px 0 0" }}/>}
                 </button>
               );
             })}
           </div>
+        </div>
 
+        <main style={{ padding: "16px 20px 120px" }}>
           {jobList}
         </main>
         <CompanyBottomNav />
@@ -371,56 +380,54 @@ export default function MinaJobb() {
     );
   }
 
+  // ── Desktop ──────────────────────────────────────────────────────────────
   return (
-    <div style={{ minHeight: "100vh", background: "var(--paper)", color: "var(--ink-900)" }}>
-      <main style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 40px 60px" }}>
-
-        {/* Sidhuvud */}
-        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 24, gap: 16 }}>
-          <div>
-            <h1 style={{ fontSize: 30, fontWeight: 800, letterSpacing: -1, marginBottom: 6 }}>Mina annonser</h1>
-            <div style={{ fontSize: 13.5, color: "var(--ink-500)" }}>
-              {counts.active} aktiva annonser · {totalCandidates} kandidater totalt
-              {newSince > 0 && <span style={{ color: "var(--amber-text)", fontWeight: 700 }}> · {newSince} nya sedan igår</span>}
+    <div style={{ minHeight: "100vh", background: "var(--paper)" }}>
+      {/* Page header */}
+      <div style={{ background: "var(--paper)", borderBottom: "1px solid var(--line)", paddingTop: 32, paddingBottom: 0 }}>
+        <div style={{ maxWidth: 1040, margin: "0 auto", padding: "0 32px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 16, marginBottom: 24 }}>
+            <div>
+              <p style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 10 }}>För åkerier</p>
+              <h1 style={{ fontSize: 38, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.5, lineHeight: 1.15, marginBottom: 6 }}>Annonser</h1>
+              <p style={{ fontSize: 14, color: "var(--ink-500)", fontWeight: 500 }}>
+                {totalApplicants} sökande totalt
+                {totalNew > 0 && <> · <span style={{ color: "var(--amber-deep)", fontWeight: 700 }}>{totalNew} nya att granska</span></>}
+              </p>
             </div>
+            <Link
+              to="/foretag/annonsera"
+              style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "11px 20px", borderRadius: 10, background: "var(--green)", color: "#fff", fontSize: 13.5, fontWeight: 800, textDecoration: "none", boxShadow: "var(--sh-sm)", flexShrink: 0 }}
+            >
+              <Icon n="plus" size={14} color="#fff" /> Publicera annons
+            </Link>
           </div>
-          <Link to="/foretag/annonsera"
-            style={{ padding: "11px 20px", borderRadius: 99, background: "linear-gradient(135deg,var(--amber),#d97706)", color: "#000", fontSize: 13.5, fontWeight: 800, textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, boxShadow: "0 4px 18px rgba(245,166,35,0.25)" }}>
-            <Icon n="plus" size={14} /> Publicera ny annons
-          </Link>
-        </div>
 
-        {/* Tabs + sök */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22, gap: 12 }}>
-          <div style={{ display: "flex", gap: 4, background: "var(--paper-2)", border: "1px solid var(--line)", borderRadius: 99, padding: 4, overflowX: "auto" }}>
-            {[
-              { k: "active", l: "Aktiva",    c: counts.active },
-              { k: "paused", l: "Pausade",   c: counts.paused },
-              { k: "closed", l: "Avslutade", c: counts.closed },
-              { k: "all",    l: "Alla",      c: counts.all    },
-            ].map((t) => (
-              <button key={t.k} onClick={() => setTab(t.k)}
-                style={{ padding: "8px 16px", borderRadius: 99, background: tab === t.k ? "var(--amber)" : "transparent", border: "none", color: tab === t.k ? "#000" : "var(--ink-700)", fontSize: 12.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, transition: "all .15s", whiteSpace: "nowrap", flexShrink: 0 }}>
-                {t.l}
-                <span style={{ padding: "1px 7px", borderRadius: 99, background: tab === t.k ? "rgba(0,0,0,0.15)" : "var(--line)", fontSize: 10.5, fontWeight: 800 }}>{t.c}</span>
-              </button>
-            ))}
-          </div>
-          <div style={{ position: "relative" }}>
-            <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
-              <Icon n="search" size={14} color="var(--ink-400)" />
-            </span>
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Sök annons"
-              style={{ padding: "9px 14px 9px 36px", background: "var(--paper-2)", border: "1px solid var(--line)", borderRadius: 99, fontSize: 12.5, width: 240, outline: "none", color: "var(--ink-900)", boxSizing: "border-box" }}
-            />
+          {/* Tab bar */}
+          <div style={{ display: "flex", gap: 0, borderBottom: "1px solid var(--line)" }}>
+            {tabs.map((t) => {
+              const isActive = tab === t.k;
+              return (
+                <button key={t.k} onClick={() => setTab(t.k)} style={{
+                  padding: "12px 18px 14px", position: "relative",
+                  fontSize: 14, fontWeight: isActive ? 700 : 500,
+                  color: isActive ? "var(--ink-900)" : "var(--ink-500)",
+                  background: "none", border: "none", cursor: "pointer", fontFamily: "inherit",
+                  display: "inline-flex", alignItems: "center", gap: 8,
+                }}>
+                  {t.l}
+                  <span style={{ padding: "1px 8px", borderRadius: 999, background: isActive ? "var(--green-tint)" : "var(--paper-2)", color: isActive ? "var(--green-text)" : "var(--ink-500)", fontSize: 11, fontWeight: 800 }}>{t.c}</span>
+                  {isActive && <span style={{ position: "absolute", left: 18, right: 18, bottom: -1, height: 3, background: "var(--green)", borderRadius: "3px 3px 0 0" }}/>}
+                </button>
+              );
+            })}
           </div>
         </div>
+      </div>
 
+      {/* Main content */}
+      <main style={{ maxWidth: 1040, margin: "0 auto", padding: "24px 32px 80px" }}>
         {jobList}
-
       </main>
     </div>
   );

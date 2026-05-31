@@ -11,6 +11,7 @@ import { ToastProvider } from "./context/ToastContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import OnboardingGate, { useOnboardingRequired } from "./components/OnboardingGate";
 import Header from "./components/Header";
+import AppTopNav from "./components/AppTopNav";
 import Footer from "./components/Footer";
 import BottomNav from "./components/BottomNav";
 import MobileHeader from "./components/MobileHeader";
@@ -216,10 +217,21 @@ function AppLayout() {
      pathname.startsWith("/profil") || pathname.startsWith("/akerier") ||
      pathname.startsWith("/onboarding/forare"));
 
+  // Auth pages are standalone full-screen layouts — no site header/footer
+  const isAuthPage = ["/login", "/verifiera-email", "/aterstall-losenord"].some(p => pathname.startsWith(p));
+
+  // Admin pages use their own sidebar layout — no top nav
+  const isAdminPage = pathname.startsWith("/admin");
+
+  // Onboarding wizards are full-screen standalone layouts — no top nav
+  const isOnboardingPage = pathname.startsWith("/onboarding/") || pathname.startsWith("/foretag/onboarding");
+
   return (
     <div className="min-h-screen flex flex-col" style={{ overflowX: "clip" }}>
-      {!hideChromeOnMobile && <Header onboarding={onboarding} />}
-      <div className={hideChromeOnMobile ? "flex-1" : `flex-1 ${isImpersonating ? "pt-[104px]" : "pt-16"}`}>
+      {!hideChromeOnMobile && !isAuthPage && !isAdminPage && !isOnboardingPage && (
+        user ? <AppTopNav /> : <Header onboarding={onboarding} />
+      )}
+      <div className={hideChromeOnMobile || isAuthPage ? "flex-1" : `flex-1 ${isImpersonating ? "pt-[104px]" : "pt-16"}`}>
         <DriverCompletionNudge />
         <OnboardingGate>
         <Suspense fallback={<div className="min-h-[60vh]" />}>
@@ -442,8 +454,8 @@ function AppLayout() {
         </Suspense>
         </OnboardingGate>
               </div>
-              {!hideChromeOnMobile && <Footer />}
-              {!hideChromeOnMobile && <FeedbackButton />}
+              {!hideChromeOnMobile && !isAuthPage && <Footer />}
+              {!hideChromeOnMobile && !isAuthPage && <FeedbackButton />}
               <InstallPrompt />
               <CookieBanner />
               {showMobileHeader && <MobileHeader />}
