@@ -64,8 +64,8 @@ export default function JobCard({
   };
 
   const employmentLabel =
-    job.employment === "fast"     ? "Fast anst." :
-    job.employment === "vikariat" ? "Vikariat"   : "Timjobb";
+    job.employment === "fast"     ? "Fast tjänst" :
+    job.employment === "vikariat" ? "Vikariat"    : "Timjobb";
 
   const salaryDisplay = job.salaryMin
     ? job.salaryMax
@@ -124,15 +124,6 @@ export default function JobCard({
               </div>
               <div style={{ fontSize: 13, color: "var(--ink-500)", display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
                 <span style={{ fontWeight: 600, color: "var(--ink-700)" }}>{job.company}</span>
-                {job.location && (
-                  <>
-                    <span style={{ color: "var(--ink-300)" }}>·</span>
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 3 }}>
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                      {job.location}
-                    </span>
-                  </>
-                )}
                 {job.companyVerified && (
                   <>
                     <span style={{ color: "var(--ink-300)" }}>·</span>
@@ -142,16 +133,18 @@ export default function JobCard({
                     </span>
                   </>
                 )}
+                {job.kollektivavtal === true && (
+                  <>
+                    <span style={{ color: "var(--ink-300)" }}>·</span>
+                    <span style={{ fontSize: 12, color: "var(--info)", fontWeight: 600 }}>KA</span>
+                  </>
+                )}
               </div>
             </div>
 
-            {/* Right: salary + save */}
+            {/* Right: match badge + save */}
             <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6, flexShrink: 0 }}>
-              {salaryDisplay && !isMobile && (
-                <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)", fontFamily: "var(--mono)", whiteSpace: "nowrap" }}>
-                  {salaryDisplay}
-                </div>
-              )}
+              {isMatch && <MatchBadge score={matchScore} />}
               {showSave && (
                 <button
                   type="button"
@@ -174,12 +167,16 @@ export default function JobCard({
             </div>
           </div>
 
-          {/* Pills row */}
+          {/* Pills row: licenses + employment + location */}
           <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
-            {isMatch && <MatchBadge score={matchScore} />}
             {(job.license || []).map(l => <Pill key={l} tone="primary">{l}</Pill>)}
             <Pill tone="neutral">{employmentLabel}</Pill>
-            {job.kollektivavtal === true && <Pill tone="info">Kollektivavtal</Pill>}
+            {job.location && (
+              <Pill tone="soft">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                {job.location}
+              </Pill>
+            )}
           </div>
 
           {/* Description (desktop only) */}
@@ -194,10 +191,10 @@ export default function JobCard({
             </p>
           )}
 
-          {/* Footer */}
+          {/* Footer: salary + published date */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 10, borderTop: "1px solid var(--line)" }}>
-            {isMobile && salaryDisplay
-              ? <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink-900)", fontFamily: "var(--mono)" }}>{salaryDisplay}</div>
+            {salaryDisplay
+              ? <div style={{ fontSize: isMobile ? 13 : 14, fontWeight: 700, color: "var(--ink-900)", fontFamily: "var(--mono)" }}>{salaryDisplay}</div>
               : <div />
             }
             {job.published && (
