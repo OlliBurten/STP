@@ -252,6 +252,7 @@ app.post("/api/internal/migrate", internalLimiter, express.json(), async (req, r
     await prisma.$executeRawUnsafe('ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "needsDriverOnboarding" BOOLEAN NOT NULL DEFAULT false');
     await prisma.$executeRawUnsafe('ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "needsRecruiterOnboarding" BOOLEAN NOT NULL DEFAULT false');
     await prisma.$executeRawUnsafe('ALTER TABLE "DriverProfile" ADD COLUMN IF NOT EXISTS "privateMatchNotes" TEXT');
+    await prisma.$executeRawUnsafe('ALTER TABLE "DriverProfile" ADD COLUMN IF NOT EXISTS "slug" TEXT');
     await prisma.$executeRawUnsafe('ALTER TABLE "Job" ADD COLUMN IF NOT EXISTS "bransch" TEXT');
     await prisma.$executeRawUnsafe('ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "emailNotificationSettings" JSONB NOT NULL DEFAULT \'{}\'');
     await prisma.$executeRawUnsafe('ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "profileReminderSentAt" TIMESTAMPTZ');
