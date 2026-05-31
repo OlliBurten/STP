@@ -8,7 +8,7 @@ import FilterDrawer from "../components/FilterDrawer";
 import { useAuth } from "../context/AuthContext";
 import { useProfile } from "../context/ProfileContext";
 import { calcYearsExperience } from "../utils/profileUtils";
-import { getMatchCriteria, getRecommendedJobsForDriver, matchScore } from "../utils/matchUtils";
+import { getMatchCriteria, matchScore } from "../utils/matchUtils";
 import { fetchJobs, fetchSavedJobs, saveJob, unsaveJob } from "../api/jobs.js";
 import { mapEmploymentToSegment } from "../data/segments";
 import PageMeta from "../components/PageMeta";
@@ -345,9 +345,6 @@ export default function JobList() {
     return Object.fromEntries(filteredJobs.map(job => [job.id, matchScore(driverForMatch, job)]));
   }, [driverForMatch, filteredJobs]);
 
-  const recommendedJobs = useMemo(() => driverForMatch ? getRecommendedJobsForDriver(driverForMatch, filteredJobs, 1, 5) : [], [driverForMatch, filteredJobs]);
-  const recommendedIds  = useMemo(() => new Set(recommendedJobs.map(({ job }) => job.id)), [recommendedJobs]);
-  const otherJobs       = useMemo(() => filteredJobs.filter(j => !recommendedIds.has(j.id)), [filteredJobs, recommendedIds]);
 
   const profileCompletion  = useMemo(() => (isDriver && profile) ? getProfileCompletion({ ...user, driverProfile: profile }) : null, [isDriver, user, profile]);
   const profileMissingItems = useMemo(() => (isDriver && profile) ? getDriverMinimumChecklist(profile).filter(i => !i.done).map(i => i.label) : [], [isDriver, profile]);
@@ -508,7 +505,7 @@ export default function JobList() {
   /* ═══════════════════════════════════════════════════════
      DESKTOP LAYOUT
   ══════════════════════════════════════════════════════ */
-  const displayJobs = tabFilteredJobs ?? (isDriver ? otherJobs : filteredJobs);
+  const displayJobs = tabFilteredJobs ?? filteredJobs;
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--paper)" }}>
@@ -690,40 +687,7 @@ export default function JobList() {
                   <EmptyState tabKey={tab} onReset={() => { setFilters(f => ({ ...f, search: "", region: "", license: "", employment: "", jobType: "" })); setTab("all"); }} />
                 )}
 
-                {!jobsLoading && isDriver && recommendedJobs.length > 0 && tabFilteredJobs === null && (
-                  <div style={{ marginBottom: 12 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
-                      <div style={{ height: 1, flex: 1, background: "var(--line)" }} />
-                      <span style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-400)", letterSpacing: 1.2, textTransform: "uppercase", whiteSpace: "nowrap" }}>Rekommenderade för dig</span>
-                      <div style={{ height: 1, flex: 1, background: "var(--line)" }} />
-                    </div>
-                    {recommendedJobs.map(({ job }) => {
-                      const data = matchDataMap[job.id];
-                      return (
-                        <div key={job.id} style={{ marginBottom: 14 }}>
-                          <JobCard
-                            job={job}
-                            matchScore={showMatch ? (data?.pct ?? null) : null}
-                            matchCriteria={showMatch && data?.pct > 0 ? getMatchCriteria(driverForMatch, job, data?.details) : []}
-                            featured
-                            showSave={isDriver && hasApi}
-                            isSaved={savedJobIds.has(job.id)}
-                            onToggleSave={handleToggleSave}
-                          />
-                        </div>
-                      );
-                    })}
-                    {otherJobs.length > 0 && (
-                      <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "20px 0 14px" }}>
-                        <div style={{ height: 1, flex: 1, background: "var(--line)" }} />
-                        <span style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-400)", letterSpacing: 1.2, textTransform: "uppercase", whiteSpace: "nowrap" }}>Övriga jobb</span>
-                        <div style={{ height: 1, flex: 1, background: "var(--line)" }} />
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {!jobsLoading && displayJobs.map(job => {
+{!jobsLoading && displayJobs.map(job => {
                   const data = matchDataMap[job.id];
                   return (
                     <JobCard
