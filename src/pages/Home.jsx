@@ -605,7 +605,7 @@ export default function Home() {
           transition: "opacity 0.7s ease-out, transform 0.7s ease-out",
         }}
       >
-        <div style={{ maxWidth: 1040, margin: "0 auto" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 56 }}>
             <div style={{
               display: "inline-block", padding: "4px 12px", borderRadius: 999,
@@ -868,7 +868,7 @@ export default function Home() {
           transition: "opacity 0.7s ease-out, transform 0.7s ease-out",
         }}
       >
-        <div style={{ maxWidth: 1040, margin: "0 auto" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <div style={{
             display: "grid",
             gridTemplateColumns: isMobile ? "1fr" : "1fr 1.5fr",
