@@ -97,7 +97,7 @@ function FactRow({ iconEl, label, value, highlight, missing }) {
   );
 }
 
-function MatchRing({ pct, job, details }) {
+function MatchRing({ pct }) {
   const size = 84, r = 36, circ = 2 * Math.PI * r;
   const [animated, setAnimated] = useState(false);
   useEffect(() => {
@@ -110,19 +110,6 @@ function MatchRing({ pct, job, details }) {
     pct >= 80 ? ["var(--green)",     "Bra match"]   :
     pct >= 70 ? ["var(--amber-deep)","OK match"]    :
                ["var(--ink-500)",   "Låg match"];
-
-  const segmentLabels = { FULLTIME: "Heltid", FLEX: "Flex/tim", INTERNSHIP: "Praktik/lärling" };
-  const breakdown = [
-    job?.segment
-      ? { l: `Inriktning: ${segmentLabels[job.segment] ?? job.segment}`, ok: details?.segment === true }
-      : null,
-    { l: job?.license?.length > 0 ? `Körkort: ${job.license.join("+")}` : "Körkort",    ok: details?.license    === true },
-    job?.certificates?.length > 0
-      ? { l: `Certifikat: ${job.certificates.join(", ")}`, ok: details?.certificates === true }
-      : null,
-    { l: job?.region ? `Region: ${job.region}` : "Region",               ok: details?.region     === true },
-    { l: "Erfarenhetskrav",                                               ok: details?.experience === true },
-  ].filter(Boolean);
 
   return (
     <>
@@ -145,26 +132,6 @@ function MatchRing({ pct, job, details }) {
           <div style={{ fontSize: 12, color: "var(--ink-500)" }}>Din profil passar tjänsten väl</div>
         </div>
       </div>
-      {breakdown.length > 0 && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 7, marginTop: 14 }}>
-          {breakdown.map(({ l, ok }) => (
-            <div key={l} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{
-                width: 18, height: 18, borderRadius: 99, flexShrink: 0,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                background: ok ? "var(--success-tint)" : "var(--paper-2)",
-                border: `1px solid ${ok ? "var(--success)" : "var(--line-2)"}`,
-              }}>
-                {ok
-                  ? <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                  : <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="var(--ink-300)" strokeWidth="3" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                }
-              </span>
-              <span style={{ fontSize: 12, color: ok ? "var(--ink-700)" : "var(--ink-400)", fontWeight: ok ? 600 : 400 }}>{l}</span>
-            </div>
-          ))}
-        </div>
-      )}
     </>
   );
 }
@@ -1035,7 +1002,7 @@ export default function JobDetail() {
             {/* Match ring */}
             {isDriver && hasApi && driverMatch && (
               <div style={{ paddingBottom: 18, marginBottom: 18, borderBottom: "1px solid var(--line)" }}>
-                <MatchRing pct={matchPct} job={job} details={driverMatch.details} />
+                <MatchRing pct={matchPct} />
               </div>
             )}
 
