@@ -231,7 +231,7 @@ function AppLayout() {
       {!hideChromeOnMobile && !isAuthPage && !isAdminPage && !isOnboardingPage && (
         user ? <AppTopNav /> : <Header onboarding={onboarding} />
       )}
-      <div className={hideChromeOnMobile || isAuthPage ? "flex-1" : `flex-1 ${isImpersonating ? "pt-[104px]" : "pt-16"}`}>
+      <div className={hideChromeOnMobile || isAuthPage || isOnboardingPage ? "flex-1" : `flex-1 ${isImpersonating ? "pt-[104px]" : "pt-16"}`}>
         <DriverCompletionNudge />
         <OnboardingGate>
         <Suspense fallback={<div className="min-h-[60vh]" />}>

@@ -1,4 +1,16 @@
 import { useState, useEffect, useRef } from "react";
+
+// ── Inline SVG icons (matching prototype Lucide style) ─────────────────────────
+const Icons = {
+  search: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
+  eye:    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>,
+  msg:    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
+  building: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="22" height="22"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 22V12h6v10M9 7h1M14 7h1M9 11h1M14 11h1"/></svg>,
+  cal:    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="22" height="22"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
+  star:   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="22" height="22"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
+  bell:   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>,
+  user:   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+};
 import { Navigate, useNavigate } from "react-router-dom";
 import { useProfile } from "../context/ProfileContext";
 import { useAuth } from "../context/AuthContext";
@@ -63,8 +75,8 @@ function ChoiceCard({ icon, label, desc, selected, onClick }) {
       <span style={{
         width: 46, height: 46, borderRadius: 12, flexShrink: 0,
         background: selected ? "var(--green)" : "var(--green-tint)",
+        color: selected ? "#fff" : "var(--green-text)",
         display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: 20,
       }}>{icon}</span>
       <div style={{ flex: 1 }}>
         <div style={{ fontSize: 15, fontWeight: 700, color: "var(--ink-900)" }}>{label}</div>
@@ -264,12 +276,12 @@ export default function DriverOnboardingWizard() {
             </p>
             <div style={{ textAlign: "left", display: "flex", flexDirection: "column", gap: 10, marginBottom: 28 }}>
               {[
-                { icon: "💬", title: "Åkerier kontaktar dig", text: "Via chatt direkt på plattformen — du slipper lägga ut ditt nummer publikt." },
-                { icon: "🔔", title: "Jobbrekommendationer", text: `När ett nytt jobb i ${draft.region} matchar dina körkort får du en notis.` },
-                { icon: "✏️", title: "Stärk profilen vidare", text: "Lägg till erfarenhet och certifikatdatum för att synas ännu mer." },
+                { icon: Icons.msg,  title: "Åkerier kontaktar dig", text: "Via chatt direkt på plattformen — du slipper lägga ut ditt nummer publikt." },
+                { icon: Icons.bell, title: "Jobbrekommendationer", text: `När ett nytt jobb i ${draft.region} matchar dina körkort får du en notis.` },
+                { icon: Icons.user, title: "Stärk profilen vidare", text: "Lägg till erfarenhet och certifikatdatum för att synas ännu mer." },
               ].map((b) => (
                 <div key={b.title} style={{ display: "flex", gap: 13, alignItems: "flex-start", background: "var(--paper)", borderRadius: 11, padding: "14px 16px", border: "1px solid var(--line)" }}>
-                  <span style={{ fontSize: 18, flexShrink: 0 }}>{b.icon}</span>
+                  <span style={{ width: 36, height: 36, borderRadius: 9, background: "var(--green-tint)", color: "var(--green-text)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{b.icon}</span>
                   <div>
                     <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--ink-900)" }}>{b.title}</div>
                     <div style={{ fontSize: 12.5, color: "var(--ink-500)", marginTop: 2, lineHeight: 1.5 }}>{b.text}</div>
@@ -303,12 +315,12 @@ export default function DriverOnboardingWizard() {
         </p>
         <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
           {[
-            { icon: "🔍", title: "Automatisk matchning", text: "Vi matchar dig mot jobb baserat på körkort, region och vad du söker." },
-            { icon: "👁", title: "Synlig för åkerier",   text: "Åkerier hittar din profil när de rekryterar i din region." },
-            { icon: "💬", title: "Bli kontaktad direkt", text: "Inget CV-skickande. Åkerier chattar med dig när de vill veta mer." },
+            { icon: Icons.search, title: "Automatisk matchning", text: "Vi matchar dig mot jobb baserat på körkort, region och vad du söker." },
+            { icon: Icons.eye,    title: "Synlig för åkerier",   text: "Åkerier hittar din profil när de rekryterar i din region." },
+            { icon: Icons.msg,    title: "Bli kontaktad direkt", text: "Inget CV-skickande. Åkerier chattar med dig när de vill veta mer." },
           ].map((b) => (
             <div key={b.title} style={{ display: "flex", gap: 14, alignItems: "flex-start", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, padding: "16px 18px", boxShadow: "var(--sh-sm)" }}>
-              <span style={{ width: 40, height: 40, borderRadius: 10, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 18 }}>{b.icon}</span>
+              <span style={{ width: 40, height: 40, borderRadius: 10, background: "var(--green-tint)", color: "var(--green-text)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{b.icon}</span>
               <div>
                 <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)" }}>{b.title}</div>
                 <div style={{ fontSize: 13, color: "var(--ink-500)", marginTop: 2, lineHeight: 1.5 }}>{b.text}</div>
@@ -326,19 +338,19 @@ export default function DriverOnboardingWizard() {
         <p style={{ fontSize: 15, color: "var(--ink-500)", marginBottom: 24 }}>Så matchar vi dig mot rätt sorts tjänster.</p>
         <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
           <ChoiceCard
-            icon="🚛" label="Fast heltid"
+            icon={Icons.building} label="Fast heltid"
             desc="Fast anställning på ett åkeri — trygghet, kollektivavtal."
             selected={draft.primarySegment === "FULLTIME" && draft.isGymnasieelev !== true}
             onClick={() => setDraft((p) => ({ ...p, primarySegment: "FULLTIME", isGymnasieelev: false }))}
           />
           <ChoiceCard
-            icon="📅" label="Vikarie / Extra"
+            icon={Icons.cal} label="Vikarie / Extra"
             desc="Vikariat, extrapass, deltid eller pensionär som vill köra lite."
             selected={draft.primarySegment === "FLEX" && draft.isGymnasieelev !== true}
             onClick={() => setDraft((p) => ({ ...p, primarySegment: "FLEX", isGymnasieelev: false }))}
           />
           <ChoiceCard
-            icon="🎓" label="Praktikplats"
+            icon={Icons.star} label="Praktikplats"
             desc="Gymnasieskola, Komvux eller Arbetsförmedlingens utbildning."
             selected={draft.isGymnasieelev === true}
             onClick={() => setDraft((p) => ({ ...p, primarySegment: "INTERNSHIP", isGymnasieelev: true }))}
