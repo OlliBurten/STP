@@ -40,17 +40,6 @@ const ChevDown = () => (
     <polyline points="6 9 12 15 18 9"/>
   </svg>
 );
-const ListIcon = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
-    <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
-  </svg>
-);
-const PinIcon = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
-  </svg>
-);
 const InfoIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
@@ -213,7 +202,7 @@ function Sidebar({ profile }) {
         </div>
         <Link to="/profil" style={{
           display: "block", width: "100%", padding: "9px 14px", borderRadius: 9,
-          background: "var(--paper-2)", border: "1px solid var(--line-2)",
+          background: "var(--card)", border: "1px solid var(--line-2)",
           color: "var(--ink-700)", fontSize: 13, fontWeight: 600,
           textDecoration: "none", textAlign: "center",
         }}>
@@ -271,7 +260,6 @@ export default function JobList() {
   const { isDriver, hasApi, user } = useAuth();
   const { profile } = useProfile();
 
-  const [view,            setView]            = useState("list");
   const [tab,             setTab]             = useState("all");
   const [showMatch,       setShowMatch]       = useState(true);
   const [jobs,            setJobs]            = useState(() => hasApi ? [] : mockJobs);
@@ -533,27 +521,6 @@ export default function JobList() {
             </div>
 
             <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
-              {/* View toggle: Lista | Karta */}
-              <div style={{ display: "flex", padding: 4, gap: 3, background: "var(--card)", border: "1px solid var(--line-2)", borderRadius: 10, boxShadow: "var(--sh-sm)" }}>
-                {[
-                  ["list", "Lista",  <ListIcon />],
-                  ["map",  "Karta",  <PinIcon />],
-                ].map(([k, label, icon]) => (
-                  <button key={k} onClick={() => setView(k)} style={{
-                    display: "inline-flex", alignItems: "center", gap: 7,
-                    padding: "7px 14px", borderRadius: 7,
-                    background: view === k ? "var(--green)" : "transparent",
-                    color: view === k ? "#fff" : "var(--ink-700)",
-                    fontSize: 13, fontWeight: 600,
-                    border: "none", cursor: "pointer",
-                    transition: "all .12s", fontFamily: "var(--font)",
-                  }}>
-                    {icon}
-                    {label}
-                  </button>
-                ))}
-              </div>
-
               {/* Match toggle */}
               {isDriver && (
                 <label style={{ display: "inline-flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
@@ -615,33 +582,7 @@ export default function JobList() {
       {/* ── Main content ─────────────────────────────────────────────────── */}
       <main style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px 80px" }}>
 
-        {view === "map" ? (
-          <div className="stp-fade-up" style={{ paddingTop: 24 }}>
-            <p style={{ fontSize: 14, color: "var(--ink-500)", marginBottom: 16, fontWeight: 500, maxWidth: 560 }}>
-              Klicka på en region för att se lediga jobb där.
-            </p>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 20, alignItems: "start" }}>
-              <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: "var(--r-lg)", padding: 32, display: "flex", alignItems: "center", justifyContent: "center", minHeight: 400, color: "var(--ink-400)", fontSize: 14 }}>
-                Karta kommer snart
-              </div>
-              <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: "var(--r-lg)", boxShadow: "var(--sh-sm)", padding: "8px 10px" }}>
-                <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.3, textTransform: "uppercase", color: "var(--ink-500)", padding: "12px 14px 10px" }}>Jobb per region</div>
-                {["Stockholm", "Västra Götaland", "Skåne", "Uppsala", "Halland", "Västernorrland"].map(region => (
-                  <button key={region}
-                    onClick={() => { setFilters(f => ({ ...f, region })); setView("list"); }}
-                    style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "11px 14px", borderRadius: 10, textAlign: "left", transition: "background .12s", background: "transparent", border: "none", cursor: "pointer", fontFamily: "var(--font)" }}
-                    onMouseEnter={e => e.currentTarget.style.background = "var(--card-2)"}
-                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                  >
-                    <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: "var(--ink-900)" }}>{region}</span>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ink-300)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        ) : (
-          <>
+        <>
             {/* Profile completion banner */}
             {showProfileBanner && (
               <div style={{ marginTop: 24, marginBottom: 0, borderRadius: "var(--r-lg)", border: "1px solid rgba(199,122,14,0.25)", background: "var(--amber-tint)", overflow: "hidden" }}>
@@ -706,8 +647,7 @@ export default function JobList() {
               {/* Sidebar */}
               <Sidebar profile={profile} />
             </div>
-          </>
-        )}
+        </>
       </main>
 
       {/* Filter drawer */}
