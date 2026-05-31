@@ -32,6 +32,22 @@ export function CheckIcon({ className = "w-5 h-5", style }) {
   );
 }
 
+export function HeartFilledIcon({ className = "w-4 h-4", style }) {
+  return (
+    <svg className={className} style={style} fill="currentColor" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" aria-hidden>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
+    </svg>
+  );
+}
+
+export function HeartOutlineIcon({ className = "w-4 h-4", style }) {
+  return (
+    <svg className={className} style={style} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
+    </svg>
+  );
+}
+
 export function StarFilledIcon({ className = "w-4 h-4", style }) {
   return (
     <svg className={className} style={style} fill="currentColor" viewBox="0 0 20 20" aria-hidden>

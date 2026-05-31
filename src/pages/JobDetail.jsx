@@ -18,7 +18,7 @@ import { getBranschLabel } from "../data/bransch.js";
 import { getCertificateLabel } from "../data/profileData";
 import { scheduleTypes } from "../data/mockJobs";
 import { isJobOlderThan30Days } from "../utils/jobUtils.js";
-import { StarFilledIcon, StarOutlineIcon, LocationIcon, CheckIcon, WarningIcon } from "../components/Icons";
+import { HeartFilledIcon, HeartOutlineIcon, LocationIcon, CheckIcon, WarningIcon } from "../components/Icons";
 import Breadcrumbs from "../components/Breadcrumbs";
 import LoadingBlock from "../components/LoadingBlock";
 import { useToast } from "../context/ToastContext";
@@ -69,29 +69,17 @@ function BulletList({ items, fallback, accent = "primary" }) {
   );
 }
 
-function FactRow({ iconEl, label, value, highlight, missing }) {
+function FactRow({ label, value, highlight, missing }) {
   return (
-    <div style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "11px 0", borderBottom: "1px solid var(--line)" }}>
-      <span style={{
-        width: 32, height: 32, borderRadius: 9,
-        background: missing ? "var(--paper-2)" : "var(--green-tint)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        flexShrink: 0,
-        color: missing ? "var(--ink-300)" : "var(--green)",
-        border: `1px solid ${missing ? "var(--line)" : "var(--green-tint-2)"}`,
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12, padding: "10px 0", borderBottom: "1px solid var(--line)" }}>
+      <div style={{ fontSize: 12, fontWeight: 600, color: "var(--ink-400)", whiteSpace: "nowrap", flexShrink: 0 }}>{label}</div>
+      <div style={{
+        fontSize: 13, fontWeight: missing ? 400 : 600, textAlign: "right",
+        color: missing ? "var(--ink-300)" : highlight ? "var(--amber)" : "var(--ink-900)",
+        fontStyle: missing ? "italic" : "normal",
+        fontFamily: highlight ? "var(--mono)" : "inherit",
       }}>
-        {iconEl}
-      </span>
-      <div>
-        <div style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-400)", letterSpacing: 0.4, textTransform: "uppercase", marginBottom: 2 }}>{label}</div>
-        <div style={{
-          fontSize: 13, fontWeight: missing ? 400 : 700,
-          color: missing ? "var(--ink-300)" : highlight ? "var(--amber)" : "var(--ink-900)",
-          fontStyle: missing ? "italic" : "normal",
-          fontFamily: highlight ? "var(--mono)" : "inherit",
-        }}>
-          {value}
-        </div>
+        {value}
       </div>
     </div>
   );
@@ -460,14 +448,6 @@ export default function JobDetail() {
       </div>
     );
   }
-
-  // Fact row icons
-  const briefcaseIcon = <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>;
-  const clockIcon     = <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
-  const calendarIcon  = <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>;
-  const locationIcon  = <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>;
-  const truckIcon     = <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>;
-  const moneyIcon     = <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>;
 
   const empLabel = job.employment === "fast" ? "Fast anställning" : job.employment === "vikariat" ? "Vikariat" : "Timanställning";
   const scheduleLabel = job.schedule ? (scheduleTypes.find((s) => s.value === job.schedule)?.label ?? job.schedule) : null;
@@ -1051,8 +1031,8 @@ export default function JobDetail() {
               )}
               {isDriver && (
                 <button type="button" onClick={handleToggleSave}
-                  style={{ width: "100%", padding: "11px", borderRadius: "var(--r-md)", background: isSaved ? "var(--amber-tint)" : "var(--paper-2)", border: isSaved ? "1px solid rgba(199,122,14,0.30)" : "1px solid var(--line-2)", color: isSaved ? "var(--amber-deep)" : "var(--ink-700)", fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, transition: "all .15s", fontFamily: "var(--font)" }}>
-                  {isSaved ? <StarFilledIcon style={{ width: 14, height: 14 }} /> : <StarOutlineIcon style={{ width: 14, height: 14 }} />}
+                  style={{ width: "100%", padding: "11px", borderRadius: "var(--r-md)", background: isSaved ? "var(--amber-tint)" : "var(--card)", border: isSaved ? "1px solid rgba(199,122,14,0.30)" : "1px solid var(--line-2)", color: isSaved ? "var(--amber-deep)" : "var(--ink-700)", fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, transition: "all .15s", fontFamily: "var(--font)" }}>
+                  {isSaved ? <HeartFilledIcon style={{ width: 14, height: 14 }} /> : <HeartOutlineIcon style={{ width: 14, height: 14 }} />}
                   {isSaved ? "Sparat" : "Spara jobb"}
                 </button>
               )}
@@ -1062,13 +1042,13 @@ export default function JobDetail() {
           {/* Snabbfakta */}
           <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: "var(--r-lg)", padding: "20px 24px", marginBottom: 18, boxShadow: "var(--sh-sm)" }}>
             <div style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-400)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 4 }}>Snabbfakta</div>
-            <FactRow iconEl={briefcaseIcon} label="Anställning"    value={empLabel} />
-            <FactRow iconEl={clockIcon}     label="Schema"         value={scheduleLabel || "Ej angiven"} missing={!scheduleLabel} />
-            <FactRow iconEl={moneyIcon}     label="Lön"            value={salaryFactVal} highlight={!!user && !!(job.salaryMin || job.salary)} missing={!!user && !job.salaryMin && !job.salary} />
-            {job.salaryNote && <FactRow iconEl={moneyIcon} label="Lönenotering" value={job.salaryNote} />}
-            <FactRow iconEl={calendarIcon}  label="Tillträde"      value={job.start || "Ej angiven"} missing={!job.start} />
-            <FactRow iconEl={locationIcon}  label="Ort"            value={job.location || "—"} />
-            <FactRow iconEl={truckIcon}     label="Körkort"        value={[...(job.license || []), ...(job.certificates || []).map(getCertificateLabel)].join(", ") || "—"} />
+            <FactRow label="Anställning"  value={empLabel} />
+            <FactRow label="Schema"       value={scheduleLabel || "Ej angiven"} missing={!scheduleLabel} />
+            <FactRow label="Lön"          value={salaryFactVal} highlight={!!user && !!(job.salaryMin || job.salary)} missing={!!user && !job.salaryMin && !job.salary} />
+            {job.salaryNote && <FactRow label="Lönenotering" value={job.salaryNote} />}
+            <FactRow label="Tillträde"    value={job.start || "Ej angiven"} missing={!job.start} />
+            <FactRow label="Ort"          value={job.location || "—"} />
+            <FactRow label="Körkort"      value={[...(job.license || []), ...(job.certificates || []).map(getCertificateLabel)].join(", ") || "—"} />
             {job.rolling && (
               <div style={{ marginTop: 14, padding: "10px 12px", background: "var(--amber-tint)", border: "1px solid var(--amber-tint-2)", borderRadius: "var(--r)", display: "flex", gap: 8, alignItems: "flex-start" }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
