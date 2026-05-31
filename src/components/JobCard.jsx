@@ -12,12 +12,12 @@ function MatchBadge({ score }) {
                ["var(--paper-2)",       "var(--ink-500)",   "Möjlig match"];
   return (
     <span style={{
-      display: "inline-flex", alignItems: "center", gap: 7,
-      padding: "5px 11px", borderRadius: 999,
+      display: "inline-flex", alignItems: "center", gap: 9,
+      padding: "6px 12px", borderRadius: 999,
       background: bg,
     }}>
-      <span style={{ fontSize: 14, fontWeight: 800, color: fg, fontFamily: "var(--mono)", lineHeight: 1 }}>{pct}%</span>
-      <span style={{ fontSize: 11, fontWeight: 700, color: fg, letterSpacing: 0.3 }}>{label}</span>
+      <span style={{ fontSize: 16, fontWeight: 800, color: fg, fontFamily: "var(--mono)", lineHeight: 1 }}>{pct}%</span>
+      <span style={{ fontSize: 11, fontWeight: 700, color: fg, letterSpacing: 0.4 }}>{label}</span>
     </span>
   );
 }
@@ -134,16 +134,13 @@ export default function JobCard({
                   </>
                 )}
                 {job.kollektivavtal === true && (
-                  <>
-                    <span style={{ color: "var(--ink-300)" }}>·</span>
-                    <span style={{ fontSize: 12, color: "var(--info)", fontWeight: 600 }}>KA</span>
-                  </>
+                  <span style={{ fontSize: 12, color: "var(--ink-500)", fontWeight: 500 }}>Kollektivavtal</span>
                 )}
               </div>
             </div>
 
-            {/* Right: match badge + save */}
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6, flexShrink: 0 }}>
+            {/* Right: match badge + save — horizontal row, matching prototype */}
+            <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
               {isMatch && <MatchBadge score={matchScore} />}
               {showSave && (
                 <button
@@ -168,7 +165,7 @@ export default function JobCard({
           </div>
 
           {/* Pills row: licenses + employment + location */}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 14, marginBottom: 12 }}>
             {(job.license || []).map(l => <Pill key={l} tone="primary">{l}</Pill>)}
             <Pill tone="neutral">{employmentLabel}</Pill>
             {job.location && (
@@ -182,8 +179,8 @@ export default function JobCard({
           {/* Description (desktop only) */}
           {!isMobile && job.description && (
             <p style={{
-              fontSize: 13.5, color: "var(--ink-500)", lineHeight: 1.6,
-              marginBottom: 12,
+              fontSize: 14, color: "var(--ink-500)", lineHeight: 1.6,
+              marginBottom: 14,
               overflow: "hidden", display: "-webkit-box",
               WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
             }}>

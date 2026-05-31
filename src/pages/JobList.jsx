@@ -221,6 +221,25 @@ function Sidebar({ profile }) {
         </Link>
       </div>
 
+      {/* Sparade sökningar */}
+      <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: "var(--r-lg)", padding: "20px 22px", boxShadow: "var(--sh-sm)" }}>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.3, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 14 }}>Sparade sökningar</div>
+        {[
+          { label: "CE Skåne, fast", count: 4 },
+          { label: "ADR-tjänster",   count: 2 },
+        ].map(s => (
+          <div key={s.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid var(--line)" }}>
+            <span style={{ fontSize: 13.5, color: "var(--ink-900)", fontWeight: 600 }}>{s.label}</span>
+            <span style={{ display: "inline-flex", alignItems: "center", padding: "3px 9px", borderRadius: 999, background: "var(--green-tint)", color: "var(--green-text)", fontSize: 11, fontWeight: 600 }}>
+              {s.count} nya
+            </span>
+          </div>
+        ))}
+        <button style={{ marginTop: 12, background: "none", border: "none", padding: 0, fontSize: 13, fontWeight: 700, color: "var(--green)", cursor: "pointer", fontFamily: "var(--font)" }}>
+          + Spara nuvarande sökning
+        </button>
+      </div>
+
       {/* Tips */}
       <div style={{ background: "var(--card-2)", border: "1px solid var(--line)", borderRadius: "var(--r-lg)", padding: "20px 22px", boxShadow: "var(--sh-sm)" }}>
         <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
@@ -233,33 +252,12 @@ function Sidebar({ profile }) {
             <InfoIcon />
           </span>
           <div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)", marginBottom: 6 }}>Tips</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)", marginBottom: 4 }}>Tips</div>
             <p style={{ fontSize: 13, color: "var(--ink-500)", lineHeight: 1.55, margin: 0 }}>
               Slå på <strong style={{ color: "var(--ink-900)", fontWeight: 600 }}>"Visa matchning"</strong> för att se hur väl varje jobb passar din profil.
             </p>
           </div>
         </div>
-      </div>
-
-      {/* Sparade sökningar */}
-      <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: "var(--r-lg)", padding: "20px 22px", boxShadow: "var(--sh-sm)" }}>
-        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.3, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 14 }}>Sparade sökningar</div>
-        {[
-          { label: "CE-jobb Stockholm",     count: 7 },
-          { label: "Distributionskörning",  count: 3 },
-          { label: "Fast anställning Skåne", count: 5 },
-        ].map(s => (
-          <div key={s.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 0", borderBottom: "1px solid var(--line)" }}>
-            <span style={{ fontSize: 13.5, color: "var(--ink-900)", fontWeight: 500 }}>{s.label}</span>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 8px", borderRadius: 999, background: "var(--green-tint)", color: "var(--green-text)", fontSize: 11, fontWeight: 700 }}>
-              {s.count} nya
-            </span>
-          </div>
-        ))}
-        <button style={{ marginTop: 14, width: "100%", padding: "8px 0", borderRadius: 8, background: "none", border: "1px dashed var(--line-2)", color: "var(--ink-500)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font)", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Spara sökning
-        </button>
       </div>
     </aside>
   );
