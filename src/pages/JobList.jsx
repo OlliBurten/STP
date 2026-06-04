@@ -1,6 +1,4 @@
 import { useState, useMemo, useEffect } from "react";
-import { cityOffset } from "../data/swedenCityCoords";
-import { SWE_LAN_BOX } from "../data/swedenGeo";
 import { Link, useNavigate } from "react-router-dom";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { mockJobs } from "../data/mockJobs";
@@ -361,11 +359,7 @@ export default function JobList() {
           cities: Object.entries(d.cities)
             .sort((a, b) => b[1] - a[1])
             .slice(0, 40)
-            .map(([name, jobs]) => {
-              const box = SWE_LAN_BOX[REGION_CODE_MAP[region] || ""];
-              const offset = box ? cityOffset(name, box.cx, box.cy) : null;
-              return { name, jobs, dx: offset?.dx ?? 0, dy: offset?.dy ?? 0 };
-            }),
+            .map(([name, jobs]) => ({ name, jobs })),
         };
       })
       .filter(r => r.code)

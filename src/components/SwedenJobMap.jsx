@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import { SWE_LAN_PATHS, SWE_LAN_BOX } from "../data/swedenGeo";
-import { CITY_COORDS, cityToSVG } from "../data/swedenCityCoords";
+import { SWE_LAN_PATHS, SWE_LAN_BOX, SWE_VIEW } from "../data/swedenGeo";
+import { getCityXY } from "../data/swedenCityCoords";
 
 /* ════════════════════════════════════════════════════════════
    SwedenJobMap — två nivåer, som iPhone Photos-kartan:
@@ -17,7 +17,7 @@ import { CITY_COORDS, cityToSVG } from "../data/swedenCityCoords";
    så att de ser konstanta ut på skärmen oavsett zoomnivå.
 ════════════════════════════════════════════════════════════ */
 
-const FULL = { x: 0, y: 0, w: 290, h: 660 };
+const FULL = SWE_VIEW;
 const PATHS = SWE_LAN_PATHS || {};
 const BOX = SWE_LAN_BOX || {};
 const ALL_CODES = Object.keys(PATHS);
@@ -30,10 +30,7 @@ const CAPITAL = {
   X: "Gävle", Y: "Härnösand", Z: "Östersund", AC: "Umeå", BD: "Luleå",
 };
 
-const projectCity = (name) => {
-  const c = CITY_COORDS[name];
-  return c ? cityToSVG(c[0], c[1]) : null;
-};
+const projectCity = (name) => getCityXY(name);
 
 // Viktat center av ett läns orter (med jobb), fallback till residensstad/box-mitt
 const regionCenter = (r) => {
@@ -111,14 +108,31 @@ const SwedenJobMap = ({ regions = [], onPickRegion = () => {}, height = 580 }) =
   const zoomedRegion = zoomCode ? byCode[zoomCode] : null;
   const zoomCities = useMemo(() => {
     if (!zoomedRegion) return [];
-    return (zoomedRegion.cities || [])
-      .map((c) => ({ ...c, p: projectCity(c.name) }))
-      .filter((c) => c.p);
-  }, [zoomedRegion]);
+    const pts = (zoomedRegion.cities || [])
+      .map((c) => ({ name: c.name, jobs: c.jobs || 0, p: projectCity(c.name) }))
+      .filter((c) => c.p)
+      .sort((a, b) => b.jobs - a.jobs);
+    // Klustra orter som ligger närmare än ~6% av regionens vy-bredd (annars överlappar storstäder)
+    const box = zoomCode && BOX[zoomCode] ? paddedBox(BOX[zoomCode]) : FULL;
+    const thr = box.w * 0.06;
+    const used = new Array(pts.length).fill(false);
+    const clusters = [];
+    for (let i = 0; i < pts.length; i++) {
+      if (used[i]) continue;
+      used[i] = true;
+      let jobs = pts[i].jobs, count = 1;
+      for (let j = i + 1; j < pts.length; j++) {
+        if (used[j]) continue;
+        if (Math.hypot(pts[j].p.x - pts[i].p.x, pts[j].p.y - pts[i].p.y) < thr) { used[j] = true; jobs += pts[j].jobs; count++; }
+      }
+      clusters.push({ name: pts[i].name, jobs, count, p: pts[i].p });
+    }
+    return clusters;
+  }, [zoomedRegion, zoomCode]);
   const maxCityJobs = useMemo(() => Math.max(1, ...zoomCities.map((c) => c.jobs || 0)), [zoomCities]);
 
-  const regionR = (jobs) => (8 + (jobs / maxJobs) * 12) * k;
-  const cityR = (jobs) => (4 + (jobs / maxCityJobs) * 7) * k;
+  const regionR = (jobs) => (16 + (jobs / maxJobs) * 22) * k;
+  const cityR = (jobs) => (9 + (jobs / maxCityJobs) * 15) * k;
 
   // skärmposition (%) för ett SVG-koordinatpar, för HTML-overlays
   const toPct = (x, y) => ({
@@ -249,7 +263,7 @@ const SwedenJobMap = ({ regions = [], onPickRegion = () => {}, height = 580 }) =
                 />
                 <text
                   x={c.x} y={c.y} textAnchor="middle" dominantBaseline="central"
-                  fill="#fff" fontWeight="800" fontSize={Math.max(7, (rad > 13 * k ? 10 : 8.5) * k * 1)}
+                  fill="#fff" fontWeight="800" fontSize={rad * 0.8}
                   fontFamily="var(--mono)" style={{ pointerEvents: "none" }}
                 >{r.jobs}</text>
               </g>
@@ -268,7 +282,7 @@ const SwedenJobMap = ({ regions = [], onPickRegion = () => {}, height = 580 }) =
                 style={{ cursor: "pointer" }}
                 onMouseEnter={() => setHover({ kind: "city", name: c.name, jobs: c.jobs, x: c.p.x, y: c.p.y })}
                 onMouseLeave={() => setHover(null)}
-                onClick={() => onPickRegion({ ...zoomedRegion, location: c.name })}
+                onClick={() => onPickRegion({ ...zoomedRegion, location: c.count > 1 ? undefined : c.name })}
               >
                 <circle
                   cx={c.p.x} cy={c.p.y} r={rad}
@@ -277,14 +291,14 @@ const SwedenJobMap = ({ regions = [], onPickRegion = () => {}, height = 580 }) =
                 />
                 <text
                   x={c.p.x} y={c.p.y} textAnchor="middle" dominantBaseline="central"
-                  fill="#fff" fontWeight="800" fontSize={7.5 * k} fontFamily="var(--mono)"
+                  fill="#fff" fontWeight="800" fontSize={rad * 0.8} fontFamily="var(--mono)"
                   style={{ pointerEvents: "none" }}
                 >{c.jobs}</text>
                 <text
-                  x={c.p.x} y={c.p.y + rad + 6 * k} textAnchor="middle"
-                  fill="var(--ink-700)" fontWeight="700" fontSize={8.5 * k}
+                  x={c.p.x} y={c.p.y + rad + 14 * k} textAnchor="middle"
+                  fill="var(--ink-700)" fontWeight="700" fontSize={15 * k}
                   fontFamily="var(--font)" style={{ pointerEvents: "none" }}
-                >{c.name}</text>
+                >{c.count > 1 ? `${c.name} +${c.count - 1}` : c.name}</text>
               </g>
             );
           })}
