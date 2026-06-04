@@ -7,6 +7,19 @@
 
 import cron from "node-cron";
 import { runIngestor } from "./jobIngestor.js";
+import { runJobEnrichment } from "./jobEnricher.js";
+
+// Berika nya aggregerade jobb (AI-extraherar arbetsuppgifter/erbjudanden/lön ur fritexten).
+// Berikaren hoppar över redan berikade → bearbetar bara nytillkomna.
+async function enrichNew(label) {
+  try {
+    if (!process.env.ANTHROPIC_API_KEY) return;
+    const r = await runJobEnrichment({ concurrency: 3 });
+    if (r.enriched) console.log(`[JobIngestScheduler] Berikade ${r.enriched} nya jobb (${label})`);
+  } catch (e) {
+    console.error("[JobIngestScheduler] Enrichment-fel:", e?.message);
+  }
+}
 
 let started = false;
 
@@ -21,6 +34,7 @@ export function startJobIngestScheduler() {
         .toISOString()
         .replace("Z", "");
       await runIngestor({ source: "jobstream", since });
+      await enrichNew("jobstream");
     } catch (e) {
       console.error("[JobIngestScheduler] Uncaught error (jobstream):", e?.message);
     }
@@ -30,6 +44,7 @@ export function startJobIngestScheduler() {
   cron.schedule("0 */6 * * *", async () => {
     try {
       await runIngestor({ source: "jobsearch" });
+      await enrichNew("jobsearch");
     } catch (e) {
       console.error("[JobIngestScheduler] Uncaught error (jobsearch reconciliation):", e?.message);
     }
