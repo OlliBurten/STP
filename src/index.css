@@ -76,6 +76,9 @@
 }
 
 html, body { height: 100%; }
+/* Reservera alltid scrollbar-utrymmet → layouten hoppar inte i sidled när man
+   växlar mellan långa flikar (Alla/Rekommenderade) och korta (Sparade). */
+html { scrollbar-gutter: stable; }
 
 body {
   margin: 0;
