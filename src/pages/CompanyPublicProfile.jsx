@@ -705,7 +705,7 @@ export default function CompanyPublicProfile() {
           </div>
 
           {/* RIGHT sticky sidebar */}
-          <aside style={{ display: "flex", flexDirection: "column", gap: 18, position: "sticky", top: 32 }}>
+          <aside style={{ display: "flex", flexDirection: "column", gap: 18, position: "sticky", top: 80 }}>
             {/* Fakta */}
             <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, padding: "20px 24px", boxShadow: "var(--sh-sm)" }}>
               <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 14 }}>Fakta</div>

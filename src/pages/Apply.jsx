@@ -88,7 +88,7 @@ function JobContextSidebar({ job }) {
     : job.salary || null;
 
   return (
-    <aside style={{ display: "flex", flexDirection: "column", gap: 18, position: "sticky", top: 32 }}>
+    <aside style={{ display: "flex", flexDirection: "column", gap: 18, position: "sticky", top: 80 }}>
       <Card>
         <div style={{ display: "flex", gap: 14, alignItems: "flex-start", marginBottom: 16 }}>
           <div style={{ width: 48, height: 48, borderRadius: 11, flexShrink: 0, background: "var(--paper-2)", border: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 800, color: "var(--ink-700)" }}>

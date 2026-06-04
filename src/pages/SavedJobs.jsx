@@ -250,7 +250,7 @@ export default function SavedJobs() {
 
   const tabs = [
     { k: "jobs",      l: "Sparade jobb",       c: jobs.length },
-    { k: "companies", l: "Åkerier jag följer",  c: companies.length },
+    { k: "companies", l: "Sparade åkerier",  c: companies.length },
   ];
 
   // ── Mobile layout ─────────────────────────────────────────────────────────
