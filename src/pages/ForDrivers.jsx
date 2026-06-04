@@ -177,55 +177,65 @@ export default function ForDrivers() {
         canonical="/forare"
       />
 
-      {/* ── Hero (dark, photo bg) ─────────────────────────────────────────────── */}
+      {/* ── Hero (dark, full-bleed — matchar Home-landningens stil) ───────────── */}
       <section
         style={{
-          position: "relative",
-          overflow: "hidden",
+          background: "var(--ink-900)",
           backgroundImage: "url('/hero-driver.webp')",
           backgroundSize: "cover",
           backgroundPosition: "center 30%",
+          minHeight: isMobile ? "auto" : "90vh",
+          display: "flex",
+          flexDirection: "column",
+          paddingTop: 96,
+          paddingBottom: 48,
+          position: "relative",
+          color: "#fff",
         }}
       >
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(5,14,14,0.93) 0%, rgba(5,14,14,0.70) 60%, rgba(5,14,14,0.40) 100%)" }} />
-        <div style={{ position: "relative", maxWidth: 1040, margin: "0 auto", padding: sp, paddingTop: isMobile ? 100 : 140, paddingBottom: isMobile ? 60 : 120 }}>
-          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: isMobile ? 32 : 64, alignItems: "center" }}>
-            <div>
-              <div style={{ ...D.label, marginBottom: 16 }}>För förare</div>
-              <h1 style={{ ...D.h2, fontSize: "clamp(34px,4.5vw,52px)", marginBottom: 20 }}>
-                En tryggare väg till rätt jobb i transportbranschen.
-              </h1>
-              <p style={{ ...D.body, marginBottom: 12 }}>
-                STP är byggt för att göra det enklare att visa vem du är som förare, vad du kan och vilken typ av uppdrag du söker — utan att försvinna i bruset.
-              </p>
-              <p style={{ fontSize: 15, color: "rgba(240,250,249,0.45)", lineHeight: 1.7, marginBottom: 36 }}>
-                Målet är inte att vara ännu en jobbsajt, utan en trygg plattform av branschen, för branschen, där rätt förare och rätt åkeri lättare hittar varandra.
-              </p>
-              <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-                <Link to="/jobb" style={D.btnPrimary}>
-                  Se lediga jobb <ArrowRightIcon className="w-4 h-4" />
-                </Link>
-                <Link to="/login" state={{ initialMode: "register", requiredRole: "driver" }} style={D.btnSecondary}>
-                  Skapa förarkonto
-                </Link>
-              </div>
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(110deg, rgba(8,18,20,0.92) 0%, rgba(8,18,20,0.68) 42%, rgba(8,18,20,0.25) 78%, rgba(8,18,20,0.08) 100%)", pointerEvents: "none" }} />
+        <div style={{ maxWidth: 1264, margin: "0 auto", padding: isMobile ? "0 24px" : "0 32px", width: "100%", display: "flex", flexDirection: "column", justifyContent: "center", flex: 1, position: "relative", zIndex: 1 }}>
+          {/* Badge */}
+          <div style={{ display: "flex", alignItems: "center", marginBottom: isMobile ? 32 : 48 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 14px", borderRadius: 999, background: "rgba(245,166,35,0.15)", border: "1px solid rgba(245,166,35,0.35)", color: "#f5c875", fontSize: 11.5, fontWeight: 700, letterSpacing: 1.4, textTransform: "uppercase" }}>
+              <span style={{ width: 6, height: 6, borderRadius: 3, background: "#f5c875", display: "inline-block" }} />
+              För förare · Gratis att använda
             </div>
+          </div>
 
-            <div style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 20, padding: "28px 32px", backdropFilter: "blur(12px)" }} className="hidden lg:block">
-              <p style={{ fontSize: 13, fontWeight: 700, color: "rgba(240,250,249,0.4)", textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: 20 }}>
-                Det här får du som förare
-              </p>
-              <ul style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                {DRIVER_POINTS.map((point) => (
-                  <li key={point} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-                    <span style={{ marginTop: 2, width: 22, height: 22, borderRadius: "50%", background: "var(--amber-tint)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <CheckIcon className="w-3.5 h-3.5" style={{ color: "var(--amber)" }} />
-                    </span>
-                    <span style={{ fontSize: 14, color: "rgba(240,250,249,0.8)", lineHeight: 1.6 }}>{point}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+          {/* Headline */}
+          <h1 style={{ fontSize: isMobile ? "clamp(40px,11vw,60px)" : "clamp(48px,6vw,84px)", fontWeight: 900, lineHeight: 1.02, letterSpacing: isMobile ? -1.5 : -2.5, color: "#fff", marginBottom: 26, maxWidth: 900 }}>
+            En tryggare väg till <span style={{ color: "var(--amber)" }}>rätt jobb</span>.
+          </h1>
+
+          {/* Lead */}
+          <p style={{ fontSize: isMobile ? 17 : 19, lineHeight: 1.6, color: "rgba(255,255,255,0.78)", fontWeight: 500, maxWidth: 620, marginBottom: 32 }}>
+            STP gör det enklare att visa vem du är som förare, vad du kan och vilken typ av uppdrag du söker — utan att försvinna i bruset. Inga mellanhänder, inga avgifter.
+          </p>
+
+          {/* CTAs */}
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: isMobile ? 48 : 72, flexDirection: isMobile ? "column" : "row" }}>
+            <Link to="/jobb" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 24px", height: 50, background: "var(--amber)", color: "#fff", border: "1px solid var(--amber-deep)", borderRadius: 10, fontWeight: 700, fontSize: 15, boxShadow: "0 1px 0 var(--amber-deep), 0 4px 12px rgba(199,122,14,0.30)", textDecoration: "none" }}>
+              Se lediga jobb <ArrowRightIcon className="w-4 h-4" />
+            </Link>
+            <Link to="/login" state={{ initialMode: "register", requiredRole: "driver" }} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "14px 24px", height: 50, background: "rgba(255,255,255,0.08)", color: "#fff", border: "1px solid rgba(255,255,255,0.22)", borderRadius: 10, fontWeight: 600, fontSize: 15, backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", textDecoration: "none" }}>
+              Skapa förarkonto
+            </Link>
+          </div>
+
+          {/* Stats */}
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2,1fr)" : "repeat(4,1fr)", gap: isMobile ? 24 : 0, borderTop: "1px solid rgba(255,255,255,0.14)", paddingTop: 28 }}>
+            {[
+              { value: "4 080", label: "Lediga tjänster" },
+              { value: "36 %", label: "Åkerier saknar förare" },
+              { value: "0 kr", label: "För dig som förare" },
+              { value: "Direkt", label: "Kontakt — inga mellanhänder", accent: true },
+            ].map((s) => (
+              <div key={s.label} style={{ padding: isMobile ? 0 : "0 4px" }}>
+                <div style={{ fontSize: isMobile ? 26 : 32, fontWeight: 900, fontFamily: "var(--mono)", color: s.accent ? "var(--amber)" : "#fff", letterSpacing: -1, lineHeight: 1 }}>{s.value}</div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: 1, marginTop: 8 }}>{s.label}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
