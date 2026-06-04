@@ -154,16 +154,16 @@ export default function JobCard({
                   type="button"
                   onClick={(e) => { e.preventDefault(); onToggleSave?.(job.id, !isSaved); }}
                   style={{
-                    width: 34, height: 34, borderRadius: 8,
+                    width: 36, height: 36, borderRadius: 9,
                     background: isSaved ? "var(--amber-tint)" : "var(--card-2)",
                     border: `1px solid ${isSaved ? "rgba(199,122,14,0.30)" : "var(--line-2)"}`,
                     display: "flex", alignItems: "center", justifyContent: "center",
-                    cursor: "pointer", color: isSaved ? "var(--amber-deep)" : "var(--ink-400)",
+                    cursor: "pointer", color: isSaved ? "var(--amber-deep)" : "var(--ink-500)",
                     transition: "all .15s",
                   }}
                   aria-label={isSaved ? "Ta bort från favoriter" : "Spara jobb"}
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill={isSaved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill={isSaved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
                   </svg>
                 </button>
@@ -196,7 +196,7 @@ export default function JobCard({
           )}
 
           {/* Footer: salary + published date */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 10, borderTop: "1px solid var(--line)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 14, borderTop: "1px solid var(--line)" }}>
             {salaryDisplay
               ? <div style={{ fontSize: isMobile ? 13 : 14, fontWeight: 700, color: "var(--ink-900)", fontFamily: "var(--mono)" }}>{salaryDisplay}</div>
               : <div />

@@ -575,7 +575,7 @@ export default function JobList() {
               </p>
             </div>
 
-            <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", flexDirection: "row-reverse", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
               {/* Match toggle */}
               {isDriver && (
                 <label style={{ display: "inline-flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
