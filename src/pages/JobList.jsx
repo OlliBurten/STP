@@ -779,7 +779,7 @@ export default function JobList() {
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         filters={filters}
-        onChange={setFilters}
+        setFilters={setFilters}
       />
     </div>
   );

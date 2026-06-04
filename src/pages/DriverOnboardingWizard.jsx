@@ -123,6 +123,34 @@ export default function DriverOnboardingWizard() {
     summary: profile.summary || "",
   }));
 
+  // ── AI summary analysis — must be before any early returns (hooks-regler) ────
+  const analyzeRef = useRef(null);
+  useEffect(() => {
+    if (step !== 4) return;
+    const text = draft.summary.trim();
+    if (text.length < SUMMARY_MIN_LENGTH) { setAiAnalysis(null); return; }
+    setAiLoading(true);
+    clearTimeout(analyzeRef.current);
+    analyzeRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/profile/analyze-summary`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ text }),
+        });
+        if (!res.ok) { setAiAnalysis(null); return; }
+        const data = await res.json();
+        if (typeof data?.ok === "boolean") setAiAnalysis(data);
+        else setAiAnalysis(null);
+      } catch {
+        setAiAnalysis(null);
+      } finally {
+        setAiLoading(false);
+      }
+    }, 800);
+    return () => clearTimeout(analyzeRef.current);
+  }, [draft.summary, step, token]);
+
   // Redirect if profile already complete (skip if we're showing the done screen)
   if (!done && profileLoaded && isDriverMinimumProfileComplete(profile)) {
     return <Navigate to="/profil" replace />;
@@ -162,34 +190,6 @@ export default function DriverOnboardingWizard() {
         : [...prev.certificates, cert],
     }));
   };
-
-  // ── AI summary analysis ──────────────────────────────────────────────────────
-  const analyzeRef = useRef(null);
-  useEffect(() => {
-    if (step !== 4) return;
-    const text = draft.summary.trim();
-    if (text.length < SUMMARY_MIN_LENGTH) { setAiAnalysis(null); return; }
-    setAiLoading(true);
-    clearTimeout(analyzeRef.current);
-    analyzeRef.current = setTimeout(async () => {
-      try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/profile/analyze-summary`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ text }),
-        });
-        if (!res.ok) { setAiAnalysis(null); return; }
-        const data = await res.json();
-        if (typeof data?.ok === "boolean") setAiAnalysis(data);
-        else setAiAnalysis(null);
-      } catch {
-        setAiAnalysis(null);
-      } finally {
-        setAiLoading(false);
-      }
-    }, 800);
-    return () => clearTimeout(analyzeRef.current);
-  }, [draft.summary, step, token]);
 
   // ── Navigate forward ─────────────────────────────────────────────────────────
   const goNext = () => {

@@ -173,6 +173,7 @@ companiesRouter.get("/:id/public", optionalAuthMiddleware, async (req, res, next
         region: true,
         employment: true,
         segment: true,
+        kollektivavtal: true,
         published: true,
         salaryMin: true,
         salaryMax: true,
