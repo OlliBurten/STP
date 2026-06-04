@@ -608,7 +608,7 @@ export default function Admin() {
                   <div>
                     <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: T.muted, marginBottom: 8 }}>Körkort</label>
                     <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-                      {["CE", "C", "C1", "BE", "B"].map((l) => (
+                      {["CE", "C"].map((l) => (
                         <label key={l} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: T.sub, cursor: "pointer" }}>
                           <input type="checkbox" checked={createJobForm.license.includes(l)}
                             onChange={(e) => setCreateJobForm((p) => ({

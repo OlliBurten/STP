@@ -5,11 +5,10 @@
 
 // —— Körkort & grund (filter + krav) ——
 export const licenseTypes = [
-  { value: "B",   label: "B" },
-  { value: "C1",  label: "C1" },
-  { value: "C1E", label: "C1E" },
-  { value: "C",   label: "C" },
-  { value: "CE",  label: "CE" },
+  { value: "C",  label: "C" },
+  { value: "CE", label: "CE" },
+  { value: "B",  label: "B" },
+  { value: "BE", label: "BE" },
 ];
 
 // —— Certifikat: grupperade för UI, platt lista för val ——

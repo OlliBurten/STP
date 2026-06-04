@@ -41,9 +41,12 @@ import { utilsRouter } from "./routes/utils.js";
 import { schoolsRouter } from "./routes/schools.js";
 import { outreachRouter } from "./routes/outreach.js";
 import { webhooksRouter } from "./routes/webhooks.js";
+import { applicationsRouter } from "./routes/applications.js";
+import { claimsRouter } from "./routes/claims.js";
 import { isGoogleConfigured, isMicrosoftConfigured } from "./lib/oauth.js";
 import { JWT_SECRET } from "./lib/config.js";
 import { startReminderScheduler } from "./lib/reminderScheduler.js";
+import { startJobIngestScheduler } from "./lib/jobIngestScheduler.js";
 import { prisma } from "./lib/prisma.js";
 import * as Sentry from "@sentry/node";
 
@@ -174,6 +177,8 @@ app.use("/api/utils", apiPublicLimiter, utilsRouter);
 app.use("/api/schools", apiPublicLimiter, schoolsRouter);
 app.use("/api/outreach", outreachRouter);
 app.use("/api/webhooks", webhooksRouter);
+app.use("/api/applications", apiWriteLimiter, applicationsRouter);
+app.use("/api/claims", apiPublicLimiter, claimsRouter);
 
 app.get("/", (_, res) => {
   res.json({
@@ -396,6 +401,26 @@ app.post("/api/internal/send-verification-reminders", internalLimiter, express.j
   }
 });
 
+// Manuell jobbimport från Platsbanken — anropas av cron eller admin
+app.post("/api/internal/ingest-jobs", internalLimiter, express.json(), async (req, res) => {
+  const key = req.headers["x-admin-api-key"] || req.body?.adminApiKey;
+  const expected = process.env.ADMIN_API_KEY;
+  if (!expected || key !== expected) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  try {
+    const { runIngestor } = await import("./lib/jobIngestor.js");
+    const source = req.body?.source || "jobsearch";
+    const since = req.body?.since || null;
+    const dryRun = req.body?.dryRun === true;
+    const result = await runIngestor({ source, since, dryRun });
+    res.json({ ok: true, ...result });
+  } catch (e) {
+    console.error("[internal/ingest-jobs]", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.get("/api/health", async (_, res) => {
   let db = "unknown";
   let dbLatencyMs = null;
@@ -513,6 +538,7 @@ if (process.env.APP_LISTEN !== "false") {
       console.log(`Server running at http://localhost:${PORT}`);
       app._httpServer = httpServer;
       startReminderScheduler();
+      startJobIngestScheduler();
     }).on("error", (err) => {
       if (err.code === "EADDRINUSE" && attempt < MAX_LISTEN_ATTEMPTS) {
         const delay = Math.min(2000 * Math.pow(2, attempt), 30000);

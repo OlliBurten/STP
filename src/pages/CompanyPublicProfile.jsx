@@ -511,6 +511,12 @@ export default function CompanyPublicProfile() {
                     </span>
                   </>
                 )}
+                {company.kollektivavtal && (
+                  <>
+                    <span style={{ color: "var(--ink-300)" }}>·</span>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 8px", borderRadius: 99, background: "var(--info-tint)", border: "1px solid var(--info)", fontSize: 11, fontWeight: 700, color: "var(--info)" }}>Kollektivavtal</span>
+                  </>
+                )}
                 {company.fSkattsedel && (
                   <>
                     <span style={{ color: "var(--ink-300)" }}>·</span>
@@ -560,7 +566,7 @@ export default function CompanyPublicProfile() {
         {/* Two-column layout */}
         <div className="ap-grid">
           {/* LEFT */}
-          <div>
+          <div className="stp-fade-up">
             {/* Om åkeriet */}
             <h2 style={{ fontSize: 20, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.4, marginTop: 0, marginBottom: 14 }}>Om åkeriet</h2>
             <p style={{ fontSize: 15, color: "var(--ink-700)", lineHeight: 1.75, whiteSpace: "pre-line", marginTop: 0, marginBottom: 16 }}>
@@ -613,7 +619,7 @@ export default function CompanyPublicProfile() {
                   const match = (isDriver && profile) ? matchScore(profile, job) : null;
                   const pct = match?.pct ?? null;
                   const matchColor = pct !== null ? (pct >= 85 ? "var(--success)" : "var(--green)") : null;
-                  const licLabel = (job.license || []).filter(l => l !== "B")[0] || "—";
+                  const licLabel = (job.license || [])[0] || "—";
                   return (
                     <Link
                       key={job.id}

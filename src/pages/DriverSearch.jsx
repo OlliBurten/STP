@@ -181,7 +181,7 @@ function FilterSheet({ open, filters, setFilters, onClose, isMobile }) {
         ))}
       </Section>
       <Section title="Körkort">
-        {["B", "C", "CE", "D"].map(l => (
+        {["C", "CE"].map(l => (
           <Chip key={l} on={filters.license === l} onClick={() => toggle("license", l)}>{l}</Chip>
         ))}
       </Section>
@@ -564,7 +564,7 @@ export default function DriverSearch() {
   if (filters.segment)  activeChips.push({ key: "segment",  label: segmentOptions.find(s => s.value === filters.segment)?.label || filters.segment });
   if (filters.region)   activeChips.push({ key: "region",   label: filters.region });
 
-  const licenseOptions = ["B", "C", "CE", "D"];
+  const licenseOptions = ["C", "CE"];
   const segmentFilterOptions = segmentOptions.map(s => s.label);
   const regionOptions = regions.slice(0, 9);
 

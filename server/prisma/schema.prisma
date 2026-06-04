@@ -76,6 +76,10 @@ model User {
 
   driverReviewsWritten   DriverReview[]   @relation("DriverReviewAuthor")
 
+  // Applications (driver → aggregated job)
+  applications           Application[]    @relation("ApplicationDriver")
+  employerClaims         EmployerClaim[]  @relation("EmployerClaimUser")
+
   // Team invites (deprecated - använd OrganizationInvite)
   companyInvites         CompanyInvite[]  @relation("CompanyInvites")
   companyInvitesSent     CompanyInvite[]  @relation("InviterInvites")
@@ -293,6 +297,21 @@ model Job {
   tips30SentAt   DateTime? // när 30-dagars tips-mail skickades
   warningSentAt  DateTime? // när 55-dagars förnyelse-varning skickades
   renewedAt      DateTime? // när företaget senast förnyade annonsen
+
+  // Aggregation fields (JobTech Dev / Platsbanken)
+  source             String   @default("ORGANIC") // ORGANIC | AGGREGATED
+  externalId         String?  @unique
+  sourceUrl          String?
+  sourceEmployerName String?
+  claimed            Boolean  @default(false)
+  enrichmentRaw      Json?
+
+  // Employer contact data (from AF — never exposed publicly, used for outreach + claim)
+  employerEmail      String?
+  employerPhone      String?
+  applyEmail         String?  // application_details.email / application_contacts[].email
+  organizationNumber String?  // employer.organization_number — links to EmployerClaim
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -300,6 +319,7 @@ model Job {
   reports Report[]
   savedBy SavedJob[]
   views   JobView[]
+  applications Application[]
 }
 
 model SavedJob {
@@ -543,4 +563,54 @@ model DriverReview {
 
   @@unique([driverId, authorId])  // one review per company per driver
   @@index([driverId])
+}
+
+// ─── Föraransökan på aggregerat jobb ─────────────────────────────────────────
+
+model Application {
+  id                String   @id @default(cuid())
+  createdAt         DateTime @default(now())
+
+  driverId          String
+  driver            User     @relation("ApplicationDriver", fields: [driverId], references: [id], onDelete: Cascade)
+
+  jobId             String
+  job               Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  // SUBMITTED → FORWARDED → VIEWED_BY_COMPANY → CLOSED
+  status            String   @default("SUBMITTED")
+
+  // GDPR — must be true at creation, cannot be created without consent
+  consentToShare    Boolean
+
+  messageFromDriver String?
+
+  @@unique([driverId, jobId])
+  @@index([jobId])
+  @@index([driverId, createdAt])
+}
+
+// ─── Åkeri-claim (när ett seedat åkeri tar över sina annonser) ─────────────
+
+model EmployerClaim {
+  id                 String   @id @default(cuid())
+  createdAt          DateTime @default(now())
+
+  organizationNumber String   @unique
+  claimToken         String   @unique @default(cuid())
+
+  // Set when an employer has registered and claimed the org
+  claimedByUserId    String?
+  claimedBy          User?    @relation("EmployerClaimUser", fields: [claimedByUserId], references: [id], onDelete: SetNull)
+  claimedAt          DateTime?
+
+  // Outreach tracking
+  outreachSentAt     DateTime?
+  outreachCount      Int      @default(0)
+
+  // B2B opt-out — if set, no further outreach to this org
+  optedOutAt         DateTime?
+
+  @@index([claimToken])
+  @@index([claimedByUserId])
 }

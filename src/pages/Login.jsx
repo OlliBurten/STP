@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { useAuth } from "../context/AuthContext";
@@ -213,9 +213,11 @@ export default function Login() {
   } = useAuth();
   const navigate  = useNavigate();
   const location  = useLocation();
+  const [searchParams] = useSearchParams();
   const from          = location.state?.from || "/";
-  const requiredRole  = location.state?.requiredRole;
-  const requestedMode = location.state?.initialMode;
+  const requiredRole  = location.state?.requiredRole || searchParams.get("requiredRole");
+  const requestedMode = location.state?.initialMode || (searchParams.get("mode") === "register" ? "register" : null);
+  const claimToken    = location.state?.claimToken || searchParams.get("claimToken") || null;
 
   // State machine: login | register_pick | register_driver | register_company | forgot | sent | verified
   const getInitialMode = () => {
@@ -293,7 +295,7 @@ export default function Login() {
       if (isRegister) {
         if (!name.trim())  { setError("Namn krävs"); return; }
         if (!acceptTerms)  { setError("Du måste godkänna användarvillkoren och integritetspolicyn."); return; }
-        const result = await registerWithApi({ email: email.trim(), password, role, name: name.trim() });
+        const result = await registerWithApi({ email: email.trim(), password, role, name: name.trim(), claimToken: claimToken || undefined });
         if (result?.emailVerificationSent === false) {
           setInfo("Kontot skapades men vi kunde tyvärr inte skicka verifieringsmail just nu. Kontakta oss med din e-postadress så verifierar vi dig manuellt.");
           setShowResendVerification(true);

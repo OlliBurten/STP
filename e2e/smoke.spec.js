@@ -57,7 +57,7 @@ test.describe("Login-sida", () => {
   test("visar inloggningsformulär", async ({ page }) => {
     await page.goto("/login");
     await expect(page.getByLabel(/E-post/i)).toBeVisible();
-    await expect(page.locator("#password")).toBeVisible();
+    await expect(page.locator('input[type="password"]').first()).toBeVisible();
     await expect(page.getByRole("button", { name: /Logga in/i })).toBeVisible();
   });
 });

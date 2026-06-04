@@ -798,7 +798,7 @@ export default function Profile() {
           {/* Körkort */}
           <SectionLabel id="edit-korkort">Körkort</SectionLabel>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            {licenseTypes.filter(l => l.value !== "B").map((l) => {
+            {licenseTypes.map((l) => {
               const active = (current.licenses || []).includes(l.value);
               return (
                 <button key={l.value} onClick={() => toggleLicense(l.value)} style={{ padding: "10px 18px", borderRadius: 99, background: active ? "var(--green)" : "var(--card)", border: `1px solid ${active ? "var(--green-deep)" : "var(--line-2)"}`, color: active ? "#fff" : "var(--ink-700)", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", minHeight: 44 }}>
@@ -1334,7 +1334,7 @@ export default function Profile() {
                     <div>
                       <p style={{ fontSize: 12, fontWeight: 600, color: T.sub, marginBottom: 10 }}>Körkortsbehörighet</p>
                       <div style={{ display: "flex", gap: 8 }}>
-                        {licenseTypes.filter((l) => l.value !== "B").map((l) => {
+                        {licenseTypes.map((l) => {
                           const active = (current.licenses || []).includes(l.value);
                           return (
                             <button key={l.value} onClick={() => toggleLicense(l.value)} style={{
@@ -1396,9 +1396,9 @@ export default function Profile() {
                   </div>
                 ) : (
                   <>
-                    {/* License boxes row: B/C1/C1E/C/CE */}
+                    {/* License boxes row: C/CE */}
                     <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-                      {["B","C1","C1E","C","CE"].map(l => {
+                      {["C","CE"].map(l => {
                         const owned = (current.licenses || []).includes(l);
                         return (
                           <div key={l} style={{

@@ -174,6 +174,10 @@ companiesRouter.get("/:id/public", optionalAuthMiddleware, async (req, res, next
         employment: true,
         segment: true,
         published: true,
+        salaryMin: true,
+        salaryMax: true,
+        license: true,
+        kollektivavtal: true,
       },
     });
 
@@ -194,6 +198,7 @@ companiesRouter.get("/:id/public", optionalAuthMiddleware, async (req, res, next
       region: company.companyRegion || "",
       verified: company.companyStatus === "VERIFIED",
       fSkattsedel: company.fSkattsedel || false,
+      kollektivavtal: jobs.some(j => j.kollektivavtal === true),
       industryOrgMember: company.industryOrgMember || false,
       industryOrgName: company.industryOrgName || null,
       policyAgreedAt: company.policyAgreedAt || null,

@@ -36,12 +36,10 @@ const STEPS = [
 
 // ── License data ───────────────────────────────────────────────────────────────
 const LICENSES = [
-  { c: "B",   d: "Personbil" },
-  { c: "C1",  d: "Medeltung lastbil" },
-  { c: "C1E", d: "C1 med släp" },
-  { c: "C",   d: "Tung lastbil" },
-  { c: "CE",  d: "Tung lastbil + släp" },
-  { c: "D",   d: "Buss" },
+  { c: "C",  d: "Tung lastbil" },
+  { c: "CE", d: "Tung lastbil + släp" },
+  { c: "B",  d: "Personbil" },
+  { c: "BE", d: "Personbil + släp" },
 ];
 
 const CERTS = ["YKB", "ADR", "ADR Tank", "Truckkort", "Kran", "Digitalt förarkort"];
@@ -102,6 +100,7 @@ export default function DriverOnboardingWizard() {
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
+  const [matchCount, setMatchCount] = useState(null);
   const [error, setError] = useState("");
   const [aiAnalysis, setAiAnalysis] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
@@ -139,25 +138,18 @@ export default function DriverOnboardingWizard() {
     if (step === 2) return draft.licenses.length > 0;
     if (step === 3) return Boolean(draft.region) && draft.name.trim().length >= 2;
     if (step === 4) {
-      if (draft.summary.trim().length < SUMMARY_MIN_LENGTH) return false;
       if (aiLoading) return false;
-      if (aiAnalysis && !aiAnalysis.ok && aiAnalysis.issues?.length > 0) return false;
       return true;
     }
     return true;
   })();
 
-  // ── Toggle license (auto-adds B with C/CE) ───────────────────────────────────
+  // ── Toggle license ───────────────────────────────────────────────────────────
   const toggleLicense = (code) => {
     setDraft((prev) => {
-      let next = prev.licenses.includes(code)
+      const next = prev.licenses.includes(code)
         ? prev.licenses.filter((l) => l !== code)
         : [...prev.licenses, code];
-      if (next.includes("C") || next.includes("CE")) {
-        if (!next.includes("B")) next = ["B", ...next];
-      } else {
-        next = next.filter((l) => l !== "B");
-      }
       return { ...prev, licenses: next };
     });
   };
@@ -250,7 +242,20 @@ export default function DriverOnboardingWizard() {
       });
       sessionStorage.removeItem("stp_school");
       setDone(true);
-      setTimeout(() => navigate("/profil", { replace: true }), 3000);
+      // Hämta antal matchande jobb i förarens region
+      try {
+        const apiBase = (import.meta.env.VITE_API_URL || "").trim().replace(/\/$/, "");
+        const qs = new URLSearchParams();
+        if (draft.region) qs.set("region", draft.region);
+        const res = await fetch(`${apiBase}/api/jobs?${qs}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const jobs = Array.isArray(data) ? data : (data.jobs || []);
+          setMatchCount(jobs.length);
+        }
+      } catch { /* visa inte antal vid nätverksfel */ }
     } catch (e) {
       setError(e?.message || "Kunde inte spara din profil. Försök igen.");
     } finally {
@@ -268,12 +273,25 @@ export default function DriverOnboardingWizard() {
             <div style={{ width: 76, height: 76, borderRadius: 38, margin: "0 auto 24px", background: "var(--success-tint)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <svg viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" width="36" height="36"><polyline points="20 6 9 17 4 12"/></svg>
             </div>
-            <h1 style={{ fontSize: 26, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.8, marginBottom: 10 }}>
-              Din profil är klar, {draft.name.split(" ")[0] || "förare"}!
-            </h1>
-            <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.6, marginBottom: 24 }}>
-              Du är nu synlig för åkerier som rekryterar i {draft.region}. Här är vad som händer nu:
-            </p>
+            {matchCount !== null && matchCount > 0 ? (
+              <>
+                <h1 style={{ fontSize: 26, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.8, marginBottom: 10 }}>
+                  {matchCount} jobb i {draft.region} matchar dig redan
+                </h1>
+                <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.6, marginBottom: 24 }}>
+                  Du är nu synlig för åkerier som rekryterar. Kolla jobben direkt — eller stärk profilen för att synas ännu mer.
+                </p>
+              </>
+            ) : (
+              <>
+                <h1 style={{ fontSize: 26, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.8, marginBottom: 10 }}>
+                  Din profil är klar, {draft.name.split(" ")[0] || "förare"}!
+                </h1>
+                <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.6, marginBottom: 24 }}>
+                  Du är nu synlig för åkerier som rekryterar i {draft.region}. Kolla lediga jobb eller stärk profilen vidare.
+                </p>
+              </>
+            )}
             <div style={{ textAlign: "left", display: "flex", flexDirection: "column", gap: 10, marginBottom: 28 }}>
               {[
                 { icon: Icons.msg,  title: "Åkerier kontaktar dig", text: "Via chatt direkt på plattformen — du slipper lägga ut ditt nummer publikt." },
@@ -290,11 +308,17 @@ export default function DriverOnboardingWizard() {
               ))}
             </div>
             <button
+              onClick={() => navigate("/jobb")}
+              style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "14px 24px", borderRadius: 12, background: "var(--green)", color: "#fff", fontSize: 15, fontWeight: 800, border: "none", cursor: "pointer", fontFamily: "inherit", marginBottom: 10 }}
+            >
+              {matchCount !== null && matchCount > 0 ? `Se ${matchCount} jobb i ${draft.region}` : "Se lediga jobb"}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </button>
+            <button
               onClick={() => navigate("/profil")}
-              style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "14px 24px", borderRadius: 12, background: "var(--green)", color: "#fff", fontSize: 15, fontWeight: 800, border: "none", cursor: "pointer", fontFamily: "inherit" }}
+              style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "12px 24px", borderRadius: 12, background: "transparent", color: "var(--ink-600)", fontSize: 14, fontWeight: 600, border: "1px solid var(--line)", cursor: "pointer", fontFamily: "inherit" }}
             >
               Till min profil
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
             </button>
           </div>
         </div>
@@ -427,7 +451,7 @@ export default function DriverOnboardingWizard() {
           })}
         </div>
 
-        {(draft.licenses.includes("C") || draft.licenses.includes("CE")) && (
+        {(draft.licenses.includes("C") || draft.licenses.includes("CE")) && !draft.licenses.includes("B") && (
           <p style={{ fontSize: 11.5, color: "var(--ink-400)", marginBottom: 20 }}>B-körkort ingår automatiskt med C/CE.</p>
         )}
 
@@ -489,10 +513,17 @@ export default function DriverOnboardingWizard() {
     );
 
     // STEP 4: Presentation
+    const summaryPlaceholder = draft.isGymnasieelev
+      ? "T.ex: Studerar till lastbilsförare och söker APL-plats hos åkeri. Engagerad, punktlig och van vid fysiskt arbete."
+      : draft.primarySegment === "FLEX"
+      ? "T.ex: Kör gärna extrapass och vikariat. Van vid distribution och lokalkörning i regionen. Flexibel och tillgänglig med kort varsel."
+      : "T.ex: CE-chaufför med erfarenhet av fjärrkörning och tank. Söker fast heltidstjänst med bra schemaplanering.";
+
     if (step === 4) return (
       <div>
-        <h1 style={{ fontSize: 28, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.8, marginBottom: 10 }}>Presentera dig kort</h1>
-        <p style={{ fontSize: 15, color: "var(--ink-500)", marginBottom: 20 }}>Ett par rader om din erfarenhet — det här är det första åkerier läser.</p>
+        <h1 style={{ fontSize: 28, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.8, marginBottom: 6 }}>Presentera dig kort</h1>
+        <p style={{ fontSize: 15, color: "var(--ink-500)", marginBottom: 4 }}>Ett par rader om din erfarenhet — det här är det första åkerier läser.</p>
+        <p style={{ fontSize: 13, color: "var(--ink-400)", marginBottom: 20 }}>Valfritt — du kan lägga till det senare från din profil.</p>
 
         <div style={{ position: "relative", marginBottom: 8 }}>
           <textarea
@@ -504,7 +535,7 @@ export default function DriverOnboardingWizard() {
               }
             }}
             rows={5}
-            placeholder={`T.ex: Erfaren CE-chaufför med 11 års vana av fjärrkörning, främst tank. Punktlig, dokumenterar noggrant, söker fast tjänst med bra schemaplanering.`}
+            placeholder={summaryPlaceholder}
             style={{
               width: "100%", padding: "16px", borderRadius: 12, background: "var(--card)",
               border: `1.5px solid ${aiAnalysis?.ok ? "var(--success)" : aiAnalysis && !aiAnalysis.ok ? "var(--amber)" : "var(--line)"}`,
@@ -518,9 +549,23 @@ export default function DriverOnboardingWizard() {
           </span>
         </div>
 
-        <div style={{ fontSize: 12.5, color: draft.summary.trim().length >= SUMMARY_MIN_LENGTH ? "var(--success)" : "var(--ink-400)", fontWeight: 600, marginBottom: 16 }}>
-          {draft.summary.trim().length >= SUMMARY_MIN_LENGTH ? "✓ Bra! Det räcker." : `Skriv minst ${SUMMARY_MIN_LENGTH - draft.summary.trim().length} tecken till.`}
-        </div>
+        {draft.summary.trim().length > 0 && (
+          <div style={{ fontSize: 12.5, color: draft.summary.trim().length >= SUMMARY_MIN_LENGTH ? "var(--success)" : "var(--ink-400)", fontWeight: 600, marginBottom: 16 }}>
+            {draft.summary.trim().length >= SUMMARY_MIN_LENGTH ? "✓ Bra! Det räcker." : `${SUMMARY_MIN_LENGTH - draft.summary.trim().length} tecken till för en komplett presentation.`}
+          </div>
+        )}
+        {draft.summary.trim().length === 0 && (
+          <div style={{ marginBottom: 16 }}>
+            <button
+              type="button"
+              onClick={saveAndFinish}
+              disabled={saving}
+              style={{ fontSize: 13, color: "var(--ink-400)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", padding: 0, textDecoration: "underline" }}
+            >
+              Hoppa över — lägg till senare
+            </button>
+          </div>
+        )}
 
         {/* AI feedback */}
         {aiLoading && draft.summary.trim().length >= SUMMARY_MIN_LENGTH && (
@@ -550,7 +595,7 @@ export default function DriverOnboardingWizard() {
             { label: "Körkort valt",   done: draft.licenses.length > 0 },
             { label: "Region vald",    done: Boolean(draft.region) },
             { label: "Söker-typ vald", done: Boolean(draft.primarySegment) || draft.isGymnasieelev === true },
-            { label: "Presentation",   done: draft.summary.trim().length >= SUMMARY_MIN_LENGTH },
+            { label: "Presentation (valfritt)", done: true },
           ].map((c) => (
             <div key={c.label} style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 0" }}>
               <span style={{ width: 18, height: 18, borderRadius: 9, background: c.done ? "var(--success-tint)" : "var(--paper)", border: `1.5px solid ${c.done ? "var(--success)" : "var(--line)"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 10, color: "var(--success)" }}>

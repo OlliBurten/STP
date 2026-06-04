@@ -1,4 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
+import { cityOffset } from "../data/swedenCityCoords";
+import { SWE_LAN_BOX } from "../data/swedenGeo";
 import { Link, useNavigate } from "react-router-dom";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { mockJobs } from "../data/mockJobs";
@@ -15,10 +17,11 @@ import PageMeta from "../components/PageMeta";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { useDriverTour } from "../hooks/useDriverTour";
 import { getProfileCompletion, getDriverMinimumChecklist } from "../utils/driverProfileRequirements";
+import SwedenJobMap from "../components/SwedenJobMap";
 
 /* ── Filter sections for mobile bottom sheet ─────────────────────────────── */
 const FILTER_SECTIONS = [
-  { title: "Körkort",    key: "license",    items: [{ l:"B", v:"B" }, { l:"C", v:"C" }, { l:"CE", v:"CE" }, { l:"D", v:"D" }] },
+  { title: "Körkort",    key: "license",    items: [{ l:"C", v:"C" }, { l:"CE", v:"CE" }] },
   { title: "Anställning",key: "employment", items: [{ l:"Fast", v:"fast" }, { l:"Vikariat", v:"vikariat" }, { l:"Tim", v:"tim" }] },
   { title: "Jobbtyp",    key: "jobType",    items: [{ l:"Fjärrkörning", v:"fjärrkörning" }, { l:"Distribution", v:"distribution" }, { l:"Lokalt", v:"lokalt" }] },
   { title: "Region",     key: "region",     items: [{ l:"Skåne", v:"Skåne" }, { l:"Stockholm", v:"Stockholm" }, { l:"V. Götaland", v:"Västra Götaland" }, { l:"Halland", v:"Halland" }, { l:"Norrbotten", v:"Norrbotten" }] },
@@ -86,7 +89,7 @@ function FilterSelect({ value, onChange, options, placeholder, width = 150 }) {
 
 /* ── FilterBar ───────────────────────────────────────────────────────────── */
 function FilterBar({ filters, setFilters, onOpenAll }) {
-  const LICENSE_OPTS    = [{ value: "CE", label: "CE-körkort" }, { value: "C", label: "C-körkort" }, { value: "B", label: "B-körkort" }, { value: "D", label: "D-körkort" }];
+  const LICENSE_OPTS    = [{ value: "CE", label: "CE-körkort" }, { value: "C", label: "C-körkort" }];
   const EMPLOYMENT_OPTS = [{ value: "fast", label: "Fast tjänst" }, { value: "vikariat", label: "Vikariat" }, { value: "tim", label: "Timjobb" }];
   const REGION_OPTS = [
     { value: "Skåne",            label: "Skåne" },
@@ -275,6 +278,7 @@ export default function JobList() {
     search: "", region: "", license: "", segment: "",
     jobType: "", employment: "", bransch: "", minSalary: "",
   });
+  const [view, setView] = useState("list");
 
   useDriverTour({ isDriver, user, profileLoaded: !jobsLoading });
 
@@ -316,6 +320,56 @@ export default function JobList() {
       && (!filters.employment || job.employment === filters.employment)
       && (!filters.bransch    || (job.bransch && job.bransch === filters.bransch));
   }), [jobs, filters, isGymnasieelev]);
+
+  const REGION_CODE_MAP = {
+    "Stockholm": "AB", "Uppsala": "C", "Södermanland": "D",
+    "Östergötland": "E", "Jönköping": "F", "Kronoberg": "G",
+    "Kalmar": "H", "Gotland": "I", "Blekinge": "K",
+    "Skåne": "M", "Halland": "N", "Västra Götaland": "O",
+    "Värmland": "S", "Örebro": "T", "Västmanland": "U",
+    "Dalarna": "W", "Gävleborg": "X", "Västernorrland": "Y",
+    "Jämtland": "Z", "Västerbotten": "AC", "Norrbotten": "BD",
+  };
+  const REGION_NUDGE = {
+    "C": {x:-4,y:-10},
+    "AB": {x:8,y:0},
+    "D": {x:6,y:6},
+  };
+  const regionData = useMemo(() => {
+    const byRegion = {};
+    filteredJobs.forEach(j => {
+      if (!j.region) return;
+      if (!byRegion[j.region]) byRegion[j.region] = { jobs: 0, cities: {} };
+      byRegion[j.region].jobs++;
+      const city = j.location || j.region;
+      byRegion[j.region].cities[city] = (byRegion[j.region].cities[city] || 0) + 1;
+    });
+    return Object.entries(byRegion)
+      .filter(([, d]) => d.jobs > 0)
+      .map(([region, d]) => {
+        const code = REGION_CODE_MAP[region] || "";
+        return {
+          id: region.toLowerCase().replace(/\s/g, "-"),
+          code,
+          name: region,
+          region,
+          jobs: d.jobs,
+          new: 0,
+          matches: 0,
+          nudge: REGION_NUDGE[code] || undefined,
+          cities: Object.entries(d.cities)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5)
+            .map(([name, jobs]) => {
+              const box = SWE_LAN_BOX[REGION_CODE_MAP[region] || ""];
+              const offset = box ? cityOffset(name, box.cx, box.cy) : null;
+              return { name, jobs, dx: offset?.dx ?? 0, dy: offset?.dy ?? 0 };
+            }),
+        };
+      })
+      .filter(r => r.code)
+      .sort((a, b) => b.jobs - a.jobs);
+  }, [filteredJobs]);
 
   const driverForMatch = useMemo(() => isDriver && profile ? {
     licenses: profile.licenses || [],
@@ -541,6 +595,32 @@ export default function JobList() {
                   </div>
                 </label>
               )}
+
+              {/* View toggle: Lista / Karta */}
+              <div style={{
+                display: "flex", padding: 4, gap: 3,
+                background: "var(--card)", border: "1px solid var(--line-2)",
+                borderRadius: 10, boxShadow: "var(--sh-sm)",
+              }}>
+                {[
+                  ["list", "Lista", <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>],
+                  ["map",  "Karta", <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21s-7-7.5-7-12a7 7 0 1114 0c0 4.5-7 12-7 12z"/></svg>],
+                ].map(([k, label, icon]) => (
+                  <button key={k} onClick={() => setView(k)} style={{
+                    display: "inline-flex", alignItems: "center", gap: 7,
+                    padding: "7px 14px", borderRadius: 7,
+                    background: view === k ? "var(--green)" : "transparent",
+                    color: view === k ? "#fff" : "var(--ink-700)",
+                    fontSize: 13, fontWeight: 600,
+                    border: "none", cursor: "pointer",
+                    transition: "all .12s",
+                    fontFamily: "var(--font)",
+                  }}>
+                    {icon}
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -618,35 +698,79 @@ export default function JobList() {
               onOpenAll={() => setDrawerOpen(true)}
             />
 
-            {/* Jobs grid: 1fr + 320px sidebar */}
-            <div className="stp-jobs-grid">
-              {/* Job list */}
-              <div className="stp-fade-up" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                {jobsLoading && <Skeletons count={5} />}
-
-                {!jobsLoading && displayJobs.length === 0 && (
-                  <EmptyState tabKey={tab} onReset={() => { setFilters(f => ({ ...f, search: "", region: "", license: "", employment: "", jobType: "" })); setTab("all"); }} />
-                )}
-
-{!jobsLoading && displayJobs.map(job => {
-                  const data = matchDataMap[job.id];
-                  return (
-                    <JobCard
-                      key={job.id}
-                      job={job}
-                      matchScore={showMatch ? (data?.pct ?? null) : null}
-                      matchCriteria={showMatch && data?.pct > 0 ? getMatchCriteria(driverForMatch, job, data?.details) : []}
-                      showSave={isDriver && hasApi}
-                      isSaved={savedJobIds.has(job.id)}
-                      onToggleSave={handleToggleSave}
-                    />
-                  );
-                })}
+            {view === "map" ? (
+              <div className="stp-fade-up" style={{ paddingTop: 24 }}>
+                <p style={{ fontSize: 14, color: "var(--ink-500)", marginBottom: 16, fontWeight: 500, maxWidth: 560 }}>
+                  Klicka på en region för att se lediga jobb där.
+                </p>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 280px", gap: 20, alignItems: "start" }}>
+                  <SwedenJobMap
+                    regions={regionData}
+                    onPickRegion={(r) => {
+                      setFilters(f => ({ ...f, region: r.region }));
+                      setView("list");
+                    }}
+                    height={580}
+                  />
+                  {/* Region-lista till höger */}
+                  <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: "var(--r-lg)", padding: "8px 10px" }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.3, textTransform: "uppercase", color: "var(--ink-500)", padding: "12px 14px 10px" }}>
+                      Jobb per region
+                    </div>
+                    {regionData.map(r => (
+                      <button key={r.id}
+                        onClick={() => { setFilters(f => ({ ...f, region: r.region })); setView("list"); }}
+                        style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "11px 14px", borderRadius: 10, textAlign: "left", border: "none", background: "transparent", cursor: "pointer", fontFamily: "var(--font)", transition: "background .12s" }}
+                        onMouseEnter={e => e.currentTarget.style.background = "var(--card-2)"}
+                        onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                      >
+                        <span style={{ width: 38, height: 38, borderRadius: 9, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, fontFamily: "var(--mono)", flexShrink: 0 }}>{r.jobs}</span>
+                        <span style={{ flex: 1, minWidth: 0 }}>
+                          <span style={{ display: "block", fontSize: 14, fontWeight: 700, color: "var(--ink-900)" }}>{r.name}</span>
+                          <span style={{ display: "block", fontSize: 12, color: "var(--ink-500)", marginTop: 1 }}>
+                            {r.new > 0 && <span style={{ color: "var(--success)", fontWeight: 600 }}>+{r.new} nya</span>}
+                            {r.new > 0 && r.matches > 0 && " · "}
+                            {r.matches > 0 && <span style={{ color: "var(--amber-deep)", fontWeight: 600 }}>{r.matches} matchar</span>}
+                            {r.new === 0 && r.matches === 0 && "Inga nya"}
+                          </span>
+                        </span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ink-300)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
+            ) : (
+              /* Jobs grid: 1fr + 320px sidebar */
+              <div className="stp-jobs-grid">
+                {/* Job list */}
+                <div className="stp-fade-up" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                  {jobsLoading && <Skeletons count={5} />}
 
-              {/* Sidebar */}
-              <Sidebar profile={profile} />
-            </div>
+                  {!jobsLoading && displayJobs.length === 0 && (
+                    <EmptyState tabKey={tab} onReset={() => { setFilters(f => ({ ...f, search: "", region: "", license: "", employment: "", jobType: "" })); setTab("all"); }} />
+                  )}
+
+                  {!jobsLoading && displayJobs.map(job => {
+                    const data = matchDataMap[job.id];
+                    return (
+                      <JobCard
+                        key={job.id}
+                        job={job}
+                        matchScore={showMatch ? (data?.pct ?? null) : null}
+                        matchCriteria={showMatch && data?.pct > 0 ? getMatchCriteria(driverForMatch, job, data?.details) : []}
+                        showSave={isDriver && hasApi}
+                        isSaved={savedJobIds.has(job.id)}
+                        onToggleSave={handleToggleSave}
+                      />
+                    );
+                  })}
+                </div>
+
+                {/* Sidebar */}
+                <Sidebar profile={profile} />
+              </div>
+            )}
         </>
       </main>
 

@@ -188,7 +188,7 @@ export async function issueEmailVerification(userId, email, baseUrlOverride) {
 
 authRouter.post("/register", validateBody(registerSchema), async (req, res, next) => {
   try {
-    const { email, password, role, name, companyName, companyOrgNumber, verificationBaseUrl } = req.body;
+    const { email, password, role, name, companyName, companyOrgNumber, verificationBaseUrl, claimToken } = req.body;
     const normalizedOrgNumber = normalizeOrgNumber(companyOrgNumber);
     if (role === "COMPANY" && normalizedOrgNumber) {
       const existingUser = await prisma.user.findFirst({
@@ -263,6 +263,77 @@ authRouter.post("/register", validateBody(registerSchema), async (req, res, next
     } catch (notifyErr) {
       console.error("Admin new-registration notify failed:", notifyErr);
     }
+    // Auto-activate claim if a claimToken was provided at registration
+    let claimResult = null;
+    if (claimToken && role === "COMPANY") {
+      try {
+        const claim = await prisma.employerClaim.findUnique({
+          where: { claimToken },
+        });
+        if (claim && !claim.claimedAt && !claim.optedOutAt) {
+          const orgNumber = claim.organizationNumber;
+          let org = await prisma.organization.findUnique({ where: { orgNumber } });
+          if (!org) {
+            const firstJob = await prisma.job.findFirst({
+              where: { organizationNumber: orgNumber, source: "AGGREGATED" },
+              select: { company: true },
+            });
+            org = await prisma.organization.create({
+              data: {
+                orgNumber,
+                name: user.companyName || firstJob?.company || orgNumber,
+                status: "PENDING",
+              },
+            });
+          }
+          await prisma.userOrganization.upsert({
+            where: { userId_organizationId: { userId: user.id, organizationId: org.id } },
+            create: { userId: user.id, organizationId: org.id, role: "OWNER" },
+            update: { role: "OWNER" },
+          });
+          const updated = await prisma.job.updateMany({
+            where: { organizationNumber: orgNumber, source: "AGGREGATED", status: { not: "REMOVED" } },
+            data: { claimed: true, organizationId: org.id },
+          });
+          const claimedJobIds = await prisma.job.findMany({
+            where: { organizationNumber: orgNumber, source: "AGGREGATED" },
+            select: { id: true },
+          }).then((jobs) => jobs.map((j) => j.id));
+          let applicationsForwarded = 0;
+          if (claimedJobIds.length > 0) {
+            const fwd = await prisma.application.updateMany({
+              where: { jobId: { in: claimedJobIds }, status: "SUBMITTED" },
+              data: { status: "FORWARDED" },
+            });
+            applicationsForwarded = fwd.count;
+          }
+          await prisma.employerClaim.update({
+            where: { id: claim.id },
+            data: { claimedByUserId: user.id, claimedAt: new Date() },
+          });
+          claimResult = {
+            activated: true,
+            organizationId: org.id,
+            jobsUpdated: updated.count,
+            applicationsForwarded,
+          };
+          try {
+            await prisma.adminAuditLog.create({
+              data: {
+                adminUserId: user.id,
+                adminEmail: user.email,
+                action: "EMPLOYER_CLAIM_ACTIVATED_AT_REGISTRATION",
+                targetType: "EmployerClaim",
+                metadata: { organizationNumber: orgNumber, ...claimResult },
+              },
+            });
+          } catch { /* non-critical */ }
+        }
+      } catch (claimErr) {
+        console.error("[Claim] Auto-activation failed:", claimErr.message);
+      }
+    }
+
     const augmentedUser = await augmentCompanyMemberUser(user);
     const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, {
       expiresIn: "24h",
@@ -274,13 +345,15 @@ authRouter.post("/register", validateBody(registerSchema), async (req, res, next
         isAdmin: isAdminEmail(user.email),
       }),
       token,
+      claimResult,
       verification:
         hasCompanyAtReg
           ? {
               required: true,
               status: user.companyStatus,
-              message:
-                "Företagskontot är skapat och väntar på verifiering innan ni kan publicera jobb eller kontakta förare.",
+              message: claimResult?.activated
+                ? `Kontot är skapat och ${claimResult.jobsUpdated} annonser är kopplade till er. ${claimResult.applicationsForwarded > 0 ? `${claimResult.applicationsForwarded} ansökningar väntar på er.` : ""} Kontot väntar på verifiering.`
+                : "Företagskontot är skapat och väntar på verifiering innan ni kan publicera jobb eller kontakta förare.",
             }
           : null,
       emailVerification: {

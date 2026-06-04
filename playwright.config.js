@@ -54,6 +54,24 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"] },
       dependencies: ["setup"],
     },
+
+    // 4. Wizard-setup — skapar/verifierar wizard-testkonto
+    {
+      name: "wizard-setup",
+      testMatch: /setup\/wizard-auth\.setup\.js/,
+      use: { ...devices["Desktop Chrome"] },
+    },
+
+    // 5. Wizard-tester — kräver wizard-setup
+    {
+      name: "chromium-wizard",
+      testMatch: [/driver-wizard\.spec/],
+      use: {
+        ...devices["Desktop Chrome"],
+        storageState: "playwright/.auth/wizard-driver.json",
+      },
+      dependencies: ["wizard-setup"],
+    },
   ],
   timeout: 20000,
   expect: { timeout: 8000 },

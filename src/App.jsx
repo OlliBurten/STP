@@ -103,6 +103,7 @@ const Arbetsmarknadsutbildning = lazyRetry(() => import("./pages/Arbetsmarknadsu
 const Partner               = lazyRetry(() => import("./pages/Partner"));
 const DriverAcquisitionLanding = lazyRetry(() => import("./pages/DriverAcquisitionLanding"));
 const PartnerPresentation   = lazyRetry(() => import("./pages/PartnerPresentation"));
+const ClaimLanding          = lazyRetry(() => import("./pages/ClaimLanding"));
 const BloggIndex            = lazy(() => import("./pages/blogg/BloggIndex"));
 const CeKorkortSverige      = lazy(() => import("./pages/blogg/CeKorkortSverige"));
 const YkbGuide              = lazy(() => import("./pages/blogg/YkbGuide"));
@@ -276,6 +277,7 @@ function AppLayout() {
                   <Route path="/uppdateringar" element={<PatchNotes />} />
                   <Route path="/vision" element={<VisionPresentation />} />
                   <Route path="/login" element={<Login />} />
+                  <Route path="/anslut/:token" element={<ClaimLanding />} />
                   <Route path="/invite/accept" element={<InviteAccept />} />
                   <Route path="/verifiera-email" element={<VerifyEmail />} />
                   <Route path="/aterstall-losenord" element={<ResetPassword />} />

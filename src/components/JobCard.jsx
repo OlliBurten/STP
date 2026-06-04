@@ -124,7 +124,14 @@ export default function JobCard({
               </div>
               <div style={{ fontSize: 13, color: "var(--ink-500)", display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
                 <span style={{ fontWeight: 600, color: "var(--ink-700)" }}>{job.company}</span>
-                {job.companyVerified && (
+                {job.source === "AGGREGATED" && !job.claimed ? (
+                  <>
+                    <span style={{ color: "var(--ink-300)" }}>·</span>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 12, color: "var(--ink-400)", fontWeight: 500 }}>
+                      Importerad annons
+                    </span>
+                  </>
+                ) : job.companyVerified ? (
                   <>
                     <span style={{ color: "var(--ink-300)" }}>·</span>
                     <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 12, color: "var(--success)", fontWeight: 600 }}>
@@ -132,7 +139,7 @@ export default function JobCard({
                       Verifierat
                     </span>
                   </>
-                )}
+                ) : null}
                 {job.kollektivavtal === true && (
                   <span style={{ fontSize: 12, color: "var(--ink-500)", fontWeight: 500 }}>Kollektivavtal</span>
                 )}

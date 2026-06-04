@@ -185,7 +185,7 @@ export default function Header({ onboarding = false }) {
       {!user && isLanding && (
         <>
           {[
-            { to: "/jobb",             label: "För förare" },
+            { to: "/forare",            label: "För förare" },
             { to: "/for-akerier",      label: "För åkerier" },
             { to: "/#sa-fungerar-det", label: "Så fungerar det" },
             { to: "/om-oss",           label: "Om STP" },

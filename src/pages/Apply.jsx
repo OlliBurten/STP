@@ -5,6 +5,7 @@ import { useProfile } from "../context/ProfileContext";
 import { useChat } from "../context/ChatContext";
 import { fetchJob } from "../api/jobs.js";
 import { suggestMessage } from "../api/ai.js";
+import { submitApplication } from "../api/applications.js";
 import { getCertificateLabel } from "../data/profileData";
 import { matchScore } from "../utils/matchUtils";
 import { calcYearsExperience } from "../utils/profileUtils";
@@ -130,25 +131,38 @@ function JobContextSidebar({ job }) {
 }
 
 // ─── Submitted state ──────────────────────────────────────────────────────────
-function Submitted({ job, conversationId }) {
+function Submitted({ job, conversationId, isAggregatedUnclaimed }) {
+  const aggregatedSteps = [
+    { n: 1, t: "Vi kontaktar åkeriet", s: `Vi skickar din intresseanmälan till ${job?.company} och ber dem ansluta till STP.` },
+    { n: 2, t: "Åkeriet ansluter", s: "När de registrerar sig kan de se din profil och svara." },
+    { n: 3, t: "Ni pratar direkt", s: "All kontakt sker sedan via plattformen — inga mellanhänder." },
+  ];
+  const organicSteps = [
+    { n: 1, t: "Åkeriet ser din ansökan", s: "De får din fullständiga profil med körkort och certifikat." },
+    { n: 2, t: "De hör av sig", s: `${job?.company || "Åkeriet"} svarar oftast inom 1–2 dagar.` },
+    { n: 3, t: "Ni pratar direkt", s: "All kontakt sker via plattformen — inga mellanhänder." },
+  ];
+  const steps = isAggregatedUnclaimed ? aggregatedSteps : organicSteps;
+
   return (
     <div style={{ maxWidth: 620, margin: "40px auto 80px", padding: "0 24px" }}>
       <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "44px 40px", boxShadow: "var(--sh-sm)", textAlign: "center" }}>
         <div style={{ width: 72, height: 72, borderRadius: 36, margin: "0 auto 24px", background: "var(--success-tint)", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <Icon n="check" s={34} c="var(--success)" />
         </div>
-        <h1 style={{ fontSize: 26, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.6, marginBottom: 10 }}>Ansökan skickad!</h1>
+        <h1 style={{ fontSize: 26, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.6, marginBottom: 10 }}>
+          {isAggregatedUnclaimed ? "Intresseanmälan mottagen!" : "Ansökan skickad!"}
+        </h1>
         <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.6, marginBottom: 28 }}>
-          Din profil och ditt meddelande har skickats till <strong style={{ color: "var(--ink-900)" }}>{job?.company}</strong>. Du får en notis så fort de svarar.
+          {isAggregatedUnclaimed
+            ? <>Vi har tagit emot din intresseanmälan för <strong style={{ color: "var(--ink-900)" }}>{job?.company}</strong> och kontaktar åkeriet å dina vägnar.</>
+            : <>Din profil och ditt meddelande har skickats till <strong style={{ color: "var(--ink-900)" }}>{job?.company}</strong>. Du får en notis så fort de svarar.</>
+          }
         </p>
 
         <div style={{ textAlign: "left", background: "var(--card-2)", borderRadius: 12, padding: "20px 22px", marginBottom: 28 }}>
           <SectionLabel>Vad händer nu?</SectionLabel>
-          {[
-            { n: 1, t: "Åkeriet ser din ansökan", s: "De får din fullständiga profil med körkort och certifikat." },
-            { n: 2, t: "De hör av sig", s: `${job?.company || "Åkeriet"} svarar oftast inom 1–2 dagar.` },
-            { n: 3, t: "Ni pratar direkt", s: "All kontakt sker via plattformen — inga mellanhänder." },
-          ].map((s) => (
+          {steps.map((s) => (
             <div key={s.n} style={{ display: "flex", gap: 14, alignItems: "flex-start", padding: "10px 0", borderBottom: s.n < 3 ? "1px solid var(--line)" : "none" }}>
               <span style={{ width: 26, height: 26, borderRadius: 13, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, flexShrink: 0, fontFamily: "var(--mono)" }}>{s.n}</span>
               <div>
@@ -197,6 +211,10 @@ export default function Apply() {
   const [submitted, setSubmitted] = useState(false);
   const [conversationId, setConversationId] = useState(null);
   const [error, setError] = useState("");
+  const [consentToShare, setConsentToShare] = useState(false);
+
+  // Derived: is this an AGGREGATED job that hasn't been claimed by an employer yet?
+  const isAggregatedUnclaimed = job?.source === "AGGREGATED" && !job?.claimed;
 
   const MAX_MSG = 600;
 
@@ -251,8 +269,27 @@ export default function Apply() {
   const handleSubmit = async () => {
     if (!job || !profile) return;
     setError("");
+
+    // For unclaimed aggregated jobs, consent is required
+    if (isAggregatedUnclaimed && !consentToShare) {
+      setError("Du måste samtycka till att din ansökan delas med arbetsgivaren.");
+      return;
+    }
+
     setSending(true);
     try {
+      // ── AGGREGATED / unclaimed path: create Application record ────────────
+      if (isAggregatedUnclaimed) {
+        await submitApplication({
+          jobId: job.id,
+          messageFromDriver: message.trim() || null,
+          consentToShare: true,
+        });
+        setSubmitted(true);
+        return;
+      }
+
+      // ── ORGANIC / claimed path: existing Conversation flow ─────────────────
       const convId = await createConversation({
         driverId: user?.id ?? profile.id,
         companyId: job.userId,
@@ -498,13 +535,39 @@ export default function Apply() {
             )}
           </div>
 
-          {/* Info banner */}
-          <div style={{ background: "var(--info-tint)", border: "1px solid rgba(27,90,138,0.2)", borderRadius: 13, padding: "14px 16px", display: "flex", gap: 11, alignItems: "flex-start", marginBottom: 8 }}>
-            <svg viewBox="0 0 24 24" fill="var(--info)" width="14" height="14" style={{ flexShrink: 0, marginTop: 1 }}><path d="M12 2l2.4 7.6H22l-6.2 4.5 2.4 7.6L12 17.2l-6.2 4.5 2.4-7.6L2 9.6h7.6z"/></svg>
-            <div style={{ fontSize: 12, color: "var(--ink-700)", lineHeight: 1.5 }}>
-              Din profil skickas till {job?.company}. Du hör tillbaka via Inkorgen — vanligtvis inom 2 dagar.
+          {/* Provenance notice + consent for AGGREGATED/unclaimed jobs */}
+          {isAggregatedUnclaimed && (
+            <div style={{ background: "var(--amber-tint)", border: "1px solid var(--amber-tint-2)", borderRadius: 13, padding: "14px 16px", marginBottom: 8 }}>
+              <div style={{ fontSize: 12.5, color: "var(--ink-700)", lineHeight: 1.6, marginBottom: 10 }}>
+                <strong style={{ color: "var(--amber-text)" }}>Det här åkeriet är inte anslutet till STP ännu.</strong> Vi förmedlar din intresseanmälan och kontaktar dem åt dig. Du kan även söka direkt via originalannonsen:
+                {job?.originalPostingUrl && (
+                  <> <a href={job.originalPostingUrl} target="_blank" rel="noopener noreferrer" style={{ color: "var(--green)", fontWeight: 600 }}>Originalannons ↗</a></>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => setConsentToShare(!consentToShare)}
+                style={{ display: "flex", alignItems: "flex-start", gap: 10, background: "transparent", border: "none", padding: 0, cursor: "pointer", textAlign: "left", fontFamily: "inherit" }}
+              >
+                <div style={{ width: 20, height: 20, borderRadius: 5, border: `2px solid ${consentToShare ? "var(--green)" : "var(--ink-300)"}`, background: consentToShare ? "var(--green)" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
+                  {consentToShare && <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" width="11" height="11"><polyline points="20 6 9 17 4 12"/></svg>}
+                </div>
+                <span style={{ fontSize: 12.5, color: "var(--ink-700)", lineHeight: 1.5, fontWeight: 500 }}>
+                  Jag samtycker till att min intresseanmälan delas med arbetsgivaren.
+                </span>
+              </button>
             </div>
-          </div>
+          )}
+
+          {/* Info banner for organic jobs */}
+          {!isAggregatedUnclaimed && (
+            <div style={{ background: "var(--info-tint)", border: "1px solid rgba(27,90,138,0.2)", borderRadius: 13, padding: "14px 16px", display: "flex", gap: 11, alignItems: "flex-start", marginBottom: 8 }}>
+              <svg viewBox="0 0 24 24" fill="var(--info)" width="14" height="14" style={{ flexShrink: 0, marginTop: 1 }}><path d="M12 2l2.4 7.6H22l-6.2 4.5 2.4 7.6L12 17.2l-6.2 4.5 2.4-7.6L2 9.6h7.6z"/></svg>
+              <div style={{ fontSize: 12, color: "var(--ink-700)", lineHeight: 1.5 }}>
+                Din profil skickas till {job?.company}. Du hör tillbaka via Inkorgen — vanligtvis inom 2 dagar.
+              </div>
+            </div>
+          )}
 
           {error && (
             <div style={{ marginTop: 12, padding: "12px 16px", borderRadius: 10, background: "var(--danger-tint)", border: "1px solid rgba(185,28,59,0.2)", color: "var(--danger)", fontSize: 13 }}>
@@ -518,10 +581,10 @@ export default function Apply() {
           <button
             type="button"
             onClick={handleSubmit}
-            disabled={sending || !job?.userId}
-            style={{ width: "100%", padding: "16px", borderRadius: 14, background: !sending ? "var(--green)" : "var(--paper-2)", color: !sending ? "#fff" : "var(--ink-400)", fontSize: 15, fontWeight: 800, cursor: sending ? "not-allowed" : "pointer", border: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: !sending ? "var(--sh)" : "none", fontFamily: "inherit" }}
+            disabled={sending || (isAggregatedUnclaimed ? !consentToShare : !job?.userId)}
+            style={{ width: "100%", padding: "16px", borderRadius: 14, background: (sending || (isAggregatedUnclaimed && !consentToShare)) ? "var(--paper-2)" : "var(--green)", color: (sending || (isAggregatedUnclaimed && !consentToShare)) ? "var(--ink-400)" : "#fff", fontSize: 15, fontWeight: 800, cursor: (sending || (isAggregatedUnclaimed && !consentToShare)) ? "not-allowed" : "pointer", border: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: (sending || (isAggregatedUnclaimed && !consentToShare)) ? "none" : "var(--sh)", fontFamily: "inherit" }}
           >
-            {sending ? "Skickar..." : "Skicka ansökan"}
+            {sending ? "Skickar..." : isAggregatedUnclaimed ? "Skicka intresseanmälan" : "Skicka ansökan"}
             {!sending && <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>}
           </button>
         </div>
@@ -555,7 +618,7 @@ export default function Apply() {
     return (
       <main style={{ background: "var(--paper)", minHeight: "100vh" }}>
         <PageMeta title={`Ansökan skickad – ${job.title}`} />
-        <Submitted job={job} conversationId={conversationId} />
+        <Submitted job={job} conversationId={conversationId} isAggregatedUnclaimed={isAggregatedUnclaimed} />
       </main>
     );
   }
@@ -680,6 +743,32 @@ export default function Apply() {
               />
             </Card>
 
+            {/* Provenance notice + consent for AGGREGATED/unclaimed jobs */}
+            {isAggregatedUnclaimed && (
+              <Card style={{ background: "var(--amber-tint)", border: "1px solid var(--amber-tint-2)" }}>
+                <div style={{ fontSize: 13.5, color: "var(--ink-800)", lineHeight: 1.65, marginBottom: 14 }}>
+                  <strong style={{ color: "var(--amber-text)" }}>Det här åkeriet är inte anslutet till STP ännu.</strong>
+                  {" "}Vi förmedlar din intresseanmälan och kontaktar dem åt dig. Du kan även söka direkt via{" "}
+                  {job?.originalPostingUrl
+                    ? <a href={job.originalPostingUrl} target="_blank" rel="noopener noreferrer" style={{ color: "var(--green)", fontWeight: 700 }}>originalannonsen ↗</a>
+                    : "originalannonsen"
+                  }.
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setConsentToShare(!consentToShare)}
+                  style={{ display: "flex", alignItems: "flex-start", gap: 12, background: "transparent", border: "none", padding: 0, cursor: "pointer", textAlign: "left", fontFamily: "inherit" }}
+                >
+                  <div style={{ width: 22, height: 22, borderRadius: 6, border: `2px solid ${consentToShare ? "var(--green)" : "var(--ink-300)"}`, background: consentToShare ? "var(--green)" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
+                    {consentToShare && <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" width="12" height="12"><polyline points="20 6 9 17 4 12"/></svg>}
+                  </div>
+                  <span style={{ fontSize: 14, color: "var(--ink-700)", lineHeight: 1.55 }}>
+                    Jag samtycker till att min intresseanmälan delas med arbetsgivaren.
+                  </span>
+                </button>
+              </Card>
+            )}
+
             {error && (
               <div style={{ padding: "12px 16px", borderRadius: 10, background: "var(--danger-tint)", border: "1px solid rgba(185,28,59,0.2)", color: "var(--danger)", fontSize: 13 }}>
                 {error}
@@ -691,10 +780,10 @@ export default function Apply() {
               <button
                 type="button"
                 onClick={handleSubmit}
-                disabled={sending || !job?.userId}
-                style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 28px", borderRadius: 10, background: !sending ? "var(--green)" : "var(--paper-2)", color: !sending ? "#fff" : "var(--ink-400)", fontSize: 15, fontWeight: 800, border: "none", cursor: sending ? "not-allowed" : "pointer", boxShadow: !sending ? "var(--sh)" : "none", fontFamily: "inherit", transition: "all .15s" }}
+                disabled={sending || (isAggregatedUnclaimed ? !consentToShare : !job?.userId)}
+                style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 28px", borderRadius: 10, background: (sending || (isAggregatedUnclaimed && !consentToShare)) ? "var(--paper-2)" : "var(--green)", color: (sending || (isAggregatedUnclaimed && !consentToShare)) ? "var(--ink-400)" : "#fff", fontSize: 15, fontWeight: 800, border: "none", cursor: (sending || (isAggregatedUnclaimed && !consentToShare)) ? "not-allowed" : "pointer", boxShadow: (sending || (isAggregatedUnclaimed && !consentToShare)) ? "none" : "var(--sh)", fontFamily: "inherit", transition: "all .15s" }}
               >
-                {sending ? "Skickar..." : "Skicka ansökan"}
+                {sending ? "Skickar..." : isAggregatedUnclaimed ? "Skicka intresseanmälan" : "Skicka ansökan"}
                 {!sending && <Icon n="arrow" s={15} c="#fff" />}
               </button>
               <Link to={`/jobb/${id}`} style={{ padding: "14px 22px", borderRadius: 10, background: "transparent", border: "none", fontSize: 14, fontWeight: 600, color: "var(--ink-500)", textDecoration: "none" }}>

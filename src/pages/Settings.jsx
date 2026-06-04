@@ -554,7 +554,7 @@ function SokprefSection({ profile: initialProfile }) {
     <Card title="Vad letar du efter?" sub="Används för att beräkna din matchning mot lediga jobb. Ju mer specifik, desto bättre matchning.">
       <Field label="Körkort jag har">
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {["B", "C", "CE", "D", "DE"].map((l) => {
+          {["C", "CE"].map((l) => {
             const on = licenses.includes(l);
             return (
               <button key={l} type="button" onClick={() => toggle("licenses", l)}

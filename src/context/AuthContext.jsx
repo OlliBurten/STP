@@ -215,7 +215,7 @@ export function AuthProvider({ children }) {
   }, [commitAuthState]);
 
   const registerWithApi = useCallback(
-    async ({ email, password, role, name, companyName, companyOrgNumber }) => {
+    async ({ email, password, role, name, companyName, companyOrgNumber, claimToken }) => {
       const verificationBaseUrl =
         typeof window !== "undefined" && window.location?.origin ? window.location.origin : undefined;
       const data = await apiPost("/api/auth/register", {
@@ -226,11 +226,16 @@ export function AuthProvider({ children }) {
         companyName: role === "company" ? companyName : undefined,
         companyOrgNumber: role === "company" ? companyOrgNumber : undefined,
         verificationBaseUrl,
+        claimToken: claimToken || undefined,
       });
       const u = normalizeUser(data.user);
       identifyUser(u);
-      track("user_registered", { role: u.rawRole || u.role });
-      return { user: u, emailVerificationSent: data.emailVerificationSent === true };
+      track("user_registered", { role: u.rawRole || u.role, claimActivated: !!data.claimResult?.activated });
+      return {
+        user: u,
+        emailVerificationSent: data.emailVerificationSent === true,
+        claimResult: data.claimResult ?? null,
+      };
     },
     []
   );

@@ -520,9 +520,9 @@ export default function JobDetail() {
                 <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: -0.6, lineHeight: 1.2, marginBottom: 6, color: "var(--ink-900)" }}>{job.title}</h1>
                 <div style={{ fontSize: 13.5, color: "var(--ink-500)", display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" }}>
                   <span style={{ fontWeight: 600, color: "var(--ink-700)" }}>{job.company}</span>
-                  {job.companyVerified && (
+                  {job.source === "AGGREGATED" && !job.claimed ? null : job.companyVerified ? (
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 12 10 18 20 6"/></svg>
-                  )}
+                  ) : null}
                   {job.location && (
                     <>
                       <span style={{ color: "var(--ink-300)" }}>·</span>
@@ -742,15 +742,21 @@ export default function JobDetail() {
 
             {/* Trust badges */}
             <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginBottom: 14 }}>
-              {job.companyVerified && (
+              {job.source === "AGGREGATED" && !job.claimed ? (
+                <Pill tone="neutral">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  Importerad annons · ej anslutet åkeri
+                </Pill>
+              ) : job.companyVerified ? (
                 <Pill tone="success">
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 12 10 18 20 6"/></svg>
                   Verifierat företag
                 </Pill>
+              ) : (
+                <Pill tone="neutral">Ej verifierat</Pill>
               )}
               {job.kollektivavtal === true && <Pill tone="info">Kollektivavtal</Pill>}
               {job.rolling && <Pill tone="amber">⚡ Rekrytering pågår</Pill>}
-              {!job.companyVerified && <Pill tone="neutral">Ej verifierat</Pill>}
             </div>
 
             {/* Tags */}

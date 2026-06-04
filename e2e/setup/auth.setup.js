@@ -19,7 +19,7 @@ const companyAuthFile = path.join(process.cwd(), "playwright/.auth/company.json"
 setup("autentisera som förare", async ({ page }) => {
   await page.goto("/login");
   await page.getByLabel(/E-post/i).fill(DRIVER_EMAIL);
-  await page.locator("#password").fill(DRIVER_PASSWORD);
+  await page.locator('input[type="password"]').first().fill(DRIVER_PASSWORD);
   await page.getByRole("button", { name: /Logga in/i }).click();
   await expect(page).not.toHaveURL(/\/login/, { timeout: 15000 });
 
@@ -75,7 +75,7 @@ setup("autentisera som förare", async ({ page }) => {
 setup("autentisera som åkeri", async ({ page }) => {
   await page.goto("/login");
   await page.getByLabel(/E-post/i).fill(COMPANY_EMAIL);
-  await page.locator("#password").fill(COMPANY_PASSWORD);
+  await page.locator('input[type="password"]').first().fill(COMPANY_PASSWORD);
   await page.getByRole("button", { name: /Logga in/i }).click();
   // Ska landa på /foretag direkt — ingen onboarding-wizard längre
   await expect(page).toHaveURL(/\/foretag/, { timeout: 15000 });

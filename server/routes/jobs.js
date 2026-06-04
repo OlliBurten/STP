@@ -201,7 +201,7 @@ jobsRouter.get("/", validateQuery(jobsListQuerySchema), async (req, res, next) =
       salary: j.salary,
       salaryMin: j.salaryMin ?? null,
       salaryMax: j.salaryMax ?? null,
-      externalApplyUrl: j.externalApplyUrl ?? null,
+      externalApplyUrl: j.source === "AGGREGATED" ? null : (j.externalApplyUrl ?? null),
       description: j.description,
       requirements: j.requirements ? JSON.parse(j.requirements || "[]") : [],
       status: j.status,
@@ -212,11 +212,15 @@ jobsRouter.get("/", validateQuery(jobsListQuerySchema), async (req, res, next) =
       soloWorkOk: j.soloWorkOk ?? null,
       kollektivavtal: j.kollektivavtal ?? null,
       filledAt: j.filledAt?.toISOString() ?? null,
-      companyVerified: (j.organization?.status || j.user?.companyStatus) === "VERIFIED",
+      companyVerified: (j.source === "AGGREGATED" && !j.claimed)
+        ? false
+        : (j.organization?.status || j.user?.companyStatus) === "VERIFIED",
       companyReviewAverage: reviewByCompany.get(j.userId)?.avg
         ? Number(reviewByCompany.get(j.userId).avg.toFixed(2))
         : null,
       companyReviewCount: reviewByCompany.get(j.userId)?.count || 0,
+      source: j.source ?? "ORGANIC",
+      claimed: j.claimed ?? false,
     }));
     res.json(list);
   } catch (e) {
@@ -492,7 +496,7 @@ jobsRouter.get("/:id", optionalAuthMiddleware, attachCompanyContext, async (req,
       salary: job.salary,
       salaryMin: job.salaryMin ?? null,
       salaryMax: job.salaryMax ?? null,
-      externalApplyUrl: job.externalApplyUrl ?? null,
+      externalApplyUrl: job.source === "AGGREGATED" ? null : (job.externalApplyUrl ?? null),
       description: job.description,
       aboutJob: job.aboutJob ?? null,
       tasks: job.tasks ?? [],
@@ -511,11 +515,20 @@ jobsRouter.get("/:id", optionalAuthMiddleware, attachCompanyContext, async (req,
       companyDescriptionShort,
       companyWebsite: companySource?.website ?? companySource?.companyWebsite ?? null,
       companyLocation: companySource?.location ?? companySource?.companyLocation ?? null,
-      companyVerified: (job.organization?.status || job.user?.companyStatus) === "VERIFIED",
+      // For AGGREGATED/unclaimed jobs: never "Verified", regardless of system user status
+      companyVerified: job.source === "AGGREGATED" && !job.claimed
+        ? false
+        : (job.organization?.status || job.user?.companyStatus) === "VERIFIED",
       companyReviewAverage: reviewAggregate._avg.rating
         ? Number(reviewAggregate._avg.rating.toFixed(2))
         : null,
       companyReviewCount: reviewAggregate._count._all || 0,
+      source: job.source ?? "ORGANIC",
+      claimed: job.claimed ?? false,
+      // Escape-hatch link for unclaimed jobs shown honestly in UI
+      originalPostingUrl: (job.source === "AGGREGATED" && !job.claimed)
+        ? (job.sourceUrl ?? null)
+        : null,
     });
   } catch (e) {
     next(e);

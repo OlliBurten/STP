@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { usePageTitle } from "../hooks/usePageTitle";
 import PageMeta from "../components/PageMeta";
 import { fetchCompaniesSearch } from "../api/companies.js";
@@ -24,6 +24,8 @@ const IC = {
   list: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>,
   bookmark: <svg viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>,
   filter: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="20" y2="12"/><line x1="12" y1="18" x2="20" y2="18"/><circle cx="4" cy="12" r="1.5"/><circle cx="16" cy="6" r="1.5"/><circle cx="8" cy="18" r="1.5"/></svg>,
+  heartFilled: <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>,
+  heartOutline: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>,
 };
 
 function Icon({ n, s = 16, c = "currentColor", filled = false }) {
@@ -76,6 +78,7 @@ function fmtSalary(n) {
 
 function CompanyGridCard({ c, user, saved, onToggleSave }) {
   const [saving, setSaving] = useState(false);
+  const navigate = useNavigate();
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -92,6 +95,7 @@ function CompanyGridCard({ c, user, saved, onToggleSave }) {
 
   return (
     <article
+      onClick={() => navigate(`/foretag/${c.id}`)}
       style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "20px 22px", boxShadow: "var(--sh-sm)", transition: "box-shadow .15s, border-color .15s", cursor: "pointer", display: "flex", flexDirection: "column" }}
       onMouseEnter={e => { e.currentTarget.style.boxShadow = "var(--sh)"; e.currentTarget.style.borderColor = "var(--line-2)"; }}
       onMouseLeave={e => { e.currentTarget.style.boxShadow = "var(--sh-sm)"; e.currentTarget.style.borderColor = "var(--line)"; }}
@@ -111,7 +115,7 @@ function CompanyGridCard({ c, user, saved, onToggleSave }) {
         </div>
         {user && (
           <button type="button" onClick={handleSave} disabled={saving} style={{ width: 30, height: 30, borderRadius: 8, flexShrink: 0, background: saved ? "var(--amber-tint)" : "var(--card-2)", border: `1px solid ${saved ? "rgba(199,122,14,0.3)" : "var(--line-2)"}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: saved ? "var(--amber-deep)" : "var(--ink-400)" }}>
-            <Icon n="bookmark" s={13} filled={saved} />
+            <Icon n={saved ? "heartFilled" : "heartOutline"} s={13} />
           </button>
         )}
       </div>
