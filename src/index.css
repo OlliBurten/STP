@@ -166,7 +166,7 @@ a:hover { text-decoration: underline; }
 }
 
 /* ── Jobs grid ─────────────────────────────────────────────────────────────── */
-.stp-jobs-grid { display: grid; grid-template-columns: 1fr 320px; gap: 24px; align-items: start; }
+.stp-jobs-grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 24px; align-items: start; }
 @media (max-width: 1080px) { .stp-jobs-grid { grid-template-columns: 1fr; } }
 @media (max-width: 1080px) { .stp-jobs-grid > aside { display: none; } }
 
