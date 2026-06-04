@@ -83,6 +83,9 @@ const InkorgPreview         = lazyRetry(() => import("./pages/preview/InkorgPrev
 const AkeriDashboardPreview = lazyRetry(() => import("./pages/preview/akeri/DashboardPreview"));
 const AkeriAnnonserPreview  = lazyRetry(() => import("./pages/preview/akeri/AnnonserPreview"));
 const AkeriHittaForarePreview = lazyRetry(() => import("./pages/preview/akeri/HittaForarePreview"));
+const AkeriSkapaAnnonsPreview = lazyRetry(() => import("./pages/preview/akeri/SkapaAnnonsPreview"));
+const AkeriKanbanPreview    = lazyRetry(() => import("./pages/preview/akeri/KanbanPreview"));
+const AkeriForetagsprofilPreview = lazyRetry(() => import("./pages/preview/akeri/ForetagsprofilPreview"));
 const SavedJobs             = lazyRetry(() => import("./pages/SavedJobs"));
 const CompanyProfile        = lazyRetry(() => import("./pages/CompanyProfile"));
 const CompanyPublicProfile  = lazyRetry(() => import("./pages/CompanyPublicProfile"));
@@ -472,6 +475,9 @@ function AppLayout() {
                   <Route path="/preview/akeri/dashboard" element={<AkeriDashboardPreview />} />
                   <Route path="/preview/akeri/annonser" element={<AkeriAnnonserPreview />} />
                   <Route path="/preview/akeri/hitta-forare" element={<AkeriHittaForarePreview />} />
+                  <Route path="/preview/akeri/skapa-annons" element={<AkeriSkapaAnnonsPreview />} />
+                  <Route path="/preview/akeri/ansokningar" element={<AkeriKanbanPreview />} />
+                  <Route path="/preview/akeri/foretagsprofil" element={<AkeriForetagsprofilPreview />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
         </Suspense>
