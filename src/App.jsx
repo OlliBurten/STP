@@ -74,6 +74,7 @@ const Privacy               = lazyRetry(() => import("./pages/Privacy"));
 const Admin                 = lazyRetry(() => import("./pages/Admin"));
 const Status                = lazyRetry(() => import("./pages/Status"));
 const NotFound              = lazyRetry(() => import("./pages/NotFound"));
+const PreviewIndex          = lazyRetry(() => import("./pages/preview/PreviewIndex"));
 const JobbdetaljPreview     = lazyRetry(() => import("./pages/preview/JobbdetaljPreview"));
 const LedigaJobbPreview     = lazyRetry(() => import("./pages/preview/LedigaJobbPreview"));
 const ForarprofilPreview    = lazyRetry(() => import("./pages/preview/ForarprofilPreview"));
@@ -483,6 +484,7 @@ function AppLayout() {
                       </ProtectedRoute>
                     }
                   />
+                  <Route path="/preview" element={<PreviewIndex />} />
                   <Route path="/preview/jobbdetalj" element={<JobbdetaljPreview />} />
                   <Route path="/preview/lediga-jobb" element={<LedigaJobbPreview />} />
                   <Route path="/preview/forarprofil" element={<ForarprofilPreview />} />
