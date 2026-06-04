@@ -31,6 +31,12 @@ const GROUPS = [
     ["Inkorg", "/preview/akeri/inkorg"],
     ["Onboarding", "/preview/akeri/onboarding"],
   ] },
+  { label: "Publikt & system", icon: "building", items: [
+    ["Landningssida", "/preview/landing"],
+    ["Felsidor (404/500/...)", "/preview/felsidor"],
+    ["Empty & loading states", "/preview/states"],
+    ["Bekräftelsedialoger", "/preview/dialoger"],
+  ] },
   { label: "Admin", icon: "settings", items: [
     ["Översikt", "/preview/admin/oversikt"],
     ["System & puls", "/preview/admin/system"],
