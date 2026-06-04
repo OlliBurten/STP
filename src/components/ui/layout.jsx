@@ -115,6 +115,6 @@ export const Section = ({ title, accessory, children, first }) => (
 );
 
 /* ────── CardStack — staplade kort med standard-gap (18px) ────── */
-export const CardStack = ({ children, gap = LAYOUT.GAP, style }) => (
-  <div style={{ display: "flex", flexDirection: "column", gap, ...style }}>{children}</div>
+export const CardStack = ({ children, gap = LAYOUT.GAP, style, className = "" }) => (
+  <div className={className} style={{ display: "flex", flexDirection: "column", gap, ...style }}>{children}</div>
 );
