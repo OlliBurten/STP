@@ -18,6 +18,7 @@ import { useIsMobile } from "../hooks/useIsMobile";
 import { useDriverTour } from "../hooks/useDriverTour";
 import { getProfileCompletion, getDriverMinimumChecklist } from "../utils/driverProfileRequirements";
 import SwedenJobMap from "../components/SwedenJobMap";
+import { LAYOUT } from "../components/ui/layout.jsx";
 
 /* ── Filter sections for mobile bottom sheet ─────────────────────────────── */
 const FILTER_SECTIONS = [
@@ -558,7 +559,7 @@ export default function JobList() {
 
       {/* ── Page header ─────────────────────────────────────────────────── */}
       <div style={{ background: "var(--paper)", borderBottom: "1px solid var(--line)", paddingTop: 32, paddingBottom: 12 }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px" }}>
+        <div style={{ maxWidth: LAYOUT.WIDE, margin: "0 auto", padding: "0 32px" }}>
 
           {/* Title row */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 16, marginBottom: 24 }}>
@@ -566,7 +567,7 @@ export default function JobList() {
               <p style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 10, margin: "0 0 10px" }}>
                 {isGymnasieelev ? "Praktikplatser" : "För förare"}
               </p>
-              <h1 style={{ fontSize: 38, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.5, lineHeight: 1.15, marginBottom: 6, margin: "0 0 6px" }}>
+              <h1 style={{ fontSize: 34, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.2, lineHeight: 1.15, marginBottom: 6, margin: "0 0 6px" }}>
                 {isGymnasieelev ? "Praktikplatser" : "Lediga jobb"}
               </h1>
               <p style={{ fontSize: 14, color: "var(--ink-500)", fontWeight: 500, margin: 0 }}>
@@ -660,7 +661,7 @@ export default function JobList() {
       </div>
 
       {/* ── Main content ─────────────────────────────────────────────────── */}
-      <main style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px 80px" }}>
+      <main style={{ maxWidth: LAYOUT.WIDE, margin: "0 auto", padding: "0 32px 80px" }}>
 
         <>
             {/* Profile completion banner */}

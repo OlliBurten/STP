@@ -169,7 +169,7 @@ export default function CompanyPublicProfile() {
     return (
       <main style={{ background: "var(--paper)", minHeight: "100vh" }}>
         <div style={{ height: 180, background: "var(--paper-2)" }} />
-        <div style={{ maxWidth: 1280, margin: "0 auto", padding: isMobile ? "0 20px" : "0 40px" }}>
+        <div style={{ maxWidth: 1040, margin: "0 auto", padding: isMobile ? "0 16px" : "0 32px" }}>
           <div style={{ height: 96, width: 96, borderRadius: 24, background: "var(--line)", marginTop: -48, marginBottom: 24 }} />
           <div style={{ height: 40, width: 320, borderRadius: 10, background: "var(--paper-2)", marginBottom: 12 }} />
           <div style={{ height: 60, borderRadius: 14, background: "var(--paper-2)" }} />
@@ -181,7 +181,7 @@ export default function CompanyPublicProfile() {
   if (!company) {
     return (
       <main style={{ background: "var(--paper)", minHeight: "100vh", paddingTop: 80 }}>
-        <div style={{ maxWidth: 1280, margin: "0 auto", padding: isMobile ? "0 20px" : "0 40px" }}>
+        <div style={{ maxWidth: 1040, margin: "0 auto", padding: isMobile ? "0 16px" : "0 32px" }}>
           <p style={{ fontSize: 15, color: "var(--ink-700)", marginBottom: 12 }}>Företaget hittades inte.</p>
           <Link to="/akerier" style={{ fontSize: 14, color: "var(--green-text)", textDecoration: "none" }}>← Tillbaka till åkerier</Link>
         </div>

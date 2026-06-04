@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STP Mobil – Åkeri Annonser</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',system-ui,sans-serif;background:#1a1a1a;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px 24px 60px;color:#f0faf9}
+button{font-family:inherit;color:inherit}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+.slide{animation:slideIn .25s ease both}
+.label{font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;text-align:center}
+</style>
+</head>
+<body>
+<script type="text/babel" src="ios-frame.jsx"></script>
+<div id="root"></div>
+<script type="text/babel">
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "view":"list",
+  "selectedJob":0,
+  "stage":"new",
+  "listTab":"active"
+}/*EDITMODE-END*/;
+
+const IC = {
+  bell:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>,
+  plus:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+  back:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>,
+  user:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+  msg:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
+  briefcase:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>,
+  eye:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>,
+  clock:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+  pin:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
+  check:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
+  more:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>,
+  arrow:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>,
+  edit:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
+};
+const Icon = ({ n, s=18, c="currentColor" }) => <span style={{ display:"inline-flex", width:s, height:s, color:c, flexShrink:0 }}>{IC[n]}</span>;
+
+const JOBS = [
+  { id:0, title:"CE-chaufför fjärrkörning", loc:"Malmö", status:"active", days:6, deadline:"22 dgr", views:84, apps:12, new:3, contacted:4, interviewed:2, hired:0, hot:true },
+  { id:1, title:"Distributionschaufför", loc:"Stockholm", status:"active", days:11, deadline:"17 dgr", views:51, apps:8, new:2, contacted:3, interviewed:1, hired:0 },
+  { id:2, title:"Tankbilschaufför ADR", loc:"Malmö", status:"active", days:4, deadline:"24 dgr", views:38, apps:6, new:2, contacted:1, interviewed:0, hired:0, hot:true },
+  { id:3, title:"Lokal CE-tjänst", loc:"Göteborg", status:"active", days:18, deadline:"10 dgr", views:23, apps:4, new:0, contacted:2, interviewed:1, hired:0, lowTraffic:true },
+  { id:4, title:"Helgchaufför distribution", loc:"Lund", status:"paused", days:14, deadline:"Pausad", views:17, apps:2, new:0, contacted:0, interviewed:0, hired:0 },
+];
+
+const CANDS = {
+  0: [
+    { id:0, name:"Erik Johansson", initials:"EJ", color:"#F5A623", loc:"Malmö", exp:8, match:94, applied:"12 min", stage:"new", starred:true },
+    { id:1, name:"Mikael Stenberg", initials:"MS", color:"#a78bfa", loc:"Lund", exp:15, match:78, applied:"4h", stage:"new" },
+    { id:2, name:"Sara Pettersson", initials:"SP", color:"#60a5fa", loc:"Helsingborg", exp:5, match:86, applied:"igår", stage:"new" },
+    { id:3, name:"Karin Olsson", initials:"KO", color:"#7dd3c8", loc:"Malmö", exp:22, match:91, applied:"2 dgr", stage:"contacted", note:"Bokat samtal 14 nov", starred:true },
+    { id:4, name:"Anders Bergström", initials:"AB", color:"#4ade80", loc:"Malmö", exp:12, match:88, applied:"3 dgr", stage:"contacted" },
+    { id:5, name:"Per Lindqvist", initials:"PL", color:"#f87171", loc:"Trelleborg", exp:18, match:82, applied:"3 dgr", stage:"contacted" },
+    { id:6, name:"Tommy Karlsson", initials:"TK", color:"#fbbf24", loc:"Malmö", exp:10, match:89, applied:"4 dgr", stage:"contacted" },
+    { id:7, name:"Maria Svensson", initials:"MS", color:"#34d399", loc:"Lund", exp:7, match:84, applied:"5 dgr", stage:"interviewed", note:"Intervju 9 nov", starred:true },
+    { id:8, name:"Jonas Wikström", initials:"JW", color:"#c084fc", loc:"Malmö", exp:14, match:90, applied:"6 dgr", stage:"interviewed" },
+  ],
+};
+
+const STAGES = [
+  { k:"new", l:"Nya", c:"#F5A623" },
+  { k:"contacted", l:"Kontaktade", c:"#60a5fa" },
+  { k:"interviewed", l:"Intervju", c:"#a78bfa" },
+  { k:"hired", l:"Anställda", c:"#4ade80" },
+  { k:"rejected", l:"Avslagna", c:"#71717a" },
+];
+
+function BottomNav({ active }) {
+  const tabs = [
+    { id:"home", l:"Översikt", n:"briefcase" },
+    { id:"jobs", l:"Annonser", n:"plus" },
+    { id:"drivers", l:"Förare", n:"user" },
+    { id:"inbox", l:"Inkorg", n:"msg", badge:3 },
+  ];
+  return (
+    <div style={{ position:"absolute", left:0, right:0, bottom:0, background:"rgba(6,15,15,0.92)", backdropFilter:"blur(20px)", borderTop:"1px solid rgba(255,255,255,0.06)", padding:"8px 8px 28px", display:"flex", justifyContent:"space-around" }}>
+      {tabs.map(t => {
+        const on = active === t.id;
+        return (
+          <button key={t.id} style={{ flex:1, padding:"8px 0", background:"transparent", border:"none", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:4, position:"relative" }}>
+            <div style={{ position:"relative" }}>
+              <Icon n={t.n} s={22} c={on ? "#F5A623" : "rgba(255,255,255,0.45)"}/>
+              {t.badge > 0 && <span style={{ position:"absolute", top:-4, right:-7, minWidth:16, height:16, padding:"0 4px", borderRadius:99, background:"#F5A623", color:"#000", fontSize:9.5, fontWeight:800, display:"flex", alignItems:"center", justifyContent:"center", border:"2px solid #060f0f" }}>{t.badge}</span>}
+            </div>
+            <span style={{ fontSize:10.5, fontWeight: on ? 800 : 600, color: on ? "#F5A623" : "rgba(255,255,255,0.5)" }}>{t.l}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── List view ─────────────────────────────────────────────────────────────
+function JobRow({ j, onClick }) {
+  const segments = [
+    { count:j.new, color:"#F5A623" },
+    { count:j.contacted, color:"#60a5fa" },
+    { count:j.interviewed, color:"#a78bfa" },
+    { count:j.hired, color:"#4ade80" },
+  ].filter(s=>s.count>0);
+  return (
+    <div onClick={onClick} style={{ background:"#0a1414", border:"1px solid rgba(255,255,255,0.05)", borderRadius:14, padding:"14px 16px", cursor:"pointer" }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:8, marginBottom:8 }}>
+        <div style={{ flex:1, minWidth:0 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:4, flexWrap:"wrap" }}>
+            <span style={{ padding:"2px 7px", borderRadius:5, background: j.status === "active" ? "rgba(74,222,128,0.12)" : "rgba(245,166,35,0.12)", color: j.status === "active" ? "#4ade80" : "#F5A623", fontSize:9.5, fontWeight:800, letterSpacing:0.3 }}>{j.status === "active" ? "AKTIV" : "PAUSAD"}</span>
+            {j.hot && <span style={{ padding:"2px 7px", borderRadius:5, background:"rgba(245,166,35,0.15)", color:"#F5A623", fontSize:9.5, fontWeight:800 }}>HÖGT TRYCK</span>}
+            {j.lowTraffic && <span style={{ padding:"2px 7px", borderRadius:5, background:"rgba(248,113,113,0.12)", color:"#f87171", fontSize:9.5, fontWeight:800 }}>LÅGT INTRESSE</span>}
+          </div>
+          <h3 style={{ fontSize:14.5, fontWeight:800, marginBottom:4, lineHeight:1.25 }}>{j.title}</h3>
+          <div style={{ fontSize:11, color:"rgba(255,255,255,0.55)", display:"flex", gap:7, alignItems:"center" }}>
+            <span style={{ display:"flex", alignItems:"center", gap:3 }}><Icon n="pin" s={10}/>{j.loc}</span>
+            <span style={{ color:"rgba(255,255,255,0.2)" }}>·</span>
+            <span style={{ display:"flex", alignItems:"center", gap:3 }}><Icon n="clock" s={10}/>{j.deadline}</span>
+          </div>
+        </div>
+        <Icon n="arrow" s={14} c="rgba(255,255,255,0.3)"/>
+      </div>
+
+      {/* Pipeline + stats */}
+      <div style={{ marginTop:10, paddingTop:12, borderTop:"1px solid rgba(255,255,255,0.05)" }}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:7 }}>
+          <span style={{ fontSize:11, color:"rgba(255,255,255,0.45)", fontWeight:600 }}>Kandidatpipeline</span>
+          <span style={{ fontSize:11.5, fontWeight:700 }}>{j.apps} totalt</span>
+        </div>
+        {j.apps > 0 ? (
+          <div style={{ display:"flex", gap:2, height:6, borderRadius:99, overflow:"hidden", background:"rgba(255,255,255,0.05)" }}>
+            {segments.map((s,i) => <div key={i} style={{ flex:s.count, background:s.color }}/>)}
+          </div>
+        ) : <div style={{ height:6, borderRadius:99, background:"rgba(255,255,255,0.05)" }}/>}
+        <div style={{ display:"flex", gap:12, marginTop:8, fontSize:10.5 }}>
+          {j.new > 0 && <span style={{ color:"#F5A623", fontWeight:700 }}>{j.new} nya</span>}
+          <span style={{ color:"rgba(255,255,255,0.4)" }}><strong style={{ color:"#fff" }}>{j.views}</strong> visningar</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ListView({ onOpen }) {
+  const [t, setT] = React.useState(TWEAK_DEFAULTS);
+  const setTab = (v) => { setT(p => ({...p, listTab:v})); window.parent.postMessage({type:"__edit_mode_set_keys", edits:{listTab:v}}, "*"); };
+
+  const tabs = [
+    { v:"active", l:"Aktiva", c:JOBS.filter(j=>j.status==="active").length },
+    { v:"paused", l:"Pausade", c:JOBS.filter(j=>j.status==="paused").length },
+    { v:"all", l:"Alla", c:JOBS.length },
+  ];
+  const filtered = t.listTab === "all" ? JOBS : JOBS.filter(j=>j.status===t.listTab);
+
+  return (
+    <div style={{ height:"100%", display:"flex", flexDirection:"column", background:"#060f0f" }}>
+      <div style={{ padding:"4px 18px 12px", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+        <div style={{ display:"flex", alignItems:"center", gap:9 }}>
+          <div style={{ width:32, height:32, borderRadius:9, background:"#1F5F5C", display:"flex", alignItems:"center", justifyContent:"center", fontWeight:800, fontSize:11, color:"#F5A623" }}>NT</div>
+          <div>
+            <div style={{ fontSize:13, fontWeight:800 }}>Nordic Transport AB</div>
+            <div style={{ fontSize:10.5, color:"rgba(255,255,255,0.5)" }}>✓ Verifierat</div>
+          </div>
+        </div>
+        <button style={{ width:40, height:40, borderRadius:99, background:"rgba(255,255,255,0.05)", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}><Icon n="bell" s={18} c="rgba(255,255,255,0.85)"/></button>
+      </div>
+
+      <div style={{ padding:"4px 20px 14px", display:"flex", alignItems:"flex-end", justifyContent:"space-between", gap:10 }}>
+        <div>
+          <h1 style={{ fontSize:24, fontWeight:800, letterSpacing:-0.8, marginBottom:4 }}>Annonser</h1>
+          <div style={{ fontSize:12.5, color:"rgba(255,255,255,0.55)" }}>30 kandidater · 7 nya</div>
+        </div>
+        <button style={{ padding:"10px 14px", borderRadius:99, background:"linear-gradient(135deg,#F5A623,#d97706)", border:"none", color:"#000", fontSize:12.5, fontWeight:800, cursor:"pointer", display:"flex", alignItems:"center", gap:6, boxShadow:"0 4px 18px rgba(245,166,35,0.25)" }}>
+          <Icon n="plus" s={13}/>Ny
+        </button>
+      </div>
+
+      <div style={{ padding:"0 20px 14px", display:"flex", gap:5, overflowX:"auto" }}>
+        {tabs.map(tab => {
+          const on = t.listTab === tab.v;
+          return (
+            <button key={tab.v} onClick={()=>setTab(tab.v)} style={{ flexShrink:0, padding:"8px 14px", borderRadius:99, background: on ? "rgba(245,166,35,0.12)" : "rgba(255,255,255,0.04)", border:`1px solid ${on ? "rgba(245,166,35,0.35)" : "rgba(255,255,255,0.06)"}`, color: on ? "#F5A623" : "rgba(255,255,255,0.7)", fontSize:12.5, fontWeight:700, cursor:"pointer", minHeight:36, display:"flex", alignItems:"center", gap:5 }}>
+              {tab.l}<span style={{ padding:"1px 6px", borderRadius:99, background: on ? "rgba(245,166,35,0.2)" : "rgba(255,255,255,0.06)", fontSize:10, fontWeight:800 }}>{tab.c}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      <div style={{ flex:1, overflowY:"auto", padding:"4px 20px 100px", display:"flex", flexDirection:"column", gap:10 }}>
+        {filtered.map(j => <JobRow key={j.id} j={j} onClick={()=>onOpen(j.id)}/>)}
+      </div>
+
+      <BottomNav active="jobs"/>
+    </div>
+  );
+}
+
+// ─── Detail view ───────────────────────────────────────────────────────────
+function CandRow({ c, stage }) {
+  const matchColor = c.match >= 85 ? "#4ade80" : c.match >= 75 ? "#F5A623" : "#71717a";
+  return (
+    <div style={{ background:"#0a1414", border:"1px solid rgba(255,255,255,0.05)", borderRadius:13, padding:"14px" }}>
+      <div style={{ display:"flex", alignItems:"flex-start", gap:11, marginBottom:c.note ? 10 : 0 }}>
+        <div style={{ position:"relative", flexShrink:0 }}>
+          <div style={{ width:42, height:42, borderRadius:99, background:c.color, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:800, fontSize:13, color:"#000" }}>{c.initials}</div>
+          {c.starred && <div style={{ position:"absolute", bottom:-3, right:-3, width:18, height:18, borderRadius:99, background:"#F5A623", display:"flex", alignItems:"center", justifyContent:"center", border:"2px solid #0a1414", fontSize:10, color:"#000" }}>★</div>}
+        </div>
+        <div style={{ flex:1, minWidth:0 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:3 }}>
+            <span style={{ fontSize:14, fontWeight:700 }}>{c.name}</span>
+          </div>
+          <div style={{ fontSize:11, color:"rgba(255,255,255,0.55)", display:"flex", gap:6, alignItems:"center" }}>
+            <span>{c.loc}</span>
+            <span style={{ color:"rgba(255,255,255,0.25)" }}>·</span>
+            <span>{c.exp} år</span>
+            <span style={{ color:"rgba(255,255,255,0.25)" }}>·</span>
+            <span>{c.applied} sen</span>
+          </div>
+        </div>
+        <div style={{ display:"flex", flexDirection:"column", alignItems:"center", flexShrink:0 }}>
+          <div style={{ fontSize:16, fontWeight:800, color:matchColor, lineHeight:1 }}>{c.match}<span style={{ fontSize:10 }}>%</span></div>
+          <div style={{ fontSize:8.5, color:"rgba(255,255,255,0.4)", marginTop:2, fontWeight:700, letterSpacing:0.3 }}>MATCH</div>
+        </div>
+      </div>
+      {c.note && (
+        <div style={{ marginTop:8, padding:"7px 10px", background:"rgba(96,165,250,0.06)", borderLeft:"2px solid #60a5fa", borderRadius:"0 6px 6px 0", fontSize:11.5, color:"rgba(255,255,255,0.7)" }}>{c.note}</div>
+      )}
+      <div style={{ display:"flex", gap:6, marginTop:10 }}>
+        <button style={{ flex:1, padding:"8px", borderRadius:9, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", color:"#fff", fontSize:11.5, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:5, minHeight:36 }}>
+          <Icon n="msg" s={11}/> Meddelande
+        </button>
+        <button style={{ flex:1.3, padding:"8px", borderRadius:9, background:"rgba(74,222,128,0.1)", border:"1px solid rgba(74,222,128,0.3)", color:"#4ade80", fontSize:11.5, fontWeight:800, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:5, minHeight:36 }}>
+          Flytta vidare <Icon n="arrow" s={11}/>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function DetailView({ jobId, stage, setStage, onBack }) {
+  const job = JOBS.find(j => j.id === jobId);
+  const cands = CANDS[jobId] || [];
+  const filtered = cands.filter(c => c.stage === stage).sort((a,b)=>b.match-a.match);
+  const counts = STAGES.reduce((acc, s) => ({...acc, [s.k]: cands.filter(c=>c.stage===s.k).length}), {});
+
+  return (
+    <div className="slide" style={{ height:"100%", display:"flex", flexDirection:"column", background:"#060f0f" }}>
+      <div style={{ padding:"4px 14px 10px", display:"flex", alignItems:"center", gap:10 }}>
+        <button onClick={onBack} style={{ width:40, height:40, borderRadius:99, background:"transparent", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:"#fff" }}><Icon n="back" s={18}/></button>
+        <div style={{ flex:1, minWidth:0 }}>
+          <div style={{ fontSize:11, color:"#4ade80", fontWeight:700, marginBottom:1 }}>● AKTIV · {job.deadline}</div>
+          <div style={{ fontSize:14, fontWeight:800, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{job.title}</div>
+        </div>
+        <button style={{ width:40, height:40, borderRadius:99, background:"transparent", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:"rgba(255,255,255,0.6)" }}><Icon n="more" s={16}/></button>
+      </div>
+
+      {/* Stats strip */}
+      <div style={{ padding:"6px 20px 14px", display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8 }}>
+        <div style={{ padding:"10px", background:"#0a1414", border:"1px solid rgba(255,255,255,0.05)", borderRadius:11, textAlign:"center" }}>
+          <div style={{ fontSize:18, fontWeight:800 }}>{job.views}</div>
+          <div style={{ fontSize:10, color:"rgba(255,255,255,0.5)", fontWeight:600 }}>Visningar</div>
+        </div>
+        <div style={{ padding:"10px", background:"rgba(245,166,35,0.05)", border:"1px solid rgba(245,166,35,0.2)", borderRadius:11, textAlign:"center" }}>
+          <div style={{ fontSize:18, fontWeight:800, color:"#F5A623" }}>{job.apps}</div>
+          <div style={{ fontSize:10, color:"rgba(255,255,255,0.5)", fontWeight:600 }}>Ansökningar</div>
+        </div>
+        <div style={{ padding:"10px", background:"#0a1414", border:"1px solid rgba(255,255,255,0.05)", borderRadius:11, textAlign:"center" }}>
+          <div style={{ fontSize:18, fontWeight:800 }}>84%</div>
+          <div style={{ fontSize:10, color:"rgba(255,255,255,0.5)", fontWeight:600 }}>Snittmatch</div>
+        </div>
+      </div>
+
+      {/* Stage tabs */}
+      <div style={{ padding:"0 20px 14px", display:"flex", gap:5, overflowX:"auto" }}>
+        {STAGES.map(s => {
+          const on = stage === s.k;
+          return (
+            <button key={s.k} onClick={()=>setStage(s.k)} style={{ flexShrink:0, padding:"8px 12px", borderRadius:99, background: on ? "rgba(255,255,255,0.06)" : "transparent", border:`1px solid ${on ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.06)"}`, color: on ? "#fff" : "rgba(255,255,255,0.55)", fontSize:12, fontWeight:700, cursor:"pointer", minHeight:34, display:"flex", alignItems:"center", gap:6 }}>
+              <span style={{ width:5, height:5, borderRadius:99, background:s.c }}/>
+              {s.l}
+              <span style={{ padding:"1px 5px", borderRadius:99, background:"rgba(255,255,255,0.08)", fontSize:10, fontWeight:800 }}>{counts[s.k] || 0}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Candidate list */}
+      <div style={{ flex:1, overflowY:"auto", padding:"4px 20px 30px", display:"flex", flexDirection:"column", gap:8 }}>
+        {filtered.length > 0 ? filtered.map(c => <CandRow key={c.id} c={c} stage={stage}/>) : (
+          <div style={{ padding:"50px 20px", textAlign:"center" }}>
+            <div style={{ fontSize:13, color:"rgba(255,255,255,0.5)" }}>Inga kandidater i detta steg ännu</div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function MobileScreen() {
+  const [t, setT] = React.useState(TWEAK_DEFAULTS);
+  const setView = (v) => { setT(p => ({...p, view:v})); window.parent.postMessage({type:"__edit_mode_set_keys", edits:{view:v}}, "*"); };
+  const setSelected = (v) => { setT(p => ({...p, selectedJob:v})); window.parent.postMessage({type:"__edit_mode_set_keys", edits:{selectedJob:v}}, "*"); };
+  const setStage = (v) => { setT(p => ({...p, stage:v})); window.parent.postMessage({type:"__edit_mode_set_keys", edits:{stage:v}}, "*"); };
+  return (
+    <div style={{ background:"#060f0f", height:"100%", color:"#fff", position:"relative", overflow:"hidden" }}>
+      {t.view === "list" ? <ListView onOpen={(id)=>{setSelected(id); setView("detail");}}/> : <DetailView jobId={t.selectedJob} stage={t.stage} setStage={setStage} onBack={()=>setView("list")}/>}
+    </div>
+  );
+}
+
+function App() {
+  const [ready, setReady] = React.useState(typeof window.IOSDevice === "function");
+  React.useEffect(() => {
+    if (ready) return;
+    const id = setInterval(() => { if (typeof window.IOSDevice === "function") { setReady(true); clearInterval(id); } }, 30);
+    return () => clearInterval(id);
+  }, [ready]);
+  if (!ready) return <div style={{ color:"rgba(255,255,255,0.4)", fontSize:13 }}>Laddar…</div>;
+  return (
+    <div>
+      <div className="label">Mobil — Åkeri Annonser (list + detail)</div>
+      <window.IOSDevice width={390} height={844} dark={true}>
+        <MobileScreen/>
+      </window.IOSDevice>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>

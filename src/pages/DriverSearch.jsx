@@ -627,11 +627,11 @@ export default function DriverSearch() {
 
       {/* Page header */}
       <div style={{ background: "var(--paper)", borderBottom: "1px solid var(--line)", paddingTop: 32, paddingBottom: 18 }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px" }}>
+        <div style={{ maxWidth: 1240, margin: "0 auto", padding: "0 32px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 16 }}>
             <div>
               <p style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 10 }}>För åkerier</p>
-              <h1 style={{ fontSize: 38, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.5, lineHeight: 1.15, marginBottom: 6 }}>Hitta förare</h1>
+              <h1 style={{ fontSize: 34, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.2, lineHeight: 1.15, marginBottom: 6 }}>Hitta förare</h1>
               <p style={{ fontSize: 14, color: "var(--ink-500)", fontWeight: 500 }}>
                 {loadingDrivers ? "Hämtar…" : `${sortedDrivers.length} tillgängliga förare`} · Matchade mot era annonser
               </p>
@@ -647,7 +647,7 @@ export default function DriverSearch() {
         </div>
       </div>
 
-      <main style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px 80px" }}>
+      <main style={{ maxWidth: 1240, margin: "0 auto", padding: "0 32px 80px" }}>
         {view === "map" ? (
           <div style={{ paddingTop: 24 }}>
             <p style={{ fontSize: 14, color: "var(--ink-500)", marginBottom: 20, fontWeight: 500, maxWidth: 600 }}>

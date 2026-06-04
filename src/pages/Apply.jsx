@@ -642,7 +642,7 @@ export default function Apply() {
       </div>
 
       <div style={{ maxWidth: 1040, margin: "0 auto", padding: "20px 32px 0" }}>
-        <h1 style={{ fontSize: 30, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -1, marginBottom: 6 }}>Ansök till tjänsten</h1>
+        <h1 style={{ fontSize: 34, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.2, marginBottom: 6 }}>Ansök till tjänsten</h1>
         <p style={{ fontSize: 14.5, color: "var(--ink-500)", marginBottom: 28 }}>
           Din profil bifogas automatiskt — du behöver inte fylla i något CV.
         </p>

@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STP Mobil – Inställningar</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',system-ui,sans-serif;background:#1a1a1a;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px 24px 60px;color:#f0faf9}
+button,input{font-family:inherit;color:inherit}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+.slide{animation:slideIn .25s cubic-bezier(.22,1,.36,1) both}
+.label{font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;text-align:center}
+</style>
+</head>
+<body>
+<script type="text/babel" src="ios-frame.jsx"></script>
+<div id="root"></div>
+<script type="text/babel">
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "role": "driver",
+  "view": "konto"
+}/*EDITMODE-END*/;
+
+const IC = {
+  back:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>,
+  chev:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>,
+  check:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
+  user:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+  search:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
+  shield:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
+  bell:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>,
+  lock:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>,
+  building:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>,
+  truck:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13" rx="1"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>,
+  logout:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>,
+  upload:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>,
+  card:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>,
+  users:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+  trash:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>,
+};
+const Icon = ({ n, s=18, c="currentColor" }) => <span style={{ display:"inline-flex", width:s, height:s, color:c, flexShrink:0 }}>{IC[n]}</span>;
+
+// ─── Top bar ───────────────────────────────────────────────────────────────
+function TopBar({ title, onBack }) {
+  return (
+    <div style={{ padding:"4px 14px 12px", display:"flex", alignItems:"center", gap:10, borderBottom:"1px solid rgba(255,255,255,0.05)" }}>
+      {onBack && <button onClick={onBack} style={{ width:40, height:40, borderRadius:99, background:"rgba(255,255,255,0.05)", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:"#fff", flexShrink:0 }}><Icon n="back" s={18}/></button>}
+      <h1 style={{ fontSize:18, fontWeight:800, letterSpacing:-0.4, flex:1 }}>{title}</h1>
+    </div>
+  );
+}
+
+// ─── Group + Row ───────────────────────────────────────────────────────────
+const Group = ({ title, hint, children }) => (
+  <div style={{ marginTop:24 }}>
+    {title && <div style={{ fontSize:10.5, fontWeight:800, letterSpacing:1.2, textTransform:"uppercase", color:"rgba(255,255,255,0.45)", padding:"0 22px 8px" }}>{title}</div>}
+    <div style={{ background:"#0a1414", border:"1px solid rgba(255,255,255,0.05)", borderRadius:14, overflow:"hidden", margin:"0 16px" }}>{children}</div>
+    {hint && <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", padding:"8px 22px 0", lineHeight:1.5 }}>{hint}</div>}
+  </div>
+);
+
+const Row = ({ icon, label, value, onClick, danger, last, accent, badge }) => (
+  <button onClick={onClick} style={{ width:"100%", padding:"14px 16px", background:"transparent", border:"none", borderBottom: last ? "none" : "1px solid rgba(255,255,255,0.04)", cursor:"pointer", display:"flex", alignItems:"center", gap:13, minHeight:54, textAlign:"left" }}>
+    {icon && (
+      <div style={{ width:30, height:30, borderRadius:8, background: accent ? "rgba(245,166,35,0.1)" : danger ? "rgba(248,113,113,0.08)" : "rgba(255,255,255,0.04)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+        <Icon n={icon} s={14} c={accent ? "#F5A623" : danger ? "#f87171" : "rgba(255,255,255,0.75)"}/>
+      </div>
+    )}
+    <span style={{ flex:1, fontSize:14, fontWeight:600, color: danger ? "#f87171" : "#fff" }}>{label}</span>
+    {badge && <span style={{ padding:"2px 8px", borderRadius:99, background:"rgba(74,222,128,0.12)", border:"1px solid rgba(74,222,128,0.25)", fontSize:10, fontWeight:800, color:"#4ade80" }}>{badge}</span>}
+    {value && <span style={{ fontSize:13, color:"rgba(255,255,255,0.5)", textAlign:"right" }}>{value}</span>}
+    {onClick && !danger && <Icon n="chev" s={14} c="rgba(255,255,255,0.3)"/>}
+  </button>
+);
+
+const Toggle = ({ on, onChange }) => (
+  <div onClick={onChange} style={{ width:46, height:26, borderRadius:99, background: on ? "#4ade80" : "rgba(255,255,255,0.12)", position:"relative", cursor:"pointer", flexShrink:0, transition:"all .15s" }}>
+    <div style={{ position:"absolute", top:2, left: on ? 22 : 2, width:22, height:22, borderRadius:99, background:"#fff", transition:"left .2s", boxShadow:"0 1px 4px rgba(0,0,0,0.3)" }}/>
+  </div>
+);
+
+const ToggleRow = ({ label, sub, on, onChange, last }) => (
+  <div style={{ padding:"14px 16px", display:"flex", alignItems:"center", gap:14, borderBottom: last ? "none" : "1px solid rgba(255,255,255,0.04)", minHeight:60 }}>
+    <div style={{ flex:1, minWidth:0 }}>
+      <div style={{ fontSize:14, fontWeight:600, color:"#fff", marginBottom: sub ? 2 : 0 }}>{label}</div>
+      {sub && <div style={{ fontSize:11.5, color:"rgba(255,255,255,0.5)", lineHeight:1.4 }}>{sub}</div>}
+    </div>
+    <Toggle on={on} onChange={onChange}/>
+  </div>
+);
+
+// ─── DRIVER — index ───────────────────────────────────────────────────────
+function DriverIndex({ go }) {
+  return (
+    <>
+      <TopBar title="Inställningar"/>
+      <div style={{ flex:1, overflowY:"auto", paddingBottom:40 }}>
+        {/* Profile card */}
+        <div style={{ padding:"18px 16px 6px" }}>
+          <div style={{ background:"#0a1414", border:"1px solid rgba(255,255,255,0.05)", borderRadius:14, padding:"16px", display:"flex", alignItems:"center", gap:14 }}>
+            <div style={{ width:56, height:56, borderRadius:99, background:"linear-gradient(135deg,#F5A623,#d97706)", display:"flex", alignItems:"center", justifyContent:"center", fontWeight:800, fontSize:18, color:"#000", position:"relative", flexShrink:0 }}>
+              EJ
+              <div style={{ position:"absolute", bottom:-2, right:-2, width:18, height:18, borderRadius:99, background:"#4ade80", border:"3px solid #0a1414", display:"flex", alignItems:"center", justifyContent:"center" }}><Icon n="check" s={9} c="#000"/></div>
+            </div>
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ fontSize:16, fontWeight:800, marginBottom:2 }}>Erik Johansson</div>
+              <div style={{ fontSize:11.5, color:"rgba(255,255,255,0.55)" }}>erik.j@gmail.com</div>
+              <div style={{ marginTop:4, padding:"2px 8px", borderRadius:99, background:"rgba(74,222,128,0.12)", border:"1px solid rgba(74,222,128,0.3)", display:"inline-block", fontSize:10, fontWeight:800, color:"#4ade80", letterSpacing:0.5 }}>✓ VERIFIERAD</div>
+            </div>
+          </div>
+        </div>
+
+        <Group>
+          <Row icon="user" label="Konto" onClick={()=>go("konto")}/>
+          <Row icon="search" label="Sökpreferenser" value="Skåne · CE" onClick={()=>go("sokpref")}/>
+          <Row icon="shield" label="Verifiering" badge="3/4" onClick={()=>go("verifiering")} last/>
+        </Group>
+
+        <Group>
+          <Row icon="bell" label="Notiser" value="På" onClick={()=>go("notiser")}/>
+          <Row icon="lock" label="Sekretess" value="Synlig" onClick={()=>go("sekretess")} last/>
+        </Group>
+
+        <Group>
+          <Row icon="card" label="Säkerhet & lösenord" onClick={()=>go("security")} last/>
+        </Group>
+
+        <Group>
+          <Row icon="logout" label="Logga ut" danger onClick={()=>{}} last/>
+        </Group>
+
+        <div style={{ textAlign:"center", padding:"22px 20px 0", fontSize:11, color:"rgba(255,255,255,0.25)" }}>
+          STP v2.4.1
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ─── DRIVER detail screens ────────────────────────────────────────────────
+function DriverKonto({ back }) {
+  return (
+    <div className="slide" style={{ display:"flex", flexDirection:"column", height:"100%" }}>
+      <TopBar title="Konto" onBack={back}/>
+      <div style={{ flex:1, overflowY:"auto", paddingBottom:40 }}>
+        <Group title="Personuppgifter" hint="Visas på din profil mot åkerier.">
+          <Row label="Förnamn" value="Erik" onClick={()=>{}}/>
+          <Row label="Efternamn" value="Johansson" onClick={()=>{}}/>
+          <Row label="E-post" value="erik.j@gmail.com" onClick={()=>{}}/>
+          <Row label="Telefon" value="+46 70 123 45 67" onClick={()=>{}}/>
+          <Row label="Bostadsort" value="Malmö" onClick={()=>{}} last/>
+        </Group>
+        <Group title="Konto" hint="Permanent ta bort kan inte ångras.">
+          <Row label="Ändra lösenord" onClick={()=>{}}/>
+          <Row icon="trash" label="Ta bort konto" danger onClick={()=>{}} last/>
+        </Group>
+      </div>
+    </div>
+  );
+}
+
+function DriverSokpref({ back }) {
+  const [licenses, setLicenses] = React.useState(["B","C","CE"]);
+  const [minSalary, setMinSalary] = React.useState(30000);
+  const toggle = (l) => setLicenses(prev => prev.includes(l) ? prev.filter(x=>x!==l) : [...prev, l]);
+  return (
+    <div className="slide" style={{ display:"flex", flexDirection:"column", height:"100%" }}>
+      <TopBar title="Sökpreferenser" onBack={back}/>
+      <div style={{ flex:1, overflowY:"auto", paddingBottom:40 }}>
+        <div style={{ padding:"18px 22px 6px", fontSize:12, color:"rgba(255,255,255,0.55)", lineHeight:1.5 }}>Detta används för att räkna ut din matchning. Ju mer specifik desto bättre.</div>
+
+        <Group title="Körkort jag har">
+          <div style={{ padding:"14px 16px", display:"flex", flexWrap:"wrap", gap:7 }}>
+            {["B","C","CE","D","DE"].map(l => {
+              const on = licenses.includes(l);
+              return <button key={l} onClick={()=>toggle(l)} style={{ padding:"10px 18px", borderRadius:99, background: on ? "rgba(74,222,128,0.15)" : "rgba(255,255,255,0.04)", border:`1px solid ${on ? "rgba(74,222,128,0.4)" : "rgba(255,255,255,0.08)"}`, color: on ? "#4ade80" : "rgba(255,255,255,0.7)", fontSize:13, fontWeight:700, cursor:"pointer", minHeight:42 }}>{on && "✓ "}{l}</button>;
+            })}
+          </div>
+        </Group>
+
+        <Group title="Anställningsform">
+          <div style={{ padding:"14px 16px", display:"flex", flexWrap:"wrap", gap:7 }}>
+            {[["fast","Fast"],["vikariat","Vikariat"],["timjobb","Timjobb"],["egen","Egenanställd"]].map(([v,l]) => (
+              <button key={v} style={{ padding:"10px 16px", borderRadius:99, background:"rgba(245,166,35,0.12)", border:"1px solid rgba(245,166,35,0.35)", color:"#F5A623", fontSize:13, fontWeight:600, cursor:"pointer", minHeight:42 }}>{l}</button>
+            ))}
+          </div>
+        </Group>
+
+        <Group title="Var vill du köra?">
+          <Row label="Region" value="Skåne · Halland" onClick={()=>{}} last/>
+        </Group>
+
+        <Group title={`Lägsta lön: ${minSalary.toLocaleString("sv-SE")} kr/mån`} hint="Jobb under denna lön visas inte i listan.">
+          <div style={{ padding:"16px 16px" }}>
+            <input type="range" min="20000" max="50000" step="1000" value={minSalary} onChange={e=>setMinSalary(parseInt(e.target.value))} style={{ width:"100%", accentColor:"#F5A623" }}/>
+            <div style={{ display:"flex", justifyContent:"space-between", fontSize:11, color:"rgba(255,255,255,0.4)", marginTop:4 }}><span>20 000</span><span>50 000+</span></div>
+          </div>
+        </Group>
+      </div>
+    </div>
+  );
+}
+
+function DriverVerifiering({ back }) {
+  const items = [
+    { l:"Körkort", sub:"Foto av båda sidor", v:true, expires:"2032-04-12" },
+    { l:"YKB-certifikat", sub:"Yrkeskompetensbevis", v:true, expires:"2027-09-30" },
+    { l:"ADR-intyg", sub:"För farligt gods", v:false },
+    { l:"CV / arbetsbetyg", sub:"Stärker din profil", v:true },
+  ];
+  return (
+    <div className="slide" style={{ display:"flex", flexDirection:"column", height:"100%" }}>
+      <TopBar title="Verifiering" onBack={back}/>
+      <div style={{ flex:1, overflowY:"auto", paddingBottom:40 }}>
+        <div style={{ margin:"18px 16px 0", padding:"14px 16px", background:"rgba(74,222,128,0.06)", border:"1px solid rgba(74,222,128,0.2)", borderRadius:13, display:"flex", alignItems:"center", gap:12 }}>
+          <div style={{ width:38, height:38, borderRadius:99, background:"rgba(74,222,128,0.18)", display:"flex", alignItems:"center", justifyContent:"center" }}><Icon n="check" s={16} c="#4ade80"/></div>
+          <div style={{ flex:1 }}>
+            <div style={{ fontSize:13.5, fontWeight:800, color:"#4ade80" }}>Du är verifierad</div>
+            <div style={{ fontSize:11.5, color:"rgba(255,255,255,0.6)" }}>3 av 4 dokument inlämnade</div>
+          </div>
+        </div>
+
+        <Group title="Mina dokument" hint="Verifierade förare får svar 2× snabbare.">
+          {items.map((it, i) => (
+            <div key={i} style={{ padding:"13px 16px", display:"flex", alignItems:"center", gap:12, borderBottom: i < items.length-1 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
+              <div style={{ width:34, height:34, borderRadius:9, background: it.v ? "rgba(74,222,128,0.1)" : "rgba(255,255,255,0.04)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}><Icon n={it.v ? "check" : "upload"} s={14} c={it.v ? "#4ade80" : "rgba(255,255,255,0.6)"}/></div>
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                  <span style={{ fontSize:13.5, fontWeight:700 }}>{it.l}</span>
+                  {it.v && <span style={{ padding:"1px 6px", borderRadius:5, background:"rgba(74,222,128,0.12)", color:"#4ade80", fontSize:9, fontWeight:800, letterSpacing:0.3 }}>OK</span>}
+                </div>
+                <div style={{ fontSize:11, color:"rgba(255,255,255,0.5)", marginTop:2 }}>{it.sub}{it.expires && ` · t.o.m. ${it.expires}`}</div>
+              </div>
+              <button style={{ padding:"7px 12px", borderRadius:8, background:"rgba(255,255,255,0.05)", border:"none", color:"#fff", fontSize:11.5, fontWeight:700, cursor:"pointer", flexShrink:0 }}>{it.v ? "Byt" : "Ladda upp"}</button>
+            </div>
+          ))}
+        </Group>
+      </div>
+    </div>
+  );
+}
+
+function DriverNotiser({ back }) {
+  const [n, setN] = React.useState({ matches:true, messages:true, statusChanges:true, newsletter:false, email:true, push:true, sms:false });
+  const set = (k) => setN(p => ({...p, [k]:!p[k]}));
+  return (
+    <div className="slide" style={{ display:"flex", flexDirection:"column", height:"100%" }}>
+      <TopBar title="Notiser" onBack={back}/>
+      <div style={{ flex:1, overflowY:"auto", paddingBottom:40 }}>
+        <Group title="Vad vill du få notiser om?" hint="Du har full kontroll. Stäng av allt om du vill — vi spammar aldrig.">
+          <ToggleRow label="Nya jobb som matchar" sub="Max 1 gång/dag" on={n.matches} onChange={()=>set("matches")}/>
+          <ToggleRow label="Meddelanden från åkerier" sub="Direkt när någon skriver" on={n.messages} onChange={()=>set("messages")}/>
+          <ToggleRow label="Statusändringar" sub="När åkeri ser eller väljer ut" on={n.statusChanges} onChange={()=>set("statusChanges")}/>
+          <ToggleRow label="Nyhetsbrev" sub="Max 1 gång/månad" on={n.newsletter} onChange={()=>set("newsletter")} last/>
+        </Group>
+        <Group title="Hur vill du få dem?">
+          <ToggleRow label="E-post" on={n.email} onChange={()=>set("email")}/>
+          <ToggleRow label="Push-notiser" on={n.push} onChange={()=>set("push")}/>
+          <ToggleRow label="SMS" sub="Endast för utvalda" on={n.sms} onChange={()=>set("sms")} last/>
+        </Group>
+      </div>
+    </div>
+  );
+}
+
+function DriverSekretess({ back }) {
+  const [vis, setVis] = React.useState("open");
+  const opts = [
+    { v:"open", l:"Synlig för alla verifierade åkerier", d:"Snabbaste vägen till jobb." },
+    { v:"limited", l:"Endast åkerier jag ansökt till", d:"Bara där du själv tagit första steget." },
+    { v:"hidden", l:"Helt dold", d:"Du syns inte alls. Du kan ändå söka jobb." },
+  ];
+  return (
+    <div className="slide" style={{ display:"flex", flexDirection:"column", height:"100%" }}>
+      <TopBar title="Sekretess" onBack={back}/>
+      <div style={{ flex:1, overflowY:"auto", paddingBottom:40 }}>
+        <div style={{ padding:"18px 22px 6px", fontSize:12, color:"rgba(255,255,255,0.55)", lineHeight:1.5 }}>Du bestämmer själv hur synlig din profil är.</div>
+        <Group>
+          {opts.map((o, i) => {
+            const on = vis === o.v;
+            return (
+              <button key={o.v} onClick={()=>setVis(o.v)} style={{ width:"100%", padding:"14px 16px", background: on ? "rgba(245,166,35,0.06)" : "transparent", border:"none", borderBottom: i < opts.length-1 ? "1px solid rgba(255,255,255,0.04)" : "none", cursor:"pointer", display:"flex", gap:13, alignItems:"flex-start", textAlign:"left" }}>
+                <div style={{ width:20, height:20, borderRadius:99, border:`2px solid ${on ? "#F5A623" : "rgba(255,255,255,0.25)"}`, background: on ? "#F5A623" : "transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, marginTop:1 }}>{on && <Icon n="check" s={10} c="#000"/>}</div>
+                <div style={{ flex:1 }}>
+                  <div style={{ fontSize:13.5, fontWeight:700, color: on ? "#F5A623" : "#fff", marginBottom:3 }}>{o.l}</div>
+                  <div style={{ fontSize:11.5, color:"rgba(255,255,255,0.55)", lineHeight:1.5 }}>{o.d}</div>
+                </div>
+              </button>
+            );
+          })}
+        </Group>
+        <Group title="Blockera åkerier" hint="Åkerier i listan kan inte se din profil eller kontakta dig.">
+          <Row label="Inga blockerade åkerier" value="0" onClick={()=>{}} last/>
+        </Group>
+      </div>
+    </div>
+  );
+}
+
+// ─── COMPANY — index ──────────────────────────────────────────────────────
+function CompanyIndex({ go }) {
+  return (
+    <>
+      <TopBar title="Inställningar"/>
+      <div style={{ flex:1, overflowY:"auto", paddingBottom:40 }}>
+        <div style={{ padding:"18px 16px 6px" }}>
+          <div style={{ background:"#0a1414", border:"1px solid rgba(255,255,255,0.05)", borderRadius:14, padding:"16px", display:"flex", alignItems:"center", gap:14 }}>
+            <div style={{ width:56, height:56, borderRadius:14, background:"#1F5F5C", display:"flex", alignItems:"center", justifyContent:"center", fontWeight:800, fontSize:17, color:"#F5A623", flexShrink:0 }}>NT</div>
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ fontSize:16, fontWeight:800, marginBottom:2 }}>Nordic Transport AB</div>
+              <div style={{ fontSize:11.5, color:"rgba(255,255,255,0.55)" }}>556677-8899</div>
+              <div style={{ marginTop:4, padding:"2px 8px", borderRadius:99, background:"rgba(74,222,128,0.12)", border:"1px solid rgba(74,222,128,0.3)", display:"inline-block", fontSize:10, fontWeight:800, color:"#4ade80", letterSpacing:0.5 }}>✓ VERIFIERAT</div>
+            </div>
+          </div>
+        </div>
+
+        <Group>
+          <Row icon="building" label="Företagsuppgifter" onClick={()=>go("konto")}/>
+          <Row icon="users" label="Team" value="3 medlemmar" onClick={()=>go("team")}/>
+          <Row icon="shield" label="Verifiering" value="Klar" onClick={()=>go("verifiering")} last/>
+        </Group>
+
+        <Group>
+          <Row icon="bell" label="Notiser" value="På" onClick={()=>go("notiser")} last/>
+        </Group>
+
+        <Group>
+          <Row icon="card" label="Fakturering" value="STP Pro" onClick={()=>go("billing")}/>
+          <Row icon="lock" label="Säkerhet" onClick={()=>go("security")} last/>
+        </Group>
+
+        <Group>
+          <Row icon="logout" label="Logga ut" danger onClick={()=>{}} last/>
+        </Group>
+
+        <div style={{ textAlign:"center", padding:"22px 20px 0", fontSize:11, color:"rgba(255,255,255,0.25)" }}>
+          STP v2.4.1
+        </div>
+      </div>
+    </>
+  );
+}
+
+function CompanyKonto({ back }) {
+  return (
+    <div className="slide" style={{ display:"flex", flexDirection:"column", height:"100%" }}>
+      <TopBar title="Företagsuppgifter" onBack={back}/>
+      <div style={{ flex:1, overflowY:"auto", paddingBottom:40 }}>
+        <Group title="Företag" hint="Visas på er publika åkeriprofil.">
+          <Row label="Företagsnamn" value="Nordic Transport AB" onClick={()=>{}}/>
+          <Row label="Org.nummer" value="556677-8899" onClick={()=>{}}/>
+          <Row label="Antal anställda" value="50-100" onClick={()=>{}}/>
+          <Row label="Webbplats" value="nordictransport.se" onClick={()=>{}} last/>
+        </Group>
+        <Group title="Kontakt">
+          <Row label="E-post" value="hr@nordictransport.se" onClick={()=>{}}/>
+          <Row label="Telefon" value="040-123 45 67" onClick={()=>{}} last/>
+        </Group>
+      </div>
+    </div>
+  );
+}
+
+function CompanyTeam({ back }) {
+  const members = [
+    { n:"Anna Karlsson", r:"Admin", e:"anna@nordictransport.se", initials:"AK" },
+    { n:"Mikael Berg", r:"Rekryterare", e:"mikael@nordictransport.se", initials:"MB" },
+    { n:"Sara Lindberg", r:"HR", e:"sara@nordictransport.se", initials:"SL" },
+  ];
+  return (
+    <div className="slide" style={{ display:"flex", flexDirection:"column", height:"100%" }}>
+      <TopBar title="Team" onBack={back}/>
+      <div style={{ flex:1, overflowY:"auto", paddingBottom:40 }}>
+        <div style={{ padding:"18px 22px 6px", fontSize:12, color:"rgba(255,255,255,0.55)", lineHeight:1.5 }}>Kollegor som har åtkomst till STP-kontot.</div>
+        <Group>
+          {members.map((m, i) => (
+            <div key={m.e} style={{ padding:"13px 16px", display:"flex", alignItems:"center", gap:12, borderBottom: i < members.length-1 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
+              <div style={{ width:38, height:38, borderRadius:99, background:"#1F5F5C", display:"flex", alignItems:"center", justifyContent:"center", fontWeight:800, fontSize:11, color:"#F5A623", flexShrink:0 }}>{m.initials}</div>
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ fontSize:13.5, fontWeight:700 }}>{m.n}</div>
+                <div style={{ fontSize:11, color:"rgba(255,255,255,0.5)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{m.e}</div>
+              </div>
+              <span style={{ padding:"2px 8px", borderRadius:5, background:"rgba(245,166,35,0.1)", color:"#F5A623", fontSize:10, fontWeight:800 }}>{m.r}</span>
+            </div>
+          ))}
+        </Group>
+        <div style={{ padding:"16px" }}>
+          <button style={{ width:"100%", padding:"13px", borderRadius:12, background:"rgba(245,166,35,0.1)", border:"1px solid rgba(245,166,35,0.3)", color:"#F5A623", fontSize:13, fontWeight:800, cursor:"pointer", minHeight:48 }}>+ Bjud in kollega</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CompanyVerifiering({ back }) {
+  return (
+    <div className="slide" style={{ display:"flex", flexDirection:"column", height:"100%" }}>
+      <TopBar title="Verifiering" onBack={back}/>
+      <div style={{ flex:1, overflowY:"auto", paddingBottom:40 }}>
+        <div style={{ margin:"18px 16px 0", padding:"14px 16px", background:"rgba(74,222,128,0.06)", border:"1px solid rgba(74,222,128,0.2)", borderRadius:13, display:"flex", alignItems:"center", gap:12 }}>
+          <div style={{ width:38, height:38, borderRadius:99, background:"rgba(74,222,128,0.18)", display:"flex", alignItems:"center", justifyContent:"center" }}><Icon n="check" s={16} c="#4ade80"/></div>
+          <div style={{ flex:1 }}>
+            <div style={{ fontSize:13.5, fontWeight:800, color:"#4ade80" }}>Verifierat företag</div>
+            <div style={{ fontSize:11.5, color:"rgba(255,255,255,0.6)" }}>F-skatt + kollektivavtal OK</div>
+          </div>
+        </div>
+        <Group title="Kontrollerat" hint="Verifierade åkerier får 3× fler ansökningar.">
+          {["Org.nummer (556677-8899)","F-skattsedel","Kollektivavtal (Transport)","Trafiktillstånd"].map((d, i, arr) => (
+            <div key={d} style={{ padding:"13px 16px", display:"flex", alignItems:"center", gap:11, borderBottom: i < arr.length-1 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
+              <div style={{ width:24, height:24, borderRadius:99, background:"rgba(74,222,128,0.15)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}><Icon n="check" s={12} c="#4ade80"/></div>
+              <span style={{ fontSize:13.5, fontWeight:600 }}>{d}</span>
+            </div>
+          ))}
+        </Group>
+      </div>
+    </div>
+  );
+}
+
+function CompanyNotiser({ back }) {
+  const [n, setN] = React.useState({ applications:true, messages:true, weekly:true, tips:true });
+  const set = (k) => setN(p => ({...p, [k]:!p[k]}));
+  return (
+    <div className="slide" style={{ display:"flex", flexDirection:"column", height:"100%" }}>
+      <TopBar title="Notiser" onBack={back}/>
+      <div style={{ flex:1, overflowY:"auto", paddingBottom:40 }}>
+        <Group title="Vad vill ni få notiser om?">
+          <ToggleRow label="Nya ansökningar" sub="Direkt när någon söker" on={n.applications} onChange={()=>set("applications")}/>
+          <ToggleRow label="Meddelanden från förare" on={n.messages} onChange={()=>set("messages")}/>
+          <ToggleRow label="Veckorapport" sub="Måndag morgon — visningar & ansökningar" on={n.weekly} onChange={()=>set("weekly")}/>
+          <ToggleRow label="Tips för bättre annonser" sub="När en annons presterar dåligt" on={n.tips} onChange={()=>set("tips")} last/>
+        </Group>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────
+function MobileScreen() {
+  const [t, setT] = React.useState(TWEAK_DEFAULTS);
+  const setView = (v) => { setT(p => ({...p, view:v})); window.parent.postMessage({type:"__edit_mode_set_keys", edits:{view:v}}, "*"); };
+  const setRole = (v) => { setT(p => ({...p, role:v, view:"index"})); window.parent.postMessage({type:"__edit_mode_set_keys", edits:{role:v, view:"index"}}, "*"); };
+  const back = () => setView("index");
+
+  const isDriver = t.role === "driver";
+
+  return (
+    <div style={{ background:"#060f0f", height:"100%", color:"#fff", position:"relative", display:"flex", flexDirection:"column", overflow:"hidden" }}>
+      {isDriver ? (
+        <>
+          {t.view === "index" && <DriverIndex go={setView}/>}
+          {t.view === "konto" && <DriverKonto back={back}/>}
+          {t.view === "sokpref" && <DriverSokpref back={back}/>}
+          {t.view === "verifiering" && <DriverVerifiering back={back}/>}
+          {t.view === "notiser" && <DriverNotiser back={back}/>}
+          {t.view === "sekretess" && <DriverSekretess back={back}/>}
+        </>
+      ) : (
+        <>
+          {t.view === "index" && <CompanyIndex go={setView}/>}
+          {t.view === "konto" && <CompanyKonto back={back}/>}
+          {t.view === "team" && <CompanyTeam back={back}/>}
+          {t.view === "verifiering" && <CompanyVerifiering back={back}/>}
+          {t.view === "notiser" && <CompanyNotiser back={back}/>}
+        </>
+      )}
+
+      {/* Role switcher overlay (for prototyping) */}
+      <div style={{ position:"absolute", top:8, left:"50%", transform:"translateX(-50%)", display:"flex", gap:4, padding:3, background:"rgba(0,0,0,0.4)", borderRadius:99, zIndex:100, backdropFilter:"blur(8px)" }}>
+        {[["driver","Förare"],["company","Åkeri"]].map(([v,l]) => (
+          <button key={v} onClick={()=>setRole(v)} style={{ padding:"4px 11px", borderRadius:99, background: t.role === v ? "#F5A623" : "transparent", color: t.role === v ? "#000" : "rgba(255,255,255,0.7)", fontSize:10, fontWeight:800, border:"none", cursor:"pointer" }}>{l}</button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  const [ready, setReady] = React.useState(typeof window.IOSDevice === "function");
+  React.useEffect(() => {
+    if (ready) return;
+    const id = setInterval(() => { if (typeof window.IOSDevice === "function") { setReady(true); clearInterval(id); } }, 30);
+    return () => clearInterval(id);
+  }, [ready]);
+  if (!ready) return <div style={{ color:"rgba(255,255,255,0.4)", fontSize:13 }}>Laddar…</div>;
+  return (
+    <div>
+      <div className="label">Mobil — Inställningar (förare + åkeri)</div>
+      <window.IOSDevice width={390} height={844} dark={true}>
+        <MobileScreen/>
+      </window.IOSDevice>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STP Mobil – Jobblista</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',system-ui,sans-serif;background:#1a1a1a;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px 24px 60px;color:#f0faf9}
+button,input,select{font-family:inherit;color:inherit}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.fade{animation:fadeIn .25s cubic-bezier(.22,1,.36,1) both}
+.label{font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;text-align:center}
+</style>
+</head>
+<body>
+<script type="text/babel" src="ios-frame.jsx"></script>
+<div id="root"></div>
+<script type="text/babel">
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "tab": "all",
+  "navTab": "jobs",
+  "showFilter": false
+}/*EDITMODE-END*/;
+
+const IC = {
+  search:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
+  filter:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="20" y2="12"/><line x1="12" y1="18" x2="20" y2="18"/><circle cx="4" cy="12" r="1.5"/><circle cx="16" cy="6" r="1.5"/><circle cx="8" cy="18" r="1.5"/></svg>,
+  star:<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>,
+  starOutline:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>,
+  bell:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>,
+  pin:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
+  user:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+  msg:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
+  briefcase:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>,
+  check:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
+  x:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+  arrow:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>,
+};
+const Icon = ({ n, s=18, c="currentColor" }) => <span style={{ display:"inline-flex", width:s, height:s, color:c, flexShrink:0 }}>{IC[n]}</span>;
+
+// ─── Mock data ─────────────────────────────────────────────────────────────
+const JOBS = [
+  { id:1, company:"Nordic Transport AB", logo:"NT", color:"#1F5F5C", title:"CE-chaufför fjärrkörning", loc:"Malmö", region:"Skåne", salary:"36–42 000 kr/mån", match:94, hot:true, saved:false, segment:"Fjärr" },
+  { id:2, company:"Stockholm Logistik", logo:"SL", color:"#3a2a5c", title:"Distributionschaufför", loc:"Stockholm", region:"Stockholm", salary:"30–36 000 kr/mån", match:81, hot:false, saved:true, segment:"Distribution" },
+  { id:3, company:"PetrolTrans Nordic", logo:"PT", color:"#3a2a1a", title:"Tankbilschaufför ADR", loc:"Göteborg", region:"V. Götaland", salary:"38–45 000 kr/mån", match:88, hot:true, saved:false, segment:"Tank" },
+  { id:4, company:"Junosuando Åkeri", logo:"JÅ", color:"#3a3a1a", title:"CE-chaufför skogstransport", loc:"Junosuando", region:"Norrbotten", salary:"34–38 000 kr/mån", match:72, hot:false, saved:false, segment:"Skog" },
+  { id:5, company:"FlexiDriv Bemanning", logo:"FD", color:"#1a2a3a", title:"CE-chaufför vikariat", loc:"Helsingborg", region:"Skåne", salary:"320 kr/tim", match:62, hot:false, saved:false, segment:"Fjärr" },
+];
+
+// ─── Job card (mobile) ────────────────────────────────────────────────────
+function JobCard({ j, onClick }) {
+  const matchColor = j.match >= 85 ? "#4ade80" : j.match >= 70 ? "#F5A623" : j.match >= 55 ? "#60a5fa" : "rgba(255,255,255,0.4)";
+  return (
+    <div onClick={onClick} style={{
+      background:"#0a1414", border:"1px solid rgba(255,255,255,0.05)", borderRadius:14,
+      padding:16, cursor:"pointer", transition:"border-color .15s",
+    }}>
+      <div style={{ display:"flex", alignItems:"flex-start", gap:12, marginBottom:12 }}>
+        <div style={{ width:42, height:42, borderRadius:11, background:j.color, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:800, fontSize:13, color:"#F5A623", flexShrink:0 }}>{j.logo}</div>
+        <div style={{ flex:1, minWidth:0 }}>
+          <div style={{ fontSize:13.5, fontWeight:700, color:"#fff", lineHeight:1.3, marginBottom:2, overflow:"hidden", textOverflow:"ellipsis", display:"-webkit-box", WebkitLineClamp:1, WebkitBoxOrient:"vertical" }}>{j.title}</div>
+          <div style={{ fontSize:12, color:"rgba(255,255,255,0.55)" }}>{j.company}</div>
+        </div>
+        <button onClick={e=>e.stopPropagation()} style={{ width:36, height:36, borderRadius:99, background:"transparent", border:"none", display:"flex", alignItems:"center", justifyContent:"center", color: j.saved ? "#F5A623" : "rgba(255,255,255,0.4)", cursor:"pointer", flexShrink:0, marginTop:-4, marginRight:-6 }}>
+          <Icon n={j.saved ? "star" : "starOutline"} s={16}/>
+        </button>
+      </div>
+
+      <div style={{ display:"flex", alignItems:"center", gap:7, fontSize:12, color:"rgba(255,255,255,0.6)", marginBottom:14, flexWrap:"wrap" }}>
+        <span style={{ display:"inline-flex", alignItems:"center", gap:4 }}><Icon n="pin" s={11}/>{j.loc}</span>
+        <span style={{ color:"rgba(255,255,255,0.2)" }}>·</span>
+        <span>{j.segment}</span>
+      </div>
+
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", paddingTop:12, borderTop:"1px solid rgba(255,255,255,0.05)" }}>
+        <div style={{ fontSize:13, fontWeight:700, color:"#fff" }}>{j.salary}</div>
+        <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+          {j.hot && <span style={{ padding:"3px 8px", borderRadius:5, background:"rgba(245,166,35,0.12)", color:"#F5A623", fontSize:9.5, fontWeight:800, letterSpacing:0.3 }}>POPULÄR</span>}
+          <div style={{ padding:"4px 9px", borderRadius:7, background:`${matchColor}1a`, color:matchColor, fontSize:12, fontWeight:800 }}>{j.match}%</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Top header (mobile) ──────────────────────────────────────────────────
+function MobileHeader({ unread }) {
+  return (
+    <div style={{ padding:"4px 18px 12px", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+      <div style={{ fontFamily:"DM Sans", fontWeight:800, letterSpacing:-0.8, fontSize:22, color:"#fff" }}>STP</div>
+      <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+        <button style={{ width:42, height:42, borderRadius:99, background:"transparent", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", position:"relative" }}>
+          <Icon n="bell" s={19} c="rgba(255,255,255,0.85)"/>
+          {unread > 0 && <span style={{ position:"absolute", top:8, right:9, minWidth:16, height:16, padding:"0 4px", borderRadius:99, background:"#F5A623", color:"#000", fontSize:9.5, fontWeight:800, display:"flex", alignItems:"center", justifyContent:"center", border:"2px solid #060f0f" }}>{unread}</span>}
+        </button>
+        <div style={{ width:34, height:34, borderRadius:99, background:"linear-gradient(135deg,#F5A623,#d97706)", display:"flex", alignItems:"center", justifyContent:"center", fontWeight:800, fontSize:12, color:"#000" }}>EJ</div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Bottom tab bar ────────────────────────────────────────────────────────
+function BottomNav({ active, onChange }) {
+  const tabs = [
+    { id:"jobs", l:"Jobb", n:"briefcase" },
+    { id:"saved", l:"Sparat", n:"star" },
+    { id:"inbox", l:"Inkorg", n:"msg", badge:2 },
+    { id:"profile", l:"Profil", n:"user" },
+  ];
+  return (
+    <div style={{ position:"absolute", left:0, right:0, bottom:0, background:"rgba(6,15,15,0.92)", backdropFilter:"blur(20px)", borderTop:"1px solid rgba(255,255,255,0.06)", padding:"8px 8px 28px", display:"flex", justifyContent:"space-around" }}>
+      {tabs.map(t => {
+        const on = active === t.id;
+        return (
+          <button key={t.id} onClick={()=>onChange(t.id)} style={{ flex:1, padding:"8px 0", background:"transparent", border:"none", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:4, position:"relative" }}>
+            <div style={{ position:"relative" }}>
+              <Icon n={t.n} s={22} c={on ? "#F5A623" : "rgba(255,255,255,0.45)"}/>
+              {t.badge > 0 && <span style={{ position:"absolute", top:-4, right:-7, minWidth:16, height:16, padding:"0 4px", borderRadius:99, background:"#F5A623", color:"#000", fontSize:9.5, fontWeight:800, display:"flex", alignItems:"center", justifyContent:"center", border:"2px solid #060f0f" }}>{t.badge}</span>}
+            </div>
+            <span style={{ fontSize:10.5, fontWeight: on ? 800 : 600, color: on ? "#F5A623" : "rgba(255,255,255,0.5)", letterSpacing:0.1 }}>{t.l}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── Filter sheet (bottom sheet) ──────────────────────────────────────────
+function FilterSheet({ open, onClose }) {
+  if (!open) return null;
+  return (
+    <>
+      <div onClick={onClose} style={{ position:"absolute", inset:0, background:"rgba(0,0,0,0.6)", zIndex:30 }}/>
+      <div className="fade" style={{ position:"absolute", left:0, right:0, bottom:0, background:"#0a1414", borderTopLeftRadius:24, borderTopRightRadius:24, padding:"8px 0 28px", zIndex:40, maxHeight:"75%", overflowY:"auto" }}>
+        <div style={{ display:"flex", justifyContent:"center", padding:"8px 0 14px" }}>
+          <div style={{ width:38, height:4, borderRadius:99, background:"rgba(255,255,255,0.15)" }}/>
+        </div>
+        <div style={{ padding:"0 20px" }}>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
+            <h3 style={{ fontSize:18, fontWeight:800, letterSpacing:-0.4 }}>Filter</h3>
+            <button onClick={onClose} style={{ width:36, height:36, borderRadius:99, background:"rgba(255,255,255,0.05)", border:"none", color:"#fff", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}><Icon n="x" s={16}/></button>
+          </div>
+          {[
+            { title:"Tillgänglighet", items:["Söker aktivt","Vikariat","Alla synliga"] },
+            { title:"Körkort", items:["B","C","CE","D"] },
+            { title:"Segment", items:["Fjärr","Distribution","Tank","Bygg","Skog"] },
+            { title:"Region", items:["Skåne","Stockholm","V. Götaland","Halland"] },
+          ].map((s, i) => (
+            <div key={i} style={{ marginBottom:24 }}>
+              <div style={{ fontSize:11, fontWeight:800, letterSpacing:1.2, textTransform:"uppercase", color:"rgba(255,255,255,0.5)", marginBottom:10 }}>{s.title}</div>
+              <div style={{ display:"flex", flexWrap:"wrap", gap:7 }}>
+                {s.items.map(it => (
+                  <button key={it} style={{ padding:"9px 16px", borderRadius:99, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.07)", color:"rgba(255,255,255,0.75)", fontSize:13, fontWeight:600, cursor:"pointer", minHeight:44 }}>{it}</button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{ padding:"16px 20px 0", display:"flex", gap:10, position:"sticky", bottom:0, background:"#0a1414", marginTop:8 }}>
+          <button style={{ flex:1, padding:"14px", borderRadius:99, background:"transparent", border:"1px solid rgba(255,255,255,0.1)", color:"rgba(255,255,255,0.75)", fontSize:14, fontWeight:700, cursor:"pointer" }}>Rensa</button>
+          <button onClick={onClose} style={{ flex:1.5, padding:"14px", borderRadius:99, background:"linear-gradient(135deg,#F5A623,#d97706)", border:"none", color:"#000", fontSize:14, fontWeight:800, cursor:"pointer" }}>Visa resultat</button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ─── Main mobile screen ────────────────────────────────────────────────────
+function MobileScreen() {
+  const [t, setT] = React.useState(TWEAK_DEFAULTS);
+  const [filterOpen, setFilterOpen] = React.useState(false);
+  const setTab = (v) => { setT(p => ({...p, tab:v})); window.parent.postMessage({type:"__edit_mode_set_keys", edits:{tab:v}}, "*"); };
+  const setNavTab = (v) => { setT(p => ({...p, navTab:v})); window.parent.postMessage({type:"__edit_mode_set_keys", edits:{navTab:v}}, "*"); };
+
+  const tabs = [
+    { v:"all", l:"Alla", count:JOBS.length },
+    { v:"rec", l:"För dig", count:JOBS.filter(j=>j.match>=80).length },
+    { v:"saved", l:"Sparade", count:JOBS.filter(j=>j.saved).length },
+  ];
+
+  const filtered = t.tab === "rec" ? JOBS.filter(j=>j.match>=80) : t.tab === "saved" ? JOBS.filter(j=>j.saved) : JOBS;
+  const sorted = t.tab === "rec" ? [...filtered].sort((a,b)=>b.match-a.match) : filtered;
+
+  return (
+    <div style={{ background:"#060f0f", height:"100%", display:"flex", flexDirection:"column", color:"#fff", position:"relative" }}>
+      <MobileHeader unread={3}/>
+
+      {/* Page title row */}
+      <div style={{ padding:"4px 20px 14px" }}>
+        <h1 style={{ fontSize:26, fontWeight:800, letterSpacing:-1, marginBottom:4 }}>Lediga jobb</h1>
+        <div style={{ fontSize:12.5, color:"rgba(255,255,255,0.55)" }}>{sorted.length} matchande just nu</div>
+      </div>
+
+      {/* Search + filter */}
+      <div style={{ padding:"0 20px 12px", display:"flex", gap:8 }}>
+        <div style={{ flex:1, position:"relative" }}>
+          <span style={{ position:"absolute", left:14, top:"50%", transform:"translateY(-50%)", color:"rgba(255,255,255,0.45)" }}><Icon n="search" s={15}/></span>
+          <input placeholder="Sök jobb eller ort" style={{ width:"100%", padding:"12px 14px 12px 40px", background:"#0a1414", border:"1px solid rgba(255,255,255,0.07)", borderRadius:12, fontSize:14, outline:"none", color:"#fff", minHeight:44 }}/>
+        </div>
+        <button onClick={()=>setFilterOpen(true)} style={{ width:48, height:48, borderRadius:12, background:"#0a1414", border:"1px solid rgba(255,255,255,0.07)", color:"#fff", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+          <Icon n="filter" s={17}/>
+        </button>
+      </div>
+
+      {/* Tabs */}
+      <div style={{ padding:"0 20px 14px", display:"flex", gap:6, overflowX:"auto", flexShrink:0 }}>
+        {tabs.map(tab => {
+          const on = t.tab === tab.v;
+          return (
+            <button key={tab.v} onClick={()=>setTab(tab.v)} style={{ padding:"8px 16px", borderRadius:99, background: on ? "rgba(245,166,35,0.12)" : "rgba(255,255,255,0.04)", border:`1px solid ${on ? "rgba(245,166,35,0.35)" : "rgba(255,255,255,0.06)"}`, color: on ? "#F5A623" : "rgba(255,255,255,0.7)", fontSize:13, fontWeight:700, cursor:"pointer", whiteSpace:"nowrap", display:"flex", alignItems:"center", gap:6, minHeight:36 }}>
+              {tab.l}
+              <span style={{ padding:"1px 7px", borderRadius:99, background: on ? "rgba(245,166,35,0.2)" : "rgba(255,255,255,0.06)", fontSize:10.5, fontWeight:800 }}>{tab.count}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Job list */}
+      <div style={{ flex:1, overflowY:"auto", padding:"4px 20px 100px", display:"flex", flexDirection:"column", gap:10 }}>
+        {sorted.map(j => <JobCard key={j.id} j={j} onClick={()=>{}}/>)}
+        {sorted.length === 0 && (
+          <div style={{ padding:"40px 20px", textAlign:"center", background:"#0a1414", border:"1px dashed rgba(255,255,255,0.07)", borderRadius:14, marginTop:8 }}>
+            <div style={{ fontSize:13, color:"rgba(255,255,255,0.55)" }}>Inga jobb här ännu</div>
+          </div>
+        )}
+      </div>
+
+      <BottomNav active={t.navTab} onChange={setNavTab}/>
+      <FilterSheet open={filterOpen} onClose={()=>setFilterOpen(false)}/>
+    </div>
+  );
+}
+
+// ─── App (with iOS frame) ──────────────────────────────────────────────────
+function App() {
+  // Wait for ios-frame.jsx to attach IOSDevice to window
+  const [ready, setReady] = React.useState(typeof window.IOSDevice === "function");
+  React.useEffect(() => {
+    if (ready) return;
+    const id = setInterval(() => {
+      if (typeof window.IOSDevice === "function") { setReady(true); clearInterval(id); }
+    }, 30);
+    return () => clearInterval(id);
+  }, [ready]);
+  if (!ready) return <div style={{ color:"rgba(255,255,255,0.4)", fontSize:13 }}>Laddar…</div>;
+
+  return (
+    <div>
+      <div className="label">Mobil — Jobblista (förare)</div>
+      <window.IOSDevice width={390} height={844} dark={true}>
+        <MobileScreen/>
+      </window.IOSDevice>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>

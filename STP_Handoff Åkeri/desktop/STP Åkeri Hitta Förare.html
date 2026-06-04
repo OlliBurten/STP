@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STP – Hitta förare</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',system-ui,sans-serif;background:#060f0f;color:#f0faf9;min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:3px}
+button,input,select{font-family:inherit;color:inherit}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideRight{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+@keyframes fadeOver{from{opacity:0}to{opacity:1}}
+.fade{animation:fadeIn .3s cubic-bezier(.22,1,.36,1) both}
+.slide{animation:slideRight .35s cubic-bezier(.22,1,.36,1) both}
+.overlay{animation:fadeOver .2s ease both}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "matchAgainst": "job_1",
+  "selected": null,
+  "filtersOpen": false
+}/*EDITMODE-END*/;
+
+// ─── Icons ─────────────────────────────────────────────────────────────────
+const IC = {
+  bell:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>,
+  plus:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+  search:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
+  star:<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>,
+  starOutline:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>,
+  msg:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
+  check:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
+  chevDown:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>,
+  filter:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="20" y2="12"/><line x1="12" y1="18" x2="20" y2="18"/><circle cx="4" cy="12" r="1.5"/><circle cx="16" cy="6" r="1.5"/><circle cx="8" cy="18" r="1.5"/></svg>,
+  x:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+};
+const Icon = ({ n, s=18, c="currentColor" }) => <span style={{ display:"inline-flex", width:s, height:s, color:c, flexShrink:0 }}>{IC[n]}</span>;
+
+// ─── Mock data ─────────────────────────────────────────────────────────────
+const MY_JOBS = [
+  { id:"job_1", title:"CE-chaufför fjärrkörning", loc:"Malmö" },
+  { id:"job_2", title:"Distributionschaufför", loc:"Stockholm" },
+  { id:"job_3", title:"Tankbilschaufför ADR", loc:"Malmö" },
+  { id:"job_4", title:"Lokal CE-tjänst", loc:"Göteborg" },
+];
+
+const DRIVERS = [
+  { id:0, name:"Erik Johansson", initials:"EJ", color:"#F5A623", age:34, loc:"Malmö", region:"Skåne", exp:8, license:["CE"], certs:["YKB","ADR","Digi förarkort"], segment:"Fjärr", availability:"open", availLabel:"Söker aktivt", responseTime:"< 1h", lastActive:"Online nu", match:{job_1:94, job_2:62, job_3:88, job_4:74}, starred:true, contacted:false, summary:"Erfaren CE-chaufför med 8 år i fjärrtrafik mellan Sverige och Tyskland. Vana vid ADR och har eget digi förarkort." },
+  { id:1, name:"Karin Olsson", initials:"KO", color:"#7dd3c8", age:51, loc:"Malmö", region:"Skåne", exp:22, license:["CE"], certs:["YKB"], segment:"Fjärr", availability:"open", availLabel:"Söker aktivt", responseTime:"~2h", lastActive:"2h sen", match:{job_1:91, job_2:55, job_3:71, job_4:68}, starred:false, contacted:false, summary:"22 års erfarenhet i fjärrtrafik. Stabil och pålitlig. Söker fast tjänst hos seriöst åkeri." },
+  { id:2, name:"Mikael Stenberg", initials:"MS", color:"#a78bfa", age:42, loc:"Lund", region:"Skåne", exp:15, license:["CE"], certs:["YKB","ADR","ADR Tank"], segment:"Tank", availability:"open", availLabel:"Öppen för förslag", responseTime:"< 4h", lastActive:"Igår", match:{job_1:78, job_2:48, job_3:96, job_4:71}, starred:false, contacted:false, summary:"Specialiserad på tanktransport. ADR Tank, Brandfarlig vätska klass 3. 15 års erfarenhet." },
+  { id:3, name:"Anders Bergström", initials:"AB", color:"#4ade80", age:38, loc:"Malmö", region:"Skåne", exp:12, license:["CE"], certs:["YKB","ADR","Kran"], segment:"Fjärr", availability:"open", availLabel:"Söker aktivt", responseTime:"< 2h", lastActive:"4h sen", match:{job_1:88, job_2:65, job_3:82, job_4:79}, starred:true, contacted:true, summary:"Flexibel chaufför som har kört både fjärr och bygg. Har kranbevis." },
+  { id:4, name:"Sara Pettersson", initials:"SP", color:"#60a5fa", age:29, loc:"Helsingborg", region:"Skåne", exp:5, license:["CE"], certs:["YKB"], segment:"Fjärr", availability:"open", availLabel:"Söker aktivt", responseTime:"< 1h", lastActive:"Online nu", match:{job_1:86, job_2:70, job_3:64, job_4:73}, starred:false, contacted:false, summary:"5 års erfarenhet i fjärrtrafik. Vill byta arbetsgivare för bättre villkor. Talar svenska och engelska flytande." },
+  { id:5, name:"Tommy Karlsson", initials:"TK", color:"#fbbf24", age:35, loc:"Malmö", region:"Skåne", exp:10, license:["CE"], certs:["YKB","ADR"], segment:"Fjärr", availability:"vikariat", availLabel:"Vikariat", responseTime:"~3h", lastActive:"1d sen", match:{job_1:89, job_2:58, job_3:81, job_4:68}, starred:false, contacted:false, summary:"Söker vikariat eller kortare uppdrag. Snabb att komma igång." },
+  { id:6, name:"Per Lindqvist", initials:"PL", color:"#f87171", age:46, loc:"Trelleborg", region:"Skåne", exp:18, license:["CE"], certs:["YKB","ADR"], segment:"Fjärr", availability:"open", availLabel:"Öppen för förslag", responseTime:"~5h", lastActive:"3d sen", match:{job_1:82, job_2:51, job_3:79, job_4:64}, starred:false, contacted:false, summary:"Erfaren förare som söker stabilitet inför pension. Föredrar regelbundna rutter." },
+  { id:7, name:"Maria Svensson", initials:"MS", color:"#34d399", age:33, loc:"Lund", region:"Skåne", exp:7, license:["CE"], certs:["YKB","Digi förarkort"], segment:"Distribution", availability:"open", availLabel:"Söker aktivt", responseTime:"< 2h", lastActive:"5h sen", match:{job_1:84, job_2:91, job_3:60, job_4:78}, starred:true, contacted:false, summary:"Mest erfaren av lokal distribution men öppen för fjärr. Pålitlig och punktlig." },
+];
+
+const SEGMENTS = ["Fjärr","Distribution","Tank","Bygg","Skog","Internationell"];
+const REGIONS = ["Skåne","Stockholm","Västra Götaland","Halland","Uppsala","Norrbotten"];
+const LICENSES = ["B","C","CE","D"];
+const CERTS = ["YKB","ADR","ADR Tank","Kran","Truckkort B","Digi förarkort"];
+
+// ─── Header ────────────────────────────────────────────────────────────────
+function Header() {
+  const link = (l, active, href="#") => (
+    <a href={href} style={{ padding:"7px 0", fontSize:13.5, fontWeight: active ? 700 : 500, color: active ? "#F5A623" : "rgba(255,255,255,0.7)", textDecoration:"none", borderBottom: active ? "2px solid #F5A623" : "2px solid transparent" }}>{l}</a>
+  );
+  return (
+    <header style={{ position:"sticky", top:0, zIndex:50, background:"rgba(6,15,15,0.92)", backdropFilter:"blur(14px)", borderBottom:"1px solid rgba(255,255,255,0.06)", height:64, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 32px" }}>
+      <div style={{ display:"flex", alignItems:"center", gap:40 }}>
+        <a href="STP Åkeri Dashboard v3.html" style={{ fontWeight:800, letterSpacing:-0.8, fontSize:21, color:"#fff", textDecoration:"none" }}>STP</a>
+        <nav style={{ display:"flex", gap:26 }}>
+          {link("Översikt", false, "STP Åkeri Dashboard v3.html")}
+          {link("Annonser", false, "STP Åkeri Annonser.html")}
+          {link("Hitta förare", true)}
+          {link("Inkorg", false)}
+        </nav>
+      </div>
+      <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+        <a href="#" style={{ padding:"9px 16px", borderRadius:99, background:"linear-gradient(135deg,#F5A623,#d97706)", color:"#000", fontSize:13, fontWeight:800, textDecoration:"none", display:"flex", alignItems:"center", gap:6, boxShadow:"0 4px 18px rgba(245,166,35,0.25)" }}>
+          <Icon n="plus" s={13}/> Publicera jobb
+        </a>
+        <button style={{ width:38, height:38, borderRadius:99, background:"transparent", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", position:"relative" }}>
+          <Icon n="bell" s={17} c="rgba(255,255,255,0.7)"/>
+          <span style={{ position:"absolute", top:8, right:9, width:7, height:7, borderRadius:99, background:"#F5A623", border:"2px solid #060f0f" }}/>
+        </button>
+        <button style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 12px 5px 5px", borderRadius:99, background:"transparent", border:"none", cursor:"pointer" }}>
+          <div style={{ width:30, height:30, borderRadius:99, background:"#1F5F5C", display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:800, color:"#F5A623" }}>NT</div>
+          <span style={{ fontSize:13, fontWeight:600, color:"rgba(255,255,255,0.85)" }}>Nordic Transport</span>
+        </button>
+      </div>
+    </header>
+  );
+}
+
+// ─── Driver row (minimalistic) ─────────────────────────────────────────────
+function DriverRow({ d, matchVs, onClick }) {
+  const match = matchVs ? d.match[matchVs] : null;
+  const matchColor = match >= 85 ? "#4ade80" : match >= 70 ? "#F5A623" : match >= 55 ? "#60a5fa" : "rgba(255,255,255,0.4)";
+  const availColor = d.availability === "open" ? "#4ade80" : "#F5A623";
+
+  return (
+    <div onClick={onClick} style={{
+      display:"flex", alignItems:"center", gap:18,
+      padding:"18px 22px", background:"#0a1414",
+      border:"1px solid rgba(255,255,255,0.05)",
+      borderRadius:14, cursor:"pointer", transition:"border-color .15s",
+    }}
+    onMouseEnter={e => e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"}
+    onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(255,255,255,0.05)"}
+    >
+      <div style={{ position:"relative", flexShrink:0 }}>
+        <div style={{ width:44, height:44, borderRadius:99, background:d.color, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:800, fontSize:13.5, color:"#000" }}>{d.initials}</div>
+        <div style={{ position:"absolute", bottom:-1, right:-1, width:12, height:12, borderRadius:99, background:availColor, border:"2.5px solid #0a1414" }}/>
+      </div>
+
+      <div style={{ flex:1, minWidth:0 }}>
+        <div style={{ fontSize:15, fontWeight:700, letterSpacing:-0.2, marginBottom:3 }}>{d.name}</div>
+        <div style={{ fontSize:12.5, color:"rgba(255,255,255,0.5)" }}>
+          {d.loc} · {d.exp} år · {d.segment}
+        </div>
+      </div>
+
+      {match !== null && (
+        <div style={{ textAlign:"right", minWidth:50 }}>
+          <div style={{ fontSize:22, fontWeight:800, color:matchColor, lineHeight:1 }}>{match}<span style={{ fontSize:13 }}>%</span></div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Filter sheet (overlay drawer) ─────────────────────────────────────────
+function FilterSheet({ open, filters, setFilters, onClose }) {
+  if (!open) return null;
+  const toggleArr = (key, val) => setFilters(p => ({ ...p, [key]: p[key].includes(val) ? p[key].filter(x=>x!==val) : [...p[key], val] }));
+  const set = (key, val) => setFilters(p => ({ ...p, [key]: p[key] === val ? null : val }));
+
+  const Section = ({ title, children }) => (
+    <div style={{ marginBottom:24 }}>
+      <div style={{ fontSize:11, fontWeight:800, letterSpacing:1.2, textTransform:"uppercase", color:"rgba(255,255,255,0.45)", marginBottom:12 }}>{title}</div>
+      <div style={{ display:"flex", flexWrap:"wrap", gap:7 }}>{children}</div>
+    </div>
+  );
+  const Chip = ({ on, onClick, children }) => (
+    <button onClick={onClick} style={{ padding:"7px 14px", borderRadius:99, background: on ? "rgba(245,166,35,0.12)" : "rgba(255,255,255,0.04)", border:`1px solid ${on ? "rgba(245,166,35,0.4)" : "rgba(255,255,255,0.07)"}`, color: on ? "#F5A623" : "rgba(255,255,255,0.65)", fontSize:12.5, fontWeight:600, cursor:"pointer", transition:"all .15s" }}>{children}</button>
+  );
+
+  return (
+    <>
+      <div className="overlay" onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.5)", zIndex:60 }}/>
+      <div className="slide" style={{ position:"fixed", top:0, right:0, height:"100vh", width:380, maxWidth:"100vw", background:"#0a1414", borderLeft:"1px solid rgba(255,255,255,0.08)", zIndex:70, display:"flex", flexDirection:"column" }}>
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"22px 24px", borderBottom:"1px solid rgba(255,255,255,0.05)" }}>
+          <h3 style={{ fontSize:17, fontWeight:800, letterSpacing:-0.3 }}>Filter</h3>
+          <button onClick={onClose} style={{ background:"none", border:"none", color:"rgba(255,255,255,0.6)", cursor:"pointer", display:"flex" }}><Icon n="x" s={20}/></button>
+        </div>
+        <div style={{ flex:1, overflowY:"auto", padding:"24px" }}>
+          <Section title="Tillgänglighet">
+            {[
+              { v:"open", l:"Söker aktivt" },
+              { v:"vikariat", l:"Vikariat" },
+              { v:"any", l:"Alla synliga" },
+            ].map(o => <Chip key={o.v} on={filters.availability === o.v} onClick={()=>set("availability", o.v)}>{o.l}</Chip>)}
+          </Section>
+          <Section title="Körkort">
+            {LICENSES.map(l => <Chip key={l} on={filters.licenses.includes(l)} onClick={()=>toggleArr("licenses", l)}>{l}</Chip>)}
+          </Section>
+          <Section title="Segment">
+            {SEGMENTS.map(s => <Chip key={s} on={filters.segments.includes(s)} onClick={()=>toggleArr("segments", s)}>{s}</Chip>)}
+          </Section>
+          <Section title="Region">
+            {REGIONS.map(r => <Chip key={r} on={filters.regions.includes(r)} onClick={()=>toggleArr("regions", r)}>{r}</Chip>)}
+          </Section>
+          <Section title="Certifikat">
+            {CERTS.map(c => <Chip key={c} on={filters.certs.includes(c)} onClick={()=>toggleArr("certs", c)}>{c}</Chip>)}
+          </Section>
+          <Section title="Minsta erfarenhet">
+            {[1,3,5,10].map(yr => <Chip key={yr} on={filters.experience === yr} onClick={()=>set("experience", yr)}>{yr}+ år</Chip>)}
+          </Section>
+        </div>
+        <div style={{ padding:"18px 24px", borderTop:"1px solid rgba(255,255,255,0.05)", display:"flex", gap:10 }}>
+          <button onClick={()=>setFilters({ segments:[], regions:[], licenses:[], certs:[], availability:null, experience:null })} style={{ flex:1, padding:"12px", borderRadius:11, background:"transparent", border:"1px solid rgba(255,255,255,0.1)", color:"rgba(255,255,255,0.7)", fontSize:13, fontWeight:700, cursor:"pointer" }}>Rensa</button>
+          <button onClick={onClose} style={{ flex:1.5, padding:"12px", borderRadius:11, background:"linear-gradient(135deg,#F5A623,#d97706)", border:"none", color:"#000", fontSize:13, fontWeight:800, cursor:"pointer" }}>Visa resultat</button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ─── Detail modal (centered overlay) ───────────────────────────────────────
+function DetailModal({ d, matchVs, onClose }) {
+  if (!d) return null;
+  const match = matchVs ? d.match[matchVs] : null;
+  const matchColor = match >= 85 ? "#4ade80" : match >= 70 ? "#F5A623" : "#60a5fa";
+  const job = MY_JOBS.find(j => j.id === matchVs);
+  const breakdown = [
+    { label:"CE-körkort", on:d.license.includes("CE") },
+    { label:"YKB", on:d.certs.includes("YKB") },
+    { label:"ADR klass 3", on:d.certs.includes("ADR") },
+    { label:`Region ${d.region}`, on:true },
+    { label:"5+ års erfarenhet", on:d.exp >= 5 },
+  ];
+
+  return (
+    <>
+      <div className="overlay" onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.6)", backdropFilter:"blur(4px)", zIndex:70 }}/>
+      <div className="slide" style={{ position:"fixed", top:"50%", left:"50%", transform:"translate(-50%,-50%)", width:460, maxWidth:"calc(100vw - 40px)", maxHeight:"calc(100vh - 80px)", overflowY:"auto", background:"#0a1414", border:"1px solid rgba(255,255,255,0.08)", borderRadius:18, zIndex:80 }}>
+        <div style={{ padding:"24px 26px 20px", borderBottom:"1px solid rgba(255,255,255,0.05)", position:"relative" }}>
+          <button onClick={onClose} style={{ position:"absolute", top:18, right:18, width:30, height:30, borderRadius:99, background:"rgba(255,255,255,0.05)", border:"none", color:"rgba(255,255,255,0.7)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}><Icon n="x" s={15}/></button>
+          <div style={{ display:"flex", gap:16, alignItems:"center" }}>
+            <div style={{ position:"relative", flexShrink:0 }}>
+              <div style={{ width:64, height:64, borderRadius:99, background:d.color, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:800, fontSize:18, color:"#000" }}>{d.initials}</div>
+              <div style={{ position:"absolute", bottom:0, right:0, width:16, height:16, borderRadius:99, background:d.availability === "open" ? "#4ade80" : "#F5A623", border:"3px solid #0a1414" }}/>
+            </div>
+            <div style={{ flex:1 }}>
+              <h2 style={{ fontSize:20, fontWeight:800, letterSpacing:-0.4, marginBottom:4 }}>{d.name}</h2>
+              <div style={{ fontSize:13, color:"rgba(255,255,255,0.6)" }}>{d.loc} · {d.exp} år · {d.segment}</div>
+            </div>
+          </div>
+        </div>
+
+        {match !== null && job && (
+          <div style={{ padding:"20px 26px", borderBottom:"1px solid rgba(255,255,255,0.05)" }}>
+            <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:16 }}>
+              <div style={{ width:60, height:60, borderRadius:99, background:`${matchColor}1a`, border:`2px solid ${matchColor}55`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                <div style={{ fontSize:19, fontWeight:800, color:matchColor }}>{match}<span style={{ fontSize:11 }}>%</span></div>
+              </div>
+              <div>
+                <div style={{ fontSize:13.5, fontWeight:700 }}>Match mot {job.title}</div>
+                <div style={{ fontSize:11.5, color:"rgba(255,255,255,0.5)", marginTop:3 }}>Baserat på krav i annonsen</div>
+              </div>
+            </div>
+            <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+              {breakdown.map((b, i) => (
+                <div key={i} style={{ display:"flex", alignItems:"center", gap:10, fontSize:13 }}>
+                  <div style={{ width:18, height:18, borderRadius:99, background: b.on ? "rgba(74,222,128,0.15)" : "rgba(248,113,113,0.1)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                    {b.on ? <Icon n="check" s={10} c="#4ade80"/> : <Icon n="x" s={10} c="#f87171"/>}
+                  </div>
+                  <span style={{ color: b.on ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.4)" }}>{b.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div style={{ padding:"20px 26px", borderBottom:"1px solid rgba(255,255,255,0.05)" }}>
+          <p style={{ fontSize:13.5, color:"rgba(255,255,255,0.85)", lineHeight:1.6 }}>{d.summary}</p>
+        </div>
+
+        <div style={{ padding:"20px 26px 24px", display:"flex", gap:10 }}>
+          <button style={{ flex:1, padding:"12px", borderRadius:11, background:"linear-gradient(135deg,#F5A623,#d97706)", color:"#000", fontSize:13, fontWeight:800, border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:7, boxShadow:"0 4px 18px rgba(245,166,35,0.25)" }}>
+            <Icon n="msg" s={14}/> Skicka meddelande
+          </button>
+          <a href="STP Åkeri Förarprofil.html" style={{ padding:"12px 16px", borderRadius:11, background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.08)", color:"#fff", fontSize:13, fontWeight:700, cursor:"pointer", textDecoration:"none", display:"flex", alignItems:"center", justifyContent:"center" }}>Hela profilen</a>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ─── Main App ──────────────────────────────────────────────────────────────
+function App() {
+  const [t, setT] = React.useState(TWEAK_DEFAULTS);
+  const [filters, setFilters] = React.useState({ segments:[], regions:[], licenses:[], certs:[], availability:"open", experience:null });
+  const [search, setSearch] = React.useState("");
+  const [filtersOpen, setFiltersOpen] = React.useState(false);
+
+  const setMatchAgainst = (v) => { setT(p => ({...p, matchAgainst:v})); window.parent.postMessage({type:"__edit_mode_set_keys", edits:{matchAgainst:v}}, "*"); };
+  const setSelected = (id) => { setT(p => ({...p, selected:id})); window.parent.postMessage({type:"__edit_mode_set_keys", edits:{selected:id}}, "*"); };
+
+  const filtered = DRIVERS.filter(d => {
+    if (search && !d.name.toLowerCase().includes(search.toLowerCase()) && !d.loc.toLowerCase().includes(search.toLowerCase())) return false;
+    if (filters.availability && filters.availability !== "any" && d.availability !== filters.availability) return false;
+    if (filters.licenses.length && !filters.licenses.some(l => d.license.includes(l))) return false;
+    if (filters.segments.length && !filters.segments.includes(d.segment)) return false;
+    if (filters.regions.length && !filters.regions.includes(d.region)) return false;
+    if (filters.certs.length && !filters.certs.every(c => d.certs.includes(c))) return false;
+    if (filters.experience && d.exp < filters.experience) return false;
+    return true;
+  });
+
+  const sorted = t.matchAgainst
+    ? [...filtered].sort((a,b) => (b.match[t.matchAgainst] || 0) - (a.match[t.matchAgainst] || 0))
+    : filtered;
+
+  const selectedDriver = DRIVERS.find(d => d.id === t.selected);
+
+  const activeFilterCount = filters.segments.length + filters.regions.length + filters.licenses.length + filters.certs.length + (filters.availability && filters.availability !== "open" ? 1 : 0) + (filters.experience ? 1 : 0);
+
+  return (
+    <>
+      <Header/>
+      <main className="fade" style={{ maxWidth:720, margin:"0 auto", padding:"32px 32px 80px" }}>
+        <div style={{ marginBottom:24 }}>
+          <h1 style={{ fontSize:30, fontWeight:800, letterSpacing:-1, marginBottom:6 }}>Hitta förare</h1>
+          <div style={{ fontSize:14, color:"rgba(255,255,255,0.55)" }}>Sök bland förare som söker jobb just nu</div>
+        </div>
+
+        {/* Match against — subtle chip-style */}
+        <div style={{ marginBottom:18, display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" }}>
+          <span style={{ fontSize:12, color:"rgba(255,255,255,0.5)" }}>Sortera på match mot:</span>
+          <div style={{ position:"relative" }}>
+            <select value={t.matchAgainst || ""} onChange={e=>setMatchAgainst(e.target.value || null)} style={{ padding:"5px 26px 5px 12px", borderRadius:99, background:"rgba(245,166,35,0.08)", border:"1px solid rgba(245,166,35,0.25)", color:"#F5A623", fontSize:12, fontWeight:700, cursor:"pointer", outline:"none", appearance:"none" }}>
+              <option value="" style={{ background:"#0a1414" }}>Ingen annons</option>
+              {MY_JOBS.map(j => <option key={j.id} value={j.id} style={{ background:"#0a1414" }}>{j.title}</option>)}
+            </select>
+            <div style={{ position:"absolute", right:9, top:"50%", transform:"translateY(-50%)", pointerEvents:"none", color:"#F5A623", fontSize:9 }}>▼</div>
+          </div>
+        </div>
+
+        {/* Search + filter */}
+        <div style={{ display:"flex", gap:10, marginBottom:18 }}>
+          <div style={{ flex:1, position:"relative" }}>
+            <span style={{ position:"absolute", left:16, top:"50%", transform:"translateY(-50%)", color:"rgba(255,255,255,0.4)" }}><Icon n="search" s={15}/></span>
+            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Sök på namn eller ort" style={{ width:"100%", padding:"14px 16px 14px 44px", background:"#0a1414", border:"1px solid rgba(255,255,255,0.08)", borderRadius:12, fontSize:14, outline:"none" }}/>
+          </div>
+          <button onClick={()=>setFiltersOpen(true)} style={{ position:"relative", padding:"0 18px", borderRadius:12, background:"#0a1414", border:"1px solid rgba(255,255,255,0.08)", color:"rgba(255,255,255,0.85)", fontSize:13, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", gap:8 }}>
+            <Icon n="filter" s={14}/>
+            Filter
+            {activeFilterCount > 0 && <span style={{ position:"absolute", left:18, right:18, bottom:9, height:2, borderRadius:2, background:"#F5A623" }}/>}
+          </button>
+        </div>
+
+        <div style={{ fontSize:12, color:"rgba(255,255,255,0.4)", marginBottom:14, fontWeight:600 }}>
+          {sorted.length} {sorted.length === 1 ? "förare" : "förare"} {t.matchAgainst ? "· sorterat på match" : ""}
+        </div>
+
+        <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+          {sorted.map(d => <DriverRow key={d.id} d={d} matchVs={t.matchAgainst} onClick={()=>setSelected(d.id)}/>)}
+        </div>
+
+        {sorted.length === 0 && (
+          <div style={{ padding:"60px 20px", textAlign:"center", background:"#0a1414", border:"1px dashed rgba(255,255,255,0.08)", borderRadius:14 }}>
+            <div style={{ fontSize:14, color:"rgba(255,255,255,0.55)", marginBottom:12 }}>Inga förare matchar dina filter</div>
+            <button onClick={()=>setFilters({ segments:[], regions:[], licenses:[], certs:[], availability:"open", experience:null })} style={{ padding:"9px 18px", borderRadius:99, background:"rgba(245,166,35,0.1)", border:"1px solid rgba(245,166,35,0.3)", color:"#F5A623", fontSize:12.5, fontWeight:700, cursor:"pointer" }}>Rensa filter</button>
+          </div>
+        )}
+      </main>
+
+      <FilterSheet open={filtersOpen} filters={filters} setFilters={setFilters} onClose={()=>setFiltersOpen(false)}/>
+      <DetailModal d={selectedDriver} matchVs={t.matchAgainst} onClose={()=>setSelected(null)}/>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>

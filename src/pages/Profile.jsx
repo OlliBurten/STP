@@ -1129,7 +1129,7 @@ export default function Profile() {
                   />
                 </div>
               ) : (
-                <h1 style={{ fontSize: 30, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.6, marginBottom: 6 }}>
+                <h1 style={{ fontSize: 34, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.2, marginBottom: 6 }}>
                   {current.name || "—"}
                 </h1>
               )}

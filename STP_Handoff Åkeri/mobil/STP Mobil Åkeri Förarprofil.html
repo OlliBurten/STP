@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STP Mobil – Åkeri Förarprofil</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',system-ui,sans-serif;background:#1a1a1a;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px 24px 60px;color:#f0faf9}
+button{font-family:inherit;color:inherit}
+.label{font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;text-align:center}
+</style>
+</head>
+<body>
+<script type="text/babel" src="ios-frame.jsx"></script>
+<div id="root"></div>
+<script type="text/babel">
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "matchAgainst":"job_1",
+  "starred":true,
+  "modalOpen":false
+}/*EDITMODE-END*/;
+
+const IC = {
+  back:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>,
+  star:<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>,
+  starOutline:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>,
+  msg:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
+  check:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
+  x:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+  chev:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>,
+  pin:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
+  spark:<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L13.5 8.5 20 10l-6.5 1.5L12 18l-1.5-6.5L4 10l6.5-1.5z"/></svg>,
+};
+const Icon = ({ n, s=18, c="currentColor" }) => <span style={{ display:"inline-flex", width:s, height:s, color:c, flexShrink:0 }}>{IC[n]}</span>;
+
+const MY_JOBS = [
+  { id:"job_1", title:"CE-chaufför fjärrkörning", loc:"Malmö" },
+  { id:"job_2", title:"Distributionschaufför", loc:"Stockholm" },
+  { id:"job_3", title:"Tankbilschaufför ADR", loc:"Malmö" },
+];
+
+const D = {
+  name:"Erik Johansson", initials:"EJ", color:"#F5A623",
+  age:34, loc:"Malmö", region:"Skåne", exp:8, segment:"Fjärrtransport",
+  available:"open", availLabel:"Söker aktivt",
+  responseTime:"< 1h", lastActive:"Online nu",
+  summary:"Erfaren CE-chaufför med 8 år i fjärrtrafik mellan Sverige och Tyskland. Föredrar fasta rutter och hemma på helgerna. Lugn och pålitlig — har aldrig haft missade leveranser.",
+  match:{job_1:94,job_2:62,job_3:88},
+  matchBreakdown:[
+    { l:"CE-körkort", on:true },
+    { l:"YKB", on:true },
+    { l:"ADR klass 3", on:true },
+    { l:"Region Skåne", on:true },
+    { l:"3+ års erfarenhet", on:true },
+    { l:"Söker fjärrkörning", on:true },
+  ],
+  licenses:["CE"],
+  certs:["YKB","ADR klass 3","Digi förarkort","Truckkort B"],
+  experience:[
+    { role:"CE-chaufför fjärr", company:"Skånetransport AB", years:"2020 – nu", desc:"Sverige – Tyskland, fasta veckorutter" },
+    { role:"CE-chaufför distribution", company:"Pettersson Logistik", years:"2017 – 2020", desc:"Malmöregion, dagliga rutter" },
+    { role:"C-chaufför", company:"Bygg & Schakt Skåne", years:"2016 – 2017", desc:"Bygg och grustransport" },
+  ],
+  regions:["Skåne","Halland","Blekinge"],
+};
+
+function ReachOutSheet({ open, jobId, onClose }) {
+  const [selectedJob, setSelectedJob] = React.useState(jobId);
+  const [msg, setMsg] = React.useState("");
+  if (!open) return null;
+  const job = MY_JOBS.find(j => j.id === selectedJob);
+  return (
+    <>
+      <div onClick={onClose} style={{ position:"absolute", inset:0, background:"rgba(0,0,0,0.6)", backdropFilter:"blur(4px)", zIndex:30 }}/>
+      <div className="fade" style={{ position:"absolute", left:0, right:0, bottom:0, background:"#0a1414", borderTopLeftRadius:24, borderTopRightRadius:24, padding:"8px 0 28px", zIndex:40, maxHeight:"90%", overflowY:"auto" }}>
+        <div style={{ display:"flex", justifyContent:"center", padding:"8px 0 14px" }}>
+          <div style={{ width:38, height:4, borderRadius:99, background:"rgba(255,255,255,0.15)" }}/>
+        </div>
+        <div style={{ padding:"0 20px" }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
+            <h3 style={{ fontSize:18, fontWeight:800, letterSpacing:-0.4 }}>Skicka meddelande</h3>
+            <button onClick={onClose} style={{ width:36, height:36, borderRadius:99, background:"rgba(255,255,255,0.05)", border:"none", color:"#fff", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}><Icon n="x" s={16}/></button>
+          </div>
+          <div style={{ fontSize:12, color:"rgba(255,255,255,0.55)", marginBottom:16 }}>Erik ser ditt meddelande tillsammans med en länk till annonsen.</div>
+
+          <div style={{ marginBottom:14 }}>
+            <div style={{ fontSize:11, color:"rgba(255,255,255,0.5)", marginBottom:7, fontWeight:700 }}>Annons</div>
+            <div style={{ position:"relative" }}>
+              <select value={selectedJob} onChange={e=>setSelectedJob(e.target.value)} style={{ width:"100%", padding:"12px 40px 12px 14px", borderRadius:11, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", color:"#fff", fontSize:13.5, fontWeight:600, cursor:"pointer", outline:"none", appearance:"none", minHeight:48 }}>
+                {MY_JOBS.map(j => <option key={j.id} value={j.id} style={{ background:"#0a1414" }}>{j.title}</option>)}
+              </select>
+              <div style={{ position:"absolute", right:14, top:"50%", transform:"translateY(-50%)", pointerEvents:"none", color:"rgba(255,255,255,0.5)" }}><Icon n="chev" s={14}/></div>
+            </div>
+          </div>
+
+          <div style={{ marginBottom:18 }}>
+            <div style={{ fontSize:11, color:"rgba(255,255,255,0.5)", marginBottom:7, fontWeight:700 }}>Meddelande</div>
+            <textarea value={msg} onChange={e=>setMsg(e.target.value)} placeholder={`Hej Erik, vi har en tjänst som ${job?.title} som vi tror passar dig...`} rows={5} style={{ width:"100%", padding:"12px 14px", borderRadius:11, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", color:"#fff", fontSize:13.5, lineHeight:1.5, fontFamily:"inherit", resize:"none", outline:"none" }}/>
+          </div>
+
+          <button onClick={onClose} style={{ width:"100%", padding:"14px", borderRadius:14, background:"linear-gradient(135deg,#F5A623,#d97706)", border:"none", color:"#000", fontSize:14, fontWeight:800, cursor:"pointer", boxShadow:"0 4px 18px rgba(245,166,35,0.25)", minHeight:52 }}>Skicka meddelande</button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+const Section = ({ title, children, last }) => (
+  <div style={{ padding:"22px 0", borderBottom: last ? "none" : "1px solid rgba(255,255,255,0.05)" }}>
+    <div style={{ fontSize:11, fontWeight:800, letterSpacing:1.2, textTransform:"uppercase", color:"rgba(255,255,255,0.45)", marginBottom:14 }}>{title}</div>
+    {children}
+  </div>
+);
+
+function MobileScreen() {
+  const [t, setT] = React.useState(TWEAK_DEFAULTS);
+  const setMatchAgainst = (v) => { setT(p => ({...p, matchAgainst:v})); window.parent.postMessage({type:"__edit_mode_set_keys", edits:{matchAgainst:v}}, "*"); };
+  const setStarred = (v) => { setT(p => ({...p, starred:v})); window.parent.postMessage({type:"__edit_mode_set_keys", edits:{starred:v}}, "*"); };
+  const setModalOpen = (v) => { setT(p => ({...p, modalOpen:v})); window.parent.postMessage({type:"__edit_mode_set_keys", edits:{modalOpen:v}}, "*"); };
+
+  const match = t.matchAgainst ? D.match[t.matchAgainst] : null;
+  const mc = match >= 85 ? "#4ade80" : match >= 70 ? "#F5A623" : "#60a5fa";
+  const ml = match >= 85 ? "Stark match" : match >= 70 ? "Bra match" : "Möjlig match";
+  const job = MY_JOBS.find(j => j.id === t.matchAgainst);
+  const ac = D.available === "open" ? "#4ade80" : "#F5A623";
+
+  return (
+    <div style={{ background:"#060f0f", height:"100%", color:"#fff", position:"relative", display:"flex", flexDirection:"column", overflow:"hidden" }}>
+      {/* Top bar */}
+      <div style={{ padding:"4px 14px 10px", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+        <button style={{ width:40, height:40, borderRadius:99, background:"rgba(255,255,255,0.05)", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:"#fff" }}><Icon n="back" s={18}/></button>
+        <button onClick={()=>setStarred(!t.starred)} style={{ width:40, height:40, borderRadius:99, background:"rgba(255,255,255,0.05)", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color: t.starred ? "#F5A623" : "rgba(255,255,255,0.7)" }}>
+          <Icon n={t.starred ? "star" : "starOutline"} s={17}/>
+        </button>
+      </div>
+
+      <div style={{ flex:1, overflowY:"auto", paddingBottom:100 }}>
+        {/* Hero */}
+        <div style={{ padding:"8px 20px 18px", textAlign:"center" }}>
+          <div style={{ position:"relative", width:84, height:84, margin:"0 auto 14px" }}>
+            <div style={{ width:"100%", height:"100%", borderRadius:99, background:D.color, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:800, fontSize:26, color:"#000" }}>{D.initials}</div>
+            <div style={{ position:"absolute", bottom:2, right:2, width:20, height:20, borderRadius:99, background:ac, border:"3px solid #060f0f" }}/>
+          </div>
+          <h1 style={{ fontSize:24, fontWeight:800, letterSpacing:-0.8, marginBottom:4 }}>{D.name}</h1>
+          <div style={{ fontSize:12.5, color:"rgba(255,255,255,0.6)", marginBottom:7 }}>{D.age} år · {D.loc} · {D.exp} år som chaufför</div>
+          <div style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:11.5, color:ac, fontWeight:700 }}>
+            <span style={{ width:5, height:5, borderRadius:99, background:ac }}/>{D.availLabel} · {D.responseTime} svarstid
+          </div>
+        </div>
+
+        {/* Match card with annons selector */}
+        {match !== null && job && (
+          <div style={{ margin:"0 20px 4px", padding:"16px", background:"#0a1414", border:"1px solid rgba(255,255,255,0.05)", borderRadius:14 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:14 }}>
+              <div style={{ width:54, height:54, borderRadius:99, background:`${mc}1a`, border:`2px solid ${mc}55`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                <div style={{ fontSize:17, fontWeight:800, color:mc }}>{match}<span style={{ fontSize:10 }}>%</span></div>
+              </div>
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ fontSize:13.5, fontWeight:800, color:mc, marginBottom:2 }}>{ml}</div>
+                <div style={{ fontSize:11, color:"rgba(255,255,255,0.55)" }}>mot {job.title}</div>
+              </div>
+              <div style={{ position:"relative" }}>
+                <select value={t.matchAgainst || ""} onChange={e=>setMatchAgainst(e.target.value || null)} style={{ padding:"5px 24px 5px 10px", borderRadius:99, background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.08)", color:"rgba(255,255,255,0.85)", fontSize:10.5, fontWeight:700, cursor:"pointer", outline:"none", appearance:"none" }}>
+                  <option value="" style={{ background:"#0a1414" }}>Ingen</option>
+                  {MY_JOBS.map(j => <option key={j.id} value={j.id} style={{ background:"#0a1414" }}>{j.title}</option>)}
+                </select>
+                <div style={{ position:"absolute", right:9, top:"50%", transform:"translateY(-50%)", pointerEvents:"none", color:"rgba(255,255,255,0.6)", fontSize:9 }}>▼</div>
+              </div>
+            </div>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
+              {D.matchBreakdown.map((b, i) => (
+                <div key={i} style={{ display:"flex", alignItems:"center", gap:8, fontSize:12 }}>
+                  <div style={{ width:16, height:16, borderRadius:99, background: b.on ? "rgba(74,222,128,0.15)" : "rgba(248,113,113,0.1)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                    <Icon n={b.on ? "check" : "x"} s={9} c={b.on ? "#4ade80" : "#f87171"}/>
+                  </div>
+                  <span style={{ color: b.on ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.4)" }}>{b.l}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* AI summary */}
+        <div style={{ margin:"14px 20px 0", padding:"14px 16px", background:"linear-gradient(135deg, rgba(245,166,35,0.06), rgba(245,166,35,0.01))", border:"1px solid rgba(245,166,35,0.2)", borderRadius:13 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:8 }}>
+            <Icon n="spark" s={12} c="#F5A623"/>
+            <div style={{ fontSize:10.5, fontWeight:800, letterSpacing:1, textTransform:"uppercase", color:"#F5A623" }}>Sammanfattning</div>
+          </div>
+          <p style={{ fontSize:13, lineHeight:1.55, color:"rgba(255,255,255,0.8)" }}>{D.summary}</p>
+        </div>
+
+        {/* Content sections */}
+        <div style={{ padding:"0 20px" }}>
+          <Section title="Erfarenhet">
+            <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+              {D.experience.map((e, i) => (
+                <div key={i} style={{ display:"flex", gap:12 }}>
+                  <div style={{ position:"relative", paddingTop:5 }}>
+                    <div style={{ width:8, height:8, borderRadius:99, background: i === 0 ? "#F5A623" : "rgba(255,255,255,0.3)" }}/>
+                    {i < D.experience.length - 1 && <div style={{ position:"absolute", left:3.5, top:18, bottom:-18, width:1, background:"rgba(255,255,255,0.08)" }}/>}
+                  </div>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontSize:13.5, fontWeight:700, marginBottom:2 }}>{e.role}</div>
+                    <div style={{ fontSize:11.5, color:"rgba(255,255,255,0.55)", marginBottom:4 }}>{e.company} · {e.years}</div>
+                    <div style={{ fontSize:11.5, color:"rgba(255,255,255,0.7)", lineHeight:1.5 }}>{e.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Section>
+
+          <Section title="Körkort & certifikat">
+            <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginBottom:10 }}>
+              {D.licenses.map(l => <span key={l} style={{ padding:"7px 12px", borderRadius:8, background:"rgba(31,95,92,0.3)", color:"#7dd3c8", fontSize:12.5, fontWeight:700, display:"inline-flex", alignItems:"center", gap:5 }}><Icon n="check" s={10}/>{l}</span>)}
+            </div>
+            <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+              {D.certs.map(c => <span key={c} style={{ padding:"7px 11px", borderRadius:8, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.06)", color:"rgba(255,255,255,0.75)", fontSize:12, fontWeight:600 }}>{c}</span>)}
+            </div>
+          </Section>
+
+          <Section title="Kör i regioner">
+            <div style={{ fontSize:13, color:"rgba(255,255,255,0.75)" }}>{D.regions.join(" · ")}</div>
+          </Section>
+
+          <Section title="Aktivitet" last>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
+              <div style={{ padding:"12px 14px", background:"#0a1414", border:"1px solid rgba(255,255,255,0.05)", borderRadius:11 }}>
+                <div style={{ fontSize:10, fontWeight:700, color:"rgba(255,255,255,0.45)", letterSpacing:0.5, marginBottom:4 }}>SVARSTID</div>
+                <div style={{ fontSize:14, fontWeight:700 }}>{D.responseTime}</div>
+              </div>
+              <div style={{ padding:"12px 14px", background:"#0a1414", border:"1px solid rgba(255,255,255,0.05)", borderRadius:11 }}>
+                <div style={{ fontSize:10, fontWeight:700, color:"rgba(255,255,255,0.45)", letterSpacing:0.5, marginBottom:4 }}>SENAST AKTIV</div>
+                <div style={{ fontSize:14, fontWeight:700 }}>{D.lastActive}</div>
+              </div>
+            </div>
+          </Section>
+        </div>
+      </div>
+
+      {/* Sticky bottom CTA */}
+      <div style={{ position:"absolute", left:0, right:0, bottom:0, padding:"12px 20px 32px", background:"rgba(6,15,15,0.95)", backdropFilter:"blur(16px)", borderTop:"1px solid rgba(255,255,255,0.06)", display:"flex", gap:10 }}>
+        <button onClick={()=>setStarred(!t.starred)} style={{ width:52, height:52, borderRadius:14, background:"rgba(255,255,255,0.04)", border:`1px solid ${t.starred ? "rgba(245,166,35,0.4)" : "rgba(255,255,255,0.07)"}`, color: t.starred ? "#F5A623" : "rgba(255,255,255,0.7)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+          <Icon n={t.starred ? "star" : "starOutline"} s={18}/>
+        </button>
+        <button onClick={()=>setModalOpen(true)} style={{ flex:1, padding:"15px", borderRadius:14, background:"linear-gradient(135deg,#F5A623,#d97706)", border:"none", color:"#000", fontSize:15, fontWeight:800, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:8, boxShadow:"0 4px 18px rgba(245,166,35,0.3)" }}>
+          <Icon n="msg" s={14}/> Skicka meddelande
+        </button>
+      </div>
+
+      <ReachOutSheet open={t.modalOpen} jobId={t.matchAgainst} onClose={()=>setModalOpen(false)}/>
+    </div>
+  );
+}
+
+function App() {
+  const [ready, setReady] = React.useState(typeof window.IOSDevice === "function");
+  React.useEffect(() => {
+    if (ready) return;
+    const id = setInterval(() => { if (typeof window.IOSDevice === "function") { setReady(true); clearInterval(id); } }, 30);
+    return () => clearInterval(id);
+  }, [ready]);
+  if (!ready) return <div style={{ color:"rgba(255,255,255,0.4)", fontSize:13 }}>Laddar…</div>;
+  return (
+    <div>
+      <div className="label">Mobil — Åkeri Förarprofil</div>
+      <window.IOSDevice width={390} height={844} dark={true}>
+        <MobileScreen/>
+      </window.IOSDevice>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>

@@ -399,7 +399,7 @@ export default function SavedJobs() {
       <div style={{ background: "var(--paper)", borderBottom: "1px solid var(--line)", paddingTop: 32, paddingBottom: 12 }}>
         <div style={{ maxWidth: 1040, margin: "0 auto", padding: "0 32px" }}>
           <p style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 10 }}>För förare</p>
-          <h1 style={{ fontSize: 38, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.5, lineHeight: 1.15, marginBottom: 6 }}>Sparat</h1>
+          <h1 style={{ fontSize: 34, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.2, lineHeight: 1.15, marginBottom: 6 }}>Sparat</h1>
           <p style={{ fontSize: 14, color: "var(--ink-500)", fontWeight: 500, marginBottom: 24 }}>Jobb och åkerier du sparat för senare.</p>
 
           {/* Tab bar */}

@@ -389,7 +389,7 @@ export default function MinaJobb() {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 16, marginBottom: 24 }}>
             <div>
               <p style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 10 }}>För åkerier</p>
-              <h1 style={{ fontSize: 38, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.5, lineHeight: 1.15, marginBottom: 6 }}>Annonser</h1>
+              <h1 style={{ fontSize: 34, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.2, lineHeight: 1.15, marginBottom: 6 }}>Annonser</h1>
               <p style={{ fontSize: 14, color: "var(--ink-500)", fontWeight: 500 }}>
                 {totalApplicants} sökande totalt
                 {totalNew > 0 && <> · <span style={{ color: "var(--amber-deep)", fontWeight: 700 }}>{totalNew} nya att granska</span></>}

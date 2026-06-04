@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STP Mobil – Ansökan</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',system-ui,sans-serif;background:#1a1a1a;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px 24px 60px;color:#f0faf9}
+button,input,textarea{font-family:inherit;color:inherit}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+@keyframes checkBounce{0%{transform:scale(0)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
+.fade{animation:fadeIn .25s cubic-bezier(.22,1,.36,1) both}
+.bounce{animation:checkBounce .55s cubic-bezier(.34,1.56,.64,1) both}
+.label{font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;text-align:center}
+</style>
+</head>
+<body>
+<script type="text/babel" src="ios-frame.jsx"></script>
+<div id="root"></div>
+<script type="text/babel">
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "state": "submitted"
+}/*EDITMODE-END*/;
+
+const IC = {
+  back:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>,
+  check:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
+  arrow:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>,
+  pin:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
+  user:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+  spark:<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L13.5 8.5 20 10l-6.5 1.5L12 18l-1.5-6.5L4 10l6.5-1.5z"/></svg>,
+  edit:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
+};
+const Icon = ({ n, s=18, c="currentColor" }) => <span style={{ display:"inline-flex", width:s, height:s, color:c, flexShrink:0 }}>{IC[n]}</span>;
+
+const JOB = {
+  title:"CE-chaufför fjärrkörning",
+  company:"Nordic Transport AB",
+  companyLogo:"NT", companyColor:"#1F5F5C",
+  loc:"Malmö, Skåne",
+  salary:"36 000 – 42 000 kr/mån",
+  match:94,
+};
+
+const ME = {
+  name:"Erik Johansson",
+  initials:"EJ",
+  loc:"Malmö",
+  age:34,
+  exp:8,
+  segments:["Fjärr","ADR"],
+  certs:["CE","YKB","ADR"],
+};
+
+// ─── Form screen ───────────────────────────────────────────────────────────
+function FormScreen({ onSubmit }) {
+  const [msg, setMsg] = React.useState("");
+  const [startDate, setStartDate] = React.useState("flexible");
+  const [includeSalary, setIncludeSalary] = React.useState(false);
+  const [salary, setSalary] = React.useState("");
+
+  const dateOpts = [
+    { v:"asap", l:"Direkt" },
+    { v:"2w", l:"Om 2 veckor" },
+    { v:"1m", l:"Om 1 månad" },
+    { v:"flexible", l:"Efter ök." },
+  ];
+
+  return (
+    <div style={{ height:"100%", display:"flex", flexDirection:"column", background:"#060f0f" }}>
+      {/* Header */}
+      <div style={{ padding:"6px 14px 12px", display:"flex", alignItems:"center", gap:10 }}>
+        <button style={{ width:42, height:42, borderRadius:99, background:"rgba(255,255,255,0.05)", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:"#fff" }}>
+          <Icon n="back" s={18}/>
+        </button>
+        <div style={{ flex:1, minWidth:0 }}>
+          <div style={{ fontSize:11.5, color:"rgba(255,255,255,0.5)", marginBottom:2 }}>Ansök till</div>
+          <div style={{ fontSize:14, fontWeight:800, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{JOB.title}</div>
+        </div>
+      </div>
+
+      {/* Scrollable body */}
+      <div style={{ flex:1, overflowY:"auto", padding:"4px 20px 110px" }}>
+        {/* Job summary card */}
+        <div style={{ background:"#0a1414", border:"1px solid rgba(255,255,255,0.05)", borderRadius:14, padding:"14px 16px", marginBottom:20, display:"flex", alignItems:"center", gap:12 }}>
+          <div style={{ width:44, height:44, borderRadius:11, background:JOB.companyColor, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:800, fontSize:13, color:"#F5A623" }}>{JOB.companyLogo}</div>
+          <div style={{ flex:1, minWidth:0 }}>
+            <div style={{ fontSize:13.5, fontWeight:700 }}>{JOB.company}</div>
+            <div style={{ fontSize:11.5, color:"rgba(255,255,255,0.55)", display:"flex", alignItems:"center", gap:4, marginTop:2 }}>
+              <Icon n="pin" s={10}/>{JOB.loc} · {JOB.salary}
+            </div>
+          </div>
+          <div style={{ width:42, height:42, borderRadius:99, background:"rgba(74,222,128,0.12)", border:"1.5px solid rgba(74,222,128,0.35)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, fontWeight:800, color:"#4ade80", flexShrink:0 }}>{JOB.match}%</div>
+        </div>
+
+        {/* Profile preview */}
+        <div style={{ marginBottom:24 }}>
+          <div style={{ fontSize:11, fontWeight:800, letterSpacing:1.2, textTransform:"uppercase", color:"rgba(255,255,255,0.45)", marginBottom:10, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+            <span>Din profil — så ser åkeriet dig</span>
+            <button style={{ background:"transparent", border:"none", color:"#F5A623", fontSize:11, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", gap:4, letterSpacing:0 }}>
+              <Icon n="edit" s={11}/> Ändra
+            </button>
+          </div>
+          <div style={{ background:"#0a1414", border:"1px solid rgba(255,255,255,0.05)", borderRadius:14, padding:"16px" }}>
+            <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:14 }}>
+              <div style={{ width:48, height:48, borderRadius:99, background:"linear-gradient(135deg,#F5A623,#d97706)", display:"flex", alignItems:"center", justifyContent:"center", fontWeight:800, fontSize:14, color:"#000" }}>{ME.initials}</div>
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ fontSize:14.5, fontWeight:800 }}>{ME.name}</div>
+                <div style={{ fontSize:11.5, color:"rgba(255,255,255,0.55)" }}>{ME.age} år · {ME.loc} · {ME.exp} år erf.</div>
+              </div>
+            </div>
+            <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>
+              {ME.certs.map(c => <span key={c} style={{ padding:"3px 9px", borderRadius:99, background:"rgba(31,95,92,0.3)", color:"#7dd3c8", fontSize:11, fontWeight:700 }}>{c}</span>)}
+              {ME.segments.map(s => <span key={s} style={{ padding:"3px 9px", borderRadius:99, background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.7)", fontSize:11, fontWeight:600 }}>{s}</span>)}
+            </div>
+          </div>
+        </div>
+
+        {/* Personal message */}
+        <div style={{ marginBottom:24 }}>
+          <div style={{ fontSize:11, fontWeight:800, letterSpacing:1.2, textTransform:"uppercase", color:"rgba(255,255,255,0.45)", marginBottom:8 }}>Personligt meddelande <span style={{ color:"rgba(255,255,255,0.3)", fontWeight:600 }}>(valfritt)</span></div>
+          <textarea
+            value={msg}
+            onChange={e=>setMsg(e.target.value)}
+            placeholder="Berätta kort varför du söker detta jobb. Åkerier som får ett personligt meddelande svarar 2× snabbare."
+            rows={5}
+            style={{ width:"100%", padding:"14px 16px", borderRadius:13, background:"#0a1414", border:"1px solid rgba(255,255,255,0.07)", color:"#fff", fontSize:14, lineHeight:1.5, fontFamily:"inherit", resize:"none", outline:"none" }}
+          />
+          <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginTop:6, textAlign:"right" }}>{msg.length} / 500</div>
+        </div>
+
+        {/* Start date */}
+        <div style={{ marginBottom:24 }}>
+          <div style={{ fontSize:11, fontWeight:800, letterSpacing:1.2, textTransform:"uppercase", color:"rgba(255,255,255,0.45)", marginBottom:8 }}>När kan du börja?</div>
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
+            {dateOpts.map(o => {
+              const on = startDate === o.v;
+              return (
+                <button key={o.v} onClick={()=>setStartDate(o.v)} style={{ padding:"14px 12px", borderRadius:12, background: on ? "rgba(245,166,35,0.1)" : "#0a1414", border:`1px solid ${on ? "rgba(245,166,35,0.4)" : "rgba(255,255,255,0.07)"}`, color: on ? "#F5A623" : "rgba(255,255,255,0.8)", fontSize:13.5, fontWeight:700, cursor:"pointer", minHeight:48, display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
+                  {on && <Icon n="check" s={11}/>}{o.l}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Salary expectation (optional) */}
+        <div style={{ marginBottom:24 }}>
+          <button onClick={()=>setIncludeSalary(v=>!v)} style={{ display:"flex", alignItems:"center", gap:10, padding:"14px 16px", width:"100%", borderRadius:13, background:"#0a1414", border:`1px solid ${includeSalary ? "rgba(245,166,35,0.3)" : "rgba(255,255,255,0.07)"}`, color:"#fff", cursor:"pointer", textAlign:"left", minHeight:48 }}>
+            <div style={{ width:20, height:20, borderRadius:6, border:`2px solid ${includeSalary ? "#F5A623" : "rgba(255,255,255,0.2)"}`, background: includeSalary ? "#F5A623" : "transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+              {includeSalary && <Icon n="check" s={10} c="#000"/>}
+            </div>
+            <span style={{ flex:1, fontSize:13.5, fontWeight:600 }}>Inkludera mitt lönekrav</span>
+          </button>
+          {includeSalary && (
+            <div className="fade" style={{ marginTop:10 }}>
+              <input value={salary} onChange={e=>setSalary(e.target.value)} placeholder="t.ex. 38 000 kr/mån" style={{ width:"100%", padding:"14px 16px", borderRadius:13, background:"#0a1414", border:"1px solid rgba(255,255,255,0.07)", color:"#fff", fontSize:14, outline:"none", minHeight:48 }}/>
+            </div>
+          )}
+        </div>
+
+        {/* What happens info */}
+        <div style={{ background:"rgba(96,165,250,0.06)", border:"1px solid rgba(96,165,250,0.2)", borderRadius:13, padding:"14px 16px", display:"flex", gap:11, alignItems:"flex-start" }}>
+          <Icon n="spark" s={14} c="#60a5fa"/>
+          <div style={{ fontSize:12, color:"rgba(255,255,255,0.7)", lineHeight:1.5 }}>
+            Din profil skickas till {JOB.company}. Du hör tillbaka via Inkorgen — vanligtvis inom 2 dagar.
+          </div>
+        </div>
+      </div>
+
+      {/* Sticky submit */}
+      <div style={{ position:"absolute", left:0, right:0, bottom:0, padding:"12px 20px 32px", background:"rgba(6,15,15,0.95)", backdropFilter:"blur(16px)", borderTop:"1px solid rgba(255,255,255,0.06)" }}>
+        <button onClick={onSubmit} style={{ width:"100%", padding:"16px", borderRadius:14, background:"linear-gradient(135deg,#F5A623,#d97706)", color:"#000", fontSize:15, fontWeight:800, cursor:"pointer", border:"none", display:"flex", alignItems:"center", justifyContent:"center", gap:8, boxShadow:"0 4px 18px rgba(245,166,35,0.3)" }}>
+          Skicka ansökan <Icon n="arrow" s={14}/>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Submitted screen ──────────────────────────────────────────────────────
+function SubmittedScreen() {
+  return (
+    <div style={{ height:"100%", background:"#060f0f", display:"flex", flexDirection:"column" }}>
+      <div style={{ padding:"6px 14px 12px" }}>
+        <button style={{ width:42, height:42, borderRadius:99, background:"rgba(255,255,255,0.05)", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:"#fff" }}>
+          <Icon n="back" s={18}/>
+        </button>
+      </div>
+
+      <div style={{ flex:1, padding:"20px 24px", overflowY:"auto", paddingBottom:120 }}>
+        <div style={{ textAlign:"center", marginBottom:32 }}>
+          <div className="bounce" style={{ width:84, height:84, borderRadius:99, background:"rgba(74,222,128,0.15)", border:"2px solid rgba(74,222,128,0.4)", display:"flex", alignItems:"center", justifyContent:"center", margin:"32px auto 20px" }}>
+            <Icon n="check" s={40} c="#4ade80"/>
+          </div>
+          <h1 style={{ fontSize:26, fontWeight:800, letterSpacing:-0.8, marginBottom:10, lineHeight:1.2 }}>Ansökan skickad!</h1>
+          <p style={{ fontSize:14, color:"rgba(255,255,255,0.65)", lineHeight:1.55, maxWidth:280, margin:"0 auto" }}>
+            {JOB.company} har fått din ansökan. Du hör vanligtvis tillbaka inom 2 dagar.
+          </p>
+        </div>
+
+        {/* What now */}
+        <div style={{ background:"#0a1414", border:"1px solid rgba(255,255,255,0.05)", borderRadius:14, padding:"4px", marginBottom:20 }}>
+          {[
+            { num:1, title:"Vi notifierar dig direkt", desc:"Push och e-post när åkeriet öppnar ansökan" },
+            { num:2, title:"Åkeriet granskar", desc:"Tar vanligen 1–2 arbetsdagar" },
+            { num:3, title:"Ni får kontakt", desc:"Via Inkorgen om de vill träffas" },
+          ].map((s, i, arr) => (
+            <div key={s.num} style={{ display:"flex", gap:14, padding:"14px 14px", borderBottom: i < arr.length-1 ? "1px solid rgba(255,255,255,0.04)" : "none", alignItems:"flex-start" }}>
+              <div style={{ width:24, height:24, borderRadius:99, background:"rgba(245,166,35,0.12)", color:"#F5A623", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:800, flexShrink:0 }}>{s.num}</div>
+              <div style={{ flex:1 }}>
+                <div style={{ fontSize:13.5, fontWeight:700, marginBottom:2 }}>{s.title}</div>
+                <div style={{ fontSize:12, color:"rgba(255,255,255,0.55)" }}>{s.desc}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Tip */}
+        <div style={{ background:"linear-gradient(135deg, rgba(245,166,35,0.05), rgba(245,166,35,0.01))", border:"1px solid rgba(245,166,35,0.2)", borderRadius:13, padding:"14px 16px", display:"flex", gap:10, alignItems:"flex-start" }}>
+          <Icon n="spark" s={14} c="#F5A623"/>
+          <div style={{ fontSize:12.5, color:"rgba(255,255,255,0.7)", lineHeight:1.55 }}>
+            <strong style={{ color:"#F5A623" }}>Tips:</strong> Du har 8 fler matchande jobb. Sök fler för att öka chanserna.
+          </div>
+        </div>
+      </div>
+
+      {/* Sticky actions */}
+      <div style={{ position:"absolute", left:0, right:0, bottom:0, padding:"12px 20px 32px", background:"rgba(6,15,15,0.95)", backdropFilter:"blur(16px)", borderTop:"1px solid rgba(255,255,255,0.06)", display:"flex", flexDirection:"column", gap:8 }}>
+        <a href="#" style={{ width:"100%", padding:"15px", borderRadius:14, background:"linear-gradient(135deg,#F5A623,#d97706)", color:"#000", fontSize:14.5, fontWeight:800, cursor:"pointer", textDecoration:"none", display:"flex", alignItems:"center", justifyContent:"center", gap:7 }}>
+          Fortsätt sök fler jobb <Icon n="arrow" s={14}/>
+        </a>
+        <a href="#" style={{ width:"100%", padding:"13px", borderRadius:14, background:"transparent", border:"1px solid rgba(255,255,255,0.08)", color:"rgba(255,255,255,0.85)", fontSize:13.5, fontWeight:700, cursor:"pointer", textDecoration:"none", display:"flex", alignItems:"center", justifyContent:"center" }}>
+          Se mina ansökningar
+        </a>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main screen ───────────────────────────────────────────────────────────
+function MobileScreen() {
+  const [t, setT] = React.useState(TWEAK_DEFAULTS);
+  const setState = (v) => { setT(p => ({...p, state:v})); window.parent.postMessage({type:"__edit_mode_set_keys", edits:{state:v}}, "*"); };
+  return t.state === "submitted" ? <SubmittedScreen/> : <FormScreen onSubmit={()=>setState("submitted")}/>;
+}
+
+// ─── App ──────────────────────────────────────────────────────────────────
+function App() {
+  const [ready, setReady] = React.useState(typeof window.IOSDevice === "function");
+  React.useEffect(() => {
+    if (ready) return;
+    const id = setInterval(() => {
+      if (typeof window.IOSDevice === "function") { setReady(true); clearInterval(id); }
+    }, 30);
+    return () => clearInterval(id);
+  }, [ready]);
+  if (!ready) return <div style={{ color:"rgba(255,255,255,0.4)", fontSize:13 }}>Laddar…</div>;
+
+  return (
+    <div>
+      <div className="label">Mobil — Ansökan (förare)</div>
+      <window.IOSDevice width={390} height={844} dark={true}>
+        <MobileScreen/>
+      </window.IOSDevice>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>

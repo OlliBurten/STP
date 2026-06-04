@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STP Mobil – Inkorg</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',system-ui,sans-serif;background:#1a1a1a;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px 24px 60px;color:#f0faf9}
+button,input,textarea{font-family:inherit;color:inherit}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideIn{from{transform:translateX(20px);opacity:0}to{transform:translateX(0);opacity:1}}
+.fade{animation:fadeIn .2s ease both}
+.slide{animation:slideIn .25s cubic-bezier(.22,1,.36,1) both}
+.label{font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;text-align:center}
+</style>
+</head>
+<body>
+<script type="text/babel" src="ios-frame.jsx"></script>
+<div id="root"></div>
+<script type="text/babel">
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "view": "thread",
+  "selected": 0,
+  "filter": "all"
+}/*EDITMODE-END*/;
+
+const IC = {
+  bell:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>,
+  search:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
+  briefcase:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>,
+  star:<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>,
+  msg:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
+  user:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+  back:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>,
+  send:<svg viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>,
+  check:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
+  more:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>,
+  ext:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>,
+  plus:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+};
+const Icon = ({ n, s=18, c="currentColor" }) => <span style={{ display:"inline-flex", width:s, height:s, color:c, flexShrink:0 }}>{IC[n]}</span>;
+
+// ─── Mock data ─────────────────────────────────────────────────────────────
+const CONVS = [
+  {
+    id:0, company:"Nordic Transport AB", logo:"NT", color:"#1F5F5C",
+    job:"CE-chaufför fjärrkörning",
+    stage:"selected", unread:2, lastTime:"4 min",
+    lastMsg:"Vi vill gärna träffa dig — passar tisdag 14:00?",
+    messages:[
+      { from:"company", text:"Hej Erik! Vi har sett din profil och tror du skulle passa väldigt bra hos oss.", time:"Igår 14:22" },
+      { from:"me", text:"Hej! Tack för meddelandet, jag är väldigt intresserad.", time:"08:45" },
+      { from:"me", text:"Är det fasta veckorutter? Jag har familj och behöver kunna planera.", time:"08:46" },
+      { from:"company", text:"Ja, fasta veckorutter mån–fre. Hemma helger. Modern Volvo FH16.", time:"09:12" },
+      { from:"company", text:"Vi vill gärna träffa dig — passar tisdag 14:00?", time:"4 min", unread:true },
+      { from:"company", text:"Eller någon annan tid den här veckan?", time:"4 min", unread:true },
+    ],
+  },
+  { id:1, company:"Stockholm Logistik", logo:"SL", color:"#3a2a5c", job:"Distributionschaufför", stage:"review", unread:0, lastTime:"2h", lastMsg:"Tackar för intervjun igår, ser fram emot..." },
+  { id:2, company:"PetrolTrans Nordic", logo:"PT", color:"#3a2a1a", job:"CE-chaufför tanktransporter", stage:"seen", unread:1, lastTime:"6h", lastMsg:"Kan ni säga mer om arbetstider och OB?" },
+  { id:3, company:"FlexiDriv", logo:"FD", color:"#1a2a3a", job:"Timjobb CE-chaufför", stage:"applied", unread:0, lastTime:"1 dag", lastMsg:"Du: Hej, jag är intresserad av timjobb..." },
+  { id:4, company:"Svensk Cementering", logo:"SC", color:"#1a3a2a", job:"Lokalchaufför C", stage:"rejected", unread:0, lastTime:"5 dgr", lastMsg:"Tack för intresset men vi gick vidare med..." },
+];
+
+const STAGE = {
+  applied:  { l:"Skickad", c:"rgba(255,255,255,0.4)" },
+  seen:     { l:"Sedd", c:"#60a5fa" },
+  review:   { l:"I urval", c:"#F5A623" },
+  selected: { l:"Utvald", c:"#4ade80" },
+  rejected: { l:"Ej aktuell", c:"rgba(255,255,255,0.3)" },
+};
+
+// ─── List item ─────────────────────────────────────────────────────────────
+function ConvItem({ c, onClick }) {
+  const s = STAGE[c.stage];
+  return (
+    <button onClick={onClick} style={{ width:"100%", padding:"14px 18px", background:"transparent", border:"none", borderBottom:"1px solid rgba(255,255,255,0.04)", cursor:"pointer", display:"flex", gap:12, alignItems:"flex-start", textAlign:"left", minHeight:74 }}>
+      <div style={{ position:"relative", flexShrink:0 }}>
+        <div style={{ width:46, height:46, borderRadius:99, background:c.color, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:800, fontSize:14, color:"#F5A623" }}>{c.logo}</div>
+        {c.unread > 0 && <div style={{ position:"absolute", top:-3, right:-3, minWidth:18, height:18, padding:"0 5px", borderRadius:99, background:"#F5A623", color:"#000", fontSize:10, fontWeight:800, display:"flex", alignItems:"center", justifyContent:"center", border:"2px solid #060f0f" }}>{c.unread}</div>}
+      </div>
+      <div style={{ flex:1, minWidth:0 }}>
+        <div style={{ display:"flex", justifyContent:"space-between", gap:6, marginBottom:2 }}>
+          <span style={{ fontSize:14, fontWeight: c.unread > 0 ? 800 : 700, color: c.unread > 0 ? "#fff" : "rgba(255,255,255,0.9)", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{c.company}</span>
+          <span style={{ fontSize:11, color:"rgba(255,255,255,0.4)", flexShrink:0 }}>{c.lastTime}</span>
+        </div>
+        <div style={{ fontSize:11.5, color:"rgba(255,255,255,0.5)", marginBottom:5, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{c.job}</div>
+        <div style={{ display:"flex", alignItems:"center", gap:7 }}>
+          <span style={{ padding:"2px 6px", borderRadius:5, background:`${s.c}1a`, color:s.c, fontSize:9.5, fontWeight:800, letterSpacing:0.3 }}>{s.l.toUpperCase()}</span>
+          <span style={{ fontSize:12, color: c.unread > 0 ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.45)", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", flex:1 }}>{c.lastMsg}</span>
+        </div>
+      </div>
+    </button>
+  );
+}
+
+// ─── Bubble ────────────────────────────────────────────────────────────────
+function Bubble({ m, conv }) {
+  const isMe = m.from === "me";
+  return (
+    <div style={{ display:"flex", justifyContent: isMe ? "flex-end" : "flex-start", marginBottom:8 }}>
+      <div style={{ maxWidth:"78%" }}>
+        <div style={{
+          padding:"10px 14px",
+          background: isMe ? "linear-gradient(135deg,#F5A623,#d97706)" : "#0e1d1d",
+          color: isMe ? "#000" : "#fff",
+          fontSize:14, lineHeight:1.4,
+          borderRadius:18,
+          borderBottomRightRadius: isMe ? 5 : 18,
+          borderBottomLeftRadius: !isMe ? 5 : 18,
+          fontWeight: isMe ? 600 : 400,
+          border: !isMe ? "1px solid rgba(255,255,255,0.04)" : "none",
+        }}>{m.text}</div>
+        <div style={{ fontSize:10.5, color:"rgba(255,255,255,0.35)", marginTop:3, textAlign: isMe ? "right" : "left", paddingLeft: isMe ? 0 : 6, paddingRight: isMe ? 6 : 0 }}>{m.time}</div>
+      </div>
+    </div>
+  );
+}
+
+// ─── List view ─────────────────────────────────────────────────────────────
+function ListView({ filter, setFilter, onOpen }) {
+  const filters = [
+    { v:"all", l:"Alla", c:CONVS.length },
+    { v:"unread", l:"Olästa", c:CONVS.filter(c=>c.unread>0).length },
+    { v:"active", l:"Aktiva", c:CONVS.filter(c=>c.stage!=="rejected").length },
+  ];
+  const filtered = filter === "all" ? CONVS : filter === "unread" ? CONVS.filter(c=>c.unread>0) : CONVS.filter(c=>c.stage!=="rejected");
+
+  return (
+    <div style={{ height:"100%", display:"flex", flexDirection:"column", background:"#060f0f" }}>
+      {/* Header */}
+      <div style={{ padding:"4px 18px 12px", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+        <div style={{ fontFamily:"DM Sans", fontWeight:800, letterSpacing:-0.8, fontSize:22 }}>STP</div>
+        <div style={{ display:"flex", gap:8 }}>
+          <button style={{ width:42, height:42, borderRadius:99, background:"transparent", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}><Icon n="bell" s={19} c="rgba(255,255,255,0.85)"/></button>
+          <div style={{ width:34, height:34, borderRadius:99, background:"linear-gradient(135deg,#F5A623,#d97706)", display:"flex", alignItems:"center", justifyContent:"center", fontWeight:800, fontSize:12, color:"#000" }}>EJ</div>
+        </div>
+      </div>
+
+      {/* Title */}
+      <div style={{ padding:"4px 20px 12px" }}>
+        <h1 style={{ fontSize:26, fontWeight:800, letterSpacing:-1, marginBottom:4 }}>Inkorg</h1>
+        <div style={{ fontSize:12.5, color:"rgba(255,255,255,0.55)" }}>{CONVS.reduce((s,c)=>s+c.unread,0)} olästa meddelanden</div>
+      </div>
+
+      {/* Search */}
+      <div style={{ padding:"0 20px 12px" }}>
+        <div style={{ position:"relative" }}>
+          <span style={{ position:"absolute", left:14, top:"50%", transform:"translateY(-50%)", color:"rgba(255,255,255,0.45)" }}><Icon n="search" s={15}/></span>
+          <input placeholder="Sök i meddelanden" style={{ width:"100%", padding:"11px 14px 11px 40px", background:"#0a1414", border:"1px solid rgba(255,255,255,0.07)", borderRadius:12, fontSize:14, outline:"none", color:"#fff", minHeight:44 }}/>
+        </div>
+      </div>
+
+      {/* Filter chips */}
+      <div style={{ padding:"0 20px 12px", display:"flex", gap:6, overflowX:"auto", flexShrink:0 }}>
+        {filters.map(f => {
+          const on = filter === f.v;
+          return (
+            <button key={f.v} onClick={()=>setFilter(f.v)} style={{ flexShrink:0, padding:"8px 14px", borderRadius:99, background: on ? "rgba(245,166,35,0.12)" : "rgba(255,255,255,0.04)", border:`1px solid ${on ? "rgba(245,166,35,0.35)" : "rgba(255,255,255,0.06)"}`, color: on ? "#F5A623" : "rgba(255,255,255,0.7)", fontSize:12.5, fontWeight:700, cursor:"pointer", minHeight:36, display:"flex", alignItems:"center", gap:5 }}>
+              {f.l}
+              <span style={{ padding:"1px 6px", borderRadius:99, background: on ? "rgba(245,166,35,0.2)" : "rgba(255,255,255,0.06)", fontSize:10, fontWeight:800 }}>{f.c}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* List */}
+      <div style={{ flex:1, overflowY:"auto", paddingBottom:90 }}>
+        {filtered.length > 0 ? filtered.map(c => <ConvItem key={c.id} c={c} onClick={()=>onOpen(c.id)}/>) : (
+          <div style={{ padding:"40px 20px", textAlign:"center" }}>
+            <div style={{ fontSize:13.5, color:"rgba(255,255,255,0.55)" }}>Inga konversationer här</div>
+          </div>
+        )}
+      </div>
+
+      {/* Bottom nav */}
+      <BottomNav active="inbox"/>
+    </div>
+  );
+}
+
+// ─── Thread view ───────────────────────────────────────────────────────────
+function ThreadView({ c, onBack }) {
+  const [draft, setDraft] = React.useState("");
+  const s = STAGE[c.stage];
+  return (
+    <div className="slide" style={{ height:"100%", display:"flex", flexDirection:"column", background:"#060f0f" }}>
+      {/* Header */}
+      <div style={{ padding:"4px 14px 10px", display:"flex", alignItems:"center", gap:10, borderBottom:"1px solid rgba(255,255,255,0.06)" }}>
+        <button onClick={onBack} style={{ width:40, height:40, borderRadius:99, background:"transparent", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:"#fff", flexShrink:0 }}>
+          <Icon n="back" s={18}/>
+        </button>
+        <div style={{ position:"relative", flexShrink:0 }}>
+          <div style={{ width:36, height:36, borderRadius:99, background:c.color, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:800, fontSize:11.5, color:"#F5A623" }}>{c.logo}</div>
+          <div style={{ position:"absolute", bottom:-1, right:-1, width:10, height:10, borderRadius:99, background:"#4ade80", border:"2px solid #060f0f" }}/>
+        </div>
+        <div style={{ flex:1, minWidth:0 }}>
+          <div style={{ fontSize:14, fontWeight:800, lineHeight:1.2 }}>{c.company}</div>
+          <div style={{ fontSize:11, color:"#4ade80", fontWeight:600, marginTop:1 }}>● Online nu</div>
+        </div>
+        <button style={{ width:40, height:40, borderRadius:99, background:"transparent", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:"rgba(255,255,255,0.6)" }}>
+          <Icon n="more" s={16}/>
+        </button>
+      </div>
+
+      {/* Job context */}
+      <a href="#" style={{ padding:"10px 16px", background:"rgba(255,255,255,0.02)", borderBottom:"1px solid rgba(255,255,255,0.04)", display:"flex", alignItems:"center", gap:9, textDecoration:"none", color:"inherit" }}>
+        <Icon n="briefcase" s={13} c="rgba(255,255,255,0.5)"/>
+        <span style={{ fontSize:12, color:"rgba(255,255,255,0.7)", flex:1, minWidth:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{c.job}</span>
+        <span style={{ padding:"3px 8px", borderRadius:5, background:`${s.c}1a`, color:s.c, fontSize:9.5, fontWeight:800, letterSpacing:0.3 }}>{s.l.toUpperCase()}</span>
+        <Icon n="ext" s={11} c="rgba(255,255,255,0.4)"/>
+      </a>
+
+      {/* Messages */}
+      <div style={{ flex:1, overflowY:"auto", padding:"16px 18px", display:"flex", flexDirection:"column" }}>
+        <div style={{ textAlign:"center", fontSize:10.5, color:"rgba(255,255,255,0.3)", marginBottom:14, letterSpacing:0.5, textTransform:"uppercase", fontWeight:600 }}>Idag</div>
+        {(c.messages || []).map((m, i) => <Bubble key={i} m={m} conv={c}/>)}
+
+        {/* Action card (if selected) */}
+        {c.stage === "selected" && (
+          <div style={{ marginTop:10, padding:"14px 16px", background:"linear-gradient(135deg, rgba(74,222,128,0.08), rgba(74,222,128,0.02))", border:"1px solid rgba(74,222,128,0.25)", borderRadius:14 }}>
+            <div style={{ fontSize:10.5, fontWeight:800, letterSpacing:0.8, color:"#4ade80", textTransform:"uppercase", marginBottom:6 }}>Snabbsvar</div>
+            <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+              {["Ja, tisdag 14:00 funkar bra!", "Kan vi göra det onsdag istället?", "Jag ringer er imorgon"].map((s, i) => (
+                <button key={i} onClick={()=>setDraft(s)} style={{ padding:"10px 12px", borderRadius:10, background:"rgba(0,0,0,0.3)", border:"1px solid rgba(74,222,128,0.2)", color:"rgba(255,255,255,0.85)", fontSize:13, fontWeight:600, cursor:"pointer", textAlign:"left" }}>{s}</button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Composer */}
+      <div style={{ padding:"10px 16px 28px", borderTop:"1px solid rgba(255,255,255,0.06)", display:"flex", gap:8, alignItems:"flex-end" }}>
+        <button style={{ width:40, height:40, borderRadius:99, background:"rgba(255,255,255,0.05)", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:"rgba(255,255,255,0.6)", flexShrink:0 }}><Icon n="plus" s={18}/></button>
+        <div style={{ flex:1, background:"#0a1414", border:"1px solid rgba(255,255,255,0.08)", borderRadius:20, padding:"10px 14px", minHeight:40, display:"flex", alignItems:"center" }}>
+          <textarea value={draft} onChange={e=>setDraft(e.target.value)} placeholder="Skriv ett meddelande..." rows={1} style={{ width:"100%", background:"transparent", border:"none", color:"#fff", fontSize:14, lineHeight:1.4, fontFamily:"inherit", resize:"none", outline:"none", maxHeight:80 }}/>
+        </div>
+        <button onClick={()=>setDraft("")} disabled={!draft.trim()} style={{ width:40, height:40, borderRadius:99, background: draft.trim() ? "linear-gradient(135deg,#F5A623,#d97706)" : "rgba(255,255,255,0.05)", color: draft.trim() ? "#000" : "rgba(255,255,255,0.3)", border:"none", cursor: draft.trim() ? "pointer" : "default", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}><Icon n="send" s={15}/></button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Bottom nav ────────────────────────────────────────────────────────────
+function BottomNav({ active }) {
+  const tabs = [
+    { id:"jobs", l:"Jobb", n:"briefcase" },
+    { id:"saved", l:"Ansökningar", n:"star" },
+    { id:"inbox", l:"Inkorg", n:"msg", badge:2 },
+    { id:"profile", l:"Profil", n:"user" },
+  ];
+  return (
+    <div style={{ position:"absolute", left:0, right:0, bottom:0, background:"rgba(6,15,15,0.92)", backdropFilter:"blur(20px)", borderTop:"1px solid rgba(255,255,255,0.06)", padding:"8px 8px 28px", display:"flex", justifyContent:"space-around" }}>
+      {tabs.map(t => {
+        const on = active === t.id;
+        return (
+          <button key={t.id} style={{ flex:1, padding:"8px 0", background:"transparent", border:"none", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:4 }}>
+            <div style={{ position:"relative" }}>
+              <Icon n={t.n} s={22} c={on ? "#F5A623" : "rgba(255,255,255,0.45)"}/>
+              {t.badge > 0 && <span style={{ position:"absolute", top:-4, right:-7, minWidth:16, height:16, padding:"0 4px", borderRadius:99, background:"#F5A623", color:"#000", fontSize:9.5, fontWeight:800, display:"flex", alignItems:"center", justifyContent:"center", border:"2px solid #060f0f" }}>{t.badge}</span>}
+            </div>
+            <span style={{ fontSize:10.5, fontWeight: on ? 800 : 600, color: on ? "#F5A623" : "rgba(255,255,255,0.5)" }}>{t.l}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── Main ──────────────────────────────────────────────────────────────────
+function MobileScreen() {
+  const [t, setT] = React.useState(TWEAK_DEFAULTS);
+  const setView = (v) => { setT(p => ({...p, view:v})); window.parent.postMessage({type:"__edit_mode_set_keys", edits:{view:v}}, "*"); };
+  const setSelected = (v) => { setT(p => ({...p, selected:v})); window.parent.postMessage({type:"__edit_mode_set_keys", edits:{selected:v}}, "*"); };
+  const setFilter = (v) => { setT(p => ({...p, filter:v})); window.parent.postMessage({type:"__edit_mode_set_keys", edits:{filter:v}}, "*"); };
+
+  const open = (id) => { setSelected(id); setView("thread"); };
+  const back = () => { setView("list"); };
+
+  const conv = CONVS.find(c => c.id === t.selected) || CONVS[0];
+
+  return (
+    <div style={{ background:"#060f0f", height:"100%", color:"#fff", position:"relative", overflow:"hidden" }}>
+      {t.view === "list"
+        ? <ListView filter={t.filter} setFilter={setFilter} onOpen={open}/>
+        : <ThreadView c={conv} onBack={back}/>
+      }
+    </div>
+  );
+}
+
+// ─── App ──────────────────────────────────────────────────────────────────
+function App() {
+  const [ready, setReady] = React.useState(typeof window.IOSDevice === "function");
+  React.useEffect(() => {
+    if (ready) return;
+    const id = setInterval(() => {
+      if (typeof window.IOSDevice === "function") { setReady(true); clearInterval(id); }
+    }, 30);
+    return () => clearInterval(id);
+  }, [ready]);
+  if (!ready) return <div style={{ color:"rgba(255,255,255,0.4)", fontSize:13 }}>Laddar…</div>;
+
+  return (
+    <div>
+      <div className="label">Mobil — Inkorg (förare)</div>
+      <window.IOSDevice width={390} height={844} dark={true}>
+        <MobileScreen/>
+      </window.IOSDevice>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>

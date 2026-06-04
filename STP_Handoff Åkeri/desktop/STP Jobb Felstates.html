@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STP – Jobb Felstates</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',system-ui,sans-serif;background:#060f0f;color:#f0faf9;min-height:100vh}
+</style>
+</head>
+<body>
+<div style="max-width:1280px;margin:0 auto;padding:48px 40px">
+  <h1 style="font-size:32px;font-weight:900;letter-spacing:-1px;margin-bottom:8px">Felstates</h1>
+  <p style="font-size:14px;color:rgba(240,250,249,0.5);margin-bottom:40px">Tre states som behöver finnas för att jobbflödet ska kännas komplett.</p>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+
+    <!-- 404 -->
+    <div style="padding:40px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:20;text-align:center;min-height:420px;display:flex;flex-direction:column;justify-content:center;align-items:center">
+      <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:rgba(240,250,249,0.3);text-transform:uppercase;margin-bottom:24px">Annons hittades ej · 404</div>
+      <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="rgba(245,166,35,0.4)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:20px"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+      <h2 style="font-size:22px;font-weight:900;margin-bottom:10px;letter-spacing:-0.5px">Annonsen finns inte längre</h2>
+      <p style="font-size:14px;color:rgba(240,250,249,0.5);line-height:1.6;margin-bottom:24px;max-width:340px">Den här annonsen är antingen avpublicerad, tillsatt eller har upphört. Vi har 247 andra CE-jobb i Sverige just nu.</p>
+      <div style="display:flex;gap:10px">
+        <a href="STP Lediga Jobb.html" style="padding:12px 22px;border-radius:11px;background:#F5A623;color:#000;font-weight:800;font-size:13px;text-decoration:none">Visa lediga jobb</a>
+        <a href="#" style="padding:12px 22px;border-radius:11px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);color:rgba(240,250,249,0.7);font-weight:600;font-size:13px;text-decoration:none">Tillbaka till sök</a>
+      </div>
+    </div>
+
+    <!-- Not logged in -->
+    <div style="padding:40px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:20;text-align:center;min-height:420px;display:flex;flex-direction:column;justify-content:center;align-items:center">
+      <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:rgba(240,250,249,0.3);text-transform:uppercase;margin-bottom:24px">Försöker ansöka utan profil</div>
+      <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="rgba(74,222,128,0.5)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:20px"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      <h2 style="font-size:22px;font-weight:900;margin-bottom:10px;letter-spacing:-0.5px">Skapa förarprofil för att ansöka</h2>
+      <p style="font-size:14px;color:rgba(240,250,249,0.5);line-height:1.6;margin-bottom:24px;max-width:380px">Din STP-profil <strong style="color:#f0faf9">ÄR</strong> ditt CV — inget att ladda upp, inga formulär att fylla i för varje annons. Tar 3 minuter att skapa.</p>
+      <div style="display:flex;gap:10px;margin-bottom:18px">
+        <a href="#" style="padding:12px 22px;border-radius:11px;background:#F5A623;color:#000;font-weight:800;font-size:13px;text-decoration:none">Skapa profil →</a>
+        <a href="#" style="padding:12px 22px;border-radius:11px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);color:rgba(240,250,249,0.7);font-weight:600;font-size:13px;text-decoration:none">Logga in</a>
+      </div>
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:8px;text-align:left;font-size:12px;color:rgba(240,250,249,0.5)">
+        <li>✓ Ansök till alla jobb med ett klick</li>
+        <li>✓ Få matchningsscore på varje annons</li>
+        <li>✓ Få notiser när nya jobb dyker upp som passar dig</li>
+      </ul>
+    </div>
+
+    <!-- Application submitted (success) -->
+    <div style="padding:40px;background:rgba(74,222,128,0.05);border:1px solid rgba(74,222,128,0.2);border-radius:20;text-align:center;min-height:420px;display:flex;flex-direction:column;justify-content:center;align-items:center">
+      <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:rgba(74,222,128,0.6);text-transform:uppercase;margin-bottom:24px">Ansökan skickad · Förare</div>
+      <div style="width:80px;height:80px;border-radius:99px;background:rgba(74,222,128,0.12);border:2px solid rgba(74,222,128,0.3);display:flex;align-items:center;justify-content:center;margin-bottom:20px">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <h2 style="font-size:22px;font-weight:900;margin-bottom:10px;letter-spacing:-0.5px">Din ansökan är skickad!</h2>
+      <p style="font-size:14px;color:rgba(240,250,249,0.5);line-height:1.6;margin-bottom:24px;max-width:380px">Nordic Transport AB har fått din ansökan tillsammans med din profil. Du hör vanligtvis från åkeriet inom 3–5 arbetsdagar.</p>
+      <div style="display:flex;gap:10px">
+        <a href="#" style="padding:12px 22px;border-radius:11px;background:#F5A623;color:#000;font-weight:800;font-size:13px;text-decoration:none">Mina ansökningar</a>
+        <a href="STP Lediga Jobb.html" style="padding:12px 22px;border-radius:11px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);color:rgba(240,250,249,0.7);font-weight:600;font-size:13px;text-decoration:none">Fortsätt söka jobb</a>
+      </div>
+    </div>
+
+    <!-- Posted (åkeri) -->
+    <div style="padding:40px;background:rgba(245,166,35,0.06);border:1px solid rgba(245,166,35,0.2);border-radius:20;text-align:center;min-height:420px;display:flex;flex-direction:column;justify-content:center;align-items:center">
+      <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:rgba(245,166,35,0.7);text-transform:uppercase;margin-bottom:24px">Annons publicerad · Åkeri</div>
+      <div style="width:80px;height:80px;border-radius:99px;background:rgba(245,166,35,0.12);border:2px solid rgba(245,166,35,0.3);display:flex;align-items:center;justify-content:center;margin-bottom:20px">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="#F5A623"><path d="M12 2l2.4 7.6H22l-6.2 4.5 2.4 7.6L12 17.2l-6.2 4.5 2.4-7.6L2 9.6h7.6z"/></svg>
+      </div>
+      <h2 style="font-size:22px;font-weight:900;margin-bottom:10px;letter-spacing:-0.5px">Annonsen är publicerad!</h2>
+      <p style="font-size:14px;color:rgba(240,250,249,0.5);line-height:1.6;margin-bottom:24px;max-width:380px"><strong style="color:#F5A623">CE-chaufför fjärrkörning</strong> är live på STP. Vi har redan börjat matcha mot 47 förare i Skåne med rätt profil.</p>
+      <div style="display:flex;gap:10px;margin-bottom:14px">
+        <a href="STP Jobbdetalj Åkeri-vy.html" style="padding:12px 22px;border-radius:11px;background:#F5A623;color:#000;font-weight:800;font-size:13px;text-decoration:none">Se din annons</a>
+        <a href="#" style="padding:12px 22px;border-radius:11px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);color:rgba(240,250,249,0.7);font-weight:600;font-size:13px;text-decoration:none">Mina jobb</a>
+      </div>
+      <p style="font-size:11px;color:rgba(240,250,249,0.3)">Du får e-post när första ansökan kommer in</p>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

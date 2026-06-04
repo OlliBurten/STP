@@ -721,7 +721,7 @@ export default function ForCompanies() {
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--paper)", color: "var(--ink-900)" }}>
-      <main style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 32px 80px" }}>
+      <main style={{ maxWidth: 1240, margin: "0 auto", padding: "32px 32px 80px" }}>
 
         {/* Hero */}
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 28, gap: 24, flexWrap: "wrap" }}>
@@ -729,7 +729,7 @@ export default function ForCompanies() {
             <p style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.4, textTransform: "uppercase", margin: "0 0 10px" }}>
               {timeGreeting()}, {companyShort}
             </p>
-            <h1 style={{ fontSize: 36, fontWeight: 800, lineHeight: 1.15, letterSpacing: -1, color: "var(--ink-900)", maxWidth: 720, margin: 0 }}>
+            <h1 style={{ fontSize: 34, fontWeight: 900, lineHeight: 1.15, letterSpacing: -1.2, color: "var(--ink-900)", maxWidth: 720, margin: 0 }}>
               {newApplications > 0 ? (
                 <>Du har <span style={{ color: "var(--amber-deep)" }}>{newApplications} nya kandidater</span> som väntar.</>
               ) : (

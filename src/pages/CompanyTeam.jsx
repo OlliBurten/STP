@@ -250,7 +250,7 @@ export default function CompanyTeam() {
           <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--amber-text)", marginBottom: 10 }}>
             {activeOrg?.name}
           </p>
-          <h1 style={{ fontSize: 32, fontWeight: 900, lineHeight: 1.1, marginBottom: 10 }}>Team</h1>
+          <h1 style={{ fontSize: 34, fontWeight: 900, letterSpacing: -1.2, lineHeight: 1.1, marginBottom: 10 }}>Team</h1>
           <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.7 }}>
             {isOwner
               ? "Bjud in kollegor och hantera teamet för detta åkeri."

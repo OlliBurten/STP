@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STP Mobil – Landing Design System</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',system-ui,sans-serif;background:#1a1a1a;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:24px 24px 60px;color:#f0faf9;gap:20px;flex-wrap:wrap}
+button,a{font-family:inherit;color:inherit}
+.label{font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;text-align:center}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.fade{animation:fadeIn .3s ease both}
+</style>
+</head>
+<body>
+<script type="text/babel" src="ios-frame.jsx"></script>
+<div id="root"></div>
+<script type="text/babel">
+
+const IC = {
+  menu:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="17" x2="21" y2="17"/></svg>,
+  x:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+  arrow:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>,
+  check:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
+  star:<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>,
+  truck:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13" rx="1"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>,
+  building:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>,
+  spark:<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L13.5 8.5 20 10l-6.5 1.5L12 18l-1.5-6.5L4 10l6.5-1.5z"/></svg>,
+  shield:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
+  msg:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
+  chev:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>,
+  plus:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+};
+const Icon = ({ n, s=18, c="currentColor" }) => <span style={{ display:"inline-flex", width:s, height:s, color:c, flexShrink:0 }}>{IC[n]}</span>;
+
+// ─── Public header (mobile) ───────────────────────────────────────────────
+function PublicHeader({ onMenu }) {
+  return (
+    <div style={{ padding:"4px 16px 12px", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+      <a href="#" style={{ fontFamily:"DM Sans", fontWeight:900, letterSpacing:-1, fontSize:24, color:"#fff", textDecoration:"none" }}>STP</a>
+      <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+        <a href="#" style={{ padding:"9px 16px", borderRadius:99, background:"linear-gradient(135deg,#F5A623,#d97706)", color:"#000", fontSize:13, fontWeight:800, textDecoration:"none", boxShadow:"0 4px 18px rgba(245,166,35,0.25)" }}>Logga in</a>
+        <button onClick={onMenu} style={{ width:42, height:42, borderRadius:99, background:"rgba(255,255,255,0.05)", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:"#fff" }}>
+          <Icon n="menu" s={20}/>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Menu drawer ──────────────────────────────────────────────────────────
+function MenuDrawer({ open, onClose }) {
+  if (!open) return null;
+  const links = [
+    { l:"Hem", h:"#" },
+    { l:"Lediga jobb", h:"#", badge:"4 080" },
+    { l:"Hitta åkerier", h:"#" },
+    { l:"För förare", h:"#" },
+    { l:"För åkerier", h:"#" },
+    { l:"Om STP", h:"#" },
+    { l:"Branschinsikter", h:"#" },
+    { l:"Blogg", h:"#" },
+    { l:"Lönekalkylator", h:"#" },
+    { l:"Kontakt", h:"#" },
+  ];
+  return (
+    <>
+      <div onClick={onClose} style={{ position:"absolute", inset:0, background:"rgba(0,0,0,0.6)", zIndex:40 }}/>
+      <div className="fade" style={{ position:"absolute", top:0, right:0, bottom:0, width:"88%", maxWidth:340, background:"#0a1414", borderLeft:"1px solid rgba(255,255,255,0.06)", zIndex:50, display:"flex", flexDirection:"column" }}>
+        <div style={{ padding:"4px 16px 12px", display:"flex", alignItems:"center", justifyContent:"space-between", borderBottom:"1px solid rgba(255,255,255,0.05)" }}>
+          <span style={{ fontFamily:"DM Sans", fontWeight:900, letterSpacing:-1, fontSize:22 }}>STP</span>
+          <button onClick={onClose} style={{ width:40, height:40, borderRadius:99, background:"rgba(255,255,255,0.05)", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:"#fff" }}><Icon n="x" s={18}/></button>
+        </div>
+        <div style={{ flex:1, overflowY:"auto", padding:"8px 0" }}>
+          {links.map((l, i) => (
+            <a key={l.l} href={l.h} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"16px 20px", color:"#fff", textDecoration:"none", borderBottom:"1px solid rgba(255,255,255,0.04)" }}>
+              <span style={{ fontSize:15, fontWeight:600 }}>{l.l}</span>
+              {l.badge && <span style={{ padding:"2px 8px", borderRadius:99, background:"rgba(245,166,35,0.12)", color:"#F5A623", fontSize:11, fontWeight:800 }}>{l.badge}</span>}
+            </a>
+          ))}
+        </div>
+        <div style={{ padding:"16px 20px 32px", display:"flex", flexDirection:"column", gap:8, borderTop:"1px solid rgba(255,255,255,0.05)" }}>
+          <a href="#" style={{ width:"100%", padding:"14px", borderRadius:14, background:"linear-gradient(135deg,#F5A623,#d97706)", color:"#000", fontSize:14, fontWeight:800, textDecoration:"none", textAlign:"center", boxShadow:"0 4px 18px rgba(245,166,35,0.25)" }}>Skapa konto — gratis</a>
+          <a href="#" style={{ width:"100%", padding:"13px", borderRadius:14, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", color:"#fff", fontSize:13.5, fontWeight:700, textDecoration:"none", textAlign:"center" }}>Logga in</a>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ─── Public footer ────────────────────────────────────────────────────────
+function PublicFooter() {
+  const sections = [
+    { t:"För förare", l:["Lediga jobb","Hitta åkerier","Skapa profil","Lönekalkylator","YKB-timer"] },
+    { t:"För åkerier", l:["Publicera jobb","Hitta förare","Åkeri-konto","Prissättning"] },
+    { t:"Om STP", l:["Om oss","Branschinsikter","Blogg","Partner","Kontakt"] },
+    { t:"Juridiskt", l:["Användarvillkor","Integritetspolicy","Cookies"] },
+  ];
+  return (
+    <div style={{ background:"#080f0f", borderTop:"1px solid rgba(255,255,255,0.05)", padding:"32px 20px 40px" }}>
+      <div style={{ fontFamily:"DM Sans", fontWeight:900, letterSpacing:-1, fontSize:24, marginBottom:8 }}>STP</div>
+      <p style={{ fontSize:12.5, color:"rgba(255,255,255,0.55)", lineHeight:1.55, marginBottom:24, maxWidth:280 }}>
+        Sveriges Transportplattform. Direktmatchning mellan förare och åkerier — utan mellanhänder.
+      </p>
+
+      <div style={{ display:"flex", flexDirection:"column", gap:0 }}>
+        {sections.map((s, i) => (
+          <details key={s.t} style={{ borderTop:"1px solid rgba(255,255,255,0.05)" }}>
+            <summary style={{ padding:"16px 0", display:"flex", justifyContent:"space-between", alignItems:"center", cursor:"pointer", listStyle:"none", fontSize:13, fontWeight:700, color:"rgba(255,255,255,0.85)" }}>
+              {s.t}
+              <Icon n="chev" s={14} c="rgba(255,255,255,0.4)"/>
+            </summary>
+            <div style={{ paddingBottom:14, display:"flex", flexDirection:"column", gap:10 }}>
+              {s.l.map(it => <a key={it} href="#" style={{ fontSize:12.5, color:"rgba(255,255,255,0.55)", textDecoration:"none", paddingLeft:2 }}>{it}</a>)}
+            </div>
+          </details>
+        ))}
+      </div>
+
+      <div style={{ marginTop:24, paddingTop:20, borderTop:"1px solid rgba(255,255,255,0.05)", fontSize:11, color:"rgba(255,255,255,0.4)" }}>
+        © 2026 Sveriges Transportplattform AB · Org.nr 559123-4567
+      </div>
+    </div>
+  );
+}
+
+// ─── Section anatomy demos ────────────────────────────────────────────────
+function SectionHero() {
+  return (
+    <div style={{ padding:"24px 20px 36px", textAlign:"center" }}>
+      <div style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"6px 12px", borderRadius:99, background:"rgba(245,166,35,0.1)", border:"1px solid rgba(245,166,35,0.25)", marginBottom:18 }}>
+        <Icon n="spark" s={11} c="#F5A623"/>
+        <span style={{ fontSize:11, fontWeight:700, color:"#F5A623", letterSpacing:0.4 }}>BETA · GRATIS</span>
+      </div>
+      <h1 style={{ fontSize:34, fontWeight:900, letterSpacing:-1.5, lineHeight:1.05, marginBottom:14 }}>
+        Hitta nästa<br/>
+        <span style={{ color:"#F5A623" }}>chaufförsjobb.</span>
+      </h1>
+      <p style={{ fontSize:15, color:"rgba(255,255,255,0.65)", lineHeight:1.55, marginBottom:22, maxWidth:320, margin:"0 auto 22px" }}>
+        Sveriges plattform för förare. 4 080 lediga jobb just nu. Skapa profil på 30 sekunder.
+      </p>
+      <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+        <a href="#" style={{ width:"100%", padding:"16px", borderRadius:14, background:"linear-gradient(135deg,#F5A623,#d97706)", color:"#000", fontSize:15, fontWeight:800, textDecoration:"none", display:"flex", alignItems:"center", justifyContent:"center", gap:8, boxShadow:"0 4px 20px rgba(245,166,35,0.3)" }}>
+          Hitta jobb nu <Icon n="arrow" s={14}/>
+        </a>
+        <a href="#" style={{ width:"100%", padding:"14px", borderRadius:14, background:"transparent", border:"1px solid rgba(255,255,255,0.12)", color:"#fff", fontSize:14, fontWeight:700, textDecoration:"none", textAlign:"center" }}>För åkerier</a>
+      </div>
+      {/* trust */}
+      <div style={{ display:"flex", justifyContent:"center", gap:18, marginTop:24, flexWrap:"wrap" }}>
+        {["2 400+ förare","320 åkerier","Verifierade"].map(v => (
+          <div key={v} style={{ display:"flex", alignItems:"center", gap:5, fontSize:11.5, color:"rgba(255,255,255,0.55)" }}>
+            <div style={{ width:5, height:5, borderRadius:99, background:"#4ade80" }}/>
+            <span style={{ fontWeight:600 }}>{v}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SectionFeatures() {
+  const items = [
+    { i:"spark", t:"Matchning som funkar", d:"Vi visar jobb baserat på dina körkort, region och vad du vill köra. Inga slumpmässiga annonser." },
+    { i:"shield", t:"Verifierade åkerier", d:"Varje åkeri verifieras mot Bolagsverket. Inga fejk-annonser eller bemanningsbluff." },
+    { i:"msg", t:"Direktkontakt", d:"Inga mellanhänder. Du och åkeriet pratar direkt — utan att någon tar en del av lönen." },
+  ];
+  return (
+    <div style={{ padding:"32px 20px", background:"#0a1414", borderTop:"1px solid rgba(255,255,255,0.05)", borderBottom:"1px solid rgba(255,255,255,0.05)" }}>
+      <div style={{ fontSize:11, fontWeight:800, letterSpacing:1.5, textTransform:"uppercase", color:"#F5A623", marginBottom:10, textAlign:"center" }}>Varför STP?</div>
+      <h2 style={{ fontSize:26, fontWeight:800, letterSpacing:-0.8, lineHeight:1.2, textAlign:"center", marginBottom:24, maxWidth:300, margin:"0 auto 24px" }}>Byggt för transportbranschen — inte en generisk jobbsajt.</h2>
+      <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+        {items.map((it, i) => (
+          <div key={i} style={{ padding:"18px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.05)", borderRadius:14 }}>
+            <div style={{ width:42, height:42, borderRadius:11, background:"rgba(245,166,35,0.1)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:14 }}>
+              <Icon n={it.i} s={18} c="#F5A623"/>
+            </div>
+            <div style={{ fontSize:16, fontWeight:800, letterSpacing:-0.3, marginBottom:6 }}>{it.t}</div>
+            <div style={{ fontSize:13, color:"rgba(255,255,255,0.65)", lineHeight:1.55 }}>{it.d}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SectionCTA() {
+  return (
+    <div style={{ padding:"36px 20px", textAlign:"center" }}>
+      <h2 style={{ fontSize:26, fontWeight:800, letterSpacing:-0.8, marginBottom:10, lineHeight:1.2 }}>Redo att börja?</h2>
+      <p style={{ fontSize:14, color:"rgba(255,255,255,0.6)", marginBottom:22, maxWidth:280, margin:"0 auto 22px", lineHeight:1.55 }}>Skapa profil på 30 sekunder med BankID. Helt gratis under betafasen.</p>
+      <a href="#" style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"16px 28px", borderRadius:14, background:"linear-gradient(135deg,#F5A623,#d97706)", color:"#000", fontSize:15, fontWeight:800, textDecoration:"none", boxShadow:"0 4px 20px rgba(245,166,35,0.3)" }}>
+        Kom igång gratis <Icon n="arrow" s={14}/>
+      </a>
+    </div>
+  );
+}
+
+function SectionFAQ() {
+  const faqs = [
+    { q:"Är STP ett bemanningsbolag?", a:"Nej. STP är inte ett bemanningsbolag. Vi möjliggör direktkontakt mellan förare och åkerier — utan mellanhänder som tar en del av lönen." },
+    { q:"Kostar det något?", a:"STP är helt gratis under betafasen för alla förare och åkerier." },
+    { q:"Hur fungerar verifiering?", a:"Åkerier verifieras mot Bolagsverket. Förares körkort och certifikat byggs ut löpande i samarbete med branschen." },
+  ];
+  return (
+    <div style={{ padding:"32px 20px", borderTop:"1px solid rgba(255,255,255,0.05)" }}>
+      <div style={{ fontSize:11, fontWeight:800, letterSpacing:1.5, textTransform:"uppercase", color:"#F5A623", marginBottom:10, textAlign:"center" }}>Vanliga frågor</div>
+      <h2 style={{ fontSize:24, fontWeight:800, letterSpacing:-0.8, textAlign:"center", marginBottom:24 }}>Inga konstigheter.</h2>
+      <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+        {faqs.map((f, i) => (
+          <details key={i} style={{ background:"#0a1414", border:"1px solid rgba(255,255,255,0.05)", borderRadius:12 }}>
+            <summary style={{ padding:"16px 18px", cursor:"pointer", listStyle:"none", display:"flex", justifyContent:"space-between", alignItems:"center", fontSize:14, fontWeight:700 }}>
+              {f.q}
+              <Icon n="plus" s={14} c="rgba(255,255,255,0.5)"/>
+            </summary>
+            <div style={{ padding:"0 18px 16px", fontSize:13, color:"rgba(255,255,255,0.65)", lineHeight:1.55 }}>{f.a}</div>
+          </details>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Show-cases ───────────────────────────────────────────────────────────
+function Screen({ children }) {
+  const [menuOpen, setMenuOpen] = React.useState(false);
+  return (
+    <div style={{ background:"#060f0f", height:"100%", color:"#fff", position:"relative", overflow:"hidden", display:"flex", flexDirection:"column" }}>
+      <PublicHeader onMenu={()=>setMenuOpen(true)}/>
+      <div style={{ flex:1, overflowY:"auto" }}>
+        {children}
+        <PublicFooter/>
+      </div>
+      <MenuDrawer open={menuOpen} onClose={()=>setMenuOpen(false)}/>
+    </div>
+  );
+}
+
+function App() {
+  const [ready, setReady] = React.useState(typeof window.IOSDevice === "function");
+  React.useEffect(() => {
+    if (ready) return;
+    const id = setInterval(() => { if (typeof window.IOSDevice === "function") { setReady(true); clearInterval(id); } }, 30);
+    return () => clearInterval(id);
+  }, [ready]);
+  if (!ready) return <div style={{ color:"rgba(255,255,255,0.4)", fontSize:13 }}>Laddar…</div>;
+
+  return (
+    <>
+      <div>
+        <div className="label">Mönster — Full landing (Home)</div>
+        <window.IOSDevice width={390} height={844} dark={true}>
+          <Screen>
+            <SectionHero/>
+            <SectionFeatures/>
+            <SectionFAQ/>
+            <SectionCTA/>
+          </Screen>
+        </window.IOSDevice>
+      </div>
+      <div>
+        <div className="label">Mönster — Menu öppen + footer</div>
+        <window.IOSDevice width={390} height={844} dark={true}>
+          <div style={{ background:"#060f0f", height:"100%", color:"#fff", position:"relative", overflow:"hidden" }}>
+            <PublicHeader onMenu={()=>{}}/>
+            <div style={{ height:"calc(100% - 64px)", overflowY:"auto" }}>
+              <PublicFooter/>
+            </div>
+            <MenuDrawer open={true} onClose={()=>{}}/>
+          </div>
+        </window.IOSDevice>
+      </div>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
