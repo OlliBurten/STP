@@ -228,12 +228,15 @@ function AppLayout() {
   // Onboarding wizards are full-screen standalone layouts — no top nav
   const isOnboardingPage = pathname.startsWith("/onboarding/") || pathname.startsWith("/foretag/onboarding");
 
+  // STP (4) design-preview screens render standalone (egen TopNav) — ingen global chrome
+  const isPreviewPage = pathname.startsWith("/preview/");
+
   return (
     <div className="min-h-screen flex flex-col" style={{ overflowX: "clip" }}>
-      {!hideChromeOnMobile && !isAuthPage && !isAdminPage && !isOnboardingPage && (
+      {!hideChromeOnMobile && !isAuthPage && !isAdminPage && !isOnboardingPage && !isPreviewPage && (
         user ? <AppTopNav /> : <Header onboarding={onboarding} />
       )}
-      <div className={hideChromeOnMobile || isAuthPage || isOnboardingPage ? "flex-1" : `flex-1 ${isImpersonating ? "pt-[104px]" : "pt-16"}`}>
+      <div className={hideChromeOnMobile || isAuthPage || isOnboardingPage || isPreviewPage ? "flex-1" : `flex-1 ${isImpersonating ? "pt-[104px]" : "pt-16"}`}>
         <DriverCompletionNudge />
         <OnboardingGate>
         <Suspense fallback={<div className="min-h-[60vh]" />}>
@@ -458,8 +461,8 @@ function AppLayout() {
         </Suspense>
         </OnboardingGate>
               </div>
-              {!hideChromeOnMobile && !isAuthPage && <Footer />}
-              {!hideChromeOnMobile && !isAuthPage && <FeedbackButton />}
+              {!hideChromeOnMobile && !isAuthPage && !isPreviewPage && <Footer />}
+              {!hideChromeOnMobile && !isAuthPage && !isPreviewPage && <FeedbackButton />}
               <InstallPrompt />
               <CookieBanner />
               {showMobileHeader && <MobileHeader />}
