@@ -360,7 +360,7 @@ export default function JobList() {
           nudge: REGION_NUDGE[code] || undefined,
           cities: Object.entries(d.cities)
             .sort((a, b) => b[1] - a[1])
-            .slice(0, 5)
+            .slice(0, 40)
             .map(([name, jobs]) => {
               const box = SWE_LAN_BOX[REGION_CODE_MAP[region] || ""];
               const offset = box ? cityOffset(name, box.cx, box.cy) : null;
@@ -708,7 +708,7 @@ export default function JobList() {
                   <SwedenJobMap
                     regions={regionData}
                     onPickRegion={(r) => {
-                      setFilters(f => ({ ...f, region: r.region }));
+                      setFilters(f => ({ ...f, region: r.region, search: r.location || f.search }));
                       setView("list");
                     }}
                     height={580}

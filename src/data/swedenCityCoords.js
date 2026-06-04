@@ -110,7 +110,7 @@ export const CITY_COORDS = {
   "Mölndal": [12.014, 57.656],
   "Lidköping": [13.159, 58.505],
   "Mariestad": [13.825, 58.709],
-  "Vänersburg": [12.323, 58.381],
+  "Vänersborg": [12.323, 58.381],
   "Kungsbacka": [12.076, 57.483],
   "Lerum": [12.270, 57.771],
   "Kungälv": [11.976, 57.870],
@@ -192,16 +192,22 @@ export const CITY_COORDS = {
   "Haparanda": [24.135, 65.836],
 };
 
-// SVG projection constants (viewBox 0 0 290 660, derived from Wikimedia county SVG)
-const LON_SCALE = 14.928;
-const LON_OFFSET = -120.2;
-const LAT_SCALE = -50.985;
-const LAT_OFFSET = 3469.8;
+/**
+ * SVG-projektion (viewBox 0 0 290 660) — KALIBRERAD AFFIN.
+ *
+ * Tidigare användes en linjär lon-enbart-projektion som ignorerade att
+ * meridianerna konvergerar norrut → öst-kusten/Gotland hamnade fel (upp till
+ * ~26 enheter). Den här affina transformen är minstakvadrat-fittad mot kartans
+ * faktiska län-positioner (läns geo-center → läns SVG-center), så svgX beror på
+ * BÅDE longitud och latitud. Alla testade städer hamnar nu inom sitt län.
+ */
+const PX = [22.1013, -3.8187, -6.005];   // svgX = PX·[lon, lat, 1]
+const PY = [-0.2532, -48.7359, 3355.232]; // svgY = PY·[lon, lat, 1]
 
 export function cityToSVG(lon, lat) {
   return {
-    x: lon * LON_SCALE + LON_OFFSET,
-    y: lat * LAT_SCALE + LAT_OFFSET,
+    x: PX[0] * lon + PX[1] * lat + PX[2],
+    y: PY[0] * lon + PY[1] * lat + PY[2],
   };
 }
 
