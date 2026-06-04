@@ -74,6 +74,7 @@ const Privacy               = lazyRetry(() => import("./pages/Privacy"));
 const Admin                 = lazyRetry(() => import("./pages/Admin"));
 const Status                = lazyRetry(() => import("./pages/Status"));
 const NotFound              = lazyRetry(() => import("./pages/NotFound"));
+const JobbdetaljPreview     = lazyRetry(() => import("./pages/preview/JobbdetaljPreview"));
 const SavedJobs             = lazyRetry(() => import("./pages/SavedJobs"));
 const CompanyProfile        = lazyRetry(() => import("./pages/CompanyProfile"));
 const CompanyPublicProfile  = lazyRetry(() => import("./pages/CompanyPublicProfile"));
@@ -451,6 +452,7 @@ function AppLayout() {
                       </ProtectedRoute>
                     }
                   />
+                  <Route path="/preview/jobbdetalj" element={<JobbdetaljPreview />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
         </Suspense>
