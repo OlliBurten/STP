@@ -202,9 +202,12 @@ export const Tabs = ({ value, onChange, items, style }) => (
 );
 
 /* ────── TopNav — mörk asfalt-strip ────── */
+const TAB_ICON = { "Jobb": "search", "Lediga jobb": "search", "Åkerier": "truck", "Hitta förare": "search", "Annonser": "building", "Översikt": "building", "Meddelanden": "msg", "Inkorg": "msg", "Favoriter": "heart", "Mina ansökningar": "check", "Företagsprofil": "user", "Profil": "user" };
+
 export const TopNav = ({ items, active, onActive, currentUser, brand = "STP", brandSub, rightExtras, sticky = true }) => (
+  <>
   <nav style={{ background: "var(--ink-900)", color: "#e8eded", borderBottom: "1px solid #000", position: sticky ? "sticky" : "relative", top: 0, zIndex: 50 }}>
-    <div style={{ maxWidth: 1240, margin: "0 auto", padding: "0 32px", height: 60, display: "flex", alignItems: "center", gap: 8 }}>
+    <div className="stp-topnav-inner" style={{ maxWidth: 1240, margin: "0 auto", padding: "0 32px", height: 60, display: "flex", alignItems: "center", gap: 8 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginRight: 28 }}>
         <div style={{ width: 28, height: 28, borderRadius: 7, background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 13, color: "#fff", boxShadow: "inset 0 -2px 0 rgba(0,0,0,0.25)" }}>S</div>
         <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: 0.5 }}>{brand}</span>
@@ -213,7 +216,7 @@ export const TopNav = ({ items, active, onActive, currentUser, brand = "STP", br
         )}
       </div>
 
-      <div style={{ display: "flex", gap: 2, flex: 1 }}>
+      <div className="stp-topnav-links" style={{ display: "flex", gap: 2, flex: 1 }}>
         {items?.map((it) => {
           const isActive = active === it.id;
           return (
@@ -241,12 +244,28 @@ export const TopNav = ({ items, active, onActive, currentUser, brand = "STP", br
           <div style={{ width: 1, height: 22, background: "rgba(255,255,255,0.1)", margin: "0 6px" }} />
           <button style={{ display: "flex", alignItems: "center", gap: 9, padding: "4px 6px", borderRadius: 8 }}>
             <div style={{ width: 30, height: 30, borderRadius: "50%", background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: 11, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid rgba(255,255,255,0.15)" }}>{currentUser.initials}</div>
-            <span style={{ fontSize: 13, color: "#fff", fontWeight: 600 }}>{currentUser.label}</span>
+            <span className="stp-topnav-userlabel" style={{ fontSize: 13, color: "#fff", fontWeight: 600 }}>{currentUser.label}</span>
           </button>
         </>
       )}
     </div>
   </nav>
+  {items?.length ? (
+    <div className="stp-tabbar">
+      {items.map((it) => {
+        const isActive = active === it.id;
+        const ic = TAB_ICON[it.label] || "menu";
+        return (
+          <button key={it.id} onClick={() => onActive?.(it.id)} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "4px 2px", background: "transparent", position: "relative" }}>
+            <Icon name={ic} size={20} color={isActive ? "var(--amber)" : "rgba(232,237,237,0.6)"} stroke={2} />
+            <span style={{ fontSize: 10.5, fontWeight: isActive ? 700 : 500, color: isActive ? "#fff" : "rgba(232,237,237,0.6)", whiteSpace: "nowrap" }}>{it.label}</span>
+            {it.badge != null && <span style={{ position: "absolute", top: -1, left: "calc(50% + 6px)", background: "var(--amber)", color: "#fff", fontSize: 9, fontWeight: 800, padding: "0 5px", borderRadius: 7, lineHeight: 1.5 }}>{it.badge}</span>}
+          </button>
+        );
+      })}
+    </div>
+  ) : null}
+  </>
 );
 
 /* ────── PageShell — paper-bakgrund ────── */

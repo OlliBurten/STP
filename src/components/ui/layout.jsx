@@ -54,7 +54,7 @@ export const AppPage = ({
       {nav && <TopNav {...nav} />}
       {breadcrumb}
       {header}
-      <main style={{ maxWidth, margin: "0 auto", padding: contentPad || `24px ${LAYOUT.PAD}px 80px` }}>
+      <main className="stp-page-main" style={{ maxWidth, margin: "0 auto", padding: contentPad || `24px ${LAYOUT.PAD}px 80px` }}>
         {children}
       </main>
     </PageShell>
@@ -69,13 +69,13 @@ export const PageHeader = ({ eyebrow, title, sub, actions, tabs, width = "wide" 
   const maxWidth = widthOf(width);
   return (
     <div style={{ background: "var(--paper)", borderBottom: "1px solid var(--line)", paddingTop: 32, paddingBottom: tabs ? 0 : 20 }}>
-      <div style={{ maxWidth, margin: "0 auto", padding: `0 ${LAYOUT.PAD}px` }}>
+      <div className="stp-header-inner" style={{ maxWidth, margin: "0 auto", padding: `0 ${LAYOUT.PAD}px` }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 16, marginBottom: tabs ? 24 : 0 }}>
           <div>
             {eyebrow && (
               <p style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 10 }}>{eyebrow}</p>
             )}
-            <h1 style={{ fontSize: 34, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.2, lineHeight: 1.15, marginBottom: sub ? 6 : 0 }}>{title}</h1>
+            <h1 className="stp-page-title" style={{ fontSize: 34, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.2, lineHeight: 1.15, marginBottom: sub ? 6 : 0 }}>{title}</h1>
             {sub && <p style={{ fontSize: 14, color: "var(--ink-500)", fontWeight: 500 }}>{sub}</p>}
           </div>
           {actions && <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>{actions}</div>}
@@ -92,7 +92,7 @@ export const PageHeader = ({ eyebrow, title, sub, actions, tabs, width = "wide" 
 export const Breadcrumb = ({ label = "Tillbaka", onClick, width = "wide" }) => {
   const maxWidth = widthOf(width);
   return (
-    <div style={{ maxWidth, margin: "0 auto", padding: `24px ${LAYOUT.PAD}px 0` }}>
+    <div className="stp-breadcrumb" style={{ maxWidth, margin: "0 auto", padding: `24px ${LAYOUT.PAD}px 0` }}>
       <button onClick={onClick} style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 600, color: "var(--ink-500)" }}>
         <Icon name="arrowLeft" size={14} stroke={2} />
         {label}
