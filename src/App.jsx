@@ -82,6 +82,11 @@ const DialogerPreview       = lazyRetry(() => import("./pages/preview/DialogerPr
 const NotiserSokPreview     = lazyRetry(() => import("./pages/preview/NotiserSokPreview"));
 const JuridikPreview        = lazyRetry(() => import("./pages/preview/JuridikPreview"));
 const InnehallssidorPreview = lazyRetry(() => import("./pages/preview/InnehallssidorPreview"));
+const FavoriterPreview      = lazyRetry(() => import("./pages/preview/FavoriterPreview"));
+const ForareAkerierPreview  = lazyRetry(() => import("./pages/preview/AkerierPreview"));
+const AkeriprofilPreview    = lazyRetry(() => import("./pages/preview/AkeriprofilPreview"));
+const ForareInstallningarPreview = lazyRetry(() => import("./pages/preview/InstallningarPreview"));
+const OnboardingForarePreview = lazyRetry(() => import("./pages/preview/OnboardingForarePreview"));
 const JobbdetaljPreview     = lazyRetry(() => import("./pages/preview/JobbdetaljPreview"));
 const LedigaJobbPreview     = lazyRetry(() => import("./pages/preview/LedigaJobbPreview"));
 const ForarprofilPreview    = lazyRetry(() => import("./pages/preview/ForarprofilPreview"));
@@ -499,6 +504,11 @@ function AppLayout() {
                   <Route path="/preview/notiser-sok" element={<NotiserSokPreview />} />
                   <Route path="/preview/juridik" element={<JuridikPreview />} />
                   <Route path="/preview/innehallssidor" element={<InnehallssidorPreview />} />
+                  <Route path="/preview/favoriter" element={<FavoriterPreview />} />
+                  <Route path="/preview/akerier" element={<ForareAkerierPreview />} />
+                  <Route path="/preview/akeriprofil" element={<AkeriprofilPreview />} />
+                  <Route path="/preview/installningar" element={<ForareInstallningarPreview />} />
+                  <Route path="/preview/onboarding-forare" element={<OnboardingForarePreview />} />
                   <Route path="/preview/jobbdetalj" element={<JobbdetaljPreview />} />
                   <Route path="/preview/lediga-jobb" element={<LedigaJobbPreview />} />
                   <Route path="/preview/forarprofil" element={<ForarprofilPreview />} />
