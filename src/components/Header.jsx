@@ -34,14 +34,12 @@ const PUBLIC_NAV_LINKS = [
   { to: "/jobb",       label: "Lediga jobb" },
   { to: "/forare",     label: "För förare" },
   { to: "/for-akerier",label: "För åkerier" },
+  { to: "/blogg",      label: "Guider" },
+  { to: "/om-oss",     label: "Om STP" },
 ];
 
-const PUBLIC_EXTRA_LINKS = [
-  { to: "/#sa-fungerar-det", label: "Så fungerar STP" },
-  { to: "/uppdateringar",    label: "Vad är nytt" },
-  { to: "/om-oss",           label: "Om STP" },
-  { to: "/kontakt",          label: "Kontakt" },
-];
+// Mobil-menyn = samma slimmade länkar som desktop (PUBLIC_NAV_LINKS). Inga extra.
+const PUBLIC_EXTRA_LINKS = [];
 
 export default function Header({ onboarding = false }) {
   const isMobile = useIsMobile();
@@ -185,9 +183,10 @@ export default function Header({ onboarding = false }) {
       {!user && isLanding && (
         <>
           {[
-            { to: "/forare",            label: "För förare" },
+            { to: "/jobb",             label: "Lediga jobb" },
+            { to: "/forare",           label: "För förare" },
             { to: "/for-akerier",      label: "För åkerier" },
-            { to: "/#sa-fungerar-det", label: "Så fungerar det" },
+            { to: "/blogg",            label: "Guider" },
             { to: "/om-oss",           label: "Om STP" },
           ].map(item => (
             <li key={item.label}>
@@ -227,47 +226,6 @@ export default function Header({ onboarding = false }) {
               </NavLink>
             </li>
           ))}
-          <li className="relative" ref={navDropdownRef}>
-            <button
-              type="button"
-              onClick={() => setNavDropdownOpen(o => !o)}
-              onMouseEnter={() => setNavDropdownOpen(true)}
-              className="dm-dark-nav-link"
-              style={{ background: "none", border: "none", cursor: "pointer", fontSize: 13.5, fontWeight: 500, display: "inline-flex", alignItems: "center", gap: 4 }}
-              aria-expanded={navDropdownOpen}
-              aria-haspopup="true"
-            >
-              Om STP
-              <ChevronDownIcon className={`w-4 h-4 transition-transform ${navDropdownOpen ? "rotate-180" : ""}`} />
-            </button>
-            {navDropdownOpen && (
-              <div
-                className="absolute left-0 top-full mt-0 pt-2 z-[100] w-full min-w-0 sm:left-1/2 sm:right-auto sm:w-auto sm:-translate-x-1/2 sm:min-w-[200px]"
-                onMouseLeave={() => setNavDropdownOpen(false)}
-              >
-                <div style={{ background: "var(--card)", border: "1px solid var(--line-2)", borderRadius: 12, boxShadow: "var(--sh-md)", padding: "6px 0", minWidth: 210 }}>
-                  {[
-                    { to: "/#sa-fungerar-det", label: "Så fungerar STP" },
-                    { to: "/uppdateringar",    label: "Vad är nytt" },
-                    { to: "/om-oss",           label: "Om STP" },
-                    { to: "/blogg",            label: "Blogg" },
-                    { to: "/branschinsikter",  label: "Branschinsikter" },
-                  ].map(item => (
-                    <Link
-                      key={item.to}
-                      to={item.to}
-                      onClick={() => { setNavDropdownOpen(false); closeMobile(); }}
-                      style={{ display: "block", padding: "10px 18px", fontSize: 13.5, fontWeight: 500, color: "var(--ink-700)", textDecoration: "none", transition: "background .1s" }}
-                      onMouseEnter={e => { e.currentTarget.style.background = "var(--paper)"; e.currentTarget.style.color = "var(--ink-900)"; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = ""; e.currentTarget.style.color = "var(--ink-700)"; }}
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
-          </li>
         </>
       )}
 
