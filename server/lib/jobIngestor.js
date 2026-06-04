@@ -185,20 +185,33 @@ function isStaffingEmployer(name = "", description = "") {
   return false;
 }
 
+// Tydliga icke-lastbilsroller (budbil/paketbil = B-körkort, truck = gaffeltruck, m.m.)
+const NON_TRUCK_KEYWORDS = [
+  "budbil", "paketbil", "paketbud", "matbud", "hemleverans", "last mile",
+  "truckförare", "gaffeltruck", "motviktstruck", "lagerarbetare", "terminalarbetare",
+  "taxi", "taxiförare", "bussförare", "busschaufför", "personbil", "traktor",
+  "väktare", "säljare", "montör", "mekaniker", "renhållningsarbetare",
+];
+
 function passesQualityFilter(hit) {
   if (!hit.headline) return false;
   if (!hit.employer?.name) return false;
 
-  // Must require a truck-class license (CE/C/D/DE) — B alone is not sufficient
-  const hasTruckLicense = (hit.driving_license || []).some(
-    dl => TRUCK_LICENSES.has((dl.label || "").toUpperCase())
-  );
-  // OR be explicitly in the truck driver occupation group
+  const dls = (hit.driving_license || []).map(dl => (dl.label || "").toUpperCase());
+  const hasTruckLicense = dls.some(l => TRUCK_LICENSES.has(l)); // explicit C eller CE
+  const hasBOnly = dls.length > 0 && !hasTruckLicense && dls.includes("B");
   const inTruckGroup =
     hit.occupation_group?.concept_id &&
     DRIVER_OCCUPATION_GROUPS.includes(hit.occupation_group.concept_id);
 
-  return hasTruckLicense || inTruckGroup;
+  const text = `${hit.headline || ""} ${hit.description?.text || ""}`.toLowerCase();
+  const isNonTruck = NON_TRUCK_KEYWORDS.some(kw => text.includes(kw));
+
+  // Endast äkta C/CE-lastbilsjobb:
+  if (hasTruckLicense) return true;   // uttalat C/CE → alltid in
+  if (hasBOnly) return false;         // uttalat endast B → ej lastbil
+  if (isNonTruck) return false;       // budbil/paketbil/gaffeltruck/taxi/buss ...
+  return inTruckGroup;                // i lastbilsförar-gruppen utan motsägelse
 }
 
 // ─── System user ─────────────────────────────────────────────────────────────
@@ -285,7 +298,14 @@ function mapJobToRecord(hit, systemUserId) {
     "";
   const region = mapRegion(regionRaw);
   const employment = mapEmployment(hit.employment_type?.label);
-  const licenses = mapLicenses(hit.driving_license || []);
+  let licenses = mapLicenses(hit.driving_license || []);
+  if (licenses.length === 0) {
+    // Platsbanken taggar ofta inget körkort → härled från text (lastbilsjobb kräver minst C)
+    const lt = `${title} ${description}`.toLowerCase();
+    licenses = /\b(ce|släp|trailer|fjärr|tung lastbil|ekipage|långtradare|semitrailer|lastväxlare|dragbil)\b/.test(lt)
+      ? ["CE"]
+      : ["C"];
+  }
   const jobType = inferJobType(title, description);
   const bransch = inferBransch(title, description);
   const applyUrl = hit.application_details?.url || hit.webpage_url || null;

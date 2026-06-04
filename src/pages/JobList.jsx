@@ -387,7 +387,7 @@ export default function JobList() {
   const profileMissingItems = useMemo(() => (isDriver && profile) ? getDriverMinimumChecklist(profile).filter(i => !i.done).map(i => i.label) : [], [isDriver, profile]);
   const showProfileBanner  = isDriver && !jobsLoading && !bannerDismissed && profileCompletion && profileCompletion.pct < 80;
 
-  const recommendedCount = useMemo(() => filteredJobs.filter(j => (matchDataMap[j.id]?.score ?? 0) >= 80).length, [filteredJobs, matchDataMap]);
+  const recommendedCount = useMemo(() => filteredJobs.filter(j => (matchDataMap[j.id]?.pct ?? 0) >= 80).length, [filteredJobs, matchDataMap]);
   const savedCount = savedJobIds.size;
 
   const tabs = [
@@ -397,7 +397,7 @@ export default function JobList() {
   ];
 
   const tabFilteredJobs = useMemo(() => {
-    if (tab === "recommended") return filteredJobs.filter(j => (matchDataMap[j.id]?.score ?? 0) >= 80);
+    if (tab === "recommended") return filteredJobs.filter(j => (matchDataMap[j.id]?.pct ?? 0) >= 80);
     if (tab === "saved")       return filteredJobs.filter(j => savedJobIds.has(j.id));
     return null;
   }, [tab, filteredJobs, matchDataMap, savedJobIds]);
@@ -407,7 +407,7 @@ export default function JobList() {
 
   const mobileJobs = useMemo(() => {
     const base = tab === "recommended"
-      ? filteredJobs.filter(j => (matchDataMap[j.id]?.score ?? 0) >= 70).sort((a,b) => (matchDataMap[b.id]?.score ?? 0) - (matchDataMap[a.id]?.score ?? 0))
+      ? filteredJobs.filter(j => (matchDataMap[j.id]?.pct ?? 0) >= 70).sort((a,b) => (matchDataMap[b.id]?.pct ?? 0) - (matchDataMap[a.id]?.pct ?? 0))
       : tab === "saved" ? filteredJobs.filter(j => savedJobIds.has(j.id))
       : filteredJobs;
     return base.filter(j =>
@@ -484,7 +484,7 @@ export default function JobList() {
       <div style={{ padding: "0 20px 12px", display: "flex", gap: 6, overflowX: "auto" }}>
         {[
           { v: "all",         l: "Alla",    c: filteredJobs.length },
-          { v: "recommended", l: "För dig", c: filteredJobs.filter(j => (matchDataMap[j.id]?.score ?? 0) >= 70).length },
+          { v: "recommended", l: "För dig", c: filteredJobs.filter(j => (matchDataMap[j.id]?.pct ?? 0) >= 70).length },
           { v: "saved",       l: "Sparade", c: savedJobIds.size },
         ].map(t => {
           const on = tab === t.v;
