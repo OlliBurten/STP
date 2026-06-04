@@ -90,6 +90,10 @@ const AkeriForarprofilPreview = lazyRetry(() => import("./pages/preview/akeri/Fo
 const AkeriVerifieringPreview = lazyRetry(() => import("./pages/preview/akeri/VerifieringPreview"));
 const AkeriInkorgPreview    = lazyRetry(() => import("./pages/preview/akeri/InkorgPreview"));
 const AkeriOnboardingPreview = lazyRetry(() => import("./pages/preview/akeri/OnboardingPreview"));
+const AdminOversiktPreview  = lazyRetry(() => import("./pages/preview/admin/OversiktPreview"));
+const AdminAnvandarePreview = lazyRetry(() => import("./pages/preview/admin/AnvandarePreview"));
+const AdminAkerierPreview   = lazyRetry(() => import("./pages/preview/admin/AkerierPreview"));
+const AdminVerifieringarPreview = lazyRetry(() => import("./pages/preview/admin/VerifieringarPreview"));
 const SavedJobs             = lazyRetry(() => import("./pages/SavedJobs"));
 const CompanyProfile        = lazyRetry(() => import("./pages/CompanyProfile"));
 const CompanyPublicProfile  = lazyRetry(() => import("./pages/CompanyPublicProfile"));
@@ -486,6 +490,10 @@ function AppLayout() {
                   <Route path="/preview/akeri/verifiering" element={<AkeriVerifieringPreview />} />
                   <Route path="/preview/akeri/inkorg" element={<AkeriInkorgPreview />} />
                   <Route path="/preview/akeri/onboarding" element={<AkeriOnboardingPreview />} />
+                  <Route path="/preview/admin/oversikt" element={<AdminOversiktPreview />} />
+                  <Route path="/preview/admin/anvandare" element={<AdminAnvandarePreview />} />
+                  <Route path="/preview/admin/akerier" element={<AdminAkerierPreview />} />
+                  <Route path="/preview/admin/verifieringar" element={<AdminVerifieringarPreview />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
         </Suspense>
