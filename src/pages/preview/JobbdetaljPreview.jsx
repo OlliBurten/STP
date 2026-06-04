@@ -10,8 +10,9 @@
 ════════════════════════════════════════════════════════════ */
 import { useState } from "react";
 import {
-  Card, Pill, Button, Icon, SectionLabel, Field, TopNav, PageShell,
+  Card, Pill, Button, Icon, SectionLabel, Field,
 } from "../../components/ui";
+import { AppPage, Breadcrumb, Section, CardStack } from "../../components/ui/layout.jsx";
 
 const JOB = {
   title: "CE-chaufför fjärrkörning",
@@ -182,13 +183,6 @@ const CompanyBox = () => (
   </Card>
 );
 
-const Section = ({ title, children }) => (
-  <section>
-    <h2 style={{ fontSize: 20, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.4, marginTop: 36, marginBottom: 14 }}>{title}</h2>
-    {children}
-  </section>
-);
-
 const BulletList = ({ items, accent = "primary" }) => {
   const color = accent === "success" ? "var(--success)" : "var(--green)";
   const tint = accent === "success" ? "var(--success-tint)" : "var(--green-tint)";
@@ -254,57 +248,46 @@ const ApplySidebar = () => {
   );
 };
 
-const Breadcrumb = () => (
-  <div style={{ maxWidth: 1240, margin: "0 auto", padding: "24px 32px 0" }}>
-    <a href="#" style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 600, color: "var(--ink-500)" }}>
-      <Icon name="arrowLeft" size={14} stroke={2} />
-      Tillbaka till lediga jobb
-    </a>
-  </div>
-);
-
 export default function JobbdetaljPreview() {
   const [nav, setNav] = useState("jobb");
   return (
-    <PageShell>
+    <AppPage
+      nav={{ items: NAV_ITEMS, active: nav, onActive: setNav, currentUser: ME }}
+      breadcrumb={<Breadcrumb label="Tillbaka till lediga jobb" />}
+    >
       <style>{`.detail-grid{display:grid;grid-template-columns:1fr 360px;gap:28px;align-items:start}@media(max-width:1080px){.detail-grid{grid-template-columns:1fr}}`}</style>
-      <TopNav items={NAV_ITEMS} active={nav} onActive={setNav} currentUser={ME} />
-      <Breadcrumb />
+      <div className="detail-grid stp-fade-up">
+        <CardStack gap={14}>
+          <HeaderCard />
+          <CompanyBox />
 
-      <main style={{ maxWidth: 1240, margin: "0 auto", padding: "20px 32px 80px" }}>
-        <div className="detail-grid stp-fade-up">
-          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            <HeaderCard />
-            <CompanyBox />
+          <Section title="Om jobbet" first>
+            <p style={{ fontSize: 15, color: "var(--ink-700)", lineHeight: 1.75, textWrap: "pretty" }}>{JOB.aboutJob}</p>
+          </Section>
 
-            <Section title="Om jobbet">
-              <p style={{ fontSize: 15, color: "var(--ink-700)", lineHeight: 1.75, textWrap: "pretty" }}>{JOB.aboutJob}</p>
-            </Section>
+          <Section title="Arbetsuppgifter">
+            <BulletList items={JOB.tasks} />
+          </Section>
 
-            <Section title="Arbetsuppgifter">
-              <BulletList items={JOB.tasks} />
-            </Section>
+          <Section title="Vi söker dig som">
+            <BulletList items={JOB.requirements} accent="primary" />
+          </Section>
 
-            <Section title="Vi söker dig som">
-              <BulletList items={JOB.requirements} accent="primary" />
-            </Section>
+          <Section title="Vi erbjuder">
+            <BulletList items={JOB.offers} accent="success" />
+          </Section>
 
-            <Section title="Vi erbjuder">
-              <BulletList items={JOB.offers} accent="success" />
-            </Section>
+          <Card padding="22px 26px" style={{ marginTop: 24, background: "var(--green-tint)", borderColor: "var(--green-tint-2)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 18, flexWrap: "wrap" }}>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)", marginBottom: 4 }}>Redo att ansöka?</div>
+              <div style={{ fontSize: 13, color: "var(--ink-500)" }}>Din profil skickas direkt — ingen extra ansökan behövs.</div>
+            </div>
+            <Button variant="primary" size="lg" iconRight={<Icon name="arrow" size={14} stroke={2.2} />}>Ansök nu</Button>
+          </Card>
+        </CardStack>
 
-            <Card padding="22px 26px" style={{ marginTop: 24, background: "var(--green-tint)", borderColor: "var(--green-tint-2)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 18, flexWrap: "wrap" }}>
-              <div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)", marginBottom: 4 }}>Redo att ansöka?</div>
-                <div style={{ fontSize: 13, color: "var(--ink-500)" }}>Din profil skickas direkt — ingen extra ansökan behövs.</div>
-              </div>
-              <Button variant="primary" size="lg" iconRight={<Icon name="arrow" size={14} stroke={2.2} />}>Ansök nu</Button>
-            </Card>
-          </div>
-
-          <ApplySidebar />
-        </div>
-      </main>
-    </PageShell>
+        <ApplySidebar />
+      </div>
+    </AppPage>
   );
 }
