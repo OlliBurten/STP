@@ -13,11 +13,6 @@ const GROUPS = [
     ["Ansökan", "/preview/ansokan"],
     ["Mina ansökningar", "/preview/mina-ansokningar"],
     ["Inkorg", "/preview/inkorg"],
-    ["Favoriter", "/preview/favoriter"],
-    ["Åkerier (bläddra)", "/preview/akerier"],
-    ["Åkeriprofil", "/preview/akeriprofil"],
-    ["Inställningar", "/preview/installningar"],
-    ["Onboarding", "/preview/onboarding-forare"],
   ] },
   { label: "Åkeri", icon: "truck", items: [
     ["Dashboard", "/preview/akeri/dashboard"],
@@ -33,6 +28,9 @@ const GROUPS = [
   ] },
   { label: "Publikt & system", icon: "building", items: [
     ["Landningssida", "/preview/landing"],
+    ["Om / Blogg / Kontakt", "/preview/innehallssidor"],
+    ["Villkor & Integritet", "/preview/juridik"],
+    ["Notiser & globalt sök", "/preview/notiser-sok"],
     ["Felsidor (404/500/...)", "/preview/felsidor"],
     ["Empty & loading states", "/preview/states"],
     ["Bekräftelsedialoger", "/preview/dialoger"],

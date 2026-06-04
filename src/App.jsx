@@ -79,6 +79,9 @@ const LandingPreview        = lazyRetry(() => import("./pages/preview/LandingPre
 const FelsidorPreview       = lazyRetry(() => import("./pages/preview/FelsidorPreview"));
 const StatesPreview         = lazyRetry(() => import("./pages/preview/StatesPreview"));
 const DialogerPreview       = lazyRetry(() => import("./pages/preview/DialogerPreview"));
+const NotiserSokPreview     = lazyRetry(() => import("./pages/preview/NotiserSokPreview"));
+const JuridikPreview        = lazyRetry(() => import("./pages/preview/JuridikPreview"));
+const InnehallssidorPreview = lazyRetry(() => import("./pages/preview/InnehallssidorPreview"));
 const JobbdetaljPreview     = lazyRetry(() => import("./pages/preview/JobbdetaljPreview"));
 const LedigaJobbPreview     = lazyRetry(() => import("./pages/preview/LedigaJobbPreview"));
 const ForarprofilPreview    = lazyRetry(() => import("./pages/preview/ForarprofilPreview"));
@@ -493,6 +496,9 @@ function AppLayout() {
                   <Route path="/preview/felsidor" element={<FelsidorPreview />} />
                   <Route path="/preview/states" element={<StatesPreview />} />
                   <Route path="/preview/dialoger" element={<DialogerPreview />} />
+                  <Route path="/preview/notiser-sok" element={<NotiserSokPreview />} />
+                  <Route path="/preview/juridik" element={<JuridikPreview />} />
+                  <Route path="/preview/innehallssidor" element={<InnehallssidorPreview />} />
                   <Route path="/preview/jobbdetalj" element={<JobbdetaljPreview />} />
                   <Route path="/preview/lediga-jobb" element={<LedigaJobbPreview />} />
                   <Route path="/preview/forarprofil" element={<ForarprofilPreview />} />
