@@ -61,45 +61,86 @@ function stripHtml(html) {
 // ─── Step 1: Scrape Hitta.se ──────────────────────────────────────────────────
 
 async function scrapeHitta(region, query = "åkeri") {
-  // Try Hitta.se JSON API first (avoids JS-rendering problem)
-  const companies = await _scrapeHittaApi(region, query)
+  // Läs den server-renderade __NEXT_DATA__-JSON:en från sökresultatsidan.
+  // Faller tillbaka på Claude-HTML-parsning om strukturen ändras.
+  const companies = await _scrapeHittaNextData(region, query)
     || await _scrapeHittaHtmlFallback(region, query);
 
   console.log(`[OutreachAgent] Hitta.se ${region}: ${companies.length} företag`);
   return companies;
 }
 
-async function _scrapeHittaApi(region, query) {
+// Plockar ett attributvärde ur Hitta.se:s attribute-array.
+function _hittaAttr(company, name) {
+  return (company.attribute || []).find((a) => a?.name === name)?.value || null;
+}
+
+// Härleder företagets hemsida ur produktlänkar eller e-postdomän.
+function _hittaWebsite(company) {
+  for (const p of company.products || []) {
+    for (const img of p.image || []) {
+      const link = img?.link;
+      if (link && /^https?:\/\//.test(link) && !link.includes("hitta.se") && !link.includes("cdn.")) {
+        try { return new URL(link).origin; } catch { /* ignorera trasig URL */ }
+      }
+    }
+  }
+  const email = _hittaAttr(company, "email") || _hittaAttr(company, "custrefemail");
+  if (email && email.includes("@")) {
+    const domain = email.split("@")[1];
+    if (domain && !/(gmail|hotmail|outlook|telia|live|yahoo|protonmail|swipnet|spray|icloud|msn|comhem|bredband)\./i.test(domain)) {
+      return `https://${domain}`;
+    }
+  }
+  return null;
+}
+
+// Hitta.se stängde sitt JSON-API (/api/search/companies) när sajten byggdes om till
+// Next.js (maj 2026). Datan finns nu server-renderad i en __NEXT_DATA__-tagg på
+// sökresultatsidan, inkl. e-post för företag med Hitta-konto. Regionen måste ligga i
+// `vad`-frågan — `var`-parametern filtrerar inte längre.
+async function _scrapeHittaNextData(region, query) {
   try {
-    const q = encodeURIComponent(`${query} ${region}`);
-    const url = `https://www.hitta.se/api/search/companies?q=${q}&size=30`;
+    const url = `https://www.hitta.se/s%C3%B6k?vad=${encodeURIComponent(`${query} ${region}`)}`;
     const resp = await fetch(url, {
-      signal: AbortSignal.timeout(12000),
+      signal: AbortSignal.timeout(15000),
       headers: {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept": "application/json",
+        "Accept": "text/html,application/xhtml+xml",
         "Accept-Language": "sv-SE,sv;q=0.9",
         "Referer": "https://www.hitta.se/",
       },
     });
     if (!resp.ok) {
-      console.log(`[OutreachAgent] Hitta.se API svarade ${resp.status} för ${region}`);
+      console.log(`[OutreachAgent] Hitta.se svarade ${resp.status} för ${region}`);
       return null;
     }
-    const data = await resp.json();
-    const items = data?.companies?.items || data?.results || data?.hits || [];
-    if (!items.length) return null;
+    const html = await resp.text();
+    const m = html.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/);
+    if (!m) {
+      console.log(`[OutreachAgent] __NEXT_DATA__ saknas för ${region} (Hitta.se kan ha ändrat struktur)`);
+      return null;
+    }
+    let data;
+    try { data = JSON.parse(m[1]); } catch { return null; }
+    const items = data?.props?.pageProps?.result?.companies;
+    if (!Array.isArray(items) || !items.length) return null;
 
-    return items.map((c) => ({
-      companyName: c.name || c.companyName || c.title,
-      phone: c.phone || c.phoneNumber || null,
-      website: c.website || c.url || null,
-      city: c.city || c.municipality || null,
-      region,
-      source: "hitta",
-    })).filter((c) => c.companyName);
+    return items.map((c) => {
+      const phoneObj = (c.phone || [])[0];
+      const addr = (c.address || [])[0];
+      return {
+        companyName: c.displayName || c.name,
+        email: _hittaAttr(c, "email") || _hittaAttr(c, "custrefemail"),
+        phone: phoneObj?.callTo || phoneObj?.displayAs || null,
+        website: _hittaWebsite(c),
+        city: addr?.city || (c.zipCity || "").replace(/^\d+\s*/, "").trim() || null,
+        region,
+        source: "hitta",
+      };
+    }).filter((c) => c.companyName);
   } catch (e) {
-    console.log(`[OutreachAgent] Hitta.se API fel ${region}: ${e?.message}`);
+    console.log(`[OutreachAgent] Hitta.se NextData-fel ${region}: ${e?.message}`);
     return null;
   }
 }
@@ -181,12 +222,24 @@ async function importNew(companies) {
   let imported = 0;
   for (const c of companies) {
     try {
+      const name = c.companyName.trim();
+      const region = c.region?.trim() || null;
+
+      // Dedupe på företagsnamn + region (det finns ingen unik DB-constraint, så vi
+      // kollar i appen — annars skulle veckans rotation återimportera samma företag).
+      const existing = await prisma.outreachProspect.findFirst({
+        where: { companyName: { equals: name, mode: "insensitive" }, region },
+        select: { id: true },
+      });
+      if (existing) continue;
+
       await prisma.outreachProspect.create({
         data: {
-          companyName: c.companyName.trim(),
+          companyName: name,
+          email: c.email?.trim() || null,
           website: c.website?.trim() || null,
           phone: c.phone?.trim() || null,
-          region: c.region?.trim() || null,
+          region,
           city: c.city?.trim() || null,
           source: c.source || "hitta",
           status: "NEW",
@@ -194,7 +247,7 @@ async function importNew(companies) {
       });
       imported++;
     } catch (_) {
-      // Unique constraint or other — skip
+      // skip
     }
   }
   return imported;
@@ -203,6 +256,9 @@ async function importNew(companies) {
 // ─── Step 3: Enrich (website → Claude → email) ───────────────────────────────
 
 async function enrichOne(prospect) {
+  // Hitta.se ger oftast e-posten direkt vid scraping — använd den utan att skrapa om.
+  if (prospect.email) return { email: prospect.email, source: "hitta-ssr" };
+
   const result = await findEmail({
     companyName: prospect.companyName,
     website: prospect.website,
