@@ -98,6 +98,11 @@ const AdminSystemPreview    = lazyRetry(() => import("./pages/preview/admin/Syst
 const AdminAnnonserPreview  = lazyRetry(() => import("./pages/preview/admin/AdminAnnonserPreview"));
 const AdminRapporterPreview = lazyRetry(() => import("./pages/preview/admin/RapporterPreview"));
 const AdminInstallningarPreview = lazyRetry(() => import("./pages/preview/admin/InstallningarPreview"));
+const FavoriterPreview      = lazyRetry(() => import("./pages/preview/FavoriterPreview"));
+const AkerierBrowsePreview  = lazyRetry(() => import("./pages/preview/AkerierPreview"));
+const AkeriprofilPreview    = lazyRetry(() => import("./pages/preview/AkeriprofilPreview"));
+const ForareInstallningarPreview = lazyRetry(() => import("./pages/preview/InstallningarPreview"));
+const OnboardingForarePreview = lazyRetry(() => import("./pages/preview/OnboardingForarePreview"));
 const SavedJobs             = lazyRetry(() => import("./pages/SavedJobs"));
 const CompanyProfile        = lazyRetry(() => import("./pages/CompanyProfile"));
 const CompanyPublicProfile  = lazyRetry(() => import("./pages/CompanyPublicProfile"));
@@ -502,6 +507,11 @@ function AppLayout() {
                   <Route path="/preview/admin/annonser" element={<AdminAnnonserPreview />} />
                   <Route path="/preview/admin/rapporter" element={<AdminRapporterPreview />} />
                   <Route path="/preview/admin/installningar" element={<AdminInstallningarPreview />} />
+                  <Route path="/preview/favoriter" element={<FavoriterPreview />} />
+                  <Route path="/preview/akerier" element={<AkerierBrowsePreview />} />
+                  <Route path="/preview/akeriprofil" element={<AkeriprofilPreview />} />
+                  <Route path="/preview/installningar" element={<ForareInstallningarPreview />} />
+                  <Route path="/preview/onboarding-forare" element={<OnboardingForarePreview />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
         </Suspense>
