@@ -112,9 +112,10 @@ export async function runJobEnrichment({ limit = 2000, concurrency = 4 } = {}) {
   const todo = jobs.filter((j) => !(j.enrichmentRaw && j.enrichmentRaw.aiExtractedAt));
   let enriched = 0, errors = 0;
   let idx = 0;
+  let aborted = false;
 
   async function worker() {
-    while (idx < todo.length) {
+    while (idx < todo.length && !aborted) {
       const j = todo[idx++];
       try {
         const ex = await extractJobFields(j.title, j.description);
@@ -133,11 +134,18 @@ export async function runJobEnrichment({ limit = 2000, concurrency = 4 } = {}) {
         await prisma.job.update({ where: { id: j.id }, data });
         enriched++;
       } catch (e) {
+        // Billing errors are unrecoverable for the whole run — abort all workers
+        // to avoid spamming the Anthropic API with thousands of doomed requests.
+        if (e?.status === 400 && String(e?.message).includes("credit balance")) {
+          aborted = true;
+          console.error("[JobEnricher] Anthropic-kredit slut — avbryter berikningskörning");
+          return;
+        }
         errors++;
       }
     }
   }
 
   await Promise.all(Array.from({ length: concurrency }, () => worker()));
-  return { active: jobs.length, todo: todo.length, enriched, errors };
+  return { active: jobs.length, todo: todo.length, enriched, errors, aborted };
 }

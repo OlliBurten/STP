@@ -19,6 +19,11 @@ Sentry.init({
     if (errValue.includes("EADDRINUSE")) {
       return null;
     }
+    // Billing errors from the Anthropic API are operational (not bugs) — suppress
+    // to avoid flooding Sentry whenever API credits run out.
+    if (errValue.includes("credit balance is too low")) {
+      return null;
+    }
 
     if (Array.isArray(event.breadcrumbs?.values)) {
       event.breadcrumbs.values = event.breadcrumbs.values.map((b) => {
