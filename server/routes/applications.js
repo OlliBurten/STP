@@ -180,24 +180,11 @@ applicationsRouter.get(
       const result = await optOutClaim(req.params.token);
 
       if (!result) {
-        return res.status(404).send(
-          "Länken är ogiltig eller har redan använts."
-        );
+        return res.status(404).json({ error: "Länken är ogiltig eller har redan använts." });
       }
 
-      // Simple HTML confirmation page
-      return res.send(`<!DOCTYPE html>
-<html lang="sv">
-<head><meta charset="UTF-8"><title>Avregistrerad – STP</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<style>body{font-family:system-ui,sans-serif;max-width:520px;margin:80px auto;padding:0 24px;color:#1e293b}h1{font-size:22px;font-weight:800;margin-bottom:12px}p{font-size:15px;line-height:1.7;color:#475569}a{color:#1d4ed8}</style>
-</head>
-<body>
-  <h1>Avregistrerat</h1>
-  <p>Ni kommer inte längre ta emot e-post från Sveriges Transportplattform angående kandidater för era annonser.</p>
-  <p>Ni kan alltid ändra er och ansluta till STP via <a href="${process.env.FRONTEND_URL || "https://transportplattformen.se"}">transportplattformen.se</a>.</p>
-</body>
-</html>`);
+      const alreadyOptedOut = !!result.optedOutAt && result.optedOutAt < new Date();
+      return res.json({ ok: true, alreadyOptedOut });
     } catch (e) {
       next(e);
     }

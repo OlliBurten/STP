@@ -84,7 +84,7 @@ export async function triggerOutreach(job, applicationCount) {
   // Best available contact
   const contactEmail = job.applyEmail || job.employerEmail || null;
   const claimUrl = `${BASE_URL}/anslut/${claim.claimToken}`;
-  const optOutUrl = `${BASE_URL}/api/applications/opt-out/${claim.claimToken}`;
+  const optOutUrl = `${BASE_URL}/avregistrera/${claim.claimToken}`;
 
   const subjectLine = `${applicationCount > 1 ? `${applicationCount} förare har sökt` : "En förare har sökt"} er annons på STP`;
 
