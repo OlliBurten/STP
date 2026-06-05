@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { usePageTitle } from "../hooks/usePageTitle";
 
 const DOCS = {
@@ -110,13 +110,10 @@ export default function Terms({ defaultDoc = "terms" }) {
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--paper)" }}>
-      {/* Sticky nav */}
-      <div style={{ background: "var(--card)", borderBottom: "1px solid var(--line)", position: "sticky", top: 0, zIndex: 50 }}>
-        <div style={{ maxWidth: 1000, margin: "0 auto", padding: "0 32px", height: 64, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <Link to="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-            <div style={{ width: 30, height: 30, borderRadius: 7, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 13 }}>S</div>
-            <span style={{ fontWeight: 800, fontSize: 17, color: "var(--ink-900)", letterSpacing: 0.5 }}>STP</span>
-          </Link>
+      {/* Sub-nav — doc switcher (the global app header already provides the STP logo + main nav) */}
+      <div style={{ background: "var(--card)", borderBottom: "1px solid var(--line)", position: "sticky", top: 0, zIndex: 40 }}>
+        <div style={{ maxWidth: 1000, margin: "0 auto", padding: "0 32px", height: 56, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-500)" }}>Juridik</span>
           <div style={{ display: "flex", gap: 4, background: "var(--card-2)", padding: 4, borderRadius: 10, border: "1px solid var(--line-2)" }}>
             {[["terms", "Villkor"], ["privacy", "Integritet"]].map(([k, l]) => (
               <button
