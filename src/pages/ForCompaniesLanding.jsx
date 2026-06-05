@@ -1,382 +1,398 @@
-import { useState, useEffect } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { useState } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { CheckIcon, TruckIcon, BuildingIcon, ShieldCheckIcon, ArrowRightIcon, ClockIcon } from "../components/Icons";
 import { usePageTitle } from "../hooks/usePageTitle";
-import { useIsMobile } from "../hooks/useIsMobile";
 import PageMeta from "../components/PageMeta";
+import { Icon, Pill, Button, Card, Avatar, Dot } from "../components/ui";
 
-const COMPANY_POINTS = [
-  "Skapa en tydlig företagsprofil som visar segment, region och vilken typ av förare ni söker.",
-  "Hitta förare i en mer strukturerad miljö än sociala flöden, lösa kontakter och spontana inlägg.",
-  "Bygg närvaro över tid genom jobb, dialoger och en starkare trust-profil på plattformen.",
+/* ════════════════════════════════════════════════
+   DATA
+════════════════════════════════════════════════ */
+const RESULTS = [
+  { initials: "EJ", name: "Erik Johansson", loc: "Malmö, Skåne", exp: 8, license: ["CE"], certs: ["YKB", "ADR"], segment: "Fjärr", avail: "Söker aktivt", match: 94 },
+  { initials: "KO", name: "Karin Olsson", loc: "Malmö, Skåne", exp: 22, license: ["CE"], certs: ["YKB"], segment: "Fjärr", avail: "Söker aktivt", match: 88 },
 ];
 
-const COMPANY_STEPS = [
-  { num: "01", text: "Registrera ett företagskonto." },
-  { num: "02", text: "Gå igenom onboarding och lägg till ert företag." },
-  { num: "03", text: "Börja med Hitta förare och publicera jobb när ni vill bredda inflödet." },
+const TALENT = [
+  { region: "Skåne", n: 47, m: 6 },
+  { region: "Stockholm", n: 38, m: 3 },
+  { region: "Västra Götaland", n: 31, m: 2 },
+  { region: "Östergötland", n: 14, m: 1 },
 ];
 
-const COMPANY_SEGMENTS = [
-  {
-    title: "Heltid",
-    text: "För långsiktig rekrytering där ni vill hitta rätt förare för fasta eller återkommande behov.",
-    icon: TruckIcon,
-    stripe: "linear-gradient(90deg, var(--success), #22c55e)",
-    label: "Fast anställning",
-    labelColor: "var(--success)",
-    labelBg: "var(--success-tint)",
-  },
-  {
-    title: "Vikarie / Deltid",
-    text: "För snabbare tillsättning när verksamheten kräver flexibilitet, extraresurser eller tillfälliga förstärkningar.",
-    icon: ClockIcon,
-    stripe: "linear-gradient(90deg, var(--amber), #f59e0b)",
-    label: "Flexibelt",
-    labelColor: "var(--amber-text)",
-    labelBg: "var(--amber-tint)",
-  },
-  {
-    title: "Praktik",
-    text: "För företag som vill synas mot elever och framtida förare från gymnasieskola, AF eller Komvux, och bygga relationer tidigt.",
-    icon: BuildingIcon,
-    stripe: "linear-gradient(90deg, #63b3ed, #3b82f6)",
-    label: "Utbildning",
-    labelColor: "var(--info)",
-    labelBg: "var(--info-tint)",
-  },
-];
-
-const FAQ_ITEMS = [
-  {
-    question: "Hur snabbt kan vi börja hitta förare?",
-    answer: "Direkt. Med ett giltigt organisationsnummer verifieras ert konto automatiskt under registreringen — ni kan söka bland förare och publicera jobb direkt efter att ni skapat kontot.",
-  },
-  {
-    question: "Kostar det att använda STP?",
-    answer: "STP är gratis under betafasen för alla åkerier. Vi meddelar tydligt i god tid innan vi introducerar betalda funktioner.",
-  },
-  {
-    question: "Vad skiljer STP från bemanningsbolag?",
-    answer: "STP är inte ett bemanningsbolag. Ni kontaktar förare direkt utan mellanhänder, vilket innebär lägre kostnad och att ni äger relationen med föraren från dag ett.",
-  },
-  {
-    question: "Kan vi se förare innan de ansökt till oss?",
-    answer: "Ja. Med Hitta förare kan ni söka bland förare som är synliga och filtrera på körkort, region, certifikat och tillgänglighet — och kontakta dem direkt.",
-  },
-  {
-    question: "Kan flera från vårt team använda kontot?",
-    answer: "Ja. Ni kan bjuda in teammedlemmar under onboardingen eller efteråt, så kan fler i organisationen söka förare och hantera konversationer.",
-  },
-];
-
-const COMPANY_PROMISES = [
-  "Ni möter förare med samma grundläggande minimum i profilerna, vilket gör överblicken bättre direkt.",
-  "STP är byggt för att lyfta fram seriösa aktörer och göra rätt matchning lättare att förstå.",
-  "Plattformen ska utvecklas utifrån verkliga behov hos både förare och företag, inte generiska standardlösningar.",
-];
-
-// Dark palette (hero, how-it-works, CTA)
-const D = {
-  section:      { maxWidth: 1040, margin: "0 auto", padding: "0 40px" },
-  label:        { fontSize: 12, fontWeight: 700, color: "var(--amber)", letterSpacing: "1.5px", textTransform: "uppercase" },
-  h2:           { fontSize: "clamp(28px,4vw,40px)", fontWeight: 900, letterSpacing: "-1.5px", color: "#f0faf9", lineHeight: 1.15, margin: 0 },
-  body:         { fontSize: 16, color: "rgba(240,250,249,0.55)", lineHeight: 1.7 },
-  btnPrimary:   { display: "inline-flex", alignItems: "center", gap: 8, background: "var(--amber)", color: "#000", fontWeight: 800, fontSize: 15, padding: "14px 28px", borderRadius: 12, textDecoration: "none" },
-  btnSecondary: { display: "inline-flex", alignItems: "center", background: "rgba(255,255,255,0.1)", color: "#fff", border: "1px solid rgba(255,255,255,0.18)", fontSize: 15, padding: "14px 28px", borderRadius: 12, textDecoration: "none", fontWeight: 600 },
+const COMPARE = {
+  bemanning: ["Provision på varje timme föraren kör", "Föraren tillhör bemanningsbolaget", "Du ser sällan vem du får förrän de dyker upp", "Bindningstider och ramavtal"],
+  stp: ["Inga avgifter under betafasen", "Du äger relationen med föraren direkt", "Sök och se hela profilen innan kontakt", "Ingen bindningstid — säg upp när du vill"],
 };
 
-// Light editorial palette
-const E = {
-  section:      { maxWidth: 1040, margin: "0 auto", padding: "0 40px" },
-  label:        { fontSize: 12, fontWeight: 700, color: "var(--green-text)", letterSpacing: "1.5px", textTransform: "uppercase" },
-  h2:           { fontSize: "clamp(28px,4vw,40px)", fontWeight: 900, letterSpacing: "-1.5px", color: "var(--ink-900)", lineHeight: 1.15, margin: 0 },
-  body:         { fontSize: 16, color: "var(--ink-500)", lineHeight: 1.7 },
-  btnSecondary: { display: "inline-flex", alignItems: "center", background: "var(--card)", color: "var(--green-text)", border: "1px solid var(--line)", fontSize: 15, padding: "14px 28px", borderRadius: 12, textDecoration: "none", fontWeight: 600 },
+const STEPS = [
+  { n: "01", title: "Registrera företagskonto", body: "Ange organisationsnummer — verifiering sker automatiskt mot Bolagsverket." },
+  { n: "02", title: "Gå igenom onboarding", body: "Lägg till ert åkeri, bjud in teamet och fyll i profilen. Klart på minuter." },
+  { n: "03", title: "Hitta förare & publicera", body: "Sök bland synliga förare direkt — och publicera jobb när ni vill bredda inflödet." },
+];
+
+const FAQS = [
+  { q: "Hur snabbt kan vi börja hitta förare?", a: "Direkt. Med ett giltigt organisationsnummer verifieras ert konto automatiskt under registreringen — ni kan söka bland förare och publicera jobb direkt efter att ni skapat kontot." },
+  { q: "Kostar det att använda STP?", a: "STP är gratis under betafasen för alla åkerier. Vi meddelar tydligt i god tid innan vi introducerar betalda funktioner." },
+  { q: "Vad skiljer STP från bemanningsbolag?", a: "STP är inte ett bemanningsbolag. Ni kontaktar förare direkt utan mellanhänder, vilket innebär lägre kostnad och att ni äger relationen med föraren från dag ett." },
+  { q: "Kan vi se förare innan de ansökt?", a: "Ja. Med Hitta förare söker ni bland förare som är synliga och filtrerar på körkort, region, certifikat och tillgänglighet — och kontaktar dem direkt." },
+  { q: "Kan flera från teamet använda kontot?", a: "Ja. Bjud in teammedlemmar under onboardingen eller efteråt, så kan fler i organisationen söka förare och hantera konversationer." },
+];
+
+/* porterade marknads-stilar (från stp-marketing.css) */
+const S = {
+  container: { maxWidth: 1200, margin: "0 auto", width: "100%", padding: "0 32px" },
+  eyebrow: { display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 14px", borderRadius: 999, background: "var(--green-tint)", color: "var(--green-text)", fontSize: 12, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase" },
+  sectionEyebrow: { display: "block", fontSize: 12, fontWeight: 800, letterSpacing: 1.4, textTransform: "uppercase", color: "var(--green-text)", marginBottom: 12 },
+  sectionTitle: { fontSize: "clamp(28px,4vw,40px)", fontWeight: 900, letterSpacing: -1.5, lineHeight: 1.15, color: "var(--ink-900)", margin: 0 },
+  lead: { fontSize: 18, lineHeight: 1.7, color: "var(--ink-500)", margin: 0 },
 };
 
-function FaqItem({ item, isOpen, onToggle }) {
-  return (
-    <div style={{ borderRadius: 16, background: "var(--card)", border: "1px solid var(--line)", overflow: "hidden", boxShadow: isOpen ? "var(--sh)" : "var(--sh-sm)", transition: "box-shadow 0.2s" }}>
-      <button
-        type="button"
-        onClick={onToggle}
-        style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, padding: "20px 24px", background: "transparent", border: "none", cursor: "pointer", textAlign: "left", fontFamily: "inherit" }}
-        aria-expanded={isOpen}
-      >
-        <span style={{ fontSize: 15, fontWeight: 600, color: "var(--ink-900)" }}>{item.question}</span>
-        <span style={{ color: "var(--green-text)", flexShrink: 0, transition: "transform 0.2s", transform: isOpen ? "rotate(45deg)" : "none", display: "flex" }}>
-          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-          </svg>
-        </span>
-      </button>
-      {isOpen && (
-        <div style={{ padding: "0 24px 20px", color: "var(--ink-500)", fontSize: 15, lineHeight: 1.7, borderTop: "1px solid var(--line)", paddingTop: 16 }}>
-          {item.answer}
+/* ════════════════════════════════════════════════
+   PRODUKT-PREVIEW: Hitta förare-sök (äkta UI)
+════════════════════════════════════════════════ */
+const DriverResult = ({ d }) => (
+  <div style={{ display: "flex", gap: 13, padding: "15px 16px", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 13 }}>
+    <Avatar initials={d.initials} size={44} />
+    <div style={{ flex: 1, minWidth: 0 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+        <div>
+          <div style={{ fontSize: 14.5, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.2 }}>{d.name}</div>
+          <div style={{ fontSize: 12.5, color: "var(--ink-500)", fontWeight: 500 }}>{d.loc} · {d.exp} års erfarenhet</div>
         </div>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 9px", borderRadius: 999, background: "var(--success-tint)", flexShrink: 0 }}>
+          <span style={{ fontSize: 13, fontWeight: 800, fontFamily: "var(--mono)", color: "var(--success)" }}>{d.match}%</span>
+          <span style={{ fontSize: 10.5, fontWeight: 700, color: "var(--success)" }}>match</span>
+        </div>
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 10 }}>
+        {d.license.map((l) => <Pill key={l} tone="primary" size="sm">{l}</Pill>)}
+        {d.certs.map((c) => <Pill key={c} tone="neutral" size="sm">{c}</Pill>)}
+        <Pill tone="soft" size="sm">{d.segment}</Pill>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 11, paddingTop: 11, borderTop: "1px solid var(--line)" }}>
+        <Dot tone="success" size={6} />
+        <span style={{ fontSize: 12, color: "var(--ink-700)", fontWeight: 600, whiteSpace: "nowrap" }}>{d.avail}</span>
+      </div>
+    </div>
+  </div>
+);
+
+const SearchPreview = () => (
+  <div style={{ position: "relative" }}>
+    <div style={{ position: "absolute", inset: "26px -18px -18px 22px", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 20, boxShadow: "var(--sh-sm)", transform: "rotate(-2deg)", opacity: 0.55 }} />
+    <div style={{ position: "relative", background: "var(--card-2)", border: "1px solid var(--line)", borderRadius: 20, boxShadow: "var(--sh-md)", padding: 20 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--card)", border: "1px solid var(--line-2)", borderRadius: 11, padding: "11px 14px", marginBottom: 12, boxShadow: "var(--sh-sm)" }}>
+        <Icon name="search" size={17} color="var(--ink-400)" stroke={2} />
+        <span style={{ fontSize: 14, color: "var(--ink-500)", fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>CE-förare i Skåne, fjärr…</span>
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 16 }}>
+        {[["Skåne", true], ["CE", true], ["Fjärr", true], ["Söker aktivt", false]].map(([f, on]) => (
+          <span key={f} style={{ fontSize: 12.5, fontWeight: 600, padding: "6px 12px", borderRadius: 999, background: on ? "var(--green-tint)" : "var(--card)", color: on ? "var(--green-text)" : "var(--ink-500)", border: on ? "1px solid rgba(31,95,92,0.18)" : "1px solid var(--line-2)", display: "inline-flex", alignItems: "center", gap: 6 }}>{on && <Icon name="check" size={11} color="var(--green-text)" stroke={2.6} />}{f}</span>
+        ))}
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 11 }}>
+        <span style={{ fontSize: 12, fontWeight: 700, color: "var(--ink-500)", textTransform: "uppercase", letterSpacing: 0.8 }}>6 matchande förare</span>
+        <span style={{ fontSize: 12, color: "var(--green-text)", fontWeight: 700 }}>Sortera: Match</span>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {RESULTS.map((d) => <DriverResult key={d.name} d={d} />)}
+      </div>
+    </div>
+    <div style={{ position: "absolute", left: 4, bottom: -28, background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, boxShadow: "var(--sh-md)", padding: "12px 16px", display: "flex", alignItems: "center", gap: 11 }}>
+      <div style={{ width: 38, height: 38, borderRadius: 10, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <Icon name="check" size={18} color="var(--green-text)" stroke={2.4} />
+      </div>
+      <div>
+        <div style={{ fontSize: 12, color: "var(--ink-500)", fontWeight: 600, whiteSpace: "nowrap" }}>Verifierat åkeri</div>
+        <div style={{ fontSize: 13.5, fontWeight: 800, color: "var(--ink-900)", whiteSpace: "nowrap" }}>Bolagsverket</div>
+      </div>
+    </div>
+  </div>
+);
+
+/* ── FAQ-block ────────────────────────────────── */
+function FaqBlock({ items, lead, email }) {
+  const [open, setOpen] = useState(null);
+  return (
+    <div>
+      <div style={{ textAlign: "center", maxWidth: 560, margin: "0 auto 40px" }}>
+        <span style={S.sectionEyebrow}>Vanliga frågor</span>
+        <h2 style={S.sectionTitle}>Frågor och svar</h2>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, maxWidth: 760, margin: "0 auto" }}>
+        {items.map((item, i) => {
+          const isOpen = open === i;
+          return (
+            <div key={i} style={{ borderRadius: 16, background: "var(--card)", border: "1px solid var(--line)", overflow: "hidden", boxShadow: isOpen ? "var(--sh)" : "var(--sh-sm)" }}>
+              <button type="button" onClick={() => setOpen(isOpen ? null : i)} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, padding: "18px 24px", textAlign: "left", background: "transparent", border: "none", cursor: "pointer", fontFamily: "inherit" }} aria-expanded={isOpen}>
+                <span style={{ fontSize: 15, fontWeight: 600, color: "var(--ink-900)" }}>{item.q}</span>
+                <span style={{ flexShrink: 0, color: "var(--green-text)", transition: "transform 0.2s", transform: isOpen ? "rotate(45deg)" : "none", display: "inline-flex" }}>
+                  <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                </span>
+              </button>
+              {isOpen && <div style={{ padding: "0 24px 18px", fontSize: 14, color: "var(--ink-500)", lineHeight: 1.7, borderTop: "1px solid var(--line)", paddingTop: 16 }}>{item.a}</div>}
+            </div>
+          );
+        })}
+      </div>
+      {lead && (
+        <p style={{ textAlign: "center", marginTop: 28, fontSize: 14.5, color: "var(--ink-500)" }}>
+          {lead}{" "}
+          <a href={`mailto:${email}`} style={{ color: "var(--green-text)", fontWeight: 700, textDecoration: "none" }}>{email}</a>
+        </p>
       )}
     </div>
   );
 }
 
-export default function ForCompaniesLanding() {
-  usePageTitle("För åkerier – Hitta chaufförer direkt");
-  const { user, isDriver, isCompany } = useAuth();
-  const isMobile = useIsMobile();
-  const [faqOpen, setFaqOpen] = useState(null);
-  const sp = isMobile ? "0 20px" : "0 40px";
-  const vp = isMobile ? "60px 0" : "80px 0";
+/* ── Grön CTA-sektion ─────────────────────────── */
+function GreenCTA({ title, lead, primaryLabel, secondaryLabel, stats, onPrimary, onSecondary }) {
+  return (
+    <section style={{ background: "linear-gradient(160deg, #14524f 0%, #0c3d3a 100%)", padding: "88px 0", color: "#fff" }}>
+      <div style={{ ...S.container, maxWidth: 1040 }}>
+        <div style={{ textAlign: "center", maxWidth: 620, margin: "0 auto" }}>
+          <h2 style={{ fontSize: "clamp(30px,4vw,44px)", fontWeight: 900, letterSpacing: -1.6, lineHeight: 1.12, marginBottom: 18 }}>{title}</h2>
+          <p style={{ fontSize: 17, lineHeight: 1.65, color: "rgba(240,250,249,0.7)", marginBottom: 32 }}>{lead}</p>
+          <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+            <button onClick={onPrimary} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 26px", height: 50, background: "var(--amber)", color: "#fff", border: "1px solid var(--amber-deep)", borderRadius: 10, fontWeight: 700, fontSize: 15, cursor: "pointer", fontFamily: "inherit" }}>
+              {primaryLabel} <Icon name="arrow" size={15} stroke={2.2} />
+            </button>
+            <button onClick={onSecondary} style={{ display: "inline-flex", alignItems: "center", padding: "14px 26px", height: 50, background: "rgba(255,255,255,0.08)", color: "#fff", border: "1px solid rgba(255,255,255,0.22)", borderRadius: 10, fontWeight: 600, fontSize: 15, cursor: "pointer", fontFamily: "inherit" }}>
+              {secondaryLabel}
+            </button>
+          </div>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 0, borderTop: "1px solid rgba(255,255,255,0.14)", marginTop: 48, paddingTop: 28, maxWidth: 760, marginLeft: "auto", marginRight: "auto" }}>
+          {stats.map(([v, l]) => (
+            <div key={l} style={{ textAlign: "center" }}>
+              <div style={{ fontSize: 22, fontWeight: 900, fontFamily: "var(--mono)", color: "var(--amber)", letterSpacing: -0.5 }}>{v}</div>
+              <div style={{ fontSize: 11.5, fontWeight: 600, color: "rgba(240,250,249,0.55)", textTransform: "uppercase", letterSpacing: 0.8, marginTop: 6 }}>{l}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
 
-  useEffect(() => {
-    const jsonLd = {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      mainEntity: FAQ_ITEMS.map((item) => ({
-        "@type": "Question",
-        name: item.question,
-        acceptedAnswer: { "@type": "Answer", text: item.answer },
-      })),
-    };
-    const script = document.createElement("script");
-    script.type = "application/ld+json";
-    script.id = "forcompanies-faq-jsonld";
-    script.textContent = JSON.stringify(jsonLd);
-    document.head.appendChild(script);
-    return () => document.getElementById("forcompanies-faq-jsonld")?.remove();
-  }, []);
+/* ════════════════════════════════════════════════
+   PAGE
+════════════════════════════════════════════════ */
+export default function ForCompaniesLanding() {
+  usePageTitle("För åkerier – Hitta lastbilsförare på STP");
+  const { user, isDriver, isCompany } = useAuth();
+  const navigate = useNavigate();
 
   if (user) {
     if (isCompany) return <Navigate to="/foretag" replace />;
     if (isDriver) return <Navigate to="/profil" replace />;
   }
 
+  const goRegister = () => navigate("/login", { state: { initialMode: "register", requiredRole: "company" } });
+  const scrollTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+
   return (
-    <main style={{ background: "var(--paper)", minHeight: "100vh" }}>
+    <main style={{ background: "var(--paper)" }}>
       <PageMeta
-        title="För åkerier – Hitta CE-chaufförer direkt på STP"
-        description="Sveriges Transportplattform hjälper åkerier att hitta och kontakta yrkesförare direkt. Filtrera på körkort, region och certifikat. Gratis under betafasen."
+        title="För åkerier – Hitta lastbilsförare på STP"
+        description="STP är åkeriets talangdatabas: sök bland verifierade lastbilsförare, filtrera på körkort, region och certifikat, och kontakta dem direkt — utan mellanhänder eller provision."
         canonical="/for-akerier"
       />
+      <style>{`
+        .fa-grid{display:grid;grid-template-columns:0.95fr 1.05fr;gap:56px;align-items:center}
+        .cmp-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+        .talent-grid{display:grid;grid-template-columns:0.8fr 1.2fr;gap:56px;align-items:center}
+        .two-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+        .steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0}
+        @media(max-width:980px){.fa-grid,.talent-grid{grid-template-columns:1fr;gap:40px}.cmp-grid,.two-grid,.steps-grid{grid-template-columns:1fr;gap:24px}.steps-grid>div{border-left:none!important;text-align:left!important}}
+      `}</style>
 
-      {/* ── Hero (dark, full-bleed — matchar Home/För förare) ─────────────────── */}
+      {/* ───────── HERO ───────── */}
       <section
         style={{
-          background: "var(--ink-900)",
-          backgroundImage: "url('/hero-company.webp')",
-          backgroundSize: "cover",
-          backgroundPosition: "center 35%",
-          minHeight: isMobile ? "auto" : "90vh",
-          display: "flex",
-          flexDirection: "column",
-          paddingTop: 96,
-          paddingBottom: 48,
-          position: "relative",
-          color: "#fff",
+          background:
+            "radial-gradient(1100px 520px at 90% -8%, rgba(31,95,92,0.10), transparent 60%), radial-gradient(800px 400px at 4% 14%, rgba(199,122,14,0.06), transparent 60%), var(--paper)",
+          paddingTop: 88,
+          paddingBottom: 96,
         }}
       >
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(110deg, rgba(6,15,15,0.93) 0%, rgba(6,15,15,0.70) 42%, rgba(6,15,15,0.28) 78%, rgba(6,15,15,0.08) 100%)", pointerEvents: "none" }} />
-        <div style={{ maxWidth: 1264, margin: "0 auto", padding: isMobile ? "0 24px" : "0 32px", width: "100%", display: "flex", flexDirection: "column", justifyContent: "center", flex: 1, position: "relative", zIndex: 1 }}>
-          {/* Badge */}
-          <div style={{ display: "flex", alignItems: "center", marginBottom: isMobile ? 32 : 48 }}>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 14px", borderRadius: 999, background: "rgba(245,166,35,0.15)", border: "1px solid rgba(245,166,35,0.35)", color: "#f5c875", fontSize: 11.5, fontWeight: 700, letterSpacing: 1.4, textTransform: "uppercase" }}>
-              <span style={{ width: 6, height: 6, borderRadius: 3, background: "#f5c875", display: "inline-block" }} />
-              För åkerier · Inga avgifter under beta
-            </div>
-          </div>
-
-          {/* Headline */}
-          <h1 style={{ fontSize: isMobile ? "clamp(38px,10vw,56px)" : "clamp(44px,5.4vw,76px)", fontWeight: 900, lineHeight: 1.04, letterSpacing: isMobile ? -1.5 : -2.5, color: "#fff", marginBottom: 26, maxWidth: 1000 }}>
-            Ett mer strukturerat sätt att hitta <span style={{ color: "var(--amber)" }}>rätt förare</span>.
-          </h1>
-
-          {/* Lead */}
-          <p style={{ fontSize: isMobile ? 17 : 19, lineHeight: 1.6, color: "rgba(255,255,255,0.78)", fontWeight: 500, maxWidth: 660, marginBottom: 32 }}>
-            STP är byggt för åkerier som vill jobba långsiktigt med matchning, tydligare krav och bättre överblick — en branschplattform där seriösa företag bygger förtroende över tid. Inga mellanhänder, ingen provision.
-          </p>
-
-          {/* CTAs */}
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: isMobile ? 48 : 72, flexDirection: isMobile ? "column" : "row" }}>
-            <Link to="/login" state={{ initialMode: "register", requiredRole: "company" }} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 24px", height: 50, background: "var(--amber)", color: "#fff", border: "1px solid var(--amber-deep)", borderRadius: 10, fontWeight: 700, fontSize: 15, boxShadow: "0 1px 0 var(--amber-deep), 0 4px 12px rgba(199,122,14,0.30)", textDecoration: "none" }}>
-              Skapa företagskonto <ArrowRightIcon style={{ width: 16, height: 16 }} />
-            </Link>
-            <Link to="/akerier" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "14px 24px", height: 50, background: "rgba(255,255,255,0.08)", color: "#fff", border: "1px solid rgba(255,255,255,0.22)", borderRadius: 10, fontWeight: 600, fontSize: 15, backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", textDecoration: "none" }}>
-              Se åkerier på STP
-            </Link>
-          </div>
-
-          {/* Stats */}
-          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2,1fr)" : "repeat(4,1fr)", gap: isMobile ? 24 : 0, borderTop: "1px solid rgba(255,255,255,0.14)", paddingTop: 28 }}>
-            {[
-              { value: "36 %", label: "Åkerier saknar förare" },
-              { value: "0 kr", label: "Provision & avgifter" },
-              { value: "Direkt", label: "Kontakt med förare", accent: true },
-              { value: "Verifierat", label: "Mot Bolagsverket" },
-            ].map((s) => (
-              <div key={s.label} style={{ padding: isMobile ? 0 : "0 4px" }}>
-                <div style={{ fontSize: isMobile ? 26 : 32, fontWeight: 900, fontFamily: "var(--mono)", color: s.accent ? "var(--amber)" : "#fff", letterSpacing: -1, lineHeight: 1 }}>{s.value}</div>
-                <div style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: 1, marginTop: 8 }}>{s.label}</div>
+        <div style={S.container}>
+          <div className="fa-grid">
+            <div>
+              <div style={{ marginBottom: 24 }}><span style={S.eyebrow}>För åkerier · Gratis under beta</span></div>
+              <h1 style={{ fontSize: "clamp(38px,4.8vw,60px)", fontWeight: 900, letterSpacing: -2.4, lineHeight: 1.04, color: "var(--ink-900)", margin: "0 0 22px", textWrap: "balance" }}>
+                En <span style={{ color: "var(--amber)" }}>talangdatabas</span> — inte en annonstavla.
+              </h1>
+              <p style={{ ...S.lead, maxWidth: 480, marginBottom: 32 }}>
+                Sök bland riktiga förare, filtrera på körkort och region, och se hela profilen innan ni tar kontakt. Direkt — utan mellanhänder, provision eller bindningstid.
+              </p>
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 34 }}>
+                <Button variant="primary" size="lg" iconRight={<Icon name="arrow" size={15} stroke={2.2} />} onClick={goRegister}>Skapa företagskonto</Button>
+                <Button variant="secondary" size="lg" onClick={() => scrollTo("sa-funkar")}>Se hur det funkar</Button>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Feature cards (light) ─────────────────────────────────────────────── */}
-      <section style={{ background: "var(--paper)", padding: vp }}>
-        <div style={{ maxWidth: 1040, margin: "0 auto", padding: sp }}>
-          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3,1fr)", gap: 16 }}>
-            {[
-              { icon: BuildingIcon, title: "För rekrytering i transport", text: "Fokus ligger på det som faktiskt spelar roll i branschen: segment, behörigheter, tillgänglighet och snabb överblick." },
-              { icon: ShieldCheckIcon, title: "Tryggare sammanhang", text: "Ambitionen är att bygga en plats där seriösa aktörer sticker ut tydligare och där kvalitet blir lättare att bedöma." },
-              { icon: ArrowRightIcon, title: "Från kontakt till match", text: "Plattformen ska hjälpa er att gå snabbare från behov till relevant kandidat, utan onödig friktion." },
-            ].map(({ icon: Icon, title, text }) => (
-              <div key={title} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 20, padding: "28px 32px", boxShadow: "var(--sh)" }}>
-                <div style={{ width: 44, height: 44, borderRadius: 13, background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
-                  <Icon style={{ width: 20, height: 20, color: "#fff" }} />
-                </div>
-                <h3 style={{ fontSize: 17, fontWeight: 700, color: "var(--ink-900)", margin: "0 0 10px" }}>{title}</h3>
-                <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.7 }}>{text}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Segments (tinted alt) ────────────────────────────────────────────── */}
-      <section style={{ background: "var(--green-tint)", borderTop: "1px solid var(--line)", borderBottom: "1px solid var(--line)", padding: vp }}>
-        <div style={{ maxWidth: 1040, margin: "0 auto", padding: sp }}>
-          <p style={E.label}>Tre segment</p>
-          <h2 style={{ ...E.h2, marginTop: 12, marginBottom: 12, maxWidth: 560 }}>Branschen är bred och behoven ser olika ut.</h2>
-          <p style={{ ...E.body, maxWidth: 600, marginBottom: 32 }}>
-            Därför utgår STP från tre tydliga segment. Det hjälper er att kommunicera behov tydligare och nå mer relevanta förare.
-          </p>
-          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3,1fr)", gap: 16 }}>
-            {COMPANY_SEGMENTS.map(({ title, text, icon: Icon, stripe, label, labelColor, labelBg }) => (
-              <div key={title} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 20, overflow: "hidden", boxShadow: "var(--sh-md)" }}>
-                <div style={{ height: 5, background: stripe }} />
-                <div style={{ padding: "24px 24px 28px" }}>
-                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16 }}>
-                    <div style={{ width: 42, height: 42, borderRadius: 12, background: "var(--green-tint)", border: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <Icon style={{ width: 20, height: 20, color: "var(--green-text)" }} />
-                    </div>
-                    <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 99, background: labelBg, color: labelColor }}>{label}</span>
+              <div style={{ display: "flex", gap: 26, flexWrap: "wrap" }}>
+                {[["36 %", "saknar förare"], ["Auto", "verifiering"], ["0 kr", "under beta"]].map(([b, s]) => (
+                  <div key={s} style={{ display: "flex", flexDirection: "column" }}>
+                    <span style={{ fontSize: 21, fontWeight: 900, color: "var(--ink-900)", fontFamily: "var(--mono)", letterSpacing: -0.5 }}>{b}</span>
+                    <span style={{ fontSize: 12.5, color: "var(--ink-500)", fontWeight: 600 }}>{s}</span>
                   </div>
-                  <h3 style={{ fontSize: 17, fontWeight: 700, color: "var(--ink-900)", margin: "0 0 10px" }}>{title}</h3>
-                  <p style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.65 }}>{text}</p>
-                </div>
+                ))}
+              </div>
+            </div>
+            <SearchPreview />
+          </div>
+        </div>
+      </section>
+
+      {/* ───────── TALANGÖVERSIKT ───────── */}
+      <section style={{ background: "var(--card)", borderTop: "1px solid var(--line)", borderBottom: "1px solid var(--line)", padding: "88px 0" }}>
+        <div style={S.container}>
+          <div className="talent-grid">
+            <div>
+              <span style={S.sectionEyebrow}>Var förarna finns</span>
+              <h2 style={{ ...S.sectionTitle, marginBottom: 18 }}>Se talangen län för län.</h2>
+              <p style={{ ...S.lead, marginBottom: 24 }}>
+                Talangkartan visar tillgängliga förare per län och hur många som matchar just era annonser — så ni vet var ni har bäst läge att rekrytera.
+              </p>
+              <Button variant="secondary" iconRight={<Icon name="arrow" size={14} stroke={2.2} />} onClick={goRegister}>Öppna talangkartan</Button>
+            </div>
+            <Card padding="28px 30px">
+              <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                {TALENT.map((t) => (
+                  <div key={t.region}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 7 }}>
+                      <span style={{ fontSize: 14.5, fontWeight: 700, color: "var(--ink-900)" }}>{t.region}</span>
+                      <span style={{ fontSize: 12.5, color: "var(--ink-500)", fontWeight: 600 }}>
+                        <span style={{ fontFamily: "var(--mono)", color: "var(--ink-900)", fontWeight: 700 }}>{t.n}</span> förare · <span style={{ color: "var(--green-text)", fontWeight: 700 }}>{t.m} matchar er</span>
+                      </span>
+                    </div>
+                    <div style={{ height: 9, borderRadius: 999, background: "var(--paper-2)", overflow: "hidden", position: "relative" }}>
+                      <div style={{ width: (t.n / 47) * 100 + "%", height: "100%", borderRadius: 999, background: "linear-gradient(90deg, var(--green), #36857f)" }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* ───────── VS BEMANNING ───────── */}
+      <section style={{ background: "var(--paper)", padding: "88px 0" }}>
+        <div style={S.container}>
+          <div style={{ textAlign: "center", maxWidth: 580, margin: "0 auto 44px" }}>
+            <span style={S.sectionEyebrow}>Skillnaden mot bemanning</span>
+            <h2 style={S.sectionTitle}>Anställ direkt. Behåll relationen.</h2>
+          </div>
+          <div className="cmp-grid" style={{ maxWidth: 920, margin: "0 auto" }}>
+            <Card padding="30px 32px" style={{ background: "var(--card-2)" }}>
+              <div style={{ fontSize: 12, fontWeight: 800, color: "var(--ink-400)", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 20 }}>Bemanningsbolag</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                {COMPARE.bemanning.map((t) => (
+                  <div key={t} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                    <span style={{ marginTop: 2, width: 20, height: 20, borderRadius: "50%", background: "var(--danger-tint)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "var(--danger)", fontWeight: 800, fontSize: 13, lineHeight: 1 }}>×</span>
+                    <span style={{ fontSize: 14.5, color: "var(--ink-500)", lineHeight: 1.5 }}>{t}</span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+            <Card padding="30px 32px" style={{ border: "1.5px solid var(--green)", boxShadow: "var(--sh-md)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 20 }}>
+                <div style={{ width: 24, height: 24, borderRadius: 6, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 11 }}>S</div>
+                <span style={{ fontSize: 12, fontWeight: 800, color: "var(--green-text)", textTransform: "uppercase", letterSpacing: 1.2 }}>Med STP</span>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                {COMPARE.stp.map((t) => (
+                  <div key={t} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                    <span style={{ marginTop: 1, width: 20, height: 20, borderRadius: "50%", background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <Icon name="check" size={11} color="#fff" stroke={2.8} />
+                    </span>
+                    <span style={{ fontSize: 14.5, color: "var(--ink-700)", lineHeight: 1.5, fontWeight: 500 }}>{t}</span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* ───────── VERIFIERING + TEAM ───────── */}
+      <section style={{ background: "var(--paper-2)", padding: "88px 0" }}>
+        <div style={S.container}>
+          <div style={{ maxWidth: 560, marginBottom: 40 }}>
+            <span style={S.sectionEyebrow}>Trygghet & samarbete</span>
+            <h2 style={S.sectionTitle}>Byggt för seriösa åkerier.</h2>
+          </div>
+          <div className="two-grid">
+            <Card padding="30px 32px">
+              <div style={{ width: 48, height: 48, borderRadius: 12, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
+                <Icon name="check" size={22} color="var(--green-text)" stroke={2.2} />
+              </div>
+              <h3 style={{ fontSize: 20, fontWeight: 800, color: "var(--ink-900)", marginBottom: 10, letterSpacing: -0.3 }}>Automatisk verifiering</h3>
+              <p style={{ fontSize: 14.5, color: "var(--ink-500)", lineHeight: 1.65, marginBottom: 16, textWrap: "pretty" }}>
+                Ange organisationsnummer vid registreringen — kontot verifieras automatiskt mot Bolagsverket. Verifierade åkerier får en tydlig märkning som förare litar på.
+              </p>
+              <Pill tone="success" size="sm" icon={<Icon name="check" size={11} stroke={2.6} />}>Verifierad via Bolagsverket</Pill>
+            </Card>
+            <Card padding="30px 32px">
+              <div style={{ width: 48, height: 48, borderRadius: 12, background: "var(--amber-tint)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
+                <Icon name="user" size={22} color="var(--amber-text)" stroke={2} />
+              </div>
+              <h3 style={{ fontSize: 20, fontWeight: 800, color: "var(--ink-900)", marginBottom: 10, letterSpacing: -0.3 }}>Hela teamet med</h3>
+              <p style={{ fontSize: 14.5, color: "var(--ink-500)", lineHeight: 1.65, marginBottom: 16, textWrap: "pretty" }}>
+                Bjud in kollegor så att fler i organisationen kan söka förare, publicera annonser och hantera konversationer — allt samlat under ert åkeri.
+              </p>
+              <div style={{ display: "flex", alignItems: "center" }}>
+                {["AL", "MK", "SP"].map((ini, i) => (
+                  <div key={ini} style={{ marginLeft: i > 0 ? -8 : 0, width: 32, height: 32, borderRadius: "50%", background: i === 0 ? "var(--green)" : i === 1 ? "var(--amber)" : "var(--ink-700)", border: "2px solid var(--card)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: 11 }}>{ini}</div>
+                ))}
+                <span style={{ marginLeft: 10, fontSize: 13, color: "var(--ink-500)", fontWeight: 600 }}>+ obegränsat antal platser</span>
+              </div>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* ───────── SÅ FUNKAR DET ───────── */}
+      <section id="sa-funkar" style={{ background: "var(--paper)", padding: "88px 0" }}>
+        <div style={S.container}>
+          <div style={{ textAlign: "center", maxWidth: 560, margin: "0 auto 48px" }}>
+            <span style={S.sectionEyebrow}>Kom igång</span>
+            <h2 style={S.sectionTitle}>Igång på minuter, inte veckor.</h2>
+          </div>
+          <div className="steps-grid">
+            {STEPS.map((s, i) => (
+              <div key={s.n} style={{ padding: "0 28px", borderLeft: i > 0 ? "1px solid var(--line)" : "none", textAlign: "center" }}>
+                <div style={{ width: 52, height: 52, borderRadius: "50%", background: "var(--green-tint)", color: "var(--green-text)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 17, fontFamily: "var(--mono)", margin: "0 auto 18px", border: "1px solid rgba(31,95,92,0.18)" }}>{s.n}</div>
+                <h3 style={{ fontSize: 18, fontWeight: 800, color: "var(--ink-900)", marginBottom: 9, letterSpacing: -0.3 }}>{s.title}</h3>
+                <p style={{ fontSize: 14.5, color: "var(--ink-500)", lineHeight: 1.6, textWrap: "pretty" }}>{s.body}</p>
               </div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* ── How it works (dark) ───────────────────────────────────────────────── */}
-      <section style={{ background: "#050e0e", padding: vp }}>
-        <div style={{ maxWidth: 1040, margin: "0 auto", padding: sp, display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1.2fr 0.8fr", gap: isMobile ? 32 : 64, alignItems: "start" }}>
-          <div>
-            <p style={D.label}>Så fungerar det</p>
-            <h2 style={{ ...D.h2, marginTop: 12, marginBottom: 16 }}>Börja enkelt och bygg vidare när kontot är igång.</h2>
-            <p style={D.body}>
-              I utloggat läge visar vi hur STP fungerar för åkerier. När ni loggar in får ni i stället tillgång till de praktiska verktygen för jobb, kandidater och dialoger.
-            </p>
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <ol style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 12 }}>
-              {COMPANY_STEPS.map(({ num, text }) => (
-                <li key={num} style={{ display: "flex", gap: 16, alignItems: "flex-start", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16, padding: "18px 20px" }}>
-                  <span style={{ fontSize: 13, fontWeight: 800, color: "var(--amber)", letterSpacing: "0.5px", flexShrink: 0, marginTop: 1 }}>{num}</span>
-                  <span style={{ fontSize: 15, color: "rgba(240,250,249,0.75)", lineHeight: 1.55 }}>{text}</span>
-                </li>
-              ))}
-            </ol>
-            <div style={{ background: "var(--amber-tint-2)", border: "1px solid rgba(245,166,35,0.2)", borderRadius: 16, padding: "18px 20px" }}>
-              <p style={{ fontSize: 14, fontWeight: 700, color: "var(--amber)", margin: "0 0 6px" }}>Kom igång direkt</p>
-              <p style={{ fontSize: 14, color: "rgba(245,166,35,0.7)", margin: 0, lineHeight: 1.6 }}>
-                Ange ert organisationsnummer vid registreringen — verifiering sker automatiskt mot Bolagsverket och ni kan publicera jobb direkt.
-              </p>
-            </div>
+          <div style={{ textAlign: "center", marginTop: 44 }}>
+            <Button variant="primary" size="lg" iconRight={<Icon name="arrow" size={15} stroke={2.2} />} onClick={goRegister}>Skapa företagskonto</Button>
           </div>
         </div>
       </section>
 
-      {/* ── Why STP (light) ───────────────────────────────────────────────────── */}
-      <section style={{ background: "var(--paper)", borderBottom: "1px solid var(--line)", padding: vp }}>
-        <div style={{ maxWidth: 1040, margin: "0 auto", padding: sp, display: "grid", gridTemplateColumns: isMobile ? "1fr" : "0.95fr 1.05fr", gap: isMobile ? 24 : 64, alignItems: "start" }}>
-          <div>
-            <p style={E.label}>Varför STP</p>
-            <h2 style={{ ...E.h2, marginTop: 12, marginBottom: 16 }}>Mer struktur i varje rekryteringsbeslut.</h2>
-            <p style={E.body}>
-              Ambitionen är att skapa en plats som hjälper er att särskilja skrotet från guldet genom tydligare profiler, bättre signaler och ett mer professionellt sammanhang.
-            </p>
-          </div>
-          <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 12 }}>
-            {COMPANY_PROMISES.map((item) => (
-              <li key={item} style={{ display: "flex", gap: 16, alignItems: "flex-start", background: "var(--green-tint)", border: "1px solid var(--line)", borderRadius: 16, padding: "18px 20px" }}>
-                <span style={{ flexShrink: 0, width: 26, height: 26, borderRadius: "50%", background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", marginTop: 1 }}>
-                  <CheckIcon style={{ width: 13, height: 13, color: "#fff" }} />
-                </span>
-                <span style={{ fontSize: 15, color: "var(--ink-700)", lineHeight: 1.6 }}>{item}</span>
-              </li>
-            ))}
-          </ul>
+      {/* ───────── FAQ ───────── */}
+      <section style={{ background: "var(--paper-2)", padding: "88px 0" }}>
+        <div style={S.container}>
+          <FaqBlock items={FAQS} lead="Frågor om partnerskap? Hör av dig." email="partner@transportplattformen.se" />
         </div>
       </section>
 
-      {/* ── FAQ (tinted) ─────────────────────────────────────────────────────── */}
-      <section style={{ background: "var(--green-tint)", padding: vp }}>
-        <div style={{ maxWidth: 1040, margin: "0 auto", padding: sp }}>
-          <p style={E.label}>Vanliga frågor</p>
-          <h2 style={{ ...E.h2, marginTop: 12, marginBottom: 36 }}>Frågor och svar</h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: 10, maxWidth: 760 }}>
-            {FAQ_ITEMS.map((item, i) => (
-              <FaqItem
-                key={i}
-                item={item}
-                isOpen={faqOpen === i}
-                onToggle={() => setFaqOpen(faqOpen === i ? null : i)}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── CTA (dark) ────────────────────────────────────────────────────────── */}
-      <section style={{ background: "linear-gradient(160deg, #0d2b2b 0%, #060f0f 100%)", padding: isMobile ? "60px 0" : "80px 0 100px" }}>
-        <div style={{ maxWidth: 1040, margin: "0 auto", padding: sp }}>
-          <div style={{ position: "relative", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 28, padding: isMobile ? "36px 24px" : "56px 56px", overflow: "hidden" }}>
-            <div style={{ position: "absolute", right: -60, top: -60, width: 300, height: 300, borderRadius: "50%", background: "radial-gradient(circle, rgba(245,166,35,0.07) 0%, transparent 70%)", pointerEvents: "none" }} />
-            <div style={{ position: "relative", zIndex: 1 }}>
-              <h2 style={{ fontSize: "clamp(24px,3vw,36px)", fontWeight: 900, letterSpacing: "-1px", color: "#f0faf9", margin: "0 0 16px" }}>
-                Vill ni börja bygga er närvaro på STP?
-              </h2>
-              <p style={{ ...D.body, color: "rgba(240,250,249,0.75)", maxWidth: 560, marginBottom: 32 }}>
-                Skapa ett företagskonto, gå igenom onboardingen och lägg till ert åkeri. När grunden finns på plats kan ni börja med Hitta förare direkt och sedan publicera jobb vid behov.
-              </p>
-              <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-                <Link
-                  to="/login"
-                  state={{ initialMode: "register", requiredRole: "company" }}
-                  style={D.btnPrimary}
-                >
-                  Skapa företagskonto
-                  <ArrowRightIcon style={{ width: 16, height: 16 }} />
-                </Link>
-                <Link to="/#sa-fungerar-det" style={D.btnSecondary}>
-                  Läs mer om STP
-                </Link>
-              </div>
-              <p style={{ marginTop: 24, fontSize: 14, color: "rgba(240,250,249,0.45)" }}>
-                Frågor om partnerskap eller enterprise?{" "}
-                <a href="mailto:partner@transportplattformen.se" style={{ color: "var(--amber)", textDecoration: "none" }}>
-                  partner@transportplattformen.se
-                </a>
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* ───────── CTA ───────── */}
+      <GreenCTA
+        title="Börja bygga er närvaro på STP."
+        lead="Skapa ett företagskonto, gå igenom onboardingen och lägg till ert åkeri. När grunden finns kan ni börja med Hitta förare direkt och publicera jobb vid behov."
+        primaryLabel="Skapa företagskonto"
+        secondaryLabel="Läs mer om STP"
+        stats={[["Gratis", "Under beta"], ["0 kr", "Aldrig provision"], ["Auto", "Verifiering"], ["Direkt", "Äg relationen"]]}
+        onPrimary={goRegister}
+        onSecondary={() => navigate("/om-oss")}
+      />
     </main>
   );
 }
