@@ -83,32 +83,27 @@ function BrandPanel() {
   );
 }
 
-/* ── BankID button (disabled – Kommer snart) ──────────────────────────────── */
-function BankIDButton() {
+/* ── BankID button — pixel-matchad mot prototypen (STP Auth Ljust) ─────────── */
+function BankIDButton({ onClick }) {
   return (
     <button
-      disabled
+      type="button"
+      onClick={onClick}
       style={{
-        width: "100%", height: 48, borderRadius: 11, marginBottom: 10,
+        width: "100%", height: 48, borderRadius: 11, marginBottom: 12,
         background: "var(--card)", border: "1px solid var(--line-2)",
         boxShadow: "var(--sh-sm)",
         display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
-        fontSize: 14.5, fontWeight: 700, color: "var(--ink-400)",
-        cursor: "not-allowed",
+        fontSize: 14.5, fontWeight: 700, color: "var(--ink-900)",
+        cursor: "pointer", fontFamily: "inherit", transition: "background .15s",
       }}
+      onMouseEnter={e => { e.currentTarget.style.background = "var(--paper-2)"; }}
+      onMouseLeave={e => { e.currentTarget.style.background = "var(--card)"; }}
     >
-      <span style={{ width: 22, height: 22, borderRadius: 5, background: "var(--ink-300)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800 }}>
+      <span style={{ width: 22, height: 22, borderRadius: 5, background: "var(--ink-900)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800 }}>
         ID
       </span>
-      BankID
-      <span style={{
-        fontSize: 10, fontWeight: 700, letterSpacing: 0.8, textTransform: "uppercase",
-        background: "var(--amber-tint)", color: "var(--amber-text)",
-        border: "1px solid rgba(180,120,0,0.2)",
-        padding: "3px 8px", borderRadius: 99,
-      }}>
-        Kommer snart
-      </span>
+      Logga in med BankID
     </button>
   );
 }
@@ -482,7 +477,7 @@ export default function Login() {
               </h1>
               <p style={{ fontSize: 14.5, color: "var(--ink-500)", marginBottom: 28 }}>Gratis under beta. Inga avgifter.</p>
 
-              <BankIDButton />
+              <BankIDButton onClick={() => { setError(""); setInfo("BankID-inloggning lanseras inom kort — använd e-post eller Google så länge."); }} />
 
               <OAuthSection
                 onSuccess={handleOAuthSuccess}
@@ -625,7 +620,7 @@ export default function Login() {
                   from={from}
                   mode="login"
                 />
-                <BankIDButton />
+                <BankIDButton onClick={() => { setError(""); setInfo("BankID-inloggning lanseras inom kort — använd e-post eller Google så länge."); }} />
                 <OrDivider />
               </>
             )}
