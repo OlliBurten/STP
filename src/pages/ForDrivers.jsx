@@ -1,161 +1,192 @@
 import { useState, useEffect } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { CheckIcon, TruckIcon, ShieldCheckIcon, ArrowRightIcon, ClockIcon, BuildingIcon } from "../components/Icons";
 import { usePageTitle } from "../hooks/usePageTitle";
-import { useIsMobile } from "../hooks/useIsMobile";
 import PageMeta from "../components/PageMeta";
+import { Icon, Pill, Button, Card, Dot } from "../components/ui";
+import { TruckIcon, ClockIcon, BuildingIcon } from "../components/Icons";
 
-const DRIVER_POINTS = [
-  "Skapa en strukturerad profil som visar behörigheter, erfarenhet, tillgänglighet och vad du faktiskt söker.",
-  "Bli hittad av seriösa åkerier utan att behöva posta i ostrukturerade grupper eller jaga rätt person manuellt.",
-  "Få smartare matchning utifrån både din profil och din privata matchningstext som bara systemet ser.",
+/* ════════════════════════════════════════════════
+   DATA
+════════════════════════════════════════════════ */
+const DEMAND = [
+  { region: "Skåne", n: 47, pct: 100 },
+  { region: "Stockholm", n: 38, pct: 81 },
+  { region: "Västra Götaland", n: 31, pct: 66 },
+  { region: "Östergötland", n: 14, pct: 30 },
+  { region: "Halland", n: 12, pct: 26 },
 ];
 
-const DRIVER_STEPS = [
-  "Registrera konto som förare.",
-  "Fyll i minimumprofilen första gången du loggar in.",
-  "Komplettera med mer information för bättre matchningar över tid.",
+const SEGMENTS = [
+  { Icon: TruckIcon, title: "Heltid", tag: "Fast anställning", body: "Söker du en långsiktig roll? Visa erfarenhet, behörigheter och vilken typ av tjänst som passar dig.", points: ["Fasta tjänster", "Långsiktiga åkerier"] },
+  { Icon: ClockIcon, title: "Vikarie & deltid", tag: "Flexibelt", body: "Vill du vara flexibel och hoppa in snabbt? Matchas mot vikariat, extrapass och kortare behov.", points: ["Extrapass", "Kortare uppdrag"] },
+  { Icon: BuildingIcon, title: "Praktik", tag: "I början av karriären", body: "Elev eller ny i yrket? Hitta seriösa företag att växa med — från gymnasiet, AF eller Komvux.", points: ["Praktikplatser", "Mentorskap"] },
 ];
 
-const DRIVER_SEGMENTS = [
-  {
-    title: "Heltid",
-    text: "För dig som söker en långsiktig roll och vill vara tydlig med erfarenhet, behörigheter och vilken typ av tjänst som passar dig.",
-    icon: TruckIcon,
-    stripe: "linear-gradient(90deg, var(--success), #22c55e)",
-    label: "Fast anställning",
-    labelColor: "var(--green-text)",
-    labelBg: "var(--green-tint)",
-  },
-  {
-    title: "Vikarie / Deltid",
-    text: "För dig som vill vara flexibel, hoppa in snabbt och matchas mot kortare behov, vikariat, extrapass eller deltid.",
-    icon: ClockIcon,
-    stripe: "linear-gradient(90deg, var(--amber), #f59e0b)",
-    label: "Flexibelt",
-    labelColor: "var(--amber-text)",
-    labelBg: "var(--amber-tint)",
-  },
-  {
-    title: "Praktik",
-    text: "För elever och förare i början av karriären från gymnasieskola, Arbetsförmedlingen eller Komvux, som vill hitta seriösa företag att växa med.",
-    icon: BuildingIcon,
-    stripe: "linear-gradient(90deg, #63b3ed, #3b82f6)",
-    label: "Utbildning",
-    labelColor: "#1d4ed8",
-    labelBg: "#eff6ff",
-  },
+const STEPS = [
+  { n: "01", title: "Skapa förarkonto", body: "Två minuter. Välj körkort, region och vad du söker — sen är du igång." },
+  { n: "02", title: "Fyll i minimumprofilen", body: "Samma grund för alla förare. Det gör dig jämförbar och seriös direkt." },
+  { n: "03", title: "Bli hittad & sök", body: "Komplettera i din takt. Åkerier hittar dig automatiskt och du söker jobb direkt." },
 ];
 
-const FEATURE_CARDS = [
-  {
-    icon: TruckIcon,
-    title: "Byggd för riktiga förarflöden",
-    text: "Plattformen utgår från transportbranschens verklighet: segment, tillgänglighet, körkort, erfarenhet och tydliga profiler.",
-  },
-  {
-    icon: ShieldCheckIcon,
-    title: "Seriösare miljö",
-    text: "Målet är att STP ska bli en trygg plats där seriösa aktörer får mer utrymme och kvalitet blir tydligare över tid.",
-  },
-  {
-    icon: ArrowRightIcon,
-    title: "Bättre matchning",
-    text: "Du kan börja med ett gemensamt minimum och sedan fylla på med mer data för att bli ännu mer träffsäker i matchningen.",
-  },
+const FAQS = [
+  { q: "Måste jag vara yrkesförare?", a: "Ja, STP är specialbyggt för yrkesförare med körkort B, C, CE eller C1. Plattformen hanterar branschens termer, YKB och ADR direkt — du behöver aldrig förklara vad du menar." },
+  { q: "Kan jag vara anonym tills jag tar kontakt?", a: "Ja. Du styr helt vad som är synligt. Du kan söka jobb och se annonser utan att åkerier ser din profil. Aktiverar du synligheten kan åkerier hitta dig — och du kan stänga av den när som helst." },
+  { q: "Tar STP betalt av förare?", a: "Nej. STP är gratis för alla förare, både att skapa profil och söka jobb. Vi meddelar tydligt i god tid om det förändras." },
+  { q: "Vad skiljer STP från en vanlig jobbsajt?", a: "Profilen utgår från körkort, segment, tillgänglighet och certifikat — inte ett generiskt CV. Det gör det lätt för åkerier att förstå dig snabbt och för dig att hitta rätt jobb." },
+  { q: "Vad händer om jag inte svarar ett åkeri?", a: "Ingenting — du är aldrig tvingad att svara. Du kan avvisa konversationer eller stänga av synligheten om du inte söker just nu." },
 ];
 
-const FAQ_ITEMS = [
-  {
-    question: "Måste jag vara yrkesförare för att använda STP?",
-    answer: "Ja, STP är specialbyggt för yrkesförare med körkort B, C, CE eller C1. Plattformen hanterar transportbranschens termer, körkort, YKB och ADR direkt — du behöver inte förklara vad du menar.",
-  },
-  {
-    question: "Kan jag vara anonym tills jag väljer att ta kontakt?",
-    answer: "Ja. Du styr helt vad som är synligt. Du kan söka jobb och se annonser utan att åkerier kan se din profil. Aktiverar du synligheten kan åkerier hitta dig — och du kan stänga av den när som helst.",
-  },
-  {
-    question: "Tar STP betalt av förare?",
-    answer: "Nej. STP är gratis för alla förare, både att skapa profil och söka jobb. Vi meddelar tydligt i god tid om det förändras.",
-  },
-  {
-    question: "Vad skiljer STP från vanliga jobbsajter?",
-    answer: "STP är byggt specifikt för transportbranschen. Profilen utgår från körkort, segment, tillgänglighet och certifikat — inte ett generiskt CV. Det gör det lättare för åkerier att förstå dig snabbt och för dig att hitta rätt jobb.",
-  },
-  {
-    question: "Vad händer om jag inte hör av mig till ett åkeri?",
-    answer: "Ingenting — du är aldrig tvingad att svara. Du kan avvisa konversationer eller stänga av synligheten om du inte söker jobb just nu.",
-  },
-];
-
-const DRIVER_PROMISES = [
-  "Samma minimum för alla förare gör det lättare för åkerier att förstå din profil snabbt.",
-  "Du styr själv vad som är publikt och vad som bara ska användas för bättre matchning.",
-  "STP utvecklas med målet att lyfta fram seriösa aktörer och minska brus och osäkerhet.",
-];
-
-// Dark palette for hero/CTA/how-it-works
-const D = {
-  section:      { maxWidth: 1280, margin: "0 auto", padding: "0 40px" },
-  label:        { fontSize: 12, fontWeight: 700, color: "var(--amber)", letterSpacing: "1.5px", textTransform: "uppercase" },
-  h2:           { fontSize: "clamp(28px,4vw,40px)", fontWeight: 900, letterSpacing: "-1.5px", color: "#f0faf9", lineHeight: 1.15, margin: 0 },
-  body:         { fontSize: 16, color: "rgba(240,250,249,0.55)", lineHeight: 1.7 },
-  btnPrimary:   { display: "inline-flex", alignItems: "center", gap: 8, background: "var(--amber)", color: "#000", fontWeight: 800, fontSize: 15, padding: "14px 28px", borderRadius: 12, textDecoration: "none" },
-  btnSecondary: { display: "inline-flex", alignItems: "center", background: "rgba(255,255,255,0.1)", color: "#fff", border: "1px solid rgba(255,255,255,0.18)", fontSize: 15, padding: "14px 28px", borderRadius: 12, textDecoration: "none", fontWeight: 600 },
+/* porterade marknads-stilar (från stp-marketing.css) */
+const S = {
+  container: { maxWidth: 1200, margin: "0 auto", width: "100%", padding: "0 32px" },
+  eyebrow: { display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 14px", borderRadius: 999, background: "var(--green-tint)", color: "var(--green-text)", fontSize: 12, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase" },
+  sectionEyebrow: { display: "block", fontSize: 12, fontWeight: 800, letterSpacing: 1.4, textTransform: "uppercase", color: "var(--green-text)", marginBottom: 12 },
+  sectionTitle: { fontSize: "clamp(28px,4vw,40px)", fontWeight: 900, letterSpacing: -1.5, lineHeight: 1.15, color: "var(--ink-900)", margin: 0 },
+  lead: { fontSize: 18, lineHeight: 1.7, color: "var(--ink-500)", margin: 0 },
 };
 
-// Light editorial palette
-const E = {
-  section:   { maxWidth: 1280, margin: "0 auto", padding: "0 40px" },
-  label:     { fontSize: 12, fontWeight: 700, color: "var(--green-text)", letterSpacing: "1.5px", textTransform: "uppercase" },
-  h2:        { fontSize: "clamp(28px,4vw,40px)", fontWeight: 900, letterSpacing: "-1.5px", color: "var(--ink-900)", lineHeight: 1.15, margin: 0 },
-  body:      { fontSize: 16, color: "var(--ink-500)", lineHeight: 1.7 },
-  btnPrimary: { display: "inline-flex", alignItems: "center", gap: 8, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: 15, padding: "14px 28px", borderRadius: 12, textDecoration: "none" },
-  btnSecondary: { display: "inline-flex", alignItems: "center", background: "var(--card)", color: "var(--green-text)", border: "1px solid var(--line)", fontSize: 15, padding: "14px 28px", borderRadius: 12, textDecoration: "none", fontWeight: 600 },
-};
+const GearIcon = ({ size = 16, color = "var(--ink-500)" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
+  </svg>
+);
 
-function FaqItem({ item, isOpen, onToggle }) {
-  return (
-    <div style={{ borderRadius: 16, background: "var(--card)", border: "1px solid var(--line)", overflow: "hidden", boxShadow: isOpen ? "var(--sh)" : "var(--sh-sm)", transition: "box-shadow 0.2s" }}>
-      <button
-        type="button"
-        onClick={onToggle}
-        style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, padding: "18px 24px", textAlign: "left", background: "transparent", border: "none", cursor: "pointer", fontFamily: "inherit" }}
-        aria-expanded={isOpen}
-      >
-        <span style={{ fontSize: 15, fontWeight: 600, color: "var(--ink-900)" }}>{item.question}</span>
-        <span style={{ flexShrink: 0, color: "var(--green-text)", transition: "transform 0.2s", transform: isOpen ? "rotate(45deg)" : "none", display: "inline-flex" }}>
-          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
-        </span>
-      </button>
-      {isOpen && (
-        <div style={{ padding: "0 24px 18px", fontSize: 14, color: "var(--ink-500)", lineHeight: 1.7, borderTop: "1px solid var(--line)", paddingTop: 16 }}>
-          {item.answer}
+/* ── Produkt-preview: förarprofil-kort ─────────── */
+const ProfilePreview = () => (
+  <div style={{ position: "relative" }}>
+    <div style={{ position: "absolute", top: 16, left: 16, width: "100%", height: "100%", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 20, boxShadow: "var(--sh-sm)", opacity: 0.55 }} />
+    <div style={{ position: "relative", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 20, boxShadow: "var(--sh-md)", overflow: "hidden" }}>
+      <div style={{ height: 64, background: "linear-gradient(120deg, var(--green) 0%, #2a6f6b 100%)" }} />
+      <div style={{ padding: "0 24px 24px", position: "relative", zIndex: 1 }}>
+        <div style={{ display: "flex", alignItems: "flex-end", gap: 16, marginTop: -26, marginBottom: 16 }}>
+          <div style={{ width: 72, height: 72, borderRadius: "50%", background: "var(--amber)", border: "4px solid var(--card)", boxShadow: "0 6px 16px rgba(199,122,14,0.28)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 26, flexShrink: 0 }}>OL</div>
+          <div style={{ paddingBottom: 4 }}>
+            <div style={{ fontSize: 19, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.4, whiteSpace: "nowrap" }}>Oliver Lind</div>
+            <div style={{ fontSize: 13.5, color: "var(--ink-500)", fontWeight: 500, whiteSpace: "nowrap" }}>Malmö, Skåne · 9 års erfarenhet</div>
+          </div>
         </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 18 }}>
+          <Pill tone="success" size="sm" icon={<Dot tone="success" size={6} />}>Synlig för åkerier</Pill>
+          <Pill tone="primary" size="sm">CE</Pill>
+          <Pill tone="primary" size="sm">C</Pill>
+          <Pill tone="primary" size="sm">B</Pill>
+          <Pill tone="soft" size="sm">ADR · 2027</Pill>
+        </div>
+        <div style={{ background: "var(--paper-2)", borderRadius: 12, padding: "14px 16px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+            <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--ink-700)" }}>Profilstyrka</span>
+            <span style={{ fontSize: 12.5, fontWeight: 800, color: "var(--green-text)", fontFamily: "var(--mono)" }}>92%</span>
+          </div>
+          <div style={{ height: 7, borderRadius: 999, background: "var(--line-2)", overflow: "hidden" }}>
+            <div style={{ width: "92%", height: "100%", borderRadius: 999, background: "linear-gradient(90deg, var(--green), #36857f)" }} />
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
+          <div style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "10px", borderRadius: 9, background: "var(--green)", color: "#fff", fontSize: 13, fontWeight: 700 }}>
+            <Icon name="eye" size={14} color="#fff" stroke={2} /> Förhandsgranska
+          </div>
+          <div style={{ width: 42, display: "inline-flex", alignItems: "center", justifyContent: "center", borderRadius: 9, background: "var(--card-2)", border: "1px solid var(--line-2)" }}>
+            <GearIcon size={16} />
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style={{ position: "absolute", right: -16, top: 80, background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, boxShadow: "var(--sh-md)", padding: "12px 16px", display: "flex", alignItems: "center", gap: 11 }}>
+      <div style={{ width: 38, height: 38, borderRadius: 10, background: "var(--success-tint)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <Icon name="truck" size={18} color="var(--success)" stroke={2} />
+      </div>
+      <div>
+        <div style={{ fontSize: 12, color: "var(--ink-500)", fontWeight: 600, whiteSpace: "nowrap" }}>Ny matchning</div>
+        <div style={{ fontSize: 13.5, fontWeight: 800, color: "var(--ink-900)", whiteSpace: "nowrap" }}>Nordisk Frakt · 94%</div>
+      </div>
+    </div>
+  </div>
+);
+
+const VisRow = ({ label, on }) => (
+  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 0", borderBottom: "1px solid var(--line)" }}>
+    <span style={{ fontSize: 14.5, color: "var(--ink-700)", fontWeight: 500 }}>{label}</span>
+    <span style={{ width: 40, height: 23, borderRadius: 999, background: on ? "var(--green)" : "var(--line-2)", position: "relative", flexShrink: 0 }}>
+      <span style={{ position: "absolute", top: 2, left: on ? 19 : 2, width: 19, height: 19, borderRadius: "50%", background: "#fff", boxShadow: "0 1px 2px rgba(0,0,0,0.2)" }} />
+    </span>
+  </div>
+);
+
+/* ── FAQ-block ────────────────────────────────── */
+function FaqBlock({ items, lead, email }) {
+  const [open, setOpen] = useState(null);
+  return (
+    <div>
+      <div style={{ textAlign: "center", maxWidth: 560, margin: "0 auto 40px" }}>
+        <span style={S.sectionEyebrow}>Vanliga frågor</span>
+        <h2 style={S.sectionTitle}>Frågor och svar</h2>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, maxWidth: 760, margin: "0 auto" }}>
+        {items.map((item, i) => {
+          const isOpen = open === i;
+          return (
+            <div key={i} style={{ borderRadius: 16, background: "var(--card)", border: "1px solid var(--line)", overflow: "hidden", boxShadow: isOpen ? "var(--sh)" : "var(--sh-sm)" }}>
+              <button type="button" onClick={() => setOpen(isOpen ? null : i)} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, padding: "18px 24px", textAlign: "left", background: "transparent", border: "none", cursor: "pointer", fontFamily: "inherit" }} aria-expanded={isOpen}>
+                <span style={{ fontSize: 15, fontWeight: 600, color: "var(--ink-900)" }}>{item.q}</span>
+                <span style={{ flexShrink: 0, color: "var(--green-text)", transition: "transform 0.2s", transform: isOpen ? "rotate(45deg)" : "none", display: "inline-flex" }}>
+                  <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                </span>
+              </button>
+              {isOpen && <div style={{ padding: "0 24px 18px", fontSize: 14, color: "var(--ink-500)", lineHeight: 1.7, borderTop: "1px solid var(--line)", paddingTop: 16 }}>{item.a}</div>}
+            </div>
+          );
+        })}
+      </div>
+      {lead && (
+        <p style={{ textAlign: "center", marginTop: 28, fontSize: 14.5, color: "var(--ink-500)" }}>
+          {lead}{email && <> <a href={`mailto:${email}`} style={{ color: "var(--green-text)", fontWeight: 700, textDecoration: "none" }}>{email}</a></>}
+        </p>
       )}
     </div>
   );
 }
 
+/* ── Grön CTA-sektion ─────────────────────────── */
+function GreenCTA({ title, lead, primaryLabel, secondaryLabel, stats, onPrimary, onSecondary }) {
+  return (
+    <section style={{ background: "linear-gradient(160deg, #14524f 0%, #0c3d3a 100%)", padding: "88px 0", color: "#fff" }}>
+      <div style={{ ...S.container, maxWidth: 1040 }}>
+        <div style={{ textAlign: "center", maxWidth: 620, margin: "0 auto" }}>
+          <h2 style={{ fontSize: "clamp(30px,4vw,44px)", fontWeight: 900, letterSpacing: -1.6, lineHeight: 1.12, marginBottom: 18 }}>{title}</h2>
+          <p style={{ fontSize: 17, lineHeight: 1.65, color: "rgba(240,250,249,0.7)", marginBottom: 32 }}>{lead}</p>
+          <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+            <button onClick={onPrimary} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 26px", height: 50, background: "var(--amber)", color: "#fff", border: "1px solid var(--amber-deep)", borderRadius: 10, fontWeight: 700, fontSize: 15, cursor: "pointer", fontFamily: "inherit" }}>
+              {primaryLabel} <Icon name="arrow" size={15} stroke={2.2} />
+            </button>
+            <button onClick={onSecondary} style={{ display: "inline-flex", alignItems: "center", padding: "14px 26px", height: 50, background: "rgba(255,255,255,0.08)", color: "#fff", border: "1px solid rgba(255,255,255,0.22)", borderRadius: 10, fontWeight: 600, fontSize: 15, cursor: "pointer", fontFamily: "inherit" }}>
+              {secondaryLabel}
+            </button>
+          </div>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 0, borderTop: "1px solid rgba(255,255,255,0.14)", marginTop: 48, paddingTop: 28, maxWidth: 820, marginLeft: "auto", marginRight: "auto" }}>
+          {stats.map(([v, l]) => (
+            <div key={l} style={{ textAlign: "center", padding: "0 6px" }}>
+              <div style={{ fontSize: 22, fontWeight: 900, fontFamily: "var(--mono)", color: "var(--amber)", letterSpacing: -0.5 }}>{v}</div>
+              <div style={{ fontSize: 11.5, fontWeight: 600, color: "rgba(240,250,249,0.55)", textTransform: "uppercase", letterSpacing: 0.8, marginTop: 6 }}>{l}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ════════════════════════════════════════════════
+   PAGE
+════════════════════════════════════════════════ */
 export default function ForDrivers() {
   usePageTitle("För yrkesförare – Hitta lastbilsjobb");
   const { user, isDriver, isCompany } = useAuth();
-  const isMobile = useIsMobile();
-  const [faqOpen, setFaqOpen] = useState(null);
-  const sp = isMobile ? "0 20px" : "0 40px"; // section padding
-  const vp = isMobile ? "60px 0" : "80px 0"; // vertical padding
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const jsonLd = {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      mainEntity: FAQ_ITEMS.map((item) => ({
-        "@type": "Question",
-        name: item.question,
-        acceptedAnswer: { "@type": "Answer", text: item.answer },
-      })),
-    };
+    const jsonLd = { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: FAQS.map((item) => ({ "@type": "Question", name: item.q, acceptedAnswer: { "@type": "Answer", text: item.a } })) };
     const script = document.createElement("script");
     script.type = "application/ld+json";
     script.id = "fordrivers-faq-jsonld";
@@ -169,202 +200,209 @@ export default function ForDrivers() {
     if (isCompany) return <Navigate to="/foretag" replace />;
   }
 
+  const goRegister = () => navigate("/login", { state: { initialMode: "register", requiredRole: "driver" } });
+  const goJobs = () => navigate("/jobb");
+
   return (
-    <main style={{ background: "var(--paper)", minHeight: "100vh" }}>
+    <main style={{ background: "var(--paper)" }}>
       <PageMeta
         title="För yrkesförare – Hitta lastbilsjobb på STP"
         description="Skapa en kostnadsfri förarprofil på Sveriges Transportplattform. Bli hittad av seriösa åkerier eller sök bland lastbilsjobb med CE, C och C1-körkort."
         canonical="/forare"
       />
+      <style>{`
+        .ff-grid{display:grid;grid-template-columns:1.02fr 0.98fr;gap:64px;align-items:center}
+        .seg-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+        .vis-grid{display:grid;grid-template-columns:0.9fr 1.1fr;gap:56px;align-items:center}
+        .demand-grid{display:grid;grid-template-columns:0.8fr 1.2fr;gap:56px;align-items:center}
+        .ff-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:0}
+        @media(max-width:980px){.ff-grid,.vis-grid,.demand-grid{grid-template-columns:1fr;gap:40px}.seg-grid,.ff-steps{grid-template-columns:1fr;gap:24px}.ff-steps>div{border-left:none!important;text-align:left!important}}
+      `}</style>
 
-      {/* ── Hero (dark, full-bleed — matchar Home-landningens stil) ───────────── */}
+      {/* ───────── HERO ───────── */}
       <section
         style={{
-          background: "var(--ink-900)",
-          backgroundImage: "url('/hero-driver.webp')",
-          backgroundSize: "cover",
-          backgroundPosition: "center 30%",
-          minHeight: isMobile ? "auto" : "90vh",
-          display: "flex",
-          flexDirection: "column",
-          paddingTop: 96,
-          paddingBottom: 48,
-          position: "relative",
-          color: "#fff",
+          background:
+            "radial-gradient(1100px 520px at 88% -8%, rgba(31,95,92,0.10), transparent 60%), radial-gradient(800px 400px at 6% 12%, rgba(199,122,14,0.07), transparent 60%), var(--paper)",
+          paddingTop: 88,
+          paddingBottom: 96,
         }}
       >
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(110deg, rgba(8,18,20,0.92) 0%, rgba(8,18,20,0.68) 42%, rgba(8,18,20,0.25) 78%, rgba(8,18,20,0.08) 100%)", pointerEvents: "none" }} />
-        <div style={{ maxWidth: 1264, margin: "0 auto", padding: isMobile ? "0 24px" : "0 32px", width: "100%", display: "flex", flexDirection: "column", justifyContent: "center", flex: 1, position: "relative", zIndex: 1 }}>
-          {/* Badge */}
-          <div style={{ display: "flex", alignItems: "center", marginBottom: isMobile ? 32 : 48 }}>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 14px", borderRadius: 999, background: "rgba(245,166,35,0.15)", border: "1px solid rgba(245,166,35,0.35)", color: "#f5c875", fontSize: 11.5, fontWeight: 700, letterSpacing: 1.4, textTransform: "uppercase" }}>
-              <span style={{ width: 6, height: 6, borderRadius: 3, background: "#f5c875", display: "inline-block" }} />
-              För förare · Gratis att använda
-            </div>
-          </div>
-
-          {/* Headline */}
-          <h1 style={{ fontSize: isMobile ? "clamp(40px,11vw,60px)" : "clamp(48px,6vw,84px)", fontWeight: 900, lineHeight: 1.02, letterSpacing: isMobile ? -1.5 : -2.5, color: "#fff", marginBottom: 26, maxWidth: 900 }}>
-            En tryggare väg till <span style={{ color: "var(--amber)" }}>rätt jobb</span>.
-          </h1>
-
-          {/* Lead */}
-          <p style={{ fontSize: isMobile ? 17 : 19, lineHeight: 1.6, color: "rgba(255,255,255,0.78)", fontWeight: 500, maxWidth: 620, marginBottom: 32 }}>
-            STP gör det enklare att visa vem du är som förare, vad du kan och vilken typ av uppdrag du söker — utan att försvinna i bruset. Inga mellanhänder, inga avgifter.
-          </p>
-
-          {/* CTAs */}
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: isMobile ? 48 : 72, flexDirection: isMobile ? "column" : "row" }}>
-            <Link to="/jobb" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 24px", height: 50, background: "var(--amber)", color: "#fff", border: "1px solid var(--amber-deep)", borderRadius: 10, fontWeight: 700, fontSize: 15, boxShadow: "0 1px 0 var(--amber-deep), 0 4px 12px rgba(199,122,14,0.30)", textDecoration: "none" }}>
-              Se lediga jobb <ArrowRightIcon className="w-4 h-4" />
-            </Link>
-            <Link to="/login" state={{ initialMode: "register", requiredRole: "driver" }} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "14px 24px", height: 50, background: "rgba(255,255,255,0.08)", color: "#fff", border: "1px solid rgba(255,255,255,0.22)", borderRadius: 10, fontWeight: 600, fontSize: 15, backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", textDecoration: "none" }}>
-              Skapa förarkonto
-            </Link>
-          </div>
-
-          {/* Stats */}
-          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2,1fr)" : "repeat(4,1fr)", gap: isMobile ? 24 : 0, borderTop: "1px solid rgba(255,255,255,0.14)", paddingTop: 28 }}>
-            {[
-              { value: "4 080", label: "Lediga tjänster" },
-              { value: "36 %", label: "Åkerier saknar förare" },
-              { value: "0 kr", label: "För dig som förare" },
-              { value: "Direkt", label: "Kontakt — inga mellanhänder", accent: true },
-            ].map((s) => (
-              <div key={s.label} style={{ padding: isMobile ? 0 : "0 4px" }}>
-                <div style={{ fontSize: isMobile ? 26 : 32, fontWeight: 900, fontFamily: "var(--mono)", color: s.accent ? "var(--amber)" : "#fff", letterSpacing: -1, lineHeight: 1 }}>{s.value}</div>
-                <div style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: 1, marginTop: 8 }}>{s.label}</div>
+        <div style={S.container}>
+          <div className="ff-grid">
+            <div>
+              <div style={{ marginBottom: 24 }}><span style={S.eyebrow}>För förare · Alltid gratis</span></div>
+              <h1 style={{ fontSize: "clamp(40px,5.4vw,68px)", fontWeight: 900, letterSpacing: -2.6, lineHeight: 1.02, color: "var(--ink-900)", margin: "0 0 22px", textWrap: "balance" }}>
+                Din profil <span style={{ color: "var(--amber)" }}>jobbar åt dig</span> — dygnet runt.
+              </h1>
+              <p style={{ ...S.lead, maxWidth: 500, marginBottom: 32 }}>
+                Bygg en profil som visar exakt vad du kan — körkort, certifikat och erfarenhet. Sen hittar rätt åkerier dig. Inga mellanhänder, inga avgifter, full kontroll.
+              </p>
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 34 }}>
+                <Button variant="primary" size="lg" iconRight={<Icon name="arrow" size={15} stroke={2.2} />} onClick={goRegister}>Skapa förarkonto</Button>
+                <Button variant="secondary" size="lg" onClick={goJobs}>Se lediga jobb</Button>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Feature cards (white) ─────────────────────────────────────────────── */}
-      <section style={{ background: "var(--paper)", padding: vp }}>
-        <div style={{ maxWidth: 1040, margin: "0 auto", padding: sp }}>
-          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3,1fr)", gap: 16 }}>
-            {FEATURE_CARDS.map(({ icon: Icon, title, text }) => (
-              <div key={title} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 20, padding: "28px 32px", boxShadow: "var(--sh-sm)" }}>
-                <span style={{ display: "inline-flex", width: 44, height: 44, borderRadius: 13, background: "var(--green)", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
-                  <Icon className="w-5 h-5" style={{ color: "#fff" }} />
-                </span>
-                <h2 style={{ fontSize: 18, fontWeight: 800, color: "var(--ink-900)", marginBottom: 10, letterSpacing: "-0.3px" }}>{title}</h2>
-                <p style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.65 }}>{text}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Segments (teal-tinted alt) ────────────────────────────────────────── */}
-      <section style={{ background: "var(--green-tint)", borderTop: "1px solid var(--line)", padding: vp }}>
-        <div style={{ maxWidth: 1040, margin: "0 auto", padding: sp }}>
-          <div style={{ marginBottom: 32 }}>
-            <div style={{ ...E.label, marginBottom: 12 }}>Tre vägar in</div>
-            <h2 style={{ ...E.h2, marginBottom: 14 }}>Alla förare söker inte samma sak.</h2>
-            <p style={{ ...E.body, maxWidth: 520 }}>
-              Därför är STP byggt runt tre tydliga segment. Det gör det lättare att matcha rätt behov med rätt profil.
-            </p>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3,1fr)", gap: 16 }}>
-            {DRIVER_SEGMENTS.map(({ title, text, icon: Icon, stripe, label, labelColor, labelBg }) => (
-              <div key={title} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 20, overflow: "hidden", boxShadow: "var(--sh-sm)" }}>
-                <div style={{ height: 5, background: stripe }} />
-                <div style={{ padding: "24px 24px 28px" }}>
-                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16 }}>
-                    <span style={{ display: "inline-flex", width: 42, height: 42, borderRadius: 12, background: "var(--green-tint)", border: "1px solid var(--line)", alignItems: "center", justifyContent: "center" }}>
-                      <Icon className="w-5 h-5" style={{ color: "var(--green-text)" }} />
-                    </span>
-                    <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 99, background: labelBg, color: labelColor }}>{label}</span>
+              <div style={{ display: "flex", gap: 26, flexWrap: "wrap" }}>
+                {[["4 080", "lediga tjänster"], ["Gratis", "för föraren"], ["2 min", "att komma igång"]].map(([b, s]) => (
+                  <div key={s} style={{ display: "flex", flexDirection: "column" }}>
+                    <span style={{ fontSize: 21, fontWeight: 900, color: "var(--ink-900)", fontFamily: "var(--mono)", letterSpacing: -0.5 }}>{b}</span>
+                    <span style={{ fontSize: 12.5, color: "var(--ink-500)", fontWeight: 600 }}>{s}</span>
                   </div>
-                  <h3 style={{ fontSize: 18, fontWeight: 800, color: "var(--ink-900)", marginBottom: 8, letterSpacing: "-0.3px" }}>{title}</h3>
-                  <p style={{ fontSize: 13, color: "var(--ink-500)", lineHeight: 1.65 }}>{text}</p>
-                </div>
+                ))}
               </div>
-            ))}
+            </div>
+            <ProfilePreview />
           </div>
         </div>
       </section>
 
-      {/* ── How it works (dark) ───────────────────────────────────────────────── */}
-      <section style={{ background: "#050e0e", padding: vp }}>
-        <div style={{ maxWidth: 1040, margin: "0 auto", padding: sp, display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1.2fr 0.8fr", gap: isMobile ? 32 : 64, alignItems: "start" }}>
-          <div>
-            <div style={{ ...D.label, marginBottom: 12 }}>Så fungerar det</div>
-            <h2 style={{ ...D.h2, marginBottom: 16 }}>Du kommer igång snabbt, men med rätt grund.</h2>
-            <p style={D.body}>
-              Alla förare får samma minimum i onboardingen så att företagen kan fatta bättre beslut. Sedan kan du komplettera profilen i din egen takt.
-            </p>
-          </div>
-          <ol style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {DRIVER_STEPS.map((step, i) => (
-              <li key={step} style={{ display: "flex", gap: 14, alignItems: "flex-start", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 14, padding: "16px 20px" }}>
-                <span style={{ fontSize: 14, fontWeight: 800, color: "var(--amber)", flexShrink: 0, minWidth: 22 }}>{i + 1}.</span>
-                <span style={{ fontSize: 14, color: "rgba(240,250,249,0.7)", lineHeight: 1.55 }}>{step}</span>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-
-      {/* ── Why STP (white) ───────────────────────────────────────────────────── */}
-      <section style={{ background: "var(--paper)", borderBottom: "1px solid var(--line)", padding: vp }}>
-        <div style={{ maxWidth: 1040, margin: "0 auto", padding: sp, display: "grid", gridTemplateColumns: isMobile ? "1fr" : "0.95fr 1.05fr", gap: isMobile ? 24 : 64, alignItems: "start" }}>
-          <div>
-            <div style={{ ...E.label, marginBottom: 12 }}>Varför STP</div>
-            <h2 style={{ ...E.h2, marginBottom: 16 }}>Mindre brus. Mer relevans.</h2>
-            <p style={E.body}>
-              På många andra ställen blir viktig information lätt gömd i fritext, kommentarer och snabba inlägg. STP försöker i stället göra det enklare att bli förstådd snabbt.
-            </p>
-          </div>
-          <ul style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {DRIVER_PROMISES.map((item) => (
-              <li key={item} style={{ display: "flex", gap: 12, alignItems: "flex-start", background: "var(--green-tint)", border: "1px solid var(--line)", borderRadius: 14, padding: "16px 20px" }}>
-                <span style={{ marginTop: 2, width: 22, height: 22, borderRadius: "50%", background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <CheckIcon className="w-3.5 h-3.5" style={{ color: "#fff" }} />
-                </span>
-                <span style={{ fontSize: 14, color: "var(--ink-700)", lineHeight: 1.6 }}>{item}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      {/* ── FAQ (teal-tinted) ─────────────────────────────────────────────────── */}
-      <section style={{ background: "var(--paper-2)", padding: vp }}>
-        <div style={{ maxWidth: 720, margin: "0 auto", padding: sp }}>
-          <div style={{ ...E.label, marginBottom: 12 }}>Vanliga frågor</div>
-          <h2 style={{ ...E.h2, marginBottom: 32 }}>Frågor och svar</h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {FAQ_ITEMS.map((item, i) => (
-              <FaqItem key={i} item={item} isOpen={faqOpen === i} onToggle={() => setFaqOpen(faqOpen === i ? null : i)} />
-            ))}
+      {/* ───────── EFTERFRÅGAN PER REGION ───────── */}
+      <section style={{ background: "var(--card)", borderTop: "1px solid var(--line)", borderBottom: "1px solid var(--line)", padding: "88px 0" }}>
+        <div style={S.container}>
+          <div className="demand-grid">
+            <div>
+              <span style={S.sectionEyebrow}>Var jobben finns</span>
+              <h2 style={{ ...S.sectionTitle, marginBottom: 18 }}>Efterfrågan på förare är rekordhög.</h2>
+              <p style={{ ...S.lead, marginBottom: 24 }}>
+                36 % av åkerierna saknar förare just nu. Välj de regioner du kan jobba i — så matchas du mot behoven där.
+              </p>
+              <Button variant="secondary" iconRight={<Icon name="arrow" size={14} stroke={2.2} />} onClick={goJobs}>Se alla regioner</Button>
+            </div>
+            <Card padding="28px 30px">
+              <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+                {DEMAND.map((d) => (
+                  <div key={d.region}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 7 }}>
+                      <span style={{ fontSize: 14.5, fontWeight: 700, color: "var(--ink-900)" }}>{d.region}</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: "var(--ink-500)", fontFamily: "var(--mono)" }}>{d.n} tjänster</span>
+                    </div>
+                    <div style={{ height: 9, borderRadius: 999, background: "var(--paper-2)", overflow: "hidden" }}>
+                      <div style={{ width: d.pct + "%", height: "100%", borderRadius: 999, background: d.pct === 100 ? "linear-gradient(90deg, var(--amber), #d98b1f)" : "linear-gradient(90deg, var(--green), #36857f)" }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
           </div>
         </div>
       </section>
 
-      {/* ── CTA (dark) ────────────────────────────────────────────────────────── */}
-      <section style={{ background: "linear-gradient(160deg, #0d2b2b 0%, #060f0f 100%)", padding: isMobile ? "60px 0" : "80px 0 100px" }}>
-        <div style={{ maxWidth: 1040, margin: "0 auto", padding: sp }}>
-          <div style={{ position: "relative", overflow: "hidden", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 24, padding: isMobile ? "36px 24px" : "56px 48px" }}>
-            <div style={{ position: "absolute", top: -60, right: -60, width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle, rgba(245,166,35,0.08) 0%, transparent 70%)", pointerEvents: "none" }} />
-            <div style={{ ...D.label, marginBottom: 16 }}>Kom igång</div>
-            <h2 style={{ ...D.h2, marginBottom: 16 }}>Redo att skapa din profil?</h2>
-            <p style={{ fontSize: 16, color: "rgba(240,250,249,0.6)", lineHeight: 1.65, maxWidth: 520, marginBottom: 36 }}>
-              Börja med minimumprofilen i onboardingen. När grunden är satt kan du bygga vidare och ge systemet ännu bättre förutsättningar att hitta rätt jobb för dig.
-            </p>
-            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-              <Link to="/jobb" style={D.btnPrimary}>
-                Se lediga jobb
-              </Link>
-              <Link to="/login" state={{ initialMode: "register", requiredRole: "driver" }} style={D.btnSecondary}>
-                Skapa förarkonto
-              </Link>
+      {/* ───────── DU STYR SYNLIGHETEN ───────── */}
+      <section style={{ background: "var(--paper)", padding: "88px 0" }}>
+        <div style={S.container}>
+          <div className="vis-grid">
+            <Card padding="26px 28px" style={{ boxShadow: "var(--sh)" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 9, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <Icon name="eye" size={17} color="var(--green-text)" stroke={2} />
+                  </div>
+                  <span style={{ fontSize: 15.5, fontWeight: 800, color: "var(--ink-900)" }}>Synlighet</span>
+                </div>
+                <Pill tone="success" size="sm" icon={<Dot tone="success" size={6} />}>Aktiv</Pill>
+              </div>
+              <VisRow label="Synlig i Hitta förare" on={true} />
+              <VisRow label="Visa telefonnummer" on={false} />
+              <VisRow label="Visa fullständigt namn" on={true} />
+              <VisRow label="Tillåt direktmeddelanden" on={true} />
+              <p style={{ fontSize: 12.5, color: "var(--ink-400)", marginTop: 14, lineHeight: 1.5 }}>
+                Du kan stänga av allt med ett klick — när du inte söker jobb är du helt osynlig.
+              </p>
+            </Card>
+            <div>
+              <span style={S.sectionEyebrow}>Du har kontrollen</span>
+              <h2 style={{ ...S.sectionTitle, marginBottom: 18 }}>Synlig när du vill. Dold när du vill.</h2>
+              <p style={{ ...S.lead, marginBottom: 24 }}>
+                Till skillnad från Facebook-grupper och lösa inlägg styr du exakt vem som ser dig och vad de ser. Sök i lugn och ro — ingen arbetsgivare behöver veta något förrän du själv väljer det.
+              </p>
+              <div style={{ display: "grid", gap: 12 }}>
+                {["Var anonym tills du själv tar kontakt", "Stäng av synligheten med ett klick", "Bestäm vad som är publikt och vad som bara används för matchning"].map((t) => (
+                  <div key={t} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                    <span style={{ marginTop: 1, width: 22, height: 22, borderRadius: "50%", background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <Icon name="check" size={12} color="#fff" stroke={2.6} />
+                    </span>
+                    <span style={{ fontSize: 15, color: "var(--ink-700)", lineHeight: 1.55 }}>{t}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </section>
+
+      {/* ───────── SEGMENT ───────── */}
+      <section style={{ background: "var(--paper-2)", padding: "88px 0" }}>
+        <div style={S.container}>
+          <div style={{ maxWidth: 560, marginBottom: 44 }}>
+            <span style={S.sectionEyebrow}>Tre vägar in</span>
+            <h2 style={{ ...S.sectionTitle, marginBottom: 16 }}>Vad söker du just nu?</h2>
+            <p style={S.lead}>STP är byggt runt tre tydliga segment — välj ditt så matchas du mot rätt behov.</p>
+          </div>
+          <div className="seg-grid">
+            {SEGMENTS.map((s) => (
+              <Card key={s.title} padding="0" style={{ overflow: "hidden" }}>
+                <div style={{ padding: "26px 26px 24px" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+                    <div style={{ width: 46, height: 46, borderRadius: 12, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <s.Icon className="w-5 h-5" style={{ color: "var(--green-text)" }} />
+                    </div>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-400)", textTransform: "uppercase", letterSpacing: 0.8 }}>{s.tag}</span>
+                  </div>
+                  <h3 style={{ fontSize: 20, fontWeight: 800, color: "var(--ink-900)", marginBottom: 9, letterSpacing: -0.4 }}>{s.title}</h3>
+                  <p style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.65, textWrap: "pretty" }}>{s.body}</p>
+                </div>
+                <div style={{ borderTop: "1px solid var(--line)", padding: "14px 26px", display: "flex", gap: 14, background: "var(--card-2)" }}>
+                  {s.points.map((p) => (
+                    <span key={p} style={{ fontSize: 12.5, color: "var(--ink-700)", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 6 }}>
+                      <Dot tone="primary" size={5} /> {p}
+                    </span>
+                  ))}
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ───────── SÅ FUNKAR DET ───────── */}
+      <section style={{ background: "var(--paper)", padding: "88px 0" }}>
+        <div style={S.container}>
+          <div style={{ textAlign: "center", maxWidth: 560, margin: "0 auto 48px" }}>
+            <span style={S.sectionEyebrow}>Så kommer du igång</span>
+            <h2 style={S.sectionTitle}>Tre steg till första matchningen.</h2>
+          </div>
+          <div className="ff-steps">
+            {STEPS.map((s, i) => (
+              <div key={s.n} style={{ padding: "0 28px", borderLeft: i > 0 ? "1px solid var(--line)" : "none", textAlign: "center" }}>
+                <div style={{ width: 52, height: 52, borderRadius: "50%", background: "var(--green-tint)", color: "var(--green-text)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 17, fontFamily: "var(--mono)", margin: "0 auto 18px", border: "1px solid rgba(31,95,92,0.18)" }}>{s.n}</div>
+                <h3 style={{ fontSize: 18, fontWeight: 800, color: "var(--ink-900)", marginBottom: 9, letterSpacing: -0.3 }}>{s.title}</h3>
+                <p style={{ fontSize: 14.5, color: "var(--ink-500)", lineHeight: 1.6, textWrap: "pretty" }}>{s.body}</p>
+              </div>
+            ))}
+          </div>
+          <div style={{ textAlign: "center", marginTop: 44 }}>
+            <Button variant="primary" size="lg" iconRight={<Icon name="arrow" size={15} stroke={2.2} />} onClick={goRegister}>Skapa förarkonto</Button>
+          </div>
+        </div>
+      </section>
+
+      {/* ───────── FAQ ───────── */}
+      <section style={{ background: "var(--paper-2)", padding: "88px 0" }}>
+        <div style={S.container}>
+          <FaqBlock items={FAQS} lead="Saknar du något? Hör av dig direkt." />
+        </div>
+      </section>
+
+      {/* ───────── CTA ───────── */}
+      <GreenCTA
+        title="Redo att skapa din profil?"
+        lead="Börja med minimumprofilen. När grunden är satt kan du bygga vidare och ge systemet ännu bättre förutsättningar att hitta rätt jobb för dig."
+        primaryLabel="Skapa förarkonto"
+        secondaryLabel="Se lediga jobb"
+        stats={[["Gratis", "Alltid för förare"], ["0 kr", "Ingen provision"], ["2 min", "Att komma igång"], ["Du styr", "Din synlighet"]]}
+        onPrimary={goRegister}
+        onSecondary={goJobs}
+      />
     </main>
   );
 }
