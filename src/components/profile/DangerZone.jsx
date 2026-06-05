@@ -2,15 +2,25 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { deleteMyAccount } from "../../api/auth.js";
+import { useConfirm } from "../ConfirmDialog";
 
 export default function DangerZone() {
   const { logout } = useAuth();
   const navigate = useNavigate();
+  const confirm = useConfirm();
   const [deleting, setDeleting] = useState(false);
 
   const handleDelete = async () => {
-    if (!window.confirm("Är du säker? All din data raderas permanent och kan inte återställas.")) return;
-    if (!window.confirm("Sista chansen — klicka OK för att radera ditt konto för alltid.")) return;
+    const ok = await confirm({
+      tone: "danger",
+      icon: "alert",
+      title: "Radera ditt konto?",
+      body: "All din data — profil, ansökningar, meddelanden och sparade jobb — raderas permanent. Detta går inte att ångra.",
+      confirm: "Radera konto",
+      confirmVariant: "danger",
+      typed: "RADERA",
+    });
+    if (!ok) return;
     setDeleting(true);
     try {
       await deleteMyAccount();

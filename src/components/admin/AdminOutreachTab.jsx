@@ -1,6 +1,7 @@
 import React from "react";
 import { T, INP, Btn, SectionCard } from "./adminShared.jsx";
 import { runAgent } from "../../api/outreach.js";
+import { useConfirm } from "../ConfirmDialog";
 
 export default function AdminOutreachTab({
   outreachStats,
@@ -35,6 +36,7 @@ export default function AdminOutreachTab({
   setSuccess,
   loadOutreach,
 }) {
+  const confirm = useConfirm();
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
@@ -58,7 +60,15 @@ export default function AdminOutreachTab({
             {loading ? "..." : "Dry run"}
           </Btn>
           <Btn variant="primary" size="md" disabled={loading} onClick={async () => {
-            if (!window.confirm("Kör agenten på riktigt? Den skrapar Hitta.se och skickar mail till åkerier.")) return;
+            const ok = await confirm({
+              tone: "danger",
+              icon: "alert",
+              title: "Kör agenten på riktigt?",
+              body: "Agenten skrapar Hitta.se och skickar riktiga mail till åkerier. Detta går inte att ångra.",
+              confirm: "Kör agent",
+              confirmVariant: "danger",
+            });
+            if (!ok) return;
             setLoading(true);
             try {
               const data = await runAgent({ dryRun: false });

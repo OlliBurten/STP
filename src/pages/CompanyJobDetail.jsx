@@ -6,6 +6,7 @@ import { useChat } from "../context/ChatContext";
 import { fetchJob, fetchJobApplicants, fetchJobStats, updateJob } from "../api/jobs.js";
 import { selectConversation, rejectConversation } from "../api/conversations.js";
 import { useIsMobile } from "../hooks/useIsMobile";
+import { useConfirm } from "../components/ConfirmDialog";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -148,6 +149,7 @@ export default function CompanyJobDetail() {
   const isMobile = useIsMobile();
   const { id } = useParams();
   const navigate = useNavigate();
+  const confirm = useConfirm();
   const { hasApi } = useAuth();
   const { conversations = [] } = useChat();
 
@@ -193,7 +195,15 @@ export default function CompanyJobDetail() {
   }, [enriched]);
 
   const handlePause = async () => {
-    if (!window.confirm("Pausa annonsen? Den blir osynlig för förare.")) return;
+    const ok = await confirm({
+      tone: "amber",
+      icon: "eye",
+      title: "Avpublicera annonsen?",
+      body: "Annonsen tas bort från sök och slutar matchas mot förare. Pågående konversationer påverkas inte. Du kan publicera den igen senare.",
+      confirm: "Avpublicera",
+      confirmVariant: "primary",
+    });
+    if (!ok) return;
     try {
       await updateJob(id, { status: "HIDDEN" });
       setJob((j) => ({ ...j, status: "HIDDEN" }));

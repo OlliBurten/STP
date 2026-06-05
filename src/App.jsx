@@ -8,6 +8,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ProfileProvider } from "./context/ProfileContext";
 import { ChatProvider } from "./context/ChatContext";
 import { ToastProvider } from "./context/ToastContext";
+import { ConfirmProvider } from "./components/ConfirmDialog";
 import ProtectedRoute from "./components/ProtectedRoute";
 import OnboardingGate, { useOnboardingRequired } from "./components/OnboardingGate";
 import Header from "./components/Header";
@@ -559,12 +560,14 @@ function App() {
               <ProfileProvider>
                 <ChatProvider>
                   <ToastProvider>
-                    <Routes>
-                      {/* Standalone landing pages — ingen header/footer */}
-                      <Route path="/bli-forare" element={<DriverAcquisitionLanding />} />
-                      {/* Alla andra sidor via AppLayout */}
-                      <Route path="/*" element={<AppLayout />} />
-                    </Routes>
+                    <ConfirmProvider>
+                      <Routes>
+                        {/* Standalone landing pages — ingen header/footer */}
+                        <Route path="/bli-forare" element={<DriverAcquisitionLanding />} />
+                        {/* Alla andra sidor via AppLayout */}
+                        <Route path="/*" element={<AppLayout />} />
+                      </Routes>
+                    </ConfirmProvider>
                   </ToastProvider>
                 </ChatProvider>
               </ProfileProvider>

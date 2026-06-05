@@ -22,6 +22,7 @@ import { HeartFilledIcon, HeartOutlineIcon, LocationIcon, CheckIcon, WarningIcon
 import Breadcrumbs from "../components/Breadcrumbs";
 import LoadingBlock from "../components/LoadingBlock";
 import { useToast } from "../context/ToastContext";
+import { useConfirm } from "../components/ConfirmDialog";
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -132,6 +133,7 @@ export default function JobDetail() {
   const isMobile = useIsMobile();
   const { profile } = useProfile();
   const toast = useToast();
+  const confirm = useConfirm();
   const [job, setJob] = useState(() => (!hasApi ? mockJobs.find((j) => j.id === id) : null));
   const [jobLoading, setJobLoading] = useState(hasApi);
   const [showApplyModal, setShowApplyModal] = useState(false);
@@ -271,7 +273,15 @@ export default function JobDetail() {
   };
 
   const handleReject = async (conversationId) => {
-    if (!window.confirm("Avvisa denna sökande? De ser statusen i sina meddelanden.")) return;
+    const ok = await confirm({
+      tone: "amber",
+      icon: "x",
+      title: "Avböj kandidat?",
+      body: "Den sökande flyttas till Avböjda och ser statusen i sina meddelanden. Du kan inte ångra detta.",
+      confirm: "Avböj",
+      confirmVariant: "danger",
+    });
+    if (!ok) return;
     try {
       await rejectConversation(conversationId);
       setApplicants((prev) =>
