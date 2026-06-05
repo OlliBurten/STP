@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { Icon } from "../../components/ui";
 
 const articles = [
   {
@@ -176,31 +177,34 @@ export default function BloggIndex() {
           </div>
         </Link>
 
-        {/* Rest of articles — 2-col grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 16 }}>
+        {/* Rest of articles — galleri-kort med kategori-tonad bildheader (prototypens stil) */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 18 }}>
           {rest.map((a) => (
             <Link
               key={a.to}
               to={a.to}
-              style={{ display: "flex", flexDirection: "column", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, padding: "22px 24px", textDecoration: "none", transition: "border-color 0.2s" }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = "var(--line-2)"}
-              onMouseLeave={e => e.currentTarget.style.borderColor = "var(--line)"}
+              style={{ display: "flex", flexDirection: "column", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, overflow: "hidden", textDecoration: "none", transition: "border-color 0.2s, box-shadow 0.2s" }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--line-2)"; e.currentTarget.style.boxShadow = "var(--sh-sm)"; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--line)"; e.currentTarget.style.boxShadow = "none"; }}
             >
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-                <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 999, ...a.tagStyle }}>
+              {/* Kategori-tonad gradient-header */}
+              <div style={{ height: 132, background: `linear-gradient(135deg, ${a.tagStyle.background} 0%, var(--paper-2) 100%)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Icon name="truck" size={30} color={a.tagStyle.color} stroke={1.7} />
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", flex: 1, padding: "18px 20px" }}>
+                <span style={{ alignSelf: "flex-start", fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 999, ...a.tagStyle }}>
                   {a.tag}
                 </span>
-                <span style={{ fontSize: 11, color: "var(--ink-400)" }}>{a.readTime} läsning</span>
-              </div>
-              <h2 style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)", lineHeight: 1.45, margin: "0 0 8px", flex: 1 }}>
-                {a.title}
-              </h2>
-              <p style={{ fontSize: 13, color: "var(--ink-500)", lineHeight: 1.6, margin: "0 0 16px", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                {a.desc}
-              </p>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 14, borderTop: "1px solid var(--line)", marginTop: "auto" }}>
-                <span style={{ fontSize: 11, color: "var(--ink-400)" }}>{a.date}</span>
-                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--green-text)" }}>Läs mer →</span>
+                <h2 style={{ fontSize: 16.5, fontWeight: 800, color: "var(--ink-900)", letterSpacing: "-0.3px", lineHeight: 1.3, margin: "12px 0 8px" }}>
+                  {a.title}
+                </h2>
+                <p style={{ fontSize: 13.5, color: "var(--ink-500)", lineHeight: 1.55, margin: "0 0 16px", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                  {a.desc}
+                </p>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 14, borderTop: "1px solid var(--line)", marginTop: "auto" }}>
+                  <span style={{ fontSize: 12, color: "var(--ink-400)", fontWeight: 600 }}>{a.date} · {a.readTime}</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: "var(--green-text)" }}>Läs mer →</span>
+                </div>
               </div>
             </Link>
           ))}
