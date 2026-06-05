@@ -57,13 +57,13 @@ const ProfilePreview = () => (
   <div style={{ position: "relative" }}>
     <div style={{ position: "absolute", top: 16, left: 16, width: "100%", height: "100%", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 20, boxShadow: "var(--sh-sm)", opacity: 0.55 }} />
     <div style={{ position: "relative", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 20, boxShadow: "var(--sh-md)", overflow: "hidden" }}>
-      <div style={{ height: 64, background: "linear-gradient(120deg, var(--green) 0%, #2a6f6b 100%)" }} />
-      <div style={{ padding: "0 24px 24px", position: "relative", zIndex: 1 }}>
-        <div style={{ display: "flex", alignItems: "flex-end", gap: 16, marginTop: -26, marginBottom: 16 }}>
-          <div style={{ width: 72, height: 72, borderRadius: "50%", background: "var(--amber)", border: "4px solid var(--card)", boxShadow: "0 6px 16px rgba(199,122,14,0.28)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 26, flexShrink: 0 }}>OL</div>
-          <div style={{ paddingBottom: 4 }}>
-            <div style={{ fontSize: 19, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.4, whiteSpace: "nowrap" }}>Oliver Lind</div>
-            <div style={{ fontSize: 13.5, color: "var(--ink-500)", fontWeight: 500, whiteSpace: "nowrap" }}>Malmö, Skåne · 9 års erfarenhet</div>
+      <div style={{ height: 58, background: "linear-gradient(120deg, var(--green) 0%, #2a6f6b 100%)" }} />
+      <div style={{ padding: "0 26px 26px", position: "relative", zIndex: 1 }}>
+        <div style={{ display: "flex", alignItems: "flex-end", gap: 15, marginTop: -20, marginBottom: 20 }}>
+          <div style={{ width: 60, height: 60, borderRadius: "50%", background: "var(--amber)", border: "3px solid var(--card)", boxShadow: "0 5px 14px rgba(199,122,14,0.22)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 22, flexShrink: 0 }}>OL</div>
+          <div style={{ minWidth: 0, paddingBottom: 3 }}>
+            <div style={{ fontSize: 18, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.4, whiteSpace: "nowrap" }}>Oliver Lind</div>
+            <div style={{ fontSize: 13, color: "var(--ink-500)", fontWeight: 500, whiteSpace: "nowrap" }}>Malmö, Skåne · 9 års erfarenhet</div>
           </div>
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 18 }}>
@@ -92,7 +92,7 @@ const ProfilePreview = () => (
         </div>
       </div>
     </div>
-    <div style={{ position: "absolute", right: -16, top: 80, background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, boxShadow: "var(--sh-md)", padding: "12px 16px", display: "flex", alignItems: "center", gap: 11 }}>
+    <div style={{ position: "absolute", right: -10, top: 96, background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, boxShadow: "var(--sh-md)", padding: "11px 15px", display: "flex", alignItems: "center", gap: 11 }}>
       <div style={{ width: 38, height: 38, borderRadius: 10, background: "var(--success-tint)", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <Icon name="truck" size={18} color="var(--success)" stroke={2} />
       </div>
