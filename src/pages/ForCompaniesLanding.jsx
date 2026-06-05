@@ -160,66 +160,65 @@ export default function ForCompaniesLanding() {
         canonical="/for-akerier"
       />
 
-      {/* ── Hero (dark, photo bg) ─────────────────────────────────────────────── */}
+      {/* ── Hero (dark, full-bleed — matchar Home/För förare) ─────────────────── */}
       <section
         style={{
-          position: "relative",
-          minHeight: "90vh",
-          display: "flex",
-          alignItems: "center",
-          overflow: "hidden",
+          background: "var(--ink-900)",
           backgroundImage: "url('/hero-company.webp')",
           backgroundSize: "cover",
           backgroundPosition: "center 35%",
+          minHeight: isMobile ? "auto" : "90vh",
+          display: "flex",
+          flexDirection: "column",
+          paddingTop: 96,
+          paddingBottom: 48,
+          position: "relative",
+          color: "#fff",
         }}
       >
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(6,15,15,0.94) 0%, rgba(6,15,15,0.72) 60%, rgba(6,15,15,0.50) 100%)" }} />
-
-        <div style={{ maxWidth: 1040, margin: "0 auto", position: "relative", zIndex: 1, padding: isMobile ? "100px 20px 60px" : "128px 40px 100px", width: "100%" }}>
-          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: isMobile ? 32 : 64, alignItems: "center" }}>
-            <div>
-              <p style={D.label}>För åkerier</p>
-              <h1 style={{ fontSize: "clamp(36px,5vw,58px)", fontWeight: 900, letterSpacing: "-2px", color: "#f0faf9", lineHeight: 1.08, margin: "14px 0 24px" }}>
-                Ett mer strukturerat sätt att hitta rätt förare.
-              </h1>
-              <p style={{ ...D.body, fontSize: 18, maxWidth: 520 }}>
-                STP är byggt för åkerier och transportföretag som vill jobba mer långsiktigt med matchning, tydligare krav och bättre överblick.
-              </p>
-              <p style={{ ...D.body, marginTop: 12, maxWidth: 520 }}>
-                Målet är inte att vara ännu en jobbsajt, utan en branschplattform där seriösa företag får bättre förutsättningar att hitta rätt personer och bygga förtroende över tid.
-              </p>
-              <div style={{ display: "flex", gap: 12, marginTop: 36, flexWrap: "wrap" }}>
-                <Link
-                  to="/login"
-                  state={{ initialMode: "register", requiredRole: "company" }}
-                  style={D.btnPrimary}
-                >
-                  Skapa företagskonto
-                  <ArrowRightIcon style={{ width: 16, height: 16 }} />
-                </Link>
-                <Link to="/akerier" style={D.btnSecondary}>
-                  Se åkerier på STP
-                </Link>
-              </div>
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(110deg, rgba(6,15,15,0.93) 0%, rgba(6,15,15,0.70) 42%, rgba(6,15,15,0.28) 78%, rgba(6,15,15,0.08) 100%)", pointerEvents: "none" }} />
+        <div style={{ maxWidth: 1264, margin: "0 auto", padding: isMobile ? "0 24px" : "0 32px", width: "100%", display: "flex", flexDirection: "column", justifyContent: "center", flex: 1, position: "relative", zIndex: 1 }}>
+          {/* Badge */}
+          <div style={{ display: "flex", alignItems: "center", marginBottom: isMobile ? 32 : 48 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 14px", borderRadius: 999, background: "rgba(245,166,35,0.15)", border: "1px solid rgba(245,166,35,0.35)", color: "#f5c875", fontSize: 11.5, fontWeight: 700, letterSpacing: 1.4, textTransform: "uppercase" }}>
+              <span style={{ width: 6, height: 6, borderRadius: 3, background: "#f5c875", display: "inline-block" }} />
+              För åkerier · Inga avgifter under beta
             </div>
+          </div>
 
-            {!isMobile && (
-              <div style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 24, padding: "32px 36px", backdropFilter: "blur(8px)" }}>
-                <p style={{ fontSize: 13, fontWeight: 700, color: "var(--amber)", letterSpacing: "1.2px", textTransform: "uppercase", marginBottom: 20 }}>
-                  Det här får ni som åkeri
-                </p>
-                <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 18 }}>
-                  {COMPANY_POINTS.map((point) => (
-                    <li key={point} style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
-                      <span style={{ flexShrink: 0, width: 24, height: 24, borderRadius: "50%", background: "var(--amber-tint)", display: "flex", alignItems: "center", justifyContent: "center", marginTop: 2 }}>
-                        <CheckIcon style={{ width: 13, height: 13, color: "var(--amber)" }} />
-                      </span>
-                      <span style={{ fontSize: 15, color: "rgba(240,250,249,0.8)", lineHeight: 1.6 }}>{point}</span>
-                    </li>
-                  ))}
-                </ul>
+          {/* Headline */}
+          <h1 style={{ fontSize: isMobile ? "clamp(38px,10vw,56px)" : "clamp(44px,5.4vw,76px)", fontWeight: 900, lineHeight: 1.04, letterSpacing: isMobile ? -1.5 : -2.5, color: "#fff", marginBottom: 26, maxWidth: 1000 }}>
+            Ett mer strukturerat sätt att hitta <span style={{ color: "var(--amber)" }}>rätt förare</span>.
+          </h1>
+
+          {/* Lead */}
+          <p style={{ fontSize: isMobile ? 17 : 19, lineHeight: 1.6, color: "rgba(255,255,255,0.78)", fontWeight: 500, maxWidth: 660, marginBottom: 32 }}>
+            STP är byggt för åkerier som vill jobba långsiktigt med matchning, tydligare krav och bättre överblick — en branschplattform där seriösa företag bygger förtroende över tid. Inga mellanhänder, ingen provision.
+          </p>
+
+          {/* CTAs */}
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: isMobile ? 48 : 72, flexDirection: isMobile ? "column" : "row" }}>
+            <Link to="/login" state={{ initialMode: "register", requiredRole: "company" }} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 24px", height: 50, background: "var(--amber)", color: "#fff", border: "1px solid var(--amber-deep)", borderRadius: 10, fontWeight: 700, fontSize: 15, boxShadow: "0 1px 0 var(--amber-deep), 0 4px 12px rgba(199,122,14,0.30)", textDecoration: "none" }}>
+              Skapa företagskonto <ArrowRightIcon style={{ width: 16, height: 16 }} />
+            </Link>
+            <Link to="/akerier" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "14px 24px", height: 50, background: "rgba(255,255,255,0.08)", color: "#fff", border: "1px solid rgba(255,255,255,0.22)", borderRadius: 10, fontWeight: 600, fontSize: 15, backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", textDecoration: "none" }}>
+              Se åkerier på STP
+            </Link>
+          </div>
+
+          {/* Stats */}
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2,1fr)" : "repeat(4,1fr)", gap: isMobile ? 24 : 0, borderTop: "1px solid rgba(255,255,255,0.14)", paddingTop: 28 }}>
+            {[
+              { value: "36 %", label: "Åkerier saknar förare" },
+              { value: "0 kr", label: "Provision & avgifter" },
+              { value: "Direkt", label: "Kontakt med förare", accent: true },
+              { value: "Verifierat", label: "Mot Bolagsverket" },
+            ].map((s) => (
+              <div key={s.label} style={{ padding: isMobile ? 0 : "0 4px" }}>
+                <div style={{ fontSize: isMobile ? 26 : 32, fontWeight: 900, fontFamily: "var(--mono)", color: s.accent ? "var(--amber)" : "#fff", letterSpacing: -1, lineHeight: 1 }}>{s.value}</div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: 1, marginTop: 8 }}>{s.label}</div>
               </div>
-            )}
+            ))}
           </div>
         </div>
       </section>
