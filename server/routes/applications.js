@@ -79,7 +79,7 @@ applicationsRouter.post(
           },
         });
         triggerOutreach(job, appCount).catch((err) => {
-          console.error("[Outreach] Fel:", err.message);
+          console.error("[Outreach] Fel:", err?.message || String(err));
         });
       }
 
