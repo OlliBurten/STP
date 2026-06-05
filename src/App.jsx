@@ -9,6 +9,7 @@ import { ProfileProvider } from "./context/ProfileContext";
 import { ChatProvider } from "./context/ChatContext";
 import { ToastProvider } from "./context/ToastContext";
 import { ConfirmProvider } from "./components/ConfirmDialog";
+import ConnectivityGate from "./components/ConnectivityGate";
 import ProtectedRoute from "./components/ProtectedRoute";
 import OnboardingGate, { useOnboardingRequired } from "./components/OnboardingGate";
 import Header from "./components/Header";
@@ -75,6 +76,7 @@ const Privacy               = lazyRetry(() => import("./pages/Privacy"));
 const Admin                 = lazyRetry(() => import("./pages/Admin"));
 const Status                = lazyRetry(() => import("./pages/Status"));
 const NotFound              = lazyRetry(() => import("./pages/NotFound"));
+const Forbidden             = lazyRetry(() => import("./pages/Forbidden"));
 const PreviewIndex          = lazyRetry(() => import("./pages/preview/PreviewIndex"));
 const LandingPreview        = lazyRetry(() => import("./pages/preview/LandingPreview"));
 const FelsidorPreview       = lazyRetry(() => import("./pages/preview/FelsidorPreview"));
@@ -531,6 +533,7 @@ function AppLayout() {
                   <Route path="/preview/akeriprofil" element={<AkeriprofilPreview />} />
                   <Route path="/preview/installningar" element={<ForareInstallningarPreview />} />
                   <Route path="/preview/onboarding-forare" element={<OnboardingForarePreview />} />
+                  <Route path="/ingen-atkomst" element={<Forbidden />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
         </Suspense>
@@ -555,6 +558,7 @@ function App() {
       <VercelAnalytics />
       <ThemeProvider>
         <ErrorBoundary>
+          <ConnectivityGate>
           <OAuthProviders>
             <AuthProvider>
               <ProfileProvider>
@@ -573,6 +577,7 @@ function App() {
               </ProfileProvider>
             </AuthProvider>
           </OAuthProviders>
+          </ConnectivityGate>
         </ErrorBoundary>
       </ThemeProvider>
     </BrowserRouter>
