@@ -313,7 +313,7 @@ export default function JobList() {
     const s = filters.search.toLowerCase();
     return (!filters.search || job.title.toLowerCase().includes(s) || job.company.toLowerCase().includes(s) || (job.description || "").toLowerCase().includes(s))
       && (!filters.region     || job.region === filters.region)
-      && (!filters.license    || job.license.some(l => l === filters.license))
+      && (!filters.license    || job.license?.some(l => l === filters.license))
       && (!filters.segment    || jobSegment === filters.segment)
       && (!filters.jobType    || job.jobType === filters.jobType)
       && (!filters.employment || job.employment === filters.employment)
