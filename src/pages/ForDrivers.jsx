@@ -46,59 +46,74 @@ const S = {
   lead: { fontSize: 18, lineHeight: 1.7, color: "var(--ink-500)", margin: 0 },
 };
 
-const GearIcon = ({ size = 16, color = "var(--ink-500)" }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
-  </svg>
-);
-
-/* ── Produkt-preview: förarprofil-kort ─────────── */
+/* ── Produkt-preview: förarprofil-kort (uppdaterad design v4) ─────────── */
 const ProfilePreview = () => (
   <div style={{ position: "relative" }}>
-    <div style={{ position: "absolute", top: 16, left: 16, width: "100%", height: "100%", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 20, boxShadow: "var(--sh-sm)", opacity: 0.55 }} />
-    <div style={{ position: "relative", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 20, boxShadow: "var(--sh-md)", overflow: "hidden" }}>
-      <div style={{ height: 58, background: "linear-gradient(120deg, var(--green) 0%, #2a6f6b 100%)" }} />
-      <div style={{ padding: "0 26px 26px", position: "relative", zIndex: 1 }}>
-        <div style={{ display: "flex", alignItems: "flex-end", gap: 15, marginTop: -20, marginBottom: 20 }}>
-          <div style={{ width: 60, height: 60, borderRadius: "50%", background: "var(--amber)", border: "3px solid var(--card)", boxShadow: "0 5px 14px rgba(199,122,14,0.22)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 22, flexShrink: 0 }}>OL</div>
-          <div style={{ minWidth: 0, paddingBottom: 3 }}>
-            <div style={{ fontSize: 18, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.4, whiteSpace: "nowrap" }}>Oliver Lind</div>
-            <div style={{ fontSize: 13, color: "var(--ink-500)", fontWeight: 500, whiteSpace: "nowrap" }}>Malmö, Skåne · 9 års erfarenhet</div>
+    {/* skuggkort bakom (ren stapel, ingen rotation) */}
+    <div style={{ position: "absolute", top: 16, left: 16, width: "100%", height: "100%", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 22, boxShadow: "var(--sh-sm)", opacity: 0.5 }} />
+    <div style={{ position: "relative", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 22, boxShadow: "var(--sh-md)", overflow: "hidden" }}>
+      {/* topp-band med subtilt djup */}
+      <div style={{ height: 78, position: "relative", overflow: "hidden", background: "linear-gradient(125deg, #1F5F5C 0%, #2f746f 58%, #36857f 100%)" }}>
+        <div style={{ position: "absolute", right: -28, top: -52, width: 158, height: 158, borderRadius: "50%", background: "rgba(255,255,255,0.07)" }} />
+        <div style={{ position: "absolute", right: 76, top: 20, width: 72, height: 72, borderRadius: "50%", background: "rgba(255,255,255,0.05)" }} />
+        <div style={{ position: "absolute", left: 22, top: 18, display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "rgba(255,255,255,0.82)" }}>
+          <Icon name="truck" size={14} color="rgba(255,255,255,0.82)" stroke={2} /> Förarprofil
+        </div>
+      </div>
+
+      <div style={{ padding: "0 24px 24px", position: "relative", zIndex: 1 }}>
+        <div style={{ display: "flex", alignItems: "flex-end", gap: 16, marginTop: -30, marginBottom: 16 }}>
+          <div style={{ width: 80, height: 80, borderRadius: "50%", background: "linear-gradient(150deg, #d9870f, #b96f0a)", border: "4px solid var(--card)", boxShadow: "0 8px 20px rgba(199,122,14,0.30)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 27, letterSpacing: 0.5, flexShrink: 0 }}>OL</div>
+          <div style={{ paddingBottom: 2 }}>
+            <div style={{ fontSize: 20, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.5, whiteSpace: "nowrap" }}>Oliver Lind</div>
+            <div style={{ fontSize: 13.5, color: "var(--ink-500)", fontWeight: 500, whiteSpace: "nowrap" }}>Malmö, Skåne · 9 års erfarenhet</div>
           </div>
         </div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 18 }}>
+
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
           <Pill tone="success" size="sm" icon={<Dot tone="success" size={6} />}>Synlig för åkerier</Pill>
           <Pill tone="primary" size="sm">CE</Pill>
           <Pill tone="primary" size="sm">C</Pill>
           <Pill tone="primary" size="sm">B</Pill>
           <Pill tone="soft" size="sm">ADR · 2027</Pill>
         </div>
-        <div style={{ background: "var(--paper-2)", borderRadius: 12, padding: "14px 16px" }}>
+
+        {/* profilstyrka */}
+        <div style={{ background: "var(--card-2)", border: "1px solid var(--line)", borderRadius: 13, padding: "14px 16px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
             <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--ink-700)" }}>Profilstyrka</span>
-            <span style={{ fontSize: 12.5, fontWeight: 800, color: "var(--green-text)", fontFamily: "var(--mono)" }}>92%</span>
+            <span style={{ fontSize: 13, fontWeight: 800, color: "var(--green-text)", fontFamily: "var(--mono)" }}>92%</span>
           </div>
-          <div style={{ height: 7, borderRadius: 999, background: "var(--line-2)", overflow: "hidden" }}>
-            <div style={{ width: "92%", height: "100%", borderRadius: 999, background: "linear-gradient(90deg, var(--green), #36857f)" }} />
+          <div style={{ height: 8, borderRadius: 999, background: "var(--line-2)", overflow: "hidden" }}>
+            <div style={{ width: "92%", height: "100%", borderRadius: 999, background: "linear-gradient(90deg, var(--green), #4a9c95)" }} />
+          </div>
+          <div style={{ fontSize: 11.5, color: "var(--ink-400)", marginTop: 9, lineHeight: 1.4 }}>Kompletta profiler syns oftare i åkeriernas sök.</div>
+        </div>
+
+        {/* senaste matchning (i kortet) */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 12, padding: "12px 14px", background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.14)", borderRadius: 13 }}>
+          <div style={{ width: 40, height: 40, borderRadius: 11, background: "var(--card)", boxShadow: "var(--sh-sm)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <Icon name="truck" size={19} color="var(--green-text)" stroke={2} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 10.5, fontWeight: 800, color: "var(--green-text)", textTransform: "uppercase", letterSpacing: 0.9, marginBottom: 2 }}>Ny matchning</div>
+            <div style={{ fontSize: 14, fontWeight: 800, color: "var(--ink-900)", whiteSpace: "nowrap" }}>Nordisk Frakt · Fjärr</div>
+          </div>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 10px", borderRadius: 999, background: "var(--success-tint)", flexShrink: 0 }}>
+            <span style={{ fontSize: 13.5, fontWeight: 800, fontFamily: "var(--mono)", color: "var(--success)" }}>94%</span>
+            <span style={{ fontSize: 10.5, fontWeight: 700, color: "var(--success)" }}>match</span>
           </div>
         </div>
-        <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
-          <div style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "10px", borderRadius: 9, background: "var(--green)", color: "#fff", fontSize: 13, fontWeight: 700 }}>
-            <Icon name="eye" size={14} color="#fff" stroke={2} /> Förhandsgranska
+
+        {/* åtgärder */}
+        <div style={{ display: "flex", gap: 8, marginTop: 18, paddingTop: 18, borderTop: "1px solid var(--line)" }}>
+          <div style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "12px", borderRadius: 10, background: "var(--green)", color: "#fff", fontSize: 13.5, fontWeight: 700, boxShadow: "0 1px 0 var(--green-deep), 0 1px 2px rgba(31,95,92,0.25)" }}>
+            <Icon name="eye" size={15} color="#fff" stroke={2} /> Förhandsgranska
           </div>
-          <div style={{ width: 42, display: "inline-flex", alignItems: "center", justifyContent: "center", borderRadius: 9, background: "var(--card-2)", border: "1px solid var(--line-2)" }}>
-            <GearIcon size={16} />
+          <div style={{ width: 46, display: "inline-flex", alignItems: "center", justifyContent: "center", borderRadius: 10, background: "var(--card-2)", border: "1px solid var(--line-2)" }}>
+            <Icon name="settings" size={16} color="var(--ink-500)" stroke={1.8} />
           </div>
         </div>
-      </div>
-    </div>
-    <div style={{ position: "absolute", right: -10, top: 96, background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, boxShadow: "var(--sh-md)", padding: "11px 15px", display: "flex", alignItems: "center", gap: 11 }}>
-      <div style={{ width: 38, height: 38, borderRadius: 10, background: "var(--success-tint)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <Icon name="truck" size={18} color="var(--success)" stroke={2} />
-      </div>
-      <div>
-        <div style={{ fontSize: 12, color: "var(--ink-500)", fontWeight: 600, whiteSpace: "nowrap" }}>Ny matchning</div>
-        <div style={{ fontSize: 13.5, fontWeight: 800, color: "var(--ink-900)", whiteSpace: "nowrap" }}>Nordisk Frakt · 94%</div>
       </div>
     </div>
   </div>
