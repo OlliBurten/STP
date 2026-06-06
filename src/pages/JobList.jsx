@@ -574,7 +574,14 @@ export default function JobList() {
               {isDriver && (
                 <label style={{ display: "inline-flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
                   <span style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", fontWeight: 600 }}>Visa matchning</span>
-                  <div onClick={() => setShowMatch(v => !v)} style={{
+                  <div
+                    role="switch"
+                    aria-checked={showMatch}
+                    aria-label="Visa matchning"
+                    tabIndex={0}
+                    onClick={() => setShowMatch(v => !v)}
+                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setShowMatch(v => !v); } }}
+                    style={{
                     width: 40, height: 22, borderRadius: 11, position: "relative",
                     background: showMatch ? "var(--green)" : "var(--ink-200)",
                     transition: "background .2s",
