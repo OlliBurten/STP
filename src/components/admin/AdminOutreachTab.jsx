@@ -43,8 +43,8 @@ export default function AdminOutreachTab({
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
         <div>
-          <p style={{ fontSize: 16, fontWeight: 700, color: T.text, margin: 0 }}>Outreach</p>
-          <p style={{ fontSize: 12, color: T.muted, margin: "3px 0 0" }}>
+          <p style={{ fontSize: "var(--text-lg)", fontWeight: 700, color: T.text, margin: 0 }}>Outreach</p>
+          <p style={{ fontSize: "var(--text-xs)", color: T.muted, margin: "3px 0 0" }}>
             Agent kör automatiskt varje måndag 09:00 — bearbetar 7 regioner/vecka på 3-veckors rotation.
           </p>
         </div>
@@ -108,7 +108,7 @@ export default function AdminOutreachTab({
           { id: "manual",    label: "+ Manuellt" },
         ].map((t) => (
           <button key={t.id} type="button" onClick={() => setOutreachSubTab(t.id)} style={{
-            padding: "7px 14px", borderRadius: 9, fontSize: 12, fontWeight: 700, cursor: "pointer", border: "none",
+            padding: "7px 14px", borderRadius: 9, fontSize: "var(--text-xs)", fontWeight: 700, cursor: "pointer", border: "none",
             background: outreachSubTab === t.id ? T.amber : T.card,
             color: outreachSubTab === t.id ? "#000" : T.sub,
           }}>
@@ -120,8 +120,8 @@ export default function AdminOutreachTab({
       {/* ── Prospektera (scrape) ── */}
       {outreachSubTab === "scrape" && (
         <SectionCard>
-          <p style={{ fontSize: 14, fontWeight: 700, color: T.text, marginBottom: 4 }}>Hitta åkerier på Hitta.se</p>
-          <p style={{ fontSize: 12, color: T.muted, marginBottom: 20 }}>AI scraper — välj region och sökterm, importera sedan valda företag.</p>
+          <p style={{ fontSize: "var(--text-base)", fontWeight: 700, color: T.text, marginBottom: 4 }}>Hitta åkerier på Hitta.se</p>
+          <p style={{ fontSize: "var(--text-xs)", color: T.muted, marginBottom: 20 }}>AI scraper — välj region och sökterm, importera sedan valda företag.</p>
           <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr auto", gap: 10, marginBottom: 16 }}>
             <select value={scrapeRegionVal} onChange={(e) => setScrapeRegionVal(e.target.value)} style={INP}>
               {["Stockholm","Uppsala","Södermanland","Östergötland","Jönköping","Kronoberg","Kalmar","Gotland","Blekinge","Skåne","Halland","Västra Götaland","Värmland","Örebro","Västmanland","Dalarna","Gävleborg","Västernorrland","Jämtland","Västerbotten","Norrbotten"].map((r) => (
@@ -137,7 +137,7 @@ export default function AdminOutreachTab({
           {scrapeResults.length > 0 && (
             <>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, flexWrap: "wrap", gap: 8 }}>
-                <p style={{ fontSize: 12, color: T.muted, margin: 0 }}>{scrapeResults.length} hittade — {scrapeSelected.size} valda</p>
+                <p style={{ fontSize: "var(--text-xs)", color: T.muted, margin: 0 }}>{scrapeResults.length} hittade — {scrapeSelected.size} valda</p>
                 <div style={{ display: "flex", gap: 8 }}>
                   <Btn size="sm" onClick={() => setScrapeSelected(new Set(scrapeResults.map((_, i) => i)))}>
                     Välj alla
@@ -160,8 +160,8 @@ export default function AdminOutreachTab({
                   >
                     <input type="checkbox" checked={scrapeSelected.has(i)} readOnly style={{ flexShrink: 0 }} />
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontWeight: 600, color: T.text, margin: 0, fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.companyName}</p>
-                      <p style={{ fontSize: 11, color: T.muted, margin: "2px 0 0" }}>
+                      <p style={{ fontWeight: 600, color: T.text, margin: 0, fontSize: "var(--text-sm)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.companyName}</p>
+                      <p style={{ fontSize: "var(--text-2xs)", color: T.muted, margin: "2px 0 0" }}>
                         {[c.city, c.phone, c.website].filter(Boolean).join(" · ")}
                       </p>
                     </div>
@@ -176,27 +176,27 @@ export default function AdminOutreachTab({
       {/* ── Manuellt ── */}
       {outreachSubTab === "manual" && (
         <SectionCard>
-          <p style={{ fontSize: 14, fontWeight: 700, color: T.text, marginBottom: 20 }}>Lägg till prospect manuellt</p>
+          <p style={{ fontSize: "var(--text-base)", fontWeight: 700, color: T.text, marginBottom: 20 }}>Lägg till prospect manuellt</p>
           <form onSubmit={handleAddManual}>
             <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12, marginBottom: 12 }}>
               <div>
-                <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: T.muted, marginBottom: 5 }}>Företagsnamn *</label>
+                <label style={{ display: "block", fontSize: "var(--text-2xs)", fontWeight: 700, color: T.muted, marginBottom: 5 }}>Företagsnamn *</label>
                 <input required value={manualForm.companyName} onChange={(e) => setManualForm((p) => ({ ...p, companyName: e.target.value }))} placeholder="Anderssons Åkeri AB" style={INP} />
               </div>
               <div>
-                <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: T.muted, marginBottom: 5 }}>Webbadress</label>
+                <label style={{ display: "block", fontSize: "var(--text-2xs)", fontWeight: 700, color: T.muted, marginBottom: 5 }}>Webbadress</label>
                 <input type="url" value={manualForm.website} onChange={(e) => setManualForm((p) => ({ ...p, website: e.target.value }))} placeholder="https://anderssonsak.se" style={INP} />
               </div>
               <div>
-                <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: T.muted, marginBottom: 5 }}>E-post</label>
+                <label style={{ display: "block", fontSize: "var(--text-2xs)", fontWeight: 700, color: T.muted, marginBottom: 5 }}>E-post</label>
                 <input type="email" value={manualForm.email} onChange={(e) => setManualForm((p) => ({ ...p, email: e.target.value }))} placeholder="info@anderssonsak.se" style={INP} />
               </div>
               <div>
-                <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: T.muted, marginBottom: 5 }}>Telefon</label>
+                <label style={{ display: "block", fontSize: "var(--text-2xs)", fontWeight: 700, color: T.muted, marginBottom: 5 }}>Telefon</label>
                 <input value={manualForm.phone} onChange={(e) => setManualForm((p) => ({ ...p, phone: e.target.value }))} placeholder="08-123 456" style={INP} />
               </div>
               <div>
-                <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: T.muted, marginBottom: 5 }}>Region</label>
+                <label style={{ display: "block", fontSize: "var(--text-2xs)", fontWeight: 700, color: T.muted, marginBottom: 5 }}>Region</label>
                 <select value={manualForm.region} onChange={(e) => setManualForm((p) => ({ ...p, region: e.target.value }))} style={INP}>
                   <option value="">Välj region</option>
                   {["Stockholm","Uppsala","Södermanland","Östergötland","Jönköping","Kronoberg","Kalmar","Gotland","Blekinge","Skåne","Halland","Västra Götaland","Värmland","Örebro","Västmanland","Dalarna","Gävleborg","Västernorrland","Jämtland","Västerbotten","Norrbotten"].map((r) => (
@@ -205,7 +205,7 @@ export default function AdminOutreachTab({
                 </select>
               </div>
               <div>
-                <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: T.muted, marginBottom: 5 }}>Stad</label>
+                <label style={{ display: "block", fontSize: "var(--text-2xs)", fontWeight: 700, color: T.muted, marginBottom: 5 }}>Stad</label>
                 <input value={manualForm.city} onChange={(e) => setManualForm((p) => ({ ...p, city: e.target.value }))} placeholder="Stockholm" style={INP} />
               </div>
             </div>
@@ -241,10 +241,10 @@ export default function AdminOutreachTab({
             <Btn variant="primary" size="md" onClick={loadOutreach} disabled={loading}>Filtrera</Btn>
           </div>
 
-          <p style={{ fontSize: 12, color: T.muted, marginBottom: 12 }}>{outreachTotal} prospects</p>
+          <p style={{ fontSize: "var(--text-xs)", color: T.muted, marginBottom: 12 }}>{outreachTotal} prospects</p>
 
           {outreachProspects.length === 0 ? (
-            <p style={{ fontSize: 13, color: T.muted, padding: "24px 0", textAlign: "center" }}>
+            <p style={{ fontSize: "var(--text-sm)", color: T.muted, padding: "24px 0", textAlign: "center" }}>
               Inga prospects ännu — börja med att scrapa eller lägg till manuellt.
             </p>
           ) : (
@@ -268,10 +268,10 @@ export default function AdminOutreachTab({
                       cursor: "pointer",
                     }} onClick={() => setExpandedProspect(isExpanded ? null : p.id)}>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ fontWeight: 600, color: T.text, margin: 0, fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        <p style={{ fontWeight: 600, color: T.text, margin: 0, fontSize: "var(--text-sm)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                           {p.companyName}
                         </p>
-                        <p style={{ fontSize: 11, color: T.muted, margin: "2px 0 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        <p style={{ fontSize: "var(--text-2xs)", color: T.muted, margin: "2px 0 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                           {[p.city, p.region, p.email].filter(Boolean).join(" · ")}
                         </p>
                       </div>
@@ -303,7 +303,7 @@ export default function AdminOutreachTab({
                             </Btn>
                           )}
                           {p.sentAt && (
-                            <span style={{ fontSize: 11, color: T.green, padding: "7px 0" }}>
+                            <span style={{ fontSize: "var(--text-2xs)", color: T.green, padding: "7px 0" }}>
                               ✓ Skickad {new Date(p.sentAt).toLocaleDateString("sv-SE")}
                             </span>
                           )}
@@ -318,7 +318,7 @@ export default function AdminOutreachTab({
                             <p style={{ fontSize: 10, fontWeight: 700, color: T.muted, marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.08em" }}>
                               Ämne: {p.generatedSubject || "–"}
                             </p>
-                            <p style={{ fontSize: 12, color: T.sub, margin: 0, whiteSpace: "pre-wrap", lineHeight: 1.6 }}>{p.generatedEmail}</p>
+                            <p style={{ fontSize: "var(--text-xs)", color: T.sub, margin: 0, whiteSpace: "pre-wrap", lineHeight: 1.6 }}>{p.generatedEmail}</p>
                           </div>
                         )}
                       </div>

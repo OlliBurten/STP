@@ -19,7 +19,7 @@ const selectStyle = {
   background: "var(--paper-2)",
   border: "1px solid var(--line)",
   color: "var(--ink-900)",
-  fontSize: 14,
+  fontSize: "var(--text-base)",
   outline: "none",
   appearance: "none",
   fontFamily: "inherit",
@@ -30,7 +30,7 @@ const optStyle = { background: "var(--card)" };
 function Field({ label, children }) {
   return (
     <div>
-      <div style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-400)", textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: 8 }}>
+      <div style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: "var(--ink-400)", textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: 8 }}>
         {label}
       </div>
       {children}
@@ -74,7 +74,7 @@ export default function FilterDrawer({ open, filters, onChange: setFilters, onCl
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32 }}>
-          <span style={{ fontSize: 18, fontWeight: 800, color: "var(--ink-900)" }}>Fler filter</span>
+          <span style={{ fontSize: "var(--text-xl)", fontWeight: 800, color: "var(--ink-900)" }}>Fler filter</span>
           <button
             onClick={onClose}
             style={{ width: 36, height: 36, borderRadius: 10, background: "var(--paper-2)", border: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--ink-400)" }}

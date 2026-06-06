@@ -38,20 +38,20 @@ export default function OptOut() {
       <PageMeta title="Avregistrering – STP" noindex />
       <div style={{ maxWidth: 480, width: "100%", textAlign: "center" }}>
         <Link to="/" style={{ display: "inline-flex", alignItems: "center", gap: 6, marginBottom: 32, textDecoration: "none" }}>
-          <div style={{ width: 26, height: 26, borderRadius: 6, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 12 }}>S</div>
-          <span style={{ fontWeight: 800, fontSize: 16, color: "var(--ink-900)", letterSpacing: 0.2 }}>STP</span>
+          <div style={{ width: 26, height: 26, borderRadius: 6, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--text-xs)" }}>S</div>
+          <span style={{ fontWeight: 800, fontSize: "var(--text-lg)", color: "var(--ink-900)", letterSpacing: 0.2 }}>STP</span>
         </Link>
 
         <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, padding: "36px 32px", boxShadow: "var(--sh-sm)" }}>
           {status === "loading" ? (
-            <div style={{ fontSize: 15, color: "var(--ink-400)" }}>Avregistrerar...</div>
+            <div style={{ fontSize: "var(--text-md)", color: "var(--ink-400)" }}>Avregistrerar...</div>
           ) : (
             <>
               <h1 style={{ fontSize: 22, fontWeight: 800, color: "var(--ink-900)", marginBottom: 12 }}>{body.title}</h1>
-              <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.65 }}>{body.text}</p>
+              <p style={{ fontSize: "var(--text-md)", color: "var(--ink-500)", lineHeight: 1.65 }}>{body.text}</p>
               <Link
                 to="/"
-                style={{ display: "inline-block", marginTop: 24, padding: "12px 24px", borderRadius: 10, background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: 14, textDecoration: "none" }}
+                style={{ display: "inline-block", marginTop: 24, padding: "12px 24px", borderRadius: 10, background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: "var(--text-base)", textDecoration: "none" }}
               >
                 Till startsidan
               </Link>

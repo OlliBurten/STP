@@ -42,10 +42,10 @@ const FAQS = [
 /* porterade marknads-stilar (från stp-marketing.css) */
 const S = {
   container: { maxWidth: 1200, margin: "0 auto", width: "100%", padding: "0 32px" },
-  eyebrow: { display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 14px", borderRadius: 999, background: "var(--green-tint)", color: "var(--green-text)", fontSize: 12, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase" },
-  sectionEyebrow: { display: "block", fontSize: 12, fontWeight: 800, letterSpacing: 1.4, textTransform: "uppercase", color: "var(--green-text)", marginBottom: 12 },
+  eyebrow: { display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 14px", borderRadius: 999, background: "var(--green-tint)", color: "var(--green-text)", fontSize: "var(--text-xs)", fontWeight: 800, letterSpacing: 1, textTransform: "uppercase" },
+  sectionEyebrow: { display: "block", fontSize: "var(--text-xs)", fontWeight: 800, letterSpacing: 1.4, textTransform: "uppercase", color: "var(--green-text)", marginBottom: 12 },
   sectionTitle: { fontSize: "clamp(28px,4vw,40px)", fontWeight: 900, letterSpacing: -1.5, lineHeight: 1.15, color: "var(--ink-900)", margin: 0 },
-  lead: { fontSize: 18, lineHeight: 1.7, color: "var(--ink-500)", margin: 0 },
+  lead: { fontSize: "var(--text-xl)", lineHeight: 1.7, color: "var(--ink-500)", margin: 0 },
 };
 
 /* ════════════════════════════════════════════════
@@ -57,12 +57,12 @@ const DriverResult = ({ d }) => (
     <div style={{ flex: 1, minWidth: 0 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
         <div>
-          <div style={{ fontSize: 14.5, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.2 }}>{d.name}</div>
-          <div style={{ fontSize: 12.5, color: "var(--ink-500)", fontWeight: 500 }}>{d.loc} · {d.exp} års erfarenhet</div>
+          <div style={{ fontSize: "var(--text-base)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.2 }}>{d.name}</div>
+          <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", fontWeight: 500 }}>{d.loc} · {d.exp} års erfarenhet</div>
         </div>
         <div style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 9px", borderRadius: 999, background: "var(--success-tint)", flexShrink: 0 }}>
-          <span style={{ fontSize: 13, fontWeight: 800, fontFamily: "var(--mono)", color: "var(--success)" }}>{d.match}%</span>
-          <span style={{ fontSize: 10.5, fontWeight: 700, color: "var(--success)" }}>match</span>
+          <span style={{ fontSize: "var(--text-sm)", fontWeight: 800, fontFamily: "var(--mono)", color: "var(--success)" }}>{d.match}%</span>
+          <span style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: "var(--success)" }}>match</span>
         </div>
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 10 }}>
@@ -72,7 +72,7 @@ const DriverResult = ({ d }) => (
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 11, paddingTop: 11, borderTop: "1px solid var(--line)" }}>
         <Dot tone="success" size={6} />
-        <span style={{ fontSize: 12, color: "var(--ink-700)", fontWeight: 600, whiteSpace: "nowrap" }}>{d.avail}</span>
+        <span style={{ fontSize: "var(--text-xs)", color: "var(--ink-700)", fontWeight: 600, whiteSpace: "nowrap" }}>{d.avail}</span>
       </div>
     </div>
   </div>
@@ -84,16 +84,16 @@ const SearchPreview = () => (
     <div style={{ position: "relative", background: "var(--card-2)", border: "1px solid var(--line)", borderRadius: 20, boxShadow: "var(--sh-md)", padding: 20 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--card)", border: "1px solid var(--line-2)", borderRadius: 11, padding: "11px 14px", marginBottom: 12, boxShadow: "var(--sh-sm)" }}>
         <Icon name="search" size={17} color="var(--ink-400)" stroke={2} />
-        <span style={{ fontSize: 14, color: "var(--ink-500)", fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>CE-förare i Skåne, fjärr…</span>
+        <span style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>CE-förare i Skåne, fjärr…</span>
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 16 }}>
         {[["Skåne", true], ["CE", true], ["Fjärr", true], ["Söker aktivt", false]].map(([f, on]) => (
-          <span key={f} style={{ fontSize: 12.5, fontWeight: 600, padding: "6px 12px", borderRadius: 999, background: on ? "var(--green-tint)" : "var(--card)", color: on ? "var(--green-text)" : "var(--ink-500)", border: on ? "1px solid rgba(31,95,92,0.18)" : "1px solid var(--line-2)", display: "inline-flex", alignItems: "center", gap: 6 }}>{on && <Icon name="check" size={11} color="var(--green-text)" stroke={2.6} />}{f}</span>
+          <span key={f} style={{ fontSize: "var(--text-xs)", fontWeight: 600, padding: "6px 12px", borderRadius: 999, background: on ? "var(--green-tint)" : "var(--card)", color: on ? "var(--green-text)" : "var(--ink-500)", border: on ? "1px solid rgba(31,95,92,0.18)" : "1px solid var(--line-2)", display: "inline-flex", alignItems: "center", gap: 6 }}>{on && <Icon name="check" size={11} color="var(--green-text)" stroke={2.6} />}{f}</span>
         ))}
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 11 }}>
-        <span style={{ fontSize: 12, fontWeight: 700, color: "var(--ink-500)", textTransform: "uppercase", letterSpacing: 0.8 }}>6 matchande förare</span>
-        <span style={{ fontSize: 12, color: "var(--green-text)", fontWeight: 700 }}>Sortera: Match</span>
+        <span style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--ink-500)", textTransform: "uppercase", letterSpacing: 0.8 }}>6 matchande förare</span>
+        <span style={{ fontSize: "var(--text-xs)", color: "var(--green-text)", fontWeight: 700 }}>Sortera: Match</span>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {RESULTS.map((d) => <DriverResult key={d.name} d={d} />)}
@@ -104,8 +104,8 @@ const SearchPreview = () => (
         <Icon name="check" size={18} color="var(--green-text)" stroke={2.4} />
       </div>
       <div>
-        <div style={{ fontSize: 12, color: "var(--ink-500)", fontWeight: 600, whiteSpace: "nowrap" }}>Verifierat åkeri</div>
-        <div style={{ fontSize: 13.5, fontWeight: 800, color: "var(--ink-900)", whiteSpace: "nowrap" }}>Bolagsverket</div>
+        <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", fontWeight: 600, whiteSpace: "nowrap" }}>Verifierat åkeri</div>
+        <div style={{ fontSize: "var(--text-sm)", fontWeight: 800, color: "var(--ink-900)", whiteSpace: "nowrap" }}>Bolagsverket</div>
       </div>
     </div>
   </div>
@@ -126,18 +126,18 @@ function FaqBlock({ items, lead, email }) {
           return (
             <div key={i} style={{ borderRadius: 16, background: "var(--card)", border: "1px solid var(--line)", overflow: "hidden", boxShadow: isOpen ? "var(--sh)" : "var(--sh-sm)" }}>
               <button type="button" onClick={() => setOpen(isOpen ? null : i)} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, padding: "18px 24px", textAlign: "left", background: "transparent", border: "none", cursor: "pointer", fontFamily: "inherit" }} aria-expanded={isOpen}>
-                <span style={{ fontSize: 15, fontWeight: 600, color: "var(--ink-900)" }}>{item.q}</span>
+                <span style={{ fontSize: "var(--text-md)", fontWeight: 600, color: "var(--ink-900)" }}>{item.q}</span>
                 <span style={{ flexShrink: 0, color: "var(--green-text)", transition: "transform 0.2s", transform: isOpen ? "rotate(45deg)" : "none", display: "inline-flex" }}>
                   <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
                 </span>
               </button>
-              {isOpen && <div style={{ padding: "0 24px 18px", fontSize: 14, color: "var(--ink-500)", lineHeight: 1.7, borderTop: "1px solid var(--line)", paddingTop: 16 }}>{item.a}</div>}
+              {isOpen && <div style={{ padding: "0 24px 18px", fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.7, borderTop: "1px solid var(--line)", paddingTop: 16 }}>{item.a}</div>}
             </div>
           );
         })}
       </div>
       {lead && (
-        <p style={{ textAlign: "center", marginTop: 28, fontSize: 14.5, color: "var(--ink-500)" }}>
+        <p style={{ textAlign: "center", marginTop: 28, fontSize: "var(--text-base)", color: "var(--ink-500)" }}>
           {lead}{" "}
           <a href={`mailto:${email}`} style={{ color: "var(--green-text)", fontWeight: 700, textDecoration: "none" }}>{email}</a>
         </p>
@@ -155,10 +155,10 @@ function GreenCTA({ title, lead, primaryLabel, secondaryLabel, stats, onPrimary,
           <h2 style={{ fontSize: "clamp(30px,4vw,44px)", fontWeight: 900, letterSpacing: -1.6, lineHeight: 1.12, marginBottom: 18 }}>{title}</h2>
           <p style={{ fontSize: 17, lineHeight: 1.65, color: "rgba(240,250,249,0.7)", marginBottom: 32 }}>{lead}</p>
           <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
-            <button onClick={onPrimary} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 26px", height: 50, background: "var(--amber)", color: "#fff", border: "1px solid var(--amber-deep)", borderRadius: 10, fontWeight: 700, fontSize: 15, cursor: "pointer", fontFamily: "inherit" }}>
+            <button onClick={onPrimary} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 26px", height: 50, background: "var(--amber)", color: "#fff", border: "1px solid var(--amber-deep)", borderRadius: 10, fontWeight: 700, fontSize: "var(--text-md)", cursor: "pointer", fontFamily: "inherit" }}>
               {primaryLabel} <Icon name="arrow" size={15} stroke={2.2} />
             </button>
-            <button onClick={onSecondary} style={{ display: "inline-flex", alignItems: "center", padding: "14px 26px", height: 50, background: "rgba(255,255,255,0.08)", color: "#fff", border: "1px solid rgba(255,255,255,0.22)", borderRadius: 10, fontWeight: 600, fontSize: 15, cursor: "pointer", fontFamily: "inherit" }}>
+            <button onClick={onSecondary} style={{ display: "inline-flex", alignItems: "center", padding: "14px 26px", height: 50, background: "rgba(255,255,255,0.08)", color: "#fff", border: "1px solid rgba(255,255,255,0.22)", borderRadius: 10, fontWeight: 600, fontSize: "var(--text-md)", cursor: "pointer", fontFamily: "inherit" }}>
               {secondaryLabel}
             </button>
           </div>
@@ -167,7 +167,7 @@ function GreenCTA({ title, lead, primaryLabel, secondaryLabel, stats, onPrimary,
           {stats.map(([v, l]) => (
             <div key={l} style={{ textAlign: "center" }}>
               <div style={{ fontSize: 22, fontWeight: 900, fontFamily: "var(--mono)", color: "var(--amber)", letterSpacing: -0.5 }}>{v}</div>
-              <div style={{ fontSize: 11.5, fontWeight: 600, color: "rgba(240,250,249,0.55)", textTransform: "uppercase", letterSpacing: 0.8, marginTop: 6 }}>{l}</div>
+              <div style={{ fontSize: "var(--text-2xs)", fontWeight: 600, color: "rgba(240,250,249,0.55)", textTransform: "uppercase", letterSpacing: 0.8, marginTop: 6 }}>{l}</div>
             </div>
           ))}
         </div>
@@ -235,7 +235,7 @@ export default function ForCompaniesLanding() {
                 {[["36 %", "saknar förare"], ["Auto", "verifiering"], ["0 kr", "under beta"]].map(([b, s]) => (
                   <div key={s} style={{ display: "flex", flexDirection: "column" }}>
                     <span style={{ fontSize: 21, fontWeight: 900, color: "var(--ink-900)", fontFamily: "var(--mono)", letterSpacing: -0.5 }}>{b}</span>
-                    <span style={{ fontSize: 12.5, color: "var(--ink-500)", fontWeight: 600 }}>{s}</span>
+                    <span style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", fontWeight: 600 }}>{s}</span>
                   </div>
                 ))}
               </div>
@@ -262,8 +262,8 @@ export default function ForCompaniesLanding() {
                 {TALENT.map((t) => (
                   <div key={t.region}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 7 }}>
-                      <span style={{ fontSize: 14.5, fontWeight: 700, color: "var(--ink-900)" }}>{t.region}</span>
-                      <span style={{ fontSize: 12.5, color: "var(--ink-500)", fontWeight: 600 }}>
+                      <span style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)" }}>{t.region}</span>
+                      <span style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", fontWeight: 600 }}>
                         <span style={{ fontFamily: "var(--mono)", color: "var(--ink-900)", fontWeight: 700 }}>{t.n}</span> förare · <span style={{ color: "var(--green-text)", fontWeight: 700 }}>{t.m} matchar er</span>
                       </span>
                     </div>
@@ -287,20 +287,20 @@ export default function ForCompaniesLanding() {
           </div>
           <div className="cmp-grid" style={{ maxWidth: 920, margin: "0 auto" }}>
             <Card padding="30px 32px" style={{ background: "var(--card-2)" }}>
-              <div style={{ fontSize: 12, fontWeight: 800, color: "var(--ink-400)", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 20 }}>Bemanningsbolag</div>
+              <div style={{ fontSize: "var(--text-xs)", fontWeight: 800, color: "var(--ink-400)", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 20 }}>Bemanningsbolag</div>
               <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                 {COMPARE.bemanning.map((t) => (
                   <div key={t} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-                    <span style={{ marginTop: 2, width: 20, height: 20, borderRadius: "50%", background: "var(--danger-tint)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "var(--danger)", fontWeight: 800, fontSize: 13, lineHeight: 1 }}>×</span>
-                    <span style={{ fontSize: 14.5, color: "var(--ink-500)", lineHeight: 1.5 }}>{t}</span>
+                    <span style={{ marginTop: 2, width: 20, height: 20, borderRadius: "50%", background: "var(--danger-tint)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "var(--danger)", fontWeight: 800, fontSize: "var(--text-sm)", lineHeight: 1 }}>×</span>
+                    <span style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.5 }}>{t}</span>
                   </div>
                 ))}
               </div>
             </Card>
             <Card padding="30px 32px" style={{ border: "1.5px solid var(--green)", boxShadow: "var(--sh-md)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 20 }}>
-                <div style={{ width: 24, height: 24, borderRadius: 6, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 11 }}>S</div>
-                <span style={{ fontSize: 12, fontWeight: 800, color: "var(--green-text)", textTransform: "uppercase", letterSpacing: 1.2 }}>Med STP</span>
+                <div style={{ width: 24, height: 24, borderRadius: 6, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--text-2xs)" }}>S</div>
+                <span style={{ fontSize: "var(--text-xs)", fontWeight: 800, color: "var(--green-text)", textTransform: "uppercase", letterSpacing: 1.2 }}>Med STP</span>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                 {COMPARE.stp.map((t) => (
@@ -308,7 +308,7 @@ export default function ForCompaniesLanding() {
                     <span style={{ marginTop: 1, width: 20, height: 20, borderRadius: "50%", background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                       <Icon name="check" size={11} color="#fff" stroke={2.8} />
                     </span>
-                    <span style={{ fontSize: 14.5, color: "var(--ink-700)", lineHeight: 1.5, fontWeight: 500 }}>{t}</span>
+                    <span style={{ fontSize: "var(--text-base)", color: "var(--ink-700)", lineHeight: 1.5, fontWeight: 500 }}>{t}</span>
                   </div>
                 ))}
               </div>
@@ -329,8 +329,8 @@ export default function ForCompaniesLanding() {
               <div style={{ width: 48, height: 48, borderRadius: 12, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
                 <Icon name="check" size={22} color="var(--green-text)" stroke={2.2} />
               </div>
-              <h3 style={{ fontSize: 20, fontWeight: 800, color: "var(--ink-900)", marginBottom: 10, letterSpacing: -0.3 }}>Automatisk verifiering</h3>
-              <p style={{ fontSize: 14.5, color: "var(--ink-500)", lineHeight: 1.65, marginBottom: 16, textWrap: "pretty" }}>
+              <h3 style={{ fontSize: "var(--text-2xl)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 10, letterSpacing: -0.3 }}>Automatisk verifiering</h3>
+              <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.65, marginBottom: 16, textWrap: "pretty" }}>
                 Ange organisationsnummer vid registreringen — kontot verifieras automatiskt mot Bolagsverket. Verifierade åkerier får en tydlig märkning som förare litar på.
               </p>
               <Pill tone="success" size="sm" icon={<Icon name="check" size={11} stroke={2.6} />}>Verifierad via Bolagsverket</Pill>
@@ -339,15 +339,15 @@ export default function ForCompaniesLanding() {
               <div style={{ width: 48, height: 48, borderRadius: 12, background: "var(--amber-tint)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
                 <Icon name="user" size={22} color="var(--amber-text)" stroke={2} />
               </div>
-              <h3 style={{ fontSize: 20, fontWeight: 800, color: "var(--ink-900)", marginBottom: 10, letterSpacing: -0.3 }}>Hela teamet med</h3>
-              <p style={{ fontSize: 14.5, color: "var(--ink-500)", lineHeight: 1.65, marginBottom: 16, textWrap: "pretty" }}>
+              <h3 style={{ fontSize: "var(--text-2xl)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 10, letterSpacing: -0.3 }}>Hela teamet med</h3>
+              <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.65, marginBottom: 16, textWrap: "pretty" }}>
                 Bjud in kollegor så att fler i organisationen kan söka förare, publicera annonser och hantera konversationer — allt samlat under ert åkeri.
               </p>
               <div style={{ display: "flex", alignItems: "center" }}>
                 {["AL", "MK", "SP"].map((ini, i) => (
-                  <div key={ini} style={{ marginLeft: i > 0 ? -8 : 0, width: 32, height: 32, borderRadius: "50%", background: i === 0 ? "var(--green)" : i === 1 ? "var(--amber)" : "var(--ink-700)", border: "2px solid var(--card)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: 11 }}>{ini}</div>
+                  <div key={ini} style={{ marginLeft: i > 0 ? -8 : 0, width: 32, height: 32, borderRadius: "50%", background: i === 0 ? "var(--green)" : i === 1 ? "var(--amber)" : "var(--ink-700)", border: "2px solid var(--card)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: "var(--text-2xs)" }}>{ini}</div>
                 ))}
-                <span style={{ marginLeft: 10, fontSize: 13, color: "var(--ink-500)", fontWeight: 600 }}>+ obegränsat antal platser</span>
+                <span style={{ marginLeft: 10, fontSize: "var(--text-sm)", color: "var(--ink-500)", fontWeight: 600 }}>+ obegränsat antal platser</span>
               </div>
             </Card>
           </div>
@@ -365,8 +365,8 @@ export default function ForCompaniesLanding() {
             {STEPS.map((s, i) => (
               <div key={s.n} style={{ padding: "0 28px", borderLeft: i > 0 ? "1px solid var(--line)" : "none", textAlign: "center" }}>
                 <div style={{ width: 52, height: 52, borderRadius: "50%", background: "var(--green-tint)", color: "var(--green-text)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 17, fontFamily: "var(--mono)", margin: "0 auto 18px", border: "1px solid rgba(31,95,92,0.18)" }}>{s.n}</div>
-                <h3 style={{ fontSize: 18, fontWeight: 800, color: "var(--ink-900)", marginBottom: 9, letterSpacing: -0.3 }}>{s.title}</h3>
-                <p style={{ fontSize: 14.5, color: "var(--ink-500)", lineHeight: 1.6, textWrap: "pretty" }}>{s.body}</p>
+                <h3 style={{ fontSize: "var(--text-xl)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 9, letterSpacing: -0.3 }}>{s.title}</h3>
+                <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.6, textWrap: "pretty" }}>{s.body}</p>
               </div>
             ))}
           </div>

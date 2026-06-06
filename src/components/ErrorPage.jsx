@@ -63,7 +63,7 @@ export default function ErrorPage({ variant = "404", onRetry, hideTopBar = false
       {!hideTopBar && (
         <div style={{ padding: "20px 32px", borderBottom: "1px solid var(--line)", background: "var(--card)" }}>
           <a href="/" style={{ display: "inline-flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-            <div style={{ width: 30, height: 30, borderRadius: 7, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 13 }}>S</div>
+            <div style={{ width: 30, height: 30, borderRadius: 7, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--text-sm)" }}>S</div>
             <span style={{ fontWeight: 800, fontSize: 17, color: "var(--ink-900)", letterSpacing: 0.5 }}>STP</span>
           </a>
         </div>
@@ -77,8 +77,8 @@ export default function ErrorPage({ variant = "404", onRetry, hideTopBar = false
           <div style={{ width: 64, height: 64, borderRadius: 16, background: toneBg[p.tone], margin: p.code ? "0 auto 22px" : "0 auto 24px", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <Icon name={p.icon} size={28} color={toneColor[p.tone]} stroke={2} />
           </div>
-          <h1 style={{ fontSize: 28, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.8, marginBottom: 12 }}>{p.title}</h1>
-          <p style={{ fontSize: 15.5, color: "var(--ink-500)", lineHeight: 1.65, marginBottom: 30, textWrap: "pretty" }}>{p.body}</p>
+          <h1 style={{ fontSize: "var(--text-4xl)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.8, marginBottom: 12 }}>{p.title}</h1>
+          <p style={{ fontSize: "var(--text-md)", color: "var(--ink-500)", lineHeight: 1.65, marginBottom: 30, textWrap: "pretty" }}>{p.body}</p>
           <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
             {p.primary && (
               <Button variant="primary" size="lg" onClick={() => go(p.primary)} iconRight={<Icon name="arrow" size={15} stroke={2.2} />}>
@@ -91,7 +91,7 @@ export default function ErrorPage({ variant = "404", onRetry, hideTopBar = false
               </Button>
             )}
           </div>
-          <div style={{ marginTop: 32, fontSize: 13, color: "var(--ink-400)" }}>
+          <div style={{ marginTop: 32, fontSize: "var(--text-sm)", color: "var(--ink-400)" }}>
             Behöver du hjälp? <a href="/kontakt" style={{ color: "var(--green)", fontWeight: 600 }}>Kontakta support</a>
           </div>
         </div>

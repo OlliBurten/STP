@@ -35,7 +35,7 @@ function MicrosoftButton({ onSuccess, onError }) {
     <button
       type="button"
       onClick={handleClick}
-      style={{ width: "100%", height: 48, borderRadius: 11, border: "1px solid var(--line-2)", background: "var(--card)", boxShadow: "var(--sh-sm)", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, fontSize: 14.5, fontWeight: 700, color: "var(--ink-900)", cursor: "pointer", fontFamily: "inherit" }}
+      style={{ width: "100%", height: 48, borderRadius: 11, border: "1px solid var(--line-2)", background: "var(--card)", boxShadow: "var(--sh-sm)", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)", cursor: "pointer", fontFamily: "inherit" }}
     >
       <svg width="20" height="20" viewBox="0 0 24 24">
         <path fill="#F25022" d="M1 1h10v10H1z" />
@@ -238,7 +238,7 @@ export default function OAuthButtons({
             />
           </div>
           {/* Visual overlay — pointer-events none so clicks reach the iframe */}
-          <div aria-hidden="true" style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, fontSize: 14.5, fontWeight: 700, color: "var(--ink-900)", pointerEvents: "none", background: "var(--card)", borderRadius: 10 }}>
+          <div aria-hidden="true" style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)", pointerEvents: "none", background: "var(--card)", borderRadius: 10 }}>
             <svg width="20" height="20" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
               <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />

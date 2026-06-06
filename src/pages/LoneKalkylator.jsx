@@ -124,7 +124,7 @@ function Card({ children, style }) {
 
 function SectionLabel({ children }) {
   return (
-    <p style={{ fontSize: 11, fontWeight: 700, color: T.sub, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 14, margin: "0 0 14px" }}>
+    <p style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: T.sub, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 14, margin: "0 0 14px" }}>
       {children}
     </p>
   );
@@ -135,7 +135,7 @@ function ChipGroup({ label, value, options, multi, onChange, note }) {
   return (
     <Card>
       <SectionLabel>{label}</SectionLabel>
-      {note && <p style={{ fontSize: 12, color: T.muted, marginBottom: 12, marginTop: -8 }}>{note}</p>}
+      {note && <p style={{ fontSize: "var(--text-xs)", color: T.muted, marginBottom: 12, marginTop: -8 }}>{note}</p>}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
         {options.map((o) => {
           const val = typeof o === "string" ? o : o.value;
@@ -150,7 +150,7 @@ function ChipGroup({ label, value, options, multi, onChange, note }) {
               border: `1px solid ${active ? T.amber : T.border}`,
               background: active ? "var(--amber-tint)" : "var(--paper-2)",
               color: active ? T.amber : T.sub,
-              fontSize: 13, fontWeight: active ? 700 : 500, cursor: "pointer",
+              fontSize: "var(--text-sm)", fontWeight: active ? 700 : 500, cursor: "pointer",
             }}>
               {lab}
             </button>
@@ -209,23 +209,23 @@ export default function LoneKalkylator() {
       />
 
       <div style={{ maxWidth: 680, margin: "0 auto", padding: "0 20px 80px" }}>
-        <Link to="/jobb" style={{ fontSize: 13, color: T.sub, textDecoration: "none", display: "inline-block", marginBottom: 32 }}>
+        <Link to="/jobb" style={{ fontSize: "var(--text-sm)", color: T.sub, textDecoration: "none", display: "inline-block", marginBottom: 32 }}>
           ← Lediga jobb
         </Link>
 
         <div style={{ marginBottom: 36 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: T.amber, display: "block", marginBottom: 10 }}>
+          <span style={{ fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: T.amber, display: "block", marginBottom: 10 }}>
             Branschverktyg
           </span>
           <h1 style={{ fontSize: 32, fontWeight: 900, color: T.text, letterSpacing: -1, margin: "0 0 10px" }}>
             Lönekalkylatorn
           </h1>
-          <p style={{ fontSize: 15, color: T.sub, lineHeight: 1.6, margin: "0 0 14px" }}>
+          <p style={{ fontSize: "var(--text-md)", color: T.sub, lineHeight: 1.6, margin: "0 0 14px" }}>
             Baserad på Transportavtalet 2025–2027. Ange dina uppgifter och få avtalets lönebotten och en uppskattad marknadslön.
           </p>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "var(--success-tint)", border: "1px solid var(--success)", borderRadius: 99, padding: "4px 12px" }}>
             <div style={{ width: 6, height: 6, borderRadius: "50%", background: T.green }} />
-            <span style={{ fontSize: 11, fontWeight: 700, color: T.green }}>Avtal gäller 1 april 2025 – 31 mars 2027</span>
+            <span style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: T.green }}>Avtal gäller 1 april 2025 – 31 mars 2027</span>
           </div>
         </div>
 
@@ -259,7 +259,7 @@ export default function LoneKalkylator() {
           {/* Region */}
           <Card>
             <SectionLabel>Region</SectionLabel>
-            <p style={{ fontSize: 12, color: T.muted, marginBottom: 12, marginTop: -8 }}>
+            <p style={{ fontSize: "var(--text-xs)", color: T.muted, marginBottom: 12, marginTop: -8 }}>
               Avtalets lönebottnar är nationellt enhetliga. Regionfaktorn speglar marknadsdata — inte avtalet.
             </p>
             <select
@@ -268,7 +268,7 @@ export default function LoneKalkylator() {
               style={{
                 width: "100%", padding: "10px 14px", borderRadius: 8,
                 border: `1px solid ${T.border}`, background: T.card,
-                color: T.text, fontSize: 14,
+                color: T.text, fontSize: "var(--text-base)",
               }}
             >
               {Object.keys(REGION_MARKET_FACTOR).map((r) => <option key={r} value={r}>{r}</option>)}
@@ -278,7 +278,7 @@ export default function LoneKalkylator() {
           {/* OB-tillägg */}
           <Card>
             <SectionLabel>OB-tillägg (valfritt)</SectionLabel>
-            <p style={{ fontSize: 12, color: T.muted, marginBottom: 16, marginTop: -8 }}>
+            <p style={{ fontSize: "var(--text-xs)", color: T.muted, marginBottom: 16, marginTop: -8 }}>
               Avtalsenliga procentsatser: natt +25%, helg +50%, röd dag +100%. Baserat på typiskt 8-timmarspass.
             </p>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
@@ -287,14 +287,14 @@ export default function LoneKalkylator() {
                 { label: "Helgpass/mån (lör/sön)", value: weekendDays, set: setWeekendDays, max: 10 },
               ].map(({ label, value, set, max }) => (
                 <div key={label}>
-                  <p style={{ fontSize: 12, color: T.sub, marginBottom: 8 }}>{label}</p>
+                  <p style={{ fontSize: "var(--text-xs)", color: T.sub, marginBottom: 8 }}>{label}</p>
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                     <input
                       type="range" min={0} max={max} value={value}
                       onChange={(e) => set(Number(e.target.value))}
                       style={{ flex: 1, accentColor: T.amber }}
                     />
-                    <span style={{ fontSize: 14, fontWeight: 700, color: T.text, minWidth: 24, textAlign: "right" }}>{value}</span>
+                    <span style={{ fontSize: "var(--text-base)", fontWeight: 700, color: T.text, minWidth: 24, textAlign: "right" }}>{value}</span>
                   </div>
                 </div>
               ))}
@@ -309,25 +309,25 @@ export default function LoneKalkylator() {
 
             {/* Avtalets lönebotten */}
             <div style={{ marginBottom: 20 }}>
-              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.teal, marginBottom: 4 }}>
+              <p style={{ fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.teal, marginBottom: 4 }}>
                 Avtalets lönebotten
               </p>
               <p style={{ fontSize: 36, fontWeight: 900, color: T.text, letterSpacing: -1, lineHeight: 1 }}>
-                {contractMin.toLocaleString("sv-SE")} <span style={{ fontSize: 18, fontWeight: 400, color: T.sub }}>kr/mån</span>
+                {contractMin.toLocaleString("sv-SE")} <span style={{ fontSize: "var(--text-xl)", fontWeight: 400, color: T.sub }}>kr/mån</span>
               </p>
-              <p style={{ fontSize: 12, color: T.sub, marginTop: 4 }}>
+              <p style={{ fontSize: "var(--text-xs)", color: T.sub, marginTop: 4 }}>
                 Transportavtalet 2025 — minimum för {expLevels.find(e => e.value === expLevel)?.label.toLowerCase()} förare
               </p>
             </div>
 
             <div style={{ borderTop: "1px solid var(--line)", paddingTop: 18, marginBottom: 18 }}>
-              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.amber, marginBottom: 4 }}>
+              <p style={{ fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.amber, marginBottom: 4 }}>
                 Uppskattad marknadslön
               </p>
               <p style={{ fontSize: 42, fontWeight: 900, color: T.text, letterSpacing: -1.5, lineHeight: 1 }}>
-                {marketMid.toLocaleString("sv-SE")} <span style={{ fontSize: 18, fontWeight: 400, color: T.sub }}>kr/mån</span>
+                {marketMid.toLocaleString("sv-SE")} <span style={{ fontSize: "var(--text-xl)", fontWeight: 400, color: T.sub }}>kr/mån</span>
               </p>
-              <p style={{ fontSize: 13, color: T.sub, marginTop: 4 }}>
+              <p style={{ fontSize: "var(--text-sm)", color: T.sub, marginTop: 4 }}>
                 Spann: {marketLow.toLocaleString("sv-SE")} – {marketHigh.toLocaleString("sv-SE")} kr/mån
               </p>
             </div>
@@ -337,8 +337,8 @@ export default function LoneKalkylator() {
               <div style={{ background: "var(--amber-tint)", border: "1px solid rgba(245,166,35,0.2)", borderRadius: 10, padding: "14px 16px", marginBottom: 18 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
                   <div>
-                    <p style={{ fontSize: 12, fontWeight: 700, color: T.amber, marginBottom: 2 }}>+ OB-tillägg</p>
-                    <p style={{ fontSize: 12, color: T.sub }}>
+                    <p style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: T.amber, marginBottom: 2 }}>+ OB-tillägg</p>
+                    <p style={{ fontSize: "var(--text-xs)", color: T.sub }}>
                       {nightDays > 0 ? `${nightDays} nattpass × 25%` : ""}
                       {nightDays > 0 && weekendDays > 0 ? " + " : ""}
                       {weekendDays > 0 ? `${weekendDays} helgpass × 50%` : ""}
@@ -349,8 +349,8 @@ export default function LoneKalkylator() {
                   </p>
                 </div>
                 <div style={{ borderTop: "1px solid rgba(245,166,35,0.15)", marginTop: 12, paddingTop: 12, display: "flex", justifyContent: "space-between" }}>
-                  <p style={{ fontSize: 13, color: T.text, fontWeight: 600 }}>Totalt inkl. OB</p>
-                  <p style={{ fontSize: 18, fontWeight: 800, color: T.text }}>{totalWithOb.toLocaleString("sv-SE")} kr/mån</p>
+                  <p style={{ fontSize: "var(--text-sm)", color: T.text, fontWeight: 600 }}>Totalt inkl. OB</p>
+                  <p style={{ fontSize: "var(--text-xl)", fontWeight: 800, color: T.text }}>{totalWithOb.toLocaleString("sv-SE")} kr/mån</p>
                 </div>
               </div>
             )}
@@ -358,11 +358,11 @@ export default function LoneKalkylator() {
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               <Link to="/jobb" style={{
                 flex: 1, textAlign: "center", padding: "10px 16px", borderRadius: 10,
-                background: T.amber, color: "#000", fontSize: 13, fontWeight: 800, textDecoration: "none",
+                background: T.amber, color: "#000", fontSize: "var(--text-sm)", fontWeight: 800, textDecoration: "none",
               }}>Se lediga jobb</Link>
               <button type="button" onClick={handleShare} style={{
                 padding: "10px 16px", borderRadius: 10, border: `1px solid ${T.border}`,
-                background: "transparent", color: T.sub, fontSize: 13, cursor: "pointer",
+                background: "transparent", color: T.sub, fontSize: "var(--text-sm)", cursor: "pointer",
               }}>
                 {shared ? "Kopierat!" : "Dela"}
               </button>
@@ -371,14 +371,14 @@ export default function LoneKalkylator() {
                 style={{
                   padding: "10px 16px", borderRadius: 10,
                   background: "rgba(37,211,102,0.12)", border: "1px solid rgba(37,211,102,0.25)",
-                  color: "#25d166", fontSize: 13, fontWeight: 600, textDecoration: "none",
+                  color: "#25d166", fontSize: "var(--text-sm)", fontWeight: 600, textDecoration: "none",
                 }}>WhatsApp</a>
             </div>
           </div>
 
           {/* Källhänvisning och transparens */}
           <div style={{ background: "var(--green-tint)", border: "1px solid var(--line)", borderRadius: 12, padding: "16px 18px" }}>
-            <p style={{ fontSize: 12, fontWeight: 700, color: T.teal, marginBottom: 8 }}>Om lönedatan</p>
+            <p style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: T.teal, marginBottom: 8 }}>Om lönedatan</p>
             <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 6 }}>
               {[
                 "Lönebottnar hämtade från Transportavtalet 2025–2027. Gäller ca 55 300 anställda.",
@@ -386,38 +386,38 @@ export default function LoneKalkylator() {
                 "Marknadslön och regionfaktor baseras på marknadsdata — inte avtalstexten. Avtalets lönebottnar är nationellt enhetliga.",
                 "Faktisk lön sätts av arbetsgivaren och kan vara högre än avtalets minimum. Avtalet sätter golvet, inte taket.",
               ].map((s) => (
-                <li key={s} style={{ display: "flex", gap: 8, fontSize: 12, color: T.sub, lineHeight: 1.55 }}>
+                <li key={s} style={{ display: "flex", gap: 8, fontSize: "var(--text-xs)", color: T.sub, lineHeight: 1.55 }}>
                   <span style={{ color: T.teal, flexShrink: 0 }}>→</span> {s}
                 </li>
               ))}
             </ul>
             <a href="https://www.transport.se/publicerat/avtal-klart-transportavtalet-2025" target="_blank" rel="noopener noreferrer"
-              style={{ display: "inline-block", marginTop: 10, fontSize: 12, color: T.teal, textDecoration: "underline" }}>
+              style={{ display: "inline-block", marginTop: 10, fontSize: "var(--text-xs)", color: T.teal, textDecoration: "underline" }}>
               Läs mer på transport.se →
             </a>
           </div>
 
           {/* CTA */}
           <Card>
-            <p style={{ fontSize: 14, fontWeight: 700, color: T.text, marginBottom: 8 }}>Förhandla bättre lön</p>
-            <p style={{ fontSize: 13, color: T.sub, lineHeight: 1.6, marginBottom: 16 }}>
+            <p style={{ fontSize: "var(--text-base)", fontWeight: 700, color: T.text, marginBottom: 8 }}>Förhandla bättre lön</p>
+            <p style={{ fontSize: "var(--text-sm)", color: T.sub, lineHeight: 1.6, marginBottom: 16 }}>
               Med en komplett profil på STP kan åkerier hitta dig direkt — och du kan jämföra erbjudanden från flera håll.
             </p>
             <Link to="/login" style={{
               display: "inline-block", padding: "10px 20px", borderRadius: 10,
-              background: T.amber, color: "#000", fontSize: 13, fontWeight: 800, textDecoration: "none",
+              background: T.amber, color: "#000", fontSize: "var(--text-sm)", fontWeight: 800, textDecoration: "none",
             }}>Skapa gratis profil →</Link>
           </Card>
 
           {/* Cross-link */}
           <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 14, padding: "18px 22px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
             <div>
-              <p style={{ fontSize: 14, fontWeight: 600, color: T.text, marginBottom: 2 }}>Kolla även: YKB-timer</p>
-              <p style={{ fontSize: 13, color: T.sub }}>Räkna ut när din YKB löper ut och när du måste boka fortbildning.</p>
+              <p style={{ fontSize: "var(--text-base)", fontWeight: 600, color: T.text, marginBottom: 2 }}>Kolla även: YKB-timer</p>
+              <p style={{ fontSize: "var(--text-sm)", color: T.sub }}>Räkna ut när din YKB löper ut och när du måste boka fortbildning.</p>
             </div>
             <Link to="/ykb-timer" style={{
               padding: "9px 16px", borderRadius: 9, border: `1px solid ${T.border}`,
-              background: "var(--paper-2)", color: T.sub, fontSize: 13, fontWeight: 600, textDecoration: "none", whiteSpace: "nowrap",
+              background: "var(--paper-2)", color: T.sub, fontSize: "var(--text-sm)", fontWeight: 600, textDecoration: "none", whiteSpace: "nowrap",
             }}>YKB-timer →</Link>
           </div>
 

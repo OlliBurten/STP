@@ -469,12 +469,12 @@ export default function Admin() {
 
         {/* ── Flash ── */}
         {error && (
-          <div style={{ background: T.redBg, border: `1px solid ${T.redBorder}`, borderRadius: 12, padding: "12px 18px", marginBottom: 16, color: T.red, fontSize: 13, fontWeight: 600 }}>
+          <div style={{ background: T.redBg, border: `1px solid ${T.redBorder}`, borderRadius: 12, padding: "12px 18px", marginBottom: 16, color: T.red, fontSize: "var(--text-sm)", fontWeight: 600 }}>
             {error}
           </div>
         )}
         {success && (
-          <div style={{ background: T.greenBg, border: `1px solid ${T.greenBorder}`, borderRadius: 12, padding: "12px 18px", marginBottom: 16, color: T.green, fontSize: 13, fontWeight: 600 }}>
+          <div style={{ background: T.greenBg, border: `1px solid ${T.greenBorder}`, borderRadius: 12, padding: "12px 18px", marginBottom: 16, color: T.green, fontSize: "var(--text-sm)", fontWeight: 600 }}>
             {success}
           </div>
         )}
@@ -484,12 +484,12 @@ export default function Admin() {
         ════════════════════════════════════════ */}
         {activeTab === "companies" && (
           <SectionCard>
-            <p style={{ fontSize: 16, fontWeight: 700, color: T.text, marginBottom: 6 }}>Väntande företag</p>
-            <p style={{ fontSize: 13, color: T.muted, marginBottom: 20 }}>
+            <p style={{ fontSize: "var(--text-lg)", fontWeight: 700, color: T.text, marginBottom: 6 }}>Väntande företag</p>
+            <p style={{ fontSize: "var(--text-sm)", color: T.muted, marginBottom: 20 }}>
               Granska och godkänn eller avslå åkerier som registrerat sig.
             </p>
             <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "var(--text-sm)" }}>
                 <thead>
                   <tr style={{ borderBottom: `1px solid ${T.border}` }}>
                     {["Företag", "Org.nr", "Skapad", ""].map((h) => (
@@ -502,7 +502,7 @@ export default function Admin() {
                 <tbody>
                   {companies.length === 0 ? (
                     <tr>
-                      <td colSpan={4} style={{ padding: "40px 12px", textAlign: "center", color: T.muted, fontSize: 13 }}>
+                      <td colSpan={4} style={{ padding: "40px 12px", textAlign: "center", color: T.muted, fontSize: "var(--text-sm)" }}>
                         Inga väntande företag just nu.
                       </td>
                     </tr>
@@ -512,12 +512,12 @@ export default function Admin() {
                         <p style={{ fontWeight: 600, color: T.text, margin: 0, maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                           {c.companyName || c.name}
                         </p>
-                        <p style={{ fontSize: 11, color: T.muted, margin: "2px 0 0", maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        <p style={{ fontSize: "var(--text-2xs)", color: T.muted, margin: "2px 0 0", maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                           {c.email}
                         </p>
                       </td>
-                      <td style={{ padding: "12px", color: T.sub, fontSize: 12 }}>{c.companyOrgNumber || "–"}</td>
-                      <td style={{ padding: "12px", color: T.muted, fontSize: 12, whiteSpace: "nowrap" }}>{fmtDate(c.createdAt)}</td>
+                      <td style={{ padding: "12px", color: T.sub, fontSize: "var(--text-xs)" }}>{c.companyOrgNumber || "–"}</td>
+                      <td style={{ padding: "12px", color: T.muted, fontSize: "var(--text-xs)", whiteSpace: "nowrap" }}>{fmtDate(c.createdAt)}</td>
                       <td style={{ padding: "12px", textAlign: "right" }}>
                         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
                           <Btn variant="success" disabled={loading} onClick={() => handleCompanyStatus(c.id, "VERIFIED")}>Godkänn</Btn>
@@ -538,7 +538,7 @@ export default function Admin() {
         {activeTab === "jobs" && (
           <SectionCard>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10, marginBottom: 20 }}>
-              <p style={{ fontSize: 16, fontWeight: 700, color: T.text, margin: 0 }}>Jobbmoderering</p>
+              <p style={{ fontSize: "var(--text-lg)", fontWeight: 700, color: T.text, margin: 0 }}>Jobbmoderering</p>
               <Btn variant="primary" size="md" onClick={() => setShowCreateJob((v) => !v)}>
                 {showCreateJob ? "Stäng" : "+ Skapa jobb åt åkeri"}
               </Btn>
@@ -549,37 +549,37 @@ export default function Admin() {
                 background: "var(--paper-2)", border: `1px solid ${T.border}`,
                 borderRadius: 14, padding: "24px", marginBottom: 24,
               }}>
-                <p style={{ fontSize: 13, fontWeight: 700, color: T.sub, marginBottom: 16 }}>Skapa jobb åt ett åkeri (utan att de behöver ett konto)</p>
+                <p style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: T.sub, marginBottom: 16 }}>Skapa jobb åt ett åkeri (utan att de behöver ett konto)</p>
                 <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12, marginBottom: 12 }}>
                   <div>
-                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: T.muted, marginBottom: 5 }}>Jobbtitel *</label>
+                    <label style={{ display: "block", fontSize: "var(--text-2xs)", fontWeight: 700, color: T.muted, marginBottom: 5 }}>Jobbtitel *</label>
                     <input required value={createJobForm.title} onChange={(e) => setCreateJobForm((p) => ({ ...p, title: e.target.value }))}
                       placeholder="CE-chaufför fjärrkörning" style={INP} />
                   </div>
                   <div>
-                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: T.muted, marginBottom: 5 }}>Företagsnamn *</label>
+                    <label style={{ display: "block", fontSize: "var(--text-2xs)", fontWeight: 700, color: T.muted, marginBottom: 5 }}>Företagsnamn *</label>
                     <input required value={createJobForm.company} onChange={(e) => setCreateJobForm((p) => ({ ...p, company: e.target.value }))}
                       placeholder="Anderssons Åkeri AB" style={INP} />
                   </div>
                   <div>
-                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: T.muted, marginBottom: 5 }}>Kontakt-epost *</label>
+                    <label style={{ display: "block", fontSize: "var(--text-2xs)", fontWeight: 700, color: T.muted, marginBottom: 5 }}>Kontakt-epost *</label>
                     <input required type="email" value={createJobForm.contact} onChange={(e) => setCreateJobForm((p) => ({ ...p, contact: e.target.value }))}
                       placeholder="rekrytering@akeri.se" style={INP} />
                   </div>
                   <div>
-                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: T.muted, marginBottom: 5 }}>Ort *</label>
+                    <label style={{ display: "block", fontSize: "var(--text-2xs)", fontWeight: 700, color: T.muted, marginBottom: 5 }}>Ort *</label>
                     <input required value={createJobForm.location} onChange={(e) => setCreateJobForm((p) => ({ ...p, location: e.target.value }))}
                       placeholder="Stockholm" style={INP} />
                   </div>
                   <div>
-                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: T.muted, marginBottom: 5 }}>Region *</label>
+                    <label style={{ display: "block", fontSize: "var(--text-2xs)", fontWeight: 700, color: T.muted, marginBottom: 5 }}>Region *</label>
                     <select required value={createJobForm.region} onChange={(e) => setCreateJobForm((p) => ({ ...p, region: e.target.value }))} style={INP}>
                       <option value="">Välj region</option>
                       {REGIONS.map((r) => <option key={r} value={r}>{r}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: T.muted, marginBottom: 5 }}>Typ av körning *</label>
+                    <label style={{ display: "block", fontSize: "var(--text-2xs)", fontWeight: 700, color: T.muted, marginBottom: 5 }}>Typ av körning *</label>
                     <select value={createJobForm.jobType} onChange={(e) => setCreateJobForm((p) => ({ ...p, jobType: e.target.value }))} style={INP}>
                       <option value="fjärrkörning">Fjärrkörning</option>
                       <option value="lokalt">Lokalkörning</option>
@@ -588,7 +588,7 @@ export default function Admin() {
                     </select>
                   </div>
                   <div>
-                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: T.muted, marginBottom: 5 }}>Anställningsform *</label>
+                    <label style={{ display: "block", fontSize: "var(--text-2xs)", fontWeight: 700, color: T.muted, marginBottom: 5 }}>Anställningsform *</label>
                     <select value={createJobForm.employment} onChange={(e) => setCreateJobForm((p) => ({ ...p, employment: e.target.value }))} style={INP}>
                       <option value="fast">Fast</option>
                       <option value="vikariat">Vikariat</option>
@@ -596,20 +596,20 @@ export default function Admin() {
                     </select>
                   </div>
                   <div>
-                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: T.muted, marginBottom: 5 }}>Lön (fritext)</label>
+                    <label style={{ display: "block", fontSize: "var(--text-2xs)", fontWeight: 700, color: T.muted, marginBottom: 5 }}>Lön (fritext)</label>
                     <input value={createJobForm.salary} onChange={(e) => setCreateJobForm((p) => ({ ...p, salary: e.target.value }))}
                       placeholder="35 000 kr/mån" style={INP} />
                   </div>
                   <div>
-                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: T.muted, marginBottom: 5 }}>Extern ansökningslänk</label>
+                    <label style={{ display: "block", fontSize: "var(--text-2xs)", fontWeight: 700, color: T.muted, marginBottom: 5 }}>Extern ansökningslänk</label>
                     <input type="url" value={createJobForm.externalApplyUrl} onChange={(e) => setCreateJobForm((p) => ({ ...p, externalApplyUrl: e.target.value }))}
                       placeholder="https://akeri.se/jobb/apply" style={INP} />
                   </div>
                   <div>
-                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: T.muted, marginBottom: 8 }}>Körkort</label>
+                    <label style={{ display: "block", fontSize: "var(--text-2xs)", fontWeight: 700, color: T.muted, marginBottom: 8 }}>Körkort</label>
                     <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
                       {["CE", "C"].map((l) => (
-                        <label key={l} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: T.sub, cursor: "pointer" }}>
+                        <label key={l} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "var(--text-sm)", color: T.sub, cursor: "pointer" }}>
                           <input type="checkbox" checked={createJobForm.license.includes(l)}
                             onChange={(e) => setCreateJobForm((p) => ({
                               ...p,
@@ -622,7 +622,7 @@ export default function Admin() {
                   </div>
                 </div>
                 <div style={{ marginBottom: 16 }}>
-                  <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: T.muted, marginBottom: 5 }}>Jobbeskrivning *</label>
+                  <label style={{ display: "block", fontSize: "var(--text-2xs)", fontWeight: 700, color: T.muted, marginBottom: 5 }}>Jobbeskrivning *</label>
                   <textarea required rows={4} value={createJobForm.description} onChange={(e) => setCreateJobForm((p) => ({ ...p, description: e.target.value }))}
                     placeholder="Beskriv tjänsten, arbetsuppgifter, krav och vad åkeriet erbjuder..."
                     style={{ ...INP, resize: "vertical" }} />
@@ -658,7 +658,7 @@ export default function Admin() {
             </div>
 
             <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "var(--text-sm)" }}>
                 <thead>
                   <tr style={{ borderBottom: `1px solid ${T.border}` }}>
                     {["Jobb", "Plats", "Status", "Publicerad", ""].map((h) => (
@@ -671,7 +671,7 @@ export default function Admin() {
                 <tbody>
                   {jobs.length === 0 ? (
                     <tr>
-                      <td colSpan={5} style={{ padding: "40px 12px", textAlign: "center", color: T.muted, fontSize: 13 }}>
+                      <td colSpan={5} style={{ padding: "40px 12px", textAlign: "center", color: T.muted, fontSize: "var(--text-sm)" }}>
                         Inga jobb för filtret.
                       </td>
                     </tr>
@@ -679,14 +679,14 @@ export default function Admin() {
                     <tr key={j.id} style={{ borderBottom: `1px solid ${T.border}` }}>
                       <td style={{ padding: "11px 12px" }}>
                         <p style={{ fontWeight: 600, color: T.text, margin: 0, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{j.title}</p>
-                        <p style={{ fontSize: 11, color: T.muted, margin: "2px 0 0", maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{j.company}</p>
+                        <p style={{ fontSize: "var(--text-2xs)", color: T.muted, margin: "2px 0 0", maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{j.company}</p>
                         {j.moderatedAt && (
                           <p style={{ fontSize: 10, color: T.amber, margin: "1px 0 0" }}>Mod: {j.moderationReason || "–"}</p>
                         )}
                       </td>
-                      <td style={{ padding: "11px 12px", color: T.sub, fontSize: 12, whiteSpace: "nowrap" }}>{j.location}, {j.region}</td>
+                      <td style={{ padding: "11px 12px", color: T.sub, fontSize: "var(--text-xs)", whiteSpace: "nowrap" }}>{j.location}, {j.region}</td>
                       <td style={{ padding: "11px 12px" }}><StatusBadge value={j.status} /></td>
-                      <td style={{ padding: "11px 12px", color: T.muted, fontSize: 11, whiteSpace: "nowrap" }}>{fmtDate(j.published)}</td>
+                      <td style={{ padding: "11px 12px", color: T.muted, fontSize: "var(--text-2xs)", whiteSpace: "nowrap" }}>{fmtDate(j.published)}</td>
                       <td style={{ padding: "11px 12px", textAlign: "right" }}>
                         <div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
                           <Btn size="sm" variant="success" disabled={loading} onClick={() => handleJobStatus(j.id, "ACTIVE")}>Aktiv</Btn>
@@ -707,7 +707,7 @@ export default function Admin() {
         ════════════════════════════════════════ */}
         {activeTab === "reports" && (
           <SectionCard>
-            <p style={{ fontSize: 16, fontWeight: 700, color: T.text, marginBottom: 20 }}>Rapporter & trust</p>
+            <p style={{ fontSize: "var(--text-lg)", fontWeight: 700, color: T.text, marginBottom: 20 }}>Rapporter & trust</p>
             <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
               <select
                 value={reportFilters.status}
@@ -723,7 +723,7 @@ export default function Admin() {
               <Btn variant="primary" disabled={loading} onClick={loadReports}>Filtrera</Btn>
             </div>
             <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "var(--text-sm)" }}>
                 <thead>
                   <tr style={{ borderBottom: `1px solid ${T.border}` }}>
                     {["Rapport", "Mål", "Datum", ""].map((h) => (
@@ -736,7 +736,7 @@ export default function Admin() {
                 <tbody>
                   {reports.length === 0 ? (
                     <tr>
-                      <td colSpan={4} style={{ padding: "40px 12px", textAlign: "center", color: T.muted, fontSize: 13 }}>
+                      <td colSpan={4} style={{ padding: "40px 12px", textAlign: "center", color: T.muted, fontSize: "var(--text-sm)" }}>
                         Inga rapporter för filtret.
                       </td>
                     </tr>
@@ -749,11 +749,11 @@ export default function Admin() {
                             {r.category}
                           </span>
                         </div>
-                        <p style={{ fontSize: 12, color: T.sub, margin: 0, maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.description}</p>
+                        <p style={{ fontSize: "var(--text-xs)", color: T.sub, margin: 0, maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.description}</p>
                         <p style={{ fontSize: 10, color: T.muted, margin: "2px 0 0" }}>av {r.reporter?.name || r.reporter?.email}</p>
                         {r.resolutionNote && <p style={{ fontSize: 10, color: T.muted, margin: "2px 0 0", fontStyle: "italic" }}>Beslut: {r.resolutionNote}</p>}
                       </td>
-                      <td style={{ padding: "11px 12px", fontSize: 12 }}>
+                      <td style={{ padding: "11px 12px", fontSize: "var(--text-xs)" }}>
                         {r.reportedUser ? (
                           <>
                             <p style={{ fontWeight: 600, color: T.sub, margin: 0, maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -763,7 +763,7 @@ export default function Admin() {
                           </>
                         ) : "–"}
                       </td>
-                      <td style={{ padding: "11px 12px", color: T.muted, fontSize: 11, whiteSpace: "nowrap" }}>{fmtDate(r.createdAt)}</td>
+                      <td style={{ padding: "11px 12px", color: T.muted, fontSize: "var(--text-2xs)", whiteSpace: "nowrap" }}>{fmtDate(r.createdAt)}</td>
                       <td style={{ padding: "11px 12px", textAlign: "right" }}>
                         <div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
                           <Btn size="sm" disabled={loading} onClick={() => handleReportDecision(r.id, "IN_REVIEW")}>Granska</Btn>
@@ -784,7 +784,7 @@ export default function Admin() {
         ════════════════════════════════════════ */}
         {activeTab === "reviews" && (
           <SectionCard>
-            <p style={{ fontSize: 16, fontWeight: 700, color: T.text, marginBottom: 20 }}>Omdömen</p>
+            <p style={{ fontSize: "var(--text-lg)", fontWeight: 700, color: T.text, marginBottom: 20 }}>Omdömen</p>
             <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
               <select
                 value={reviewFilters.status}
@@ -798,7 +798,7 @@ export default function Admin() {
               <Btn variant="primary" disabled={loading} onClick={loadReviews}>Filtrera</Btn>
             </div>
             <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "var(--text-sm)" }}>
                 <thead>
                   <tr style={{ borderBottom: `1px solid ${T.border}` }}>
                     {["Omdöme", "Parter", "Status", ""].map((h) => (
@@ -811,7 +811,7 @@ export default function Admin() {
                 <tbody>
                   {reviews.length === 0 ? (
                     <tr>
-                      <td colSpan={4} style={{ padding: "40px 12px", textAlign: "center", color: T.muted, fontSize: 13 }}>
+                      <td colSpan={4} style={{ padding: "40px 12px", textAlign: "center", color: T.muted, fontSize: "var(--text-sm)" }}>
                         Inga omdömen för filtret.
                       </td>
                     </tr>
@@ -819,15 +819,15 @@ export default function Admin() {
                     <tr key={r.id} style={{ borderBottom: `1px solid ${T.border}` }}>
                       <td style={{ padding: "11px 12px" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                          <span style={{ fontSize: 12, fontWeight: 700, color: T.amber }}>{r.rating}/5</span>
-                          <span style={{ color: T.amber, fontSize: 13 }}>{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</span>
+                          <span style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: T.amber }}>{r.rating}/5</span>
+                          <span style={{ color: T.amber, fontSize: "var(--text-sm)" }}>{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</span>
                         </div>
-                        <p style={{ fontSize: 12, color: T.sub, margin: 0, maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        <p style={{ fontSize: "var(--text-xs)", color: T.sub, margin: 0, maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                           {r.comment || "Ingen kommentar"}
                         </p>
                         {r.moderationReason && <p style={{ fontSize: 10, color: T.red, margin: "2px 0 0", fontStyle: "italic" }}>{r.moderationReason}</p>}
                       </td>
-                      <td style={{ padding: "11px 12px", fontSize: 12 }}>
+                      <td style={{ padding: "11px 12px", fontSize: "var(--text-xs)" }}>
                         <p style={{ fontWeight: 600, color: T.sub, margin: 0, maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.company?.name || "–"}</p>
                         <p style={{ color: T.muted, margin: "2px 0 0", maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.author?.name || r.author?.email}</p>
                         <p style={{ color: T.muted, margin: "1px 0 0", whiteSpace: "nowrap" }}>{fmtDate(r.createdAt)}</p>
@@ -893,15 +893,15 @@ export default function Admin() {
           <SectionCard>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
               <div>
-                <p style={{ fontSize: 16, fontWeight: 700, color: T.text, margin: 0 }}>Användarfeedback</p>
-                <p style={{ fontSize: 12, color: T.muted, margin: "4px 0 0" }}>
+                <p style={{ fontSize: "var(--text-lg)", fontWeight: 700, color: T.text, margin: 0 }}>Användarfeedback</p>
+                <p style={{ fontSize: "var(--text-xs)", color: T.muted, margin: "4px 0 0" }}>
                   AI-analyserad och prioriterad. Auto-svar skickas till användaren.
                 </p>
               </div>
               <div style={{ display: "flex", gap: 6 }}>
                 {["NEW", "REVIEWED", "DONE", "ALL"].map((f) => (
                   <button key={f} onClick={() => { setFeedbackFilter(f); loadFeedback(f); }} style={{
-                    padding: "5px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer",
+                    padding: "5px 12px", borderRadius: 8, fontSize: "var(--text-xs)", fontWeight: 600, cursor: "pointer",
                     background: feedbackFilter === f ? "var(--green-tint)" : "transparent",
                     color: feedbackFilter === f ? "var(--green-text)" : T.muted,
                     border: `1px solid ${feedbackFilter === f ? "var(--green)" : T.border}`,
@@ -911,9 +911,9 @@ export default function Admin() {
             </div>
 
             {feedbackLoading ? (
-              <div style={{ padding: "40px 0", textAlign: "center", color: T.muted, fontSize: 13 }}>Laddar...</div>
+              <div style={{ padding: "40px 0", textAlign: "center", color: T.muted, fontSize: "var(--text-sm)" }}>Laddar...</div>
             ) : feedbackItems.length === 0 ? (
-              <div style={{ padding: "40px 0", textAlign: "center", color: T.muted, fontSize: 13 }}>
+              <div style={{ padding: "40px 0", textAlign: "center", color: T.muted, fontSize: "var(--text-sm)" }}>
                 Ingen feedback {feedbackFilter !== "ALL" ? `med status ${feedbackFilter}` : ""} ännu.
               </div>
             ) : (
@@ -930,20 +930,20 @@ export default function Admin() {
                       <div style={{ padding: "12px 16px", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                         {fb.priority && (
                           <span style={{
-                            padding: "2px 8px", borderRadius: 6, fontSize: 11, fontWeight: 700,
+                            padding: "2px 8px", borderRadius: 6, fontSize: "var(--text-2xs)", fontWeight: 700,
                             background: `${priorityColor}22`, color: priorityColor, border: `1px solid ${priorityColor}44`,
                           }}>{fb.priority}</span>
                         )}
                         {fb.category && (
                           <span style={{
-                            padding: "2px 8px", borderRadius: 6, fontSize: 11, fontWeight: 600,
+                            padding: "2px 8px", borderRadius: 6, fontSize: "var(--text-2xs)", fontWeight: 600,
                             background: "var(--paper-2)", color: T.muted,
                           }}>{fb.category}</span>
                         )}
-                        <span style={{ fontSize: 13, color: T.text, flex: 1 }}>
+                        <span style={{ fontSize: "var(--text-sm)", color: T.text, flex: 1 }}>
                           {fb.aiSummary || fb.message.slice(0, 80)}
                         </span>
-                        <span style={{ fontSize: 11, color: T.muted, whiteSpace: "nowrap" }}>
+                        <span style={{ fontSize: "var(--text-2xs)", color: T.muted, whiteSpace: "nowrap" }}>
                           {new Date(fb.createdAt).toLocaleDateString("sv-SE")}
                         </span>
                       </div>
@@ -951,18 +951,18 @@ export default function Admin() {
                       {/* Expanded content */}
                       {isExpanded && (
                         <div style={{ borderTop: `1px solid ${T.border}`, padding: "16px" }} onClick={(e) => e.stopPropagation()}>
-                          <p style={{ fontSize: 13, color: T.muted, marginBottom: 12, lineHeight: 1.6 }}>
+                          <p style={{ fontSize: "var(--text-sm)", color: T.muted, marginBottom: 12, lineHeight: 1.6 }}>
                             {fb.message}
                           </p>
                           {fb.aiAction && (
                             <div style={{ background: "var(--green-tint)", border: "1px solid var(--green)", borderRadius: 8, padding: "10px 14px", marginBottom: 12 }}>
-                              <span style={{ fontSize: 11, color: "var(--green-text)", fontWeight: 700 }}>ÅTGÄRD: </span>
-                              <span style={{ fontSize: 12, color: T.text }}>{fb.aiAction}</span>
+                              <span style={{ fontSize: "var(--text-2xs)", color: "var(--green-text)", fontWeight: 700 }}>ÅTGÄRD: </span>
+                              <span style={{ fontSize: "var(--text-xs)", color: T.text }}>{fb.aiAction}</span>
                             </div>
                           )}
                           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                             {fb.senderEmail && (
-                              <span style={{ fontSize: 12, color: T.muted }}>
+                              <span style={{ fontSize: "var(--text-xs)", color: T.muted }}>
                                 {fb.senderName ? `${fb.senderName} — ` : ""}{fb.senderEmail}
                                 {fb.autoReplySentAt && <span style={{ color: "var(--green-text)", marginLeft: 6 }}>✓ Auto-svar skickat</span>}
                               </span>
@@ -970,19 +970,19 @@ export default function Admin() {
                             <div style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
                               {fb.status !== "REVIEWED" && (
                                 <button onClick={() => handleFeedbackStatus(fb.id, "REVIEWED")} style={{
-                                  padding: "5px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer",
+                                  padding: "5px 12px", borderRadius: 8, fontSize: "var(--text-xs)", fontWeight: 600, cursor: "pointer",
                                   background: "transparent", color: T.muted, border: `1px solid ${T.border}`,
                                 }}>Markera granskad</button>
                               )}
                               {fb.status !== "DONE" && (
                                 <button onClick={() => handleFeedbackStatus(fb.id, "DONE")} style={{
-                                  padding: "5px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer",
+                                  padding: "5px 12px", borderRadius: 8, fontSize: "var(--text-xs)", fontWeight: 600, cursor: "pointer",
                                   background: "var(--green)", color: "#fff", border: "none",
                                 }}>Klar</button>
                               )}
                               {fb.status === "DONE" && (
                                 <button onClick={() => handleFeedbackStatus(fb.id, "NEW")} style={{
-                                  padding: "5px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer",
+                                  padding: "5px 12px", borderRadius: 8, fontSize: "var(--text-xs)", fontWeight: 600, cursor: "pointer",
                                   background: "transparent", color: T.muted, border: `1px solid ${T.border}`,
                                 }}>Återöppna</button>
                               )}
@@ -1003,13 +1003,13 @@ export default function Admin() {
         ════════════════════════════════════════ */}
         {activeTab === "schools" && (
           <SectionCard>
-            <p style={{ fontSize: 16, fontWeight: 700, color: T.text, marginBottom: 6 }}>Skolor & utbildare</p>
-            <p style={{ fontSize: 13, color: T.muted, marginBottom: 24 }}>
+            <p style={{ fontSize: "var(--text-lg)", fontWeight: 700, color: T.text, marginBottom: 6 }}>Skolor & utbildare</p>
+            <p style={{ fontSize: "var(--text-sm)", color: T.muted, marginBottom: 24 }}>
               Skolor som har elever på STP. Länkformat: <span style={{ color: T.tealBright, fontFamily: "monospace" }}>transportplattformen.se/skola/skolnamn-med-bindestreck</span>
             </p>
 
             {schools.length === 0 ? (
-              <div style={{ padding: "40px 0", textAlign: "center", color: T.muted, fontSize: 13 }}>
+              <div style={{ padding: "40px 0", textAlign: "center", color: T.muted, fontSize: "var(--text-sm)" }}>
                 Inga elever har registrerat sig med skolnamn ännu.
               </div>
             ) : (
@@ -1028,14 +1028,14 @@ export default function Admin() {
                       borderRadius: 12, padding: "14px 18px",
                     }}>
                       <div>
-                        <p style={{ fontSize: 14, fontWeight: 600, color: T.text, margin: 0 }}>{schoolOnly || raw}</p>
+                        <p style={{ fontSize: "var(--text-base)", fontWeight: 600, color: T.text, margin: 0 }}>{schoolOnly || raw}</p>
                         {typeLabel && (
-                          <p style={{ fontSize: 11, color: T.muted, margin: "3px 0 0" }}>{typeLabel}</p>
+                          <p style={{ fontSize: "var(--text-2xs)", color: T.muted, margin: "3px 0 0" }}>{typeLabel}</p>
                         )}
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
                         <div style={{ textAlign: "right" }}>
-                          <p style={{ fontSize: 18, fontWeight: 800, color: T.tealBright, margin: 0 }}>{s.count}</p>
+                          <p style={{ fontSize: "var(--text-xl)", fontWeight: 800, color: T.tealBright, margin: 0 }}>{s.count}</p>
                           <p style={{ fontSize: 10, color: T.muted, margin: 0 }}>{s.count === 1 ? "elev" : "elever"}</p>
                         </div>
                         {slug && (
@@ -1044,7 +1044,7 @@ export default function Admin() {
                             target="_blank"
                             rel="noreferrer"
                             style={{
-                              fontSize: 11, padding: "6px 12px", borderRadius: 8,
+                              fontSize: "var(--text-2xs)", padding: "6px 12px", borderRadius: 8,
                               border: `1px solid ${T.tealBorder}`, color: T.tealBright,
                               textDecoration: "none", whiteSpace: "nowrap",
                             }}
@@ -1068,8 +1068,8 @@ export default function Admin() {
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
               <div>
-                <p style={{ fontSize: 16, fontWeight: 700, color: T.text, margin: 0 }}>Produktinsikter</p>
-                <p style={{ fontSize: 12, color: T.muted, margin: "4px 0 0" }}>
+                <p style={{ fontSize: "var(--text-lg)", fontWeight: 700, color: T.text, margin: 0 }}>Produktinsikter</p>
+                <p style={{ fontSize: "var(--text-xs)", color: T.muted, margin: "4px 0 0" }}>
                   AI-genererade förbättringsförslag baserat på användarbeteende. Körs automatiskt varje måndag.
                 </p>
               </div>
@@ -1091,9 +1091,9 @@ export default function Admin() {
 
             {insights.length === 0 ? (
               <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 16, padding: "48px 32px", textAlign: "center" }}>
-                <p style={{ fontSize: 24, marginBottom: 12 }}>✦</p>
-                <p style={{ fontSize: 14, fontWeight: 700, color: T.text, marginBottom: 6 }}>Inga insikter ännu</p>
-                <p style={{ fontSize: 13, color: T.muted }}>
+                <p style={{ fontSize: "var(--text-3xl)", marginBottom: 12 }}>✦</p>
+                <p style={{ fontSize: "var(--text-base)", fontWeight: 700, color: T.text, marginBottom: 6 }}>Inga insikter ännu</p>
+                <p style={{ fontSize: "var(--text-sm)", color: T.muted }}>
                   Agenten kör varje måndag kl 07:00 och analyserar hela plattformen.<br />
                   Klicka "Kör nu" för att generera insikter direkt.
                 </p>
@@ -1110,7 +1110,7 @@ export default function Admin() {
                   ].map(({ label, value, color }) => (
                     <div key={label} style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 12, padding: "14px 18px" }}>
                       <p style={{ fontSize: 22, fontWeight: 800, color, margin: 0 }}>{value}</p>
-                      <p style={{ fontSize: 11, color: T.muted, margin: "3px 0 0" }}>{label}</p>
+                      <p style={{ fontSize: "var(--text-2xs)", color: T.muted, margin: "3px 0 0" }}>{label}</p>
                     </div>
                   ))}
                 </div>
@@ -1150,17 +1150,17 @@ export default function Admin() {
                               <span style={{ fontSize: 10, color: T.muted }}>{insight.weekOf}</span>
                             </div>
 
-                            <p style={{ fontSize: 14, fontWeight: 700, color: T.text, margin: "0 0 6px", lineHeight: 1.4 }}>
+                            <p style={{ fontSize: "var(--text-base)", fontWeight: 700, color: T.text, margin: "0 0 6px", lineHeight: 1.4 }}>
                               {insight.title}
                             </p>
-                            <p style={{ fontSize: 13, color: T.sub, margin: "0 0 10px", lineHeight: 1.6 }}>
+                            <p style={{ fontSize: "var(--text-sm)", color: T.sub, margin: "0 0 10px", lineHeight: 1.6 }}>
                               {insight.description}
                             </p>
 
                             {dataPoints.length > 0 && (
                               <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                                 {dataPoints.map((dp, i) => (
-                                  <span key={i} style={{ fontSize: 11, padding: "3px 9px", borderRadius: 99, background: "var(--paper-2)", border: `1px solid ${T.border}`, color: T.muted }}>
+                                  <span key={i} style={{ fontSize: "var(--text-2xs)", padding: "3px 9px", borderRadius: 99, background: "var(--paper-2)", border: `1px solid ${T.border}`, color: T.muted }}>
                                     {dp}
                                   </span>
                                 ))}
@@ -1232,7 +1232,7 @@ export default function Admin() {
                 background: "var(--card)", border: `1px solid ${T.border}`, borderRadius: 18,
                 width: "100%", maxWidth: 380, padding: 28, boxShadow: "0 24px 60px rgba(0,0,0,0.6)",
               }}>
-                <p style={{ fontWeight: 700, color: T.text, fontSize: 14, marginBottom: 14 }}>{reasonModal.label}</p>
+                <p style={{ fontWeight: 700, color: T.text, fontSize: "var(--text-base)", marginBottom: 14 }}>{reasonModal.label}</p>
                 <textarea
                   autoFocus
                   value={reasonInput}
@@ -1242,7 +1242,7 @@ export default function Admin() {
                   style={{ ...INP, resize: "none", marginBottom: 12 }}
                 />
                 {reasonModal.withWarning && (
-                  <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: T.sub, cursor: "pointer", marginBottom: 16 }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: "var(--text-sm)", color: T.sub, cursor: "pointer", marginBottom: 16 }}>
                     <input type="checkbox" checked={warningChecked} onChange={(e) => setWarningChecked(e.target.checked)} />
                     Ge varning till det rapporterade kontot
                   </label>

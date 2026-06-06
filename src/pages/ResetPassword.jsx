@@ -42,18 +42,18 @@ export default function ResetPassword() {
     }
   };
 
-  const inputStyle = { width: "100%", padding: "13px 48px 13px 16px", borderRadius: 12, border: "1px solid var(--line-2)", background: "var(--paper-2)", color: "var(--ink-900)", fontSize: 15, outline: "none", boxSizing: "border-box" };
+  const inputStyle = { width: "100%", padding: "13px 48px 13px 16px", borderRadius: 12, border: "1px solid var(--line-2)", background: "var(--paper-2)", color: "var(--ink-900)", fontSize: "var(--text-md)", outline: "none", boxSizing: "border-box" };
 
   return (
     <main style={{ background: "var(--paper)", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "80px 16px" }}>
       <div style={{ width: "100%", maxWidth: 420, background: "var(--card)", border: "1px solid var(--line)", borderRadius: 24, padding: "40px 36px", boxShadow: "var(--sh)" }}>
         <h1 style={{ fontSize: 26, fontWeight: 900, color: "var(--ink-900)", letterSpacing: "-0.5px", margin: "0 0 10px" }}>Återställ lösenord</h1>
-        <p style={{ fontSize: 15, color: "var(--ink-500)", margin: "0 0 24px" }}>Ange nytt lösenord (minst 8 tecken).</p>
+        <p style={{ fontSize: "var(--text-md)", color: "var(--ink-500)", margin: "0 0 24px" }}>Ange nytt lösenord (minst 8 tecken).</p>
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          {error && <p style={{ fontSize: 14, color: "var(--danger)", padding: "10px 14px", background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 10 }}>{error}</p>}
-          {success && <p style={{ fontSize: 14, color: "var(--success)", padding: "10px 14px", background: "var(--success-tint)", border: "1px solid var(--success)", borderRadius: 10 }}>{success}</p>}
+          {error && <p style={{ fontSize: "var(--text-base)", color: "var(--danger)", padding: "10px 14px", background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 10 }}>{error}</p>}
+          {success && <p style={{ fontSize: "var(--text-base)", color: "var(--success)", padding: "10px 14px", background: "var(--success-tint)", border: "1px solid var(--success)", borderRadius: 10 }}>{success}</p>}
           <div>
-            <label htmlFor="password" style={{ display: "block", fontSize: 13, fontWeight: 600, color: "var(--ink-500)", marginBottom: 8 }}>
+            <label htmlFor="password" style={{ display: "block", fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--ink-500)", marginBottom: 8 }}>
               Nytt lösenord
             </label>
             <div style={{ position: "relative" }}>
@@ -64,7 +64,7 @@ export default function ResetPassword() {
             </div>
           </div>
           <div>
-            <label htmlFor="confirm" style={{ display: "block", fontSize: 13, fontWeight: 600, color: "var(--ink-500)", marginBottom: 8 }}>
+            <label htmlFor="confirm" style={{ display: "block", fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--ink-500)", marginBottom: 8 }}>
               Bekräfta lösenord
             </label>
             <div style={{ position: "relative" }}>
@@ -74,11 +74,11 @@ export default function ResetPassword() {
               </button>
             </div>
           </div>
-          <button type="submit" disabled={loading} style={{ width: "100%", padding: "14px", borderRadius: 14, background: "var(--green)", color: "#fff", fontSize: 15, fontWeight: 800, border: "none", cursor: "pointer", opacity: loading ? 0.5 : 1 }}>
+          <button type="submit" disabled={loading} style={{ width: "100%", padding: "14px", borderRadius: 14, background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, border: "none", cursor: "pointer", opacity: loading ? 0.5 : 1 }}>
             {loading ? "Sparar..." : "Spara nytt lösenord"}
           </button>
         </form>
-        <Link to="/login" style={{ display: "inline-block", marginTop: 20, fontSize: 14, color: "var(--green-text)", textDecoration: "none" }}>
+        <Link to="/login" style={{ display: "inline-block", marginTop: 20, fontSize: "var(--text-base)", color: "var(--green-text)", textDecoration: "none" }}>
           Till login
         </Link>
       </div>

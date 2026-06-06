@@ -35,13 +35,13 @@ function Toggle({ checked, onChange, disabled }) {
   );
 }
 
-const inputStyle = { width: "100%", padding: "11px 14px", borderRadius: 10, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-900)", fontSize: 14, outline: "none", fontFamily: "inherit", boxSizing: "border-box" };
+const inputStyle = { width: "100%", padding: "11px 14px", borderRadius: 10, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-900)", fontSize: "var(--text-base)", outline: "none", fontFamily: "inherit", boxSizing: "border-box" };
 
 function Field({ label, sub, children }) {
   return (
     <div style={{ marginBottom: 18 }}>
-      <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--ink-700)", marginBottom: sub ? 2 : 7 }}>{label}</label>
-      {sub && <div style={{ fontSize: 12, color: "var(--ink-400)", marginBottom: 7 }}>{sub}</div>}
+      <label style={{ display: "block", fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-700)", marginBottom: sub ? 2 : 7 }}>{label}</label>
+      {sub && <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-400)", marginBottom: 7 }}>{sub}</div>}
       {children}
     </div>
   );
@@ -52,8 +52,8 @@ function Card({ title, sub, children, danger }) {
     <div style={{ background: danger ? "var(--danger-tint)" : "var(--card)", border: `1px solid ${danger ? "rgba(239,68,68,0.25)" : "var(--line)"}`, borderRadius: 16, padding: "24px 28px", marginBottom: 16, boxShadow: "var(--sh-sm)" }}>
       {title && (
         <div style={{ marginBottom: sub ? 4 : 18 }}>
-          <h3 style={{ fontSize: 16, fontWeight: 800, color: danger ? "var(--danger)" : "var(--ink-900)", letterSpacing: -0.3, margin: 0 }}>{title}</h3>
-          {sub && <p style={{ fontSize: 13, color: "var(--ink-500)", marginTop: 5, lineHeight: 1.5 }}>{sub}</p>}
+          <h3 style={{ fontSize: "var(--text-lg)", fontWeight: 800, color: danger ? "var(--danger)" : "var(--ink-900)", letterSpacing: -0.3, margin: 0 }}>{title}</h3>
+          {sub && <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", marginTop: 5, lineHeight: 1.5 }}>{sub}</p>}
         </div>
       )}
       {sub && <div style={{ marginTop: 14 }} />}
@@ -66,8 +66,8 @@ function ToggleRow({ label, sub, on, onChange, first }) {
   return (
     <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", padding: "13px 0", borderTop: first ? "none" : "1px solid var(--line)", gap: 24 }}>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 14, fontWeight: 600, color: "var(--ink-900)" }}>{label}</div>
-        {sub && <div style={{ fontSize: 12, color: "var(--ink-500)", marginTop: 2 }}>{sub}</div>}
+        <div style={{ fontSize: "var(--text-base)", fontWeight: 600, color: "var(--ink-900)" }}>{label}</div>
+        {sub && <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", marginTop: 2 }}>{sub}</div>}
       </div>
       <Toggle checked={on} onChange={onChange} />
     </div>
@@ -82,10 +82,10 @@ function DeleteAccountDialog({ isCompany, onClose, onConfirm, loading }) {
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
       <div style={{ background: "var(--card)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 16, padding: "32px 28px", maxWidth: 440, width: "100%", boxShadow: "var(--sh)" }}>
-        <h2 style={{ fontSize: 20, fontWeight: 900, color: "var(--danger)", margin: "0 0 10px", letterSpacing: -0.5 }}>
+        <h2 style={{ fontSize: "var(--text-2xl)", fontWeight: 900, color: "var(--danger)", margin: "0 0 10px", letterSpacing: -0.5 }}>
           {isCompany ? "Ta bort företagskonto" : "Ta bort mitt konto"}
         </h2>
-        <p style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.6, margin: "0 0 22px" }}>
+        <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.6, margin: "0 0 22px" }}>
           Detta är <strong style={{ color: "var(--ink-900)" }}>permanent och kan inte ångras</strong>. All data — {isCompany ? "annonser, konversationer och teammedlemmar" : "ansökningar, meddelanden och din profil"} — raderas omedelbart.
         </p>
         <Field label='Skriv "RADERA" för att bekräfta'>
@@ -102,7 +102,7 @@ function DeleteAccountDialog({ isCompany, onClose, onConfirm, loading }) {
             type="button"
             onClick={onClose}
             disabled={loading}
-            style={{ flex: 1, padding: "11px 16px", borderRadius: 10, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-700)", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}
+            style={{ flex: 1, padding: "11px 16px", borderRadius: 10, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-700)", fontWeight: 700, fontSize: "var(--text-sm)", cursor: "pointer", fontFamily: "inherit" }}
           >
             Avbryt
           </button>
@@ -110,7 +110,7 @@ function DeleteAccountDialog({ isCompany, onClose, onConfirm, loading }) {
             type="button"
             onClick={onConfirm}
             disabled={!confirmed || loading}
-            style={{ flex: 1, padding: "11px 16px", borderRadius: 10, background: confirmed ? "rgba(239,68,68,0.15)" : "rgba(239,68,68,0.05)", border: `1px solid ${confirmed ? "rgba(239,68,68,0.5)" : "rgba(239,68,68,0.15)"}`, color: confirmed ? "var(--danger)" : "rgba(239,68,68,0.4)", fontWeight: 700, fontSize: 13, cursor: confirmed && !loading ? "pointer" : "not-allowed", fontFamily: "inherit", transition: "all .15s" }}
+            style={{ flex: 1, padding: "11px 16px", borderRadius: 10, background: confirmed ? "rgba(239,68,68,0.15)" : "rgba(239,68,68,0.05)", border: `1px solid ${confirmed ? "rgba(239,68,68,0.5)" : "rgba(239,68,68,0.15)"}`, color: confirmed ? "var(--danger)" : "rgba(239,68,68,0.4)", fontWeight: 700, fontSize: "var(--text-sm)", cursor: confirmed && !loading ? "pointer" : "not-allowed", fontFamily: "inherit", transition: "all .15s" }}
           >
             {loading ? "Raderar…" : "Radera permanent"}
           </button>
@@ -149,8 +149,8 @@ function PasswordCard() {
   return (
     <Card title="Lösenord">
       <form onSubmit={handleSubmit} style={{ maxWidth: 400 }}>
-        {error && <div style={{ padding: "10px 14px", borderRadius: 10, background: "var(--danger-tint)", border: "1px solid rgba(239,68,68,0.2)", fontSize: 13, color: "var(--danger)", marginBottom: 14 }}>{error}</div>}
-        {success && <div style={{ padding: "10px 14px", borderRadius: 10, background: "var(--success-tint)", border: "1px solid rgba(31,122,58,0.2)", fontSize: 13, color: "var(--success)", marginBottom: 14 }}>{success}</div>}
+        {error && <div style={{ padding: "10px 14px", borderRadius: 10, background: "var(--danger-tint)", border: "1px solid rgba(239,68,68,0.2)", fontSize: "var(--text-sm)", color: "var(--danger)", marginBottom: 14 }}>{error}</div>}
+        {success && <div style={{ padding: "10px 14px", borderRadius: 10, background: "var(--success-tint)", border: "1px solid rgba(31,122,58,0.2)", fontSize: "var(--text-sm)", color: "var(--success)", marginBottom: 14 }}>{success}</div>}
         <Field label="Nuvarande lösenord">
           <div style={{ position: "relative" }}>
             <input type={showCurrent ? "text" : "password"} value={form.current} onChange={e => setForm(p => ({ ...p, current: e.target.value }))} style={{ ...inputStyle, paddingRight: 44 }} />
@@ -168,7 +168,7 @@ function PasswordCard() {
             <input type={showNext ? "text" : "password"} value={form.confirm} onChange={e => setForm(p => ({ ...p, confirm: e.target.value }))} style={inputStyle} />
           </Field>
         </div>
-        <button type="submit" disabled={loading} style={{ padding: "10px 18px", borderRadius: 10, background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: 13, border: "none", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.6 : 1, fontFamily: "inherit", marginTop: 4 }}>
+        <button type="submit" disabled={loading} style={{ padding: "10px 18px", borderRadius: 10, background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: "var(--text-sm)", border: "none", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.6 : 1, fontFamily: "inherit", marginTop: 4 }}>
           {loading ? "Sparar…" : "Uppdatera lösenord"}
         </button>
       </form>
@@ -220,7 +220,7 @@ function DriverKontoSection({ user, profile }) {
           <input style={{ ...inputStyle, color: "var(--ink-400)" }} value={user?.email || ""} disabled />
         </Field>
         <div style={{ marginTop: 4 }}>
-          <Link to="/profil" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 16px", borderRadius: 10, background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.2)", fontSize: 13, fontWeight: 600, color: "var(--green-text)", textDecoration: "none" }}>
+          <Link to="/profil" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 16px", borderRadius: 10, background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.2)", fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--green-text)", textDecoration: "none" }}>
             Redigera profil (telefon, ort, erfarenhet m.m.) →
           </Link>
         </div>
@@ -234,7 +234,7 @@ function DriverKontoSection({ user, profile }) {
         <button
           type="button"
           onClick={() => { localStorage.removeItem("stp_driver_tour_done"); window.location.href = "/jobb"; }}
-          style={{ padding: "10px 18px", borderRadius: 10, background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.2)", color: "var(--green-text)", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}
+          style={{ padding: "10px 18px", borderRadius: 10, background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.2)", color: "var(--green-text)", fontWeight: 700, fontSize: "var(--text-sm)", cursor: "pointer", fontFamily: "inherit" }}
         >
           Starta om guiden
         </button>
@@ -244,7 +244,7 @@ function DriverKontoSection({ user, profile }) {
         <button
           type="button"
           onClick={() => setShowDeleteDialog(true)}
-          style={{ padding: "10px 18px", borderRadius: 10, background: "var(--danger-tint)", border: "1px solid rgba(239,68,68,0.3)", color: "var(--danger)", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}
+          style={{ padding: "10px 18px", borderRadius: 10, background: "var(--danger-tint)", border: "1px solid rgba(239,68,68,0.3)", color: "var(--danger)", fontWeight: 700, fontSize: "var(--text-sm)", cursor: "pointer", fontFamily: "inherit" }}
         >
           Ta bort mitt konto
         </button>
@@ -284,7 +284,7 @@ function DriverAnstallningsSection({ profile }) {
 
   return (
     <Card title="Vad letar du efter?" sub="Vilken typ av anställning är du intresserad av?">
-      {error && <div style={{ padding: "10px 14px", borderRadius: 10, background: "var(--danger-tint)", border: "1px solid rgba(239,68,68,0.2)", fontSize: 13, color: "var(--danger)", marginBottom: 14 }}>{error}</div>}
+      {error && <div style={{ padding: "10px 14px", borderRadius: 10, background: "var(--danger-tint)", border: "1px solid rgba(239,68,68,0.2)", fontSize: "var(--text-sm)", color: "var(--danger)", marginBottom: 14 }}>{error}</div>}
       <Field label="Anställningsform">
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {EMPLOY_OPTS.map(([v, l]) => {
@@ -294,7 +294,7 @@ function DriverAnstallningsSection({ profile }) {
                 key={v}
                 type="button"
                 onClick={() => setEmployment(toggle(employment, v))}
-                style={{ padding: "8px 16px", borderRadius: 99, background: on ? "var(--green-tint)" : "var(--paper-2)", border: `1px solid ${on ? "rgba(31,95,92,0.3)" : "var(--line)"}`, fontSize: 13, fontWeight: 600, color: on ? "var(--green-text)" : "var(--ink-500)", cursor: "pointer", fontFamily: "inherit" }}
+                style={{ padding: "8px 16px", borderRadius: 99, background: on ? "var(--green-tint)" : "var(--paper-2)", border: `1px solid ${on ? "rgba(31,95,92,0.3)" : "var(--line)"}`, fontSize: "var(--text-sm)", fontWeight: 600, color: on ? "var(--green-text)" : "var(--ink-500)", cursor: "pointer", fontFamily: "inherit" }}
               >
                 {on ? "✓ " : ""}{l}
               </button>
@@ -306,7 +306,7 @@ function DriverAnstallningsSection({ profile }) {
         type="button"
         onClick={handleSave}
         disabled={saving}
-        style={{ padding: "10px 18px", borderRadius: 10, background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: 13, border: "none", cursor: saving ? "not-allowed" : "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 8 }}
+        style={{ padding: "10px 18px", borderRadius: 10, background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: "var(--text-sm)", border: "none", cursor: saving ? "not-allowed" : "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 8 }}
       >
         {saved ? <><Icon n="check" s={14} /> Sparat!</> : saving ? "Sparar…" : "Spara preferens"}
       </button>
@@ -335,10 +335,10 @@ function DriverVerifieringSection({ profile }) {
             <Icon n={verifiedCount > 0 ? "check" : "shield"} s={17} c={verifiedCount > 0 ? "var(--success)" : "var(--amber)"} />
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 14, fontWeight: 800, color: verifiedCount > 0 ? "var(--success)" : "var(--amber)" }}>
+            <div style={{ fontSize: "var(--text-base)", fontWeight: 800, color: verifiedCount > 0 ? "var(--success)" : "var(--amber)" }}>
               {verifiedCount > 0 ? "Du har dokument registrerade" : "Inga dokument uppladdade"}
             </div>
-            <div style={{ fontSize: 12, color: "var(--ink-500)" }}>
+            <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)" }}>
               {verifiedCount} av 3 verifieringssteg slutförda
             </div>
           </div>
@@ -354,10 +354,10 @@ function DriverVerifieringSection({ profile }) {
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
-                  <span style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)" }}>{it.l}</span>
+                  <span style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)" }}>{it.l}</span>
                   {it.verified && <span style={{ padding: "2px 8px", borderRadius: 99, background: "var(--success-tint)", border: "1px solid rgba(31,122,58,0.2)", fontSize: 10, fontWeight: 800, color: "var(--success)", letterSpacing: 0.5 }}>REGISTRERAT</span>}
                 </div>
-                <div style={{ fontSize: 12, color: "var(--ink-500)" }}>{it.sub}</div>
+                <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)" }}>{it.sub}</div>
               </div>
             </div>
           ))}
@@ -365,7 +365,7 @@ function DriverVerifieringSection({ profile }) {
 
         <div style={{ padding: "16px 18px", borderRadius: 12, background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.2)", display: "flex", alignItems: "flex-start", gap: 14 }}>
           <Icon n="mail" s={18} c="var(--amber)" />
-          <div style={{ fontSize: 13, color: "var(--ink-700)", lineHeight: 1.6 }}>
+          <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-700)", lineHeight: 1.6 }}>
             <strong style={{ color: "var(--amber)" }}>Verifiering sker via support.</strong>{" "}
             Skicka dina dokument till{" "}
             <a href="mailto:support@transportplattformen.se" style={{ color: "var(--amber)", textDecoration: "underline" }}>
@@ -478,14 +478,14 @@ function SekretessSection({ profile: initialProfile }) {
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
                 <div style={{ width: 10, height: 10, borderRadius: "50%", background: openToWork ? "var(--success)" : "var(--ink-300)", flexShrink: 0 }} />
-                <span style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)" }}>Söker aktivt jobb</span>
+                <span style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)" }}>Söker aktivt jobb</span>
                 {openToWork && (
-                  <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.5, textTransform: "uppercase", padding: "2px 8px", borderRadius: 99, background: "var(--success)", color: "#fff" }}>
+                  <span style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 0.5, textTransform: "uppercase", padding: "2px 8px", borderRadius: 99, background: "var(--success)", color: "#fff" }}>
                     SÖKER JOBB
                   </span>
                 )}
               </div>
-              <p style={{ fontSize: 12.5, color: "var(--ink-500)", lineHeight: 1.55, margin: 0 }}>
+              <p style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", lineHeight: 1.55, margin: 0 }}>
                 {openToWork
                   ? "En grön ring visas runt din profilbild — åkerier ser att du aktivt söker."
                   : "Slå på för att visa en grön ring runt din profilbild och signalera att du är öppen för erbjudanden."}
@@ -517,7 +517,7 @@ function SekretessSection({ profile: initialProfile }) {
       </Card>
 
       {saving && (
-        <p style={{ fontSize: 12, color: "var(--ink-500)", textAlign: "right", marginTop: -8 }}>Sparar…</p>
+        <p style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", textAlign: "right", marginTop: -8 }}>Sparar…</p>
       )}
     </>
   );
@@ -558,7 +558,7 @@ function SokprefSection({ profile: initialProfile }) {
             const on = licenses.includes(l);
             return (
               <button key={l} type="button" onClick={() => toggle("licenses", l)}
-                style={{ padding: "8px 16px", borderRadius: 99, background: on ? "var(--success-tint)" : "var(--paper-2)", border: `1px solid ${on ? "var(--success)" : "var(--line)"}`, fontSize: 13, fontWeight: 700, color: on ? "var(--success)" : "var(--ink-500)", cursor: "pointer", fontFamily: "inherit" }}>
+                style={{ padding: "8px 16px", borderRadius: 99, background: on ? "var(--success-tint)" : "var(--paper-2)", border: `1px solid ${on ? "var(--success)" : "var(--line)"}`, fontSize: "var(--text-sm)", fontWeight: 700, color: on ? "var(--success)" : "var(--ink-500)", cursor: "pointer", fontFamily: "inherit" }}>
                 {on && "✓ "}{l}
               </button>
             );
@@ -575,7 +575,7 @@ function SokprefSection({ profile: initialProfile }) {
                 setLocalProfile((p) => ({ ...p, availability: next }));
                 updateProfile({ availability: next }).catch(() => {});
               }}
-                style={{ padding: "8px 16px", borderRadius: 99, background: on ? "var(--amber-tint)" : "var(--paper-2)", border: `1px solid ${on ? "var(--amber)" : "var(--line)"}`, fontSize: 13, fontWeight: 600, color: on ? "var(--amber-text)" : "var(--ink-500)", cursor: "pointer", fontFamily: "inherit" }}>
+                style={{ padding: "8px 16px", borderRadius: 99, background: on ? "var(--amber-tint)" : "var(--paper-2)", border: `1px solid ${on ? "var(--amber)" : "var(--line)"}`, fontSize: "var(--text-sm)", fontWeight: 600, color: on ? "var(--amber-text)" : "var(--ink-500)", cursor: "pointer", fontFamily: "inherit" }}>
                 {l}
               </button>
             );
@@ -588,14 +588,14 @@ function SokprefSection({ profile: initialProfile }) {
             const on = segments.includes(s);
             return (
               <button key={s} type="button" onClick={() => toggle("secondarySegments", s)}
-                style={{ padding: "7px 14px", borderRadius: 99, background: on ? "var(--green-tint)" : "var(--paper-2)", border: `1px solid ${on ? "var(--green)" : "var(--line)"}`, fontSize: 13, fontWeight: 600, color: on ? "var(--green-text)" : "var(--ink-500)", cursor: "pointer", fontFamily: "inherit" }}>
+                style={{ padding: "7px 14px", borderRadius: 99, background: on ? "var(--green-tint)" : "var(--paper-2)", border: `1px solid ${on ? "var(--green)" : "var(--line)"}`, fontSize: "var(--text-sm)", fontWeight: 600, color: on ? "var(--green-text)" : "var(--ink-500)", cursor: "pointer", fontFamily: "inherit" }}>
                 {s}
               </button>
             );
           })}
         </div>
       </Field>
-      {saving && <div style={{ fontSize: 11.5, color: "var(--ink-400)", marginTop: 8 }}>Sparar…</div>}
+      {saving && <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", marginTop: 8 }}>Sparar…</div>}
     </Card>
   );
 }
@@ -651,8 +651,8 @@ function InviteSection() {
 
   return (
     <Card title="Bjud in kollega" sub="Skicka en inbjudan till en kollega så kan de logga in på ert STP-konto.">
-      {error && <div style={{ padding: "10px 14px", borderRadius: 10, background: "var(--danger-tint)", border: "1px solid rgba(239,68,68,0.2)", fontSize: 13, color: "var(--danger)", marginBottom: 14 }}>{error}</div>}
-      {success && <div style={{ padding: "10px 14px", borderRadius: 10, background: "var(--success-tint)", border: "1px solid rgba(31,122,58,0.2)", fontSize: 13, color: "var(--success)", marginBottom: 14 }}>{success}</div>}
+      {error && <div style={{ padding: "10px 14px", borderRadius: 10, background: "var(--danger-tint)", border: "1px solid rgba(239,68,68,0.2)", fontSize: "var(--text-sm)", color: "var(--danger)", marginBottom: 14 }}>{error}</div>}
+      {success && <div style={{ padding: "10px 14px", borderRadius: 10, background: "var(--success-tint)", border: "1px solid rgba(31,122,58,0.2)", fontSize: "var(--text-sm)", color: "var(--success)", marginBottom: 14 }}>{success}</div>}
       <form onSubmit={handleSend} style={{ display: "flex", gap: 8, marginBottom: 18 }}>
         <input
           style={{ ...inputStyle, flex: 1 }}
@@ -665,28 +665,28 @@ function InviteSection() {
         <button
           type="submit"
           disabled={sending}
-          style={{ padding: "11px 18px", borderRadius: 10, background: "var(--green)", border: "none", color: "#fff", fontWeight: 700, fontSize: 13, cursor: sending ? "not-allowed" : "pointer", fontFamily: "inherit", whiteSpace: "nowrap", opacity: sending ? 0.6 : 1 }}
+          style={{ padding: "11px 18px", borderRadius: 10, background: "var(--green)", border: "none", color: "#fff", fontWeight: 700, fontSize: "var(--text-sm)", cursor: sending ? "not-allowed" : "pointer", fontFamily: "inherit", whiteSpace: "nowrap", opacity: sending ? 0.6 : 1 }}
         >
           {sending ? "Skickar…" : "Skicka inbjudan"}
         </button>
       </form>
 
       {loading ? (
-        <p style={{ fontSize: 13, color: "var(--ink-400)", margin: 0 }}>Laddar inbjudningar…</p>
+        <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-400)", margin: 0 }}>Laddar inbjudningar…</p>
       ) : invites.length === 0 ? (
-        <p style={{ fontSize: 13, color: "var(--ink-400)", margin: 0 }}>Inga väntande inbjudningar.</p>
+        <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-400)", margin: 0 }}>Inga väntande inbjudningar.</p>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          <p style={{ fontSize: 12, fontWeight: 700, color: "var(--ink-400)", textTransform: "uppercase", letterSpacing: 0.8, margin: "0 0 4px" }}>Väntande inbjudningar</p>
+          <p style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--ink-400)", textTransform: "uppercase", letterSpacing: 0.8, margin: "0 0 4px" }}>Väntande inbjudningar</p>
           {invites.map(inv => (
             <div key={inv.id} style={{ padding: "12px 14px", background: "var(--paper-2)", border: "1px solid var(--line)", borderRadius: 10, display: "flex", alignItems: "center", gap: 12 }}>
               <Icon n="mail" s={15} c="var(--ink-400)" />
-              <span style={{ flex: 1, fontSize: 13, color: "var(--ink-700)" }}>{inv.email}</span>
-              <span style={{ fontSize: 11, color: "var(--ink-400)", marginRight: 8 }}>Väntar</span>
+              <span style={{ flex: 1, fontSize: "var(--text-sm)", color: "var(--ink-700)" }}>{inv.email}</span>
+              <span style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", marginRight: 8 }}>Väntar</span>
               <button
                 type="button"
                 onClick={() => handleRevoke(inv.id)}
-                style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 10px", borderRadius: 8, background: "var(--danger-tint)", border: "1px solid rgba(239,68,68,0.2)", color: "var(--danger)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}
+                style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 10px", borderRadius: 8, background: "var(--danger-tint)", border: "1px solid rgba(239,68,68,0.2)", color: "var(--danger)", fontSize: "var(--text-xs)", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}
               >
                 <Icon n="trash" s={12} /> Återkalla
               </button>
@@ -736,8 +736,8 @@ function CompanyKontoSection({ user }) {
             ["Status", user?.emailVerifiedAt ? "E-post verifierad" : "E-post ej verifierad"],
           ].map(([label, val]) => (
             <div key={label} style={{ padding: "14px 16px", borderRadius: 12, background: "var(--paper-2)", border: "1px solid var(--line)" }}>
-              <p style={{ fontSize: 11, fontWeight: 600, color: "var(--ink-400)", textTransform: "uppercase", letterSpacing: "0.8px", margin: "0 0 4px" }}>{label}</p>
-              <p style={{ fontSize: 14, fontWeight: 600, color: label === "Status" ? (user?.emailVerifiedAt ? "var(--success)" : "var(--amber)") : "var(--ink-900)", margin: 0, wordBreak: "break-all" }}>{val}</p>
+              <p style={{ fontSize: "var(--text-2xs)", fontWeight: 600, color: "var(--ink-400)", textTransform: "uppercase", letterSpacing: "0.8px", margin: "0 0 4px" }}>{label}</p>
+              <p style={{ fontSize: "var(--text-base)", fontWeight: 600, color: label === "Status" ? (user?.emailVerifiedAt ? "var(--success)" : "var(--amber)") : "var(--ink-900)", margin: 0, wordBreak: "break-all" }}>{val}</p>
             </div>
           ))}
         </div>
@@ -746,10 +746,10 @@ function CompanyKontoSection({ user }) {
             onMouseEnter={e => e.currentTarget.style.borderColor = "rgba(31,95,92,0.4)"}
             onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(31,95,92,0.2)"}>
             <div>
-              <p style={{ fontSize: 14, fontWeight: 600, color: "var(--ink-900)", margin: "0 0 2px" }}>Redigera företagsprofil</p>
-              <p style={{ fontSize: 12, color: "var(--ink-500)", margin: 0 }}>Beskrivning, kontaktuppgifter, bransch</p>
+              <p style={{ fontSize: "var(--text-base)", fontWeight: 600, color: "var(--ink-900)", margin: "0 0 2px" }}>Redigera företagsprofil</p>
+              <p style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", margin: 0 }}>Beskrivning, kontaktuppgifter, bransch</p>
             </div>
-            <span style={{ color: "var(--green-text)", fontSize: 16 }}>→</span>
+            <span style={{ color: "var(--green-text)", fontSize: "var(--text-lg)" }}>→</span>
           </Link>
         </div>
       </Card>
@@ -762,14 +762,14 @@ function CompanyKontoSection({ user }) {
             { n: user?.name || "Admin", e: user?.email || "", r: "Admin" },
           ].map(m => (
             <div key={m.e} style={{ padding: "12px 14px", background: "var(--paper-2)", border: "1px solid var(--line)", borderRadius: 10, display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{ width: 36, height: 36, borderRadius: 99, background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 13, color: "#fff" }}>
+              <div style={{ width: 36, height: 36, borderRadius: 99, background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "var(--text-sm)", color: "#fff" }}>
                 {(m.n || "?").split(" ").map(x => x[0]).join("").slice(0, 2).toUpperCase()}
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink-900)" }}>{m.n}</div>
-                <div style={{ fontSize: 12, color: "var(--ink-500)" }}>{m.e}</div>
+                <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-900)" }}>{m.n}</div>
+                <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)" }}>{m.e}</div>
               </div>
-              <span style={{ padding: "3px 9px", borderRadius: 99, background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.2)", fontSize: 11, fontWeight: 700, color: "var(--amber)" }}>{m.r}</span>
+              <span style={{ padding: "3px 9px", borderRadius: 99, background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.2)", fontSize: "var(--text-2xs)", fontWeight: 700, color: "var(--amber)" }}>{m.r}</span>
             </div>
           ))}
         </div>
@@ -781,7 +781,7 @@ function CompanyKontoSection({ user }) {
         <button
           type="button"
           onClick={() => { localStorage.removeItem("stp_company_tour_done"); window.location.href = "/foretag"; }}
-          style={{ padding: "10px 18px", borderRadius: 10, background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.2)", color: "var(--green-text)", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}
+          style={{ padding: "10px 18px", borderRadius: 10, background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.2)", color: "var(--green-text)", fontWeight: 700, fontSize: "var(--text-sm)", cursor: "pointer", fontFamily: "inherit" }}
         >
           Starta om guiden
         </button>
@@ -791,7 +791,7 @@ function CompanyKontoSection({ user }) {
         <button
           type="button"
           onClick={() => setShowDeleteDialog(true)}
-          style={{ padding: "10px 18px", borderRadius: 10, background: "var(--danger-tint)", border: "1px solid rgba(239,68,68,0.3)", color: "var(--danger)", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}
+          style={{ padding: "10px 18px", borderRadius: 10, background: "var(--danger-tint)", border: "1px solid rgba(239,68,68,0.3)", color: "var(--danger)", fontWeight: 700, fontSize: "var(--text-sm)", cursor: "pointer", fontFamily: "inherit" }}
         >
           Ta bort företagskonto
         </button>
@@ -840,7 +840,7 @@ function PraktikToggleCard() {
         first
       />
       {saved && (
-        <div style={{ marginTop: 10, fontSize: 12, color: "var(--success)", display: "flex", alignItems: "center", gap: 6 }}>
+        <div style={{ marginTop: 10, fontSize: "var(--text-xs)", color: "var(--success)", display: "flex", alignItems: "center", gap: 6 }}>
           <Icon n="check" s={13} c="var(--success)" /> Sparat
         </div>
       )}
@@ -859,10 +859,10 @@ function CompanyVerifieringSection({ user }) {
           <Icon n={isVerified ? "check" : "shield"} s={17} c={isVerified ? "var(--success)" : "var(--amber)"} />
         </div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 14, fontWeight: 800, color: isVerified ? "var(--success)" : "var(--amber)" }}>
+          <div style={{ fontSize: "var(--text-base)", fontWeight: 800, color: isVerified ? "var(--success)" : "var(--amber)" }}>
             {isVerified ? "Verifierat företag" : "Verifiering pågår"}
           </div>
-          <div style={{ fontSize: 12, color: "var(--ink-500)" }}>
+          <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)" }}>
             {isVerified
               ? "Ert företag är granskat och godkänt av STP."
               : "Vår granskare kontrollerar era uppgifter. Detta tar vanligtvis 1–2 arbetsdagar."}
@@ -871,7 +871,7 @@ function CompanyVerifieringSection({ user }) {
       </div>
 
       {!isVerified && (
-        <div style={{ padding: "14px 16px", borderRadius: 11, background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.2)", fontSize: 13, color: "var(--ink-700)", lineHeight: 1.6 }}>
+        <div style={{ padding: "14px 16px", borderRadius: 11, background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.2)", fontSize: "var(--text-sm)", color: "var(--ink-700)", lineHeight: 1.6 }}>
           Har du frågor om verifieringen?{" "}
           <a href="mailto:support@transportplattformen.se" style={{ color: "var(--amber)", textDecoration: "underline" }}>
             Kontakta support
@@ -954,7 +954,7 @@ export default function Settings() {
     }
     if (section === "notiser") {
       return settingsLoading ? (
-        <Card><p style={{ fontSize: 13, color: "var(--ink-400)", margin: 0 }}>Laddar inställningar…</p></Card>
+        <Card><p style={{ fontSize: "var(--text-sm)", color: "var(--ink-400)", margin: 0 }}>Laddar inställningar…</p></Card>
       ) : (
         <NotifSection isDriver={isDriver} initialSettings={notifSettings} onToggle={handleToggle} />
       );
@@ -972,8 +972,8 @@ export default function Settings() {
       {!isMobile && (
         <div style={{ background: "var(--paper)", borderBottom: "1px solid var(--line)", paddingTop: 32, paddingBottom: 24 }}>
           <div style={{ maxWidth: 1040, margin: "0 auto", padding: "0 32px" }}>
-            <p style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 10 }}>Konto</p>
-            <h1 style={{ fontSize: 34, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.2, lineHeight: 1.15, margin: 0 }}>Inställningar</h1>
+            <p style={{ fontSize: "var(--text-2xs)", fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 10 }}>Konto</p>
+            <h1 style={{ fontSize: "var(--text-5xl)", fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.2, lineHeight: 1.15, margin: 0 }}>Inställningar</h1>
           </div>
         </div>
       )}
@@ -993,7 +993,7 @@ export default function Settings() {
             {section !== null ? (
               /* Detail view */
               <div>
-                <button type="button" onClick={() => setSection(null)} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0", background: "none", border: "none", cursor: "pointer", color: "var(--green-text)", fontSize: 14, fontWeight: 700, fontFamily: "inherit", marginBottom: 20 }}>
+                <button type="button" onClick={() => setSection(null)} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0", background: "none", border: "none", cursor: "pointer", color: "var(--green-text)", fontSize: "var(--text-base)", fontWeight: 700, fontFamily: "inherit", marginBottom: 20 }}>
                   ← Tillbaka
                 </button>
                 {renderContent()}
@@ -1009,7 +1009,7 @@ export default function Settings() {
                     </div>
                   ) : (
                     <div style={{ position: "relative", flexShrink: 0 }}>
-                      <div style={{ width: 56, height: 56, borderRadius: 99, background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 18, color: "#fff" }}>
+                      <div style={{ width: 56, height: 56, borderRadius: 99, background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "var(--text-xl)", color: "#fff" }}>
                         {(user?.name || "?").split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()}
                       </div>
                       <div style={{ position: "absolute", bottom: -2, right: -2, width: 18, height: 18, borderRadius: 99, background: "var(--success)", border: "3px solid var(--card)", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -1018,8 +1018,8 @@ export default function Settings() {
                     </div>
                   )}
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 16, fontWeight: 800, color: "var(--ink-900)", marginBottom: 2 }}>{user?.name || "—"}</div>
-                    <div style={{ fontSize: 11.5, color: "var(--ink-500)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user?.email || ""}</div>
+                    <div style={{ fontSize: "var(--text-lg)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 2 }}>{user?.name || "—"}</div>
+                    <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user?.email || ""}</div>
                     {user?.status === "VERIFIED" && (
                       <div style={{ marginTop: 4, padding: "2px 8px", borderRadius: 99, background: "var(--success-tint)", border: "1px solid rgba(31,122,58,0.2)", display: "inline-block", fontSize: 10, fontWeight: 800, color: "var(--success)", letterSpacing: 0.5 }}>✓ VERIFIERAD</div>
                     )}
@@ -1033,8 +1033,8 @@ export default function Settings() {
                       <div style={{ width: 30, height: 30, borderRadius: 8, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                         <Icon n={s.i} s={14} c="var(--green-text)" />
                       </div>
-                      <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: "var(--ink-900)" }}>{s.l}</span>
-                      <span style={{ color: "var(--ink-300)", fontSize: 12 }}>›</span>
+                      <span style={{ flex: 1, fontSize: "var(--text-base)", fontWeight: 600, color: "var(--ink-900)" }}>{s.l}</span>
+                      <span style={{ color: "var(--ink-300)", fontSize: "var(--text-xs)" }}>›</span>
                     </button>
                   ))}
                 </div>
@@ -1044,11 +1044,11 @@ export default function Settings() {
                     <div style={{ width: 30, height: 30, borderRadius: 8, background: "var(--danger-tint)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                       <Icon n="trash" s={14} c="var(--danger)" />
                     </div>
-                    <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: "var(--danger)" }}>Logga ut</span>
+                    <span style={{ flex: 1, fontSize: "var(--text-base)", fontWeight: 600, color: "var(--danger)" }}>Logga ut</span>
                   </Link>
                 </div>
 
-                <div style={{ textAlign: "center", fontSize: 11, color: "var(--ink-300)", paddingBottom: 8 }}>STP v2.4.1</div>
+                <div style={{ textAlign: "center", fontSize: "var(--text-2xs)", color: "var(--ink-300)", paddingBottom: 8 }}>STP v2.4.1</div>
               </div>
             )}
           </div>
@@ -1063,7 +1063,7 @@ export default function Settings() {
                     key={s.k}
                     type="button"
                     onClick={() => setSection(s.k)}
-                    style={{ display: "inline-flex", alignItems: "center", gap: 11, padding: "11px 14px", borderRadius: 10, textAlign: "left", background: active ? "var(--green-tint)" : "transparent", color: active ? "var(--green-text)" : "var(--ink-700)", fontSize: 14, fontWeight: active ? 700 : 500, border: "none", cursor: "pointer", fontFamily: "inherit", transition: "background .12s", whiteSpace: "nowrap" }}
+                    style={{ display: "inline-flex", alignItems: "center", gap: 11, padding: "11px 14px", borderRadius: 10, textAlign: "left", background: active ? "var(--green-tint)" : "transparent", color: active ? "var(--green-text)" : "var(--ink-700)", fontSize: "var(--text-base)", fontWeight: active ? 700 : 500, border: "none", cursor: "pointer", fontFamily: "inherit", transition: "background .12s", whiteSpace: "nowrap" }}
                     onMouseEnter={e => { if (!active) e.currentTarget.style.background = "var(--card-2)"; }}
                     onMouseLeave={e => { if (!active) e.currentTarget.style.background = "transparent"; }}
                   >

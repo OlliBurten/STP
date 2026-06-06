@@ -191,7 +191,7 @@ export default function Home() {
               background: "rgba(245,166,35,0.15)",
               border: "1px solid rgba(245,166,35,0.35)",
               color: "#f5c875",
-              fontSize: 11.5, fontWeight: 700,
+              fontSize: "var(--text-2xs)", fontWeight: 700,
               letterSpacing: 1.4, textTransform: "uppercase",
             }}>
               <span style={{ width: 6, height: 6, borderRadius: 3, background: "#f5c875", flexShrink: 0, display: "inline-block" }} />
@@ -241,7 +241,7 @@ export default function Home() {
                 padding: "14px 24px", height: 50,
                 background: "var(--amber)", color: "#fff",
                 border: "1px solid var(--amber-deep)", borderRadius: 10,
-                fontWeight: 700, fontSize: 15,
+                fontWeight: 700, fontSize: "var(--text-md)",
                 boxShadow: "0 1px 0 var(--amber-deep), 0 4px 12px rgba(199,122,14,0.30)",
                 textDecoration: "none",
               }}
@@ -257,7 +257,7 @@ export default function Home() {
                 padding: "14px 24px", height: 50,
                 background: "rgba(255,255,255,0.08)", color: "#fff",
                 border: "1px solid rgba(255,255,255,0.22)", borderRadius: 10,
-                fontWeight: 600, fontSize: 15,
+                fontWeight: 600, fontSize: "var(--text-md)",
                 backdropFilter: "blur(6px)",
                 WebkitBackdropFilter: "blur(6px)",
                 textDecoration: "none",
@@ -299,7 +299,7 @@ export default function Home() {
                   fontFamily: s.mono ? "var(--mono)" : "var(--font)",
                 }}>{s.value}</div>
                 <div style={{
-                  fontSize: 11, color: "rgba(255,255,255,0.55)", fontWeight: 700,
+                  fontSize: "var(--text-2xs)", color: "rgba(255,255,255,0.55)", fontWeight: 700,
                   letterSpacing: 1.3, textTransform: "uppercase",
                 }}>{s.label}</div>
               </div>
@@ -324,7 +324,7 @@ export default function Home() {
             <div style={{
               display: "inline-block", padding: "4px 12px", borderRadius: 999,
               background: "var(--green-tint)", color: "var(--green-text)",
-              fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
+              fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
               marginBottom: 18,
             }}>Bakgrund</div>
             <h2 style={{
@@ -334,7 +334,7 @@ export default function Home() {
             }}>
               Branschen förtjänar bättre.
             </h2>
-            <p style={{ fontSize: 18, lineHeight: 1.7, color: "var(--ink-500)", fontWeight: 500 }}>
+            <p style={{ fontSize: "var(--text-xl)", lineHeight: 1.7, color: "var(--ink-500)", fontWeight: 500 }}>
               Idag matchas förare och åkerier via Facebook-grupper, generiska
               jobbsajter och bemanningsbolag som tar en del av lönen.
               Det behöver inte vara så.
@@ -353,7 +353,7 @@ export default function Home() {
                 boxShadow: "var(--sh-sm)",
               }}>
                 <div style={{
-                  fontSize: 13, fontWeight: 800, color: "var(--green)",
+                  fontSize: "var(--text-sm)", fontWeight: 800, color: "var(--green)",
                   letterSpacing: 2, marginBottom: 22,
                   fontFamily: "var(--mono)",
                 }}>{p.no}</div>
@@ -361,7 +361,7 @@ export default function Home() {
                   fontSize: 22, fontWeight: 800, color: "var(--ink-900)",
                   marginBottom: 14, letterSpacing: -0.5, lineHeight: 1.2,
                 }}>{p.title}</h3>
-                <p style={{ fontSize: 14.5, color: "var(--ink-500)", lineHeight: 1.7 }}>{p.body}</p>
+                <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.7 }}>{p.body}</p>
               </div>
             ))}
           </div>
@@ -384,7 +384,7 @@ export default function Home() {
             <div style={{
               display: "inline-block", padding: "4px 12px", borderRadius: 999,
               background: "var(--green-tint)", color: "var(--green-text)",
-              fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
+              fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
               marginBottom: 18,
             }}>Vad är STP</div>
             <h2 style={{
@@ -394,7 +394,7 @@ export default function Home() {
             }}>
               En tydlig plattform.<br />Ingen otydlig mellanhand.
             </h2>
-            <p style={{ fontSize: 18, lineHeight: 1.7, color: "var(--ink-500)", fontWeight: 500 }}>
+            <p style={{ fontSize: "var(--text-xl)", lineHeight: 1.7, color: "var(--ink-500)", fontWeight: 500 }}>
               En enkel definition gör det lättare att veta om STP är för dig.
             </p>
           </div>
@@ -440,7 +440,7 @@ export default function Home() {
                     }}>
                       <Icon name="check" size={11} color="var(--success)" stroke={3} />
                     </span>
-                    <span style={{ fontSize: 14.5, color: "var(--ink-700)", lineHeight: 1.6, fontWeight: 500 }}>{it}</span>
+                    <span style={{ fontSize: "var(--text-base)", color: "var(--ink-700)", lineHeight: 1.6, fontWeight: 500 }}>{it}</span>
                   </li>
                 ))}
               </ul>
@@ -486,7 +486,7 @@ export default function Home() {
                     }}>
                       <Icon name="x" size={11} color="var(--danger)" stroke={3} />
                     </span>
-                    <span style={{ fontSize: 14.5, color: "var(--ink-700)", lineHeight: 1.6, fontWeight: 500 }}>{it}</span>
+                    <span style={{ fontSize: "var(--text-base)", color: "var(--ink-700)", lineHeight: 1.6, fontWeight: 500 }}>{it}</span>
                   </li>
                 ))}
               </ul>
@@ -517,7 +517,7 @@ export default function Home() {
               <div style={{
                 display: "inline-block", padding: "4px 12px", borderRadius: 999,
                 background: "var(--green-tint)", color: "var(--green-text)",
-                fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
+                fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
                 marginBottom: 18,
               }}>Lösningen</div>
               <h2 style={{
@@ -527,7 +527,7 @@ export default function Home() {
               }}>
                 En samlande plattform för hela branschen.
               </h2>
-              <p style={{ fontSize: 18, lineHeight: 1.7, color: "var(--ink-500)", fontWeight: 500, marginBottom: 36 }}>
+              <p style={{ fontSize: "var(--text-xl)", lineHeight: 1.7, color: "var(--ink-500)", fontWeight: 500, marginBottom: 36 }}>
                 STP samlar förare och åkerier i en transparent och
                 kvalitetssäkrad plattform. Direkt kontakt. Inga mellanhänder.
                 Inga avgifter.
@@ -539,7 +539,7 @@ export default function Home() {
                   style={{
                     display: "inline-flex", alignItems: "center", gap: 8,
                     background: "var(--green)", color: "#fff",
-                    fontWeight: 700, fontSize: 15,
+                    fontWeight: 700, fontSize: "var(--text-md)",
                     padding: "14px 28px", borderRadius: 12, textDecoration: "none",
                   }}
                 >
@@ -552,7 +552,7 @@ export default function Home() {
                     display: "inline-flex", alignItems: "center",
                     background: "var(--card)", color: "var(--green-text)",
                     border: "1px solid var(--line-2)",
-                    fontSize: 15, padding: "14px 28px", borderRadius: 12,
+                    fontSize: "var(--text-md)", padding: "14px 28px", borderRadius: 12,
                     textDecoration: "none", fontWeight: 600,
                   }}
                 >
@@ -584,7 +584,7 @@ export default function Home() {
                   </div>
                   <div>
                     <h3 style={{ fontSize: 17, fontWeight: 700, color: "var(--ink-900)", marginBottom: 4, letterSpacing: -0.3 }}>{f.title}</h3>
-                    <p style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.65 }}>{f.body}</p>
+                    <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.65 }}>{f.body}</p>
                   </div>
                 </div>
               ))}
@@ -610,7 +610,7 @@ export default function Home() {
             <div style={{
               display: "inline-block", padding: "4px 12px", borderRadius: 999,
               background: "var(--green-tint)", color: "var(--green-text)",
-              fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
+              fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
               marginBottom: 18,
             }}>Kom igång</div>
             <h2 style={{
@@ -618,7 +618,7 @@ export default function Home() {
               letterSpacing: -1.8, lineHeight: 1.05,
               color: "var(--ink-900)", marginBottom: 16,
             }}>Tre steg. Det är allt.</h2>
-            <p style={{ fontSize: 18, lineHeight: 1.7, color: "var(--ink-500)", fontWeight: 500, maxWidth: 500, margin: "0 auto" }}>
+            <p style={{ fontSize: "var(--text-xl)", lineHeight: 1.7, color: "var(--ink-500)", fontWeight: 500, maxWidth: 500, margin: "0 auto" }}>
               Kom igång på tre steg — oavsett om du är förare eller åkeri.
             </p>
           </div>
@@ -639,7 +639,7 @@ export default function Home() {
                   padding: "10px 24px", borderRadius: 8,
                   background: howTab === k ? "var(--green)" : "transparent",
                   color: howTab === k ? "#fff" : "var(--ink-700)",
-                  fontWeight: 600, fontSize: 13.5, border: "none",
+                  fontWeight: 600, fontSize: "var(--text-sm)", border: "none",
                   cursor: "pointer", fontFamily: "inherit",
                   transition: "all .15s",
                 }}
@@ -676,11 +676,11 @@ export default function Home() {
               color: "rgba(255,255,255,0.92)",
             }}>
               <div style={{
-                fontSize: 11, fontWeight: 800, letterSpacing: 1.4,
+                fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.4,
                 textTransform: "uppercase", color: "rgba(255,255,255,0.7)",
                 marginBottom: 4,
               }}>{howTab === "driver" ? "För förare" : "För åkerier"}</div>
-              <div style={{ fontSize: 15.5, fontWeight: 600, color: "#fff" }}>
+              <div style={{ fontSize: "var(--text-md)", fontWeight: 600, color: "#fff" }}>
                 {howTab === "driver"
                   ? "Hitta ditt nästa jobb — utan att jaga annonser i grupper."
                   : "Bemanna kontoret med förare som faktiskt finns och söker."}
@@ -717,17 +717,17 @@ export default function Home() {
                   width: 38, height: 38, borderRadius: 10,
                   background: "var(--green)", color: "#fff",
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  marginBottom: 22, fontWeight: 900, fontSize: 15,
+                  marginBottom: 22, fontWeight: 900, fontSize: "var(--text-md)",
                   boxShadow: "inset 0 -2px 0 rgba(0,0,0,0.2)",
                   position: "relative", zIndex: 1,
                 }}>{s.n}</div>
                 <h3 style={{
-                  fontSize: 18, fontWeight: 800, color: "var(--ink-900)",
+                  fontSize: "var(--text-xl)", fontWeight: 800, color: "var(--ink-900)",
                   marginBottom: 10, letterSpacing: -0.3,
                   position: "relative", zIndex: 1,
                 }}>{s.title}</h3>
                 <p style={{
-                  fontSize: 14, color: "var(--ink-500)", lineHeight: 1.7,
+                  fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.7,
                   position: "relative", zIndex: 1,
                 }}>{s.body}</p>
               </div>
@@ -746,7 +746,7 @@ export default function Home() {
               {["Gratis under hela betafasen", "Direktkontakt utan provision", "Verifierat mot Bolagsverket"].map((l) => (
                 <span key={l} style={{
                   display: "inline-flex", alignItems: "center", gap: 8,
-                  fontSize: 14.5, fontWeight: 600, color: "var(--ink-900)",
+                  fontSize: "var(--text-base)", fontWeight: 600, color: "var(--ink-900)",
                 }}>
                   <Icon name="check" size={15} color="var(--success)" stroke={2.6} />
                   {l}
@@ -758,7 +758,7 @@ export default function Home() {
                 display: "inline-flex", alignItems: "center", gap: 6,
                 padding: "5px 12px", borderRadius: 999,
                 background: "var(--success-tint)", color: "var(--success)",
-                fontSize: 12, fontWeight: 700,
+                fontSize: "var(--text-xs)", fontWeight: 700,
               }}>
                 <span style={{ width: 6, height: 6, borderRadius: 3, background: "var(--success)", flexShrink: 0 }} />
                 Gratis under beta
@@ -790,7 +790,7 @@ export default function Home() {
               <div style={{
                 display: "inline-block", padding: "4px 12px", borderRadius: 999,
                 background: "var(--green-tint)", color: "var(--green-text)",
-                fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
+                fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
                 marginBottom: 18,
               }}>Tre vägar in</div>
               <h2 style={{
@@ -800,7 +800,7 @@ export default function Home() {
               }}>
                 Alla förare söker inte samma sak.
               </h2>
-              <p style={{ fontSize: 18, lineHeight: 1.7, color: "var(--ink-500)", fontWeight: 500 }}>
+              <p style={{ fontSize: "var(--text-xl)", lineHeight: 1.7, color: "var(--ink-500)", fontWeight: 500 }}>
                 STP är byggt runt tre tydliga segment som gör det lättare att
                 matcha rätt behov med rätt profil.
               </p>
@@ -828,7 +828,7 @@ export default function Home() {
                       <Icon name={s.icon} size={17} color="var(--green-text)" stroke={1.9} />
                     </span>
                     <span style={{
-                      fontSize: 11, fontWeight: 800, color: "var(--ink-500)",
+                      fontSize: "var(--text-2xs)", fontWeight: 800, color: "var(--ink-500)",
                       letterSpacing: 1.4, textTransform: "uppercase",
                     }}>{s.tag}</span>
                   </div>
@@ -837,7 +837,7 @@ export default function Home() {
                     marginBottom: 10, letterSpacing: -0.4,
                   }}>{s.title}</h3>
                   <p style={{
-                    fontSize: 14, color: "var(--ink-500)", lineHeight: 1.65,
+                    fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.65,
                     marginBottom: 20, flex: 1,
                   }}>{s.desc}</p>
                   <div style={{
@@ -845,10 +845,10 @@ export default function Home() {
                     display: "flex", alignItems: "baseline", gap: 8,
                   }}>
                     <span style={{
-                      fontSize: 24, fontWeight: 800, color: "var(--green)",
+                      fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--green)",
                       fontFamily: "var(--mono)", letterSpacing: -0.5,
                     }}>{s.stat}</span>
-                    <span style={{ fontSize: 12, color: "var(--ink-500)", fontWeight: 500 }}>{s.statLabel}</span>
+                    <span style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", fontWeight: 500 }}>{s.statLabel}</span>
                   </div>
                 </div>
               ))}
@@ -879,7 +879,7 @@ export default function Home() {
               <div style={{
                 display: "inline-block", padding: "4px 12px", borderRadius: 999,
                 background: "var(--green-tint)", color: "var(--green-text)",
-                fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
+                fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
                 marginBottom: 18,
               }}>FAQ</div>
               <h2 style={{
@@ -887,13 +887,13 @@ export default function Home() {
                 letterSpacing: -1.8, lineHeight: 1.05,
                 color: "var(--ink-900)", marginBottom: 16,
               }}>Vanliga frågor</h2>
-              <p style={{ fontSize: 18, lineHeight: 1.7, color: "var(--ink-500)", fontWeight: 500, marginBottom: 26 }}>
+              <p style={{ fontSize: "var(--text-xl)", lineHeight: 1.7, color: "var(--ink-500)", fontWeight: 500, marginBottom: 26 }}>
                 Saknar du något? Hör av dig direkt.
               </p>
               <a
                 href="mailto:hej@transportplattformen.se"
                 style={{
-                  fontSize: 14, fontWeight: 700, color: "var(--green)",
+                  fontSize: "var(--text-base)", fontWeight: 700, color: "var(--green)",
                   display: "inline-flex", alignItems: "center", gap: 6,
                   textDecoration: "none",
                 }}
@@ -927,7 +927,7 @@ export default function Home() {
                       }}
                     >
                       <span style={{
-                        fontSize: 15.5, fontWeight: 700, color: "var(--ink-900)",
+                        fontSize: "var(--text-md)", fontWeight: 700, color: "var(--ink-900)",
                         textAlign: "left", lineHeight: 1.4,
                       }}>{f.q}</span>
                       <span style={{
@@ -935,7 +935,7 @@ export default function Home() {
                         background: isOpen ? "var(--green)" : "var(--paper-2)",
                         color: isOpen ? "#fff" : "var(--ink-700)",
                         display: "flex", alignItems: "center", justifyContent: "center",
-                        flexShrink: 0, fontSize: 16, fontWeight: 700,
+                        flexShrink: 0, fontSize: "var(--text-lg)", fontWeight: 700,
                         transition: "background .2s",
                       }}>{isOpen ? "−" : "+"}</span>
                     </button>
@@ -944,7 +944,7 @@ export default function Home() {
                       transition: "max-height .3s ease",
                     }}>
                       <p style={{
-                        fontSize: 14.5, color: "var(--ink-500)",
+                        fontSize: "var(--text-base)", color: "var(--ink-500)",
                         lineHeight: 1.7, padding: "0 24px 22px",
                       }}>{f.a}</p>
                     </div>
@@ -1000,7 +1000,7 @@ export default function Home() {
                   padding: "16px 32px",
                   background: "var(--amber)", color: "#fff",
                   border: "1px solid var(--amber-deep)", borderRadius: 12,
-                  fontWeight: 700, fontSize: 16,
+                  fontWeight: 700, fontSize: "var(--text-lg)",
                   boxShadow: "0 1px 0 var(--amber-deep), 0 4px 12px rgba(199,122,14,0.30)",
                   textDecoration: "none",
                 }}
@@ -1016,7 +1016,7 @@ export default function Home() {
                   padding: "16px 32px",
                   background: "rgba(255,255,255,0.10)", color: "#fff",
                   border: "1px solid rgba(255,255,255,0.25)", borderRadius: 12,
-                  fontWeight: 600, fontSize: 16, textDecoration: "none",
+                  fontWeight: 600, fontSize: "var(--text-lg)", textDecoration: "none",
                 }}
               >
                 Jag är ett åkeri
@@ -1041,7 +1041,7 @@ export default function Home() {
                   fontSize: 22, fontWeight: 800, color: "#fff",
                   letterSpacing: -0.5, marginBottom: 4,
                 }}>{big}</div>
-                <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.7)", fontWeight: 500 }}>{sub}</div>
+                <div style={{ fontSize: "var(--text-xs)", color: "rgba(255,255,255,0.7)", fontWeight: 500 }}>{sub}</div>
               </div>
             ))}
           </div>

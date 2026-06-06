@@ -43,7 +43,7 @@ function Card({ children, style }) {
 }
 function SectionLabel({ children }) {
   return (
-    <div style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-500)", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 14 }}>
+    <div style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: "var(--ink-500)", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 14 }}>
       {children}
     </div>
   );
@@ -52,8 +52,8 @@ function FieldRow({ label, value, mono }) {
   if (!value) return null;
   return (
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "9px 0", borderBottom: "1px solid var(--line)" }}>
-      <span style={{ fontSize: 12.5, color: "var(--ink-500)" }}>{label}</span>
-      <span style={{ fontSize: 13, fontWeight: 600, color: "var(--ink-900)", fontFamily: mono ? "var(--mono)" : "inherit" }}>{value}</span>
+      <span style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)" }}>{label}</span>
+      <span style={{ fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--ink-900)", fontFamily: mono ? "var(--mono)" : "inherit" }}>{value}</span>
     </div>
   );
 }
@@ -70,8 +70,8 @@ function Toggle({ on, setOn, label, sub }) {
         <div style={{ position: "absolute", top: 2, left: on ? 18 : 2, width: 16, height: 16, borderRadius: 8, background: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,0.2)", transition: "left .2s" }} />
       </div>
       <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 2, color: "var(--ink-900)" }}>{label}</div>
-        {sub && <div style={{ fontSize: 12.5, color: "var(--ink-500)", marginTop: 2 }}>{sub}</div>}
+        <div style={{ fontSize: "var(--text-base)", fontWeight: 600, marginBottom: 2, color: "var(--ink-900)" }}>{label}</div>
+        {sub && <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", marginTop: 2 }}>{sub}</div>}
       </div>
     </button>
   );
@@ -91,12 +91,12 @@ function JobContextSidebar({ job }) {
     <aside style={{ display: "flex", flexDirection: "column", gap: 18, position: "sticky", top: 80 }}>
       <Card>
         <div style={{ display: "flex", gap: 14, alignItems: "flex-start", marginBottom: 16 }}>
-          <div style={{ width: 48, height: 48, borderRadius: 11, flexShrink: 0, background: "var(--paper-2)", border: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 800, color: "var(--ink-700)" }}>
+          <div style={{ width: 48, height: 48, borderRadius: 11, flexShrink: 0, background: "var(--paper-2)", border: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "var(--text-md)", fontWeight: 800, color: "var(--ink-700)" }}>
             {initials}
           </div>
           <div>
-            <h3 style={{ fontSize: 16, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.3, lineHeight: 1.3, margin: 0 }}>{job.title}</h3>
-            <div style={{ fontSize: 13, color: "var(--ink-500)", marginTop: 3, display: "flex", alignItems: "center", gap: 5 }}>
+            <h3 style={{ fontSize: "var(--text-lg)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.3, lineHeight: 1.3, margin: 0 }}>{job.title}</h3>
+            <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", marginTop: 3, display: "flex", alignItems: "center", gap: 5 }}>
               {job.company}
               <Icon n="check" s={11} c="var(--success)" />
             </div>
@@ -114,13 +114,13 @@ function JobContextSidebar({ job }) {
             {job.responseRate != null && (
               <div>
                 <div style={{ fontSize: 22, fontWeight: 800, color: "var(--green)", fontFamily: "var(--mono)", lineHeight: 1 }}>{job.responseRate}%</div>
-                <div style={{ fontSize: 11.5, color: "var(--ink-500)", marginTop: 4 }}>svarsfrekvens</div>
+                <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", marginTop: 4 }}>svarsfrekvens</div>
               </div>
             )}
             {job.avgResponseDays != null && (
               <div>
                 <div style={{ fontSize: 22, fontWeight: 800, color: "var(--ink-900)", fontFamily: "var(--mono)", lineHeight: 1 }}>~{job.avgResponseDays}d</div>
-                <div style={{ fontSize: 11.5, color: "var(--ink-500)", marginTop: 4 }}>svarstid</div>
+                <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", marginTop: 4 }}>svarstid</div>
               </div>
             )}
           </div>
@@ -153,7 +153,7 @@ function Submitted({ job, conversationId, isAggregatedUnclaimed }) {
         <h1 style={{ fontSize: 26, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.6, marginBottom: 10 }}>
           {isAggregatedUnclaimed ? "Intresseanmälan mottagen!" : "Ansökan skickad!"}
         </h1>
-        <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.6, marginBottom: 28 }}>
+        <p style={{ fontSize: "var(--text-md)", color: "var(--ink-500)", lineHeight: 1.6, marginBottom: 28 }}>
           {isAggregatedUnclaimed
             ? <>Vi har tagit emot din intresseanmälan för <strong style={{ color: "var(--ink-900)" }}>{job?.company}</strong> och kontaktar åkeriet å dina vägnar.</>
             : <>Din profil och ditt meddelande har skickats till <strong style={{ color: "var(--ink-900)" }}>{job?.company}</strong>. Du får en notis så fort de svarar.</>
@@ -164,25 +164,25 @@ function Submitted({ job, conversationId, isAggregatedUnclaimed }) {
           <SectionLabel>Vad händer nu?</SectionLabel>
           {steps.map((s) => (
             <div key={s.n} style={{ display: "flex", gap: 14, alignItems: "flex-start", padding: "10px 0", borderBottom: s.n < 3 ? "1px solid var(--line)" : "none" }}>
-              <span style={{ width: 26, height: 26, borderRadius: 13, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, flexShrink: 0, fontFamily: "var(--mono)" }}>{s.n}</span>
+              <span style={{ width: 26, height: 26, borderRadius: 13, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "var(--text-sm)", fontWeight: 800, flexShrink: 0, fontFamily: "var(--mono)" }}>{s.n}</span>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)" }}>{s.t}</div>
-                <div style={{ fontSize: 13, color: "var(--ink-500)", marginTop: 2, lineHeight: 1.5 }}>{s.s}</div>
+                <div style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)" }}>{s.t}</div>
+                <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", marginTop: 2, lineHeight: 1.5 }}>{s.s}</div>
               </div>
             </div>
           ))}
         </div>
 
         <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
-          <Link to="/mina-ansokningar" style={{ padding: "12px 22px", borderRadius: 10, background: "var(--paper-2)", border: "1px solid var(--line-2)", fontSize: 13.5, fontWeight: 600, color: "var(--ink-700)", textDecoration: "none" }}>
+          <Link to="/mina-ansokningar" style={{ padding: "12px 22px", borderRadius: 10, background: "var(--paper-2)", border: "1px solid var(--line-2)", fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--ink-700)", textDecoration: "none" }}>
             Visa mina ansökningar
           </Link>
           {conversationId && (
-            <Link to={`/meddelanden/${conversationId}`} style={{ padding: "12px 22px", borderRadius: 10, background: "var(--green)", color: "#fff", fontSize: 13.5, fontWeight: 800, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 8, boxShadow: "var(--sh)" }}>
+            <Link to={`/meddelanden/${conversationId}`} style={{ padding: "12px 22px", borderRadius: 10, background: "var(--green)", color: "#fff", fontSize: "var(--text-sm)", fontWeight: 800, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 8, boxShadow: "var(--sh)" }}>
               Öppna konversation <Icon n="arrow" s={14} c="#fff" />
             </Link>
           )}
-          <Link to="/jobb" style={{ padding: "12px 22px", borderRadius: 10, background: "var(--green)", color: "#fff", fontSize: 13.5, fontWeight: 800, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 8, boxShadow: "var(--sh)" }}>
+          <Link to="/jobb" style={{ padding: "12px 22px", borderRadius: 10, background: "var(--green)", color: "#fff", fontSize: "var(--text-sm)", fontWeight: 800, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 8, boxShadow: "var(--sh)" }}>
             Sök fler jobb <Icon n="arrow" s={14} c="#fff" />
           </Link>
         </div>
@@ -328,7 +328,7 @@ export default function Apply() {
 
     if (jobLoading) {
       return (
-        <div style={{ background: "var(--paper)", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-400)", fontSize: 14 }}>
+        <div style={{ background: "var(--paper)", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-400)", fontSize: "var(--text-base)" }}>
           Hämtar jobb...
         </div>
       );
@@ -352,7 +352,7 @@ export default function Apply() {
                 <svg viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" width="40" height="40"><polyline points="20 6 9 17 4 12"/></svg>
               </div>
               <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: -0.8, marginBottom: 10, lineHeight: 1.2, color: "var(--ink-900)" }}>Ansökan skickad!</h1>
-              <p style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.55, maxWidth: 280, margin: "0 auto" }}>
+              <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.55, maxWidth: 280, margin: "0 auto" }}>
                 {job?.company} har fått din ansökan. Du hör vanligtvis tillbaka inom 2 dagar.
               </p>
             </div>
@@ -365,10 +365,10 @@ export default function Apply() {
                 { num: 3, title: "Ni får kontakt", desc: "Via Inkorgen om de vill träffas" },
               ].map((s, i, arr) => (
                 <div key={s.num} style={{ display: "flex", gap: 14, padding: "14px 14px", borderBottom: i < arr.length - 1 ? "1px solid var(--line)" : "none", alignItems: "flex-start" }}>
-                  <div style={{ width: 24, height: 24, borderRadius: 99, background: "var(--amber-tint)", color: "var(--amber)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, flexShrink: 0 }}>{s.num}</div>
+                  <div style={{ width: 24, height: 24, borderRadius: 99, background: "var(--amber-tint)", color: "var(--amber)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "var(--text-xs)", fontWeight: 800, flexShrink: 0 }}>{s.num}</div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 13.5, fontWeight: 700, marginBottom: 2, color: "var(--ink-900)" }}>{s.title}</div>
-                    <div style={{ fontSize: 12, color: "var(--ink-500)" }}>{s.desc}</div>
+                    <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, marginBottom: 2, color: "var(--ink-900)" }}>{s.title}</div>
+                    <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)" }}>{s.desc}</div>
                   </div>
                 </div>
               ))}
@@ -377,7 +377,7 @@ export default function Apply() {
             {/* Tips */}
             <div style={{ background: "var(--amber-tint)", border: "1px solid var(--amber-tint-2)", borderRadius: 13, padding: "14px 16px", display: "flex", gap: 10, alignItems: "flex-start" }}>
               <svg viewBox="0 0 24 24" fill="var(--amber)" width="14" height="14" style={{ flexShrink: 0, marginTop: 1 }}><path d="M12 2l2.4 7.6H22l-6.2 4.5 2.4 7.6L12 17.2l-6.2 4.5 2.4-7.6L2 9.6h7.6z"/></svg>
-              <div style={{ fontSize: 12.5, color: "var(--ink-700)", lineHeight: 1.55 }}>
+              <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-700)", lineHeight: 1.55 }}>
                 <strong style={{ color: "var(--amber-text)" }}>Tips:</strong> Kolla in fler jobb som matchar din profil.
               </div>
             </div>
@@ -385,11 +385,11 @@ export default function Apply() {
 
           {/* Sticky CTAs */}
           <div style={{ padding: "12px 20px max(env(safe-area-inset-bottom), 24px)", background: "var(--card)", borderTop: "1px solid var(--line)", display: "flex", flexDirection: "column", gap: 8, flexShrink: 0, boxShadow: "0 -4px 20px rgba(15,22,22,0.06)" }}>
-            <Link to="/jobb" style={{ width: "100%", padding: "15px", borderRadius: 14, background: "var(--green)", color: "#fff", fontSize: 14.5, fontWeight: 800, textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
+            <Link to="/jobb" style={{ width: "100%", padding: "15px", borderRadius: 14, background: "var(--green)", color: "#fff", fontSize: "var(--text-base)", fontWeight: 800, textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
               Fortsätt sök fler jobb
               <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
             </Link>
-            <Link to="/mina-ansokningar" style={{ width: "100%", padding: "13px", borderRadius: 14, background: "var(--paper-2)", border: "1px solid var(--line-2)", color: "var(--ink-700)", fontSize: 13.5, fontWeight: 700, textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <Link to="/mina-ansokningar" style={{ width: "100%", padding: "13px", borderRadius: 14, background: "var(--paper-2)", border: "1px solid var(--line-2)", color: "var(--ink-700)", fontSize: "var(--text-sm)", fontWeight: 700, textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center" }}>
               Se mina ansökningar
             </Link>
           </div>
@@ -409,8 +409,8 @@ export default function Apply() {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
           </button>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 11, color: "var(--ink-400)", marginBottom: 2 }}>Ansök till</div>
-            <div style={{ fontSize: 14, fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "var(--ink-900)" }}>{job?.title}</div>
+            <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", marginBottom: 2 }}>Ansök till</div>
+            <div style={{ fontSize: "var(--text-base)", fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "var(--ink-900)" }}>{job?.title}</div>
           </div>
         </div>
 
@@ -418,42 +418,42 @@ export default function Apply() {
         <div style={{ flex: 1, overflowY: "auto", padding: "12px 20px 130px" }}>
           {/* Job summary card */}
           <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "14px 16px", marginBottom: 20, display: "flex", alignItems: "center", gap: 12, boxShadow: "var(--sh-sm)" }}>
-            <div style={{ width: 44, height: 44, borderRadius: 11, background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 13, color: "#fff", flexShrink: 0 }}>{initials}</div>
+            <div style={{ width: 44, height: 44, borderRadius: 11, background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "var(--text-sm)", color: "#fff", flexShrink: 0 }}>{initials}</div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--ink-900)" }}>{job?.company}</div>
-              <div style={{ fontSize: 11.5, color: "var(--ink-500)", display: "flex", alignItems: "center", gap: 4, marginTop: 2 }}>
+              <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-900)" }}>{job?.company}</div>
+              <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", display: "flex", alignItems: "center", gap: 4, marginTop: 2 }}>
                 {job?.location && <><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="10" height="10"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>{job.location}</>}
                 {salaryDisplay && <span style={{ color: "var(--ink-400)" }}>{job?.location ? " · " : ""}{salaryDisplay}</span>}
               </div>
             </div>
             {pct != null && (
-              <div style={{ width: 42, height: 42, borderRadius: 99, background: pctBg, border: `1.5px solid ${pctBorder}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: pctColor, flexShrink: 0, fontFamily: "var(--mono)" }}>{pct}%</div>
+              <div style={{ width: 42, height: 42, borderRadius: 99, background: pctBg, border: `1.5px solid ${pctBorder}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "var(--text-sm)", fontWeight: 800, color: pctColor, flexShrink: 0, fontFamily: "var(--mono)" }}>{pct}%</div>
             )}
           </div>
 
           {/* Profile preview */}
           <div style={{ marginBottom: 24 }}>
-            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 10, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 10, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <span>Din profil — så ser åkeriet dig</span>
-              <Link to="/profil" style={{ background: "transparent", border: "none", color: "var(--green)", fontSize: 11, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 4, textDecoration: "none", letterSpacing: 0 }}>
+              <Link to="/profil" style={{ background: "transparent", border: "none", color: "var(--green)", fontSize: "var(--text-2xs)", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 4, textDecoration: "none", letterSpacing: 0 }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="11" height="11"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 Ändra
               </Link>
             </div>
             <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "16px", boxShadow: "var(--sh-sm)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
-                <div style={{ width: 48, height: 48, borderRadius: 99, background: "linear-gradient(135deg,var(--green),var(--green-soft))", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 14, color: "#fff", flexShrink: 0 }}>{driverInitials}</div>
+                <div style={{ width: 48, height: 48, borderRadius: 99, background: "linear-gradient(135deg,var(--green),var(--green-soft))", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "var(--text-base)", color: "#fff", flexShrink: 0 }}>{driverInitials}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 14.5, fontWeight: 800, color: "var(--ink-900)" }}>{profile?.name || user?.name}</div>
-                  <div style={{ fontSize: 11.5, color: "var(--ink-500)" }}>
+                  <div style={{ fontSize: "var(--text-base)", fontWeight: 800, color: "var(--ink-900)" }}>{profile?.name || user?.name}</div>
+                  <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)" }}>
                     {[profile?.region, profile?.experience && `${calcYearsExperience(profile.experience)} år erf.`].filter(Boolean).join(" · ")}
                   </div>
                 </div>
               </div>
               {(licenses.length > 0 || certsLabels.length > 0) && (
                 <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-                  {licenses.map((l) => <span key={l} style={{ padding: "3px 9px", borderRadius: 99, background: "var(--green)", color: "#fff", fontSize: 11, fontWeight: 700 }}>{l}</span>)}
-                  {certsLabels.map((c) => <span key={c} style={{ padding: "3px 9px", borderRadius: 99, background: "var(--paper-2)", border: "1px solid var(--line-2)", color: "var(--ink-700)", fontSize: 11, fontWeight: 600 }}>{c}</span>)}
+                  {licenses.map((l) => <span key={l} style={{ padding: "3px 9px", borderRadius: 99, background: "var(--green)", color: "#fff", fontSize: "var(--text-2xs)", fontWeight: 700 }}>{l}</span>)}
+                  {certsLabels.map((c) => <span key={c} style={{ padding: "3px 9px", borderRadius: 99, background: "var(--paper-2)", border: "1px solid var(--line-2)", color: "var(--ink-700)", fontSize: "var(--text-2xs)", fontWeight: 600 }}>{c}</span>)}
                 </div>
               )}
             </div>
@@ -461,7 +461,7 @@ export default function Apply() {
 
           {/* Personal message */}
           <div style={{ marginBottom: 24 }}>
-            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 8 }}>
+            <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 8 }}>
               Personligt meddelande <span style={{ color: "var(--ink-300)", fontWeight: 600, textTransform: "none", letterSpacing: 0 }}>(valfritt)</span>
             </div>
             <textarea
@@ -469,25 +469,25 @@ export default function Apply() {
               onChange={(e) => setMessage(e.target.value.slice(0, MAX_MSG))}
               placeholder="Berätta kort varför du söker detta jobb. Åkerier som får ett personligt meddelande svarar 2× snabbare."
               rows={4}
-              style={{ width: "100%", padding: "14px 16px", borderRadius: 13, background: "var(--card)", border: "1px solid var(--line-2)", color: "var(--ink-900)", fontSize: 14, lineHeight: 1.5, fontFamily: "inherit", resize: "none", outline: "none" }}
+              style={{ width: "100%", padding: "14px 16px", borderRadius: 13, background: "var(--card)", border: "1px solid var(--line-2)", color: "var(--ink-900)", fontSize: "var(--text-base)", lineHeight: 1.5, fontFamily: "inherit", resize: "none", outline: "none" }}
             />
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 6 }}>
               <button
                 type="button"
                 onClick={handleSuggest}
                 disabled={suggesting}
-                style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 11px", borderRadius: 99, background: "var(--green-tint)", border: "1px solid var(--green-tint-2)", color: suggesting ? "var(--ink-300)" : "var(--green-text)", fontSize: 11.5, fontWeight: 600, cursor: suggesting ? "not-allowed" : "pointer", fontFamily: "inherit" }}
+                style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 11px", borderRadius: 99, background: "var(--green-tint)", border: "1px solid var(--green-tint-2)", color: suggesting ? "var(--ink-300)" : "var(--green-text)", fontSize: "var(--text-2xs)", fontWeight: 600, cursor: suggesting ? "not-allowed" : "pointer", fontFamily: "inherit" }}
               >
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="var(--green)"><path d="M12 2l2.4 7.6H22l-6.2 4.5 2.4 7.6L12 17.2l-6.2 4.5 2.4-7.6L2 9.6h7.6z"/></svg>
                 {suggesting ? "Skriver..." : "AI-förslag"}
               </button>
-              <span style={{ fontSize: 11, color: "var(--ink-400)" }}>{message.length} / {MAX_MSG}</span>
+              <span style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)" }}>{message.length} / {MAX_MSG}</span>
             </div>
           </div>
 
           {/* When can you start */}
           <div style={{ marginBottom: 24 }}>
-            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 8 }}>När kan du börja?</div>
+            <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 8 }}>När kan du börja?</div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
               {[
                 { k: "now", l: "Direkt" },
@@ -501,7 +501,7 @@ export default function Apply() {
                     key={o.k}
                     type="button"
                     onClick={() => setStartDate(o.k)}
-                    style={{ padding: "14px 12px", borderRadius: 12, background: on ? "var(--green-tint)" : "var(--card)", border: `1.5px solid ${on ? "var(--green)" : "var(--line-2)"}`, color: on ? "var(--green-text)" : "var(--ink-700)", fontSize: 13.5, fontWeight: 700, cursor: "pointer", minHeight: 48, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, fontFamily: "inherit", transition: "all .15s" }}
+                    style={{ padding: "14px 12px", borderRadius: 12, background: on ? "var(--green-tint)" : "var(--card)", border: `1.5px solid ${on ? "var(--green)" : "var(--line-2)"}`, color: on ? "var(--green-text)" : "var(--ink-700)", fontSize: "var(--text-sm)", fontWeight: 700, cursor: "pointer", minHeight: 48, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, fontFamily: "inherit", transition: "all .15s" }}
                   >
                     {on && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" width="11" height="11"><polyline points="20 6 9 17 4 12"/></svg>}
                     {o.l}
@@ -521,7 +521,7 @@ export default function Apply() {
               <div style={{ width: 20, height: 20, borderRadius: 6, border: `2px solid ${salaryExp !== null ? "var(--amber)" : "var(--ink-300)"}`, background: salaryExp !== null ? "var(--amber)" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 {salaryExp !== null && <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" width="10" height="10"><polyline points="20 6 9 17 4 12"/></svg>}
               </div>
-              <span style={{ flex: 1, fontSize: 13.5, fontWeight: 600 }}>Inkludera mitt lönekrav</span>
+              <span style={{ flex: 1, fontSize: "var(--text-sm)", fontWeight: 600 }}>Inkludera mitt lönekrav</span>
             </button>
             {salaryExp !== null && (
               <div style={{ marginTop: 10 }}>
@@ -529,7 +529,7 @@ export default function Apply() {
                   value={salaryExp}
                   onChange={(e) => setSalaryExp(e.target.value)}
                   placeholder="t.ex. 38 000 kr/mån"
-                  style={{ width: "100%", padding: "14px 16px", borderRadius: 13, background: "var(--card)", border: "1px solid var(--line-2)", color: "var(--ink-900)", fontSize: 14, outline: "none", minHeight: 48, fontFamily: "inherit" }}
+                  style={{ width: "100%", padding: "14px 16px", borderRadius: 13, background: "var(--card)", border: "1px solid var(--line-2)", color: "var(--ink-900)", fontSize: "var(--text-base)", outline: "none", minHeight: 48, fontFamily: "inherit" }}
                 />
               </div>
             )}
@@ -538,7 +538,7 @@ export default function Apply() {
           {/* Provenance notice + consent for AGGREGATED/unclaimed jobs */}
           {isAggregatedUnclaimed && (
             <div style={{ background: "var(--amber-tint)", border: "1px solid var(--amber-tint-2)", borderRadius: 13, padding: "14px 16px", marginBottom: 8 }}>
-              <div style={{ fontSize: 12.5, color: "var(--ink-700)", lineHeight: 1.6, marginBottom: 10 }}>
+              <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-700)", lineHeight: 1.6, marginBottom: 10 }}>
                 <strong style={{ color: "var(--amber-text)" }}>Det här åkeriet är inte anslutet till STP ännu.</strong> Vi förmedlar din intresseanmälan och kontaktar dem åt dig. Du kan även söka direkt via originalannonsen:
                 {job?.originalPostingUrl && (
                   <> <a href={job.originalPostingUrl} target="_blank" rel="noopener noreferrer" style={{ color: "var(--green)", fontWeight: 600 }}>Originalannons ↗</a></>
@@ -552,7 +552,7 @@ export default function Apply() {
                 <div style={{ width: 20, height: 20, borderRadius: 5, border: `2px solid ${consentToShare ? "var(--green)" : "var(--ink-300)"}`, background: consentToShare ? "var(--green)" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
                   {consentToShare && <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" width="11" height="11"><polyline points="20 6 9 17 4 12"/></svg>}
                 </div>
-                <span style={{ fontSize: 12.5, color: "var(--ink-700)", lineHeight: 1.5, fontWeight: 500 }}>
+                <span style={{ fontSize: "var(--text-xs)", color: "var(--ink-700)", lineHeight: 1.5, fontWeight: 500 }}>
                   Jag samtycker till att min intresseanmälan delas med arbetsgivaren.
                 </span>
               </button>
@@ -563,14 +563,14 @@ export default function Apply() {
           {!isAggregatedUnclaimed && (
             <div style={{ background: "var(--info-tint)", border: "1px solid rgba(27,90,138,0.2)", borderRadius: 13, padding: "14px 16px", display: "flex", gap: 11, alignItems: "flex-start", marginBottom: 8 }}>
               <svg viewBox="0 0 24 24" fill="var(--info)" width="14" height="14" style={{ flexShrink: 0, marginTop: 1 }}><path d="M12 2l2.4 7.6H22l-6.2 4.5 2.4 7.6L12 17.2l-6.2 4.5 2.4-7.6L2 9.6h7.6z"/></svg>
-              <div style={{ fontSize: 12, color: "var(--ink-700)", lineHeight: 1.5 }}>
+              <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-700)", lineHeight: 1.5 }}>
                 Din profil skickas till {job?.company}. Du hör tillbaka via Inkorgen — vanligtvis inom 2 dagar.
               </div>
             </div>
           )}
 
           {error && (
-            <div style={{ marginTop: 12, padding: "12px 16px", borderRadius: 10, background: "var(--danger-tint)", border: "1px solid rgba(185,28,59,0.2)", color: "var(--danger)", fontSize: 13 }}>
+            <div style={{ marginTop: 12, padding: "12px 16px", borderRadius: 10, background: "var(--danger-tint)", border: "1px solid rgba(185,28,59,0.2)", color: "var(--danger)", fontSize: "var(--text-sm)" }}>
               {error}
             </div>
           )}
@@ -582,7 +582,7 @@ export default function Apply() {
             type="button"
             onClick={handleSubmit}
             disabled={sending || (isAggregatedUnclaimed ? !consentToShare : !job?.userId)}
-            style={{ width: "100%", padding: "16px", borderRadius: 14, background: (sending || (isAggregatedUnclaimed && !consentToShare)) ? "var(--paper-2)" : "var(--green)", color: (sending || (isAggregatedUnclaimed && !consentToShare)) ? "var(--ink-400)" : "#fff", fontSize: 15, fontWeight: 800, cursor: (sending || (isAggregatedUnclaimed && !consentToShare)) ? "not-allowed" : "pointer", border: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: (sending || (isAggregatedUnclaimed && !consentToShare)) ? "none" : "var(--sh)", fontFamily: "inherit" }}
+            style={{ width: "100%", padding: "16px", borderRadius: 14, background: (sending || (isAggregatedUnclaimed && !consentToShare)) ? "var(--paper-2)" : "var(--green)", color: (sending || (isAggregatedUnclaimed && !consentToShare)) ? "var(--ink-400)" : "#fff", fontSize: "var(--text-md)", fontWeight: 800, cursor: (sending || (isAggregatedUnclaimed && !consentToShare)) ? "not-allowed" : "pointer", border: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: (sending || (isAggregatedUnclaimed && !consentToShare)) ? "none" : "var(--sh)", fontFamily: "inherit" }}
           >
             {sending ? "Skickar..." : isAggregatedUnclaimed ? "Skicka intresseanmälan" : "Skicka ansökan"}
             {!sending && <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>}
@@ -607,7 +607,7 @@ export default function Apply() {
     return (
       <main style={{ background: "var(--paper)", minHeight: "100vh" }}>
         <div style={{ maxWidth: 800, margin: "0 auto", padding: "120px 24px", textAlign: "center" }}>
-          <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 12, color: "var(--ink-900)" }}>Jobbet hittades inte</div>
+          <div style={{ fontSize: "var(--text-xl)", fontWeight: 700, marginBottom: 12, color: "var(--ink-900)" }}>Jobbet hittades inte</div>
           <Link to="/jobb" style={{ color: "var(--green)", textDecoration: "none", fontWeight: 600 }}>← Tillbaka till jobb</Link>
         </div>
       </main>
@@ -636,14 +636,14 @@ export default function Apply() {
 
       {/* Breadcrumb */}
       <div style={{ maxWidth: 1040, margin: "0 auto", padding: "24px 32px 0" }}>
-        <Link to={`/jobb/${id}`} style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 600, color: "var(--ink-500)", textDecoration: "none" }}>
+        <Link to={`/jobb/${id}`} style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--ink-500)", textDecoration: "none" }}>
           <Icon n="back" s={14} /> Tillbaka till jobbet
         </Link>
       </div>
 
       <div style={{ maxWidth: 1040, margin: "0 auto", padding: "20px 32px 0" }}>
-        <h1 style={{ fontSize: 34, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.2, marginBottom: 6 }}>Ansök till tjänsten</h1>
-        <p style={{ fontSize: 14.5, color: "var(--ink-500)", marginBottom: 28 }}>
+        <h1 style={{ fontSize: "var(--text-5xl)", fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.2, marginBottom: 6 }}>Ansök till tjänsten</h1>
+        <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", marginBottom: 28 }}>
           Din profil bifogas automatiskt — du behöver inte fylla i något CV.
         </p>
 
@@ -655,28 +655,28 @@ export default function Apply() {
             <Card>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
                 <SectionLabel style={{ marginBottom: 0 }}>Din profil bifogas</SectionLabel>
-                <Link to="/profil" style={{ fontSize: 13, fontWeight: 700, color: "var(--green)", textDecoration: "none" }}>Redigera profil →</Link>
+                <Link to="/profil" style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--green)", textDecoration: "none" }}>Redigera profil →</Link>
               </div>
               <div style={{ display: "flex", gap: 14, alignItems: "center", marginBottom: 16 }}>
-                <div style={{ width: 52, height: 52, borderRadius: 99, background: "linear-gradient(135deg,var(--green),var(--green-soft))", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 16, color: "#fff", flexShrink: 0 }}>
+                <div style={{ width: 52, height: 52, borderRadius: 99, background: "linear-gradient(135deg,var(--green),var(--green-soft))", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "var(--text-lg)", color: "#fff", flexShrink: 0 }}>
                   {driverInitials}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 16, fontWeight: 800, color: "var(--ink-900)" }}>{profile?.name || "Din profil"}</div>
-                  <div style={{ fontSize: 13, color: "var(--ink-500)", marginTop: 2 }}>
+                  <div style={{ fontSize: "var(--text-lg)", fontWeight: 800, color: "var(--ink-900)" }}>{profile?.name || "Din profil"}</div>
+                  <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", marginTop: 2 }}>
                     {[profile?.region, yearsExp > 0 && `${yearsExp} års erfarenhet`].filter(Boolean).join(" · ")}
                   </div>
                 </div>
                 {pct != null && (
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 11px", borderRadius: 999, background: pctBg, fontSize: 13, fontWeight: 800, fontFamily: "var(--mono)", color: pctColor, flexShrink: 0 }}>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 11px", borderRadius: 999, background: pctBg, fontSize: "var(--text-sm)", fontWeight: 800, fontFamily: "var(--mono)", color: pctColor, flexShrink: 0 }}>
                     {pct}% match
                   </span>
                 )}
               </div>
               {(licenses.length > 0 || certsLabels.length > 0) && (
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                  {licenses.map((l) => <span key={l} style={{ padding: "4px 10px", borderRadius: 99, background: "var(--green)", color: "#fff", fontSize: 11, fontWeight: 700 }}>{l}</span>)}
-                  {certsLabels.map((c) => <span key={c} style={{ padding: "4px 10px", borderRadius: 99, background: "var(--paper-2)", border: "1px solid var(--line-2)", color: "var(--ink-700)", fontSize: 11, fontWeight: 600 }}>{c}</span>)}
+                  {licenses.map((l) => <span key={l} style={{ padding: "4px 10px", borderRadius: 99, background: "var(--green)", color: "#fff", fontSize: "var(--text-2xs)", fontWeight: 700 }}>{l}</span>)}
+                  {certsLabels.map((c) => <span key={c} style={{ padding: "4px 10px", borderRadius: 99, background: "var(--paper-2)", border: "1px solid var(--line-2)", color: "var(--ink-700)", fontSize: "var(--text-2xs)", fontWeight: 600 }}>{c}</span>)}
                 </div>
               )}
             </Card>
@@ -689,17 +689,17 @@ export default function Apply() {
                 onChange={(e) => setMessage(e.target.value.slice(0, MAX_MSG))}
                 placeholder="Berätta kort varför du är intresserad av tjänsten. Ett par rader räcker — det gör skillnad."
                 rows={4}
-                style={{ width: "100%", padding: "14px 16px", background: "var(--card-2)", border: "1px solid var(--line-2)", borderRadius: 11, fontSize: 14.5, color: "var(--ink-900)", fontFamily: "inherit", lineHeight: 1.6, resize: "vertical", outline: "none" }}
+                style={{ width: "100%", padding: "14px 16px", background: "var(--card-2)", border: "1px solid var(--line-2)", borderRadius: 11, fontSize: "var(--text-base)", color: "var(--ink-900)", fontFamily: "inherit", lineHeight: 1.6, resize: "vertical", outline: "none" }}
                 onFocus={(e) => { e.target.style.borderColor = "var(--green)"; }}
                 onBlur={(e) => { e.target.style.borderColor = "var(--line-2)"; }}
               />
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 8 }}>
-                <div style={{ fontSize: 12, color: "var(--ink-400)" }}>Tips: åkerier svarar oftare på ansökningar med ett personligt meddelande.</div>
+                <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-400)" }}>Tips: åkerier svarar oftare på ansökningar med ett personligt meddelande.</div>
                 <button
                   type="button"
                   onClick={handleSuggest}
                   disabled={suggesting}
-                  style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 11px", borderRadius: 99, background: "var(--green-tint)", border: "1px solid var(--green-tint-2)", color: suggesting ? "var(--ink-300)" : "var(--green-text)", fontSize: 11.5, fontWeight: 600, cursor: suggesting ? "not-allowed" : "pointer", fontFamily: "inherit", flexShrink: 0 }}
+                  style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 11px", borderRadius: 99, background: "var(--green-tint)", border: "1px solid var(--green-tint-2)", color: suggesting ? "var(--ink-300)" : "var(--green-text)", fontSize: "var(--text-2xs)", fontWeight: 600, cursor: suggesting ? "not-allowed" : "pointer", fontFamily: "inherit", flexShrink: 0 }}
                 >
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="var(--green)"><path d="M12 2l2.4 7.6H22l-6.2 4.5 2.4 7.6L12 17.2l-6.2 4.5 2.4-7.6L2 9.6h7.6z"/></svg>
                   {suggesting ? "Skriver..." : "AI-förslag"}
@@ -723,7 +723,7 @@ export default function Apply() {
                       key={o.k}
                       type="button"
                       onClick={() => setStartDate(o.k)}
-                      style={{ padding: "10px 16px", borderRadius: 10, background: on ? "var(--green)" : "var(--card)", color: on ? "#fff" : "var(--ink-700)", border: `1px solid ${on ? "var(--green-deep)" : "var(--line-2)"}`, fontSize: 13.5, fontWeight: 600, cursor: "pointer", boxShadow: "var(--sh-sm)", fontFamily: "inherit", transition: "all .15s" }}
+                      style={{ padding: "10px 16px", borderRadius: 10, background: on ? "var(--green)" : "var(--card)", color: on ? "#fff" : "var(--ink-700)", border: `1px solid ${on ? "var(--green-deep)" : "var(--line-2)"}`, fontSize: "var(--text-sm)", fontWeight: 600, cursor: "pointer", boxShadow: "var(--sh-sm)", fontFamily: "inherit", transition: "all .15s" }}
                     >
                       {o.l}
                     </button>
@@ -746,7 +746,7 @@ export default function Apply() {
             {/* Provenance notice + consent for AGGREGATED/unclaimed jobs */}
             {isAggregatedUnclaimed && (
               <Card style={{ background: "var(--amber-tint)", border: "1px solid var(--amber-tint-2)" }}>
-                <div style={{ fontSize: 13.5, color: "var(--ink-800)", lineHeight: 1.65, marginBottom: 14 }}>
+                <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-800)", lineHeight: 1.65, marginBottom: 14 }}>
                   <strong style={{ color: "var(--amber-text)" }}>Det här åkeriet är inte anslutet till STP ännu.</strong>
                   {" "}Vi förmedlar din intresseanmälan och kontaktar dem åt dig. Du kan även söka direkt via{" "}
                   {job?.originalPostingUrl
@@ -762,7 +762,7 @@ export default function Apply() {
                   <div style={{ width: 22, height: 22, borderRadius: 6, border: `2px solid ${consentToShare ? "var(--green)" : "var(--ink-300)"}`, background: consentToShare ? "var(--green)" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
                     {consentToShare && <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" width="12" height="12"><polyline points="20 6 9 17 4 12"/></svg>}
                   </div>
-                  <span style={{ fontSize: 14, color: "var(--ink-700)", lineHeight: 1.55 }}>
+                  <span style={{ fontSize: "var(--text-base)", color: "var(--ink-700)", lineHeight: 1.55 }}>
                     Jag samtycker till att min intresseanmälan delas med arbetsgivaren.
                   </span>
                 </button>
@@ -770,7 +770,7 @@ export default function Apply() {
             )}
 
             {error && (
-              <div style={{ padding: "12px 16px", borderRadius: 10, background: "var(--danger-tint)", border: "1px solid rgba(185,28,59,0.2)", color: "var(--danger)", fontSize: 13 }}>
+              <div style={{ padding: "12px 16px", borderRadius: 10, background: "var(--danger-tint)", border: "1px solid rgba(185,28,59,0.2)", color: "var(--danger)", fontSize: "var(--text-sm)" }}>
                 {error}
               </div>
             )}
@@ -781,15 +781,15 @@ export default function Apply() {
                 type="button"
                 onClick={handleSubmit}
                 disabled={sending || (isAggregatedUnclaimed ? !consentToShare : !job?.userId)}
-                style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 28px", borderRadius: 10, background: (sending || (isAggregatedUnclaimed && !consentToShare)) ? "var(--paper-2)" : "var(--green)", color: (sending || (isAggregatedUnclaimed && !consentToShare)) ? "var(--ink-400)" : "#fff", fontSize: 15, fontWeight: 800, border: "none", cursor: (sending || (isAggregatedUnclaimed && !consentToShare)) ? "not-allowed" : "pointer", boxShadow: (sending || (isAggregatedUnclaimed && !consentToShare)) ? "none" : "var(--sh)", fontFamily: "inherit", transition: "all .15s" }}
+                style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 28px", borderRadius: 10, background: (sending || (isAggregatedUnclaimed && !consentToShare)) ? "var(--paper-2)" : "var(--green)", color: (sending || (isAggregatedUnclaimed && !consentToShare)) ? "var(--ink-400)" : "#fff", fontSize: "var(--text-md)", fontWeight: 800, border: "none", cursor: (sending || (isAggregatedUnclaimed && !consentToShare)) ? "not-allowed" : "pointer", boxShadow: (sending || (isAggregatedUnclaimed && !consentToShare)) ? "none" : "var(--sh)", fontFamily: "inherit", transition: "all .15s" }}
               >
                 {sending ? "Skickar..." : isAggregatedUnclaimed ? "Skicka intresseanmälan" : "Skicka ansökan"}
                 {!sending && <Icon n="arrow" s={15} c="#fff" />}
               </button>
-              <Link to={`/jobb/${id}`} style={{ padding: "14px 22px", borderRadius: 10, background: "transparent", border: "none", fontSize: 14, fontWeight: 600, color: "var(--ink-500)", textDecoration: "none" }}>
+              <Link to={`/jobb/${id}`} style={{ padding: "14px 22px", borderRadius: 10, background: "transparent", border: "none", fontSize: "var(--text-base)", fontWeight: 600, color: "var(--ink-500)", textDecoration: "none" }}>
                 Avbryt
               </Link>
-              <span style={{ fontSize: 12.5, color: "var(--ink-400)", marginLeft: "auto" }}>Du kan dra tillbaka ansökan när som helst.</span>
+              <span style={{ fontSize: "var(--text-xs)", color: "var(--ink-400)", marginLeft: "auto" }}>Du kan dra tillbaka ansökan när som helst.</span>
             </div>
           </div>
 

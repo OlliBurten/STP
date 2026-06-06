@@ -80,7 +80,7 @@ function ConvItem({ conv, isDriver, isActive, basePath, isMobile }) {
       >
         <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
           <div style={{ position: "relative", flexShrink: 0 }}>
-            <div style={{ width: 46, height: 46, borderRadius: 99, background: avatarBg(other), display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 14, color: "#fff" }}>
+            <div style={{ width: 46, height: 46, borderRadius: 99, background: avatarBg(other), display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "var(--text-base)", color: "#fff" }}>
               {avatarInitials(other)}
             </div>
             {unread && (
@@ -89,16 +89,16 @@ function ConvItem({ conv, isDriver, isActive, basePath, isMobile }) {
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 2 }}>
-              <span style={{ fontSize: 14, fontWeight: unread ? 800 : 700, color: "var(--ink-900)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{other}</span>
-              <span style={{ fontSize: 11, color: "var(--ink-400)", flexShrink: 0 }}>{relTime}</span>
+              <span style={{ fontSize: "var(--text-base)", fontWeight: unread ? 800 : 700, color: "var(--ink-900)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{other}</span>
+              <span style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", flexShrink: 0 }}>{relTime}</span>
             </div>
             {conv.jobTitle && (
-              <div style={{ fontSize: 11.5, color: "var(--ink-500)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: 5 }}>{conv.jobTitle}</div>
+              <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: 5 }}>{conv.jobTitle}</div>
             )}
             <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
               <span style={{ padding: "2px 6px", borderRadius: 5, background: stageBg, color: stageColor, fontSize: 9.5, fontWeight: 800, letterSpacing: 0.3 }}>{stageLabel}</span>
-              {typeof conv.matchScore === "number" && <span style={{ fontSize: 11, color: "var(--amber)", fontWeight: 700 }}>{conv.matchScore}%</span>}
-              <span style={{ fontSize: 12, color: "var(--ink-400)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
+              {typeof conv.matchScore === "number" && <span style={{ fontSize: "var(--text-2xs)", color: "var(--amber)", fontWeight: 700 }}>{conv.matchScore}%</span>}
+              <span style={{ fontSize: "var(--text-xs)", color: "var(--ink-400)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
                 {lastMsg?.sender === "company" && <span style={{ color: "var(--ink-300)" }}>Du: </span>}
                 {lastMsg?.content || "—"}
               </span>
@@ -123,22 +123,22 @@ function ConvItem({ conv, isDriver, isActive, basePath, isMobile }) {
       onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
     >
       <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-        <div style={{ width: 38, height: 38, borderRadius: 10, background: avatarBg(other), display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 12, color: "#fff", flexShrink: 0 }}>
+        <div style={{ width: 38, height: 38, borderRadius: 10, background: avatarBg(other), display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "var(--text-xs)", color: "#fff", flexShrink: 0 }}>
           {avatarInitials(other)}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
-            <span style={{ fontSize: 13, fontWeight: unread ? 800 : 600, color: unread ? "var(--ink-900)" : "var(--ink-700)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
+            <span style={{ fontSize: "var(--text-sm)", fontWeight: unread ? 800 : 600, color: unread ? "var(--ink-900)" : "var(--ink-700)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
               {other}
             </span>
-            <span style={{ fontSize: 11, color: "var(--ink-400)", flexShrink: 0 }}>{relTime}</span>
+            <span style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", flexShrink: 0 }}>{relTime}</span>
           </div>
           {conv.jobTitle && (
-            <div style={{ fontSize: 12, color: "var(--ink-500)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: 4 }}>
+            <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: 4 }}>
               {conv.jobTitle}
             </div>
           )}
-          <div style={{ fontSize: 12, color: unread ? "var(--ink-700)" : "var(--ink-400)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", lineHeight: 1.4 }}>
+          <div style={{ fontSize: "var(--text-xs)", color: unread ? "var(--ink-700)" : "var(--ink-400)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", lineHeight: 1.4 }}>
             {lastMsg?.sender === (isDriver ? "driver" : "company") && <span style={{ color: "var(--ink-300)" }}>Du: </span>}
             {lastMsg?.content || "—"}
           </div>
@@ -237,7 +237,7 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
       {/* Job context header */}
       <div style={{ padding: isMobile ? "12px 16px" : "18px 28px", borderBottom: "1px solid var(--line)", background: "var(--card)", display: "flex", alignItems: "center", gap: isMobile ? 10 : 16, flexShrink: 0 }}>
         {isMobile && (
-          <button type="button" onClick={onBack} style={{ background: "none", border: "none", color: "var(--ink-500)", cursor: "pointer", fontSize: 20, padding: "2px 4px", lineHeight: 1, flexShrink: 0 }}>
+          <button type="button" onClick={onBack} style={{ background: "none", border: "none", color: "var(--ink-500)", cursor: "pointer", fontSize: "var(--text-2xl)", padding: "2px 4px", lineHeight: 1, flexShrink: 0 }}>
             ←
           </button>
         )}
@@ -255,12 +255,12 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
               </span>
             )}
             {!isMobile && typeof conv.matchScore === "number" && (
-              <span style={{ fontSize: 13, fontWeight: 700, color: conv.matchScore >= 90 ? "var(--success)" : conv.matchScore >= 75 ? "var(--green)" : "var(--amber-deep)", fontFamily: "var(--mono)", flexShrink: 0 }}>
+              <span style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: conv.matchScore >= 90 ? "var(--success)" : conv.matchScore >= 75 ? "var(--green)" : "var(--amber-deep)", fontFamily: "var(--mono)", flexShrink: 0 }}>
                 {conv.matchScore}% match
               </span>
             )}
           </div>
-          <div style={{ fontSize: 12, color: "var(--ink-500)", display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+          <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
             {!isDriver && conv.jobTitle && <span>{conv.jobTitle}</span>}
             {isDriver && conv.companyName && <span>{conv.companyName}</span>}
             {!isMobile && conv.location && <><span style={{ color: "var(--ink-200)" }}>·</span><span>{conv.location}</span></>}
@@ -276,32 +276,32 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
           {!isDriver && !isMobile && conv.driverId && (
             <Link
               to={`/foretag/forare/${conv.driverId}`}
-              style={{ padding: "7px 12px", borderRadius: 9, background: "var(--paper-2)", border: "1px solid var(--line-2)", color: "var(--ink-700)", fontSize: 12, fontWeight: 700, textDecoration: "none", display: "flex", alignItems: "center", gap: 5, whiteSpace: "nowrap" }}
+              style={{ padding: "7px 12px", borderRadius: 9, background: "var(--paper-2)", border: "1px solid var(--line-2)", color: "var(--ink-700)", fontSize: "var(--text-xs)", fontWeight: 700, textDecoration: "none", display: "flex", alignItems: "center", gap: 5, whiteSpace: "nowrap" }}
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
               Visa profil
             </Link>
           )}
           {!isDriver && !isMobile && (
-            <button type="button" style={{ padding: "7px 14px", borderRadius: 9, background: "var(--green)", color: "#fff", fontSize: 12, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
+            <button type="button" style={{ padding: "7px 14px", borderRadius: 9, background: "var(--green)", color: "#fff", fontSize: "var(--text-xs)", fontWeight: 700, border: "none", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
               Boka intervju
             </button>
           )}
           {isDriver && conv.jobId && !isMobile && (
             <Link
               to={`/jobb/${conv.jobId}`}
-              style={{ padding: "7px 12px", borderRadius: 9, background: "var(--paper-2)", border: "1px solid var(--line-2)", color: "var(--ink-700)", fontSize: 11, fontWeight: 700, textDecoration: "none", display: "flex", alignItems: "center", gap: 4, whiteSpace: "nowrap" }}
+              style={{ padding: "7px 12px", borderRadius: 9, background: "var(--paper-2)", border: "1px solid var(--line-2)", color: "var(--ink-700)", fontSize: "var(--text-2xs)", fontWeight: 700, textDecoration: "none", display: "flex", alignItems: "center", gap: 4, whiteSpace: "nowrap" }}
             >
               Se annons <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
             </Link>
           )}
           {!isMobile && isDriver && (
-            <button type="button" onClick={onReview} disabled={!canReview} style={{ padding: "6px 10px", borderRadius: 8, background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.2)", color: !canReview ? "var(--ink-300)" : "var(--amber)", fontSize: 11, fontWeight: 600, cursor: canReview ? "pointer" : "not-allowed", fontFamily: "inherit", whiteSpace: "nowrap" }}>
+            <button type="button" onClick={onReview} disabled={!canReview} style={{ padding: "6px 10px", borderRadius: 8, background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.2)", color: !canReview ? "var(--ink-300)" : "var(--amber)", fontSize: "var(--text-2xs)", fontWeight: 600, cursor: canReview ? "pointer" : "not-allowed", fontFamily: "inherit", whiteSpace: "nowrap" }}>
               {reviewLabel}
             </button>
           )}
           {!isMobile && (
-            <button type="button" onClick={onReport} style={{ padding: "6px 10px", borderRadius: 8, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-400)", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
+            <button type="button" onClick={onReport} style={{ padding: "6px 10px", borderRadius: 8, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-400)", fontSize: "var(--text-2xs)", fontWeight: 600, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
               Rapportera
             </button>
           )}
@@ -315,22 +315,22 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 13, fontWeight: 800, color: "var(--success)" }}>Du är utvald — åtgärd krävs</div>
-            <div style={{ fontSize: 12, color: "var(--ink-500)", marginTop: 2 }}>{other} har valt ut din profil.</div>
+            <div style={{ fontSize: "var(--text-sm)", fontWeight: 800, color: "var(--success)" }}>Du är utvald — åtgärd krävs</div>
+            <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", marginTop: 2 }}>{other} har valt ut din profil.</div>
           </div>
         </div>
       )}
 
       {/* Rejected banner */}
       {isRejected && (
-        <div style={{ padding: isMobile ? "10px 16px" : "12px 28px", background: "var(--paper-2)", borderBottom: "1px solid var(--line)", fontSize: 12, color: "var(--ink-400)", fontStyle: "italic" }}>
+        <div style={{ padding: isMobile ? "10px 16px" : "12px 28px", background: "var(--paper-2)", borderBottom: "1px solid var(--line)", fontSize: "var(--text-xs)", color: "var(--ink-400)", fontStyle: "italic" }}>
           Konversationen är avslutad.
         </div>
       )}
 
       {/* Company contact info */}
       {!isDriver && (conv.driverEmail || conv.driverPhone) && (
-        <div style={{ padding: "10px 24px", background: "var(--paper-2)", borderBottom: "1px solid var(--line)", fontSize: 13, color: "var(--ink-500)", display: "flex", gap: 16 }}>
+        <div style={{ padding: "10px 24px", background: "var(--paper-2)", borderBottom: "1px solid var(--line)", fontSize: "var(--text-sm)", color: "var(--ink-500)", display: "flex", gap: 16 }}>
           {conv.driverEmail && <span>📧 {conv.driverEmail}</span>}
           {conv.driverPhone && <span>📞 {conv.driverPhone}</span>}
         </div>
@@ -340,7 +340,7 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
       <div style={{ flex: 1, overflowY: "auto", padding: isMobile ? "16px 16px" : "24px 28px", paddingBottom: isMobile ? "calc(env(safe-area-inset-bottom, 0px) + 80px)" : undefined }}>
         {groups.map(({ day, msgs }) => (
           <div key={day}>
-            <div style={{ textAlign: "center", margin: "12px 0 18px", fontSize: 11, fontWeight: 700, color: "var(--ink-400)", letterSpacing: 0.5 }}>
+            <div style={{ textAlign: "center", margin: "12px 0 18px", fontSize: "var(--text-2xs)", fontWeight: 700, color: "var(--ink-400)", letterSpacing: 0.5 }}>
               <span style={{ padding: "4px 12px", background: "var(--paper-2)", borderRadius: 99 }}>
                 {formatDateLabel(msgs[0].timestamp)}
               </span>
@@ -351,7 +351,7 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
                 <div key={msg.id} style={{ marginBottom: 10 }}>
                   <div style={{ display: "flex", justifyContent: isOwn ? "flex-end" : "flex-start", alignItems: "flex-end", gap: 10 }}>
                     {!isOwn && (
-                      <div style={{ width: 32, height: 32, borderRadius: 8, background: avatarBg(other), display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 11, color: "#fff", flexShrink: 0 }}>
+                      <div style={{ width: 32, height: 32, borderRadius: 8, background: avatarBg(other), display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "var(--text-2xs)", color: "#fff", flexShrink: 0 }}>
                         {avatarInitials(other)}
                       </div>
                     )}
@@ -364,7 +364,7 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
                         color: isOwn ? "#fff" : "var(--ink-900)",
                         fontWeight: isOwn ? 600 : 400,
                       }}>
-                        <p style={{ fontSize: 14, lineHeight: 1.5, margin: 0, whiteSpace: "pre-wrap" }}>{msg.content}</p>
+                        <p style={{ fontSize: "var(--text-base)", lineHeight: 1.5, margin: 0, whiteSpace: "pre-wrap" }}>{msg.content}</p>
                       </div>
                       <div style={{ fontSize: 10, color: "var(--ink-400)", marginTop: 4, textAlign: isOwn ? "right" : "left", paddingLeft: isOwn ? 0 : 4, paddingRight: isOwn ? 4 : 0 }}>
                         {formatTime(msg.timestamp)}
@@ -373,7 +373,7 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
                     </div>
                   </div>
                   {readReceiptMsgId === msg.id && (
-                    <p style={{ textAlign: "right", fontSize: 11, color: "var(--ink-300)", marginTop: 2 }}>
+                    <p style={{ textAlign: "right", fontSize: "var(--text-2xs)", color: "var(--ink-300)", marginTop: 2 }}>
                       Läst {new Date(conv.readByDriverAt).toLocaleString("sv-SE", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
                     </p>
                   )}
@@ -396,13 +396,13 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
               onKeyDown={handleKeyDown}
               placeholder={`Skriv till ${other}...`}
               rows={1}
-              style={{ flex: 1, fontSize: 14, color: "var(--ink-900)", background: "transparent", outline: "none", resize: "none", lineHeight: 1.5, paddingTop: 6, paddingBottom: 6, minHeight: 24, maxHeight: 120, fontFamily: "inherit", border: "none" }}
+              style={{ flex: 1, fontSize: "var(--text-base)", color: "var(--ink-900)", background: "transparent", outline: "none", resize: "none", lineHeight: 1.5, paddingTop: 6, paddingBottom: 6, minHeight: 24, maxHeight: 120, fontFamily: "inherit", border: "none" }}
             />
             <button
               type="button"
               onClick={handleSend}
               disabled={!input.trim()}
-              style={{ padding: "8px 16px", borderRadius: 10, background: input.trim() ? "var(--green)" : "var(--paper-2)", color: input.trim() ? "#fff" : "var(--ink-300)", fontWeight: 800, fontSize: 13, display: "flex", alignItems: "center", gap: 7, flexShrink: 0, transition: "all .15s", fontFamily: "inherit", cursor: input.trim() ? "pointer" : "not-allowed", border: "none" }}
+              style={{ padding: "8px 16px", borderRadius: 10, background: input.trim() ? "var(--green)" : "var(--paper-2)", color: input.trim() ? "#fff" : "var(--ink-300)", fontWeight: 800, fontSize: "var(--text-sm)", display: "flex", alignItems: "center", gap: 7, flexShrink: 0, transition: "all .15s", fontFamily: "inherit", cursor: input.trim() ? "pointer" : "not-allowed", border: "none" }}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
               Skicka
@@ -411,9 +411,9 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
           {/* Quick replies — always visible when selected */}
           {stage === "selected" && (
             <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap", alignItems: "center" }}>
-              <span style={{ fontSize: 11, color: "var(--ink-400)", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>Snabbsvar:</span>
+              <span style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>Snabbsvar:</span>
               {quickReplies.map((r) => (
-                <button key={r} type="button" onClick={() => setInput(r)} style={{ padding: "6px 12px", borderRadius: 99, background: "var(--success-tint)", border: "1px solid rgba(31,122,58,0.2)", color: "var(--success)", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+                <button key={r} type="button" onClick={() => setInput(r)} style={{ padding: "6px 12px", borderRadius: 99, background: "var(--success-tint)", border: "1px solid rgba(31,122,58,0.2)", color: "var(--success)", fontSize: "var(--text-xs)", fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
                   {r.length > 36 ? r.slice(0, 36) + "…" : r}
                 </button>
               ))}
@@ -423,11 +423,11 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
           {stage !== "selected" && (
             <div style={{ marginTop: 6, display: "flex", gap: 6, flexWrap: "wrap" }}>
               {showQuick && quickReplies.map((r) => (
-                <button key={r} type="button" onClick={() => { setInput(r); setShowQuick(false); }} style={{ padding: "6px 12px", borderRadius: 99, background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.2)", color: "var(--amber)", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+                <button key={r} type="button" onClick={() => { setInput(r); setShowQuick(false); }} style={{ padding: "6px 12px", borderRadius: 99, background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.2)", color: "var(--amber)", fontSize: "var(--text-xs)", fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
                   {r.length > 40 ? r.slice(0, 40) + "…" : r}
                 </button>
               ))}
-              <button type="button" onClick={() => setShowQuick((v) => !v)} style={{ padding: "5px 10px", borderRadius: 99, background: "transparent", border: "1px solid var(--line)", color: "var(--ink-400)", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+              <button type="button" onClick={() => setShowQuick((v) => !v)} style={{ padding: "5px 10px", borderRadius: 99, background: "transparent", border: "1px solid var(--line)", color: "var(--ink-400)", fontSize: "var(--text-2xs)", fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
                 {showQuick ? "Dölj" : "Snabbsvar"}
               </button>
             </div>
@@ -569,12 +569,12 @@ export default function Messages() {
 
       {/* Banners */}
       {!isDriver && companyUnreadConversationCount > 0 && (
-        <div style={{ padding: "10px 24px", background: "var(--amber-tint)", borderBottom: "1px solid rgba(199,122,14,0.2)", fontSize: 13, color: "var(--amber-text)", flexShrink: 0 }}>
+        <div style={{ padding: "10px 24px", background: "var(--amber-tint)", borderBottom: "1px solid rgba(199,122,14,0.2)", fontSize: "var(--text-sm)", color: "var(--amber-text)", flexShrink: 0 }}>
           Ni har <strong>{companyUnreadConversationCount}</strong> nya ansökningar att granska. Svarar ni inom 24h ökar chansen att hitta rätt kandidat.
         </div>
       )}
       {isDriver && selectedCount > 0 && (
-        <div style={{ padding: "10px 24px", background: "var(--success-tint)", borderBottom: "1px solid rgba(31,122,58,0.2)", fontSize: 13, color: "var(--success)", display: "flex", gap: 10, alignItems: "center", flexShrink: 0 }}>
+        <div style={{ padding: "10px 24px", background: "var(--success-tint)", borderBottom: "1px solid rgba(31,122,58,0.2)", fontSize: "var(--text-sm)", color: "var(--success)", display: "flex", gap: 10, alignItems: "center", flexShrink: 0 }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polyline points="20 6 9 17 4 12"/></svg>
           <span>Du är utvald i <strong>{selectedCount}</strong> ansökan{selectedCount > 1 ? "er" : ""}. Svara snabbt — det visar intresse!</span>
         </div>
@@ -593,18 +593,18 @@ export default function Messages() {
                 <h1 style={{ fontSize: isMobile ? 26 : 20, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.4 }}>
                   {isDriver ? "Meddelanden" : "Inkorg"}
                 </h1>
-                {!isMobile && unreadCount > 0 && <span style={{ padding: "2px 9px", borderRadius: 999, background: "var(--success-tint)", border: "1px solid rgba(31,122,58,0.2)", fontSize: 11.5, fontWeight: 800, color: "var(--success)" }}>{unreadCount} nya</span>}
+                {!isMobile && unreadCount > 0 && <span style={{ padding: "2px 9px", borderRadius: 999, background: "var(--success-tint)", border: "1px solid rgba(31,122,58,0.2)", fontSize: "var(--text-2xs)", fontWeight: 800, color: "var(--success)" }}>{unreadCount} nya</span>}
               </div>
               {!isMobile && (
                 <div style={{ position: "relative" }}>
                   <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--ink-400)", display: "inline-flex" }}>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 15, height: 15 }}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                   </span>
-                  <input placeholder="Sök konversation..." style={{ width: "100%", padding: "9px 14px 9px 36px", background: "var(--card-2)", border: "1px solid var(--line-2)", borderRadius: 9, fontSize: 13.5, color: "var(--ink-900)", outline: "none", fontFamily: "inherit", boxSizing: "border-box" }} readOnly />
+                  <input placeholder="Sök konversation..." style={{ width: "100%", padding: "9px 14px 9px 36px", background: "var(--card-2)", border: "1px solid var(--line-2)", borderRadius: 9, fontSize: "var(--text-sm)", color: "var(--ink-900)", outline: "none", fontFamily: "inherit", boxSizing: "border-box" }} readOnly />
                 </div>
               )}
               {isMobile && (
-                <div style={{ fontSize: 12.5, color: "var(--ink-500)", marginBottom: 10 }}>
+                <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", marginBottom: 10 }}>
                   {unreadCount > 0 ? `${unreadCount} olästa meddelanden` : "Inga olästa meddelanden"}
                 </div>
               )}
@@ -614,7 +614,7 @@ export default function Messages() {
                 <select
                   value={companyFilter}
                   onChange={(e) => setCompanyFilter(e.target.value)}
-                  style={{ width: "100%", padding: "8px 10px", borderRadius: 9, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-900)", fontSize: 13, outline: "none", marginBottom: 10, fontFamily: "inherit", appearance: "none" }}
+                  style={{ width: "100%", padding: "8px 10px", borderRadius: 9, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-900)", fontSize: "var(--text-sm)", outline: "none", marginBottom: 10, fontFamily: "inherit", appearance: "none" }}
                 >
                   {companies.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
@@ -643,11 +643,11 @@ export default function Messages() {
                 <div style={{ padding: "24px 16px" }}><LoadingBlock message="Hämtar..." /></div>
               ) : conversations.length === 0 ? (
                 <div style={{ padding: "32px 20px", textAlign: "center" }}>
-                  <p style={{ fontSize: 13, color: "var(--ink-400)", marginBottom: 16 }}>
+                  <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-400)", marginBottom: 16 }}>
                     {stageFilter !== "all" ? "Inga konversationer i denna kategori." : isDriver ? "Inga konversationer ännu." : "Inga konversationer."}
                   </p>
                   {stageFilter === "all" && (
-                    <Link to={isDriver ? "/jobb" : "/foretag/chaufforer"} style={{ display: "inline-block", padding: "8px 16px", borderRadius: 10, background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: 13, textDecoration: "none" }}>
+                    <Link to={isDriver ? "/jobb" : "/foretag/chaufforer"} style={{ display: "inline-block", padding: "8px 16px", borderRadius: 10, background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: "var(--text-sm)", textDecoration: "none" }}>
                       {isDriver ? "Hitta jobb →" : "Hitta förare →"}
                     </Link>
                   )}
@@ -679,26 +679,26 @@ export default function Messages() {
             ) : (
               <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, padding: "40px", textAlign: "center" }}>
                 {id ? (
-                  <p style={{ fontSize: 14, color: "var(--ink-400)" }}>Konversationen hittades inte.</p>
+                  <p style={{ fontSize: "var(--text-base)", color: "var(--ink-400)" }}>Konversationen hittades inte.</p>
                 ) : allConversations.length > 0 ? (
                   <>
                     <div style={{ width: 72, height: 72, borderRadius: 99, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 6 }}>
                       <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--green-text)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
                     </div>
-                    <h2 style={{ fontSize: 20, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -0.5, marginBottom: 4 }}>Välj en konversation</h2>
-                    <p style={{ fontSize: 13, color: "var(--ink-500)", maxWidth: 340, lineHeight: 1.6 }}>Här samlas alla dina ansökningar och meddelanden från åkerier på ett ställe.</p>
+                    <h2 style={{ fontSize: "var(--text-2xl)", fontWeight: 900, color: "var(--ink-900)", letterSpacing: -0.5, marginBottom: 4 }}>Välj en konversation</h2>
+                    <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", maxWidth: 340, lineHeight: 1.6 }}>Här samlas alla dina ansökningar och meddelanden från åkerier på ett ställe.</p>
                   </>
                 ) : isDriver ? (
                   <>
-                    <p style={{ fontSize: 14, color: "var(--ink-400)" }}>Ansök till ett jobb för att starta en konversation.</p>
-                    <Link to="/jobb" style={{ padding: "10px 22px", borderRadius: 11, background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
+                    <p style={{ fontSize: "var(--text-base)", color: "var(--ink-400)" }}>Ansök till ett jobb för att starta en konversation.</p>
+                    <Link to="/jobb" style={{ padding: "10px 22px", borderRadius: 11, background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: "var(--text-base)", textDecoration: "none" }}>
                       Se lediga jobb
                     </Link>
                   </>
                 ) : (
                   <>
-                    <p style={{ fontSize: 14, color: "var(--ink-400)" }}>Kontakta en förare för att starta en konversation.</p>
-                    <Link to="/foretag/chaufforer" style={{ padding: "10px 22px", borderRadius: 11, background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
+                    <p style={{ fontSize: "var(--text-base)", color: "var(--ink-400)" }}>Kontakta en förare för att starta en konversation.</p>
+                    <Link to="/foretag/chaufforer" style={{ padding: "10px 22px", borderRadius: 11, background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: "var(--text-base)", textDecoration: "none" }}>
                       Hitta förare
                     </Link>
                   </>

@@ -140,10 +140,10 @@ export default function BloggIndex() {
 
         {/* Header */}
         <div style={{ marginBottom: 48 }}>
-          <span style={{ display: "inline-block", fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--green-text)", marginBottom: 12 }}>
+          <span style={{ display: "inline-block", fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--green-text)", marginBottom: 12 }}>
             Transportplattformen
           </span>
-          <h1 style={{ fontSize: 40, fontWeight: 900, color: "var(--ink-900)", letterSpacing: "-0.5px", margin: "0 0 12px" }}>
+          <h1 style={{ fontSize: "var(--text-6xl)", fontWeight: 900, color: "var(--ink-900)", letterSpacing: "-0.5px", margin: "0 0 12px" }}>
             Guider &amp; insikter
           </h1>
           <p style={{ fontSize: 17, color: "var(--ink-500)", maxWidth: 560, lineHeight: 1.6, margin: 0 }}>
@@ -159,19 +159,19 @@ export default function BloggIndex() {
         >
           <div style={{ background: "linear-gradient(135deg, #1F5F5C 0%, #0f3533 100%)", padding: "40px 40px 36px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
-              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.6)" }}>
+              <span style={{ fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.6)" }}>
                 Toppguide
               </span>
               <span style={{ width: 4, height: 4, borderRadius: "50%", background: "rgba(255,255,255,0.3)" }} />
-              <span style={{ fontSize: 12, color: "rgba(255,255,255,0.55)" }}>{featured.readTime} läsning</span>
+              <span style={{ fontSize: "var(--text-xs)", color: "rgba(255,255,255,0.55)" }}>{featured.readTime} läsning</span>
             </div>
-            <h2 style={{ fontSize: 28, fontWeight: 800, color: "#f0faf9", lineHeight: 1.25, margin: "0 0 10px", letterSpacing: "-0.3px" }}>
+            <h2 style={{ fontSize: "var(--text-4xl)", fontWeight: 800, color: "#f0faf9", lineHeight: 1.25, margin: "0 0 10px", letterSpacing: "-0.3px" }}>
               {featured.title}
             </h2>
-            <p style={{ fontSize: 15, color: "rgba(255,255,255,0.7)", lineHeight: 1.65, maxWidth: 640, margin: "0 0 20px" }}>
+            <p style={{ fontSize: "var(--text-md)", color: "rgba(255,255,255,0.7)", lineHeight: 1.65, maxWidth: 640, margin: "0 0 20px" }}>
               {featured.desc}
             </p>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, color: "var(--success)" }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--success)" }}>
               Läs guide →
             </span>
           </div>
@@ -192,18 +192,18 @@ export default function BloggIndex() {
                 <Icon name="truck" size={30} color={a.tagStyle.color} stroke={1.7} />
               </div>
               <div style={{ display: "flex", flexDirection: "column", flex: 1, padding: "18px 20px" }}>
-                <span style={{ alignSelf: "flex-start", fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 999, ...a.tagStyle }}>
+                <span style={{ alignSelf: "flex-start", fontSize: "var(--text-2xs)", fontWeight: 700, padding: "3px 10px", borderRadius: 999, ...a.tagStyle }}>
                   {a.tag}
                 </span>
-                <h2 style={{ fontSize: 16.5, fontWeight: 800, color: "var(--ink-900)", letterSpacing: "-0.3px", lineHeight: 1.3, margin: "12px 0 8px" }}>
+                <h2 style={{ fontSize: "var(--text-lg)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: "-0.3px", lineHeight: 1.3, margin: "12px 0 8px" }}>
                   {a.title}
                 </h2>
-                <p style={{ fontSize: 13.5, color: "var(--ink-500)", lineHeight: 1.55, margin: "0 0 16px", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", lineHeight: 1.55, margin: "0 0 16px", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
                   {a.desc}
                 </p>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 14, borderTop: "1px solid var(--line)", marginTop: "auto" }}>
-                  <span style={{ fontSize: 12, color: "var(--ink-400)", fontWeight: 600 }}>{a.date} · {a.readTime}</span>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: "var(--green-text)" }}>Läs mer →</span>
+                  <span style={{ fontSize: "var(--text-xs)", color: "var(--ink-400)", fontWeight: 600 }}>{a.date} · {a.readTime}</span>
+                  <span style={{ fontSize: "var(--text-xs)", fontWeight: 600, color: "var(--green-text)" }}>Läs mer →</span>
                 </div>
               </div>
             </Link>
@@ -213,21 +213,21 @@ export default function BloggIndex() {
         {/* Bottom CTA */}
         <div style={{ marginTop: 56, background: "var(--green-tint)", border: "1px solid var(--green)", borderRadius: 20, padding: "36px 40px", display: "flex", flexWrap: "wrap", alignItems: "center", gap: 24 }}>
           <div style={{ flex: 1, minWidth: 200 }}>
-            <h3 style={{ fontSize: 18, fontWeight: 800, color: "var(--ink-900)", margin: "0 0 6px" }}>Redo att hitta nästa steg?</h3>
-            <p style={{ fontSize: 14, color: "var(--ink-500)", margin: 0, lineHeight: 1.6 }}>
+            <h3 style={{ fontSize: "var(--text-xl)", fontWeight: 800, color: "var(--ink-900)", margin: "0 0 6px" }}>Redo att hitta nästa steg?</h3>
+            <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", margin: 0, lineHeight: 1.6 }}>
               Bläddra bland lediga tjänster eller lägg upp din profil och bli synlig för hundratals åkerier.
             </p>
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
             <Link
               to="/jobb"
-              style={{ display: "inline-block", background: "var(--green)", color: "#fff", padding: "11px 22px", borderRadius: 12, fontSize: 14, fontWeight: 800, textDecoration: "none" }}
+              style={{ display: "inline-block", background: "var(--green)", color: "#fff", padding: "11px 22px", borderRadius: 12, fontSize: "var(--text-base)", fontWeight: 800, textDecoration: "none" }}
             >
               Se lediga jobb
             </Link>
             <Link
               to="/forare"
-              style={{ display: "inline-block", border: "1px solid var(--line-2)", color: "var(--ink-700)", padding: "11px 22px", borderRadius: 12, fontSize: 14, fontWeight: 600, textDecoration: "none" }}
+              style={{ display: "inline-block", border: "1px solid var(--line-2)", color: "var(--ink-700)", padding: "11px 22px", borderRadius: 12, fontSize: "var(--text-base)", fontWeight: 600, textDecoration: "none" }}
             >
               Hitta förare
             </Link>

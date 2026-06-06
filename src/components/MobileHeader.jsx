@@ -160,7 +160,7 @@ export default function MobileHeader() {
               width: 34, height: 34, borderRadius: 99,
               background: "linear-gradient(135deg,var(--amber),#d97706)",
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontWeight: 800, fontSize: 12, color: "#000",
+              fontWeight: 800, fontSize: "var(--text-xs)", color: "#000",
               cursor: "pointer", flexShrink: 0,
               WebkitTapHighlightColor: "transparent",
             }}
@@ -180,12 +180,12 @@ export default function MobileHeader() {
             ].map(({ label, icon, to }) => (
               <Link key={to} to={to} onClick={() => setAvatarOpen(false)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 16px", borderRadius: 10, textDecoration: "none", color: "var(--ink-900)" }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="var(--ink-400)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="17" height="17"><path d={icon}/></svg>
-                <span style={{ fontSize: 15, fontWeight: 600 }}>{label}</span>
+                <span style={{ fontSize: "var(--text-md)", fontWeight: 600 }}>{label}</span>
               </Link>
             ))}
             <button onClick={handleLogout} style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 16px", width: "100%", background: "none", border: "none", borderRadius: 10, cursor: "pointer", fontFamily: "inherit" }}>
               <svg viewBox="0 0 24 24" fill="none" stroke="var(--danger)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="17" height="17"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-              <span style={{ fontSize: 15, fontWeight: 600, color: "var(--danger)" }}>Logga ut</span>
+              <span style={{ fontSize: "var(--text-md)", fontWeight: 600, color: "var(--danger)" }}>Logga ut</span>
             </button>
           </div>
         </div>
@@ -201,9 +201,9 @@ export default function MobileHeader() {
         }}>
           {/* Panel header */}
           <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={{ fontSize: 14, fontWeight: 800, color: "var(--ink-900)" }}>Notiser</span>
+            <span style={{ fontSize: "var(--text-base)", fontWeight: 800, color: "var(--ink-900)" }}>Notiser</span>
             {notifications.unreadCount > 0 && (
-              <button type="button" onClick={handleMarkAllRead} style={{ fontSize: 12, color: "var(--green-text)", fontWeight: 700, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
+              <button type="button" onClick={handleMarkAllRead} style={{ fontSize: "var(--text-xs)", color: "var(--green-text)", fontWeight: 700, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
                 Markera alla lästa
               </button>
             )}
@@ -212,7 +212,7 @@ export default function MobileHeader() {
           {/* Items */}
           <div style={{ maxHeight: "60vh", overflowY: "auto" }}>
             {notifications.list.length === 0 ? (
-              <div style={{ padding: "28px 18px", textAlign: "center", fontSize: 13, color: "var(--ink-400)" }}>
+              <div style={{ padding: "28px 18px", textAlign: "center", fontSize: "var(--text-sm)", color: "var(--ink-400)" }}>
                 Inga notiser just nu
               </div>
             ) : (
@@ -231,9 +231,9 @@ export default function MobileHeader() {
                 >
                   <span style={{ width: 7, height: 7, borderRadius: 99, background: notifDotColor(n.type), marginTop: 6, flexShrink: 0 }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, lineHeight: 1.4, color: "var(--ink-900)", fontWeight: !n.readAt ? 700 : 400 }}>{n.title}</div>
-                    {n.body && <div style={{ fontSize: 11.5, color: "var(--ink-500)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{n.body}</div>}
-                    <div style={{ fontSize: 11, color: "var(--ink-400)", marginTop: 3 }}>{formatNotifDate(n.createdAt)}</div>
+                    <div style={{ fontSize: "var(--text-sm)", lineHeight: 1.4, color: "var(--ink-900)", fontWeight: !n.readAt ? 700 : 400 }}>{n.title}</div>
+                    {n.body && <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{n.body}</div>}
+                    <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", marginTop: 3 }}>{formatNotifDate(n.createdAt)}</div>
                   </div>
                 </button>
               ))
@@ -244,7 +244,7 @@ export default function MobileHeader() {
           <Link
             to="/meddelanden"
             onClick={() => setNotifOpen(false)}
-            style={{ display: "block", padding: "12px 18px", textAlign: "center", fontSize: 13, color: "var(--green-text)", fontWeight: 700, textDecoration: "none", borderTop: "1px solid var(--line)" }}
+            style={{ display: "block", padding: "12px 18px", textAlign: "center", fontSize: "var(--text-sm)", color: "var(--green-text)", fontWeight: 700, textDecoration: "none", borderTop: "1px solid var(--line)" }}
           >
             Gå till inkorg →
           </Link>

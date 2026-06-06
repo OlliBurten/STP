@@ -15,7 +15,7 @@ export default function Branschinsikter() {
         <h1 style={{ fontSize: "clamp(28px,4vw,38px)", fontWeight: 900, color: "var(--ink-900)", letterSpacing: "-1px", lineHeight: 1.15, margin: "0 0 16px" }}>
           Branschinsikter
         </h1>
-        <p style={{ fontSize: 16, color: "var(--ink-500)", lineHeight: 1.65, margin: "0 0 40px", maxWidth: 560 }}>
+        <p style={{ fontSize: "var(--text-lg)", color: "var(--ink-500)", lineHeight: 1.65, margin: "0 0 40px", maxWidth: 560 }}>
           Sammanställningar och statistik kring kompetensläget i svensk transport. Innehåll byggs ut utifrån tillgängliga källor som TYA Trendindikator Åkeri.
         </p>
         <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 12 }}>
@@ -24,10 +24,10 @@ export default function Branschinsikter() {
               to="/branschinsikter/kompetenslaget-2025"
               style={{ display: "block", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "18px 22px", textDecoration: "none" }}
             >
-              <span style={{ fontSize: 15, fontWeight: 700, color: "var(--green-text)" }}>
+              <span style={{ fontSize: "var(--text-md)", fontWeight: 700, color: "var(--green-text)" }}>
                 Kompetensläget 2025/2026
               </span>
-              <p style={{ fontSize: 13, color: "var(--ink-500)", margin: "4px 0 0", lineHeight: 1.5 }}>
+              <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", margin: "4px 0 0", lineHeight: 1.5 }}>
                 Nyckeltal om rekryteringsbehov och matchningsutmaningar.
               </p>
             </Link>

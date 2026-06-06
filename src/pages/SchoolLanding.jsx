@@ -65,8 +65,8 @@ export default function SchoolLanding() {
             background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.25)",
             borderRadius: 99, padding: "5px 16px", marginBottom: 24,
           }}>
-            <span style={{ fontSize: 14 }}>🏫</span>
-            <span style={{ fontSize: 12, fontWeight: 700, color: "var(--green-text)", letterSpacing: "0.06em" }}>
+            <span style={{ fontSize: "var(--text-base)" }}>🏫</span>
+            <span style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--green-text)", letterSpacing: "0.06em" }}>
               {displayName}
             </span>
           </div>
@@ -88,7 +88,7 @@ export default function SchoolLanding() {
 
           <Link to={registerUrl} style={{
             display: "inline-block", padding: "14px 32px", borderRadius: 13,
-            background: "var(--green)", color: "#fff", fontSize: 15, fontWeight: 800,
+            background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800,
             textDecoration: "none",
           }}>
             Registrera dig gratis →
@@ -101,19 +101,19 @@ export default function SchoolLanding() {
               marginTop: 40, flexWrap: "wrap",
             }}>
               <div style={{ textAlign: "center" }}>
-                <p style={{ fontSize: 28, fontWeight: 800, color: "var(--green-text)", margin: 0 }}>
+                <p style={{ fontSize: "var(--text-4xl)", fontWeight: 800, color: "var(--green-text)", margin: 0 }}>
                   {stats.studentCount > 0 ? stats.studentCount : "—"}
                 </p>
-                <p style={{ fontSize: 12, color: "var(--ink-400)", margin: "4px 0 0" }}>
+                <p style={{ fontSize: "var(--text-xs)", color: "var(--ink-400)", margin: "4px 0 0" }}>
                   {stats.studentCount === 1 ? "elev från er skola" : "elever från er skola"}
                 </p>
               </div>
               <div style={{ width: 1, background: "var(--line)", alignSelf: "stretch" }} />
               <div style={{ textAlign: "center" }}>
-                <p style={{ fontSize: 28, fontWeight: 800, color: "var(--amber-text)", margin: 0 }}>
+                <p style={{ fontSize: "var(--text-4xl)", fontWeight: 800, color: "var(--amber-text)", margin: 0 }}>
                   {stats.praktikCompanyCount}
                 </p>
-                <p style={{ fontSize: 12, color: "var(--ink-400)", margin: "4px 0 0" }}>
+                <p style={{ fontSize: "var(--text-xs)", color: "var(--ink-400)", margin: "4px 0 0" }}>
                   verifierade åkerier tar emot praktikanter
                 </p>
               </div>
@@ -126,7 +126,7 @@ export default function SchoolLanding() {
       <div style={{ maxWidth: 860, margin: "0 auto", padding: "64px 24px 80px" }}>
 
         <p style={{
-          fontSize: 11, fontWeight: 700, letterSpacing: "0.12em",
+          fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: "0.12em",
           textTransform: "uppercase", color: "var(--amber-text)", textAlign: "center", marginBottom: 12,
         }}>
           Så här funkar det
@@ -149,13 +149,13 @@ export default function SchoolLanding() {
                 width: 36, height: 36, borderRadius: "50%", flexShrink: 0,
                 background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.2)",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 13, fontWeight: 800, color: "var(--green-text)",
+                fontSize: "var(--text-sm)", fontWeight: 800, color: "var(--green-text)",
               }}>
                 {s.n}
               </div>
               <div>
-                <p style={{ fontSize: 15, fontWeight: 700, color: "var(--ink-900)", margin: "0 0 6px" }}>{s.title}</p>
-                <p style={{ fontSize: 13, color: "var(--ink-500)", lineHeight: 1.65, margin: 0 }}>{s.body}</p>
+                <p style={{ fontSize: "var(--text-md)", fontWeight: 700, color: "var(--ink-900)", margin: "0 0 6px" }}>{s.title}</p>
+                <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", lineHeight: 1.65, margin: 0 }}>{s.body}</p>
               </div>
             </div>
           ))}
@@ -177,9 +177,9 @@ export default function SchoolLanding() {
               background: "var(--card)", border: "1px solid var(--line)",
               borderRadius: 14, padding: "20px",
             }}>
-              <div style={{ fontSize: 20, marginBottom: 8 }}>{w.icon}</div>
-              <p style={{ fontSize: 13, fontWeight: 700, color: "var(--ink-900)", marginBottom: 6 }}>{w.title}</p>
-              <p style={{ fontSize: 12, color: "var(--ink-500)", lineHeight: 1.6, margin: 0 }}>{w.body}</p>
+              <div style={{ fontSize: "var(--text-2xl)", marginBottom: 8 }}>{w.icon}</div>
+              <p style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-900)", marginBottom: 6 }}>{w.title}</p>
+              <p style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", lineHeight: 1.6, margin: 0 }}>{w.body}</p>
             </div>
           ))}
         </div>
@@ -191,7 +191,7 @@ export default function SchoolLanding() {
           padding: "clamp(28px, 5vw, 44px)", textAlign: "center",
         }}>
           <p style={{
-            fontSize: 12, fontWeight: 700, letterSpacing: "0.1em",
+            fontSize: "var(--text-xs)", fontWeight: 700, letterSpacing: "0.1em",
             textTransform: "uppercase", color: "var(--green-text)", marginBottom: 14,
           }}>
             {displayName}
@@ -203,7 +203,7 @@ export default function SchoolLanding() {
             Redo att hitta din praktikplats?
           </h2>
           <p style={{
-            fontSize: 14, color: "var(--ink-500)", lineHeight: 1.7,
+            fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.7,
             maxWidth: 460, margin: "0 auto 28px",
           }}>
             Det tar under fem minuter att skapa din profil. Din skola är redan förifylld.
@@ -211,13 +211,13 @@ export default function SchoolLanding() {
           <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
             <Link to={registerUrl} style={{
               padding: "13px 28px", borderRadius: 12, background: "var(--green)",
-              color: "#fff", fontSize: 14, fontWeight: 800, textDecoration: "none",
+              color: "#fff", fontSize: "var(--text-base)", fontWeight: 800, textDecoration: "none",
             }}>
               Registrera dig gratis
             </Link>
             <Link to="/akerier?praktik=true" style={{
               padding: "13px 28px", borderRadius: 12, border: "1px solid var(--line)",
-              color: "var(--ink-500)", fontSize: 14, fontWeight: 600, textDecoration: "none",
+              color: "var(--ink-500)", fontSize: "var(--text-base)", fontWeight: 600, textDecoration: "none",
             }}>
               Bläddra bland åkerier →
             </Link>

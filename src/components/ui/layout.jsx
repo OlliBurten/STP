@@ -89,10 +89,10 @@ export const PageHeader = ({ eyebrow, title, sub, actions, tabs, width = "wide" 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 16, marginBottom: tabs ? 24 : 0 }}>
           <div>
             {eyebrow && (
-              <p style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 10 }}>{eyebrow}</p>
+              <p style={{ fontSize: "var(--text-2xs)", fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 10 }}>{eyebrow}</p>
             )}
-            <h1 className="stp-page-title" style={{ fontSize: 34, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.2, lineHeight: 1.15, marginBottom: sub ? 6 : 0 }}>{title}</h1>
-            {sub && <p style={{ fontSize: 14, color: "var(--ink-500)", fontWeight: 500 }}>{sub}</p>}
+            <h1 className="stp-page-title" style={{ fontSize: "var(--text-5xl)", fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.2, lineHeight: 1.15, marginBottom: sub ? 6 : 0 }}>{title}</h1>
+            {sub && <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", fontWeight: 500 }}>{sub}</p>}
           </div>
           {actions && <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>{actions}</div>}
         </div>
@@ -109,7 +109,7 @@ export const Breadcrumb = ({ label = "Tillbaka", onClick, width = "wide" }) => {
   const maxWidth = widthOf(width);
   return (
     <div className="stp-breadcrumb" style={{ maxWidth, margin: "0 auto", padding: `24px ${LAYOUT.PAD}px 0` }}>
-      <button onClick={onClick} style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 600, color: "var(--ink-500)" }}>
+      <button onClick={onClick} style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--ink-500)" }}>
         <Icon name="arrowLeft" size={14} stroke={2} />
         {label}
       </button>
@@ -122,7 +122,7 @@ export const Section = ({ title, accessory, children, first }) => (
   <section>
     {title && (
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: first ? 0 : 36, marginBottom: 14 }}>
-        <h2 style={{ fontSize: 20, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.4 }}>{title}</h2>
+        <h2 style={{ fontSize: "var(--text-2xl)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.4 }}>{title}</h2>
         {accessory}
       </div>
     )}

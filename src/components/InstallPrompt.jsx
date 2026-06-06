@@ -56,26 +56,26 @@ export default function InstallPrompt() {
 
       {/* Ikon */}
       <div style={{ width: 44, height: 44, borderRadius: 10, background: "var(--green)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <span style={{ fontSize: 13, fontWeight: 800, color: "#fff", letterSpacing: -0.5 }}>STP</span>
+        <span style={{ fontSize: "var(--text-sm)", fontWeight: 800, color: "#fff", letterSpacing: -0.5 }}>STP</span>
       </div>
 
       {/* Text */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)" }}>Lägg till på hemskärmen</div>
-        <div style={{ fontSize: 12, color: "var(--ink-500)", marginTop: 2 }}>Snabb åtkomst som en riktig app</div>
+        <div style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)" }}>Lägg till på hemskärmen</div>
+        <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", marginTop: 2 }}>Snabb åtkomst som en riktig app</div>
       </div>
 
       {/* Knappar */}
       <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
         <button
           onClick={handleDismiss}
-          style={{ padding: "7px 12px", borderRadius: 8, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-400)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}
+          style={{ padding: "7px 12px", borderRadius: 8, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-400)", fontSize: "var(--text-sm)", fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}
         >
           Inte nu
         </button>
         <button
           onClick={handleInstall}
-          style={{ padding: "7px 14px", borderRadius: 8, background: "var(--green)", border: "none", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}
+          style={{ padding: "7px 14px", borderRadius: 8, background: "var(--green)", border: "none", color: "#fff", fontSize: "var(--text-sm)", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}
         >
           Installera
         </button>

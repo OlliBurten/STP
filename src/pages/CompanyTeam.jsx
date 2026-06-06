@@ -28,7 +28,7 @@ function MemberRow({ member, isOwner, onRemove, removing }) {
         width: 38, height: 38, borderRadius: 99, flexShrink: 0,
         background: member.role === "OWNER" ? "linear-gradient(135deg, var(--green), var(--green-text))" : "var(--paper-2)",
         display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: 14, fontWeight: 800, color: member.role === "OWNER" ? "#fff" : "var(--ink-400)",
+        fontSize: "var(--text-base)", fontWeight: 800, color: member.role === "OWNER" ? "#fff" : "var(--ink-400)",
       }}>
         {(member.name || member.email || "?").slice(0, 1).toUpperCase()}
       </div>
@@ -36,20 +36,20 @@ function MemberRow({ member, isOwner, onRemove, removing }) {
       {/* Info */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)" }}>
+          <span style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)" }}>
             {member.name || member.email}
           </span>
           {member.isYou && (
-            <span style={{ fontSize: 11, color: "var(--ink-400)", fontWeight: 600 }}>(du)</span>
+            <span style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", fontWeight: 600 }}>(du)</span>
           )}
           <span style={{
-            fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 99,
+            fontSize: "var(--text-2xs)", fontWeight: 700, padding: "2px 8px", borderRadius: 99,
             ...ROLE_COLOR[member.role],
           }}>
             {ROLE_LABEL[member.role] || member.role}
           </span>
         </div>
-        <div style={{ fontSize: 12, color: "var(--ink-400)", marginTop: 2 }}>
+        <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-400)", marginTop: 2 }}>
           {member.email}
           {member.joinedAt && (
             <span style={{ marginLeft: 10 }}>Gick med {formatDate(member.joinedAt)}</span>
@@ -64,7 +64,7 @@ function MemberRow({ member, isOwner, onRemove, removing }) {
           onClick={() => onRemove(member)}
           disabled={removing === member.id}
           style={{
-            padding: "6px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600,
+            padding: "6px 12px", borderRadius: 8, fontSize: "var(--text-xs)", fontWeight: 600,
             background: "var(--danger-tint)", border: "1px solid rgba(239,68,68,0.2)",
             color: "var(--danger)", cursor: removing === member.id ? "default" : "pointer",
             opacity: removing === member.id ? 0.5 : 1, fontFamily: "inherit",
@@ -100,13 +100,13 @@ function InviteRow({ invite, isOwner, onRevoke, revoking }) {
         width: 38, height: 38, borderRadius: 99, flexShrink: 0,
         background: "var(--paper-2)",
         display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: 16, color: "var(--ink-400)",
+        fontSize: "var(--text-lg)", color: "var(--ink-400)",
       }}>
         ✉
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 14, fontWeight: 600, color: "var(--ink-900)" }}>{invite.email}</div>
-        <div style={{ fontSize: 12, color: "var(--ink-400)", marginTop: 2, display: "flex", gap: 10 }}>
+        <div style={{ fontSize: "var(--text-base)", fontWeight: 600, color: "var(--ink-900)" }}>{invite.email}</div>
+        <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-400)", marginTop: 2, display: "flex", gap: 10 }}>
           <span style={{ color: statusColor, fontWeight: 700 }}>{statusLabel}</span>
           {invite.createdAt && <span>Skickad {formatDate(invite.createdAt)}</span>}
           {invite.status === "PENDING" && !expired && invite.expiresAt && (
@@ -120,7 +120,7 @@ function InviteRow({ invite, isOwner, onRevoke, revoking }) {
           onClick={() => onRevoke(invite.id)}
           disabled={revoking === invite.id}
           style={{
-            padding: "6px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600,
+            padding: "6px 12px", borderRadius: 8, fontSize: "var(--text-xs)", fontWeight: 600,
             background: "var(--paper-2)", border: "1px solid var(--line-2)",
             color: "var(--ink-500)", cursor: revoking === invite.id ? "default" : "pointer",
             opacity: revoking === invite.id ? 0.5 : 1, fontFamily: "inherit",
@@ -241,17 +241,17 @@ export default function CompanyTeam() {
       <div style={{ maxWidth: 680, margin: "0 auto", padding: "48px 24px 0" }}>
 
         {/* Breadcrumb */}
-        <Link to="/foretag" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--ink-400)", textDecoration: "none", marginBottom: 36 }}>
+        <Link to="/foretag" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: "var(--text-sm)", color: "var(--ink-400)", textDecoration: "none", marginBottom: 36 }}>
           ← Tillbaka till översikt
         </Link>
 
         {/* Header */}
         <div style={{ marginBottom: 40 }}>
-          <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--amber-text)", marginBottom: 10 }}>
+          <p style={{ fontSize: "var(--text-xs)", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--amber-text)", marginBottom: 10 }}>
             {activeOrg?.name}
           </p>
-          <h1 style={{ fontSize: 34, fontWeight: 900, letterSpacing: -1.2, lineHeight: 1.1, marginBottom: 10 }}>Team</h1>
-          <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.7 }}>
+          <h1 style={{ fontSize: "var(--text-5xl)", fontWeight: 900, letterSpacing: -1.2, lineHeight: 1.1, marginBottom: 10 }}>Team</h1>
+          <p style={{ fontSize: "var(--text-md)", color: "var(--ink-500)", lineHeight: 1.7 }}>
             {isOwner
               ? "Bjud in kollegor och hantera teamet för detta åkeri."
               : "Teammedlemmar för detta åkeri."}
@@ -259,7 +259,7 @@ export default function CompanyTeam() {
         </div>
 
         {error && (
-          <div style={{ padding: "12px 16px", borderRadius: 10, background: "var(--danger-tint)", border: "1px solid rgba(239,68,68,0.2)", marginBottom: 24, fontSize: 13, color: "var(--danger)" }}>
+          <div style={{ padding: "12px 16px", borderRadius: 10, background: "var(--danger-tint)", border: "1px solid rgba(239,68,68,0.2)", marginBottom: 24, fontSize: "var(--text-sm)", color: "var(--danger)" }}>
             {error}
           </div>
         )}
@@ -267,7 +267,7 @@ export default function CompanyTeam() {
         {/* Invite form — owner only */}
         {isOwner && (
           <div style={{ marginBottom: 40 }}>
-            <p style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)", marginBottom: 14 }}>Bjud in en kollega</p>
+            <p style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)", marginBottom: 14 }}>Bjud in en kollega</p>
             <form onSubmit={handleInvite} style={{ display: "flex", gap: 10 }}>
               <input
                 type="email"
@@ -278,7 +278,7 @@ export default function CompanyTeam() {
                 style={{
                   flex: 1, padding: "12px 16px", borderRadius: 10,
                   background: "var(--paper-2)", border: "1.5px solid var(--line-2)",
-                  color: "var(--ink-900)", fontSize: 14, fontFamily: "inherit", outline: "none",
+                  color: "var(--ink-900)", fontSize: "var(--text-base)", fontFamily: "inherit", outline: "none",
                 }}
               />
               <button
@@ -286,7 +286,7 @@ export default function CompanyTeam() {
                 disabled={inviting || !inviteEmail.trim()}
                 style={{
                   padding: "12px 20px", borderRadius: 10, border: "none",
-                  background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: 14,
+                  background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: "var(--text-base)",
                   fontFamily: "inherit", cursor: inviting || !inviteEmail.trim() ? "default" : "pointer",
                   opacity: inviting || !inviteEmail.trim() ? 0.4 : 1, whiteSpace: "nowrap",
                   transition: "opacity .15s",
@@ -297,14 +297,14 @@ export default function CompanyTeam() {
             </form>
             {inviteMsg && (
               <div style={{
-                marginTop: 10, padding: "10px 14px", borderRadius: 8, fontSize: 13,
+                marginTop: 10, padding: "10px 14px", borderRadius: 8, fontSize: "var(--text-sm)",
                 background: inviteMsg.ok ? "var(--success-tint)" : "var(--danger-tint)",
                 border: `1px solid ${inviteMsg.ok ? "var(--success)" : "rgba(239,68,68,0.2)"}`,
                 color: inviteMsg.ok ? "var(--green-text)" : "var(--danger)",
               }}>
                 {inviteMsg.text}
                 {inviteMsg.devLink && (
-                  <a href={inviteMsg.devLink} target="_blank" rel="noreferrer" style={{ display: "block", marginTop: 6, color: "var(--amber-text)", fontWeight: 600, fontSize: 12, wordBreak: "break-all" }}>
+                  <a href={inviteMsg.devLink} target="_blank" rel="noreferrer" style={{ display: "block", marginTop: 6, color: "var(--amber-text)", fontWeight: 600, fontSize: "var(--text-xs)", wordBreak: "break-all" }}>
                     Dev-länk: {inviteMsg.devLink}
                   </a>
                 )}
@@ -315,14 +315,14 @@ export default function CompanyTeam() {
 
         {/* Members list */}
         <div style={{ marginBottom: 32 }}>
-          <p style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)", marginBottom: 12 }}>
+          <p style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)", marginBottom: 12 }}>
             Teammedlemmar ({members.length})
           </p>
           <div style={{ borderRadius: 14, border: "1px solid var(--line-2)", overflow: "hidden", background: "var(--card)" }}>
             {loading ? (
-              <div style={{ padding: "28px", textAlign: "center", fontSize: 13, color: "var(--ink-400)" }}>Laddar…</div>
+              <div style={{ padding: "28px", textAlign: "center", fontSize: "var(--text-sm)", color: "var(--ink-400)" }}>Laddar…</div>
             ) : members.length === 0 ? (
-              <div style={{ padding: "28px", textAlign: "center", fontSize: 13, color: "var(--ink-400)" }}>Inga medlemmar ännu.</div>
+              <div style={{ padding: "28px", textAlign: "center", fontSize: "var(--text-sm)", color: "var(--ink-400)" }}>Inga medlemmar ännu.</div>
             ) : (
               members.map((m) => (
                 <MemberRow key={m.id} member={m} isOwner={isOwner} onRemove={handleRemove} removing={removing} />
@@ -334,7 +334,7 @@ export default function CompanyTeam() {
         {/* Pending invites */}
         {isOwner && (pendingInvites.length > 0 || otherInvites.length > 0) && (
           <div>
-            <p style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)", marginBottom: 12 }}>
+            <p style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)", marginBottom: 12 }}>
               Inbjudningar
             </p>
             <div style={{ borderRadius: 14, border: "1px solid var(--line-2)", overflow: "hidden", background: "var(--card)" }}>
@@ -353,7 +353,7 @@ export default function CompanyTeam() {
           marginTop: 48, padding: "20px 24px", borderRadius: 14,
           background: "var(--paper-2)", border: "1px solid var(--line)",
         }}>
-          <p style={{ fontSize: 13, fontWeight: 700, color: "var(--ink-500)", marginBottom: 14, textTransform: "uppercase", letterSpacing: "0.08em" }}>Roller</p>
+          <p style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-500)", marginBottom: 14, textTransform: "uppercase", letterSpacing: "0.08em" }}>Roller</p>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {[
               { role: "OWNER", desc: "Skapade åkeriet. Kan bjuda in, ta bort och hantera allt." },
@@ -362,13 +362,13 @@ export default function CompanyTeam() {
             ].map(({ role, desc }) => (
               <div key={role} style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
                 <span style={{
-                  fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 99,
+                  fontSize: "var(--text-2xs)", fontWeight: 700, padding: "2px 8px", borderRadius: 99,
                   marginTop: 1, flexShrink: 0,
                   ...ROLE_COLOR[role],
                 }}>
                   {ROLE_LABEL[role]}
                 </span>
-                <span style={{ fontSize: 13, color: "var(--ink-500)", lineHeight: 1.5 }}>{desc}</span>
+                <span style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", lineHeight: 1.5 }}>{desc}</span>
               </div>
             ))}
           </div>

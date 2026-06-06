@@ -93,7 +93,7 @@ function StageTracker({ conv }) {
                 ))}
               </span>
               <span style={{
-                fontSize: 11, fontWeight: isCurrent ? 700 : 500,
+                fontSize: "var(--text-2xs)", fontWeight: isCurrent ? 700 : 500,
                 color: done ? (isCurrent ? "var(--ink-900)" : "var(--ink-500)") : "var(--ink-400)",
                 whiteSpace: "nowrap",
               }}>{label}</span>
@@ -126,7 +126,7 @@ function StatusPill({ stage }) {
       display: "inline-flex", alignItems: "center", gap: 5,
       padding: "4px 10px", borderRadius: 99,
       background: c.bg, color: c.color,
-      fontSize: 11.5, fontWeight: 700, flexShrink: 0,
+      fontSize: "var(--text-2xs)", fontWeight: 700, flexShrink: 0,
     }}>
       {c.dot && <span style={{ width: 6, height: 6, borderRadius: 99, background: c.color, flexShrink: 0 }}/>}
       {c.label}
@@ -156,7 +156,7 @@ function AppCard({ conv }) {
           width: 48, height: 48, borderRadius: 11, flexShrink: 0,
           background: "var(--paper-2)", border: "1px solid var(--line)",
           display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 15, fontWeight: 800, color: "var(--ink-700)",
+          fontSize: "var(--text-md)", fontWeight: 800, color: "var(--ink-700)",
         }}>
           {logoInitials(conv.companyName)}
         </div>
@@ -165,10 +165,10 @@ function AppCard({ conv }) {
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
             <div style={{ minWidth: 0 }}>
-              <h3 style={{ fontSize: 16.5, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.3, marginBottom: 3 }}>
+              <h3 style={{ fontSize: "var(--text-lg)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.3, marginBottom: 3 }}>
                 {conv.jobTitle || "Okänd tjänst"}
               </h3>
-              <div style={{ fontSize: 13.5, color: "var(--ink-500)" }}>
+              <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)" }}>
                 <span style={{ fontWeight: 600, color: "var(--ink-700)" }}>{conv.companyName}</span>
                 {conv.jobLocation && <> · {conv.jobLocation}</>}
               </div>
@@ -178,14 +178,14 @@ function AppCard({ conv }) {
 
           <div style={{ display: "flex", gap: 16, marginTop: 12, alignItems: "center", flexWrap: "wrap" }}>
             {conv.jobSalary && (
-              <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--ink-900)", fontFamily: "var(--mono)" }}>
+              <span style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-900)", fontFamily: "var(--mono)" }}>
                 {conv.jobSalary}
               </span>
             )}
-            <span style={{ fontSize: 12.5, color: "var(--ink-500)" }}>Ansökt {formatRel(conv.createdAt)}</span>
+            <span style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)" }}>Ansökt {formatRel(conv.createdAt)}</span>
             {conv.matchPct != null && (
               <span style={{
-                fontSize: 12.5, fontWeight: 700, fontFamily: "var(--mono)",
+                fontSize: "var(--text-xs)", fontWeight: 700, fontFamily: "var(--mono)",
                 color: conv.matchPct >= 85 ? "var(--success)" : conv.matchPct >= 70 ? "var(--green)" : "var(--ink-500)",
               }}>
                 {conv.matchPct}% match
@@ -208,7 +208,7 @@ function AppCard({ conv }) {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green-text)" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}>
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
           </svg>
-          <div style={{ flex: 1, fontSize: 13, color: "var(--ink-700)", lineHeight: 1.5 }}>
+          <div style={{ flex: 1, fontSize: "var(--text-sm)", color: "var(--ink-700)", lineHeight: 1.5 }}>
             {lastMsg.content}
           </div>
           <Link
@@ -216,7 +216,7 @@ function AppCard({ conv }) {
             style={{
               padding: "6px 14px", borderRadius: 8, flexShrink: 0,
               background: "var(--green)", color: "#fff",
-              fontSize: 12, fontWeight: 700, textDecoration: "none",
+              fontSize: "var(--text-xs)", fontWeight: 700, textDecoration: "none",
             }}
           >
             Svara
@@ -233,7 +233,7 @@ function AppCard({ conv }) {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green-text)" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}>
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
           </svg>
-          <div style={{ flex: 1, fontSize: 13, color: "var(--ink-700)", lineHeight: 1.5 }}>
+          <div style={{ flex: 1, fontSize: "var(--text-sm)", color: "var(--ink-700)", lineHeight: 1.5 }}>
             {lastMsg.content}
           </div>
           <Link
@@ -241,7 +241,7 @@ function AppCard({ conv }) {
             style={{
               padding: "6px 14px", borderRadius: 8, flexShrink: 0,
               background: "var(--paper-2)", border: "1px solid var(--line-2)",
-              color: "var(--ink-700)", fontSize: 12, fontWeight: 700, textDecoration: "none",
+              color: "var(--ink-700)", fontSize: "var(--text-xs)", fontWeight: 700, textDecoration: "none",
             }}
           >
             Visa
@@ -302,17 +302,17 @@ function MobileAppCard({ conv }) {
     >
       <div style={{ display: "flex", alignItems: "flex-start", gap: 11, marginBottom: 12 }}>
         <div style={{ position: "relative", flexShrink: 0 }}>
-          <div style={{ width: 42, height: 42, borderRadius: 11, background: "var(--paper-2)", border: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 13, color: "var(--ink-700)" }}>
+          <div style={{ width: 42, height: 42, borderRadius: 11, background: "var(--paper-2)", border: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "var(--text-sm)", color: "var(--ink-700)" }}>
             {logoInitials(conv.companyName)}
           </div>
           {hasUnread && <div style={{ position: "absolute", top: -3, right: -3, width: 12, height: 12, borderRadius: 99, background: "var(--success)", border: "2px solid var(--card)" }}/>}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
-            <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--ink-900)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>{conv.jobTitle || "Okänd tjänst"}</div>
+            <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-900)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>{conv.jobTitle || "Okänd tjänst"}</div>
             <span style={{ padding: "3px 8px", borderRadius: 6, background: STAGE_BG[stage], color: STAGE_COLOR[stage], fontSize: 9.5, fontWeight: 800, letterSpacing: 0.3, flexShrink: 0 }}>{(STAGE_LABEL[stage] || "").toUpperCase()}</span>
           </div>
-          <div style={{ fontSize: 11.5, color: "var(--ink-500)" }}>{conv.companyName}</div>
+          <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)" }}>{conv.companyName}</div>
         </div>
       </div>
 
@@ -320,9 +320,9 @@ function MobileAppCard({ conv }) {
         <MiniProgressBar stage={stage}/>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 11, color: "var(--ink-400)" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "var(--text-2xs)", color: "var(--ink-400)" }}>
         <span>Ansökt {formatRel(conv.createdAt)}</span>
-        {hasUnread && <span style={{ fontSize: 11, fontWeight: 700, color: "var(--success)" }}>Nytt meddelande</span>}
+        {hasUnread && <span style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: "var(--success)" }}>Nytt meddelande</span>}
       </div>
     </Link>
   );
@@ -378,8 +378,8 @@ export default function MinaAnsokningar() {
 
         {/* Header */}
         <div style={{ background: "var(--paper)", borderBottom: "1px solid var(--line)", padding: "20px 20px 0" }}>
-          <p style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 8 }}>För förare</p>
-          <h1 style={{ fontSize: 28, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1, marginBottom: 14 }}>Mina ansökningar</h1>
+          <p style={{ fontSize: "var(--text-2xs)", fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 8 }}>För förare</p>
+          <h1 style={{ fontSize: "var(--text-4xl)", fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1, marginBottom: 14 }}>Mina ansökningar</h1>
 
           {/* Tab bar */}
           <div style={{ display: "flex", overflowX: "auto", gap: 0 }}>
@@ -388,7 +388,7 @@ export default function MinaAnsokningar() {
               return (
                 <button key={t.k} onClick={() => setTab(t.k)} style={{
                   padding: "10px 14px 12px", position: "relative", flexShrink: 0,
-                  fontSize: 13, fontWeight: isActive ? 700 : 500,
+                  fontSize: "var(--text-sm)", fontWeight: isActive ? 700 : 500,
                   color: isActive ? "var(--ink-900)" : "var(--ink-500)",
                   background: "none", border: "none", cursor: "pointer", fontFamily: "inherit",
                   display: "inline-flex", alignItems: "center", gap: 6,
@@ -409,13 +409,13 @@ export default function MinaAnsokningar() {
 
         <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 10 }}>
           {loading ? (
-            <div style={{ padding: "40px 0", textAlign: "center", color: "var(--ink-400)", fontSize: 14 }}>Hämtar dina ansökningar...</div>
+            <div style={{ padding: "40px 0", textAlign: "center", color: "var(--ink-400)", fontSize: "var(--text-base)" }}>Hämtar dina ansökningar...</div>
           ) : error ? (
-            <div style={{ padding: "12px 16px", borderRadius: 10, background: "var(--danger-tint)", color: "var(--danger)", fontSize: 13 }}>{error}</div>
+            <div style={{ padding: "12px 16px", borderRadius: 10, background: "var(--danger-tint)", color: "var(--danger)", fontSize: "var(--text-sm)" }}>{error}</div>
           ) : list.length === 0 ? (
             <div style={{ padding: "56px 24px", textAlign: "center", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, marginTop: 8 }}>
-              <h3 style={{ fontSize: 16, fontWeight: 700, color: "var(--ink-900)", marginBottom: 6 }}>Inga ansökningar här</h3>
-              <p style={{ fontSize: 14, color: "var(--ink-500)" }}>När du söker jobb dyker de upp här med status.</p>
+              <h3 style={{ fontSize: "var(--text-lg)", fontWeight: 700, color: "var(--ink-900)", marginBottom: 6 }}>Inga ansökningar här</h3>
+              <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)" }}>När du söker jobb dyker de upp här med status.</p>
             </div>
           ) : list.map((conv) => <MobileAppCard key={conv.id} conv={conv} />)}
         </div>
@@ -431,9 +431,9 @@ export default function MinaAnsokningar() {
       {/* Page header */}
       <div style={{ background: "var(--paper)", borderBottom: "1px solid var(--line)", paddingTop: 32, paddingBottom: 0 }}>
         <div style={{ maxWidth: 1040, margin: "0 auto", padding: "0 32px" }}>
-          <p style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 10 }}>För förare</p>
-          <h1 style={{ fontSize: 34, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.2, lineHeight: 1.15, marginBottom: 6 }}>Mina ansökningar</h1>
-          <p style={{ fontSize: 14, color: "var(--ink-500)", fontWeight: 500, marginBottom: 24 }}>
+          <p style={{ fontSize: "var(--text-2xs)", fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 10 }}>För förare</p>
+          <h1 style={{ fontSize: "var(--text-5xl)", fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.2, lineHeight: 1.15, marginBottom: 6 }}>Mina ansökningar</h1>
+          <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", fontWeight: 500, marginBottom: 24 }}>
             Följ statusen på dina ansökningar — från skickad till beslut.
           </p>
 
@@ -444,7 +444,7 @@ export default function MinaAnsokningar() {
               return (
                 <button key={t.k} onClick={() => setTab(t.k)} style={{
                   padding: "12px 18px 14px", position: "relative",
-                  fontSize: 14, fontWeight: isActive ? 700 : 500,
+                  fontSize: "var(--text-base)", fontWeight: isActive ? 700 : 500,
                   color: isActive ? "var(--ink-900)" : "var(--ink-500)",
                   background: "none", border: "none", cursor: "pointer", fontFamily: "inherit",
                   display: "inline-flex", alignItems: "center", gap: 8,
@@ -454,7 +454,7 @@ export default function MinaAnsokningar() {
                     padding: "1px 8px", borderRadius: 999,
                     background: isActive ? "var(--green-tint)" : "var(--paper-2)",
                     color: isActive ? "var(--green-text)" : "var(--ink-500)",
-                    fontSize: 11, fontWeight: 800,
+                    fontSize: "var(--text-2xs)", fontWeight: 800,
                   }}>{t.c}</span>
                   {isActive && <span style={{ position: "absolute", left: 18, right: 18, bottom: -1, height: 3, background: "var(--green)", borderRadius: "3px 3px 0 0" }}/>}
                 </button>
@@ -469,11 +469,11 @@ export default function MinaAnsokningar() {
         {loading ? (
           <LoadingBlock message="Hämtar dina ansökningar..." />
         ) : error ? (
-          <div style={{ padding: 20, borderRadius: 14, background: "var(--danger-tint)", color: "var(--danger)", fontSize: 14 }}>{error}</div>
+          <div style={{ padding: 20, borderRadius: 14, background: "var(--danger-tint)", color: "var(--danger)", fontSize: "var(--text-base)" }}>{error}</div>
         ) : list.length === 0 ? (
           <div style={{ padding: "56px 32px", textAlign: "center", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14 }}>
-            <h3 style={{ fontSize: 16, fontWeight: 700, color: "var(--ink-900)", marginBottom: 6 }}>Inga ansökningar här</h3>
-            <p style={{ fontSize: 14, color: "var(--ink-500)" }}>När du söker jobb dyker de upp här med status.</p>
+            <h3 style={{ fontSize: "var(--text-lg)", fontWeight: 700, color: "var(--ink-900)", marginBottom: 6 }}>Inga ansökningar här</h3>
+            <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)" }}>När du söker jobb dyker de upp här med status.</p>
           </div>
         ) : (
           <div className="stp-fade-up" style={{ display: "flex", flexDirection: "column", gap: 14 }}>

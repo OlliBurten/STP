@@ -122,7 +122,7 @@ export default function Partner() {
 
       {/* Hero */}
       <section style={{ padding: "80px 24px 72px", maxWidth: 800, margin: "0 auto", textAlign: "center" }}>
-        <div style={{ display: "inline-block", fontSize: 12, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--green-text)", marginBottom: 20 }}>
+        <div style={{ display: "inline-block", fontSize: "var(--text-xs)", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--green-text)", marginBottom: 20 }}>
           Partnerinformation
         </div>
         <h1 style={{ fontSize: "clamp(28px, 5vw, 52px)", fontWeight: 900, color: "var(--ink-900)", lineHeight: 1.1, letterSpacing: "-1px", margin: "0 0 22px" }}>
@@ -134,13 +134,13 @@ export default function Partner() {
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
           <a
             href="mailto:partner@transportplattformen.se"
-            style={{ display: "inline-block", padding: "15px 32px", borderRadius: 12, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: 16, textDecoration: "none" }}
+            style={{ display: "inline-block", padding: "15px 32px", borderRadius: 12, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: "var(--text-lg)", textDecoration: "none" }}
           >
             Kontakta oss →
           </a>
           <Link
             to="/partner/presentation"
-            style={{ display: "inline-block", padding: "15px 28px", borderRadius: 12, background: "transparent", border: "1px solid var(--line)", color: "var(--ink-700)", fontWeight: 600, fontSize: 15, textDecoration: "none" }}
+            style={{ display: "inline-block", padding: "15px 28px", borderRadius: 12, background: "transparent", border: "1px solid var(--line)", color: "var(--ink-700)", fontWeight: 600, fontSize: "var(--text-md)", textDecoration: "none" }}
           >
             Ladda ner presentation
           </Link>
@@ -153,8 +153,8 @@ export default function Partner() {
           {NUMBERS.map((n) => (
             <div key={n.label} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "22px 18px", textAlign: "center" }}>
               <div style={{ fontSize: 32, fontWeight: 900, color: "var(--ink-900)", lineHeight: 1 }}>{n.value}</div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink-500)", marginTop: 6 }}>{n.label}</div>
-              <div style={{ fontSize: 12, color: "var(--ink-400)", marginTop: 3 }}>{n.sub}</div>
+              <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-500)", marginTop: 6 }}>{n.label}</div>
+              <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-400)", marginTop: 3 }}>{n.sub}</div>
             </div>
           ))}
         </div>
@@ -166,10 +166,10 @@ export default function Partner() {
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           {HOW_IT_WORKS.map((s) => (
             <div key={s.n} style={{ display: "flex", gap: 20, alignItems: "flex-start", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "20px 22px" }}>
-              <span style={{ fontSize: 13, fontWeight: 800, color: "var(--green-text)", background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.2)", borderRadius: 8, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{s.n}</span>
+              <span style={{ fontSize: "var(--text-sm)", fontWeight: 800, color: "var(--green-text)", background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.2)", borderRadius: 8, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{s.n}</span>
               <div>
-                <div style={{ fontWeight: 700, color: "var(--ink-900)", fontSize: 15, marginBottom: 4 }}>{s.title}</div>
-                <div style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.6 }}>{s.body}</div>
+                <div style={{ fontWeight: 700, color: "var(--ink-900)", fontSize: "var(--text-md)", marginBottom: 4 }}>{s.title}</div>
+                <div style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.6 }}>{s.body}</div>
               </div>
             </div>
           ))}
@@ -182,8 +182,8 @@ export default function Partner() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12 }}>
           {SEGMENTS.map((s) => (
             <div key={s.label} style={{ background: s.bg, border: `1px solid ${s.border}`, borderRadius: 14, padding: "22px 20px" }}>
-              <div style={{ fontWeight: 800, color: s.color, fontSize: 15, marginBottom: 8 }}>{s.label}</div>
-              <div style={{ fontSize: 13, color: "var(--ink-500)", lineHeight: 1.6 }}>{s.text}</div>
+              <div style={{ fontWeight: 800, color: s.color, fontSize: "var(--text-md)", marginBottom: 8 }}>{s.label}</div>
+              <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", lineHeight: 1.6 }}>{s.text}</div>
             </div>
           ))}
         </div>
@@ -192,15 +192,15 @@ export default function Partner() {
       {/* Partnertyper */}
       <section style={{ maxWidth: 800, margin: "0 auto", padding: "0 24px 72px" }}>
         <h2 style={{ fontSize: 22, fontWeight: 800, color: "var(--ink-900)", marginBottom: 8, textAlign: "center" }}>Vem samarbetar vi med?</h2>
-        <p style={{ fontSize: 15, color: "var(--ink-500)", textAlign: "center", marginBottom: 32 }}>Vi söker organisationer som möter yrkesförare i olika faser — utbildning, omställning och karriär.</p>
+        <p style={{ fontSize: "var(--text-md)", color: "var(--ink-500)", textAlign: "center", marginBottom: 32 }}>Vi söker organisationer som möter yrkesförare i olika faser — utbildning, omställning och karriär.</p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 14 }}>
           {PARTNER_TYPES.map((p) => (
             <div key={p.label} style={{ background: p.bg, border: `1px solid ${p.border}`, borderRadius: 16, padding: "24px 22px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
                 <span style={{ fontSize: 22 }}>{p.icon}</span>
-                <span style={{ fontWeight: 800, color: p.color, fontSize: 15 }}>{p.label}</span>
+                <span style={{ fontWeight: 800, color: p.color, fontSize: "var(--text-md)" }}>{p.label}</span>
               </div>
-              <p style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.65, margin: 0 }}>{p.body}</p>
+              <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.65, margin: 0 }}>{p.body}</p>
             </div>
           ))}
         </div>
@@ -209,7 +209,7 @@ export default function Partner() {
       {/* Varför STP */}
       <section style={{ maxWidth: 800, margin: "0 auto", padding: "0 24px 72px" }}>
         <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, padding: "32px 28px" }}>
-          <h2 style={{ fontSize: 18, fontWeight: 800, color: "var(--ink-900)", margin: "0 0 22px" }}>Varför STP?</h2>
+          <h2 style={{ fontSize: "var(--text-xl)", fontWeight: 800, color: "var(--ink-900)", margin: "0 0 22px" }}>Varför STP?</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             {[
               { icon: "→", text: "Branschspecifik — transport och logistik, inte ett generellt jobbbolag." },
@@ -220,7 +220,7 @@ export default function Partner() {
             ].map((r, i) => (
               <div key={i} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
                 <span style={{ color: "var(--green-text)", fontWeight: 700, flexShrink: 0, marginTop: 2 }}>{r.icon}</span>
-                <span style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.65 }}>{r.text}</span>
+                <span style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.65 }}>{r.text}</span>
               </div>
             ))}
           </div>
@@ -233,8 +233,8 @@ export default function Partner() {
         <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
           {FAQ.map((f) => (
             <div key={f.q} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, padding: "16px 20px" }}>
-              <div style={{ fontWeight: 700, color: "var(--ink-900)", fontSize: 14, marginBottom: 6 }}>{f.q}</div>
-              <div style={{ fontSize: 13, color: "var(--ink-500)", lineHeight: 1.65 }}>{f.a}</div>
+              <div style={{ fontWeight: 700, color: "var(--ink-900)", fontSize: "var(--text-base)", marginBottom: 6 }}>{f.q}</div>
+              <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", lineHeight: 1.65 }}>{f.a}</div>
             </div>
           ))}
         </div>
@@ -243,19 +243,19 @@ export default function Partner() {
       {/* CTA */}
       <section style={{ maxWidth: 800, margin: "0 auto", padding: "0 24px 100px", textAlign: "center" }}>
         <h2 style={{ fontSize: 26, fontWeight: 800, color: "var(--ink-900)", marginBottom: 12 }}>Redo att samarbeta?</h2>
-        <p style={{ fontSize: 15, color: "var(--ink-500)", marginBottom: 12, lineHeight: 1.7, maxWidth: 500, margin: "0 auto 28px" }}>
+        <p style={{ fontSize: "var(--text-md)", color: "var(--ink-500)", marginBottom: 12, lineHeight: 1.7, maxWidth: 500, margin: "0 auto 28px" }}>
           Hör av dig till oss — vi svarar inom en arbetsdag och berättar hur ett samarbete kan se ut för just er organisation.
         </p>
         <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
           <a
             href="mailto:partner@transportplattformen.se"
-            style={{ display: "inline-block", padding: "15px 32px", borderRadius: 12, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: 16, textDecoration: "none" }}
+            style={{ display: "inline-block", padding: "15px 32px", borderRadius: 12, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: "var(--text-lg)", textDecoration: "none" }}
           >
             Skicka mejl →
           </a>
           <Link
             to="/kontakt"
-            style={{ display: "inline-block", padding: "15px 32px", borderRadius: 12, background: "transparent", border: "1px solid var(--line)", color: "var(--ink-700)", fontWeight: 600, fontSize: 15, textDecoration: "none" }}
+            style={{ display: "inline-block", padding: "15px 32px", borderRadius: 12, background: "transparent", border: "1px solid var(--line)", color: "var(--ink-700)", fontWeight: 600, fontSize: "var(--text-md)", textDecoration: "none" }}
           >
             Kontaktformulär
           </Link>

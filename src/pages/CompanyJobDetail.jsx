@@ -91,17 +91,17 @@ function KanbanCard({ a }) {
       onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "var(--sh-sm)"; e.currentTarget.style.borderColor = "var(--line)"; }}
     >
       <div style={{ display: "flex", gap: 11, alignItems: "center", marginBottom: 11 }}>
-        <div style={{ width: 40, height: 40, borderRadius: 99, background: avatarColor(a.driverName), display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: "#fff", flexShrink: 0 }}>
+        <div style={{ width: 40, height: 40, borderRadius: 99, background: avatarColor(a.driverName), display: "flex", alignItems: "center", justifyContent: "center", fontSize: "var(--text-sm)", fontWeight: 800, color: "#fff", flexShrink: 0 }}>
           {initials(a.driverName)}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.driverName || "Förare"}</div>
-          <div style={{ fontSize: 12, color: "var(--ink-500)", marginTop: 1 }}>
+          <div style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.driverName || "Förare"}</div>
+          <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", marginTop: 1 }}>
             {[a.region, a.yearsExperience != null ? `${a.yearsExperience} år` : null].filter(Boolean).join(" · ")}
           </div>
         </div>
         <div style={{ textAlign: "right", flexShrink: 0 }}>
-          <div style={{ fontSize: 15, fontWeight: 800, color: mc, fontFamily: "var(--mono)", lineHeight: 1 }}>{a.matchScore || 0}%</div>
+          <div style={{ fontSize: "var(--text-md)", fontWeight: 800, color: mc, fontFamily: "var(--mono)", lineHeight: 1 }}>{a.matchScore || 0}%</div>
         </div>
       </div>
 
@@ -115,13 +115,13 @@ function KanbanCard({ a }) {
       </div>
 
       {a.note && (
-        <div style={{ fontSize: 12, color: "var(--ink-500)", background: "var(--card-2)", borderRadius: 8, padding: "7px 10px", marginBottom: 11, lineHeight: 1.4 }}>
+        <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", background: "var(--card-2)", borderRadius: 8, padding: "7px 10px", marginBottom: 11, lineHeight: 1.4 }}>
           {a.note}
         </div>
       )}
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span style={{ fontSize: 11.5, color: "var(--ink-400)" }}>{relativeTime(a.appliedAt)}</span>
+        <span style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)" }}>{relativeTime(a.appliedAt)}</span>
         <div style={{ display: "flex", gap: 6 }}>
           <Link
             to={`/foretag/meddelanden/${a.conversationId}`}
@@ -239,7 +239,7 @@ export default function CompanyJobDetail() {
         <div style={{ maxWidth: 1240, margin: "0 auto", padding: "0 32px" }}>
           <Link
             to="/foretag/annonser"
-            style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 600, color: "var(--ink-500)", textDecoration: "none", marginBottom: 16 }}
+            style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--ink-500)", textDecoration: "none", marginBottom: 16 }}
           >
             <Icon name="arrowLeft" size={14} /> Tillbaka till annonser
           </Link>
@@ -249,13 +249,13 @@ export default function CompanyJobDetail() {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 16 }}>
                 <div>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                    <h1 style={{ fontSize: 28, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.8 }}>{job.title}</h1>
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 99, background: isActive ? "var(--success-tint)" : "var(--amber-tint)", border: `1px solid ${isActive ? "rgba(31,122,58,0.2)" : "rgba(199,122,14,0.2)"}`, fontSize: 11, fontWeight: 700, color: isActive ? "var(--success)" : "var(--amber-text)" }}>
+                    <h1 style={{ fontSize: "var(--text-4xl)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.8 }}>{job.title}</h1>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 99, background: isActive ? "var(--success-tint)" : "var(--amber-tint)", border: `1px solid ${isActive ? "rgba(31,122,58,0.2)" : "rgba(199,122,14,0.2)"}`, fontSize: "var(--text-2xs)", fontWeight: 700, color: isActive ? "var(--success)" : "var(--amber-text)" }}>
                       <span style={{ width: 5, height: 5, borderRadius: 99, background: isActive ? "var(--success)" : "var(--amber)" }} />
                       {isActive ? "Aktiv" : "Pausad"}
                     </span>
                   </div>
-                  <div style={{ fontSize: 14, color: "var(--ink-500)", display: "flex", gap: 10, flexWrap: "wrap" }}>
+                  <div style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", display: "flex", gap: 10, flexWrap: "wrap" }}>
                     {job.location && (
                       <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
                         <Icon name="eye" size={13} color="var(--ink-500)" />
@@ -269,14 +269,14 @@ export default function CompanyJobDetail() {
                 <div style={{ display: "flex", gap: 8 }}>
                   <Link
                     to={`/jobb/${id}`}
-                    style={{ padding: "10px 16px", borderRadius: 10, background: "var(--card)", border: "1px solid var(--line-2)", color: "var(--ink-700)", fontSize: 13, fontWeight: 600, textDecoration: "none", display: "flex", alignItems: "center", gap: 6 }}
+                    style={{ padding: "10px 16px", borderRadius: 10, background: "var(--card)", border: "1px solid var(--line-2)", color: "var(--ink-700)", fontSize: "var(--text-sm)", fontWeight: 600, textDecoration: "none", display: "flex", alignItems: "center", gap: 6 }}
                   >
                     <Icon name="eye" size={14} /> Visa annons
                   </Link>
                   {isActive && (
                     <button
                       onClick={handlePause}
-                      style={{ padding: "10px 16px", borderRadius: 10, background: "var(--card)", border: "1px solid var(--line-2)", color: "var(--ink-700)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 6 }}
+                      style={{ padding: "10px 16px", borderRadius: 10, background: "var(--card)", border: "1px solid var(--line-2)", color: "var(--ink-700)", fontSize: "var(--text-sm)", fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 6 }}
                     >
                       <Icon name="pause" size={14} /> Hantera
                     </button>
@@ -293,8 +293,8 @@ export default function CompanyJobDetail() {
                   { v: counts.hired,     l: "Anställda",       accent: false },
                 ].map((s) => (
                   <div key={s.l}>
-                    <div style={{ fontSize: 24, fontWeight: 800, color: s.accent ? "var(--amber-deep)" : "var(--ink-900)", fontFamily: "var(--mono)", letterSpacing: -0.5, lineHeight: 1 }}>{s.v}</div>
-                    <div style={{ fontSize: 11.5, color: "var(--ink-500)", marginTop: 5, fontWeight: 600, letterSpacing: 0.2, textTransform: "uppercase" }}>{s.l}</div>
+                    <div style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: s.accent ? "var(--amber-deep)" : "var(--ink-900)", fontFamily: "var(--mono)", letterSpacing: -0.5, lineHeight: 1 }}>{s.v}</div>
+                    <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", marginTop: 5, fontWeight: 600, letterSpacing: 0.2, textTransform: "uppercase" }}>{s.l}</div>
                   </div>
                 ))}
               </div>
@@ -308,8 +308,8 @@ export default function CompanyJobDetail() {
         {applicants.length === 0 && !loading ? (
           <div style={{ padding: "48px 32px", borderRadius: 14, background: "var(--card)", border: "1px solid var(--line)", textAlign: "center", boxShadow: "var(--sh-sm)" }}>
             <div style={{ fontSize: 17, fontWeight: 800, color: "var(--ink-900)", marginBottom: 8 }}>Inga ansökningar ännu</div>
-            <p style={{ fontSize: 13, color: "var(--ink-500)", marginBottom: 20 }}>Förare som söker det här jobbet dyker upp här. Du kan också kontakta förare aktivt via förarregistret.</p>
-            <Link to="/foretag/chaufforer" style={{ display: "inline-block", padding: "10px 22px", borderRadius: 10, background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: 13, textDecoration: "none" }}>
+            <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", marginBottom: 20 }}>Förare som söker det här jobbet dyker upp här. Du kan också kontakta förare aktivt via förarregistret.</p>
+            <Link to="/foretag/chaufforer" style={{ display: "inline-block", padding: "10px 22px", borderRadius: 10, background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: "var(--text-sm)", textDecoration: "none" }}>
               Sök bland förare →
             </Link>
           </div>
@@ -322,12 +322,12 @@ export default function CompanyJobDetail() {
                 return (
                   <div key={col.key}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12, padding: "0 2px" }}>
-                      <span style={{ padding: "3px 10px", borderRadius: 99, background: tc.bg, border: `1px solid ${tc.border}`, fontSize: 11, fontWeight: 700, color: tc.color }}>{col.label}</span>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: "var(--ink-400)", fontFamily: "var(--mono)" }}>{cards.length}</span>
+                      <span style={{ padding: "3px 10px", borderRadius: 99, background: tc.bg, border: `1px solid ${tc.border}`, fontSize: "var(--text-2xs)", fontWeight: 700, color: tc.color }}>{col.label}</span>
+                      <span style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-400)", fontFamily: "var(--mono)" }}>{cards.length}</span>
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 10, background: "var(--paper-2)", borderRadius: 12, padding: 10, minHeight: 80 }}>
                       {cards.length === 0
-                        ? <div style={{ fontSize: 12.5, color: "var(--ink-400)", textAlign: "center", padding: "20px 0" }}>Tom</div>
+                        ? <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-400)", textAlign: "center", padding: "20px 0" }}>Tom</div>
                         : cards.map((a) => <KanbanCard key={a.conversationId} a={a} />)}
                     </div>
                   </div>
@@ -340,7 +340,7 @@ export default function CompanyJobDetail() {
               <div style={{ marginTop: 24 }}>
                 <button
                   onClick={() => setShowRejected((s) => !s)}
-                  style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13.5, fontWeight: 600, color: "var(--ink-500)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}
+                  style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--ink-500)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}
                 >
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15">
                     {showRejected

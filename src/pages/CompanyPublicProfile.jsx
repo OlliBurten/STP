@@ -91,13 +91,13 @@ function Fact({ icon, label, value, highlight, link }) {
         <Icon n={icon} s={14} c={highlight ? "var(--amber-text)" : "var(--ink-500)"} />
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 11, color: "var(--ink-400)" }}>{label}</div>
+        <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)" }}>{label}</div>
         {link ? (
-          <a href={link} target="_blank" rel="noreferrer" style={{ fontSize: 13, fontWeight: 700, color: "var(--amber-text)", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4, marginTop: 1 }}>
+          <a href={link} target="_blank" rel="noreferrer" style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--amber-text)", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4, marginTop: 1 }}>
             {value} <Icon n="external" s={10} />
           </a>
         ) : (
-          <div style={{ fontSize: 13, fontWeight: 700, color: highlight ? "var(--amber-text)" : "var(--ink-900)", marginTop: 1 }}>{value}</div>
+          <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: highlight ? "var(--amber-text)" : "var(--ink-900)", marginTop: 1 }}>{value}</div>
         )}
       </div>
     </div>
@@ -182,8 +182,8 @@ export default function CompanyPublicProfile() {
     return (
       <main style={{ background: "var(--paper)", minHeight: "100vh", paddingTop: 80 }}>
         <div style={{ maxWidth: 1040, margin: "0 auto", padding: isMobile ? "0 16px" : "0 32px" }}>
-          <p style={{ fontSize: 15, color: "var(--ink-700)", marginBottom: 12 }}>Företaget hittades inte.</p>
-          <Link to="/akerier" style={{ fontSize: 14, color: "var(--green-text)", textDecoration: "none" }}>← Tillbaka till åkerier</Link>
+          <p style={{ fontSize: "var(--text-md)", color: "var(--ink-700)", marginBottom: 12 }}>Företaget hittades inte.</p>
+          <Link to="/akerier" style={{ fontSize: "var(--text-base)", color: "var(--green-text)", textDecoration: "none" }}>← Tillbaka till åkerier</Link>
         </div>
       </main>
     );
@@ -225,7 +225,7 @@ export default function CompanyPublicProfile() {
 
     const StatBox = ({ v, l, sub, accent, accent2 }) => (
       <div style={{ flex: 1, padding: "10px 8px", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 11, textAlign: "center" }}>
-        <div style={{ fontSize: 16, fontWeight: 800, color: accent ? "var(--amber-text)" : accent2 ? "var(--success)" : "var(--ink-900)", marginBottom: 2 }}>{v}</div>
+        <div style={{ fontSize: "var(--text-lg)", fontWeight: 800, color: accent ? "var(--amber-text)" : accent2 ? "var(--success)" : "var(--ink-900)", marginBottom: 2 }}>{v}</div>
         <div style={{ fontSize: 10, color: "var(--ink-500)", fontWeight: 600 }}>{l}</div>
         {sub && <div style={{ fontSize: 9, color: "var(--ink-400)", marginTop: 1 }}>{sub}</div>}
       </div>
@@ -257,7 +257,7 @@ export default function CompanyPublicProfile() {
                 <Icon n="back" s={18} />
               </button>
               {scrolled && (
-                <div style={{ flex: 1, padding: "0 12px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 14, fontWeight: 800, color: "var(--ink-900)" }}>
+                <div style={{ flex: 1, padding: "0 12px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: "var(--text-base)", fontWeight: 800, color: "var(--ink-900)" }}>
                   {company.name}
                 </div>
               )}
@@ -280,7 +280,7 @@ export default function CompanyPublicProfile() {
           {/* Identity */}
           <div style={{ padding: "0 20px", marginTop: -40 }}>
             <div style={{ marginBottom: 14 }}>
-              <div style={{ width: 78, height: 78, borderRadius: 18, background: color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 24, color: "var(--amber-text)", letterSpacing: -1, border: "4px solid var(--paper)", boxShadow: "var(--sh-md)" }}>
+              <div style={{ width: 78, height: 78, borderRadius: 18, background: color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "var(--text-3xl)", color: "var(--amber-text)", letterSpacing: -1, border: "4px solid var(--paper)", boxShadow: "var(--sh-md)" }}>
                 {companyInitials(company.name)}
               </div>
             </div>
@@ -288,7 +288,7 @@ export default function CompanyPublicProfile() {
               <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: -0.7, color: "var(--ink-900)", margin: 0 }}>{company.name}</h1>
               {company.verified && <Icon n="check" s={14} c="var(--success)" />}
             </div>
-            <div style={{ fontSize: 13, color: "var(--ink-500)", display: "flex", alignItems: "center", gap: 6, marginBottom: 14, flexWrap: "wrap" }}>
+            <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", display: "flex", alignItems: "center", gap: 6, marginBottom: 14, flexWrap: "wrap" }}>
               {displayLocation && <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}><Icon n="pin" s={11} /> {displayLocation}</span>}
               {company.foundedYear && (
                 <><span style={{ color: "var(--ink-300)" }}>·</span><span>grundat {company.foundedYear}</span></>
@@ -306,17 +306,17 @@ export default function CompanyPublicProfile() {
             {/* CTAs */}
             <div style={{ display: "flex", gap: 8, marginBottom: 18 }}>
               {user && (
-                <button onClick={handleToggleSave} disabled={saving} style={{ flex: 1, padding: "13px", borderRadius: 12, background: saved ? "var(--amber-tint)" : "var(--paper-2)", border: `1px solid ${saved ? "var(--amber)" : "var(--line)"}`, color: saved ? "var(--amber-text)" : "var(--ink-700)", fontSize: 13, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, minHeight: 46, fontFamily: "inherit" }}>
+                <button onClick={handleToggleSave} disabled={saving} style={{ flex: 1, padding: "13px", borderRadius: 12, background: saved ? "var(--amber-tint)" : "var(--paper-2)", border: `1px solid ${saved ? "var(--amber)" : "var(--line)"}`, color: saved ? "var(--amber-text)" : "var(--ink-700)", fontSize: "var(--text-sm)", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, minHeight: 46, fontFamily: "inherit" }}>
                   <Icon n="heart" s={13} filled={saved} c={saved ? "var(--amber-text)" : "var(--ink-700)"} />{saved ? "Följer" : "Följ"}
                 </button>
               )}
               {!user && (
-                <Link to="/login" state={{ from: `/foretag/${company.id}` }} style={{ flex: 1, padding: "13px", borderRadius: 12, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-700)", fontSize: 13, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, minHeight: 46, textDecoration: "none" }}>
+                <Link to="/login" state={{ from: `/foretag/${company.id}` }} style={{ flex: 1, padding: "13px", borderRadius: 12, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-700)", fontSize: "var(--text-sm)", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, minHeight: 46, textDecoration: "none" }}>
                   Logga in för kontakt
                 </Link>
               )}
               {isDriver && (
-                <button onClick={handleMessage} disabled={messaging} style={{ flex: 1, padding: "13px", borderRadius: 12, background: "var(--green)", border: "none", color: "#fff", fontSize: 13, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, boxShadow: "var(--sh-sm)", minHeight: 46, fontFamily: "inherit" }}>
+                <button onClick={handleMessage} disabled={messaging} style={{ flex: 1, padding: "13px", borderRadius: 12, background: "var(--green)", border: "none", color: "#fff", fontSize: "var(--text-sm)", fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, boxShadow: "var(--sh-sm)", minHeight: 46, fontFamily: "inherit" }}>
                   <Icon n="msg" s={13} c="#fff" />Skicka meddelande
                 </button>
               )}
@@ -328,7 +328,7 @@ export default function CompanyPublicProfile() {
             {mobileTabs.map(tab => {
               const on = mobileTab === tab.v;
               return (
-                <button key={tab.v} onClick={() => setMobileTab(tab.v)} style={{ padding: "12px 0", marginRight: 22, background: "transparent", border: "none", color: on ? "var(--green-text)" : "var(--ink-500)", fontSize: 13.5, fontWeight: on ? 800 : 600, cursor: "pointer", borderBottom: on ? "2px solid var(--green-text)" : "2px solid transparent", marginBottom: -1, fontFamily: "inherit" }}>
+                <button key={tab.v} onClick={() => setMobileTab(tab.v)} style={{ padding: "12px 0", marginRight: 22, background: "transparent", border: "none", color: on ? "var(--green-text)" : "var(--ink-500)", fontSize: "var(--text-sm)", fontWeight: on ? 800 : 600, cursor: "pointer", borderBottom: on ? "2px solid var(--green-text)" : "2px solid transparent", marginBottom: -1, fontFamily: "inherit" }}>
                   {tab.l}
                 </button>
               );
@@ -339,19 +339,19 @@ export default function CompanyPublicProfile() {
           <div style={{ padding: "20px" }}>
             {mobileTab === "about" && (
               <>
-                <p style={{ fontSize: 14, lineHeight: 1.6, color: "var(--ink-700)", marginBottom: 18, whiteSpace: "pre-line" }}>
+                <p style={{ fontSize: "var(--text-base)", lineHeight: 1.6, color: "var(--ink-700)", marginBottom: 18, whiteSpace: "pre-line" }}>
                   {company.description || "Företaget har inte lagt till någon presentation ännu."}
                 </p>
                 {company.bransch?.length > 0 && (
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 24 }}>
                     {company.bransch.map(b => (
-                      <span key={b} style={{ padding: "6px 12px", borderRadius: 99, background: "var(--green-tint)", color: "var(--green-text)", fontSize: 12, fontWeight: 700 }}>
+                      <span key={b} style={{ padding: "6px 12px", borderRadius: 99, background: "var(--green-tint)", color: "var(--green-text)", fontSize: "var(--text-xs)", fontWeight: 700 }}>
                         {getBranschLabel(b)}
                       </span>
                     ))}
                   </div>
                 )}
-                <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 12 }}>Fakta</div>
+                <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 12 }}>Fakta</div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                   {[
                     company.employeeCount ? { t: `${company.employeeCount} anställda`, d: "Personal" } : null,
@@ -365,8 +365,8 @@ export default function CompanyPublicProfile() {
                         <Icon n="check" s={14} c="var(--success)" />
                       </div>
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 13.5, fontWeight: 700, marginBottom: 2, color: "var(--ink-900)" }}>{b.t}</div>
-                        <div style={{ fontSize: 11.5, color: "var(--ink-500)" }}>{b.d}</div>
+                        <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, marginBottom: 2, color: "var(--ink-900)" }}>{b.t}</div>
+                        <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)" }}>{b.d}</div>
                       </div>
                     </div>
                   ))}
@@ -378,7 +378,7 @@ export default function CompanyPublicProfile() {
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {company.jobs.length === 0 ? (
                   <div style={{ padding: "40px 0", textAlign: "center" }}>
-                    <p style={{ fontSize: 13, color: "var(--ink-400)" }}>Inga aktiva jobb just nu.</p>
+                    <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-400)" }}>Inga aktiva jobb just nu.</p>
                   </div>
                 ) : company.jobs.map(job => {
                   const match = (isDriver && profile) ? matchScore(profile, job) : null;
@@ -387,10 +387,10 @@ export default function CompanyPublicProfile() {
                   return (
                     <Link key={job.id} to={`/jobb/${job.id}`} style={{ display: "block", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, padding: "14px 16px", textDecoration: "none", color: "inherit" }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10, marginBottom: 8 }}>
-                        <div style={{ fontSize: 14, fontWeight: 800, flex: 1, color: "var(--ink-900)" }}>{job.title}</div>
-                        {pct !== null && <div style={{ padding: "3px 8px", borderRadius: 6, background: pct >= 85 ? "var(--success-tint)" : pct >= 70 ? "var(--amber-tint)" : "var(--paper-2)", color: mc, fontSize: 11.5, fontWeight: 800, flexShrink: 0 }}>{pct}%</div>}
+                        <div style={{ fontSize: "var(--text-base)", fontWeight: 800, flex: 1, color: "var(--ink-900)" }}>{job.title}</div>
+                        {pct !== null && <div style={{ padding: "3px 8px", borderRadius: 6, background: pct >= 85 ? "var(--success-tint)" : pct >= 70 ? "var(--amber-tint)" : "var(--paper-2)", color: mc, fontSize: "var(--text-2xs)", fontWeight: 800, flexShrink: 0 }}>{pct}%</div>}
                       </div>
-                      <div style={{ fontSize: 12, color: "var(--ink-500)", display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                      <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
                         {(job.location || job.region) && (
                           <span style={{ display: "flex", alignItems: "center", gap: 3 }}>
                             <Icon n="pin" s={10} />{[job.location, job.region].filter(Boolean).join(", ")}
@@ -410,10 +410,10 @@ export default function CompanyPublicProfile() {
               <>
                 {rating && (
                   <div style={{ padding: "16px 18px", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, display: "flex", alignItems: "center", gap: 14, marginBottom: 14 }}>
-                    <div style={{ fontSize: 34, fontWeight: 800, color: "var(--amber-text)", lineHeight: 1 }}>{rating}</div>
+                    <div style={{ fontSize: "var(--text-5xl)", fontWeight: 800, color: "var(--amber-text)", lineHeight: 1 }}>{rating}</div>
                     <div>
                       <Stars rating={rating} size={13} />
-                      <div style={{ fontSize: 11.5, color: "var(--ink-500)", marginTop: 3 }}>{reviewCount} omdömen från förare</div>
+                      <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", marginTop: 3 }}>{reviewCount} omdömen från förare</div>
                     </div>
                   </div>
                 )}
@@ -423,22 +423,22 @@ export default function CompanyPublicProfile() {
                       <div key={r.id} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, padding: "14px 16px" }}>
                         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, gap: 10 }}>
                           <div>
-                            <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2, color: "var(--ink-900)" }}>{r.authorName || "Verifierad förare"}</div>
-                            <div style={{ fontSize: 11, color: "var(--ink-500)" }}>
+                            <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, marginBottom: 2, color: "var(--ink-900)" }}>{r.authorName || "Verifierad förare"}</div>
+                            <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)" }}>
                               Förare · {new Date(r.createdAt).toLocaleDateString("sv-SE", { month: "short", year: "numeric" })}
                             </div>
                           </div>
                           <Stars rating={r.rating} size={11} />
                         </div>
-                        {r.comment && <p style={{ fontSize: 12.5, color: "var(--ink-700)", lineHeight: 1.55, margin: 0 }}>{r.comment}</p>}
+                        {r.comment && <p style={{ fontSize: "var(--text-xs)", color: "var(--ink-700)", lineHeight: 1.55, margin: 0 }}>{r.comment}</p>}
                       </div>
                     ))}
                   </div>
                 ) : (
                   <div style={{ padding: "40px 0", textAlign: "center" }}>
-                    <p style={{ fontSize: 13, color: "var(--ink-400)" }}>Inga omdömen ännu.</p>
+                    <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-400)" }}>Inga omdömen ännu.</p>
                     {isDriver && (
-                      <p style={{ fontSize: 12, color: "var(--ink-400)", marginTop: 6 }}>
+                      <p style={{ fontSize: "var(--text-xs)", color: "var(--ink-400)", marginTop: 6 }}>
                         Har du jobbat här?{" "}
                         <Link to="/meddelanden" style={{ color: "var(--green-text)", textDecoration: "none" }}>Lämna ett omdöme →</Link>
                       </p>
@@ -471,7 +471,7 @@ export default function CompanyPublicProfile() {
 
       {/* Breadcrumb */}
       <div style={{ maxWidth: 1040, margin: "0 auto", padding: "24px 32px 0" }}>
-        <Link to="/akerier" style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 600, color: "var(--ink-500)", textDecoration: "none" }}>
+        <Link to="/akerier" style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--ink-500)", textDecoration: "none" }}>
           <Icon n="back" s={14} /> Tillbaka till åkerier
         </Link>
       </div>
@@ -482,20 +482,20 @@ export default function CompanyPublicProfile() {
         <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "28px 32px", boxShadow: "var(--sh-sm)", marginBottom: 24 }}>
           <div style={{ display: "flex", gap: 22, alignItems: "flex-start", flexWrap: "wrap" }}>
             {/* Logo box */}
-            <div style={{ width: 76, height: 76, borderRadius: 16, flexShrink: 0, background: "var(--paper-2)", border: "1px solid var(--line-2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, fontWeight: 800, color: "var(--ink-700)" }}>
+            <div style={{ width: 76, height: 76, borderRadius: 16, flexShrink: 0, background: "var(--paper-2)", border: "1px solid var(--line-2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--ink-700)" }}>
               {companyInitials(company.name)}
             </div>
 
             <div style={{ flex: 1, minWidth: 240 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6, flexWrap: "wrap" }}>
-                <h1 style={{ fontSize: 28, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.8, margin: 0 }}>{company.name}</h1>
+                <h1 style={{ fontSize: "var(--text-4xl)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.8, margin: 0 }}>{company.name}</h1>
                 {company.verified && (
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 99, background: "var(--success-tint)", border: "1px solid var(--success)", fontSize: 11, fontWeight: 700, color: "var(--success)" }}>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 99, background: "var(--success-tint)", border: "1px solid var(--success)", fontSize: "var(--text-2xs)", fontWeight: 700, color: "var(--success)" }}>
                     <Icon n="check" s={11} c="var(--success)" /> Verifierat
                   </span>
                 )}
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", fontSize: 14, color: "var(--ink-500)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", fontSize: "var(--text-base)", color: "var(--ink-500)" }}>
                 {displayLocation && (
                   <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
                     <Icon n="pin" s={14} /> {displayLocation}
@@ -514,13 +514,13 @@ export default function CompanyPublicProfile() {
                 {company.kollektivavtal && (
                   <>
                     <span style={{ color: "var(--ink-300)" }}>·</span>
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 8px", borderRadius: 99, background: "var(--info-tint)", border: "1px solid var(--info)", fontSize: 11, fontWeight: 700, color: "var(--info)" }}>Kollektivavtal</span>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 8px", borderRadius: 99, background: "var(--info-tint)", border: "1px solid var(--info)", fontSize: "var(--text-2xs)", fontWeight: 700, color: "var(--info)" }}>Kollektivavtal</span>
                   </>
                 )}
                 {company.fSkattsedel && (
                   <>
                     <span style={{ color: "var(--ink-300)" }}>·</span>
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 8px", borderRadius: 99, background: "var(--info-tint)", border: "1px solid var(--info)", fontSize: 11, fontWeight: 700, color: "var(--info)" }}>F-skatt</span>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 8px", borderRadius: 99, background: "var(--info-tint)", border: "1px solid var(--info)", fontSize: "var(--text-2xs)", fontWeight: 700, color: "var(--info)" }}>F-skatt</span>
                   </>
                 )}
               </div>
@@ -529,18 +529,18 @@ export default function CompanyPublicProfile() {
             {/* Action buttons */}
             <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
               {user && (
-                <button type="button" onClick={handleToggleSave} disabled={saving} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 16px", borderRadius: 10, background: saved ? "var(--amber-tint)" : "var(--paper-2)", border: `1px solid ${saved ? "var(--amber)" : "var(--line-2)"}`, color: saved ? "var(--amber-text)" : "var(--ink-700)", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", transition: "all .15s" }}>
+                <button type="button" onClick={handleToggleSave} disabled={saving} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 16px", borderRadius: 10, background: saved ? "var(--amber-tint)" : "var(--paper-2)", border: `1px solid ${saved ? "var(--amber)" : "var(--line-2)"}`, color: saved ? "var(--amber-text)" : "var(--ink-700)", fontSize: "var(--text-sm)", fontWeight: 700, cursor: "pointer", fontFamily: "inherit", transition: "all .15s" }}>
                   <Icon n="heart" s={14} filled={saved} c={saved ? "var(--amber-deep)" : "var(--ink-700)"} />
                   {saved ? "Sparat" : "Spara"}
                 </button>
               )}
               {isDriver && (
-                <button type="button" onClick={handleMessage} disabled={messaging} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 10, background: "var(--green)", border: "none", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: "var(--sh-sm)" }}>
+                <button type="button" onClick={handleMessage} disabled={messaging} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 10, background: "var(--green)", border: "none", color: "#fff", fontSize: "var(--text-sm)", fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: "var(--sh-sm)" }}>
                   <Icon n="msg" s={14} c="#fff" /> Kontakta
                 </button>
               )}
               {!user && (
-                <Link to="/login" state={{ from: `/foretag/${company.id}` }} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 10, background: "var(--green)", color: "#fff", fontSize: 13, fontWeight: 700, textDecoration: "none", boxShadow: "var(--sh-sm)" }}>
+                <Link to="/login" state={{ from: `/foretag/${company.id}` }} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 10, background: "var(--green)", color: "#fff", fontSize: "var(--text-sm)", fontWeight: 700, textDecoration: "none", boxShadow: "var(--sh-sm)" }}>
                   <Icon n="msg" s={14} c="#fff" /> Kontakta
                 </Link>
               )}
@@ -557,7 +557,7 @@ export default function CompanyPublicProfile() {
             ].map((s, i) => (
               <div key={s.l} style={{ paddingLeft: i ? 24 : 0, borderLeft: i ? "1px solid var(--line)" : "none" }}>
                 <div style={{ fontSize: 26, fontWeight: 800, color: s.accent ? "var(--green)" : "var(--ink-900)", letterSpacing: -0.6, fontFamily: "var(--mono)" }}>{s.v}</div>
-                <div style={{ fontSize: 11.5, color: "var(--ink-500)", marginTop: 4, fontWeight: 600, letterSpacing: 0.3, textTransform: "uppercase" }}>{s.l}</div>
+                <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", marginTop: 4, fontWeight: 600, letterSpacing: 0.3, textTransform: "uppercase" }}>{s.l}</div>
               </div>
             ))}
           </div>
@@ -568,14 +568,14 @@ export default function CompanyPublicProfile() {
           {/* LEFT */}
           <div className="stp-fade-up">
             {/* Om åkeriet */}
-            <h2 style={{ fontSize: 20, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.4, marginTop: 0, marginBottom: 14 }}>Om åkeriet</h2>
-            <p style={{ fontSize: 15, color: "var(--ink-700)", lineHeight: 1.75, whiteSpace: "pre-line", marginTop: 0, marginBottom: 16 }}>
+            <h2 style={{ fontSize: "var(--text-2xl)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.4, marginTop: 0, marginBottom: 14 }}>Om åkeriet</h2>
+            <p style={{ fontSize: "var(--text-md)", color: "var(--ink-700)", lineHeight: 1.75, whiteSpace: "pre-line", marginTop: 0, marginBottom: 16 }}>
               {company.description || "Företaget har inte lagt till någon presentation ännu."}
             </p>
             {company.bransch?.length > 0 && (
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 32 }}>
                 {company.bransch.map((b) => (
-                  <span key={b} style={{ padding: "6px 12px", borderRadius: 99, background: "var(--green-tint)", color: "var(--green-text)", fontSize: 12, fontWeight: 600 }}>
+                  <span key={b} style={{ padding: "6px 12px", borderRadius: 99, background: "var(--green-tint)", color: "var(--green-text)", fontSize: "var(--text-xs)", fontWeight: 600 }}>
                     {getBranschLabel(b)}
                   </span>
                 ))}
@@ -585,7 +585,7 @@ export default function CompanyPublicProfile() {
             {/* Förmåner */}
             {benefitItems.length > 0 && (
               <>
-                <h2 style={{ fontSize: 20, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.4, marginTop: 32, marginBottom: 14 }}>Förmåner</h2>
+                <h2 style={{ fontSize: "var(--text-2xl)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.4, marginTop: 32, marginBottom: 14 }}>Förmåner</h2>
                 <div className="benefit-grid">
                   {benefitItems.map((b) => (
                     <div key={b.title} style={{ display: "flex", gap: 13, alignItems: "flex-start", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, padding: "16px 18px", boxShadow: "var(--sh-sm)" }}>
@@ -593,8 +593,8 @@ export default function CompanyPublicProfile() {
                         <Icon n={b.icon} s={17} c="var(--green-text)" />
                       </span>
                       <div>
-                        <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)", marginBottom: 3 }}>{b.title}</div>
-                        <div style={{ fontSize: 12.5, color: "var(--ink-500)", lineHeight: 1.5 }}>{b.desc}</div>
+                        <div style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)", marginBottom: 3 }}>{b.title}</div>
+                        <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", lineHeight: 1.5 }}>{b.desc}</div>
                       </div>
                     </div>
                   ))}
@@ -604,14 +604,14 @@ export default function CompanyPublicProfile() {
 
             {/* Lediga jobb */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 32, marginBottom: 14 }}>
-              <h2 style={{ fontSize: 20, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.4, margin: 0 }}>Lediga jobb</h2>
-              <Link to="/jobb" style={{ fontSize: 13, fontWeight: 700, color: "var(--green)", textDecoration: "none" }}>
+              <h2 style={{ fontSize: "var(--text-2xl)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.4, margin: 0 }}>Lediga jobb</h2>
+              <Link to="/jobb" style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--green)", textDecoration: "none" }}>
                 Alla {company.jobs.length} jobb →
               </Link>
             </div>
             {company.jobs.length === 0 ? (
               <div style={{ padding: "28px 24px", borderRadius: 12, background: "var(--card)", border: "1px solid var(--line)", textAlign: "center" }}>
-                <p style={{ fontSize: 13, color: "var(--ink-400)", margin: 0 }}>Inga aktiva jobb just nu.</p>
+                <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-400)", margin: 0 }}>Inga aktiva jobb just nu.</p>
               </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -630,13 +630,13 @@ export default function CompanyPublicProfile() {
                     >
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                          <span style={{ fontSize: 15, fontWeight: 700, color: "var(--ink-900)" }}>{job.title}</span>
+                          <span style={{ fontSize: "var(--text-md)", fontWeight: 700, color: "var(--ink-900)" }}>{job.title}</span>
                         </div>
                         <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                          {licLabel !== "—" && <span style={{ padding: "3px 9px", borderRadius: 99, background: "var(--green-tint)", color: "var(--green-text)", fontSize: 11.5, fontWeight: 700 }}>{licLabel}</span>}
-                          <span style={{ padding: "3px 9px", borderRadius: 99, background: "var(--paper-2)", color: "var(--ink-500)", fontSize: 11.5, fontWeight: 600, border: "1px solid var(--line)" }}>{employmentLabel(job.employment)}</span>
+                          {licLabel !== "—" && <span style={{ padding: "3px 9px", borderRadius: 99, background: "var(--green-tint)", color: "var(--green-text)", fontSize: "var(--text-2xs)", fontWeight: 700 }}>{licLabel}</span>}
+                          <span style={{ padding: "3px 9px", borderRadius: 99, background: "var(--paper-2)", color: "var(--ink-500)", fontSize: "var(--text-2xs)", fontWeight: 600, border: "1px solid var(--line)" }}>{employmentLabel(job.employment)}</span>
                           {(job.location || job.region) && (
-                            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 9px", borderRadius: 99, background: "var(--paper-2)", color: "var(--ink-500)", fontSize: 11.5, fontWeight: 600, border: "1px solid var(--line)" }}>
+                            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 9px", borderRadius: 99, background: "var(--paper-2)", color: "var(--ink-500)", fontSize: "var(--text-2xs)", fontWeight: 600, border: "1px solid var(--line)" }}>
                               <Icon n="pin" s={10} />{[job.location, job.region].filter(Boolean).join(", ")}
                             </span>
                           )}
@@ -644,12 +644,12 @@ export default function CompanyPublicProfile() {
                       </div>
                       <div style={{ textAlign: "right", flexShrink: 0 }}>
                         {job.salaryMin && (
-                          <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--ink-900)", fontFamily: "var(--mono)" }}>
+                          <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-900)", fontFamily: "var(--mono)" }}>
                             {job.salaryMin}–{job.salaryMax} kr/mån
                           </div>
                         )}
                         {pct !== null && (
-                          <div style={{ fontSize: 12, fontWeight: 700, color: matchColor, fontFamily: "var(--mono)", marginTop: 3 }}>{pct}% match</div>
+                          <div style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: matchColor, fontFamily: "var(--mono)", marginTop: 3 }}>{pct}% match</div>
                         )}
                       </div>
                       <Icon n="arrow" s={16} c="var(--ink-300)" />
@@ -660,37 +660,37 @@ export default function CompanyPublicProfile() {
             )}
 
             {/* Omdömen */}
-            <h2 style={{ fontSize: 20, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.4, marginTop: 32, marginBottom: 14 }}>Omdömen från förare</h2>
+            <h2 style={{ fontSize: "var(--text-2xl)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.4, marginTop: 32, marginBottom: 14 }}>Omdömen från förare</h2>
             {reviewSummary?.recent?.length > 0 ? (
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 {reviewSummary.recent.map((r) => (
                   <div key={r.id} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, padding: "18px 20px", boxShadow: "var(--sh-sm)" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
                       <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                        <div style={{ width: 38, height: 38, borderRadius: 99, background: "var(--green-tint)", border: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 13, flexShrink: 0, color: "var(--green-text)" }}>
+                        <div style={{ width: 38, height: 38, borderRadius: 99, background: "var(--green-tint)", border: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "var(--text-sm)", flexShrink: 0, color: "var(--green-text)" }}>
                           {reviewInitials(r.authorName || "?")}
                         </div>
                         <div>
-                          <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)" }}>{r.authorName || "Verifierad förare"}</div>
-                          <div style={{ fontSize: 12.5, color: "var(--ink-500)", marginTop: 1 }}>Förare</div>
+                          <div style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)" }}>{r.authorName || "Verifierad förare"}</div>
+                          <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", marginTop: 1 }}>Förare</div>
                         </div>
                       </div>
                       <div style={{ textAlign: "right" }}>
                         <Stars rating={r.rating} size={12} />
-                        <div style={{ fontSize: 11.5, color: "var(--ink-400)", marginTop: 3 }}>
+                        <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", marginTop: 3 }}>
                           {new Date(r.createdAt).toLocaleDateString("sv-SE", { month: "short", year: "numeric" })}
                         </div>
                       </div>
                     </div>
-                    {r.comment && <p style={{ fontSize: 14, color: "var(--ink-700)", lineHeight: 1.6, margin: 0 }}>{r.comment}</p>}
+                    {r.comment && <p style={{ fontSize: "var(--text-base)", color: "var(--ink-700)", lineHeight: 1.6, margin: 0 }}>{r.comment}</p>}
                   </div>
                 ))}
               </div>
             ) : (
               <div style={{ padding: "28px 24px", borderRadius: 12, background: "var(--card)", border: "1px solid var(--line)", textAlign: "center" }}>
-                <p style={{ fontSize: 13, color: "var(--ink-400)", margin: "0 0 4px" }}>Inga omdömen ännu.</p>
+                <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-400)", margin: "0 0 4px" }}>Inga omdömen ännu.</p>
                 {isDriver && (
-                  <p style={{ fontSize: 12, color: "var(--ink-400)", margin: 0 }}>
+                  <p style={{ fontSize: "var(--text-xs)", color: "var(--ink-400)", margin: 0 }}>
                     Har du jobbat här?{" "}
                     <Link to="/meddelanden" style={{ color: "var(--green-text)", textDecoration: "none" }}>Lämna ett omdöme →</Link>
                   </p>
@@ -698,7 +698,7 @@ export default function CompanyPublicProfile() {
               </div>
             )}
             {reviewSummary?.recent?.length > 0 && reviewCount > reviewSummary.recent.length && (
-              <button style={{ marginTop: 12, width: "100%", padding: "13px 22px", borderRadius: 12, background: "var(--paper-2)", border: "1px solid var(--line)", fontSize: 13, fontWeight: 600, color: "var(--ink-700)", cursor: "pointer", fontFamily: "inherit" }}>
+              <button style={{ marginTop: 12, width: "100%", padding: "13px 22px", borderRadius: 12, background: "var(--paper-2)", border: "1px solid var(--line)", fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--ink-700)", cursor: "pointer", fontFamily: "inherit" }}>
                 Visa alla {reviewCount} omdömen
               </button>
             )}
@@ -708,28 +708,28 @@ export default function CompanyPublicProfile() {
           <aside style={{ display: "flex", flexDirection: "column", gap: 18, position: "sticky", top: 80 }}>
             {/* Fakta */}
             <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, padding: "20px 24px", boxShadow: "var(--sh-sm)" }}>
-              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 14 }}>Fakta</div>
+              <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 14 }}>Fakta</div>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {company.foundedYear && (
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "var(--text-sm)" }}>
                     <span style={{ color: "var(--ink-500)" }}>Grundat</span>
                     <span style={{ fontWeight: 700, color: "var(--ink-900)" }}>{company.foundedYear}</span>
                   </div>
                 )}
                 {company.employeeCount && (
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "var(--text-sm)" }}>
                     <span style={{ color: "var(--ink-500)" }}>Anställda</span>
                     <span style={{ fontWeight: 700, color: "var(--ink-900)" }}>{company.employeeCount}</span>
                   </div>
                 )}
                 {company.fleet && (
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "var(--text-sm)" }}>
                     <span style={{ color: "var(--ink-500)" }}>Fordon i flottan</span>
                     <span style={{ fontWeight: 700, color: "var(--ink-900)", fontFamily: "var(--mono)" }}>{company.fleet}</span>
                   </div>
                 )}
                 {displayLocation && (
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "var(--text-sm)" }}>
                     <span style={{ color: "var(--ink-500)" }}>Ort</span>
                     <span style={{ fontWeight: 700, color: "var(--ink-900)" }}>{displayLocation}</span>
                   </div>
@@ -740,7 +740,7 @@ export default function CompanyPublicProfile() {
                       href={company.website.startsWith("http") ? company.website : `https://${company.website}`}
                       target="_blank"
                       rel="noreferrer"
-                      style={{ fontSize: 13, fontWeight: 700, color: "var(--green)", display: "inline-flex", alignItems: "center", gap: 5, textDecoration: "none" }}
+                      style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--green)", display: "inline-flex", alignItems: "center", gap: 5, textDecoration: "none" }}
                     >
                       {company.website.replace(/^https?:\/\//, "").split("/")[0]}
                       <Icon n="external" s={12} />
@@ -752,15 +752,15 @@ export default function CompanyPublicProfile() {
 
             {/* Svarar ofta */}
             <div style={{ background: "var(--card-2)", border: "1px solid var(--line)", borderRadius: 12, padding: "20px 24px", boxShadow: "var(--sh-sm)" }}>
-              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 14 }}>Svarar ofta</div>
+              <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 14 }}>Svarar ofta</div>
               <div style={{ display: "flex", gap: 20 }}>
                 <div>
                   <div style={{ fontSize: 22, fontWeight: 800, color: "var(--green)", fontFamily: "var(--mono)", lineHeight: 1 }}>—</div>
-                  <div style={{ fontSize: 11.5, color: "var(--ink-500)", marginTop: 4 }}>svarsfrekvens</div>
+                  <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", marginTop: 4 }}>svarsfrekvens</div>
                 </div>
                 <div>
                   <div style={{ fontSize: 22, fontWeight: 800, color: "var(--ink-900)", fontFamily: "var(--mono)", lineHeight: 1 }}>—</div>
-                  <div style={{ fontSize: 11.5, color: "var(--ink-500)", marginTop: 4 }}>svarstid</div>
+                  <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", marginTop: 4 }}>svarstid</div>
                 </div>
               </div>
             </div>

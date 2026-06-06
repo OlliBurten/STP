@@ -57,21 +57,21 @@ function StepCard({ step, expanded, onToggle, onComplete }) {
         {/* Title + pills */}
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-            <span style={{ fontSize: 15.5, fontWeight: 700, color: "var(--ink-900)" }}>{step.title}</span>
+            <span style={{ fontSize: "var(--text-md)", fontWeight: 700, color: "var(--ink-900)" }}>{step.title}</span>
             {!step.required && (
-              <span style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-500)", background: "var(--paper-2)", border: "1px solid var(--line-2)", borderRadius: 6, padding: "2px 7px" }}>Valfritt</span>
+              <span style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: "var(--ink-500)", background: "var(--paper-2)", border: "1px solid var(--line-2)", borderRadius: 6, padding: "2px 7px" }}>Valfritt</span>
             )}
             {meta.label && (
-              <span style={{ fontSize: 11, fontWeight: 700, color: meta.pillColor, background: meta.pillBg, borderRadius: 6, padding: "2px 7px" }}>{meta.label}</span>
+              <span style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: meta.pillColor, background: meta.pillBg, borderRadius: 6, padding: "2px 7px" }}>{meta.label}</span>
             )}
           </div>
           {!isOpen && (
-            <div style={{ fontSize: 13, color: "var(--ink-500)", marginTop: 3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{step.desc}</div>
+            <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", marginTop: 3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{step.desc}</div>
           )}
         </div>
 
         {/* Time */}
-        <span style={{ fontSize: 12.5, color: "var(--ink-400)", fontFamily: "var(--mono)", flexShrink: 0 }}>{step.time}</span>
+        <span style={{ fontSize: "var(--text-xs)", color: "var(--ink-400)", fontFamily: "var(--mono)", flexShrink: 0 }}>{step.time}</span>
 
         {/* Chevron */}
         {!isLocked && <Icon name={isOpen ? "chevDown" : "chevRight"} size={16} color="var(--ink-300)" stroke={2} />}
@@ -80,7 +80,7 @@ function StepCard({ step, expanded, onToggle, onComplete }) {
       {/* Expanded body */}
       {isOpen && (
         <div style={{ padding: "0 22px 22px 78px" }}>
-          <p style={{ fontSize: 14, color: "var(--ink-600)", lineHeight: 1.6, marginBottom: 16 }}>{step.desc}</p>
+          <p style={{ fontSize: "var(--text-base)", color: "var(--ink-600)", lineHeight: 1.6, marginBottom: 16 }}>{step.desc}</p>
 
           {isActionable && (
             <>
@@ -89,13 +89,13 @@ function StepCard({ step, expanded, onToggle, onComplete }) {
                 <div style={{ width: 44, height: 44, borderRadius: 11, background: "var(--green-tint)", margin: "0 auto 12px", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <Icon name="plus" size={20} color="var(--green-text)" stroke={2.4} />
                 </div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)", marginBottom: 4 }}>Ladda upp dokument</div>
-                <div style={{ fontSize: 12.5, color: "var(--ink-500)" }}>PDF, JPG eller PNG · max 10 MB</div>
+                <div style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)", marginBottom: 4 }}>Ladda upp dokument</div>
+                <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)" }}>PDF, JPG eller PNG · max 10 MB</div>
               </div>
               <div style={{ display: "flex", gap: 10 }}>
                 <button
                   onClick={() => onComplete(step.id)}
-                  style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 20px", borderRadius: 10, background: "var(--green)", color: "#fff", fontSize: 13.5, fontWeight: 800, border: "none", cursor: "pointer", fontFamily: "inherit" }}
+                  style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 20px", borderRadius: 10, background: "var(--green)", color: "#fff", fontSize: "var(--text-sm)", fontWeight: 800, border: "none", cursor: "pointer", fontFamily: "inherit" }}
                 >
                   Skicka för granskning
                   <Icon name="arrow" size={14} color="#fff" stroke={2.2} />
@@ -103,7 +103,7 @@ function StepCard({ step, expanded, onToggle, onComplete }) {
                 {!step.required && (
                   <button
                     onClick={onToggle}
-                    style={{ padding: "10px 20px", borderRadius: 10, background: "transparent", border: "1px solid var(--line-2)", color: "var(--ink-500)", fontSize: 13.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}
+                    style={{ padding: "10px 20px", borderRadius: 10, background: "transparent", border: "1px solid var(--line-2)", color: "var(--ink-500)", fontSize: "var(--text-sm)", fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}
                   >
                     Hoppa över
                   </button>
@@ -113,7 +113,7 @@ function StepCard({ step, expanded, onToggle, onComplete }) {
           )}
 
           {step.status === "review" && (
-            <div style={{ padding: "12px 16px", background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.2)", borderRadius: 10, fontSize: 13, color: "var(--amber-deep)", fontWeight: 600 }}>
+            <div style={{ padding: "12px 16px", background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.2)", borderRadius: 10, fontSize: "var(--text-sm)", color: "var(--amber-deep)", fontWeight: 600 }}>
               Granskas av STP — vi återkommer inom 1–2 arbetsdagar.
             </div>
           )}
@@ -173,9 +173,9 @@ export default function CompanyVerification() {
       {/* Page header */}
       <div style={{ background: "var(--paper)", borderBottom: "1px solid var(--line)", paddingTop: 32, paddingBottom: 24 }}>
         <div style={{ maxWidth: 1000, margin: "0 auto", padding: "0 32px" }}>
-          <p style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 10 }}>För åkerier</p>
-          <h1 style={{ fontSize: 34, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.2, lineHeight: 1.15, marginBottom: 6 }}>Verifiering</h1>
-          <p style={{ fontSize: 14, color: "var(--ink-500)", fontWeight: 500 }}>
+          <p style={{ fontSize: "var(--text-2xs)", fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 10 }}>För åkerier</p>
+          <h1 style={{ fontSize: "var(--text-5xl)", fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.2, lineHeight: 1.15, marginBottom: 6 }}>Verifiering</h1>
+          <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", fontWeight: 500 }}>
             Verifierade åkerier får fler ansökningar. Det tar några minuter.
           </p>
         </div>
@@ -201,8 +201,8 @@ export default function CompanyVerification() {
                     </span>
                   )}
                   <div>
-                    <div style={{ fontSize: 16, fontWeight: 800, color: "var(--ink-900)" }}>{verified ? "Verifierat åkeri!" : "Verifiering pågår"}</div>
-                    <div style={{ fontSize: 13, color: "var(--ink-500)", marginTop: 1 }}>{requiredDone} av {requiredTotal} obligatoriska steg klara</div>
+                    <div style={{ fontSize: "var(--text-lg)", fontWeight: 800, color: "var(--ink-900)" }}>{verified ? "Verifierat åkeri!" : "Verifiering pågår"}</div>
+                    <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", marginTop: 1 }}>{requiredDone} av {requiredTotal} obligatoriska steg klara</div>
                   </div>
                 </div>
                 <div style={{ fontSize: 26, fontWeight: 800, color: verified ? "var(--success)" : "var(--green)", fontFamily: "var(--mono)" }}>{pct}%</div>
@@ -236,7 +236,7 @@ export default function CompanyVerification() {
           <aside style={{ display: "flex", flexDirection: "column", gap: 18, position: "sticky", top: 32 }}>
             {/* Why verify */}
             <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "22px 24px" }}>
-              <p style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 14 }}>Varför verifiera?</p>
+              <p style={{ fontSize: "var(--text-2xs)", fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 14 }}>Varför verifiera?</p>
               {[
                 { icon: "eye",   title: "Mer synlig",       text: "Verifierade åkerier rankas högre och får en blå bock." },
                 { icon: "user",  title: "Fler ansökningar", text: "Förare söker hellre hos verifierade arbetsgivare." },
@@ -247,8 +247,8 @@ export default function CompanyVerification() {
                     <Icon name={b.icon} size={16} color="var(--green-text)" stroke={2} />
                   </span>
                   <div>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)" }}>{b.title}</div>
-                    <div style={{ fontSize: 12.5, color: "var(--ink-500)", marginTop: 2, lineHeight: 1.5 }}>{b.text}</div>
+                    <div style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)" }}>{b.title}</div>
+                    <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", marginTop: 2, lineHeight: 1.5 }}>{b.text}</div>
                   </div>
                 </div>
               ))}
@@ -256,7 +256,7 @@ export default function CompanyVerification() {
 
             {/* Support */}
             <div style={{ background: "var(--card-2)", border: "1px solid var(--line)", borderRadius: 14, padding: "18px 22px" }}>
-              <div style={{ fontSize: 13, color: "var(--ink-500)", lineHeight: 1.6 }}>
+              <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", lineHeight: 1.6 }}>
                 Behöver du hjälp?{" "}
                 <Link to="/kontakt" style={{ color: "var(--green)", fontWeight: 600, textDecoration: "none" }}>Kontakta support</Link>
                 {" "}så guidar vi dig genom verifieringen.

@@ -49,9 +49,9 @@ export default function About() {
       {/* Hero */}
       <div style={{ background: "var(--paper)", padding: "72px 0 48px" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 32px", maxWidth: 720 }}>
-          <span style={{ display: "inline-block", padding: "4px 12px", borderRadius: 999, fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", color: "var(--green-text)", background: "var(--green-tint)", marginBottom: 18 }}>Om STP</span>
+          <span style={{ display: "inline-block", padding: "4px 12px", borderRadius: 999, fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", color: "var(--green-text)", background: "var(--green-tint)", marginBottom: 18 }}>Om STP</span>
           <h1 style={{ fontSize: 44, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -2, lineHeight: 1.05, marginBottom: 20 }}>Branschens egen plattform — byggd av branschen.</h1>
-          <p style={{ fontSize: 18, color: "var(--ink-500)", lineHeight: 1.7 }}>
+          <p style={{ fontSize: "var(--text-xl)", color: "var(--ink-500)", lineHeight: 1.7 }}>
             STP grundades för att lösa ett problem alla i transport känner igen: förare och åkerier hittar inte varandra utan dyra mellanhänder. Vi bygger en plattform där de möts direkt.
           </p>
         </div>
@@ -66,8 +66,8 @@ export default function About() {
             { v: "0 kr",   l: "Provision — alltid" },
           ].map(({ v, l }) => (
             <div key={l} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "26px 28px" }}>
-              <div style={{ fontSize: 34, fontWeight: 800, color: "var(--green)", fontFamily: "var(--mono)", letterSpacing: -1 }}>{v}</div>
-              <div style={{ fontSize: 13.5, color: "var(--ink-500)", marginTop: 6, fontWeight: 600 }}>{l}</div>
+              <div style={{ fontSize: "var(--text-5xl)", fontWeight: 800, color: "var(--green)", fontFamily: "var(--mono)", letterSpacing: -1 }}>{v}</div>
+              <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", marginTop: 6, fontWeight: 600 }}>{l}</div>
             </div>
           ))}
         </div>
@@ -90,7 +90,7 @@ export default function About() {
       {/* Values */}
       <div style={{ background: "var(--paper-2)", borderTop: "1px solid var(--line)", borderBottom: "1px solid var(--line)", padding: "64px 0" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 32px" }}>
-          <p style={{ fontSize: 11, fontWeight: 700, color: "var(--green-text)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 12 }}>Vad vi tror på</p>
+          <p style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: "var(--green-text)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 12 }}>Vad vi tror på</p>
           <h2 style={{ fontSize: 30, fontWeight: 900, letterSpacing: -0.8, color: "var(--ink-900)", marginBottom: 28 }}>Principer vi bygger efter</h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
             {VALUES.map(({ title, text }) => (
@@ -98,8 +98,8 @@ export default function About() {
                 <div style={{ width: 40, height: 40, borderRadius: 10, background: "var(--green-tint)", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="var(--green-text)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><polyline points="20 6 9 17 4 12"/></svg>
                 </div>
-                <h3 style={{ fontSize: 16, fontWeight: 700, color: "var(--ink-900)", marginBottom: 10 }}>{title}</h3>
-                <p style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.7 }}>{text}</p>
+                <h3 style={{ fontSize: "var(--text-lg)", fontWeight: 700, color: "var(--ink-900)", marginBottom: 10 }}>{title}</h3>
+                <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.7 }}>{text}</p>
               </div>
             ))}
           </div>
@@ -110,16 +110,16 @@ export default function About() {
       <div style={{ padding: "64px 32px 80px" }}>
         <div style={{ maxWidth: 760, margin: "0 auto" }}>
           <div style={{ background: "var(--green)", borderRadius: 20, padding: "48px 48px" }}>
-            <p style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.6)", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 12 }}>Var vi är nu</p>
-            <h2 style={{ fontSize: 28, fontWeight: 900, color: "#fff", letterSpacing: -0.8, marginBottom: 14 }}>Plattformen testas med branschen</h2>
-            <p style={{ fontSize: 16, color: "rgba(255,255,255,0.75)", lineHeight: 1.75, marginBottom: 28, maxWidth: 520 }}>
+            <p style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: "rgba(255,255,255,0.6)", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 12 }}>Var vi är nu</p>
+            <h2 style={{ fontSize: "var(--text-4xl)", fontWeight: 900, color: "#fff", letterSpacing: -0.8, marginBottom: 14 }}>Plattformen testas med branschen</h2>
+            <p style={{ fontSize: "var(--text-lg)", color: "rgba(255,255,255,0.75)", lineHeight: 1.75, marginBottom: 28, maxWidth: 520 }}>
               STP är i tidig fas. Vi bygger tillsammans med förare och åkerier som vill vara med och forma hur plattformen fungerar.
             </p>
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-              <Link to="/jobb" style={{ display: "inline-flex", alignItems: "center", padding: "13px 26px", borderRadius: 12, background: "#fff", color: "var(--green)", fontSize: 15, fontWeight: 800, textDecoration: "none" }}>
+              <Link to="/jobb" style={{ display: "inline-flex", alignItems: "center", padding: "13px 26px", borderRadius: 12, background: "#fff", color: "var(--green)", fontSize: "var(--text-md)", fontWeight: 800, textDecoration: "none" }}>
                 Se lediga jobb
               </Link>
-              <Link to="/kontakt" style={{ display: "inline-flex", alignItems: "center", padding: "13px 26px", borderRadius: 12, background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.25)", color: "#fff", fontSize: 15, fontWeight: 600, textDecoration: "none" }}>
+              <Link to="/kontakt" style={{ display: "inline-flex", alignItems: "center", padding: "13px 26px", borderRadius: 12, background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.25)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 600, textDecoration: "none" }}>
                 Kontakta oss
               </Link>
             </div>

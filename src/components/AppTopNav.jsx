@@ -71,16 +71,16 @@ function NotifPanel({ notifs, unreadCount, onClose, onClickItem, onMarkAll }) {
         zIndex: 61, display: "flex", flexDirection: "column", overflow: "hidden",
       }}>
         <div style={{ padding: "16px 18px", borderBottom: "1px solid var(--line)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ fontSize: 16, fontWeight: 800, color: "var(--ink-900)" }}>Notiser</span>
+          <span style={{ fontSize: "var(--text-lg)", fontWeight: 800, color: "var(--ink-900)" }}>Notiser</span>
           {unreadCount > 0 && (
-            <button onClick={onMarkAll} style={{ fontSize: 12.5, fontWeight: 700, color: "var(--green)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
+            <button onClick={onMarkAll} style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--green)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
               Markera alla lästa
             </button>
           )}
         </div>
         <div style={{ overflowY: "auto", flex: 1 }}>
           {notifs.length === 0 ? (
-            <div style={{ padding: "32px 18px", textAlign: "center", color: "var(--ink-400)", fontSize: 14 }}>
+            <div style={{ padding: "32px 18px", textAlign: "center", color: "var(--ink-400)", fontSize: "var(--text-base)" }}>
               Inga notiser ännu
             </div>
           ) : notifs.map(n => {
@@ -102,10 +102,10 @@ function NotifPanel({ notifs, unreadCount, onClose, onClickItem, onMarkAll }) {
                   <Ico n={conf.icon} size={15} color={conf.color} sw={2} />
                 </span>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 13.5, color: "var(--ink-900)", lineHeight: 1.45, fontWeight: unread ? 600 : 400 }}>
+                  <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-900)", lineHeight: 1.45, fontWeight: unread ? 600 : 400 }}>
                     {n.text || n.message || "Notis"}
                   </div>
-                  <div style={{ fontSize: 12, color: "var(--ink-400)", marginTop: 3 }}>{timeAgo(n.createdAt)}</div>
+                  <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-400)", marginTop: 3 }}>{timeAgo(n.createdAt)}</div>
                 </div>
                 {unread && <span style={{ width: 8, height: 8, borderRadius: 4, background: "var(--green)", flexShrink: 0, marginTop: 6 }} />}
               </button>
@@ -113,7 +113,7 @@ function NotifPanel({ notifs, unreadCount, onClose, onClickItem, onMarkAll }) {
           })}
         </div>
         <div style={{ padding: "10px 12px", borderTop: "1px solid var(--line)" }}>
-          <NavLink to="/meddelanden" onClick={onClose} style={{ display: "block", width: "100%", padding: "9px", borderRadius: 9, border: "1px solid var(--line-2)", background: "transparent", color: "var(--ink-900)", fontSize: 13, fontWeight: 600, textAlign: "center", textDecoration: "none", cursor: "pointer" }}>
+          <NavLink to="/meddelanden" onClick={onClose} style={{ display: "block", width: "100%", padding: "9px", borderRadius: 9, border: "1px solid var(--line-2)", background: "transparent", color: "var(--ink-900)", fontSize: "var(--text-sm)", fontWeight: 600, textAlign: "center", textDecoration: "none", cursor: "pointer" }}>
             Visa alla meddelanden
           </NavLink>
         </div>
@@ -170,13 +170,13 @@ function SearchModal({ onClose }) {
             onChange={e => setQ(e.target.value)}
             onKeyDown={e => { if (e.key === "Enter" && filtered[0]) go(filtered[0].path); }}
             placeholder="Sök jobb, åkerier, sidor..."
-            style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontSize: 16.5, color: "var(--ink-900)", fontFamily: "inherit" }}
+            style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontSize: "var(--text-lg)", color: "var(--ink-900)", fontFamily: "inherit" }}
           />
-          <kbd style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-500)", background: "var(--card-2)", border: "1px solid var(--line-2)", borderRadius: 6, padding: "3px 7px", fontFamily: "monospace" }}>ESC</kbd>
+          <kbd style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: "var(--ink-500)", background: "var(--card-2)", border: "1px solid var(--line-2)", borderRadius: 6, padding: "3px 7px", fontFamily: "monospace" }}>ESC</kbd>
         </div>
         <div style={{ maxHeight: "50vh", overflowY: "auto", padding: "8px" }}>
           {q.length === 0 && (
-            <div style={{ padding: "8px 12px 4px", fontSize: 11, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", color: "var(--ink-400)" }}>Genvägar</div>
+            <div style={{ padding: "8px 12px 4px", fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", color: "var(--ink-400)" }}>Genvägar</div>
           )}
           {filtered.map((it, i) => (
             <button key={i} onClick={() => go(it.path)} style={{
@@ -190,12 +190,12 @@ function SearchModal({ onClose }) {
               <span style={{ width: 34, height: 34, borderRadius: 8, background: "var(--paper-2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <Ico n="search" size={14} color="var(--ink-600)" sw={2} />
               </span>
-              <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: "var(--ink-900)" }}>{it.label}</span>
-              <kbd style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-400)", background: "var(--card-2)", border: "1px solid var(--line-2)", borderRadius: 6, padding: "2px 7px", fontFamily: "monospace" }}>{it.hint}</kbd>
+              <span style={{ flex: 1, fontSize: "var(--text-base)", fontWeight: 600, color: "var(--ink-900)" }}>{it.label}</span>
+              <kbd style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: "var(--ink-400)", background: "var(--card-2)", border: "1px solid var(--line-2)", borderRadius: 6, padding: "2px 7px", fontFamily: "monospace" }}>{it.hint}</kbd>
             </button>
           ))}
         </div>
-        <div style={{ padding: "10px 16px", borderTop: "1px solid var(--line)", display: "flex", gap: 16, fontSize: 11.5, color: "var(--ink-400)" }}>
+        <div style={{ padding: "10px 16px", borderTop: "1px solid var(--line)", display: "flex", gap: 16, fontSize: "var(--text-2xs)", color: "var(--ink-400)" }}>
           <span><kbd style={{ fontFamily: "monospace" }}>↑↓</kbd> navigera</span>
           <span><kbd style={{ fontFamily: "monospace" }}>↵</kbd> öppna</span>
           <span><kbd style={{ fontFamily: "monospace" }}>ESC</kbd> stäng</span>
@@ -219,8 +219,8 @@ function UserMenu({ user, isCompany, onClose, onLogout }) {
         zIndex: 61, overflow: "hidden",
       }}>
         <div style={{ padding: "14px 16px", borderBottom: "1px solid var(--line)" }}>
-          <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--ink-900)" }}>{user?.name || user?.email}</div>
-          <div style={{ fontSize: 12, color: "var(--ink-400)", marginTop: 2 }}>{isCompany ? "Åkeri-konto" : "Förarkonto"}</div>
+          <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-900)" }}>{user?.name || user?.email}</div>
+          <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-400)", marginTop: 2 }}>{isCompany ? "Åkeri-konto" : "Förarkonto"}</div>
         </div>
         {[
           isCompany
@@ -230,7 +230,7 @@ function UserMenu({ user, isCompany, onClose, onLogout }) {
         ].map(item => (
           <button key={item.path} onClick={() => go(item.path)} style={{
             width: "100%", textAlign: "left", padding: "11px 16px",
-            fontSize: 13.5, color: "var(--ink-900)", fontWeight: 500,
+            fontSize: "var(--text-sm)", color: "var(--ink-900)", fontWeight: 500,
             background: "none", border: "none", cursor: "pointer",
             fontFamily: "inherit", display: "flex", alignItems: "center", gap: 10,
           }}
@@ -244,7 +244,7 @@ function UserMenu({ user, isCompany, onClose, onLogout }) {
         <div style={{ borderTop: "1px solid var(--line)" }}>
           <button onClick={onLogout} style={{
             width: "100%", textAlign: "left", padding: "11px 16px",
-            fontSize: 13.5, color: "var(--danger)", fontWeight: 600,
+            fontSize: "var(--text-sm)", color: "var(--danger)", fontWeight: 600,
             background: "none", border: "none", cursor: "pointer",
             fontFamily: "inherit", display: "flex", alignItems: "center", gap: 10,
           }}
@@ -349,9 +349,9 @@ export default function AppTopNav() {
     <>
       {/* Impersonation banner */}
       {isImpersonating && (
-        <div style={{ background: "var(--amber)", color: "#fff", textAlign: "center", fontSize: 12.5, fontWeight: 700, padding: "6px 16px", display: "flex", alignItems: "center", justifyContent: "center", gap: 12 }}>
+        <div style={{ background: "var(--amber)", color: "#fff", textAlign: "center", fontSize: "var(--text-xs)", fontWeight: 700, padding: "6px 16px", display: "flex", alignItems: "center", justifyContent: "center", gap: 12 }}>
           Visningsläge — du ser plattformen som {user?.name || user?.email}
-          <button onClick={handleStopViewAs} style={{ background: "rgba(0,0,0,0.2)", border: "none", color: "#fff", fontSize: 12, fontWeight: 700, padding: "3px 10px", borderRadius: 6, cursor: "pointer", fontFamily: "inherit" }}>
+          <button onClick={handleStopViewAs} style={{ background: "rgba(0,0,0,0.2)", border: "none", color: "#fff", fontSize: "var(--text-xs)", fontWeight: 700, padding: "3px 10px", borderRadius: 6, cursor: "pointer", fontFamily: "inherit" }}>
             Avsluta visning
           </button>
         </div>
@@ -373,13 +373,13 @@ export default function AppTopNav() {
               width: 28, height: 28, borderRadius: 7,
               background: "var(--green)", color: "#fff",
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontWeight: 900, fontSize: 13,
+              fontWeight: 900, fontSize: "var(--text-sm)",
               boxShadow: "inset 0 -2px 0 rgba(0,0,0,0.25)",
             }}>S</div>
-            <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: 0.5, color: "#e8eded" }}>STP</span>
+            <span style={{ fontWeight: 800, fontSize: "var(--text-lg)", letterSpacing: 0.5, color: "#e8eded" }}>STP</span>
             {isCompany && (
               <span style={{
-                fontSize: 11, color: "rgba(232,237,237,0.5)",
+                fontSize: "var(--text-2xs)", color: "rgba(232,237,237,0.5)",
                 paddingLeft: 8, marginLeft: 4,
                 borderLeft: "1px solid rgba(255,255,255,0.15)",
                 fontWeight: 600, letterSpacing: 0.5,
@@ -398,7 +398,7 @@ export default function AppTopNav() {
                   background: isActive ? "rgba(255,255,255,0.08)" : "transparent",
                   borderRadius: 8, border: "none", cursor: "pointer",
                   color: isActive ? "#fff" : "rgba(232,237,237,0.65)",
-                  fontSize: 13.5, fontWeight: isActive ? 700 : 500,
+                  fontSize: "var(--text-sm)", fontWeight: isActive ? 700 : 500,
                   display: "inline-flex", alignItems: "center", gap: 7,
                   fontFamily: "inherit",
                 }}>
@@ -422,7 +422,7 @@ export default function AppTopNav() {
               padding: "7px 12px", borderRadius: 8,
               background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)",
               color: "rgba(232,237,237,0.65)", display: "inline-flex", alignItems: "center",
-              gap: 8, fontSize: 12.5, cursor: "pointer", fontFamily: "inherit",
+              gap: 8, fontSize: "var(--text-xs)", cursor: "pointer", fontFamily: "inherit",
             }}>
               <Ico n="search" size={14} color="rgba(232,237,237,0.65)" sw={2} />
               Sök
@@ -459,11 +459,11 @@ export default function AppTopNav() {
               <div style={{
                 width: 30, height: 30, borderRadius: "50%",
                 background: "var(--green)", color: "#fff",
-                fontWeight: 800, fontSize: 11,
+                fontWeight: 800, fontSize: "var(--text-2xs)",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 border: "2px solid rgba(255,255,255,0.15)", flexShrink: 0,
               }}>{userInitials}</div>
-              <span style={{ fontSize: 13, color: "#fff", fontWeight: 600, maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <span style={{ fontSize: "var(--text-sm)", color: "#fff", fontWeight: 600, maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {user?.name || user?.email}
               </span>
               <Ico n="chevD" size={12} color="rgba(232,237,237,0.5)" sw={2} />

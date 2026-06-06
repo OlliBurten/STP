@@ -65,7 +65,7 @@ function FilterSelect({ value, onChange, options, placeholder, width = 150 }) {
           width: "100%", padding: "11px 32px 11px 14px",
           background: value ? "var(--green-tint)" : "var(--card)",
           border: `1px solid ${value ? "var(--green)" : "var(--line-2)"}`,
-          borderRadius: 10, fontSize: 13.5, fontWeight: value ? 700 : 500,
+          borderRadius: 10, fontSize: "var(--text-sm)", fontWeight: value ? 700 : 500,
           color: value ? "var(--green-text)" : "var(--ink-900)",
           boxShadow: "var(--sh-sm)", cursor: "pointer",
           fontFamily: "var(--font)", outline: "none",
@@ -124,7 +124,7 @@ function FilterBar({ filters, setFilters, onOpenAll }) {
             style={{
               width: "100%", padding: "11px 16px 11px 42px",
               background: "var(--card)", border: "1px solid var(--line-2)",
-              borderRadius: 10, fontSize: 14, color: "var(--ink-900)",
+              borderRadius: 10, fontSize: "var(--text-base)", color: "var(--ink-900)",
               outline: "none", boxShadow: "var(--sh-sm)",
               fontFamily: "var(--font)", boxSizing: "border-box",
             }}
@@ -150,7 +150,7 @@ function FilterBar({ filters, setFilters, onOpenAll }) {
           display: "inline-flex", alignItems: "center", gap: 7,
           padding: "11px 14px", borderRadius: 10,
           background: "var(--card)", border: "1px solid var(--line-2)",
-          color: "var(--ink-900)", fontSize: 13.5, fontWeight: 600,
+          color: "var(--ink-900)", fontSize: "var(--text-sm)", fontWeight: 600,
           boxShadow: "var(--sh-sm)", cursor: "pointer",
           fontFamily: "var(--font)",
         }}>
@@ -162,19 +162,19 @@ function FilterBar({ filters, setFilters, onOpenAll }) {
       {/* Active filter chips */}
       {activeChips.length > 0 && (
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 14 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-500)", letterSpacing: 1.2, textTransform: "uppercase" }}>Aktiva filter</span>
+          <span style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: "var(--ink-500)", letterSpacing: 1.2, textTransform: "uppercase" }}>Aktiva filter</span>
           {activeChips.map(c => (
             <span key={c.key} style={{
               display: "inline-flex", alignItems: "center", gap: 6,
               padding: "4px 10px", borderRadius: 999,
               background: "var(--green-tint)", color: "var(--green-text)",
-              fontSize: 12, fontWeight: 600,
+              fontSize: "var(--text-xs)", fontWeight: 600,
             }}>
               {c.label}
-              <button onClick={() => clearChip(c.key)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--green-text)", padding: 0, lineHeight: 1, fontSize: 13, fontWeight: 700 }}>×</button>
+              <button onClick={() => clearChip(c.key)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--green-text)", padding: 0, lineHeight: 1, fontSize: "var(--text-sm)", fontWeight: 700 }}>×</button>
             </span>
           ))}
-          <button onClick={clearAll} style={{ fontSize: 12.5, fontWeight: 700, color: "var(--green)", background: "none", border: "none", cursor: "pointer", marginLeft: 4, fontFamily: "var(--font)" }}>Rensa alla</button>
+          <button onClick={clearAll} style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--green)", background: "none", border: "none", cursor: "pointer", marginLeft: 4, fontFamily: "var(--font)" }}>Rensa alla</button>
         </div>
       )}
     </div>
@@ -188,7 +188,7 @@ function Sidebar({ profile }) {
     <aside style={{ display: "flex", flexDirection: "column", gap: 18 }}>
       {/* Sökstatus */}
       <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: "var(--r-lg)", padding: "20px 22px", boxShadow: "var(--sh-sm)" }}>
-        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.3, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 14 }}>Sökstatus</div>
+        <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.3, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 14 }}>Sökstatus</div>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
           <span style={{
             width: 10, height: 10, borderRadius: 5, flexShrink: 0,
@@ -196,16 +196,16 @@ function Sidebar({ profile }) {
             boxShadow: visibleToCompanies ? "0 0 0 3px var(--success-tint)" : "none",
           }} />
           <div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)" }}>
+            <div style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)" }}>
               {visibleToCompanies ? "Synlig för åkerier" : "Dold för åkerier"}
             </div>
-            <div style={{ fontSize: 12, color: "var(--ink-500)", marginTop: 2 }}>Hanteras i din profil</div>
+            <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", marginTop: 2 }}>Hanteras i din profil</div>
           </div>
         </div>
         <Link to="/profil" style={{
           display: "block", width: "100%", padding: "9px 14px", borderRadius: 9,
           background: "var(--card)", border: "1px solid var(--line-2)",
-          color: "var(--ink-700)", fontSize: 13, fontWeight: 600,
+          color: "var(--ink-700)", fontSize: "var(--text-sm)", fontWeight: 600,
           textDecoration: "none", textAlign: "center",
         }}>
           Hantera synlighet
@@ -214,19 +214,19 @@ function Sidebar({ profile }) {
 
       {/* Sparade sökningar */}
       <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: "var(--r-lg)", padding: "20px 22px", boxShadow: "var(--sh-sm)" }}>
-        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.3, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 14 }}>Sparade sökningar</div>
+        <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.3, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 14 }}>Sparade sökningar</div>
         {[
           { label: "CE Skåne, fast", count: 4 },
           { label: "ADR-tjänster",   count: 2 },
         ].map(s => (
           <div key={s.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid var(--line)" }}>
-            <span style={{ fontSize: 13.5, color: "var(--ink-900)", fontWeight: 600 }}>{s.label}</span>
-            <span style={{ display: "inline-flex", alignItems: "center", padding: "3px 9px", borderRadius: 999, background: "var(--green-tint)", color: "var(--green-text)", fontSize: 11, fontWeight: 600 }}>
+            <span style={{ fontSize: "var(--text-sm)", color: "var(--ink-900)", fontWeight: 600 }}>{s.label}</span>
+            <span style={{ display: "inline-flex", alignItems: "center", padding: "3px 9px", borderRadius: 999, background: "var(--green-tint)", color: "var(--green-text)", fontSize: "var(--text-2xs)", fontWeight: 600 }}>
               {s.count} nya
             </span>
           </div>
         ))}
-        <button style={{ marginTop: 12, background: "none", border: "none", padding: 0, fontSize: 13, fontWeight: 700, color: "var(--green)", cursor: "pointer", fontFamily: "var(--font)" }}>
+        <button style={{ marginTop: 12, background: "none", border: "none", padding: 0, fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--green)", cursor: "pointer", fontFamily: "var(--font)" }}>
           + Spara nuvarande sökning
         </button>
       </div>
@@ -243,8 +243,8 @@ function Sidebar({ profile }) {
             <InfoIcon />
           </span>
           <div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)", marginBottom: 4 }}>Tips</div>
-            <p style={{ fontSize: 13, color: "var(--ink-500)", lineHeight: 1.55, margin: 0 }}>
+            <div style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)", marginBottom: 4 }}>Tips</div>
+            <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", lineHeight: 1.55, margin: 0 }}>
               Slå på <strong style={{ color: "var(--ink-900)", fontWeight: 600 }}>"Visa matchning"</strong> för att se hur väl varje jobb passar din profil.
             </p>
           </div>
@@ -426,12 +426,12 @@ export default function JobList() {
       <h3 style={{ fontSize: 17, fontWeight: 700, color: "var(--ink-900)", marginBottom: 6 }}>
         {tabKey === "saved" ? "Inga sparade jobb" : tabKey === "recommended" ? "Inga rekommenderade jobb" : "Inga jobb matchar dina filter"}
       </h3>
-      <p style={{ fontSize: 14, color: "var(--ink-500)", marginBottom: 20 }}>
+      <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", marginBottom: 20 }}>
         {tabKey === "saved"        ? "Spara jobb du är intresserad av med hjärt-ikonen" :
          tabKey === "recommended"  ? "Fyll i körkort, region och tillgänglighet i din profil för att få matchade jobb" :
          "Prova att ta bort något filter eller söka bredare."}
       </p>
-      <button onClick={onReset} style={{ padding: "10px 22px", borderRadius: "var(--r)", background: "var(--paper-2)", border: "1px solid var(--line-2)", color: "var(--ink-700)", fontWeight: 600, cursor: "pointer", fontFamily: "inherit", fontSize: 14 }}>
+      <button onClick={onReset} style={{ padding: "10px 22px", borderRadius: "var(--r)", background: "var(--paper-2)", border: "1px solid var(--line-2)", color: "var(--ink-700)", fontWeight: 600, cursor: "pointer", fontFamily: "inherit", fontSize: "var(--text-base)" }}>
         {tabKey === "recommended" ? "Uppdatera profil" : "Rensa filter"}
       </button>
     </div>
@@ -456,7 +456,7 @@ export default function JobList() {
         <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: -0.8, color: "var(--ink-900)", margin: "0 0 4px" }}>
           {isGymnasieelev ? "Praktikplatser" : "Lediga jobb"}
         </h1>
-        <div style={{ fontSize: 13, color: "var(--ink-500)" }}>
+        <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)" }}>
           {jobsLoading ? "Hämtar…" : `${filteredJobs.length} jobb just nu`}
         </div>
       </div>
@@ -470,7 +470,7 @@ export default function JobList() {
             value={filters.search}
             onChange={e => setFilters(f => ({ ...f, search: e.target.value }))}
             placeholder="Sök jobb eller ort"
-            style={{ width: "100%", padding: "11px 14px 11px 40px", background: "var(--card)", border: "1px solid var(--line-2)", borderRadius: "var(--r-md)", fontSize: 14, outline: "none", color: "var(--ink-900)", fontFamily: "inherit", boxSizing: "border-box", minHeight: 44, boxShadow: "var(--sh-sm)" }}
+            style={{ width: "100%", padding: "11px 14px 11px 40px", background: "var(--card)", border: "1px solid var(--line-2)", borderRadius: "var(--r-md)", fontSize: "var(--text-base)", outline: "none", color: "var(--ink-900)", fontFamily: "inherit", boxSizing: "border-box", minHeight: 44, boxShadow: "var(--sh-sm)" }}
           />
         </div>
         <button
@@ -489,9 +489,9 @@ export default function JobList() {
         ].map(t => {
           const on = tab === t.v;
           return (
-            <button key={t.v} onClick={() => setTab(t.v)} style={{ padding: "7px 14px", borderRadius: 99, background: on ? "var(--green)" : "var(--card)", border: `1px solid ${on ? "var(--green)" : "var(--line-2)"}`, color: on ? "#fff" : "var(--ink-700)", fontSize: 13, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 6, minHeight: 36, fontFamily: "inherit", boxShadow: "var(--sh-sm)" }}>
+            <button key={t.v} onClick={() => setTab(t.v)} style={{ padding: "7px 14px", borderRadius: 99, background: on ? "var(--green)" : "var(--card)", border: `1px solid ${on ? "var(--green)" : "var(--line-2)"}`, color: on ? "#fff" : "var(--ink-700)", fontSize: "var(--text-sm)", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 6, minHeight: 36, fontFamily: "inherit", boxShadow: "var(--sh-sm)" }}>
               {t.l}
-              <span style={{ padding: "1px 7px", borderRadius: 99, background: on ? "rgba(255,255,255,0.2)" : "var(--paper-2)", fontSize: 10.5, fontWeight: 800 }}>{t.c}</span>
+              <span style={{ padding: "1px 7px", borderRadius: 99, background: on ? "rgba(255,255,255,0.2)" : "var(--paper-2)", fontSize: "var(--text-2xs)", fontWeight: 800 }}>{t.c}</span>
             </button>
           );
         })}
@@ -522,12 +522,12 @@ export default function JobList() {
       >
         {FILTER_SECTIONS.map(sec => (
           <div key={sec.key} style={{ marginBottom: 24 }}>
-            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 10 }}>{sec.title}</div>
+            <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 10 }}>{sec.title}</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
               {sec.items.map(item => {
                 const on = mobileFilters[sec.key] === item.v;
                 return (
-                  <button key={item.v} onClick={() => setMobileFilters(f => ({ ...f, [sec.key]: f[sec.key] === item.v ? "" : item.v }))} style={{ padding: "9px 16px", borderRadius: 99, background: on ? "var(--green)" : "var(--card)", border: `1px solid ${on ? "var(--green)" : "var(--line-2)"}`, color: on ? "#fff" : "var(--ink-700)", fontSize: 13, fontWeight: on ? 700 : 500, cursor: "pointer", minHeight: 44, fontFamily: "inherit" }}>
+                  <button key={item.v} onClick={() => setMobileFilters(f => ({ ...f, [sec.key]: f[sec.key] === item.v ? "" : item.v }))} style={{ padding: "9px 16px", borderRadius: 99, background: on ? "var(--green)" : "var(--card)", border: `1px solid ${on ? "var(--green)" : "var(--line-2)"}`, color: on ? "#fff" : "var(--ink-700)", fontSize: "var(--text-sm)", fontWeight: on ? 700 : 500, cursor: "pointer", minHeight: 44, fontFamily: "inherit" }}>
                     {item.l}
                   </button>
                 );
@@ -558,13 +558,13 @@ export default function JobList() {
           {/* Title row */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 16, marginBottom: 24 }}>
             <div>
-              <p style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 10, margin: "0 0 10px" }}>
+              <p style={{ fontSize: "var(--text-2xs)", fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 10, margin: "0 0 10px" }}>
                 {isGymnasieelev ? "Praktikplatser" : "För förare"}
               </p>
-              <h1 style={{ fontSize: 34, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.2, lineHeight: 1.15, marginBottom: 6, margin: "0 0 6px" }}>
+              <h1 style={{ fontSize: "var(--text-5xl)", fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.2, lineHeight: 1.15, marginBottom: 6, margin: "0 0 6px" }}>
                 {isGymnasieelev ? "Praktikplatser" : "Lediga jobb"}
               </h1>
-              <p style={{ fontSize: 14, color: "var(--ink-500)", fontWeight: 500, margin: 0 }}>
+              <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", fontWeight: 500, margin: 0 }}>
                 {jobsLoading ? "Hämtar jobb…" : `${filteredJobs.length} aktiva annonser · Uppdateras dagligen`}
               </p>
             </div>
@@ -573,7 +573,7 @@ export default function JobList() {
               {/* Match toggle */}
               {isDriver && (
                 <label style={{ display: "inline-flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
-                  <span style={{ fontSize: 13, color: "var(--ink-500)", fontWeight: 600 }}>Visa matchning</span>
+                  <span style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", fontWeight: 600 }}>Visa matchning</span>
                   <div onClick={() => setShowMatch(v => !v)} style={{
                     width: 40, height: 22, borderRadius: 11, position: "relative",
                     background: showMatch ? "var(--green)" : "var(--ink-200)",
@@ -606,7 +606,7 @@ export default function JobList() {
                     padding: "7px 14px", borderRadius: 7,
                     background: view === k ? "var(--green)" : "transparent",
                     color: view === k ? "#fff" : "var(--ink-700)",
-                    fontSize: 13, fontWeight: 600,
+                    fontSize: "var(--text-sm)", fontWeight: 600,
                     border: "none", cursor: "pointer",
                     transition: "all .12s",
                     fontFamily: "var(--font)",
@@ -627,7 +627,7 @@ export default function JobList() {
                 <button key={t.k} onClick={() => setTab(t.k)} style={{
                   padding: "12px 20px 14px",
                   position: "relative",
-                  fontFamily: "var(--font)", fontSize: 14,
+                  fontFamily: "var(--font)", fontSize: "var(--text-base)",
                   fontWeight: isActive ? 700 : 500,
                   color: isActive ? "var(--ink-900)" : "var(--ink-500)",
                   display: "inline-flex", alignItems: "center", gap: 8,
@@ -638,7 +638,7 @@ export default function JobList() {
                     padding: "1px 8px", borderRadius: 999,
                     background: isActive ? "var(--green-tint)" : "var(--paper-2)",
                     color: isActive ? "var(--green-text)" : "var(--ink-500)",
-                    fontSize: 11, fontWeight: 800,
+                    fontSize: "var(--text-2xs)", fontWeight: 800,
                   }}>{t.c}</span>
                   {isActive && (
                     <span style={{
@@ -667,20 +667,20 @@ export default function JobList() {
                 <div style={{ padding: "18px 24px", display: "flex", alignItems: "flex-start", gap: 16, justifyContent: "space-between" }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6, flexWrap: "wrap" }}>
-                      <span style={{ fontSize: 14, fontWeight: 700, color: "var(--amber-text)", fontFamily: "var(--mono)" }}>
+                      <span style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--amber-text)", fontFamily: "var(--mono)" }}>
                         Din profil är {profileCompletion.pct}% klar
                       </span>
                     </div>
-                    <p style={{ fontSize: 13, color: "var(--amber-text)", margin: "0 0 12px", lineHeight: 1.5 }}>
+                    <p style={{ fontSize: "var(--text-sm)", color: "var(--amber-text)", margin: "0 0 12px", lineHeight: 1.5 }}>
                       Fyll i din profil så kan åkerier hitta och kontakta dig direkt.
                     </p>
-                    <Link to="/profil" style={{ display: "inline-block", padding: "9px 20px", borderRadius: "var(--r)", background: "var(--amber)", color: "#fff", fontSize: 13, fontWeight: 700, textDecoration: "none" }}>
+                    <Link to="/profil" style={{ display: "inline-block", padding: "9px 20px", borderRadius: "var(--r)", background: "var(--amber)", color: "#fff", fontSize: "var(--text-sm)", fontWeight: 700, textDecoration: "none" }}>
                       Slutför profil →
                     </Link>
                   </div>
                   <button
                     onClick={() => { setBannerDismissed(true); try { sessionStorage.setItem("stp_profile_banner_dismissed","1"); } catch {} }}
-                    style={{ flexShrink: 0, background: "none", border: "none", cursor: "pointer", color: "var(--amber-text)", opacity: 0.5, padding: 4, lineHeight: 1, fontSize: 16 }}
+                    style={{ flexShrink: 0, background: "none", border: "none", cursor: "pointer", color: "var(--amber-text)", opacity: 0.5, padding: 4, lineHeight: 1, fontSize: "var(--text-lg)" }}
                   >✕</button>
                 </div>
               </div>
@@ -695,7 +695,7 @@ export default function JobList() {
 
             {view === "map" ? (
               <div className="stp-fade-up" style={{ paddingTop: 24 }}>
-                <p style={{ fontSize: 14, color: "var(--ink-500)", marginBottom: 16, fontWeight: 500, maxWidth: 560 }}>
+                <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", marginBottom: 16, fontWeight: 500, maxWidth: 560 }}>
                   Klicka på en region för att se lediga jobb där.
                 </p>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 280px", gap: 20, alignItems: "start" }}>
@@ -709,7 +709,7 @@ export default function JobList() {
                   />
                   {/* Region-lista till höger */}
                   <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: "var(--r-lg)", padding: "8px 10px" }}>
-                    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.3, textTransform: "uppercase", color: "var(--ink-500)", padding: "12px 14px 10px" }}>
+                    <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.3, textTransform: "uppercase", color: "var(--ink-500)", padding: "12px 14px 10px" }}>
                       Jobb per region
                     </div>
                     {regionData.map(r => (
@@ -719,10 +719,10 @@ export default function JobList() {
                         onMouseEnter={e => e.currentTarget.style.background = "var(--card-2)"}
                         onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                       >
-                        <span style={{ width: 38, height: 38, borderRadius: 9, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, fontFamily: "var(--mono)", flexShrink: 0 }}>{r.jobs}</span>
+                        <span style={{ width: 38, height: 38, borderRadius: 9, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "var(--text-base)", fontWeight: 800, fontFamily: "var(--mono)", flexShrink: 0 }}>{r.jobs}</span>
                         <span style={{ flex: 1, minWidth: 0 }}>
-                          <span style={{ display: "block", fontSize: 14, fontWeight: 700, color: "var(--ink-900)" }}>{r.name}</span>
-                          <span style={{ display: "block", fontSize: 12, color: "var(--ink-500)", marginTop: 1 }}>
+                          <span style={{ display: "block", fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)" }}>{r.name}</span>
+                          <span style={{ display: "block", fontSize: "var(--text-xs)", color: "var(--ink-500)", marginTop: 1 }}>
                             {r.new > 0 && <span style={{ color: "var(--success)", fontWeight: 600 }}>+{r.new} nya</span>}
                             {r.new > 0 && r.matches > 0 && " · "}
                             {r.matches > 0 && <span style={{ color: "var(--amber-deep)", fontWeight: 600 }}>{r.matches} matchar</span>}

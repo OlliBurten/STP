@@ -67,17 +67,17 @@ function FavJobCard({ job, matchData, onUnsave }) {
       style={{ background: "var(--card)", border: `1px solid ${hovered ? "var(--line-2)" : "var(--line)"}`, borderRadius: "var(--r-lg)", padding: "20px 22px", boxShadow: hovered ? "var(--sh)" : "var(--sh-sm)", opacity: expired ? 0.6 : 1, cursor: "pointer", transition: "box-shadow .15s, border-color .15s" }}
     >
       <div style={{ display: "flex", gap: 14, alignItems: "flex-start", marginBottom: 14 }}>
-        <div style={{ width: 46, height: 46, borderRadius: 11, background: "var(--paper-2)", border: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, color: "var(--ink-700)", flexShrink: 0 }}>
+        <div style={{ width: 46, height: 46, borderRadius: 11, background: "var(--paper-2)", border: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "var(--text-base)", fontWeight: 800, color: "var(--ink-700)", flexShrink: 0 }}>
           {initials}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
-            <h3 style={{ fontSize: 16, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.3, lineHeight: 1.3 }}>{job.title}</h3>
+            <h3 style={{ fontSize: "var(--text-lg)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.3, lineHeight: 1.3 }}>{job.title}</h3>
             <button onClick={(e) => { e.stopPropagation(); onUnsave(job.id); }} style={{ width: 32, height: 32, borderRadius: 8, flexShrink: 0, background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.3)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
               <Icon n="heart" s={14} c="var(--amber-deep)" />
             </button>
           </div>
-          <div style={{ fontSize: 13, color: "var(--ink-500)", marginTop: 3 }}>
+          <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", marginTop: 3 }}>
             <span style={{ fontWeight: 600, color: "var(--ink-700)" }}>{job.company}</span> · {job.location}
           </div>
         </div>
@@ -85,23 +85,23 @@ function FavJobCard({ job, matchData, onUnsave }) {
 
       {/* Pills */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
-        {licenseStr && <span style={{ padding: "3px 9px", borderRadius: 6, background: "var(--green-tint)", border: "1px solid var(--green-tint-2)", color: "var(--green-text)", fontSize: 11.5, fontWeight: 700 }}>{licenseStr}</span>}
-        <span style={{ padding: "3px 9px", borderRadius: 6, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-700)", fontSize: 11.5, fontWeight: 600 }}>{employmentLabel}</span>
-        {job.location && <span style={{ padding: "3px 9px", borderRadius: 6, background: "var(--card-2)", border: "1px solid var(--line)", color: "var(--ink-500)", fontSize: 11.5, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 4 }}><Icon n="pin" s={10} />{job.location}</span>}
+        {licenseStr && <span style={{ padding: "3px 9px", borderRadius: 6, background: "var(--green-tint)", border: "1px solid var(--green-tint-2)", color: "var(--green-text)", fontSize: "var(--text-2xs)", fontWeight: 700 }}>{licenseStr}</span>}
+        <span style={{ padding: "3px 9px", borderRadius: 6, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-700)", fontSize: "var(--text-2xs)", fontWeight: 600 }}>{employmentLabel}</span>
+        {job.location && <span style={{ padding: "3px 9px", borderRadius: 6, background: "var(--card-2)", border: "1px solid var(--line)", color: "var(--ink-500)", fontSize: "var(--text-2xs)", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 4 }}><Icon n="pin" s={10} />{job.location}</span>}
       </div>
 
       {/* Bottom */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 14, borderTop: "1px solid var(--line)" }}>
         <div>
-          {salaryDisplay && <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--ink-900)", fontFamily: "'JetBrains Mono', monospace" }}>{salaryDisplay}</div>}
-          <div style={{ fontSize: 11.5, color: "var(--ink-400)", marginTop: 2 }}>Sparad {relativeTime(job.savedAt)}</div>
+          {salaryDisplay && <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-900)", fontFamily: "'JetBrains Mono', monospace" }}>{salaryDisplay}</div>}
+          <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", marginTop: 2 }}>Sparad {relativeTime(job.savedAt)}</div>
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           {pct != null && (
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 999, background: matchBg, fontSize: 13, fontWeight: 800, fontFamily: "'JetBrains Mono', monospace", color: matchTextColor }}>{pct}%</span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 999, background: matchBg, fontSize: "var(--text-sm)", fontWeight: 800, fontFamily: "'JetBrains Mono', monospace", color: matchTextColor }}>{pct}%</span>
           )}
           {!expired && (
-            <Link to={`/jobb/${job.id}`} style={{ padding: "8px 14px", borderRadius: 9, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: 12, textDecoration: "none", display: "inline-flex", alignItems: "center" }}>
+            <Link to={`/jobb/${job.id}`} style={{ padding: "8px 14px", borderRadius: 9, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: "var(--text-xs)", textDecoration: "none", display: "inline-flex", alignItems: "center" }}>
               Ansök
             </Link>
           )}
@@ -119,13 +119,13 @@ function CompanyCard({ company, onUnsave }) {
     <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, padding: 22, boxShadow: "var(--sh-sm)" }}>
       {/* Header */}
       <div style={{ display: "flex", gap: 14, alignItems: "flex-start", marginBottom: 14 }}>
-        <div style={{ width: 52, height: 52, borderRadius: 13, background: bg, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 16, color: "#fff", flexShrink: 0 }}>
+        <div style={{ width: 52, height: 52, borderRadius: 13, background: bg, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "var(--text-lg)", color: "#fff", flexShrink: 0 }}>
           {initials}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <h3 style={{ fontSize: 16, fontWeight: 800, letterSpacing: -0.3, marginBottom: 3, color: "var(--ink-900)" }}>{company.companyName}</h3>
+          <h3 style={{ fontSize: "var(--text-lg)", fontWeight: 800, letterSpacing: -0.3, marginBottom: 3, color: "var(--ink-900)" }}>{company.companyName}</h3>
           {company.companyLocation && (
-            <div style={{ fontSize: 12.5, color: "var(--ink-500)", display: "inline-flex", alignItems: "center", gap: 5 }}>
+            <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", display: "inline-flex", alignItems: "center", gap: 5 }}>
               <Icon n="pin" s={11} />{company.companyLocation}
             </div>
           )}
@@ -143,7 +143,7 @@ function CompanyCard({ company, onUnsave }) {
       {/* Badges */}
       <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
         {company.verified && (
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 99, background: "var(--success-tint)", border: "1px solid rgba(31,122,58,0.2)", fontSize: 11, fontWeight: 700, color: "var(--success)" }}>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 99, background: "var(--success-tint)", border: "1px solid rgba(31,122,58,0.2)", fontSize: "var(--text-2xs)", fontWeight: 700, color: "var(--success)" }}>
             Verifierat
           </span>
         )}
@@ -154,16 +154,16 @@ function CompanyCard({ company, onUnsave }) {
         {company.openJobs > 0 ? (
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <span style={{ width: 7, height: 7, borderRadius: 99, background: "var(--success)", flexShrink: 0 }} />
-            <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--success)" }}>
+            <span style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--success)" }}>
               {company.openJobs} {company.openJobs === 1 ? "ledigt jobb" : "lediga jobb"}
             </span>
           </div>
         ) : (
-          <span style={{ fontSize: 12, color: "var(--ink-400)" }}>Inga lediga jobb just nu</span>
+          <span style={{ fontSize: "var(--text-xs)", color: "var(--ink-400)" }}>Inga lediga jobb just nu</span>
         )}
         <Link
           to={`/foretag/${company.id}`}
-          style={{ padding: "8px 14px", borderRadius: 9, background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: 12, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5 }}
+          style={{ padding: "8px 14px", borderRadius: 9, background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: "var(--text-xs)", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5 }}
         >
           Se profil <Icon n="arrow" s={11} />
         </Link>
@@ -269,7 +269,7 @@ export default function SavedJobs() {
         {/* Title */}
         <div style={{ padding: "4px 20px 14px", paddingTop: 64 }}>
           <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: -1, marginBottom: 4, color: "var(--ink-900)" }}>Sparat</h1>
-          <div style={{ fontSize: 12.5, color: "var(--ink-500)" }}>Dina sparade jobb och åkerier</div>
+          <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)" }}>Dina sparade jobb och åkerier</div>
         </div>
 
         {/* Sub-tabs */}
@@ -277,9 +277,9 @@ export default function SavedJobs() {
           {mobileTabs.map((t) => {
             const on = tab === t.v;
             return (
-              <button key={t.v} onClick={() => setTab(t.v)} style={{ flex: 1, padding: "12px 0", marginBottom: -1, background: "transparent", border: "none", color: on ? "var(--green-text)" : "var(--ink-400)", fontSize: 14, fontWeight: on ? 800 : 600, cursor: "pointer", borderBottom: on ? "2px solid var(--green)" : "2px solid transparent", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, fontFamily: "inherit" }}>
+              <button key={t.v} onClick={() => setTab(t.v)} style={{ flex: 1, padding: "12px 0", marginBottom: -1, background: "transparent", border: "none", color: on ? "var(--green-text)" : "var(--ink-400)", fontSize: "var(--text-base)", fontWeight: on ? 800 : 600, cursor: "pointer", borderBottom: on ? "2px solid var(--green)" : "2px solid transparent", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, fontFamily: "inherit" }}>
                 {t.l}
-                <span style={{ padding: "1px 7px", borderRadius: 99, background: on ? "var(--green-tint)" : "var(--paper-2)", fontSize: 10.5, fontWeight: 800, color: on ? "var(--green-text)" : "var(--ink-400)" }}>{t.c}</span>
+                <span style={{ padding: "1px 7px", borderRadius: 99, background: on ? "var(--green-tint)" : "var(--paper-2)", fontSize: "var(--text-2xs)", fontWeight: 800, color: on ? "var(--green-text)" : "var(--ink-400)" }}>{t.c}</span>
               </button>
             );
           })}
@@ -288,16 +288,16 @@ export default function SavedJobs() {
         {/* Content */}
         <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 10 }}>
           {isLoading ? (
-            <div style={{ padding: "40px 0", textAlign: "center", color: "var(--ink-400)", fontSize: 14 }}>Hämtar...</div>
+            <div style={{ padding: "40px 0", textAlign: "center", color: "var(--ink-400)", fontSize: "var(--text-base)" }}>Hämtar...</div>
           ) : hasError ? (
-            <div style={{ padding: "12px 16px", borderRadius: 10, background: "rgba(220,38,38,0.06)", border: "1px solid rgba(220,38,38,0.15)", color: "var(--danger)", fontSize: 13 }}>{hasError}</div>
+            <div style={{ padding: "12px 16px", borderRadius: 10, background: "rgba(220,38,38,0.06)", border: "1px solid rgba(220,38,38,0.15)", color: "var(--danger)", fontSize: "var(--text-sm)" }}>{hasError}</div>
           ) : tab === "jobs" ? (
             <>
               {expiredCount > 0 && (
                 <div style={{ padding: "11px 14px", background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.2)", borderRadius: 11, display: "flex", alignItems: "center", gap: 9 }}>
                   <Icon n="alert" s={14} c="var(--amber)"/>
-                  <span style={{ fontSize: 12, color: "var(--ink-700)", flex: 1 }}><strong style={{ color: "var(--amber-text)" }}>{expiredCount} avslutade jobb</strong></span>
-                  <button onClick={handleRemoveExpired} style={{ fontSize: 11.5, color: "var(--amber-text)", fontWeight: 700, background: "transparent", border: "none", cursor: "pointer", fontFamily: "inherit" }}>Ta bort</button>
+                  <span style={{ fontSize: "var(--text-xs)", color: "var(--ink-700)", flex: 1 }}><strong style={{ color: "var(--amber-text)" }}>{expiredCount} avslutade jobb</strong></span>
+                  <button onClick={handleRemoveExpired} style={{ fontSize: "var(--text-2xs)", color: "var(--amber-text)", fontWeight: 700, background: "transparent", border: "none", cursor: "pointer", fontFamily: "inherit" }}>Ta bort</button>
                 </div>
               )}
               {jobs.length === 0 ? (
@@ -305,9 +305,9 @@ export default function SavedJobs() {
                   <div style={{ width: 60, height: 60, margin: "0 auto 16px", borderRadius: 99, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                     <Icon n="star" s={26} c="var(--green)"/>
                   </div>
-                  <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 6, color: "var(--ink-900)" }}>Inga sparade jobb</div>
-                  <div style={{ fontSize: 12.5, color: "var(--ink-500)", marginBottom: 18 }}>Tryck på stjärnan för att spara — så hittar du tillbaka.</div>
-                  <Link to="/jobb" style={{ padding: "11px 20px", borderRadius: 99, background: "var(--green)", color: "#fff", fontSize: 13, fontWeight: 800, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 7 }}>
+                  <div style={{ fontSize: "var(--text-md)", fontWeight: 700, marginBottom: 6, color: "var(--ink-900)" }}>Inga sparade jobb</div>
+                  <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", marginBottom: 18 }}>Tryck på stjärnan för att spara — så hittar du tillbaka.</div>
+                  <Link to="/jobb" style={{ padding: "11px 20px", borderRadius: 99, background: "var(--green)", color: "#fff", fontSize: "var(--text-sm)", fontWeight: 800, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 7 }}>
                     Bläddra jobb <Icon n="arrow" s={13} c="#fff"/>
                   </Link>
                 </div>
@@ -324,20 +324,20 @@ export default function SavedJobs() {
                   <Link key={job.id} to={`/jobb/${job.id}`} style={{ display: "block", textDecoration: "none", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "16px", opacity: expired ? 0.55 : 1, position: "relative", boxShadow: "var(--sh-sm)" }}>
                     {expired && <div style={{ position: "absolute", top: 14, right: 14, padding: "3px 8px", borderRadius: 5, background: "var(--paper-2)", color: "var(--ink-400)", fontSize: 9.5, fontWeight: 800, letterSpacing: 0.4 }}>AVSLUTAD</div>}
                     <div style={{ display: "flex", alignItems: "flex-start", gap: 11, marginBottom: 12 }}>
-                      <div style={{ width: 42, height: 42, borderRadius: 11, background: bg, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 13, color: "#fff", flexShrink: 0 }}>{initials}</div>
+                      <div style={{ width: 42, height: 42, borderRadius: 11, background: bg, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "var(--text-sm)", color: "#fff", flexShrink: 0 }}>{initials}</div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--ink-900)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: 3 }}>{job.title}</div>
-                        <div style={{ fontSize: 12, color: "var(--ink-500)" }}>{job.company}</div>
+                        <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-900)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: 3 }}>{job.title}</div>
+                        <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)" }}>{job.company}</div>
                       </div>
                     </div>
-                    <div style={{ display: "flex", gap: 8, marginBottom: 12, fontSize: 12, color: "var(--ink-500)", flexWrap: "wrap", alignItems: "center" }}>
+                    <div style={{ display: "flex", gap: 8, marginBottom: 12, fontSize: "var(--text-xs)", color: "var(--ink-500)", flexWrap: "wrap", alignItems: "center" }}>
                       {job.location && <span style={{ display: "inline-flex", alignItems: "center", gap: 3 }}><Icon n="pin" s={10}/>{job.location}</span>}
                       {salaryDisplay && <><span style={{ color: "var(--ink-200)" }}>·</span><span>{salaryDisplay}</span></>}
                     </div>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 10, borderTop: "1px solid var(--line)" }}>
-                      <span style={{ fontSize: 11, color: "var(--ink-400)" }}>{relativeTime(job.savedAt)}</span>
+                      <span style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)" }}>{relativeTime(job.savedAt)}</span>
                       <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                        {pct != null && <div style={{ padding: "4px 9px", borderRadius: 7, background: matchBg, color: matchColor, fontSize: 12, fontWeight: 800 }}>{pct}%</div>}
+                        {pct != null && <div style={{ padding: "4px 9px", borderRadius: 7, background: matchBg, color: matchColor, fontSize: "var(--text-xs)", fontWeight: 800 }}>{pct}%</div>}
                         <button
                           onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleUnsaveJob(job.id); }}
                           style={{ width: 34, height: 34, borderRadius: 99, background: "var(--amber-tint)", border: "none", color: "var(--amber)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
@@ -357,9 +357,9 @@ export default function SavedJobs() {
                   <div style={{ width: 60, height: 60, margin: "0 auto 16px", borderRadius: 99, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                     <Icon n="star" s={26} c="var(--green)"/>
                   </div>
-                  <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 6, color: "var(--ink-900)" }}>Inga sparade åkerier</div>
-                  <div style={{ fontSize: 12.5, color: "var(--ink-500)", marginBottom: 18 }}>Tryck på stjärnan för att följa ett åkeri.</div>
-                  <Link to="/akerier" style={{ padding: "11px 20px", borderRadius: 99, background: "var(--green)", color: "#fff", fontSize: 13, fontWeight: 800, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 7 }}>
+                  <div style={{ fontSize: "var(--text-md)", fontWeight: 700, marginBottom: 6, color: "var(--ink-900)" }}>Inga sparade åkerier</div>
+                  <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", marginBottom: 18 }}>Tryck på stjärnan för att följa ett åkeri.</div>
+                  <Link to="/akerier" style={{ padding: "11px 20px", borderRadius: 99, background: "var(--green)", color: "#fff", fontSize: "var(--text-sm)", fontWeight: 800, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 7 }}>
                     Hitta åkerier <Icon n="arrow" s={13} c="#fff"/>
                   </Link>
                 </div>
@@ -369,10 +369,10 @@ export default function SavedJobs() {
                 const name = company.name || company.companyName;
                 return (
                   <Link key={company.id} to={`/akerier/${company.id || company.userId}`} style={{ display: "flex", alignItems: "center", gap: 12, textDecoration: "none", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "16px", boxShadow: "var(--sh-sm)" }}>
-                    <div style={{ width: 48, height: 48, borderRadius: 12, background: bg, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 14, color: "#fff", flexShrink: 0 }}>{initials}</div>
+                    <div style={{ width: 48, height: 48, borderRadius: 12, background: bg, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "var(--text-base)", color: "#fff", flexShrink: 0 }}>{initials}</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)", marginBottom: 3 }}>{name}</div>
-                      <div style={{ fontSize: 11.5, color: "var(--ink-400)" }}>{company.location || company.city || ""}</div>
+                      <div style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)", marginBottom: 3 }}>{name}</div>
+                      <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)" }}>{company.location || company.city || ""}</div>
                     </div>
                     <button
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleUnsaveCompany(company.id); }}
@@ -398,9 +398,9 @@ export default function SavedJobs() {
       {/* Page header */}
       <div style={{ background: "var(--paper)", borderBottom: "1px solid var(--line)", paddingTop: 32, paddingBottom: 12 }}>
         <div style={{ maxWidth: 1040, margin: "0 auto", padding: "0 32px" }}>
-          <p style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 10 }}>För förare</p>
-          <h1 style={{ fontSize: 34, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.2, lineHeight: 1.15, marginBottom: 6 }}>Sparat</h1>
-          <p style={{ fontSize: 14, color: "var(--ink-500)", fontWeight: 500, marginBottom: 24 }}>Jobb och åkerier du sparat för senare.</p>
+          <p style={{ fontSize: "var(--text-2xs)", fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 10 }}>För förare</p>
+          <h1 style={{ fontSize: "var(--text-5xl)", fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.2, lineHeight: 1.15, marginBottom: 6 }}>Sparat</h1>
+          <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", fontWeight: 500, marginBottom: 24 }}>Jobb och åkerier du sparat för senare.</p>
 
           {/* Tab bar */}
           <div style={{ display: "flex", gap: 0, borderBottom: "1px solid var(--line)" }}>
@@ -409,13 +409,13 @@ export default function SavedJobs() {
               return (
                 <button key={k} onClick={() => setTab(k)} style={{
                   padding: "12px 18px 14px", position: "relative",
-                  fontSize: 14, fontWeight: active ? 700 : 500,
+                  fontSize: "var(--text-base)", fontWeight: active ? 700 : 500,
                   color: active ? "var(--ink-900)" : "var(--ink-500)",
                   display: "inline-flex", alignItems: "center", gap: 8,
                   background: "none", border: "none", cursor: "pointer", fontFamily: "inherit",
                 }}>
                   {l}
-                  <span style={{ padding: "1px 8px", borderRadius: 999, background: active ? "var(--green-tint)" : "var(--paper-2)", color: active ? "var(--green-text)" : "var(--ink-500)", fontSize: 11, fontWeight: 800 }}>{c}</span>
+                  <span style={{ padding: "1px 8px", borderRadius: 999, background: active ? "var(--green-tint)" : "var(--paper-2)", color: active ? "var(--green-text)" : "var(--ink-500)", fontSize: "var(--text-2xs)", fontWeight: 800 }}>{c}</span>
                   {active && <span style={{ position: "absolute", left: 18, right: 18, bottom: -1, height: 3, background: "var(--green)", borderRadius: "3px 3px 0 0" }} />}
                 </button>
               );
@@ -433,17 +433,17 @@ export default function SavedJobs() {
             {jobsLoading ? (
               <LoadingBlock message="Hämtar sparade jobb..." />
             ) : jobsError ? (
-              <div style={{ padding: 16, borderRadius: 12, background: "rgba(220,38,38,0.06)", border: "1px solid rgba(220,38,38,0.15)", color: "var(--danger)", fontSize: 14 }}>{jobsError}</div>
+              <div style={{ padding: 16, borderRadius: 12, background: "rgba(220,38,38,0.06)", border: "1px solid rgba(220,38,38,0.15)", color: "var(--danger)", fontSize: "var(--text-base)" }}>{jobsError}</div>
             ) : jobs.length === 0 ? (
               <div style={{ background: "var(--card)", border: "1px dashed var(--line-2)", borderRadius: 18, padding: "60px 40px", textAlign: "center", boxShadow: "var(--sh-sm)" }}>
                 <div style={{ width: 64, height: 64, margin: "0 auto 18px", borderRadius: 99, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <Icon n="heart" s={28} c="var(--green)" />
                 </div>
-                <div style={{ fontSize: 18, fontWeight: 800, color: "var(--ink-900)", marginBottom: 8 }}>Inga sparade jobb än</div>
-                <p style={{ fontSize: 13.5, color: "var(--ink-500)", maxWidth: 380, margin: "0 auto 22px", lineHeight: 1.5 }}>
+                <div style={{ fontSize: "var(--text-xl)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 8 }}>Inga sparade jobb än</div>
+                <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", maxWidth: 380, margin: "0 auto 22px", lineHeight: 1.5 }}>
                   Klicka på ♡-ikonen på ett jobb för att spara det här. Du får notiser om statusändringar.
                 </p>
-                <Link to="/jobb" style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "12px 22px", borderRadius: 99, background: "var(--green)", color: "#fff", fontSize: 13, fontWeight: 800, textDecoration: "none" }}>
+                <Link to="/jobb" style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "12px 22px", borderRadius: 99, background: "var(--green)", color: "#fff", fontSize: "var(--text-sm)", fontWeight: 800, textDecoration: "none" }}>
                   Bläddra jobb <Icon n="arrow" s={13} c="#fff" />
                 </Link>
               </div>
@@ -451,7 +451,7 @@ export default function SavedJobs() {
               <>
                 {/* Expired banner */}
                 {expiredCount > 0 && (
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.2)", borderRadius: 11, marginBottom: 18, fontSize: 12.5 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.2)", borderRadius: 11, marginBottom: 18, fontSize: "var(--text-xs)" }}>
                     <Icon n="alert" s={14} c="var(--amber)" />
                     <span style={{ color: "var(--ink-700)" }}>
                       <strong style={{ color: "var(--amber-text)" }}>{expiredCount} {expiredCount === 1 ? "sparat jobb" : "sparade jobb"}</strong> {expiredCount === 1 ? "har avslutats" : "har avslutats"}. Vill du städa upp?
@@ -459,7 +459,7 @@ export default function SavedJobs() {
                     <button
                       type="button"
                       onClick={handleRemoveExpired}
-                      style={{ marginLeft: "auto", fontSize: 12, fontWeight: 700, color: "var(--amber-text)", cursor: "pointer", background: "none", border: "none", fontFamily: "inherit" }}
+                      style={{ marginLeft: "auto", fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--amber-text)", cursor: "pointer", background: "none", border: "none", fontFamily: "inherit" }}
                     >
                       Ta bort avslutade
                     </button>
@@ -489,17 +489,17 @@ export default function SavedJobs() {
             {companiesLoading ? (
               <LoadingBlock message="Hämtar åkerier..." />
             ) : companiesError ? (
-              <div style={{ padding: 16, borderRadius: 12, background: "rgba(220,38,38,0.06)", border: "1px solid rgba(220,38,38,0.15)", color: "var(--danger)", fontSize: 14 }}>{companiesError}</div>
+              <div style={{ padding: 16, borderRadius: 12, background: "rgba(220,38,38,0.06)", border: "1px solid rgba(220,38,38,0.15)", color: "var(--danger)", fontSize: "var(--text-base)" }}>{companiesError}</div>
             ) : companies.length === 0 ? (
               <div style={{ background: "var(--card)", border: "1px dashed var(--line-2)", borderRadius: 18, padding: "60px 40px", textAlign: "center", boxShadow: "var(--sh-sm)" }}>
                 <div style={{ width: 64, height: 64, margin: "0 auto 18px", borderRadius: 99, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <Icon n="heart" s={28} c="var(--green)" />
                 </div>
-                <div style={{ fontSize: 18, fontWeight: 800, color: "var(--ink-900)", marginBottom: 8 }}>Inga favoritmarkerade åkerier än</div>
-                <p style={{ fontSize: 13.5, color: "var(--ink-500)", maxWidth: 380, margin: "0 auto 22px", lineHeight: 1.5 }}>
+                <div style={{ fontSize: "var(--text-xl)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 8 }}>Inga favoritmarkerade åkerier än</div>
+                <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", maxWidth: 380, margin: "0 auto 22px", lineHeight: 1.5 }}>
                   Klicka på ♡-ikonen på ett åkeri för att spara det här. Du får notiser om nya jobb.
                 </p>
-                <Link to="/akerier" style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "12px 22px", borderRadius: 99, background: "var(--green)", color: "#fff", fontSize: 13, fontWeight: 800, textDecoration: "none" }}>
+                <Link to="/akerier" style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "12px 22px", borderRadius: 99, background: "var(--green)", color: "#fff", fontSize: "var(--text-sm)", fontWeight: 800, textDecoration: "none" }}>
                   Bläddra åkerier <Icon n="arrow" s={13} c="#fff" />
                 </Link>
               </div>

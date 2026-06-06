@@ -68,9 +68,9 @@ export const Pill = ({ tone = "neutral", children, icon, onRemove, size = "md" }
   };
   const s = tones[tone] || tones.neutral;
   const sizes = {
-    sm: { padding: "3px 9px", fontSize: 11.5 },
-    md: { padding: "4px 11px", fontSize: 12.5 },
-    lg: { padding: "5px 13px", fontSize: 13 },
+    sm: { padding: "3px 9px", fontSize: "var(--text-2xs)" },
+    md: { padding: "4px 11px", fontSize: "var(--text-xs)" },
+    lg: { padding: "5px 13px", fontSize: "var(--text-sm)" },
   };
   const sz = sizes[size];
   return (
@@ -84,7 +84,7 @@ export const Pill = ({ tone = "neutral", children, icon, onRemove, size = "md" }
       {icon}
       {children}
       {onRemove && (
-        <button onClick={onRemove} style={{ color: "inherit", opacity: 0.75, marginLeft: 2, fontSize: 14, lineHeight: 1 }}>×</button>
+        <button onClick={onRemove} style={{ color: "inherit", opacity: 0.75, marginLeft: 2, fontSize: "var(--text-base)", lineHeight: 1 }}>×</button>
       )}
     </span>
   );
@@ -114,9 +114,9 @@ export const Button = ({ children, variant = "primary", size = "md", icon, iconR
     link: { bg: "transparent", color: "var(--green)", border: "1px solid transparent" },
   };
   const sizes = {
-    sm: { padding: "6px 12px", fontSize: 12.5, height: 32, radius: 7 },
-    md: { padding: "9px 18px", fontSize: 14, height: 40, radius: 9 },
-    lg: { padding: "12px 22px", fontSize: 15, height: 46, radius: 10 },
+    sm: { padding: "6px 12px", fontSize: "var(--text-xs)", height: 32, radius: 7 },
+    md: { padding: "9px 18px", fontSize: "var(--text-base)", height: 40, radius: 9 },
+    lg: { padding: "12px 22px", fontSize: "var(--text-md)", height: 46, radius: 10 },
   };
   const v = variants[variant], sz = sizes[size];
   return (
@@ -161,7 +161,7 @@ export const Card = ({ children, padding = "26px 28px", style, className = "" })
 /* ────── SectionLabel ────── */
 export const SectionLabel = ({ children, accessory, style }) => (
   <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, ...style }}>
-    <h3 style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.4, textTransform: "uppercase", color: "var(--ink-500)" }}>{children}</h3>
+    <h3 style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.4, textTransform: "uppercase", color: "var(--ink-500)" }}>{children}</h3>
     {accessory}
   </header>
 );
@@ -170,8 +170,8 @@ export const SectionLabel = ({ children, accessory, style }) => (
 export const Field = ({ label, value, mono, action }) => (
   <div style={{ padding: "12px 0", borderBottom: "1px solid var(--line)", display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 12 }}>
     <div style={{ flex: 1, minWidth: 0 }}>
-      <p style={{ fontSize: 11, color: "var(--ink-500)", marginBottom: 4, letterSpacing: 0.3, fontWeight: 500 }}>{label}</p>
-      <p style={{ fontSize: 15, color: "var(--ink-900)", fontWeight: 600, fontFamily: mono ? "var(--mono)" : "var(--font)", overflow: "hidden", textOverflow: "ellipsis" }}>{value || "—"}</p>
+      <p style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", marginBottom: 4, letterSpacing: 0.3, fontWeight: 500 }}>{label}</p>
+      <p style={{ fontSize: "var(--text-md)", color: "var(--ink-900)", fontWeight: 600, fontFamily: mono ? "var(--mono)" : "var(--font)", overflow: "hidden", textOverflow: "ellipsis" }}>{value || "—"}</p>
     </div>
     {action}
   </div>
@@ -186,7 +186,7 @@ export const Tabs = ({ value, onChange, items, style }) => (
       const isActive = value === id;
       return (
         <button key={id} onClick={() => onChange(id)} style={{
-          position: "relative", padding: "16px 20px", fontSize: 14,
+          position: "relative", padding: "16px 20px", fontSize: "var(--text-base)",
           fontWeight: isActive ? 700 : 500,
           color: isActive ? "var(--ink-900)" : "var(--ink-500)",
           textTransform: "capitalize",
@@ -209,10 +209,10 @@ export const TopNav = ({ items, active, onActive, currentUser, brand = "STP", br
   <nav style={{ background: "var(--ink-900)", color: "#e8eded", borderBottom: "1px solid #000", position: sticky ? "sticky" : "relative", top: 0, zIndex: 50 }}>
     <div className="stp-topnav-inner" style={{ maxWidth: 1240, margin: "0 auto", padding: "0 32px", height: 60, display: "flex", alignItems: "center", gap: 8 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginRight: 28 }}>
-        <div style={{ width: 28, height: 28, borderRadius: 7, background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 13, color: "#fff", boxShadow: "inset 0 -2px 0 rgba(0,0,0,0.25)" }}>S</div>
-        <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: 0.5 }}>{brand}</span>
+        <div style={{ width: 28, height: 28, borderRadius: 7, background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--text-sm)", color: "#fff", boxShadow: "inset 0 -2px 0 rgba(0,0,0,0.25)" }}>S</div>
+        <span style={{ fontWeight: 800, fontSize: "var(--text-lg)", letterSpacing: 0.5 }}>{brand}</span>
         {brandSub && (
-          <span style={{ fontSize: 11, color: "rgba(232,237,237,0.5)", paddingLeft: 8, marginLeft: 4, borderLeft: "1px solid rgba(255,255,255,0.15)", fontWeight: 600, letterSpacing: 0.5 }}>{brandSub}</span>
+          <span style={{ fontSize: "var(--text-2xs)", color: "rgba(232,237,237,0.5)", paddingLeft: 8, marginLeft: 4, borderLeft: "1px solid rgba(255,255,255,0.15)", fontWeight: 600, letterSpacing: 0.5 }}>{brandSub}</span>
         )}
       </div>
 
@@ -225,7 +225,7 @@ export const TopNav = ({ items, active, onActive, currentUser, brand = "STP", br
               background: isActive ? "rgba(255,255,255,0.08)" : "transparent",
               borderRadius: 8,
               color: isActive ? "#fff" : "rgba(232,237,237,0.65)",
-              fontSize: 13.5, fontWeight: isActive ? 700 : 500,
+              fontSize: "var(--text-sm)", fontWeight: isActive ? 700 : 500,
               display: "inline-flex", alignItems: "center", gap: 7,
             }}>
               {it.label}
@@ -243,8 +243,8 @@ export const TopNav = ({ items, active, onActive, currentUser, brand = "STP", br
         <>
           <div style={{ width: 1, height: 22, background: "rgba(255,255,255,0.1)", margin: "0 6px" }} />
           <button style={{ display: "flex", alignItems: "center", gap: 9, padding: "4px 6px", borderRadius: 8 }}>
-            <div style={{ width: 30, height: 30, borderRadius: "50%", background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: 11, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid rgba(255,255,255,0.15)" }}>{currentUser.initials}</div>
-            <span className="stp-topnav-userlabel" style={{ fontSize: 13, color: "#fff", fontWeight: 600 }}>{currentUser.label}</span>
+            <div style={{ width: 30, height: 30, borderRadius: "50%", background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: "var(--text-2xs)", display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid rgba(255,255,255,0.15)" }}>{currentUser.initials}</div>
+            <span className="stp-topnav-userlabel" style={{ fontSize: "var(--text-sm)", color: "#fff", fontWeight: 600 }}>{currentUser.label}</span>
           </button>
         </>
       )}
@@ -258,7 +258,7 @@ export const TopNav = ({ items, active, onActive, currentUser, brand = "STP", br
         return (
           <button key={it.id} onClick={() => onActive?.(it.id)} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "4px 2px", background: "transparent", position: "relative" }}>
             <Icon name={ic} size={20} color={isActive ? "var(--amber)" : "rgba(232,237,237,0.6)"} stroke={2} />
-            <span style={{ fontSize: 10.5, fontWeight: isActive ? 700 : 500, color: isActive ? "#fff" : "rgba(232,237,237,0.6)", whiteSpace: "nowrap" }}>{it.label}</span>
+            <span style={{ fontSize: "var(--text-2xs)", fontWeight: isActive ? 700 : 500, color: isActive ? "#fff" : "rgba(232,237,237,0.6)", whiteSpace: "nowrap" }}>{it.label}</span>
             {it.badge != null && <span style={{ position: "absolute", top: -1, left: "calc(50% + 6px)", background: "var(--amber)", color: "#fff", fontSize: 9, fontWeight: 800, padding: "0 5px", borderRadius: 7, lineHeight: 1.5 }}>{it.badge}</span>}
           </button>
         );
@@ -281,13 +281,13 @@ export const Container = ({ children, maxWidth = 1240, style, padding = "32px 32
 /* ────── Input ────── */
 export const Input = ({ label, hint, error, icon, type = "text", ...rest }) => (
   <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-    {label && <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--ink-700)", letterSpacing: 0.1 }}>{label}</span>}
+    {label && <span style={{ fontSize: "var(--text-xs)", fontWeight: 600, color: "var(--ink-700)", letterSpacing: 0.1 }}>{label}</span>}
     <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 12px", background: "#fff", border: `1px solid ${error ? "var(--danger)" : "var(--line-2)"}`, borderRadius: 9, height: 42, boxShadow: "var(--sh-sm)" }}>
       {icon}
-      <input type={type} {...rest} style={{ flex: 1, height: "100%", border: "none", outline: "none", background: "transparent", fontSize: 14.5, color: "var(--ink-900)", fontFamily: "var(--font)" }} />
+      <input type={type} {...rest} style={{ flex: 1, height: "100%", border: "none", outline: "none", background: "transparent", fontSize: "var(--text-base)", color: "var(--ink-900)", fontFamily: "var(--font)" }} />
     </div>
-    {hint && !error && <span style={{ fontSize: 12, color: "var(--ink-500)" }}>{hint}</span>}
-    {error && <span style={{ fontSize: 12, color: "var(--danger)", fontWeight: 600 }}>{error}</span>}
+    {hint && !error && <span style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)" }}>{hint}</span>}
+    {error && <span style={{ fontSize: "var(--text-xs)", color: "var(--danger)", fontWeight: 600 }}>{error}</span>}
   </label>
 );
 
@@ -307,10 +307,10 @@ export const Stat = ({ value, label, tone = "ink", mono = true, trend }) => {
   };
   return (
     <div>
-      <div style={{ fontSize: 28, fontWeight: 800, lineHeight: 1.1, color: colors[tone], letterSpacing: -0.5, fontFamily: mono ? "var(--mono)" : "var(--font)" }}>{value}</div>
-      <div style={{ fontSize: 12, color: "var(--ink-500)", marginTop: 5, fontWeight: 600, letterSpacing: 0.2, textTransform: "uppercase" }}>{label}</div>
+      <div style={{ fontSize: "var(--text-4xl)", fontWeight: 800, lineHeight: 1.1, color: colors[tone], letterSpacing: -0.5, fontFamily: mono ? "var(--mono)" : "var(--font)" }}>{value}</div>
+      <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", marginTop: 5, fontWeight: 600, letterSpacing: 0.2, textTransform: "uppercase" }}>{label}</div>
       {trend && (
-        <div style={{ fontSize: 12, color: trend.startsWith("+") ? "var(--success)" : "var(--danger)", marginTop: 3, fontWeight: 600 }}>{trend}</div>
+        <div style={{ fontSize: "var(--text-xs)", color: trend.startsWith("+") ? "var(--success)" : "var(--danger)", marginTop: 3, fontWeight: 600 }}>{trend}</div>
       )}
     </div>
   );
@@ -329,7 +329,7 @@ export const Notice = ({ tone = "info", title, children, action, icon }) => {
   return (
     <div style={{ display: "flex", gap: 12, alignItems: "flex-start", padding: "14px 16px", background: s.bg, border: `1px solid ${s.border}`, borderRadius: 11 }}>
       {icon !== false && <Icon name={s.iconName} size={18} color={s.color} stroke={1.8} style={{ flexShrink: 0, marginTop: 1 }} />}
-      <div style={{ flex: 1, fontSize: 13.5, lineHeight: 1.5, color: "var(--ink-700)" }}>
+      <div style={{ flex: 1, fontSize: "var(--text-sm)", lineHeight: 1.5, color: "var(--ink-700)" }}>
         {title && <div style={{ fontWeight: 700, color: "var(--ink-900)", marginBottom: 2 }}>{title}</div>}
         {children}
       </div>

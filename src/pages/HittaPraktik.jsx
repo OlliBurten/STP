@@ -52,25 +52,25 @@ export default function HittaPraktik() {
 
       {/* Hero */}
       <section style={{ padding: "80px 24px 64px", maxWidth: 760, margin: "0 auto", textAlign: "center" }}>
-        <div style={{ display: "inline-block", fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--green-text)", marginBottom: 20 }}>
+        <div style={{ display: "inline-block", fontSize: "var(--text-xs)", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--green-text)", marginBottom: 20 }}>
           För elever & praktikanter
         </div>
         <h1 style={{ fontSize: "clamp(28px, 5vw, 48px)", fontWeight: 900, color: "var(--ink-900)", lineHeight: 1.1, letterSpacing: "-1px", margin: "0 0 20px" }}>
           Hitta din praktikplats<br />inom transport
         </h1>
-        <p style={{ fontSize: 18, color: "var(--ink-500)", lineHeight: 1.7, maxWidth: 560, margin: "0 auto 36px" }}>
+        <p style={{ fontSize: "var(--text-xl)", color: "var(--ink-500)", lineHeight: 1.7, maxWidth: 560, margin: "0 auto 36px" }}>
           STP kopplar ihop dig som studerar lastbil eller transport med åkerier som faktiskt tar emot praktikanter — i hela Sverige.
         </p>
         <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
           <Link
             to="/login?mode=register&role=driver"
-            style={{ display: "inline-block", padding: "14px 28px", borderRadius: 12, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: 15, textDecoration: "none" }}
+            style={{ display: "inline-block", padding: "14px 28px", borderRadius: 12, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: "var(--text-md)", textDecoration: "none" }}
           >
             Skapa gratis profil →
           </Link>
           <Link
             to="/akerier?praktik=true"
-            style={{ display: "inline-block", padding: "14px 28px", borderRadius: 12, background: "transparent", border: "1px solid var(--line)", color: "var(--ink-700)", fontWeight: 600, fontSize: 15, textDecoration: "none" }}
+            style={{ display: "inline-block", padding: "14px 28px", borderRadius: 12, background: "transparent", border: "1px solid var(--line)", color: "var(--ink-700)", fontWeight: 600, fontSize: "var(--text-md)", textDecoration: "none" }}
           >
             Se åkerier med praktikplats
           </Link>
@@ -86,9 +86,9 @@ export default function HittaPraktik() {
             { icon: "🚛", label: "Söker APL", body: "Arbetsplatsförlagt lärande (APL) som kräver ett godkänt åkeri — vi hjälper dig hitta rätt." },
           ].map((c) => (
             <div key={c.label} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "20px 18px" }}>
-              <div style={{ fontSize: 24, marginBottom: 10 }}>{c.icon}</div>
-              <div style={{ fontWeight: 700, color: "var(--ink-900)", fontSize: 14, marginBottom: 6 }}>{c.label}</div>
-              <div style={{ fontSize: 13, color: "var(--ink-500)", lineHeight: 1.6 }}>{c.body}</div>
+              <div style={{ fontSize: "var(--text-3xl)", marginBottom: 10 }}>{c.icon}</div>
+              <div style={{ fontWeight: 700, color: "var(--ink-900)", fontSize: "var(--text-base)", marginBottom: 6 }}>{c.label}</div>
+              <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", lineHeight: 1.6 }}>{c.body}</div>
             </div>
           ))}
         </div>
@@ -100,10 +100,10 @@ export default function HittaPraktik() {
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {STEPS.map((s) => (
             <div key={s.n} style={{ display: "flex", gap: 20, alignItems: "flex-start", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "20px 22px" }}>
-              <span style={{ fontSize: 13, fontWeight: 800, color: "var(--green-text)", background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.2)", borderRadius: 8, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{s.n}</span>
+              <span style={{ fontSize: "var(--text-sm)", fontWeight: 800, color: "var(--green-text)", background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.2)", borderRadius: 8, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{s.n}</span>
               <div>
-                <div style={{ fontWeight: 700, color: "var(--ink-900)", fontSize: 15, marginBottom: 4 }}>{s.title}</div>
-                <div style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.6 }}>{s.body}</div>
+                <div style={{ fontWeight: 700, color: "var(--ink-900)", fontSize: "var(--text-md)", marginBottom: 4 }}>{s.title}</div>
+                <div style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.6 }}>{s.body}</div>
               </div>
             </div>
           ))}
@@ -113,7 +113,7 @@ export default function HittaPraktik() {
       {/* Varför STP */}
       <section style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px 72px" }}>
         <div style={{ background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.2)", borderRadius: 16, padding: "32px 28px" }}>
-          <h2 style={{ fontSize: 18, fontWeight: 800, color: "var(--green-text)", margin: "0 0 20px" }}>Varför STP istället för att ringa runt?</h2>
+          <h2 style={{ fontSize: "var(--text-xl)", fontWeight: 800, color: "var(--green-text)", margin: "0 0 20px" }}>Varför STP istället för att ringa runt?</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             {[
               { text: "Du ser direkt vilka åkerier som är öppna för praktikanter — filtrera på region och segment." },
@@ -123,7 +123,7 @@ export default function HittaPraktik() {
             ].map((r) => (
               <div key={r.text} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
                 <span style={{ color: "var(--green-text)", fontWeight: 700, flexShrink: 0, marginTop: 1 }}>✓</span>
-                <span style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.6 }}>{r.text}</span>
+                <span style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.6 }}>{r.text}</span>
               </div>
             ))}
           </div>
@@ -136,8 +136,8 @@ export default function HittaPraktik() {
         <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
           {FAQ.map((f) => (
             <div key={f.q} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, padding: "16px 20px" }}>
-              <div style={{ fontWeight: 700, color: "var(--ink-900)", fontSize: 14, marginBottom: 6 }}>{f.q}</div>
-              <div style={{ fontSize: 13, color: "var(--ink-500)", lineHeight: 1.65 }}>{f.a}</div>
+              <div style={{ fontWeight: 700, color: "var(--ink-900)", fontSize: "var(--text-base)", marginBottom: 6 }}>{f.q}</div>
+              <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", lineHeight: 1.65 }}>{f.a}</div>
             </div>
           ))}
         </div>
@@ -145,11 +145,11 @@ export default function HittaPraktik() {
 
       {/* CTA */}
       <section style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px 100px", textAlign: "center" }}>
-        <h2 style={{ fontSize: 24, fontWeight: 800, color: "var(--ink-900)", marginBottom: 12 }}>Redo att hitta din praktikplats?</h2>
-        <p style={{ fontSize: 15, color: "var(--ink-500)", marginBottom: 28 }}>Gratis. Tar 3 minuter. Inget kreditkort.</p>
+        <h2 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 12 }}>Redo att hitta din praktikplats?</h2>
+        <p style={{ fontSize: "var(--text-md)", color: "var(--ink-500)", marginBottom: 28 }}>Gratis. Tar 3 minuter. Inget kreditkort.</p>
         <Link
           to="/login?mode=register&role=driver"
-          style={{ display: "inline-block", padding: "15px 32px", borderRadius: 12, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: 16, textDecoration: "none" }}
+          style={{ display: "inline-block", padding: "15px 32px", borderRadius: 12, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: "var(--text-lg)", textDecoration: "none" }}
         >
           Skapa din profil nu →
         </Link>

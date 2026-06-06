@@ -50,10 +50,10 @@ export default function Footer() {
             <Link to="/" className="inline-block mb-5">
               <Logo height={32} variant="light" />
             </Link>
-            <p style={{ fontSize: 14, color: "rgba(255,255,255,0.5)", lineHeight: 1.7, maxWidth: 260, marginBottom: 16 }}>
+            <p style={{ fontSize: "var(--text-base)", color: "rgba(255,255,255,0.5)", lineHeight: 1.7, maxWidth: 260, marginBottom: 16 }}>
               Sveriges matchningsplattform för yrkesförare och transportföretag. Direkt kontakt utan mellanhänder.
             </p>
-            <a href="mailto:hello@transportplattformen.se" style={{ fontSize: 13, color: "rgba(255,255,255,0.6)" }} className="hover:text-white transition-colors">
+            <a href="mailto:hello@transportplattformen.se" style={{ fontSize: "var(--text-sm)", color: "rgba(255,255,255,0.6)" }} className="hover:text-white transition-colors">
               hello@transportplattformen.se
             </a>
           </div>
@@ -61,12 +61,12 @@ export default function Footer() {
           {/* Link columns */}
           {COLS.map((col) => (
             <div key={col.heading}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 20 }}>
+              <div style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 20 }}>
                 {col.heading}
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 {col.links.map((link) => (
-                  <Link key={link.label} to={link.to} style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", textDecoration: "none" }} className="hover:text-white transition-colors">
+                  <Link key={link.label} to={link.to} style={{ fontSize: "var(--text-base)", color: "rgba(255,255,255,0.6)", textDecoration: "none" }} className="hover:text-white transition-colors">
                     {link.label}
                   </Link>
                 ))}
@@ -77,12 +77,12 @@ export default function Footer() {
 
         {/* City links */}
         <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 32, marginBottom: 24 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 16 }}>
+          <div style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 16 }}>
             CE-jobb per stad
           </div>
           <div className="flex flex-wrap" style={{ gap: "8px 24px" }}>
             {cityPages.map((c) => (
-              <Link key={c.slug} to={`/ce-jobb/${c.slug}`} style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", textDecoration: "none" }} className="hover:text-white transition-colors">
+              <Link key={c.slug} to={`/ce-jobb/${c.slug}`} style={{ fontSize: "var(--text-sm)", color: "rgba(255,255,255,0.45)", textDecoration: "none" }} className="hover:text-white transition-colors">
                 {c.name}
               </Link>
             ))}
@@ -91,12 +91,12 @@ export default function Footer() {
 
         {/* Region links */}
         <div style={{ marginBottom: 32 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 16 }}>
+          <div style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 16 }}>
             Lastbilsjobb per region
           </div>
           <div className="flex flex-wrap" style={{ gap: "8px 24px" }}>
             {regionPages.map((r) => (
-              <Link key={r.slug} to={`/lastbilsjobb/${r.slug}`} style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", textDecoration: "none" }} className="hover:text-white transition-colors">
+              <Link key={r.slug} to={`/lastbilsjobb/${r.slug}`} style={{ fontSize: "var(--text-sm)", color: "rgba(255,255,255,0.45)", textDecoration: "none" }} className="hover:text-white transition-colors">
                 {r.name}
               </Link>
             ))}
@@ -106,10 +106,10 @@ export default function Footer() {
         {/* Bottom bar */}
         <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 28, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
           <div>
-            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>
+            <p style={{ fontSize: "var(--text-xs)", color: "rgba(255,255,255,0.4)" }}>
               © {new Date().getFullYear()} Sveriges Transportplattform AB
             </p>
-            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.28)", marginTop: 4 }}>
+            <p style={{ fontSize: "var(--text-xs)", color: "rgba(255,255,255,0.28)", marginTop: 4 }}>
               Datapunkter baseras på TYA Trendindikator Åkeri 2025/2026.
             </p>
           </div>
@@ -119,7 +119,7 @@ export default function Footer() {
               { to: "/anvandarvillkor", label: "Villkor" },
               { to: "/uppdateringar", label: `v${CURRENT_VERSION}` },
             ].map((l) => (
-              <Link key={l.label} to={l.to} style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", textDecoration: "none" }} className="hover:text-white/60 transition-colors">
+              <Link key={l.label} to={l.to} style={{ fontSize: "var(--text-xs)", color: "rgba(255,255,255,0.3)", textDecoration: "none" }} className="hover:text-white/60 transition-colors">
                 {l.label}
               </Link>
             ))}

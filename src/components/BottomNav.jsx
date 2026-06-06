@@ -114,7 +114,7 @@ export default function BottomNav() {
               )}
             </div>
             <span style={{
-              fontSize: 10.5,
+              fontSize: "var(--text-2xs)",
               fontWeight: on ? 800 : 600,
               color: on ? "var(--green)" : "var(--ink-400)",
               letterSpacing: 0.1,

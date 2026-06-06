@@ -35,10 +35,10 @@ export default function VerifyEmail() {
     <main style={{ background: "var(--paper)", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "80px 16px" }}>
       <div style={{ width: "100%", maxWidth: 420 }}>
         <div style={{ ...statusStyle, borderRadius: 16, padding: "24px 28px" }}>
-          <h1 style={{ fontSize: 18, fontWeight: 700, margin: "0 0 8px", color: "var(--ink-900)" }}>E-postverifiering</h1>
-          <p style={{ fontSize: 14, margin: 0, opacity: 0.85 }}>{message}</p>
+          <h1 style={{ fontSize: "var(--text-xl)", fontWeight: 700, margin: "0 0 8px", color: "var(--ink-900)" }}>E-postverifiering</h1>
+          <p style={{ fontSize: "var(--text-base)", margin: 0, opacity: 0.85 }}>{message}</p>
         </div>
-        <Link to="/login" style={{ display: "inline-block", marginTop: 24, fontSize: 14, color: "var(--green-text)", textDecoration: "none" }}>
+        <Link to="/login" style={{ display: "inline-block", marginTop: 24, fontSize: "var(--text-base)", color: "var(--green-text)", textDecoration: "none" }}>
           Till login
         </Link>
       </div>

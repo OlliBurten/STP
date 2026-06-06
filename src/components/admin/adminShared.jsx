@@ -31,7 +31,7 @@ export const INP = {
   borderRadius: 10,
   color: "var(--ink-900)",
   padding: "9px 12px",
-  fontSize: 13,
+  fontSize: "var(--text-sm)",
   outline: "none",
   width: "100%",
   boxSizing: "border-box",
@@ -122,7 +122,7 @@ export function KpiCard({ label, value, sub, urgent, teal, onClick }) {
         color: urgent ? T.amber : (teal ? T.tealBright : T.muted), marginBottom: 6 }}>{label}</p>
       <p style={{ fontSize: 26, fontWeight: 800, letterSpacing: -0.5, margin: "0 0 4px",
         color: urgent ? T.amber : (teal ? T.tealBright : T.text) }}>{value}</p>
-      {sub && <p style={{ fontSize: 11, color: T.muted, margin: 0 }}>{sub}</p>}
+      {sub && <p style={{ fontSize: "var(--text-2xs)", color: T.muted, margin: 0 }}>{sub}</p>}
     </div>
   );
 }

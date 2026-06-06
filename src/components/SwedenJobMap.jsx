@@ -162,10 +162,10 @@ const SwedenJobMap = ({ regions = [], onPickRegion = () => {}, height = 580 }) =
         background: "rgba(255,255,255,0.85)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)",
         border: "1px solid var(--line)", borderRadius: 10, padding: "12px 14px", maxWidth: 180,
       }}>
-        <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-500)", marginBottom: 4 }}>
+        <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-500)", marginBottom: 4 }}>
           {zoomedRegion ? zoomedRegion.name : "Lediga jobb"}
         </div>
-        <div style={{ fontSize: 11, color: "var(--ink-400)", lineHeight: 1.4 }}>
+        <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", lineHeight: 1.4 }}>
           {zoomedRegion
             ? `${zoomedRegion.jobs} jobb · klicka på en ort`
             : "Klicka på ett län för att zooma in och se orterna."}
@@ -180,7 +180,7 @@ const SwedenJobMap = ({ regions = [], onPickRegion = () => {}, height = 580 }) =
             style={{
               display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 13px", borderRadius: 9,
               background: "rgba(255,255,255,0.92)", backdropFilter: "blur(6px)",
-              border: "1px solid var(--line-2)", color: "var(--ink-700)", fontSize: 12.5, fontWeight: 700,
+              border: "1px solid var(--line-2)", color: "var(--ink-700)", fontSize: "var(--text-xs)", fontWeight: 700,
               cursor: "pointer", fontFamily: "var(--font)", boxShadow: "var(--sh-sm)",
             }}
           >
@@ -191,7 +191,7 @@ const SwedenJobMap = ({ regions = [], onPickRegion = () => {}, height = 580 }) =
             onClick={() => onPickRegion({ ...zoomedRegion })}
             style={{
               padding: "8px 13px", borderRadius: 9, background: "var(--green)", color: "#fff",
-              fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font)",
+              fontSize: "var(--text-xs)", fontWeight: 700, cursor: "pointer", fontFamily: "var(--font)",
               border: "none", boxShadow: "var(--sh-sm)",
             }}
           >
@@ -313,8 +313,8 @@ const SwedenJobMap = ({ regions = [], onPickRegion = () => {}, height = 580 }) =
           background: "var(--ink-900)", color: "#fff", borderRadius: 10, padding: "9px 13px",
           boxShadow: "var(--sh-md)", whiteSpace: "nowrap",
         }}>
-          <div style={{ fontSize: 13.5, fontWeight: 800, marginBottom: 3 }}>{byCode[hover.code].name}</div>
-          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.8)" }}>
+          <div style={{ fontSize: "var(--text-sm)", fontWeight: 800, marginBottom: 3 }}>{byCode[hover.code].name}</div>
+          <div style={{ fontSize: "var(--text-xs)", color: "rgba(255,255,255,0.8)" }}>
             <span style={{ fontFamily: "var(--mono)", fontWeight: 700 }}>{byCode[hover.code].jobs}</span> lediga jobb · klicka för att zooma
           </div>
         </div>

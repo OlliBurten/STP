@@ -77,15 +77,15 @@ function ChoiceCard({ icon, label, desc, selected, onClick }) {
         display: "flex", alignItems: "center", justifyContent: "center",
       }}>{icon}</span>
       <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 15, fontWeight: 700, color: "var(--ink-900)" }}>{label}</div>
-        <div style={{ fontSize: 13, color: "var(--ink-500)", marginTop: 3, lineHeight: 1.5 }}>{desc}</div>
+        <div style={{ fontSize: "var(--text-md)", fontWeight: 700, color: "var(--ink-900)" }}>{label}</div>
+        <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", marginTop: 3, lineHeight: 1.5 }}>{desc}</div>
       </div>
       <span style={{
         width: 22, height: 22, borderRadius: 11, flexShrink: 0,
         border: `2px solid ${selected ? "var(--green)" : "var(--line)"}`,
         background: selected ? "var(--green)" : "transparent",
         display: "flex", alignItems: "center", justifyContent: "center",
-        color: "#fff", fontSize: 11,
+        color: "#fff", fontSize: "var(--text-2xs)",
       }}>{selected ? "✓" : ""}</span>
     </button>
   );
@@ -278,7 +278,7 @@ export default function DriverOnboardingWizard() {
                 <h1 style={{ fontSize: 26, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.8, marginBottom: 10 }}>
                   {matchCount} jobb i {draft.region} matchar dig redan
                 </h1>
-                <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.6, marginBottom: 24 }}>
+                <p style={{ fontSize: "var(--text-md)", color: "var(--ink-500)", lineHeight: 1.6, marginBottom: 24 }}>
                   Du är nu synlig för åkerier som rekryterar. Kolla jobben direkt — eller stärk profilen för att synas ännu mer.
                 </p>
               </>
@@ -287,7 +287,7 @@ export default function DriverOnboardingWizard() {
                 <h1 style={{ fontSize: 26, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.8, marginBottom: 10 }}>
                   Din profil är klar, {draft.name.split(" ")[0] || "förare"}!
                 </h1>
-                <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.6, marginBottom: 24 }}>
+                <p style={{ fontSize: "var(--text-md)", color: "var(--ink-500)", lineHeight: 1.6, marginBottom: 24 }}>
                   Du är nu synlig för åkerier som rekryterar i {draft.region}. Kolla lediga jobb eller stärk profilen vidare.
                 </p>
               </>
@@ -301,22 +301,22 @@ export default function DriverOnboardingWizard() {
                 <div key={b.title} style={{ display: "flex", gap: 13, alignItems: "flex-start", background: "var(--paper)", borderRadius: 11, padding: "14px 16px", border: "1px solid var(--line)" }}>
                   <span style={{ width: 36, height: 36, borderRadius: 9, background: "var(--green-tint)", color: "var(--green-text)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{b.icon}</span>
                   <div>
-                    <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--ink-900)" }}>{b.title}</div>
-                    <div style={{ fontSize: 12.5, color: "var(--ink-500)", marginTop: 2, lineHeight: 1.5 }}>{b.text}</div>
+                    <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-900)" }}>{b.title}</div>
+                    <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", marginTop: 2, lineHeight: 1.5 }}>{b.text}</div>
                   </div>
                 </div>
               ))}
             </div>
             <button
               onClick={() => navigate("/jobb")}
-              style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "14px 24px", borderRadius: 12, background: "var(--green)", color: "#fff", fontSize: 15, fontWeight: 800, border: "none", cursor: "pointer", fontFamily: "inherit", marginBottom: 10 }}
+              style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "14px 24px", borderRadius: 12, background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, border: "none", cursor: "pointer", fontFamily: "inherit", marginBottom: 10 }}
             >
               {matchCount !== null && matchCount > 0 ? `Se ${matchCount} jobb i ${draft.region}` : "Se lediga jobb"}
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
             </button>
             <button
               onClick={() => navigate("/profil")}
-              style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "12px 24px", borderRadius: 12, background: "transparent", color: "var(--ink-600)", fontSize: 14, fontWeight: 600, border: "1px solid var(--line)", cursor: "pointer", fontFamily: "inherit" }}
+              style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "12px 24px", borderRadius: 12, background: "transparent", color: "var(--ink-600)", fontSize: "var(--text-base)", fontWeight: 600, border: "1px solid var(--line)", cursor: "pointer", fontFamily: "inherit" }}
             >
               Till min profil
             </button>
@@ -334,7 +334,7 @@ export default function DriverOnboardingWizard() {
         <h1 style={{ fontSize: 30, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.8, lineHeight: 1.15, marginBottom: 12 }}>
           Välkommen till STP
         </h1>
-        <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.65, marginBottom: 28 }}>
+        <p style={{ fontSize: "var(--text-md)", color: "var(--ink-500)", lineHeight: 1.65, marginBottom: 28 }}>
           Sveriges transportplattform kopplar ihop dig med seriösa åkerier — utan mellanhänder och utan CV. Det tar två minuter att komma igång.
         </p>
         <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
@@ -346,8 +346,8 @@ export default function DriverOnboardingWizard() {
             <div key={b.title} style={{ display: "flex", gap: 14, alignItems: "flex-start", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, padding: "16px 18px", boxShadow: "var(--sh-sm)" }}>
               <span style={{ width: 40, height: 40, borderRadius: 10, background: "var(--green-tint)", color: "var(--green-text)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{b.icon}</span>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)" }}>{b.title}</div>
-                <div style={{ fontSize: 13, color: "var(--ink-500)", marginTop: 2, lineHeight: 1.5 }}>{b.text}</div>
+                <div style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)" }}>{b.title}</div>
+                <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", marginTop: 2, lineHeight: 1.5 }}>{b.text}</div>
               </div>
             </div>
           ))}
@@ -358,8 +358,8 @@ export default function DriverOnboardingWizard() {
     // STEP 1: Segment
     if (step === 1) return (
       <div>
-        <h1 style={{ fontSize: 28, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.8, marginBottom: 10 }}>Vad söker du?</h1>
-        <p style={{ fontSize: 15, color: "var(--ink-500)", marginBottom: 24 }}>Så matchar vi dig mot rätt sorts tjänster.</p>
+        <h1 style={{ fontSize: "var(--text-4xl)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.8, marginBottom: 10 }}>Vad söker du?</h1>
+        <p style={{ fontSize: "var(--text-md)", color: "var(--ink-500)", marginBottom: 24 }}>Så matchar vi dig mot rätt sorts tjänster.</p>
         <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
           <ChoiceCard
             icon={Icons.building} label="Fast heltid"
@@ -384,7 +384,7 @@ export default function DriverOnboardingWizard() {
         {/* Internship sub-form */}
         {draft.isGymnasieelev === true && (
           <div style={{ marginTop: 20, padding: "18px 20px", background: "var(--green-tint)", borderRadius: 12, border: "1px solid rgba(31,95,92,0.2)" }}>
-            <p style={{ fontSize: 13, fontWeight: 700, color: "var(--green-text)", marginBottom: 12 }}>Vilken typ av utbildning?</p>
+            <p style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--green-text)", marginBottom: 12 }}>Vilken typ av utbildning?</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {internshipTypeOptions.map((opt) => (
                 <button key={opt.value} type="button"
@@ -397,8 +397,8 @@ export default function DriverOnboardingWizard() {
                     transition: "all .15s",
                   }}>
                   <div>
-                    <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--ink-900)" }}>{opt.label}</div>
-                    <div style={{ fontSize: 12, color: "var(--ink-500)", marginTop: 2 }}>{opt.description}</div>
+                    <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-900)" }}>{opt.label}</div>
+                    <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", marginTop: 2 }}>{opt.description}</div>
                   </div>
                   <span style={{
                     width: 20, height: 20, borderRadius: 10, flexShrink: 0,
@@ -413,12 +413,12 @@ export default function DriverOnboardingWizard() {
             {draft.internshipType && (
               <div style={{ marginTop: 14 }}>
                 <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: "var(--green-text)" }}>Skola (valfritt)</span>
+                  <span style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--green-text)" }}>Skola (valfritt)</span>
                   <input
                     type="text" value={draft.schoolName}
                     onChange={(e) => setDraft((p) => ({ ...p, schoolName: e.target.value }))}
                     placeholder="t.ex. Transportgymnasiet Stockholm"
-                    style={{ padding: "11px 14px", borderRadius: 9, background: "var(--card)", border: "1px solid rgba(31,95,92,0.25)", fontSize: 14, color: "var(--ink-900)", fontFamily: "inherit", outline: "none" }}
+                    style={{ padding: "11px 14px", borderRadius: 9, background: "var(--card)", border: "1px solid rgba(31,95,92,0.25)", fontSize: "var(--text-base)", color: "var(--ink-900)", fontFamily: "inherit", outline: "none" }}
                   />
                 </label>
               </div>
@@ -431,8 +431,8 @@ export default function DriverOnboardingWizard() {
     // STEP 2: Körkort
     if (step === 2) return (
       <div>
-        <h1 style={{ fontSize: 28, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.8, marginBottom: 10 }}>Vilka körkort har du?</h1>
-        <p style={{ fontSize: 15, color: "var(--ink-500)", marginBottom: 24 }}>Välj alla som gäller — de är det viktigaste för matchningen.</p>
+        <h1 style={{ fontSize: "var(--text-4xl)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.8, marginBottom: 10 }}>Vilka körkort har du?</h1>
+        <p style={{ fontSize: "var(--text-md)", color: "var(--ink-500)", marginBottom: 24 }}>Välj alla som gäller — de är det viktigaste för matchningen.</p>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 24 }}>
           {LICENSES.map((l) => {
             const sel = draft.licenses.includes(l.c);
@@ -444,25 +444,25 @@ export default function DriverOnboardingWizard() {
                 boxShadow: sel ? "0 2px 6px rgba(31,95,92,0.2)" : "var(--sh-sm)",
                 transition: "all .15s", cursor: "pointer", fontFamily: "inherit",
               }}>
-                <span style={{ fontSize: 16, fontWeight: 800, color: sel ? "#fff" : "var(--ink-900)", minWidth: 34 }}>{l.c}</span>
-                <span style={{ fontSize: 12, color: sel ? "rgba(255,255,255,0.85)" : "var(--ink-500)", lineHeight: 1.3 }}>{l.d}</span>
+                <span style={{ fontSize: "var(--text-lg)", fontWeight: 800, color: sel ? "#fff" : "var(--ink-900)", minWidth: 34 }}>{l.c}</span>
+                <span style={{ fontSize: "var(--text-xs)", color: sel ? "rgba(255,255,255,0.85)" : "var(--ink-500)", lineHeight: 1.3 }}>{l.d}</span>
               </button>
             );
           })}
         </div>
 
         {(draft.licenses.includes("C") || draft.licenses.includes("CE")) && !draft.licenses.includes("B") && (
-          <p style={{ fontSize: 11.5, color: "var(--ink-400)", marginBottom: 20 }}>B-körkort ingår automatiskt med C/CE.</p>
+          <p style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", marginBottom: 20 }}>B-körkort ingår automatiskt med C/CE.</p>
         )}
 
         <div style={{ marginBottom: 8 }}>
-          <p style={{ fontSize: 13, fontWeight: 700, color: "var(--ink-700)", marginBottom: 10 }}>Certifikat (valfritt)</p>
+          <p style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-700)", marginBottom: 10 }}>Certifikat (valfritt)</p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {CERTS.map((ct) => {
               const sel = draft.certificates.includes(ct);
               return (
                 <button key={ct} onClick={() => toggleCert(ct)} style={{
-                  padding: "8px 14px", borderRadius: 999, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                  padding: "8px 14px", borderRadius: 999, fontSize: "var(--text-sm)", fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
                   background: sel ? "var(--green-tint)" : "var(--card)",
                   color: sel ? "var(--green-text)" : "var(--ink-700)",
                   border: `1px solid ${sel ? "var(--green)" : "var(--line)"}`,
@@ -478,26 +478,26 @@ export default function DriverOnboardingWizard() {
     // STEP 3: Region + Namn
     if (step === 3) return (
       <div>
-        <h1 style={{ fontSize: 28, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.8, marginBottom: 10 }}>Vem är du och var?</h1>
-        <p style={{ fontSize: 15, color: "var(--ink-500)", marginBottom: 24 }}>Så åkerier vet vem de pratar med och var du finns.</p>
+        <h1 style={{ fontSize: "var(--text-4xl)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.8, marginBottom: 10 }}>Vem är du och var?</h1>
+        <p style={{ fontSize: "var(--text-md)", color: "var(--ink-500)", marginBottom: 24 }}>Så åkerier vet vem de pratar med och var du finns.</p>
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           <label style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: "var(--ink-700)" }}>Ditt namn</span>
+            <span style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-700)" }}>Ditt namn</span>
             <input
               type="text" value={draft.name}
               onChange={(e) => setDraft((p) => ({ ...p, name: e.target.value }))}
               placeholder="För- och efternamn"
-              style={{ padding: "13px 16px", borderRadius: 11, background: "var(--card)", border: "1px solid var(--line)", fontSize: 15, color: "var(--ink-900)", outline: "none", fontFamily: "inherit", boxShadow: "var(--sh-sm)" }}
+              style={{ padding: "13px 16px", borderRadius: 11, background: "var(--card)", border: "1px solid var(--line)", fontSize: "var(--text-md)", color: "var(--ink-900)", outline: "none", fontFamily: "inherit", boxShadow: "var(--sh-sm)" }}
             />
           </label>
           <div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink-700)", marginBottom: 10 }}>Din region</div>
+            <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-700)", marginBottom: 10 }}>Din region</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               {regions.map((r) => {
                 const sel = draft.region === r;
                 return (
                   <button key={r} type="button" onClick={() => setDraft((p) => ({ ...p, region: r }))} style={{
-                    padding: "9px 15px", borderRadius: 999, fontSize: 13.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                    padding: "9px 15px", borderRadius: 999, fontSize: "var(--text-sm)", fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
                     background: sel ? "var(--green)" : "var(--card)",
                     color: sel ? "#fff" : "var(--ink-700)",
                     border: `1px solid ${sel ? "var(--green)" : "var(--line)"}`,
@@ -521,9 +521,9 @@ export default function DriverOnboardingWizard() {
 
     if (step === 4) return (
       <div>
-        <h1 style={{ fontSize: 28, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.8, marginBottom: 6 }}>Presentera dig kort</h1>
-        <p style={{ fontSize: 15, color: "var(--ink-500)", marginBottom: 4 }}>Ett par rader om din erfarenhet — det här är det första åkerier läser.</p>
-        <p style={{ fontSize: 13, color: "var(--ink-400)", marginBottom: 20 }}>Valfritt — du kan lägga till det senare från din profil.</p>
+        <h1 style={{ fontSize: "var(--text-4xl)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.8, marginBottom: 6 }}>Presentera dig kort</h1>
+        <p style={{ fontSize: "var(--text-md)", color: "var(--ink-500)", marginBottom: 4 }}>Ett par rader om din erfarenhet — det här är det första åkerier läser.</p>
+        <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-400)", marginBottom: 20 }}>Valfritt — du kan lägga till det senare från din profil.</p>
 
         <div style={{ position: "relative", marginBottom: 8 }}>
           <textarea
@@ -539,18 +539,18 @@ export default function DriverOnboardingWizard() {
             style={{
               width: "100%", padding: "16px", borderRadius: 12, background: "var(--card)",
               border: `1.5px solid ${aiAnalysis?.ok ? "var(--success)" : aiAnalysis && !aiAnalysis.ok ? "var(--amber)" : "var(--line)"}`,
-              fontSize: 15, color: "var(--ink-900)", fontFamily: "inherit",
+              fontSize: "var(--text-md)", color: "var(--ink-900)", fontFamily: "inherit",
               outline: "none", resize: "vertical", lineHeight: 1.6,
               boxShadow: "var(--sh-sm)", transition: "border-color .3s",
             }}
           />
-          <span style={{ position: "absolute", bottom: 10, right: 12, fontSize: 11, color: draft.summary.length > SUMMARY_MAX_LENGTH * 0.9 ? "var(--amber)" : "var(--ink-400)" }}>
+          <span style={{ position: "absolute", bottom: 10, right: 12, fontSize: "var(--text-2xs)", color: draft.summary.length > SUMMARY_MAX_LENGTH * 0.9 ? "var(--amber)" : "var(--ink-400)" }}>
             {draft.summary.length}/{SUMMARY_MAX_LENGTH}
           </span>
         </div>
 
         {draft.summary.trim().length > 0 && (
-          <div style={{ fontSize: 12.5, color: draft.summary.trim().length >= SUMMARY_MIN_LENGTH ? "var(--success)" : "var(--ink-400)", fontWeight: 600, marginBottom: 16 }}>
+          <div style={{ fontSize: "var(--text-xs)", color: draft.summary.trim().length >= SUMMARY_MIN_LENGTH ? "var(--success)" : "var(--ink-400)", fontWeight: 600, marginBottom: 16 }}>
             {draft.summary.trim().length >= SUMMARY_MIN_LENGTH ? "✓ Bra! Det räcker." : `${SUMMARY_MIN_LENGTH - draft.summary.trim().length} tecken till för en komplett presentation.`}
           </div>
         )}
@@ -560,7 +560,7 @@ export default function DriverOnboardingWizard() {
               type="button"
               onClick={saveAndFinish}
               disabled={saving}
-              style={{ fontSize: 13, color: "var(--ink-400)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", padding: 0, textDecoration: "underline" }}
+              style={{ fontSize: "var(--text-sm)", color: "var(--ink-400)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", padding: 0, textDecoration: "underline" }}
             >
               Hoppa över — lägg till senare
             </button>
@@ -570,26 +570,26 @@ export default function DriverOnboardingWizard() {
         {/* AI feedback */}
         {aiLoading && draft.summary.trim().length >= SUMMARY_MIN_LENGTH && (
           <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", borderRadius: 10, background: "var(--card)", border: "1px solid var(--line)", marginBottom: 12 }}>
-            <span style={{ fontSize: 12 }}>✦</span>
-            <span style={{ fontSize: 13, color: "var(--ink-500)" }}>Granskar din text…</span>
+            <span style={{ fontSize: "var(--text-xs)" }}>✦</span>
+            <span style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)" }}>Granskar din text…</span>
           </div>
         )}
         {aiAnalysis?.ok && (
           <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", borderRadius: 10, background: "var(--success-tint)", border: "1px solid rgba(74,222,128,0.2)", marginBottom: 12 }}>
             <span style={{ color: "var(--success)" }}>✓</span>
-            <span style={{ fontSize: 13, color: "var(--success)", fontWeight: 600 }}>Bra! Texten är tydlig och professionell.</span>
+            <span style={{ fontSize: "var(--text-sm)", color: "var(--success)", fontWeight: 600 }}>Bra! Texten är tydlig och professionell.</span>
           </div>
         )}
         {aiAnalysis && !aiAnalysis.ok && (aiAnalysis.issues?.length > 0 || aiAnalysis.suggestions?.length > 0) && (
           <div style={{ padding: "12px 16px", borderRadius: 10, background: "var(--amber-tint)", border: "1px solid rgba(245,166,35,0.25)", marginBottom: 12 }}>
-            <p style={{ fontSize: 13, fontWeight: 600, color: "var(--amber-text)", marginBottom: 6 }}>Några saker att tänka på</p>
-            {aiAnalysis.issues?.map((issue, i) => <p key={i} style={{ fontSize: 12, color: "var(--ink-500)", marginBottom: 3 }}>• {issue}</p>)}
+            <p style={{ fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--amber-text)", marginBottom: 6 }}>Några saker att tänka på</p>
+            {aiAnalysis.issues?.map((issue, i) => <p key={i} style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", marginBottom: 3 }}>• {issue}</p>)}
           </div>
         )}
 
         {/* Profile checklist preview */}
         <div style={{ marginTop: 20, background: "var(--paper)", borderRadius: 12, padding: "18px 20px", border: "1px solid var(--line)" }}>
-          <p style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--ink-500)", marginBottom: 12 }}>Din profil hittills</p>
+          <p style={{ fontSize: "var(--text-xs)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--ink-500)", marginBottom: 12 }}>Din profil hittills</p>
           {[
             { label: "Namn",           done: draft.name.trim().length >= 2 },
             { label: "Körkort valt",   done: draft.licenses.length > 0 },
@@ -601,7 +601,7 @@ export default function DriverOnboardingWizard() {
               <span style={{ width: 18, height: 18, borderRadius: 9, background: c.done ? "var(--success-tint)" : "var(--paper)", border: `1.5px solid ${c.done ? "var(--success)" : "var(--line)"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 10, color: "var(--success)" }}>
                 {c.done ? "✓" : ""}
               </span>
-              <span style={{ fontSize: 13.5, color: c.done ? "var(--ink-700)" : "var(--ink-400)", fontWeight: c.done ? 600 : 400 }}>{c.label}</span>
+              <span style={{ fontSize: "var(--text-sm)", color: c.done ? "var(--ink-700)" : "var(--ink-400)", fontWeight: c.done ? 600 : 400 }}>{c.label}</span>
             </div>
           ))}
         </div>
@@ -627,12 +627,12 @@ export default function DriverOnboardingWizard() {
 
         {/* Scrollable content */}
         <div style={{ flex: 1, overflowY: "auto", padding: "12px 24px 100px" }}>
-          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "var(--amber-text, var(--amber))", marginBottom: 10 }}>
+          <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "var(--amber-text, var(--amber))", marginBottom: 10 }}>
             {step === 0 ? "Välkommen till STP" : `Steg ${step} av ${STEPS.length - 1}`}
           </div>
           {error && (
             <div style={{ marginBottom: 16, padding: "12px 16px", borderRadius: 10, background: "var(--danger-tint)", border: "1px solid rgba(239,68,68,0.3)" }}>
-              <p style={{ fontSize: 13, color: "var(--danger)", margin: 0 }}>{error}</p>
+              <p style={{ fontSize: "var(--text-sm)", color: "var(--danger)", margin: 0 }}>{error}</p>
             </div>
           )}
           {renderStep()}
@@ -640,7 +640,7 @@ export default function DriverOnboardingWizard() {
 
         {/* Sticky CTA */}
         <div style={{ padding: "12px 24px", paddingBottom: "max(env(safe-area-inset-bottom), 24px)", background: "rgba(255,255,255,0.95)", WebkitBackdropFilter: "blur(14px)", backdropFilter: "blur(14px)", borderTop: "1px solid var(--line)", flexShrink: 0 }}>
-          {step === 0 && <p style={{ fontSize: 11.5, color: "var(--ink-400)", textAlign: "center", marginBottom: 10 }}>Gratis för förare · Alltid</p>}
+          {step === 0 && <p style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", textAlign: "center", marginBottom: 10 }}>Gratis för förare · Alltid</p>}
           <button
             onClick={step < STEPS.length - 1 ? goNext : saveAndFinish}
             disabled={!canNext || saving}
@@ -649,7 +649,7 @@ export default function DriverOnboardingWizard() {
               background: canNext && !saving ? "var(--green)" : "var(--paper-2)",
               border: "none",
               color: canNext && !saving ? "#fff" : "var(--ink-400)",
-              fontSize: 15, fontWeight: 800, fontFamily: "inherit",
+              fontSize: "var(--text-md)", fontWeight: 800, fontFamily: "inherit",
               cursor: canNext && !saving ? "pointer" : "default",
               display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
               boxShadow: canNext && !saving ? "var(--sh)" : "none",
@@ -671,13 +671,13 @@ export default function DriverOnboardingWizard() {
       <div style={{ maxWidth: 620, width: "100%", margin: "0 auto", padding: "32px 24px 40px", flex: 1, display: "flex", flexDirection: "column" }}>
         {/* Progress */}
         <div style={{ marginBottom: 8 }}><Progress step={step} /></div>
-        <div style={{ fontSize: 12.5, color: "var(--ink-500)", fontWeight: 600, marginBottom: 32 }}>
+        <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", fontWeight: 600, marginBottom: 32 }}>
           Steg {step + 1} av {STEPS.length} · {STEPS[step].label}
         </div>
 
         {error && (
           <div style={{ marginBottom: 20, padding: "12px 16px", borderRadius: 10, background: "var(--danger-tint)", border: "1px solid rgba(239,68,68,0.3)" }}>
-            <p style={{ fontSize: 13, color: "var(--danger)" }}>{error}</p>
+            <p style={{ fontSize: "var(--text-sm)", color: "var(--danger)" }}>{error}</p>
           </div>
         )}
 
@@ -689,7 +689,7 @@ export default function DriverOnboardingWizard() {
         {/* Nav */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 32, paddingTop: 20, borderTop: "1px solid var(--line)" }}>
           {step > 0 ? (
-            <button onClick={() => setStep((s) => s - 1)} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "11px 20px", borderRadius: 10, background: "transparent", border: "1px solid var(--line)", color: "var(--ink-700)", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+            <button onClick={() => setStep((s) => s - 1)} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "11px 20px", borderRadius: 10, background: "transparent", border: "1px solid var(--line)", color: "var(--ink-700)", fontSize: "var(--text-base)", fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
               Tillbaka
             </button>
@@ -697,7 +697,7 @@ export default function DriverOnboardingWizard() {
           <button
             onClick={step < STEPS.length - 1 ? goNext : saveAndFinish}
             disabled={!canNext || saving}
-            style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 24px", borderRadius: 10, background: canNext && !saving ? "var(--green)" : "var(--paper-2)", color: canNext && !saving ? "#fff" : "var(--ink-400)", fontSize: 14, fontWeight: 800, border: "none", cursor: canNext && !saving ? "pointer" : "default", fontFamily: "inherit", transition: "all .15s" }}
+            style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 24px", borderRadius: 10, background: canNext && !saving ? "var(--green)" : "var(--paper-2)", color: canNext && !saving ? "#fff" : "var(--ink-400)", fontSize: "var(--text-base)", fontWeight: 800, border: "none", cursor: canNext && !saving ? "pointer" : "default", fontFamily: "inherit", transition: "all .15s" }}
           >
             {saving ? "Sparar…" : step === STEPS.length - 1 ? "Skapa profil" : (step === 0 ? "Kom igång" : "Fortsätt")}
             {!saving && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>}
@@ -705,7 +705,7 @@ export default function DriverOnboardingWizard() {
         </div>
 
         {step === 0 && (
-          <p style={{ fontSize: 12, color: "var(--ink-400)", marginTop: 14, textAlign: "center" }}>Gratis för förare · Alltid</p>
+          <p style={{ fontSize: "var(--text-xs)", color: "var(--ink-400)", marginTop: 14, textAlign: "center" }}>Gratis för förare · Alltid</p>
         )}
       </div>
     </div>
@@ -717,11 +717,11 @@ function TopBar({ onSkip }) {
   return (
     <div style={{ height: 60, borderBottom: "1px solid var(--line)", background: "var(--card)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 24px", flexShrink: 0 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <div style={{ width: 28, height: 28, borderRadius: 7, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 12 }}>S</div>
-        <span style={{ fontWeight: 800, fontSize: 15, color: "var(--ink-900)", letterSpacing: 0.5 }}>STP</span>
+        <div style={{ width: 28, height: 28, borderRadius: 7, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--text-xs)" }}>S</div>
+        <span style={{ fontWeight: 800, fontSize: "var(--text-md)", color: "var(--ink-900)", letterSpacing: 0.5 }}>STP</span>
       </div>
       {onSkip && (
-        <button onClick={onSkip} style={{ fontSize: 13, color: "var(--ink-500)", fontWeight: 600, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
+        <button onClick={onSkip} style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", fontWeight: 600, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
           Hoppa över
         </button>
       )}

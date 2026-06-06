@@ -144,7 +144,7 @@ const EXP_JOB_TYPES = [
 function ReviewsSection({ reviews }) {
   if (!reviews || reviews.length === 0) {
     return (
-      <div style={{ padding: "18px 20px", border: "1.5px dashed var(--line-2)", borderRadius: 12, textAlign: "center", color: "var(--ink-400)", fontSize: 13, lineHeight: 1.6 }}>
+      <div style={{ padding: "18px 20px", border: "1.5px dashed var(--line-2)", borderRadius: 12, textAlign: "center", color: "var(--ink-400)", fontSize: "var(--text-sm)", lineHeight: 1.6 }}>
         Inga omdömen ännu — åkerier du jobbat hos kan lämna ett omdöme.
       </div>
     );
@@ -156,18 +156,18 @@ function ReviewsSection({ reviews }) {
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8, flexWrap: "wrap", gap: 8 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <Stars rating={r.rating} />
-              <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--ink-900)" }}>{r.authorName}</span>
+              <span style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-900)" }}>{r.authorName}</span>
               {r.isVerified && (
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 8px", borderRadius: 99, background: "var(--success-tint)", color: "var(--success)", fontSize: 11, fontWeight: 700, border: "1px solid var(--success)" }}>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 8px", borderRadius: 99, background: "var(--success-tint)", color: "var(--success)", fontSize: "var(--text-2xs)", fontWeight: 700, border: "1px solid var(--success)" }}>
                   <CheckIcon /> Verifierat åkeri
                 </span>
               )}
             </div>
-            <span style={{ fontSize: 12, color: "var(--ink-400)" }}>
+            <span style={{ fontSize: "var(--text-xs)", color: "var(--ink-400)" }}>
               {new Date(r.createdAt).toLocaleDateString("sv-SE", { year: "numeric", month: "long" })}
             </span>
           </div>
-          {r.comment && <p style={{ fontSize: 14, color: "var(--ink-700)", lineHeight: 1.65, margin: 0 }}>{r.comment}</p>}
+          {r.comment && <p style={{ fontSize: "var(--text-base)", color: "var(--ink-700)", lineHeight: 1.65, margin: 0 }}>{r.comment}</p>}
         </div>
       ))}
     </div>
@@ -212,19 +212,19 @@ function ReviewModal({ driverId, driverName, onClose, onSubmitted }) {
             <div style={{ width: 52, height: 52, borderRadius: "50%", background: "var(--success-tint)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             </div>
-            <h3 style={{ fontSize: 18, fontWeight: 800, color: "var(--ink-900)", marginBottom: 8 }}>Tack för ditt omdöme!</h3>
-            <p style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.6 }}>Ditt omdöme om {driverName} har sparats och visas på hens profil.</p>
-            <button onClick={onClose} style={{ marginTop: 20, padding: "10px 24px", borderRadius: 10, background: "var(--green)", color: "#fff", border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>Stäng</button>
+            <h3 style={{ fontSize: "var(--text-xl)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 8 }}>Tack för ditt omdöme!</h3>
+            <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.6 }}>Ditt omdöme om {driverName} har sparats och visas på hens profil.</p>
+            <button onClick={onClose} style={{ marginTop: 20, padding: "10px 24px", borderRadius: 10, background: "var(--green)", color: "#fff", border: "none", fontSize: "var(--text-base)", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>Stäng</button>
           </div>
         ) : (
           <>
             <h3 style={{ fontSize: 19, fontWeight: 800, color: "var(--ink-900)", marginBottom: 6 }}>Lämna omdöme</h3>
-            <p style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.5, marginBottom: 24 }}>
+            <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.5, marginBottom: 24 }}>
               Betygsätt {driverName} baserat på er samarbetserfarenhet. Omdömet visas på hens profil med verifierings-märke.
             </p>
 
             {/* Star picker */}
-            <p style={{ fontSize: 13, fontWeight: 700, color: "var(--ink-700)", marginBottom: 10 }}>Betyg</p>
+            <p style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-700)", marginBottom: 10 }}>Betyg</p>
             <div style={{ display: "flex", gap: 6, marginBottom: 22 }}>
               {[1,2,3,4,5].map((n) => (
                 <button key={n} type="button"
@@ -238,27 +238,27 @@ function ReviewModal({ driverId, driverName, onClose, onSubmitted }) {
                 </button>
               ))}
               {rating > 0 && (
-                <span style={{ alignSelf: "center", fontSize: 13, color: "var(--ink-500)", marginLeft: 8 }}>
+                <span style={{ alignSelf: "center", fontSize: "var(--text-sm)", color: "var(--ink-500)", marginLeft: 8 }}>
                   {["","Dålig","Under medel","Okej","Bra","Utmärkt"][rating]}
                 </span>
               )}
             </div>
 
             {/* Comment */}
-            <p style={{ fontSize: 13, fontWeight: 700, color: "var(--ink-700)", marginBottom: 8 }}>Kommentar <span style={{ fontWeight: 400, color: "var(--ink-400)" }}>(valfri)</span></p>
+            <p style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-700)", marginBottom: 8 }}>Kommentar <span style={{ fontWeight: 400, color: "var(--ink-400)" }}>(valfri)</span></p>
             <textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder="Berätta om er erfarenhet av föraren — punktlighet, hantering av fordon, kommunikation..."
               rows={4}
-              style={{ width: "100%", padding: "12px 14px", borderRadius: 10, border: "1px solid var(--line-2)", background: "var(--paper-2)", fontSize: 14, color: "var(--ink-900)", outline: "none", fontFamily: "inherit", lineHeight: 1.55, resize: "vertical", boxSizing: "border-box" }}
+              style={{ width: "100%", padding: "12px 14px", borderRadius: 10, border: "1px solid var(--line-2)", background: "var(--paper-2)", fontSize: "var(--text-base)", color: "var(--ink-900)", outline: "none", fontFamily: "inherit", lineHeight: 1.55, resize: "vertical", boxSizing: "border-box" }}
             />
 
-            {error && <p style={{ color: "var(--danger)", fontSize: 13, marginTop: 8, fontWeight: 600 }}>{error}</p>}
+            {error && <p style={{ color: "var(--danger)", fontSize: "var(--text-sm)", marginTop: 8, fontWeight: 600 }}>{error}</p>}
 
             <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
-              <button onClick={onClose} style={{ flex: 1, padding: "11px", borderRadius: 10, border: "1px solid var(--line-2)", background: "transparent", color: "var(--ink-700)", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Avbryt</button>
-              <button onClick={handleSubmit} disabled={loading || !rating} style={{ flex: 2, padding: "11px", borderRadius: 10, background: rating ? "var(--green)" : "var(--ink-200)", color: rating ? "#fff" : "var(--ink-400)", border: "none", fontSize: 14, fontWeight: 800, cursor: rating ? "pointer" : "not-allowed", fontFamily: "inherit", transition: "all .15s" }}>
+              <button onClick={onClose} style={{ flex: 1, padding: "11px", borderRadius: 10, border: "1px solid var(--line-2)", background: "transparent", color: "var(--ink-700)", fontSize: "var(--text-base)", fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Avbryt</button>
+              <button onClick={handleSubmit} disabled={loading || !rating} style={{ flex: 2, padding: "11px", borderRadius: 10, background: rating ? "var(--green)" : "var(--ink-200)", color: rating ? "#fff" : "var(--ink-400)", border: "none", fontSize: "var(--text-base)", fontWeight: 800, cursor: rating ? "pointer" : "not-allowed", fontFamily: "inherit", transition: "all .15s" }}>
                 {loading ? "Skickar…" : "Skicka omdöme"}
               </button>
             </div>
@@ -278,15 +278,15 @@ function MarketPanel({ driverMarket, region }) {
 
   return (
     <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "22px 24px" }}>
-      <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-500)", marginBottom: 16 }}>
+      <p style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-500)", marginBottom: 16 }}>
         Marknad i {regionLabel}
       </p>
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
         {items.map((m) => (
           <div key={m.name}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
-              <span style={{ fontSize: 13.5, color: "var(--ink-700)", fontWeight: 600 }}>{m.name}</span>
-              <span style={{ fontSize: 13, color: "var(--ink-900)", fontWeight: 700, fontFamily: "var(--mono)" }}>{m.pct}%</span>
+              <span style={{ fontSize: "var(--text-sm)", color: "var(--ink-700)", fontWeight: 600 }}>{m.name}</span>
+              <span style={{ fontSize: "var(--text-sm)", color: "var(--ink-900)", fontWeight: 700, fontFamily: "var(--mono)" }}>{m.pct}%</span>
             </div>
             <div style={{ height: 4, borderRadius: 2, background: "var(--paper-2)", overflow: "hidden" }}>
               <div style={{ height: "100%", width: `${m.pct}%`, background: "var(--green)", opacity: 0.4 + (m.pct / 100) * 0.6, borderRadius: 2 }} />
@@ -294,7 +294,7 @@ function MarketPanel({ driverMarket, region }) {
           </div>
         ))}
       </div>
-      <p style={{ fontSize: 12.5, color: "var(--ink-500)", marginTop: 14, lineHeight: 1.5 }}>Andel aktiva jobb som kräver respektive behörighet.</p>
+      <p style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", marginTop: 14, lineHeight: 1.5 }}>Andel aktiva jobb som kräver respektive behörighet.</p>
     </div>
   );
 }
@@ -316,28 +316,28 @@ function ProfileStrengthCard({ profile, displayScore, onEdit }) {
   return (
     <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "22px 24px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 12 }}>
-        <h3 style={{ fontSize: 14.5, fontWeight: 700, color: "var(--ink-900)" }}>Profilstyrka</h3>
+        <h3 style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)" }}>Profilstyrka</h3>
         <div style={{ display: "flex", alignItems: "baseline", gap: 2 }}>
           <span style={{ fontSize: 30, fontWeight: 800, color: "var(--green)", letterSpacing: -0.5 }}>{score}</span>
-          <span style={{ fontSize: 12, color: "var(--ink-500)", fontWeight: 600 }}>/100</span>
+          <span style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", fontWeight: 600 }}>/100</span>
         </div>
       </div>
       <div style={{ height: 6, borderRadius: 3, background: "var(--paper-2)", overflow: "hidden", marginBottom: 14 }}>
         <div style={{ height: "100%", width: `${score}%`, background: "linear-gradient(to right, var(--green) 0%, var(--green-soft) 100%)", borderRadius: 3, transition: "width .5s" }} />
       </div>
-      <p style={{ fontSize: 13, color: "var(--ink-500)", marginBottom: 14, fontWeight: 500 }}>{label}</p>
+      <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", marginBottom: 14, fontWeight: 500 }}>{label}</p>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {checks.map((c) => (
           <div key={c.label} style={{ display: "flex", alignItems: "center", gap: 9 }}>
             <span style={{ width: 18, height: 18, borderRadius: 9, background: c.done ? "var(--success-tint)" : "var(--paper-2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: `1.5px solid ${c.done ? "var(--success)" : "var(--line-2)"}` }}>
               {c.done && <span style={{ fontSize: 9, color: "var(--success)", fontWeight: 800 }}>✓</span>}
             </span>
-            <span style={{ fontSize: 13.5, color: "var(--ink-700)", fontWeight: 500 }}>{c.label}</span>
+            <span style={{ fontSize: "var(--text-sm)", color: "var(--ink-700)", fontWeight: 500 }}>{c.label}</span>
           </div>
         ))}
       </div>
       {score < 100 && onEdit && (
-        <button onClick={onEdit} style={{ marginTop: 14, width: "100%", padding: "8px", borderRadius: 8, border: "none", background: "var(--green-tint)", color: "var(--green-text)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>Stärk profilen →</button>
+        <button onClick={onEdit} style={{ marginTop: 14, width: "100%", padding: "8px", borderRadius: 8, border: "none", background: "var(--green-tint)", color: "var(--green-text)", fontSize: "var(--text-xs)", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>Stärk profilen →</button>
       )}
     </div>
   );
@@ -352,10 +352,10 @@ function MatchContent({ profile, job, jobs, matchJobId, onChangeJob }) {
 
   return (
     <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, padding: "22px 24px" }}>
-      <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 14 }}>Matchning mot annons</p>
+      <p style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 14 }}>Matchning mot annons</p>
       {jobs && jobs.length > 0 && onChangeJob && (
         <div style={{ position: "relative", marginBottom: 18 }}>
-          <select value={matchJobId || ""} onChange={(e) => onChangeJob(e.target.value || null)} style={{ appearance: "none", width: "100%", padding: "11px 32px 11px 14px", background: "var(--card-2)", border: "1px solid var(--line-2)", borderRadius: 10, fontSize: 14, fontWeight: 600, color: "var(--ink-900)", cursor: "pointer", fontFamily: "inherit", outline: "none" }}>
+          <select value={matchJobId || ""} onChange={(e) => onChangeJob(e.target.value || null)} style={{ appearance: "none", width: "100%", padding: "11px 32px 11px 14px", background: "var(--card-2)", border: "1px solid var(--line-2)", borderRadius: 10, fontSize: "var(--text-base)", fontWeight: 600, color: "var(--ink-900)", cursor: "pointer", fontFamily: "inherit", outline: "none" }}>
             <option value="">Välj annons</option>
             {jobs.map((j) => <option key={j.id} value={j.id}>{j.title}</option>)}
           </select>
@@ -372,16 +372,16 @@ function MatchContent({ profile, job, jobs, matchJobId, onChangeJob }) {
               style={{ transition: "stroke-dashoffset .6s, stroke .3s" }}/>
           </svg>
           <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <span style={{ fontSize: 18, fontWeight: 800, color: pct !== null ? matchColor(pct) : "var(--ink-400)", fontFamily: "var(--mono)" }}>
+            <span style={{ fontSize: "var(--text-xl)", fontWeight: 800, color: pct !== null ? matchColor(pct) : "var(--ink-400)", fontFamily: "var(--mono)" }}>
               {pct !== null ? pct : "—"}
             </span>
           </div>
         </div>
         <div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)" }}>
+          <div style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)" }}>
             {pct !== null ? matchLabel(pct) : "Välj annons"}
           </div>
-          {selectedJob && <div style={{ fontSize: 12.5, color: "var(--ink-500)", marginTop: 2, lineHeight: 1.4 }}>mot {selectedJob.title}</div>}
+          {selectedJob && <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", marginTop: 2, lineHeight: 1.4 }}>mot {selectedJob.title}</div>}
         </div>
       </div>
       {criteria.length > 0 && (
@@ -391,13 +391,13 @@ function MatchContent({ profile, job, jobs, matchJobId, onChangeJob }) {
               <span style={{ width: 18, height: 18, borderRadius: 9, background: b.met ? "var(--success-tint)" : "var(--paper-2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: b.met ? "var(--success)" : "var(--ink-400)" }}>
                 {b.met ? <CheckIcon /> : <XIcon />}
               </span>
-              <span style={{ fontSize: 13.5, color: b.met ? "var(--ink-700)" : "var(--ink-400)", fontWeight: 500 }}>{b.label}</span>
+              <span style={{ fontSize: "var(--text-sm)", color: b.met ? "var(--ink-700)" : "var(--ink-400)", fontWeight: 500 }}>{b.label}</span>
             </div>
           ))}
         </div>
       )}
       {!selectedJob && (
-        <p style={{ fontSize: 13, color: "var(--ink-400)", lineHeight: 1.5 }}>Välj en av dina annonser ovan för att se hur bra föraren matchar.</p>
+        <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-400)", lineHeight: 1.5 }}>Välj en av dina annonser ovan för att se hur bra föraren matchar.</p>
       )}
     </div>
   );
@@ -503,7 +503,7 @@ export default function DriverProfileView({
               {name}
             </h1>
 
-            <div style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--ink-500)", fontSize: 14, marginBottom: 14 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--ink-500)", fontSize: "var(--text-base)", marginBottom: 14 }}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
               <span style={{ fontWeight: 500 }}>
                 {[profile.location, profile.region].filter(Boolean).join(", ") || "—"}
@@ -518,7 +518,7 @@ export default function DriverProfileView({
               {(profile.licenses || []).map((l) => (
                 <span key={l} style={{
                   display: "inline-flex", alignItems: "center", padding: "4px 11px", borderRadius: 999,
-                  fontSize: 12.5, fontWeight: 600,
+                  fontSize: "var(--text-xs)", fontWeight: 600,
                   background: "var(--green)", color: "#fff",
                   boxShadow: "0 1px 2px rgba(31,95,92,0.20), inset 0 -1px 0 rgba(0,0,0,0.10)",
                 }}>{l}</span>
@@ -527,20 +527,20 @@ export default function DriverProfileView({
                 const st = expiryStatus(certExpiry[cid]);
                 const label = getCertificateLabel(cid);
                 if (!st) return (
-                  <span key={cid} style={{ padding: "4px 11px", borderRadius: 999, fontSize: 12.5, fontWeight: 600, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-700)" }}>{label}</span>
+                  <span key={cid} style={{ padding: "4px 11px", borderRadius: 999, fontSize: "var(--text-xs)", fontWeight: 600, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-700)" }}>{label}</span>
                 );
                 if (st.days < 0) return (
-                  <span key={cid} style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 11px", borderRadius: 999, fontSize: 12.5, fontWeight: 600, background: "var(--danger-tint)", border: "1px solid rgba(185,28,59,0.18)", color: "var(--danger)" }}>
+                  <span key={cid} style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 11px", borderRadius: 999, fontSize: "var(--text-xs)", fontWeight: 600, background: "var(--danger-tint)", border: "1px solid rgba(185,28,59,0.18)", color: "var(--danger)" }}>
                     <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--danger)", display: "inline-block" }} />{label} · Utgånget
                   </span>
                 );
                 if (st.days < 180) return (
-                  <span key={cid} style={{ padding: "4px 11px", borderRadius: 999, fontSize: 12.5, fontWeight: 600, background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.2)", color: "var(--amber-text)" }}>{label} · {st.label}</span>
+                  <span key={cid} style={{ padding: "4px 11px", borderRadius: 999, fontSize: "var(--text-xs)", fontWeight: 600, background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.2)", color: "var(--amber-text)" }}>{label} · {st.label}</span>
                 );
-                return <span key={cid} style={{ padding: "4px 11px", borderRadius: 999, fontSize: 12.5, fontWeight: 600, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-700)" }}>{label}</span>;
+                return <span key={cid} style={{ padding: "4px 11px", borderRadius: 999, fontSize: "var(--text-xs)", fontWeight: 600, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-700)" }}>{label}</span>;
               })}
               {availLabel && (
-                <span style={{ padding: "4px 11px", borderRadius: 999, fontSize: 12.5, fontWeight: 600, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-600)" }}>{availLabel}</span>
+                <span style={{ padding: "4px 11px", borderRadius: 999, fontSize: "var(--text-xs)", fontWeight: 600, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-600)" }}>{availLabel}</span>
               )}
             </div>
           </div>
@@ -549,11 +549,11 @@ export default function DriverProfileView({
           <div style={{ display: "flex", gap: 8, flexShrink: 0, paddingTop: 4 }}>
             {mode === "self" && !editing && (
               <>
-                <button onClick={handleShare} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 9, border: "1px solid var(--line-2)", background: "var(--card)", color: "var(--ink-700)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font)" }}>
+                <button onClick={handleShare} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 9, border: "1px solid var(--line-2)", background: "var(--card)", color: "var(--ink-700)", fontSize: "var(--text-sm)", fontWeight: 600, cursor: "pointer", fontFamily: "var(--font)" }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
                   {linkCopied ? "Kopierat!" : "Dela profil"}
                 </button>
-                <button onClick={onEdit} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 18px", borderRadius: 9, border: "1px solid var(--green)", background: "var(--green)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font)" }}>
+                <button onClick={onEdit} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 18px", borderRadius: 9, border: "1px solid var(--green)", background: "var(--green)", color: "#fff", fontSize: "var(--text-sm)", fontWeight: 700, cursor: "pointer", fontFamily: "var(--font)" }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                   Redigera profil
                 </button>
@@ -564,13 +564,13 @@ export default function DriverProfileView({
                 <button onClick={() => setStarred((s) => !s)} style={{ width: 44, height: 44, borderRadius: 10, background: starred ? "var(--amber-tint)" : "var(--paper-2)", border: `1px solid ${starred ? "var(--amber)" : "var(--line-2)"}`, color: starred ? "var(--amber)" : "var(--ink-500)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   {starred ? <StarFilled /> : <StarEmpty />}
                 </button>
-                <button onClick={() => { setShowReachOut(true); track("reach_out_modal_opened", { driverId: profileId }); }} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 10, background: "var(--green)", border: "none", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: "var(--font)" }}>
+                <button onClick={() => { setShowReachOut(true); track("reach_out_modal_opened", { driverId: profileId }); }} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 10, background: "var(--green)", border: "none", color: "#fff", fontSize: "var(--text-base)", fontWeight: 800, cursor: "pointer", fontFamily: "var(--font)" }}>
                   <MsgIcon /> Kontakta {name.split(" ")[0]}
                 </button>
               </>
             )}
             {mode === "public" && (
-              <button onClick={handleShare} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 9, border: "1px solid var(--line-2)", background: "var(--card)", color: "var(--ink-700)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font)" }}>
+              <button onClick={handleShare} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 9, border: "1px solid var(--line-2)", background: "var(--card)", color: "var(--ink-700)", fontSize: "var(--text-sm)", fontWeight: 600, cursor: "pointer", fontFamily: "var(--font)" }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
                 {shared ? "Kopierat!" : "Dela profil"}
               </button>
@@ -583,7 +583,7 @@ export default function DriverProfileView({
           {["profil", "matchningar", "statistik"].map((t) => (
             <button key={t} onClick={() => setTab(t)} style={{
               padding: "14px 22px", border: "none", background: "transparent", cursor: "pointer",
-              fontFamily: "var(--font)", fontSize: 13.5, fontWeight: tab === t ? 700 : 500,
+              fontFamily: "var(--font)", fontSize: "var(--text-sm)", fontWeight: tab === t ? 700 : 500,
               color: tab === t ? "var(--ink-900)" : "var(--ink-500)",
               borderBottom: tab === t ? "2px solid var(--green)" : "2px solid transparent",
               transition: "all .15s",
@@ -606,12 +606,12 @@ export default function DriverProfileView({
                 <div style={{ background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.2)", borderRadius: 12, padding: "18px 22px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
                     <span style={{ color: "var(--amber-text)", display: "inline-flex" }}><SparkIcon /></span>
-                    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", color: "var(--amber-text)" }}>AI-sammanfattning</div>
+                    <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", color: "var(--amber-text)" }}>AI-sammanfattning</div>
                   </div>
                   {driverSummaryLoading ? (
                     <div style={{ height: 16, background: "var(--amber-tint-2)", borderRadius: 8, width: "75%" }} />
                   ) : (
-                    <p style={{ fontSize: 14, lineHeight: 1.6, color: "var(--ink-700)", margin: 0 }}>{driverSummary}</p>
+                    <p style={{ fontSize: "var(--text-base)", lineHeight: 1.6, color: "var(--ink-700)", margin: 0 }}>{driverSummary}</p>
                   )}
                 </div>
               )}
@@ -620,7 +620,7 @@ export default function DriverProfileView({
               {expiredCerts.length > 0 && (
                 <div style={{ padding: "14px 18px", borderRadius: 12, background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.2)" }}>
                   {expiredCerts.map((cid) => (
-                    <p key={cid} style={{ fontSize: 13, color: "var(--amber-text)", fontWeight: 600, margin: "0 0 4px" }}>
+                    <p key={cid} style={{ fontSize: "var(--text-sm)", color: "var(--amber-text)", fontWeight: 600, margin: "0 0 4px" }}>
                       ⚠ {getCertificateLabel(cid)} är utgånget — du kan missa matchningar från åkerier som kräver detta certifikat.
                     </p>
                   ))}
@@ -631,11 +631,11 @@ export default function DriverProfileView({
               {(profile.summary || mode === "self") && (
                 <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, padding: "20px 24px", boxShadow: "var(--sh-sm)" }}>
                   <div style={{ marginBottom: 14 }}>
-                    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)" }}>Om mig</div>
+                    <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)" }}>Om mig</div>
                   </div>
                   {profile.summary
-                    ? <p style={{ fontSize: 15, color: "var(--ink-700)", lineHeight: 1.7, margin: 0 }}>{profile.summary}</p>
-                    : <p style={{ fontSize: 14, color: "var(--ink-400)", margin: 0 }}>Ingen presentation ännu — lägg till för att synas mer.</p>
+                    ? <p style={{ fontSize: "var(--text-md)", color: "var(--ink-700)", lineHeight: 1.7, margin: 0 }}>{profile.summary}</p>
+                    : <p style={{ fontSize: "var(--text-base)", color: "var(--ink-400)", margin: 0 }}>Ingen presentation ännu — lägg till för att synas mer.</p>
                   }
                 </div>
               )}
@@ -643,7 +643,7 @@ export default function DriverProfileView({
               {/* Erfarenhet */}
               {(profile.experience || []).length > 0 && (
                 <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, padding: "20px 24px", boxShadow: "var(--sh-sm)" }}>
-                  <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 14 }}>Erfarenhet</div>
+                  <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 14 }}>Erfarenhet</div>
                   <div style={{ display: "flex", flexDirection: "column" }}>
                     {(profile.experience || []).map((exp, i) => (
                       <div key={exp.id || i} style={{ display: "grid", gridTemplateColumns: "16px 1fr auto", gap: 16, padding: "16px 0", borderBottom: i < profile.experience.length - 1 ? "1px solid var(--line)" : "none", alignItems: "start" }}>
@@ -653,19 +653,19 @@ export default function DriverProfileView({
                         </div>
                         <div>
                           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                            <span style={{ fontSize: 15, fontWeight: 700, color: "var(--ink-900)" }}>{exp.role}</span>
-                            {exp.current && <span style={{ padding: "2px 8px", borderRadius: 6, fontSize: 11, fontWeight: 600, background: "var(--success-tint)", color: "var(--success)", border: "1px solid var(--success)" }}>Pågående</span>}
+                            <span style={{ fontSize: "var(--text-md)", fontWeight: 700, color: "var(--ink-900)" }}>{exp.role}</span>
+                            {exp.current && <span style={{ padding: "2px 8px", borderRadius: 6, fontSize: "var(--text-2xs)", fontWeight: 600, background: "var(--success-tint)", color: "var(--success)", border: "1px solid var(--success)" }}>Pågående</span>}
                           </div>
-                          <div style={{ fontSize: 13.5, color: "var(--ink-500)", marginTop: 2, fontWeight: 500 }}>{exp.company}</div>
+                          <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", marginTop: 2, fontWeight: 500 }}>{exp.company}</div>
                           {(exp.vehicleTypes?.length > 0 || exp.jobType) && (
                             <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 6 }}>
-                              {(exp.vehicleTypes || []).map((v) => <span key={v} style={{ padding: "3px 8px", borderRadius: 6, fontSize: 11.5, background: "var(--paper-2)", color: "var(--ink-500)", border: "1px solid var(--line)" }}>{EXP_VEHICLE_TYPES.find((x) => x.value === v)?.label || v}</span>)}
-                              {exp.jobType && <span style={{ padding: "3px 8px", borderRadius: 6, fontSize: 11.5, background: "var(--green-tint)", color: "var(--green-text)", border: "1px solid rgba(31,95,92,0.2)" }}>{EXP_JOB_TYPES.find((x) => x.value === exp.jobType)?.label || exp.jobType}</span>}
+                              {(exp.vehicleTypes || []).map((v) => <span key={v} style={{ padding: "3px 8px", borderRadius: 6, fontSize: "var(--text-2xs)", background: "var(--paper-2)", color: "var(--ink-500)", border: "1px solid var(--line)" }}>{EXP_VEHICLE_TYPES.find((x) => x.value === v)?.label || v}</span>)}
+                              {exp.jobType && <span style={{ padding: "3px 8px", borderRadius: 6, fontSize: "var(--text-2xs)", background: "var(--green-tint)", color: "var(--green-text)", border: "1px solid rgba(31,95,92,0.2)" }}>{EXP_JOB_TYPES.find((x) => x.value === exp.jobType)?.label || exp.jobType}</span>}
                             </div>
                           )}
-                          {exp.description && <div style={{ fontSize: 13, color: "var(--ink-500)", marginTop: 6 }}>{exp.description}</div>}
+                          {exp.description && <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", marginTop: 6 }}>{exp.description}</div>}
                         </div>
-                        <div style={{ fontSize: 12.5, color: "var(--ink-500)", fontWeight: 600, fontFamily: "var(--mono)", whiteSpace: "nowrap", paddingTop: 4 }}>{formatYearRange(exp)}</div>
+                        <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", fontWeight: 600, fontFamily: "var(--mono)", whiteSpace: "nowrap", paddingTop: 4 }}>{formatYearRange(exp)}</div>
                       </div>
                     ))}
                   </div>
@@ -675,10 +675,10 @@ export default function DriverProfileView({
               {/* Kan jobba i */}
               {(profile.regionsWilling || []).length > 0 && (
                 <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, padding: "20px 24px", boxShadow: "var(--sh-sm)" }}>
-                  <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 14 }}>Kan jobba i</div>
+                  <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 14 }}>Kan jobba i</div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                     {profile.regionsWilling.map((r) => (
-                      <span key={r} style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 99, background: "var(--green-tint)", color: "var(--green-text)", fontSize: 13, fontWeight: 600 }}>
+                      <span key={r} style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 99, background: "var(--green-tint)", color: "var(--green-text)", fontSize: "var(--text-sm)", fontWeight: 600 }}>
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 11, height: 11 }}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                         {r}
                       </span>
@@ -690,9 +690,9 @@ export default function DriverProfileView({
               {/* Omdömen */}
               <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, padding: "20px 24px", boxShadow: "var(--sh-sm)" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-                  <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)" }}>Omdömen</div>
+                  <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)" }}>Omdömen</div>
                   {mode === "company" && (
-                    <button onClick={() => setShowReviewModal(true)} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, border: "1px solid var(--line-2)", background: "var(--paper-2)", color: "var(--ink-700)", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+                    <button onClick={() => setShowReviewModal(true)} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, border: "1px solid var(--line-2)", background: "var(--paper-2)", color: "var(--ink-700)", fontSize: "var(--text-xs)", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>
                       Lämna omdöme
                     </button>
@@ -717,7 +717,7 @@ export default function DriverProfileView({
           {/* STATISTIK TAB */}
           {tab === "statistik" && (
             <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, padding: "22px 24px", boxShadow: "var(--sh-sm)" }}>
-              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 18 }}>Profilstatistik</div>
+              <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 18 }}>Profilstatistik</div>
               {mode === "self" && profileStats ? (
                 <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
@@ -732,13 +732,13 @@ export default function DriverProfileView({
                     ))}
                   </div>
                   {profileStats.conversationCount > 0 && (
-                    <p style={{ fontSize: 12, color: "var(--success)", fontWeight: 600, margin: 0 }}>
+                    <p style={{ fontSize: "var(--text-xs)", color: "var(--success)", fontWeight: 600, margin: 0 }}>
                       {profileStats.conversationCount} {profileStats.conversationCount === 1 ? "åkeri" : "åkerier"} har kontaktat dig
                     </p>
                   )}
                 </div>
               ) : (
-                <p style={{ fontSize: 13, color: "var(--ink-400)" }}>
+                <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-400)" }}>
                   {mode === "self" ? "Laddar statistik…" : "Statistik är bara synlig för föraren själv."}
                 </p>
               )}
@@ -757,7 +757,7 @@ export default function DriverProfileView({
           {/* Company mode: match card */}
           {mode === "company" && apiJobs.length > 0 && (
             <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, padding: "22px 24px", boxShadow: "var(--sh-sm)" }}>
-              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 14 }}>Matchning mot annons</div>
+              <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 14 }}>Matchning mot annons</div>
               <MatchContent
                 profile={profile}
                 job={job}
@@ -772,10 +772,10 @@ export default function DriverProfileView({
           {mode === "company" && (
             <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, padding: "20px 24px", boxShadow: "var(--sh-sm)" }}>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                <button onClick={() => { setShowReachOut(true); track("reach_out_modal_opened", { driverId: profileId }); }} style={{ width: "100%", padding: "12px 18px", borderRadius: 10, background: "var(--green)", border: "none", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: "inherit" }}>
+                <button onClick={() => { setShowReachOut(true); track("reach_out_modal_opened", { driverId: profileId }); }} style={{ width: "100%", padding: "12px 18px", borderRadius: 10, background: "var(--green)", border: "none", color: "#fff", fontSize: "var(--text-base)", fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: "inherit" }}>
                   <MsgIcon /> Kontakta {name.split(" ")[0]}
                 </button>
-                <button onClick={() => setStarred((s) => !s)} style={{ width: "100%", padding: "11px 18px", borderRadius: 10, background: starred ? "var(--amber-tint)" : "var(--paper-2)", border: `1px solid ${starred ? "var(--amber)" : "var(--line-2)"}`, color: starred ? "var(--amber-text)" : "var(--ink-700)", fontSize: 13.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: "inherit" }}>
+                <button onClick={() => setStarred((s) => !s)} style={{ width: "100%", padding: "11px 18px", borderRadius: 10, background: starred ? "var(--amber-tint)" : "var(--paper-2)", border: `1px solid ${starred ? "var(--amber)" : "var(--line-2)"}`, color: starred ? "var(--amber-text)" : "var(--ink-700)", fontSize: "var(--text-sm)", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: "inherit" }}>
                   {starred ? <StarFilled /> : <StarEmpty />} {starred ? "Sparad i kandidatlista" : "Spara kandidat"}
                 </button>
               </div>
@@ -788,15 +788,15 @@ export default function DriverProfileView({
           {/* Self mode: profile link */}
           {mode === "self" && (
             <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "22px 24px" }}>
-              <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-500)", marginBottom: 12 }}>Din profillänk</p>
-              <p style={{ fontSize: 13.5, color: "var(--ink-700)", marginBottom: 14, lineHeight: 1.5 }}>
+              <p style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-500)", marginBottom: 12 }}>Din profillänk</p>
+              <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-700)", marginBottom: 14, lineHeight: 1.5 }}>
                 Dela med åkerier — de ser din profil utan inloggning.
               </p>
               <div style={{ display: "flex", alignItems: "center", gap: 0, background: "var(--card-2)", border: "1px solid var(--line-2)", borderRadius: 9, paddingLeft: 12, overflow: "hidden" }}>
-                <span style={{ flex: 1, fontSize: 12.5, fontFamily: "var(--mono)", color: "var(--ink-700)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", paddingRight: 8 }}>
+                <span style={{ flex: 1, fontSize: "var(--text-xs)", fontFamily: "var(--mono)", color: "var(--ink-700)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", paddingRight: 8 }}>
                   transportplattformen.se/forare/{profile.slug || profileId}
                 </span>
-                <button onClick={onCopyLink} style={{ background: linkCopied ? "var(--success)" : "var(--ink-900)", color: "#fff", padding: "10px 14px", fontSize: 12.5, fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 6, border: "none", cursor: "pointer", transition: "background .2s", fontFamily: "inherit" }}>
+                <button onClick={onCopyLink} style={{ background: linkCopied ? "var(--success)" : "var(--ink-900)", color: "#fff", padding: "10px 14px", fontSize: "var(--text-xs)", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 6, border: "none", cursor: "pointer", transition: "background .2s", fontFamily: "inherit" }}>
                   {linkCopied ? "Kopierad ✓" : "Kopiera"}
                 </button>
               </div>

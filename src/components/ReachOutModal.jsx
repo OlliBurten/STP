@@ -65,17 +65,17 @@ export default function ReachOutModal({ driver, jobs, onClose, onSuccess }) {
             <div style={{ width: 48, height: 48, borderRadius: 99, background: "var(--success-tint)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", color: "var(--success)" }}>
               <CheckIcon className="w-6 h-6" />
             </div>
-            <div style={{ fontSize: 18, fontWeight: 800, color: "var(--ink-900)", marginBottom: 8 }}>Förfrågan skickad</div>
-            <p style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.55, marginBottom: 24 }}>
+            <div style={{ fontSize: "var(--text-xl)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 8 }}>Förfrågan skickad</div>
+            <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.55, marginBottom: 24 }}>
               Din förfrågan har skickats till {driver.name}.
             </p>
             <Link
               to={`/foretag/meddelanden/${conversationId}`}
-              style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", padding: "15px", borderRadius: 14, background: "var(--green)", color: "#fff", fontSize: 15, fontWeight: 700, textDecoration: "none", marginBottom: 12 }}
+              style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", padding: "15px", borderRadius: 14, background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 700, textDecoration: "none", marginBottom: 12 }}
             >
               Öppna konversation
             </Link>
-            <button type="button" onClick={onClose} style={{ width: "100%", padding: "12px", background: "transparent", border: "none", color: "var(--ink-400)", fontSize: 14, cursor: "pointer" }}>
+            <button type="button" onClick={onClose} style={{ width: "100%", padding: "12px", background: "transparent", border: "none", color: "var(--ink-400)", fontSize: "var(--text-base)", cursor: "pointer" }}>
               Stäng
             </button>
           </div>
@@ -124,7 +124,7 @@ export default function ReachOutModal({ driver, jobs, onClose, onSuccess }) {
             </button>
           </div>
 
-          <p style={{ fontSize: 13, color: "var(--ink-500)", marginBottom: 18, lineHeight: 1.5 }}>
+          <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", marginBottom: 18, lineHeight: 1.5 }}>
             All kommunikation sker via Sveriges Transportplattform.
           </p>
 
@@ -134,7 +134,7 @@ export default function ReachOutModal({ driver, jobs, onClose, onSuccess }) {
                 key={m}
                 type="button"
                 onClick={() => setMode(m)}
-                style={{ flex: 1, padding: "10px", borderRadius: 11, fontSize: 13, fontWeight: 700, cursor: "pointer", background: mode === m ? "var(--green)" : "var(--paper-2)", border: `1px solid ${mode === m ? "var(--green)" : "var(--line)"}`, color: mode === m ? "#fff" : "var(--ink-500)" }}
+                style={{ flex: 1, padding: "10px", borderRadius: 11, fontSize: "var(--text-sm)", fontWeight: 700, cursor: "pointer", background: mode === m ? "var(--green)" : "var(--paper-2)", border: `1px solid ${mode === m ? "var(--green)" : "var(--line)"}`, color: mode === m ? "#fff" : "var(--ink-500)" }}
               >
                 {m === "general" ? "Generell förfrågan" : "Bjud in till jobb"}
               </button>
@@ -143,19 +143,19 @@ export default function ReachOutModal({ driver, jobs, onClose, onSuccess }) {
 
           <form onSubmit={handleSubmit}>
             {mode === "general" && companyName && (
-              <div style={{ marginBottom: 16, padding: "12px 16px", borderRadius: 11, background: "var(--paper-2)", border: "1px solid var(--line)", fontSize: 13, color: "var(--ink-500)" }}>
+              <div style={{ marginBottom: 16, padding: "12px 16px", borderRadius: 11, background: "var(--paper-2)", border: "1px solid var(--line)", fontSize: "var(--text-sm)", color: "var(--ink-500)" }}>
                 Från: <span style={{ fontWeight: 700, color: "var(--ink-900)" }}>{companyName}</span>
               </div>
             )}
 
             {mode === "invite" && (
               <div style={{ marginBottom: 16 }}>
-                <div style={{ fontSize: 12.5, fontWeight: 700, color: "var(--ink-500)", marginBottom: 8 }}>Välj jobb</div>
+                <div style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--ink-500)", marginBottom: 8 }}>Välj jobb</div>
                 <select
                   required
                   value={selectedJobId}
                   onChange={(e) => setSelectedJobId(e.target.value)}
-                  style={{ width: "100%", padding: "12px 16px", borderRadius: 11, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-900)", fontSize: 14, outline: "none" }}
+                  style={{ width: "100%", padding: "12px 16px", borderRadius: 11, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-900)", fontSize: "var(--text-base)", outline: "none" }}
                 >
                   <option value="">Välj jobb</option>
                   {jobs.map((j) => (
@@ -167,7 +167,7 @@ export default function ReachOutModal({ driver, jobs, onClose, onSuccess }) {
 
             <div style={{ marginBottom: 20 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                <div style={{ fontSize: 12.5, fontWeight: 700, color: "var(--ink-500)" }}>Meddelande</div>
+                <div style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--ink-500)" }}>Meddelande</div>
                 <button
                   type="button"
                   onClick={async () => {
@@ -179,7 +179,7 @@ export default function ReachOutModal({ driver, jobs, onClose, onSuccess }) {
                     setSuggesting(false);
                   }}
                   disabled={suggesting}
-                  style={{ fontSize: 12, fontWeight: 600, color: "var(--green-text)", background: "none", border: "none", cursor: "pointer", opacity: suggesting ? 0.5 : 1, padding: 0 }}
+                  style={{ fontSize: "var(--text-xs)", fontWeight: 600, color: "var(--green-text)", background: "none", border: "none", cursor: "pointer", opacity: suggesting ? 0.5 : 1, padding: 0 }}
                 >
                   {suggesting ? "Skriver..." : "Förslag"}
                 </button>
@@ -190,14 +190,14 @@ export default function ReachOutModal({ driver, jobs, onClose, onSuccess }) {
                 placeholder={mode === "invite" ? "Skriv ett kort meddelande till föraren om jobbet..." : "Skriv vad du vill diskutera..."}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                style={{ width: "100%", padding: "12px 16px", borderRadius: 11, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-900)", fontSize: 14, outline: "none", resize: "none", lineHeight: 1.55, boxSizing: "border-box" }}
+                style={{ width: "100%", padding: "12px 16px", borderRadius: 11, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-900)", fontSize: "var(--text-base)", outline: "none", resize: "none", lineHeight: 1.55, boxSizing: "border-box" }}
               />
             </div>
 
             <button
               type="submit"
               disabled={sending}
-              style={{ width: "100%", padding: "15px", borderRadius: 14, background: "var(--green)", border: "none", color: "#fff", fontSize: 15, fontWeight: 800, cursor: "pointer", opacity: sending ? 0.7 : 1 }}
+              style={{ width: "100%", padding: "15px", borderRadius: 14, background: "var(--green)", border: "none", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, cursor: "pointer", opacity: sending ? 0.7 : 1 }}
             >
               {sending ? "Skickar..." : mode === "invite" ? "Bjud in" : "Skicka förfrågan"}
             </button>

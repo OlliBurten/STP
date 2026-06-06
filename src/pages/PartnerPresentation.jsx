@@ -103,10 +103,10 @@ function SlideFooter({ page, total }) {
       alignItems: "center",
       borderTop: `1px solid ${BORDER}`,
     }}>
-      <span style={{ fontSize: 11, color: "rgba(240,250,249,0.3)", fontWeight: 600 }}>
+      <span style={{ fontSize: "var(--text-2xs)", color: "rgba(240,250,249,0.3)", fontWeight: 600 }}>
         transportplattformen.se
       </span>
-      <span style={{ fontSize: 11, color: "rgba(240,250,249,0.3)" }}>
+      <span style={{ fontSize: "var(--text-2xs)", color: "rgba(240,250,249,0.3)" }}>
         {page} / {total}
       </span>
     </div>
@@ -138,7 +138,7 @@ export default function PartnerPresentation() {
             background: ACCENT,
             color: BG,
             fontWeight: 800,
-            fontSize: 14,
+            fontSize: "var(--text-base)",
             border: "none",
             cursor: "pointer",
           }}
@@ -152,7 +152,7 @@ export default function PartnerPresentation() {
         {/* ── SLIDE 1: Cover ── */}
         <Slide style={{ justifyContent: "space-between" }}>
           <div>
-            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.15em", textTransform: "uppercase", color: ACCENT, marginBottom: 48 }}>
+            <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: "0.15em", textTransform: "uppercase", color: ACCENT, marginBottom: 48 }}>
               Sveriges Transportplattform
             </div>
             <h1 style={{ fontSize: 46, fontWeight: 900, color: TEXT, lineHeight: 1.1, letterSpacing: "-1.5px", margin: "0 0 24px", maxWidth: 560 }}>
@@ -172,8 +172,8 @@ export default function PartnerPresentation() {
                 { label: "Segment", value: "Heltid · Vikariat · Praktik" },
               ].map((s) => (
                 <div key={s.label}>
-                  <div style={{ fontSize: 11, color: "rgba(240,250,249,0.4)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>{s.label}</div>
-                  <div style={{ fontSize: 15, color: TEXT, fontWeight: 800 }}>{s.value}</div>
+                  <div style={{ fontSize: "var(--text-2xs)", color: "rgba(240,250,249,0.4)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>{s.label}</div>
+                  <div style={{ fontSize: "var(--text-md)", color: TEXT, fontWeight: 800 }}>{s.value}</div>
                 </div>
               ))}
             </div>
@@ -187,7 +187,7 @@ export default function PartnerPresentation() {
           <h2 style={{ fontSize: 32, fontWeight: 900, color: TEXT, margin: "0 0 10px", letterSpacing: "-0.5px" }}>
             Transportbranschen har ett matchningsproblem
           </h2>
-          <p style={{ fontSize: 15, color: SUB, lineHeight: 1.7, margin: "0 0 36px", maxWidth: 580 }}>
+          <p style={{ fontSize: "var(--text-md)", color: SUB, lineHeight: 1.7, margin: "0 0 36px", maxWidth: 580 }}>
             Sverige behöver tusentals nya yrkesförare de kommande åren. Ändå tar det onödigt lång tid att koppla ihop rätt förare med rätt åkeri.
           </p>
 
@@ -216,8 +216,8 @@ export default function PartnerPresentation() {
             ].map((p) => (
               <div key={p.title} style={{ background: CARD_BG, border: `1px solid ${BORDER}`, borderRadius: 12, padding: "18px 20px" }}>
                 <div style={{ fontSize: 22, marginBottom: 10 }}>{p.icon}</div>
-                <div style={{ fontWeight: 800, color: TEXT, fontSize: 14, marginBottom: 6 }}>{p.title}</div>
-                <div style={{ fontSize: 13, color: SUB, lineHeight: 1.6 }}>{p.body}</div>
+                <div style={{ fontWeight: 800, color: TEXT, fontSize: "var(--text-base)", marginBottom: 6 }}>{p.title}</div>
+                <div style={{ fontSize: "var(--text-sm)", color: SUB, lineHeight: 1.6 }}>{p.body}</div>
               </div>
             ))}
           </div>
@@ -231,7 +231,7 @@ export default function PartnerPresentation() {
           <h2 style={{ fontSize: 32, fontWeight: 900, color: TEXT, margin: "0 0 10px", letterSpacing: "-0.5px" }}>
             Strukturerad matchning — utan mellankraft
           </h2>
-          <p style={{ fontSize: 15, color: SUB, lineHeight: 1.7, margin: "0 0 36px", maxWidth: 580 }}>
+          <p style={{ fontSize: "var(--text-md)", color: SUB, lineHeight: 1.7, margin: "0 0 36px", maxWidth: 580 }}>
             STP samlar förare och åkerier på en plats med strukturerade profiler, sökbara certifikat och direktkommunikation.
           </p>
 
@@ -254,10 +254,10 @@ export default function PartnerPresentation() {
               },
             ].map((s) => (
               <div key={s.n} style={{ display: "flex", gap: 18, alignItems: "flex-start", background: CARD_BG, border: `1px solid ${BORDER}`, borderRadius: 12, padding: "18px 20px" }}>
-                <span style={{ fontSize: 12, fontWeight: 800, color: BG, background: ACCENT, borderRadius: 6, width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{s.n}</span>
+                <span style={{ fontSize: "var(--text-xs)", fontWeight: 800, color: BG, background: ACCENT, borderRadius: 6, width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{s.n}</span>
                 <div>
-                  <div style={{ fontWeight: 800, color: TEXT, fontSize: 14, marginBottom: 4 }}>{s.title}</div>
-                  <div style={{ fontSize: 13, color: SUB, lineHeight: 1.6 }}>{s.body}</div>
+                  <div style={{ fontWeight: 800, color: TEXT, fontSize: "var(--text-base)", marginBottom: 4 }}>{s.title}</div>
+                  <div style={{ fontSize: "var(--text-sm)", color: SUB, lineHeight: 1.6 }}>{s.body}</div>
                 </div>
               </div>
             ))}
@@ -272,7 +272,7 @@ export default function PartnerPresentation() {
           <h2 style={{ fontSize: 32, fontWeight: 900, color: TEXT, margin: "0 0 10px", letterSpacing: "-0.5px" }}>
             Tre segment — ett ekosystem
           </h2>
-          <p style={{ fontSize: 15, color: SUB, lineHeight: 1.7, margin: "0 0 36px", maxWidth: 580 }}>
+          <p style={{ fontSize: "var(--text-md)", color: SUB, lineHeight: 1.7, margin: "0 0 36px", maxWidth: 580 }}>
             STP täcker hela förarens karriärresa — från första praktikplats till fast heltidstjänst.
           </p>
 
@@ -305,9 +305,9 @@ export default function PartnerPresentation() {
             ].map((s) => (
               <div key={s.label} style={{ background: s.bg, border: `1px solid ${s.border}`, borderRadius: 14, padding: "20px 22px", display: "flex", gap: 20 }}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 900, color: s.color, fontSize: 16, marginBottom: 6 }}>{s.label}</div>
-                  <div style={{ fontSize: 13, color: SUB, lineHeight: 1.6, marginBottom: 8 }}>{s.desc}</div>
-                  <div style={{ fontSize: 12, color: s.color, fontWeight: 700, opacity: 0.8 }}>Målgrupp: {s.who}</div>
+                  <div style={{ fontWeight: 900, color: s.color, fontSize: "var(--text-lg)", marginBottom: 6 }}>{s.label}</div>
+                  <div style={{ fontSize: "var(--text-sm)", color: SUB, lineHeight: 1.6, marginBottom: 8 }}>{s.desc}</div>
+                  <div style={{ fontSize: "var(--text-xs)", color: s.color, fontWeight: 700, opacity: 0.8 }}>Målgrupp: {s.who}</div>
                 </div>
               </div>
             ))}
@@ -322,7 +322,7 @@ export default function PartnerPresentation() {
           <h2 style={{ fontSize: 32, fontWeight: 900, color: TEXT, margin: "0 0 10px", letterSpacing: "-0.5px" }}>
             Vem samarbetar vi med?
           </h2>
-          <p style={{ fontSize: 15, color: SUB, lineHeight: 1.7, margin: "0 0 36px", maxWidth: 580 }}>
+          <p style={{ fontSize: "var(--text-md)", color: SUB, lineHeight: 1.7, margin: "0 0 36px", maxWidth: 580 }}>
             Vi söker organisationer som möter yrkesförare i olika faser — utbildning, omställning och karriär.
           </p>
 
@@ -355,10 +355,10 @@ export default function PartnerPresentation() {
             ].map((p) => (
               <div key={p.label} style={{ background: CARD_BG, border: `1px solid ${BORDER}`, borderRadius: 12, padding: "18px 20px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-                  <span style={{ fontSize: 20 }}>{p.icon}</span>
-                  <span style={{ fontWeight: 800, color: p.color, fontSize: 14 }}>{p.label}</span>
+                  <span style={{ fontSize: "var(--text-2xl)" }}>{p.icon}</span>
+                  <span style={{ fontWeight: 800, color: p.color, fontSize: "var(--text-base)" }}>{p.label}</span>
                 </div>
-                <div style={{ fontSize: 13, color: SUB, lineHeight: 1.65 }}>{p.body}</div>
+                <div style={{ fontSize: "var(--text-sm)", color: SUB, lineHeight: 1.65 }}>{p.body}</div>
               </div>
             ))}
           </div>
@@ -372,7 +372,7 @@ export default function PartnerPresentation() {
           <h2 style={{ fontSize: 32, fontWeight: 900, color: TEXT, margin: "0 0 10px", letterSpacing: "-0.5px" }}>
             Det finns ingen liknande tjänst för transport
           </h2>
-          <p style={{ fontSize: 15, color: SUB, lineHeight: 1.7, margin: "0 0 36px", maxWidth: 580 }}>
+          <p style={{ fontSize: "var(--text-md)", color: SUB, lineHeight: 1.7, margin: "0 0 36px", maxWidth: 580 }}>
             Generella jobbtjänster saknar branschstruktur. Bemanningsbolag tar hög marginal. STP är byggt specifikt för yrkesförare och åkerier.
           </p>
 
@@ -385,10 +385,10 @@ export default function PartnerPresentation() {
               { icon: "✓", color: ACCENT, title: "Hela karriärresan", body: "Praktik → vikariat → heltid — ett ekosystem som följer föraren hela vägen." },
             ].map((r) => (
               <div key={r.title} style={{ display: "flex", gap: 14, alignItems: "flex-start", background: CARD_BG, border: `1px solid ${BORDER}`, borderRadius: 10, padding: "14px 18px" }}>
-                <span style={{ color: r.color, fontWeight: 900, fontSize: 16, flexShrink: 0, lineHeight: 1 }}>✓</span>
+                <span style={{ color: r.color, fontWeight: 900, fontSize: "var(--text-lg)", flexShrink: 0, lineHeight: 1 }}>✓</span>
                 <div>
-                  <span style={{ fontWeight: 800, color: TEXT, fontSize: 14 }}>{r.title} — </span>
-                  <span style={{ fontSize: 14, color: SUB, lineHeight: 1.6 }}>{r.body}</span>
+                  <span style={{ fontWeight: 800, color: TEXT, fontSize: "var(--text-base)" }}>{r.title} — </span>
+                  <span style={{ fontSize: "var(--text-base)", color: SUB, lineHeight: 1.6 }}>{r.body}</span>
                 </div>
               </div>
             ))}
@@ -404,7 +404,7 @@ export default function PartnerPresentation() {
             <h2 style={{ fontSize: 38, fontWeight: 900, color: TEXT, margin: "0 0 20px", letterSpacing: "-1px", lineHeight: 1.15 }}>
               Redo att samarbeta?
             </h2>
-            <p style={{ fontSize: 16, color: SUB, lineHeight: 1.75, maxWidth: 520, margin: "0 0 40px" }}>
+            <p style={{ fontSize: "var(--text-lg)", color: SUB, lineHeight: 1.75, maxWidth: 520, margin: "0 0 40px" }}>
               Hör av er så berättar vi hur ett samarbete kan se ut för just er organisation. Vi svarar inom en arbetsdag.
             </p>
 
@@ -414,8 +414,8 @@ export default function PartnerPresentation() {
                 { label: "Webb", value: "transportplattformen.se/partner" },
               ].map((c) => (
                 <div key={c.label} style={{ display: "flex", gap: 16, alignItems: "center" }}>
-                  <div style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(240,250,249,0.35)", width: 60 }}>{c.label}</div>
-                  <div style={{ fontWeight: 700, color: TEAL, fontSize: 15 }}>{c.value}</div>
+                  <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(240,250,249,0.35)", width: 60 }}>{c.label}</div>
+                  <div style={{ fontWeight: 700, color: TEAL, fontSize: "var(--text-md)" }}>{c.value}</div>
                 </div>
               ))}
             </div>
@@ -423,7 +423,7 @@ export default function PartnerPresentation() {
 
           <div>
             <div style={{ background: `${ACCENT}10`, border: `1px solid ${ACCENT}25`, borderRadius: 12, padding: "18px 22px", marginBottom: 24 }}>
-              <p style={{ fontSize: 13, color: SUB, lineHeight: 1.7, margin: 0 }}>
+              <p style={{ fontSize: "var(--text-sm)", color: SUB, lineHeight: 1.7, margin: 0 }}>
                 <span style={{ color: ACCENT, fontWeight: 700 }}>För Arbetsförmedlingen: </span>
                 Vi erbjuder anpassad URL-integration och kan tillhandahålla statistik om hur många AF-deltagare som registrerat sig och fått jobb via plattformen.
               </p>

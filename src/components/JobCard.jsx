@@ -16,8 +16,8 @@ function MatchBadge({ score }) {
       padding: "6px 12px", borderRadius: 999,
       background: bg,
     }}>
-      <span style={{ fontSize: 16, fontWeight: 800, color: fg, fontFamily: "var(--mono)", lineHeight: 1 }}>{pct}%</span>
-      <span style={{ fontSize: 11, fontWeight: 700, color: fg, letterSpacing: 0.4 }}>{label}</span>
+      <span style={{ fontSize: "var(--text-lg)", fontWeight: 800, color: fg, fontFamily: "var(--mono)", lineHeight: 1 }}>{pct}%</span>
+      <span style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: fg, letterSpacing: 0.4 }}>{label}</span>
     </span>
   );
 }
@@ -37,7 +37,7 @@ function Pill({ children, tone = "neutral" }) {
       display: "inline-flex", alignItems: "center", gap: 4,
       padding: "3px 9px", borderRadius: 999,
       background: s.bg, color: s.color,
-      fontSize: 11, fontWeight: 600, whiteSpace: "nowrap",
+      fontSize: "var(--text-2xs)", fontWeight: 600, whiteSpace: "nowrap",
     }}>{children}</span>
   );
 }
@@ -122,26 +122,26 @@ export default function JobCard({
               }}>
                 {job.title}
               </div>
-              <div style={{ fontSize: 13, color: "var(--ink-500)", display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+              <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
                 <span style={{ fontWeight: 600, color: "var(--ink-700)" }}>{job.company}</span>
                 {job.source === "AGGREGATED" && !job.claimed ? (
                   <>
                     <span style={{ color: "var(--ink-300)" }}>·</span>
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 12, color: "var(--ink-400)", fontWeight: 500 }}>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: "var(--text-xs)", color: "var(--ink-400)", fontWeight: 500 }}>
                       Importerad annons
                     </span>
                   </>
                 ) : job.companyVerified ? (
                   <>
                     <span style={{ color: "var(--ink-300)" }}>·</span>
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 12, color: "var(--success)", fontWeight: 600 }}>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: "var(--text-xs)", color: "var(--success)", fontWeight: 600 }}>
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 12 10 18 20 6"/></svg>
                       Verifierat
                     </span>
                   </>
                 ) : null}
                 {job.kollektivavtal === true && (
-                  <span style={{ fontSize: 12, color: "var(--ink-500)", fontWeight: 500 }}>Kollektivavtal</span>
+                  <span style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", fontWeight: 500 }}>Kollektivavtal</span>
                 )}
               </div>
             </div>
@@ -186,7 +186,7 @@ export default function JobCard({
           {/* Description (desktop only) */}
           {!isMobile && job.description && (
             <p style={{
-              fontSize: 14, color: "var(--ink-500)", lineHeight: 1.6,
+              fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.6,
               marginBottom: 14,
               overflow: "hidden", display: "-webkit-box",
               WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
@@ -202,7 +202,7 @@ export default function JobCard({
               : <div />
             }
             {job.published && (
-              <span style={{ fontSize: 11.5, color: "var(--ink-400)" }}>Publ. {formatDate(job.published)}</span>
+              <span style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)" }}>Publ. {formatDate(job.published)}</span>
             )}
           </div>
 
@@ -214,7 +214,7 @@ export default function JobCard({
                   key={c.label}
                   style={{
                     display: "inline-flex", alignItems: "center", gap: 4,
-                    padding: "2px 8px", borderRadius: 99, fontSize: 11, fontWeight: 500,
+                    padding: "2px 8px", borderRadius: 99, fontSize: "var(--text-2xs)", fontWeight: 500,
                     background: c.met ? "var(--success-tint)" : "var(--paper-2)",
                     color: c.met ? "var(--success)" : "var(--ink-400)",
                   }}

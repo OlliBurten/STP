@@ -113,13 +113,13 @@ export default function Terms({ defaultDoc = "terms" }) {
       {/* Sub-nav — doc switcher (the global app header already provides the STP logo + main nav) */}
       <div style={{ background: "var(--card)", borderBottom: "1px solid var(--line)", position: "sticky", top: 0, zIndex: 40 }}>
         <div style={{ maxWidth: 1000, margin: "0 auto", padding: "0 32px", height: 56, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-500)" }}>Juridik</span>
+          <span style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-500)" }}>Juridik</span>
           <div style={{ display: "flex", gap: 4, background: "var(--card-2)", padding: 4, borderRadius: 10, border: "1px solid var(--line-2)" }}>
             {[["terms", "Villkor"], ["privacy", "Integritet"]].map(([k, l]) => (
               <button
                 key={k}
                 onClick={() => switchDoc(k)}
-                style={{ padding: "7px 16px", borderRadius: 7, fontSize: 13, fontWeight: 600, background: doc === k ? "var(--green)" : "transparent", color: doc === k ? "#fff" : "var(--ink-700)", border: "none", cursor: "pointer", fontFamily: "inherit", transition: "all .15s" }}
+                style={{ padding: "7px 16px", borderRadius: 7, fontSize: "var(--text-sm)", fontWeight: 600, background: doc === k ? "var(--green)" : "transparent", color: doc === k ? "#fff" : "var(--ink-700)", border: "none", cursor: "pointer", fontFamily: "inherit", transition: "all .15s" }}
               >
                 {l}
               </button>
@@ -131,12 +131,12 @@ export default function Terms({ defaultDoc = "terms" }) {
       <div className="legal-grid">
         {/* TOC sidebar */}
         <nav className="legal-toc" style={{ position: "sticky", top: 88 }}>
-          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-500)", marginBottom: 12 }}>Innehåll</div>
+          <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-500)", marginBottom: 12 }}>Innehåll</div>
           {d.sections.map((s) => (
             <a
               key={s.id}
               href={`#${s.id}`}
-              style={{ display: "block", fontSize: 13.5, color: "var(--ink-600)", padding: "7px 0 7px 14px", borderLeft: "2px solid var(--line)", textDecoration: "none", lineHeight: 1.4 }}
+              style={{ display: "block", fontSize: "var(--text-sm)", color: "var(--ink-600)", padding: "7px 0 7px 14px", borderLeft: "2px solid var(--line)", textDecoration: "none", lineHeight: 1.4 }}
             >
               {s.h}
             </a>
@@ -147,7 +147,7 @@ export default function Terms({ defaultDoc = "terms" }) {
         <div>
           <div style={{ marginBottom: 32, paddingBottom: 24, borderBottom: "1px solid var(--line)" }}>
             <h1 style={{ fontSize: 36, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.4, marginBottom: 8 }}>{d.title}</h1>
-            <p style={{ fontSize: 13.5, color: "var(--ink-500)" }}>{d.updated}</p>
+            <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)" }}>{d.updated}</p>
           </div>
           <div className="doc">
             {d.sections.map((s) => (

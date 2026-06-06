@@ -85,7 +85,7 @@ const ChevDown = () => (
 function Section({ title, children, last }) {
   return (
     <section style={{ padding: "28px 0", borderBottom: last ? "none" : "1px solid var(--line)" }}>
-      <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 18 }}>{title}</div>
+      <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 18 }}>{title}</div>
       {children}
     </section>
   );
@@ -156,7 +156,7 @@ export default function DriverDetail() {
   if (loading) {
     return (
       <main style={{ minHeight: "100vh", background: "var(--paper)" }}>
-        <div style={{ maxWidth: 720, margin: "0 auto", padding: "40px 32px", textAlign: "center", color: "var(--ink-500)", fontSize: 14 }}>
+        <div style={{ maxWidth: 720, margin: "0 auto", padding: "40px 32px", textAlign: "center", color: "var(--ink-500)", fontSize: "var(--text-base)" }}>
           Laddar profil...
         </div>
       </main>
@@ -168,7 +168,7 @@ export default function DriverDetail() {
       <main style={{ minHeight: "100vh", background: "var(--paper)" }}>
         <div style={{ maxWidth: 720, margin: "0 auto", padding: "40px 32px", textAlign: "center" }}>
           <h1 style={{ fontSize: 22, fontWeight: 800, color: "var(--ink-900)", marginBottom: 16 }}>Föraren hittades inte</h1>
-          <Link to="/foretag/chaufforer" style={{ color: "var(--amber-text)", fontSize: 14, fontWeight: 600, textDecoration: "none" }}>
+          <Link to="/foretag/chaufforer" style={{ color: "var(--amber-text)", fontSize: "var(--text-base)", fontWeight: 600, textDecoration: "none" }}>
             Tillbaka till sökning
           </Link>
         </div>
@@ -193,18 +193,18 @@ export default function DriverDetail() {
       <main style={{ minHeight: "100vh", background: "var(--paper)" }}>
         <PageMeta title={driver.name} description={metaDescription || "Förarprofil på Sveriges Transportplattform"} canonical={`/foretag/chaufforer/${id}`} />
         <div style={{ padding: "16px 20px 120px" }}>
-          <Link to="/foretag/chaufforer" style={{ display: "inline-flex", alignItems: "center", gap: 7, color: "var(--ink-500)", fontSize: 13, fontWeight: 600, textDecoration: "none", marginBottom: 20 }}>
+          <Link to="/foretag/chaufforer" style={{ display: "inline-flex", alignItems: "center", gap: 7, color: "var(--ink-500)", fontSize: "var(--text-sm)", fontWeight: 600, textDecoration: "none", marginBottom: 20 }}>
             <BackIcon /> Tillbaka
           </Link>
           {/* Mobile hero */}
           <div style={{ display: "flex", gap: 14, alignItems: "flex-start", marginBottom: 18 }}>
-            <div style={{ width: 64, height: 64, borderRadius: 99, background: color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 20, color: "#fff", flexShrink: 0 }}>{initials}</div>
+            <div style={{ width: 64, height: 64, borderRadius: 99, background: color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "var(--text-2xl)", color: "#fff", flexShrink: 0 }}>{initials}</div>
             <div style={{ flex: 1 }}>
               <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: -0.6, color: "var(--ink-900)", marginBottom: 4 }}>{driver.name}</h1>
-              <div style={{ fontSize: 12.5, color: "var(--ink-500)", marginBottom: 6 }}>
+              <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", marginBottom: 6 }}>
                 {[driver.age && `${driver.age} år`, driver.location, yearsExp && `${yearsExp} år erfarenhet`].filter(Boolean).join(" · ")}
               </div>
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12.5, fontWeight: 600, color: availColor }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: "var(--text-xs)", fontWeight: 600, color: availColor }}>
                 <span style={{ width: 6, height: 6, borderRadius: 99, background: availColor }} />{availabilityLabel}
               </span>
             </div>
@@ -212,15 +212,15 @@ export default function DriverDetail() {
           {/* License pills */}
           {(driver.licenses?.length > 0 || driver.certificates?.length > 0) && (
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
-              {driver.licenses?.map(l => <span key={l} style={{ padding: "5px 10px", borderRadius: 99, background: "var(--green-tint)", color: "var(--green-text)", fontSize: 12, fontWeight: 700 }}>{l}</span>)}
-              {driver.certificates?.slice(0, 3).map(c => <span key={c} style={{ padding: "5px 10px", borderRadius: 99, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-700)", fontSize: 12, fontWeight: 600 }}>{getCertificateLabel(c)}</span>)}
+              {driver.licenses?.map(l => <span key={l} style={{ padding: "5px 10px", borderRadius: 99, background: "var(--green-tint)", color: "var(--green-text)", fontSize: "var(--text-xs)", fontWeight: 700 }}>{l}</span>)}
+              {driver.certificates?.slice(0, 3).map(c => <span key={c} style={{ padding: "5px 10px", borderRadius: 99, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-700)", fontSize: "var(--text-xs)", fontWeight: 600 }}>{getCertificateLabel(c)}</span>)}
             </div>
           )}
-          {driver.summary && <p style={{ fontSize: 14, lineHeight: 1.65, color: "var(--ink-700)", marginBottom: 16 }}>{driver.summary}</p>}
+          {driver.summary && <p style={{ fontSize: "var(--text-base)", lineHeight: 1.65, color: "var(--ink-700)", marginBottom: 16 }}>{driver.summary}</p>}
           {driver.experience?.length > 0 && driver.experience.map((exp, i) => (
             <div key={exp.id || i} style={{ padding: "14px 0", borderTop: "1px solid var(--line)" }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)" }}>{exp.role}</div>
-              <div style={{ fontSize: 12.5, color: "var(--ink-500)", marginTop: 2 }}>{exp.company} · {formatYearRange(exp)}</div>
+              <div style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)" }}>{exp.role}</div>
+              <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", marginTop: 2 }}>{exp.company} · {formatYearRange(exp)}</div>
             </div>
           ))}
         </div>
@@ -229,7 +229,7 @@ export default function DriverDetail() {
           <button onClick={() => setStarred(s => !s)} style={{ width: 52, height: 52, borderRadius: 14, background: starred ? "var(--amber-tint)" : "var(--paper-2)", border: `1px solid ${starred ? "rgba(245,166,35,0.3)" : "var(--line)"}`, color: starred ? "var(--amber)" : "var(--ink-500)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             <StarIcon filled={starred} />
           </button>
-          <button onClick={() => { setShowReachOut(true); track("reach_out_modal_opened", { driverId: id }); }} style={{ flex: 1, height: 52, borderRadius: 14, background: "var(--green)", border: "none", color: "#fff", fontSize: 15, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+          <button onClick={() => { setShowReachOut(true); track("reach_out_modal_opened", { driverId: id }); }} style={{ flex: 1, height: 52, borderRadius: 14, background: "var(--green)", border: "none", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
             <MsgIcon /> Skicka meddelande
           </button>
         </div>
@@ -248,7 +248,7 @@ export default function DriverDetail() {
 
       {/* Breadcrumb */}
       <div style={{ maxWidth: 1040, margin: "0 auto", padding: "24px 32px 0" }}>
-        <Link to="/foretag/chaufforer" style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 600, color: "var(--ink-500)", textDecoration: "none" }}>
+        <Link to="/foretag/chaufforer" style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--ink-500)", textDecoration: "none" }}>
           <BackIcon /> Tillbaka till sökresultat
         </Link>
       </div>

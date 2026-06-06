@@ -102,13 +102,13 @@ function CompanyGridCard({ c, user, saved, onToggleSave }) {
     >
       {/* Header: logo box + name + save */}
       <div style={{ display: "flex", gap: 13, alignItems: "flex-start", marginBottom: 14 }}>
-        <div style={{ width: 50, height: 50, borderRadius: 12, flexShrink: 0, background: "var(--paper-2)", border: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 800, color: "var(--ink-700)" }}>
+        <div style={{ width: 50, height: 50, borderRadius: 12, flexShrink: 0, background: "var(--paper-2)", border: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "var(--text-md)", fontWeight: 800, color: "var(--ink-700)" }}>
           {companyInitials(c.name)}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <h3 style={{ fontSize: 15.5, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.3, lineHeight: 1.25, margin: 0 }}>{c.name}</h3>
+          <h3 style={{ fontSize: "var(--text-md)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.3, lineHeight: 1.25, margin: 0 }}>{c.name}</h3>
           {(c.location || c.region) && (
-            <div style={{ fontSize: 12.5, color: "var(--ink-500)", marginTop: 3, display: "flex", alignItems: "center", gap: 5 }}>
+            <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", marginTop: 3, display: "flex", alignItems: "center", gap: 5 }}>
               <Icon n="pin" s={11} />{[c.location, c.region].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i).join(", ")}
             </div>
           )}
@@ -123,12 +123,12 @@ function CompanyGridCard({ c, user, saved, onToggleSave }) {
       {/* Rating + verified */}
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
         <Stars rating={c.rating} size={11} />
-        <span style={{ fontSize: 12.5, color: "var(--ink-700)", fontWeight: 600 }}>{c.rating?.toFixed(1) ?? "—"}</span>
-        {c.reviewCount > 0 && <span style={{ fontSize: 11.5, color: "var(--ink-400)" }}>({c.reviewCount})</span>}
+        <span style={{ fontSize: "var(--text-xs)", color: "var(--ink-700)", fontWeight: 600 }}>{c.rating?.toFixed(1) ?? "—"}</span>
+        {c.reviewCount > 0 && <span style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)" }}>({c.reviewCount})</span>}
         {c.isVerified && (
           <span style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 4 }}>
             <Icon n="check" s={11} c="var(--success)" />
-            <span style={{ fontSize: 11.5, color: "var(--success)", fontWeight: 700 }}>Verifierat</span>
+            <span style={{ fontSize: "var(--text-2xs)", color: "var(--success)", fontWeight: 700 }}>Verifierat</span>
           </span>
         )}
       </div>
@@ -136,15 +136,15 @@ function CompanyGridCard({ c, user, saved, onToggleSave }) {
       {/* Segment pills + employees */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 16 }}>
         {c.hasCollectiveAgreement && (
-          <span style={{ padding: "3px 9px", borderRadius: 99, background: "var(--info-tint)", border: "1px solid var(--info)", fontSize: 11, fontWeight: 700, color: "var(--info)" }}>Kollektivavtal</span>
+          <span style={{ padding: "3px 9px", borderRadius: 99, background: "var(--info-tint)", border: "1px solid var(--info)", fontSize: "var(--text-2xs)", fontWeight: 700, color: "var(--info)" }}>Kollektivavtal</span>
         )}
         {c.bransch?.slice(0, 2).map((b) => (
-          <span key={b} style={{ padding: "3px 9px", borderRadius: 99, background: "var(--green-tint)", border: "1px solid var(--green-tint-2)", fontSize: 11, fontWeight: 600, color: "var(--green-text)" }}>
+          <span key={b} style={{ padding: "3px 9px", borderRadius: 99, background: "var(--green-tint)", border: "1px solid var(--green-tint-2)", fontSize: "var(--text-2xs)", fontWeight: 600, color: "var(--green-text)" }}>
             {getBranschLabel(b)}
           </span>
         ))}
         {c.employeeCount && (
-          <span style={{ padding: "3px 9px", borderRadius: 99, background: "var(--paper-2)", border: "1px solid var(--line)", fontSize: 11, fontWeight: 600, color: "var(--ink-500)" }}>
+          <span style={{ padding: "3px 9px", borderRadius: 99, background: "var(--paper-2)", border: "1px solid var(--line)", fontSize: "var(--text-2xs)", fontWeight: 600, color: "var(--ink-500)" }}>
             {c.employeeCount} anställda
           </span>
         )}
@@ -152,12 +152,12 @@ function CompanyGridCard({ c, user, saved, onToggleSave }) {
 
       {/* CTA footer */}
       <div style={{ marginTop: "auto", display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 14, borderTop: "1px solid var(--line)" }}>
-        <span style={{ fontSize: 13, fontWeight: 700, color: c.activeJobCount > 0 ? "var(--green-text)" : "var(--ink-400)" }}>
+        <span style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: c.activeJobCount > 0 ? "var(--green-text)" : "var(--ink-400)" }}>
           {c.activeJobCount > 0 ? `${c.activeJobCount} lediga jobb` : "Inga lediga jobb"}
         </span>
         <Link
           to={`/foretag/${c.id}`}
-          style={{ padding: "7px 14px", borderRadius: 9, background: c.activeJobCount > 0 ? "var(--green)" : "var(--paper-2)", color: c.activeJobCount > 0 ? "#fff" : "var(--ink-500)", fontWeight: 700, fontSize: 12, display: "inline-flex", alignItems: "center", gap: 5, textDecoration: "none" }}
+          style={{ padding: "7px 14px", borderRadius: 9, background: c.activeJobCount > 0 ? "var(--green)" : "var(--paper-2)", color: c.activeJobCount > 0 ? "#fff" : "var(--ink-500)", fontWeight: 700, fontSize: "var(--text-xs)", display: "inline-flex", alignItems: "center", gap: 5, textDecoration: "none" }}
           onClick={e => e.stopPropagation()}
         >
           {c.activeJobCount > 0 ? "Se jobb" : "Profil"} <Icon n="arrow" s={11} c={c.activeJobCount > 0 ? "#fff" : "var(--ink-500)"} />
@@ -206,20 +206,20 @@ function CompanyListRow({ c, user, saved, onToggleSave }) {
       }}
     >
       {/* Avatar */}
-      <div style={{ width: 46, height: 46, borderRadius: 11, background: color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, color: "#fff", fontSize: 14, flexShrink: 0 }}>
+      <div style={{ width: 46, height: 46, borderRadius: 11, background: color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, color: "#fff", fontSize: "var(--text-base)", flexShrink: 0 }}>
         {companyInitials(c.name)}
       </div>
 
       {/* Main info */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 15, fontWeight: 800, color: "var(--ink-900)" }}>{c.name}</span>
+          <span style={{ fontSize: "var(--text-md)", fontWeight: 800, color: "var(--ink-900)" }}>{c.name}</span>
           {c.isVerified && <Icon n="check" s={13} c="var(--success)" />}
           {c.acceptsPraktik && (
             <span style={{ padding: "2px 7px", borderRadius: 99, background: "var(--green-tint)", border: "1px solid var(--green-tint-2)", fontSize: 10, fontWeight: 700, color: "var(--green-text)" }}>🎓 Praktik</span>
           )}
         </div>
-        <div style={{ fontSize: 12, color: "var(--ink-500)", display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+        <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
           {(c.location || c.region) && (
             <span>{[c.location, c.region].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i).join(", ")}</span>
           )}
@@ -242,16 +242,16 @@ function CompanyListRow({ c, user, saved, onToggleSave }) {
       {c.rating > 0 && (
         <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
           <Icon n="star" s={13} c="var(--amber)" />
-          <span style={{ fontSize: 13, fontWeight: 800, color: "var(--ink-900)" }}>{c.rating?.toFixed(1)}</span>
+          <span style={{ fontSize: "var(--text-sm)", fontWeight: 800, color: "var(--ink-900)" }}>{c.rating?.toFixed(1)}</span>
           {c.reviewCount > 0 && (
-            <span style={{ fontSize: 12, color: "var(--ink-400)" }}>({c.reviewCount})</span>
+            <span style={{ fontSize: "var(--text-xs)", color: "var(--ink-400)" }}>({c.reviewCount})</span>
           )}
         </div>
       )}
 
       {/* Open jobs badge */}
       {c.activeJobCount > 0 && (
-        <div style={{ padding: "5px 11px", borderRadius: 99, background: "var(--success-tint)", border: "1px solid var(--success)", fontSize: 12, fontWeight: 700, color: "var(--success)", whiteSpace: "nowrap", flexShrink: 0 }}>
+        <div style={{ padding: "5px 11px", borderRadius: 99, background: "var(--success-tint)", border: "1px solid var(--success)", fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--success)", whiteSpace: "nowrap", flexShrink: 0 }}>
           {c.activeJobCount} jobb
         </div>
       )}
@@ -272,7 +272,7 @@ function CompanyListRow({ c, user, saved, onToggleSave }) {
       {/* Se profil */}
       <Link
         to={`/foretag/${c.id}`}
-        style={{ padding: "8px 16px", borderRadius: 9, background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: 13, display: "flex", alignItems: "center", gap: 5, textDecoration: "none", flexShrink: 0 }}
+        style={{ padding: "8px 16px", borderRadius: 9, background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: "var(--text-sm)", display: "flex", alignItems: "center", gap: 5, textDecoration: "none", flexShrink: 0 }}
       >
         Se profil <Icon n="arrow" s={12} c="#fff" />
       </Link>
@@ -398,7 +398,7 @@ export default function AkerierSearch() {
         {/* Title */}
         <div style={{ padding: "10px 20px 14px" }}>
           <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: -1, marginBottom: 4, color: "var(--ink-900)" }}>Åkerier</h1>
-          <div style={{ fontSize: 12.5, color: "var(--ink-500)" }}>{list.length} verifierade åkerier i Sverige</div>
+          <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)" }}>{list.length} verifierade åkerier i Sverige</div>
         </div>
 
         {/* Search + filter button */}
@@ -411,7 +411,7 @@ export default function AkerierSearch() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Sök åkeri eller ort"
-              style={{ width: "100%", padding: "12px 14px 12px 40px", background: "var(--paper-2)", border: "1px solid var(--line)", borderRadius: 12, fontSize: 14, outline: "none", color: "var(--ink-900)", minHeight: 44, fontFamily: "inherit" }}
+              style={{ width: "100%", padding: "12px 14px 12px 40px", background: "var(--paper-2)", border: "1px solid var(--line)", borderRadius: 12, fontSize: "var(--text-base)", outline: "none", color: "var(--ink-900)", minHeight: 44, fontFamily: "inherit" }}
             />
           </div>
           <button
@@ -431,7 +431,7 @@ export default function AkerierSearch() {
                 key={f.v}
                 type="button"
                 onClick={() => setMobileFilter(f.v)}
-                style={{ flexShrink: 0, padding: "8px 14px", borderRadius: 99, background: on ? "var(--amber-tint)" : "var(--paper-2)", border: `1px solid ${on ? "var(--amber)" : "var(--line)"}`, color: on ? "var(--amber-text)" : "var(--ink-700)", fontSize: 12.5, fontWeight: 700, cursor: "pointer", minHeight: 36, display: "flex", alignItems: "center", gap: 5, fontFamily: "inherit" }}
+                style={{ flexShrink: 0, padding: "8px 14px", borderRadius: 99, background: on ? "var(--amber-tint)" : "var(--paper-2)", border: `1px solid ${on ? "var(--amber)" : "var(--line)"}`, color: on ? "var(--amber-text)" : "var(--ink-700)", fontSize: "var(--text-xs)", fontWeight: 700, cursor: "pointer", minHeight: 36, display: "flex", alignItems: "center", gap: 5, fontFamily: "inherit" }}
               >
                 {f.l}
                 <span style={{ padding: "1px 6px", borderRadius: 99, background: on ? "var(--amber-tint-2)" : "var(--line)", fontSize: 10, fontWeight: 800, color: on ? "var(--amber-text)" : "var(--ink-500)" }}>{f.c}</span>
@@ -443,20 +443,20 @@ export default function AkerierSearch() {
         {/* Company list */}
         <div style={{ padding: "0 20px", display: "flex", flexDirection: "column", gap: 10 }}>
           {loading ? (
-            <div style={{ padding: "40px 0", textAlign: "center", color: "var(--ink-400)", fontSize: 14 }}>Hämtar åkerier...</div>
+            <div style={{ padding: "40px 0", textAlign: "center", color: "var(--ink-400)", fontSize: "var(--text-base)" }}>Hämtar åkerier...</div>
           ) : mobileListed.map((company) => {
             const initials = companyInitials(company.name);
             const bg = avatarColor(company.name);
             return (
               <Link key={company.id} to={`/foretag/${company.id}`} style={{ display: "block", textDecoration: "none", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "16px", position: "relative", overflow: "hidden", boxShadow: "var(--sh-sm)" }}>
                 <div style={{ display: "flex", gap: 12, alignItems: "flex-start", marginBottom: 10 }}>
-                  <div style={{ width: 48, height: 48, borderRadius: 12, background: bg, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 14, color: "#fff", flexShrink: 0 }}>{initials}</div>
+                  <div style={{ width: 48, height: 48, borderRadius: 12, background: bg, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "var(--text-base)", color: "#fff", flexShrink: 0 }}>{initials}</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 3 }}>
-                      <span style={{ fontSize: 14, fontWeight: 800, color: "var(--ink-900)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>{company.name}</span>
+                      <span style={{ fontSize: "var(--text-base)", fontWeight: 800, color: "var(--ink-900)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>{company.name}</span>
                       {company.isVerified && <svg viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" width="12" height="12"><polyline points="20 6 9 17 4 12"/></svg>}
                     </div>
-                    <div style={{ fontSize: 11.5, color: "var(--ink-500)", display: "flex", alignItems: "center", gap: 4 }}>
+                    <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", display: "flex", alignItems: "center", gap: 4 }}>
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="10" height="10"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                       {company.location}{company.region ? `, ${company.region}` : ""}
                     </div>
@@ -468,16 +468,16 @@ export default function AkerierSearch() {
                   {company.rating > 0 && (
                     <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                       <Icon n="star" s={11} c="var(--amber)" />
-                      <span style={{ fontSize: 13, fontWeight: 800, color: "var(--ink-900)" }}>{company.rating?.toFixed(1)}</span>
+                      <span style={{ fontSize: "var(--text-sm)", fontWeight: 800, color: "var(--ink-900)" }}>{company.rating?.toFixed(1)}</span>
                       {company.reviewCount > 0 && (
-                        <span style={{ fontSize: 11, color: "var(--ink-400)" }}>({company.reviewCount})</span>
+                        <span style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)" }}>({company.reviewCount})</span>
                       )}
                     </div>
                   )}
                   {company.employeeCount && (
                     <>
                       {company.rating > 0 && <span style={{ color: "var(--line-2)" }}>·</span>}
-                      <span style={{ fontSize: 11.5, color: "var(--ink-500)" }}>{company.employeeCount} förare</span>
+                      <span style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)" }}>{company.employeeCount} förare</span>
                     </>
                   )}
                 </div>
@@ -485,10 +485,10 @@ export default function AkerierSearch() {
                 {/* Tags */}
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
                   {company.hasCollectiveAgreement && (
-                    <span style={{ padding: "3px 8px", borderRadius: 99, background: "var(--info-tint)", border: "1px solid var(--info)", fontSize: 10.5, fontWeight: 700, color: "var(--info)" }}>Kollektivavtal</span>
+                    <span style={{ padding: "3px 8px", borderRadius: 99, background: "var(--info-tint)", border: "1px solid var(--info)", fontSize: "var(--text-2xs)", fontWeight: 700, color: "var(--info)" }}>Kollektivavtal</span>
                   )}
                   {company.bransch?.slice(0, 2).map((b) => (
-                    <span key={b} style={{ padding: "3px 8px", borderRadius: 99, background: "var(--green-tint)", border: "1px solid var(--green-tint-2)", fontSize: 10.5, fontWeight: 600, color: "var(--green-text)" }}>{getBranschLabel(b)}</span>
+                    <span key={b} style={{ padding: "3px 8px", borderRadius: 99, background: "var(--green-tint)", border: "1px solid var(--green-tint-2)", fontSize: "var(--text-2xs)", fontWeight: 600, color: "var(--green-text)" }}>{getBranschLabel(b)}</span>
                   ))}
                 </div>
 
@@ -496,10 +496,10 @@ export default function AkerierSearch() {
                   {company.activeJobCount > 0 ? (
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       <span style={{ width: 6, height: 6, borderRadius: 99, background: "var(--success)" }} />
-                      <span style={{ fontSize: 12, fontWeight: 700, color: "var(--success)" }}>{company.activeJobCount} {company.activeJobCount === 1 ? "ledigt jobb" : "lediga jobb"}</span>
+                      <span style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--success)" }}>{company.activeJobCount} {company.activeJobCount === 1 ? "ledigt jobb" : "lediga jobb"}</span>
                     </div>
                   ) : (
-                    <span style={{ fontSize: 11.5, color: "var(--ink-400)" }}>Inga lediga jobb</span>
+                    <span style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)" }}>Inga lediga jobb</span>
                   )}
                 </div>
               </Link>
@@ -522,9 +522,9 @@ export default function AkerierSearch() {
       {/* Page header */}
       <div style={{ background: "var(--paper)", borderBottom: "1px solid var(--line)", paddingTop: 32, paddingBottom: 18 }}>
         <div style={{ maxWidth: 1240, margin: "0 auto", padding: "0 32px" }}>
-          <p style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 10 }}>För förare</p>
-          <h1 style={{ fontSize: 34, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.2, lineHeight: 1.15, marginBottom: 6 }}>Åkerier</h1>
-          <p style={{ fontSize: 14, color: "var(--ink-500)", fontWeight: 500, marginBottom: 0 }}>
+          <p style={{ fontSize: "var(--text-2xs)", fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 10 }}>För förare</p>
+          <h1 style={{ fontSize: "var(--text-5xl)", fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.2, lineHeight: 1.15, marginBottom: 6 }}>Åkerier</h1>
+          <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", fontWeight: 500, marginBottom: 0 }}>
             {list.length} verifierade och aktiva åkerier · Spara dem du vill följa
           </p>
         </div>
@@ -542,13 +542,13 @@ export default function AkerierSearch() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Sök åkeri eller ort..."
-              style={{ width: "100%", padding: "11px 16px 11px 42px", background: "var(--card)", border: "1px solid var(--line-2)", borderRadius: 10, fontSize: 14, color: "var(--ink-900)", outline: "none", boxShadow: "var(--sh-sm)", fontFamily: "inherit", boxSizing: "border-box" }}
+              style={{ width: "100%", padding: "11px 16px 11px 42px", background: "var(--card)", border: "1px solid var(--line-2)", borderRadius: 10, fontSize: "var(--text-base)", color: "var(--ink-900)", outline: "none", boxShadow: "var(--sh-sm)", fontFamily: "inherit", boxSizing: "border-box" }}
             />
           </div>
           <div style={{ flex: 1, minWidth: 8 }} />
           {/* Segment select */}
           <div style={{ position: "relative" }}>
-            <select value={bransch} onChange={(e) => setBransch(e.target.value)} style={{ appearance: "none", padding: "11px 32px 11px 14px", background: bransch ? "var(--green-tint)" : "var(--card)", border: `1px solid ${bransch ? "var(--green)" : "var(--line-2)"}`, borderRadius: 10, fontSize: 13.5, fontWeight: bransch ? 700 : 500, color: bransch ? "var(--green-text)" : "var(--ink-900)", boxShadow: "var(--sh-sm)", cursor: "pointer", fontFamily: "inherit", outline: "none" }}>
+            <select value={bransch} onChange={(e) => setBransch(e.target.value)} style={{ appearance: "none", padding: "11px 32px 11px 14px", background: bransch ? "var(--green-tint)" : "var(--card)", border: `1px solid ${bransch ? "var(--green)" : "var(--line-2)"}`, borderRadius: 10, fontSize: "var(--text-sm)", fontWeight: bransch ? 700 : 500, color: bransch ? "var(--green-text)" : "var(--ink-900)", boxShadow: "var(--sh-sm)", cursor: "pointer", fontFamily: "inherit", outline: "none" }}>
               <option value="">Segment</option>
               {transportSegmentGroups.map((g) => (
                 <optgroup key={g.id} label={g.label}>
@@ -560,7 +560,7 @@ export default function AkerierSearch() {
           </div>
           {/* Region select */}
           <div style={{ position: "relative" }}>
-            <select value={region} onChange={(e) => setRegion(e.target.value)} style={{ appearance: "none", padding: "11px 32px 11px 14px", background: region ? "var(--green-tint)" : "var(--card)", border: `1px solid ${region ? "var(--green)" : "var(--line-2)"}`, borderRadius: 10, fontSize: 13.5, fontWeight: region ? 700 : 500, color: region ? "var(--green-text)" : "var(--ink-900)", boxShadow: "var(--sh-sm)", cursor: "pointer", fontFamily: "inherit", outline: "none" }}>
+            <select value={region} onChange={(e) => setRegion(e.target.value)} style={{ appearance: "none", padding: "11px 32px 11px 14px", background: region ? "var(--green-tint)" : "var(--card)", border: `1px solid ${region ? "var(--green)" : "var(--line-2)"}`, borderRadius: 10, fontSize: "var(--text-sm)", fontWeight: region ? 700 : 500, color: region ? "var(--green-text)" : "var(--ink-900)", boxShadow: "var(--sh-sm)", cursor: "pointer", fontFamily: "inherit", outline: "none" }}>
               <option value="">Region</option>
               {regions.map((r) => <option key={r} value={r}>{r}</option>)}
             </select>
@@ -571,29 +571,29 @@ export default function AkerierSearch() {
         {/* Active filter chips */}
         {hasActiveFilters && (
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 18 }}>
-            <span style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-500)", letterSpacing: 1.2, textTransform: "uppercase" }}>Aktiva filter</span>
+            <span style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: "var(--ink-500)", letterSpacing: 1.2, textTransform: "uppercase" }}>Aktiva filter</span>
             {bransch && (
-              <button type="button" onClick={() => setBransch("")} style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 99, fontSize: 11, fontWeight: 600, background: "var(--green-tint)", border: "1px solid var(--green-tint-2)", color: "var(--green-text)", cursor: "pointer", fontFamily: "inherit" }}>
+              <button type="button" onClick={() => setBransch("")} style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 99, fontSize: "var(--text-2xs)", fontWeight: 600, background: "var(--green-tint)", border: "1px solid var(--green-tint-2)", color: "var(--green-text)", cursor: "pointer", fontFamily: "inherit" }}>
                 {getBranschLabel(bransch)} <span aria-hidden style={{ opacity: 0.6 }}>×</span>
               </button>
             )}
             {region && (
-              <button type="button" onClick={() => setRegion("")} style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 99, fontSize: 11, fontWeight: 600, background: "var(--green-tint)", border: "1px solid var(--green-tint-2)", color: "var(--green-text)", cursor: "pointer", fontFamily: "inherit" }}>
+              <button type="button" onClick={() => setRegion("")} style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 99, fontSize: "var(--text-2xs)", fontWeight: 600, background: "var(--green-tint)", border: "1px solid var(--green-tint-2)", color: "var(--green-text)", cursor: "pointer", fontFamily: "inherit" }}>
                 {region} <span aria-hidden style={{ opacity: 0.6 }}>×</span>
               </button>
             )}
-            <button type="button" onClick={clearAll} style={{ fontSize: 12.5, fontWeight: 700, color: "var(--green)", background: "none", border: "none", cursor: "pointer", padding: 0, fontFamily: "inherit" }}>Rensa alla</button>
+            <button type="button" onClick={clearAll} style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--green)", background: "none", border: "none", cursor: "pointer", padding: 0, fontFamily: "inherit" }}>Rensa alla</button>
           </div>
         )}
 
         {/* Count */}
-        <div style={{ fontSize: 13, color: "var(--ink-500)", fontWeight: 600, margin: "14px 0 16px" }}>
+        <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", fontWeight: 600, margin: "14px 0 16px" }}>
           {loading ? "Laddar åkerier…" : `${displayed.length} åkerier`}
         </div>
 
         {/* Content */}
         {!hasApi ? (
-          <div style={{ padding: "24px", borderRadius: 14, background: "var(--paper-2)", border: "1px solid var(--line)", fontSize: 13, color: "var(--ink-400)" }}>
+          <div style={{ padding: "24px", borderRadius: 14, background: "var(--paper-2)", border: "1px solid var(--line)", fontSize: "var(--text-sm)", color: "var(--ink-400)" }}>
             Åkeridatabasen kräver att appen är kopplad till servern.
           </div>
         ) : loading ? (
@@ -604,9 +604,9 @@ export default function AkerierSearch() {
           </div>
         ) : displayed.length === 0 ? (
           <div style={{ padding: "80px 20px", textAlign: "center" }}>
-            <div style={{ fontSize: 18, fontWeight: 800, color: "var(--ink-900)", marginBottom: 6 }}>Inga åkerier hittades</div>
-            <div style={{ fontSize: 14, color: "var(--ink-400)", marginBottom: 20 }}>Prova att ändra dina filter</div>
-            <button type="button" onClick={clearAll} style={{ padding: "10px 22px", borderRadius: 10, background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: 13, border: "none", cursor: "pointer", fontFamily: "inherit" }}>
+            <div style={{ fontSize: "var(--text-xl)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 6 }}>Inga åkerier hittades</div>
+            <div style={{ fontSize: "var(--text-base)", color: "var(--ink-400)", marginBottom: 20 }}>Prova att ändra dina filter</div>
+            <button type="button" onClick={clearAll} style={{ padding: "10px 22px", borderRadius: 10, background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: "var(--text-sm)", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
               Rensa filter
             </button>
           </div>

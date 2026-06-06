@@ -68,7 +68,7 @@ export default function CookieBanner() {
       <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
         {/* Text */}
         <div style={{ flex: 1, minWidth: 260 }}>
-          <p style={{ margin: 0, fontSize: 14, color: "var(--ink-700)", lineHeight: 1.6 }}>
+          <p style={{ margin: 0, fontSize: "var(--text-base)", color: "var(--ink-700)", lineHeight: 1.6 }}>
             Vi använder cookies för felrapportering (Sentry) och inloggning (OAuth). Anonymiserad besöksstatistik via{" "}
             <a href="https://plausible.io" target="_blank" rel="noopener noreferrer" style={{ color: "var(--green-text)", textDecoration: "underline" }}>Plausible</a>
             {" "}är cookiefri och kräver inget samtycke.{" "}
@@ -85,7 +85,7 @@ export default function CookieBanner() {
             style={{
               padding: "10px 20px", borderRadius: 10,
               background: "var(--paper-2)", border: "1px solid var(--line)",
-              color: "var(--ink-500)", fontSize: 13, fontWeight: 600,
+              color: "var(--ink-500)", fontSize: "var(--text-sm)", fontWeight: 600,
               cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap",
             }}
           >
@@ -96,7 +96,7 @@ export default function CookieBanner() {
             style={{
               padding: "10px 24px", borderRadius: 10,
               background: "var(--green)", border: "none",
-              color: "#fff", fontSize: 13, fontWeight: 700,
+              color: "#fff", fontSize: "var(--text-sm)", fontWeight: 700,
               cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap",
             }}
           >

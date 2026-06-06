@@ -40,8 +40,8 @@ function Dialog({ opts, onResolve }) {
         <div style={{ width: 52, height: 52, borderRadius: 14, background: tone[1], display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 18 }}>
           <Icon name={opts.icon || "alert"} size={24} color={tone[0]} stroke={2} />
         </div>
-        <h2 style={{ fontSize: 20, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.4, marginBottom: 10 }}>{opts.title}</h2>
-        <p style={{ fontSize: 14.5, color: "var(--ink-500)", lineHeight: 1.6, marginBottom: opts.typed || opts.note ? 18 : 24, textWrap: "pretty" }}>{opts.body}</p>
+        <h2 style={{ fontSize: "var(--text-2xl)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.4, marginBottom: 10 }}>{opts.title}</h2>
+        <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.6, marginBottom: opts.typed || opts.note ? 18 : 24, textWrap: "pretty" }}>{opts.body}</p>
 
         {opts.note && (
           <textarea
@@ -49,13 +49,13 @@ function Dialog({ opts, onResolve }) {
             onChange={(e) => setNote(e.target.value)}
             placeholder={typeof opts.note === "string" ? opts.note : "Återkoppling (valfritt)"}
             rows={2}
-            style={{ width: "100%", padding: "11px 14px", borderRadius: 10, background: "var(--card-2)", border: "1px solid var(--line-2)", fontSize: 13.5, color: "var(--ink-900)", outline: "none", fontFamily: "var(--font)", lineHeight: 1.5, resize: "vertical", marginBottom: 20 }}
+            style={{ width: "100%", padding: "11px 14px", borderRadius: 10, background: "var(--card-2)", border: "1px solid var(--line-2)", fontSize: "var(--text-sm)", color: "var(--ink-900)", outline: "none", fontFamily: "var(--font)", lineHeight: 1.5, resize: "vertical", marginBottom: 20 }}
           />
         )}
 
         {opts.typed && (
           <div style={{ marginBottom: 20 }}>
-            <div style={{ fontSize: 12.5, color: "var(--ink-500)", marginBottom: 8 }}>
+            <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", marginBottom: 8 }}>
               Skriv <strong style={{ color: "var(--danger)", fontFamily: "var(--mono)" }}>{opts.typed}</strong> för att bekräfta
             </div>
             <input
@@ -64,7 +64,7 @@ function Dialog({ opts, onResolve }) {
               placeholder={opts.typed}
               autoFocus
               onKeyDown={(e) => { if (e.key === "Enter") ok(); }}
-              style={{ width: "100%", padding: "11px 14px", borderRadius: 10, background: "var(--card-2)", border: `1px solid ${typed && !canConfirm ? "var(--danger)" : "var(--line-2)"}`, fontSize: 14.5, color: "var(--ink-900)", outline: "none", fontFamily: "var(--mono)" }}
+              style={{ width: "100%", padding: "11px 14px", borderRadius: 10, background: "var(--card-2)", border: `1px solid ${typed && !canConfirm ? "var(--danger)" : "var(--line-2)"}`, fontSize: "var(--text-base)", color: "var(--ink-900)", outline: "none", fontFamily: "var(--mono)" }}
             />
           </div>
         )}

@@ -40,8 +40,8 @@ function StatBlock({ label, value, accent }) {
       background: accent ? "var(--amber-tint)" : "var(--paper-2)",
       border: `1px solid ${accent ? "rgba(245,166,35,0.3)" : "var(--line)"}`,
     }}>
-      <span style={{ fontSize: 16, fontWeight: 800, color: accent ? "var(--amber-text)" : "var(--ink-900)" }}>{value}</span>
-      <span style={{ fontSize: 11, marginTop: 2, color: accent ? "var(--amber-text)" : "var(--ink-400)", opacity: accent ? 0.85 : 1 }}>{label}</span>
+      <span style={{ fontSize: "var(--text-lg)", fontWeight: 800, color: accent ? "var(--amber-text)" : "var(--ink-900)" }}>{value}</span>
+      <span style={{ fontSize: "var(--text-2xs)", marginTop: 2, color: accent ? "var(--amber-text)" : "var(--ink-400)", opacity: accent ? 0.85 : 1 }}>{label}</span>
     </div>
   );
 }
@@ -95,9 +95,9 @@ export default function PublicDriverProfile() {
       <main style={{ background: "var(--paper)", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "80px 24px" }}>
         <div>
           <p style={{ fontSize: 48, marginBottom: 16 }}>🚛</p>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: "var(--ink-900)", margin: "0 0 10px" }}>Föraren hittades inte</h1>
-          <p style={{ fontSize: 14, color: "var(--ink-400)", margin: "0 0 24px" }}>Föraren har kanske valt att inte synas offentligt.</p>
-          <Link to="/jobb" style={{ fontSize: 14, color: "var(--green-text)", textDecoration: "none" }}>Se lediga jobb →</Link>
+          <h1 style={{ fontSize: "var(--text-2xl)", fontWeight: 700, color: "var(--ink-900)", margin: "0 0 10px" }}>Föraren hittades inte</h1>
+          <p style={{ fontSize: "var(--text-base)", color: "var(--ink-400)", margin: "0 0 24px" }}>Föraren har kanske valt att inte synas offentligt.</p>
+          <Link to="/jobb" style={{ fontSize: "var(--text-base)", color: "var(--green-text)", textDecoration: "none" }}>Se lediga jobb →</Link>
         </div>
       </main>
     );
@@ -123,7 +123,7 @@ export default function PublicDriverProfile() {
 
       {/* Navigering */}
       <div style={{ marginBottom: 20, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }} className="print:hidden">
-        <Link to="/" style={{ fontSize: 13, color: "var(--ink-400)", textDecoration: "none" }}>
+        <Link to="/" style={{ fontSize: "var(--text-sm)", color: "var(--ink-400)", textDecoration: "none" }}>
           ← Sveriges Transportplattform
         </Link>
       </div>
@@ -136,7 +136,7 @@ export default function PublicDriverProfile() {
       />
 
       {/* Print footer */}
-      <div className="hidden print:block" style={{ marginTop: 24, textAlign: "center", fontSize: 12, color: "var(--ink-400)" }}>
+      <div className="hidden print:block" style={{ marginTop: 24, textAlign: "center", fontSize: "var(--text-xs)", color: "var(--ink-400)" }}>
         Profil skapad via Sveriges Transportplattform · transportplattformen.se
       </div>
       </div>

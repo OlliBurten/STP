@@ -166,7 +166,7 @@ export default function Header({ onboarding = false }) {
   const navLinkStyle = (isActive) => ({
     padding: "6px 14px",
     borderRadius: 8,
-    fontSize: 13.5,
+    fontSize: "var(--text-sm)",
     fontWeight: isActive ? 700 : 500,
     color: isLanding
       ? scrolled ? "var(--ink-700)" : "rgba(255,255,255,0.82)"
@@ -194,7 +194,7 @@ export default function Header({ onboarding = false }) {
                 to={item.to}
                 onClick={closeMobile}
                 style={{
-                  fontSize: 14, fontWeight: 500,
+                  fontSize: "var(--text-base)", fontWeight: 500,
                   color: scrolled ? "var(--ink-700)" : "rgba(255,255,255,0.82)",
                   textDecoration: "none",
                   padding: "6px 14px",
@@ -219,7 +219,7 @@ export default function Header({ onboarding = false }) {
                 to={item.to}
                 onClick={closeMobile}
                 className={navLinkClass}
-                style={{ fontSize: 13.5, fontWeight: 500 }}
+                style={{ fontSize: "var(--text-sm)", fontWeight: 500 }}
                 end={item.to === "/"}
               >
                 {item.label}
@@ -329,7 +329,7 @@ export default function Header({ onboarding = false }) {
                 width: 30, height: 30, borderRadius: 7,
                 background: "var(--green)", color: "#fff",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontWeight: 900, fontSize: 13,
+                fontWeight: 900, fontSize: "var(--text-sm)",
                 boxShadow: "inset 0 -2px 0 rgba(0,0,0,0.20)",
                 flexShrink: 0,
               }}>S</div>
@@ -366,7 +366,7 @@ export default function Header({ onboarding = false }) {
                     padding: "7px 12px", borderRadius: 10,
                     background: "rgba(255,255,255,0.08)",
                     border: "1px solid rgba(255,255,255,0.12)",
-                    color: "rgba(232,237,237,0.9)", fontSize: 13, fontWeight: 600,
+                    color: "rgba(232,237,237,0.9)", fontSize: "var(--text-sm)", fontWeight: 600,
                     cursor: "pointer", maxWidth: 180, fontFamily: "inherit",
                     transition: "background .15s",
                   }}
@@ -403,10 +403,10 @@ export default function Header({ onboarding = false }) {
                         onMouseEnter={e => { if (org.id !== activeOrg?.id) e.currentTarget.style.background = "var(--paper)"; }}
                         onMouseLeave={e => { if (org.id !== activeOrg?.id) e.currentTarget.style.background = "transparent"; }}
                       >
-                        <span style={{ fontSize: 13, fontWeight: org.id === activeOrg?.id ? 700 : 500, color: org.id === activeOrg?.id ? "var(--green-text)" : "var(--ink-700)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        <span style={{ fontSize: "var(--text-sm)", fontWeight: org.id === activeOrg?.id ? 700 : 500, color: org.id === activeOrg?.id ? "var(--green-text)" : "var(--ink-700)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                           {org.name}
                         </span>
-                        <span style={{ fontSize: 11, flexShrink: 0, color: org.id === activeOrg?.id ? "var(--green)" : (org.status === "PENDING" ? "var(--amber)" : "var(--ink-300)"), fontWeight: 600 }}>
+                        <span style={{ fontSize: "var(--text-2xs)", flexShrink: 0, color: org.id === activeOrg?.id ? "var(--green)" : (org.status === "PENDING" ? "var(--amber)" : "var(--ink-300)"), fontWeight: 600 }}>
                           {org.id === activeOrg?.id ? "Aktiv" : org.status === "PENDING" ? "Väntar" : ""}
                         </span>
                       </button>
@@ -417,7 +417,7 @@ export default function Header({ onboarding = false }) {
                         onClick={() => setOrgMenuOpen(false)}
                         style={{
                           display: "flex", alignItems: "center", gap: 8,
-                          padding: "9px 16px", fontSize: 13, fontWeight: 600,
+                          padding: "9px 16px", fontSize: "var(--text-sm)", fontWeight: 600,
                           color: "var(--green)", textDecoration: "none", transition: "background .1s",
                         }}
                         onMouseEnter={e => { e.currentTarget.style.background = "var(--paper)"; }}
@@ -439,7 +439,7 @@ export default function Header({ onboarding = false }) {
                 style={{
                   padding: "8px 16px", borderRadius: 9,
                   background: "var(--amber)", color: "#fff",
-                  fontSize: 13, fontWeight: 700, textDecoration: "none",
+                  fontSize: "var(--text-sm)", fontWeight: 700, textDecoration: "none",
                   display: "inline-flex", alignItems: "center", gap: 6,
                   whiteSpace: "nowrap",
                   boxShadow: "0 1px 0 var(--amber-deep)",
@@ -488,9 +488,9 @@ export default function Header({ onboarding = false }) {
                     overflow: "hidden", zIndex: 100,
                   }}>
                     <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                      <span style={{ fontSize: 14, fontWeight: 800, color: "var(--ink-900)" }}>Notifikationer</span>
+                      <span style={{ fontSize: "var(--text-base)", fontWeight: 800, color: "var(--ink-900)" }}>Notifikationer</span>
                       {notifications.unreadCount > 0 && (
-                        <button type="button" onClick={handleMarkAllRead} style={{ fontSize: 11, color: "var(--green)", fontWeight: 700, background: "none", border: "none", cursor: "pointer" }}>
+                        <button type="button" onClick={handleMarkAllRead} style={{ fontSize: "var(--text-2xs)", color: "var(--green)", fontWeight: 700, background: "none", border: "none", cursor: "pointer" }}>
                           Markera som lästa
                         </button>
                       )}
@@ -498,7 +498,7 @@ export default function Header({ onboarding = false }) {
 
                     <div style={{ maxHeight: 320, overflowY: "auto" }}>
                       {notifications.list.length === 0 ? (
-                        <div style={{ padding: "28px 18px", textAlign: "center", fontSize: 13, color: "var(--ink-400)" }}>
+                        <div style={{ padding: "28px 18px", textAlign: "center", fontSize: "var(--text-sm)", color: "var(--ink-400)" }}>
                           Inga notiser
                         </div>
                       ) : (
@@ -520,9 +520,9 @@ export default function Header({ onboarding = false }) {
                           >
                             <span style={{ width: 7, height: 7, borderRadius: 99, background: notifDotColor(n.type), marginTop: 6, flexShrink: 0 }} />
                             <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ fontSize: 13, lineHeight: 1.4, color: "var(--ink-900)", fontWeight: 500 }}>{n.title}</div>
-                              {n.body && <div style={{ fontSize: 11.5, color: "var(--ink-500)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{n.body}</div>}
-                              <div style={{ fontSize: 11, color: "var(--ink-400)", marginTop: 3 }}>{formatNotifDate(n.createdAt)}</div>
+                              <div style={{ fontSize: "var(--text-sm)", lineHeight: 1.4, color: "var(--ink-900)", fontWeight: 500 }}>{n.title}</div>
+                              {n.body && <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{n.body}</div>}
+                              <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", marginTop: 3 }}>{formatNotifDate(n.createdAt)}</div>
                             </div>
                           </button>
                         ))
@@ -534,7 +534,7 @@ export default function Header({ onboarding = false }) {
                       onClick={() => setNotifOpen(false)}
                       style={{
                         display: "block", padding: "12px 18px", textAlign: "center",
-                        fontSize: 13, color: "var(--green)", fontWeight: 700,
+                        fontSize: "var(--text-sm)", color: "var(--green)", fontWeight: 700,
                         textDecoration: "none", borderTop: "1px solid var(--line)",
                         transition: "background .1s",
                       }}
@@ -559,7 +559,7 @@ export default function Header({ onboarding = false }) {
                     background: isCompany ? "var(--amber)" : "var(--green)",
                     border: userMenuOpen ? "2px solid rgba(255,255,255,0.3)" : "2px solid rgba(255,255,255,0.12)",
                     display: "flex", alignItems: "center", justifyContent: "center",
-                    fontWeight: 800, fontSize: 12,
+                    fontWeight: 800, fontSize: "var(--text-xs)",
                     color: "#fff",
                     cursor: "pointer",
                     transition: "border-color .15s",
@@ -582,8 +582,8 @@ export default function Header({ onboarding = false }) {
                     role="menu"
                   >
                     <div style={{ padding: "14px 16px", borderBottom: "1px solid var(--line)" }}>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)", marginBottom: 2 }}>{user?.name || "Konto"}</div>
-                      <div style={{ fontSize: 12, color: "var(--ink-400)" }}>{user?.email}</div>
+                      <div style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)", marginBottom: 2 }}>{user?.name || "Konto"}</div>
+                      <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-400)" }}>{user?.email}</div>
                     </div>
 
                     {[
@@ -598,7 +598,7 @@ export default function Header({ onboarding = false }) {
                         to={item.to}
                         role="menuitem"
                         onClick={() => { setUserMenuOpen(false); closeMobile(); }}
-                        style={{ display: "block", padding: "11px 16px", fontSize: 13.5, fontWeight: 500, color: "var(--ink-700)", textDecoration: "none", transition: "background .1s" }}
+                        style={{ display: "block", padding: "11px 16px", fontSize: "var(--text-sm)", fontWeight: 500, color: "var(--ink-700)", textDecoration: "none", transition: "background .1s" }}
                         onMouseEnter={e => { e.currentTarget.style.background = "var(--paper)"; e.currentTarget.style.color = "var(--ink-900)"; }}
                         onMouseLeave={e => { e.currentTarget.style.background = ""; e.currentTarget.style.color = "var(--ink-700)"; }}
                       >
@@ -611,7 +611,7 @@ export default function Header({ onboarding = false }) {
                         type="button"
                         role="menuitem"
                         onClick={() => { setUserMenuOpen(false); handleLogout(); }}
-                        style={{ width: "100%", padding: "11px 16px", fontSize: 13.5, fontWeight: 500, color: "var(--danger)", background: "none", border: "none", cursor: "pointer", textAlign: "left", fontFamily: "inherit", transition: "background .1s" }}
+                        style={{ width: "100%", padding: "11px 16px", fontSize: "var(--text-sm)", fontWeight: 500, color: "var(--danger)", background: "none", border: "none", cursor: "pointer", textAlign: "left", fontFamily: "inherit", transition: "background .1s" }}
                         onMouseEnter={e => { e.currentTarget.style.background = "var(--danger-tint)"; }}
                         onMouseLeave={e => { e.currentTarget.style.background = ""; }}
                       >
@@ -668,7 +668,7 @@ export default function Header({ onboarding = false }) {
                   style={{
                     color: isLanding ? (scrolled ? "var(--ink-900)" : "#fff") : "rgba(232,237,237,0.75)",
                     textDecoration: "none", padding: "7px 14px",
-                    fontSize: 13.5, fontWeight: 600,
+                    fontSize: "var(--text-sm)", fontWeight: 600,
                     transition: "color .25s",
                   }}
                 >
@@ -681,7 +681,7 @@ export default function Header({ onboarding = false }) {
                   style={{
                     background: "var(--green)", color: "#fff",
                     padding: "8px 18px", borderRadius: 9,
-                    fontSize: 13.5, fontWeight: 700, textDecoration: "none",
+                    fontSize: "var(--text-sm)", fontWeight: 700, textDecoration: "none",
                     boxShadow: "0 1px 0 var(--green-deep)",
                     transition: "background .15s",
                   }}
@@ -713,7 +713,7 @@ export default function Header({ onboarding = false }) {
                     <Link
                       to={item.to}
                       onClick={closeMobile}
-                      style={{ display: "block", padding: "14px 20px", fontSize: 15, fontWeight: 500, color: "var(--ink-700)", textDecoration: "none", transition: "background .1s" }}
+                      style={{ display: "block", padding: "14px 20px", fontSize: "var(--text-md)", fontWeight: 500, color: "var(--ink-700)", textDecoration: "none", transition: "background .1s" }}
                       onMouseEnter={e => { e.currentTarget.style.background = "var(--paper)"; }}
                       onMouseLeave={e => { e.currentTarget.style.background = ""; }}
                     >
@@ -751,7 +751,7 @@ export default function Header({ onboarding = false }) {
                             color: isActive ? "var(--green-text)" : "var(--ink-700)",
                             background: isActive ? "var(--green-tint)" : "transparent",
                             borderLeft: `3px solid ${isActive ? "var(--green)" : "transparent"}`,
-                            fontSize: 15, fontWeight: isActive ? 700 : 500,
+                            fontSize: "var(--text-md)", fontWeight: isActive ? 700 : 500,
                           }}>
                             {item.label}
                             {item.badge > 0 && (
@@ -773,7 +773,7 @@ export default function Header({ onboarding = false }) {
                 <div className="flex flex-col gap-2">
                   {isCompany && userOrgs.length > 1 && (
                     <div style={{ padding: "8px 0 4px", borderBottom: "1px solid var(--line)", marginBottom: 4 }}>
-                      <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--ink-400)", marginBottom: 6 }}>Byt åkeri</p>
+                      <p style={{ fontSize: "var(--text-2xs)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--ink-400)", marginBottom: 6 }}>Byt åkeri</p>
                       {userOrgs.map(org => (
                         <button
                           key={org.id}
@@ -781,10 +781,10 @@ export default function Header({ onboarding = false }) {
                           onClick={() => { switchOrg(org.id); closeMobile(); }}
                           style={{ width: "100%", padding: "9px 0", textAlign: "left", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "space-between" }}
                         >
-                          <span style={{ fontSize: 14, fontWeight: org.id === activeOrg?.id ? 700 : 500, color: org.id === activeOrg?.id ? "var(--green-text)" : "var(--ink-700)" }}>
+                          <span style={{ fontSize: "var(--text-base)", fontWeight: org.id === activeOrg?.id ? 700 : 500, color: org.id === activeOrg?.id ? "var(--green-text)" : "var(--ink-700)" }}>
                             {org.name}
                           </span>
-                          {org.id === activeOrg?.id && <span style={{ fontSize: 11, color: "var(--green)", fontWeight: 700 }}>Aktiv</span>}
+                          {org.id === activeOrg?.id && <span style={{ fontSize: "var(--text-2xs)", color: "var(--green)", fontWeight: 700 }}>Aktiv</span>}
                         </button>
                       ))}
                     </div>
@@ -793,7 +793,7 @@ export default function Header({ onboarding = false }) {
                     <Link
                       to="/foretag/annonsera"
                       onClick={closeMobile}
-                      style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", padding: "12px 16px", borderRadius: 10, background: "var(--amber)", color: "#fff", fontSize: 14, fontWeight: 700, textDecoration: "none", boxShadow: "0 1px 0 var(--amber-deep)" }}
+                      style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", padding: "12px 16px", borderRadius: 10, background: "var(--amber)", color: "#fff", fontSize: "var(--text-base)", fontWeight: 700, textDecoration: "none", boxShadow: "0 1px 0 var(--amber-deep)" }}
                     >
                       + Publicera jobb
                     </Link>
@@ -802,7 +802,7 @@ export default function Header({ onboarding = false }) {
                     <button
                       type="button"
                       onClick={() => { closeMobile(); handleStopViewAs(); }}
-                      style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", padding: "10px 16px", borderRadius: 10, background: "var(--amber-tint)", color: "var(--amber-text)", border: "1px solid rgba(199,122,14,0.3)", fontSize: 13.5, fontWeight: 600, fontFamily: "inherit", cursor: "pointer" }}
+                      style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", padding: "10px 16px", borderRadius: 10, background: "var(--amber-tint)", color: "var(--amber-text)", border: "1px solid rgba(199,122,14,0.3)", fontSize: "var(--text-sm)", fontWeight: 600, fontFamily: "inherit", cursor: "pointer" }}
                     >
                       <span style={{ width: 6, height: 6, borderRadius: 99, background: "var(--amber)", flexShrink: 0 }} />
                       Avsluta view as
@@ -811,7 +811,7 @@ export default function Header({ onboarding = false }) {
                   <button
                     type="button"
                     onClick={() => { closeMobile(); handleLogout(); }}
-                    style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", padding: "11px 16px", borderRadius: 10, fontSize: 14, fontWeight: 500, color: "var(--danger)", background: "transparent", border: "1px solid var(--line-2)", cursor: "pointer", fontFamily: "inherit" }}
+                    style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", padding: "11px 16px", borderRadius: 10, fontSize: "var(--text-base)", fontWeight: 500, color: "var(--danger)", background: "transparent", border: "1px solid var(--line-2)", cursor: "pointer", fontFamily: "inherit" }}
                     onMouseEnter={e => { e.currentTarget.style.background = "var(--danger-tint)"; }}
                     onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
                   >
@@ -824,14 +824,14 @@ export default function Header({ onboarding = false }) {
                     to="/login"
                     state={{ initialMode: "register" }}
                     onClick={closeMobile}
-                    style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", padding: "12px 16px", borderRadius: 10, background: "var(--green)", color: "#fff", fontSize: 14, fontWeight: 700, textDecoration: "none", boxShadow: "0 1px 0 var(--green-deep)" }}
+                    style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", padding: "12px 16px", borderRadius: 10, background: "var(--green)", color: "#fff", fontSize: "var(--text-base)", fontWeight: 700, textDecoration: "none", boxShadow: "0 1px 0 var(--green-deep)" }}
                   >
                     Skapa konto
                   </Link>
                   <Link
                     to="/login"
                     onClick={closeMobile}
-                    style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", padding: "11px 16px", borderRadius: 10, fontSize: 14, fontWeight: 500, color: "var(--ink-700)", background: "transparent", border: "1px solid var(--line-2)", textDecoration: "none" }}
+                    style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", padding: "11px 16px", borderRadius: 10, fontSize: "var(--text-base)", fontWeight: 500, color: "var(--ink-700)", background: "transparent", border: "1px solid var(--line-2)", textDecoration: "none" }}
                     onMouseEnter={e => { e.currentTarget.style.background = "var(--paper)"; }}
                     onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
                   >

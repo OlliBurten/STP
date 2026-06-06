@@ -50,7 +50,7 @@ const SIZES = [
 const inp = {
   width: "100%", padding: "12px 14px", borderRadius: 11,
   background: "var(--paper-2)", border: "1px solid var(--line)",
-  color: "var(--ink-900)", fontSize: 14, outline: "none", fontFamily: "inherit",
+  color: "var(--ink-900)", fontSize: "var(--text-base)", outline: "none", fontFamily: "inherit",
 };
 
 // ─── Step 0: Welcome ──────────────────────────────────────────────────────────
@@ -62,10 +62,10 @@ function Step0() {
   ];
   return (
     <div>
-      <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: -0.8, marginBottom: 8, lineHeight: 1.2 }}>
+      <h1 style={{ fontSize: "var(--text-4xl)", fontWeight: 800, letterSpacing: -0.8, marginBottom: 8, lineHeight: 1.2 }}>
         Välkommen till STP
       </h1>
-      <p style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.55, marginBottom: 32 }}>
+      <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.55, marginBottom: 32 }}>
         Vi hjälper åkerier att hitta rätt förare — utan mellanhänder. Sätt upp din profil på fyra minuter.
       </p>
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -75,8 +75,8 @@ function Step0() {
               <Icon n={icon} s={18} c="var(--green-text)" />
             </div>
             <div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)", marginBottom: 4 }}>{title}</div>
-              <div style={{ fontSize: 13, color: "var(--ink-500)", lineHeight: 1.5 }}>{desc}</div>
+              <div style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)", marginBottom: 4 }}>{title}</div>
+              <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", lineHeight: 1.5 }}>{desc}</div>
             </div>
           </div>
         ))}
@@ -89,15 +89,15 @@ function Step0() {
 function Step1({ form, orgLookup, onLookup, error }) {
   return (
     <div>
-      <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: -0.8, marginBottom: 8, lineHeight: 1.2 }}>
+      <h1 style={{ fontSize: "var(--text-4xl)", fontWeight: 800, letterSpacing: -0.8, marginBottom: 8, lineHeight: 1.2 }}>
         Hej! Vilket åkeri jobbar du på?
       </h1>
-      <p style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.55, marginBottom: 28 }}>
+      <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.55, marginBottom: 28 }}>
         Vi hämtar uppgifterna från Bolagsverket så slipper du fylla i allt manuellt.
       </p>
 
       <div style={{ marginBottom: 16 }}>
-        <label style={{ fontSize: 12, fontWeight: 700, color: "var(--ink-700)", marginBottom: 7, display: "block" }}>
+        <label style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--ink-700)", marginBottom: 7, display: "block" }}>
           Organisationsnummer
         </label>
         <div style={{ display: "flex", gap: 8 }}>
@@ -105,13 +105,13 @@ function Step1({ form, orgLookup, onLookup, error }) {
             value={form.orgNumber}
             onChange={(e) => onLookup(e.target.value)}
             placeholder="556677-8899"
-            style={{ ...inp, flex: 1, fontSize: 16, letterSpacing: 0.5, borderColor: orgLookup.valid === false ? "rgba(239,68,68,0.6)" : orgLookup.valid === true ? "rgba(74,222,128,0.5)" : "var(--line)" }}
+            style={{ ...inp, flex: 1, fontSize: "var(--text-lg)", letterSpacing: 0.5, borderColor: orgLookup.valid === false ? "rgba(239,68,68,0.6)" : orgLookup.valid === true ? "rgba(74,222,128,0.5)" : "var(--line)" }}
           />
           <button
             type="button"
             onClick={() => onLookup(form.orgNumber, true)}
             disabled={orgLookup.loading || form.orgNumber.replace(/\D/g, "").length < 10}
-            style={{ padding: "0 18px", borderRadius: 11, background: "var(--green)", border: "none", color: "#fff", fontSize: 13, fontWeight: 800, cursor: orgLookup.loading ? "default" : "pointer", display: "flex", alignItems: "center", gap: 7, whiteSpace: "nowrap", opacity: form.orgNumber.replace(/\D/g, "").length < 10 ? 0.5 : 1, fontFamily: "inherit" }}
+            style={{ padding: "0 18px", borderRadius: 11, background: "var(--green)", border: "none", color: "#fff", fontSize: "var(--text-sm)", fontWeight: 800, cursor: orgLookup.loading ? "default" : "pointer", display: "flex", alignItems: "center", gap: 7, whiteSpace: "nowrap", opacity: form.orgNumber.replace(/\D/g, "").length < 10 ? 0.5 : 1, fontFamily: "inherit" }}
           >
             {orgLookup.loading ? (
               <>
@@ -123,11 +123,11 @@ function Step1({ form, orgLookup, onLookup, error }) {
             )}
           </button>
         </div>
-        <div style={{ fontSize: 11.5, color: "var(--ink-400)", marginTop: 6 }}>Format: 556677-8899</div>
+        <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", marginTop: 6 }}>Format: 556677-8899</div>
       </div>
 
       {orgLookup.error && (
-        <div style={{ padding: "10px 14px", borderRadius: 11, background: "var(--danger-tint)", border: "1px solid rgba(239,68,68,0.2)", color: "var(--danger)", fontSize: 13, marginBottom: 14 }}>
+        <div style={{ padding: "10px 14px", borderRadius: 11, background: "var(--danger-tint)", border: "1px solid rgba(239,68,68,0.2)", color: "var(--danger)", fontSize: "var(--text-sm)", marginBottom: 14 }}>
           {orgLookup.error}
         </div>
       )}
@@ -138,22 +138,22 @@ function Step1({ form, orgLookup, onLookup, error }) {
             <div style={{ width: 30, height: 30, borderRadius: 99, background: "var(--success-tint)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               <Icon n="check" s={14} c="var(--success)" />
             </div>
-            <div style={{ fontSize: 12.5, fontWeight: 700, color: "var(--success)" }}>Hämtat från Bolagsverket</div>
+            <div style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--success)" }}>Hämtat från Bolagsverket</div>
           </div>
-          <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 4 }}>{form.companyName}</div>
+          <div style={{ fontSize: "var(--text-lg)", fontWeight: 800, marginBottom: 4 }}>{form.companyName}</div>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 4 }}>
-            {form.city && <div style={{ fontSize: 12.5, color: "var(--ink-500)" }}>{form.city}</div>}
-            {form.companyType && <div style={{ fontSize: 12.5, color: "var(--ink-400)" }}>·</div>}
-            {form.companyType && <div style={{ fontSize: 12.5, color: "var(--ink-500)" }}>{form.companyType}</div>}
-            {form.foundedYear && <div style={{ fontSize: 12.5, color: "var(--ink-400)" }}>·</div>}
-            {form.foundedYear && <div style={{ fontSize: 12.5, color: "var(--ink-500)" }}>Grundat {form.foundedYear}</div>}
+            {form.city && <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)" }}>{form.city}</div>}
+            {form.companyType && <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-400)" }}>·</div>}
+            {form.companyType && <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)" }}>{form.companyType}</div>}
+            {form.foundedYear && <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-400)" }}>·</div>}
+            {form.foundedYear && <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)" }}>Grundat {form.foundedYear}</div>}
           </div>
         </div>
       )}
 
       {orgLookup.valid === true && !orgLookup.loading && orgLookup.isTransport === false && (
         <div style={{ padding: "12px 16px", borderRadius: 12, background: "var(--danger-tint)", border: "1px solid rgba(239,68,68,0.2)", marginBottom: 14 }}>
-          <p style={{ fontSize: 12, color: "var(--danger)", fontWeight: 600 }}>
+          <p style={{ fontSize: "var(--text-xs)", color: "var(--danger)", fontWeight: 600 }}>
             Ert företag är inte registrerat som transportverksamhet hos Bolagsverket.
             STP är till för åkerier och transportföretag.
           </p>
@@ -161,7 +161,7 @@ function Step1({ form, orgLookup, onLookup, error }) {
       )}
 
       {error && (
-        <div style={{ padding: "10px 14px", borderRadius: 10, background: "var(--danger-tint)", border: "1px solid rgba(239,68,68,0.2)", color: "var(--danger)", fontSize: 13, marginBottom: 14 }}>
+        <div style={{ padding: "10px 14px", borderRadius: 10, background: "var(--danger-tint)", border: "1px solid rgba(239,68,68,0.2)", color: "var(--danger)", fontSize: "var(--text-sm)", marginBottom: 14 }}>
           {error}
         </div>
       )}
@@ -178,10 +178,10 @@ function Step2({ form, setForm }) {
 
   return (
     <div>
-      <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: -0.8, marginBottom: 8, lineHeight: 1.2 }}>
+      <h1 style={{ fontSize: "var(--text-4xl)", fontWeight: 800, letterSpacing: -0.8, marginBottom: 8, lineHeight: 1.2 }}>
         Vilken typ av transport kör ni?
       </h1>
-      <p style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.55, marginBottom: 28 }}>
+      <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.55, marginBottom: 28 }}>
         Vi matchar er med förare som söker rätt typ av uppdrag. Välj en eller flera.
       </p>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
@@ -195,8 +195,8 @@ function Step2({ form, setForm }) {
                 border: `1px solid ${on ? "var(--green)" : "var(--line)"}`,
                 transition: "all .15s",
               }}>
-              <div style={{ fontSize: 13.5, fontWeight: 700, color: on ? "var(--green-text)" : "var(--ink-900)", marginBottom: 4 }}>{label}</div>
-              <div style={{ fontSize: 12, color: on ? "var(--green-text)" : "var(--ink-500)", opacity: on ? 0.8 : 1, lineHeight: 1.4 }}>{desc}</div>
+              <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: on ? "var(--green-text)" : "var(--ink-900)", marginBottom: 4 }}>{label}</div>
+              <div style={{ fontSize: "var(--text-xs)", color: on ? "var(--green-text)" : "var(--ink-500)", opacity: on ? 0.8 : 1, lineHeight: 1.4 }}>{desc}</div>
             </button>
           );
         })}
@@ -214,15 +214,15 @@ function Step3({ form, setForm }) {
 
   return (
     <div>
-      <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: -0.8, marginBottom: 8, lineHeight: 1.2 }}>
+      <h1 style={{ fontSize: "var(--text-4xl)", fontWeight: 800, letterSpacing: -0.8, marginBottom: 8, lineHeight: 1.2 }}>
         Var och hur stor är ni?
       </h1>
-      <p style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.55, marginBottom: 28 }}>
+      <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.55, marginBottom: 28 }}>
         Används för att matcha er med förare i rätt region.
       </p>
 
       <div style={{ marginBottom: 24 }}>
-        <label style={{ fontSize: 12, fontWeight: 700, color: "var(--ink-700)", marginBottom: 10, display: "block" }}>
+        <label style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--ink-700)", marginBottom: 10, display: "block" }}>
           Hur stort är ert åkeri?
         </label>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -230,7 +230,7 @@ function Step3({ form, setForm }) {
             const on = form.companySize === s.v;
             return (
               <button key={s.v} type="button" onClick={() => setForm((p) => ({ ...p, companySize: s.v }))}
-                style={{ padding: "10px 18px", borderRadius: 99, fontFamily: "inherit", cursor: "pointer", fontSize: 13, fontWeight: 700, transition: "all .15s", background: on ? "var(--green-tint)" : "var(--card)", border: `1px solid ${on ? "var(--green)" : "var(--line)"}`, color: on ? "var(--green-text)" : "var(--ink-600)" }}>
+                style={{ padding: "10px 18px", borderRadius: 99, fontFamily: "inherit", cursor: "pointer", fontSize: "var(--text-sm)", fontWeight: 700, transition: "all .15s", background: on ? "var(--green-tint)" : "var(--card)", border: `1px solid ${on ? "var(--green)" : "var(--line)"}`, color: on ? "var(--green-text)" : "var(--ink-600)" }}>
                 {s.l}
               </button>
             );
@@ -239,7 +239,7 @@ function Step3({ form, setForm }) {
       </div>
 
       <div>
-        <label style={{ fontSize: 12, fontWeight: 700, color: "var(--ink-700)", marginBottom: 10, display: "block" }}>
+        <label style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--ink-700)", marginBottom: 10, display: "block" }}>
           Vilka regioner kör ni i? Välj alla som gäller
         </label>
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
@@ -247,7 +247,7 @@ function Step3({ form, setForm }) {
             const on = (form.companyRegions || []).includes(r);
             return (
               <button key={r} type="button" onClick={() => toggleRegion(r)}
-                style={{ padding: "7px 13px", borderRadius: 99, background: on ? "var(--green-tint)" : "var(--paper-2)", border: `1px solid ${on ? "var(--green)" : "var(--line)"}`, color: on ? "var(--green-text)" : "var(--ink-500)", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 5, fontFamily: "inherit" }}>
+                style={{ padding: "7px 13px", borderRadius: 99, background: on ? "var(--green-tint)" : "var(--paper-2)", border: `1px solid ${on ? "var(--green)" : "var(--line)"}`, color: on ? "var(--green-text)" : "var(--ink-500)", fontSize: "var(--text-xs)", fontWeight: 600, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 5, fontFamily: "inherit" }}>
                 {on && <Icon n="check" s={10} />} {r}
               </button>
             );
@@ -265,11 +265,11 @@ function DoneScreen({ form }) {
       <div style={{ width: 72, height: 72, borderRadius: 99, background: "var(--success-tint)", border: "2px solid var(--success)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
         <Icon n="check" s={32} c="var(--success)" />
       </div>
-      <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "var(--success)", marginBottom: 10 }}>Klart!</div>
+      <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "var(--success)", marginBottom: 10 }}>Klart!</div>
       <h1 style={{ fontSize: 32, fontWeight: 800, letterSpacing: -1, marginBottom: 10, color: "var(--ink-900)" }}>
         Välkommen till STP{form.companyName ? ` — ${form.companyName}` : ""}!
       </h1>
-      <p style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.55, maxWidth: 440, margin: "0 auto 32px" }}>
+      <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.55, maxWidth: 440, margin: "0 auto 32px" }}>
         Ert konto är skapat. För att börja anställa behöver ni verifiera er och publicera er första annons.
       </p>
 
@@ -285,15 +285,15 @@ function DoneScreen({ form }) {
               <Icon n={item.icon} s={16} c={item.primary ? "var(--green-text)" : "var(--ink-400)"} />
             </div>
             <div style={{ flex: 1, minWidth: 0, textAlign: "left" }}>
-              <div style={{ fontSize: 13.5, fontWeight: 700, marginBottom: 2, color: item.primary ? "var(--green-text)" : "var(--ink-900)" }}>{item.title}</div>
-              <div style={{ fontSize: 11.5, color: item.primary ? "var(--green-text)" : "var(--ink-400)", opacity: item.primary ? 0.8 : 1 }}>{item.desc}</div>
+              <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, marginBottom: 2, color: item.primary ? "var(--green-text)" : "var(--ink-900)" }}>{item.title}</div>
+              <div style={{ fontSize: "var(--text-2xs)", color: item.primary ? "var(--green-text)" : "var(--ink-400)", opacity: item.primary ? 0.8 : 1 }}>{item.desc}</div>
             </div>
             <Icon n="arrow" s={14} c={item.primary ? "var(--green-text)" : "var(--ink-300)"} />
           </Link>
         ))}
       </div>
 
-      <Link to="/foretag" style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "12px 22px", borderRadius: 99, background: "var(--green)", color: "#fff", fontSize: 13.5, fontWeight: 800, textDecoration: "none", boxShadow: "var(--sh-sm)" }}>
+      <Link to="/foretag" style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "12px 22px", borderRadius: 99, background: "var(--green)", color: "#fff", fontSize: "var(--text-sm)", fontWeight: 800, textDecoration: "none", boxShadow: "var(--sh-sm)" }}>
         Gå till översikten <Icon n="arrow" s={14} />
       </Link>
     </div>
@@ -430,11 +430,11 @@ export default function CompanyOnboardingWizard() {
       {/* TopBar */}
       <div style={{ height: 60, borderBottom: "1px solid var(--line)", background: "var(--card)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 24px", flexShrink: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ width: 28, height: 28, borderRadius: 7, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 12 }}>S</div>
-          <span style={{ fontWeight: 800, fontSize: 15, color: "var(--ink-900)", letterSpacing: 0.5 }}>STP</span>
-          <span style={{ fontSize: 11, color: "var(--ink-500)", paddingLeft: 8, marginLeft: 4, borderLeft: "1px solid var(--line-2)", fontWeight: 600, letterSpacing: 0.5 }}>Åkeri</span>
+          <div style={{ width: 28, height: 28, borderRadius: 7, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--text-xs)" }}>S</div>
+          <span style={{ fontWeight: 800, fontSize: "var(--text-md)", color: "var(--ink-900)", letterSpacing: 0.5 }}>STP</span>
+          <span style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", paddingLeft: 8, marginLeft: 4, borderLeft: "1px solid var(--line-2)", fontWeight: 600, letterSpacing: 0.5 }}>Åkeri</span>
         </div>
-        <Link to="/loggaut" style={{ fontSize: 13, color: "var(--ink-500)", fontWeight: 600, textDecoration: "none" }}>Spara &amp; avsluta</Link>
+        <Link to="/loggaut" style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", fontWeight: 600, textDecoration: "none" }}>Spara &amp; avsluta</Link>
       </div>
 
       <div style={{ maxWidth: 620, width: "100%", margin: "0 auto", padding: "32px 24px 40px", flex: 1, display: "flex", flexDirection: "column" }}>
@@ -446,7 +446,7 @@ export default function CompanyOnboardingWizard() {
                 <div key={s.id} style={{ height: 4, flex: 1, borderRadius: 2, background: i <= stepIdx ? "var(--green)" : "var(--line-2)", transition: "background .3s" }} />
               ))}
             </div>
-            <div style={{ fontSize: 12.5, color: "var(--ink-500)", fontWeight: 600, marginBottom: 32 }}>
+            <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", fontWeight: 600, marginBottom: 32 }}>
               Steg {stepIdx + 1} av {numSteps} · {WIZARD_STEPS[stepIdx]?.label}
             </div>
           </>
@@ -466,7 +466,7 @@ export default function CompanyOnboardingWizard() {
               <button
                 type="button"
                 onClick={() => setStep((s) => s - 1)}
-                style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "11px 20px", borderRadius: 10, background: "transparent", border: "1px solid var(--line-2)", color: "var(--ink-500)", fontSize: 13.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}
+                style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "11px 20px", borderRadius: 10, background: "transparent", border: "1px solid var(--line-2)", color: "var(--ink-500)", fontSize: "var(--text-sm)", fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}
               >
                 <Icon n="back" s={14} /> Tillbaka
               </button>
@@ -475,7 +475,7 @@ export default function CompanyOnboardingWizard() {
               type="button"
               onClick={handleNext}
               disabled={!canContinue() || saving}
-              style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 24px", borderRadius: 10, background: canContinue() && !saving ? "var(--green)" : "var(--paper-2)", border: "none", color: canContinue() && !saving ? "#fff" : "var(--ink-300)", fontSize: 13.5, fontWeight: 800, cursor: canContinue() && !saving ? "pointer" : "default", boxShadow: canContinue() && !saving ? "var(--sh-sm)" : "none", transition: "all .15s", fontFamily: "inherit" }}
+              style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 24px", borderRadius: 10, background: canContinue() && !saving ? "var(--green)" : "var(--paper-2)", border: "none", color: canContinue() && !saving ? "#fff" : "var(--ink-300)", fontSize: "var(--text-sm)", fontWeight: 800, cursor: canContinue() && !saving ? "pointer" : "default", boxShadow: canContinue() && !saving ? "var(--sh-sm)" : "none", transition: "all .15s", fontFamily: "inherit" }}
             >
               {saving ? "Sparar…" : step === 3 ? "Skapa konto" : step === 0 ? "Kom igång" : "Fortsätt"}
               {!saving && <Icon n="arrow" s={14} />}
@@ -491,7 +491,7 @@ export default function CompanyOnboardingWizard() {
             type="button"
             onClick={handleNext}
             disabled={!canContinue() || saving}
-            style={{ width: "100%", padding: 16, borderRadius: 14, background: canContinue() && !saving ? "var(--green)" : "var(--paper-2)", border: "none", color: canContinue() && !saving ? "#fff" : "var(--ink-300)", fontSize: 15, fontWeight: 800, cursor: canContinue() && !saving ? "pointer" : "default", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: "inherit" }}
+            style={{ width: "100%", padding: 16, borderRadius: 14, background: canContinue() && !saving ? "var(--green)" : "var(--paper-2)", border: "none", color: canContinue() && !saving ? "#fff" : "var(--ink-300)", fontSize: "var(--text-md)", fontWeight: 800, cursor: canContinue() && !saving ? "pointer" : "default", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: "inherit" }}
           >
             {saving ? "Sparar…" : step === 3 ? "Skapa konto" : step === 0 ? "Kom igång" : "Fortsätt"} {!saving && <Icon n="arrow" s={14} />}
           </button>

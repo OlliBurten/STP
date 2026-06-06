@@ -61,7 +61,7 @@ export default function CompanyBottomNav({ unreadCount = 0 }) {
                 }}>{unreadCount}</span>
               )}
             </div>
-            <span style={{ fontSize: 10.5, fontWeight: on ? 800 : 600, color: on ? "var(--green)" : "var(--ink-400)" }}>
+            <span style={{ fontSize: "var(--text-2xs)", fontWeight: on ? 800 : 600, color: on ? "var(--green)" : "var(--ink-400)" }}>
               {label}
             </span>
           </button>

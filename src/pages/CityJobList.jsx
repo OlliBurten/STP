@@ -13,7 +13,7 @@ function Chip({ children }) {
       display: "inline-flex", alignItems: "center", gap: 6,
       background: "var(--green-tint)", border: "1px solid var(--green)",
       borderRadius: 99, padding: "4px 12px",
-      fontSize: 12, fontWeight: 600, color: "var(--green-text)",
+      fontSize: "var(--text-xs)", fontWeight: 600, color: "var(--green-text)",
     }}>
       <span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--green-text)", flexShrink: 0 }} />
       {children}
@@ -67,7 +67,7 @@ export default function CityJobList() {
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
 
           {/* Breadcrumb */}
-          <nav style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--ink-400)", marginBottom: 20 }}>
+          <nav style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "var(--text-xs)", color: "var(--ink-400)", marginBottom: 20 }}>
             <Link to="/jobb" style={{ color: "var(--ink-400)", textDecoration: "none" }}>Alla jobb</Link>
             <span>›</span>
             <Link to={`/lastbilsjobb/${city.regionSlug}`} style={{ color: "var(--ink-400)", textDecoration: "none" }}>{city.region}</Link>
@@ -79,12 +79,12 @@ export default function CityJobList() {
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12, flexWrap: "wrap" }}>
                 <Chip>CE-jobb</Chip>
-                <span style={{ fontSize: 12, color: "var(--ink-400)" }}>{city.tagline}</span>
+                <span style={{ fontSize: "var(--text-xs)", color: "var(--ink-400)" }}>{city.tagline}</span>
               </div>
               <h1 style={{ fontSize: isMobile ? 28 : 42, fontWeight: 900, letterSpacing: -1.2, color: "var(--ink-900)", lineHeight: 1.1, margin: "0 0 10px" }}>
                 CE-jobb i {city.name}
               </h1>
-              <p style={{ fontSize: 14, color: "var(--ink-500)", margin: 0, maxWidth: 520, lineHeight: 1.65 }}>
+              <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", margin: 0, maxWidth: 520, lineHeight: 1.65 }}>
                 {city.desc}
               </p>
             </div>
@@ -102,7 +102,7 @@ export default function CityJobList() {
                   {jobs.length}
                 </p>
               )}
-              <p style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-400)", letterSpacing: "0.08em", textTransform: "uppercase", margin: 0 }}>
+              <p style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: "var(--ink-400)", letterSpacing: "0.08em", textTransform: "uppercase", margin: 0 }}>
                 {loading ? "Hämtar…" : jobs.length === 1 ? "ledig tjänst" : "lediga tjänster"}
               </p>
             </div>
@@ -132,22 +132,22 @@ export default function CityJobList() {
                 borderRadius: 18, border: "1px solid var(--line)",
                 background: "var(--card)", padding: "48px 28px", textAlign: "center",
               }}>
-                <p style={{ fontSize: 15, fontWeight: 700, color: "var(--ink-500)", marginBottom: 8 }}>
+                <p style={{ fontSize: "var(--text-md)", fontWeight: 700, color: "var(--ink-500)", marginBottom: 8 }}>
                   Inga lediga tjänster i {city.name} just nu
                 </p>
-                <p style={{ fontSize: 13, color: "var(--ink-400)", marginBottom: 24, lineHeight: 1.6 }}>
+                <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-400)", marginBottom: 24, lineHeight: 1.6 }}>
                   Skapa en profil så kontaktar åkerier dig direkt när de söker förare i {city.region}.
                 </p>
                 <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
                   <Link to="/login" style={{
                     display: "inline-block", padding: "10px 20px", borderRadius: 10,
-                    background: "var(--green)", color: "#fff", fontSize: 13, fontWeight: 800, textDecoration: "none",
+                    background: "var(--green)", color: "#fff", fontSize: "var(--text-sm)", fontWeight: 800, textDecoration: "none",
                   }}>
                     Skapa profil gratis
                   </Link>
                   <Link to="/jobb" style={{
                     display: "inline-block", padding: "10px 20px", borderRadius: 10,
-                    border: "1px solid var(--line)", color: "var(--ink-500)", fontSize: 13, fontWeight: 600, textDecoration: "none",
+                    border: "1px solid var(--line)", color: "var(--ink-500)", fontSize: "var(--text-sm)", fontWeight: 600, textDecoration: "none",
                   }}>
                     Sök i hela Sverige
                   </Link>
@@ -159,13 +159,13 @@ export default function CityJobList() {
               <div style={{ marginTop: 16, display: "flex", gap: 10, flexWrap: "wrap" }}>
                 <Link to={`/lastbilsjobb/${city.regionSlug}`} style={{
                   display: "inline-block", padding: "10px 18px", borderRadius: 10,
-                  border: "1px solid var(--line)", color: "var(--ink-500)", fontSize: 13, fontWeight: 600, textDecoration: "none",
+                  border: "1px solid var(--line)", color: "var(--ink-500)", fontSize: "var(--text-sm)", fontWeight: 600, textDecoration: "none",
                 }}>
                   Fler jobb i {city.region} →
                 </Link>
                 <Link to="/jobb" style={{
                   display: "inline-block", padding: "10px 18px", borderRadius: 10,
-                  border: "1px solid var(--line)", color: "var(--ink-500)", fontSize: 13, fontWeight: 600, textDecoration: "none",
+                  border: "1px solid var(--line)", color: "var(--ink-500)", fontSize: "var(--text-sm)", fontWeight: 600, textDecoration: "none",
                 }}>
                   Alla jobb i Sverige →
                 </Link>
@@ -181,17 +181,17 @@ export default function CityJobList() {
               background: "var(--green-tint)",
               border: "1px solid rgba(31,95,92,0.2)", borderRadius: 16, padding: "22px",
             }}>
-              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--green-text)", marginBottom: 10 }}>
+              <p style={{ fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--green-text)", marginBottom: 10 }}>
                 Transport i {city.name}
               </p>
-              <p style={{ fontSize: 13, color: "var(--ink-500)", lineHeight: 1.7, marginBottom: 16 }}>
+              <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", lineHeight: 1.7, marginBottom: 16 }}>
                 {city.transport}
               </p>
               <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
                 {city.highlights.map((h) => (
                   <div key={h} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-                    <span style={{ color: "var(--green-text)", fontSize: 12, marginTop: 2, flexShrink: 0 }}>→</span>
-                    <span style={{ fontSize: 13, color: "var(--ink-500)", lineHeight: 1.5 }}>{h}</span>
+                    <span style={{ color: "var(--green-text)", fontSize: "var(--text-xs)", marginTop: 2, flexShrink: 0 }}>→</span>
+                    <span style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", lineHeight: 1.5 }}>{h}</span>
                   </div>
                 ))}
               </div>
@@ -201,15 +201,15 @@ export default function CityJobList() {
             <div style={{
               background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, padding: "22px",
             }}>
-              <p style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)", marginBottom: 6 }}>
+              <p style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)", marginBottom: 6 }}>
                 Sök utan bemanningsbolag
               </p>
-              <p style={{ fontSize: 13, color: "var(--ink-500)", lineHeight: 1.6, marginBottom: 16 }}>
+              <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", lineHeight: 1.6, marginBottom: 16 }}>
                 Skapa en förarprofil på STP — verifierade åkerier i {city.name} hittar dig direkt. Alltid gratis för förare.
               </p>
               <Link to="/login" style={{
                 display: "block", textAlign: "center", padding: "11px 18px", borderRadius: 10,
-                background: "var(--green)", color: "#fff", fontSize: 13, fontWeight: 800, textDecoration: "none",
+                background: "var(--green)", color: "#fff", fontSize: "var(--text-sm)", fontWeight: 800, textDecoration: "none",
               }}>
                 Skapa profil gratis →
               </Link>
@@ -218,14 +218,14 @@ export default function CityJobList() {
             {/* Nearby cities */}
             {nearbyCities.length > 0 && (
               <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, padding: "20px 22px" }}>
-                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 12 }}>
+                <p style={{ fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 12 }}>
                   Andra städer i {city.region}
                 </p>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                   {nearbyCities.map((c) => (
                     <Link key={c.slug} to={`/ce-jobb/${c.slug}`} style={{
                       padding: "6px 14px", borderRadius: 8, border: "1px solid var(--line)",
-                      fontSize: 13, color: "var(--ink-500)", textDecoration: "none",
+                      fontSize: "var(--text-sm)", color: "var(--ink-500)", textDecoration: "none",
                     }}
                       onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--green)"; e.currentTarget.style.color = "var(--green-text)"; }}
                       onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--line)"; e.currentTarget.style.color = "var(--ink-500)"; }}
@@ -239,7 +239,7 @@ export default function CityJobList() {
 
             {/* Tools cross-links */}
             <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, padding: "20px 22px" }}>
-              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 14 }}>
+              <p style={{ fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 14 }}>
                 Branschverktyg
               </p>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -255,8 +255,8 @@ export default function CityJobList() {
                       onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--green)"; }}
                       onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--line)"; }}
                     >
-                      <p style={{ fontSize: 13, fontWeight: 700, color: "var(--ink-900)", marginBottom: 2 }}>{label}</p>
-                      <p style={{ fontSize: 12, color: "var(--ink-400)", margin: 0 }}>{desc}</p>
+                      <p style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-900)", marginBottom: 2 }}>{label}</p>
+                      <p style={{ fontSize: "var(--text-xs)", color: "var(--ink-400)", margin: 0 }}>{desc}</p>
                     </div>
                   </Link>
                 ))}
@@ -267,7 +267,7 @@ export default function CityJobList() {
 
         {/* ── All cities grid ──────────────────────────────────────────────────── */}
         <div style={{ marginTop: 56, borderTop: "1px solid var(--line)", paddingTop: 36 }}>
-          <h2 style={{ fontSize: 15, fontWeight: 700, color: "var(--ink-500)", marginBottom: 16 }}>
+          <h2 style={{ fontSize: "var(--text-md)", fontWeight: 700, color: "var(--ink-500)", marginBottom: 16 }}>
             CE-jobb i fler städer
           </h2>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -276,7 +276,7 @@ export default function CityJobList() {
               .map((c) => (
                 <Link key={c.slug} to={`/ce-jobb/${c.slug}`} style={{
                   padding: "7px 16px", borderRadius: 9, border: "1px solid var(--line)",
-                  fontSize: 13, color: "var(--ink-500)", textDecoration: "none", transition: "all .15s",
+                  fontSize: "var(--text-sm)", color: "var(--ink-500)", textDecoration: "none", transition: "all .15s",
                 }}
                   onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--green)"; e.currentTarget.style.color = "var(--green-text)"; }}
                   onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--line)"; e.currentTarget.style.color = "var(--ink-500)"; }}

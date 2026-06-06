@@ -55,7 +55,7 @@ export default function BottomSheet({ open, onClose, title, children, footerLeft
             display: "flex", alignItems: "center", justifyContent: "space-between",
             flexShrink: 0,
           }}>
-            <h3 style={{ fontSize: 18, fontWeight: 800, letterSpacing: -0.4, color: "var(--ink-900)", margin: 0 }}>
+            <h3 style={{ fontSize: "var(--text-xl)", fontWeight: 800, letterSpacing: -0.4, color: "var(--ink-900)", margin: 0 }}>
               {title}
             </h3>
             <button
@@ -95,7 +95,7 @@ export default function BottomSheet({ open, onClose, title, children, footerLeft
                 style={{
                   flex: 1, padding: "14px", borderRadius: 99,
                   background: "transparent", border: "1px solid var(--line-2)",
-                  color: "var(--ink-500)", fontSize: 14, fontWeight: 700, cursor: "pointer",
+                  color: "var(--ink-500)", fontSize: "var(--text-base)", fontWeight: 700, cursor: "pointer",
                   fontFamily: "inherit",
                 }}
               >
@@ -108,7 +108,7 @@ export default function BottomSheet({ open, onClose, title, children, footerLeft
                 style={{
                   flex: 1.5, padding: "14px", borderRadius: 99,
                   background: "var(--green)",
-                  border: "none", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer",
+                  border: "none", color: "#fff", fontSize: "var(--text-base)", fontWeight: 800, cursor: "pointer",
                   fontFamily: "inherit",
                 }}
               >
