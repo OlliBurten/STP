@@ -3,7 +3,7 @@
  * Dark asphalt strip, green logo, nav links, ⌘K search, notification panel, avatar.
  * Company users get "Åkeri" sub-label next to the logo.
  */
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useChat } from "../context/ChatContext";

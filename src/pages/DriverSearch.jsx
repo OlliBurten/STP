@@ -12,7 +12,7 @@ import { fetchMyJobs, fetchJob } from "../api/jobs.js";
 import { fetchConversations, createConversation } from "../api/conversations.js";
 import { segmentOptions } from "../data/segments";
 import { regions } from "../data/mockJobs";
-import { availabilityTypes, getCertificateLabel } from "../data/profileData";
+import { availabilityTypes } from "../data/profileData";
 import { mockDrivers } from "../data/mockDrivers";
 import { mockJobs } from "../data/mockJobs";
 

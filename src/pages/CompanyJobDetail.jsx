@@ -4,7 +4,6 @@ import { usePageTitle } from "../hooks/usePageTitle";
 import { useAuth } from "../context/AuthContext";
 import { useChat } from "../context/ChatContext";
 import { fetchJob, fetchJobApplicants, fetchJobStats, updateJob } from "../api/jobs.js";
-import { selectConversation, rejectConversation } from "../api/conversations.js";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { useConfirm } from "../components/ConfirmDialog";
 

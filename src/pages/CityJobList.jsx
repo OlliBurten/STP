@@ -3,7 +3,6 @@ import { Link, useParams, Navigate } from "react-router-dom";
 import { fetchJobs } from "../api/jobs";
 import { usePageMeta } from "../hooks/usePageMeta";
 import { getCityBySlug, cityPages } from "../data/cities";
-import { getSlugByName } from "../data/regions";
 import JobCard from "../components/JobCard";
 import { useIsMobile } from "../hooks/useIsMobile";
 

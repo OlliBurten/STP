@@ -29,6 +29,14 @@ export default defineConfig([
         caughtErrors: 'none',
       }],
       'no-empty': ['error', { allowEmptyCatch: true }],
+      // Rådgivande/experimentella regler → "warn" (matchar Vites standardmall).
+      // rules-of-hooks behålls som "error" (kritiskt).
+      'react-refresh/only-export-components': 'warn',
+      'react-hooks/exhaustive-deps': 'warn',
+      'react-hooks/set-state-in-effect': 'warn',
+      'react-hooks/static-components': 'warn',
+      'react-hooks/purity': 'warn',
+      'react-hooks/incompatible-library': 'warn',
     },
   },
 ])

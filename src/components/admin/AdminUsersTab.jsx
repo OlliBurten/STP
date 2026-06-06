@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Icon } from "./AdminShell.jsx";
-import { updateCompanyStatus, setUserSuspended, updateUserWarnings, verifyUserEmail, sendVerificationReminders, deleteUser } from "../../api/admin.js";
+import { updateCompanyStatus, setUserSuspended, updateUserWarnings, sendVerificationReminders, deleteUser } from "../../api/admin.js";
 
 const mono = { fontFamily: "'JetBrains Mono',monospace", fontFeatureSettings: '"tnum"' };
 

@@ -5,7 +5,6 @@ import { useIsMobile } from "../hooks/useIsMobile";
 import { calcYearsExperience } from "../utils/profileUtils";
 import { availabilityTypes, getCertificateLabel } from "../data/profileData";
 import ReachOutModal from "../components/ReachOutModal";
-import { segmentLabel } from "../data/segments";
 import { fetchDriver, trackDriverProfileView, fetchDriverReviews } from "../api/drivers.js";
 import { track } from "../utils/posthog.js";
 import { fetchMyJobs } from "../api/jobs.js";
