@@ -39,7 +39,7 @@ export default function Kontakt() {
     <main style={{ background: "var(--paper)", minHeight: "100vh" }}>
       <PageMeta title="Kontakt – Sveriges Transportplattform" description="Kontakta Sveriges Transportplattform (STP) med frågor om samverkan, plattformen eller genomgång. Vi svarar på info@transportplattformen.se." canonical="/kontakt" />
 
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "64px 32px 80px" }}>
+      <div style={{ maxWidth: "var(--w-public)", margin: "0 auto", padding: "64px 32px 80px" }}>
         {/* Top grid: contact info + form */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 48, alignItems: "start", marginBottom: 64 }}>
           {/* Left */}

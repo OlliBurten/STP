@@ -136,7 +136,7 @@ export default function BloggIndex() {
 
   return (
     <main style={{ background: "var(--paper)", minHeight: "100vh", paddingTop: 48 }}>
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px 96px" }}>
+      <div style={{ maxWidth: "var(--w-public)", margin: "0 auto", padding: "0 24px 96px" }}>
 
         {/* Header */}
         <div style={{ marginBottom: 48 }}>

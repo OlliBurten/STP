@@ -48,7 +48,7 @@ export default function About() {
 
       {/* Hero */}
       <div style={{ background: "var(--paper)", padding: "72px 0 48px" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 32px", maxWidth: 720 }}>
+        <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 32px" }}>
           <span style={{ display: "inline-block", padding: "4px 12px", borderRadius: 999, fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", color: "var(--green-text)", background: "var(--green-tint)", marginBottom: 18 }}>Om STP</span>
           <h1 style={{ fontSize: 44, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -2, lineHeight: 1.05, marginBottom: 20 }}>Branschens egen plattform — byggd av branschen.</h1>
           <p style={{ fontSize: "var(--text-xl)", color: "var(--ink-500)", lineHeight: 1.7 }}>
@@ -58,7 +58,7 @@ export default function About() {
       </div>
 
       {/* Stats */}
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 32px 48px" }}>
+      <div style={{ maxWidth: "var(--w-public)", margin: "0 auto", padding: "0 32px 48px" }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 48 }}>
           {[
             { v: "2 847+", l: "Registrerade användare" },
@@ -89,7 +89,7 @@ export default function About() {
 
       {/* Values */}
       <div style={{ background: "var(--paper-2)", borderTop: "1px solid var(--line)", borderBottom: "1px solid var(--line)", padding: "64px 0" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 32px" }}>
+        <div style={{ maxWidth: "var(--w-public)", margin: "0 auto", padding: "0 32px" }}>
           <p style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: "var(--green-text)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 12 }}>Vad vi tror på</p>
           <h2 style={{ fontSize: 30, fontWeight: 900, letterSpacing: -0.8, color: "var(--ink-900)", marginBottom: 28 }}>Principer vi bygger efter</h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>

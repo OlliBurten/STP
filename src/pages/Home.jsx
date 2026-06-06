@@ -173,7 +173,7 @@ export default function Home() {
         }} />
 
         <div style={{
-          maxWidth: 1264, margin: "0 auto",
+          maxWidth: "var(--w-public)", margin: "0 auto",
           padding: isMobile ? "0 24px" : "0 32px",
           width: "100%",
           display: "flex",
