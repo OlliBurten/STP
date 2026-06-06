@@ -160,6 +160,27 @@ select {
 a { color: var(--green); text-decoration: none; }
 a:hover { text-decoration: underline; }
 
+/* ── Interaktionspolering (global, additiv) ─────────────────────────────────────
+   Mjuk, konsekvent övergång på interaktiva element som saknar egen. Inline-
+   transitions vinner, så detta lyfter bara element utan egen polering. */
+button, [role="button"], a, input, select, textarea, summary {
+  transition: background-color .15s ease, border-color .15s ease,
+              box-shadow .15s ease, color .15s ease, opacity .15s ease;
+}
+/* Diskret nedtryck → känns responsivt vid klick */
+button:not(:disabled):active { transform: translateY(0.5px); }
+button:disabled { cursor: not-allowed; }
+
+/* Respektera användare som föredrar mindre rörelse (a11y-standard) */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* ── Animationer ───────────────────────────────────────────────────────────── */
 @keyframes stp-fade-up {
   from { opacity: 0; transform: translateY(8px); }
