@@ -635,13 +635,13 @@ export default function Apply() {
       <PageMeta title={`Ansök – ${job.title} hos ${job.company}`} />
 
       {/* Breadcrumb */}
-      <div style={{ maxWidth: 1040, margin: "0 auto", padding: "24px 32px 0" }}>
+      <div style={{ maxWidth: "var(--w-read)", margin: "0 auto", padding: "24px 32px 0" }}>
         <Link to={`/jobb/${id}`} style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--ink-500)", textDecoration: "none" }}>
           <Icon n="back" s={14} /> Tillbaka till jobbet
         </Link>
       </div>
 
-      <div style={{ maxWidth: 1040, margin: "0 auto", padding: "20px 32px 0" }}>
+      <div style={{ maxWidth: "var(--w-read)", margin: "0 auto", padding: "20px 32px 0" }}>
         <h1 style={{ fontSize: "var(--text-5xl)", fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.2, marginBottom: 6 }}>Ansök till tjänsten</h1>
         <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", marginBottom: 28 }}>
           Din profil bifogas automatiskt — du behöver inte fylla i något CV.

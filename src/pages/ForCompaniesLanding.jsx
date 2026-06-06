@@ -41,7 +41,7 @@ const FAQS = [
 
 /* porterade marknads-stilar (från stp-marketing.css) */
 const S = {
-  container: { maxWidth: 1200, margin: "0 auto", width: "100%", padding: "0 32px" },
+  container: { maxWidth: "var(--w-public)", margin: "0 auto", width: "100%", padding: "0 32px" },
   eyebrow: { display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 14px", borderRadius: 999, background: "var(--green-tint)", color: "var(--green-text)", fontSize: "var(--text-xs)", fontWeight: 800, letterSpacing: 1, textTransform: "uppercase" },
   sectionEyebrow: { display: "block", fontSize: "var(--text-xs)", fontWeight: 800, letterSpacing: 1.4, textTransform: "uppercase", color: "var(--green-text)", marginBottom: 12 },
   sectionTitle: { fontSize: "clamp(28px,4vw,40px)", fontWeight: 900, letterSpacing: -1.5, lineHeight: 1.15, color: "var(--ink-900)", margin: 0 },
@@ -116,7 +116,7 @@ function FaqBlock({ items, lead, email }) {
   const [open, setOpen] = useState(null);
   return (
     <div>
-      <div style={{ textAlign: "center", maxWidth: 560, margin: "0 auto 40px" }}>
+      <div style={{ textAlign: "center", maxWidth: "var(--w-form)", margin: "0 auto 40px" }}>
         <span style={S.sectionEyebrow}>Vanliga frågor</span>
         <h2 style={S.sectionTitle}>Frågor och svar</h2>
       </div>
@@ -150,7 +150,7 @@ function FaqBlock({ items, lead, email }) {
 function GreenCTA({ title, lead, primaryLabel, secondaryLabel, stats, onPrimary, onSecondary }) {
   return (
     <section style={{ background: "linear-gradient(160deg, #14524f 0%, #0c3d3a 100%)", padding: "88px 0", color: "#fff" }}>
-      <div style={{ ...S.container, maxWidth: 1040 }}>
+      <div style={{ ...S.container, maxWidth: "var(--w-read)" }}>
         <div style={{ textAlign: "center", maxWidth: 620, margin: "0 auto" }}>
           <h2 style={{ fontSize: "clamp(30px,4vw,44px)", fontWeight: 900, letterSpacing: -1.6, lineHeight: 1.12, marginBottom: 18 }}>{title}</h2>
           <p style={{ fontSize: "var(--text-xl)", lineHeight: 1.65, color: "rgba(240,250,249,0.7)", marginBottom: 32 }}>{lead}</p>
@@ -320,7 +320,7 @@ export default function ForCompaniesLanding() {
       {/* ───────── VERIFIERING + TEAM ───────── */}
       <section style={{ background: "var(--paper-2)", padding: "88px 0" }}>
         <div style={S.container}>
-          <div style={{ maxWidth: 560, marginBottom: 40 }}>
+          <div style={{ maxWidth: "var(--w-form)", marginBottom: 40 }}>
             <span style={S.sectionEyebrow}>Trygghet & samarbete</span>
             <h2 style={S.sectionTitle}>Byggt för seriösa åkerier.</h2>
           </div>
@@ -357,7 +357,7 @@ export default function ForCompaniesLanding() {
       {/* ───────── SÅ FUNKAR DET ───────── */}
       <section id="sa-funkar" style={{ background: "var(--paper)", padding: "88px 0" }}>
         <div style={S.container}>
-          <div style={{ textAlign: "center", maxWidth: 560, margin: "0 auto 48px" }}>
+          <div style={{ textAlign: "center", maxWidth: "var(--w-form)", margin: "0 auto 48px" }}>
             <span style={S.sectionEyebrow}>Kom igång</span>
             <h2 style={S.sectionTitle}>Igång på minuter, inte veckor.</h2>
           </div>

@@ -319,7 +319,7 @@ export default function Home() {
           transition: "opacity 0.7s ease-out, transform 0.7s ease-out",
         }}
       >
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+        <div style={{ maxWidth: "var(--w-public)", margin: "0 auto" }}>
           <div style={{ maxWidth: 620, marginBottom: 64 }}>
             <div style={{
               display: "inline-block", padding: "4px 12px", borderRadius: 999,
@@ -379,7 +379,7 @@ export default function Home() {
           transition: "opacity 0.7s ease-out, transform 0.7s ease-out",
         }}
       >
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+        <div style={{ maxWidth: "var(--w-public)", margin: "0 auto" }}>
           <div style={{ marginBottom: 56, maxWidth: 720 }}>
             <div style={{
               display: "inline-block", padding: "4px 12px", borderRadius: 999,
@@ -506,7 +506,7 @@ export default function Home() {
           transition: "opacity 0.7s ease-out, transform 0.7s ease-out",
         }}
       >
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+        <div style={{ maxWidth: "var(--w-public)", margin: "0 auto" }}>
           <div style={{
             display: "grid",
             gridTemplateColumns: isMobile ? "1fr" : "1fr 1.15fr",
@@ -605,7 +605,7 @@ export default function Home() {
           transition: "opacity 0.7s ease-out, transform 0.7s ease-out",
         }}
       >
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+        <div style={{ maxWidth: "var(--w-public)", margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 56 }}>
             <div style={{
               display: "inline-block", padding: "4px 12px", borderRadius: 999,
@@ -779,7 +779,7 @@ export default function Home() {
           transition: "opacity 0.7s ease-out, transform 0.7s ease-out",
         }}
       >
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+        <div style={{ maxWidth: "var(--w-public)", margin: "0 auto" }}>
           <div style={{
             display: "grid",
             gridTemplateColumns: isMobile ? "1fr" : "1fr 1.8fr",
@@ -868,7 +868,7 @@ export default function Home() {
           transition: "opacity 0.7s ease-out, transform 0.7s ease-out",
         }}
       >
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+        <div style={{ maxWidth: "var(--w-public)", margin: "0 auto" }}>
           <div style={{
             display: "grid",
             gridTemplateColumns: isMobile ? "1fr" : "1fr 1.5fr",
@@ -970,7 +970,7 @@ export default function Home() {
         }}
       >
         <div style={{
-          maxWidth: 1200, margin: "0 auto",
+          maxWidth: "var(--w-public)", margin: "0 auto",
           display: "grid",
           gridTemplateColumns: isMobile ? "1fr" : "1.2fr 1fr",
           gap: isMobile ? 48 : 60,

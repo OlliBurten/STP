@@ -971,14 +971,14 @@ export default function Settings() {
       {/* Page header */}
       {!isMobile && (
         <div style={{ background: "var(--paper)", borderBottom: "1px solid var(--line)", paddingTop: 32, paddingBottom: 24 }}>
-          <div style={{ maxWidth: 1040, margin: "0 auto", padding: "0 32px" }}>
+          <div style={{ maxWidth: "var(--w-read)", margin: "0 auto", padding: "0 32px" }}>
             <p style={{ fontSize: "var(--text-2xs)", fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 10 }}>Konto</p>
             <h1 style={{ fontSize: "var(--text-5xl)", fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.2, lineHeight: 1.15, margin: 0 }}>Inställningar</h1>
           </div>
         </div>
       )}
 
-      <div style={{ maxWidth: 1040, margin: "0 auto", padding: isMobile ? "72px 16px 80px" : "28px 32px 100px" }}>
+      <div style={{ maxWidth: "var(--w-read)", margin: "0 auto", padding: isMobile ? "72px 16px 80px" : "28px 32px 100px" }}>
 
         {/* Mobile title bar */}
         {isMobile && (

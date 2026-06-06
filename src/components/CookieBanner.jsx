@@ -65,7 +65,7 @@ export default function CookieBanner() {
         boxShadow: "var(--sh-md)",
       }}
     >
-      <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
+      <div style={{ maxWidth: "var(--w-public)", margin: "0 auto", display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
         {/* Text */}
         <div style={{ flex: 1, minWidth: 260 }}>
           <p style={{ margin: 0, fontSize: "var(--text-base)", color: "var(--ink-700)", lineHeight: 1.6 }}>

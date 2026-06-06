@@ -146,7 +146,7 @@ export default function BloggIndex() {
           <h1 style={{ fontSize: "var(--text-6xl)", fontWeight: 900, color: "var(--ink-900)", letterSpacing: "-0.5px", margin: "0 0 12px" }}>
             Guider &amp; insikter
           </h1>
-          <p style={{ fontSize: "var(--text-xl)", color: "var(--ink-500)", maxWidth: 560, lineHeight: 1.6, margin: 0 }}>
+          <p style={{ fontSize: "var(--text-xl)", color: "var(--ink-500)", maxWidth: "var(--w-form)", lineHeight: 1.6, margin: 0 }}>
             Praktiska guider om körkort, certifikat, löner och rekrytering — baserade på officiella
             källor från Trafikverket, SCB och TYA.
           </p>

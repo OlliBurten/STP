@@ -385,7 +385,7 @@ export default function MinaJobb() {
     <div style={{ minHeight: "100vh", background: "var(--paper)" }}>
       {/* Page header */}
       <div style={{ background: "var(--paper)", borderBottom: "1px solid var(--line)", paddingTop: 32, paddingBottom: 0 }}>
-        <div style={{ maxWidth: 1040, margin: "0 auto", padding: "0 32px" }}>
+        <div style={{ maxWidth: "var(--w-read)", margin: "0 auto", padding: "0 32px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 16, marginBottom: 24 }}>
             <div>
               <p style={{ fontSize: "var(--text-2xs)", fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 10 }}>För åkerier</p>
@@ -426,7 +426,7 @@ export default function MinaJobb() {
       </div>
 
       {/* Main content */}
-      <main style={{ maxWidth: 1040, margin: "0 auto", padding: "24px 32px 80px" }}>
+      <main style={{ maxWidth: "var(--w-read)", margin: "0 auto", padding: "24px 32px 80px" }}>
         {jobList}
       </main>
     </div>

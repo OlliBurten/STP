@@ -236,7 +236,7 @@ export default function CompanyJobDetail() {
     <main style={{ background: "var(--paper)", minHeight: "100vh" }}>
       {/* Page header */}
       <div style={{ background: "var(--paper)", borderBottom: "1px solid var(--line)", paddingTop: 24, paddingBottom: 22 }}>
-        <div style={{ maxWidth: 1240, margin: "0 auto", padding: "0 32px" }}>
+        <div style={{ maxWidth: "var(--w-app)", margin: "0 auto", padding: "0 32px" }}>
           <Link
             to="/foretag/annonser"
             style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--ink-500)", textDecoration: "none", marginBottom: 16 }}
@@ -304,7 +304,7 @@ export default function CompanyJobDetail() {
       </div>
 
       {/* Kanban body */}
-      <div style={{ maxWidth: 1240, margin: "0 auto", padding: "24px 32px 80px" }}>
+      <div style={{ maxWidth: "var(--w-app)", margin: "0 auto", padding: "24px 32px 80px" }}>
         {applicants.length === 0 && !loading ? (
           <div style={{ padding: "48px 32px", borderRadius: 14, background: "var(--card)", border: "1px solid var(--line)", textAlign: "center", boxShadow: "var(--sh-sm)" }}>
             <div style={{ fontSize: "var(--text-xl)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 8 }}>Inga ansökningar ännu</div>

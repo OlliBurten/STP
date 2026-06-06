@@ -97,7 +97,7 @@ export default function Kontakt() {
         </div>
 
         {/* FAQ */}
-        <div style={{ maxWidth: 680 }}>
+        <div style={{ maxWidth: "var(--w-prose)" }}>
           <p style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-500)", marginBottom: 20 }}>Vanliga frågor</p>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {FAQ.map((item) => (

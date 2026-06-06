@@ -155,7 +155,7 @@ export default function PartnerPresentation() {
             <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: "0.15em", textTransform: "uppercase", color: ACCENT, marginBottom: 48 }}>
               Sveriges Transportplattform
             </div>
-            <h1 style={{ fontSize: 46, fontWeight: 900, color: TEXT, lineHeight: 1.1, letterSpacing: "-1.5px", margin: "0 0 24px", maxWidth: 560 }}>
+            <h1 style={{ fontSize: 46, fontWeight: 900, color: TEXT, lineHeight: 1.1, letterSpacing: "-1.5px", margin: "0 0 24px", maxWidth: "var(--w-form)" }}>
               En jobbplattform byggd för transportbranschen
             </h1>
             <p style={{ fontSize: "var(--text-xl)", color: SUB, lineHeight: 1.75, maxWidth: 520, margin: 0 }}>

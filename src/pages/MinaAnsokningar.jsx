@@ -430,7 +430,7 @@ export default function MinaAnsokningar() {
 
       {/* Page header */}
       <div style={{ background: "var(--paper)", borderBottom: "1px solid var(--line)", paddingTop: 32, paddingBottom: 0 }}>
-        <div style={{ maxWidth: 1040, margin: "0 auto", padding: "0 32px" }}>
+        <div style={{ maxWidth: "var(--w-read)", margin: "0 auto", padding: "0 32px" }}>
           <p style={{ fontSize: "var(--text-2xs)", fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 10 }}>För förare</p>
           <h1 style={{ fontSize: "var(--text-5xl)", fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.2, lineHeight: 1.15, marginBottom: 6 }}>Mina ansökningar</h1>
           <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", fontWeight: 500, marginBottom: 24 }}>
@@ -465,7 +465,7 @@ export default function MinaAnsokningar() {
       </div>
 
       {/* Main content */}
-      <div style={{ maxWidth: 1040, margin: "0 auto", padding: "24px 32px 80px" }}>
+      <div style={{ maxWidth: "var(--w-read)", margin: "0 auto", padding: "24px 32px 80px" }}>
         {loading ? (
           <LoadingBlock message="Hämtar dina ansökningar..." />
         ) : error ? (

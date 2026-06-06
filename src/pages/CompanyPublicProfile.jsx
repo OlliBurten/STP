@@ -169,7 +169,7 @@ export default function CompanyPublicProfile() {
     return (
       <main style={{ background: "var(--paper)", minHeight: "100vh" }}>
         <div style={{ height: 180, background: "var(--paper-2)" }} />
-        <div style={{ maxWidth: 1040, margin: "0 auto", padding: isMobile ? "0 16px" : "0 32px" }}>
+        <div style={{ maxWidth: "var(--w-read)", margin: "0 auto", padding: isMobile ? "0 16px" : "0 32px" }}>
           <div style={{ height: 96, width: 96, borderRadius: 24, background: "var(--line)", marginTop: -48, marginBottom: 24 }} />
           <div style={{ height: 40, width: 320, borderRadius: 10, background: "var(--paper-2)", marginBottom: 12 }} />
           <div style={{ height: 60, borderRadius: 14, background: "var(--paper-2)" }} />
@@ -181,7 +181,7 @@ export default function CompanyPublicProfile() {
   if (!company) {
     return (
       <main style={{ background: "var(--paper)", minHeight: "100vh", paddingTop: 80 }}>
-        <div style={{ maxWidth: 1040, margin: "0 auto", padding: isMobile ? "0 16px" : "0 32px" }}>
+        <div style={{ maxWidth: "var(--w-read)", margin: "0 auto", padding: isMobile ? "0 16px" : "0 32px" }}>
           <p style={{ fontSize: "var(--text-md)", color: "var(--ink-700)", marginBottom: 12 }}>Företaget hittades inte.</p>
           <Link to="/akerier" style={{ fontSize: "var(--text-base)", color: "var(--green-text)", textDecoration: "none" }}>← Tillbaka till åkerier</Link>
         </div>
@@ -470,13 +470,13 @@ export default function CompanyPublicProfile() {
       />
 
       {/* Breadcrumb */}
-      <div style={{ maxWidth: 1040, margin: "0 auto", padding: "24px 32px 0" }}>
+      <div style={{ maxWidth: "var(--w-read)", margin: "0 auto", padding: "24px 32px 0" }}>
         <Link to="/akerier" style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--ink-500)", textDecoration: "none" }}>
           <Icon n="back" s={14} /> Tillbaka till åkerier
         </Link>
       </div>
 
-      <div style={{ maxWidth: 1040, margin: "0 auto", padding: "20px 32px 80px" }}>
+      <div style={{ maxWidth: "var(--w-read)", margin: "0 auto", padding: "20px 32px 80px" }}>
 
         {/* Header card */}
         <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "28px 32px", boxShadow: "var(--sh-sm)", marginBottom: 24 }}>

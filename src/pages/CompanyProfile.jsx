@@ -537,11 +537,11 @@ export default function CompanyProfile() {
     }
   };
 
-  if (loading) return <main style={{ background: "var(--paper)", minHeight: "100vh" }}><div style={{ maxWidth: 1040, margin: "0 auto", padding: "60px 24px" }}><LoadingBlock message="Hämtar företagsprofil..." /></div></main>;
+  if (loading) return <main style={{ background: "var(--paper)", minHeight: "100vh" }}><div style={{ maxWidth: "var(--w-read)", margin: "0 auto", padding: "60px 24px" }}><LoadingBlock message="Hämtar företagsprofil..." /></div></main>;
 
   if (!hasApi) return (
     <main style={{ background: "var(--paper)", minHeight: "100vh" }}>
-      <div style={{ maxWidth: 1040, margin: "0 auto", padding: "60px 24px", textAlign: "center", color: "var(--ink-400)" }}>
+      <div style={{ maxWidth: "var(--w-read)", margin: "0 auto", padding: "60px 24px", textAlign: "center", color: "var(--ink-400)" }}>
         Företagsprofil kräver API-läge.
       </div>
     </main>
@@ -568,7 +568,7 @@ export default function CompanyProfile() {
 
       {/* Page header */}
       <div style={{ background: "var(--paper)", borderBottom: "1px solid var(--line)", paddingTop: 32, paddingBottom: 24 }}>
-        <div style={{ maxWidth: 1040, margin: "0 auto", padding: "0 32px", display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 16 }}>
+        <div style={{ maxWidth: "var(--w-read)", margin: "0 auto", padding: "0 32px", display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 16 }}>
           <div>
             <p style={{ fontSize: "var(--text-2xs)", fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 10 }}>För åkerier</p>
             <h1 style={{ fontSize: "var(--text-5xl)", fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.2, lineHeight: 1.15 }}>Företagsprofil</h1>
@@ -586,7 +586,7 @@ export default function CompanyProfile() {
         </div>
       </div>
 
-      <div style={{ maxWidth: 1040, margin: "0 auto", padding: isMobile ? "20px 20px 100px" : "28px 32px 80px" }}>
+      <div style={{ maxWidth: "var(--w-read)", margin: "0 auto", padding: isMobile ? "20px 20px 100px" : "28px 32px 80px" }}>
         {/* Varning */}
         {draft && (!Array.isArray(draft.companyBransch) || draft.companyBransch.length === 0 || !draft.companyRegion) && (
           <div style={{ marginBottom: 20, padding: "14px 18px", borderRadius: 14, background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.25)", display: "flex", gap: 12, alignItems: "flex-start" }}>

@@ -13,7 +13,7 @@ export default function PatchNotes() {
       />
       <section style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px 80px" }}>
 
-        <div style={{ maxWidth: 560, marginBottom: 48 }}>
+        <div style={{ maxWidth: "var(--w-form)", marginBottom: 48 }}>
           <span style={{ display: "inline-flex", alignItems: "center", gap: 6, borderRadius: 20, background: "var(--success-tint)", border: "1px solid var(--success)", padding: "4px 12px", fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--success)", letterSpacing: "0.5px" }}>
             Senaste version: {CURRENT_VERSION}
           </span>

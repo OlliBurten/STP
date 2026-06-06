@@ -208,7 +208,7 @@ export default function LoneKalkylator() {
         canonical="/lon-kalkylator"
       />
 
-      <div style={{ maxWidth: 680, margin: "0 auto", padding: "0 20px 80px" }}>
+      <div style={{ maxWidth: "var(--w-prose)", margin: "0 auto", padding: "0 20px 80px" }}>
         <Link to="/jobb" style={{ fontSize: "var(--text-sm)", color: T.sub, textDecoration: "none", display: "inline-block", marginBottom: 32 }}>
           ← Lediga jobb
         </Link>

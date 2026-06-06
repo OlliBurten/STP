@@ -119,7 +119,7 @@ export default function AddCompany() {
         <div style={{ height: 3, background: "var(--green)", width: "50%" }} />
       </div>
 
-      <div style={{ maxWidth: 560, margin: "0 auto", padding: "48px 24px 0" }}>
+      <div style={{ maxWidth: "var(--w-form)", margin: "0 auto", padding: "48px 24px 0" }}>
         {/* Tillbaka */}
         <Link to="/foretag" style={{
           display: "inline-flex", alignItems: "center", gap: 6,

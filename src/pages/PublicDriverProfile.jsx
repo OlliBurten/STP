@@ -112,7 +112,7 @@ export default function PublicDriverProfile() {
 
   return (
     <main style={{ background: "var(--paper)", minHeight: "100vh" }}>
-      <div style={{ maxWidth: 1040, margin: "0 auto", padding: "24px 32px 80px" }}>
+      <div style={{ maxWidth: "var(--w-read)", margin: "0 auto", padding: "24px 32px 80px" }}>
       <PageMeta
         title={`${driver.name} – Förarprofil på STP`}
         description={metaDescription || "Förarprofil på Sveriges Transportplattform"}

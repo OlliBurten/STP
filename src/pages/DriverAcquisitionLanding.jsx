@@ -39,7 +39,7 @@ export default function DriverAcquisitionLanding() {
       <div style={{ minHeight: "100vh", background: "var(--paper)", fontFamily: "inherit" }}>
 
         {/* Top bar — logo + trust pill */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 24px", maxWidth: 680, margin: "0 auto" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 24px", maxWidth: "var(--w-prose)", margin: "0 auto" }}>
           <Link to="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
             <Logo height={30} />
           </Link>
@@ -54,7 +54,7 @@ export default function DriverAcquisitionLanding() {
         </div>
 
         {/* Hero */}
-        <div style={{ maxWidth: 680, margin: "0 auto", padding: "40px 24px 0" }}>
+        <div style={{ maxWidth: "var(--w-prose)", margin: "0 auto", padding: "40px 24px 0" }}>
           <h1 style={{
             fontSize: "clamp(28px, 6vw, 44px)", fontWeight: 900, lineHeight: 1.15,
             letterSpacing: "-0.02em", marginBottom: 20, color: "var(--ink-900)",
@@ -90,7 +90,7 @@ export default function DriverAcquisitionLanding() {
         </div>
 
         {/* Trust signals */}
-        <div style={{ maxWidth: 680, margin: "40px auto 0", padding: "0 24px" }}>
+        <div style={{ maxWidth: "var(--w-prose)", margin: "40px auto 0", padding: "0 24px" }}>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
             {TRUST.map((t) => (
               <span key={t.label} style={{
@@ -108,12 +108,12 @@ export default function DriverAcquisitionLanding() {
         </div>
 
         {/* Divider */}
-        <div style={{ maxWidth: 680, margin: "48px auto 0", padding: "0 24px" }}>
+        <div style={{ maxWidth: "var(--w-prose)", margin: "48px auto 0", padding: "0 24px" }}>
           <div style={{ borderTop: "1px solid var(--line)" }} />
         </div>
 
         {/* Benefits */}
-        <div style={{ maxWidth: 680, margin: "0 auto", padding: "40px 24px 0" }}>
+        <div style={{ maxWidth: "var(--w-prose)", margin: "0 auto", padding: "40px 24px 0" }}>
           <h2 style={{ fontSize: "var(--text-sm)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--ink-400)", marginBottom: 24 }}>
             Vad du får
           </h2>
@@ -136,7 +136,7 @@ export default function DriverAcquisitionLanding() {
         </div>
 
         {/* Second CTA */}
-        <div style={{ maxWidth: 680, margin: "48px auto 0", padding: "0 24px", textAlign: "center" }}>
+        <div style={{ maxWidth: "var(--w-prose)", margin: "48px auto 0", padding: "0 24px", textAlign: "center" }}>
           <Link
             to="/login"
             state={{ initialMode: "register", role: "driver" }}
@@ -160,7 +160,7 @@ export default function DriverAcquisitionLanding() {
         </div>
 
         {/* Legitimacy block */}
-        <div style={{ maxWidth: 680, margin: "48px auto 0", padding: "0 24px" }}>
+        <div style={{ maxWidth: "var(--w-prose)", margin: "48px auto 0", padding: "0 24px" }}>
           <div style={{
             padding: "22px 24px", borderRadius: 14,
             background: "var(--info-tint)", border: "1px solid rgba(96,165,250,0.2)",
@@ -178,7 +178,7 @@ export default function DriverAcquisitionLanding() {
         </div>
 
         {/* Footer */}
-        <div style={{ maxWidth: 680, margin: "48px auto 0", padding: "24px 24px 48px", borderTop: "1px solid var(--line)" }}>
+        <div style={{ maxWidth: "var(--w-prose)", margin: "48px auto 0", padding: "24px 24px 48px", borderTop: "1px solid var(--line)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
             <span style={{ fontSize: "var(--text-xs)", color: "var(--ink-300)" }}>
               © 2026 Sveriges Transportplattform

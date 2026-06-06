@@ -158,7 +158,7 @@ function SearchModal({ onClose }) {
       padding: "12vh 24px 24px", zIndex: 100,
     }}>
       <div onClick={e => e.stopPropagation()} style={{
-        width: "100%", maxWidth: 560,
+        width: "100%", maxWidth: "var(--w-form)",
         background: "var(--card)", borderRadius: 16,
         boxShadow: "0 30px 70px rgba(15,22,22,0.3)", overflow: "hidden",
       }}>
@@ -363,7 +363,7 @@ export default function AppTopNav() {
         position: "sticky", top: 0, zIndex: 50,
       }}>
         <div style={{
-          maxWidth: 1240, margin: "0 auto",
+          maxWidth: "var(--w-app)", margin: "0 auto",
           padding: "0 32px", height: 60,
           display: "flex", alignItems: "center", gap: 8,
         }}>

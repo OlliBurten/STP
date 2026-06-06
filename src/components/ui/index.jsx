@@ -207,7 +207,7 @@ const TAB_ICON = { "Jobb": "search", "Lediga jobb": "search", "Åkerier": "truck
 export const TopNav = ({ items, active, onActive, currentUser, brand = "STP", brandSub, rightExtras, sticky = true }) => (
   <>
   <nav style={{ background: "var(--ink-900)", color: "#e8eded", borderBottom: "1px solid #000", position: sticky ? "sticky" : "relative", top: 0, zIndex: 50 }}>
-    <div className="stp-topnav-inner" style={{ maxWidth: 1240, margin: "0 auto", padding: "0 32px", height: 60, display: "flex", alignItems: "center", gap: 8 }}>
+    <div className="stp-topnav-inner" style={{ maxWidth: "var(--w-app)", margin: "0 auto", padding: "0 32px", height: 60, display: "flex", alignItems: "center", gap: 8 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginRight: 28 }}>
         <div style={{ width: 28, height: 28, borderRadius: 7, background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--text-sm)", color: "#fff", boxShadow: "inset 0 -2px 0 rgba(0,0,0,0.25)" }}>S</div>
         <span style={{ fontWeight: 800, fontSize: "var(--text-lg)", letterSpacing: 0.5 }}>{brand}</span>

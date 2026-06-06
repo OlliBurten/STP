@@ -238,7 +238,7 @@ export default function CompanyTeam() {
       minHeight: "100vh", background: "var(--paper)", color: "var(--ink-900)",
       fontFamily: "inherit", paddingBottom: "80px",
     }}>
-      <div style={{ maxWidth: 680, margin: "0 auto", padding: "48px 24px 0" }}>
+      <div style={{ maxWidth: "var(--w-prose)", margin: "0 auto", padding: "48px 24px 0" }}>
 
         {/* Breadcrumb */}
         <Link to="/foretag" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: "var(--text-sm)", color: "var(--ink-400)", textDecoration: "none", marginBottom: 36 }}>

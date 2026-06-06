@@ -58,7 +58,7 @@ export default function HittaPraktik() {
         <h1 style={{ fontSize: "clamp(28px, 5vw, 48px)", fontWeight: 900, color: "var(--ink-900)", lineHeight: 1.1, letterSpacing: "-1px", margin: "0 0 20px" }}>
           Hitta din praktikplats<br />inom transport
         </h1>
-        <p style={{ fontSize: "var(--text-xl)", color: "var(--ink-500)", lineHeight: 1.7, maxWidth: 560, margin: "0 auto 36px" }}>
+        <p style={{ fontSize: "var(--text-xl)", color: "var(--ink-500)", lineHeight: 1.7, maxWidth: "var(--w-form)", margin: "0 auto 36px" }}>
           STP kopplar ihop dig som studerar lastbil eller transport med åkerier som faktiskt tar emot praktikanter — i hela Sverige.
         </p>
         <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>

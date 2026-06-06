@@ -80,7 +80,7 @@ export default function SchoolLanding() {
 
           <p style={{
             fontSize: "clamp(14px, 2.5vw, 17px)", color: "var(--ink-500)",
-            lineHeight: 1.7, maxWidth: 560, margin: "0 auto 32px",
+            lineHeight: 1.7, maxWidth: "var(--w-form)", margin: "0 auto 32px",
           }}>
             STP kopplar ihop elever från {displayName} med verifierade åkerier som söker praktikanter.
             Gratis, direkt och utan mellanhänder.

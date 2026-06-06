@@ -325,7 +325,7 @@ export default function JobDetail() {
   if (!job) {
     return (
       <main style={{ background: "var(--paper)", minHeight: "100vh" }}>
-        <div style={{ maxWidth: 560, margin: "0 auto", padding: "80px 24px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <div style={{ maxWidth: "var(--w-form)", margin: "0 auto", padding: "80px 24px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center" }}>
           <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.5, color: "var(--ink-400)", textTransform: "uppercase", marginBottom: 24 }}>Annons hittades ej · 404</div>
           <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="var(--line-2)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 20 }}><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
           <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, marginBottom: 10, letterSpacing: -0.5, color: "var(--ink-900)" }}>Annonsen finns inte längre</h1>
@@ -703,7 +703,7 @@ export default function JobDetail() {
     <main style={{ background: "var(--paper)", minHeight: "100vh", overflowX: "clip" }}>
       <PageMeta title={`${job.title} – ${job.company}`} description={metaDescription} canonical={`/jobb/${job.id}`} jsonLd={jobLd} />
 
-      <div style={{ maxWidth: 1240, margin: "0 auto", padding: `${user ? "0" : "28px"} 32px 0` }}>
+      <div style={{ maxWidth: "var(--w-app)", margin: "0 auto", padding: `${user ? "0" : "28px"} 32px 0` }}>
         <Breadcrumbs items={breadcrumbs} className="mb-4" />
         <div style={{ marginBottom: 14 }}>
           <Link to={isCompany ? "/foretag/annonser" : "/jobb"} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--ink-500)", textDecoration: "none" }}>
@@ -714,7 +714,7 @@ export default function JobDetail() {
       </div>
 
       {/* Two-column grid */}
-      <div style={{ maxWidth: 1240, margin: "0 auto", padding: "0 32px 80px", display: "grid", gridTemplateColumns: "1fr 360px", gap: 28, alignItems: "start" }}>
+      <div style={{ maxWidth: "var(--w-app)", margin: "0 auto", padding: "0 32px 80px", display: "grid", gridTemplateColumns: "1fr 360px", gap: 28, alignItems: "start" }}>
 
         {/* ── LEFT COLUMN ──────────────────────────────────────────────────── */}
         <div style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: 14 }}>

@@ -73,7 +73,7 @@ export default function About() {
         </div>
 
         {/* Story */}
-        <div style={{ maxWidth: 680 }}>
+        <div style={{ maxWidth: "var(--w-prose)" }}>
           <h2 style={{ fontSize: "var(--text-4xl)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.6, marginBottom: 16 }}>Vår historia</h2>
           <p style={{ fontSize: "var(--text-xl)", color: "var(--ink-700)", lineHeight: 1.75, marginBottom: 18 }}>
             När man söker "lastbilsjobb" på Google landar man direkt på Indeed och generiska plattformar byggda för alla branscher, inte för transport. De vet inte skillnaden på ett CE-körkort och ett C, och bryr sig inte om YKB eller ADR.

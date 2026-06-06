@@ -247,13 +247,13 @@ export default function DriverDetail() {
       />
 
       {/* Breadcrumb */}
-      <div style={{ maxWidth: 1040, margin: "0 auto", padding: "24px 32px 0" }}>
+      <div style={{ maxWidth: "var(--w-read)", margin: "0 auto", padding: "24px 32px 0" }}>
         <Link to="/foretag/chaufforer" style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--ink-500)", textDecoration: "none" }}>
           <BackIcon /> Tillbaka till sökresultat
         </Link>
       </div>
 
-      <div style={{ maxWidth: 1040, margin: "0 auto", padding: "20px 32px 80px" }}>
+      <div style={{ maxWidth: "var(--w-read)", margin: "0 auto", padding: "20px 32px 80px" }}>
         <DriverProfileView
           profile={driver}
           owner={driver}

@@ -64,7 +64,7 @@ export default function CityJobList() {
         borderBottom: "1px solid var(--line)",
         padding: isMobile ? "24px 20px 32px" : "40px 40px 48px",
       }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+        <div style={{ maxWidth: "var(--w-public)", margin: "0 auto" }}>
 
           {/* Breadcrumb */}
           <nav style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "var(--text-xs)", color: "var(--ink-400)", marginBottom: 20 }}>
@@ -111,7 +111,7 @@ export default function CityJobList() {
       </div>
 
       {/* ── Content ───────────────────────────────────────────────────────────── */}
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: isMobile ? "28px 20px 60px" : "40px 40px 80px" }}>
+      <div style={{ maxWidth: "var(--w-public)", margin: "0 auto", padding: isMobile ? "28px 20px 60px" : "40px 40px 80px" }}>
 
         <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 340px", gap: 24, alignItems: "start" }}>
 

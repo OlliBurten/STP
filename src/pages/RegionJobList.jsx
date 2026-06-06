@@ -49,7 +49,7 @@ export default function RegionJobList() {
 
       {/* ── Page header ──────────────────────────────────────────────────────── */}
       <div style={{ background: "var(--card)", borderBottom: "1px solid var(--line)", padding: isMobile ? "24px 20px 20px" : "40px 40px 32px" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+        <div style={{ maxWidth: "var(--w-public)", margin: "0 auto" }}>
 
           {/* Breadcrumb */}
           <nav style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "var(--text-xs)", color: "var(--ink-400)", marginBottom: 18 }}>
@@ -75,7 +75,7 @@ export default function RegionJobList() {
       </div>
 
       {/* ── Content ──────────────────────────────────────────────────────────── */}
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: isMobile ? "24px 20px" : "32px 40px" }}>
+      <div style={{ maxWidth: "var(--w-public)", margin: "0 auto", padding: isMobile ? "24px 20px" : "32px 40px" }}>
 
         {/* Job list */}
         {loading ? (

@@ -743,7 +743,7 @@ export default function PostJob() {
       <PageMeta title="Publicera jobb – STP" />
 
       {/* Page header */}
-      <div style={{ maxWidth: 1040, margin: "0 auto", padding: isMobile ? "16px 20px 0" : "28px 32px 0" }}>
+      <div style={{ maxWidth: "var(--w-read)", margin: "0 auto", padding: isMobile ? "16px 20px 0" : "28px 32px 0" }}>
         <Link to="/foretag/annonser" style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--ink-500)", marginBottom: 18, textDecoration: "none" }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
           Tillbaka till annonser
@@ -751,7 +751,7 @@ export default function PostJob() {
         <h1 style={{ fontSize: isMobile ? 24 : 34, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.2, marginBottom: 18 }}>Skapa annons</h1>
       </div>
 
-      <div style={{ maxWidth: 1040, margin: "0 auto", padding: isMobile ? "0 20px 80px" : "0 32px 80px" }}>
+      <div style={{ maxWidth: "var(--w-read)", margin: "0 auto", padding: isMobile ? "0 20px 80px" : "0 32px 80px" }}>
         <div className={isMobile ? "" : "pj-grid"}>
 
         {/* ── Left: form ── */}

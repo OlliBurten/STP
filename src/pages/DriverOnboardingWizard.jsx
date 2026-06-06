@@ -269,7 +269,7 @@ export default function DriverOnboardingWizard() {
       <div style={{ minHeight: "100vh", background: "var(--paper)", display: "flex", flexDirection: "column" }}>
         <TopBar onSkip={null} />
         <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 24px" }}>
-          <div style={{ maxWidth: 560, width: "100%", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, padding: isMobile ? "36px 24px" : "48px 44px", textAlign: "center", boxShadow: "var(--sh)" }}>
+          <div style={{ maxWidth: "var(--w-form)", width: "100%", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, padding: isMobile ? "36px 24px" : "48px 44px", textAlign: "center", boxShadow: "var(--sh)" }}>
             <div style={{ width: 76, height: 76, borderRadius: 38, margin: "0 auto 24px", background: "var(--success-tint)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <svg viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" width="36" height="36"><polyline points="20 6 9 17 4 12"/></svg>
             </div>

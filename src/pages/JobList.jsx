@@ -702,7 +702,7 @@ export default function JobList() {
 
             {view === "map" ? (
               <div className="stp-fade-up" style={{ paddingTop: 24 }}>
-                <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", marginBottom: 16, fontWeight: 500, maxWidth: 560 }}>
+                <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", marginBottom: 16, fontWeight: 500, maxWidth: "var(--w-form)" }}>
                   Klicka på en region för att se lediga jobb där.
                 </p>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 280px", gap: 20, alignItems: "start" }}>
