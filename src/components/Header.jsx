@@ -249,7 +249,7 @@ export default function Header({ onboarding = false }) {
                 <span style={{ ...navLinkStyle(isActive), display: "inline-flex", alignItems: "center", gap: 6 }}>
                   Meddelanden
                   {(unreadCount > 0 || selectedNotificationCount > 0) && (
-                    <span style={{ minWidth: 18, height: 18, padding: "0 5px", borderRadius: 99, background: "var(--amber)", color: "#fff", fontSize: 10, fontWeight: 800, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                    <span style={{ minWidth: 18, height: 18, padding: "0 5px", borderRadius: 99, background: "var(--amber)", color: "#fff", fontSize: "var(--text-2xs)", fontWeight: 800, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
                       {unreadCount + selectedNotificationCount > 99 ? "99+" : unreadCount + selectedNotificationCount}
                     </span>
                   )}
@@ -280,7 +280,7 @@ export default function Header({ onboarding = false }) {
                 <span style={{ ...navLinkStyle(isActive), display: "inline-flex", alignItems: "center", gap: 6 }}>
                   Meddelanden
                   {companyUnreadConversationCount > 0 && (
-                    <span style={{ minWidth: 18, height: 18, padding: "0 5px", borderRadius: 99, background: "var(--amber)", color: "#fff", fontSize: 10, fontWeight: 800, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                    <span style={{ minWidth: 18, height: 18, padding: "0 5px", borderRadius: 99, background: "var(--amber)", color: "#fff", fontSize: "var(--text-2xs)", fontWeight: 800, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
                       {companyUnreadConversationCount > 99 ? "99+" : companyUnreadConversationCount}
                     </span>
                   )}
@@ -334,7 +334,7 @@ export default function Header({ onboarding = false }) {
                 flexShrink: 0,
               }}>S</div>
               <span style={{
-                fontWeight: 800, fontSize: 17, letterSpacing: 0.5,
+                fontWeight: 800, fontSize: "var(--text-xl)", letterSpacing: 0.5,
                 color: isLanding ? (scrolled ? "var(--ink-900)" : "#fff") : "#fff",
                 transition: "color .25s",
               }}>STP</span>
@@ -377,7 +377,7 @@ export default function Header({ onboarding = false }) {
                     {activeOrg?.name || "Välj åkeri"}
                   </span>
                   {activeOrg?.status === "PENDING" && (
-                    <span style={{ fontSize: 10, color: "var(--amber)", fontWeight: 700, flexShrink: 0 }}>●</span>
+                    <span style={{ fontSize: "var(--text-2xs)", color: "var(--amber)", fontWeight: 700, flexShrink: 0 }}>●</span>
                   )}
                   <ChevronDownIcon style={{ width: 14, height: 14, color: "rgba(255,255,255,0.4)", flexShrink: 0, transform: orgMenuOpen ? "rotate(180deg)" : "none", transition: "transform .15s" }} />
                 </button>
@@ -470,7 +470,7 @@ export default function Header({ onboarding = false }) {
                       position: "absolute", top: 7, right: 8,
                       minWidth: 16, height: 16, padding: "0 4px", borderRadius: 99,
                       background: "var(--amber)", color: "#fff",
-                      fontSize: 10, fontWeight: 800,
+                      fontSize: "var(--text-2xs)", fontWeight: 800,
                       display: "flex", alignItems: "center", justifyContent: "center",
                       border: "2px solid var(--ink-900)",
                     }}>
@@ -755,7 +755,7 @@ export default function Header({ onboarding = false }) {
                           }}>
                             {item.label}
                             {item.badge > 0 && (
-                              <span style={{ minWidth: 18, height: 18, padding: "0 5px", borderRadius: 99, background: "var(--amber)", color: "#fff", fontSize: 10, fontWeight: 800, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                              <span style={{ minWidth: 18, height: 18, padding: "0 5px", borderRadius: 99, background: "var(--amber)", color: "#fff", fontSize: "var(--text-2xs)", fontWeight: 800, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
                                 {item.badge > 99 ? "99+" : item.badge}
                               </span>
                             )}

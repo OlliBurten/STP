@@ -118,7 +118,7 @@ export default function PraktikLanding() {
           <h1 style={{ fontSize: "clamp(28px, 5vw, 52px)", fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.5, lineHeight: 1.1, margin: "0 0 22px" }}>
             Transportbranschens pipeline<br />börjar med rätt praktikplats.
           </h1>
-          <p style={{ fontSize: 17, color: "var(--ink-500)", lineHeight: 1.7, maxWidth: 600, margin: "0 auto 36px" }}>
+          <p style={{ fontSize: "var(--text-xl)", color: "var(--ink-500)", lineHeight: 1.7, maxWidth: 600, margin: "0 auto 36px" }}>
             STP kopplar ihop gymnasieelever, YKB-studerande och yrkesbytar med verifierade åkerier — strukturerat, direkt och utan mellanhänder.
           </p>
 
@@ -160,7 +160,7 @@ export default function PraktikLanding() {
               borderRadius: 20, padding: "28px clamp(18px, 5vw, 36px)",
             }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
-                <span style={{ fontSize: 22 }}>{s.icon}</span>
+                <span style={{ fontSize: "var(--text-3xl)" }}>{s.icon}</span>
                 <span style={{ fontSize: "var(--text-xs)", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: s.color }}>
                   {s.label}
                 </span>

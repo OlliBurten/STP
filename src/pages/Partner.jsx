@@ -128,7 +128,7 @@ export default function Partner() {
         <h1 style={{ fontSize: "clamp(28px, 5vw, 52px)", fontWeight: 900, color: "var(--ink-900)", lineHeight: 1.1, letterSpacing: "-1px", margin: "0 0 22px" }}>
           En jobbplattform byggd<br />för transportbranschen
         </h1>
-        <p style={{ fontSize: 19, color: "var(--ink-500)", lineHeight: 1.7, maxWidth: 600, margin: "0 auto 40px" }}>
+        <p style={{ fontSize: "var(--text-xl)", color: "var(--ink-500)", lineHeight: 1.7, maxWidth: 600, margin: "0 auto 40px" }}>
           STP — Sveriges Transportplattform — kopplar ihop yrkesförare med åkerier direkt, utan bemanningsföretag. Vi söker samarbeten med organisationer som arbetar med utbildning, rekrytering och sysselsättning inom transport.
         </p>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
@@ -162,7 +162,7 @@ export default function Partner() {
 
       {/* Vad är STP */}
       <section style={{ maxWidth: 800, margin: "0 auto", padding: "0 24px 72px" }}>
-        <h2 style={{ fontSize: 22, fontWeight: 800, color: "var(--ink-900)", marginBottom: 32, textAlign: "center" }}>Hur plattformen fungerar</h2>
+        <h2 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 32, textAlign: "center" }}>Hur plattformen fungerar</h2>
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           {HOW_IT_WORKS.map((s) => (
             <div key={s.n} style={{ display: "flex", gap: 20, alignItems: "flex-start", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "20px 22px" }}>
@@ -178,7 +178,7 @@ export default function Partner() {
 
       {/* Segment */}
       <section style={{ maxWidth: 800, margin: "0 auto", padding: "0 24px 72px" }}>
-        <h2 style={{ fontSize: 22, fontWeight: 800, color: "var(--ink-900)", marginBottom: 24, textAlign: "center" }}>Tre segment — ett ekosystem</h2>
+        <h2 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 24, textAlign: "center" }}>Tre segment — ett ekosystem</h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12 }}>
           {SEGMENTS.map((s) => (
             <div key={s.label} style={{ background: s.bg, border: `1px solid ${s.border}`, borderRadius: 14, padding: "22px 20px" }}>
@@ -191,13 +191,13 @@ export default function Partner() {
 
       {/* Partnertyper */}
       <section style={{ maxWidth: 800, margin: "0 auto", padding: "0 24px 72px" }}>
-        <h2 style={{ fontSize: 22, fontWeight: 800, color: "var(--ink-900)", marginBottom: 8, textAlign: "center" }}>Vem samarbetar vi med?</h2>
+        <h2 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 8, textAlign: "center" }}>Vem samarbetar vi med?</h2>
         <p style={{ fontSize: "var(--text-md)", color: "var(--ink-500)", textAlign: "center", marginBottom: 32 }}>Vi söker organisationer som möter yrkesförare i olika faser — utbildning, omställning och karriär.</p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 14 }}>
           {PARTNER_TYPES.map((p) => (
             <div key={p.label} style={{ background: p.bg, border: `1px solid ${p.border}`, borderRadius: 16, padding: "24px 22px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
-                <span style={{ fontSize: 22 }}>{p.icon}</span>
+                <span style={{ fontSize: "var(--text-3xl)" }}>{p.icon}</span>
                 <span style={{ fontWeight: 800, color: p.color, fontSize: "var(--text-md)" }}>{p.label}</span>
               </div>
               <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.65, margin: 0 }}>{p.body}</p>
@@ -229,7 +229,7 @@ export default function Partner() {
 
       {/* FAQ */}
       <section style={{ maxWidth: 800, margin: "0 auto", padding: "0 24px 80px" }}>
-        <h2 style={{ fontSize: 22, fontWeight: 800, color: "var(--ink-900)", marginBottom: 24, textAlign: "center" }}>Vanliga frågor</h2>
+        <h2 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 24, textAlign: "center" }}>Vanliga frågor</h2>
         <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
           {FAQ.map((f) => (
             <div key={f.q} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, padding: "16px 20px" }}>
@@ -242,7 +242,7 @@ export default function Partner() {
 
       {/* CTA */}
       <section style={{ maxWidth: 800, margin: "0 auto", padding: "0 24px 100px", textAlign: "center" }}>
-        <h2 style={{ fontSize: 26, fontWeight: 800, color: "var(--ink-900)", marginBottom: 12 }}>Redo att samarbeta?</h2>
+        <h2 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 12 }}>Redo att samarbeta?</h2>
         <p style={{ fontSize: "var(--text-md)", color: "var(--ink-500)", marginBottom: 12, lineHeight: 1.7, maxWidth: 500, margin: "0 auto 28px" }}>
           Hör av dig till oss — vi svarar inom en arbetsdag och berättar hur ett samarbete kan se ut för just er organisation.
         </p>

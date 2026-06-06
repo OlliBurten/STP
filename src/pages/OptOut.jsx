@@ -47,7 +47,7 @@ export default function OptOut() {
             <div style={{ fontSize: "var(--text-md)", color: "var(--ink-400)" }}>Avregistrerar...</div>
           ) : (
             <>
-              <h1 style={{ fontSize: 22, fontWeight: 800, color: "var(--ink-900)", marginBottom: 12 }}>{body.title}</h1>
+              <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 12 }}>{body.title}</h1>
               <p style={{ fontSize: "var(--text-md)", color: "var(--ink-500)", lineHeight: 1.65 }}>{body.text}</p>
               <Link
                 to="/"

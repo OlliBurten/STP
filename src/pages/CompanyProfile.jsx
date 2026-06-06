@@ -255,7 +255,7 @@ function Verifiering({ draft, setDraft }) {
               <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)" }}>{item.sub}</div>
             </div>
             {item.verified && (
-              <span style={{ padding: "3px 9px", borderRadius: 6, background: "var(--success-tint)", color: "var(--success)", fontSize: 10, fontWeight: 800, letterSpacing: 0.4 }}>VERIFIERAD</span>
+              <span style={{ padding: "3px 9px", borderRadius: 6, background: "var(--success-tint)", color: "var(--success)", fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 0.4 }}>VERIFIERAD</span>
             )}
           </div>
         ))}

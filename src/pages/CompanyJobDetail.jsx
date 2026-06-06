@@ -107,10 +107,10 @@ function KanbanCard({ a }) {
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 11 }}>
         {licenseArr.map((l) => (
-          <span key={l} style={{ padding: "3px 9px", borderRadius: 99, background: "var(--green)", fontSize: 10, fontWeight: 700, color: "#fff" }}>{l}</span>
+          <span key={l} style={{ padding: "3px 9px", borderRadius: 99, background: "var(--green)", fontSize: "var(--text-2xs)", fontWeight: 700, color: "#fff" }}>{l}</span>
         ))}
         {certsArr.slice(0, 2).map((c) => (
-          <span key={c} style={{ padding: "3px 9px", borderRadius: 99, background: "var(--paper-2)", border: "1px solid var(--line-2)", fontSize: 10, color: "var(--ink-700)", fontWeight: 600 }}>{c}</span>
+          <span key={c} style={{ padding: "3px 9px", borderRadius: 99, background: "var(--paper-2)", border: "1px solid var(--line-2)", fontSize: "var(--text-2xs)", color: "var(--ink-700)", fontWeight: 600 }}>{c}</span>
         ))}
       </div>
 
@@ -307,7 +307,7 @@ export default function CompanyJobDetail() {
       <div style={{ maxWidth: 1240, margin: "0 auto", padding: "24px 32px 80px" }}>
         {applicants.length === 0 && !loading ? (
           <div style={{ padding: "48px 32px", borderRadius: 14, background: "var(--card)", border: "1px solid var(--line)", textAlign: "center", boxShadow: "var(--sh-sm)" }}>
-            <div style={{ fontSize: 17, fontWeight: 800, color: "var(--ink-900)", marginBottom: 8 }}>Inga ansökningar ännu</div>
+            <div style={{ fontSize: "var(--text-xl)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 8 }}>Inga ansökningar ännu</div>
             <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", marginBottom: 20 }}>Förare som söker det här jobbet dyker upp här. Du kan också kontakta förare aktivt via förarregistret.</p>
             <Link to="/foretag/chaufforer" style={{ display: "inline-block", padding: "10px 22px", borderRadius: 10, background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: "var(--text-sm)", textDecoration: "none" }}>
               Sök bland förare →

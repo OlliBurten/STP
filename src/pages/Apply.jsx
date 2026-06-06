@@ -113,13 +113,13 @@ function JobContextSidebar({ job }) {
           <div style={{ display: "flex", gap: 20 }}>
             {job.responseRate != null && (
               <div>
-                <div style={{ fontSize: 22, fontWeight: 800, color: "var(--green)", fontFamily: "var(--mono)", lineHeight: 1 }}>{job.responseRate}%</div>
+                <div style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--green)", fontFamily: "var(--mono)", lineHeight: 1 }}>{job.responseRate}%</div>
                 <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", marginTop: 4 }}>svarsfrekvens</div>
               </div>
             )}
             {job.avgResponseDays != null && (
               <div>
-                <div style={{ fontSize: 22, fontWeight: 800, color: "var(--ink-900)", fontFamily: "var(--mono)", lineHeight: 1 }}>~{job.avgResponseDays}d</div>
+                <div style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--ink-900)", fontFamily: "var(--mono)", lineHeight: 1 }}>~{job.avgResponseDays}d</div>
                 <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", marginTop: 4 }}>svarstid</div>
               </div>
             )}
@@ -150,7 +150,7 @@ function Submitted({ job, conversationId, isAggregatedUnclaimed }) {
         <div style={{ width: 72, height: 72, borderRadius: 36, margin: "0 auto 24px", background: "var(--success-tint)", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <Icon n="check" s={34} c="var(--success)" />
         </div>
-        <h1 style={{ fontSize: 26, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.6, marginBottom: 10 }}>
+        <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.6, marginBottom: 10 }}>
           {isAggregatedUnclaimed ? "Intresseanmälan mottagen!" : "Ansökan skickad!"}
         </h1>
         <p style={{ fontSize: "var(--text-md)", color: "var(--ink-500)", lineHeight: 1.6, marginBottom: 28 }}>
@@ -351,7 +351,7 @@ export default function Apply() {
               <div style={{ width: 84, height: 84, borderRadius: 99, background: "var(--success-tint)", border: "2px solid rgba(31,122,58,0.3)", display: "flex", alignItems: "center", justifyContent: "center", margin: "24px auto 18px", animation: "checkBounce .55s cubic-bezier(.34,1.56,.64,1) both" }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" width="40" height="40"><polyline points="20 6 9 17 4 12"/></svg>
               </div>
-              <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: -0.8, marginBottom: 10, lineHeight: 1.2, color: "var(--ink-900)" }}>Ansökan skickad!</h1>
+              <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, letterSpacing: -0.8, marginBottom: 10, lineHeight: 1.2, color: "var(--ink-900)" }}>Ansökan skickad!</h1>
               <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.55, maxWidth: 280, margin: "0 auto" }}>
                 {job?.company} har fått din ansökan. Du hör vanligtvis tillbaka inom 2 dagar.
               </p>

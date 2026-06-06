@@ -72,7 +72,7 @@ function Tag({ color = ACCENT, children }) {
   return (
     <div style={{
       display: "inline-block",
-      fontSize: 10,
+      fontSize: "var(--text-2xs)",
       fontWeight: 800,
       letterSpacing: "0.12em",
       textTransform: "uppercase",
@@ -158,7 +158,7 @@ export default function PartnerPresentation() {
             <h1 style={{ fontSize: 46, fontWeight: 900, color: TEXT, lineHeight: 1.1, letterSpacing: "-1.5px", margin: "0 0 24px", maxWidth: 560 }}>
               En jobbplattform byggd för transportbranschen
             </h1>
-            <p style={{ fontSize: 17, color: SUB, lineHeight: 1.75, maxWidth: 520, margin: 0 }}>
+            <p style={{ fontSize: "var(--text-xl)", color: SUB, lineHeight: 1.75, maxWidth: 520, margin: 0 }}>
               STP kopplar ihop yrkesförare med åkerier direkt — utan bemanningsföretag, utan väntetid. Vi söker samarbeten med organisationer som möter förare under utbildning, omställning och karriär.
             </p>
           </div>
@@ -215,7 +215,7 @@ export default function PartnerPresentation() {
               },
             ].map((p) => (
               <div key={p.title} style={{ background: CARD_BG, border: `1px solid ${BORDER}`, borderRadius: 12, padding: "18px 20px" }}>
-                <div style={{ fontSize: 22, marginBottom: 10 }}>{p.icon}</div>
+                <div style={{ fontSize: "var(--text-3xl)", marginBottom: 10 }}>{p.icon}</div>
                 <div style={{ fontWeight: 800, color: TEXT, fontSize: "var(--text-base)", marginBottom: 6 }}>{p.title}</div>
                 <div style={{ fontSize: "var(--text-sm)", color: SUB, lineHeight: 1.6 }}>{p.body}</div>
               </div>

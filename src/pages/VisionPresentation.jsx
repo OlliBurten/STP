@@ -60,7 +60,7 @@ const ROADMAP = [
 
 const card = { background: "var(--card)", border: "1px solid var(--line)", borderRadius: 20, padding: "36px 40px" };
 const label = { fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--amber-text)" };
-const h2style = { fontSize: 26, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.5, margin: "12px 0 14px" };
+const h2style = { fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.5, margin: "12px 0 14px" };
 const body = { fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.7, maxWidth: 640, margin: 0 };
 
 function CheckIcon() {

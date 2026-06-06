@@ -275,7 +275,7 @@ export default function DriverOnboardingWizard() {
             </div>
             {matchCount !== null && matchCount > 0 ? (
               <>
-                <h1 style={{ fontSize: 26, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.8, marginBottom: 10 }}>
+                <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.8, marginBottom: 10 }}>
                   {matchCount} jobb i {draft.region} matchar dig redan
                 </h1>
                 <p style={{ fontSize: "var(--text-md)", color: "var(--ink-500)", lineHeight: 1.6, marginBottom: 24 }}>
@@ -284,7 +284,7 @@ export default function DriverOnboardingWizard() {
               </>
             ) : (
               <>
-                <h1 style={{ fontSize: 26, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.8, marginBottom: 10 }}>
+                <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.8, marginBottom: 10 }}>
                   Din profil är klar, {draft.name.split(" ")[0] || "förare"}!
                 </h1>
                 <p style={{ fontSize: "var(--text-md)", color: "var(--ink-500)", lineHeight: 1.6, marginBottom: 24 }}>
@@ -405,7 +405,7 @@ export default function DriverOnboardingWizard() {
                     border: `2px solid ${draft.internshipType === opt.value ? "var(--green)" : "rgba(31,95,92,0.3)"}`,
                     background: draft.internshipType === opt.value ? "var(--green)" : "transparent",
                     display: "flex", alignItems: "center", justifyContent: "center",
-                    color: "#fff", fontSize: 10,
+                    color: "#fff", fontSize: "var(--text-2xs)",
                   }}>{draft.internshipType === opt.value ? "✓" : ""}</span>
                 </button>
               ))}
@@ -598,7 +598,7 @@ export default function DriverOnboardingWizard() {
             { label: "Presentation (valfritt)", done: true },
           ].map((c) => (
             <div key={c.label} style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 0" }}>
-              <span style={{ width: 18, height: 18, borderRadius: 9, background: c.done ? "var(--success-tint)" : "var(--paper)", border: `1.5px solid ${c.done ? "var(--success)" : "var(--line)"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 10, color: "var(--success)" }}>
+              <span style={{ width: 18, height: 18, borderRadius: 9, background: c.done ? "var(--success-tint)" : "var(--paper)", border: `1.5px solid ${c.done ? "var(--success)" : "var(--line)"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: "var(--text-2xs)", color: "var(--success)" }}>
                 {c.done ? "✓" : ""}
               </span>
               <span style={{ fontSize: "var(--text-sm)", color: c.done ? "var(--ink-700)" : "var(--ink-400)", fontWeight: c.done ? 600 : 400 }}>{c.label}</span>

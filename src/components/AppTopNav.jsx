@@ -406,7 +406,7 @@ export default function AppTopNav() {
                   {it.badge > 0 && (
                     <span style={{
                       background: "var(--amber)", color: "#fff",
-                      fontSize: 10, fontWeight: 800,
+                      fontSize: "var(--text-2xs)", fontWeight: 800,
                       padding: "1px 6px", borderRadius: 8, lineHeight: 1.3,
                     }}>{it.badge}</span>
                   )}
@@ -426,7 +426,7 @@ export default function AppTopNav() {
             }}>
               <Ico n="search" size={14} color="rgba(232,237,237,0.65)" sw={2} />
               Sök
-              <kbd style={{ fontSize: 10, fontFamily: "monospace", opacity: 0.65 }}>⌘K</kbd>
+              <kbd style={{ fontSize: "var(--text-2xs)", fontFamily: "monospace", opacity: 0.65 }}>⌘K</kbd>
             </button>
 
             {/* Bell */}

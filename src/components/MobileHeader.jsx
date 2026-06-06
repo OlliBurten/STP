@@ -122,7 +122,7 @@ export default function MobileHeader() {
         <div style={{
           fontFamily: "'DM Sans', system-ui, sans-serif",
           fontWeight: 800, letterSpacing: -0.8,
-          fontSize: 22, color: "var(--ink-900)",
+          fontSize: "var(--text-3xl)", color: "var(--ink-900)",
         }}>
           STP
         </div>

@@ -205,7 +205,7 @@ export default function CompanyVerification() {
                     <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", marginTop: 1 }}>{requiredDone} av {requiredTotal} obligatoriska steg klara</div>
                   </div>
                 </div>
-                <div style={{ fontSize: 26, fontWeight: 800, color: verified ? "var(--success)" : "var(--green)", fontFamily: "var(--mono)" }}>{pct}%</div>
+                <div style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: verified ? "var(--success)" : "var(--green)", fontFamily: "var(--mono)" }}>{pct}%</div>
               </div>
               <div style={{ height: 6, borderRadius: 3, background: "var(--paper-2)", overflow: "hidden" }}>
                 <div style={{

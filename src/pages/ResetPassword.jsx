@@ -47,7 +47,7 @@ export default function ResetPassword() {
   return (
     <main style={{ background: "var(--paper)", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "80px 16px" }}>
       <div style={{ width: "100%", maxWidth: 420, background: "var(--card)", border: "1px solid var(--line)", borderRadius: 24, padding: "40px 36px", boxShadow: "var(--sh)" }}>
-        <h1 style={{ fontSize: 26, fontWeight: 900, color: "var(--ink-900)", letterSpacing: "-0.5px", margin: "0 0 10px" }}>Återställ lösenord</h1>
+        <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, color: "var(--ink-900)", letterSpacing: "-0.5px", margin: "0 0 10px" }}>Återställ lösenord</h1>
         <p style={{ fontSize: "var(--text-md)", color: "var(--ink-500)", margin: "0 0 24px" }}>Ange nytt lösenord (minst 8 tecken).</p>
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           {error && <p style={{ fontSize: "var(--text-base)", color: "var(--danger)", padding: "10px 14px", background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 10 }}>{error}</p>}

@@ -96,7 +96,7 @@ export default function HittaPraktik() {
 
       {/* Så funkar det */}
       <section style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px 72px" }}>
-        <h2 style={{ fontSize: 22, fontWeight: 800, color: "var(--ink-900)", marginBottom: 32, textAlign: "center" }}>Så här hittar du en praktikplats</h2>
+        <h2 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 32, textAlign: "center" }}>Så här hittar du en praktikplats</h2>
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {STEPS.map((s) => (
             <div key={s.n} style={{ display: "flex", gap: 20, alignItems: "flex-start", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "20px 22px" }}>
@@ -132,7 +132,7 @@ export default function HittaPraktik() {
 
       {/* FAQ */}
       <section style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px 80px" }}>
-        <h2 style={{ fontSize: 22, fontWeight: 800, color: "var(--ink-900)", marginBottom: 24, textAlign: "center" }}>Vanliga frågor</h2>
+        <h2 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 24, textAlign: "center" }}>Vanliga frågor</h2>
         <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
           {FAQ.map((f) => (
             <div key={f.q} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, padding: "16px 20px" }}>

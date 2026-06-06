@@ -355,7 +355,7 @@ function DriverVerifieringSection({ profile }) {
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
                   <span style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)" }}>{it.l}</span>
-                  {it.verified && <span style={{ padding: "2px 8px", borderRadius: 99, background: "var(--success-tint)", border: "1px solid rgba(31,122,58,0.2)", fontSize: 10, fontWeight: 800, color: "var(--success)", letterSpacing: 0.5 }}>REGISTRERAT</span>}
+                  {it.verified && <span style={{ padding: "2px 8px", borderRadius: 99, background: "var(--success-tint)", border: "1px solid rgba(31,122,58,0.2)", fontSize: "var(--text-2xs)", fontWeight: 800, color: "var(--success)", letterSpacing: 0.5 }}>REGISTRERAT</span>}
                 </div>
                 <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)" }}>{it.sub}</div>
               </div>
@@ -983,7 +983,7 @@ export default function Settings() {
         {/* Mobile title bar */}
         {isMobile && (
           <div style={{ marginBottom: 20 }}>
-            <h1 style={{ fontSize: 26, fontWeight: 900, letterSpacing: -0.8, margin: 0, color: "var(--ink-900)" }}>Inställningar</h1>
+            <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, letterSpacing: -0.8, margin: 0, color: "var(--ink-900)" }}>Inställningar</h1>
           </div>
         )}
 
@@ -1004,7 +1004,7 @@ export default function Settings() {
                 {/* Profile card */}
                 <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: 16, display: "flex", alignItems: "center", gap: 14, marginBottom: 8, boxShadow: "var(--sh-sm)" }}>
                   {isCompany ? (
-                    <div style={{ width: 56, height: 56, borderRadius: 14, background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 17, color: "#fff", flexShrink: 0 }}>
+                    <div style={{ width: 56, height: 56, borderRadius: 14, background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "var(--text-xl)", color: "#fff", flexShrink: 0 }}>
                       {(user?.name || "?").split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()}
                     </div>
                   ) : (
@@ -1021,7 +1021,7 @@ export default function Settings() {
                     <div style={{ fontSize: "var(--text-lg)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 2 }}>{user?.name || "—"}</div>
                     <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user?.email || ""}</div>
                     {user?.status === "VERIFIED" && (
-                      <div style={{ marginTop: 4, padding: "2px 8px", borderRadius: 99, background: "var(--success-tint)", border: "1px solid rgba(31,122,58,0.2)", display: "inline-block", fontSize: 10, fontWeight: 800, color: "var(--success)", letterSpacing: 0.5 }}>✓ VERIFIERAD</div>
+                      <div style={{ marginTop: 4, padding: "2px 8px", borderRadius: 99, background: "var(--success-tint)", border: "1px solid rgba(31,122,58,0.2)", display: "inline-block", fontSize: "var(--text-2xs)", fontWeight: 800, color: "var(--success)", letterSpacing: 0.5 }}>✓ VERIFIERAD</div>
                     )}
                   </div>
                 </div>

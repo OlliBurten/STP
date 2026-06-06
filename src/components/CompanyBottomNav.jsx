@@ -55,7 +55,7 @@ export default function CompanyBottomNav({ unreadCount = 0 }) {
                 <span style={{
                   position: "absolute", top: -4, right: -7,
                   minWidth: 16, height: 16, padding: "0 4px", borderRadius: 99,
-                  background: "var(--amber)", color: "#000", fontSize: 9.5, fontWeight: 800,
+                  background: "var(--amber)", color: "#000", fontSize: "var(--text-2xs)", fontWeight: 800,
                   display: "flex", alignItems: "center", justifyContent: "center",
                   border: "2px solid var(--card)",
                 }}>{unreadCount}</span>

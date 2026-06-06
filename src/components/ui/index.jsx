@@ -230,7 +230,7 @@ export const TopNav = ({ items, active, onActive, currentUser, brand = "STP", br
             }}>
               {it.label}
               {it.badge != null && (
-                <span style={{ background: "var(--amber)", color: "#fff", fontSize: 10, fontWeight: 800, padding: "1px 6px", borderRadius: 8, lineHeight: 1.3 }}>{it.badge}</span>
+                <span style={{ background: "var(--amber)", color: "#fff", fontSize: "var(--text-2xs)", fontWeight: 800, padding: "1px 6px", borderRadius: 8, lineHeight: 1.3 }}>{it.badge}</span>
               )}
             </button>
           );
@@ -259,7 +259,7 @@ export const TopNav = ({ items, active, onActive, currentUser, brand = "STP", br
           <button key={it.id} onClick={() => onActive?.(it.id)} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "4px 2px", background: "transparent", position: "relative" }}>
             <Icon name={ic} size={20} color={isActive ? "var(--amber)" : "rgba(232,237,237,0.6)"} stroke={2} />
             <span style={{ fontSize: "var(--text-2xs)", fontWeight: isActive ? 700 : 500, color: isActive ? "#fff" : "rgba(232,237,237,0.6)", whiteSpace: "nowrap" }}>{it.label}</span>
-            {it.badge != null && <span style={{ position: "absolute", top: -1, left: "calc(50% + 6px)", background: "var(--amber)", color: "#fff", fontSize: 9, fontWeight: 800, padding: "0 5px", borderRadius: 7, lineHeight: 1.5 }}>{it.badge}</span>}
+            {it.badge != null && <span style={{ position: "absolute", top: -1, left: "calc(50% + 6px)", background: "var(--amber)", color: "#fff", fontSize: "var(--text-2xs)", fontWeight: 800, padding: "0 5px", borderRadius: 7, lineHeight: 1.5 }}>{it.badge}</span>}
           </button>
         );
       })}

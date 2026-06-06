@@ -226,8 +226,8 @@ export default function CompanyPublicProfile() {
     const StatBox = ({ v, l, sub, accent, accent2 }) => (
       <div style={{ flex: 1, padding: "10px 8px", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 11, textAlign: "center" }}>
         <div style={{ fontSize: "var(--text-lg)", fontWeight: 800, color: accent ? "var(--amber-text)" : accent2 ? "var(--success)" : "var(--ink-900)", marginBottom: 2 }}>{v}</div>
-        <div style={{ fontSize: 10, color: "var(--ink-500)", fontWeight: 600 }}>{l}</div>
-        {sub && <div style={{ fontSize: 9, color: "var(--ink-400)", marginTop: 1 }}>{sub}</div>}
+        <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", fontWeight: 600 }}>{l}</div>
+        {sub && <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", marginTop: 1 }}>{sub}</div>}
       </div>
     );
 
@@ -285,7 +285,7 @@ export default function CompanyPublicProfile() {
               </div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 4 }}>
-              <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: -0.7, color: "var(--ink-900)", margin: 0 }}>{company.name}</h1>
+              <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, letterSpacing: -0.7, color: "var(--ink-900)", margin: 0 }}>{company.name}</h1>
               {company.verified && <Icon n="check" s={14} c="var(--success)" />}
             </div>
             <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", display: "flex", alignItems: "center", gap: 6, marginBottom: 14, flexWrap: "wrap" }}>
@@ -556,7 +556,7 @@ export default function CompanyPublicProfile() {
               { v: company.fleet ?? "—", l: "Fordon" },
             ].map((s, i) => (
               <div key={s.l} style={{ paddingLeft: i ? 24 : 0, borderLeft: i ? "1px solid var(--line)" : "none" }}>
-                <div style={{ fontSize: 26, fontWeight: 800, color: s.accent ? "var(--green)" : "var(--ink-900)", letterSpacing: -0.6, fontFamily: "var(--mono)" }}>{s.v}</div>
+                <div style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: s.accent ? "var(--green)" : "var(--ink-900)", letterSpacing: -0.6, fontFamily: "var(--mono)" }}>{s.v}</div>
                 <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", marginTop: 4, fontWeight: 600, letterSpacing: 0.3, textTransform: "uppercase" }}>{s.l}</div>
               </div>
             ))}
@@ -755,11 +755,11 @@ export default function CompanyPublicProfile() {
               <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 14 }}>Svarar ofta</div>
               <div style={{ display: "flex", gap: 20 }}>
                 <div>
-                  <div style={{ fontSize: 22, fontWeight: 800, color: "var(--green)", fontFamily: "var(--mono)", lineHeight: 1 }}>—</div>
+                  <div style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--green)", fontFamily: "var(--mono)", lineHeight: 1 }}>—</div>
                   <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", marginTop: 4 }}>svarsfrekvens</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: 22, fontWeight: 800, color: "var(--ink-900)", fontFamily: "var(--mono)", lineHeight: 1 }}>—</div>
+                  <div style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--ink-900)", fontFamily: "var(--mono)", lineHeight: 1 }}>—</div>
                   <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", marginTop: 4 }}>svarstid</div>
                 </div>
               </div>

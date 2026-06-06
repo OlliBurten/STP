@@ -88,7 +88,7 @@ export default function Arbetsmarknadsutbildning() {
             { icon: "◎", label: "Är redo att börja nu", body: "Utbildningen är klar och du söker en tjänst att starta din karriär i." },
           ].map((c) => (
             <div key={c.label} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "20px 18px" }}>
-              <div style={{ fontSize: 22, marginBottom: 10 }}>{c.icon}</div>
+              <div style={{ fontSize: "var(--text-3xl)", marginBottom: 10 }}>{c.icon}</div>
               <div style={{ fontWeight: 700, color: "var(--ink-900)", fontSize: "var(--text-base)", marginBottom: 6 }}>{c.label}</div>
               <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", lineHeight: 1.6 }}>{c.body}</div>
             </div>
@@ -98,7 +98,7 @@ export default function Arbetsmarknadsutbildning() {
 
       {/* Så funkar det */}
       <section style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px 72px" }}>
-        <h2 style={{ fontSize: 22, fontWeight: 800, color: "var(--ink-900)", marginBottom: 32, textAlign: "center" }}>Kom igång på tre steg</h2>
+        <h2 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 32, textAlign: "center" }}>Kom igång på tre steg</h2>
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {STEPS.map((s) => (
             <div key={s.n} style={{ display: "flex", gap: 20, alignItems: "flex-start", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "20px 22px" }}>
@@ -134,7 +134,7 @@ export default function Arbetsmarknadsutbildning() {
 
       {/* FAQ */}
       <section style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px 80px" }}>
-        <h2 style={{ fontSize: 22, fontWeight: 800, color: "var(--ink-900)", marginBottom: 24, textAlign: "center" }}>Vanliga frågor</h2>
+        <h2 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 24, textAlign: "center" }}>Vanliga frågor</h2>
         <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
           {FAQ.map((f) => (
             <div key={f.q} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, padding: "16px 20px" }}>

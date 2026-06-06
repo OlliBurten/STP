@@ -344,7 +344,7 @@ export default function LoneKalkylator() {
                       {weekendDays > 0 ? `${weekendDays} helgpass × 50%` : ""}
                     </p>
                   </div>
-                  <p style={{ fontSize: 22, fontWeight: 800, color: T.amber }}>
+                  <p style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: T.amber }}>
                     +{obAmount.toLocaleString("sv-SE")} kr
                   </p>
                 </div>

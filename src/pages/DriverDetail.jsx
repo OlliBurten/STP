@@ -167,7 +167,7 @@ export default function DriverDetail() {
     return (
       <main style={{ minHeight: "100vh", background: "var(--paper)" }}>
         <div style={{ maxWidth: 720, margin: "0 auto", padding: "40px 32px", textAlign: "center" }}>
-          <h1 style={{ fontSize: 22, fontWeight: 800, color: "var(--ink-900)", marginBottom: 16 }}>Föraren hittades inte</h1>
+          <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 16 }}>Föraren hittades inte</h1>
           <Link to="/foretag/chaufforer" style={{ color: "var(--amber-text)", fontSize: "var(--text-base)", fontWeight: 600, textDecoration: "none" }}>
             Tillbaka till sökning
           </Link>
@@ -200,7 +200,7 @@ export default function DriverDetail() {
           <div style={{ display: "flex", gap: 14, alignItems: "flex-start", marginBottom: 18 }}>
             <div style={{ width: 64, height: 64, borderRadius: 99, background: color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "var(--text-2xl)", color: "#fff", flexShrink: 0 }}>{initials}</div>
             <div style={{ flex: 1 }}>
-              <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: -0.6, color: "var(--ink-900)", marginBottom: 4 }}>{driver.name}</h1>
+              <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, letterSpacing: -0.6, color: "var(--ink-900)", marginBottom: 4 }}>{driver.name}</h1>
               <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", marginBottom: 6 }}>
                 {[driver.age && `${driver.age} år`, driver.location, yearsExp && `${yearsExp} år erfarenhet`].filter(Boolean).join(" · ")}
               </div>

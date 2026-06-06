@@ -74,14 +74,14 @@ export default function About() {
 
         {/* Story */}
         <div style={{ maxWidth: 680 }}>
-          <h2 style={{ fontSize: 26, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.6, marginBottom: 16 }}>Vår historia</h2>
-          <p style={{ fontSize: 17, color: "var(--ink-700)", lineHeight: 1.75, marginBottom: 18 }}>
+          <h2 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.6, marginBottom: 16 }}>Vår historia</h2>
+          <p style={{ fontSize: "var(--text-xl)", color: "var(--ink-700)", lineHeight: 1.75, marginBottom: 18 }}>
             När man söker "lastbilsjobb" på Google landar man direkt på Indeed och generiska plattformar byggda för alla branscher, inte för transport. De vet inte skillnaden på ett CE-körkort och ett C, och bryr sig inte om YKB eller ADR.
           </p>
-          <p style={{ fontSize: 17, color: "var(--ink-700)", lineHeight: 1.75, marginBottom: 18 }}>
+          <p style={{ fontSize: "var(--text-xl)", color: "var(--ink-700)", lineHeight: 1.75, marginBottom: 18 }}>
             Det riktiga jobbet skedde på Facebook. Stora grupper med tusentals förare och åkerier som lade ut annonser i flödet. Effektivt för stunden, men utan historik, struktur eller kvalitetskontroll.
           </p>
-          <p style={{ fontSize: 17, color: "var(--ink-700)", lineHeight: 1.75 }}>
+          <p style={{ fontSize: "var(--text-xl)", color: "var(--ink-700)", lineHeight: 1.75 }}>
             STP är svaret: en plats byggd specifikt för transportbranschen, med rätt struktur för körkort, certifikat, segment och region — med direktkontakt utan mellanhänder.
           </p>
         </div>

@@ -45,7 +45,7 @@ function BrandPanel() {
       {/* Logo */}
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <div style={{ width: 30, height: 30, borderRadius: 7, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--text-sm)", boxShadow: "inset 0 -2px 0 rgba(0,0,0,0.25)" }}>S</div>
-        <span style={{ fontWeight: 800, fontSize: 17, letterSpacing: 0.5 }}>STP</span>
+        <span style={{ fontWeight: 800, fontSize: "var(--text-xl)", letterSpacing: 0.5 }}>STP</span>
       </div>
 
       {/* Headline */}
@@ -366,7 +366,7 @@ export default function Login() {
         {meta}
         <div style={{ minHeight: "100vh", background: "var(--ink-900)", display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 24px" }}>
           <div style={{ width: "100%", maxWidth: 380, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 16, padding: "40px 32px" }}>
-            <h1 style={{ fontSize: 26, fontWeight: 800, color: "#fff", letterSpacing: -0.5, marginBottom: 8 }}>Demo-läge</h1>
+            <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "#fff", letterSpacing: -0.5, marginBottom: 8 }}>Demo-läge</h1>
             <p style={{ fontSize: "var(--text-base)", color: "rgba(255,255,255,0.55)", marginBottom: 24 }}>Välj en roll för att utforska plattformen.</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               <button type="button" onClick={handleMockDriver} style={{ padding: "14px 20px", borderRadius: 11, background: "var(--green)", color: "#fff", fontSize: "var(--text-base)", fontWeight: 700, border: "none", cursor: "pointer", fontFamily: "inherit", textAlign: "left" }}>

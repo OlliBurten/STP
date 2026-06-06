@@ -268,7 +268,7 @@ export default function SavedJobs() {
 
         {/* Title */}
         <div style={{ padding: "4px 20px 14px", paddingTop: 64 }}>
-          <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: -1, marginBottom: 4, color: "var(--ink-900)" }}>Sparat</h1>
+          <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, letterSpacing: -1, marginBottom: 4, color: "var(--ink-900)" }}>Sparat</h1>
           <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)" }}>Dina sparade jobb och åkerier</div>
         </div>
 
@@ -322,7 +322,7 @@ export default function SavedJobs() {
                 const salaryDisplay = job.salaryMin ? (job.salaryMax ? `${job.salaryMin.toLocaleString("sv-SE")} – ${job.salaryMax.toLocaleString("sv-SE")} kr/mån` : `Från ${job.salaryMin.toLocaleString("sv-SE")} kr/mån`) : job.salary || null;
                 return (
                   <Link key={job.id} to={`/jobb/${job.id}`} style={{ display: "block", textDecoration: "none", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "16px", opacity: expired ? 0.55 : 1, position: "relative", boxShadow: "var(--sh-sm)" }}>
-                    {expired && <div style={{ position: "absolute", top: 14, right: 14, padding: "3px 8px", borderRadius: 5, background: "var(--paper-2)", color: "var(--ink-400)", fontSize: 9.5, fontWeight: 800, letterSpacing: 0.4 }}>AVSLUTAD</div>}
+                    {expired && <div style={{ position: "absolute", top: 14, right: 14, padding: "3px 8px", borderRadius: 5, background: "var(--paper-2)", color: "var(--ink-400)", fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 0.4 }}>AVSLUTAD</div>}
                     <div style={{ display: "flex", alignItems: "flex-start", gap: 11, marginBottom: 12 }}>
                       <div style={{ width: 42, height: 42, borderRadius: 11, background: bg, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "var(--text-sm)", color: "#fff", flexShrink: 0 }}>{initials}</div>
                       <div style={{ flex: 1, minWidth: 0 }}>

@@ -54,7 +54,7 @@ export default function PatchNotes() {
                   </div>
                   <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-300)", margin: 0 }}>{note.date}</p>
                 </div>
-                <h2 style={{ fontSize: 17, fontWeight: 700, color: "var(--ink-900)", margin: 0 }}>{note.title}</h2>
+                <h2 style={{ fontSize: "var(--text-xl)", fontWeight: 700, color: "var(--ink-900)", margin: 0 }}>{note.title}</h2>
               </div>
               <ul style={{ listStyle: "none", margin: 0, padding: "18px 28px", display: "flex", flexDirection: "column", gap: 12 }}>
                 {note.items.map((item) => (

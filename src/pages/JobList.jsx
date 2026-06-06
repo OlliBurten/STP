@@ -423,7 +423,7 @@ export default function JobList() {
       <div style={{ width: 56, height: 56, borderRadius: 14, background: "var(--paper-2)", margin: "0 auto 18px", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <SearchIcon />
       </div>
-      <h3 style={{ fontSize: 17, fontWeight: 700, color: "var(--ink-900)", marginBottom: 6 }}>
+      <h3 style={{ fontSize: "var(--text-xl)", fontWeight: 700, color: "var(--ink-900)", marginBottom: 6 }}>
         {tabKey === "saved" ? "Inga sparade jobb" : tabKey === "recommended" ? "Inga rekommenderade jobb" : "Inga jobb matchar dina filter"}
       </h3>
       <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", marginBottom: 20 }}>
@@ -453,7 +453,7 @@ export default function JobList() {
       <PageMeta description="Bläddra bland lediga lastbilsjobb i Sverige." canonical="/jobb" />
 
       <div style={{ padding: "20px 20px 14px" }}>
-        <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: -0.8, color: "var(--ink-900)", margin: "0 0 4px" }}>
+        <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, letterSpacing: -0.8, color: "var(--ink-900)", margin: "0 0 4px" }}>
           {isGymnasieelev ? "Praktikplatser" : "Lediga jobb"}
         </h1>
         <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)" }}>

@@ -153,7 +153,7 @@ function GreenCTA({ title, lead, primaryLabel, secondaryLabel, stats, onPrimary,
       <div style={{ ...S.container, maxWidth: 1040 }}>
         <div style={{ textAlign: "center", maxWidth: 620, margin: "0 auto" }}>
           <h2 style={{ fontSize: "clamp(30px,4vw,44px)", fontWeight: 900, letterSpacing: -1.6, lineHeight: 1.12, marginBottom: 18 }}>{title}</h2>
-          <p style={{ fontSize: 17, lineHeight: 1.65, color: "rgba(240,250,249,0.7)", marginBottom: 32 }}>{lead}</p>
+          <p style={{ fontSize: "var(--text-xl)", lineHeight: 1.65, color: "rgba(240,250,249,0.7)", marginBottom: 32 }}>{lead}</p>
           <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
             <button onClick={onPrimary} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 26px", height: 50, background: "var(--amber)", color: "#fff", border: "1px solid var(--amber-deep)", borderRadius: 10, fontWeight: 700, fontSize: "var(--text-md)", cursor: "pointer", fontFamily: "inherit" }}>
               {primaryLabel} <Icon name="arrow" size={15} stroke={2.2} />
@@ -166,7 +166,7 @@ function GreenCTA({ title, lead, primaryLabel, secondaryLabel, stats, onPrimary,
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 0, borderTop: "1px solid rgba(255,255,255,0.14)", marginTop: 48, paddingTop: 28, maxWidth: 760, marginLeft: "auto", marginRight: "auto" }}>
           {stats.map(([v, l]) => (
             <div key={l} style={{ textAlign: "center" }}>
-              <div style={{ fontSize: 22, fontWeight: 900, fontFamily: "var(--mono)", color: "var(--amber)", letterSpacing: -0.5 }}>{v}</div>
+              <div style={{ fontSize: "var(--text-3xl)", fontWeight: 900, fontFamily: "var(--mono)", color: "var(--amber)", letterSpacing: -0.5 }}>{v}</div>
               <div style={{ fontSize: "var(--text-2xs)", fontWeight: 600, color: "rgba(240,250,249,0.55)", textTransform: "uppercase", letterSpacing: 0.8, marginTop: 6 }}>{l}</div>
             </div>
           ))}
@@ -234,7 +234,7 @@ export default function ForCompaniesLanding() {
               <div style={{ display: "flex", gap: 26, flexWrap: "wrap" }}>
                 {[["36 %", "saknar förare"], ["Auto", "verifiering"], ["0 kr", "under beta"]].map(([b, s]) => (
                   <div key={s} style={{ display: "flex", flexDirection: "column" }}>
-                    <span style={{ fontSize: 21, fontWeight: 900, color: "var(--ink-900)", fontFamily: "var(--mono)", letterSpacing: -0.5 }}>{b}</span>
+                    <span style={{ fontSize: "var(--text-2xl)", fontWeight: 900, color: "var(--ink-900)", fontFamily: "var(--mono)", letterSpacing: -0.5 }}>{b}</span>
                     <span style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", fontWeight: 600 }}>{s}</span>
                   </div>
                 ))}
@@ -364,7 +364,7 @@ export default function ForCompaniesLanding() {
           <div className="steps-grid">
             {STEPS.map((s, i) => (
               <div key={s.n} style={{ padding: "0 28px", borderLeft: i > 0 ? "1px solid var(--line)" : "none", textAlign: "center" }}>
-                <div style={{ width: 52, height: 52, borderRadius: "50%", background: "var(--green-tint)", color: "var(--green-text)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 17, fontFamily: "var(--mono)", margin: "0 auto 18px", border: "1px solid rgba(31,95,92,0.18)" }}>{s.n}</div>
+                <div style={{ width: 52, height: 52, borderRadius: "50%", background: "var(--green-tint)", color: "var(--green-text)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--text-xl)", fontFamily: "var(--mono)", margin: "0 auto 18px", border: "1px solid rgba(31,95,92,0.18)" }}>{s.n}</div>
                 <h3 style={{ fontSize: "var(--text-xl)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 9, letterSpacing: -0.3 }}>{s.title}</h3>
                 <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.6, textWrap: "pretty" }}>{s.body}</p>
               </div>

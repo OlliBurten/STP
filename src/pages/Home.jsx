@@ -223,7 +223,7 @@ export default function Home() {
 
           {/* Lead */}
           <p style={{
-            fontSize: 19, lineHeight: 1.6,
+            fontSize: "var(--text-xl)", lineHeight: 1.6,
             color: "rgba(255,255,255,0.78)", fontWeight: 500,
             maxWidth: 580, marginBottom: 32,
           }}>
@@ -358,7 +358,7 @@ export default function Home() {
                   fontFamily: "var(--mono)",
                 }}>{p.no}</div>
                 <h3 style={{
-                  fontSize: 22, fontWeight: 800, color: "var(--ink-900)",
+                  fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--ink-900)",
                   marginBottom: 14, letterSpacing: -0.5, lineHeight: 1.2,
                 }}>{p.title}</h3>
                 <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.7 }}>{p.body}</p>
@@ -419,7 +419,7 @@ export default function Home() {
                 }}>
                   <Icon name="check" size={17} color="var(--green-text)" stroke={2.6} />
                 </span>
-                <h3 style={{ fontSize: 22, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.5 }}>
+                <h3 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.5 }}>
                   STP <span style={{ color: "var(--green)" }}>är</span>
                 </h3>
               </div>
@@ -465,7 +465,7 @@ export default function Home() {
                 }}>
                   <Icon name="x" size={16} color="var(--danger)" stroke={2.6} />
                 </span>
-                <h3 style={{ fontSize: 22, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.5 }}>
+                <h3 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.5 }}>
                   STP är <span style={{ color: "var(--danger)" }}>inte</span>
                 </h3>
               </div>
@@ -583,7 +583,7 @@ export default function Home() {
                     <Icon name={f.icon} size={20} color="var(--green-text)" stroke={1.8} />
                   </div>
                   <div>
-                    <h3 style={{ fontSize: 17, fontWeight: 700, color: "var(--ink-900)", marginBottom: 4, letterSpacing: -0.3 }}>{f.title}</h3>
+                    <h3 style={{ fontSize: "var(--text-xl)", fontWeight: 700, color: "var(--ink-900)", marginBottom: 4, letterSpacing: -0.3 }}>{f.title}</h3>
                     <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.65 }}>{f.body}</p>
                   </div>
                 </div>
@@ -833,7 +833,7 @@ export default function Home() {
                     }}>{s.tag}</span>
                   </div>
                   <h3 style={{
-                    fontSize: 21, fontWeight: 800, color: "var(--ink-900)",
+                    fontSize: "var(--text-2xl)", fontWeight: 800, color: "var(--ink-900)",
                     marginBottom: 10, letterSpacing: -0.4,
                   }}>{s.title}</h3>
                   <p style={{
@@ -985,7 +985,7 @@ export default function Home() {
               Sluta leta i Facebook-grupper.<br />Börja matcha rätt.
             </h2>
             <p style={{
-              fontSize: 17, lineHeight: 1.7, marginBottom: 36,
+              fontSize: "var(--text-xl)", lineHeight: 1.7, marginBottom: 36,
               color: "rgba(255,255,255,0.82)", maxWidth: 540,
             }}>
               Skapa din profil eller registrera ditt åkeri på två minuter.
@@ -1038,7 +1038,7 @@ export default function Home() {
                 borderRadius: 16, padding: "20px 22px",
               }}>
                 <div style={{
-                  fontSize: 22, fontWeight: 800, color: "#fff",
+                  fontSize: "var(--text-3xl)", fontWeight: 800, color: "#fff",
                   letterSpacing: -0.5, marginBottom: 4,
                 }}>{big}</div>
                 <div style={{ fontSize: "var(--text-xs)", color: "rgba(255,255,255,0.7)", fontWeight: 500 }}>{sub}</div>

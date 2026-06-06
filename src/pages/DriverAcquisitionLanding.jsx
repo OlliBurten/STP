@@ -75,7 +75,7 @@ export default function DriverAcquisitionLanding() {
               display: "inline-flex", alignItems: "center", justifyContent: "center",
               padding: "16px 36px", borderRadius: 14,
               background: "var(--green)", color: "#fff",
-              fontSize: 17, fontWeight: 900, textDecoration: "none",
+              fontSize: "var(--text-xl)", fontWeight: 900, textDecoration: "none",
               boxShadow: "var(--sh-md)",
               transition: "opacity .15s, transform .15s",
             }}

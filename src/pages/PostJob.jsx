@@ -280,7 +280,7 @@ function LivePreview({ form }) {
           <PreviewSection title="Vi erbjuder" items={form.offers} fallback="Vad gör ert erbjudande attraktivt?" />
         </div>
         <div style={{ padding: "10px 14px", background: "var(--paper-2)", border: "1px solid var(--line)", borderRadius: 10 }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: "var(--ink-400)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>Ersättning</div>
+          <div style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: "var(--ink-400)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>Ersättning</div>
           {form.salaryMin
             ? <div style={{ fontSize: "var(--text-md)", fontWeight: 900, color: "var(--amber)" }}>
                 {Number(form.salaryMin).toLocaleString("sv-SE")}
@@ -306,7 +306,7 @@ function StepBasics({ form, setForm, isMobile }) {
 
   return (
     <div>
-      <h2 style={{ fontSize: 22, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -0.5, marginBottom: 6 }}>Grundläggande info</h2>
+      <h2 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, color: "var(--ink-900)", letterSpacing: -0.5, marginBottom: 6 }}>Grundläggande info</h2>
       <p style={{ fontSize: "var(--text-base)", color: "var(--ink-400)", marginBottom: 32, lineHeight: 1.7 }}>Titel, plats och krav — detta används för matchning mot förare.</p>
 
       <Field label="Jobbtitel" required hint="Var specifik. Förare söker på exakta termer som 'CE-chaufför fjärrkörning'.">
@@ -388,7 +388,7 @@ function StepBasics({ form, setForm, isMobile }) {
 function StepContent({ form, setForm, aiGenerating, aiError, onGenerate, hasApi }) {
   return (
     <div>
-      <h2 style={{ fontSize: 22, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -0.5, marginBottom: 6 }}>Annonstext</h2>
+      <h2 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, color: "var(--ink-900)", letterSpacing: -0.5, marginBottom: 6 }}>Annonstext</h2>
       <p style={{ fontSize: "var(--text-base)", color: "var(--ink-400)", marginBottom: 32, lineHeight: 1.7 }}>Dessa fyra sektioner visas alltid för föraren i exakt denna ordning. Förhandsvisningen uppdateras direkt.</p>
 
       <Field label="Om jobbet" required hint="Beskriv verksamheten och rollen kortfattat. 2–4 meningar räcker.">
@@ -431,7 +431,7 @@ function StepContent({ form, setForm, aiGenerating, aiError, onGenerate, hasApi 
 function StepTerms({ form, setForm }) {
   return (
     <div>
-      <h2 style={{ fontSize: 22, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -0.5, marginBottom: 6 }}>Villkor & ersättning</h2>
+      <h2 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, color: "var(--ink-900)", letterSpacing: -0.5, marginBottom: 6 }}>Villkor & ersättning</h2>
       <p style={{ fontSize: "var(--text-base)", color: "var(--ink-400)", marginBottom: 32, lineHeight: 1.7 }}>Lönen visas bara för inloggade förare — det är en av de starkaste konverteringsfaktorerna.</p>
 
       <Field label="Kollektivavtal">
@@ -464,7 +464,7 @@ function StepTerms({ form, setForm }) {
       {(form.salaryMin || form.salaryNote) && (
         <div style={{ padding: "14px 18px", background: "var(--amber-tint)", border: "1px solid var(--amber-tint-2)", borderRadius: 14, marginBottom: 24 }}>
           <div style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: "var(--amber-text)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Så visas det för föraren</div>
-          {form.salaryMin && <div style={{ fontSize: 22, fontWeight: 900, color: "var(--amber)", letterSpacing: -0.6 }}>{Number(form.salaryMin).toLocaleString("sv-SE")}{form.salaryMax ? `–${Number(form.salaryMax).toLocaleString("sv-SE")}` : ""} kr/mån</div>}
+          {form.salaryMin && <div style={{ fontSize: "var(--text-3xl)", fontWeight: 900, color: "var(--amber)", letterSpacing: -0.6 }}>{Number(form.salaryMin).toLocaleString("sv-SE")}{form.salaryMax ? `–${Number(form.salaryMax).toLocaleString("sv-SE")}` : ""} kr/mån</div>}
           {form.salaryNote && <div style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", marginTop: 4 }}>{form.salaryNote}</div>}
         </div>
       )}
@@ -516,7 +516,7 @@ function StepPreview({ form, onPublish, publishing, publishError }) {
 
   return (
     <div>
-      <h2 style={{ fontSize: 22, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -0.5, marginBottom: 6 }}>Förhandsgranska & publicera</h2>
+      <h2 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, color: "var(--ink-900)", letterSpacing: -0.5, marginBottom: 6 }}>Förhandsgranska & publicera</h2>
       <p style={{ fontSize: "var(--text-base)", color: "var(--ink-400)", marginBottom: 28, lineHeight: 1.7 }}>Kontrollera att allt ser bra ut — exakt så här ser föraren din annons.</p>
 
       <div style={{ padding: "18px 20px", background: ready ? "var(--success-tint)" : "var(--amber-tint)", border: `1px solid ${ready ? "var(--success-tint)" : "var(--amber-tint-2)"}`, borderRadius: 16, marginBottom: 28 }}>
@@ -699,7 +699,7 @@ export default function PostJob() {
             <div style={{ width: 80, height: 80, borderRadius: 99, background: "var(--green-tint)", border: "2px solid var(--green-tint-2)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
               <svg width="36" height="36" viewBox="0 0 24 24" fill="var(--green)"><path d="M12 2l2.4 7.6H22l-6.2 4.5 2.4 7.6L12 17.2l-6.2 4.5 2.4-7.6L2 9.6h7.6z"/></svg>
             </div>
-            <h1 style={{ fontSize: 22, fontWeight: 900, letterSpacing: -0.5, marginBottom: 10, color: "var(--ink-900)" }}>Annonsen är publicerad!</h1>
+            <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, letterSpacing: -0.5, marginBottom: 10, color: "var(--ink-900)" }}>Annonsen är publicerad!</h1>
             <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.6, marginBottom: 28 }}>
               {hasApi ? "Vi har redan börjat matcha mot förare med rätt profil. Du får e-post när första ansökan kommer in." : "Demo — inget jobb sparades (backend används inte)."}
             </p>

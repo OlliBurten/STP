@@ -216,7 +216,7 @@ function CompanyListRow({ c, user, saved, onToggleSave }) {
           <span style={{ fontSize: "var(--text-md)", fontWeight: 800, color: "var(--ink-900)" }}>{c.name}</span>
           {c.isVerified && <Icon n="check" s={13} c="var(--success)" />}
           {c.acceptsPraktik && (
-            <span style={{ padding: "2px 7px", borderRadius: 99, background: "var(--green-tint)", border: "1px solid var(--green-tint-2)", fontSize: 10, fontWeight: 700, color: "var(--green-text)" }}>🎓 Praktik</span>
+            <span style={{ padding: "2px 7px", borderRadius: 99, background: "var(--green-tint)", border: "1px solid var(--green-tint-2)", fontSize: "var(--text-2xs)", fontWeight: 700, color: "var(--green-text)" }}>🎓 Praktik</span>
           )}
         </div>
         <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
@@ -397,7 +397,7 @@ export default function AkerierSearch() {
 
         {/* Title */}
         <div style={{ padding: "10px 20px 14px" }}>
-          <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: -1, marginBottom: 4, color: "var(--ink-900)" }}>Åkerier</h1>
+          <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, letterSpacing: -1, marginBottom: 4, color: "var(--ink-900)" }}>Åkerier</h1>
           <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)" }}>{list.length} verifierade åkerier i Sverige</div>
         </div>
 
@@ -434,7 +434,7 @@ export default function AkerierSearch() {
                 style={{ flexShrink: 0, padding: "8px 14px", borderRadius: 99, background: on ? "var(--amber-tint)" : "var(--paper-2)", border: `1px solid ${on ? "var(--amber)" : "var(--line)"}`, color: on ? "var(--amber-text)" : "var(--ink-700)", fontSize: "var(--text-xs)", fontWeight: 700, cursor: "pointer", minHeight: 36, display: "flex", alignItems: "center", gap: 5, fontFamily: "inherit" }}
               >
                 {f.l}
-                <span style={{ padding: "1px 6px", borderRadius: 99, background: on ? "var(--amber-tint-2)" : "var(--line)", fontSize: 10, fontWeight: 800, color: on ? "var(--amber-text)" : "var(--ink-500)" }}>{f.c}</span>
+                <span style={{ padding: "1px 6px", borderRadius: 99, background: on ? "var(--amber-tint-2)" : "var(--line)", fontSize: "var(--text-2xs)", fontWeight: 800, color: on ? "var(--amber-text)" : "var(--ink-500)" }}>{f.c}</span>
               </button>
             );
           })}

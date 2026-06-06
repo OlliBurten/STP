@@ -93,8 +93,8 @@ export default function AdminOutreachTab({
             { label: "Studsade",   value: (outreachStats.byStatus?.BOUNCED ?? 0),            color: T.red },
           ].map(({ label, value, color }) => (
             <div key={label} style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 12, padding: "14px 16px" }}>
-              <p style={{ fontSize: 10, fontWeight: 700, color: T.muted, textTransform: "uppercase", letterSpacing: "0.08em", margin: 0 }}>{label}</p>
-              <p style={{ fontSize: 22, fontWeight: 800, color, margin: "4px 0 0" }}>{value}</p>
+              <p style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: T.muted, textTransform: "uppercase", letterSpacing: "0.08em", margin: 0 }}>{label}</p>
+              <p style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color, margin: "4px 0 0" }}>{value}</p>
             </div>
           ))}
         </div>
@@ -276,7 +276,7 @@ export default function AdminOutreachTab({
                         </p>
                       </div>
                       <span style={{
-                        fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 99,
+                        fontSize: "var(--text-2xs)", fontWeight: 700, padding: "2px 8px", borderRadius: 99,
                         background: `${statusColor}18`, color: statusColor, border: `1px solid ${statusColor}44`,
                         flexShrink: 0,
                       }}>
@@ -315,7 +315,7 @@ export default function AdminOutreachTab({
                         {/* Generated email preview */}
                         {p.generatedEmail && (
                           <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 8, padding: 12 }}>
-                            <p style={{ fontSize: 10, fontWeight: 700, color: T.muted, marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                            <p style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: T.muted, marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.08em" }}>
                               Ämne: {p.generatedSubject || "–"}
                             </p>
                             <p style={{ fontSize: "var(--text-xs)", color: T.sub, margin: 0, whiteSpace: "pre-wrap", lineHeight: 1.6 }}>{p.generatedEmail}</p>

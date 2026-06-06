@@ -170,7 +170,7 @@ function ScoreCard({ score, profile, onEdit }) {
               background: c.done ? "var(--success-tint)" : "transparent",
               border: `1.5px solid ${c.done ? "var(--success)" : "var(--line-2)"}`,
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 9, color: "var(--success)", fontWeight: 800, transition: "all .2s",
+              fontSize: "var(--text-2xs)", color: "var(--success)", fontWeight: 800, transition: "all .2s",
             }}>{c.done ? "✓" : ""}</div>
             <span style={{ fontSize: "var(--text-xs)", color: c.done ? T.sub : T.muted, lineHeight: 1.5,
               textDecoration: c.done ? "none" : "none",
@@ -222,8 +222,8 @@ function MarketSidebar({ driverMarket, user, linkCopied, onCopyLink, profileStat
               { val: profileStats.views30 ?? 0, label: "Senaste 30 dagar" },
             ].map(({ val, label }) => (
               <div key={label} style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 10, padding: "12px 10px", textAlign: "center" }}>
-                <div style={{ fontSize: 26, fontWeight: 900, color: val > 0 ? T.amber : T.muted, lineHeight: 1, marginBottom: 4 }}>{val}</div>
-                <div style={{ fontSize: 10, color: T.muted, lineHeight: 1.3 }}>{label}</div>
+                <div style={{ fontSize: "var(--text-3xl)", fontWeight: 900, color: val > 0 ? T.amber : T.muted, lineHeight: 1, marginBottom: 4 }}>{val}</div>
+                <div style={{ fontSize: "var(--text-2xs)", color: T.muted, lineHeight: 1.3 }}>{label}</div>
               </div>
             ))}
           </div>
@@ -736,7 +736,7 @@ export default function Profile() {
           <button onClick={cancelEditing} style={{ padding: "8px 14px", borderRadius: 99, background: "var(--paper-2)", border: "1px solid var(--line-2)", color: "var(--ink-700)", fontSize: "var(--text-sm)", fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
             Avbryt
           </button>
-          <h1 style={{ flex: 1, fontSize: 17, fontWeight: 800, textAlign: "center", margin: 0, color: "var(--ink-900)" }}>Redigera profil</h1>
+          <h1 style={{ flex: 1, fontSize: "var(--text-xl)", fontWeight: 800, textAlign: "center", margin: 0, color: "var(--ink-900)" }}>Redigera profil</h1>
           <button
             onClick={saveProfile}
             disabled={profileSaving}
@@ -905,13 +905,13 @@ export default function Profile() {
             <div style={{ position: "relative", display: "inline-block", margin: "0 auto 12px" }}>
               <div style={{ padding: current?.openToWork ? 3 : 0, borderRadius: "50%", background: current?.openToWork ? "conic-gradient(var(--success), var(--green-soft), var(--success))" : "transparent" }}>
                 <div style={{ padding: current?.openToWork ? 2 : 0, borderRadius: "50%", background: "var(--card)" }}>
-                  <div style={{ width: 84, height: 84, borderRadius: "50%", background: "linear-gradient(135deg, var(--green) 0%, var(--green-soft) 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 26, color: "#fff" }}>
+                  <div style={{ width: 84, height: 84, borderRadius: "50%", background: "linear-gradient(135deg, var(--green) 0%, var(--green-soft) 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "var(--text-3xl)", color: "#fff" }}>
                     {initials}
                   </div>
                 </div>
               </div>
               {current?.openToWork && (
-                <span style={{ position: "absolute", bottom: 2, left: "50%", transform: "translateX(-50%)", background: "var(--success)", color: "#fff", fontSize: 9, fontWeight: 800, letterSpacing: 0.4, padding: "2px 8px", borderRadius: 999, whiteSpace: "nowrap", border: "2px solid var(--card)" }}>SÖKER JOBB</span>
+                <span style={{ position: "absolute", bottom: 2, left: "50%", transform: "translateX(-50%)", background: "var(--success)", color: "#fff", fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 0.4, padding: "2px 8px", borderRadius: 999, whiteSpace: "nowrap", border: "2px solid var(--card)" }}>SÖKER JOBB</span>
               )}
             </div>
             <h2 style={{ fontSize: "var(--text-2xl)", fontWeight: 800, letterSpacing: -0.5, marginBottom: 4, color: "var(--ink-900)" }}>{current?.name || "Din profil"}</h2>
@@ -927,15 +927,15 @@ export default function Profile() {
           {/* Stats */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginTop: 12 }}>
             <div style={{ padding: "12px 10px", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 11, textAlign: "center", boxShadow: "var(--sh-sm)" }}>
-              <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 2, color: "var(--ink-900)", fontFamily: "var(--mono)" }}>{profileStats?.views30 ?? 0}</div>
+              <div style={{ fontSize: "var(--text-xl)", fontWeight: 800, marginBottom: 2, color: "var(--ink-900)", fontFamily: "var(--mono)" }}>{profileStats?.views30 ?? 0}</div>
               <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", fontWeight: 600 }}>Visningar (30d)</div>
             </div>
             <div style={{ padding: "12px 10px", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 11, textAlign: "center", boxShadow: "var(--sh-sm)" }}>
-              <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 2, color: "var(--amber)", fontFamily: "var(--mono)" }}>{profileStats?.views7 ?? 0}</div>
+              <div style={{ fontSize: "var(--text-xl)", fontWeight: 800, marginBottom: 2, color: "var(--amber)", fontFamily: "var(--mono)" }}>{profileStats?.views7 ?? 0}</div>
               <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", fontWeight: 600 }}>Visningar (7d)</div>
             </div>
             <div style={{ padding: "12px 10px", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 11, textAlign: "center", boxShadow: "var(--sh-sm)" }}>
-              <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 2, color: "var(--success)", fontFamily: "var(--mono)" }}>{profileStats?.conversationCount ?? 0}</div>
+              <div style={{ fontSize: "var(--text-xl)", fontWeight: 800, marginBottom: 2, color: "var(--success)", fontFamily: "var(--mono)" }}>{profileStats?.conversationCount ?? 0}</div>
               <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", fontWeight: 600 }}>Kontaktade dig</div>
             </div>
           </div>
@@ -970,7 +970,7 @@ export default function Profile() {
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
                   <span style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-900)" }}>Söker aktivt jobb</span>
                   {current?.openToWork && (
-                    <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: 0.5, textTransform: "uppercase", padding: "2px 7px", borderRadius: 99, background: "var(--green)", color: "#fff" }}>SÖKER JOBB</span>
+                    <span style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 0.5, textTransform: "uppercase", padding: "2px 7px", borderRadius: 99, background: "var(--green)", color: "#fff" }}>SÖKER JOBB</span>
                   )}
                 </div>
                 <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)" }}>{current?.openToWork ? "Grön ring visas runt din profilbild" : "Slå på för att visa att du söker aktivt"}</div>
@@ -1099,7 +1099,7 @@ export default function Profile() {
                     width: 84, height: 84, borderRadius: "50%",
                     background: "linear-gradient(135deg, var(--green) 0%, var(--green-soft) 100%)",
                     display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: 26, fontWeight: 700, color: "#fff",
+                    fontSize: "var(--text-3xl)", fontWeight: 700, color: "#fff",
                   }}>{initials}</div>
                 </div>
               </div>
@@ -1107,7 +1107,7 @@ export default function Profile() {
                 <span style={{
                   position: "absolute", bottom: 2, left: "50%", transform: "translateX(-50%)",
                   background: "var(--success)", color: "#fff",
-                  fontSize: 10, fontWeight: 800, letterSpacing: 0.4,
+                  fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 0.4,
                   padding: "2px 10px", borderRadius: 999, whiteSpace: "nowrap",
                   border: "2px solid var(--card)",
                 }}>SÖKER JOBB</span>
@@ -1656,7 +1656,7 @@ export default function Profile() {
                   ].map((c) => (
                     <div key={c.label} style={{ display: "flex", alignItems: "center", gap: 9 }}>
                       <span style={{ width: 18, height: 18, borderRadius: 9, background: c.done ? "var(--success-tint)" : "var(--paper-2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: `1.5px solid ${c.done ? "var(--success)" : "var(--line-2)"}` }}>
-                        {c.done && <span style={{ fontSize: 9, color: "var(--success)", fontWeight: 800 }}>✓</span>}
+                        {c.done && <span style={{ fontSize: "var(--text-2xs)", color: "var(--success)", fontWeight: 800 }}>✓</span>}
                       </span>
                       <span style={{ fontSize: "var(--text-sm)", color: "var(--ink-700)", fontWeight: 500 }}>{c.label}</span>
                     </div>
@@ -1754,7 +1754,7 @@ export default function Profile() {
               ) : matchedJobs && matchedJobs.length > 0 ? (
                 <>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-                    <h2 style={{ fontSize: 17, fontWeight: 700, color: T.text }}>
+                    <h2 style={{ fontSize: "var(--text-xl)", fontWeight: 700, color: T.text }}>
                       Matchande jobb · {matchedJobs.length} st
                     </h2>
                   </div>
@@ -1806,7 +1806,7 @@ export default function Profile() {
                               }}>
                                 <span style={{ fontSize: "var(--text-md)", fontWeight: 900, color: matchColor }}>{match}%</span>
                               </div>
-                              <p style={{ fontSize: 9, color: T.muted, marginTop: 4, fontWeight: 600 }}>MATCH</p>
+                              <p style={{ fontSize: "var(--text-2xs)", color: T.muted, marginTop: 4, fontWeight: 600 }}>MATCH</p>
                             </div>
                           </div>
                         </Link>

@@ -84,7 +84,7 @@ function ConvItem({ conv, isDriver, isActive, basePath, isMobile }) {
               {avatarInitials(other)}
             </div>
             {unread && (
-              <div style={{ position: "absolute", top: -3, right: -3, minWidth: 18, height: 18, padding: "0 5px", borderRadius: 99, background: "var(--amber)", color: "#fff", fontSize: 10, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid var(--card)" }}>1</div>
+              <div style={{ position: "absolute", top: -3, right: -3, minWidth: 18, height: 18, padding: "0 5px", borderRadius: 99, background: "var(--amber)", color: "#fff", fontSize: "var(--text-2xs)", fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid var(--card)" }}>1</div>
             )}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -96,7 +96,7 @@ function ConvItem({ conv, isDriver, isActive, basePath, isMobile }) {
               <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: 5 }}>{conv.jobTitle}</div>
             )}
             <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-              <span style={{ padding: "2px 6px", borderRadius: 5, background: stageBg, color: stageColor, fontSize: 9.5, fontWeight: 800, letterSpacing: 0.3 }}>{stageLabel}</span>
+              <span style={{ padding: "2px 6px", borderRadius: 5, background: stageBg, color: stageColor, fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 0.3 }}>{stageLabel}</span>
               {typeof conv.matchScore === "number" && <span style={{ fontSize: "var(--text-2xs)", color: "var(--amber)", fontWeight: 700 }}>{conv.matchScore}%</span>}
               <span style={{ fontSize: "var(--text-xs)", color: "var(--ink-400)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
                 {lastMsg?.sender === "company" && <span style={{ color: "var(--ink-300)" }}>Du: </span>}
@@ -144,12 +144,12 @@ function ConvItem({ conv, isDriver, isActive, basePath, isMobile }) {
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
             {s && (
-              <span style={{ padding: "2px 8px", borderRadius: 99, background: s.bg, border: `1px solid ${s.border}`, fontSize: 10, fontWeight: 800, color: s.color }}>
+              <span style={{ padding: "2px 8px", borderRadius: 99, background: s.bg, border: `1px solid ${s.border}`, fontSize: "var(--text-2xs)", fontWeight: 800, color: s.color }}>
                 {s.label}
               </span>
             )}
             {unread && (
-              <span style={{ marginLeft: "auto", minWidth: 18, height: 18, padding: "0 5px", borderRadius: 99, background: "var(--amber)", color: "#fff", fontSize: 10, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ marginLeft: "auto", minWidth: 18, height: 18, padding: "0 5px", borderRadius: 99, background: "var(--amber)", color: "#fff", fontSize: "var(--text-2xs)", fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 1
               </span>
             )}
@@ -250,7 +250,7 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
               {other}
             </span>
             {!isMobile && (
-              <span style={{ padding: "3px 9px", borderRadius: 99, background: s.bg, border: `1px solid ${s.border}`, fontSize: 10, fontWeight: 800, color: s.color, whiteSpace: "nowrap", flexShrink: 0 }}>
+              <span style={{ padding: "3px 9px", borderRadius: 99, background: s.bg, border: `1px solid ${s.border}`, fontSize: "var(--text-2xs)", fontWeight: 800, color: s.color, whiteSpace: "nowrap", flexShrink: 0 }}>
                 {s.label}
               </span>
             )}
@@ -269,7 +269,7 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
           {isMobile && (
-            <span style={{ padding: "4px 9px", borderRadius: 99, background: s.bg, border: `1px solid ${s.border}`, fontSize: 10, fontWeight: 800, color: s.color, whiteSpace: "nowrap" }}>
+            <span style={{ padding: "4px 9px", borderRadius: 99, background: s.bg, border: `1px solid ${s.border}`, fontSize: "var(--text-2xs)", fontWeight: 800, color: s.color, whiteSpace: "nowrap" }}>
               {s.label}
             </span>
           )}
@@ -366,7 +366,7 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
                       }}>
                         <p style={{ fontSize: "var(--text-base)", lineHeight: 1.5, margin: 0, whiteSpace: "pre-wrap" }}>{msg.content}</p>
                       </div>
-                      <div style={{ fontSize: 10, color: "var(--ink-400)", marginTop: 4, textAlign: isOwn ? "right" : "left", paddingLeft: isOwn ? 0 : 4, paddingRight: isOwn ? 4 : 0 }}>
+                      <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", marginTop: 4, textAlign: isOwn ? "right" : "left", paddingLeft: isOwn ? 0 : 4, paddingRight: isOwn ? 4 : 0 }}>
                         {formatTime(msg.timestamp)}
                         {isOwn && <span style={{ marginLeft: 5 }}>· Levererat</span>}
                       </div>
@@ -631,7 +631,7 @@ export default function Messages() {
                         style={{ padding: isMobile ? "8px 14px" : "6px 11px", borderRadius: 99, background: active ? "var(--green-tint)" : "var(--paper-2)", border: active ? "1px solid rgba(31,95,92,0.3)" : "1px solid var(--line)", color: active ? "var(--green-text)" : "var(--ink-500)", fontSize: isMobile ? 12.5 : 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", flexShrink: 0, display: "flex", alignItems: "center", gap: 5, minHeight: isMobile ? 36 : "auto" }}
                       >
                         {l}
-                        {isMobile ? <span style={{ padding: "1px 6px", borderRadius: 99, background: active ? "var(--green-tint)" : "var(--paper-2)", fontSize: 10, fontWeight: 800 }}>{c}</span> : (c > 0 && ` · ${c}`)}
+                        {isMobile ? <span style={{ padding: "1px 6px", borderRadius: 99, background: active ? "var(--green-tint)" : "var(--paper-2)", fontSize: "var(--text-2xs)", fontWeight: 800 }}>{c}</span> : (c > 0 && ` · ${c}`)}
                       </button>
                     );
                   })}

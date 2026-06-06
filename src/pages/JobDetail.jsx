@@ -112,8 +112,8 @@ function MatchRing({ pct }) {
             />
           </svg>
           <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column" }}>
-            <span style={{ fontSize: 22, fontWeight: 800, color, lineHeight: 1, letterSpacing: -0.5, fontFamily: "var(--mono)" }}>{pct}</span>
-            <span style={{ fontSize: 9, fontWeight: 700, color: "var(--ink-500)", letterSpacing: 0.6, textTransform: "uppercase", marginTop: 2 }}>%</span>
+            <span style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color, lineHeight: 1, letterSpacing: -0.5, fontFamily: "var(--mono)" }}>{pct}</span>
+            <span style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: "var(--ink-500)", letterSpacing: 0.6, textTransform: "uppercase", marginTop: 2 }}>%</span>
           </div>
         </div>
         <div>
@@ -328,7 +328,7 @@ export default function JobDetail() {
         <div style={{ maxWidth: 560, margin: "0 auto", padding: "80px 24px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center" }}>
           <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.5, color: "var(--ink-400)", textTransform: "uppercase", marginBottom: 24 }}>Annons hittades ej · 404</div>
           <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="var(--line-2)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 20 }}><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-          <h1 style={{ fontSize: 22, fontWeight: 900, marginBottom: 10, letterSpacing: -0.5, color: "var(--ink-900)" }}>Annonsen finns inte längre</h1>
+          <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, marginBottom: 10, letterSpacing: -0.5, color: "var(--ink-900)" }}>Annonsen finns inte längre</h1>
           <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.6, marginBottom: 28, maxWidth: 340 }}>Den här annonsen är antingen avpublicerad, tillsatt eller har upphört. Vi har hundratals CE-jobb i Sverige just nu.</p>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
             <Link to="/jobb" style={{ padding: "12px 22px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: "var(--text-sm)", textDecoration: "none" }}>Visa lediga jobb</Link>
@@ -523,11 +523,11 @@ export default function JobDetail() {
           {/* Hero */}
           <div style={{ padding: "6px 18px 0" }}>
             <div style={{ display: "flex", gap: 14, alignItems: "flex-start", marginBottom: 14 }}>
-              <div style={{ width: 56, height: 56, borderRadius: 14, background: "var(--paper-2)", border: "1px solid var(--line-2)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 17, color: "var(--ink-700)", flexShrink: 0 }}>
+              <div style={{ width: 56, height: 56, borderRadius: 14, background: "var(--paper-2)", border: "1px solid var(--line-2)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "var(--text-xl)", color: "var(--ink-700)", flexShrink: 0 }}>
                 {companyInitials}
               </div>
               <div style={{ flex: 1 }}>
-                <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: -0.6, lineHeight: 1.2, marginBottom: 6, color: "var(--ink-900)" }}>{job.title}</h1>
+                <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, letterSpacing: -0.6, lineHeight: 1.2, marginBottom: 6, color: "var(--ink-900)" }}>{job.title}</h1>
                 <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" }}>
                   <span style={{ fontWeight: 600, color: "var(--ink-700)" }}>{job.company}</span>
                   {job.source === "AGGREGATED" && !job.claimed ? null : job.companyVerified ? (
@@ -722,7 +722,7 @@ export default function JobDetail() {
           {/* Header card */}
           <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: "var(--r-lg)", padding: "32px 36px", boxShadow: "var(--sh-sm)" }}>
             <div style={{ display: "flex", gap: 20, alignItems: "flex-start", marginBottom: 20 }}>
-              <div style={{ width: 64, height: 64, borderRadius: 14, background: "var(--paper-2)", border: "1px solid var(--line-2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 19, fontWeight: 800, color: "var(--ink-700)", flexShrink: 0 }}>
+              <div style={{ width: 64, height: 64, borderRadius: 14, background: "var(--paper-2)", border: "1px solid var(--line-2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "var(--text-xl)", fontWeight: 800, color: "var(--ink-700)", flexShrink: 0 }}>
                 {companyInitials}
               </div>
               <div style={{ flex: 1 }}>
@@ -880,7 +880,7 @@ export default function JobDetail() {
                   { value: jobStats.conversationCount, label: "Ansökningar"  },
                 ].map(({ value, label }) => (
                   <div key={label} style={{ borderRadius: "var(--r-md)", border: "1px solid var(--line)", background: "var(--card)", padding: "16px 12px", textAlign: "center", boxShadow: "var(--sh-sm)" }}>
-                    <p style={{ fontSize: 26, fontWeight: 800, color: "var(--ink-900)", margin: "0 0 4px", fontFamily: "var(--mono)" }}>{value}</p>
+                    <p style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--ink-900)", margin: "0 0 4px", fontFamily: "var(--mono)" }}>{value}</p>
                     <p style={{ fontSize: "var(--text-xs)", color: "var(--ink-400)", margin: 0 }}>{label}</p>
                   </div>
                 ))}
@@ -1007,7 +1007,7 @@ export default function JobDetail() {
               <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, color: "var(--ink-500)", textTransform: "uppercase", letterSpacing: 1.3, marginBottom: 6 }}>Månadslön</div>
               {job.salaryMin ? (
                 <>
-                  <div style={{ fontSize: 26, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.5, fontFamily: "var(--mono)", lineHeight: 1.1 }}>
+                  <div style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.5, fontFamily: "var(--mono)", lineHeight: 1.1 }}>
                     {job.salaryMin.toLocaleString("sv-SE")}–{(job.salaryMax || job.salaryMin).toLocaleString("sv-SE")} kr
                   </div>
                   {job.salaryNote && <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", marginTop: 4 }}>{job.salaryNote}</div>}

@@ -218,7 +218,7 @@ function ReviewModal({ driverId, driverName, onClose, onSubmitted }) {
           </div>
         ) : (
           <>
-            <h3 style={{ fontSize: 19, fontWeight: 800, color: "var(--ink-900)", marginBottom: 6 }}>Lämna omdöme</h3>
+            <h3 style={{ fontSize: "var(--text-xl)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 6 }}>Lämna omdöme</h3>
             <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.5, marginBottom: 24 }}>
               Betygsätt {driverName} baserat på er samarbetserfarenhet. Omdömet visas på hens profil med verifierings-märke.
             </p>
@@ -330,7 +330,7 @@ function ProfileStrengthCard({ profile, displayScore, onEdit }) {
         {checks.map((c) => (
           <div key={c.label} style={{ display: "flex", alignItems: "center", gap: 9 }}>
             <span style={{ width: 18, height: 18, borderRadius: 9, background: c.done ? "var(--success-tint)" : "var(--paper-2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: `1.5px solid ${c.done ? "var(--success)" : "var(--line-2)"}` }}>
-              {c.done && <span style={{ fontSize: 9, color: "var(--success)", fontWeight: 800 }}>✓</span>}
+              {c.done && <span style={{ fontSize: "var(--text-2xs)", color: "var(--success)", fontWeight: 800 }}>✓</span>}
             </span>
             <span style={{ fontSize: "var(--text-sm)", color: "var(--ink-700)", fontWeight: 500 }}>{c.label}</span>
           </div>
@@ -482,7 +482,7 @@ export default function DriverProfileView({
                   width: 84, height: 84, borderRadius: "50%",
                   background: `linear-gradient(135deg, ${color} 0%, var(--green-soft) 100%)`,
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 26, fontWeight: 700, color: "#fff",
+                  fontSize: "var(--text-3xl)", fontWeight: 700, color: "#fff",
                 }}>{initials}</div>
               </div>
             </div>
@@ -490,7 +490,7 @@ export default function DriverProfileView({
               <span style={{
                 position: "absolute", bottom: 2, left: "50%", transform: "translateX(-50%)",
                 background: "var(--success)", color: "#fff",
-                fontSize: 10, fontWeight: 800, letterSpacing: 0.4,
+                fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 0.4,
                 padding: "2px 10px", borderRadius: 999, whiteSpace: "nowrap",
                 border: "2px solid var(--card)",
               }}>SÖKER JOBB</span>
@@ -726,8 +726,8 @@ export default function DriverProfileView({
                       { val: profileStats.views30 ?? 0, label: "Senaste 30 dagar" },
                     ].map(({ val, label }) => (
                       <div key={label} style={{ background: "var(--card-2)", border: "1px solid var(--line)", borderRadius: 10, padding: "12px 10px", textAlign: "center" }}>
-                        <div style={{ fontSize: 26, fontWeight: 900, color: val > 0 ? "var(--amber)" : "var(--ink-400)", lineHeight: 1, marginBottom: 4 }}>{val}</div>
-                        <div style={{ fontSize: 10, color: "var(--ink-400)", lineHeight: 1.3 }}>{label}</div>
+                        <div style={{ fontSize: "var(--text-3xl)", fontWeight: 900, color: val > 0 ? "var(--amber)" : "var(--ink-400)", lineHeight: 1, marginBottom: 4 }}>{val}</div>
+                        <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", lineHeight: 1.3 }}>{label}</div>
                       </div>
                     ))}
                   </div>

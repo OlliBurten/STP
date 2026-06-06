@@ -102,7 +102,7 @@ export function StatusBadge({ value }) {
   const s = map[value] || { bg: T.card, color: T.muted, border: T.border, label: value };
   return (
     <span style={{
-      display: "inline-block", fontSize: 10, fontWeight: 700, letterSpacing: "0.06em",
+      display: "inline-block", fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: "0.06em",
       padding: "3px 8px", borderRadius: 99, background: s.bg, color: s.color, border: `1px solid ${s.border}`,
     }}>
       {s.label}
@@ -118,9 +118,9 @@ export function KpiCard({ label, value, sub, urgent, teal, onClick }) {
       borderRadius: 14, padding: "18px 20px",
       cursor: onClick ? "pointer" : "default",
     }}>
-      <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
+      <p style={{ fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
         color: urgent ? T.amber : (teal ? T.tealBright : T.muted), marginBottom: 6 }}>{label}</p>
-      <p style={{ fontSize: 26, fontWeight: 800, letterSpacing: -0.5, margin: "0 0 4px",
+      <p style={{ fontSize: "var(--text-3xl)", fontWeight: 800, letterSpacing: -0.5, margin: "0 0 4px",
         color: urgent ? T.amber : (teal ? T.tealBright : T.text) }}>{value}</p>
       {sub && <p style={{ fontSize: "var(--text-2xs)", color: T.muted, margin: 0 }}>{sub}</p>}
     </div>

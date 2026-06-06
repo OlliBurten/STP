@@ -82,7 +82,7 @@ export default function ClaimLanding() {
       <main style={{ minHeight: "100vh", background: "var(--paper)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
         <div style={{ maxWidth: 420, textAlign: "center" }}>
           <div style={{ fontSize: "var(--text-6xl)", marginBottom: 16 }}>🔗</div>
-          <h1 style={{ fontSize: 22, fontWeight: 800, color: "var(--ink-900)", marginBottom: 10 }}>Ogiltig länk</h1>
+          <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 10 }}>Ogiltig länk</h1>
           <p style={{ fontSize: "var(--text-md)", color: "var(--ink-500)", marginBottom: 24 }}>{error}</p>
           <Link to="/" style={{ color: "var(--green)", fontWeight: 600, textDecoration: "none" }}>← Till startsidan</Link>
         </div>
@@ -98,7 +98,7 @@ export default function ClaimLanding() {
           <div style={{ width: 72, height: 72, borderRadius: 36, background: "var(--success-tint)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
             <Icon n="check" s={32} c="var(--success)" />
           </div>
-          <h1 style={{ fontSize: 26, fontWeight: 800, color: "var(--ink-900)", marginBottom: 10 }}>Era annonser är kopplade!</h1>
+          <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 10 }}>Era annonser är kopplade!</h1>
           <p style={{ fontSize: "var(--text-md)", color: "var(--ink-500)", lineHeight: 1.65, marginBottom: 24 }}>
             {activated.jobsUpdated} annonser är nu kopplade till ert konto.
             {activated.applicationsForwarded > 0 && <> {activated.applicationsForwarded} ansökningar väntar på er.</>}
@@ -157,7 +157,7 @@ export default function ClaimLanding() {
         <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, padding: "36px 40px", boxShadow: "var(--sh-sm)", marginBottom: 20, textAlign: "center" }}>
 
           {/* Company avatar */}
-          <div style={{ width: 72, height: 72, borderRadius: 18, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 22, margin: "0 auto 20px", boxShadow: "0 4px 16px rgba(31,95,92,0.25)" }}>
+          <div style={{ width: 72, height: 72, borderRadius: 18, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--text-3xl)", margin: "0 auto 20px", boxShadow: "0 4px 16px rgba(31,95,92,0.25)" }}>
             {companyInitials}
           </div>
 

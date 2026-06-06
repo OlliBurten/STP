@@ -246,7 +246,7 @@ function FilterSheet({ open, filters, setFilters, onClose, isMobile }) {
       <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.3)", zIndex: 60 }} />
       <div style={{ position: "fixed", top: 0, right: 0, height: "100vh", width: 380, maxWidth: "100vw", background: "var(--card)", borderLeft: "1px solid var(--line)", zIndex: 70, display: "flex", flexDirection: "column", boxShadow: "var(--sh-md)" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "22px 24px", borderBottom: "1px solid var(--line)" }}>
-          <h3 style={{ fontSize: 17, fontWeight: 800, letterSpacing: -0.3, color: "var(--ink-900)" }}>Filter</h3>
+          <h3 style={{ fontSize: "var(--text-xl)", fontWeight: 800, letterSpacing: -0.3, color: "var(--ink-900)" }}>Filter</h3>
           <button onClick={onClose} style={{ background: "none", border: "none", color: "var(--ink-500)", cursor: "pointer", display: "flex" }}><Icon name="x" size={20} /></button>
         </div>
         <div style={{ flex: 1, overflowY: "auto", padding: "24px" }}>

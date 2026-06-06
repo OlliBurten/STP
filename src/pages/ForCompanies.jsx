@@ -233,7 +233,7 @@ function PerformanceChart({ weeks, total }) {
         </div>
         {trendLabel && (
           <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: -0.5, color: trendPositive ? "var(--success)" : "var(--danger)" }}>{trendLabel}</div>
+            <div style={{ fontSize: "var(--text-3xl)", fontWeight: 800, letterSpacing: -0.5, color: trendPositive ? "var(--success)" : "var(--danger)" }}>{trendLabel}</div>
             <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)" }}>vs de 6 föregående</div>
           </div>
         )}
@@ -246,7 +246,7 @@ function PerformanceChart({ weeks, total }) {
                 <div style={{ position: "absolute", top: -22, left: "50%", transform: "translateX(-50%)", fontSize: "var(--text-2xs)", fontWeight: 800, color: "var(--amber-text)", whiteSpace: "nowrap" }}>{v}</div>
               )}
             </div>
-            <div style={{ fontSize: 9, color: "var(--ink-300)" }}>v{((currentWeek - 11 + i + 52) % 52) + 1}</div>
+            <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-300)" }}>v{((currentWeek - 11 + i + 52) % 52) + 1}</div>
           </div>
         ))}
       </div>
@@ -363,7 +363,7 @@ function ActiveJobsSidebar({ jobs, conversations }) {
               >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6, gap: 8 }}>
                   <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, lineHeight: 1.3, flex: 1, color: "var(--ink-900)" }}>{j.title}</div>
-                  {hot && <span style={{ padding: "2px 7px", borderRadius: 5, background: "var(--amber-tint)", color: "var(--amber-text)", fontSize: 9.5, fontWeight: 800, letterSpacing: 0.5, flexShrink: 0 }}>HOT</span>}
+                  {hot && <span style={{ padding: "2px 7px", borderRadius: 5, background: "var(--amber-tint)", color: "var(--amber-text)", fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 0.5, flexShrink: 0 }}>HOT</span>}
                 </div>
                 <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
                   <Icon n="pin" size={10} /> {j.region || j.location || "–"} · {days} dgr aktiv
@@ -477,7 +477,7 @@ function SuggestedDrivers({ drivers }) {
               </div>
               <div style={{ textAlign: "right" }}>
                 <div style={{ fontSize: "var(--text-base)", fontWeight: 800, color: "var(--amber-text)", lineHeight: 1 }}>{d.match}%</div>
-                <div style={{ fontSize: 10, color: "var(--ink-400)", marginTop: 2 }}>match</div>
+                <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", marginTop: 2 }}>match</div>
               </div>
             </Link>
           );
@@ -649,7 +649,7 @@ export default function ForCompanies() {
                   </div>
                   <div style={{ fontSize: "var(--text-3xl)", fontWeight: 800, letterSpacing: -0.8, lineHeight: 1, marginBottom: 4, color: "var(--ink-900)" }}>{k.value}</div>
                   <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", fontWeight: 600 }}>{k.label}</div>
-                  {k.sub && <div style={{ fontSize: 10, color: "var(--ink-400)", marginTop: 3 }}>{k.sub}</div>}
+                  {k.sub && <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", marginTop: 3 }}>{k.sub}</div>}
                 </div>
               );
               return k.to ? <Link key={i} to={k.to} style={{ textDecoration: "none", color: "inherit" }}>{card}</Link> : card;

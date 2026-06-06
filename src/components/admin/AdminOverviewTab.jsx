@@ -9,7 +9,7 @@ function SectionHeader({ title, sub, action }) {
   return (
     <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 20, gap: 14 }}>
       <div>
-        <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: -0.6, marginBottom: 3, color: "var(--ink-900)" }}>{title}</h1>
+        <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, letterSpacing: -0.6, marginBottom: 3, color: "var(--ink-900)" }}>{title}</h1>
         {sub && <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)" }}>{sub}</div>}
       </div>
       {action}
@@ -25,7 +25,7 @@ function Metric({ label, value, delta, trend, color = "var(--amber)" }) {
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 14 }}>
         <div style={{ fontSize: "var(--text-2xs)", fontWeight: 600, color: "var(--ink-500)", letterSpacing: 0.3 }}>{label}</div>
         {delta && (
-          <div style={{ display: "flex", alignItems: "center", gap: 3, padding: "2px 7px", borderRadius: 5, background: positive ? "var(--success-tint)" : "rgba(220,38,38,0.08)", border: `1px solid ${positive ? "var(--success)" : "rgba(220,38,38,0.2)"}`, fontSize: 10, fontWeight: 700, color: positive ? "var(--success)" : "var(--danger)", ...mono }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 3, padding: "2px 7px", borderRadius: 5, background: positive ? "var(--success-tint)" : "rgba(220,38,38,0.08)", border: `1px solid ${positive ? "var(--success)" : "rgba(220,38,38,0.2)"}`, fontSize: "var(--text-2xs)", fontWeight: 700, color: positive ? "var(--success)" : "var(--danger)", ...mono }}>
             <Icon n={positive ? "up" : "down"} s={9} />{delta}
           </div>
         )}
@@ -163,7 +163,7 @@ function SystemPulse({ health }) {
             <span style={{ width: 6, height: 6, borderRadius: 99, background: s.c, flexShrink: 0, animation: s.s === "ok" ? "pulse 2s infinite" : "none" }} />
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: "var(--text-2xs)", fontWeight: 600, color: "var(--ink-900)" }}>{s.n}</div>
-              <div style={{ fontSize: 9.5, color: "var(--ink-400)", ...mono }}>{s.v}</div>
+              <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", ...mono }}>{s.v}</div>
             </div>
           </div>
         ))}
@@ -297,7 +297,7 @@ function OnboardingFunnel({ onboarding }) {
                 <div style={{ height: "100%", width: `${s.p}%`, background: s.c, borderRadius: 99 }} />
               </div>
               {i < stages.length - 1 && (
-                <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 4, fontSize: 10, color: "var(--danger)", paddingLeft: 4, ...mono }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 4, fontSize: "var(--text-2xs)", color: "var(--danger)", paddingLeft: 4, ...mono }}>
                   <Icon n="down" s={9} /> {Math.round((1 - stages[i + 1].v / (stages[i].v || 1)) * 100)}% drop-off
                 </div>
               )}
@@ -334,7 +334,7 @@ function IntegrationsCard({ health }) {
           <Icon n="plug" s={14} c="var(--info)" />
           <span style={{ fontSize: "var(--text-sm)", fontWeight: 800, letterSpacing: -0.2, color: "var(--ink-900)" }}>Integrationer</span>
         </div>
-        <span style={{ padding: "1px 7px", borderRadius: 4, background: "var(--info-tint)", color: "var(--info)", fontSize: 9, fontWeight: 800, letterSpacing: 0.5 }}>MCP-redo</span>
+        <span style={{ padding: "1px 7px", borderRadius: 4, background: "var(--info-tint)", color: "var(--info)", fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 0.5 }}>MCP-redo</span>
       </div>
       <div style={{ padding: "10px 14px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 5 }}>
         {integrations.map(it => (

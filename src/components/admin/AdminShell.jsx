@@ -81,14 +81,14 @@ export function AdminSidebar({ section, onChange }) {
         <div style={{ width: 32, height: 32, borderRadius: 9, background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--text-sm)", color: "#fff", letterSpacing: -0.5 }}>STP</div>
         <div>
           <div style={{ fontSize: "var(--text-sm)", fontWeight: 800, letterSpacing: -0.2, lineHeight: 1.2, color: "var(--ink-900)" }}>Admin</div>
-          <div style={{ fontSize: 10, color: "var(--ink-400)", marginTop: 1 }}>v2.4.1 · prod</div>
+          <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", marginTop: 1 }}>v2.4.1 · prod</div>
         </div>
       </Link>
 
       <div style={{ flex: 1, overflowY: "auto", padding: "12px 8px" }}>
         {NAV_GROUPS.map((g, gi) => (
           <div key={g.l} style={{ marginBottom: gi < NAV_GROUPS.length - 1 ? 18 : 0 }}>
-            <div style={{ padding: "6px 10px 8px", fontSize: 9.5, fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "var(--ink-400)" }}>{g.l}</div>
+            <div style={{ padding: "6px 10px 8px", fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "var(--ink-400)" }}>{g.l}</div>
             {g.items.map(it => {
               const on = section === it.id;
               return (
@@ -103,9 +103,9 @@ export function AdminSidebar({ section, onChange }) {
                 }}>
                   <Icon n={it.n} s={15} />
                   <span style={{ flex: 1 }}>{it.l}</span>
-                  {it.alert > 0 && <span style={{ minWidth: 18, height: 18, padding: "0 5px", borderRadius: 99, background: "var(--danger)", color: "#fff", fontSize: 9.5, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center" }}>{it.alert}</span>}
+                  {it.alert > 0 && <span style={{ minWidth: 18, height: 18, padding: "0 5px", borderRadius: 99, background: "var(--danger)", color: "#fff", fontSize: "var(--text-2xs)", fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center" }}>{it.alert}</span>}
                   {it.count > 0 && !it.alert && <span style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", fontWeight: 700 }}>{it.count}</span>}
-                  {it.badge && <span style={{ padding: "1px 6px", borderRadius: 4, background: "var(--info-tint)", color: "var(--info)", fontSize: 9, fontWeight: 800, letterSpacing: 0.5 }}>{it.badge}</span>}
+                  {it.badge && <span style={{ padding: "1px 6px", borderRadius: 4, background: "var(--info-tint)", color: "var(--info)", fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 0.5 }}>{it.badge}</span>}
                 </button>
               );
             })}
@@ -117,7 +117,7 @@ export function AdminSidebar({ section, onChange }) {
         <div style={{ width: 32, height: 32, borderRadius: 99, background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "var(--text-2xs)", fontWeight: 800, color: "#fff" }}>OH</div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: "var(--text-xs)", fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "var(--ink-900)" }}>Oliver Harburt</div>
-          <div style={{ fontSize: 10, color: "var(--ink-400)" }}>Super admin</div>
+          <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)" }}>Super admin</div>
         </div>
         <button style={{ width: 28, height: 28, borderRadius: 7, background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-400)" }}>
           <Icon n="cog" s={13} />
@@ -142,14 +142,14 @@ export function AdminTopBar({ openCmd, health }) {
       <button onClick={openCmd} style={{ flex: 1, maxWidth: 480, display: "flex", alignItems: "center", gap: 9, padding: "7px 12px", borderRadius: 8, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-400)", fontSize: "var(--text-xs)", cursor: "pointer" }}>
         <Icon n="search" s={14} c="var(--ink-400)" />
         <span style={{ flex: 1, textAlign: "left" }}>Sök användare, företag, jobb...</span>
-        <span style={{ padding: "1px 6px", borderRadius: 4, background: "var(--paper-2)", fontSize: 10, color: "var(--ink-400)", fontFamily: "'JetBrains Mono',monospace" }}>⌘K</span>
+        <span style={{ padding: "1px 6px", borderRadius: 4, background: "var(--paper-2)", fontSize: "var(--text-2xs)", color: "var(--ink-400)", fontFamily: "'JetBrains Mono',monospace" }}>⌘K</span>
       </button>
 
       <div style={{ display: "flex", alignItems: "center", gap: 7, marginLeft: "auto" }}>
         <button style={{ display: "flex", alignItems: "center", gap: 7, padding: "5px 11px", borderRadius: 99, background: pillBg, border: `1px solid ${pillBorder}`, cursor: "pointer" }}>
           <span style={{ width: 7, height: 7, borderRadius: 99, background: pillColor, animation: systemOk ? "pulse 2s infinite" : "none" }} />
           <span style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: pillColor }}>{pillLabel}</span>
-          {latency && <span style={{ fontSize: 10, color: `${pillColor}88`, fontFamily: "'JetBrains Mono',monospace" }}>{latency}</span>}
+          {latency && <span style={{ fontSize: "var(--text-2xs)", color: `${pillColor}88`, fontFamily: "'JetBrains Mono',monospace" }}>{latency}</span>}
         </button>
 
         <button style={{ padding: "7px 12px", borderRadius: 8, background: "var(--amber-tint)", border: "1px solid var(--amber)", color: "var(--amber-text)", fontSize: "var(--text-xs)", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
@@ -197,7 +197,7 @@ export function AdminCmdK({ open, onClose, onChange }) {
         <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--line)", display: "flex", alignItems: "center", gap: 11 }}>
           <Icon n="search" s={15} c="var(--ink-400)" />
           <input autoFocus placeholder="Sök eller utför åtgärd..." style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "var(--ink-900)", fontSize: "var(--text-md)", fontFamily: "inherit" }} />
-          <span style={{ padding: "2px 7px", borderRadius: 4, background: "var(--paper-2)", fontSize: 10, color: "var(--ink-400)", fontFamily: "'JetBrains Mono',monospace" }}>esc</span>
+          <span style={{ padding: "2px 7px", borderRadius: 4, background: "var(--paper-2)", fontSize: "var(--text-2xs)", color: "var(--ink-400)", fontFamily: "'JetBrains Mono',monospace" }}>esc</span>
         </div>
         <div style={{ flex: 1, overflowY: "auto", padding: "6px 0" }}>
           {items.map((it, i) => {
@@ -205,7 +205,7 @@ export function AdminCmdK({ open, onClose, onChange }) {
             lastGroup = it.group;
             return (
               <React.Fragment key={i}>
-                {showHeader && <div style={{ padding: "10px 18px 4px", fontSize: 9.5, fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "var(--ink-400)" }}>{it.group}</div>}
+                {showHeader && <div style={{ padding: "10px 18px 4px", fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "var(--ink-400)" }}>{it.group}</div>}
                 <button
                   onClick={() => { onChange && onChange(it.i); onClose(); }}
                   style={{ width: "100%", padding: "9px 18px", background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 11, color: "var(--ink-900)", textAlign: "left" }}

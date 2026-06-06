@@ -104,7 +104,7 @@ export default function BottomNav() {
                   position: "absolute", top: -4, right: -8,
                   minWidth: 16, height: 16, padding: "0 4px",
                   borderRadius: 99, background: "var(--amber)", color: "#000",
-                  fontSize: 9.5, fontWeight: 800,
+                  fontSize: "var(--text-2xs)", fontWeight: 800,
                   display: "flex", alignItems: "center", justifyContent: "center",
                   border: "2px solid var(--card)",
                   lineHeight: 1,

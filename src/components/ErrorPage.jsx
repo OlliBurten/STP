@@ -64,7 +64,7 @@ export default function ErrorPage({ variant = "404", onRetry, hideTopBar = false
         <div style={{ padding: "20px 32px", borderBottom: "1px solid var(--line)", background: "var(--card)" }}>
           <a href="/" style={{ display: "inline-flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
             <div style={{ width: 30, height: 30, borderRadius: 7, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--text-sm)" }}>S</div>
-            <span style={{ fontWeight: 800, fontSize: 17, color: "var(--ink-900)", letterSpacing: 0.5 }}>STP</span>
+            <span style={{ fontWeight: 800, fontSize: "var(--text-xl)", color: "var(--ink-900)", letterSpacing: 0.5 }}>STP</span>
           </a>
         </div>
       )}

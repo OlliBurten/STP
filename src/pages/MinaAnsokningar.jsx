@@ -310,7 +310,7 @@ function MobileAppCard({ conv }) {
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
             <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-900)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>{conv.jobTitle || "Okänd tjänst"}</div>
-            <span style={{ padding: "3px 8px", borderRadius: 6, background: STAGE_BG[stage], color: STAGE_COLOR[stage], fontSize: 9.5, fontWeight: 800, letterSpacing: 0.3, flexShrink: 0 }}>{(STAGE_LABEL[stage] || "").toUpperCase()}</span>
+            <span style={{ padding: "3px 8px", borderRadius: 6, background: STAGE_BG[stage], color: STAGE_COLOR[stage], fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 0.3, flexShrink: 0 }}>{(STAGE_LABEL[stage] || "").toUpperCase()}</span>
           </div>
           <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)" }}>{conv.companyName}</div>
         </div>
@@ -398,7 +398,7 @@ export default function MinaAnsokningar() {
                     padding: "1px 7px", borderRadius: 999,
                     background: isActive ? "var(--green-tint)" : "var(--paper-2)",
                     color: isActive ? "var(--green-text)" : "var(--ink-500)",
-                    fontSize: 10, fontWeight: 800,
+                    fontSize: "var(--text-2xs)", fontWeight: 800,
                   }}>{t.c}</span>
                   {isActive && <span style={{ position: "absolute", left: 14, right: 14, bottom: -1, height: 3, background: "var(--green)", borderRadius: "3px 3px 0 0" }}/>}
                 </button>

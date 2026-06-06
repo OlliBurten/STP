@@ -493,7 +493,7 @@ export default function Admin() {
                 <thead>
                   <tr style={{ borderBottom: `1px solid ${T.border}` }}>
                     {["Företag", "Org.nr", "Skapad", ""].map((h) => (
-                      <th key={h} style={{ textAlign: "left", padding: "10px 12px", fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.muted }}>
+                      <th key={h} style={{ textAlign: "left", padding: "10px 12px", fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.muted }}>
                         {h}
                       </th>
                     ))}
@@ -662,7 +662,7 @@ export default function Admin() {
                 <thead>
                   <tr style={{ borderBottom: `1px solid ${T.border}` }}>
                     {["Jobb", "Plats", "Status", "Publicerad", ""].map((h) => (
-                      <th key={h} style={{ textAlign: "left", padding: "10px 12px", fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.muted }}>
+                      <th key={h} style={{ textAlign: "left", padding: "10px 12px", fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.muted }}>
                         {h}
                       </th>
                     ))}
@@ -681,7 +681,7 @@ export default function Admin() {
                         <p style={{ fontWeight: 600, color: T.text, margin: 0, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{j.title}</p>
                         <p style={{ fontSize: "var(--text-2xs)", color: T.muted, margin: "2px 0 0", maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{j.company}</p>
                         {j.moderatedAt && (
-                          <p style={{ fontSize: 10, color: T.amber, margin: "1px 0 0" }}>Mod: {j.moderationReason || "–"}</p>
+                          <p style={{ fontSize: "var(--text-2xs)", color: T.amber, margin: "1px 0 0" }}>Mod: {j.moderationReason || "–"}</p>
                         )}
                       </td>
                       <td style={{ padding: "11px 12px", color: T.sub, fontSize: "var(--text-xs)", whiteSpace: "nowrap" }}>{j.location}, {j.region}</td>
@@ -727,7 +727,7 @@ export default function Admin() {
                 <thead>
                   <tr style={{ borderBottom: `1px solid ${T.border}` }}>
                     {["Rapport", "Mål", "Datum", ""].map((h) => (
-                      <th key={h} style={{ textAlign: "left", padding: "10px 12px", fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.muted }}>
+                      <th key={h} style={{ textAlign: "left", padding: "10px 12px", fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.muted }}>
                         {h}
                       </th>
                     ))}
@@ -745,13 +745,13 @@ export default function Admin() {
                       <td style={{ padding: "11px 12px" }}>
                         <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 4 }}>
                           <StatusBadge value={r.status} />
-                          <span style={{ fontSize: 10, padding: "3px 8px", borderRadius: 99, background: T.card, border: `1px solid ${T.border}`, color: T.muted }}>
+                          <span style={{ fontSize: "var(--text-2xs)", padding: "3px 8px", borderRadius: 99, background: T.card, border: `1px solid ${T.border}`, color: T.muted }}>
                             {r.category}
                           </span>
                         </div>
                         <p style={{ fontSize: "var(--text-xs)", color: T.sub, margin: 0, maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.description}</p>
-                        <p style={{ fontSize: 10, color: T.muted, margin: "2px 0 0" }}>av {r.reporter?.name || r.reporter?.email}</p>
-                        {r.resolutionNote && <p style={{ fontSize: 10, color: T.muted, margin: "2px 0 0", fontStyle: "italic" }}>Beslut: {r.resolutionNote}</p>}
+                        <p style={{ fontSize: "var(--text-2xs)", color: T.muted, margin: "2px 0 0" }}>av {r.reporter?.name || r.reporter?.email}</p>
+                        {r.resolutionNote && <p style={{ fontSize: "var(--text-2xs)", color: T.muted, margin: "2px 0 0", fontStyle: "italic" }}>Beslut: {r.resolutionNote}</p>}
                       </td>
                       <td style={{ padding: "11px 12px", fontSize: "var(--text-xs)" }}>
                         {r.reportedUser ? (
@@ -802,7 +802,7 @@ export default function Admin() {
                 <thead>
                   <tr style={{ borderBottom: `1px solid ${T.border}` }}>
                     {["Omdöme", "Parter", "Status", ""].map((h) => (
-                      <th key={h} style={{ textAlign: "left", padding: "10px 12px", fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.muted }}>
+                      <th key={h} style={{ textAlign: "left", padding: "10px 12px", fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.muted }}>
                         {h}
                       </th>
                     ))}
@@ -825,7 +825,7 @@ export default function Admin() {
                         <p style={{ fontSize: "var(--text-xs)", color: T.sub, margin: 0, maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                           {r.comment || "Ingen kommentar"}
                         </p>
-                        {r.moderationReason && <p style={{ fontSize: 10, color: T.red, margin: "2px 0 0", fontStyle: "italic" }}>{r.moderationReason}</p>}
+                        {r.moderationReason && <p style={{ fontSize: "var(--text-2xs)", color: T.red, margin: "2px 0 0", fontStyle: "italic" }}>{r.moderationReason}</p>}
                       </td>
                       <td style={{ padding: "11px 12px", fontSize: "var(--text-xs)" }}>
                         <p style={{ fontWeight: 600, color: T.sub, margin: 0, maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.company?.name || "–"}</p>
@@ -1036,7 +1036,7 @@ export default function Admin() {
                       <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
                         <div style={{ textAlign: "right" }}>
                           <p style={{ fontSize: "var(--text-xl)", fontWeight: 800, color: T.tealBright, margin: 0 }}>{s.count}</p>
-                          <p style={{ fontSize: 10, color: T.muted, margin: 0 }}>{s.count === 1 ? "elev" : "elever"}</p>
+                          <p style={{ fontSize: "var(--text-2xs)", color: T.muted, margin: 0 }}>{s.count === 1 ? "elev" : "elever"}</p>
                         </div>
                         {slug && (
                           <a
@@ -1109,7 +1109,7 @@ export default function Admin() {
                     { label: "Klara", value: insights.filter(i => i.status === "DONE").length, color: T.green },
                   ].map(({ label, value, color }) => (
                     <div key={label} style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 12, padding: "14px 18px" }}>
-                      <p style={{ fontSize: 22, fontWeight: 800, color, margin: 0 }}>{value}</p>
+                      <p style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color, margin: 0 }}>{value}</p>
                       <p style={{ fontSize: "var(--text-2xs)", color: T.muted, margin: "3px 0 0" }}>{label}</p>
                     </div>
                   ))}
@@ -1137,17 +1137,17 @@ export default function Admin() {
                         <div style={{ display: "flex", alignItems: "flex-start", gap: 12, justifyContent: "space-between", flexWrap: "wrap" }}>
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
-                              <span style={{ fontSize: 10, fontWeight: 800, padding: "2px 8px", borderRadius: 99, background: priorityBg, color: priorityColor, border: `1px solid ${priorityColor}40` }}>
+                              <span style={{ fontSize: "var(--text-2xs)", fontWeight: 800, padding: "2px 8px", borderRadius: 99, background: priorityBg, color: priorityColor, border: `1px solid ${priorityColor}40` }}>
                                 {insight.priority}
                               </span>
-                              <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 99, background: "var(--paper-2)", color: catColor }}>
+                              <span style={{ fontSize: "var(--text-2xs)", fontWeight: 700, padding: "2px 8px", borderRadius: 99, background: "var(--paper-2)", color: catColor }}>
                                 {insight.category}
                               </span>
-                              <span style={{ fontSize: 10, color: T.muted }}>
+                              <span style={{ fontSize: "var(--text-2xs)", color: T.muted }}>
                                 {effortLabel}
                               </span>
-                              <span style={{ fontSize: 10, color: T.muted }}>·</span>
-                              <span style={{ fontSize: 10, color: T.muted }}>{insight.weekOf}</span>
+                              <span style={{ fontSize: "var(--text-2xs)", color: T.muted }}>·</span>
+                              <span style={{ fontSize: "var(--text-2xs)", color: T.muted }}>{insight.weekOf}</span>
                             </div>
 
                             <p style={{ fontSize: "var(--text-base)", fontWeight: 700, color: T.text, margin: "0 0 6px", lineHeight: 1.4 }}>

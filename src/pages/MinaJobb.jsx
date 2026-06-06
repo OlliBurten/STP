@@ -64,10 +64,10 @@ function Funnel({ pipeline }) {
             background: "var(--card-2)", border: "1px solid var(--line)",
             borderRadius: 9, padding: "9px 10px", textAlign: "center",
           }}>
-            <div style={{ fontSize: 17, fontWeight: 800, color: s.value > 0 ? "var(--ink-900)" : "var(--ink-300)", fontFamily: "var(--mono)", lineHeight: 1 }}>
+            <div style={{ fontSize: "var(--text-xl)", fontWeight: 800, color: s.value > 0 ? "var(--ink-900)" : "var(--ink-300)", fontFamily: "var(--mono)", lineHeight: 1 }}>
               {s.value}
             </div>
-            <div style={{ fontSize: 10, color: "var(--ink-500)", marginTop: 4, fontWeight: 600, letterSpacing: 0.2, textTransform: "uppercase" }}>
+            <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", marginTop: 4, fontWeight: 600, letterSpacing: 0.2, textTransform: "uppercase" }}>
               {s.label}
             </div>
           </div>
@@ -103,15 +103,15 @@ function AdCard({ job, pipeline, onPause, onClose }) {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 14, marginBottom: 16 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
-            <h3 style={{ fontSize: 17, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.3 }}>{job.title}</h3>
+            <h3 style={{ fontSize: "var(--text-xl)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.3 }}>{job.title}</h3>
             <span style={{ padding: "3px 9px", borderRadius: 99, background: meta.bg, color: meta.color, fontSize: "var(--text-2xs)", fontWeight: 700 }}>
               {meta.label}
             </span>
             {hot && (
-              <span style={{ padding: "3px 9px", borderRadius: 99, background: "var(--amber)", color: "#fff", fontSize: 10, fontWeight: 800, letterSpacing: 0.3 }}>HOT</span>
+              <span style={{ padding: "3px 9px", borderRadius: 99, background: "var(--amber)", color: "#fff", fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 0.3 }}>HOT</span>
             )}
             {lowTraffic && (
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 9px", borderRadius: 99, background: "var(--amber-tint-2)", color: "var(--amber-deep)", fontSize: 10, fontWeight: 800 }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 9px", borderRadius: 99, background: "var(--amber-tint-2)", color: "var(--amber-deep)", fontSize: "var(--text-2xs)", fontWeight: 800 }}>
                 <Icon n="alert" size={10} color="var(--amber-deep)" /> Behöver attention
               </span>
             )}
@@ -213,9 +213,9 @@ function MobileJobCard({ job, pipeline, navigate }) {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 8 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4, flexWrap: "wrap" }}>
-            <span style={{ padding: "2px 7px", borderRadius: 5, background: statusBg, color: statusColor, fontSize: 9.5, fontWeight: 800, letterSpacing: 0.3 }}>{statusLabel.toUpperCase()}</span>
-            {hot && <span style={{ padding: "2px 7px", borderRadius: 5, background: "var(--amber-tint)", color: "var(--amber-text)", fontSize: 9.5, fontWeight: 800 }}>HÖGT TRYCK</span>}
-            {lowTraffic && <span style={{ padding: "2px 7px", borderRadius: 5, background: "var(--danger-tint)", color: "var(--danger)", fontSize: 9.5, fontWeight: 800 }}>LÅGT INTRESSE</span>}
+            <span style={{ padding: "2px 7px", borderRadius: 5, background: statusBg, color: statusColor, fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 0.3 }}>{statusLabel.toUpperCase()}</span>
+            {hot && <span style={{ padding: "2px 7px", borderRadius: 5, background: "var(--amber-tint)", color: "var(--amber-text)", fontSize: "var(--text-2xs)", fontWeight: 800 }}>HÖGT TRYCK</span>}
+            {lowTraffic && <span style={{ padding: "2px 7px", borderRadius: 5, background: "var(--danger-tint)", color: "var(--danger)", fontSize: "var(--text-2xs)", fontWeight: 800 }}>LÅGT INTRESSE</span>}
           </div>
           <h3 style={{ fontSize: "var(--text-base)", fontWeight: 800, marginBottom: 4, lineHeight: 1.25 }}>{job.title}</h3>
           <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", display: "flex", gap: 7, alignItems: "center", flexWrap: "wrap" }}>
@@ -341,7 +341,7 @@ export default function MinaJobb() {
         <div style={{ background: "var(--paper)", borderBottom: "1px solid var(--line)", padding: "20px 20px 0", paddingTop: 68 }}>
           <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 10, marginBottom: 14 }}>
             <div>
-              <h1 style={{ fontSize: 26, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1, marginBottom: 4 }}>Annonser</h1>
+              <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1, marginBottom: 4 }}>Annonser</h1>
               <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)" }}>
                 {totalApplicants} kandidater
                 {totalNew > 0 && <span style={{ color: "var(--amber-deep)", fontWeight: 700 }}> · {totalNew} nya</span>}
@@ -364,7 +364,7 @@ export default function MinaJobb() {
                   display: "inline-flex", alignItems: "center", gap: 6,
                 }}>
                   {t.l}
-                  <span style={{ padding: "1px 7px", borderRadius: 999, background: isActive ? "var(--green-tint)" : "var(--paper-2)", color: isActive ? "var(--green-text)" : "var(--ink-500)", fontSize: 10, fontWeight: 800 }}>{t.c}</span>
+                  <span style={{ padding: "1px 7px", borderRadius: 999, background: isActive ? "var(--green-tint)" : "var(--paper-2)", color: isActive ? "var(--green-text)" : "var(--ink-500)", fontSize: "var(--text-2xs)", fontWeight: 800 }}>{t.c}</span>
                   {isActive && <span style={{ position: "absolute", left: 14, right: 14, bottom: -1, height: 3, background: "var(--green)", borderRadius: "3px 3px 0 0" }}/>}
                 </button>
               );

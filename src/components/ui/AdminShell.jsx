@@ -28,19 +28,19 @@ export const AdminShell = ({ active, onNav, title, sub, headerAction, children, 
       <div style={{ padding: "18px 20px", borderBottom: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", gap: 10 }}>
         <div style={{ width: 28, height: 28, borderRadius: 7, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--text-xs)" }}>S</div>
         <span style={{ fontWeight: 800, fontSize: "var(--text-md)", color: "#fff", letterSpacing: 0.5 }}>STP</span>
-        <span style={{ fontSize: 10, fontWeight: 800, color: "var(--amber)", letterSpacing: 1, textTransform: "uppercase", paddingLeft: 8, marginLeft: 2, borderLeft: "1px solid rgba(255,255,255,0.15)" }}>Admin</span>
+        <span style={{ fontSize: "var(--text-2xs)", fontWeight: 800, color: "var(--amber)", letterSpacing: 1, textTransform: "uppercase", paddingLeft: 8, marginLeft: 2, borderLeft: "1px solid rgba(255,255,255,0.15)" }}>Admin</span>
       </div>
       <nav style={{ flex: 1, overflowY: "auto", padding: "14px 12px" }}>
         {ADMIN_NAV.map((g) => (
           <div key={g.group} style={{ marginBottom: 18 }}>
-            <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "rgba(255,255,255,0.35)", padding: "0 10px 8px" }}>{g.group}</div>
+            <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "rgba(255,255,255,0.35)", padding: "0 10px 8px" }}>{g.group}</div>
             {g.items.map((it) => {
               const on = active === it.id;
               return (
                 <button key={it.id} onClick={() => onNav && onNav(it.id)} style={{ width: "100%", display: "flex", alignItems: "center", gap: 11, padding: "9px 10px", borderRadius: 8, marginBottom: 2, background: on ? "rgba(255,255,255,0.10)" : "transparent", color: on ? "#fff" : "rgba(255,255,255,0.65)", fontSize: "var(--text-sm)", fontWeight: on ? 700 : 500, textAlign: "left" }}>
                   <Icon name={it.icon} size={16} color={on ? "var(--amber)" : "rgba(255,255,255,0.5)"} stroke={2} />
                   <span style={{ flex: 1 }}>{it.label}</span>
-                  {it.badge && <span style={{ background: "var(--amber)", color: "#fff", fontSize: 10, fontWeight: 800, padding: "1px 6px", borderRadius: 8 }}>{it.badge}</span>}
+                  {it.badge && <span style={{ background: "var(--amber)", color: "#fff", fontSize: "var(--text-2xs)", fontWeight: 800, padding: "1px 6px", borderRadius: 8 }}>{it.badge}</span>}
                 </button>
               );
             })}

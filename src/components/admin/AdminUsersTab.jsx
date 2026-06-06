@@ -21,7 +21,7 @@ const FilterPill = ({ on, count, children, onClick, color }) => (
   }}>
     {children}
     {count !== undefined && (
-      <span style={{ padding: "1px 6px", borderRadius: 99, background: on ? `${color || "var(--amber)"}25` : "var(--line)", fontSize: 10, fontWeight: 800, ...mono }}>{count}</span>
+      <span style={{ padding: "1px 6px", borderRadius: 99, background: on ? `${color || "var(--amber)"}25` : "var(--line)", fontSize: "var(--text-2xs)", fontWeight: 800, ...mono }}>{count}</span>
     )}
   </button>
 );
@@ -41,7 +41,7 @@ function UsersHeader({ users, selectedCount, filter, setFilter, onExportCsv, onS
     <div style={{ padding: "22px 26px 14px" }}>
       <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 18, gap: 14 }}>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: -0.6, marginBottom: 3, color: "var(--ink-900)" }}>Användare</h1>
+          <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, letterSpacing: -0.6, marginBottom: 3, color: "var(--ink-900)" }}>Användare</h1>
           <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)" }}>{users.length} totalt · {selectedCount} valda</div>
         </div>
         <div style={{ display: "flex", gap: 7 }}>
@@ -81,7 +81,7 @@ function BulkBar({ count, onClear, onBulkSuspend }) {
 function TableHeader({ allSelected, onSelectAll, compact }) {
   const cols = compact ? "36px 1fr 78px 96px 80px 36px" : "40px 1fr 90px 100px 80px 100px 90px 40px";
   return (
-    <div style={{ display: "grid", gridTemplateColumns: cols, gap: 14, alignItems: "center", padding: "10px 18px", borderBottom: "1px solid var(--line)", borderLeft: "2px solid transparent", background: "var(--card)", fontSize: 10, fontWeight: 800, letterSpacing: 1.3, textTransform: "uppercase", color: "var(--ink-400)", position: "sticky", top: 0, zIndex: 5 }}>
+    <div style={{ display: "grid", gridTemplateColumns: cols, gap: 14, alignItems: "center", padding: "10px 18px", borderBottom: "1px solid var(--line)", borderLeft: "2px solid transparent", background: "var(--card)", fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.3, textTransform: "uppercase", color: "var(--ink-400)", position: "sticky", top: 0, zIndex: 5 }}>
       <div onClick={onSelectAll}>
         <div style={{ width: 18, height: 18, borderRadius: 5, border: `1.5px solid ${allSelected ? "var(--amber)" : "var(--line-2)"}`, background: allSelected ? "var(--amber)" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
           {allSelected && <Icon n="check" s={11} c="#fff" />}
@@ -142,13 +142,13 @@ function UserRow({ u, selected, isSelectedRow, onCheck, onSelect, compact }) {
       </div>
 
       <div>
-        <span style={{ padding: "3px 9px", borderRadius: 5, background: !isComp ? "var(--info-tint)" : "var(--amber-tint)", color: !isComp ? "var(--info)" : "var(--amber-text)", fontSize: 10, fontWeight: 800, letterSpacing: 0.4, ...mono }}>
+        <span style={{ padding: "3px 9px", borderRadius: 5, background: !isComp ? "var(--info-tint)" : "var(--amber-tint)", color: !isComp ? "var(--info)" : "var(--amber-text)", fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 0.4, ...mono }}>
           {isComp ? "COMPANY" : "DRIVER"}
         </span>
       </div>
 
       <div>
-        <span style={{ padding: "3px 9px", borderRadius: 5, background: statusBadge.bg, color: statusBadge.c, fontSize: 9.5, fontWeight: 800, letterSpacing: 0.4, ...mono }}>{statusBadge.l}</span>
+        <span style={{ padding: "3px 9px", borderRadius: 5, background: statusBadge.bg, color: statusBadge.c, fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 0.4, ...mono }}>{statusBadge.l}</span>
       </div>
 
       <div>
@@ -212,13 +212,13 @@ function DetailPanel({ u, detail, onClose, onVerify, onSuspend, onUnsuspend, onW
 
       <div style={{ padding: 20, borderBottom: "1px solid var(--line)" }}>
         <div style={{ display: "flex", alignItems: "flex-start", gap: 13, marginBottom: 14 }}>
-          <div style={{ width: 54, height: 54, borderRadius: 13, background: avatarBg, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 17, color: "#fff", flexShrink: 0 }}>{initials}</div>
+          <div style={{ width: 54, height: 54, borderRadius: 13, background: avatarBg, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "var(--text-xl)", color: "#fff", flexShrink: 0 }}>{initials}</div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: "var(--text-lg)", fontWeight: 800, marginBottom: 3, color: "var(--ink-900)" }}>{u.name || u.email}</div>
             <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.email}</div>
             <div style={{ display: "flex", gap: 5, marginTop: 6 }}>
-              <span style={{ padding: "2px 7px", borderRadius: 4, background: !isComp ? "var(--info-tint)" : "var(--amber-tint)", color: !isComp ? "var(--info)" : "var(--amber-text)", fontSize: 9.5, fontWeight: 800, letterSpacing: 0.4, ...mono }}>{isComp ? "COMPANY" : "DRIVER"}</span>
-              <span style={{ padding: "2px 7px", borderRadius: 4, background: statusBadge.bg, color: statusBadge.c, fontSize: 9.5, fontWeight: 800, letterSpacing: 0.4, ...mono }}>{statusBadge.l}</span>
+              <span style={{ padding: "2px 7px", borderRadius: 4, background: !isComp ? "var(--info-tint)" : "var(--amber-tint)", color: !isComp ? "var(--info)" : "var(--amber-text)", fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 0.4, ...mono }}>{isComp ? "COMPANY" : "DRIVER"}</span>
+              <span style={{ padding: "2px 7px", borderRadius: 4, background: statusBadge.bg, color: statusBadge.c, fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 0.4, ...mono }}>{statusBadge.l}</span>
             </div>
           </div>
         </div>
@@ -319,7 +319,7 @@ function DetailPanel({ u, detail, onClose, onVerify, onSuspend, onUnsuspend, onW
 // ─── Shared small components ───────────────────────────────────────────────────
 const StatBox = ({ label, value, color = "var(--ink-900)" }) => (
   <div style={{ padding: "10px 12px", background: "var(--paper-2)", borderRadius: 8 }}>
-    <div style={{ fontSize: 9.5, color: "var(--ink-400)", fontWeight: 700, letterSpacing: 0.3, marginBottom: 3 }}>{label}</div>
+    <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", fontWeight: 700, letterSpacing: 0.3, marginBottom: 3 }}>{label}</div>
     <div style={{ fontSize: "var(--text-xl)", fontWeight: 800, color, lineHeight: 1, ...mono }}>{value}</div>
   </div>
 );

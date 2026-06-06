@@ -118,7 +118,7 @@ export default function ReachOutModal({ driver, jobs, onClose, onSuccess }) {
           <div style={{ width: 40, height: 4, borderRadius: 99, background: "var(--line-2)", margin: "0 auto 20px" }} />
 
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-            <div style={{ fontSize: 17, fontWeight: 800, color: "var(--ink-900)" }}>Kontakta {driver.name}</div>
+            <div style={{ fontSize: "var(--text-xl)", fontWeight: 800, color: "var(--ink-900)" }}>Kontakta {driver.name}</div>
             <button type="button" onClick={onClose} style={{ width: 32, height: 32, borderRadius: 99, background: "var(--paper-2)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-400)" }}>
               <CloseIcon className="w-4 h-4" />
             </button>
