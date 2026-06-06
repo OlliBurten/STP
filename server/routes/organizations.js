@@ -138,8 +138,8 @@ organizationsRouter.get("/:id/members", async (req, res, next) => {
     res.json(members.map((m) => ({
       id: m.id,
       userId: m.userId,
-      name: m.user.name,
-      email: m.user.email,
+      name: m.user?.name ?? null,
+      email: m.user?.email ?? null,
       role: m.role,
       joinedAt: m.joinedAt?.toISOString() ?? null,
       isYou: m.userId === req.userId,
