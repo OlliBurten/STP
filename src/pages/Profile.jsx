@@ -668,11 +668,8 @@ export default function Profile() {
     return `${fmt(exp.startMonth, exp.startYear)} – ${fmt(exp.endMonth, exp.endYear)}`;
   };
 
-  if (hasApi && profileLoaded && profile.id === user?.id && !isAdmin && !isDriverMinimumProfileComplete(profile)) {
-    return <Navigate to="/onboarding/forare" replace />;
-  }
-
-  /* Profile score from backend, falling back to local calculation */
+  /* Profile score from backend, falling back to local calculation.
+     Hooks must run unconditionally → computed before any early return. */
   const backendScore = profile?.profileScore;
   const localScore = useMemo(() => {
     const checks = [
@@ -687,6 +684,10 @@ export default function Profile() {
     ];
     return Math.round(checks.filter(Boolean).length / checks.length * 100);
   }, [current]);
+
+  if (hasApi && profileLoaded && profile.id === user?.id && !isAdmin && !isDriverMinimumProfileComplete(profile)) {
+    return <Navigate to="/onboarding/forare" replace />;
+  }
   const displayScore = editing ? localScore : (backendScore != null ? backendScore : localScore);
 
   const completedSteps = onboardingSteps.filter((s) => s.done).length;

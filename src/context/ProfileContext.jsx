@@ -152,36 +152,15 @@ export function ProfileProvider({ children }) {
 
   const addExperience = (exp) => {
     const id = `exp-${Date.now()}`;
-    setProfile((prev) => {
-      const next = {
-        ...prev,
-        experience: [...(prev.experience || []), { ...exp, id }],
-      };
-      syncProfileIfApi(next);
-      return next;
-    });
+    updateProfile({ experience: [...(profile.experience || []), { ...exp, id }] });
   };
 
   const updateExperience = (id, updates) => {
-    setProfile((prev) => {
-      const next = {
-        ...prev,
-        experience: (prev.experience || []).map((e) => (e.id === id ? { ...e, ...updates } : e)),
-      };
-      syncProfileIfApi(next);
-      return next;
-    });
+    updateProfile({ experience: (profile.experience || []).map((e) => (e.id === id ? { ...e, ...updates } : e)) });
   };
 
   const removeExperience = (id) => {
-    setProfile((prev) => {
-      const next = {
-        ...prev,
-        experience: (prev.experience || []).filter((e) => e.id !== id),
-      };
-      syncProfileIfApi(next);
-      return next;
-    });
+    updateProfile({ experience: (profile.experience || []).filter((e) => e.id !== id) });
   };
 
   return (
