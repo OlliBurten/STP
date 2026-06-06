@@ -3,7 +3,7 @@
  * Shows STP logo, notification bell with panel, and user avatar.
  */
 import { useState, useEffect, useRef } from "react";
-import { useNavigate, useLocation, Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useChat } from "../context/ChatContext";
 import { fetchNotifications, markNotificationRead, markAllNotificationsRead } from "../api/notifications.js";
@@ -28,7 +28,6 @@ function notifDotColor(type) {
 
 export default function MobileHeader() {
   const navigate = useNavigate();
-  const { pathname } = useLocation();
   const { user, logout } = useAuth();
   const { unreadCount } = useChat();
 

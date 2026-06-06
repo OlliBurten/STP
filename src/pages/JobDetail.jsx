@@ -26,13 +26,6 @@ import { useConfirm } from "../components/ConfirmDialog";
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
-const AVATAR_PALETTE = ["#1F5F5C","#1a3a5c","#3a1a5c","#5c1a2a","#1a5c3a","#3a5c1a","#5c3a1a","#1a4a5c"];
-function avatarColor(name) {
-  if (!name) return AVATAR_PALETTE[0];
-  let h = 0;
-  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xffffffff;
-  return AVATAR_PALETTE[Math.abs(h) % AVATAR_PALETTE.length];
-}
 
 // ─── Sub-components ────────────────────────────────────────────────────────────
 
@@ -486,7 +479,6 @@ export default function JobDetail() {
       mPct >= 70 ? "var(--amber-tint)"   : "var(--paper-2)";
     const reqMet   = (profile ? (job.license || []).filter((l) => profile.licenses?.includes(l)).length : 0) + (profile ? (job.certificates || []).filter((c) => profile.certificates?.includes(c)).length : 0);
     const reqTotal = (job.license || []).length + (job.certificates || []).length;
-    const r = 22; const circ = 2 * Math.PI * r;
 
     return (
       <div style={{ background: "var(--paper)", minHeight: "100vh", color: "var(--ink-900)", display: "flex", flexDirection: "column" }}>

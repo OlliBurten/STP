@@ -34,7 +34,7 @@ export default function CompanyBottomNav({ unreadCount = 0 }) {
       display: "flex", justifyContent: "space-around",
       zIndex: 50,
     }}>
-      {TABS.map(({ id, label, Icon, to }) => {
+      {TABS.map(({ id, label, to }) => {
         const on = isActive({ id }, pathname);
         return (
           <button

@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { useAuth } from "../context/AuthContext";
 import { useChat } from "../context/ChatContext";
 import { fetchJob, fetchJobApplicants, fetchJobStats, updateJob } from "../api/jobs.js";
-import { useIsMobile } from "../hooks/useIsMobile";
 import { useConfirm } from "../components/ConfirmDialog";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -145,9 +144,7 @@ function KanbanCard({ a }) {
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 export default function CompanyJobDetail() {
-  const isMobile = useIsMobile();
   const { id } = useParams();
-  const navigate = useNavigate();
   const confirm = useConfirm();
   const { hasApi } = useAuth();
   const { conversations = [] } = useChat();
@@ -156,7 +153,7 @@ export default function CompanyJobDetail() {
   const [applicants, setApplicants] = useState([]);
   const [stats, setStats]           = useState(null);
   const [loading, setLoading]       = useState(true);
-  const [overrides, setOverrides]   = useState({});
+  const [overrides] = useState({});
   const [showRejected, setShowRejected] = useState(false);
 
   usePageTitle(job?.title ? `Kandidater – ${job.title}` : "Kandidater");

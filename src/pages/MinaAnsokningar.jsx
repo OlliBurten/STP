@@ -139,7 +139,6 @@ function AppCard({ conv }) {
   const stage = getStage(conv);
   const lastMsg = conv.messages?.[conv.messages.length - 1];
   const hasUnread = !conv.readByDriverAt && lastMsg?.sender !== "driver" && !!lastMsg;
-  const rejectReason = conv.rejectedByCompanyAt && !lastMsg ? null : null; // not in API yet
 
   return (
     <div style={{

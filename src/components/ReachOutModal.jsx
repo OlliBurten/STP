@@ -16,7 +16,7 @@ export default function ReachOutModal({ driver, jobs, onClose, onSuccess }) {
   const { profile } = useProfile();
   const [mode, setMode] = useState("general");
   const [selectedJobId, setSelectedJobId] = useState("");
-  const [companyName, setCompanyName] = useState(user?.companyName || "");
+  const [companyName] = useState(user?.companyName || "");
   const [message, setMessage] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [conversationId, setConversationId] = useState(null);

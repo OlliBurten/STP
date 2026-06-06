@@ -803,7 +803,7 @@ function CompanyKontoSection({ user }) {
 // ─── Company Praktik toggle ────────────────────────────────────────────────────
 function PraktikToggleCard() {
   const [accepts, setAccepts] = useState(null);
-  const [saving, setSaving] = useState(false);
+  const [, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
@@ -893,7 +893,7 @@ export default function Settings() {
   const [searchParams] = useSearchParams();
   const [section, setSection] = useState(searchParams.get("tab") || "konto");
   const [notifSettings, setNotifSettings] = useState({});
-  const [notifSaving, setNotifSaving] = useState(false);
+  const [, setNotifSaving] = useState(false);
   const [settingsLoading, setSettingsLoading] = useState(true);
 
   useEffect(() => {

@@ -262,7 +262,7 @@ function UserMenu({ user, isCompany, onClose, onLogout }) {
 
 /* ─── Main component ──────────────────────────────────────────────────────── */
 export default function AppTopNav() {
-  const { user, isDriver, isCompany, isImpersonating, logout, stopViewAs } = useAuth();
+  const { user, isCompany, isImpersonating, logout, stopViewAs } = useAuth();
   const { unreadCount = 0, companyUnreadConversationCount = 0 } = useChat();
   const navigate = useNavigate();
   const location = useLocation();

@@ -9,7 +9,6 @@ import { fetchDriver, trackDriverProfileView, fetchDriverReviews } from "../api/
 import { track } from "../utils/posthog.js";
 import { fetchMyJobs } from "../api/jobs.js";
 import { fetchDriverSummary } from "../api/ai.js";
-import { matchScore, getMatchCriteria } from "../utils/matchUtils.js";
 import PageMeta from "../components/PageMeta";
 import DriverProfileView from "../components/DriverProfileView.jsx";
 
@@ -19,20 +18,6 @@ function driverColor(driver) {
   let h = 0;
   for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
   return colors[h % colors.length];
-}
-
-function matchColor(pct) {
-  if (pct >= 85) return "var(--success)";
-  if (pct >= 70) return "var(--amber)";
-  if (pct >= 55) return "var(--info)";
-  return "var(--ink-400)";
-}
-
-function matchLabel(pct) {
-  if (pct >= 85) return "Stark match";
-  if (pct >= 70) return "Bra match";
-  if (pct >= 55) return "Delvis match";
-  return "Svag match";
 }
 
 const CheckIcon = () => (
@@ -139,9 +124,6 @@ export default function DriverDetail() {
   const driver = apiDriver || null;
 
   const selectedJob = apiJobs.find((j) => j.id === matchJobId) || null;
-  const matchResult = driver && selectedJob ? matchScore(driver, selectedJob) : null;
-  const pct = matchResult?.pct ?? null;
-  const criteria = driver && selectedJob && matchResult ? getMatchCriteria(driver, selectedJob, matchResult.details) : [];
 
   const availabilityLabel = driver
     ? availabilityTypes.find((a) => a.value === driver.availability)?.label || driver.availability

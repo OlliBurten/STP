@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { mockJobs } from "../data/mockJobs";
 import JobCard from "../components/JobCard";
@@ -14,7 +14,7 @@ import { mapEmploymentToSegment } from "../data/segments";
 import PageMeta from "../components/PageMeta";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { useDriverTour } from "../hooks/useDriverTour";
-import { getProfileCompletion, getDriverMinimumChecklist } from "../utils/driverProfileRequirements";
+import { getProfileCompletion } from "../utils/driverProfileRequirements";
 import SwedenJobMap from "../components/SwedenJobMap";
 import { LAYOUT } from "../components/ui/layout.jsx";
 
@@ -258,7 +258,6 @@ function Sidebar({ profile }) {
 export default function JobList() {
   usePageTitle("Lediga chaufförsjobb");
   const isMobile = useIsMobile();
-  const navigate = useNavigate();
   const { isDriver, hasApi, user } = useAuth();
   const { profile } = useProfile();
 
@@ -384,7 +383,6 @@ export default function JobList() {
 
 
   const profileCompletion  = useMemo(() => (isDriver && profile) ? getProfileCompletion({ ...user, driverProfile: profile }) : null, [isDriver, user, profile]);
-  const profileMissingItems = useMemo(() => (isDriver && profile) ? getDriverMinimumChecklist(profile).filter(i => !i.done).map(i => i.label) : [], [isDriver, profile]);
   const showProfileBanner  = isDriver && !jobsLoading && !bannerDismissed && profileCompletion && profileCompletion.pct < 80;
 
   const recommendedCount = useMemo(() => filteredJobs.filter(j => (matchDataMap[j.id]?.pct ?? 0) >= 80).length, [filteredJobs, matchDataMap]);
@@ -402,7 +400,6 @@ export default function JobList() {
     return null;
   }, [tab, filteredJobs, matchDataMap, savedJobIds]);
 
-  const activeDrawerCount = ["region","license","segment","jobType","employment","bransch","minSalary"].filter(k => filters[k]).length;
   const activeMobileFilterCount = Object.values(mobileFilters).filter(Boolean).length;
 
   const mobileJobs = useMemo(() => {

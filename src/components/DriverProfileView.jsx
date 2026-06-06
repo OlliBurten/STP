@@ -412,7 +412,6 @@ export default function DriverProfileView({
   mode = "public",
   job = null,
   onEdit,
-  onSave,
   reviews = [],
   // self-mode extras:
   editing = false,

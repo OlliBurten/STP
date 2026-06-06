@@ -66,10 +66,6 @@ function employmentLabel(e) {
   return m[e] || e;
 }
 
-function segmentLabel(seg) {
-  const m = { FULLTIME: "Heltid", FLEX: "Flextid", INTERNSHIP: "Praktik", PARTTIME: "Deltid" };
-  return m[seg] || seg;
-}
 
 function Stars({ rating, size = 12 }) {
   return (

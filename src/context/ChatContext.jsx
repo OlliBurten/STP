@@ -158,7 +158,7 @@ export function ChatProvider({ children }) {
   );
 
   const getOrCreateConversation = useCallback(
-    ({ driverId, driverName, companyName, jobId, jobTitle }) => {
+    ({ driverId, companyName, jobId }) => {
       const existing = list.find(
         (c) =>
           c.driverId === driverId &&

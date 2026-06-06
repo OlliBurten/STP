@@ -18,7 +18,7 @@ function scoreColor(score) {
 }
 
 
-export default function DriverCard({ driver, matchScore = null, matchPct = null, matchCriteria = [], matchHighlights = [], isContacted = false }) {
+export default function DriverCard({ driver, matchScore = null, matchPct = null, matchCriteria = [], isContacted = false }) {
   const availabilityLabel = availabilityTypes.find((a) => a.value === driver.availability)?.label || driver.availability;
   const effectivePct = matchPct ?? (matchScore != null ? matchScore : null);
   const quality = effectivePct != null && effectivePct > 0 ? matchQuality(effectivePct) : null;

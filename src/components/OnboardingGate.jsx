@@ -7,10 +7,6 @@ import { isDriverMinimumProfileComplete } from "../utils/driverProfileRequiremen
 export function useOnboardingRequired() {
   const { user, isDriver, isCompany, isAdmin } = useAuth();
   const { profile, profileLoaded } = useProfile();
-  const isCompanyMember = Boolean(user?.companyOwnerId && user.companyOwnerId !== user?.id);
-  const hasSegments =
-    Array.isArray(user?.companySegmentDefaults) && user.companySegmentDefaults.length > 0;
-  const hasOrganizationContext = Boolean(user?.organizationId || user?.companyOwnerId);
 
   if (!user) return false;
   if (isAdmin) return false;
@@ -31,14 +27,10 @@ const SKIP_PATHS = [
 
 /** Redirecterar inloggade användare till onboarding om de inte fyllt i obligatoriska fält. */
 export default function OnboardingGate({ children }) {
-  const { user, isDriver, isCompany, isAdmin } = useAuth();
+  const { user, isDriver, isAdmin } = useAuth();
   const { profile, profileLoaded } = useProfile();
   const location = useLocation();
   const path = location.pathname;
-  const isCompanyMember = Boolean(user?.companyOwnerId && user.companyOwnerId !== user?.id);
-  const hasSegments =
-    Array.isArray(user?.companySegmentDefaults) && user.companySegmentDefaults.length > 0;
-  const hasOrganizationContext = Boolean(user?.organizationId || user?.companyOwnerId);
 
   if (!user) return children;
   if (isAdmin) return children;

@@ -17,7 +17,7 @@ export default function OAuthProviders({ children }) {
       import("@azure/msal-react"),
       import("@azure/msal-browser"),
       import("../lib/msalConfig.js"),
-    ]).then(([{ MsalProvider }, { PublicClientApplication }, { msalConfig }]) => {
+    ]).then(([, { PublicClientApplication }, { msalConfig }]) => {
       try {
         const instance = new PublicClientApplication(msalConfig());
         // Store as a render function to avoid React treating it as a state updater

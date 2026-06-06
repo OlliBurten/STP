@@ -69,11 +69,6 @@ function companyInitials(name) {
   return name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
 }
 
-function fmtSalary(n) {
-  if (!n || n <= 0) return "–";
-  return `${Math.round(n / 1000)}k`;
-}
-
 // ── CompanyGridCard ──────────────────────────────────────────────────────────
 
 function CompanyGridCard({ c, user, saved, onToggleSave }) {
@@ -293,8 +288,7 @@ export default function AkerierSearch() {
   const [bransch, setBransch] = useState("");
   const [region, setRegion] = useState("");
   const [search, setSearch] = useState("");
-  const [viewMode, setViewMode] = useState("grid");
-  const [sort, setSort] = useState("jobs");
+  const [sort] = useState("jobs");
   const [onlyWithJobs, setOnlyWithJobs] = useState(false);
   const [onlyPraktik, setOnlyPraktik] = useState(() => searchParams.get("praktik") === "true");
   const [list, setList] = useState([]);

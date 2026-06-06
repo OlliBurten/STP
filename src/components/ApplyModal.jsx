@@ -7,7 +7,7 @@ import { CloseIcon, CheckIcon } from "./Icons";
 import { suggestMessage } from "../api/ai.js";
 import { useEscapeKey } from "../hooks/useEscapeKey";
 
-export default function ApplyModal({ job, onClose, onSuccess }) {
+export default function ApplyModal({ job, onClose }) {
   useEscapeKey(onClose);
   const { user } = useAuth();
   const { profile } = useProfile();

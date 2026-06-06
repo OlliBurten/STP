@@ -2,8 +2,6 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { fetchPublicDriver, trackDriverProfileView, fetchPublicDriverReviews } from "../api/drivers.js";
-import { availabilityTypes, getCertificateLabel } from "../data/profileData";
-import { segmentLabel } from "../data/segments";
 import { LocationIcon } from "../components/Icons";
 import PageMeta from "../components/PageMeta";
 import DriverProfileView from "../components/DriverProfileView.jsx";
@@ -27,11 +25,6 @@ const EXP_JOB_TYPES = [
   { value: "natt", label: "Nattransport" },
 ];
 
-function formatYearRange(exp) {
-  if (exp.current) return `${exp.startYear || "?"} – nu`;
-  return `${exp.startYear || "?"} – ${exp.endYear || "?"}`;
-}
-
 function StatBlock({ label, value, accent }) {
   return (
     <div style={{
@@ -52,7 +45,6 @@ export default function PublicDriverProfile() {
   const [driver, setDriver] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [shared, setShared] = useState(false);
   const [driverReviews, setDriverReviews] = useState([]);
 
   useEffect(() => {
@@ -69,18 +61,6 @@ export default function PublicDriverProfile() {
     if (!id || !isCompany || user?.id === id) return;
     trackDriverProfileView(id).catch(() => {});
   }, [id, isCompany, user?.id]);
-
-  const handleShare = async () => {
-    const url = window.location.href;
-    const title = `${driver?.name} – Förare på STP`;
-    if (navigator.share) {
-      try { await navigator.share({ title, url }); } catch {}
-    } else {
-      await navigator.clipboard.writeText(url);
-      setShared(true);
-      setTimeout(() => setShared(false), 2000);
-    }
-  };
 
   if (loading) {
     return (

@@ -134,7 +134,6 @@ export default function OAuthButtons({
   requiredRole,
   fromPath,
   authMode = "login",
-  promptText,
 }) {
   const [needRole, setNeedRole] = useState(null);
   const [backendReachable, setBackendReachable] = useState(null);

@@ -403,7 +403,6 @@ function TeamTab({ isOwner, invites, setInvites, toast }) {
 }
 
 function PasswordSection() {
-  const toast = useToast();
   const [pwForm, setPwForm] = useState({ current: "", next: "", confirm: "" });
   const [pwError, setPwError] = useState("");
   const [pwSuccess, setPwSuccess] = useState("");

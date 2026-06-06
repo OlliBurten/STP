@@ -18,7 +18,7 @@ function SectionHeader({ title, sub, action }) {
 }
 
 // ─── Metric card with sparkline ────────────────────────────────────────────────
-function Metric({ label, value, delta, trend, color = "var(--amber)" }) {
+function Metric({ label, value, delta, trend }) {
   const positive = delta && (delta.startsWith("+") || (!delta.startsWith("−") && !delta.startsWith("-")));
   return (
     <div style={{ padding: "16px 18px", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12 }}>
