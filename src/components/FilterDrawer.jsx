@@ -1,3 +1,4 @@
+import { useEscapeKey } from "../hooks/useEscapeKey";
 import { jobTypes, employmentTypes, licenseTypes, regions } from "../data/mockJobs";
 import { segmentOptions } from "../data/segments";
 import { transportSegmentGroups } from "../data/bransch.js";
@@ -39,6 +40,7 @@ function Field({ label, children }) {
 }
 
 export default function FilterDrawer({ open, filters, onChange: setFilters, onClose }) {
+  useEscapeKey(onClose, open);
   if (!open) return null;
   const handleChange = (key, value) => setFilters((f) => ({ ...f, [key]: value }));
 

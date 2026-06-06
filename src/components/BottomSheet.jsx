@@ -6,8 +6,10 @@
  *   </BottomSheet>
  */
 import { useEffect } from "react";
+import { useEscapeKey } from "../hooks/useEscapeKey";
 
 export default function BottomSheet({ open, onClose, title, children, footerLeft, footerRight }) {
+  useEscapeKey(onClose, open);
   // Lock body scroll when open
   useEffect(() => {
     if (open) {

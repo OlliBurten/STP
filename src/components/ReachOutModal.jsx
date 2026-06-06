@@ -6,8 +6,10 @@ import { useProfile } from "../context/ProfileContext";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { CloseIcon, CheckIcon } from "./Icons";
 import { suggestMessage } from "../api/ai.js";
+import { useEscapeKey } from "../hooks/useEscapeKey";
 
 export default function ReachOutModal({ driver, jobs, onClose, onSuccess }) {
+  useEscapeKey(onClose);
   const isMobile = useIsMobile();
   const { user } = useAuth();
   const { createConversation } = useChat();

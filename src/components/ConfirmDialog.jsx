@@ -8,6 +8,7 @@
  */
 import { createContext, useCallback, useContext, useState } from "react";
 import { Button, Icon } from "./ui";
+import { useEscapeKey } from "../hooks/useEscapeKey";
 
 const ConfirmContext = createContext(null);
 
@@ -25,6 +26,7 @@ function Dialog({ opts, onResolve }) {
 
   const cancel = () => onResolve(false);
   const ok = () => { if (canConfirm) onResolve(opts.note ? (note.trim() || true) : true); };
+  useEscapeKey(cancel);
 
   return (
     <div

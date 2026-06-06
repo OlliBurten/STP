@@ -5,8 +5,10 @@ import { useProfile } from "../context/ProfileContext";
 import { useChat } from "../context/ChatContext";
 import { CloseIcon, CheckIcon } from "./Icons";
 import { suggestMessage } from "../api/ai.js";
+import { useEscapeKey } from "../hooks/useEscapeKey";
 
 export default function ApplyModal({ job, onClose, onSuccess }) {
+  useEscapeKey(onClose);
   const { user } = useAuth();
   const { profile } = useProfile();
   const { createConversation } = useChat();
