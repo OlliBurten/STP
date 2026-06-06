@@ -208,7 +208,7 @@ ${text}`,
 
   let companies = [];
   try {
-    const raw = message.content[0].text.trim();
+    const raw = (message.content?.[0]?.text ?? '').trim();
     const match = raw.match(/\[[\s\S]*\]/);
     if (match) companies = JSON.parse(match[0]);
   } catch (_) {}
@@ -347,7 +347,7 @@ Format:
     }],
   });
 
-  const raw = message.content[0].text.trim();
+  const raw = (message.content?.[0]?.text ?? '').trim();
   const subjectMatch = raw.match(/ÄMNE:\s*(.+)/);
   const bodyMatch = raw.match(/---\n([\s\S]+)/);
 
@@ -497,7 +497,7 @@ Format:
         }],
       });
 
-      const raw = message.content[0].text.trim();
+      const raw = (message.content?.[0]?.text ?? '').trim();
       const subjectMatch = raw.match(/ÄMNE:\s*(.+)/);
       const bodyMatch = raw.match(/---\n([\s\S]+)/);
       const subject = subjectMatch?.[1]?.trim() || "Kort uppföljning – Sveriges Transportplattform";

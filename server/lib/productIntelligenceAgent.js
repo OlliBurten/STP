@@ -228,7 +228,7 @@ Returnera BARA JSON-arrayen.`;
     messages: [{ role: "user", content: prompt }],
   });
 
-  const raw = message.content[0].text.trim();
+  const raw = (message.content?.[0]?.text ?? '').trim();
   const match = raw.match(/\[[\s\S]*\]/);
   if (!match) throw new Error("Claude returnerade inte valid JSON");
 

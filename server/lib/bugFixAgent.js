@@ -232,7 +232,7 @@ FIX: [vad du ändrade, 1 mening]
     }],
   });
 
-  const response = message.content[0].text.trim();
+  const response = (message.content?.[0]?.text ?? '').trim();
 
   const confident = response.match(/SÄKER:\s*(JA|NEJ)/i)?.[1]?.toUpperCase();
   const explanation = response.match(/FÖRKLARING:\s*(.+)/i)?.[1]?.trim() || "";

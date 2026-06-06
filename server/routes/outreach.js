@@ -184,7 +184,7 @@ ${text}`,
 
     let companies = [];
     try {
-      const raw = message.content[0].text.trim();
+      const raw = (message.content?.[0]?.text ?? '').trim();
       const match = raw.match(/\[[\s\S]*\]/);
       if (match) companies = JSON.parse(match[0]);
     } catch (_) {
@@ -241,7 +241,7 @@ ${text}`,
 
     let contact = { email: null, phone: null };
     try {
-      const raw = message.content[0].text.trim();
+      const raw = (message.content?.[0]?.text ?? '').trim();
       const match = raw.match(/\{[\s\S]*?\}/);
       if (match) contact = JSON.parse(match[0]);
     } catch (_) {}
@@ -314,7 +314,7 @@ Format (exakt):
       }],
     });
 
-    const raw = message.content[0].text.trim();
+    const raw = (message.content?.[0]?.text ?? '').trim();
     const subjectMatch = raw.match(/ÄMNE:\s*(.+)/);
     const bodyMatch = raw.match(/---\n([\s\S]+)/);
 

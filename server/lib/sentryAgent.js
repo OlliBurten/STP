@@ -76,7 +76,7 @@ TROLIG ORSAK: [vad är sannolikt fel]
       throw e;
     }
 
-    const analysis = message.content[0].text.trim();
+    const analysis = (message.content?.[0]?.text ?? '').trim();
     const severityMatch = analysis.match(/ALLVARLIGHET:\s*(CRITICAL|WARNING|INFO)/i);
     const severity = severityMatch?.[1]?.toUpperCase() || "WARNING";
 
