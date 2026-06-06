@@ -24,7 +24,7 @@ webhooksRouter.post("/sentry", async (req, res) => {
   }
 
   handleSentryEvent(req.body).catch((e) =>
-    console.error("[SentryWebhook] Fel:", e.message)
+    console.error("[SentryWebhook] Fel:", e?.message || String(e))
   );
 });
 
@@ -36,6 +36,6 @@ webhooksRouter.post("/sentry/process-backlog", authMiddleware, requireAdmin, asy
   res.json({ ok: true, message: "Backlog-processing startad, kör i bakgrunden" });
 
   processBacklog().catch((e) =>
-    console.error("[SentryWebhook] Backlog-fel:", e.message)
+    console.error("[SentryWebhook] Backlog-fel:", e?.message || String(e))
   );
 });

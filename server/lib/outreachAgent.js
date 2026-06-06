@@ -162,7 +162,7 @@ async function _scrapeHittaHtmlFallback(region, query) {
     });
     html = await resp.text();
   } catch (e) {
-    throw new Error(`Hitta.se ej nåbar för ${region}: ${e.message}`);
+    throw new Error(`Hitta.se ej nåbar för ${region}: ${e?.message || String(e)}`);
   }
 
   if (!html || html.length < 500) {
@@ -608,9 +608,9 @@ export async function runOutreachAgent({ dryRun = false, regions: overrideRegion
           console.log(`[OutreachAgent] ${region}: +${imported} imp, +${enriched} enr, +${generated} gen, +${sent} sent`);
         }
       } catch (e) {
-        const msg = `${region}: ${e.message}`;
+        const msg = `${region}: ${e?.message || String(e)}`;
         stats.errors.push(msg);
-        console.error(`[OutreachAgent] Fel för ${region}:`, e.message);
+        console.error(`[OutreachAgent] Fel för ${region}:`, e?.message || String(e));
       }
 
       await delay(5000); // 5s between regions
@@ -624,8 +624,8 @@ export async function runOutreachAgent({ dryRun = false, regions: overrideRegion
     }
 
   } catch (e) {
-    stats.errors.push(`Kritiskt fel: ${e.message}`);
-    console.error("[OutreachAgent] Kritiskt fel:", e.message);
+    stats.errors.push(`Kritiskt fel: ${e?.message || String(e)}`);
+    console.error("[OutreachAgent] Kritiskt fel:", e?.message || String(e));
   } finally {
     if (!dryRun) {
       await sendAgentReport(stats);

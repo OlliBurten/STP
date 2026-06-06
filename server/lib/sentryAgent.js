@@ -104,7 +104,7 @@ ${url ? `URL: ${url}` : ""}`;
 
     for (const to of adminEmails) {
       await sendEmail({ to, subject, text: body }).catch((e) =>
-        console.error("[SentryAgent] Kunde inte skicka mail:", e.message)
+        console.error("[SentryAgent] Kunde inte skicka mail:", e?.message || String(e))
       );
     }
 
@@ -118,13 +118,13 @@ ${url ? `URL: ${url}` : ""}`;
         } else {
           console.log(`[SentryAgent] Auto-fix skippat: ${result.reason}`);
         }
-      }).catch((e) => console.error("[SentryAgent] BugFixAgent fel:", e.message));
+      }).catch((e) => console.error("[SentryAgent] BugFixAgent fel:", e?.message || String(e)));
     }
 
     return { severity, emailSent: true };
   } catch (e) {
-    console.error("[SentryAgent] Fel:", e.message);
-    return { severity: "ERROR", error: e.message };
+    console.error("[SentryAgent] Fel:", e?.message || String(e));
+    return { severity: "ERROR", error: e?.message || String(e) };
   }
 }
 
