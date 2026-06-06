@@ -74,7 +74,7 @@ export default function About() {
 
         {/* Story */}
         <div style={{ maxWidth: 680 }}>
-          <h2 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.6, marginBottom: 16 }}>Vår historia</h2>
+          <h2 style={{ fontSize: "var(--text-4xl)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.6, marginBottom: 16 }}>Vår historia</h2>
           <p style={{ fontSize: "var(--text-xl)", color: "var(--ink-700)", lineHeight: 1.75, marginBottom: 18 }}>
             När man söker "lastbilsjobb" på Google landar man direkt på Indeed och generiska plattformar byggda för alla branscher, inte för transport. De vet inte skillnaden på ett CE-körkort och ett C, och bryr sig inte om YKB eller ADR.
           </p>
@@ -91,7 +91,7 @@ export default function About() {
       <div style={{ background: "var(--paper-2)", borderTop: "1px solid var(--line)", borderBottom: "1px solid var(--line)", padding: "64px 0" }}>
         <div style={{ maxWidth: "var(--w-public)", margin: "0 auto", padding: "0 32px" }}>
           <p style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: "var(--green-text)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 12 }}>Vad vi tror på</p>
-          <h2 style={{ fontSize: 30, fontWeight: 900, letterSpacing: -0.8, color: "var(--ink-900)", marginBottom: 28 }}>Principer vi bygger efter</h2>
+          <h2 style={{ fontSize: "var(--text-4xl)", fontWeight: 900, letterSpacing: -0.8, color: "var(--ink-900)", marginBottom: 28 }}>Principer vi bygger efter</h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
             {VALUES.map(({ title, text }) => (
               <div key={title} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "28px 24px" }}>
