@@ -26,10 +26,26 @@
 import { Icon, TopNav, PageShell } from "./index.jsx";
 
 export const LAYOUT = {
-  WIDE: 1240,
-  READ: 1040,
+  WIDE: 1240,    // = --w-app (inloggade app-sidor)
+  PUBLIC: 1200,  // = --w-public (utloggade marknads-/innehållssidor)
+  READ: 1040,    // = --w-read (tät läs-/app-bredd)
+  PROSE: 680,    // = --w-prose (artikel-/långtextkolumn)
+  FORM: 560,     // = --w-form (centrerade formulär)
   PAD: 32,
   GAP: 18,
+};
+
+/* Typskala (px) — speglar CSS-tokens --text-* för JS/inline-style-konsumenter.
+   Föredra CSS-varianten ("var(--text-sm)") i inline styles; importera dessa
+   bara när ett numeriskt värde behövs (beräkningar, clamp-baser). */
+export const TYPE = {
+  "2xs": 11, xs: 12, sm: 13, base: 14, md: 15, lg: 16,
+  xl: 18, "2xl": 20, "3xl": 24, "4xl": 28, "5xl": 34, "6xl": 40,
+};
+
+/* Spacing-skala (px, 4px-bas) — speglar --space-* */
+export const SPACE = {
+  1: 4, 2: 8, 3: 12, 4: 16, 5: 20, 6: 24, 7: 28, 8: 32, 10: 40, 12: 48, 16: 64, 20: 80,
 };
 
 const widthOf = (w) => (w === "read" ? LAYOUT.READ : LAYOUT.WIDE);

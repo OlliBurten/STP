@@ -64,6 +64,45 @@
   --r-md: 11px;
   --r-lg: 14px;
 
+  /* ── Typskala ──────────────────────────────────────────────────────────────
+     En källa för alla typsnittsstorlekar. Halvsteg (12.5/13.5/14.5…) snäpps till
+     närmaste rena steg. Display/hero-storlekar använder clamp() lokalt. */
+  --text-2xs:  11px;  /* 9–11.5 → 11   — pyttiga etiketter, eyebrows, badges */
+  --text-xs:   12px;  /* 12, 12.5 → 12 — meta, captions, taggar */
+  --text-sm:   13px;  /* 13, 13.5 → 13 — sekundär brödtext, knapptext (sm) */
+  --text-base: 14px;  /* 14, 14.5 → 14 — standard brödtext */
+  --text-md:   15px;  /* 15, 15.5 → 15 — betonad brödtext, små leads */
+  --text-lg:   16px;  /* 16, 16.5 → 16 — lead, kortrubriker */
+  --text-xl:   18px;  /* 17–19 → 18    — sektions-underrubriker */
+  --text-2xl:  20px;  /* 20, 21 → 20   — h4 / stora kortrubriker */
+  --text-3xl:  24px;  /* 22, 24, 26 → 24 — h3 */
+  --text-4xl:  28px;  /* 28, 30 → 28   — h2 */
+  --text-5xl:  34px;  /* 32, 34 → 34   — sidtitlar */
+  --text-6xl:  40px;  /* 36–40 → 40    — display (icke-hero) */
+
+  /* ── Spacing-skala (4px-bas) ──────────────────────────────────────────────── */
+  --space-1:   4px;
+  --space-2:   8px;
+  --space-3:   12px;
+  --space-4:   16px;
+  --space-5:   20px;
+  --space-6:   24px;
+  --space-7:   28px;
+  --space-8:   32px;
+  --space-10:  40px;
+  --space-12:  48px;
+  --space-16:  64px;
+  --space-20:  80px;
+
+  /* ── Innehållsbredder ──────────────────────────────────────────────────────
+     Slut på bredd-drift: varje sida väljer EN av dessa. */
+  --w-app:    1240px;  /* inloggade app-sidor (matchar LAYOUT.WIDE) */
+  --w-public: 1200px;  /* utloggade marknads-/innehållssidor */
+  --w-read:   1040px;  /* tät läs-/app-bredd (matchar LAYOUT.READ) */
+  --w-prose:   680px;  /* artikel-/långtextkolumn */
+  --w-form:    560px;  /* centrerade formulär / smalt innehåll */
+  --pad-x:      32px;  /* standard horisontell sid-padding */
+
   /* Legacy aliases — behålls tills alla sidor är migrerade */
   --color-primary:       var(--green);
   --color-primary-light: var(--green-soft);
