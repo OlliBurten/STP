@@ -43,7 +43,7 @@ SAMMANFATTNING: [max 15 ord — vad vill användaren]
       }],
     });
 
-    const analysis = analysisMsg.content[0].text.trim();
+    const analysis = (analysisMsg.content?.[0]?.text ?? '').trim();
     const priority = analysis.match(/PRIORITET:\s*(HIGH|MEDIUM|LOW)/i)?.[1]?.toUpperCase() || "MEDIUM";
     const category = analysis.match(/KATEGORI:\s*(\w+)/i)?.[1]?.toUpperCase() || "ÖVRIGT";
     const summary = analysis.match(/SAMMANFATTNING:\s*(.+)/i)?.[1]?.trim() || "";
@@ -74,7 +74,7 @@ Regler:
 - Skriv BARA svaret, ingen hälsning (den läggs till automatiskt), ingen signatur`,
         }],
       });
-      autoReply = replyMsg.content[0].text.trim();
+      autoReply = (replyMsg.content?.[0]?.text ?? '').trim();
     }
 
     await prisma.feedback.update({
@@ -105,12 +105,12 @@ Regler:
 
         console.log(`[FeedbackAgent] Auto-svar skickat till ${feedback.senderEmail}`);
       } catch (e) {
-        console.error("[FeedbackAgent] Kunde inte skicka auto-svar:", e.message);
+        console.error("[FeedbackAgent] Kunde inte skicka auto-svar:", e?.message || String(e));
       }
     }
 
     console.log(`[FeedbackAgent] Feedback ${feedbackId} analyserad — ${priority} / ${category}: ${summary}`);
   } catch (e) {
-    console.error("[FeedbackAgent] Fel vid analys av feedback:", e.message);
+    console.error("[FeedbackAgent] Fel vid analys av feedback:", e?.message || String(e));
   }
 }
