@@ -12,7 +12,7 @@ function toParagraphs(text) {
  * @param {string} [params.devInviteUrl] – Om satt och e-post inte skickas: loggas hela URL:en (för teaminbjudan i dev).
  * @returns {Promise<boolean>} true if email was sent via provider, false if only logged (not sent).
  */
-export async function sendEmail({ to, subject, text, html: htmlOverride, ctaUrl, ctaText, devInviteUrl, replyTo: replyToOverride }) {
+export async function sendEmail({ to, subject, text, heading, html: htmlOverride, ctaUrl, ctaText, devInviteUrl, replyTo: replyToOverride }) {
   const apiKey = process.env.RESEND_API_KEY;
   const fromAddress = process.env.EMAIL_FROM || "noreply@transportplattformen.se";
   const fromName = process.env.EMAIL_FROM_NAME || "Sveriges Transportplattform";
@@ -25,7 +25,7 @@ export async function sendEmail({ to, subject, text, html: htmlOverride, ctaUrl,
       to: [to],
       subject,
       text,
-      html: htmlOverride || (await renderEmail({ preview: subject, paragraphs: toParagraphs(text), ctaUrl, ctaText })),
+      html: htmlOverride || (await renderEmail({ preview: subject, heading, paragraphs: toParagraphs(text), ctaUrl, ctaText })),
       ...(replyTo && { reply_to: replyTo }),
     };
     const res = await fetch("https://api.resend.com/emails", {
@@ -64,6 +64,7 @@ export async function notifyNewApplication({ companyEmail, driverName, jobTitle,
   await sendEmail({
     to: companyEmail,
     subject: `Ny ansökan: ${driverName} – ${jobTitle}`,
+    heading: "Ny ansökan",
     text: `Hej,\n\n${driverName} har skickat en ansökan till "${jobTitle}" på Sveriges Transportplattform.`,
     ctaUrl: conversationUrl || undefined,
     ctaText: conversationUrl ? "Svara på ansökan" : undefined,
@@ -74,6 +75,7 @@ export async function notifyNewMessage({ toEmail, fromName, preview, conversatio
   await sendEmail({
     to: toEmail,
     subject: `Nytt meddelande från ${fromName}`,
+    heading: "Nytt meddelande",
     text: `Hej,\n\nDu har fått ett nytt meddelande från ${fromName}.\n\n"${preview}"`,
     ctaUrl: conversationUrl || undefined,
     ctaText: conversationUrl ? "Svara på meddelandet" : undefined,
@@ -84,6 +86,7 @@ export async function notifyDriverSelected({ driverEmail, companyName, jobTitle,
   await sendEmail({
     to: driverEmail,
     subject: `Du är utvald – ${jobTitle}`,
+    heading: "Du är utvald 🎉",
     text: `Hej,\n\n${companyName} har markerat dig som utvald för jobbet "${jobTitle}".`,
     ctaUrl: conversationUrl || undefined,
     ctaText: conversationUrl ? "Gå till konversationen" : undefined,
@@ -96,10 +99,14 @@ export async function notifyRecommendedJobMatch({ driverEmail, driverName, jobs 
     .slice(0, 5)
     .map((job, idx) => `${idx + 1}. ${job.title} – ${job.company} (${job.region})`)
     .join("\n");
+  const base = (process.env.FRONTEND_URL || "").split(",")[0]?.trim().replace(/\/$/, "") || "";
   await sendEmail({
     to: driverEmail,
     subject: `Nya jobb som matchar din profil`,
-    text: `Hej ${driverName || ""},\n\nVi hittade ${jobs.length} jobb som matchar din profil på Sveriges Transportplattform:\n\n${lines}\n\nLogga in för att se detaljer och ansöka.\n\nMed vänliga hälsningar,\nSveriges Transportplattform`,
+    heading: "Nya jobb för dig",
+    text: `Hej ${driverName || ""},\n\nVi hittade ${jobs.length} jobb som matchar din profil:\n\n${lines}\n\nLogga in för att se detaljer och ansöka.`,
+    ctaUrl: base ? `${base}/jobb` : undefined,
+    ctaText: base ? "Se jobben" : undefined,
   });
 }
 
@@ -111,19 +118,27 @@ export async function notifyRecommendedDriverMatch({
   jobTitles = [],
 }) {
   const lines = jobTitles.slice(0, 5).map((title, idx) => `${idx + 1}. ${title}`).join("\n");
+  const base = (process.env.FRONTEND_URL || "").split(",")[0]?.trim().replace(/\/$/, "") || "";
   await sendEmail({
     to: companyEmail,
     subject: `Ny förare matchar era jobb`,
-    text: `Hej ${companyName || ""},\n\nEn förare som matchar era jobb är nu aktiv:\n\nFörare: ${driverName}\nRegion: ${driverRegion || "Ej angiven"}\n\nMatchar bland annat:\n${lines || "- Era aktiva jobb"}\n\nLogga in på Sveriges Transportplattform för att se profiler och kontakta föraren.\n\nMed vänliga hälsningar,\nSveriges Transportplattform`,
+    heading: "Ny förare matchar era jobb",
+    text: `Hej ${companyName || ""},\n\nEn förare som matchar era jobb är nu aktiv:\n\nFörare: ${driverName}\nRegion: ${driverRegion || "Ej angiven"}\n\nMatchar bland annat:\n${lines || "- Era aktiva jobb"}\n\nLogga in för att se profilen och kontakta föraren.`,
+    ctaUrl: base ? `${base}/foretag/chaufforer` : undefined,
+    ctaText: base ? "Se föraren" : undefined,
   });
 }
 
 /** Skickas till åkeriet när admin har godkänt företaget (companyStatus → VERIFIED). */
 export async function notifyCompanyApproved({ to, companyName }) {
+  const base = (process.env.FRONTEND_URL || "").split(",")[0]?.trim().replace(/\/$/, "") || "";
   await sendEmail({
     to,
     subject: "Ert företag är godkänt – Sveriges Transportplattform",
-    text: `Hej${companyName ? ` ${companyName}` : ""},\n\nErt företagskonto är nu godkänt. Ni kan logga in och publicera jobb samt kontakta förare.\n\nLogga in på plattformen för att komma igång.\n\nMed vänliga hälsningar,\nSveriges Transportplattform`,
+    heading: "Ert företag är godkänt ✓",
+    text: `Hej${companyName ? ` ${companyName}` : ""},\n\nErt företagskonto är nu godkänt. Ni kan publicera jobb och kontakta förare direkt.`,
+    ctaUrl: base ? `${base}/foretag` : undefined,
+    ctaText: base ? "Kom igång" : undefined,
   });
 }
 
@@ -184,15 +199,17 @@ export async function sendInviteEmail({ to, companyName, inviteToken, frontendBa
     `Hej,\n\n` +
     `Du är inbjuden till ${companyName} på Sveriges Transportplattform.\n\n` +
     (inviteLink
-      ? `Klicka på länken för att acceptera och skapa ett konto (eller logga in om du redan har ett):\n\n${inviteLink}\n\n`
-      : "Logga in på plattformen och använd inbjudningslänken du fått.\n\n") +
-    `Länken gäller i 7 dagar.\n\n` +
-    `Med vänliga hälsningar,\nSveriges Transportplattform`;
+      ? `Klicka på knappen nedan för att acceptera och skapa ett konto (eller logga in om du redan har ett).`
+      : "Logga in på plattformen och använd inbjudningslänken du fått.") +
+    `\n\nLänken gäller i 7 dagar.`;
 
   const emailSent = await sendEmail({
     to,
     subject: `Inbjudan till ${companyName} – Sveriges Transportplattform`,
+    heading: `Inbjudan till ${companyName}`,
     text,
+    ctaUrl: inviteLink || undefined,
+    ctaText: inviteLink ? "Acceptera inbjudan" : undefined,
     devInviteUrl: inviteLink || undefined,
   });
   return { emailSent, inviteLink };
@@ -207,6 +224,7 @@ export async function sendWelcomeEmail({ to, name, role, frontendBaseUrl }) {
     await sendEmail({
       to,
       subject,
+      heading: "Välkommen till STP!",
       text: `Hej ${name || ""}!\n\nVälkommen till Sveriges Transportplattform. Ditt konto är skapat.\n\nFyll i din profil med körkort, region och tillgänglighet så kan rätt åkerier hitta dig direkt.`,
       ctaUrl: base ? `${base}/profil` : undefined,
       ctaText: "Gå till din profil",
@@ -215,6 +233,7 @@ export async function sendWelcomeEmail({ to, name, role, frontendBaseUrl }) {
     await sendEmail({
       to,
       subject,
+      heading: "Välkommen till STP!",
       text: `Hej ${name || ""}!\n\nVälkommen till Sveriges Transportplattform. Ert konto är skapat och väntar på verifiering.\n\nVi granskar nya företagskonton manuellt. Det tar vanligtvis 1–2 vardagar. Vi hör av oss när ni är verifierade och kan börja publicera jobb.`,
       ctaUrl: base ? `${base}/foretag` : undefined,
       ctaText: "Gå till er sida",
@@ -228,6 +247,7 @@ export async function notifyApplicationConfirmation({ driverEmail, driverName, j
   await sendEmail({
     to: driverEmail,
     subject: `Ansökan skickad – ${jobTitle}`,
+    heading: "Ansökan skickad ✓",
     text: `Hej ${driverName || ""}!\n\nDin ansökan till "${jobTitle}" hos ${companyName} har skickats. Företaget kontaktar dig via plattformen om de är intresserade.`,
     ctaUrl: conversationUrl || (base ? `${base}/meddelanden` : undefined),
     ctaText: "Se konversationen",
@@ -240,6 +260,7 @@ export async function notifyPasswordChanged({ to, name }) {
   await sendEmail({
     to,
     subject: "Ditt lösenord har ändrats",
+    heading: "Lösenordet ändrat",
     text: `Hej ${name || ""}!\n\nDitt lösenord på Sveriges Transportplattform ändrades precis. Om det var du behöver du inte göra något.\n\nOm du inte gjort detta, kontakta oss omedelbart på hej@transportplattformen.se.`,
     ctaUrl: base ? `${base}/login` : undefined,
     ctaText: "Gå till inloggning",

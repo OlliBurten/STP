@@ -179,7 +179,8 @@ export async function issueEmailVerification(userId, email, baseUrlOverride) {
   const sent = await sendEmail({
     to: email,
     subject: "Verifiera din e-post – Sveriges Transportplattform",
-    text: `Hej!\n\nKlicka på knappen nedan för att verifiera din e-postadress på Sveriges Transportplattform.\n\nLänken är giltig i 24 timmar.\n\nOm du inte skapade kontot kan du ignorera detta mail.\n\nSveriges Transportplattform`,
+    heading: "Verifiera din e-post",
+    text: `Hej!\n\nKlicka på knappen nedan för att verifiera din e-postadress och aktivera ditt konto.\n\nLänken är giltig i 24 timmar. Om du inte skapade kontot kan du ignorera detta mejl.`,
     ctaUrl: verifyUrl,
     ctaText: "Verifiera e-post",
   });

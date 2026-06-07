@@ -2,7 +2,7 @@
  * Bundled by emails/build.mjs → lib/emailRender.js (plain ESM, no JSX at runtime). */
 import * as React from "react";
 import {
-  Html, Head, Body, Container, Section, Heading, Text, Button, Hr, Link, Preview,
+  Html, Head, Body, Container, Section, Heading, Text, Button, Hr, Link, Preview, Img,
 } from "@react-email/components";
 import { render } from "@react-email/render";
 
@@ -30,8 +30,10 @@ function StpEmail({ preview, heading, paragraphs = [], ctaUrl, ctaText, footNote
             <table cellPadding={0} cellSpacing={0} role="presentation">
               <tbody>
                 <tr>
-                  <td style={{ width: "34px", height: "34px", borderRadius: "9px", background: C.green, color: "#ffffff", textAlign: "center", verticalAlign: "middle", fontWeight: 800, fontSize: "16px", fontFamily: FONT }}>S</td>
-                  <td style={{ paddingLeft: "11px", fontWeight: 800, fontSize: "16px", color: C.ink900, letterSpacing: "-0.2px", fontFamily: FONT }}>Sveriges Transportplattform</td>
+                  <td style={{ verticalAlign: "middle" }}>
+                    <Img src="https://transportplattformen.se/stp-icon-192.png" width="36" height="36" alt="STP" style={{ borderRadius: "9px", display: "block" }} />
+                  </td>
+                  <td style={{ paddingLeft: "11px", verticalAlign: "middle", fontWeight: 800, fontSize: "16px", color: C.ink900, letterSpacing: "-0.2px", fontFamily: FONT }}>Sveriges Transportplattform</td>
                 </tr>
               </tbody>
             </table>
