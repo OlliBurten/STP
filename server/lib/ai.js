@@ -62,7 +62,7 @@ export async function generateMatchExplanation(driver, job) {
   ].filter(Boolean).join("\n");
 
   const message = await withRetry(() => client.messages.create({
-    model: "claude-haiku-4-5",
+    model: "claude-haiku-4-5-20251001",
     max_tokens: 300,
     system: `Du är en jobbmatchningsassistent för en svensk transportplattform.
 Skriv 2–3 korta meningar på svenska som förklarar hur väl en förares profil matchar ett specifikt jobb.
@@ -113,7 +113,7 @@ export async function generateJobDescription(form) {
   ].filter(Boolean).join("\n");
 
   const message = await withRetry(() => client.messages.create({
-    model: "claude-haiku-4-5",
+    model: "claude-haiku-4-5-20251001",
     max_tokens: 600,
     system: `Du är expert på att skriva jobbannonser för den svenska transportsektorn.
 Skriv en professionell och inbjudande jobbannons på svenska baserat på given information.
@@ -161,7 +161,7 @@ export async function suggestMessage(driver, job, senderRole) {
     : "Åkeriet ska skriva till föraren. Skriv i vi-form från företagets perspektiv. Nämn varför föraren verkar passa och vad ni erbjuder.";
 
   const message = await withRetry(() => client.messages.create({
-    model: "claude-haiku-4-5",
+    model: "claude-haiku-4-5-20251001",
     max_tokens: 250,
     system: `Du är en jobbmatchningsassistent för en svensk transportplattform.
 Skriv ett kort, personligt och professionellt öppningsmeddelande på svenska.
@@ -203,7 +203,7 @@ export async function summarizeDriverProfile(driver) {
   ].filter(Boolean).join("\n");
 
   const message = await withRetry(() => client.messages.create({
-    model: "claude-haiku-4-5",
+    model: "claude-haiku-4-5-20251001",
     max_tokens: 200,
     system: `Du är en rekryteringsassistent för en svensk transportplattform.
 Skriv 2–3 meningar på svenska som sammanfattar förarens starka sidor för ett åkeri.
@@ -254,7 +254,7 @@ export async function generateProfileTips(driver, marketStats) {
   ].filter(Boolean).join("\n");
 
   const message = await withRetry(() => client.messages.create({
-    model: "claude-haiku-4-5",
+    model: "claude-haiku-4-5-20251001",
     max_tokens: 400,
     system: `Du är en karriärcoach för yrkesförare på en svensk transportplattform.
 Baserat på förarens profil och marknadsstatistik för aktiva jobb i deras region,
@@ -315,7 +315,7 @@ export async function screenApplicant(driver, job) {
   ].filter(Boolean).join("\n");
 
   const message = await withRetry(() => client.messages.create({
-    model: "claude-haiku-4-5",
+    model: "claude-haiku-4-5-20251001",
     max_tokens: 400,
     system: `Du är en rekryteringsassistent för en svensk transportplattform.
 Gör en snabb bedömning av om en förare passar för ett jobb.
