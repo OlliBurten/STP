@@ -12,6 +12,11 @@ await build({
   jsx: "automatic",
   outfile: "lib/emailRender.js",
   logLevel: "info",
+  // ESM-bundeln innehåller interna require() för node-builtins (util m.fl.).
+  // Backend kör som type:module (ingen ambient require) → shimma den.
+  banner: {
+    js: "import { createRequire as __cr } from 'module'; const require = __cr(import.meta.url);",
+  },
   // node builtins stay external automatically for platform:node
 });
 
