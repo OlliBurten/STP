@@ -83,7 +83,7 @@ function BrandPanel() {
   );
 }
 
-/* ── BankID button — prototypens look (STP Auth Ljust) + "Kommer snart" ─────── */
+/* ── BankID button — "Kommer snart"-läge (streckad, inaktiv) ─────────────────── */
 function BankIDButton() {
   return (
     <button
@@ -91,22 +91,20 @@ function BankIDButton() {
       disabled
       style={{
         width: "100%", height: 48, borderRadius: 11, marginBottom: 12,
-        background: "var(--card)", border: "1px solid var(--line-2)",
-        boxShadow: "var(--sh-sm)",
+        background: "transparent", border: "1px dashed var(--line-strong)",
         display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
-        fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)",
+        fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-700)",
         cursor: "not-allowed", fontFamily: "inherit",
       }}
     >
-      <span style={{ width: 22, height: 22, borderRadius: 5, background: "var(--ink-900)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "var(--text-2xs)", fontWeight: 800 }}>
+      <span style={{ width: 26, height: 26, borderRadius: 6, background: "var(--ink-400)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "var(--text-2xs)", fontWeight: 800 }}>
         ID
       </span>
-      Logga in med BankID
+      BankID
       <span style={{
-        fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase",
+        fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 0.6, textTransform: "uppercase",
         background: "var(--amber-tint)", color: "var(--amber-text)",
-        border: "1px solid rgba(180,120,0,0.2)",
-        padding: "3px 8px", borderRadius: 99,
+        padding: "4px 10px", borderRadius: 99,
       }}>
         Kommer snart
       </span>
