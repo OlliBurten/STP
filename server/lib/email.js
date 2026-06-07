@@ -1,40 +1,8 @@
-/**
- * Wraps plain text email body in a minimal HTML template.
- * Optionally renders a CTA button if ctaUrl + ctaText are provided.
- */
-function buildHtml(text, { ctaUrl, ctaText } = {}) {
-  const escaped = text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/\n/g, "<br>");
-  const ctaBlock = ctaUrl && ctaText
-    ? `<tr><td style="padding:0 32px 32px">
-        <a href="${ctaUrl}" style="display:inline-block;background:#1e40af;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;padding:14px 28px;border-radius:10px">${ctaText}</a>
-      </td></tr>`
-    : "";
-  return `<!DOCTYPE html>
-<html lang="sv">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f8fafc;font-family:system-ui,-apple-system,sans-serif">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;padding:32px 0">
-    <tr><td align="center">
-      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden">
-        <tr><td style="background:#1e40af;padding:20px 32px">
-          <span style="color:#ffffff;font-size:18px;font-weight:700;letter-spacing:-0.3px">Sveriges Transportplattform</span>
-        </td></tr>
-        <tr><td style="padding:32px 32px 24px;color:#1e293b;font-size:15px;line-height:1.7">
-          ${escaped}
-        </td></tr>
-        ${ctaBlock}
-        <tr><td style="padding:16px 32px 24px;border-top:1px solid #f1f5f9">
-          <p style="margin:0;font-size:13px;color:#94a3b8">Sveriges Transportplattform &mdash; <a href="https://transportplattformen.se" style="color:#3b82f6;text-decoration:none">transportplattformen.se</a></p>
-        </td></tr>
-      </table>
-    </td></tr>
-  </table>
-</body>
-</html>`;
+import { renderEmail } from "./emailRender.js";
+
+/** Splits plain-text body into paragraphs for the branded React Email layout. */
+function toParagraphs(text) {
+  return String(text || "").trim().split(/\n{2,}/).filter(Boolean);
 }
 
 /**
@@ -57,7 +25,7 @@ export async function sendEmail({ to, subject, text, html: htmlOverride, ctaUrl,
       to: [to],
       subject,
       text,
-      html: htmlOverride || buildHtml(text, { ctaUrl, ctaText }),
+      html: htmlOverride || (await renderEmail({ preview: subject, paragraphs: toParagraphs(text), ctaUrl, ctaText })),
       ...(replyTo && { reply_to: replyTo }),
     };
     const res = await fetch("https://api.resend.com/emails", {
