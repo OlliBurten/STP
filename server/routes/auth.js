@@ -330,7 +330,7 @@ authRouter.post("/register", validateBody(registerSchema), async (req, res, next
           } catch { /* non-critical */ }
         }
       } catch (claimErr) {
-        console.error("[Claim] Auto-activation failed:", claimErr.message);
+        console.error("[Claim] Auto-activation failed:", claimErr?.message || String(claimErr));
       }
     }
 

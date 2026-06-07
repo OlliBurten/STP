@@ -30,7 +30,7 @@ feedbackRouter.post("/", async (req, res, next) => {
 
     // Analysera med AI asynkront — blockerar inte svaret
     processFeedback(feedback.id).catch((e) =>
-      console.error("[Feedback] Agent-fel:", e.message)
+      console.error("[Feedback] Agent-fel:", e?.message || String(e))
     );
 
     res.status(200).json({ ok: true, message: "Tack för din feedback." });

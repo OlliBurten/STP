@@ -89,7 +89,7 @@ async function fetchAccessToken() {
 
     return _tokenCache.token;
   } catch (err) {
-    console.error("[bolagsverket] token fetch error:", err.message);
+    console.error("[bolagsverket] token fetch error:", err?.message || String(err));
     return null;
   }
 }
@@ -190,7 +190,7 @@ async function lookupBolagsverket(orgnr) {
 
     return { companyName, city, region, companyType, organisationsform, foundedYear, sniCodes, isTransport, verksamhetsbeskrivning, isDeregistered };
   } catch (err) {
-    console.error("[bolagsverket] lookup error:", err.message);
+    console.error("[bolagsverket] lookup error:", err?.message || String(err));
     return null;
   }
 }

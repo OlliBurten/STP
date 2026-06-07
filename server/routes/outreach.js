@@ -341,7 +341,7 @@ outreachRouter.post("/run-agent", async (req, res, next) => {
     const { dryRun = false, regions } = req.body;
     // Run async — don't block the HTTP response
     runOutreachAgent({ dryRun, regions }).catch((e) =>
-      console.error("[OutreachAgent] Manual trigger error:", e.message)
+      console.error("[OutreachAgent] Manual trigger error:", e?.message || String(e))
     );
     res.json({
       ok: true,
