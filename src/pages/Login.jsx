@@ -83,27 +83,33 @@ function BrandPanel() {
   );
 }
 
-/* ── BankID button — pixel-matchad mot prototypen (STP Auth Ljust) ─────────── */
-function BankIDButton({ onClick }) {
+/* ── BankID button — prototypens look (STP Auth Ljust) + "Kommer snart" ─────── */
+function BankIDButton() {
   return (
     <button
       type="button"
-      onClick={onClick}
+      disabled
       style={{
         width: "100%", height: 48, borderRadius: 11, marginBottom: 12,
         background: "var(--card)", border: "1px solid var(--line-2)",
         boxShadow: "var(--sh-sm)",
         display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
         fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)",
-        cursor: "pointer", fontFamily: "inherit", transition: "background .15s",
+        cursor: "not-allowed", fontFamily: "inherit",
       }}
-      onMouseEnter={e => { e.currentTarget.style.background = "var(--paper-2)"; }}
-      onMouseLeave={e => { e.currentTarget.style.background = "var(--card)"; }}
     >
       <span style={{ width: 22, height: 22, borderRadius: 5, background: "var(--ink-900)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "var(--text-2xs)", fontWeight: 800 }}>
         ID
       </span>
       Logga in med BankID
+      <span style={{
+        fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase",
+        background: "var(--amber-tint)", color: "var(--amber-text)",
+        border: "1px solid rgba(180,120,0,0.2)",
+        padding: "3px 8px", borderRadius: 99,
+      }}>
+        Kommer snart
+      </span>
     </button>
   );
 }
@@ -477,7 +483,7 @@ export default function Login() {
               </h1>
               <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", marginBottom: 28 }}>Gratis under beta. Inga avgifter.</p>
 
-              <BankIDButton onClick={() => { setError(""); setInfo("BankID-inloggning lanseras inom kort — använd e-post eller Google så länge."); }} />
+              <BankIDButton />
 
               <OAuthSection
                 onSuccess={handleOAuthSuccess}
@@ -620,7 +626,7 @@ export default function Login() {
                   from={from}
                   mode="login"
                 />
-                <BankIDButton onClick={() => { setError(""); setInfo("BankID-inloggning lanseras inom kort — använd e-post eller Google så länge."); }} />
+                <BankIDButton />
                 <OrDivider />
               </>
             )}
