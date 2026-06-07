@@ -55,17 +55,17 @@ const NAV_GROUPS = [
     { id: "pulse",    l: "System & pulse", n: "pulse" },
   ]},
   { l: "Hantera", items: [
-    { id: "users",      l: "Användare", n: "users",     count: 248 },
-    { id: "companies",  l: "Företag",   n: "building",  count: 22, alert: 3 },
-    { id: "jobs",       l: "Jobb",      n: "briefcase", count: 14 },
-    { id: "moderation", l: "Moderering",n: "shield",    alert: 5 },
+    { id: "users",      l: "Användare", n: "users" },
+    { id: "companies",  l: "Företag",   n: "building" },
+    { id: "jobs",       l: "Jobb",      n: "briefcase" },
+    { id: "moderation", l: "Moderering",n: "shield" },
     { id: "reviews",    l: "Omdömen",   n: "star" },
     { id: "schools",    l: "Skolor",    n: "school" },
   ]},
   { l: "Tillväxt", items: [
     { id: "outreach",  l: "Outreach",   n: "outreach" },
     { id: "insights",  l: "AI-insikter",n: "spark" },
-    { id: "feedback",  l: "Feedback",   n: "feedback", alert: 2 },
+    { id: "feedback",  l: "Feedback",   n: "feedback" },
   ]},
   { l: "System", items: [
     { id: "integrations", l: "Integrationer", n: "plug", badge: "MCP" },
@@ -74,7 +74,15 @@ const NAV_GROUPS = [
 ];
 
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
-export function AdminSidebar({ section, onChange }) {
+export function AdminSidebar({ section, onChange, counts = {} }) {
+  // Riktiga siffror per nav-id (från /summary). count = grå badge, alert = röd badge.
+  const META = {
+    users:      { count: counts.users },
+    companies:  { count: counts.companies, alert: counts.companiesAlert },
+    jobs:       { count: counts.jobs },
+    moderation: { alert: counts.moderationAlert },
+    feedback:   { alert: counts.feedbackAlert },
+  };
   return (
     <aside style={{ width: 240, background: "var(--card)", borderRight: "1px solid var(--line)", display: "flex", flexDirection: "column", flexShrink: 0 }}>
       <Link to="/admin" style={{ padding: "18px 18px 14px", display: "flex", alignItems: "center", gap: 10, borderBottom: "1px solid var(--line)", textDecoration: "none" }}>
@@ -91,6 +99,8 @@ export function AdminSidebar({ section, onChange }) {
             <div style={{ padding: "6px 10px 8px", fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "var(--ink-400)" }}>{g.l}</div>
             {g.items.map(it => {
               const on = section === it.id;
+              const m = META[it.id] || {};
+              const count = m.count, alert = m.alert;
               return (
                 <button key={it.id} onClick={() => onChange(it.id)} style={{
                   width: "100%", padding: "8px 10px", borderRadius: 8,
@@ -103,8 +113,8 @@ export function AdminSidebar({ section, onChange }) {
                 }}>
                   <Icon n={it.n} s={15} />
                   <span style={{ flex: 1 }}>{it.l}</span>
-                  {it.alert > 0 && <span style={{ minWidth: 18, height: 18, padding: "0 5px", borderRadius: 99, background: "var(--danger)", color: "#fff", fontSize: "var(--text-2xs)", fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center" }}>{it.alert}</span>}
-                  {it.count > 0 && !it.alert && <span style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", fontWeight: 700 }}>{it.count}</span>}
+                  {alert > 0 && <span style={{ minWidth: 18, height: 18, padding: "0 5px", borderRadius: 99, background: "var(--danger)", color: "#fff", fontSize: "var(--text-2xs)", fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center" }}>{alert}</span>}
+                  {count > 0 && !alert && <span style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", fontWeight: 700 }}>{count}</span>}
                   {it.badge && <span style={{ padding: "1px 6px", borderRadius: 4, background: "var(--info-tint)", color: "var(--info)", fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 0.5 }}>{it.badge}</span>}
                 </button>
               );

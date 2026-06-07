@@ -283,7 +283,7 @@ export default function Admin() {
       if (activeTab === "companies") await loadCompanies();
       if (activeTab === "users")     await loadUsers();
       if (activeTab === "jobs")      await loadJobs();
-      if (activeTab === "reports")   await loadReports();
+      if (activeTab === "moderation") await loadReports();
       if (activeTab === "reviews")   await loadReviews();
       if (activeTab === "schools")   await loadSchools();
       if (activeTab === "outreach")  await loadOutreach();
@@ -397,7 +397,6 @@ export default function Admin() {
   };
 
   const pendingCount = summary?.verification?.pendingCompanies ?? 0;
-  const insightNewCount = insights.filter(i => i.status === "NEW").length;
   const feedbackNewCount = feedbackItems.filter(f => f.status === "NEW").length;
 
   return (
@@ -405,9 +404,14 @@ export default function Admin() {
       <AdminSidebar
         section={activeTab}
         onChange={setActiveTab}
-        pendingCount={pendingCount}
-        insightNewCount={insightNewCount}
-        feedbackNewCount={feedbackNewCount}
+        counts={{
+          users: ((summary?.users?.driversTotal ?? 0) + (summary?.users?.recruitersTotal ?? 0)) || undefined,
+          companies: summary?.verification?.verifiedCompanies || undefined,
+          companiesAlert: pendingCount || undefined,
+          jobs: summary?.jobs?.active || undefined,
+          moderationAlert: summary?.actionQueue?.openReports || undefined,
+          feedbackAlert: (summary?.actionQueue?.newFeedback ?? feedbackNewCount) || undefined,
+        }}
       />
       <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
         <AdminTopBar openCmd={() => setCmdK(true)} health={health} />
@@ -705,7 +709,7 @@ export default function Admin() {
         {/* ════════════════════════════════════════
             REPORTS TAB
         ════════════════════════════════════════ */}
-        {activeTab === "reports" && (
+        {activeTab === "moderation" && (
           <SectionCard>
             <p style={{ fontSize: "var(--text-lg)", fontWeight: 700, color: T.text, marginBottom: 20 }}>Rapporter & trust</p>
             <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
@@ -1215,6 +1219,131 @@ export default function Admin() {
                 </div>
               </>
             )}
+          </div>
+        )}
+
+        {/* ── System & pulse ── */}
+        {activeTab === "pulse" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <SectionCard>
+              <p style={{ fontSize: "var(--text-lg)", fontWeight: 700, color: T.text, marginBottom: 6 }}>Systemstatus</p>
+              <p style={{ fontSize: "var(--text-sm)", color: T.muted, marginBottom: 20 }}>Realtidshälsa för backend, databas och integrationer.</p>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px,1fr))", gap: 10 }}>
+                {[
+                  { label: "Backend", value: health?.ok ? "OK" : "–", ok: health?.ok },
+                  { label: "Databas", value: health?.db === "ok" ? "OK" : "–", ok: health?.db === "ok", sub: health?.dbLatencyMs != null ? health.dbLatencyMs + " ms" : null },
+                  { label: "Uptime", value: health?.uptimeSec != null ? Math.floor(health.uptimeSec / 3600) + " h" : "–", ok: true },
+                  { label: "Miljö", value: health?.deployment || "–", ok: true },
+                  { label: "E-post", value: health?.emailConfigured ? "Konfigurerad" : "Saknas", ok: health?.emailConfigured },
+                  { label: "OAuth Google", value: health?.oauth?.google ? "Aktiv" : "Av", ok: health?.oauth?.google },
+                  { label: "OAuth Microsoft", value: health?.oauth?.microsoft ? "Aktiv" : "Av", ok: health?.oauth?.microsoft },
+                  { label: "Datalagring", value: "EU (Amsterdam)", ok: true },
+                ].map(s => (
+                  <div key={s.label} style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 12, padding: "14px 16px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6 }}>
+                      <span style={{ width: 8, height: 8, borderRadius: 99, background: s.ok ? T.green : T.red }} />
+                      <span style={{ fontSize: "var(--text-2xs)", color: T.muted, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.6 }}>{s.label}</span>
+                    </div>
+                    <p style={{ fontSize: "var(--text-xl)", fontWeight: 800, color: T.text, margin: 0 }}>{s.value}</p>
+                    {s.sub && <p style={{ fontSize: "var(--text-2xs)", color: T.muted, margin: "2px 0 0", fontFamily: "monospace" }}>{s.sub}</p>}
+                  </div>
+                ))}
+              </div>
+            </SectionCard>
+            <SectionCard>
+              <p style={{ fontSize: "var(--text-lg)", fontWeight: 700, color: T.text, marginBottom: 16 }}>Nyckeltal (live)</p>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px,1fr))", gap: 10 }}>
+                {[
+                  { label: "Förare", value: summary?.users?.driversTotal ?? "–" },
+                  { label: "Åkerier", value: summary?.users?.recruitersTotal ?? "–" },
+                  { label: "Aktiva jobb", value: summary?.jobs?.active ?? "–" },
+                  { label: "Konversationer", value: summary?.activity?.conversations ?? "–" },
+                  { label: "Meddelanden", value: summary?.activity?.messages ?? "–" },
+                  { label: "Nya (24h)", value: summary?.users?.new24h ?? "–" },
+                  { label: "Väntar verifiering", value: summary?.verification?.pendingCompanies ?? "–", urgent: true },
+                  { label: "Öppna rapporter", value: summary?.actionQueue?.openReports ?? "–", urgent: true },
+                ].map(s => (
+                  <div key={s.label} style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 12, padding: "14px 16px" }}>
+                    <p style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: s.urgent && s.value > 0 ? T.amber : T.tealBright, margin: 0 }}>{s.value}</p>
+                    <p style={{ fontSize: "var(--text-2xs)", color: T.muted, margin: "3px 0 0" }}>{s.label}</p>
+                  </div>
+                ))}
+              </div>
+            </SectionCard>
+          </div>
+        )}
+
+        {/* ── Integrationer ── */}
+        {activeTab === "integrations" && (
+          <SectionCard>
+            <p style={{ fontSize: "var(--text-lg)", fontWeight: 700, color: T.text, marginBottom: 6 }}>Integrationer & tjänster</p>
+            <p style={{ fontSize: "var(--text-sm)", color: T.muted, marginBottom: 20 }}>Tredjepartstjänster plattformen är beroende av. Status hämtas från systemhälsan där möjligt.</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {[
+                { name: "Railway", role: "Hosting + databas (EU, Amsterdam)", ok: health?.db === "ok", status: health?.db === "ok" ? "Ansluten" : "Okänd" },
+                { name: "Vercel", role: "Frontend-hosting", ok: true, status: "Aktiv" },
+                { name: "Google OAuth", role: "Inloggning", ok: health?.oauth?.google, status: health?.oauth?.google ? "Aktiv" : "Inaktiv" },
+                { name: "Microsoft OAuth", role: "Inloggning", ok: health?.oauth?.microsoft, status: health?.oauth?.microsoft ? "Aktiv" : "Inaktiv" },
+                { name: "Resend", role: "E-postutskick", ok: health?.emailConfigured, status: health?.emailConfigured ? "Konfigurerad" : "Saknas" },
+                { name: "Sentry", role: "Felövervakning", ok: true, status: "Aktiv" },
+                { name: "PostHog", role: "Produktanalys (EU)", ok: true, status: "Aktiv" },
+                { name: "Anthropic (Claude)", role: "AI: jobb-berikning & matchning", ok: true, status: "Aktiv" },
+                { name: "JobTech / Platsbanken", role: "Jobb-ingestion", ok: true, status: "Aktiv" },
+              ].map(it => (
+                <div key={it.name} style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", background: T.card, border: `1px solid ${T.border}`, borderRadius: 12 }}>
+                  <span style={{ width: 10, height: 10, borderRadius: 99, background: it.ok ? T.green : T.red, flexShrink: 0 }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: "var(--text-base)", fontWeight: 700, color: T.text, margin: 0 }}>{it.name}</p>
+                    <p style={{ fontSize: "var(--text-xs)", color: T.muted, margin: "1px 0 0" }}>{it.role}</p>
+                  </div>
+                  <span style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: it.ok ? T.green : T.red, background: it.ok ? T.greenBg : T.redBg, padding: "4px 10px", borderRadius: 99 }}>{it.status}</span>
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+        )}
+
+        {/* ── Inställningar ── */}
+        {activeTab === "settings" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <SectionCard>
+              <p style={{ fontSize: "var(--text-lg)", fontWeight: 700, color: T.text, marginBottom: 6 }}>Plattformskonfiguration</p>
+              <p style={{ fontSize: "var(--text-sm)", color: T.muted, marginBottom: 20 }}>Aktuell driftmiljö (skrivskyddad — ändras via Railway/Vercel).</p>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px,1fr))", gap: 10 }}>
+                {[
+                  ["Miljö", health?.deployment || "production"],
+                  ["Datalagring", "EU — Amsterdam (Railway)"],
+                  ["Frontend", "transportplattformen.se (Vercel)"],
+                  ["Backend", "Railway · service nodejs"],
+                  ["E-post", health?.emailFromConfigured ? "Resend (konfigurerad)" : "–"],
+                  ["Inloggning", "E-post · Google · Microsoft · BankID (snart)"],
+                ].map(([k, v]) => (
+                  <div key={k} style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 12, padding: "12px 16px" }}>
+                    <p style={{ fontSize: "var(--text-2xs)", color: T.muted, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.6, margin: "0 0 4px" }}>{k}</p>
+                    <p style={{ fontSize: "var(--text-sm)", fontWeight: 600, color: T.text, margin: 0 }}>{v}</p>
+                  </div>
+                ))}
+              </div>
+            </SectionCard>
+            <SectionCard>
+              <p style={{ fontSize: "var(--text-lg)", fontWeight: 700, color: T.text, marginBottom: 14 }}>Drift & dashboards</p>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {[
+                  ["Railway", "https://railway.app"],
+                  ["Vercel", "https://vercel.com"],
+                  ["Sentry", "https://sentry.io"],
+                  ["PostHog (EU)", "https://eu.posthog.com"],
+                  ["Resend", "https://resend.com"],
+                  ["IMY (incident)", "https://imy.se"],
+                ].map(([l, href]) => (
+                  <a key={l} href={href} target="_blank" rel="noreferrer" style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: T.tealBright, background: T.tealBg, border: `1px solid ${T.tealBorder}`, padding: "8px 14px", borderRadius: 10, textDecoration: "none" }}>{l} ↗</a>
+                ))}
+              </div>
+            </SectionCard>
+            <SectionCard>
+              <p style={{ fontSize: "var(--text-lg)", fontWeight: 700, color: T.text, marginBottom: 6 }}>Compliance</p>
+              <p style={{ fontSize: "var(--text-sm)", color: T.muted, margin: 0 }}>Persondata lagras i EU. GDPR-register och incidentrutin finns i repo (<span style={{ fontFamily: "monospace", color: T.tealBright }}>docs/REGISTERFORTECKNING.md</span> + <span style={{ fontFamily: "monospace", color: T.tealBright }}>INCIDENTRUTIN.md</span>).</p>
+            </SectionCard>
           </div>
         )}
 
