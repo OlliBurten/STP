@@ -171,7 +171,7 @@ function UserRow({ u, selected, isSelectedRow, onCheck, onSelect, compact }) {
       )}
 
       <div onClick={e => e.stopPropagation()} style={{ display: "flex", justifyContent: "flex-end" }}>
-        <button title="Visa detalj" style={{ width: 30, height: 30, borderRadius: 7, background: "var(--paper-2)", border: "none", color: "var(--ink-400)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <button title="Visa detalj" onClick={onSelect} style={{ width: 30, height: 30, borderRadius: 7, background: "var(--paper-2)", border: "none", color: "var(--ink-400)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <Icon n="eye" s={13} c="var(--ink-400)" />
         </button>
       </div>

@@ -1,5 +1,6 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { listUsers, listJobsForAdmin } from "../../api/admin.js";
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 export const IC = {
@@ -129,7 +130,7 @@ export function AdminSidebar({ section, onChange, counts = {} }) {
           <div style={{ fontSize: "var(--text-xs)", fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "var(--ink-900)" }}>Oliver Harburt</div>
           <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)" }}>Super admin</div>
         </div>
-        <button style={{ width: 28, height: 28, borderRadius: 7, background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-400)" }}>
+        <button title="Inställningar" onClick={() => onChange("settings")} style={{ width: 28, height: 28, borderRadius: 7, background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-400)" }}>
           <Icon n="cog" s={13} />
         </button>
       </div>
@@ -138,13 +139,15 @@ export function AdminSidebar({ section, onChange, counts = {} }) {
 }
 
 // ─── TopBar ───────────────────────────────────────────────────────────────────
-export function AdminTopBar({ openCmd, health }) {
+export function AdminTopBar({ openCmd, health, onChange, notifs = [] }) {
+  const [bellOpen, setBellOpen] = useState(false);
   const latency = health?.dbLatencyMs != null ? `${health.dbLatencyMs}ms` : null;
   const systemOk = !health || (health.db === "ok");
   const pillColor = systemOk ? "var(--success)" : "var(--danger)";
   const pillBg = systemOk ? "var(--success-tint)" : "var(--danger-tint)";
   const pillBorder = systemOk ? "rgba(74,222,128,0.2)" : "rgba(239,68,68,0.2)";
   const pillLabel = systemOk ? "System OK" : "Systemfel";
+  const active = notifs.filter((n) => n.count > 0);
 
   return (
     <div style={{ height: 54, borderBottom: "1px solid var(--line)", display: "flex", alignItems: "center", padding: "0 22px", gap: 14, background: "var(--card)", flexShrink: 0 }}>
@@ -155,27 +158,66 @@ export function AdminTopBar({ openCmd, health }) {
       </button>
 
       <div style={{ display: "flex", alignItems: "center", gap: 7, marginLeft: "auto" }}>
-        <button style={{ display: "flex", alignItems: "center", gap: 7, padding: "5px 11px", borderRadius: 99, background: pillBg, border: `1px solid ${pillBorder}`, cursor: "pointer" }}>
+        <button onClick={() => onChange?.("pulse")} title="Visa systemstatus" style={{ display: "flex", alignItems: "center", gap: 7, padding: "5px 11px", borderRadius: 99, background: pillBg, border: `1px solid ${pillBorder}`, cursor: "pointer" }}>
           <span style={{ width: 7, height: 7, borderRadius: 99, background: pillColor, animation: systemOk ? "pulse 2s infinite" : "none" }} />
           <span style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: pillColor }}>{pillLabel}</span>
           {latency && <span style={{ fontSize: "var(--text-2xs)", color: `${pillColor}88`, fontFamily: "'JetBrains Mono',monospace" }}>{latency}</span>}
         </button>
 
-        <button style={{ padding: "7px 12px", borderRadius: 8, background: "var(--amber-tint)", border: "1px solid var(--amber)", color: "var(--amber-text)", fontSize: "var(--text-xs)", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
-          <Icon n="zap" s={12} c="var(--amber-text)" /> Quick action
+        <button onClick={openCmd} title="Sök & åtgärder (⌘K)" style={{ padding: "7px 12px", borderRadius: 8, background: "var(--amber-tint)", border: "1px solid var(--amber)", color: "var(--amber-text)", fontSize: "var(--text-xs)", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+          <Icon n="zap" s={12} c="var(--amber-text)" /> Snabbåtgärd
         </button>
 
-        <button style={{ width: 36, height: 36, borderRadius: 99, background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
-          <Icon n="bell" s={16} c="var(--ink-500)" />
-          <span style={{ position: "absolute", top: 7, right: 7, width: 7, height: 7, borderRadius: 99, background: "var(--amber)", border: "2px solid var(--card)" }} />
-        </button>
+        <div style={{ position: "relative" }}>
+          <button onClick={() => setBellOpen((o) => !o)} title="Aviseringar" style={{ width: 36, height: 36, borderRadius: 99, background: bellOpen ? "var(--paper-2)" : "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
+            <Icon n="bell" s={16} c="var(--ink-500)" />
+            {active.length > 0 && <span style={{ position: "absolute", top: 7, right: 7, width: 7, height: 7, borderRadius: 99, background: "var(--amber)", border: "2px solid var(--card)" }} />}
+          </button>
+          {bellOpen && (
+            <>
+              <div onClick={() => setBellOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 90 }} />
+              <div style={{ position: "absolute", right: 0, top: 44, width: 300, background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, boxShadow: "var(--sh-md)", zIndex: 95, overflow: "hidden" }}>
+                <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--line)", fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", color: "var(--ink-400)" }}>Aviseringar</div>
+                {active.length === 0 ? (
+                  <div style={{ padding: "24px 16px", textAlign: "center", fontSize: "var(--text-sm)", color: "var(--ink-400)" }}>Inget nytt just nu 🎉</div>
+                ) : (
+                  active.map((n) => (
+                    <button key={n.tab} onClick={() => { onChange?.(n.tab); setBellOpen(false); }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 11, padding: "11px 16px", background: "transparent", border: "none", borderBottom: "1px solid var(--line)", cursor: "pointer", textAlign: "left" }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = "var(--paper-2)")} onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>
+                      <span style={{ minWidth: 22, height: 22, padding: "0 6px", borderRadius: 99, background: "var(--danger)", color: "#fff", fontSize: "var(--text-2xs)", fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center" }}>{n.count}</span>
+                      <span style={{ fontSize: "var(--text-sm)", color: "var(--ink-900)", fontWeight: 600 }}>{n.label}</span>
+                    </button>
+                  ))
+                )}
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
 // ─── Command palette ──────────────────────────────────────────────────────────
-export function AdminCmdK({ open, onClose, onChange }) {
+const CmdGroup = ({ label, children }) => (
+  <>
+    <div style={{ padding: "10px 18px 4px", fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "var(--ink-400)" }}>{label}</div>
+    {children}
+  </>
+);
+const CmdRow = ({ icon, label, onClick }) => (
+  <button onClick={onClick} style={{ width: "100%", padding: "9px 18px", background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 11, color: "var(--ink-900)", textAlign: "left" }}
+    onMouseEnter={(e) => (e.currentTarget.style.background = "var(--green-tint)")} onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>
+    <Icon n={icon} s={13} c="var(--ink-400)" />
+    <span style={{ flex: 1, fontSize: "var(--text-sm)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{label}</span>
+  </button>
+);
+
+export function AdminCmdK({ open, onClose, onChange, onAction }) {
+  const [q, setQ] = useState("");
+  const [results, setResults] = useState({ users: [], jobs: [] });
+  const [searching, setSearching] = useState(false);
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e) => { if (e.key === "Escape") onClose(); };
@@ -183,54 +225,79 @@ export function AdminCmdK({ open, onClose, onChange }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
+  useEffect(() => { if (!open) { setQ(""); setResults({ users: [], jobs: [] }); } }, [open]);
+
+  useEffect(() => {
+    const term = q.trim();
+    if (term.length < 2) { setResults({ users: [], jobs: [] }); setSearching(false); return; }
+    setSearching(true);
+    const t = setTimeout(async () => {
+      try {
+        const [u, j] = await Promise.all([
+          listUsers({ q: term, limit: 6 }).catch(() => null),
+          listJobsForAdmin({ q: term, limit: 6 }).catch(() => null),
+        ]);
+        setResults({
+          users: (u?.users || (Array.isArray(u) ? u : []) || []).slice(0, 6),
+          jobs: (j?.jobs || (Array.isArray(j) ? j : []) || []).slice(0, 6),
+        });
+      } finally { setSearching(false); }
+    }, 250);
+    return () => clearTimeout(t);
+  }, [q]);
+
   if (!open) return null;
 
-  const items = [
-    { i: "users",     l: "Användare",                              group: "Sektion" },
-    { i: "building",  l: "Företag",                               group: "Sektion" },
-    { i: "briefcase", l: "Jobb",                                   group: "Sektion" },
-    { i: "user",      l: "Erik Johansson — erik.j@gmail.com",      group: "Användare" },
-    { i: "user",      l: "Lina Pettersson — cadillaclina@outlook.com", group: "Användare" },
-    { i: "building",  l: "Nordic Transport AB",                    group: "Företag" },
-    { i: "building",  l: "Kaunis Iron Logistik AB",                group: "Företag" },
-    { i: "briefcase", l: "CE-chaufför lokalt — Junosuando",        group: "Jobb" },
-    { i: "zap",       l: "Skicka påminnelse till alla < 50% profil", group: "Åtgärd" },
-    { i: "zap",       l: "Kör AI-insights nu",                    group: "Åtgärd" },
+  const term = q.trim();
+  const go = (tab) => { onChange?.(tab); onClose(); };
+  const act = (a) => { onAction?.(a); onClose(); };
+  const sections = [
+    { id: "overview", l: "Översikt" }, { id: "users", l: "Användare" },
+    { id: "companies", l: "Företag" }, { id: "jobs", l: "Jobb" },
+    { id: "moderation", l: "Moderering" }, { id: "insights", l: "AI-insikter" },
+    { id: "pulse", l: "System & pulse" },
   ];
+  const noHits = !searching && results.users.length === 0 && results.jobs.length === 0;
 
-  let lastGroup = null;
   return (
     <>
       <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(6px)", zIndex: 100 }} />
       <div style={{ position: "fixed", top: 80, left: "50%", transform: "translateX(-50%)", width: 580, maxWidth: "calc(100vw - 40px)", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, boxShadow: "var(--sh-md)", zIndex: 110, overflow: "hidden", maxHeight: "70vh", display: "flex", flexDirection: "column", animation: "fadeIn .25s cubic-bezier(.22,1,.36,1) both" }}>
         <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--line)", display: "flex", alignItems: "center", gap: 11 }}>
           <Icon n="search" s={15} c="var(--ink-400)" />
-          <input autoFocus placeholder="Sök eller utför åtgärd..." style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "var(--ink-900)", fontSize: "var(--text-md)", fontFamily: "inherit" }} />
+          <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Sök användare, jobb — eller hoppa till en sektion..." style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "var(--ink-900)", fontSize: "var(--text-md)", fontFamily: "inherit" }} />
           <span style={{ padding: "2px 7px", borderRadius: 4, background: "var(--paper-2)", fontSize: "var(--text-2xs)", color: "var(--ink-400)", fontFamily: "'JetBrains Mono',monospace" }}>esc</span>
         </div>
         <div style={{ flex: 1, overflowY: "auto", padding: "6px 0" }}>
-          {items.map((it, i) => {
-            const showHeader = it.group !== lastGroup;
-            lastGroup = it.group;
-            return (
-              <React.Fragment key={i}>
-                {showHeader && <div style={{ padding: "10px 18px 4px", fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "var(--ink-400)" }}>{it.group}</div>}
-                <button
-                  onClick={() => { onChange && onChange(it.i); onClose(); }}
-                  style={{ width: "100%", padding: "9px 18px", background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 11, color: "var(--ink-900)", textAlign: "left" }}
-                  onMouseEnter={e => e.currentTarget.style.background = "var(--green-tint)"}
-                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                >
-                  <Icon n={it.i} s={13} c="var(--ink-400)" />
-                  <span style={{ flex: 1, fontSize: "var(--text-sm)" }}>{it.l}</span>
-                </button>
-              </React.Fragment>
-            );
-          })}
+          {term.length < 2 ? (
+            <>
+              <CmdGroup label="Gå till">
+                {sections.map((s) => <CmdRow key={s.id} icon="arrow" label={s.l} onClick={() => go(s.id)} />)}
+              </CmdGroup>
+              <CmdGroup label="Åtgärder">
+                <CmdRow icon="spark" label="Kör AI-insikter nu" onClick={() => act("insights")} />
+                <CmdRow icon="mail" label="Skicka verifierings-påminnelser till stuck-förare" onClick={() => act("reminders")} />
+              </CmdGroup>
+            </>
+          ) : (
+            <>
+              {searching && <div style={{ padding: "20px 18px", fontSize: "var(--text-sm)", color: "var(--ink-400)" }}>Söker…</div>}
+              {noHits && <div style={{ padding: "20px 18px", fontSize: "var(--text-sm)", color: "var(--ink-400)" }}>Inga träffar för &quot;{term}&quot;</div>}
+              {results.users.length > 0 && (
+                <CmdGroup label="Användare">
+                  {results.users.map((u) => <CmdRow key={u.id} icon="user" label={`${u.name || "(namnlös)"} — ${u.email}`} onClick={() => go("users")} />)}
+                </CmdGroup>
+              )}
+              {results.jobs.length > 0 && (
+                <CmdGroup label="Jobb">
+                  {results.jobs.map((j) => <CmdRow key={j.id} icon="briefcase" label={`${j.title}${j.company ? " — " + j.company : ""}`} onClick={() => go("jobs")} />)}
+                </CmdGroup>
+              )}
+            </>
+          )}
         </div>
         <div style={{ padding: "10px 18px", borderTop: "1px solid var(--line)", display: "flex", gap: 14, fontSize: "var(--text-2xs)", color: "var(--ink-400)" }}>
-          <span><span style={{ padding: "1px 5px", borderRadius: 3, background: "var(--paper-2)", fontFamily: "'JetBrains Mono',monospace" }}>↵</span> öppna</span>
-          <span><span style={{ padding: "1px 5px", borderRadius: 3, background: "var(--paper-2)", fontFamily: "'JetBrains Mono',monospace" }}>↑↓</span> navigera</span>
+          <span>Sök bland {sections.length} sektioner, användare och jobb</span>
         </div>
       </div>
     </>

@@ -57,7 +57,7 @@ function ActionQueue({ pendingCount, openReportsCount, stuckCount, feedbackNewCo
       l: "Rapporter att granska",
       action: "Öppna",
       icon: "shield",
-      onClick: () => setActiveTab && setActiveTab("reports"),
+      onClick: () => setActiveTab && setActiveTab("moderation"),
     },
     {
       sev: stuckCount == null ? "blue" : stuckCount > 0 ? "amber" : "blue",
@@ -119,7 +119,7 @@ function ActionQueue({ pendingCount, openReportsCount, stuckCount, feedbackNewCo
 }
 
 // ─── System pulse ──────────────────────────────────────────────────────────────
-function SystemPulse({ health }) {
+function SystemPulse({ health, setActiveTab }) {
   // health shape: { ok, db, dbLatencyMs, emailConfigured, emailFromConfigured, oauth: { google, microsoft }, reminders: { ready } }
   const loaded = health != null;
 
@@ -155,7 +155,7 @@ function SystemPulse({ health }) {
           <Icon n="pulse" s={14} c="var(--success)" />
           <span style={{ fontSize: "var(--text-sm)", fontWeight: 800, letterSpacing: -0.2, color: "var(--ink-900)" }}>System pulse</span>
         </div>
-        <button style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", background: "transparent", border: "none", cursor: "pointer" }}>Visa detaljer →</button>
+        <button onClick={() => setActiveTab && setActiveTab("pulse")} style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", background: "transparent", border: "none", cursor: "pointer" }}>Visa detaljer →</button>
       </div>
       <div style={{ padding: "12px 14px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 5 }}>
         {services.map(s => (
@@ -467,7 +467,7 @@ export default function AdminOverviewTab({
             setActiveTab={setActiveTab}
             onStuckReminder={onStuckReminder}
           />
-          <SystemPulse health={health} />
+          <SystemPulse health={health} setActiveTab={setActiveTab} />
           <IntegrationsCard health={health} />
         </div>
       </div>

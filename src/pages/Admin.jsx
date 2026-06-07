@@ -399,6 +399,19 @@ export default function Admin() {
   const pendingCount = summary?.verification?.pendingCompanies ?? 0;
   const feedbackNewCount = feedbackItems.filter(f => f.status === "NEW").length;
 
+  const notifs = [
+    { tab: "companies",  label: "Åkerier väntar verifiering", count: pendingCount },
+    { tab: "moderation", label: "Öppna rapporter",            count: summary?.actionQueue?.openReports || 0 },
+    { tab: "feedback",   label: "Ny feedback",                count: summary?.actionQueue?.newFeedback ?? feedbackNewCount },
+  ];
+
+  async function handleCmdAction(a) {
+    try {
+      if (a === "insights") { await runInsightsNow(); setActiveTab("insights"); setSuccess("AI-insikter körs — uppdateras strax."); }
+      else if (a === "reminders") { await sendVerificationReminders(); setSuccess("Påminnelser skickade till stuck-förare."); }
+    } catch (e) { setError(e?.message || "Åtgärden misslyckades"); }
+  }
+
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 51, display: "flex", background: "var(--paper)", color: "var(--ink-900)" }}>
       <AdminSidebar
@@ -414,7 +427,7 @@ export default function Admin() {
         }}
       />
       <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
-        <AdminTopBar openCmd={() => setCmdK(true)} health={health} />
+        <AdminTopBar openCmd={() => setCmdK(true)} health={health} onChange={setActiveTab} notifs={notifs} />
         <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
 
         {/* ════════════════════════════════════════
@@ -1386,7 +1399,7 @@ export default function Admin() {
 
         </div>{/* /flex column wrapper */}
       </div>{/* /right col */}
-      <AdminCmdK open={cmdK} onClose={() => setCmdK(false)} onChange={setActiveTab} />
+      <AdminCmdK open={cmdK} onClose={() => setCmdK(false)} onChange={setActiveTab} onAction={handleCmdAction} />
     </div>
   );
 }
