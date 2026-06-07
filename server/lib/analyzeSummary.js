@@ -36,7 +36,7 @@ Bedöm:
     ],
   });
 
-  const raw = message.content[0]?.text || "{}";
+  const raw = message.content?.[0]?.text || "{}";
   try {
     const parsed = JSON.parse(raw);
     return {

@@ -153,7 +153,7 @@ outreachRouter.post("/scrape", async (req, res, next) => {
       });
       html = await resp.text();
     } catch (e) {
-      return res.status(502).json({ error: `Kunde inte nå Hitta.se: ${e.message}` });
+      return res.status(502).json({ error: `Kunde inte nå Hitta.se: ${e?.message || String(e)}` });
     }
 
     if (!html || html.length < 200) {

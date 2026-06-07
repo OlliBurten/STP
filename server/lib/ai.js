@@ -78,7 +78,7 @@ Svara ENBART med de 2–3 meningarna, ingen rubrik eller inledning.`,
     ],
   }));
 
-  return message.content[0]?.text?.trim() || "";
+  return message.content?.[0]?.text?.trim() || "";
 }
 
 // ─── 2. Job description generator — hjälp åkerier skriva jobbannonser ─────────
@@ -128,7 +128,7 @@ Annonsen ska vara 150–250 ord. Svara ENBART med annonsen, ingen rubrik eller e
     ],
   }));
 
-  return message.content[0]?.text?.trim() || "";
+  return message.content?.[0]?.text?.trim() || "";
 }
 
 // ─── 4. Suggest first message — personligt förslag på öppningsmeddelande ──────
@@ -176,7 +176,7 @@ Svara ENBART med meddelandet, ingen rubrik eller extra text.`,
     ],
   }));
 
-  return message.content[0]?.text?.trim() || "";
+  return message.content?.[0]?.text?.trim() || "";
 }
 
 // ─── 5. Driver summary — sammanfatta förarprofil för åkeri ────────────────────
@@ -217,7 +217,7 @@ Var objektiv och professionell. Svara ENBART med sammanfattningen, ingen rubrik.
     ],
   }));
 
-  return message.content[0]?.text?.trim() || "";
+  return message.content?.[0]?.text?.trim() || "";
 }
 
 // ─── 6. Profile tips — marknadsbaserade förbättringstips för föraren ──────────
@@ -271,7 +271,7 @@ Varje tips max 2 meningar. Inga rubriker eller extra text.`,
     ],
   }));
 
-  const raw = message.content[0]?.text || "[]";
+  const raw = message.content?.[0]?.text || "[]";
   try {
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed.slice(0, 4) : [];
@@ -336,7 +336,7 @@ Var konkret och hänvisa till specifika faktorer.`,
     ],
   }));
 
-  const raw = message.content[0]?.text || "{}";
+  const raw = message.content?.[0]?.text || "{}";
   try {
     const parsed = JSON.parse(raw);
     return {

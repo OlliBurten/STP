@@ -57,7 +57,7 @@ export async function extractJobFields(title, description) {
     system: SYSTEM,
     messages: [{ role: "user", content: `Titel: ${title || ""}\n\nAnnonstext:\n${description.slice(0, 4000)}` }],
   }));
-  let raw = message.content[0]?.text || "{}";
+  let raw = message.content?.[0]?.text || "{}";
   raw = raw.replace(/^```(?:json)?/i, "").replace(/```$/i, "").trim();
   try {
     const p = JSON.parse(raw);
