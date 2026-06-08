@@ -38,8 +38,10 @@ const EXPLICIT_TEST = [
   "fadel@crewservice.se",
 ];
 
+// "confirm" kan ges som argument (node ... confirm) ELLER env-var (REMOVE_TEST_AKERIER=confirm)
+const ARGV_CONFIRM = process.argv.slice(2).map((a) => a.toLowerCase()).includes("confirm");
 const MODE = String(process.env.REMOVE_TEST_AKERIER || "dry").toLowerCase();
-const CONFIRM = MODE === "confirm";
+const CONFIRM = ARGV_CONFIRM || MODE === "confirm";
 const SANITY_CAP = 30; // vägrar köra om fler än så här matchar (skydd mot felmatchning)
 
 async function main() {
