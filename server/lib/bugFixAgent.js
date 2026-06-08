@@ -326,7 +326,7 @@ export async function processBacklog() {
       // 2 sekunders paus mellan fixar för att inte spamma GitHub API
       await new Promise((r) => setTimeout(r, 2000));
     } catch (e) {
-      console.error(`[BugFixAgent] Fel vid issue ${issue.id}:`, e.message);
+      console.error(`[BugFixAgent] Fel vid issue ${issue.id}:`, e?.message || String(e));
     }
   }
 
