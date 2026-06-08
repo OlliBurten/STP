@@ -1047,6 +1047,8 @@ adminRouter.get("/jobs", async (req, res, next) => {
   try {
     const q = String(req.query.q || "").trim();
     const status = String(req.query.status || "").toUpperCase();
+    const source = String(req.query.source || "").toUpperCase();
+    const sort = String(req.query.sort || "recent").toLowerCase();
     const where = {
       ...(q
         ? {
@@ -1058,20 +1060,25 @@ adminRouter.get("/jobs", async (req, res, next) => {
           }
         : {}),
       ...(status && ["ACTIVE", "HIDDEN", "REMOVED"].includes(status) ? { status } : {}),
+      ...(source && ["AGGREGATED", "ORGANIC"].includes(source) ? { source } : {}),
     };
+
+    // sort=activity → mest aktiva först (visningar); sort=applications → flest ansökningar; annars senaste
+    const orderBy =
+      sort === "activity"     ? [{ views: { _count: "desc" } }, { published: "desc" }]
+      : sort === "applications" ? [{ applications: { _count: "desc" } }, { published: "desc" }]
+      : { published: "desc" };
 
     const jobs = await prisma.job.findMany({
       where,
-      orderBy: { published: "desc" },
-      take: 200,
+      orderBy,
+      take: 300,
       include: {
         user: {
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            companyName: true,
-          },
+          select: { id: true, email: true, name: true, companyName: true },
+        },
+        _count: {
+          select: { views: true, applications: true, conversations: true, savedBy: true },
         },
       },
     });
@@ -1084,9 +1091,16 @@ adminRouter.get("/jobs", async (req, res, next) => {
         location: j.location,
         region: j.region,
         status: j.status,
+        source: j.source,
+        sourceUrl: j.sourceUrl || null,
+        claimed: j.claimed,
         moderationReason: j.moderationReason || null,
         moderatedAt: j.moderatedAt?.toISOString() ?? null,
         published: j.published.toISOString(),
+        views: j._count.views,
+        applications: j._count.applications,
+        conversations: j._count.conversations,
+        saved: j._count.savedBy,
         owner: {
           id: j.user.id,
           email: j.user.email,

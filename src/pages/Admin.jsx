@@ -56,7 +56,7 @@ export default function Admin() {
   const [schools, setSchools] = useState([]);
 
   const [userFilters, setUserFilters] = useState({ q: "", role: "", suspended: "" });
-  const [jobFilters, setJobFilters] = useState({ q: "", status: "" });
+  const [jobFilters, setJobFilters] = useState({ q: "", status: "", source: "", sort: "recent" });
   const [reportFilters, setReportFilters] = useState({ status: "" });
   const [reviewFilters, setReviewFilters] = useState({ status: "" });
 
@@ -601,6 +601,24 @@ export default function Admin() {
                 <option value="HIDDEN">Dolda</option>
                 <option value="REMOVED">Borttagna</option>
               </select>
+              <select
+                value={jobFilters.source}
+                onChange={(e) => setJobFilters((p) => ({ ...p, source: e.target.value }))}
+                style={{ ...INP, width: "auto" }}
+              >
+                <option value="">Alla källor</option>
+                <option value="AGGREGATED">Platsbanken (aggregerade)</option>
+                <option value="ORGANIC">Egna annonser</option>
+              </select>
+              <select
+                value={jobFilters.sort}
+                onChange={(e) => setJobFilters((p) => ({ ...p, sort: e.target.value }))}
+                style={{ ...INP, width: "auto" }}
+              >
+                <option value="recent">Senaste</option>
+                <option value="activity">Mest visade</option>
+                <option value="applications">Flest ansökningar</option>
+              </select>
               <Btn variant="primary" disabled={loading} onClick={loadJobs}>Filtrera</Btn>
             </div>
 
@@ -608,7 +626,7 @@ export default function Admin() {
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "var(--text-sm)" }}>
                 <thead>
                   <tr style={{ borderBottom: `1px solid ${T.border}` }}>
-                    {["Jobb", "Plats", "Status", "Publicerad", ""].map((h) => (
+                    {["Jobb", "Plats", "Status", "Visningar", "Ansökn.", "Konv.", "Publicerad", ""].map((h) => (
                       <th key={h} style={{ textAlign: "left", padding: "10px 12px", fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.muted }}>
                         {h}
                       </th>
@@ -618,14 +636,21 @@ export default function Admin() {
                 <tbody>
                   {jobs.length === 0 ? (
                     <tr>
-                      <td colSpan={5} style={{ padding: "40px 12px", textAlign: "center", color: T.muted, fontSize: "var(--text-sm)" }}>
+                      <td colSpan={8} style={{ padding: "40px 12px", textAlign: "center", color: T.muted, fontSize: "var(--text-sm)" }}>
                         Inga jobb för filtret.
                       </td>
                     </tr>
                   ) : jobs.map((j) => (
                     <tr key={j.id} style={{ borderBottom: `1px solid ${T.border}` }}>
                       <td style={{ padding: "11px 12px" }}>
-                        <p style={{ fontWeight: 600, color: T.text, margin: 0, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{j.title}</p>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                          <p style={{ fontWeight: 600, color: T.text, margin: 0, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{j.title}</p>
+                          {j.source === "AGGREGATED" && (
+                            j.sourceUrl
+                              ? <a href={j.sourceUrl} target="_blank" rel="noopener noreferrer" title="Öppna på Platsbanken" style={{ fontSize: "var(--text-2xs)", fontWeight: 700, padding: "1px 6px", borderRadius: 99, background: "rgba(31,95,92,0.1)", color: T.green, textDecoration: "none", whiteSpace: "nowrap" }}>AF ↗</a>
+                              : <span style={{ fontSize: "var(--text-2xs)", fontWeight: 700, padding: "1px 6px", borderRadius: 99, background: "rgba(31,95,92,0.1)", color: T.green, whiteSpace: "nowrap" }}>AF</span>
+                          )}
+                        </div>
                         <p style={{ fontSize: "var(--text-2xs)", color: T.muted, margin: "2px 0 0", maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{j.company}</p>
                         {j.moderatedAt && (
                           <p style={{ fontSize: "var(--text-2xs)", color: T.amber, margin: "1px 0 0" }}>Mod: {j.moderationReason || "–"}</p>
@@ -633,6 +658,9 @@ export default function Admin() {
                       </td>
                       <td style={{ padding: "11px 12px", color: T.sub, fontSize: "var(--text-xs)", whiteSpace: "nowrap" }}>{j.location}, {j.region}</td>
                       <td style={{ padding: "11px 12px" }}><StatusBadge value={j.status} /></td>
+                      <td style={{ padding: "11px 12px", fontSize: "var(--text-sm)", fontWeight: 700, color: (j.views ?? 0) > 0 ? T.text : T.muted, fontVariantNumeric: "tabular-nums" }}>{j.views ?? 0}</td>
+                      <td style={{ padding: "11px 12px", fontSize: "var(--text-sm)", fontWeight: 700, color: (j.applications ?? 0) > 0 ? T.green : T.muted, fontVariantNumeric: "tabular-nums" }}>{j.applications ?? 0}</td>
+                      <td style={{ padding: "11px 12px", fontSize: "var(--text-sm)", fontWeight: 700, color: (j.conversations ?? 0) > 0 ? T.text : T.muted, fontVariantNumeric: "tabular-nums" }}>{j.conversations ?? 0}</td>
                       <td style={{ padding: "11px 12px", color: T.muted, fontSize: "var(--text-2xs)", whiteSpace: "nowrap" }}>{fmtDate(j.published)}</td>
                       <td style={{ padding: "11px 12px", textAlign: "right" }}>
                         <div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
