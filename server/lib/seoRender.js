@@ -10,6 +10,7 @@
 import { prisma } from "./prisma.js";
 import { cityPages } from "./seoCities.js";
 import { regionPages } from "./seoRegions.js";
+import { blogArticles } from "./seoBlog.js";
 
 const SITE = (process.env.FRONTEND_URL || "https://transportplattformen.se").split(",")[0].trim();
 const EMPLOYMENT_TYPE_MAP = { fast: "FULL_TIME", vikariat: "TEMPORARY", tim: "PART_TIME", deltid: "PART_TIME" };
@@ -47,7 +48,7 @@ ${jsonLd ? jsonLdScript(jsonLd) : ""}
 </head>
 <body>
 ${body}
-<p><a href="${esc(canonical)}">Visa annonsen på Sveriges Transportplattform</a></p>
+<p><a href="${esc(canonical)}">Öppna på Sveriges Transportplattform</a></p>
 </body>
 </html>`;
 }
@@ -265,4 +266,42 @@ export function renderStaticHtml(key) {
   ${p.paras.map(t => `<p>${esc(t)}</p>`).join("\n  ")}
 </main>`;
   return htmlShell({ title: p.title, description: p.description, canonical, jsonLd, body });
+}
+
+// ─── Blogg ────────────────────────────────────────────────────────────────────
+export function renderBlogArticleHtml(slug) {
+  const a = blogArticles.find(x => x.slug === slug);
+  if (!a) return null;
+  const canonical = `${SITE}/blogg/${a.slug}`;
+  const title = `${a.title} | Transportplattformen`;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: a.title,
+    description: a.desc || a.title,
+    ...(a.datePublished ? { datePublished: a.datePublished } : {}),
+    url: canonical,
+    author: { "@type": "Organization", name: "Sveriges Transportplattform" },
+    publisher: { "@type": "Organization", name: "Sveriges Transportplattform", logo: { "@type": "ImageObject", url: `${SITE}/stp-icon-192.png` } },
+    mainEntityOfPage: canonical,
+  };
+  // bodyHtml är redan ren, säker HTML genererad från våra egna komponenter
+  const body = `<main>${a.bodyHtml}</main>`;
+  return htmlShell({ title, description: a.desc || a.title, canonical, jsonLd, body });
+}
+
+export function renderBlogIndexHtml() {
+  const canonical = `${SITE}/blogg`;
+  const title = "Blogg – Guider för lastbilsförare & åkerier | Transportplattformen";
+  const description = "Guider om CE-körkort, YKB, ADR, lön och jobb för yrkesförare — från Sveriges Transportplattform.";
+  const jsonLd = {
+    "@context": "https://schema.org", "@type": "Blog", name: title, url: canonical,
+    blogPost: blogArticles.map(a => ({ "@type": "BlogPosting", headline: a.title, url: `${SITE}/blogg/${a.slug}`, ...(a.datePublished ? { datePublished: a.datePublished } : {}) })),
+  };
+  const body = `
+<main>
+  <h1>Blogg – guider för förare och åkerier</h1>
+  <ul>${blogArticles.map(a => `<li><a href="${SITE}/blogg/${a.slug}">${esc(a.title)}</a> — ${esc(a.desc || "")}</li>`).join("")}</ul>
+</main>`;
+  return htmlShell({ title, description, canonical, jsonLd, body });
 }

@@ -292,6 +292,16 @@ app.get("/api/ssr/static/:key", async (req, res) => {
   catch (e) { console.error("[ssr-static]", e?.message || e); res.status(500).type("html").send('<!DOCTYPE html><html lang="sv"><head><meta name="robots" content="noindex"></head><body></body></html>'); }
 });
 
+app.get("/api/ssr/blogg", async (req, res) => {
+  try { const { renderBlogIndexHtml } = await import("./lib/seoRender.js"); ssrSend(res, renderBlogIndexHtml(), "Bloggen hittades inte"); }
+  catch (e) { console.error("[ssr-blog-index]", e?.message || e); res.status(500).type("html").send('<!DOCTYPE html><html lang="sv"><head><meta name="robots" content="noindex"></head><body></body></html>'); }
+});
+
+app.get("/api/ssr/blogg/:slug", async (req, res) => {
+  try { const { renderBlogArticleHtml } = await import("./lib/seoRender.js"); ssrSend(res, renderBlogArticleHtml(req.params.slug), "Artikeln hittades inte"); }
+  catch (e) { console.error("[ssr-blog]", e?.message || e); res.status(500).type("html").send('<!DOCTYPE html><html lang="sv"><head><meta name="robots" content="noindex"></head><body></body></html>'); }
+});
+
 // Nödmigration: lägg till saknade DB-kolumner (kräver ADMIN_API_KEY)
 app.post("/api/internal/migrate", internalLimiter, express.json(), async (req, res) => {
   const key = req.headers["x-admin-api-key"] || req.body?.adminApiKey;

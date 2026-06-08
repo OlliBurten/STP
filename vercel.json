@@ -35,6 +35,16 @@
       "destination": "https://nodejs-production-f3b9.up.railway.app/api/ssr/static/:key"
     },
     {
+      "source": "/blogg",
+      "has": [{ "type": "header", "key": "user-agent", "value": ".*([Bb]ot|[Cc]rawler|[Ss]pider|Slurp|facebookexternalhit|Embedly|Quora|Pinterest).*" }],
+      "destination": "https://nodejs-production-f3b9.up.railway.app/api/ssr/blogg"
+    },
+    {
+      "source": "/blogg/:slug",
+      "has": [{ "type": "header", "key": "user-agent", "value": ".*([Bb]ot|[Cc]rawler|[Ss]pider|Slurp|facebookexternalhit|Embedly|Quora|Pinterest).*" }],
+      "destination": "https://nodejs-production-f3b9.up.railway.app/api/ssr/blogg/:slug"
+    },
+    {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
