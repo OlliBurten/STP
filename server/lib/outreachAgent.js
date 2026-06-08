@@ -40,6 +40,32 @@ function delay(ms) {
 }
 
 /**
+ * Översätter ett fel till en kort, begriplig svensk rad för admin-rapporten.
+ * Känner igen de vanligaste blockerarna så att rapporten säger VARFÖR inget skickades
+ * (t.ex. slut på Claude-krediter) istället för att tyst visa "0 skickade".
+ */
+function summarizeError(e) {
+  const msg = String(e?.message || e || "").toLowerCase();
+  const status = e?.status;
+  if (msg.includes("credit balance is too low") || e?.error?.type === "invalid_request_error" && msg.includes("credit")) {
+    return "Anthropic-krediter slut — fyll på i console.anthropic.com (Plans & Billing). Genererar/skickar inget förrän det är åtgärdat.";
+  }
+  if (status === 401 || msg.includes("authentication") || msg.includes("invalid x-api-key")) {
+    return "Anthropic API-nyckel ogiltig/saknas (401) — kontrollera ANTHROPIC_API_KEY.";
+  }
+  if (status === 429 || msg.includes("rate_limit") || msg.includes("rate limit")) {
+    return "Anthropic rate limit (429) — för många anrop, försök igen senare.";
+  }
+  if (status === 529 || msg.includes("overloaded")) {
+    return "Anthropic överbelastad (529) — tillfälligt, försöker igen nästa körning.";
+  }
+  if (msg.includes("resend") || msg.includes("email") || msg.includes("smtp")) {
+    return `E-postutskick misslyckades: ${e?.message || e}`;
+  }
+  return e?.message ? String(e.message).slice(0, 160) : String(e).slice(0, 160);
+}
+
+/**
  * Dag-index (0–6) → vilka 3 regioner körs idag.
  * 21 regioner / 7 dagar = 3 regioner per dag, full rotation på 1 vecka.
  */
@@ -364,6 +390,8 @@ async function generateBatch(region) {
   });
 
   let generated = 0;
+  let failed = 0;
+  const errors = new Set();
   for (const p of prospects) {
     try {
       const { subject, body } = await generateOne(p);
@@ -372,10 +400,15 @@ async function generateBatch(region) {
         data: { generatedSubject: subject, generatedEmail: body, status: "READY" },
       });
       generated++;
-    } catch (_) {}
+    } catch (e) {
+      failed++;
+      errors.add(summarizeError(e));
+      console.error(`[OutreachAgent] Genereringsfel för ${p.companyName}:`, e?.message || String(e));
+    }
     await delay(300);
   }
-  return generated;
+  if (failed) console.log(`[OutreachAgent] ${region}: ${failed} genereringar misslyckades`);
+  return { generated, failed, errors: [...errors] };
 }
 
 // ─── Step 5: Check if already registered on STP ──────────────────────────────
@@ -409,6 +442,8 @@ async function sendBatch(region) {
 
   let sent = 0;
   let skippedRegistered = 0;
+  let failed = 0;
+  const errors = new Set();
 
   for (const p of prospects) {
     try {
@@ -436,9 +471,14 @@ async function sendBatch(region) {
       });
       sent++;
       await delay(SEND_DELAY_MS);
-    } catch (_) {}
+    } catch (e) {
+      failed++;
+      errors.add(summarizeError(e));
+      console.error(`[OutreachAgent] Sändningsfel för ${p.companyName}:`, e?.message || String(e));
+    }
   }
-  return { sent, skippedRegistered };
+  if (failed) console.log(`[OutreachAgent] ${region}: ${failed} utskick misslyckades`);
+  return { sent, skippedRegistered, failed, errors: [...errors] };
 }
 
 // ─── Follow-ups (14 days after initial send) ─────────────────────────────────
@@ -462,6 +502,7 @@ async function runFollowUps() {
     || undefined;
 
   let followUpsSent = 0;
+  const followUpErrors = new Set();
 
   for (const p of candidates) {
     try {
@@ -511,9 +552,12 @@ Format:
       });
       followUpsSent++;
       await delay(SEND_DELAY_MS);
-    } catch (_) {}
+    } catch (e) {
+      followUpErrors.add(summarizeError(e));
+      console.error(`[OutreachAgent] Uppföljningsfel för ${p.companyName}:`, e?.message || String(e));
+    }
   }
-  return followUpsSent;
+  return { sent: followUpsSent, errors: [...followUpErrors] };
 }
 
 // ─── Admin summary report ─────────────────────────────────────────────────────
@@ -523,7 +567,29 @@ async function sendAgentReport(stats) {
     .split(",").map((e) => e.trim()).filter(Boolean);
   if (!adminEmails.length) return;
 
+  // Deduplicera fel: samma grundorsak (t.ex. slut på krediter) dyker annars upp
+  // en gång per region. Visa unika rader med antal.
+  const errorCounts = new Map();
+  for (const e of stats.errors) {
+    errorCounts.set(e, (errorCounts.get(e) || 0) + 1);
+  }
+  const dedupedErrors = [...errorCounts.entries()]
+    .map(([e, n]) => (n > 1 ? `${e}  (×${n})` : e));
+
+  // Varningsrubrik: berikade prospekt fanns men inget skickades = tratten är blockerad.
+  const blocked = stats.sent === 0 && (stats.enriched > 0 || stats.generated > 0 || stats.errors.length > 0);
+  const banner = blocked
+    ? [
+        `⚠️  INGET SKICKADES TROTS ${stats.enriched} BERIKADE PROSPEKT`,
+        stats.errors.length
+          ? `   Trolig orsak: se "Fel" nedan.`
+          : `   Inga fel rapporterade — kontrollera ANTHROPIC_API_KEY och RESEND_API_KEY.`,
+        ``,
+      ]
+    : [];
+
   const lines = [
+    ...banner,
     `Outreach-agent körde ${new Date().toLocaleDateString("sv-SE")}`,
     ``,
     `Regioner: ${stats.regionsProcessed.join(", ")}`,
@@ -537,8 +603,8 @@ async function sendAgentReport(stats) {
     `  Uppföljningar:  ${stats.followUps} follow-up mail`,
     `  Redan reg:      ${stats.alreadyRegistered} åkerier redan på STP`,
     ``,
-    stats.errors.length
-      ? `Fel:\n${stats.errors.map((e) => `  - ${e}`).join("\n")}`
+    dedupedErrors.length
+      ? `Fel:\n${dedupedErrors.map((e) => `  - ${e}`).join("\n")}`
       : `Inga fel.`,
     ``,
     `Se alla prospects: transportplattformen.se/admin (Outreach-fliken)`,
@@ -597,13 +663,15 @@ export async function runOutreachAgent({ dryRun = false, regions: overrideRegion
           stats.enriched += enriched;
 
           // 4. Generate
-          const generated = await generateBatch(region);
+          const { generated, errors: genErrors } = await generateBatch(region);
           stats.generated += generated;
+          for (const m of genErrors) stats.errors.push(`Generering (${region}): ${m}`);
 
           // 5. Send
-          const { sent, skippedRegistered } = await sendBatch(region);
+          const { sent, skippedRegistered, errors: sendErrors } = await sendBatch(region);
           stats.sent += sent;
           stats.alreadyRegistered += skippedRegistered;
+          for (const m of sendErrors) stats.errors.push(`Utskick (${region}): ${m}`);
 
           console.log(`[OutreachAgent] ${region}: +${imported} imp, +${enriched} enr, +${generated} gen, +${sent} sent`);
         }
@@ -619,7 +687,9 @@ export async function runOutreachAgent({ dryRun = false, regions: overrideRegion
     // Follow-ups
     if (!dryRun) {
       console.log("[OutreachAgent] Kör uppföljningar...");
-      stats.followUps = await runFollowUps();
+      const { sent: followUps, errors: followUpErrors } = await runFollowUps();
+      stats.followUps = followUps;
+      for (const m of followUpErrors) stats.errors.push(`Uppföljning: ${m}`);
       console.log(`[OutreachAgent] ${stats.followUps} uppföljningar skickade`);
     }
 
