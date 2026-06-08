@@ -9,11 +9,9 @@ import {
   updateInsightStatus,
   runInsightsNow,
   listJobsForAdmin,
-  listPendingCompanies,
   listReports,
   listSchools,
   listUsers,
-  updateCompanyStatus,
   updateJobStatus,
   updateReport,
   sendVerificationReminders,
@@ -51,7 +49,6 @@ export default function Admin() {
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [viewAsLoading, setViewAsLoading] = useState("");
 
-  const [companies, setCompanies] = useState([]);
   const [users, setUsers] = useState([]);
   const [jobs, setJobs] = useState([]);
   const [reports, setReports] = useState([]);
@@ -119,11 +116,6 @@ export default function Admin() {
     if (reasonModal) reasonModal.resolve(null);
     setReasonModal(null);
   };
-
-  async function loadCompanies() {
-    const data = await listPendingCompanies();
-    setCompanies(Array.isArray(data) ? data : []);
-  }
 
   async function loadUsers() {
     const data = await listUsers(userFilters);
@@ -280,7 +272,7 @@ export default function Admin() {
         finally { setSummaryLoading(false); }
         return;
       }
-      if (activeTab === "companies") await loadCompanies();
+      if (activeTab === "companies") await loadUsers();
       if (activeTab === "users")     await loadUsers();
       if (activeTab === "jobs")      await loadJobs();
       if (activeTab === "moderation") await loadReports();
@@ -313,16 +305,6 @@ export default function Admin() {
     setSummaryLoading(true);
     Promise.all([loadSummary(), loadOnboarding(), loadHealth()]).catch(() => setSummary(null)).finally(() => setSummaryLoading(false));
   }, []);
-
-  const handleCompanyStatus = async (id, status) => {
-    setLoading(true); clearFlash();
-    try {
-      await updateCompanyStatus(id, status);
-      await loadCompanies();
-      setSuccess(`Företaget uppdaterades till ${status}.`);
-    } catch (e) { setError(e.message || "Kunde inte uppdatera företag"); }
-    finally { setLoading(false); }
-  };
 
   const handleJobStatus = async (id, status) => {
     let reason = "";
@@ -456,8 +438,9 @@ export default function Admin() {
         {/* ════════════════════════════════════════
             USERS TAB — flex split-view layout
         ════════════════════════════════════════ */}
-        {activeTab === "users" && (
+        {(activeTab === "users" || activeTab === "companies") && (
           <AdminUsersTab
+            audience={activeTab === "companies" ? "companies" : "drivers"}
             users={users}
             userFilters={userFilters}
             setUserFilters={setUserFilters}
@@ -480,7 +463,7 @@ export default function Admin() {
         {/* ════════════════════════════════════════
             ALL OTHER TABS — scrollable with padding
         ════════════════════════════════════════ */}
-        {activeTab !== "overview" && activeTab !== "users" && (
+        {activeTab !== "overview" && activeTab !== "users" && activeTab !== "companies" && (
           <div style={{ flex: 1, overflowY: "auto" }}>
           <div style={{ padding: "22px 26px 40px", maxWidth: 1440, margin: "0 auto" }}>
 
@@ -494,59 +477,6 @@ export default function Admin() {
           <div style={{ background: T.greenBg, border: `1px solid ${T.greenBorder}`, borderRadius: 12, padding: "12px 18px", marginBottom: 16, color: T.green, fontSize: "var(--text-sm)", fontWeight: 600 }}>
             {success}
           </div>
-        )}
-
-        {/* ════════════════════════════════════════
-            COMPANIES TAB
-        ════════════════════════════════════════ */}
-        {activeTab === "companies" && (
-          <SectionCard>
-            <p style={{ fontSize: "var(--text-lg)", fontWeight: 700, color: T.text, marginBottom: 6 }}>Väntande företag</p>
-            <p style={{ fontSize: "var(--text-sm)", color: T.muted, marginBottom: 20 }}>
-              Granska och godkänn eller avslå åkerier som registrerat sig.
-            </p>
-            <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "var(--text-sm)" }}>
-                <thead>
-                  <tr style={{ borderBottom: `1px solid ${T.border}` }}>
-                    {["Företag", "Org.nr", "Skapad", ""].map((h) => (
-                      <th key={h} style={{ textAlign: "left", padding: "10px 12px", fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.muted }}>
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {companies.length === 0 ? (
-                    <tr>
-                      <td colSpan={4} style={{ padding: "40px 12px", textAlign: "center", color: T.muted, fontSize: "var(--text-sm)" }}>
-                        Inga väntande företag just nu.
-                      </td>
-                    </tr>
-                  ) : companies.map((c) => (
-                    <tr key={c.id} style={{ borderBottom: `1px solid ${T.border}` }}>
-                      <td style={{ padding: "12px" }}>
-                        <p style={{ fontWeight: 600, color: T.text, margin: 0, maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                          {c.companyName || c.name}
-                        </p>
-                        <p style={{ fontSize: "var(--text-2xs)", color: T.muted, margin: "2px 0 0", maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                          {c.email}
-                        </p>
-                      </td>
-                      <td style={{ padding: "12px", color: T.sub, fontSize: "var(--text-xs)" }}>{c.companyOrgNumber || "–"}</td>
-                      <td style={{ padding: "12px", color: T.muted, fontSize: "var(--text-xs)", whiteSpace: "nowrap" }}>{fmtDate(c.createdAt)}</td>
-                      <td style={{ padding: "12px", textAlign: "right" }}>
-                        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-                          <Btn variant="success" disabled={loading} onClick={() => handleCompanyStatus(c.id, "VERIFIED")}>Godkänn</Btn>
-                          <Btn variant="danger"  disabled={loading} onClick={() => handleCompanyStatus(c.id, "REJECTED")}>Avslå</Btn>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </SectionCard>
         )}
 
         {/* ════════════════════════════════════════

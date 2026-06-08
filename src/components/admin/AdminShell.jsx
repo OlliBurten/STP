@@ -56,8 +56,8 @@ const NAV_GROUPS = [
     { id: "pulse",    l: "System & pulse", n: "pulse" },
   ]},
   { l: "Hantera", items: [
-    { id: "users",      l: "Användare", n: "users" },
-    { id: "companies",  l: "Företag",   n: "building" },
+    { id: "users",      l: "Förare",    n: "users" },
+    { id: "companies",  l: "Åkerier",   n: "building" },
     { id: "jobs",       l: "Jobb",      n: "briefcase" },
     { id: "moderation", l: "Moderering",n: "shield" },
     { id: "reviews",    l: "Omdömen",   n: "star" },
@@ -252,8 +252,8 @@ export function AdminCmdK({ open, onClose, onChange, onAction }) {
   const go = (tab) => { onChange?.(tab); onClose(); };
   const act = (a) => { onAction?.(a); onClose(); };
   const sections = [
-    { id: "overview", l: "Översikt" }, { id: "users", l: "Användare" },
-    { id: "companies", l: "Företag" }, { id: "jobs", l: "Jobb" },
+    { id: "overview", l: "Översikt" }, { id: "users", l: "Förare" },
+    { id: "companies", l: "Åkerier" }, { id: "jobs", l: "Jobb" },
     { id: "moderation", l: "Moderering" }, { id: "insights", l: "AI-insikter" },
     { id: "pulse", l: "System & pulse" },
   ];
@@ -284,7 +284,7 @@ export function AdminCmdK({ open, onClose, onChange, onAction }) {
               {noHits && <div style={{ padding: "20px 18px", fontSize: "var(--text-sm)", color: "var(--ink-400)" }}>Inga träffar för &quot;{term}&quot;</div>}
               {results.users.length > 0 && (
                 <CmdGroup label="Användare">
-                  {results.users.map((u) => <CmdRow key={u.id} icon="user" label={`${u.name || "(namnlös)"} — ${u.email}`} onClick={() => go("users")} />)}
+                  {results.users.map((u) => <CmdRow key={u.id} icon="user" label={`${u.name || u.companyName || "(namnlös)"} — ${u.email}`} onClick={() => go((u.role === "COMPANY" || u.role === "RECRUITER") ? "companies" : "users")} />)}
                 </CmdGroup>
               )}
               {results.jobs.length > 0 && (

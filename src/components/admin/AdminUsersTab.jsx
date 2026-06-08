@@ -27,30 +27,39 @@ const FilterPill = ({ on, count, children, onClick, color }) => (
 );
 
 // ─── Users header ──────────────────────────────────────────────────────────────
-function UsersHeader({ users, selectedCount, filter, setFilter, onExportCsv, onStuckReminder }) {
-  const filters = [
-    { v: "all",        l: "Alla",           c: users.length },
-    { v: "driver",     l: "Förare",         c: users.filter(u => !isCompanyRole(u)).length },
-    { v: "company",    l: "Åkerier",        c: users.filter(u => isCompanyRole(u)).length },
-    { v: "unverified", l: "Ej verifierade", c: users.filter(u => !isVerified(u) && isCompanyRole(u)).length, color: "var(--amber)" },
-    { v: "stuck",      l: "Stuck (<25%)",   c: users.filter(u => (u.profileCompletion ?? 0) < 25).length, color: "var(--amber)" },
-    { v: "warnings",   l: "Med varningar",  c: users.filter(u => warnings(u) > 0).length, color: "var(--danger)" },
-    { v: "suspended",  l: "Suspenderade",   c: users.filter(u => isSuspended(u)).length, color: "var(--danger)" },
-  ];
+function UsersHeader({ users, selectedCount, filter, setFilter, onExportCsv, onStuckReminder, audience = "all" }) {
+  const isCompanies = audience === "companies";
+  const title = isCompanies ? "Åkerier" : audience === "drivers" ? "Förare" : "Användare";
+  const filters = isCompanies
+    ? [
+        { v: "all",        l: "Alla",             c: users.length },
+        { v: "pending",    l: "Väntar verifiering", c: users.filter(u => u.companyStatus === "PENDING").length, color: "var(--amber)" },
+        { v: "unverified", l: "Ej verifierade",   c: users.filter(u => !isVerified(u)).length, color: "var(--amber)" },
+        { v: "warnings",   l: "Med varningar",    c: users.filter(u => warnings(u) > 0).length, color: "var(--danger)" },
+        { v: "suspended",  l: "Suspenderade",     c: users.filter(u => isSuspended(u)).length, color: "var(--danger)" },
+      ]
+    : [
+        { v: "all",        l: "Alla",           c: users.length },
+        { v: "stuck",      l: "Stuck (<25%)",   c: users.filter(u => (u.profileCompletion ?? 0) < 25).length, color: "var(--amber)" },
+        { v: "warnings",   l: "Med varningar",  c: users.filter(u => warnings(u) > 0).length, color: "var(--danger)" },
+        { v: "suspended",  l: "Suspenderade",   c: users.filter(u => isSuspended(u)).length, color: "var(--danger)" },
+      ];
   return (
     <div style={{ padding: "22px 26px 14px" }}>
       <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 18, gap: 14 }}>
         <div>
-          <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, letterSpacing: -0.6, marginBottom: 3, color: "var(--ink-900)" }}>Användare</h1>
+          <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, letterSpacing: -0.6, marginBottom: 3, color: "var(--ink-900)" }}>{title}</h1>
           <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)" }}>{users.length} totalt · {selectedCount} valda</div>
         </div>
         <div style={{ display: "flex", gap: 7 }}>
           <button onClick={onExportCsv} style={{ padding: "7px 12px", borderRadius: 7, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-700)", fontSize: "var(--text-2xs)", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
             <Icon n="download" s={12} c="var(--ink-500)" /> Exportera CSV
           </button>
-          <button onClick={onStuckReminder} style={{ padding: "7px 12px", borderRadius: 7, background: "var(--amber-tint)", border: "1px solid var(--amber)", color: "var(--amber-text)", fontSize: "var(--text-2xs)", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
-            <Icon n="zap" s={12} c="var(--amber-text)" /> Skicka påminnelse till stuck
-          </button>
+          {!isCompanies && (
+            <button onClick={onStuckReminder} style={{ padding: "7px 12px", borderRadius: 7, background: "var(--amber-tint)", border: "1px solid var(--amber)", color: "var(--amber-text)", fontSize: "var(--text-2xs)", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+              <Icon n="zap" s={12} c="var(--amber-text)" /> Skicka påminnelse till stuck
+            </button>
+          )}
         </div>
       </div>
       <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
@@ -180,7 +189,7 @@ function UserRow({ u, selected, isSelectedRow, onCheck, onSelect, compact }) {
 }
 
 // ─── Detail panel ──────────────────────────────────────────────────────────────
-function DetailPanel({ u, detail, onClose, onVerify, onSuspend, onUnsuspend, onWarn, onDelete, onViewAs }) {
+function DetailPanel({ u, detail, onClose, onVerify, onReject, onSuspend, onUnsuspend, onWarn, onDelete, onViewAs }) {
   if (!u) return null;
   const isComp   = isCompanyRole(u);
   const verified = isVerified(u);
@@ -289,9 +298,16 @@ function DetailPanel({ u, detail, onClose, onVerify, onSuspend, onUnsuspend, onW
         <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.3, textTransform: "uppercase", color: "var(--danger)", marginBottom: 10 }}>Åtgärder</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           {isComp && !verified && (
-            <button onClick={onVerify} style={{ padding: "10px 12px", borderRadius: 8, background: "var(--success-tint)", border: "1px solid var(--success)", color: "var(--success)", fontSize: "var(--text-xs)", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
-              <Icon n="check" s={12} c="var(--success)" /> Verifiera företag
-            </button>
+            <>
+              <button onClick={onVerify} style={{ padding: "10px 12px", borderRadius: 8, background: "var(--success-tint)", border: "1px solid var(--success)", color: "var(--success)", fontSize: "var(--text-xs)", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
+                <Icon n="check" s={12} c="var(--success)" /> Verifiera åkeri
+              </button>
+              {onReject && (
+                <button onClick={onReject} style={{ padding: "10px 12px", borderRadius: 8, background: "rgba(220,38,38,0.06)", border: "1px solid rgba(220,38,38,0.2)", color: "var(--danger)", fontSize: "var(--text-xs)", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
+                  <Icon n="ban" s={12} c="var(--danger)" /> Avslå ansökan
+                </button>
+              )}
+            </>
           )}
           {!suspended ? (
             <>
@@ -360,11 +376,18 @@ export default function AdminUsersTab({
   showReasonModal,
   startViewAs,
   navigate,
+  audience = "all",
 }) {
   const [selected, setSelected] = useState(new Set());
   const [filter, setFilter] = useState("all");
 
-  const allUsers = Array.isArray(users) ? users : [];
+  const allUsersRaw = Array.isArray(users) ? users : [];
+  // Skopa till målgrupp: "drivers" = bara förare, "companies" = bara åkerier
+  const allUsers = audience === "drivers"
+    ? allUsersRaw.filter(u => !isCompanyRole(u))
+    : audience === "companies"
+      ? allUsersRaw.filter(u => isCompanyRole(u))
+      : allUsersRaw;
 
   const toggle = (id) => {
     const next = new Set(selected);
@@ -375,7 +398,8 @@ export default function AdminUsersTab({
   const filtered = allUsers.filter(u => {
     if (filter === "driver")     return !isCompanyRole(u);
     if (filter === "company")    return isCompanyRole(u);
-    if (filter === "unverified") return !isVerified(u) && isCompanyRole(u);
+    if (filter === "pending")    return u.companyStatus === "PENDING";
+    if (filter === "unverified") return !isVerified(u);
     if (filter === "stuck")      return (u.profileCompletion ?? 0) < 25;
     if (filter === "warnings")   return warnings(u) > 0;
     if (filter === "suspended")  return isSuspended(u);
@@ -404,9 +428,23 @@ export default function AdminUsersTab({
       const orgId = selectedUserDetail?.organizations?.[0]?.id || selectedUser.id;
       await updateCompanyStatus(orgId, "VERIFIED");
       await loadUsers();
-      setSuccess("Företaget verifierades.");
+      setSuccess("Åkeriet verifierades.");
     } catch (e) {
       setError(e.message || "Kunde inte verifiera");
+    }
+  };
+
+  const handleReject = async () => {
+    if (!selectedUser) return;
+    const result = await showReasonModal(`Avslå ${selectedUser.companyName || selectedUser.email}? Skriv en kort anledning (visas ej för åkeriet):`);
+    if (!result) return;
+    try {
+      const orgId = selectedUserDetail?.organizations?.[0]?.id || selectedUser.id;
+      await updateCompanyStatus(orgId, "REJECTED");
+      await loadUsers();
+      setSuccess("Ansökan avslogs.");
+    } catch (e) {
+      setError(e.message || "Kunde inte avslå");
     }
   };
 
@@ -540,6 +578,7 @@ export default function AdminUsersTab({
           setFilter={setFilter}
           onExportCsv={handleCsvExport}
           onStuckReminder={handleStuckReminder}
+          audience={audience}
         />
         <BulkBar count={selected.size} onClear={() => setSelected(new Set())} onBulkSuspend={handleBulkSuspend} />
         <TableHeader allSelected={allSelected} onSelectAll={toggleAll} compact={!!selectedUser} />
@@ -563,6 +602,7 @@ export default function AdminUsersTab({
         detail={selectedUserDetail}
         onClose={() => loadUserDetail(null)}
         onVerify={handleVerify}
+        onReject={audience === "companies" ? handleReject : undefined}
         onSuspend={handleSuspend}
         onUnsuspend={handleUnsuspend}
         onWarn={handleWarn}
