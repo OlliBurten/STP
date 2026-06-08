@@ -5,6 +5,16 @@
       "destination": "https://nodejs-production-f3b9.up.railway.app/api/sitemap-dynamic.xml"
     },
     {
+      "source": "/jobb/:id",
+      "has": [{ "type": "header", "key": "user-agent", "value": ".*([Bb]ot|[Cc]rawler|[Ss]pider|Slurp|facebookexternalhit|Embedly|Quora|Pinterest).*" }],
+      "destination": "https://nodejs-production-f3b9.up.railway.app/api/ssr/jobb/:id"
+    },
+    {
+      "source": "/foretag/:id",
+      "has": [{ "type": "header", "key": "user-agent", "value": ".*([Bb]ot|[Cc]rawler|[Ss]pider|Slurp|facebookexternalhit|Embedly|Quora|Pinterest).*" }],
+      "destination": "https://nodejs-production-f3b9.up.railway.app/api/ssr/foretag/:id"
+    },
+    {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }

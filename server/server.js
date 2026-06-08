@@ -239,6 +239,38 @@ app.get("/api/sitemap-dynamic.xml", async (req, res) => {
   }
 });
 
+// SSR för sökmotorer (dynamic rendering) — serveras till botar via Vercel-rewrite.
+// Människor får alltid SPA:n; dessa routes ger crawlers fullt HTML-innehåll + strukturdata.
+app.get("/api/ssr/jobb/:id", async (req, res) => {
+  try {
+    const { renderJobHtml } = await import("./lib/seoRender.js");
+    const html = await renderJobHtml(req.params.id);
+    res.set("Cache-Control", "public, max-age=3600");
+    if (!html) {
+      return res.status(404).type("html").send('<!DOCTYPE html><html lang="sv"><head><meta name="robots" content="noindex"><title>Annonsen hittades inte</title></head><body><h1>Annonsen finns inte längre</h1></body></html>');
+    }
+    res.type("html").send(html);
+  } catch (e) {
+    console.error("[ssr-job]", e?.message || e);
+    res.status(500).type("html").send('<!DOCTYPE html><html lang="sv"><head><meta name="robots" content="noindex"></head><body></body></html>');
+  }
+});
+
+app.get("/api/ssr/foretag/:id", async (req, res) => {
+  try {
+    const { renderCompanyHtml } = await import("./lib/seoRender.js");
+    const html = await renderCompanyHtml(req.params.id);
+    res.set("Cache-Control", "public, max-age=3600");
+    if (!html) {
+      return res.status(404).type("html").send('<!DOCTYPE html><html lang="sv"><head><meta name="robots" content="noindex"><title>Åkeriet hittades inte</title></head><body><h1>Åkeriet finns inte</h1></body></html>');
+    }
+    res.type("html").send(html);
+  } catch (e) {
+    console.error("[ssr-company]", e?.message || e);
+    res.status(500).type("html").send('<!DOCTYPE html><html lang="sv"><head><meta name="robots" content="noindex"></head><body></body></html>');
+  }
+});
+
 // Nödmigration: lägg till saknade DB-kolumner (kräver ADMIN_API_KEY)
 app.post("/api/internal/migrate", internalLimiter, express.json(), async (req, res) => {
   const key = req.headers["x-admin-api-key"] || req.body?.adminApiKey;
