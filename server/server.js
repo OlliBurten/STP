@@ -271,6 +271,27 @@ app.get("/api/ssr/foretag/:id", async (req, res) => {
   }
 });
 
+const ssrSend = (res, html, notFoundTitle) => {
+  res.set("Cache-Control", "public, max-age=3600");
+  if (!html) return res.status(404).type("html").send(`<!DOCTYPE html><html lang="sv"><head><meta name="robots" content="noindex"><title>${notFoundTitle}</title></head><body><h1>${notFoundTitle}</h1></body></html>`);
+  res.type("html").send(html);
+};
+
+app.get("/api/ssr/ce-jobb/:slug", async (req, res) => {
+  try { const { renderCityHtml } = await import("./lib/seoRender.js"); ssrSend(res, await renderCityHtml(req.params.slug), "Staden hittades inte"); }
+  catch (e) { console.error("[ssr-city]", e?.message || e); res.status(500).type("html").send('<!DOCTYPE html><html lang="sv"><head><meta name="robots" content="noindex"></head><body></body></html>'); }
+});
+
+app.get("/api/ssr/lastbilsjobb/:slug", async (req, res) => {
+  try { const { renderRegionHtml } = await import("./lib/seoRender.js"); ssrSend(res, await renderRegionHtml(req.params.slug), "Regionen hittades inte"); }
+  catch (e) { console.error("[ssr-region]", e?.message || e); res.status(500).type("html").send('<!DOCTYPE html><html lang="sv"><head><meta name="robots" content="noindex"></head><body></body></html>'); }
+});
+
+app.get("/api/ssr/static/:key", async (req, res) => {
+  try { const { renderStaticHtml } = await import("./lib/seoRender.js"); ssrSend(res, renderStaticHtml(req.params.key === "home" ? "" : req.params.key), "Sidan hittades inte"); }
+  catch (e) { console.error("[ssr-static]", e?.message || e); res.status(500).type("html").send('<!DOCTYPE html><html lang="sv"><head><meta name="robots" content="noindex"></head><body></body></html>'); }
+});
+
 // Nödmigration: lägg till saknade DB-kolumner (kräver ADMIN_API_KEY)
 app.post("/api/internal/migrate", internalLimiter, express.json(), async (req, res) => {
   const key = req.headers["x-admin-api-key"] || req.body?.adminApiKey;

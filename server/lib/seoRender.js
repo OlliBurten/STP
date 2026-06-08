@@ -8,6 +8,8 @@
  */
 
 import { prisma } from "./prisma.js";
+import { cityPages } from "./seoCities.js";
+import { regionPages } from "./seoRegions.js";
 
 const SITE = (process.env.FRONTEND_URL || "https://transportplattformen.se").split(",")[0].trim();
 const EMPLOYMENT_TYPE_MAP = { fast: "FULL_TIME", vikariat: "TEMPORARY", tim: "PART_TIME", deltid: "PART_TIME" };
@@ -147,4 +149,120 @@ export async function renderCompanyHtml(id) {
 </main>`;
 
   return htmlShell({ title, description, canonical, jsonLd, body });
+}
+
+// ─── Jobblista-fragment (för stad/region-sidor) ───────────────────────────────
+async function activeJobsInRegion(region, take = 40) {
+  if (!region) return [];
+  return prisma.job.findMany({
+    where: { status: "ACTIVE", region },
+    select: { id: true, title: true, company: true, location: true },
+    orderBy: { published: "desc" },
+    take,
+  });
+}
+
+function jobsListHtml(jobs) {
+  if (!jobs.length) return "<p>Inga aktiva annonser just nu — skapa en profil så hör åkerier av sig.</p>";
+  return `<ul>${jobs.map(j => `<li><a href="${SITE}/jobb/${j.id}">${esc(j.title)}</a> – ${esc(j.company)}${j.location ? `, ${esc(j.location)}` : ""}</li>`).join("")}</ul>`;
+}
+
+// ─── Stad-landningssida (/ce-jobb/:slug) ──────────────────────────────────────
+export async function renderCityHtml(slug) {
+  const city = cityPages.find(c => c.slug === slug);
+  if (!city) return null;
+  const canonical = `${SITE}/ce-jobb/${city.slug}`;
+  const title = `CE-jobb & lastbilsjobb i ${city.name} | Transportplattformen`;
+  const description = (city.desc || `Lediga CE-jobb och lastbilsjobb i ${city.name}.`).slice(0, 160);
+  const jobs = await activeJobsInRegion(city.region);
+  const jsonLd = { "@context": "https://schema.org", "@type": "CollectionPage", name: title, description, url: canonical };
+  const body = `
+<main>
+  <h1>CE-jobb och lastbilsjobb i ${esc(city.name)}</h1>
+  ${city.tagline ? `<p><strong>${esc(city.tagline)}</strong></p>` : ""}
+  <p>${esc(city.desc || "")}</p>
+  ${city.transport ? `<section><h2>Transportmarknaden i ${esc(city.name)}</h2><p>${esc(city.transport)}</p></section>` : ""}
+  ${(city.highlights || []).length ? `<section><h2>Kännetecken</h2><ul>${city.highlights.map(h => `<li>${esc(h)}</li>`).join("")}</ul></section>` : ""}
+  <section><h2>Lediga jobb i ${esc(city.region)}</h2>${jobsListHtml(jobs)}</section>
+</main>`;
+  return htmlShell({ title, description, canonical, jsonLd, body });
+}
+
+// ─── Region-landningssida (/lastbilsjobb/:slug) ───────────────────────────────
+export async function renderRegionHtml(slug) {
+  const region = regionPages.find(r => r.slug === slug);
+  if (!region) return null;
+  const canonical = `${SITE}/lastbilsjobb/${region.slug}`;
+  const title = `Lastbilsjobb i ${region.name} | Transportplattformen`;
+  const description = (region.desc || `Lediga lastbilsjobb i ${region.name}.`).slice(0, 160);
+  const jobs = await activeJobsInRegion(region.name);
+  const jsonLd = { "@context": "https://schema.org", "@type": "CollectionPage", name: title, description, url: canonical };
+  const body = `
+<main>
+  <h1>Lastbilsjobb i ${esc(region.name)}</h1>
+  <p>${esc(region.desc || "")}</p>
+  <section><h2>Lediga jobb i ${esc(region.name)}</h2>${jobsListHtml(jobs)}</section>
+</main>`;
+  return htmlShell({ title, description, canonical, jsonLd, body });
+}
+
+// ─── Statiska marknadsföringssidor ────────────────────────────────────────────
+const STATIC_PAGES = {
+  "": {
+    path: "", title: "Sveriges Transportplattform – Jobb & rekrytering av lastbilsförare",
+    description: "Sveriges plattform för lastbilsförare och åkerier. Hitta CE- och C-jobb, eller rekrytera yrkesförare direkt — utan bemanningsavgift.",
+    h1: "Sveriges Transportplattform", paras: [
+      "Plattformen som kopplar samman lastbilsförare med åkerier i hela Sverige.",
+      "Förare: bläddra bland lediga CE- och C-jobb, skapa en profil och bli kontaktad direkt av åkerier.",
+      "Åkerier: posta jobb gratis och nå kvalificerade yrkesförare utan rekryteringsavgift.",
+    ],
+  },
+  "forare": {
+    path: "forare", title: "För förare – Hitta lastbilsjobb | Transportplattformen",
+    description: "Hitta CE- och C-jobb i hela Sverige. Skapa en gratis förarprofil och bli kontaktad direkt av åkerier som söker chaufförer.",
+    h1: "För förare", paras: [
+      "Bläddra bland lediga lastbilsjobb i hela Sverige — fjärrkörning, distribution, lokalt och timjobb.",
+      "Skapa en profil med dina körkort (CE, C), YKB och ADR — så hör åkerier av sig direkt när de söker.",
+    ],
+  },
+  "for-akerier": {
+    path: "for-akerier", title: "För åkerier – Rekrytera lastbilsförare | Transportplattformen",
+    description: "Rekrytera CE- och C-förare direkt, utan bemanningsavgift. Posta jobb gratis och nå yrkesförare i hela Sverige.",
+    h1: "För åkerier", paras: [
+      "Posta lediga tjänster gratis och nå kvalificerade lastbilsförare i hela Sverige.",
+      "Kontakta förare direkt — ingen bemanning, ingen rekryteringsavgift.",
+    ],
+  },
+  "jobb": {
+    path: "jobb", title: "Lediga lastbilsjobb i hela Sverige | Transportplattformen",
+    description: "Alla lediga CE- och C-jobb i Sverige på ett ställe. Fjärrkörning, distribution, lokalt och tim — sök och ansök direkt.",
+    h1: "Lediga lastbilsjobb i Sverige", paras: [
+      "Sök bland lediga lastbilsjobb i hela landet — filtrera på körkort, region och anställningsform.",
+    ],
+  },
+  "om-oss": {
+    path: "om-oss", title: "Om oss – Sveriges Transportplattform",
+    description: "Sveriges Transportplattform kopplar samman lastbilsförare och åkerier direkt — utan mellanhänder.",
+    h1: "Om Sveriges Transportplattform", paras: [
+      "Vi bygger Sveriges marknadsplats för yrkesförare och åkerier — en direktkanal utan bemanningsbolag.",
+    ],
+  },
+  "kontakt": {
+    path: "kontakt", title: "Kontakt – Sveriges Transportplattform",
+    description: "Kontakta Sveriges Transportplattform — frågor, support och samarbeten.",
+    h1: "Kontakta oss", paras: ["Har du frågor om plattformen, jobb eller samarbeten? Hör av dig."],
+  },
+};
+
+export function renderStaticHtml(key) {
+  const p = STATIC_PAGES[key];
+  if (!p) return null;
+  const canonical = `${SITE}/${p.path}`;
+  const jsonLd = { "@context": "https://schema.org", "@type": "WebPage", name: p.title, description: p.description, url: canonical };
+  const body = `
+<main>
+  <h1>${esc(p.h1)}</h1>
+  ${p.paras.map(t => `<p>${esc(t)}</p>`).join("\n  ")}
+</main>`;
+  return htmlShell({ title: p.title, description: p.description, canonical, jsonLd, body });
 }
