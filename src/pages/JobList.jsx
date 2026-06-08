@@ -254,6 +254,34 @@ function Sidebar({ profile }) {
   );
 }
 
+/* ─── Sidnumrering ──────────────────────────────────────────────────────────── */
+function Pagination({ page, totalPages, onChange }) {
+  if (totalPages <= 1) return null;
+  // Visa sidor runt nuvarande (max 5 + första/sista)
+  const nums = [];
+  const add = (n) => { if (n >= 1 && n <= totalPages && !nums.includes(n)) nums.push(n); };
+  add(1); for (let i = page - 1; i <= page + 1; i++) add(i); add(totalPages);
+  nums.sort((a, b) => a - b);
+  const btn = (active) => ({
+    minWidth: 36, height: 36, padding: "0 10px", borderRadius: 8, cursor: "pointer",
+    border: `1px solid ${active ? "var(--green)" : "var(--line)"}`,
+    background: active ? "var(--green)" : "var(--paper)",
+    color: active ? "#fff" : "var(--ink-700)", fontSize: "var(--text-sm)", fontWeight: 700,
+  });
+  return (
+    <nav aria-label="Sidnavigering" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, flexWrap: "wrap", padding: "28px 0 8px" }}>
+      <button disabled={page <= 1} onClick={() => onChange(page - 1)} style={{ ...btn(false), opacity: page <= 1 ? 0.4 : 1, cursor: page <= 1 ? "default" : "pointer" }}>← Föregående</button>
+      {nums.map((n, i) => (
+        <span key={n} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          {i > 0 && n - nums[i - 1] > 1 && <span style={{ color: "var(--ink-400)" }}>…</span>}
+          <button onClick={() => onChange(n)} style={btn(n === page)}>{n}</button>
+        </span>
+      ))}
+      <button disabled={page >= totalPages} onClick={() => onChange(page + 1)} style={{ ...btn(false), opacity: page >= totalPages ? 0.4 : 1, cursor: page >= totalPages ? "default" : "pointer" }}>Nästa →</button>
+    </nav>
+  );
+}
+
 /* ─────────────────────────────────────────────────────────────────────────── */
 export default function JobList() {
   usePageTitle("Lediga chaufförsjobb");
@@ -277,8 +305,13 @@ export default function JobList() {
     jobType: "", employment: "", bransch: "", minSalary: "",
   });
   const [view, setView] = useState("list");
+  const PAGE_SIZE = 20;
+  const [page, setPage] = useState(1);
 
   useDriverTour({ isDriver, user, profileLoaded: !jobsLoading });
+
+  // Återställ till sida 1 när filter/flik/sökning ändras
+  useEffect(() => { setPage(1); }, [tab, filters, mobileFilters]);
 
   useEffect(() => {
     if (!hasApi) return;
@@ -445,6 +478,11 @@ export default function JobList() {
   /* ═══════════════════════════════════════════════════════
      MOBILE LAYOUT
   ══════════════════════════════════════════════════════ */
+  const goToPage = (n) => { setPage(n); if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" }); };
+  const mTotalPages = Math.max(1, Math.ceil(mobileJobs.length / PAGE_SIZE));
+  const mSafePage = Math.min(page, mTotalPages);
+  const pagedMobileJobs = mobileJobs.slice((mSafePage - 1) * PAGE_SIZE, mSafePage * PAGE_SIZE);
+
   if (isMobile) return (
     <div style={{ background: "var(--paper)", minHeight: "100vh" }}>
       <PageMeta description="Bläddra bland lediga lastbilsjobb i Sverige." canonical="/jobb" />
@@ -496,7 +534,7 @@ export default function JobList() {
 
       <div style={{ padding: "4px 20px 100px", display: "flex", flexDirection: "column", gap: 10 }}>
         {jobsLoading && <Skeletons count={4} />}
-        {!jobsLoading && mobileJobs.map(job => (
+        {!jobsLoading && pagedMobileJobs.map(job => (
           <JobCard
             key={job.id} job={job}
             matchScore={isDriver && driverForMatch ? (matchDataMap[job.id]?.pct ?? null) : null}
@@ -505,6 +543,9 @@ export default function JobList() {
             onToggleSave={handleToggleSave}
           />
         ))}
+        {!jobsLoading && mobileJobs.length > 0 && (
+          <Pagination page={mSafePage} totalPages={mTotalPages} onChange={goToPage} />
+        )}
         {!jobsLoading && mobileJobs.length === 0 && (
           <EmptyState tabKey={tab} onReset={() => { setFilters(f => ({ ...f, search: "", region: "", license: "", employment: "", jobType: "" })); setMobileFilters({ license: "", employment: "", jobType: "", region: "" }); setTab("all"); }} />
         )}
@@ -540,6 +581,9 @@ export default function JobList() {
      DESKTOP LAYOUT
   ══════════════════════════════════════════════════════ */
   const displayJobs = tabFilteredJobs ?? filteredJobs;
+  const totalPages = Math.max(1, Math.ceil(displayJobs.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const pagedJobs = displayJobs.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--paper)" }}>
@@ -750,7 +794,7 @@ export default function JobList() {
                     <EmptyState tabKey={tab} onReset={() => { setFilters(f => ({ ...f, search: "", region: "", license: "", employment: "", jobType: "" })); setTab("all"); }} />
                   )}
 
-                  {!jobsLoading && displayJobs.map(job => {
+                  {!jobsLoading && pagedJobs.map(job => {
                     const data = matchDataMap[job.id];
                     return (
                       <JobCard
@@ -764,6 +808,10 @@ export default function JobList() {
                       />
                     );
                   })}
+
+                  {!jobsLoading && displayJobs.length > 0 && (
+                    <Pagination page={safePage} totalPages={totalPages} onChange={goToPage} />
+                  )}
                 </div>
 
                 {/* Sidebar */}
