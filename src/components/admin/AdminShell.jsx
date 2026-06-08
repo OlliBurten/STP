@@ -260,9 +260,8 @@ export function AdminCmdK({ open, onClose, onChange, onAction }) {
   const noHits = !searching && results.users.length === 0 && results.jobs.length === 0;
 
   return (
-    <>
-      <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(6px)", zIndex: 100 }} />
-      <div style={{ position: "fixed", top: 80, left: "50%", transform: "translateX(-50%)", width: 580, maxWidth: "calc(100vw - 40px)", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, boxShadow: "var(--sh-md)", zIndex: 110, overflow: "hidden", maxHeight: "70vh", display: "flex", flexDirection: "column", animation: "fadeIn .25s cubic-bezier(.22,1,.36,1) both" }}>
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(6px)", zIndex: 100, display: "flex", justifyContent: "center", alignItems: "flex-start", paddingTop: 80 }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: 580, maxWidth: "calc(100vw - 40px)", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, boxShadow: "var(--sh-md)", zIndex: 110, overflow: "hidden", maxHeight: "70vh", display: "flex", flexDirection: "column", animation: "fadeIn .25s cubic-bezier(.22,1,.36,1) both" }}>
         <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--line)", display: "flex", alignItems: "center", gap: 11 }}>
           <Icon n="search" s={15} c="var(--ink-400)" />
           <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Sök användare, jobb — eller hoppa till en sektion..." style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "var(--ink-900)", fontSize: "var(--text-md)", fontFamily: "inherit" }} />
@@ -300,6 +299,6 @@ export function AdminCmdK({ open, onClose, onChange, onAction }) {
           <span>Sök bland {sections.length} sektioner, användare och jobb</span>
         </div>
       </div>
-    </>
+    </div>
   );
 }
