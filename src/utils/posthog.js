@@ -7,8 +7,10 @@
  * - Alla funktioner är no-ops tills PostHog är initierat
  */
 
-const POSTHOG_KEY = "phc_yAAxbAPm3pGzBTxGaFUR6yvHmbSMgGwwKZkqTufe478z";
-const POSTHOG_HOST = "https://eu.i.posthog.com";
+// Rätt projekt-nyckel för STP:s PostHog (EU). Tidigare hårdkodad nyckel (phc_yAAx…)
+// matchade INTE projektet → 0 events fångades. Läs från env om satt, annars korrekt fallback.
+const POSTHOG_KEY = import.meta.env.VITE_POSTHOG_KEY || "phc_kShkxLGgrao6jypSTnFAjUVdazNiYw6sVijhKGQMxPdt";
+const POSTHOG_HOST = import.meta.env.VITE_POSTHOG_HOST || "https://eu.i.posthog.com";
 
 let ph = null;
 
