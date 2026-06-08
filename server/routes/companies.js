@@ -359,7 +359,7 @@ companiesRouter.post(
         ...(devInviteLink ? { devInviteLink } : {}),
       });
     } catch (e) {
-      if (e.status) return res.status(e.status).json({ error: e.message });
+      if (e.status) return res.status(e.status).json({ error: e?.message || String(e) });
       next(e);
     }
   }
@@ -374,7 +374,7 @@ companiesRouter.delete(
       await revokeInvite(req.params.id, ownerId);
       res.status(204).send();
     } catch (e) {
-      if (e.status) return res.status(e.status).json({ error: e.message });
+      if (e.status) return res.status(e.status).json({ error: e?.message || String(e) });
       next(e);
     }
   }

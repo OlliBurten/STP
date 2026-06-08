@@ -119,8 +119,8 @@ export async function triggerOutreach(job, applicationCount) {
       });
       console.log(`[Outreach] Skickade till ${contactEmail} för org ${job.organizationNumber}`);
     } catch (err) {
-      console.error(`[Outreach] Misslyckades skicka till ${contactEmail}:`, err.message);
-      return { skipped: false, sent: false, error: err.message, claimToken: claim.claimToken };
+      console.error(`[Outreach] Misslyckades skicka till ${contactEmail}:`, err?.message || String(err));
+      return { skipped: false, sent: false, error: err?.message || String(err), claimToken: claim.claimToken };
     }
   } else {
     // Review mode — log to console so Oliver can inspect before enabling auto-send

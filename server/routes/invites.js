@@ -70,7 +70,7 @@ invitesRouter.post("/accept", validateBody(inviteAcceptSchema), async (req, res,
       token: jwtToken,
     });
   } catch (e) {
-    if (e.status) return res.status(e.status).json({ error: e.message });
+    if (e.status) return res.status(e.status).json({ error: e?.message || String(e) });
     next(e);
   }
 });
