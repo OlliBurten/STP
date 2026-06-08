@@ -209,7 +209,7 @@ app.get("/api/sitemap-dynamic.xml", async (req, res) => {
         take: 500,
       }),
       prisma.driverProfile.findMany({
-        where: { visibleToCompanies: true, suspendedAt: null },
+        where: { visibleToCompanies: true, user: { suspendedAt: null } },
         select: { userId: true, updatedAt: true },
         orderBy: { updatedAt: "desc" },
         take: 2000,
