@@ -25,6 +25,11 @@ function mapEmploymentToSegment(employment) {
   return "FULLTIME";
 }
 
+function parseRequirements(raw) {
+  if (!raw) return [];
+  try { return JSON.parse(raw); } catch { return []; }
+}
+
 function resolveSegment(segment, employment) {
   if (segment === "INTERNSHIP") return "INTERNSHIP";
   if (segment === "FLEX") return "FLEX";
@@ -203,7 +208,7 @@ jobsRouter.get("/", validateQuery(jobsListQuerySchema), async (req, res, next) =
       salaryMax: j.salaryMax ?? null,
       externalApplyUrl: j.source === "AGGREGATED" ? null : (j.externalApplyUrl ?? null),
       description: j.description,
-      requirements: j.requirements ? JSON.parse(j.requirements || "[]") : [],
+      requirements: parseRequirements(j.requirements),
       status: j.status,
       published: j.published.toISOString().slice(0, 10),
       updatedAt: j.updatedAt.toISOString(),
@@ -258,7 +263,7 @@ jobsRouter.get("/saved", authMiddleware, requireDriver, async (req, res, next) =
       experience: s.job.experience,
       salary: s.job.salary,
       description: s.job.description,
-      requirements: s.job.requirements ? JSON.parse(s.job.requirements || "[]") : [],
+      requirements: parseRequirements(s.job.requirements),
       status: s.job.status,
       published: s.job.published.toISOString().slice(0, 10),
       updatedAt: s.job.updatedAt.toISOString(),
@@ -501,7 +506,7 @@ jobsRouter.get("/:id", optionalAuthMiddleware, attachCompanyContext, async (req,
       aboutJob: job.aboutJob ?? null,
       tasks: job.tasks ?? [],
       offers: job.offers ?? [],
-      requirements: job.requirements ? JSON.parse(job.requirements) : [],
+      requirements: parseRequirements(job.requirements),
       extraRequirements: job.extraRequirements,
       published: job.published.toISOString().slice(0, 10),
       updatedAt: job.updatedAt.toISOString(),
