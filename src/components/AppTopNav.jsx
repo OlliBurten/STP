@@ -47,6 +47,8 @@ function Ico({ n, size = 16, color = "currentColor", sw = 1.8 }) {
     eye:    <><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></>,
     alert:  <><path d="M12 9v4"/><circle cx="12" cy="17" r=".5" fill="currentColor"/><path d="M10.3 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></>,
     chevD:  <polyline points="6 9 12 15 18 9"/>,
+    user:   <><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></>,
+    building: <><path d="M3 21h18"/><path d="M5 21V5a2 2 0 012-2h10a2 2 0 012 2v16"/><path d="M9 8h2M9 12h2M9 16h2M13 8h2M13 12h2M13 16h2"/></>,
     logout: <><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>,
     settings: <><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82V9a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></>,
   };
@@ -64,8 +66,8 @@ function NotifPanel({ notifs, unreadCount, onClose, onClickItem, onMarkAll }) {
     <>
       <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 60 }} />
       <div style={{
-        position: "fixed", top: 60, right: 20,
-        width: 380, maxHeight: "calc(100vh - 76px)",
+        position: "fixed", top: 64, right: "max(20px, calc((100vw - var(--w-app)) / 2 + 32px))",
+        width: 380, maxWidth: "calc(100vw - 40px)", maxHeight: "calc(100vh - 80px)",
         background: "var(--card)", border: "1px solid var(--line)",
         borderRadius: 16, boxShadow: "0 24px 60px rgba(15,22,22,0.22)",
         zIndex: 61, display: "flex", flexDirection: "column", overflow: "hidden",
@@ -213,7 +215,7 @@ function UserMenu({ user, isCompany, onClose, onLogout }) {
     <>
       <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 60 }} />
       <div style={{
-        position: "fixed", top: 60, right: 20,
+        position: "fixed", top: 64, right: "max(20px, calc((100vw - var(--w-app)) / 2 + 32px))",
         width: 220, background: "var(--card)", border: "1px solid var(--line)",
         borderRadius: 14, boxShadow: "0 16px 48px rgba(15,22,22,0.2)",
         zIndex: 61, overflow: "hidden",
@@ -224,9 +226,9 @@ function UserMenu({ user, isCompany, onClose, onLogout }) {
         </div>
         {[
           isCompany
-            ? { label: "Företagsprofil", path: "/foretag/profil" }
-            : { label: "Min profil",     path: "/profil" },
-          { label: "Inställningar",    path: "/installningar" },
+            ? { label: "Företagsprofil", path: "/foretag/profil", icon: "building" }
+            : { label: "Min profil",     path: "/profil",         icon: "user" },
+          { label: "Inställningar",    path: "/installningar",  icon: "settings" },
         ].map(item => (
           <button key={item.path} onClick={() => go(item.path)} style={{
             width: "100%", textAlign: "left", padding: "11px 16px",
@@ -237,7 +239,7 @@ function UserMenu({ user, isCompany, onClose, onLogout }) {
             onMouseEnter={e => e.currentTarget.style.background = "var(--paper-2)"}
             onMouseLeave={e => e.currentTarget.style.background = "none"}
           >
-            <Ico n="settings" size={14} color="var(--ink-400)" sw={1.7} />
+            <Ico n={item.icon} size={14} color="var(--ink-400)" sw={1.7} />
             {item.label}
           </button>
         ))}
@@ -419,14 +421,14 @@ export default function AppTopNav() {
           <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
             {/* Search ⌘K */}
             <button onClick={() => setSearchOpen(true)} style={{
-              padding: "7px 12px", borderRadius: 8,
+              padding: "7px 14px", borderRadius: 8, minWidth: 240,
               background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)",
               color: "rgba(232,237,237,0.65)", display: "inline-flex", alignItems: "center",
-              gap: 8, fontSize: "var(--text-xs)", cursor: "pointer", fontFamily: "inherit",
+              gap: 8, fontSize: "var(--text-sm)", cursor: "pointer", fontFamily: "inherit",
             }}>
-              <Ico n="search" size={14} color="rgba(232,237,237,0.65)" sw={2} />
-              Sök
-              <kbd style={{ fontSize: "var(--text-2xs)", fontFamily: "monospace", opacity: 0.65 }}>⌘K</kbd>
+              <Ico n="search" size={15} color="rgba(232,237,237,0.65)" sw={2} />
+              Sök jobb, åkerier…
+              <kbd style={{ marginLeft: "auto", fontSize: "var(--text-2xs)", fontFamily: "monospace", opacity: 0.65 }}>⌘K</kbd>
             </button>
 
             {/* Bell */}
