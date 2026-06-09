@@ -107,3 +107,5 @@ Varje frontend byggs med sin `VITE_API_URL`. Bygg om (Redeploy) efter ändring.
 - **Prod:** drivermatch (nodejs) + postgres-yjbv.
 - **Demo:** drivermatch-demo, DEPLOYMENT=demo, transportplattform-demo.vercel.app.
 - **Health:** `GET /api/health` returnerar `deployment` för verifiering.
+
+<!-- Auto-deploy test 65b0422 — Vercel git connect verifiering -->
