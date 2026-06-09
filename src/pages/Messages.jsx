@@ -588,7 +588,7 @@ export default function Messages() {
             style={{ display: id && isMobile ? "none" : "flex", width: isMobile ? "100%" : undefined, background: "var(--card)", borderRight: "1px solid var(--line)", flexDirection: "column", overflow: "hidden", flexShrink: 0 }}
             className="sidebar-panel"
           >
-            <div style={{ padding: isMobile ? "4px 20px 12px" : "30px 18px 16px", paddingTop: isMobile ? 68 : undefined, borderBottom: "1px solid var(--line)", flexShrink: 0 }}>
+            <div style={{ padding: isMobile ? "4px 20px 12px" : "40px 18px 16px", paddingTop: isMobile ? 68 : undefined, borderBottom: "1px solid var(--line)", flexShrink: 0 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: isMobile ? 6 : 14 }}>
                 <h1 style={{ fontSize: isMobile ? 26 : 20, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.4 }}>
                   {isDriver ? "Meddelanden" : "Inkorg"}
