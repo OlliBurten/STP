@@ -117,13 +117,14 @@ export default function MobileHeader() {
         WebkitBackdropFilter: "blur(14px)",
         borderBottom: "1px solid var(--line)",
       }}>
-        {/* Logo */}
-        <div style={{
-          fontFamily: "'DM Sans', system-ui, sans-serif",
-          fontWeight: 800, letterSpacing: -0.8,
-          fontSize: "var(--text-3xl)", color: "var(--ink-900)",
-        }}>
-          STP
+        {/* Logo — matchar desktop (grön S-box + STP) */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{
+            width: 28, height: 28, borderRadius: 7, background: "var(--green)", color: "#fff",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontWeight: 900, fontSize: "var(--text-sm)", boxShadow: "inset 0 -2px 0 rgba(0,0,0,0.25)",
+          }}>S</div>
+          <span style={{ fontWeight: 800, letterSpacing: 0.5, fontSize: "var(--text-xl)", color: "var(--ink-900)" }}>STP</span>
         </div>
 
         {/* Right: bell + avatar */}
@@ -157,10 +158,11 @@ export default function MobileHeader() {
             onClick={() => { setAvatarOpen((v) => !v); setNotifOpen(false); }}
             style={{
               width: 34, height: 34, borderRadius: 99,
-              background: "linear-gradient(135deg,var(--amber),#d97706)",
+              background: "var(--green)",
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontWeight: 800, fontSize: "var(--text-xs)", color: "#000",
+              fontWeight: 800, fontSize: "var(--text-xs)", color: "#fff",
               cursor: "pointer", flexShrink: 0,
+              border: "2px solid rgba(0,0,0,0.06)",
               WebkitTapHighlightColor: "transparent",
             }}
           >
@@ -174,11 +176,11 @@ export default function MobileHeader() {
         <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderTop: "none", boxShadow: "var(--sh-md)" }}>
           <div style={{ padding: "10px 6px" }}>
             {[
-              { label: "Min profil", icon: "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z", to: "/profil" },
-              { label: "Inställningar", icon: "M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z", to: "/installningar" },
-            ].map(({ label, icon, to }) => (
+              { label: "Min profil", to: "/profil", svg: <><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></> },
+              { label: "Inställningar", to: "/installningar", svg: <><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82V9a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></> },
+            ].map(({ label, svg, to }) => (
               <Link key={to} to={to} onClick={() => setAvatarOpen(false)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 16px", borderRadius: 10, textDecoration: "none", color: "var(--ink-900)" }}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="var(--ink-400)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="17" height="17"><path d={icon}/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="var(--ink-400)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="17" height="17">{svg}</svg>
                 <span style={{ fontSize: "var(--text-md)", fontWeight: 600 }}>{label}</span>
               </Link>
             ))}

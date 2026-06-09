@@ -34,7 +34,7 @@ const IC = {
 
 const TABS = [
   { id: "jobs",    label: "Jobb",   icon: "briefcase", paths: ["/jobb"] },
-  { id: "saved",   label: "Sparat", icon: "star",      paths: ["/favoriter"] },
+  { id: "saved",   label: "Favoriter", icon: "star",   paths: ["/favoriter"] },
   { id: "inbox",   label: "Inkorg", icon: "msg",       paths: ["/meddelanden", "/mina-ansokningar"] },
   { id: "profile", label: "Profil", icon: "user",      paths: ["/profil"] },
 ];

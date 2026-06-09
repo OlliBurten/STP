@@ -532,9 +532,9 @@ export default function JobList() {
 
       <div style={{ padding: "0 20px 12px", display: "flex", gap: 6, overflowX: "auto" }}>
         {[
-          { v: "all",         l: "Alla",    c: filteredJobs.length },
-          { v: "recommended", l: "För dig", c: filteredJobs.filter(j => (matchDataMap[j.id]?.pct ?? 0) >= 70).length },
-          { v: "saved",       l: "Sparade", c: savedJobIds.size },
+          { v: "all",         l: "Alla jobb",      c: filteredJobs.length },
+          { v: "recommended", l: "Rekommenderade", c: recommendedCount },
+          { v: "saved",       l: "Sparade",        c: savedCount },
         ].map(t => {
           const on = tab === t.v;
           return (

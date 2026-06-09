@@ -1,0 +1,101 @@
+{
+  "version": 1,
+  "skills": {
+    "app-sizzle": {
+      "source": "Pika-Labs/Pika-Plugins",
+      "sourceType": "github",
+      "skillPath": "skills/app-sizzle/SKILL.md",
+      "computedHash": "30abd9bb7bb00e89145b215db653cfa570d912eb0734a4a32f8b19568b5909e8"
+    },
+    "app-store-screens": {
+      "source": "Pika-Labs/Pika-Plugins",
+      "sourceType": "github",
+      "skillPath": "skills/app-store-screens/SKILL.md",
+      "computedHash": "c60cfe9d1aae7f3ee5a171e6e45fcefc23717506934184dc0a90a12bac069dfb"
+    },
+    "baseball-trend": {
+      "source": "Pika-Labs/Pika-Plugins",
+      "sourceType": "github",
+      "skillPath": "skills/baseball-trend/SKILL.md",
+      "computedHash": "51cf5774614845702f2495300a5ca763ccad6e2736b8210a9eb96e35e8aefaa6"
+    },
+    "build-a-brand": {
+      "source": "Pika-Labs/Pika-Plugins",
+      "sourceType": "github",
+      "skillPath": "skills/build-a-brand/SKILL.md",
+      "computedHash": "13101ae71a0848d00363459fe7a177b404c86f681841d2f5c906f64fd009ba36"
+    },
+    "ckm:banner-design": {
+      "source": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/banner-design/SKILL.md",
+      "computedHash": "7bbf0f48704f5c40436e3466d7ef9bcbafe35a84eb8c3e9d0ab76408a57bac5c"
+    },
+    "ckm:brand": {
+      "source": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/brand/SKILL.md",
+      "computedHash": "89c8579d232e6e14152a8b898d49eb94f59aa7288ed8ca103cd3b38cb082e00a"
+    },
+    "ckm:design": {
+      "source": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/design/SKILL.md",
+      "computedHash": "2020e511bb6fbc1dbc233d1da335ec7e8cb553d6e321d34cec4555efcc9ec8f1"
+    },
+    "ckm:design-system": {
+      "source": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/design-system/SKILL.md",
+      "computedHash": "49b8308dc428c66b0983f4b3d102c522c495f62538121064d1e82a040b1afd2c"
+    },
+    "ckm:slides": {
+      "source": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/slides/SKILL.md",
+      "computedHash": "6d753831914ed6703b7222153f2710efc2f195f0ab24fd2119c76c2b6d1a6ba1"
+    },
+    "ckm:ui-styling": {
+      "source": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/ui-styling/SKILL.md",
+      "computedHash": "9ae38e4e201f338b6150e462b98a2db0f2ae7c180c77e8cfb1d33eba9d33bf33"
+    },
+    "explainer": {
+      "source": "Pika-Labs/Pika-Plugins",
+      "sourceType": "github",
+      "skillPath": "skills/explainer/SKILL.md",
+      "computedHash": "5523898d6487147a57b5ebbb06073fbf10c98cd2e369cfdb73869f4b08b8e667"
+    },
+    "founder-product-video": {
+      "source": "Pika-Labs/Pika-Plugins",
+      "sourceType": "github",
+      "skillPath": "skills/founder-product-video/SKILL.md",
+      "computedHash": "9e71e4c5220e33343b4ee8369fb1b9c75dacac56f22c771399c82f9df2d83c2f"
+    },
+    "kiss-cam": {
+      "source": "Pika-Labs/Pika-Plugins",
+      "sourceType": "github",
+      "skillPath": "skills/kiss-cam/SKILL.md",
+      "computedHash": "2792d453629f6d099c4bbfac0f13a52c660b78de750c1579c713bc6336a48c8d"
+    },
+    "podcast": {
+      "source": "Pika-Labs/Pika-Plugins",
+      "sourceType": "github",
+      "skillPath": "skills/podcast/SKILL.md",
+      "computedHash": "c3ddf5b0ebc8f60a65c55de5100e1a0910c4830ceec83c2b115c5fd12f248e25"
+    },
+    "ugc-ads": {
+      "source": "Pika-Labs/Pika-Plugins",
+      "sourceType": "github",
+      "skillPath": "skills/ugc-ads/SKILL.md",
+      "computedHash": "e9d6dad9621a1fad63f80d4f93c7fb159d7bf1cfeb2d3f8620cbd4827fa4aa6d"
+    },
+    "ui-ux-pro-max": {
+      "source": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/ui-ux-pro-max/SKILL.md",
+      "computedHash": "0a413bf988d06481f69bb81df2070741c3ba12dd9f1be2706d57f259c905992d"
+    }
+  }
+}
