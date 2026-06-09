@@ -418,7 +418,20 @@ export default function JobList() {
   const profileCompletion  = useMemo(() => (isDriver && profile) ? getProfileCompletion({ ...user, driverProfile: profile }) : null, [isDriver, user, profile]);
   const showProfileBanner  = isDriver && !jobsLoading && !bannerDismissed && profileCompletion && profileCompletion.pct < 80;
 
-  const recommendedCount = useMemo(() => filteredJobs.filter(j => (matchDataMap[j.id]?.pct ?? 0) >= 80).length, [filteredJobs, matchDataMap]);
+  // Rekommenderad = hög matchning OCH i en region föraren valt (fjärrkörning är platsoberoende → undantas).
+  // Har föraren ingen region vald visas alla höga matchningar.
+  const driverHasRegionPref = !!(driverForMatch && (driverForMatch.region || (driverForMatch.regionsWilling?.length)));
+  const recommendedIds = useMemo(() => {
+    const set = new Set();
+    for (const job of filteredJobs) {
+      const m = matchDataMap[job.id];
+      if ((m?.pct ?? 0) < 80) continue;
+      if (!driverHasRegionPref || m?.details?.region === true || job.jobType === "fjärrkörning") set.add(job.id);
+    }
+    return set;
+  }, [filteredJobs, matchDataMap, driverHasRegionPref]);
+
+  const recommendedCount = recommendedIds.size;
   const savedCount = savedJobIds.size;
 
   const tabs = [
@@ -428,16 +441,16 @@ export default function JobList() {
   ];
 
   const tabFilteredJobs = useMemo(() => {
-    if (tab === "recommended") return filteredJobs.filter(j => (matchDataMap[j.id]?.pct ?? 0) >= 80);
+    if (tab === "recommended") return filteredJobs.filter(j => recommendedIds.has(j.id));
     if (tab === "saved")       return filteredJobs.filter(j => savedJobIds.has(j.id));
     return null;
-  }, [tab, filteredJobs, matchDataMap, savedJobIds]);
+  }, [tab, filteredJobs, recommendedIds, savedJobIds]);
 
   const activeMobileFilterCount = Object.values(mobileFilters).filter(Boolean).length;
 
   const mobileJobs = useMemo(() => {
     const base = tab === "recommended"
-      ? filteredJobs.filter(j => (matchDataMap[j.id]?.pct ?? 0) >= 70).sort((a,b) => (matchDataMap[b.id]?.pct ?? 0) - (matchDataMap[a.id]?.pct ?? 0))
+      ? filteredJobs.filter(j => recommendedIds.has(j.id)).sort((a,b) => (matchDataMap[b.id]?.pct ?? 0) - (matchDataMap[a.id]?.pct ?? 0))
       : tab === "saved" ? filteredJobs.filter(j => savedJobIds.has(j.id))
       : filteredJobs;
     return base.filter(j =>
@@ -446,7 +459,7 @@ export default function JobList() {
       (!mobileFilters.jobType    || j.jobType === mobileFilters.jobType) &&
       (!mobileFilters.region     || j.region === mobileFilters.region)
     );
-  }, [tab, filteredJobs, matchDataMap, savedJobIds, mobileFilters]);
+  }, [tab, filteredJobs, matchDataMap, recommendedIds, savedJobIds, mobileFilters]);
 
   const EmptyState = ({ tabKey, onReset }) => (
     <div style={{ textAlign: "center", padding: "64px 32px", background: "var(--card)", borderRadius: "var(--r-lg)", border: "1px solid var(--line)" }}>
@@ -792,10 +805,6 @@ export default function JobList() {
 
                   {!jobsLoading && displayJobs.length === 0 && (
                     <EmptyState tabKey={tab} onReset={() => { setFilters(f => ({ ...f, search: "", region: "", license: "", employment: "", jobType: "" })); setTab("all"); }} />
-                  )}
-
-                  {!jobsLoading && displayJobs.length > 0 && (
-                    <Pagination page={safePage} totalPages={totalPages} onChange={goToPage} top />
                   )}
 
                   {!jobsLoading && pagedJobs.map(job => {
