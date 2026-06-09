@@ -185,7 +185,7 @@ function FilterBar({ filters, setFilters, onOpenAll }) {
 function Sidebar({ profile }) {
   const visibleToCompanies = profile?.visibleToCompanies !== false;
   return (
-    <aside style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+    <aside style={{ display: "flex", flexDirection: "column", gap: 18, position: "sticky", top: 76, alignSelf: "start", maxHeight: "calc(100vh - 92px)", overflowY: "auto" }}>
       {/* Sökstatus */}
       <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: "var(--r-lg)", padding: "20px 22px", boxShadow: "var(--sh-sm)" }}>
         <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.3, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 14 }}>Sökstatus</div>
@@ -255,7 +255,7 @@ function Sidebar({ profile }) {
 }
 
 /* ─── Sidnumrering ──────────────────────────────────────────────────────────── */
-function Pagination({ page, totalPages, onChange }) {
+function Pagination({ page, totalPages, onChange, top = false }) {
   if (totalPages <= 1) return null;
   // Visa sidor runt nuvarande (max 5 + första/sista)
   const nums = [];
@@ -269,7 +269,7 @@ function Pagination({ page, totalPages, onChange }) {
     color: active ? "#fff" : "var(--ink-700)", fontSize: "var(--text-sm)", fontWeight: 700,
   });
   return (
-    <nav aria-label="Sidnavigering" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, flexWrap: "wrap", padding: "28px 0 8px" }}>
+    <nav aria-label="Sidnavigering" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, flexWrap: "wrap", padding: top ? "0 0 16px" : "28px 0 8px" }}>
       <button disabled={page <= 1} onClick={() => onChange(page - 1)} style={{ ...btn(false), opacity: page <= 1 ? 0.4 : 1, cursor: page <= 1 ? "default" : "pointer" }}>← Föregående</button>
       {nums.map((n, i) => (
         <span key={n} style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -792,6 +792,10 @@ export default function JobList() {
 
                   {!jobsLoading && displayJobs.length === 0 && (
                     <EmptyState tabKey={tab} onReset={() => { setFilters(f => ({ ...f, search: "", region: "", license: "", employment: "", jobType: "" })); setTab("all"); }} />
+                  )}
+
+                  {!jobsLoading && displayJobs.length > 0 && (
+                    <Pagination page={safePage} totalPages={totalPages} onChange={goToPage} top />
                   )}
 
                   {!jobsLoading && pagedJobs.map(job => {
