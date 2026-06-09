@@ -61,7 +61,7 @@ export default function ProfileCompletionBanner({ pct, missing, profileUrl, stor
             background: "var(--green)", color: "#fff", textDecoration: "none", textAlign: "center",
             padding: "9px 14px", borderRadius: 8, fontSize: "var(--text-sm)", fontWeight: 700,
           }}>
-            Fyll i din profil →
+            Fyll i nu →
           </Link>
         </div>
       </div>
