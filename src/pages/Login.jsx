@@ -42,11 +42,11 @@ function BrandPanel() {
       display: "flex",
       flexDirection: "column",
     }}>
-      {/* Logo */}
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      {/* Logo — klickbar, tillbaka till startsidan */}
+      <Link to="/" aria-label="Till startsidan" style={{ display: "inline-flex", alignItems: "center", gap: 10, alignSelf: "flex-start", color: "#fff", textDecoration: "none", cursor: "pointer" }}>
         <div style={{ width: 30, height: 30, borderRadius: 7, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--text-sm)", boxShadow: "inset 0 -2px 0 rgba(0,0,0,0.25)" }}>S</div>
         <span style={{ fontWeight: 800, fontSize: "var(--text-xl)", letterSpacing: 0.5 }}>STP</span>
-      </div>
+      </Link>
 
       {/* Headline */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", padding: "40px 0" }}>
