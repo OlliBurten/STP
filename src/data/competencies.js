@@ -40,11 +40,10 @@ const certGroups = [
     id: "apv",
     label: "APV (Arbete på väg)",
     options: [
-      { value: "APV_1_1", label: "APV 1.1" },
-      { value: "APV_1_2", label: "APV 1.2" },
-      { value: "APV_2_1", label: "APV 2.1" },
-      { value: "APV_2_2", label: "APV 2.2" },
-      { value: "APV_3", label: "APV 3" },
+      // Trafikverket TDOK 2018:0371 — tre steg (undernivåer är roll-/årsberoende).
+      { value: "APV_Steg1", label: "APV Steg 1 (grundkompetens)" },
+      { value: "APV_Steg2", label: "APV Steg 2 (utförare)" },
+      { value: "APV_Steg3", label: "APV Steg 3 (styra & leda)" },
     ],
   },
   {
@@ -52,7 +51,8 @@ const certGroups = [
     label: "Kran & lyft",
     options: [
       { value: "Kran", label: "Kranförarbevis" },
-      { value: "Fordonsmonterad_kran", label: "Fordonsmonterad kran (HIAB)" },
+      { value: "Fordonsmonterad_kran", label: "Fordonsmonterad kran (lastbilskran)" },
+      { value: "Timmerkran", label: "Timmerkran" },
     ],
   },
   {
@@ -71,8 +71,7 @@ const certGroups = [
     label: "Övriga certifikat",
     options: [
       { value: "Lastsakring", label: "Lastsäkring" },
-      { value: "Livsmedelshantering", label: "Livsmedelshantering" },
-      { value: "Kyl", label: "Kylskåpsbehörighet" },
+      { value: "Livsmedelshantering", label: "Livsmedelshygien" },
       { value: "Heta_arbeten", label: "Heta arbeten" },
       { value: "ID06", label: "ID06" },
     ],
@@ -85,6 +84,13 @@ const certGroups = [
 const _legacyOptions = [
   { value: "Tank",      label: "Tankbehörighet" },
   { value: "Forarkort", label: "Förarkort" },
+  // Gamla APV-undernivåer + utgången "Kyl" — visas ej i UI, men ger etikett åt gamla profiler.
+  { value: "APV_1_1", label: "APV 1.1" },
+  { value: "APV_1_2", label: "APV 1.2" },
+  { value: "APV_2_1", label: "APV 2.1" },
+  { value: "APV_2_2", label: "APV 2.2" },
+  { value: "APV_3",   label: "APV 3" },
+  { value: "Kyl",     label: "Kyltransport (ATP)" },
 ];
 
 /** Platt lista för kryssrutor/dropdown — inkl. legacy för getCertificateLabel-lookup */

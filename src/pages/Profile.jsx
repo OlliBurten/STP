@@ -104,11 +104,11 @@ function Toggle({ checked, onChange }) {
 /* ── Cert groups (maps to existing certificateTypes values) ── */
 const CERT_GROUPS = [
   { id: "grund", label: "Grund", opts: ["YKB", "Digitalt_fardskrivarkort"] },
-  { id: "adr", label: "ADR – Farligt gods", opts: ["ADR", "ADR_Tank"] },
-  { id: "apv", label: "APV – Arbete på väg", opts: ["APV_1_1", "APV_1_2", "APV_2_1", "APV_3"] },
-  { id: "kran", label: "Kran & lyft", opts: ["Kran", "Fordonsmonterad_kran"] },
+  { id: "adr", label: "ADR – Farligt gods", opts: ["ADR", "ADR_Tank", "ADR_Klass1", "ADR_Klass7", "ADR_1_3"] },
+  { id: "apv", label: "APV – Arbete på väg", opts: ["APV_Steg1", "APV_Steg2", "APV_Steg3"] },
+  { id: "kran", label: "Kran & lyft", opts: ["Kran", "Fordonsmonterad_kran", "Timmerkran"] },
   { id: "truck", label: "Truck", opts: ["Truck_A", "Truck_B", "Truck_C", "Truck_D", "Bakgavellyft"] },
-  { id: "ovriga", label: "Övriga", opts: ["Lastsakring", "Livsmedelshantering", "Kyl", "ID06"] },
+  { id: "ovriga", label: "Övriga", opts: ["Lastsakring", "Livsmedelshantering", "Heta_arbeten", "ID06"] },
 ];
 
 /* ── Section header ── */
