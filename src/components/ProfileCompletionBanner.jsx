@@ -2,75 +2,62 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 
 /**
- * Slim profile-completion nudge shown below the header.
+ * Slim profilkomplettering-banner under headern.
+ * STP-stil (inline + tokens). Full bredd, innehåll i appens innehållsbredd.
  *
  * Props:
- *   pct          — 0-100 completion percentage
- *   missing      — [{ label: string }] items still incomplete
- *   profileUrl   — where to send the user to fix it
- *   storageKey   — unique localStorage key to persist dismissal
+ *   pct          — 0-100
+ *   missing      — [{ label }] kvarvarande
+ *   profileUrl   — vart användaren skickas
+ *   storageKey   — localStorage-nyckel för att minnas stängning
  */
 export default function ProfileCompletionBanner({ pct, missing, profileUrl, storageKey }) {
   const [dismissed, setDismissed] = useState(() => {
     try { return localStorage.getItem(storageKey) === "1"; } catch { return false; }
   });
 
-  if (dismissed || pct >= 75 || missing.length === 0) return null;
+  if (dismissed || pct >= 75 || !missing?.length) return null;
 
   function dismiss() {
     try { localStorage.setItem(storageKey, "1"); } catch { /* */ }
     setDismissed(true);
   }
 
-  const bg = "bg-slate-50 border-slate-200";
-  const barColor = "bg-[var(--color-primary)]";
-  const textStrong = "text-slate-900";
-  const textMuted = "text-slate-600";
-  const btnClass = "bg-[var(--color-primary)] hover:opacity-90 text-white";
-
   const shown = missing.slice(0, 2);
   const extra = missing.length - shown.length;
 
   return (
-    <div className={`border-b ${bg} px-4 py-3`}>
-      <div className="max-w-5xl mx-auto flex flex-wrap items-center gap-x-4 gap-y-2">
-        {/* Progress bar + percentage */}
-        <div className="flex items-center gap-2 shrink-0">
-          <div className="w-24 h-1.5 rounded-full bg-black/10 overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all ${barColor}`}
-              style={{ width: `${pct}%` }}
-            />
+    <div style={{ width: "100%", background: "var(--paper-2)", borderBottom: "1px solid var(--line)" }}>
+      <div style={{
+        maxWidth: "var(--w-app)", margin: "0 auto", padding: "10px 32px",
+        display: "flex", alignItems: "center", flexWrap: "wrap", gap: 16,
+      }}>
+        {/* Progress + procent */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+          <div style={{ width: 96, height: 6, borderRadius: 99, background: "var(--line-2)", overflow: "hidden" }}>
+            <div style={{ height: "100%", borderRadius: 99, width: `${pct}%`, background: "var(--green)", transition: "width .3s" }} />
           </div>
-          <span className={`text-xs font-semibold tabular-nums ${textStrong}`}>{pct}%</span>
+          <span style={{ fontSize: "var(--text-xs)", fontWeight: 800, color: "var(--ink-900)", fontVariantNumeric: "tabular-nums" }}>{pct}%</span>
         </div>
 
-        {/* Missing items */}
-        <p className={`text-sm ${textMuted} flex-1 min-w-0`}>
-          <span className={`font-semibold ${textStrong}`}>Din profil är ofullständig.</span>
-          {" "}Saknar:{" "}
-          {shown.map((m, i) => (
-            <span key={m.label}>
-              {i > 0 && ", "}
-              <span className="font-medium">{m.label}</span>
-            </span>
-          ))}
-          {extra > 0 && ` och ${extra} till`}.
+        {/* Text */}
+        <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-600)", flex: 1, minWidth: 0, margin: 0 }}>
+          <span style={{ fontWeight: 700, color: "var(--ink-900)" }}>Din profil är ofullständig.</span>{" "}
+          Saknar: {shown.map((m) => m.label).join(", ")}{extra > 0 ? ` och ${extra} till` : ""}.
         </p>
 
-        {/* CTA + dismiss */}
-        <div className="flex items-center gap-2 shrink-0">
-          <Link
-            to={profileUrl}
-            className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${btnClass}`}
-          >
+        {/* CTA + stäng */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+          <Link to={profileUrl} style={{
+            background: "var(--green)", color: "#fff", textDecoration: "none",
+            padding: "7px 14px", borderRadius: 8, fontSize: "var(--text-xs)", fontWeight: 700, whiteSpace: "nowrap",
+          }}>
             Fyll i nu →
           </Link>
-          <button
-            onClick={dismiss}
-            aria-label="Stäng"
-            className={`text-lg leading-none opacity-50 hover:opacity-80 ${textStrong}`}
-          >
+          <button onClick={dismiss} aria-label="Stäng" style={{
+            background: "none", border: "none", cursor: "pointer", color: "var(--ink-400)",
+            fontSize: "var(--text-xl)", lineHeight: 1, padding: "0 4px",
+          }}>
             ×
           </button>
         </div>

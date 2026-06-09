@@ -276,8 +276,9 @@ function AppLayout() {
       {!hideChromeOnMobile && !isAuthPage && !isAdminPage && !isOnboardingPage && !isPreviewPage && (
         user ? <AppTopNav /> : <Header onboarding={onboarding} />
       )}
+      {/* Profilbanner sitter tätt under headern (utanför pt-16-paddingen) */}
+      <DriverCompletionNudge />
       <div className={hideChromeOnMobile || isAuthPage || isOnboardingPage || isPreviewPage ? "flex-1" : `flex-1 ${isImpersonating ? "pt-[104px]" : "pt-16"}`}>
-        <DriverCompletionNudge />
         <OnboardingGate>
         <Suspense fallback={<div className="min-h-[60vh]" />}>
         <Routes>
