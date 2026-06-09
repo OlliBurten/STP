@@ -395,7 +395,7 @@ export default function AppTopNav() {
               const isActive = location.pathname === it.path ||
                 (it.path !== "/foretag" && location.pathname.startsWith(it.path));
               return (
-                <button key={it.path} onClick={() => navigate(it.path)} style={{
+                <button key={it.path} onClick={() => navigate(it.path)} data-tour={it.path === "/jobb" ? "jobs-link" : undefined} style={{
                   padding: "8px 14px", height: 36,
                   background: isActive ? "rgba(255,255,255,0.08)" : "transparent",
                   borderRadius: 8, border: "none", cursor: "pointer",
@@ -432,7 +432,7 @@ export default function AppTopNav() {
             </button>
 
             {/* Bell */}
-            <button onClick={() => { setNotifOpen(v => !v); setUserMenuOpen(false); }} style={{
+            <button data-tour="notifications" onClick={() => { setNotifOpen(v => !v); setUserMenuOpen(false); }} style={{
               width: 36, height: 36, borderRadius: 8, position: "relative",
               background: notifOpen ? "rgba(255,255,255,0.1)" : "transparent",
               border: "none", cursor: "pointer",
@@ -452,7 +452,7 @@ export default function AppTopNav() {
             <div style={{ width: 1, height: 22, background: "rgba(255,255,255,0.1)", margin: "0 2px" }} />
 
             {/* Avatar + name */}
-            <button onClick={() => { setUserMenuOpen(v => !v); setNotifOpen(false); }} style={{
+            <button data-tour="user-menu" onClick={() => { setUserMenuOpen(v => !v); setNotifOpen(false); }} style={{
               display: "flex", alignItems: "center", gap: 9,
               padding: "4px 8px 4px 4px", borderRadius: 8,
               background: userMenuOpen ? "rgba(255,255,255,0.08)" : "transparent",

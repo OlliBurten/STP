@@ -222,7 +222,8 @@ export default function DriverOnboardingWizard() {
     try {
       await updateProfile({
         name: draft.name.trim(),
-        summary: draft.summary.trim(),
+        // Skriv ALDRIG över en befintlig presentation med tomt — bara om användaren faktiskt skrivit något
+        ...(draft.summary.trim() ? { summary: draft.summary.trim() } : {}),
         primarySegment,
         isGymnasieelev: draft.isGymnasieelev === true,
         schoolName: draft.isGymnasieelev === true
