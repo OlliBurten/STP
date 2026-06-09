@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { useProfile } from "../context/ProfileContext";
 import { useAuth } from "../context/AuthContext";
 import DriverProfileView from "../components/DriverProfileView.jsx";
@@ -617,6 +617,18 @@ export default function Profile() {
     }, 80);
   };
   const cancelEditing = () => { setDraft(profile); setEditing(false); setAddingExp(false); setEditingExpId(null); };
+
+  // Öppna redigeringsläget automatiskt när man kommer hit via "Fyll i nu" (?redigera=1)
+  const [searchParams, setSearchParams] = useSearchParams();
+  useEffect(() => {
+    if (searchParams.get("redigera") === "1" && !editing) {
+      startEditing();
+      const next = new URLSearchParams(searchParams);
+      next.delete("redigera");
+      setSearchParams(next, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
   const saveProfile = async () => {
     try {
       await updateProfile(draft);

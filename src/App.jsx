@@ -226,7 +226,7 @@ function DriverCompletionNudge() {
     <ProfileCompletionBanner
       pct={pct}
       missing={missing}
-      profileUrl="/profil"
+      profileUrl="/profil?redigera=1"
       storageKey={`stp-profile-banner:${user.id}`}
     />
   );
