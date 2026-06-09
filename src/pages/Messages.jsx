@@ -565,7 +565,7 @@ export default function Messages() {
   };
 
   return (
-    <main style={{ background: "var(--paper)", height: isMobile ? "100dvh" : "calc(100vh - 64px)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+    <main style={{ background: "var(--paper)", height: isMobile ? "100dvh" : "calc(100vh - 64px)", marginTop: isMobile ? 0 : -64, display: "flex", flexDirection: "column", overflow: "hidden" }}>
 
       {/* Banners */}
       {!isDriver && companyUnreadConversationCount > 0 && (
@@ -621,7 +621,7 @@ export default function Messages() {
               )}
 
               {/* Stage filter pills */}
-              <div style={{ display: "flex", gap: 6, flexWrap: isMobile ? "nowrap" : "wrap", overflowX: isMobile ? "auto" : "visible" }}>
+              <div style={{ display: "flex", gap: 8, rowGap: 8, flexWrap: isMobile ? "nowrap" : "wrap", overflowX: isMobile ? "auto" : "visible", marginTop: isMobile ? 0 : 4 }}>
                   {STAGE_FILTERS.filter(({ k }) => isDriver ? true : ["all", "unread", "selected", "active"].includes(k)).map(({ k, l, c }) => {
                     const active = stageFilter === k;
                     return (
