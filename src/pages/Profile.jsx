@@ -911,10 +911,10 @@ export default function Profile() {
     );
 
     return (
-      <div style={{ background: "var(--paper)", minHeight: "100vh", color: "var(--ink-900)", paddingBottom: 100, paddingTop: 60, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+      <div style={{ background: "var(--paper)", minHeight: "100vh", color: "var(--ink-900)", paddingBottom: 100, paddingTop: "calc(env(safe-area-inset-top, 0px) + 84px)", fontFamily: "'DM Sans', system-ui, sans-serif" }}>
 
         {/* Hero card */}
-        <div style={{ padding: "4px 20px 20px" }}>
+        <div style={{ padding: "0 20px 20px" }}>
           <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 18, padding: "20px", textAlign: "center", boxShadow: "var(--sh-sm)" }}>
             <div style={{ position: "relative", display: "inline-block", margin: "0 auto 12px" }}>
               <div style={{ padding: current?.openToWork ? 3 : 0, borderRadius: "50%", background: current?.openToWork ? "conic-gradient(var(--success), var(--green-soft), var(--success))" : "transparent" }}>
