@@ -211,13 +211,16 @@ const DRIVER_ITEMS = [
 ];
 
 const ONBOARDING_PATHS = ["/onboarding/forare", "/foretag/onboarding"];
+// Sidor som har en egen kompletteringsvy — visa inte den globala bannern där (redundant)
+const COMPLETION_SELF_PATHS = ["/profil", "/installningar"];
 
 function DriverCompletionNudge() {
   const { user, isDriver } = useAuth();
   const { profile, profileLoaded } = useProfile();
   const { pathname } = useLocation();
   const isOnboarding = ONBOARDING_PATHS.some((p) => matchPath(p, pathname));
-  if (!isDriver || !profileLoaded || !user || user.isAdmin || isOnboarding) return null;
+  const hasOwnCompletionUI = COMPLETION_SELF_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"));
+  if (!isDriver || !profileLoaded || !user || user.isAdmin || isOnboarding || hasOwnCompletionUI) return null;
   const p = { ...profile, name: profile?.name || user.name };
   const items = DRIVER_ITEMS.map((item) => ({ label: item.label, done: item.fn(p) }));
   const pct = Math.round((items.filter((i) => i.done).length / items.length) * 100);
