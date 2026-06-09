@@ -38,7 +38,7 @@ export function useDriverTour({ isDriver, user, profileLoaded }) {
             popover: {
               title: "Välkommen till Sveriges Transportplattform! 👋",
               description:
-                "Vi hjälper dig hitta rätt tjänst som CE- eller C-förare. Den här guiden visar dig runt på 1 minut.",
+                "Plattformen där du hittar jobb som CE- eller C-förare och blir kontaktad direkt av åkerier — utan bemanning. En snabb rundtur på under en minut.",
               side: "over",
               align: "center",
             },
@@ -46,9 +46,19 @@ export function useDriverTour({ isDriver, user, profileLoaded }) {
           {
             element: "[data-tour='jobs-link']",
             popover: {
-              title: "Lediga jobb",
+              title: "1. Hitta lediga jobb",
               description:
-                "Här hittar du alla aktiva tjänster. Klicka för att bläddra bland jobb i hela Sverige — filtererat på din region och ditt körkort.",
+                "Här finns alla aktiva tjänster i hela Sverige — filtrerat på din region och ditt körkort. Klicka på ett jobb för att läsa mer och ansöka direkt.",
+              side: "bottom",
+              align: "start",
+            },
+          },
+          {
+            element: "[data-tour='favoriter-link']",
+            popover: {
+              title: "2. Spara intressanta jobb",
+              description:
+                "Hittar du ett jobb du vill återkomma till? Spara det som favorit så hittar du tillbaka enkelt.",
               side: "bottom",
               align: "start",
             },
@@ -56,19 +66,29 @@ export function useDriverTour({ isDriver, user, profileLoaded }) {
           {
             element: "[data-tour='user-menu']",
             popover: {
-              title: "Din profil — viktigast av allt",
+              title: "3. Fyll i din profil — viktigast av allt",
               description:
-                "Fyll i din profil så att åkerier kan hitta dig. Ju mer info du lägger in — körkort, certifikat, region — desto fler matcher får du.",
+                "Här fyller du i körkort, certifikat, region och presentation. Ju mer komplett din profil är, desto fler åkerier hittar dig och desto bättre matchningar får du.",
               side: "bottom",
               align: "end",
             },
           },
           {
+            element: "[data-tour='messages-link']",
+            popover: {
+              title: "4. Bli kontaktad",
+              description:
+                "När ett åkeri vill prata med dig hamnar konversationen här. Svara snabbt — åkerier går ofta vidare fort.",
+              side: "bottom",
+              align: "start",
+            },
+          },
+          {
             element: "[data-tour='notifications']",
             popover: {
-              title: "Notiser & meddelanden",
+              title: "5. Missa inget",
               description:
-                "När ett åkeri kontaktar dig dyker det upp här. Håll koll — åkerier går ofta vidare snabbt.",
+                "Notiser om nya matchningar och meddelanden dyker upp här. Håll koll så du inte missar ett jobb.",
               side: "bottom",
               align: "end",
             },
@@ -77,7 +97,7 @@ export function useDriverTour({ isDriver, user, profileLoaded }) {
             popover: {
               title: "Du är redo! 🎉",
               description:
-                "Börja med att komplettera din profil — det tar 3 minuter och gör att åkerier kan hitta dig direkt. Lycka till!",
+                "Nästa steg: komplettera din profil — det tar några minuter och gör att åkerier kan hitta dig direkt. Lycka till!",
               side: "over",
               align: "center",
             },
