@@ -5,10 +5,12 @@
 
 // —— Körkort & grund (filter + krav) ——
 export const licenseTypes = [
-  { value: "C",  label: "C" },
-  { value: "CE", label: "CE" },
-  { value: "B",  label: "B" },
-  { value: "BE", label: "BE" },
+  { value: "C",   label: "C (tung lastbil)" },
+  { value: "CE",  label: "CE (tung lastbil + släp)" },
+  { value: "C1",  label: "C1 (medeltung lastbil)" },
+  { value: "C1E", label: "C1E (medeltung + tungt släp)" },
+  { value: "B",   label: "B (personbil)" },
+  { value: "BE",  label: "BE (personbil + släp)" },
 ];
 
 // —— Certifikat: grupperade för UI, platt lista för val ——
@@ -55,9 +57,9 @@ const certGroups = [
     label: "Terminal & lager",
     options: [
       { value: "Truck_A", label: "Truck A (låglyftande)" },
-      { value: "Truck_B", label: "Truck B (motviktstruck)" },
-      { value: "Truck_C", label: "Truck C (skjutstativstruck)" },
-      { value: "Truck_D", label: "Truck D (skjutbomstruck)" },
+      { value: "Truck_B", label: "Truck B (motvikts-/skjutstativtruck)" },
+      { value: "Truck_C", label: "Truck C (stora specialtruckar)" },
+      { value: "Truck_D", label: "Truck D (drag- och flaktruck)" },
       { value: "Bakgavellyft", label: "Bakgavellyft" },
     ],
   },
@@ -74,14 +76,12 @@ const certGroups = [
   },
 ];
 
-// Dolda bakåtkompatibla värden — visas ej i UI men lever i gamla profiler
+// Dolda bakåtkompatibla värden — visas ej i UI men lever i gamla profiler.
+// (Truck_A–D fanns tidigare även här och dubblerade listan — borttagna; de definieras
+//  nu bara i "terminal"-gruppen ovan.)
 const _legacyOptions = [
-  { value: "Tank",     label: "Tankbehörighet" },
+  { value: "Tank",      label: "Tankbehörighet" },
   { value: "Forarkort", label: "Förarkort" },
-  { value: "Truck_A", label: "Truck A" },
-  { value: "Truck_B", label: "Truck B" },
-  { value: "Truck_C", label: "Truck C" },
-  { value: "Truck_D", label: "Truck D" },
 ];
 
 /** Platt lista för kryssrutor/dropdown — inkl. legacy för getCertificateLabel-lookup */
