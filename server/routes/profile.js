@@ -61,6 +61,7 @@ function formatProfileResponse(profile, user) {
     availability: profile.availability,
     primarySegment: profile.primarySegment,
     secondarySegments: profile.secondarySegments,
+    experienceTypes: profile.experienceTypes ?? [],
     visibleToCompanies: profile.visibleToCompanies,
     searchableByCompanies: Boolean(profile.visibleToCompanies && minimumProfileComplete),
     minimumProfileComplete,
@@ -119,6 +120,7 @@ async function sendCompanyMatchAlertsForDriver(userId) {
       availability: profile.availability || "open",
       primarySegment: profile.primarySegment || null,
       secondarySegments: profile.secondarySegments || [],
+      experienceTypes: profile.experienceTypes || [],
       privateMatchNotes: profile.privateMatchNotes || "",
       yearsExperience: driverYearsFromExperience(experience),
     };
@@ -280,6 +282,7 @@ profileRouter.put("/", async (req, res, next) => {
     if (body.physicalWorkOk !== undefined) data.physicalWorkOk = body.physicalWorkOk === true ? true : body.physicalWorkOk === false ? false : null;
     if (body.soloWorkOk !== undefined) data.soloWorkOk = body.soloWorkOk === true ? true : body.soloWorkOk === false ? false : null;
     if (Array.isArray(body.preferredEmployment)) data.preferredEmployment = body.preferredEmployment;
+    if (Array.isArray(body.experienceTypes)) data.experienceTypes = body.experienceTypes;
     if (body.openToWork !== undefined) data.openToWork = Boolean(body.openToWork);
     if (data.isGymnasieelev) {
       data.primarySegment = "INTERNSHIP";

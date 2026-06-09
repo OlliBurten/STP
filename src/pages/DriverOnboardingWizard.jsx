@@ -17,6 +17,7 @@ import { useAuth } from "../context/AuthContext";
 import { track, setPersonProperties } from "../utils/posthog.js";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { internshipTypeOptions, encodeSchoolName } from "../data/segments";
+import { experienceTypes } from "../data/competencies";
 import { regions } from "../data/mockJobs";
 import { trackDriverOnboardingComplete } from "../utils/segmentMetrics";
 import {
@@ -119,6 +120,7 @@ export default function DriverOnboardingWizard() {
     schoolName: initialSchoolName || sessionStorage.getItem("stp_school") || "",
     licenses: profile.licenses || [],
     certificates: profile.certificates || [],
+    experienceTypes: profile.experienceTypes || [],
     region: profile.region || "",
     summary: profile.summary || "",
   }));
@@ -221,6 +223,7 @@ export default function DriverOnboardingWizard() {
           : "",
         licenses: draft.licenses,
         certificates: draft.certificates,
+        experienceTypes: draft.experienceTypes || [],
         region: draft.region,
         availability,
         visibleToCompanies: true,
@@ -468,6 +471,28 @@ export default function DriverOnboardingWizard() {
                   border: `1px solid ${sel ? "var(--green)" : "var(--line)"}`,
                   transition: "all .15s",
                 }}>{ct}</button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 8 }}>
+          <p style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-700)", marginBottom: 4 }}>Körningar du har erfarenhet av (valfritt)</p>
+          <p style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", marginBottom: 10 }}>Höjer matchningen mot liknande jobb.</p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {experienceTypes.map((e) => {
+              const sel = (draft.experienceTypes || []).includes(e.value);
+              return (
+                <button key={e.value} onClick={() => setDraft((p) => {
+                  const arr = p.experienceTypes || [];
+                  return { ...p, experienceTypes: arr.includes(e.value) ? arr.filter((x) => x !== e.value) : [...arr, e.value] };
+                })} style={{
+                  padding: "8px 14px", borderRadius: 999, fontSize: "var(--text-sm)", fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                  background: sel ? "var(--green-tint)" : "var(--card)",
+                  color: sel ? "var(--green-text)" : "var(--ink-700)",
+                  border: `1px solid ${sel ? "var(--green)" : "var(--line)"}`,
+                  transition: "all .15s",
+                }}>{e.label}</button>
               );
             })}
           </div>

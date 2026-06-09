@@ -235,6 +235,7 @@ model DriverProfile {
   availability        String?  // open, vikariat, tim, fast, inactive
   primarySegment      String?  // FULLTIME | FLEX | INTERNSHIP
   secondarySegments   String[] @default([])
+  experienceTypes     String[] @default([])  // körningar föraren HAR erfarenhet av (boostar matchning)
   visibleToCompanies  Boolean  @default(true)
   regionsWilling      String[] // ["Skåne", "Halland"]
   showEmailToCompanies Boolean @default(false)

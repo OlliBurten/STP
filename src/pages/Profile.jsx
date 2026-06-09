@@ -11,6 +11,7 @@ import { fetchDriverMarket } from "../api/stats.js";
 import { fetchJobs } from "../api/jobs.js";
 import { licenseTypes, regions } from "../data/mockJobs";
 import { certificateTypes, certificateGroups, availabilityTypes, getCertificateLabel } from "../data/profileData";
+import { experienceTypes } from "../data/competencies";
 import { segmentOptions } from "../data/segments";
 import { useToast } from "../context/ToastContext";
 import {
@@ -1508,6 +1509,22 @@ export default function Profile() {
                         <input type="date" value={current.availableFrom || ""} onChange={(e) => updateDraft({ availableFrom: e.target.value })} style={{ padding: "9px 12px", borderRadius: 9, background: T.card, border: `1px solid ${T.border2}`, color: T.text, fontSize: "var(--text-sm)", fontFamily: T.font, cursor: "pointer" }} />
                         <p style={{ fontSize: "var(--text-2xs)", color: T.muted, marginTop: 5 }}>Visa åkerier när du är ledig för ett nytt uppdrag</p>
                       </div>
+                    </div>
+                  </div>
+
+                  <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "22px 24px" }}>
+                    <p style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-500)", marginBottom: 6 }}>Körningar jag har erfarenhet av</p>
+                    <p style={{ fontSize: "var(--text-2xs)", color: T.muted, marginBottom: 12 }}>Vad du faktiskt har kört. Höjer matchningen mot liknande jobb — och bygger förtroende hos åkerier.</p>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+                      {experienceTypes.map((e) => {
+                        const arr = Array.isArray(current.experienceTypes) ? current.experienceTypes : [];
+                        const on = arr.includes(e.value);
+                        return (
+                          <button key={e.value} onClick={() => updateDraft({ experienceTypes: on ? arr.filter((x) => x !== e.value) : [...arr, e.value] })} style={chipBtn(on)}>
+                            {e.label}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 

@@ -100,6 +100,29 @@ export function getCertificateLabel(value) {
   return certificateTypes.find((c) => c.value === value)?.label ?? value;
 }
 
+// —— Körningar jag har erfarenhet av (additiv merit, boostar matchning — straffar aldrig) ——
+// `kw` = nyckelord som matchas mot jobbets jobType/bransch/titel.
+export const experienceTypes = [
+  { value: "distribution",     label: "Distribution",            kw: ["distribution"] },
+  { value: "fjarr",            label: "Fjärr / utland",          kw: ["fjärr", "fjarr", "utland", "internationell"] },
+  { value: "lokalt",           label: "Lokalt / närtrafik",      kw: ["lokal", "närtrafik", "nartrafik"] },
+  { value: "kranbil",          label: "Kranbil",                 kw: ["kran"] },
+  { value: "tank_bulk",        label: "Tank & bulk",             kw: ["tank", "bulk"] },
+  { value: "bygg_anlaggning",  label: "Bygg & anläggning",       kw: ["bygg", "anläggning", "anlaggning"] },
+  { value: "skog",             label: "Skogstransport",          kw: ["skog", "timmer"] },
+  { value: "renhallning",      label: "Renhållning",             kw: ["renhållning", "renhallning", "avfall", "sopor", "soppor", "sopbil"] },
+  { value: "bargning",         label: "Bärgning",                kw: ["bärgning", "bargning"] },
+  { value: "djurtransport",    label: "Djurtransport",           kw: ["djur"] },
+  { value: "flytt",            label: "Flytt / bohag",           kw: ["flytt", "bohag"] },
+  { value: "sug_spol",         label: "Sug & spol",              kw: ["sug", "spol", "slam"] },
+  { value: "special",          label: "Specialtransport",        kw: ["special"] },
+  { value: "liftdumper",       label: "Liftdumper / lastväxlare", kw: ["liftdumper", "lastväxlare", "lastvaxlare"] },
+];
+
+export function getExperienceTypeLabel(value) {
+  return experienceTypes.find((e) => e.value === value)?.label ?? value;
+}
+
 // —— Erfarenhetsnivå (0–1, 1–3, 3–5, 5+; 1–2, 2–5, 5–10, 10+ bakåtkompatibla) ——
 export const experienceLevels = [
   { value: "", label: "Inget krav" },

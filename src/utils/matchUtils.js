@@ -1,5 +1,21 @@
 import { segmentLabel } from "../data/segments";
 import { getCertificateLabel } from "../data/profileData";
+import { experienceTypes } from "../data/competencies";
+
+/**
+ * Boost (aldrig minus): har föraren erfarenhet av en körningstyp som jobbet rör?
+ * Matchar förarens experienceTypes-nyckelord mot jobbets jobType/bransch/titel.
+ */
+function experienceBoost(driver, job) {
+  const have = Array.isArray(driver?.experienceTypes) ? driver.experienceTypes : [];
+  if (!have.length) return 0;
+  const hay = `${job?.jobType || ""} ${job?.bransch || ""} ${job?.title || ""}`.toLowerCase();
+  for (const v of have) {
+    const t = experienceTypes.find((e) => e.value === v);
+    if (t && t.kw.some((k) => hay.includes(k.toLowerCase()))) return 1; // +1 om någon erfarenhet matchar jobbet
+  }
+  return 0;
+}
 
 /**
  * Match scoring for driver-job compatibility.
@@ -209,9 +225,14 @@ export function matchScore(driver, job) {
 
   score += privateMatchNotesAdjustment(driver.privateMatchNotes, job);
 
+  // Erfarenhets-boost: additiv, kapas vid 100% nedan → höjer relevanta jobb, straffar aldrig.
+  const expBonus = experienceBoost(driver, job);
+  if (expBonus) details.experienceType = true;
+  score += expBonus;
+
   const finalScore = Math.max(0, score);
   const max = matchMaxScore(job);
-  const pct = max > 0 ? Math.round((finalScore / max) * 100) : 0;
+  const pct = max > 0 ? Math.min(100, Math.round((finalScore / max) * 100)) : 0;
   return { score: finalScore, pct, details };
 }
 

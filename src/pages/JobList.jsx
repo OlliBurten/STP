@@ -407,6 +407,7 @@ export default function JobList() {
     yearsExperience: calcYearsExperience(profile.experience),
     primarySegment: profile.primarySegment || "",
     secondarySegments: Array.isArray(profile.secondarySegments) ? profile.secondarySegments : [],
+    experienceTypes: Array.isArray(profile.experienceTypes) ? profile.experienceTypes : [],
   } : null, [isDriver, profile]);
 
   const matchDataMap = useMemo(() => {
