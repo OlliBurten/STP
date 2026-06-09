@@ -418,7 +418,7 @@ export default function JobList() {
   const profileCompletion  = useMemo(() => (isDriver && profile) ? getProfileCompletion({ ...user, driverProfile: profile }) : null, [isDriver, user, profile]);
   const showProfileBanner  = isDriver && !jobsLoading && !bannerDismissed && profileCompletion && profileCompletion.pct < 80;
 
-  // Rekommenderad = hög matchning OCH i en region föraren valt (fjärrkörning är platsoberoende → undantas).
+  // Rekommenderad = hög matchning OCH i en region föraren valt.
   // Har föraren ingen region vald visas alla höga matchningar.
   const driverHasRegionPref = !!(driverForMatch && (driverForMatch.region || (driverForMatch.regionsWilling?.length)));
   const recommendedIds = useMemo(() => {
@@ -426,7 +426,7 @@ export default function JobList() {
     for (const job of filteredJobs) {
       const m = matchDataMap[job.id];
       if ((m?.pct ?? 0) < 80) continue;
-      if (!driverHasRegionPref || m?.details?.region === true || job.jobType === "fjärrkörning") set.add(job.id);
+      if (!driverHasRegionPref || m?.details?.region === true) set.add(job.id);
     }
     return set;
   }, [filteredJobs, matchDataMap, driverHasRegionPref]);
