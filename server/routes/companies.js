@@ -573,7 +573,7 @@ companiesRouter.get("/stats/matching-drivers", async (req, res, next) => {
       const exp = Array.isArray(profile.experience)
         ? profile.experience
         : typeof profile.experience === "string"
-          ? JSON.parse(profile.experience || "[]")
+          ? (() => { try { return JSON.parse(profile.experience || "[]"); } catch { return []; } })()
           : [];
       const now = new Date().getFullYear();
       return exp.reduce((sum, e) => {

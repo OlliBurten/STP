@@ -15,6 +15,9 @@ import { validateBody, validateQuery } from "../middleware/validate.js";
 import { createJobSchema, jobsListQuerySchema, patchJobSchema } from "../lib/validators.js";
 
 export const jobsRouter = Router();
+
+function parseExpSafe(v) { try { return JSON.parse(v || "[]"); } catch { return []; } }
+
 const MATCH_ALERTS_ENABLED = process.env.MATCH_ALERTS_ENABLED !== "false";
 const MATCH_EMAIL_COOLDOWN_MS = 24 * 60 * 60 * 1000;
 const MATCH_ALERT_MAX_RECIPIENTS = 40;
@@ -61,7 +64,7 @@ async function sendDriverMatchAlertsForJob(job) {
         const experience = Array.isArray(p.experience)
           ? p.experience
           : typeof p.experience === "string"
-            ? JSON.parse(p.experience || "[]")
+            ? parseExpSafe(p.experience)
             : [];
         const driver = {
           licenses: p.licenses || [],
@@ -316,7 +319,7 @@ jobsRouter.get("/:id/applicants", authMiddleware, requireCompany, attachCompanyC
       const exp = Array.isArray(p?.experience)
         ? p.experience
         : typeof p?.experience === "string"
-          ? JSON.parse(p?.experience || "[]")
+          ? parseExpSafe(p?.experience)
           : [];
       const yearsExperience = driverYearsFromExperience(exp);
       const driver = {
