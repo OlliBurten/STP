@@ -5,6 +5,8 @@ import { computeProfileScore } from "../lib/profileScore.js";
 
 export const driversRouter = Router();
 
+function parseExpSafe(v) { try { return JSON.parse(v || "[]"); } catch { return []; } }
+
 driversRouter.get("/", authMiddleware, requireCompany, requireVerifiedCompany, async (req, res, next) => {
   try {
     const { region, license, certificate, availability, experience, segment } = req.query;
@@ -56,7 +58,7 @@ driversRouter.get("/", authMiddleware, requireCompany, requireVerifiedCompany, a
       const exp = (p.experience && typeof p.experience === "object")
         ? p.experience
         : typeof p.experience === "string"
-          ? JSON.parse(p.experience || "[]")
+          ? parseExpSafe(p.experience)
           : [];
       const now = new Date().getFullYear();
       let yearsExperience = 0;
@@ -201,7 +203,7 @@ driversRouter.get("/public/:id", async (req, res, next) => {
     const exp = (profile.experience && typeof profile.experience === "object")
       ? profile.experience
       : typeof profile.experience === "string"
-        ? JSON.parse(profile.experience || "[]")
+        ? parseExpSafe(profile.experience)
         : [];
     const now = new Date().getFullYear();
     let yearsExperience = 0;
@@ -364,7 +366,7 @@ driversRouter.get("/:id", authMiddleware, requireCompany, requireVerifiedCompany
     const exp = (profile.experience && typeof profile.experience === "object")
       ? profile.experience
       : typeof profile.experience === "string"
-        ? JSON.parse(profile.experience || "[]")
+        ? parseExpSafe(profile.experience)
         : [];
     const now = new Date().getFullYear();
     let yearsExperience = 0;

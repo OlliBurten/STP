@@ -9,6 +9,9 @@ import { analyzeSummary } from "../lib/analyzeSummary.js";
 import { computeProfileScore } from "../lib/profileScore.js";
 
 export const profileRouter = Router();
+
+function parseExpSafe(v) { try { return JSON.parse(v || "[]"); } catch { return []; } }
+
 const MATCH_ALERTS_ENABLED = process.env.MATCH_ALERTS_ENABLED !== "false";
 const MATCH_EMAIL_COOLDOWN_MS = 24 * 60 * 60 * 1000;
 
@@ -39,7 +42,7 @@ function formatProfileResponse(profile, user) {
   const experience = (profile.experience && typeof profile.experience === "object")
     ? profile.experience
     : typeof profile.experience === "string"
-      ? JSON.parse(profile.experience || "[]")
+      ? parseExpSafe(profile.experience)
       : [];
   const minimumProfileComplete = isDriverMinimumProfileComplete(
     normalizeProfileForMinimumCheck(profile, user?.name || profile.email || "")
@@ -106,7 +109,7 @@ async function sendCompanyMatchAlertsForDriver(userId) {
     const experience = Array.isArray(profile.experience)
       ? profile.experience
       : typeof profile.experience === "string"
-        ? JSON.parse(profile.experience || "[]")
+        ? parseExpSafe(profile.experience)
         : [];
     const driver = {
       licenses: profile.licenses || [],
