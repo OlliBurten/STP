@@ -177,7 +177,7 @@ function PasswordCard() {
 }
 
 // ─── Driver Konto ─────────────────────────────────────────────────────────────
-function DriverKontoSection({ user, profile }) {
+function DriverKontoSection({ user }) {
   const navigate = useNavigate();
   const { logout } = useAuth();
   const nameParts = (user?.name || "").split(" ");
@@ -228,8 +228,6 @@ function DriverKontoSection({ user, profile }) {
 
       <PasswordCard />
 
-      <DriverAnstallningsSection profile={profile} />
-
       <Card title="Plattformsguide" sub="Gå igenom introduktionsguiden igen för att se tips och funktioner.">
         <button
           type="button"
@@ -250,67 +248,6 @@ function DriverKontoSection({ user, profile }) {
         </button>
       </Card>
     </>
-  );
-}
-
-// ─── Driver Anställningsform-preferens ────────────────────────────────────────
-const EMPLOY_OPTS = [
-  ["fast",         "Fast anställning"],
-  ["vikariat",     "Vikariat"],
-  ["timjobb",      "Timjobb"],
-  ["egenanstald",  "Egenanställd"],
-];
-
-function DriverAnstallningsSection({ profile }) {
-  const [employment, setEmployment] = useState(profile?.preferredEmployment || []);
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [error, setError] = useState("");
-
-  const toggle = (arr, v) => arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v];
-
-  const handleSave = async () => {
-    setSaving(true); setError("");
-    try {
-      await updateProfile({ preferredEmployment: employment });
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2500);
-    } catch (err) {
-      setError(err.message || "Kunde inte spara.");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <Card title="Vad letar du efter?" sub="Vilken typ av anställning är du intresserad av?">
-      {error && <div style={{ padding: "10px 14px", borderRadius: 10, background: "var(--danger-tint)", border: "1px solid rgba(239,68,68,0.2)", fontSize: "var(--text-sm)", color: "var(--danger)", marginBottom: 14 }}>{error}</div>}
-      <Field label="Anställningsform">
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {EMPLOY_OPTS.map(([v, l]) => {
-            const on = employment.includes(v);
-            return (
-              <button
-                key={v}
-                type="button"
-                onClick={() => setEmployment(toggle(employment, v))}
-                style={{ padding: "8px 16px", borderRadius: 99, background: on ? "var(--green-tint)" : "var(--paper-2)", border: `1px solid ${on ? "rgba(31,95,92,0.3)" : "var(--line)"}`, fontSize: "var(--text-sm)", fontWeight: 600, color: on ? "var(--green-text)" : "var(--ink-500)", cursor: "pointer", fontFamily: "inherit" }}
-              >
-                {on ? "✓ " : ""}{l}
-              </button>
-            );
-          })}
-        </div>
-      </Field>
-      <button
-        type="button"
-        onClick={handleSave}
-        disabled={saving}
-        style={{ padding: "10px 18px", borderRadius: 10, background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: "var(--text-sm)", border: "none", cursor: saving ? "not-allowed" : "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 8 }}
-      >
-        {saved ? <><Icon n="check" s={14} /> Sparat!</> : saving ? "Sparar…" : "Spara preferens"}
-      </button>
-    </Card>
   );
 }
 
@@ -539,15 +476,14 @@ function SokprefSection({ profile: initialProfile }) {
     });
   };
 
+  const setBool = (field, val) => {
+    setLocalProfile((p) => ({ ...p, [field]: val }));
+    setSaving(true);
+    updateProfile({ [field]: val }).catch(() => {}).finally(() => setSaving(false));
+  };
+
   const licenses = Array.isArray(localProfile.licenses) ? localProfile.licenses : [];
   const segments = Array.isArray(localProfile.secondarySegments) ? localProfile.secondarySegments : [];
-  const avail = localProfile.availability || "";
-
-  const EMPLOYMENTS = [
-    ["fast", "Fast anställning"],
-    ["vikariat", "Vikariat"],
-    ["tim", "Timjobb"],
-  ];
   const SEGMENTS = ["Fjärr", "Distribution", "Tank", "Bygg", "Skog", "Container", "Internationell", "Bemanning"];
 
   return (
@@ -565,23 +501,6 @@ function SokprefSection({ profile: initialProfile }) {
           })}
         </div>
       </Field>
-      <Field label="Anställningsform">
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {EMPLOYMENTS.map(([v, l]) => {
-            const on = avail === v;
-            return (
-              <button key={v} type="button" onClick={() => {
-                const next = on ? "" : v;
-                setLocalProfile((p) => ({ ...p, availability: next }));
-                updateProfile({ availability: next }).catch(() => {});
-              }}
-                style={{ padding: "8px 16px", borderRadius: 99, background: on ? "var(--amber-tint)" : "var(--paper-2)", border: `1px solid ${on ? "var(--amber)" : "var(--line)"}`, fontSize: "var(--text-sm)", fontWeight: 600, color: on ? "var(--amber-text)" : "var(--ink-500)", cursor: "pointer", fontFamily: "inherit" }}>
-                {l}
-              </button>
-            );
-          })}
-        </div>
-      </Field>
       <Field label="Segment du är intresserad av">
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {SEGMENTS.map((s) => {
@@ -590,6 +509,19 @@ function SokprefSection({ profile: initialProfile }) {
               <button key={s} type="button" onClick={() => toggle("secondarySegments", s)}
                 style={{ padding: "7px 14px", borderRadius: 99, background: on ? "var(--green-tint)" : "var(--paper-2)", border: `1px solid ${on ? "var(--green)" : "var(--line)"}`, fontSize: "var(--text-sm)", fontWeight: 600, color: on ? "var(--green-text)" : "var(--ink-500)", cursor: "pointer", fontFamily: "inherit" }}>
                 {s}
+              </button>
+            );
+          })}
+        </div>
+      </Field>
+      <Field label="Arbetsprofil">
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {[{ k: "physicalWorkOk", l: "Fysiskt tungt arbete ok" }, { k: "soloWorkOk", l: "Ensamarbete ok" }].map(({ k, l }) => {
+            const on = Boolean(localProfile[k]);
+            return (
+              <button key={k} type="button" onClick={() => setBool(k, !on)}
+                style={{ padding: "8px 16px", borderRadius: 99, background: on ? "var(--green-tint)" : "var(--paper-2)", border: `1px solid ${on ? "var(--green)" : "var(--line)"}`, fontSize: "var(--text-sm)", fontWeight: 600, color: on ? "var(--green-text)" : "var(--ink-500)", cursor: "pointer", fontFamily: "inherit" }}>
+                {on && "✓ "}{l}
               </button>
             );
           })}

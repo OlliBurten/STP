@@ -1508,17 +1508,6 @@ export default function Profile() {
                         <input type="date" value={current.availableFrom || ""} onChange={(e) => updateDraft({ availableFrom: e.target.value })} style={{ padding: "9px 12px", borderRadius: 9, background: T.card, border: `1px solid ${T.border2}`, color: T.text, fontSize: "var(--text-sm)", fontFamily: T.font, cursor: "pointer" }} />
                         <p style={{ fontSize: "var(--text-2xs)", color: T.muted, marginTop: 5 }}>Visa åkerier när du är ledig för ett nytt uppdrag</p>
                       </div>
-                      <div>
-                        <p style={{ fontSize: "var(--text-xs)", fontWeight: 600, color: T.sub, marginBottom: 4 }}>Arbetsprofil</p>
-                        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
-                          {[{ key: "physicalWorkOk", label: "Fysiskt tungt arbete ok" }, { key: "soloWorkOk", label: "Ensamarbete ok" }].map(({ key, label }) => (
-                            <label key={key} style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
-                              <Toggle checked={Boolean(current[key])} onChange={() => updateDraft({ [key]: !current[key] })} />
-                              <span style={{ fontSize: "var(--text-sm)", color: T.sub }}>{label}</span>
-                            </label>
-                          ))}
-                        </div>
-                      </div>
                     </div>
                   </div>
 
