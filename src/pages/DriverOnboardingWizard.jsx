@@ -43,7 +43,14 @@ const LICENSES = [
   { c: "BE", d: "Personbil + släp" },
 ];
 
-const CERTS = ["YKB", "ADR", "ADR Tank", "Truckkort", "Kran", "Digitalt förarkort"];
+// Förenklad högnivå-uppsättning för onboarding — kanoniska VÄRDEN (samma som profil/matchning).
+// Detaljer (ADR Tank/Klass 1/7, truck A–D) fylls i på profilsidan.
+const CERTS = [
+  { value: "YKB",                     label: "YKB" },
+  { value: "ADR",                     label: "ADR (grund)" },
+  { value: "Kran",                    label: "Kranförarbevis" },
+  { value: "Digitalt_fardskrivarkort", label: "Digitalt färdskrivarkort" },
+];
 
 // ── Progress bar ───────────────────────────────────────────────────────────────
 function Progress({ step }) {
@@ -462,15 +469,15 @@ export default function DriverOnboardingWizard() {
           <p style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-700)", marginBottom: 10 }}>Certifikat (valfritt)</p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {CERTS.map((ct) => {
-              const sel = draft.certificates.includes(ct);
+              const sel = draft.certificates.includes(ct.value);
               return (
-                <button key={ct} onClick={() => toggleCert(ct)} style={{
+                <button key={ct.value} onClick={() => toggleCert(ct.value)} style={{
                   padding: "8px 14px", borderRadius: 999, fontSize: "var(--text-sm)", fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
                   background: sel ? "var(--green-tint)" : "var(--card)",
                   color: sel ? "var(--green-text)" : "var(--ink-700)",
                   border: `1px solid ${sel ? "var(--green)" : "var(--line)"}`,
                   transition: "all .15s",
-                }}>{ct}</button>
+                }}>{ct.label}</button>
               );
             })}
           </div>

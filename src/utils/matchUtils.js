@@ -17,6 +17,24 @@ function experienceBoost(driver, job) {
   return 0;
 }
 
+// Körkortshierarki: högre behörighet medför lägre (Transportstyrelsen).
+const LICENSE_IMPLIES = {
+  CE:  ["CE", "C", "C1", "C1E", "BE", "B"],
+  C1E: ["C1E", "C1", "BE", "B"],
+  C:   ["C", "C1", "B"],
+  C1:  ["C1", "B"],
+  BE:  ["BE", "B"],
+  B:   ["B"],
+};
+function expandLicenses(licenses) {
+  const set = new Set();
+  for (const l of (licenses || [])) {
+    set.add(l);
+    for (const imp of (LICENSE_IMPLIES[l] || [])) set.add(imp);
+  }
+  return [...set];
+}
+
 /**
  * Match scoring for driver-job compatibility.
  * Structured fields enable consistent matching across the platform.
@@ -163,8 +181,10 @@ export function matchScore(driver, job) {
     // Mismatch or no preference → no bonus, but never a hard fail
   }
 
-  // License — only hard fail: can't legally drive without the right license
-  const driverLicenses = driver.licenses || [];
+  // License — only hard fail: can't legally drive without the right license.
+  // Högre behörighet täcker lägre (CE⇒C⇒B, CE⇒BE, C1E⇒C1) → en CE-förare matchar
+  // jobb som kräver C/B/BE utan att behöva välja dem separat.
+  const driverLicenses = expandLicenses(driver.licenses);
   const jobLicenses = job.license || [];
   const hasLicense = jobLicenses.length === 0 || jobLicenses.some((l) => driverLicenses.includes(l));
   if (hasLicense) details.license = true;

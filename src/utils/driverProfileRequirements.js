@@ -65,15 +65,15 @@ export function getDriverMinimumMissingKeys(profile) {
 }
 
 export function isDriverMinimumProfileComplete(profile) {
-  // Only check fields that the onboarding wizard collects.
-  // Phone, location and availability are optional for onboarding — they
-  // can be filled in on the profile page afterwards.
+  // Måste matcha EXAKT vad onboarding-wizardens canNext tvingar fram (steg 1–3),
+  // annars studsar OnboardingGate tillbaka användaren i en loop.
+  // Onboarding kräver: segment, namn, körkort, region. Telefon/ort/tillgänglighet
+  // OCH presentation (summary) är "valfritt" i onboarding → gaten kräver dem INTE.
   return (
     hasDriverMinimumName(profile) &&
     hasDriverMinimumSegment(profile) &&
     hasDriverMinimumLicense(profile) &&
-    hasDriverMinimumRegion(profile) &&
-    hasDriverMinimumSummary(profile)
+    hasDriverMinimumRegion(profile)
   );
 }
 

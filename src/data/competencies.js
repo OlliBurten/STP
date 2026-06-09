@@ -28,8 +28,11 @@ const certGroups = [
     id: "adr",
     label: "ADR (Farligt gods)",
     options: [
-      { value: "ADR", label: "ADR (grund)" },
-      { value: "ADR_Tank", label: "ADR Tank" },
+      { value: "ADR",        label: "ADR Grund (styckegods)" },
+      { value: "ADR_Tank",   label: "ADR Tank" },
+      { value: "ADR_Klass1", label: "ADR Klass 1 (explosiva)" },
+      { value: "ADR_Klass7", label: "ADR Klass 7 (radioaktiva)" },
+      { value: "ADR_1_3",    label: "ADR 1.3 (hantering farligt gods)" },
       // Tank är bakåtkompatibel alias — dold från UI men lever i gamla profiler
     ],
   },
