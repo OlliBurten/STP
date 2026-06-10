@@ -1618,7 +1618,14 @@ adminRouter.get("/onboarding", async (req, res, next) => {
       createdAt: toIso(u.createdAt), pct: scoreDriver(u),
     }));
 
-    res.json({ buckets, stuck, newDrivers: newWithPct, total30d: allDrivers.length });
+    // Webbsteg (besökare + klick på Skapa konto) från PostHog — best-effort
+    let webFunnel = null;
+    try {
+      const { getOnboardingWebFunnel } = await import("../lib/stackOverview.js");
+      webFunnel = await getOnboardingWebFunnel();
+    } catch { /* tratten visar 'Ingen data' utan webbsteg */ }
+
+    res.json({ buckets, stuck, newDrivers: newWithPct, total30d: allDrivers.length, webFunnel });
   } catch (e) { next(e); }
 });
 

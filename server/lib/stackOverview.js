@@ -142,6 +142,36 @@ async function fetchResend() {
   }
 }
 
+// ── Onboarding-trattens webbsteg (PostHog: besökare + klick på Skapa konto) ──
+let _funnelCache = null; // { at, data }
+
+export async function getOnboardingWebFunnel() {
+  const key = process.env.POSTHOG_PERSONAL_API_KEY;
+  if (!key) return null;
+  if (_funnelCache && Date.now() - _funnelCache.at < CACHE_TTL_MS) return _funnelCache.data;
+  try {
+    const data = await fetchJson(`${POSTHOG_HOST}/api/projects/${POSTHOG_PROJECT_ID}/query/`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        query: {
+          kind: "HogQLQuery",
+          // 'Skapa%konto' matchar "Skapa konto", "Skapa förarkonto" och "Skapa företagskonto"
+          query:
+            "select count(distinct person_id) as visitors, count(distinct if(event = '$autocapture' and elements_chain ilike '%Skapa%konto%', person_id, null)) as signup_clickers from events where timestamp > now() - interval 30 day",
+        },
+      }),
+    }, 10000);
+    const row = data?.results?.[0] || [];
+    const result = { visitors30d: row[0] ?? null, signupClickers30d: row[1] ?? null, source: "posthog" };
+    _funnelCache = { at: Date.now(), data: result };
+    return result;
+  } catch (e) {
+    console.warn("[stackOverview] onboarding web funnel failed:", e?.message);
+    return null;
+  }
+}
+
 // ── Publikt API ─────────────────────────────────────────────────────────────
 export async function getStackOverview({ force = false } = {}) {
   if (!force && _cache && Date.now() - _cache.at < CACHE_TTL_MS) {

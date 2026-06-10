@@ -246,12 +246,18 @@ function OnboardingFunnel({ onboarding }) {
   const over50 = (onboarding?.buckets?.["50-75"] ?? 0) + (onboarding?.buckets?.["75-100"] ?? 0);
   const over75 = onboarding?.buckets?.["75-100"] ?? 0;
   const signups = onboarding?.total30d ?? null;
+  const web = onboarding?.webFunnel || null; // { visitors30d, signupClickers30d } från PostHog
 
-  // Rows 1-2 (besökare/klick) have no tracking data — no pageview analytics
+  // Procent relativt trattens topp: besökare om webbdata finns, annars signups.
+  const base = web?.visitors30d || signups || 1;
   const stages = signups != null ? [
-    { l: "Slutfört signup",         v: signups, p: 100,                                         c: "var(--amber)" },
-    { l: "Profil > 50%",            v: over50,  p: Math.round((over50 / (signups || 1)) * 100), c: "var(--info)" },
-    { l: "Profil > 75% (matchbar)", v: over75,  p: Math.round((over75 / (signups || 1)) * 100), c: "var(--success)" },
+    ...(web ? [
+      { l: "Besökare (samtyckt trafik)", v: web.visitors30d ?? 0,       p: 100,                                                          c: "var(--info)" },
+      { l: "Klickat 'Skapa konto'",      v: web.signupClickers30d ?? 0, p: Math.round(((web.signupClickers30d ?? 0) / base) * 100),      c: "var(--green-text)" },
+    ] : []),
+    { l: "Slutfört signup",         v: signups, p: web ? Math.round((signups / base) * 100) : 100, c: "var(--amber)" },
+    { l: "Profil > 50%",            v: over50,  p: Math.round((over50 / base) * 100),              c: "var(--info)" },
+    { l: "Profil > 75% (matchbar)", v: over75,  p: Math.round((over75 / base) * 100),              c: "var(--success)" },
   ] : null;
 
   return (
@@ -267,8 +273,8 @@ function OnboardingFunnel({ onboarding }) {
         </select>
       </div>
 
-      {/* Rows without tracking data */}
-      {[
+      {/* Fallback-rader när PostHog-nyckel saknas */}
+      {!web && [
         { l: "Besökare",              c: "var(--info)" },
         { l: "Klickat 'Skapa konto'", c: "var(--green-text)" },
       ].map(s => (
