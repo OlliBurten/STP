@@ -102,11 +102,12 @@ driversRouter.get("/", authMiddleware, requireCompany, requireVerifiedCompany, a
     });
     // Strippa interna sorteringsfält
     list = list.map(({ _lastLoginAt, ...rest }) => rest);
-    if (experience) {
+    const experienceStr = Array.isArray(experience) ? experience[0] : experience;
+    if (experienceStr) {
       const [min, max] =
-        experience === "10+" ? [10, 999]
-        : experience === "5+" ? [5, 999]
-        : experience.split("-").map(Number);
+        experienceStr === "10+" ? [10, 999]
+        : experienceStr === "5+" ? [5, 999]
+        : typeof experienceStr === "string" ? experienceStr.split("-").map(Number) : [0, 999];
       list = list.filter(
         (d) =>
           d.yearsExperience >= min &&
