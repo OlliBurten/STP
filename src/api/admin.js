@@ -24,6 +24,11 @@ export function getAdminSummary() {
   return apiGet("/api/admin/summary");
 }
 
+/** Nyckeltal från externa tjänster (Sentry/Plausible/PostHog/Resend) — 5 min cache på servern. */
+export function getStackOverview() {
+  return apiGet("/api/admin/stack-overview");
+}
+
 export function getOnboardingStats() {
   return apiGet("/api/admin/onboarding");
 }

@@ -284,6 +284,16 @@ adminRouter.patch("/companies/:id/status", async (req, res, next) => {
   }
 });
 
+// Stack-översikt — nyckeltal från Sentry/Plausible/PostHog/Resend på ett ställe (5 min cache)
+adminRouter.get("/stack-overview", async (req, res, next) => {
+  try {
+    const { getStackOverview } = await import("../lib/stackOverview.js");
+    res.json(await getStackOverview({ force: req.query.force === "1" }));
+  } catch (e) {
+    next(e);
+  }
+});
+
 adminRouter.get("/summary", async (req, res, next) => {
   try {
     const now = new Date();

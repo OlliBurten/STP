@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   adminCreateJob,
   getAdminSummary,
+  getStackOverview,
   getOnboardingStats,
   getUserAdminDetail,
   listInsights,
@@ -39,6 +40,7 @@ export default function Admin() {
   const [summary, setSummary] = useState(null);
   const [onboarding, setOnboarding] = useState(null);
   const [health, setHealth] = useState(null);
+  const [stack, setStack] = useState(null);
   const [insights, setInsights] = useState([]);
   const [insightsRunning, setInsightsRunning] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
@@ -138,6 +140,10 @@ export default function Admin() {
       const res = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/health`);
       if (res.ok) setHealth(await res.json());
     } catch { /* health is best-effort */ }
+  }
+
+  async function loadStack() {
+    try { setStack(await getStackOverview()); } catch { /* best-effort */ }
   }
 
   async function loadInsights() {
@@ -282,6 +288,7 @@ export default function Admin() {
       if (activeTab === "outreach")  await loadOutreach();
       if (activeTab === "feedback")  await loadFeedback();
       if (activeTab === "insights")  await loadInsights();
+      if (activeTab === "integrations") await loadStack();
     } catch (e) {
       setError(e.message || "Kunde inte hämta data");
     } finally {
@@ -1259,6 +1266,113 @@ export default function Admin() {
 
         {/* ── Integrationer ── */}
         {activeTab === "integrations" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <SectionCard>
+            <p style={{ fontSize: "var(--text-lg)", fontWeight: 700, color: T.text, marginBottom: 6 }}>Datakällor — allt på ett ställe</p>
+            <p style={{ fontSize: "var(--text-sm)", color: T.muted, marginBottom: 20 }}>
+              Nyckeltal hämtade direkt från tjänsternas API:er (uppdateras var 5:e minut).
+            </p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px,1fr))", gap: 12 }}>
+
+              {/* Plausible — hela trafiken */}
+              <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 12, padding: "16px 18px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                  <span style={{ fontSize: "var(--text-base)", fontWeight: 800, color: T.text }}>Trafik · Plausible</span>
+                  <a href="https://plausible.io" target="_blank" rel="noreferrer" style={{ fontSize: "var(--text-2xs)", color: T.muted, textDecoration: "none" }}>Öppna ↗</a>
+                </div>
+                {!stack?.plausible?.configured ? (
+                  <p style={{ fontSize: "var(--text-xs)", color: T.muted, margin: 0 }}>
+                    API-nyckel saknas — skapa en på plausible.io (Settings → API Keys) och lägg <span style={{ fontFamily: "var(--mono)" }}>PLAUSIBLE_API_KEY</span> i Railway.
+                  </p>
+                ) : stack.plausible.error ? (
+                  <p style={{ fontSize: "var(--text-xs)", color: T.red, margin: 0 }}>Fel: {stack.plausible.error}</p>
+                ) : (
+                  <>
+                    <div style={{ display: "flex", gap: 18, marginBottom: 10 }}>
+                      <div><div style={{ fontSize: "var(--text-2xl)", fontWeight: 800, color: T.text, fontFamily: "var(--mono)" }}>{stack.plausible.visitors7d ?? "–"}</div><div style={{ fontSize: "var(--text-2xs)", color: T.muted }}>Besökare 7d</div></div>
+                      <div><div style={{ fontSize: "var(--text-2xl)", fontWeight: 800, color: T.text, fontFamily: "var(--mono)" }}>{stack.plausible.visitors30d ?? "–"}</div><div style={{ fontSize: "var(--text-2xs)", color: T.muted }}>Besökare 30d</div></div>
+                      <div><div style={{ fontSize: "var(--text-2xl)", fontWeight: 800, color: T.text, fontFamily: "var(--mono)" }}>{stack.plausible.pageviews7d ?? "–"}</div><div style={{ fontSize: "var(--text-2xs)", color: T.muted }}>Sidvisningar 7d</div></div>
+                    </div>
+                    {(stack.plausible.topSources || []).length > 0 && (
+                      <div style={{ fontSize: "var(--text-2xs)", color: T.muted }}>
+                        Toppkällor: {stack.plausible.topSources.map(s => `${s.name} (${s.visitors})`).join(" · ")}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+
+              {/* PostHog — produktanalys */}
+              <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 12, padding: "16px 18px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                  <span style={{ fontSize: "var(--text-base)", fontWeight: 800, color: T.text }}>Produkt · PostHog</span>
+                  <a href="https://eu.posthog.com" target="_blank" rel="noreferrer" style={{ fontSize: "var(--text-2xs)", color: T.muted, textDecoration: "none" }}>Öppna ↗</a>
+                </div>
+                {!stack?.posthog?.configured ? (
+                  <p style={{ fontSize: "var(--text-xs)", color: T.muted, margin: 0 }}>
+                    API-nyckel saknas — skapa en på eu.posthog.com (Settings → Personal API Keys) och lägg <span style={{ fontFamily: "var(--mono)" }}>POSTHOG_PERSONAL_API_KEY</span> i Railway.
+                  </p>
+                ) : stack.posthog.error ? (
+                  <p style={{ fontSize: "var(--text-xs)", color: T.red, margin: 0 }}>Fel: {stack.posthog.error}</p>
+                ) : (
+                  <div style={{ display: "flex", gap: 18 }}>
+                    <div><div style={{ fontSize: "var(--text-2xl)", fontWeight: 800, color: T.text, fontFamily: "var(--mono)" }}>{stack.posthog.users7d ?? "–"}</div><div style={{ fontSize: "var(--text-2xs)", color: T.muted }}>Användare 7d</div></div>
+                    <div><div style={{ fontSize: "var(--text-2xl)", fontWeight: 800, color: T.text, fontFamily: "var(--mono)" }}>{stack.posthog.pageviews7d ?? "–"}</div><div style={{ fontSize: "var(--text-2xs)", color: T.muted }}>Sidvisningar 7d</div></div>
+                    <div><div style={{ fontSize: "var(--text-2xl)", fontWeight: 800, color: T.text, fontFamily: "var(--mono)" }}>{stack.posthog.events7d ?? "–"}</div><div style={{ fontSize: "var(--text-2xs)", color: T.muted }}>Events 7d</div></div>
+                  </div>
+                )}
+              </div>
+
+              {/* Sentry — fel */}
+              <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 12, padding: "16px 18px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                  <span style={{ fontSize: "var(--text-base)", fontWeight: 800, color: T.text }}>Fel · Sentry</span>
+                  <a href="https://stp-jb.sentry.io" target="_blank" rel="noreferrer" style={{ fontSize: "var(--text-2xs)", color: T.muted, textDecoration: "none" }}>Öppna ↗</a>
+                </div>
+                {!stack?.sentry?.configured ? (
+                  <p style={{ fontSize: "var(--text-xs)", color: T.muted, margin: 0 }}>SENTRY_API_TOKEN saknas i Railway.</p>
+                ) : stack.sentry.error ? (
+                  <p style={{ fontSize: "var(--text-xs)", color: T.red, margin: 0 }}>Fel: {stack.sentry.error}</p>
+                ) : (
+                  <>
+                    <div style={{ marginBottom: 8 }}>
+                      <span style={{ fontSize: "var(--text-2xl)", fontWeight: 800, fontFamily: "var(--mono)", color: Number(stack.sentry.unresolvedCount) === 0 ? T.green : T.red }}>{stack.sentry.unresolvedCount}</span>
+                      <span style={{ fontSize: "var(--text-2xs)", color: T.muted, marginLeft: 7 }}>olösta fel</span>
+                    </div>
+                    {(stack.sentry.latest || []).map((i, idx) => (
+                      <a key={idx} href={i.link} target="_blank" rel="noreferrer" style={{ display: "block", fontSize: "var(--text-2xs)", color: T.muted, textDecoration: "none", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", padding: "2px 0" }}>• {i.title}</a>
+                    ))}
+                  </>
+                )}
+              </div>
+
+              {/* Resend — e-post */}
+              <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 12, padding: "16px 18px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                  <span style={{ fontSize: "var(--text-base)", fontWeight: 800, color: T.text }}>E-post · Resend</span>
+                  <a href="https://resend.com" target="_blank" rel="noreferrer" style={{ fontSize: "var(--text-2xs)", color: T.muted, textDecoration: "none" }}>Öppna ↗</a>
+                </div>
+                {!stack?.resend?.configured ? (
+                  <p style={{ fontSize: "var(--text-xs)", color: T.muted, margin: 0 }}>RESEND_API_KEY saknas.</p>
+                ) : stack.resend.error ? (
+                  <p style={{ fontSize: "var(--text-xs)", color: T.red, margin: 0 }}>Fel: {stack.resend.error}</p>
+                ) : (
+                  <>
+                    <div style={{ marginBottom: 8 }}>
+                      <span style={{ fontSize: "var(--text-2xl)", fontWeight: 800, fontFamily: "var(--mono)", color: T.text }}>{stack.resend.sent24h ?? "–"}</span>
+                      <span style={{ fontSize: "var(--text-2xs)", color: T.muted, marginLeft: 7 }}>skickade senaste dygnet</span>
+                    </div>
+                    {stack.resend.lastSubject && (
+                      <div style={{ fontSize: "var(--text-2xs)", color: T.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        Senaste: {stack.resend.lastSubject} <span style={{ color: stack.resend.lastStatus === "delivered" ? T.green : T.muted }}>({stack.resend.lastStatus || "?"})</span>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+          </SectionCard>
+
           <SectionCard>
             <p style={{ fontSize: "var(--text-lg)", fontWeight: 700, color: T.text, marginBottom: 6 }}>Integrationer & tjänster</p>
             <p style={{ fontSize: "var(--text-sm)", color: T.muted, marginBottom: 20 }}>Tredjepartstjänster plattformen är beroende av. Status hämtas från systemhälsan där möjligt.</p>
@@ -1285,6 +1399,7 @@ export default function Admin() {
               ))}
             </div>
           </SectionCard>
+          </div>
         )}
 
         {/* ── Inställningar ── */}
