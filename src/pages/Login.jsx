@@ -185,6 +185,16 @@ function CloseButton() {
   );
 }
 
+/* ── Mobil-logga (visas bara på mobil där brand-panelen är dold) ──────────── */
+function MobileLogo() {
+  return (
+    <Link to="/" aria-label="Till startsidan" style={{ display: "inline-flex", alignItems: "center", gap: 9, alignSelf: "flex-start", color: "var(--ink-900)", textDecoration: "none", marginBottom: 28 }}>
+      <div style={{ width: 32, height: 32, borderRadius: 8, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--text-base)", boxShadow: "inset 0 -2px 0 rgba(0,0,0,0.25)" }}>S</div>
+      <span style={{ fontWeight: 800, fontSize: "var(--text-2xl)", letterSpacing: 0.5, color: "var(--ink-900)" }}>STP</span>
+    </Link>
+  );
+}
+
 /* ── Notice (error/info) ──────────────────────────────────────────────────── */
 function Notice({ type, children }) {
   const s = type === "error"
@@ -400,6 +410,7 @@ export default function Login() {
           <div style={formPanelStyle}>
             <CloseButton />
             <div style={transitionStyle}>
+              {isMobile && <MobileLogo />}
               <h1 style={{ fontSize: "var(--text-4xl)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.8, marginBottom: 6 }}>Skapa konto</h1>
               <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", marginBottom: 28 }}>Vem är du? Det avgör hur vi matchar.</p>
 
@@ -468,6 +479,7 @@ export default function Login() {
           <div style={formPanelStyle}>
             <CloseButton />
             <div style={transitionStyle}>
+              {isMobile && <MobileLogo />}
               <button
                 onClick={() => goTo("register_pick")}
                 style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--ink-500)", marginBottom: 18, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", padding: 0 }}
@@ -594,6 +606,7 @@ export default function Login() {
         <div style={formPanelStyle}>
           <CloseButton />
           <div style={transitionStyle}>
+            {isMobile && <MobileLogo />}
 
             {mode === "forgot" && (
               <button
