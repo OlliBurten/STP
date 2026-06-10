@@ -342,7 +342,7 @@ authRouter.post("/register", validateBody(registerSchema), async (req, res, next
 
     const augmentedUser = await augmentCompanyMemberUser(user);
     const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, {
-      expiresIn: "24h",
+      expiresIn: "7d",
     });
     res.status(201).json({
       emailVerificationSent: !!emailVerificationSent,
@@ -499,7 +499,7 @@ authRouter.post("/login", validateBody(loginSchema), async (req, res, next) => {
         ...(augmented.companyOwnerId && { companyOwnerId: augmented.companyOwnerId }),
       },
       JWT_SECRET,
-      { expiresIn: "24h" }
+      { expiresIn: "7d" }
     );
     res.json({
       user: formatClientAuthUser(user, augmented, {
@@ -590,7 +590,7 @@ async function formatOAuthUser(user, options = {}) {
         ...(augmented.companyOwnerId && { companyOwnerId: augmented.companyOwnerId }),
       },
       JWT_SECRET,
-      { expiresIn: "24h" }
+      { expiresIn: "7d" }
     ),
   };
 }

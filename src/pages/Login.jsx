@@ -2,12 +2,26 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { useIsMobile } from "../hooks/useIsMobile";
-import { useAuth } from "../context/AuthContext";
+import { useAuth, LOGOUT_REASON_KEY } from "../context/AuthContext";
 import { requestPasswordReset, resendVerification } from "../api/auth";
 import { EyeIcon, EyeOffIcon } from "../components/Icons";
 import OAuthButtons from "../components/OAuthButtons";
 import ErrorBoundary from "../components/ErrorBoundary";
 import PageMeta from "../components/PageMeta";
+
+// Läses en gång per sidladdning (modulnivå — överlever StrictMode-dubbelmontering).
+// Sätts av AuthContext vid automatisk utloggning; visas som info-notis på login.
+let initialLogoutNotice = "";
+try {
+  const r = sessionStorage.getItem(LOGOUT_REASON_KEY);
+  if (r) {
+    sessionStorage.removeItem(LOGOUT_REASON_KEY);
+    initialLogoutNotice =
+      r === "inactivity"
+        ? "Du loggades ut på grund av inaktivitet. Logga in igen för att fortsätta."
+        : "Din session har gått ut. Logga in igen för att fortsätta.";
+  }
+} catch { /* */ }
 
 /* ── OAuthSection ─────────────────────────────────────────────────────────── */
 function OAuthSection({ onSuccess, onError, onRolePickerVisible, requiredRole, from, mode }) {
@@ -247,7 +261,7 @@ export default function Login() {
   const [password,              setPassword]              = useState("");
   const [name,                  setName]                  = useState("");
   const [error,                 setError]                 = useState("");
-  const [info,                  setInfo]                  = useState("");
+  const [info,                  setInfo]                  = useState(initialLogoutNotice);
   const [showResendVerification,setShowResendVerification]= useState(false);
   const [loading,               setLoading]               = useState(false);
   const [acceptTerms,           setAcceptTerms]           = useState(false);
@@ -264,8 +278,12 @@ export default function Login() {
   };
 
   const isInitialMount = useRef(true);
+  const lastLocationKey = useRef(location.key);
   useEffect(() => {
     if (isInitialMount.current) { isInitialMount.current = false; return; }
+    // Reagera bara på riktiga navigationer — inte StrictMode/dev-omkörningar med samma key
+    if (lastLocationKey.current === location.key) return;
+    lastLocationKey.current = location.key;
     const stateMode = location.state?.initialMode;
     if (!stateMode || stateMode === "login") {
       setMode("login"); setError(""); setInfo(""); setShowResendVerification(false);

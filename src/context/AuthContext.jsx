@@ -6,8 +6,14 @@ import { fetchMyOrganizations } from "../api/organizations.js";
 import { identifyUser, resetUser, track, groupCompany } from "../utils/posthog.js";
 
 const AUTH_STORAGE_KEY = "drivermatch-auth";
-const SESSION_MAX_MS = 24 * 60 * 60 * 1000; // 24h
-const SESSION_INACTIVITY_MS = 15 * 60 * 1000; // 15 min
+const SESSION_MAX_MS = 7 * 24 * 60 * 60 * 1000; // 7 dagar (matchar backend-JWT)
+const SESSION_INACTIVITY_MS = 60 * 60 * 1000; // 1 timme inaktivitet
+// Login-sidan läser denna för att förklara varför man loggades ut.
+export const LOGOUT_REASON_KEY = "stp-logout-reason";
+
+function setLogoutReason(reason) {
+  try { sessionStorage.setItem(LOGOUT_REASON_KEY, reason); } catch { /* */ }
+}
 const API_URL = (import.meta.env.VITE_API_URL || "").trim().replace(/\/$/, "");
 
 function readStoredAuth() {
@@ -177,13 +183,14 @@ export function AuthProvider({ children }) {
   // Central logout när API markerar sessionen som ogiltig.
   useEffect(() => {
     const handleAuthInvalid = () => {
+      if (user) setLogoutReason("expired");
       clearAuthState();
     };
     window.addEventListener(AUTH_INVALID_EVENT, handleAuthInvalid);
     return () => window.removeEventListener(AUTH_INVALID_EVENT, handleAuthInvalid);
-  }, [clearAuthState]);
+  }, [clearAuthState, user]);
 
-  // Delad session-timeout: absolut max 24h och 15 min inaktivitet.
+  // Delad session-timeout: absolut max 7 dagar och 1 timme inaktivitet.
   useEffect(() => {
     if (!user || !token) return;
     const now = Date.now();
@@ -192,11 +199,14 @@ export function AuthProvider({ children }) {
       ? SESSION_INACTIVITY_MS - (now - lastActivity)
       : SESSION_INACTIVITY_MS;
     const remaining = Math.min(absoluteRemaining, inactivityRemaining);
+    const reason = inactivityRemaining <= absoluteRemaining ? "inactivity" : "expired";
     if (remaining <= 0) {
+      setLogoutReason(reason);
       clearAuthState();
       return;
     }
     const id = window.setTimeout(() => {
+      setLogoutReason(reason);
       clearAuthState();
     }, remaining);
     return () => window.clearTimeout(id);
