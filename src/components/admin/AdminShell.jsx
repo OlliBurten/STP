@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { listUsers, listJobsForAdmin } from "../../api/admin.js";
+import { useAuth } from "../../context/AuthContext.jsx";
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 export const IC = {
@@ -76,6 +77,9 @@ const NAV_GROUPS = [
 
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
 export function AdminSidebar({ section, onChange, counts = {} }) {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+  const handleLogout = () => { logout(); navigate("/login"); };
   // Riktiga siffror per nav-id (från /summary). count = grå badge, alert = röd badge.
   const META = {
     users:      { count: counts.users },
@@ -132,6 +136,17 @@ export function AdminSidebar({ section, onChange, counts = {} }) {
         </div>
         <button title="Inställningar" onClick={() => onChange("settings")} style={{ width: 28, height: 28, borderRadius: 7, background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-400)" }}>
           <Icon n="cog" s={13} />
+        </button>
+        <button
+          title="Logga ut"
+          onClick={handleLogout}
+          style={{ width: 28, height: 28, borderRadius: 7, background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-400)" }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = "var(--danger)"; e.currentTarget.style.background = "rgba(220,38,38,0.06)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = "var(--ink-400)"; e.currentTarget.style.background = "transparent"; }}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="13" height="13">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
         </button>
       </div>
     </aside>
