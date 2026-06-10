@@ -711,7 +711,7 @@ jobsRouter.post("/", authMiddleware, requireCompany, attachCompanyContext, requi
       segment: job.segment,
       published: job.published.toISOString().slice(0, 10),
     });
-    sendDriverMatchAlertsForJob(job);
+    sendDriverMatchAlertsForJob(job).catch((e) => console.error('sendDriverMatchAlertsForJob failed:', e));
   } catch (e) {
     next(e);
   }
