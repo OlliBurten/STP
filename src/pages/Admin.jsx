@@ -15,6 +15,7 @@ import {
   updateJobStatus,
   updateReport,
   sendVerificationReminders,
+  sendProfileReminders,
 } from "../api/admin";
 import { regions as REGIONS } from "../data/mockJobs.js";
 import { listReviewsForAdmin, moderateReview } from "../api/reviews.js";
@@ -301,6 +302,16 @@ export default function Admin() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
+  // Auto-uppdatera översikten var 60:e sekund så siffror/aktivitet hålls färska
+  useEffect(() => {
+    if (activeTab !== "overview") return;
+    const t = setInterval(() => {
+      Promise.all([loadSummary(), loadOnboarding()]).catch(() => {});
+    }, 60_000);
+    return () => clearInterval(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
+
   useEffect(() => {
     setSummaryLoading(true);
     Promise.all([loadSummary(), loadOnboarding(), loadHealth()]).catch(() => setSummary(null)).finally(() => setSummaryLoading(false));
@@ -390,7 +401,7 @@ export default function Admin() {
   async function handleCmdAction(a) {
     try {
       if (a === "insights") { await runInsightsNow(); setActiveTab("insights"); setSuccess("AI-insikter körs — uppdateras strax."); }
-      else if (a === "reminders") { await sendVerificationReminders(); setSuccess("Påminnelser skickade till stuck-förare."); }
+      else if (a === "reminders") { const r = await sendVerificationReminders(); setSuccess(r?.message || `Skickade ${r?.sent ?? 0} verifieringspåminnelser.`); }
     } catch (e) { setError(e?.message || "Åtgärden misslyckades"); }
   }
 
@@ -428,8 +439,10 @@ export default function Admin() {
               loadUserDetail={loadUserDetail}
               setError={setError}
               onStuckReminder={async () => {
-                try { await sendVerificationReminders(); setSuccess("Påminnelser skickade till stuck-förare."); }
-                catch (e) { setError(e.message || "Kunde inte skicka påminnelser"); }
+                try {
+                  const r = await sendProfileReminders();
+                  setSuccess(r?.message || `Skickade ${r?.sent ?? 0} profilpåminnelser.`);
+                } catch (e) { setError(e.message || "Kunde inte skicka påminnelser"); }
               }}
             />
           </div>

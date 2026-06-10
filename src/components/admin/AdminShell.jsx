@@ -150,7 +150,7 @@ export function AdminTopBar({ openCmd, health, onChange, notifs = [] }) {
   const active = notifs.filter((n) => n.count > 0);
 
   return (
-    <div style={{ height: 54, borderBottom: "1px solid var(--line)", display: "flex", alignItems: "center", padding: "0 22px", gap: 14, background: "var(--card)", flexShrink: 0 }}>
+    <div style={{ height: 64, borderBottom: "1px solid var(--line)", display: "flex", alignItems: "center", padding: "0 22px", gap: 14, background: "var(--card)", flexShrink: 0 }}>
       <button onClick={openCmd} style={{ flex: 1, maxWidth: 480, display: "flex", alignItems: "center", gap: 9, padding: "7px 12px", borderRadius: 8, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-400)", fontSize: "var(--text-xs)", cursor: "pointer" }}>
         <Icon n="search" s={14} c="var(--ink-400)" />
         <span style={{ flex: 1, textAlign: "left" }}>Sök användare, företag, jobb...</span>

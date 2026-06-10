@@ -26,8 +26,8 @@ export const T = {
 };
 
 export const INP = {
-  background: "var(--paper-2)",
-  border: "1px solid var(--line)",
+  background: "var(--card)",
+  border: "1px solid var(--line-2)",
   borderRadius: 10,
   color: "var(--ink-900)",
   padding: "9px 12px",

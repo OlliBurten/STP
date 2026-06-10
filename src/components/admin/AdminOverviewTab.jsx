@@ -225,7 +225,7 @@ function ActivityFeed({ latestUsers, latestApplications, onOpenUser }) {
         ) : filtered.map((it, i) => (
           <div key={i}
             style={{ padding: "10px 18px", display: "flex", alignItems: "center", gap: 12, borderBottom: i < filtered.length - 1 ? "1px solid var(--line)" : "none", cursor: it.id ? "pointer" : "default" }}
-            onClick={() => it.id && onOpenUser && onOpenUser(it.id)}
+            onClick={() => it.id && onOpenUser && onOpenUser(it.id, it.type)}
           >
             <div style={{ width: 26, height: 26, borderRadius: 99, background: "var(--paper-2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               <Icon n={it.icon} s={12} c={it.color} />
@@ -450,8 +450,9 @@ export default function AdminOverviewTab({
           <ActivityFeed
             latestUsers={summary?.latestUsers}
             latestApplications={summary?.latestApplications}
-            onOpenUser={(id) => {
-              setActiveTab("users");
+            onOpenUser={(id, type) => {
+              // Åkerier öppnas i Åkerier-fliken, förare i Förare-fliken
+              setActiveTab(type === "Åkeri" ? "companies" : "users");
               loadUserDetail && loadUserDetail(id).catch((e) => setError && setError(e.message || "Kunde inte öppna användare"));
             }}
           />

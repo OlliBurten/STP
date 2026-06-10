@@ -946,6 +946,17 @@ adminRouter.post("/users/send-verification-reminders", async (req, res, next) =>
   }
 });
 
+// Profilpåminnelser — till användare med ofullständig profil (cooldown 7d, max 3 per användare)
+adminRouter.post("/users/send-profile-reminders", async (req, res, next) => {
+  try {
+    const { runProfileReminders } = await import("../lib/reminders.js");
+    const { sent, total } = await runProfileReminders();
+    res.json({ sent, total, message: `Skickade ${sent} profilpåminnelser (${total} kandidater).` });
+  } catch (e) {
+    next(e);
+  }
+});
+
 adminRouter.patch("/users/:id/suspend", async (req, res, next) => {
   try {
     const suspended = Boolean(req.body?.suspended);

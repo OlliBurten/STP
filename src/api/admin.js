@@ -53,6 +53,11 @@ export function sendVerificationReminders() {
   return apiPost("/api/admin/users/send-verification-reminders", {});
 }
 
+/** Skickar profilpåminnelser till användare med ofullständig profil (stuck i onboarding). */
+export function sendProfileReminders() {
+  return apiPost("/api/admin/users/send-profile-reminders", {});
+}
+
 export function setUserSuspended(id, suspended, reason) {
   return apiPatch(`/api/admin/users/${id}/suspend`, { suspended, reason: reason || null });
 }
