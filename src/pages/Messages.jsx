@@ -591,7 +591,7 @@ export default function Messages() {
             <div style={{ padding: isMobile ? "0 20px 12px" : "40px 18px 16px", paddingTop: isMobile ? "calc(env(safe-area-inset-top, 0px) + 84px)" : undefined, borderBottom: "1px solid var(--line)", flexShrink: 0 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: isMobile ? 6 : 14 }}>
                 <h1 style={{ fontSize: isMobile ? 26 : 20, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.4 }}>
-                  {isDriver ? "Meddelanden" : "Inkorg"}
+                  Meddelanden
                 </h1>
                 {!isMobile && unreadCount > 0 && <span style={{ padding: "2px 9px", borderRadius: 999, background: "var(--success-tint)", border: "1px solid rgba(31,122,58,0.2)", fontSize: "var(--text-2xs)", fontWeight: 800, color: "var(--success)" }}>{unreadCount} nya</span>}
               </div>

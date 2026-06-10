@@ -535,19 +535,34 @@ adminRouter.get("/users", async (req, res, next) => {
             experience: true,
           },
         },
+        userOrganizations: {
+          where: { role: "OWNER" },
+          take: 1,
+          select: {
+            organization: { select: { name: true, orgNumber: true, status: true } },
+          },
+        },
       },
     });
 
     res.json(
-      users.map((u) => ({
-        ...u,
-        isAdmin: isAdminEmail(u.email),
-        emailVerifiedAt: u.emailVerifiedAt?.toISOString() ?? null,
-        suspendedAt: u.suspendedAt?.toISOString() ?? null,
-        lastWarnedAt: u.lastWarnedAt?.toISOString() ?? null,
-        lastLoginAt: u.lastLoginAt?.toISOString() ?? null,
-        createdAt: u.createdAt.toISOString(),
-      }))
+      users.map((u) => {
+        const { userOrganizations, ...rest } = u;
+        // Org-baserade åkerier har namn/org-nr/status på Organization; legacy på User.
+        const org = userOrganizations?.[0]?.organization || null;
+        return {
+          ...rest,
+          companyName: u.companyName ?? org?.name ?? null,
+          companyOrgNumber: u.companyOrgNumber ?? org?.orgNumber ?? null,
+          companyStatus: org?.status ?? u.companyStatus,
+          isAdmin: isAdminEmail(u.email),
+          emailVerifiedAt: u.emailVerifiedAt?.toISOString() ?? null,
+          suspendedAt: u.suspendedAt?.toISOString() ?? null,
+          lastWarnedAt: u.lastWarnedAt?.toISOString() ?? null,
+          lastLoginAt: u.lastLoginAt?.toISOString() ?? null,
+          createdAt: u.createdAt.toISOString(),
+        };
+      })
     );
   } catch (e) {
     next(e);

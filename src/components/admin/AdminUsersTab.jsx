@@ -117,6 +117,12 @@ function UserRow({ u, selected, isSelectedRow, onCheck, onSelect, compact }) {
   const lastLogin = u.lastLoginAt ? fmtRelative(u.lastLoginAt) : "Aldrig";
   const created  = u.createdAt ? u.createdAt.slice(0, 10) : "";
   const initials = u.name ? u.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : u.email?.[0]?.toUpperCase() || "?";
+  const orgNr = u.companyOrgNumber ? String(u.companyOrgNumber).replace(/^(\d{6})(\d{4})$/, "$1-$2") : null;
+  // För åkerier: visa åkeriets namn som titel, kontaktperson + e-post + org-nr i underraden.
+  const rowTitle = isComp ? (u.companyName || u.name || u.email) : (u.name || u.email);
+  const rowSubtitle = isComp
+    ? [u.name && u.name !== u.companyName ? u.name : null, u.email, orgNr].filter(Boolean).join(" · ")
+    : u.email;
   const avatarBg = isComp ? "var(--amber)" : "var(--info)";
 
   const statusBadge = suspended
@@ -145,8 +151,8 @@ function UserRow({ u, selected, isSelectedRow, onCheck, onSelect, compact }) {
       <div style={{ display: "flex", alignItems: "center", gap: 11, minWidth: 0 }}>
         <div style={{ width: 36, height: 36, borderRadius: 9, background: avatarBg, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "var(--text-2xs)", color: "#fff", flexShrink: 0 }}>{initials}</div>
         <div style={{ minWidth: 0 }}>
-          <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-900)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.name || u.email}</div>
-          <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.email}</div>
+          <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-900)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{rowTitle}</div>
+          <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{rowSubtitle}</div>
         </div>
       </div>
 
