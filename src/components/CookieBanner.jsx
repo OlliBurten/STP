@@ -58,51 +58,53 @@ export default function CookieBanner() {
       role="dialog"
       aria-label="Cookie-inställningar"
       style={{
-        position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 10000,
+        position: "fixed", bottom: "max(env(safe-area-inset-bottom, 0px), 16px)",
+        left: 16, right: 16, zIndex: 10000,
+        maxWidth: 720, margin: "0 auto",
         background: "var(--card)",
-        borderTop: "1px solid var(--line)",
-        padding: "20px 24px",
-        boxShadow: "var(--sh-md)",
+        border: "1px solid var(--line)",
+        borderRadius: 16,
+        padding: "18px 20px",
+        boxShadow: "0 12px 40px rgba(15,33,32,0.16)",
       }}
     >
-      <div style={{ maxWidth: "var(--w-public)", margin: "0 auto", display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
-        {/* Text */}
-        <div style={{ flex: 1, minWidth: 260 }}>
-          <p style={{ margin: 0, fontSize: "var(--text-base)", color: "var(--ink-700)", lineHeight: 1.6 }}>
-            Vi använder cookies för felrapportering (Sentry) och inloggning (OAuth). Anonymiserad besöksstatistik via{" "}
-            <a href="https://plausible.io" target="_blank" rel="noopener noreferrer" style={{ color: "var(--green-text)", textDecoration: "underline" }}>Plausible</a>
-            {" "}är cookiefri och kräver inget samtycke.{" "}
-            <Link to="/privacy" style={{ color: "var(--green-text)", textDecoration: "underline", whiteSpace: "nowrap" }}>
-              Läs vår integritetspolicy
-            </Link>
-          </p>
-        </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 8 }}>
+        <span style={{ fontSize: "var(--text-base)" }} aria-hidden="true">🍪</span>
+        <span style={{ fontSize: "var(--text-sm)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.2 }}>Cookies på STP</span>
+      </div>
+      <p style={{ margin: "0 0 14px", fontSize: "var(--text-sm)", color: "var(--ink-600)", lineHeight: 1.55 }}>
+        Nödvändiga cookies används för inloggning och säkerhet. Godkänner du alla aktiverar vi
+        även felrapportering (Sentry) och produktanalys (PostHog) som hjälper oss förbättra
+        plattformen.{" "}
+        <Link to="/integritet" style={{ color: "var(--green-text)", textDecoration: "underline", whiteSpace: "nowrap" }}>
+          Läs vår integritetspolicy
+        </Link>
+      </p>
 
-        {/* Knappar */}
-        <div style={{ display: "flex", gap: 10, flexShrink: 0, flexWrap: "wrap" }}>
-          <button
-            onClick={() => respond("declined")}
-            style={{
-              padding: "10px 20px", borderRadius: 10,
-              background: "var(--paper-2)", border: "1px solid var(--line)",
-              color: "var(--ink-500)", fontSize: "var(--text-sm)", fontWeight: 600,
-              cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap",
-            }}
-          >
-            Endast nödvändiga
-          </button>
-          <button
-            onClick={() => respond("accepted")}
-            style={{
-              padding: "10px 24px", borderRadius: 10,
-              background: "var(--green)", border: "none",
-              color: "#fff", fontSize: "var(--text-sm)", fontWeight: 700,
-              cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap",
-            }}
-          >
-            Acceptera alla
-          </button>
-        </div>
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "flex-end" }}>
+        <button
+          onClick={() => respond("declined")}
+          style={{
+            padding: "10px 18px", borderRadius: 10,
+            background: "transparent", border: "1px solid var(--line-2)",
+            color: "var(--ink-600)", fontSize: "var(--text-sm)", fontWeight: 700,
+            cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap",
+          }}
+        >
+          Endast nödvändiga
+        </button>
+        <button
+          onClick={() => respond("accepted")}
+          style={{
+            padding: "10px 22px", borderRadius: 10,
+            background: "var(--green)", border: "none",
+            color: "#fff", fontSize: "var(--text-sm)", fontWeight: 800,
+            cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap",
+            boxShadow: "var(--sh-sm)",
+          }}
+        >
+          Acceptera alla
+        </button>
       </div>
     </div>
   );

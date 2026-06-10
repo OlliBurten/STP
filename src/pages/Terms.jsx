@@ -69,7 +69,7 @@ const DOCS = {
       },
       {
         id: "delning", h: "4. Delning av uppgifter",
-        p: ["Din profildata delas enligt dina egna inställningar — t.ex. syns din förarprofil för företag bara om du aktiverat synligheten. Vi delar aldrig dina uppgifter med tredje part för marknadsföring.", "Din persondata lagras inom EU — databasen finns i Amsterdam (Nederländerna). Vi använder följande underleverantörer: Railway (hosting och databas, EU), Vercel (frontend), Resend (e-post) och Sentry (felövervakning). Vi har ingått databehandlaravtal med samtliga i enlighet med GDPR artikel 28, och eventuell överföring utanför EU sker med giltiga skyddsmekanismer (standardavtalsklausuler/DPF)."],
+        p: ["Din profildata delas enligt dina egna inställningar — t.ex. syns din förarprofil för företag bara om du aktiverat synligheten. Vi delar aldrig dina uppgifter med tredje part för marknadsföring.", "Din persondata lagras inom EU — databasen finns i Amsterdam (Nederländerna). Vi använder följande underleverantörer: Railway (hosting och databas, EU), Vercel (frontend), Resend (e-post), Sentry (felövervakning) och PostHog (produktanalys, EU — endast efter samtycke). Vi har ingått databehandlaravtal med samtliga i enlighet med GDPR artikel 28, och eventuell överföring utanför EU sker med giltiga skyddsmekanismer (standardavtalsklausuler/DPF)."],
       },
       {
         id: "lagring", h: "5. Lagring och radering",
@@ -82,7 +82,7 @@ const DOCS = {
       },
       {
         id: "cookies", h: "7. Cookies",
-        p: ["Nödvändiga cookies — krävs för att tjänsten ska fungera (inloggning, sessionshantering). Kräver inget samtycke.", "Analytics — vi använder Sentry för felövervakning. Aktiveras bara om du väljer att acceptera. Plausible Analytics används för besöksstatistik — helt cookiefritt."],
+        p: ["Nödvändiga cookies — krävs för att tjänsten ska fungera (inloggning, sessionshantering). Kräver inget samtycke.", "Samtyckesbaserade — aktiveras endast om du accepterar i cookie-bannern: Sentry (felövervakning) och PostHog (produktanalys och anonymiserade sessionsinspelningar där känsliga fält som lösenord alltid maskeras). Datan lagras inom EU.", "Cookiefri besöksstatistik (Plausible) används för aggregerad trafikmätning och kräver inget samtycke."],
       },
       {
         id: "sakerhet", h: "8. Säkerhet",
