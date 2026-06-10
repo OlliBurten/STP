@@ -146,19 +146,27 @@ export default function Header({ onboarding = false }) {
   };
 
   // ── Header — transparent på landing, mörk på inre sidor ──────────────────
+  // På landing visas en ljus header både vid scroll OCH när mobilmenyn är öppen
+  // (panelen ligger inuti headern → toppraden måste vara ljus så logga + kryss syns).
+  const landingLight = isLanding && (scrolled || mobileOpen);
+
   const headerBg = isImpersonating
     ? "rgba(10,20,20,0.97)"
     : isLanding
-      ? scrolled ? "rgba(245,242,236,0.92)" : "transparent"
+      ? landingLight ? "rgba(245,242,236,0.97)" : "transparent"
       : "var(--ink-900)";
 
   const headerBorder = isImpersonating
     ? "1px solid rgba(199,122,14,0.45)"
     : isLanding
-      ? scrolled ? "1px solid var(--line)" : "1px solid transparent"
+      ? landingLight ? "1px solid var(--line)" : "1px solid transparent"
       : "1px solid rgba(255,255,255,0.06)";
 
   const headerTransition = isLanding ? "background .25s, border-color .25s" : undefined;
+
+  // Hamburgar/kryss-färg: mörk på ljus landing-header (scroll/öppen meny),
+  // vit på mörk hjältebild (landing topp) och på mörka inre headers.
+  const menuIconColor = landingLight ? "var(--ink-800)" : "rgba(255,255,255,0.9)";
 
   // ── Nav link style (på mörk bakgrund) ────────────────────────────────────
   const navLinkClass = ({ isActive }) => isActive ? "dm-dark-nav-link active-dark" : "dm-dark-nav-link";
@@ -319,7 +327,7 @@ export default function Header({ onboarding = false }) {
         />
       )}
 
-      <header className="fixed left-0 right-0 top-0 z-50" style={{ background: headerBg, borderBottom: headerBorder, backdropFilter: isLanding && scrolled ? "blur(12px)" : "none", WebkitBackdropFilter: isLanding && scrolled ? "blur(12px)" : "none", transition: headerTransition }}>
+      <header className="fixed left-0 right-0 top-0 z-50" style={{ background: headerBg, borderBottom: headerBorder, backdropFilter: landingLight ? "blur(12px)" : "none", WebkitBackdropFilter: landingLight ? "blur(12px)" : "none", transition: headerTransition }}>
         <nav className="flex items-center relative" style={{ maxWidth: 1264, margin: "0 auto", padding: isMobile ? "0 24px" : "0 32px", width: "100%", height: isLanding ? 68 : 64 }}>
 
           {/* Logo */}
@@ -335,7 +343,7 @@ export default function Header({ onboarding = false }) {
               }}>S</div>
               <span style={{
                 fontWeight: 800, fontSize: "var(--text-xl)", letterSpacing: 0.5,
-                color: isLanding ? (scrolled ? "var(--ink-900)" : "#fff") : "#fff",
+                color: isLanding ? (landingLight ? "var(--ink-900)" : "#fff") : "#fff",
                 transition: "color .25s",
               }}>STP</span>
             </Link>
@@ -650,9 +658,9 @@ export default function Header({ onboarding = false }) {
               type="button"
               onClick={() => setMobileOpen(!mobileOpen)}
               className="dm-mobile-menu-button p-2 -mr-2 rounded-lg min-h-[44px] min-w-[44px] flex items-center justify-center transition-colors"
-              style={{ color: isLanding && !scrolled ? "rgba(255,255,255,0.85)" : "rgba(232,237,237,0.7)", background: "none", border: "none", cursor: "pointer" }}
-              onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.08)"; e.currentTarget.style.color = "#fff"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = ""; e.currentTarget.style.color = isLanding && !scrolled ? "rgba(255,255,255,0.85)" : "rgba(232,237,237,0.7)"; }}
+              style={{ color: menuIconColor, background: mobileOpen ? "rgba(0,0,0,0.04)" : "none", border: "none", cursor: "pointer" }}
+              onMouseEnter={e => { e.currentTarget.style.background = mobileOpen ? "rgba(0,0,0,0.07)" : "rgba(255,255,255,0.08)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = mobileOpen ? "rgba(0,0,0,0.04)" : ""; }}
               aria-label={mobileOpen ? "Stäng meny" : "Öppna meny"}
               aria-expanded={mobileOpen}
             >

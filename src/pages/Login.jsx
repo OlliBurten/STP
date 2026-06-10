@@ -188,10 +188,12 @@ function CloseButton() {
 /* ── Mobil-logga (visas bara på mobil där brand-panelen är dold) ──────────── */
 function MobileLogo() {
   return (
-    <Link to="/" aria-label="Till startsidan" style={{ display: "inline-flex", alignItems: "center", gap: 9, alignSelf: "flex-start", color: "var(--ink-900)", textDecoration: "none", marginBottom: 28 }}>
-      <div style={{ width: 32, height: 32, borderRadius: 8, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--text-base)", boxShadow: "inset 0 -2px 0 rgba(0,0,0,0.25)" }}>S</div>
-      <span style={{ fontWeight: 800, fontSize: "var(--text-2xl)", letterSpacing: 0.5, color: "var(--ink-900)" }}>STP</span>
-    </Link>
+    <div style={{ marginBottom: 24 }}>
+      <Link to="/" aria-label="Till startsidan" style={{ display: "inline-flex", alignItems: "center", gap: 9, color: "var(--ink-900)", textDecoration: "none" }}>
+        <div style={{ width: 32, height: 32, borderRadius: 8, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--text-base)", boxShadow: "inset 0 -2px 0 rgba(0,0,0,0.25)" }}>S</div>
+        <span style={{ fontWeight: 800, fontSize: "var(--text-2xl)", letterSpacing: 0.5, color: "var(--ink-900)" }}>STP</span>
+      </Link>
+    </div>
   );
 }
 
@@ -359,8 +361,8 @@ export default function Login() {
   // ── Shared form panel wrapper ──────────────────────────────────────────
   const formPanelStyle = {
     position: "relative",
-    display: "flex", alignItems: "center", justifyContent: "center",
-    padding: isMobile ? "48px 24px 60px" : "40px 24px",
+    display: "flex", alignItems: isMobile ? "flex-start" : "center", justifyContent: "center",
+    padding: isMobile ? "40px 24px 60px" : "40px 24px",
     background: "var(--paper)",
     minHeight: "100vh",
   };
