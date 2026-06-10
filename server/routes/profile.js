@@ -369,7 +369,7 @@ profileRouter.put("/", async (req, res, next) => {
           experience: profile.experience || [],
         });
     if (shouldSendMatchAlerts) {
-      sendCompanyMatchAlertsForDriver(req.userId);
+      sendCompanyMatchAlertsForDriver(req.userId).catch((e) => console.error('sendCompanyMatchAlertsForDriver failed:', e));
     }
   } catch (e) {
     next(e);
