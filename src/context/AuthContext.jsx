@@ -6,8 +6,9 @@ import { fetchMyOrganizations } from "../api/organizations.js";
 import { identifyUser, resetUser, track, groupCompany } from "../utils/posthog.js";
 
 const AUTH_STORAGE_KEY = "drivermatch-auth";
-const SESSION_MAX_MS = 7 * 24 * 60 * 60 * 1000; // 7 dagar (matchar backend-JWT)
-const SESSION_INACTIVITY_MS = 60 * 60 * 1000; // 1 timme inaktivitet
+// Industristandard för konsumentplattform: ingen inaktivitetsutloggning,
+// endast en absolut sessionsgräns (matchar backend-JWT på 7 dagar).
+const SESSION_MAX_MS = 7 * 24 * 60 * 60 * 1000; // 7 dagar
 // Login-sidan läser denna för att förklara varför man loggades ut.
 export const LOGOUT_REASON_KEY = "stp-logout-reason";
 
@@ -190,27 +191,22 @@ export function AuthProvider({ children }) {
     return () => window.removeEventListener(AUTH_INVALID_EVENT, handleAuthInvalid);
   }, [clearAuthState, user]);
 
-  // Delad session-timeout: absolut max 7 dagar och 1 timme inaktivitet.
+  // Session-timeout: endast absolut gräns (7 dagar). Ingen inaktivitetsutloggning.
   useEffect(() => {
     if (!user || !token) return;
     const now = Date.now();
-    const absoluteRemaining = issuedAt ? SESSION_MAX_MS - (now - issuedAt) : SESSION_MAX_MS;
-    const inactivityRemaining = lastActivity
-      ? SESSION_INACTIVITY_MS - (now - lastActivity)
-      : SESSION_INACTIVITY_MS;
-    const remaining = Math.min(absoluteRemaining, inactivityRemaining);
-    const reason = inactivityRemaining <= absoluteRemaining ? "inactivity" : "expired";
+    const remaining = issuedAt ? SESSION_MAX_MS - (now - issuedAt) : SESSION_MAX_MS;
     if (remaining <= 0) {
-      setLogoutReason(reason);
+      setLogoutReason("expired");
       clearAuthState();
       return;
     }
     const id = window.setTimeout(() => {
-      setLogoutReason(reason);
+      setLogoutReason("expired");
       clearAuthState();
     }, remaining);
     return () => window.clearTimeout(id);
-  }, [user, token, issuedAt, lastActivity, clearAuthState]);
+  }, [user, token, issuedAt, clearAuthState]);
 
   const loginWithApi = useCallback(async (email, password) => {
     const data = await apiPost("/api/auth/login", { email, password });
@@ -325,27 +321,10 @@ export function AuthProvider({ children }) {
     return normalized;
   }, [commitAuthState]);
 
-  // Uppdatera senaste aktivitet vid interaktion. Skriv inte på varje pixelrörelse.
   // Identifiera användare i PostHog vid sidladdning om redan inloggad
   useEffect(() => {
     if (user && !user.isAdmin) identifyUser(user);
   }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    if (!user || !token) return;
-    let lastMarkedAt = 0;
-    const handleActivity = () => {
-      const now = Date.now();
-      if (now - lastMarkedAt < 15000) return;
-      lastMarkedAt = now;
-      setLastActivity(now);
-    };
-    const events = ["click", "keydown", "mousemove", "scroll", "visibilitychange"];
-    events.forEach((ev) => window.addEventListener(ev, handleActivity));
-    return () => {
-      events.forEach((ev) => window.removeEventListener(ev, handleActivity));
-    };
-  }, [user, token]);
 
   const [userOrgs, setUserOrgs] = useState([]);
   const [activeOrgId, setActiveOrgIdState] = useState(() => getActiveOrgId());
