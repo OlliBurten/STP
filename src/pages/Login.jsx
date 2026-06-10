@@ -167,7 +167,7 @@ function CloseButton() {
       to="/"
       aria-label="Tillbaka till startsidan"
       style={{
-        position: "absolute", top: 40, right: 40,
+        position: "absolute", top: 40, right: 40, zIndex: 20,
         width: 36, height: 36, borderRadius: 10,
         background: "var(--card)", border: "1px solid var(--line-2)",
         display: "flex", alignItems: "center", justifyContent: "center",
