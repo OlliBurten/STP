@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect } from "react";
 import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
-import { BrowserRouter, Routes, Route, useLocation, matchPath } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, useNavigationType, matchPath } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import OAuthProviders from "./components/OAuthProviders";
 import { ThemeProvider } from "./context/ThemeContext";
@@ -180,18 +180,69 @@ function SchoolParamCapture() {
   return null;
 }
 
-function ScrollToTop() {
-  const { pathname, hash } = useLocation();
+// Återställ scroll-position vid refresh och bakåt/framåt (POP); scrolla till toppen vid ny navigation (PUSH).
+function restoreScrollTo(y) {
+  const start = performance.now();
+  const step = () => {
+    window.scrollTo(0, y);
+    // Innehållet laddas asynkront — försök tills sidan är tillräckligt hög (max 2s).
+    if (Math.abs(window.scrollY - y) > 2 && performance.now() - start < 2000) {
+      requestAnimationFrame(step);
+    }
+  };
+  requestAnimationFrame(step);
+}
+
+function ScrollManager() {
+  const { pathname, search, hash } = useLocation();
+  const navType = useNavigationType(); // "POP" (refresh/bakåt) | "PUSH" | "REPLACE"
+  const storageKey = `stp_scroll:${pathname}${search}`;
+
+  // Vi sköter scroll-återställning manuellt (webbläsarens auto fungerar inte i en SPA med async-data).
+  useEffect(() => {
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+  }, []);
+
+  // Spara aktuell scroll-position löpande (per sida) så den finns kvar vid refresh.
+  useEffect(() => {
+    const writeNow = () => {
+      try { sessionStorage.setItem(storageKey, String(window.scrollY)); } catch { /* */ }
+    };
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => { writeNow(); ticking = false; });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("beforeunload", writeNow);
+    return () => {
+      writeNow();
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("beforeunload", writeNow);
+    };
+  }, [storageKey]);
+
   useEffect(() => {
     if (hash) {
       const el = document.getElementById(hash.slice(1));
-      if (el) {
-        setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
-      }
-    } else {
-      window.scrollTo(0, 0);
+      if (el) setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
+      return;
     }
-  }, [pathname, hash]);
+    if (navType === "POP") {
+      // Refresh eller bakåt/framåt → stanna kvar där användaren var.
+      let saved = null;
+      try { saved = sessionStorage.getItem(storageKey); } catch { /* */ }
+      const y = saved != null ? parseInt(saved, 10) : 0;
+      if (y > 0) { restoreScrollTo(y); return; }
+    }
+    // Ny navigation (PUSH/REPLACE) → börja högst upp.
+    window.scrollTo(0, 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname, search, hash]);
+
   return null;
 }
 
@@ -556,7 +607,7 @@ function AppLayout() {
 function App() {
   return (
     <BrowserRouter>
-      <ScrollToTop />
+      <ScrollManager />
       <PlausibleAnalytics />
       <SchoolParamCapture />
       <VercelAnalytics />
