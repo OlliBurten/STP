@@ -83,7 +83,7 @@ export default function PublicDriverProfile() {
     );
   }
 
-  const primaryLicense = driver.licenses?.filter((l) => ["CE", "C"].includes(l)).sort().reverse()[0];
+  const primaryLicense = (driver.licenses?.filter((l) => ["CE", "C"].includes(l)) ?? []).sort().reverse()[0];
   const metaDescription = [
     driver.location && `Baserad i ${driver.location}`,
     primaryLicense && `Körkort ${primaryLicense}`,
