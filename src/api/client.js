@@ -61,8 +61,11 @@ export async function api(method, path, body, options = {}) {
   };
   const token = getToken();
   if (token) opts.headers.Authorization = `Bearer ${token}`;
+  // Skicka inte adminens aktiva org under view-as — då skulle backend försöka matcha
+  // den impersonerade användaren mot en org hen inte äger (403). Låt backend resolva
+  // den impersonerade användarens egen org i stället.
   const activeOrgId = getActiveOrgId();
-  if (activeOrgId) opts.headers["X-Active-Org"] = activeOrgId;
+  if (activeOrgId && !isReadOnlyViewActive()) opts.headers["X-Active-Org"] = activeOrgId;
   if (body != null) opts.body = JSON.stringify(body);
 
   let res;
