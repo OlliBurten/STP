@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Icon } from "./AdminShell.jsx";
+import { useIsMobile } from "./adminShared.jsx";
 import { updateCompanyStatus, setUserSuspended, updateUserWarnings, sendVerificationReminders, deleteUser } from "../../api/admin.js";
 
 const mono = { fontFamily: "'JetBrains Mono',monospace", fontFeatureSettings: '"tnum"' };
@@ -108,7 +109,7 @@ function TableHeader({ allSelected, onSelectAll, compact }) {
 }
 
 // ─── User row ──────────────────────────────────────────────────────────────────
-function UserRow({ u, selected, isSelectedRow, onCheck, onSelect, compact }) {
+function UserRow({ u, selected, isSelectedRow, onCheck, onSelect, compact, mobile }) {
   const profile  = u.profileCompletion ?? 0;
   const isComp   = isCompanyRole(u);
   const verified = isVerified(u);
@@ -134,6 +135,23 @@ function UserRow({ u, selected, isSelectedRow, onCheck, onSelect, compact }) {
     : { l: "OK", c: "var(--success)", bg: "var(--success-tint)" };
 
   const cols = compact ? "36px 1fr 78px 116px 80px 36px" : "40px 1fr 90px 124px 80px 100px 90px 40px";
+
+  // Mobil: kompakt flex-rad — avatar + namn/info + statusbadge. Inga kolumner.
+  if (mobile) {
+    return (
+      <div
+        onClick={onSelect}
+        style={{ display: "flex", alignItems: "center", gap: 11, padding: "12px 16px", background: isSelectedRow ? "var(--amber-tint)" : "transparent", borderLeft: isSelectedRow ? "2px solid var(--amber)" : "2px solid transparent", borderBottom: "1px solid var(--line)", cursor: "pointer" }}
+      >
+        <div style={{ width: 36, height: 36, borderRadius: 9, background: avatarBg, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "var(--text-2xs)", color: "#fff", flexShrink: 0 }}>{initials}</div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-900)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{rowTitle}</div>
+          <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{rowSubtitle}</div>
+        </div>
+        <span style={{ display: "inline-block", padding: "3px 8px", borderRadius: 5, background: statusBadge.bg, color: statusBadge.c, fontSize: "var(--text-2xs)", fontWeight: 800, whiteSpace: "nowrap", flexShrink: 0, ...mono }}>{statusBadge.l}</span>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -195,7 +213,7 @@ function UserRow({ u, selected, isSelectedRow, onCheck, onSelect, compact }) {
 }
 
 // ─── Detail panel ──────────────────────────────────────────────────────────────
-function DetailPanel({ u, detail, onClose, onVerify, onReject, onSuspend, onUnsuspend, onWarn, onDelete, onViewAs }) {
+function DetailPanel({ u, detail, onClose, onVerify, onReject, onSuspend, onUnsuspend, onWarn, onDelete, onViewAs, mobile }) {
   if (!u) return null;
   const isComp   = isCompanyRole(u);
   const verified = isVerified(u);
@@ -216,8 +234,13 @@ function DetailPanel({ u, detail, onClose, onVerify, onReject, onSuspend, onUnsu
     : (detail?._count?.conversationsAsDriver ?? 0);
   const jobCount  = detail?._count?.jobs ?? 0;
 
+  // Mobil: fullskärms-overlay i stället för sidopanel
+  const panelStyle = mobile
+    ? { position: "fixed", inset: 0, zIndex: 230, background: "var(--card)", display: "flex", flexDirection: "column", overflowY: "auto" }
+    : { width: 380, background: "var(--card)", borderLeft: "1px solid var(--line)", flexShrink: 0, display: "flex", flexDirection: "column", overflowY: "auto" };
+
   return (
-    <aside style={{ width: 380, background: "var(--card)", borderLeft: "1px solid var(--line)", flexShrink: 0, display: "flex", flexDirection: "column", overflowY: "auto" }}>
+    <aside style={panelStyle}>
       <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <span style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "var(--ink-400)" }}>Detalj</span>
         <button onClick={onClose} style={{ width: 28, height: 28, borderRadius: 6, background: "var(--paper-2)", border: "none", color: "var(--ink-400)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -386,6 +409,7 @@ export default function AdminUsersTab({
 }) {
   const [selected, setSelected] = useState(new Set());
   const [filter, setFilter] = useState("all");
+  const isMobile = useIsMobile(900);
 
   const allUsersRaw = Array.isArray(users) ? users : [];
   // Skopa till målgrupp: "drivers" = bara förare, "companies" = bara åkerier
@@ -589,7 +613,7 @@ export default function AdminUsersTab({
           audience={audience}
         />
         <BulkBar count={selected.size} onClear={() => setSelected(new Set())} onBulkSuspend={handleBulkSuspend} />
-        <TableHeader allSelected={allSelected} onSelectAll={toggleAll} compact={!!selectedUser} />
+        {!isMobile && <TableHeader allSelected={allSelected} onSelectAll={toggleAll} compact={!!selectedUser} />}
         {filtered.map(u => (
           <UserRow
             key={u.id}
@@ -599,6 +623,7 @@ export default function AdminUsersTab({
             onCheck={() => toggle(u.id)}
             onSelect={() => loadUserDetail(selectedUserId === u.id ? null : u.id)}
             compact={!!selectedUser}
+            mobile={isMobile}
           />
         ))}
         {filtered.length === 0 && (
@@ -608,6 +633,7 @@ export default function AdminUsersTab({
       <DetailPanel
         u={selectedUser}
         detail={selectedUserDetail}
+        mobile={isMobile}
         onClose={() => loadUserDetail(null)}
         onVerify={handleVerify}
         onReject={audience === "companies" ? handleReject : undefined}

@@ -41,6 +41,8 @@ export default function Admin() {
   const [onboarding, setOnboarding] = useState(null);
   const [health, setHealth] = useState(null);
   const [stack, setStack] = useState(null);
+  const isMobileAdmin = useIsMobile(900);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [insights, setInsights] = useState([]);
   const [insightsRunning, setInsightsRunning] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
@@ -417,6 +419,9 @@ export default function Admin() {
       <AdminSidebar
         section={activeTab}
         onChange={setActiveTab}
+        mobile={isMobileAdmin}
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
         counts={{
           users: ((summary?.users?.driversTotal ?? 0) + (summary?.users?.recruitersTotal ?? 0)) || undefined,
           companies: summary?.verification?.verifiedCompanies || undefined,
@@ -427,7 +432,7 @@ export default function Admin() {
         }}
       />
       <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
-        <AdminTopBar openCmd={() => setCmdK(true)} health={health} onChange={setActiveTab} notifs={notifs} />
+        <AdminTopBar openCmd={() => setCmdK(true)} health={health} onChange={setActiveTab} notifs={notifs} isMobile={isMobileAdmin} onMenu={() => setSidebarOpen(true)} />
         <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
 
         {/* ════════════════════════════════════════

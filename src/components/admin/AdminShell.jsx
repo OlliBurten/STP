@@ -76,7 +76,7 @@ const NAV_GROUPS = [
 ];
 
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
-export function AdminSidebar({ section, onChange, counts = {} }) {
+export function AdminSidebar({ section, onChange, counts = {}, mobile = false, open = false, onClose }) {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const handleLogout = () => { logout(); navigate("/login"); };
@@ -88,8 +88,19 @@ export function AdminSidebar({ section, onChange, counts = {} }) {
     moderation: { alert: counts.moderationAlert },
     feedback:   { alert: counts.feedbackAlert },
   };
+  // Mobil: rendera som overlay-drawer (backdrop + panel); stängd = inget alls.
+  if (mobile && !open) return null;
+
+  const asideStyle = mobile
+    ? { position: "fixed", top: 0, left: 0, bottom: 0, width: 268, zIndex: 220, background: "var(--card)", borderRight: "1px solid var(--line)", display: "flex", flexDirection: "column", boxShadow: "8px 0 32px rgba(15,33,32,0.18)" }
+    : { width: 240, background: "var(--card)", borderRight: "1px solid var(--line)", display: "flex", flexDirection: "column", flexShrink: 0 };
+
+  const handleNav = (id) => { onChange(id); if (mobile) onClose?.(); };
+
   return (
-    <aside style={{ width: 240, background: "var(--card)", borderRight: "1px solid var(--line)", display: "flex", flexDirection: "column", flexShrink: 0 }}>
+    <>
+    {mobile && <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 210, background: "rgba(10,20,20,0.45)" }} aria-hidden="true" />}
+    <aside style={asideStyle}>
       {/* Låst 64px + border-box så underkanten linjerar exakt med toppbarens (height 64) */}
       <Link to="/admin" style={{ height: 64, boxSizing: "border-box", padding: "0 18px", display: "flex", alignItems: "center", gap: 10, borderBottom: "1px solid var(--line)", textDecoration: "none", flexShrink: 0 }}>
         <div style={{ width: 32, height: 32, borderRadius: 9, background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--text-sm)", color: "#fff", letterSpacing: -0.5 }}>STP</div>
@@ -108,7 +119,7 @@ export function AdminSidebar({ section, onChange, counts = {} }) {
               const m = META[it.id] || {};
               const count = m.count, alert = m.alert;
               return (
-                <button key={it.id} onClick={() => onChange(it.id)} style={{
+                <button key={it.id} onClick={() => handleNav(it.id)} style={{
                   width: "100%", padding: "8px 10px", borderRadius: 8,
                   background: on ? "var(--green-tint)" : "transparent",
                   border: "none", cursor: "pointer",
@@ -135,7 +146,7 @@ export function AdminSidebar({ section, onChange, counts = {} }) {
           <div style={{ fontSize: "var(--text-xs)", fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "var(--ink-900)" }}>Oliver Harburt</div>
           <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)" }}>Super admin</div>
         </div>
-        <button title="Inställningar" onClick={() => onChange("settings")} style={{ width: 28, height: 28, borderRadius: 7, background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-400)" }}>
+        <button title="Inställningar" onClick={() => handleNav("settings")} style={{ width: 28, height: 28, borderRadius: 7, background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-400)" }}>
           <Icon n="cog" s={13} />
         </button>
         <button
@@ -151,11 +162,12 @@ export function AdminSidebar({ section, onChange, counts = {} }) {
         </button>
       </div>
     </aside>
+    </>
   );
 }
 
 // ─── TopBar ───────────────────────────────────────────────────────────────────
-export function AdminTopBar({ openCmd, health, onChange, notifs = [] }) {
+export function AdminTopBar({ openCmd, health, onChange, notifs = [], isMobile = false, onMenu }) {
   const [bellOpen, setBellOpen] = useState(false);
   const latency = health?.dbLatencyMs != null ? `${health.dbLatencyMs}ms` : null;
   const systemOk = !health || (health.db === "ok");
@@ -166,23 +178,30 @@ export function AdminTopBar({ openCmd, health, onChange, notifs = [] }) {
   const active = notifs.filter((n) => n.count > 0);
 
   return (
-    <div style={{ height: 64, borderBottom: "1px solid var(--line)", display: "flex", alignItems: "center", padding: "0 22px", gap: 14, background: "var(--card)", flexShrink: 0 }}>
-      <button onClick={openCmd} style={{ flex: 1, maxWidth: 480, display: "flex", alignItems: "center", gap: 9, padding: "7px 12px", borderRadius: 8, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-400)", fontSize: "var(--text-xs)", cursor: "pointer" }}>
+    <div style={{ height: 64, borderBottom: "1px solid var(--line)", display: "flex", alignItems: "center", padding: isMobile ? "0 12px" : "0 22px", gap: isMobile ? 8 : 14, background: "var(--card)", flexShrink: 0 }}>
+      {isMobile && (
+        <button onClick={onMenu} title="Meny" aria-label="Öppna meny" style={{ width: 40, height: 40, borderRadius: 9, background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-700)", flexShrink: 0 }}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" width="19" height="19"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+      )}
+      <button onClick={openCmd} style={{ flex: 1, maxWidth: 480, minWidth: 0, display: "flex", alignItems: "center", gap: 9, padding: "7px 12px", borderRadius: 8, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-400)", fontSize: "var(--text-xs)", cursor: "pointer" }}>
         <Icon n="search" s={14} c="var(--ink-400)" />
-        <span style={{ flex: 1, textAlign: "left" }}>Sök användare, företag, jobb...</span>
-        <span style={{ padding: "1px 6px", borderRadius: 4, background: "var(--paper-2)", fontSize: "var(--text-2xs)", color: "var(--ink-400)", fontFamily: "'JetBrains Mono',monospace" }}>⌘K</span>
+        <span style={{ flex: 1, textAlign: "left", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{isMobile ? "Sök..." : "Sök användare, företag, jobb..."}</span>
+        {!isMobile && <span style={{ padding: "1px 6px", borderRadius: 4, background: "var(--paper-2)", fontSize: "var(--text-2xs)", color: "var(--ink-400)", fontFamily: "'JetBrains Mono',monospace" }}>⌘K</span>}
       </button>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 7, marginLeft: "auto" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 7, marginLeft: "auto", flexShrink: 0 }}>
         <button onClick={() => onChange?.("pulse")} title="Visa systemstatus" style={{ display: "flex", alignItems: "center", gap: 7, padding: "5px 11px", borderRadius: 99, background: pillBg, border: `1px solid ${pillBorder}`, cursor: "pointer" }}>
           <span style={{ width: 7, height: 7, borderRadius: 99, background: pillColor, animation: systemOk ? "pulse 2s infinite" : "none" }} />
-          <span style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: pillColor }}>{pillLabel}</span>
-          {latency && <span style={{ fontSize: "var(--text-2xs)", color: `${pillColor}88`, fontFamily: "'JetBrains Mono',monospace" }}>{latency}</span>}
+          {!isMobile && <span style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: pillColor }}>{pillLabel}</span>}
+          {!isMobile && latency && <span style={{ fontSize: "var(--text-2xs)", color: `${pillColor}88`, fontFamily: "'JetBrains Mono',monospace" }}>{latency}</span>}
         </button>
 
-        <button onClick={openCmd} title="Sök & åtgärder (⌘K)" style={{ padding: "7px 12px", borderRadius: 8, background: "var(--amber-tint)", border: "1px solid var(--amber)", color: "var(--amber-text)", fontSize: "var(--text-xs)", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
-          <Icon n="zap" s={12} c="var(--amber-text)" /> Snabbåtgärd
-        </button>
+        {!isMobile && (
+          <button onClick={openCmd} title="Sök & åtgärder (⌘K)" style={{ padding: "7px 12px", borderRadius: 8, background: "var(--amber-tint)", border: "1px solid var(--amber)", color: "var(--amber-text)", fontSize: "var(--text-xs)", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+            <Icon n="zap" s={12} c="var(--amber-text)" /> Snabbåtgärd
+          </button>
+        )}
 
         <div style={{ position: "relative" }}>
           <button onClick={() => setBellOpen((o) => !o)} title="Aviseringar" style={{ width: 36, height: 36, borderRadius: 99, background: bellOpen ? "var(--paper-2)" : "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>

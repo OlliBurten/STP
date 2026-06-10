@@ -1,6 +1,6 @@
 import React from "react";
 import { Icon } from "./AdminShell.jsx";
-import { fmtDate } from "./adminShared.jsx";
+import { fmtDate, useIsMobile } from "./adminShared.jsx";
 
 const mono = { fontFamily: "'JetBrains Mono',monospace", fontFeatureSettings: '"tnum"' };
 
@@ -383,6 +383,7 @@ export default function AdminOverviewTab({
   onStuckReminder,
 }) {
   const [period, setPeriod] = React.useState("30d");
+  const isMobile = useIsMobile(900);
 
   const drivers      = summary?.users?.driversTotal ?? null;
   const companies    = summary?.users?.recruitersTotal ?? null;
@@ -419,7 +420,7 @@ export default function AdminOverviewTab({
       />
 
       {/* Hero metrics */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 20 }}>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4,1fr)", gap: 12, marginBottom: 20 }}>
         <Metric
           label="Förare totalt"
           value={drivers != null ? String(drivers) : noDataStr}
@@ -451,7 +452,7 @@ export default function AdminOverviewTab({
       </div>
 
       {/* Two-column main */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 14 }}>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 360px", gap: 14 }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <ActivityFeed
             latestUsers={summary?.latestUsers}
