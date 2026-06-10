@@ -19,6 +19,13 @@ const STEPS = [
   { id: "preview", label: "Förhandsgranska" },
 ];
 
+const JOBTYPE_OPTS = [
+  { value: "fjärrkörning", label: "Fjärrkörning"  },
+  { value: "lokalt",       label: "Lokalkörning"  },
+  { value: "distribution", label: "Distribution"  },
+  { value: "timjobb",      label: "Timjobb"       },
+];
+
 const EMP_OPTS = [
   { value: "fast",     label: "Fast anställning" },
   { value: "vikariat", label: "Vikariat"          },
@@ -345,6 +352,14 @@ function StepBasics({ form, setForm, isMobile }) {
         </div>
       </Field>
 
+      <Field label="Jobbtyp" required>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {JOBTYPE_OPTS.map((t) => (
+            <ToggleChip key={t.value} label={t.label} active={form.jobType === t.value} onClick={() => setForm((f) => ({ ...f, jobType: t.value }))} />
+          ))}
+        </div>
+      </Field>
+
       <Field label="Minsta erfarenhet">
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {EXP_DISPLAY.map((e) => (
@@ -575,6 +590,7 @@ export default function PostJob() {
     certificates: [],
     experienceLabel: "",
     experience: "",
+    jobType: "",
     employment: "",
     schedule: "",
     start: "",
@@ -609,7 +625,7 @@ export default function PostJob() {
   }, [hasApi, isCompany, user?.email]);
 
   const canNext = () => {
-    if (step === 0) return form.title && form.company && form.location && form.region && form.license.length > 0 && form.employment && form.schedule;
+    if (step === 0) return form.title && form.company && form.location && form.region && form.license.length > 0 && form.jobType && form.employment && form.schedule;
     if (step === 1) return form.aboutJob.trim().length >= 60 && form.requirements.length >= 1;
     if (step === 2) return !!form.contact;
     return true;
@@ -644,7 +660,7 @@ export default function PostJob() {
           region: form.region,
           license: form.license,
           certificates: form.certificates,
-          jobType: "fjärrkörning",
+          jobType: form.jobType,
           employment: form.employment,
           segment: form.segment || mapEmploymentToSegment(form.employment) || "FULLTIME",
           schedule: form.schedule || null,
