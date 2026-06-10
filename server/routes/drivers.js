@@ -314,17 +314,17 @@ driversRouter.post("/:id/reviews", authMiddleware, requireCompany, requireVerifi
 
     // Kräv att företaget har haft en konversation med föraren
     const convo = await prisma.conversation.findFirst({
-      where: { companyId: req.user.id, driverId: req.params.id },
+      where: { companyId: req.userId, driverId: req.params.id },
     });
     if (!convo) {
       return res.status(403).json({ error: "Du kan bara recensera förare du haft kontakt med." });
     }
 
     const review = await prisma.driverReview.upsert({
-      where: { driverId_authorId: { driverId: profile.id, authorId: req.user.id } },
+      where: { driverId_authorId: { driverId: profile.id, authorId: req.userId } },
       create: {
         driverId: profile.id,
-        authorId: req.user.id,
+        authorId: req.userId,
         rating: Math.round(rating),
         comment: comment?.trim() || null,
         isVerified: true,
