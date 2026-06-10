@@ -6,7 +6,7 @@ const FAQ = [
   { q: "Hur snabbt svarar ni?", a: "Vi svarar normalt inom 1–2 vardagar. Vid enklare frågor ofta samma dag." },
   { q: "Vad kan jag kontakta er om?", a: "Frågor om plattformen, samverkan, genomgångar, pressförfrågningar eller feedback. Är du inloggad och har ett tekniskt problem — beskriv gärna vad som hände." },
   { q: "Finns det telefonsupport?", a: "Inte just nu. Vi prioriterar e-post för att kunna ge genomtänkta svar. Det gör det också lättare att följa upp och dokumentera ärendet." },
-  { q: "Hur kontaktar jag er som åkeri eller partner?", a: "Samma adress — info@transportplattformen.se. Ange gärna i ämnesraden att det gäller partnerskap eller samverkan så prioriteras det." },
+  { q: "Hur kontaktar jag er som åkeri eller partner?", a: "Samma adress — hello@transportplattformen.se. Ange gärna i ämnesraden att det gäller partnerskap eller samverkan så prioriteras det." },
 ];
 
 function FaqItem({ item }) {
@@ -37,7 +37,7 @@ export default function Kontakt() {
   usePageTitle("Kontakt");
   return (
     <main style={{ background: "var(--paper)", minHeight: "100vh" }}>
-      <PageMeta title="Kontakt – Sveriges Transportplattform" description="Kontakta Sveriges Transportplattform (STP) med frågor om samverkan, plattformen eller genomgång. Vi svarar på info@transportplattformen.se." canonical="/kontakt" />
+      <PageMeta title="Kontakt – Sveriges Transportplattform" description="Kontakta Sveriges Transportplattform (STP) med frågor om samverkan, plattformen eller genomgång. Vi svarar på hello@transportplattformen.se." canonical="/kontakt" />
 
       <div style={{ maxWidth: "var(--w-public)", margin: "0 auto", padding: "64px 32px 80px" }}>
         {/* Top grid: contact info + form */}
@@ -49,7 +49,7 @@ export default function Kontakt() {
               Frågor, feedback eller vill du veta mer? Vi svarar oftast samma dag.
             </p>
             {[
-              { icon: "mail",  label: "E-post",  value: "info@transportplattformen.se" },
+              { icon: "mail",  label: "E-post",  value: "hello@transportplattformen.se" },
               { icon: "clock", label: "Support", value: "Vardagar 08–17" },
               { icon: "pin",   label: "Kontor",  value: "Malmö, Sverige" },
             ].map(({ icon, label, value }) => (

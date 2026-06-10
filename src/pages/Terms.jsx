@@ -56,7 +56,7 @@ const DOCS = {
     sections: [
       {
         id: "ansvarig", h: "1. Personuppgiftsansvarig",
-        p: ["Sveriges Transportplattform är personuppgiftsansvarig för den behandling av personuppgifter som sker inom ramen för tjänsten. Kontakt: support@transportplattformen.se"],
+        p: ["Sveriges Transportplattform är personuppgiftsansvarig för den behandling av personuppgifter som sker inom ramen för tjänsten. Kontakt: dataskydd@transportplattformen.se"],
       },
       {
         id: "insamling", h: "2. Vilka uppgifter vi samlar in",
@@ -78,7 +78,7 @@ const DOCS = {
       {
         id: "rattigheter", h: "6. Dina rättigheter (GDPR)",
         p: ["Enligt GDPR har du rätt att:"],
-        li: ["Få tillgång till dina personuppgifter", "Rätta felaktiga uppgifter (direkt via din profil)", "Radera ditt konto och all tillhörande data (direkt via tjänsten)", "Begränsa behandling av dina uppgifter", "Dataportabilitet — begär ut dina uppgifter via support@transportplattformen.se", "Invända mot behandling baserad på berättigat intresse", "Lämna klagomål till Integritetsskyddsmyndigheten (IMY)"],
+        li: ["Få tillgång till dina personuppgifter", "Rätta felaktiga uppgifter (direkt via din profil)", "Radera ditt konto och all tillhörande data (direkt via tjänsten)", "Begränsa behandling av dina uppgifter", "Dataportabilitet — begär ut dina uppgifter via dataskydd@transportplattformen.se", "Invända mot behandling baserad på berättigat intresse", "Lämna klagomål till Integritetsskyddsmyndigheten (IMY)"],
       },
       {
         id: "cookies", h: "7. Cookies",

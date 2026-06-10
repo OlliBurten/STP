@@ -52,7 +52,7 @@ export default function InstallningarPreview() {
               <Card>
                 <SectionLabel>Identitet</SectionLabel>
                 <Row label="Plattformsnamn"><span style={{ fontSize: 14, color: "var(--ink-700)", fontFamily: "var(--mono)" }}>Sveriges Transportplattform</span></Row>
-                <Row label="Supportmejl" last><span style={{ fontSize: 14, color: "var(--ink-700)", fontFamily: "var(--mono)" }}>hej@transportplattformen.se</span></Row>
+                <Row label="Supportmejl" last><span style={{ fontSize: 14, color: "var(--ink-700)", fontFamily: "var(--mono)" }}>support@transportplattformen.se</span></Row>
               </Card>
             </>
           )}

@@ -891,14 +891,14 @@ export default function Home() {
                 Saknar du något? Hör av dig direkt.
               </p>
               <a
-                href="mailto:hej@transportplattformen.se"
+                href="mailto:hello@transportplattformen.se"
                 style={{
                   fontSize: "var(--text-base)", fontWeight: 700, color: "var(--green)",
                   display: "inline-flex", alignItems: "center", gap: 6,
                   textDecoration: "none",
                 }}
               >
-                hej@transportplattformen.se
+                hello@transportplattformen.se
                 <Icon name="arrow" size={13} stroke={2.2} />
               </a>
             </div>

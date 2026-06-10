@@ -50,7 +50,7 @@ const Kontakt = () => (
       <div>
         <h1 style={{ fontSize: 38, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.5, marginBottom: 14 }}>Hör av dig</h1>
         <p style={{ fontSize: 16, color: "var(--ink-500)", lineHeight: 1.7, marginBottom: 28 }}>Frågor, feedback eller vill du veta mer? Vi svarar oftast samma dag.</p>
-        {[["mail", "E-post", "hej@transportplattformen.se"], ["msg", "Support", "Vardagar 08–17"], ["pin", "Kontor", "Malmö, Sverige"]].map(([ic, l, v]) => (
+        {[["mail", "E-post", "hello@transportplattformen.se"], ["msg", "Support", "Vardagar 08–17"], ["pin", "Kontor", "Malmö, Sverige"]].map(([ic, l, v]) => (
           <div key={l} style={{ display: "flex", gap: 13, alignItems: "center", marginBottom: 16 }}>
             <span style={{ width: 42, height: 42, borderRadius: 11, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icon name={ic} size={18} color="var(--green-text)" stroke={2} /></span>
             <div><div style={{ fontSize: 12.5, color: "var(--ink-500)", fontWeight: 600 }}>{l}</div><div style={{ fontSize: 15, fontWeight: 700, color: "var(--ink-900)" }}>{v}</div></div>

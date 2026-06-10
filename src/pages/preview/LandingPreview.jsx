@@ -185,7 +185,7 @@ const FAQSection = () => {
     <section style={{ background: "var(--paper-2)", padding: "110px 32px" }}>
       <div style={{ maxWidth: 1040, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1.5fr", gap: 64, alignItems: "start" }} className="faq2">
         <style>{`@media(max-width:760px){.faq2{grid-template-columns:1fr!important}}`}</style>
-        <div style={{ position: "sticky", top: 100 }}><Eyebrow>FAQ</Eyebrow><H2 style={{ fontSize: "clamp(28px,3vw,44px)", marginBottom: 16 }}>Vanliga frågor</H2><Lead style={{ fontSize: 16, marginBottom: 26 }}>Saknar du något? Hör av dig direkt.</Lead><a href="mailto:hej@transportplattformen.se" style={{ fontSize: 14, fontWeight: 700, color: "var(--green)", textDecoration: "none" }}>hej@transportplattformen.se →</a></div>
+        <div style={{ position: "sticky", top: 100 }}><Eyebrow>FAQ</Eyebrow><H2 style={{ fontSize: "clamp(28px,3vw,44px)", marginBottom: 16 }}>Vanliga frågor</H2><Lead style={{ fontSize: 16, marginBottom: 26 }}>Saknar du något? Hör av dig direkt.</Lead><a href="mailto:hello@transportplattformen.se" style={{ fontSize: 14, fontWeight: 700, color: "var(--green)", textDecoration: "none" }}>hello@transportplattformen.se →</a></div>
         <div style={{ background: "var(--card)", borderRadius: "var(--r-lg)", border: "1px solid var(--line)", boxShadow: "var(--sh-sm)", overflow: "hidden" }}>
           {FAQS.map((f, i) => {
             const isOpen = open === i;
@@ -236,7 +236,7 @@ const Footer = () => {
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}><div style={{ width: 30, height: 30, borderRadius: 7, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 13 }}>S</div><span style={{ fontWeight: 800, fontSize: 17, color: "#fff", letterSpacing: 0.5 }}>STP</span></div>
             <p style={{ fontSize: 14, lineHeight: 1.7, maxWidth: 280, color: "rgba(255,255,255,0.55)", marginBottom: 18 }}>Sveriges matchningsplattform för yrkesförare och transportföretag. Direkt kontakt utan mellanhänder.</p>
-            <a href="mailto:hej@transportplattformen.se" style={{ fontSize: 13.5, color: "rgba(255,255,255,0.7)" }}>hej@transportplattformen.se</a>
+            <a href="mailto:hello@transportplattformen.se" style={{ fontSize: 13.5, color: "rgba(255,255,255,0.7)" }}>hello@transportplattformen.se</a>
           </div>
           {cols.map((col) => (
             <div key={col.title}>

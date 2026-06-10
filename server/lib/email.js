@@ -261,7 +261,7 @@ export async function notifyPasswordChanged({ to, name }) {
     to,
     subject: "Ditt lösenord har ändrats",
     heading: "Lösenordet ändrat",
-    text: `Hej ${name || ""}!\n\nDitt lösenord på Sveriges Transportplattform ändrades precis. Om det var du behöver du inte göra något.\n\nOm du inte gjort detta, kontakta oss omedelbart på hej@transportplattformen.se.`,
+    text: `Hej ${name || ""}!\n\nDitt lösenord på Sveriges Transportplattform ändrades precis. Om det var du behöver du inte göra något.\n\nOm du inte gjort detta, kontakta oss omedelbart på hello@transportplattformen.se.`,
     ctaUrl: base ? `${base}/login` : undefined,
     ctaText: "Gå till inloggning",
   });

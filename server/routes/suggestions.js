@@ -5,7 +5,7 @@ import { sendEmail } from "../lib/email.js";
 
 export const suggestionsRouter = Router();
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || process.env.EMAIL_FROM || "info@transportplattformen.se";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || process.env.EMAIL_FROM || "hello@transportplattformen.se";
 
 suggestionsRouter.post("/certificate", authMiddleware, async (req, res, next) => {
   try {
