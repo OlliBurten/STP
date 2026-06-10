@@ -201,6 +201,15 @@ adminRouter.patch("/companies/:id/status", async (req, res, next) => {
         companyStatus: orgUpdated.status,
         emailVerifiedAt: orgUpdated.userOrganizations[0]?.user?.emailVerifiedAt ?? null,
       };
+      // Synka ägarens user.companyStatus — admin-listan (GET /users) läser detta fält,
+      // annars uppdateras org.status men listan visar fortfarande gammal status.
+      const ownerId = orgUpdated.userOrganizations[0]?.user?.id;
+      if (ownerId) {
+        await prisma.user.update({
+          where: { id: ownerId },
+          data: { companyStatus: status },
+        });
+      }
     } else {
       const company = await prisma.user.findUnique({
         where: { id: req.params.id },

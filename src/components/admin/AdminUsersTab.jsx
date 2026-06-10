@@ -88,7 +88,7 @@ function BulkBar({ count, onClear, onBulkSuspend }) {
 
 // ─── Table header ──────────────────────────────────────────────────────────────
 function TableHeader({ allSelected, onSelectAll, compact }) {
-  const cols = compact ? "36px 1fr 78px 96px 80px 36px" : "40px 1fr 90px 100px 80px 100px 90px 40px";
+  const cols = compact ? "36px 1fr 78px 116px 80px 36px" : "40px 1fr 90px 124px 80px 100px 90px 40px";
   return (
     <div style={{ display: "grid", gridTemplateColumns: cols, gap: 14, alignItems: "center", padding: "10px 18px", borderBottom: "1px solid var(--line)", borderLeft: "2px solid transparent", background: "var(--card)", fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.3, textTransform: "uppercase", color: "var(--ink-400)", position: "sticky", top: 0, zIndex: 5 }}>
       <div onClick={onSelectAll}>
@@ -127,7 +127,7 @@ function UserRow({ u, selected, isSelectedRow, onCheck, onSelect, compact }) {
     ? { l: "EJ VERIFIERAD", c: "var(--amber)", bg: "var(--amber-tint)" }
     : { l: "OK", c: "var(--success)", bg: "var(--success-tint)" };
 
-  const cols = compact ? "36px 1fr 78px 96px 80px 36px" : "40px 1fr 90px 100px 80px 100px 90px 40px";
+  const cols = compact ? "36px 1fr 78px 116px 80px 36px" : "40px 1fr 90px 124px 80px 100px 90px 40px";
 
   return (
     <div
@@ -157,7 +157,7 @@ function UserRow({ u, selected, isSelectedRow, onCheck, onSelect, compact }) {
       </div>
 
       <div>
-        <span style={{ padding: "3px 9px", borderRadius: 5, background: statusBadge.bg, color: statusBadge.c, fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 0.4, ...mono }}>{statusBadge.l}</span>
+        <span style={{ display: "inline-block", padding: "3px 9px", borderRadius: 5, background: statusBadge.bg, color: statusBadge.c, fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 0.4, whiteSpace: "nowrap", ...mono }}>{statusBadge.l}</span>
       </div>
 
       <div>
@@ -227,7 +227,7 @@ function DetailPanel({ u, detail, onClose, onVerify, onReject, onSuspend, onUnsu
             <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.email}</div>
             <div style={{ display: "flex", gap: 5, marginTop: 6 }}>
               <span style={{ padding: "2px 7px", borderRadius: 4, background: !isComp ? "var(--info-tint)" : "var(--amber-tint)", color: !isComp ? "var(--info)" : "var(--amber-text)", fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 0.4, ...mono }}>{isComp ? "COMPANY" : "DRIVER"}</span>
-              <span style={{ padding: "2px 7px", borderRadius: 4, background: statusBadge.bg, color: statusBadge.c, fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 0.4, ...mono }}>{statusBadge.l}</span>
+              <span style={{ display: "inline-block", padding: "2px 7px", borderRadius: 4, background: statusBadge.bg, color: statusBadge.c, fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 0.4, whiteSpace: "nowrap", ...mono }}>{statusBadge.l}</span>
             </div>
           </div>
         </div>
@@ -428,6 +428,7 @@ export default function AdminUsersTab({
       const orgId = selectedUserDetail?.organizations?.[0]?.id || selectedUser.id;
       await updateCompanyStatus(orgId, "VERIFIED");
       await loadUsers();
+      await loadUserDetail(selectedUserId);
       setSuccess("Åkeriet verifierades.");
     } catch (e) {
       setError(e.message || "Kunde inte verifiera");
@@ -442,6 +443,7 @@ export default function AdminUsersTab({
       const orgId = selectedUserDetail?.organizations?.[0]?.id || selectedUser.id;
       await updateCompanyStatus(orgId, "REJECTED");
       await loadUsers();
+      await loadUserDetail(selectedUserId);
       setSuccess("Ansökan avslogs.");
     } catch (e) {
       setError(e.message || "Kunde inte avslå");
