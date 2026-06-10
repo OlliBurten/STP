@@ -568,6 +568,22 @@ export default function DriverSearch() {
   const segmentFilterOptions = segmentOptions.map(s => s.label);
   const regionOptions = regions.slice(0, 9);
 
+  // Antal tillgängliga förare per region (räknar både hemregion och regioner de vill köra i).
+  const regionCounts = useMemo(() => {
+    const counts = {};
+    for (const d of allDrivers) {
+      const set = new Set([d.region, ...(d.regionsWilling || [])].filter(Boolean));
+      for (const r of set) counts[r] = (counts[r] || 0) + 1;
+    }
+    return counts;
+  }, [allDrivers]);
+
+  // Regioner sorterade efter flest förare först (för rekryterings-insikt).
+  const regionsByCount = useMemo(
+    () => regions.slice(0, 9).sort((a, b) => (regionCounts[b] || 0) - (regionCounts[a] || 0)),
+    [regionCounts]
+  );
+
   function setFilterKey(key, val) {
     if (key === "segment") {
       const sv = segmentOptions.find(s => s.label === val)?.value || val;
@@ -637,7 +653,7 @@ export default function DriverSearch() {
               </p>
             </div>
             <div style={{ display: "flex", padding: 4, gap: 3, background: "var(--card)", border: "1px solid var(--line-2)", borderRadius: 10, boxShadow: "var(--sh-sm)" }}>
-              {[["list", "Lista"], ["map", "Karta"]].map(([k, label]) => (
+              {[["list", "Lista"], ["map", "Regioner"]].map(([k, label]) => (
                 <button key={k} onClick={() => setView(k)} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "7px 14px", borderRadius: 7, background: view === k ? "var(--green)" : "transparent", color: view === k ? "#fff" : "var(--ink-700)", fontSize: "var(--text-sm)", fontWeight: 600, transition: "all .12s", cursor: "pointer", border: "none", fontFamily: "inherit" }}>
                   {label}
                 </button>
@@ -651,19 +667,31 @@ export default function DriverSearch() {
         {view === "map" ? (
           <div style={{ paddingTop: 24 }}>
             <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", marginBottom: 20, fontWeight: 500, maxWidth: 600 }}>
-              Visa förare per region — klicka för att filtrera listan.
+              Så här fördelar sig tillgängliga förare över landet — klicka på en region för att se dem.
             </p>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 20, alignItems: "start" }}>
               <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: "var(--r-lg)", padding: 24, boxShadow: "var(--sh-sm)" }}>
-                <div style={{ fontSize: "var(--text-lg)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 16 }}>Välj region</div>
+                <div style={{ fontSize: "var(--text-lg)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 16 }}>Förare per region</div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10 }}>
-                  {regionOptions.map(r => (
-                    <button key={r} onClick={() => { setFilterKey("region", r); setView("list"); }} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 16px", borderRadius: 10, background: "var(--card-2)", border: `1px solid ${filters.region === r ? "var(--green)" : "var(--line)"}`, color: "var(--ink-900)", cursor: "pointer", fontFamily: "inherit", transition: "all .12s" }}>
-                      <span style={{ fontSize: "var(--text-base)", fontWeight: 700 }}>{r}</span>
-                      <span style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", fontWeight: 600 }}>Visa förare →</span>
-                    </button>
-                  ))}
+                  {regionsByCount.map(r => {
+                    const count = regionCounts[r] || 0;
+                    const max = regionCounts[regionsByCount[0]] || 1;
+                    return (
+                      <button key={r} onClick={() => { if (count) { setFilterKey("region", r); setView("list"); } }} disabled={!count} style={{ display: "flex", flexDirection: "column", gap: 8, padding: "14px 16px", borderRadius: 10, background: "var(--card-2)", border: `1px solid ${filters.region === r ? "var(--green)" : "var(--line)"}`, color: "var(--ink-900)", cursor: count ? "pointer" : "default", opacity: count ? 1 : 0.55, fontFamily: "inherit", transition: "all .12s", textAlign: "left" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", width: "100%" }}>
+                          <span style={{ fontSize: "var(--text-base)", fontWeight: 700 }}>{r}</span>
+                          <span style={{ fontSize: "var(--text-sm)", fontWeight: 800, color: count ? "var(--green-text)" : "var(--ink-400)", fontFamily: "var(--mono)" }}>{count}</span>
+                        </div>
+                        <div style={{ height: 4, borderRadius: 99, background: "var(--paper-2)", overflow: "hidden", width: "100%" }}>
+                          <div style={{ height: "100%", width: `${Math.round((count / max) * 100)}%`, background: count ? "var(--green)" : "transparent", borderRadius: 99 }} />
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
+                {regionsByCount.every(r => !regionCounts[r]) && (
+                  <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-400)", paddingTop: 14 }}>Inga tillgängliga förare i någon region ännu.</div>
+                )}
               </div>
               <aside style={{ display: "flex", flexDirection: "column", gap: 18 }}>
                 <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: "var(--r-lg)", padding: 20, boxShadow: "var(--sh-sm)" }}>
