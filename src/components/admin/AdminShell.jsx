@@ -90,7 +90,8 @@ export function AdminSidebar({ section, onChange, counts = {} }) {
   };
   return (
     <aside style={{ width: 240, background: "var(--card)", borderRight: "1px solid var(--line)", display: "flex", flexDirection: "column", flexShrink: 0 }}>
-      <Link to="/admin" style={{ padding: "18px 18px 14px", display: "flex", alignItems: "center", gap: 10, borderBottom: "1px solid var(--line)", textDecoration: "none" }}>
+      {/* Låst 64px + border-box så underkanten linjerar exakt med toppbarens (height 64) */}
+      <Link to="/admin" style={{ height: 64, boxSizing: "border-box", padding: "0 18px", display: "flex", alignItems: "center", gap: 10, borderBottom: "1px solid var(--line)", textDecoration: "none", flexShrink: 0 }}>
         <div style={{ width: 32, height: 32, borderRadius: 9, background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--text-sm)", color: "#fff", letterSpacing: -0.5 }}>STP</div>
         <div>
           <div style={{ fontSize: "var(--text-sm)", fontWeight: 800, letterSpacing: -0.2, lineHeight: 1.2, color: "var(--ink-900)" }}>Admin</div>
