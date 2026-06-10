@@ -8,7 +8,7 @@ import { authMiddleware, requireCompany } from "../middleware/auth.js";
 import { validateBody } from "../middleware/validate.js";
 import { createOrganizationSchema } from "../lib/validators.js";
 import { getUserOrganizations, resolveEffectiveOrganization } from "../lib/organizations.js";
-import { shouldAutoVerifyCompany } from "../lib/companyVerify.js";
+import { lookupBolagsverket } from "../lib/bolagsverket.js";
 
 export const organizationsRouter = Router();
 
@@ -49,11 +49,22 @@ organizationsRouter.post("/", validateBody(createOrganizationSchema), async (req
       return res.status(409).json({ error: "Organisationsnumret används redan av ett annat åkeri." });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: req.userId },
-      select: { email: true },
-    });
-    const status = shouldAutoVerifyCompany(user?.email, orgNum) ? "VERIFIED" : "PENDING";
+    // Server-side SNI-grind mot Bolagsverket — wizardens frontend-kontroll kan kringgås.
+    // Transport (SNI 49/52/53) → auto-VERIFIED. Bekräftat icke-transport → avvisa.
+    // Okänt (API nere / SNI saknas) → PENDING för manuell admin-granskning.
+    const bolag = await lookupBolagsverket(orgNum);
+    if (bolag?.isDeregistered) {
+      return res.status(400).json({
+        error: "Organisationsnumret är avregistrerat hos Bolagsverket och kan inte användas.",
+      });
+    }
+    if (bolag?.isTransport === false) {
+      return res.status(400).json({
+        error:
+          "Företaget är inte registrerat som transportverksamhet hos Bolagsverket. STP är till för åkerier och transportföretag.",
+      });
+    }
+    const status = bolag?.isTransport === true ? "VERIFIED" : "PENDING";
 
     const org = await prisma.organization.create({
       data: {

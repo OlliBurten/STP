@@ -22,7 +22,7 @@ import {
   isGoogleConfigured,
   isMicrosoftConfigured,
 } from "../lib/oauth.js";
-import { shouldAutoVerifyCompany } from "../lib/companyVerify.js";
+import { lookupBolagsverket } from "../lib/bolagsverket.js";
 import { authMiddleware } from "../middleware/auth.js";
 import { isAdminEmail } from "../lib/adminAccess.js";
 
@@ -210,8 +210,13 @@ authRouter.post("/register", validateBody(registerSchema), async (req, res, next
     }
     const passwordHash = await bcrypt.hash(password, 10);
     const hasCompanyAtReg = role === "COMPANY" && companyName?.trim() && normalizedOrgNumber;
-    const companyStatus =
-      role === "COMPANY" ? (hasCompanyAtReg ? (shouldAutoVerifyCompany(email, normalizedOrgNumber) ? "VERIFIED" : "PENDING") : "VERIFIED") : "VERIFIED";
+    // SNI-grind även här (legacy-väg med org-nr vid registrering): auto-VERIFIED endast om
+    // Bolagsverket bekräftar transportverksamhet (SNI 49/52/53). Annars PENDING → manuell granskning.
+    let companyStatus = "VERIFIED";
+    if (role === "COMPANY" && hasCompanyAtReg) {
+      const bolag = await lookupBolagsverket(normalizedOrgNumber);
+      companyStatus = bolag?.isTransport === true && !bolag.isDeregistered ? "VERIFIED" : "PENDING";
+    }
 
     const user = await prisma.user.create({
       data: {
