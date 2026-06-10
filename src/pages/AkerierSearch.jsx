@@ -227,7 +227,7 @@ function CompanyListRow({ c, user, saved, onToggleSave }) {
           {c.bransch?.length > 0 && (
             <>
               <span style={{ color: "var(--line-2)" }}>·</span>
-              <span>{c.bransch.slice(0, 2).map(getBranschLabel).join(", ")}</span>
+              <span>{c.bransch?.slice(0, 2).map(getBranschLabel).join(", ")}</span>
             </>
           )}
         </div>
