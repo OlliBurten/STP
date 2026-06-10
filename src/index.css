@@ -471,3 +471,19 @@ button:disabled { cursor: not-allowed; }
   }
   .stp-page-main { padding-bottom: 84px !important; }
 }
+
+/* ── Webbläsarens autofill ────────────────────────────────────────────────────
+   Chrome/Safari målar ifyllda fält ljusblå (input:-webkit-autofill) och färgen
+   sitter kvar tills användaren skriver. Måla över med kortets bakgrund så
+   autofyllda fält ser ut som alla andra. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px var(--card) inset;
+  box-shadow: 0 0 0 1000px var(--card) inset;
+  -webkit-text-fill-color: var(--ink-900);
+  caret-color: var(--ink-900);
+  transition: background-color 9999s ease-out 0s;
+}
