@@ -669,7 +669,7 @@ export default function DriverSearch() {
             <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", marginBottom: 20, fontWeight: 500, maxWidth: 600 }}>
               Så här fördelar sig tillgängliga förare över landet — klicka på en region för att se dem.
             </p>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 20, alignItems: "start" }}>
+            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 300px", gap: 20, alignItems: "start" }}>
               <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: "var(--r-lg)", padding: 24, boxShadow: "var(--sh-sm)" }}>
                 <div style={{ fontSize: "var(--text-lg)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 16 }}>Förare per region</div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10 }}>

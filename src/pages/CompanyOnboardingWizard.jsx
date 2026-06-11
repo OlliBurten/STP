@@ -184,7 +184,7 @@ function Step2({ form, setForm }) {
       <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.55, marginBottom: 28 }}>
         Vi matchar er med förare som söker rätt typ av uppdrag. Välj en eller flera.
       </p>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 10 }}>
         {TRANSPORT_TYPES.map(({ value, label, desc }) => {
           const on = (form.transportTypes || []).includes(value);
           return (

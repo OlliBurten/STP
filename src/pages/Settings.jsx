@@ -157,7 +157,7 @@ function PasswordCard() {
             <button type="button" onClick={() => setShowCurrent(v => !v)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "var(--ink-400)", display: "flex" }}><Icon n={showCurrent ? "eyeoff" : "eye"} s={16} /></button>
           </div>
         </Field>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16 }}>
           <Field label="Nytt lösenord">
             <div style={{ position: "relative" }}>
               <input type={showNext ? "text" : "password"} value={form.next} onChange={e => setForm(p => ({ ...p, next: e.target.value }))} placeholder="Minst 8 tecken" style={{ ...inputStyle, paddingRight: 44 }} />
@@ -208,7 +208,7 @@ function DriverKontoSection({ user }) {
       )}
 
       <Card title="Personuppgifter" sub="Grundläggande kontoinformation. Kontakta /profil för att redigera telefon, ort och mer.">
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16 }}>
           <Field label="Förnamn">
             <input style={{ ...inputStyle, color: "var(--ink-400)" }} value={nameParts[0] || ""} disabled title="Ändra via Support" />
           </Field>
@@ -660,7 +660,7 @@ function CompanyKontoSection({ user }) {
       )}
 
       <Card title="Företagsuppgifter" sub="Din inloggningsinformation på STP.">
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 4 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12, marginBottom: 4 }}>
           {[
             ["Företagsnamn", user?.companyName || user?.name || "—"],
             ["E-post", user?.email || "—"],
