@@ -49,7 +49,7 @@ function getGitHub() {
 }
 
 function getSentry() {
-  const token = process.env.SENTRY_AUTH_TOKEN;
+  const token = process.env.SENTRY_API_TOKEN || process.env.SENTRY_AUTH_TOKEN;
   const org = process.env.SENTRY_ORG || "stp-jb";
   return { token, org };
 }
