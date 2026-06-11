@@ -1071,7 +1071,7 @@ export default function Profile() {
               navigator.clipboard.writeText(`https://transportplattformen.se/forare/${user?.id || ""}`).then(() => {
                 setLinkCopied(true);
                 setTimeout(() => setLinkCopied(false), 2000);
-              });
+              }).catch(() => {});
             }}
           />
         </div>
@@ -1750,7 +1750,7 @@ export default function Profile() {
                       navigator.clipboard.writeText(`https://transportplattformen.se/forare/${user.id}`).then(() => {
                         setLinkCopied(true);
                         setTimeout(() => setLinkCopied(false), 2000);
-                      });
+                      }).catch(() => {});
                     }} style={{ background: linkCopied ? "var(--success)" : "var(--ink-900)", color: "#fff", padding: "10px 14px", fontSize: "var(--text-xs)", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 6, border: "none", cursor: "pointer", transition: "background .2s", fontFamily: "inherit" }}>
                       {linkCopied ? "Kopierad ✓" : "Kopiera"}
                     </button>
@@ -1857,7 +1857,7 @@ export default function Profile() {
                 navigator.clipboard.writeText(`https://transportplattformen.se/forare/${user.id}`).then(() => {
                   setLinkCopied(true);
                   setTimeout(() => setLinkCopied(false), 2000);
-                });
+                }).catch(() => {});
               }}
             />
           </div>

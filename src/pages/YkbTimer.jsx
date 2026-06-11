@@ -109,9 +109,11 @@ export default function YkbTimer() {
     if (navigator.share) {
       try { await navigator.share({ title: "YKB-timer – räkna ut när din YKB löper ut", url }); } catch {}
     } else {
-      await navigator.clipboard.writeText(url);
-      setShared(true);
-      setTimeout(() => setShared(false), 2000);
+      try {
+        await navigator.clipboard.writeText(url);
+        setShared(true);
+        setTimeout(() => setShared(false), 2000);
+      } catch {}
     }
   };
 
