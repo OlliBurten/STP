@@ -47,7 +47,7 @@ function UsersHeader({ users, selectedCount, filter, setFilter, onExportCsv, onS
       ];
   return (
     <div style={{ padding: "22px 26px 14px" }}>
-      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 18, gap: 14 }}>
+      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 18, gap: 14, flexWrap: "wrap" }}>
         <div>
           <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, letterSpacing: -0.6, marginBottom: 3, color: "var(--ink-900)" }}>{title}</h1>
           <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)" }}>{users.length} totalt · {selectedCount} valda</div>
