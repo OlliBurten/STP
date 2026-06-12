@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 """
-STP Sentry Auto-Fix Script
-Usage: SENTRY_TOKEN=<token> python3 scripts/sentry-autofix.py
+STP Sentry Auto-Fix
+Usage: cd /path/to/STP && SENTRY_TOKEN=<token> python3 scripts/sentry-autofix.py
 
-Fetches unresolved Sentry issues, applies safe code fixes (optional chaining,
-missing React imports), commits one fix per issue, pushes, deploys backend
-to Railway if server/ files changed, and marks issues resolved in Sentry.
+Hämtar olösta Sentry-issues, tillämpar säkra kodfixar (optional chaining,
+saknade React-importer), committar en fix per issue, pushar, deployas till
+Railway om server/-filer ändrades, och markerar issues som resolved i Sentry.
 """
 import os, re, subprocess, sys
 import requests
 
-TOKEN = os.environ.get("SENTRY_TOKEN") or sys.exit("Set SENTRY_TOKEN env var")
+TOKEN = os.environ.get("SENTRY_TOKEN") or sys.exit("Sätt SENTRY_TOKEN miljövariabel")
 ORG = "stp-jb"
 BASE = "https://sentry.io/api/0"
 H = {"Authorization": f"Bearer {TOKEN}"}
@@ -23,7 +23,11 @@ def sget(path):
 
 
 def sput(path, data):
-    r = requests.put(f"{BASE}{path}", headers={**H, "Content-Type": "application/json"}, json=data, timeout=30)
+    r = requests.put(
+        f"{BASE}{path}",
+        headers={**H, "Content-Type": "application/json"},
+        json=data, timeout=30
+    )
     return r.ok
 
 
@@ -79,7 +83,11 @@ def find_file(filename):
 
 
 def extract_prop(msg):
-    for pat in [r"reading '([^']+)'", r"Cannot read property '([^']+)' of", r"evaluating '[^']*\.([^'.])+'"]:
+    for pat in [
+        r"reading '([^']+)'",
+        r"Cannot read property '([^']+)' of",
+        r"evaluating '[^']*\.([^'.]+)'"
+    ]:
         m = re.search(pat, msg)
         if m:
             return m.group(1)
@@ -116,13 +124,13 @@ def ref_error_fix(content, var):
         return None, None
     lines = content.split("\n")
     for i, line in enumerate(lines):
-        m = re.match(r'import \\{([^}]+)\\} from ['\"]react['\"]\', line)
+        m = re.match(r"import \{([^}]+)\} from ['\"]react['\"]", line)
         if m:
             imports = [s.strip() for s in m.group(1).split(",")]
             if var not in imports:
                 imports.append(var)
                 new_imp = "{ " + ", ".join(sorted(imports)) + " }"
-                lines[i] = re.sub(r'\\{[^}]+\\}', new_imp, line)
+                lines[i] = re.sub(r'\{[^}]+\}', new_imp, line)
                 return "\n".join(lines), f"add {var} to React imports"
     lines.insert(0, f'import {{ {var} }} from "react";')
     return "\n".join(lines), f"add missing React import for {var}"
@@ -133,7 +141,7 @@ def git_commit(path, msg):
     r = subprocess.run(["git", "commit", "-m", msg], capture_output=True, text=True)
     if r.returncode != 0:
         subprocess.run(["git", "restore", "--staged", path])
-        print(f"  Commit failed: {r.stderr.strip()}")
+        print(f"  Commit misslyckades: {r.stderr.strip()}")
         return False
     return True
 
@@ -146,10 +154,10 @@ def main():
     try:
         issues = sget(f"/organizations/{ORG}/issues/?limit=25&query=is:unresolved&sort=date")
     except Exception as e:
-        print(f"Sentry fetch failed: {e}")
+        print(f"Sentry-hämtning misslyckades: {e}")
         sys.exit(1)
 
-    print(f"Found {len(issues)} unresolved issues\n")
+    print(f"Hittade {len(issues)} olösta issues\n")
     fixed = []
     backend_changed = False
 
@@ -159,18 +167,18 @@ def main():
         try:
             event = sget(f"/issues/{iid}/events/latest/")
         except Exception as e:
-            print(f"  Event error: {e}, skip\n")
+            print(f"  Händelse-fel: {e}, hoppar\n")
             continue
 
         etype, evalue, frames = error_info(event)
         if not etype:
-            print("  No exception info, skip\n")
+            print("  Ingen exceptioninfo, hoppar\n")
             continue
         print(f"  {etype}: {evalue[:100]}")
 
         frame = first_party_frame(frames)
         if not frame:
-            print("  No first-party frame, skip\n")
+            print("  Ingen first-party frame, hoppar\n")
             continue
 
         fname = frame.get("filename", "")
@@ -178,19 +186,19 @@ def main():
         print(f"  Frame: {fname}:{lno}")
 
         if any(s in fname for s in ["schema.prisma", ".env"]):
-            print("  Protected file, skip\n")
+            print("  Skyddad fil, hoppar\n")
             continue
 
         fpath = find_file(fname)
         if not fpath:
-            print("  File not found in repo, skip\n")
+            print("  Fil ej funnen i repot, hoppar\n")
             continue
-        print(f"  Local: {fpath}")
+        print(f"  Lokal sökväg: {fpath}")
 
         try:
             original = open(fpath, encoding="utf-8").read()
         except Exception as e:
-            print(f"  Read error: {e}, skip\n")
+            print(f"  Läsfel: {e}, hoppar\n")
             continue
 
         fixed_content = fix_desc = None
@@ -208,7 +216,7 @@ def main():
                 fixed_content, fix_desc = ref_error_fix(original, m.group(1))
 
         if not fixed_content:
-            print("  No safe fix available, skip\n")
+            print("  Ingen säker fix hittad, hoppar\n")
             continue
 
         open(fpath, "w", encoding="utf-8").write(fixed_content)
@@ -222,14 +230,14 @@ def main():
             open(fpath, "w", encoding="utf-8").write(original)
         print()
 
-    print(f"\nFixed {len(fixed)} issues: {fixed}")
+    print(f"\nFixade {len(fixed)} issues: {fixed}")
 
     if fixed:
         r = subprocess.run(["git", "push", "origin", "main"], capture_output=True, text=True)
         if r.returncode != 0:
-            print(f"Push failed: {r.stderr}")
+            print(f"Push misslyckades: {r.stderr}")
             sys.exit(1)
-        print("Pushed successfully")
+        print("Push lyckades")
         for iid in fixed:
             ok = sput(f"/issues/{iid}/", {"status": "resolved"})
             print(f"Sentry #{iid} resolved: {ok}")
@@ -237,13 +245,14 @@ def main():
     if backend_changed:
         railway_token = os.environ.get("RAILWAY_TOKEN", "")
         if railway_token:
-            print("Deploying backend to Railway...")
+            print("Deployas backend till Railway...")
             env = {**os.environ, "RAILWAY_TOKEN": railway_token}
-            subprocess.run(["railway", "up", "--service", "nodejs"], cwd="server", env=env)
+            r = subprocess.run(["railway", "up", "--service", "nodejs"], cwd="server", env=env)
         else:
-            print("Set RAILWAY_TOKEN to deploy backend")
+            print("Sätt RAILWAY_TOKEN för att deploya backend")
 
-    print("Done!")
+    print("Klar!")
 
 
-main()
+if __name__ == "__main__":
+    main()
