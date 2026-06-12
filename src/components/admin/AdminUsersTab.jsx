@@ -10,6 +10,8 @@ const isCompanyRole = u => u.role === "COMPANY" || u.role === "RECRUITER";
 const isVerified    = u => isCompanyRole(u) ? u.companyStatus === "VERIFIED" : u.emailVerifiedAt != null;
 const isSuspended   = u => u.suspendedAt != null;
 const warnings      = u => u.warningCount || 0;
+// Somnat konto: aldrig inloggad, eller inte inloggad på 7+ dagar.
+const isStaleLogin  = u => !u.lastLoginAt || Date.now() - new Date(u.lastLoginAt).getTime() >= 7 * 86400000;
 
 // ─── Filter pill ───────────────────────────────────────────────────────────────
 const FilterPill = ({ on, count, children, onClick, color }) => (
@@ -115,7 +117,9 @@ function UserRow({ u, selected, isSelectedRow, onCheck, onSelect, compact, mobil
   const verified = isVerified(u);
   const suspended = isSuspended(u);
   const warn     = warnings(u);
-  const lastLogin = u.lastLoginAt ? fmtRelative(u.lastLoginAt) : "Aldrig";
+  const lastLogin = fmtRelative(u.lastLoginAt);
+  const staleLogin = isStaleLogin(u);
+  const emailOk  = u.emailVerifiedAt != null;
   const created  = u.createdAt ? u.createdAt.slice(0, 10) : "";
   const initials = u.name ? u.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : u.email?.[0]?.toUpperCase() || "?";
   const orgNr = u.companyOrgNumber ? String(u.companyOrgNumber).replace(/^(\d{6})(\d{4})$/, "$1-$2") : null;
@@ -145,10 +149,18 @@ function UserRow({ u, selected, isSelectedRow, onCheck, onSelect, compact, mobil
       >
         <div style={{ width: 36, height: 36, borderRadius: 9, background: avatarBg, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "var(--text-2xs)", color: "#fff", flexShrink: 0 }}>{initials}</div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-900)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{rowTitle}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 5, minWidth: 0 }}>
+            <span style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-900)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{rowTitle}</span>
+            <span title={emailOk ? "E-post verifierad" : "E-post ej verifierad"} style={{ display: "inline-flex", flexShrink: 0 }}>
+              <Icon n={emailOk ? "check" : "x"} s={11} c={emailOk ? "var(--success)" : "var(--danger)"} />
+            </span>
+          </div>
           <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{rowSubtitle}</div>
         </div>
-        <span style={{ display: "inline-block", padding: "3px 8px", borderRadius: 5, background: statusBadge.bg, color: statusBadge.c, fontSize: "var(--text-2xs)", fontWeight: 800, whiteSpace: "nowrap", flexShrink: 0, ...mono }}>{statusBadge.l}</span>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3, flexShrink: 0 }}>
+          <span style={{ display: "inline-block", padding: "3px 8px", borderRadius: 5, background: statusBadge.bg, color: statusBadge.c, fontSize: "var(--text-2xs)", fontWeight: 800, whiteSpace: "nowrap", ...mono }}>{statusBadge.l}</span>
+          <span style={{ fontSize: "var(--text-2xs)", color: staleLogin ? "var(--danger)" : "var(--ink-400)", whiteSpace: "nowrap", ...mono }}>{lastLogin}</span>
+        </div>
       </div>
     );
   }
@@ -169,7 +181,12 @@ function UserRow({ u, selected, isSelectedRow, onCheck, onSelect, compact, mobil
       <div style={{ display: "flex", alignItems: "center", gap: 11, minWidth: 0 }}>
         <div style={{ width: 36, height: 36, borderRadius: 9, background: avatarBg, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "var(--text-2xs)", color: "#fff", flexShrink: 0 }}>{initials}</div>
         <div style={{ minWidth: 0 }}>
-          <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-900)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{rowTitle}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 5, minWidth: 0 }}>
+            <span style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-900)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{rowTitle}</span>
+            <span title={emailOk ? "E-post verifierad" : "E-post ej verifierad"} style={{ display: "inline-flex", flexShrink: 0 }}>
+              <Icon n={emailOk ? "check" : "x"} s={11} c={emailOk ? "var(--success)" : "var(--danger)"} />
+            </span>
+          </div>
           <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{rowSubtitle}</div>
         </div>
       </div>
@@ -194,7 +211,7 @@ function UserRow({ u, selected, isSelectedRow, onCheck, onSelect, compact, mobil
       </div>
 
       {!compact && (
-        <div style={{ fontSize: "var(--text-2xs)", color: lastLogin === "Aldrig" ? "var(--danger)" : "var(--ink-500)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", ...mono }}>
+        <div style={{ fontSize: "var(--text-2xs)", color: staleLogin ? "var(--danger)" : "var(--ink-500)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", ...mono }}>
           {lastLogin}
         </div>
       )}
@@ -285,8 +302,9 @@ function DetailPanel({ u, detail, onClose, onVerify, onReject, onSuspend, onUnsu
         <div style={{ display: "flex", flexDirection: "column", gap: 7, fontSize: "var(--text-xs)" }}>
           <InfoRow label="Region"      value={u.driverProfile?.region || u.companyRegion || detail?.driverProfile?.region || "—"} />
           <InfoRow label="Skapad"      value={u.createdAt ? u.createdAt.slice(0, 10) : "—"} useMono />
-          <InfoRow label="Senast inne" value={u.lastLoginAt ? fmtRelative(u.lastLoginAt) : "Aldrig"} />
+          <InfoRow label="Senast inne" value={fmtRelative(u.lastLoginAt)} valueColor={isStaleLogin(u) ? "var(--danger)" : undefined} />
           <InfoRow label="Verifierad"  value={verified ? "Ja" : "Nej"} valueColor={verified ? "var(--success)" : "var(--amber)"} />
+          <InfoRow label="E-post verifierad" value={u.emailVerifiedAt != null ? "Ja" : "Nej"} valueColor={u.emailVerifiedAt != null ? "var(--success)" : "var(--danger)"} />
           {warn > 0 && <InfoRow label="Varningar" value={String(warn)} valueColor="var(--amber)" useMono />}
         </div>
       </div>
@@ -380,16 +398,12 @@ function fmtRelative(dateStr) {
   if (!dateStr) return "Aldrig";
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return dateStr;
-  const diff = Date.now() - d.getTime();
-  const min = Math.floor(diff / 60000);
-  if (min < 1) return "Just nu";
-  if (min < 60) return `${min} min sen`;
-  const h = Math.floor(min / 60);
-  if (h < 24) return `${h}h sen`;
-  const days = Math.floor(h / 24);
+  const days = Math.floor((Date.now() - d.getTime()) / 86400000);
+  if (days <= 0) return "Idag";
   if (days === 1) return "Igår";
-  if (days < 7) return `${days} dgr sen`;
-  return d.toISOString().slice(0, 10);
+  if (days < 7) return `${days} dgr sedan`;
+  if (days < 30) return `${Math.floor(days / 7)} v sedan`;
+  return `${Math.floor(days / 30)} mån sedan`;
 }
 
 // ─── Main export ───────────────────────────────────────────────────────────────
