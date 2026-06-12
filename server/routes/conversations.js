@@ -256,6 +256,7 @@ conversationsRouter.post("/", requireVerifiedIfCompany, validateBody(createConve
         messages: { orderBy: { createdAt: "asc" } },
       },
     });
+    if (!updated) return res.status(500).json({ error: "Konversationen kunde inte hämtas" });
     res.status(201).json(toConversation(updated));
   } catch (e) {
     next(e);
