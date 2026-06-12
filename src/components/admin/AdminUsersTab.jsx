@@ -2,11 +2,14 @@ import React, { useState } from "react";
 import { Icon } from "./AdminShell.jsx";
 import { useIsMobile } from "./adminShared.jsx";
 import { updateCompanyStatus, setUserSuspended, updateUserWarnings, sendVerificationReminders, deleteUser } from "../../api/admin.js";
+import { getProfileCompletion } from "../../utils/driverProfileRequirements.js";
 
 const mono = { fontFamily: "'JetBrains Mono',monospace", fontFeatureSettings: '"tnum"' };
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 const isCompanyRole = u => u.role === "COMPANY" || u.role === "RECRUITER";
+// Profilkompletthet i % — samma kanoniska beräkning som användaren själv ser (JobList-bannern).
+const profilePct = u => getProfileCompletion(u)?.pct ?? 0;
 const isVerified    = u => isCompanyRole(u) ? u.companyStatus === "VERIFIED" : u.emailVerifiedAt != null;
 const isSuspended   = u => u.suspendedAt != null;
 const warnings      = u => u.warningCount || 0;
@@ -43,7 +46,7 @@ function UsersHeader({ users, selectedCount, filter, setFilter, onExportCsv, onS
       ]
     : [
         { v: "all",        l: "Alla",           c: users.length },
-        { v: "stuck",      l: "Stuck (<25%)",   c: users.filter(u => (u.profileCompletion ?? 0) < 25).length, color: "var(--amber)" },
+        { v: "stuck",      l: "Stuck (<25%)",   c: users.filter(u => profilePct(u) < 25).length, color: "var(--amber)" },
         { v: "warnings",   l: "Med varningar",  c: users.filter(u => warnings(u) > 0).length, color: "var(--danger)" },
         { v: "suspended",  l: "Suspenderade",   c: users.filter(u => isSuspended(u)).length, color: "var(--danger)" },
       ];
@@ -112,7 +115,7 @@ function TableHeader({ allSelected, onSelectAll, compact }) {
 
 // ─── User row ──────────────────────────────────────────────────────────────────
 function UserRow({ u, selected, isSelectedRow, onCheck, onSelect, compact, mobile }) {
-  const profile  = u.profileCompletion ?? 0;
+  const profile  = profilePct(u);
   const isComp   = isCompanyRole(u);
   const verified = isVerified(u);
   const suspended = isSuspended(u);
@@ -236,7 +239,7 @@ function DetailPanel({ u, detail, onClose, onVerify, onReject, onSuspend, onUnsu
   const verified = isVerified(u);
   const suspended = isSuspended(u);
   const warn     = warnings(u);
-  const profile  = u.profileCompletion ?? 0;
+  const profile  = profilePct(u);
   const initials = u.name ? u.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : u.email?.[0]?.toUpperCase() || "?";
   const avatarBg = isComp ? "var(--amber)" : "var(--info)";
 
@@ -444,7 +447,7 @@ export default function AdminUsersTab({
     if (filter === "company")    return isCompanyRole(u);
     if (filter === "pending")    return u.companyStatus === "PENDING";
     if (filter === "unverified") return !isVerified(u);
-    if (filter === "stuck")      return (u.profileCompletion ?? 0) < 25;
+    if (filter === "stuck")      return profilePct(u) < 25;
     if (filter === "warnings")   return warnings(u) > 0;
     if (filter === "suspended")  return isSuspended(u);
     return true;

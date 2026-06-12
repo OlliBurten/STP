@@ -549,22 +549,42 @@ adminRouter.get("/users", async (req, res, next) => {
           where: { role: "OWNER" },
           take: 1,
           select: {
-            organization: { select: { name: true, orgNumber: true, status: true } },
+            organization: {
+              select: {
+                name: true,
+                orgNumber: true,
+                status: true,
+                description: true,
+                website: true,
+                location: true,
+                segmentDefaults: true,
+                bransch: true,
+                region: true,
+              },
+            },
           },
         },
       },
     });
 
+    const firstNonEmpty = (a, b) => (Array.isArray(a) && a.length > 0 ? a : (b ?? []));
+
     res.json(
       users.map((u) => {
         const { userOrganizations, ...rest } = u;
-        // Org-baserade åkerier har namn/org-nr/status på Organization; legacy på User.
+        // Org-baserade åkerier har företagsuppgifter på Organization; legacy på User.
         const org = userOrganizations?.[0]?.organization || null;
         return {
           ...rest,
           companyName: u.companyName ?? org?.name ?? null,
           companyOrgNumber: u.companyOrgNumber ?? org?.orgNumber ?? null,
           companyStatus: org?.status ?? u.companyStatus,
+          companyDescription: u.companyDescription || org?.description || null,
+          companyWebsite: u.companyWebsite || org?.website || null,
+          companyLocation: u.companyLocation || org?.location || null,
+          companyRegion: u.companyRegion || org?.region || null,
+          companyBransch: firstNonEmpty(u.companyBransch, org?.bransch),
+          companySegmentDefaults: firstNonEmpty(u.companySegmentDefaults, org?.segmentDefaults),
           isAdmin: isAdminEmail(u.email),
           emailVerifiedAt: u.emailVerifiedAt?.toISOString() ?? null,
           suspendedAt: u.suspendedAt?.toISOString() ?? null,
