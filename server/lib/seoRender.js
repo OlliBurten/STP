@@ -80,9 +80,19 @@ export async function renderJobHtml(id) {
     ? new Date(job.filledAt).toISOString()
     : new Date(new Date(job.published || job.createdAt).getTime() + 60 * 864e5).toISOString();
 
+  // baseSalary: strukturerade fält i första hand, annars tolka fritext ("X kr/tim" / "X kr/mån").
+  // Emitteras ALDRIG om löneuppgift saknas — hitta aldrig på löner.
   let baseSalary = null;
   if (job.salaryMin) {
     baseSalary = { "@type": "MonetaryAmount", currency: "SEK", value: { "@type": "QuantitativeValue", minValue: job.salaryMin, ...(job.salaryMax ? { maxValue: job.salaryMax } : {}), unitText: "MONTH" } };
+  } else if (job.salary) {
+    const hourMatch = job.salary.match(/(\d[\d\s]*)\s*kr\s*\/\s*tim/i);
+    const monthMatch = job.salary.match(/(\d[\d\s]*)\s*kr\s*\/\s*m[åa]n/i);
+    if (hourMatch) {
+      baseSalary = { "@type": "MonetaryAmount", currency: "SEK", value: { "@type": "QuantitativeValue", value: parseInt(hourMatch[1].replace(/\s/g, ""), 10), unitText: "HOUR" } };
+    } else if (monthMatch) {
+      baseSalary = { "@type": "MonetaryAmount", currency: "SEK", value: { "@type": "QuantitativeValue", value: parseInt(monthMatch[1].replace(/\s/g, ""), 10), unitText: "MONTH" } };
+    }
   }
 
   const jsonLd = {
@@ -95,7 +105,17 @@ export async function renderJobHtml(id) {
     employmentType: EMPLOYMENT_TYPE_MAP[job.employment] || "FULL_TIME",
     url: canonical,
     hiringOrganization: { "@type": "Organization", name: job.company, sameAs: SITE },
-    jobLocation: { "@type": "Place", address: { "@type": "PostalAddress", addressLocality: job.location || "", addressRegion: job.region || "", addressCountry: "SE" } },
+    // Gatuadress/postnummer finns inte i datamodellen — utelämna hellre än att skicka tomt/påhittat.
+    // Googles riktlinjer: ange så många adressfält som finns; locality+region+country räcker.
+    jobLocation: {
+      "@type": "Place",
+      address: {
+        "@type": "PostalAddress",
+        ...(job.location ? { addressLocality: job.location } : {}),
+        ...(job.region ? { addressRegion: job.region } : {}),
+        addressCountry: "SE",
+      },
+    },
     applicantLocationRequirements: { "@type": "Country", name: "SE" },
     identifier: { "@type": "PropertyValue", name: "Transportplattformen", value: job.id },
     directApply: true,
@@ -139,7 +159,7 @@ export async function renderCompanyHtml(id) {
     name: org.name,
     url: canonical,
     ...(org.website ? { sameAs: org.website.startsWith("http") ? org.website : `https://${org.website}` } : {}),
-    ...(org.location ? { address: { "@type": "PostalAddress", addressLocality: org.location, addressRegion: org.region || "", addressCountry: "SE" } } : {}),
+    ...(org.location ? { address: { "@type": "PostalAddress", addressLocality: org.location, ...(org.region ? { addressRegion: org.region } : {}), addressCountry: "SE" } } : {}),
   };
 
   const body = `

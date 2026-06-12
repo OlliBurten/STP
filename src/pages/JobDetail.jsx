@@ -389,7 +389,16 @@ export default function JobDetail() {
         ? (job.companyWebsite.startsWith("http") ? job.companyWebsite : `https://${job.companyWebsite}`)
         : "https://transportplattformen.se",
     },
-    jobLocation: { "@type": "Place", address: { "@type": "PostalAddress", addressLocality: job.location || job.companyLocation || "", addressRegion: job.region || "", addressCountry: "SE" } },
+    // Gatuadress/postnummer finns inte i datamodellen — utelämna hellre än tomt/påhittat (Googles riktlinjer).
+    jobLocation: {
+      "@type": "Place",
+      address: {
+        "@type": "PostalAddress",
+        ...((job.location || job.companyLocation) ? { addressLocality: job.location || job.companyLocation } : {}),
+        ...(job.region ? { addressRegion: job.region } : {}),
+        addressCountry: "SE",
+      },
+    },
     applicantLocationRequirements: { "@type": "Country", name: "SE" },
     identifier: { "@type": "PropertyValue", name: "Transportplattformen", value: job.id },
     ...(ldValidThrough ? { validThrough: ldValidThrough } : {}),
