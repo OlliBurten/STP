@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect } from "react";
 import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
-import { BrowserRouter, Routes, Route, useLocation, useNavigationType, matchPath } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigationType, matchPath } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import OAuthProviders from "./components/OAuthProviders";
 import { ThemeProvider } from "./context/ThemeContext";
@@ -314,7 +314,7 @@ function AppLayout() {
      pathname.startsWith("/onboarding/forare"));
 
   // Auth pages are standalone full-screen layouts — no site header/footer
-  const isAuthPage = ["/login", "/verifiera-email", "/aterstall-losenord"].some(p => pathname.startsWith(p));
+  const isAuthPage = ["/login", "/registrera", "/verifiera-email", "/aterstall-losenord"].some(p => pathname.startsWith(p));
 
   // Admin pages use their own sidebar layout — no top nav
   const isAdminPage = pathname.startsWith("/admin");
@@ -376,6 +376,8 @@ function AppLayout() {
                   <Route path="/uppdateringar" element={<PatchNotes />} />
                   <Route path="/vision" element={<VisionPresentation />} />
                   <Route path="/login" element={<Login />} />
+                  {/* Direktlänk till registrering — besökare skriver in /registrera för hand */}
+                  <Route path="/registrera" element={<Navigate to="/login?mode=register" replace />} />
                   <Route path="/anslut/:token" element={<ClaimLanding />} />
                   <Route path="/avregistrera/:token" element={<OptOut />} />
                   <Route path="/invite/accept" element={<InviteAccept />} />

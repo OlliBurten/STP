@@ -104,7 +104,10 @@ export async function api(method, path, body, options = {}) {
     if (res.status === 401) {
       clearStoredAuth();
     }
-    throw new Error(message);
+    const error = new Error(message);
+    if (data?.code) error.code = data.code; // maskinläsbar felkod från backend (t.ex. EMAIL_IN_USE)
+    error.status = res.status;
+    throw error;
   }
   return data;
 }

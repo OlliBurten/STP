@@ -206,7 +206,7 @@ authRouter.post("/register", validateBody(registerSchema), async (req, res, next
     }
     const existing = await prisma.user.findUnique({ where: { email: email.trim().toLowerCase() } });
     if (existing) {
-      return res.status(409).json({ error: "E-postadressen används redan" });
+      return res.status(409).json({ error: "E-postadressen används redan", code: "EMAIL_IN_USE" });
     }
     const passwordHash = await bcrypt.hash(password, 10);
     const hasCompanyAtReg = role === "COMPANY" && companyName?.trim() && normalizedOrgNumber;
@@ -376,7 +376,7 @@ authRouter.post("/register", validateBody(registerSchema), async (req, res, next
         return res.status(409).json({ error: "Organisationsnumret används redan" });
       }
       if (target.includes("email")) {
-        return res.status(409).json({ error: "E-postadressen används redan" });
+        return res.status(409).json({ error: "E-postadressen används redan", code: "EMAIL_IN_USE" });
       }
     }
     next(e);
@@ -484,6 +484,7 @@ authRouter.post("/login", validateBody(loginSchema), async (req, res, next) => {
     if (!user.emailVerifiedAt) {
       return res.status(403).json({
         error: "Verifiera din e-post först. Kolla inkorgen och försök igen.",
+        code: "EMAIL_NOT_VERIFIED",
       });
     }
     const hadLoggedInBefore = Boolean(user.lastLoginAt);
@@ -725,15 +726,35 @@ authRouter.get("/verify-email", async (req, res, next) => {
   }
 });
 
+// Enkel rate limit: max 1 resend per minut per e-postadress (in-memory, nollställs vid omstart)
+const RESEND_COOLDOWN_MS = 60 * 1000;
+const resendLastSentAt = new Map();
+
 authRouter.post("/resend-verification", validateBody(resendVerificationSchema), async (req, res, next) => {
   try {
     const email = String(req.body?.email || "").trim().toLowerCase();
     const verificationBaseUrl = req.body?.verificationBaseUrl;
+    const lastSent = resendLastSentAt.get(email);
+    if (lastSent && Date.now() - lastSent < RESEND_COOLDOWN_MS) {
+      return res.status(429).json({
+        error: "Vänta en minut innan du begär ett nytt verifieringsmejl.",
+        code: "RESEND_RATE_LIMITED",
+      });
+    }
+    // Städa gamla poster så mappen inte växer obegränsat
+    if (resendLastSentAt.size > 1000) {
+      const cutoff = Date.now() - RESEND_COOLDOWN_MS;
+      for (const [key, ts] of resendLastSentAt) {
+        if (ts < cutoff) resendLastSentAt.delete(key);
+      }
+    }
+    resendLastSentAt.set(email, Date.now());
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user || user.emailVerifiedAt) return res.json({ ok: true });
     try {
       const sent = await issueEmailVerification(user.id, user.email, verificationBaseUrl);
       if (!sent) {
+        resendLastSentAt.delete(email); // misslyckat utskick ska inte låsa användaren i en minut
         return res.status(502).json({
           error: "E-posttjänsten är inte konfigurerad. Kontakta support så kan vi verifiera din e-post manuellt.",
         });
@@ -741,6 +762,7 @@ authRouter.post("/resend-verification", validateBody(resendVerificationSchema), 
       res.json({ ok: true, message: "Ny verifieringslänk skickad" });
     } catch (mailError) {
       console.error("Resend verification failed:", mailError);
+      resendLastSentAt.delete(email); // misslyckat utskick ska inte låsa användaren i en minut
       res.status(502).json({ error: "Kunde inte skicka verifieringsmail just nu. Försök igen eller kontakta support." });
     }
   } catch (e) {

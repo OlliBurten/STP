@@ -159,6 +159,10 @@ select {
 /* ── Links ─────────────────────────────────────────────────────────────────── */
 a { color: var(--green); text-decoration: none; }
 a:hover { text-decoration: underline; }
+/* Olagrad regel ovan slår Tailwinds lagrade utilities — länkar med .text-white
+   (CTA-knappar på färgad bakgrund) blev gröna på grön botten. Högre specificitet
+   återställer det klassen lovar. */
+a.text-white { color: #fff; }
 
 /* ── Interaktionspolering (global, additiv) ─────────────────────────────────────
    Mjuk, konsekvent övergång på interaktiva element som saknar egen. Inline-

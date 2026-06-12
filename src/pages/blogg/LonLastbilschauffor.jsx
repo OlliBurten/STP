@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import ArticleJsonLd from "../../components/ArticleJsonLd";
 import BlogPost from "../../components/BlogPost";
+import BlogInlineCta from "../../components/BlogInlineCta";
 
 const TITLE = "Vad tjänar en lastbilschaufför i Sverige?";
 const DESC = "Löner för lastbilschaufförer 2025 — vad påverkar lönen, skillnader per körkortsbehörighet, bransch och kollektivavtal.";
@@ -98,6 +99,8 @@ export default function LonLastbilschauffor() {
           </li>
         </ul>
 
+        <BlogInlineCta role="driver" />
+
         <h2 className="text-xl font-semibold text-slate-900 mt-8">Kollektivavtal — stor skillnad</h2>
         <p>
           Åkerier med{" "}
@@ -126,7 +129,8 @@ export default function LonLastbilschauffor() {
         <p className="mt-6">
           <Link
             to="/jobb"
-            className="inline-block bg-[var(--color-primary)] text-white px-5 py-2.5 rounded-lg font-medium hover:opacity-90 transition-opacity"
+            className="inline-block bg-[var(--color-primary)] px-5 py-2.5 rounded-lg font-medium hover:opacity-90 transition-opacity"
+            style={{ color: "#fff" }} /* inline: globala a-regeln i index.css vinner annars över .text-white */
           >
             Bläddra bland lediga tjänster →
           </Link>

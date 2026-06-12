@@ -223,6 +223,25 @@ function Notice({ type, children }) {
   );
 }
 
+/* ── Knappar inuti en Notice — väg framåt direkt i felrutan ───────────────── */
+const noticeBtnPrimary = {
+  padding: "8px 14px", borderRadius: 9,
+  background: "var(--green)", color: "#fff",
+  border: "1px solid var(--green-deep)", boxShadow: "0 1px 0 var(--green-deep)",
+  fontSize: "var(--text-sm)", fontWeight: 700,
+  cursor: "pointer", fontFamily: "inherit",
+};
+const noticeBtnSecondary = {
+  padding: "8px 14px", borderRadius: 9,
+  background: "var(--card)", color: "var(--ink-700)",
+  border: "1px solid var(--line-2)", boxShadow: "var(--sh-sm)",
+  fontSize: "var(--text-sm)", fontWeight: 700,
+  cursor: "pointer", fontFamily: "inherit",
+};
+function NoticeActions({ children }) {
+  return <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>{children}</div>;
+}
+
 /* ════════════════════════════════════════════════════════════
    MAIN EXPORT
 ═══════════════════════════════════════════════════════════ */
@@ -263,6 +282,8 @@ export default function Login() {
   const [error,                 setError]                 = useState("");
   const [info,                  setInfo]                  = useState(initialLogoutNotice);
   const [showResendVerification,setShowResendVerification]= useState(false);
+  const [emailInUse,            setEmailInUse]            = useState(false);
+  const [resendLoading,         setResendLoading]         = useState(false);
   const [loading,               setLoading]               = useState(false);
   const [acceptTerms,           setAcceptTerms]           = useState(false);
   const [oauthPickingRole,      setOauthPickingRole]      = useState(false);
@@ -274,7 +295,7 @@ export default function Login() {
 
   const goTo = (newMode) => {
     setAnimOut(true);
-    setTimeout(() => { setMode(newMode); setAnimOut(false); setError(""); setInfo(""); }, 180);
+    setTimeout(() => { setMode(newMode); setAnimOut(false); setError(""); setInfo(""); setEmailInUse(false); setShowResendVerification(false); }, 180);
   };
 
   const isInitialMount = useRef(true);
@@ -313,7 +334,7 @@ export default function Login() {
   // ── Form submit ──────────────────────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(""); setInfo(""); setShowResendVerification(false);
+    setError(""); setInfo(""); setShowResendVerification(false); setEmailInUse(false);
     setLoading(true);
     try {
       if (mode === "forgot") {
@@ -341,11 +362,12 @@ export default function Login() {
       if (mode !== "forgot") navigate(from, { replace: true });
     } catch (err) {
       const message = err.message || "Något gick fel";
-      if (mode === "login" && /verifiera din e-post/i.test(message)) {
+      if (mode === "login" && (err.code === "EMAIL_NOT_VERIFIED" || /verifiera din e-post/i.test(message))) {
         setShowResendVerification(true);
-        setInfo("Kontot finns men e-posten är inte verifierad ännu.");
-      } else if (isRegister && /E-postadressen används redan/i.test(message)) {
-        setError("Det finns redan ett konto med den e-posten. Logga in i stället.");
+        setError("Din e-post är inte verifierad ännu. Klicka på länken i mejlet vi skickade — eller skicka ett nytt.");
+      } else if (isRegister && (err.code === "EMAIL_IN_USE" || /E-postadressen används redan/i.test(message))) {
+        setEmailInUse(true);
+        setError("Det finns redan ett konto med den här e-posten.");
       } else {
         setError(message);
       }
@@ -355,16 +377,18 @@ export default function Login() {
   };
 
   const handleResendVerification = async () => {
-    if (!email.trim()) { setError("Ange e-post först"); return; }
-    setError(""); setInfo(""); setLoading(true);
+    if (!email.trim()) { setError("Ange din e-post i fältet nedan först."); return; }
+    setResendLoading(true);
     try {
       const origin = typeof window !== "undefined" && window.location?.origin ? window.location.origin : undefined;
       await resendVerification(email.trim(), origin);
-      setInfo("Ny verifieringslänk skickad om kontot finns och inte redan är verifierat.");
+      setError("");
+      setShowResendVerification(false);
+      setInfo("Nytt verifieringsmejl skickat! Kolla inkorgen — och skräpposten.");
     } catch (err) {
-      setError(err.message || "Kunde inte skicka verifieringsmail");
+      setError(err.message || "Kunde inte skicka verifieringsmejl just nu. Försök igen om en stund.");
     } finally {
-      setLoading(false);
+      setResendLoading(false);
     }
   };
 
@@ -527,7 +551,21 @@ export default function Login() {
               <OrDivider />
 
               <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column" }}>
-                {error && <Notice type="error">{error}</Notice>}
+                {error && (
+                  <Notice type="error">
+                    {error}
+                    {emailInUse && (
+                      <NoticeActions>
+                        <button type="button" onClick={() => goTo("login")} style={noticeBtnPrimary}>
+                          Logga in i stället
+                        </button>
+                        <button type="button" onClick={() => goTo("forgot")} style={noticeBtnSecondary}>
+                          Glömt lösenord?
+                        </button>
+                      </NoticeActions>
+                    )}
+                  </Notice>
+                )}
                 {info  && <Notice type="info">{info}</Notice>}
 
                 <InputField
@@ -663,8 +701,40 @@ export default function Login() {
             )}
 
             <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column" }}>
-              {error && <Notice type="error">{error}</Notice>}
-              {info  && <Notice type="info">{info}</Notice>}
+              {error && (
+                <Notice type="error">
+                  {error}
+                  {mode === "login" && showResendVerification && (
+                    <NoticeActions>
+                      <button
+                        type="button"
+                        onClick={handleResendVerification}
+                        disabled={resendLoading}
+                        style={{ ...noticeBtnPrimary, opacity: resendLoading ? 0.6 : 1, cursor: resendLoading ? "wait" : "pointer" }}
+                      >
+                        {resendLoading ? "Skickar..." : "Skicka nytt verifieringsmejl"}
+                      </button>
+                    </NoticeActions>
+                  )}
+                </Notice>
+              )}
+              {info && (
+                <Notice type="info">
+                  {info}
+                  {mode === "login" && showResendVerification && (
+                    <NoticeActions>
+                      <button
+                        type="button"
+                        onClick={handleResendVerification}
+                        disabled={resendLoading}
+                        style={{ ...noticeBtnPrimary, opacity: resendLoading ? 0.6 : 1, cursor: resendLoading ? "wait" : "pointer" }}
+                      >
+                        {resendLoading ? "Skickar..." : "Skicka nytt verifieringsmejl"}
+                      </button>
+                    </NoticeActions>
+                  )}
+                </Notice>
+              )}
 
               {oauthPickingRole && (
                 <OAuthSection
@@ -742,16 +812,6 @@ export default function Login() {
                 </>
               )}
 
-              {!oauthPickingRole && mode === "login" && showResendVerification && (
-                <button
-                  type="button"
-                  onClick={handleResendVerification}
-                  disabled={loading}
-                  style={{ marginTop: 14, textAlign: "center", color: "var(--green)", fontWeight: 700, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: "var(--text-base)", opacity: loading ? 0.5 : 1 }}
-                >
-                  Skicka verifieringsmail igen
-                </button>
-              )}
             </form>
 
             {mode === "login" && (
