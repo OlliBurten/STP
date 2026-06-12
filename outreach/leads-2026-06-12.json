@@ -1,0 +1,14 @@
+[
+  { "email": "info@haninge-akeri.se",    "company": "Haninge Åkeri",                   "region": "Stockholm",  "source": "websearch", "status": "pending" },
+  { "email": "info@ackarlskrona.se",     "company": "Åkericentralen Karlskrona",        "region": "Karlskrona", "source": "websearch", "status": "pending" },
+  { "email": "info@elleakeri.se",        "company": "Elle Åkeri AB",                   "region": "Eskilstuna", "source": "websearch", "status": "pending" },
+  { "email": "info@sundfrakt.se",        "company": "Sundfrakt AB",                    "region": "Norrland",   "source": "websearch", "status": "pending" },
+  { "email": "bokning@aldosakeri.se",    "company": "Aldos Åkeri",                     "region": "Malmö",      "source": "websearch", "status": "pending" },
+  { "email": "traffic@ahrensakeri.se",   "company": "Ahréns Åkeri AB",                 "region": "Södertälje", "source": "websearch", "status": "pending" },
+  { "email": "kontakt@bellmans.se",      "company": "Bellmans Åkeri & Entreprenad AB", "region": "Saltsjö-Boo","source": "websearch", "status": "pending" },
+  { "email": "info@hardstransport.se",   "company": "Hårds Transport AB",              "region": "Ljungby",    "source": "websearch", "status": "pending" },
+  { "email": "info@jarfallaakeri.se",    "company": "Järfälla Åkeri AB",               "region": "Järfälla",   "source": "websearch", "status": "pending" },
+  { "email": "info@ka-akeri.se",         "company": "KA Åkeri",                        "region": "Järfälla",   "source": "websearch", "status": "pending" },
+  { "email": "info@stockholmsakeri.se",  "company": "Stockholms Åkeri AB",             "region": "Stockholm",  "source": "websearch", "status": "pending" },
+  { "email": "info@skaratransport.se",   "company": "Skaraslättens Transport",         "region": "Skara",      "source": "websearch", "status": "pending" }
+]
