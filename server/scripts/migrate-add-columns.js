@@ -6,6 +6,9 @@ const columnMigrations = [
   `ALTER TABLE "DriverProfile" ADD COLUMN IF NOT EXISTS "openToWork" BOOLEAN NOT NULL DEFAULT false`,
   `ALTER TABLE "DriverProfile" ADD COLUMN IF NOT EXISTS "slug" TEXT`,
   `CREATE UNIQUE INDEX IF NOT EXISTS "DriverProfile_slug_key" ON "DriverProfile"("slug")`,
+  // Profilberikning för åkerier (förslag som granskas innan publicering)
+  `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "profileSuggestions" JSONB`,
+  `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "suggestionsGeneratedAt" TIMESTAMP(3)`,
 ];
 
 async function main() {

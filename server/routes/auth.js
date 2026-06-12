@@ -25,6 +25,8 @@ import {
 import { lookupBolagsverket } from "../lib/bolagsverket.js";
 import { authMiddleware } from "../middleware/auth.js";
 import { isAdminEmail } from "../lib/adminAccess.js";
+import { isTestAccountEmail } from "../lib/testAccounts.js";
+import { generateCompanySuggestionsForUser } from "../lib/companyEnrichment.js";
 
 export const authRouter = Router();
 
@@ -251,6 +253,14 @@ authRouter.post("/register", validateBody(registerSchema), async (req, res, next
           email: user.email,
         },
       });
+    }
+    // Profilberikning för åkerier: ta fram FÖRSLAG (webbplats, telefon, region,
+    // beskrivning m.m.) i bakgrunden. Blockerar inte registreringssvaret och
+    // publicerar aldrig något — åkeriet godkänner per fält i företagsprofilen.
+    if (role === "COMPANY" && user.companyName && !isTestAccountEmail(user.email)) {
+      generateCompanySuggestionsForUser(user.id).catch((e) =>
+        console.error("[CompanyEnrichment] Förslagsgenerering misslyckades:", e?.message || String(e))
+      );
     }
     let emailVerificationSent = false;
     try {

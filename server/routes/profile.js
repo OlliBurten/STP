@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
-import { authMiddleware, requireDriver } from "../middleware/auth.js";
+import { authMiddleware, requireDriver, requireCompany } from "../middleware/auth.js";
+import { generateCompanySuggestionsForUser } from "../lib/companyEnrichment.js";
 import { matchScore, driverYearsFromExperience } from "../utils/matchScore.js";
 import { isDriverMinimumProfileComplete } from "../utils/driverProfileRequirements.js";
 import { notifyRecommendedDriverMatch } from "../lib/email.js";
@@ -22,6 +23,61 @@ function generateSlug(name, userId) {
     .replace(/^-|-$/g, '')
     + '-' + userId.slice(-6);
 }
+
+// ─── Företagsprofil-förslag (COMPANY/RECRUITER) ──────────────────────────────
+// OBS: registreras FÖRE profileRouter.use(requireDriver) nedan, eftersom
+// resten av /api/profile är förar-endpoints.
+
+// Enkel rate limit för omkörning: max 1 per 10 min per användare (in-memory,
+// samma mönster som resend-verification i auth.js).
+const REGENERATE_COOLDOWN_MS = 10 * 60 * 1000;
+const regenerateLastAt = new Map();
+
+profileRouter.get("/company/suggestions", authMiddleware, requireCompany, async (req, res, next) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+      select: { profileSuggestions: true, suggestionsGeneratedAt: true },
+    });
+    if (!user) return res.status(404).json({ error: "Användaren hittades inte" });
+    res.json({
+      suggestions: user.profileSuggestions || null,
+      generatedAt: user.suggestionsGeneratedAt,
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
+profileRouter.post("/company/suggestions/regenerate", authMiddleware, requireCompany, async (req, res, next) => {
+  try {
+    const lastRun = regenerateLastAt.get(req.userId);
+    if (lastRun && Date.now() - lastRun < REGENERATE_COOLDOWN_MS) {
+      return res.status(429).json({
+        error: "Vänta 10 minuter innan du genererar nya förslag.",
+        code: "REGENERATE_RATE_LIMITED",
+      });
+    }
+    // Städa gamla poster så mappen inte växer obegränsat
+    if (regenerateLastAt.size > 1000) {
+      const cutoff = Date.now() - REGENERATE_COOLDOWN_MS;
+      for (const [key, ts] of regenerateLastAt) {
+        if (ts < cutoff) regenerateLastAt.delete(key);
+      }
+    }
+    regenerateLastAt.set(req.userId, Date.now());
+    const suggestions = await generateCompanySuggestionsForUser(req.userId, { force: true });
+    if (!suggestions) {
+      regenerateLastAt.delete(req.userId); // ingen körning gjordes — lås inte användaren
+      return res.status(400).json({
+        error: "Kunde inte generera förslag — kontrollera att företagsnamn finns på kontot.",
+      });
+    }
+    res.json({ suggestions, generatedAt: new Date().toISOString() });
+  } catch (e) {
+    next(e);
+  }
+});
 
 profileRouter.use(authMiddleware, requireDriver);
 

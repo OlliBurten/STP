@@ -35,6 +35,11 @@ export function fetchMatchingDrivers() {
   return apiGet("/api/companies/stats/matching-drivers");
 }
 
+/** Auto-genererade profilförslag (publiceras aldrig utan godkännande). */
+export function fetchCompanyProfileSuggestions() {
+  return apiGet("/api/profile/company/suggestions");
+}
+
 /** Team invites */
 export function listInvites() {
   return apiGet("/api/companies/me/invites");

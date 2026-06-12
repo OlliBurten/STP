@@ -33,6 +33,8 @@ model User {
   industryOrgMember  Boolean  @default(false) // Branschorganisation-medlem
   industryOrgName    String?                  // Namn på branschorganisation
   policyAgreedAt     DateTime?                // När de godkände STP:s policy
+  profileSuggestions Json?                    // Auto-genererade profilförslag (åkerier) — publiceras ALDRIG utan godkännande
+  suggestionsGeneratedAt DateTime?            // När förslagen genererades (guard: en gång per konto)
   suspendedAt DateTime?
   suspensionReason String?
   warningCount Int @default(0)

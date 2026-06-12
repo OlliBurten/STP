@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { fetchMyCompanyProfile, updateMyCompanyProfile, updateCompanyNotificationSettings } from "../api/companies.js";
+import { fetchMyCompanyProfile, updateMyCompanyProfile, updateCompanyNotificationSettings, fetchCompanyProfileSuggestions } from "../api/companies.js";
 import { listCompanyInvites, createCompanyInvite, revokeCompanyInvite } from "../api/invites.js";
 import { changePassword } from "../api/auth.js";
 import { useAuth } from "../context/AuthContext";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { segmentOptions } from "../data/segments";
-import { branschValues } from "../data/bransch.js";
+import { branschValues, getBranschLabel } from "../data/bransch.js";
 import BranschSearch from "../components/BranschSearch.jsx";
 import { regions } from "../data/mockJobs.js";
 import LoadingBlock from "../components/LoadingBlock";
@@ -30,6 +30,22 @@ function Field({ label, hintText, children }) {
       <label style={lbl}>{label}</label>
       {children}
       {hintText && <div style={hint}>{hintText}</div>}
+    </div>
+  );
+}
+
+/** Diskret förslagsrad under ett tomt fält — fyller i fältet, sparar inte. */
+function SuggestionHint({ text, onUse }) {
+  if (!text) return null;
+  return (
+    <div style={{ marginTop: 6, display: "flex", alignItems: "flex-start", gap: 10 }}>
+      <span style={{ flex: 1, fontSize: "var(--text-2xs)", color: "var(--ink-400)", lineHeight: 1.55 }}>
+        <span style={{ fontWeight: 700, color: "var(--ink-500)" }}>Förslag:</span> {text}
+      </span>
+      <button type="button" onClick={onUse}
+        style={{ flexShrink: 0, padding: "3px 12px", borderRadius: 99, background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.25)", color: "var(--green-text)", fontSize: "var(--text-2xs)", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+        Använd
+      </button>
     </div>
   );
 }
@@ -87,7 +103,8 @@ const ShieldIcon = () => (
 );
 
 // ─── Tab components ────────────────────────────────────────────────────────────
-function GrundInfo({ draft, setDraft, isMobile }) {
+function GrundInfo({ draft, setDraft, isMobile, sug }) {
+  const applySug = (key) => setDraft((p) => ({ ...p, [key]: sug[key] }));
   const toggleSeg = (v) => setDraft((p) => {
     const cur = p?.companySegmentDefaults || [];
     return { ...p, companySegmentDefaults: cur.includes(v) ? cur.filter((s) => s !== v) : [...cur, v] };
@@ -105,17 +122,20 @@ function GrundInfo({ draft, setDraft, isMobile }) {
       <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 14 }}>
         <Field label="Ort">
           <input style={inp} value={draft?.companyLocation || ""} onChange={(e) => setDraft((p) => ({ ...p, companyLocation: e.target.value }))} placeholder="t.ex. Malmö" />
+          {sug?.companyLocation && <SuggestionHint text={sug.companyLocation} onUse={() => applySug("companyLocation")} />}
         </Field>
         <Field label="Region">
           <select style={{ ...inp, appearance: "none" }} value={draft?.companyRegion || ""} onChange={(e) => setDraft((p) => ({ ...p, companyRegion: e.target.value }))}>
             <option value="">Välj region</option>
             {regions.map((r) => <option key={r} value={r}>{r}</option>)}
           </select>
+          {sug?.companyRegion && <SuggestionHint text={sug.companyRegion} onUse={() => applySug("companyRegion")} />}
         </Field>
       </div>
 
       <Field label="Webbplats" hintText="Visas på er profil">
         <input style={inp} value={draft?.companyWebsite || ""} onChange={(e) => setDraft((p) => ({ ...p, companyWebsite: e.target.value }))} placeholder="https://..." />
+        {sug?.companyWebsite && <SuggestionHint text={sug.companyWebsite} onUse={() => applySug("companyWebsite")} />}
       </Field>
 
       <Field label="Verksamhetssegment" hintText="Påverkar vilka förare ni matchas mot">
@@ -138,19 +158,27 @@ function GrundInfo({ draft, setDraft, isMobile }) {
           onChange={(v) => setDraft((prev) => ({ ...prev, companyBransch: v }))}
           placeholder="Sök bransch, t.ex. tankbil, timmerbil..."
         />
+        {sug?.companyBransch && (
+          <SuggestionHint
+            text={sug.companyBransch.map(getBranschLabel).join(", ")}
+            onUse={() => applySug("companyBransch")}
+          />
+        )}
       </Field>
 
       <Field label="Kontakt-e-post">
         <input style={inp} type="email" value={draft?.companyContactEmail || ""} onChange={(e) => setDraft((p) => ({ ...p, companyContactEmail: e.target.value || null }))} placeholder="rekrytering@ert-akeri.se" />
+        {sug?.companyContactEmail && <SuggestionHint text={sug.companyContactEmail} onUse={() => applySug("companyContactEmail")} />}
       </Field>
       <Field label="Telefon (valfritt)">
         <input style={inp} type="tel" value={draft?.companyContactPhone || ""} onChange={(e) => setDraft((p) => ({ ...p, companyContactPhone: e.target.value || null }))} placeholder="070-000 00 00" />
+        {sug?.companyContactPhone && <SuggestionHint text={sug.companyContactPhone} onUse={() => applySug("companyContactPhone")} />}
       </Field>
     </div>
   );
 }
 
-function OmOss({ draft, setDraft }) {
+function OmOss({ draft, setDraft, sug }) {
   const about = draft?.companyDescription || "";
   const [bvHint, setBvHint] = useState(null);
   const fetched = useRef(false);
@@ -185,6 +213,9 @@ function OmOss({ draft, setDraft }) {
           <div style={{ marginTop: 10, padding: "10px 14px", background: "var(--paper-2)", border: "1px solid var(--line)", borderRadius: 10, fontSize: "var(--text-xs)", color: "var(--ink-400)", lineHeight: 1.5 }}>
             <span style={{ fontWeight: 700, color: "var(--ink-400)" }}>Från Bolagsverket: </span>{bvHint}
           </div>
+        )}
+        {sug?.companyDescription && (
+          <SuggestionHint text={sug.companyDescription} onUse={() => setDraft((p) => ({ ...p, companyDescription: sug.companyDescription }))} />
         )}
       </Field>
 
@@ -478,6 +509,7 @@ export default function CompanyProfile() {
   const [draft, setDraft] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [suggestions, setSuggestions] = useState(null);
   const isOwner = !user?.companyOwnerId;
 
   const [invites, setInvites] = useState([]);
@@ -500,6 +532,37 @@ export default function CompanyProfile() {
     if (!hasApi || !isOwner) return;
     listCompanyInvites().then(setInvites).catch(() => setInvites([]));
   }, [hasApi, isOwner]);
+
+  // Auto-genererade profilförslag (visas bara under TOMMA fält, sparas aldrig automatiskt)
+  useEffect(() => {
+    if (!hasApi) return;
+    fetchCompanyProfileSuggestions()
+      .then((data) => setSuggestions(data?.suggestions || null))
+      .catch(() => setSuggestions(null));
+  }, [hasApi]);
+
+  // Aktiva förslag = förslag som finns OCH där motsvarande fält i utkastet är tomt.
+  const sug = useMemo(() => {
+    if (!suggestions || !draft) return {};
+    const emptyStr = (v) => !String(v || "").trim();
+    const out = {};
+    if (suggestions.website && emptyStr(draft.companyWebsite)) out.companyWebsite = suggestions.website;
+    if (suggestions.phone && emptyStr(draft.companyContactPhone)) out.companyContactPhone = suggestions.phone;
+    if (suggestions.email && emptyStr(draft.companyContactEmail)) out.companyContactEmail = suggestions.email;
+    if (suggestions.location && emptyStr(draft.companyLocation)) out.companyLocation = suggestions.location;
+    if (suggestions.region && regions.includes(suggestions.region) && emptyStr(draft.companyRegion)) out.companyRegion = suggestions.region;
+    if (suggestions.description && emptyStr(draft.companyDescription)) out.companyDescription = suggestions.description;
+    const validBransch = Array.isArray(suggestions.bransch)
+      ? suggestions.bransch.filter((b) => branschValues.includes(b))
+      : [];
+    if (validBransch.length && !(Array.isArray(draft.companyBransch) && draft.companyBransch.length)) {
+      out.companyBransch = validBransch;
+    }
+    return out;
+  }, [suggestions, draft]);
+
+  const sugCount = Object.keys(sug).length;
+  const applyAllSuggestions = () => setDraft((p) => ({ ...p, ...sug }));
 
   const changed = useMemo(
     () => JSON.stringify(profile || {}) !== JSON.stringify(draft || {}),
@@ -586,6 +649,24 @@ export default function CompanyProfile() {
       </div>
 
       <div style={{ maxWidth: "var(--w-read)", margin: "0 auto", padding: isMobile ? "20px 20px 100px" : "28px 32px 80px" }}>
+        {/* Auto-genererade profilförslag — fyller bara i utkastet, användaren sparar själv */}
+        {sugCount > 0 && (
+          <div style={{ marginBottom: 20, padding: "14px 18px", borderRadius: 14, background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.2)", display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
+            <div style={{ flex: 1, minWidth: 220 }}>
+              <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--green-text)", marginBottom: 3 }}>
+                Vi har tagit fram {sugCount} förslag till er profil
+              </div>
+              <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", lineHeight: 1.5 }}>
+                Förslag hämtade från offentliga källor och företagets webbplats — granska innan du sparar.
+              </div>
+            </div>
+            <button type="button" onClick={applyAllSuggestions}
+              style={{ padding: "9px 18px", borderRadius: 99, background: "var(--green)", border: "none", color: "#fff", fontSize: "var(--text-xs)", fontWeight: 800, cursor: "pointer", fontFamily: "inherit", flexShrink: 0 }}>
+              Använd alla förslag
+            </button>
+          </div>
+        )}
+
         {/* Varning */}
         {draft && (!Array.isArray(draft.companyBransch) || draft.companyBransch.length === 0 || !draft.companyRegion) && (
           <div style={{ marginBottom: 20, padding: "14px 18px", borderRadius: 14, background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.25)", display: "flex", gap: 12, alignItems: "flex-start" }}>
@@ -639,7 +720,7 @@ export default function CompanyProfile() {
           <div className="stp-fade-up" key={tab}>
             {tab === "basic" && (
               <>
-                <GrundInfo draft={draft} setDraft={setDraft} isMobile={isMobile} />
+                <GrundInfo draft={draft} setDraft={setDraft} isMobile={isMobile} sug={sug} />
                 <div style={{ marginTop: 24, padding: "20px 22px", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14 }}>
                   <div style={{ fontSize: "var(--text-base)", fontWeight: 800, letterSpacing: -0.3, marginBottom: 4, color: "var(--ink-900)" }}>E-postnotiser</div>
                   <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", marginBottom: 16 }}>Välj vilka påminnelser ni vill få via e-post.</div>
@@ -670,7 +751,7 @@ export default function CompanyProfile() {
                 </div>
               </>
             )}
-            {tab === "about" && <OmOss draft={draft} setDraft={setDraft} />}
+            {tab === "about" && <OmOss draft={draft} setDraft={setDraft} sug={sug} />}
             {tab === "team" && <TeamTab isOwner={isOwner} invites={invites} setInvites={setInvites} toast={toast} />}
           </div>
         </div>
