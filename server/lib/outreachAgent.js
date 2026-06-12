@@ -18,6 +18,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { prisma } from "./prisma.js";
 import { sendEmail } from "./email.js";
 import { findEmail } from "./emailFinder.js";
+import { fetchHittaCompanies, hittaEmail, hittaWebsite } from "./hittaScraper.js";
 
 const REGIONS = [
   // Week 0 (cycle index 0)
@@ -96,70 +97,20 @@ async function scrapeHitta(region, query = "åkeri") {
   return companies;
 }
 
-// Plockar ett attributvärde ur Hitta.se:s attribute-array.
-function _hittaAttr(company, name) {
-  return (company.attribute || []).find((a) => a?.name === name)?.value || null;
-}
-
-// Härleder företagets hemsida ur produktlänkar eller e-postdomän.
-function _hittaWebsite(company) {
-  for (const p of company.products || []) {
-    for (const img of p.image || []) {
-      const link = img?.link;
-      if (link && /^https?:\/\//.test(link) && !link.includes("hitta.se") && !link.includes("cdn.")) {
-        try { return new URL(link).origin; } catch { /* ignorera trasig URL */ }
-      }
-    }
-  }
-  const email = _hittaAttr(company, "email") || _hittaAttr(company, "custrefemail");
-  if (email && email.includes("@")) {
-    const domain = email.split("@")[1];
-    if (domain && !/(gmail|hotmail|outlook|telia|live|yahoo|protonmail|swipnet|spray|icloud|msn|comhem|bredband)\./i.test(domain)) {
-      return `https://${domain}`;
-    }
-  }
-  return null;
-}
-
-// Hitta.se stängde sitt JSON-API (/api/search/companies) när sajten byggdes om till
-// Next.js (maj 2026). Datan finns nu server-renderad i en __NEXT_DATA__-tagg på
-// sökresultatsidan, inkl. e-post för företag med Hitta-konto. Regionen måste ligga i
-// `vad`-frågan — `var`-parametern filtrerar inte längre.
+// __NEXT_DATA__-parsningen delas med emailFinder via hittaScraper.js.
 async function _scrapeHittaNextData(region, query) {
   try {
-    const url = `https://www.hitta.se/s%C3%B6k?vad=${encodeURIComponent(`${query} ${region}`)}`;
-    const resp = await fetch(url, {
-      signal: AbortSignal.timeout(15000),
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml",
-        "Accept-Language": "sv-SE,sv;q=0.9",
-        "Referer": "https://www.hitta.se/",
-      },
-    });
-    if (!resp.ok) {
-      console.log(`[OutreachAgent] Hitta.se svarade ${resp.status} för ${region}`);
-      return null;
-    }
-    const html = await resp.text();
-    const m = html.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/);
-    if (!m) {
-      console.log(`[OutreachAgent] __NEXT_DATA__ saknas för ${region} (Hitta.se kan ha ändrat struktur)`);
-      return null;
-    }
-    let data;
-    try { data = JSON.parse(m[1]); } catch { return null; }
-    const items = data?.props?.pageProps?.result?.companies;
-    if (!Array.isArray(items) || !items.length) return null;
+    const items = await fetchHittaCompanies(`${query} ${region}`);
+    if (!items) return null;
 
     return items.map((c) => {
       const phoneObj = (c.phone || [])[0];
       const addr = (c.address || [])[0];
       return {
         companyName: c.displayName || c.name,
-        email: _hittaAttr(c, "email") || _hittaAttr(c, "custrefemail"),
+        email: hittaEmail(c),
         phone: phoneObj?.callTo || phoneObj?.displayAs || null,
-        website: _hittaWebsite(c),
+        website: hittaWebsite(c),
         city: addr?.city || (c.zipCity || "").replace(/^\d+\s*/, "").trim() || null,
         region,
         source: "hitta",
@@ -562,10 +513,46 @@ Format:
 
 // ─── Admin summary report ─────────────────────────────────────────────────────
 
+/**
+ * Kö-läge per status (alla regioner). En växande ENRICHED-kö betyder att
+ * genereringen är blockerad (t.ex. slut på Claude-krediter) — det ska synas
+ * i varje rapport, inte bara när något råkar fela samma dag.
+ */
+async function getQueueStatus() {
+  const counts = await prisma.outreachProspect.groupBy({
+    by: ["status"],
+    _count: { _all: true },
+  });
+  const byStatus = Object.fromEntries(counts.map((c) => [c.status, c._count._all]));
+  return ["NEW", "ENRICHED", "READY", "NO_EMAIL", "SENT"]
+    .map((s) => `  ${s.padEnd(9)} ${byStatus[s] || 0}`)
+    .concat(
+      Object.keys(byStatus)
+        .filter((s) => !["NEW", "ENRICHED", "READY", "NO_EMAIL", "SENT"].includes(s))
+        .map((s) => `  ${s.padEnd(9)} ${byStatus[s]}`)
+    );
+}
+
+/**
+ * Skickar dagsrapporten till admin. Returnerar { sent, error } så att
+ * körningen kan persistera om rapporten faktiskt gick iväg — en utebliven
+ * rapport ska gå att upptäcka i efterhand (admin /api/outreach/stats).
+ */
 async function sendAgentReport(stats) {
   const adminEmails = String(process.env.ADMIN_EMAILS || "")
     .split(",").map((e) => e.trim()).filter(Boolean);
-  if (!adminEmails.length) return;
+  if (!adminEmails.length) {
+    console.error("[OutreachAgent] Ingen rapport skickad: ADMIN_EMAILS saknas");
+    return { sent: false, error: "ADMIN_EMAILS saknas" };
+  }
+
+  let queueLines = [];
+  try {
+    queueLines = await getQueueStatus();
+  } catch (e) {
+    console.error("[OutreachAgent] Kunde inte hämta kö-status:", e?.message || String(e));
+    queueLines = [`  (kunde inte hämtas: ${e?.message || e})`];
+  }
 
   // Deduplicera fel: samma grundorsak (t.ex. slut på krediter) dyker annars upp
   // en gång per region. Visa unika rader med antal.
@@ -603,6 +590,9 @@ async function sendAgentReport(stats) {
     `  Uppföljningar:  ${stats.followUps} follow-up mail`,
     `  Redan reg:      ${stats.alreadyRegistered} åkerier redan på STP`,
     ``,
+    `Kö-läge (alla regioner):`,
+    ...queueLines,
+    ``,
     dedupedErrors.length
       ? `Fel:\n${dedupedErrors.map((e) => `  - ${e}`).join("\n")}`
       : `Inga fel.`,
@@ -610,6 +600,8 @@ async function sendAgentReport(stats) {
     `Se alla prospects: transportplattformen.se/admin (Outreach-fliken)`,
   ].join("\n");
 
+  let delivered = 0;
+  let lastError = null;
   for (const to of adminEmails) {
     try {
       await sendEmail({
@@ -617,8 +609,13 @@ async function sendAgentReport(stats) {
         subject: `[STP Agent] Outreach klar — ${stats.sent} mail skickade`,
         text: lines,
       });
-    } catch (_) {}
+      delivered++;
+    } catch (e) {
+      lastError = e?.message || String(e);
+      console.error(`[OutreachAgent] Rapport till ${to} misslyckades:`, lastError);
+    }
   }
+  return { sent: delivered > 0, error: lastError };
 }
 
 // ─── Main entry point ─────────────────────────────────────────────────────────
@@ -698,7 +695,27 @@ export async function runOutreachAgent({ dryRun = false, regions: overrideRegion
     console.error("[OutreachAgent] Kritiskt fel:", e?.message || String(e));
   } finally {
     if (!dryRun) {
-      await sendAgentReport(stats);
+      let report = { sent: false, error: null };
+      try {
+        report = await sendAgentReport(stats);
+      } catch (e) {
+        report = { sent: false, error: e?.message || String(e) };
+        console.error("[OutreachAgent] Rapportsteg kraschade:", report.error);
+      }
+      // Persistera körningen så att en utebliven rapport går att upptäcka
+      // (exponeras via GET /api/outreach/stats → lastRun).
+      try {
+        await prisma.outreachAgentRun.create({
+          data: {
+            regions: stats.regionsProcessed.join(", "),
+            stats,
+            reportSent: report.sent,
+            reportError: report.error,
+          },
+        });
+      } catch (e) {
+        console.error("[OutreachAgent] Kunde inte spara körningsstatus:", e?.message || String(e));
+      }
     }
     console.log("[OutreachAgent] Klar.", stats);
   }

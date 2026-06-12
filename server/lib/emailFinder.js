@@ -2,13 +2,14 @@
  * Email Finder — vår egna mini-Hunter.io för svenska åkerier.
  *
  * Strategi (i ordning):
- *   1. Scrapa företagets Hitta.se-profilsida direkt
- *   2. Scrapa företagets hemsida (kontakt/om-oss/startsida)
+ *   1. Scrapa företagets hemsida (kontakt/om-oss/startsida)
+ *   2. Sök på Hitta.se (__NEXT_DATA__ via hittaScraper.js)
  *   3. Gissa vanliga mönster (info@, kontakt@, hej@...) + verifiera via SMTP
  */
 
 import dns from "dns/promises";
 import net from "net";
+import { fetchHittaCompanies, hittaEmail } from "./hittaScraper.js";
 
 const COMMON_PREFIXES = ["info", "kontakt", "hej", "post", "kontor", "order", "jobb", "rekrytering"];
 const SCRAPE_TIMEOUT = 8000;
@@ -44,50 +45,33 @@ function extractDomain(website) {
   }
 }
 
-// ─── 1. Hitta.se profilsida (JSON API) ───────────────────────────────────────
+// ─── 1. Hitta.se sökresultat (__NEXT_DATA__) ─────────────────────────────────
+
+// Matchar sökträff mot eftersökt företagsnamn så att vi inte returnerar
+// e-post för ett annat företag som råkar ligga först i resultatet.
+function _nameMatches(candidate, wanted) {
+  const norm = (s) => String(s || "").toLowerCase().replace(/\b(ab|hb|kb|aktiebolag)\b/g, "").replace(/[^a-zåäö0-9]+/g, " ").trim();
+  const a = norm(candidate);
+  const b = norm(wanted);
+  return Boolean(a && b && (a.includes(b) || b.includes(a)));
+}
 
 export async function scrapeHittaProfile(companyName, city) {
   try {
-    // Hitta.se has a JSON search API — use this instead of scraping HTML (which is JS-rendered)
-    const q = encodeURIComponent(`${companyName}${city ? ` ${city}` : ""}`);
-    const apiUrl = `https://www.hitta.se/api/search/companies?q=${q}&size=5`;
-
-    const resp = await fetch(apiUrl, {
-      signal: AbortSignal.timeout(SCRAPE_TIMEOUT),
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept": "application/json",
-        "Accept-Language": "sv-SE,sv;q=0.9",
-        "Referer": "https://www.hitta.se/",
-      },
-    });
-
-    if (!resp.ok) {
+    const items = await fetchHittaCompanies(`${companyName}${city ? ` ${city}` : ""}`);
+    if (!items) {
       // Fallback: try scraping the HTML search page for mailto links
       return await _scrapeHittaHtml(companyName, city);
     }
 
-    const data = await resp.json().catch(() => null);
-    if (!data) return null;
-
-    // Look for email in company results
-    const companies = data?.companies?.items || data?.results || data?.hits || [];
-    for (const c of companies) {
-      const email = c.email || c.contactEmail || c.emailAddress;
-      if (email && email.includes("@")) return email.toLowerCase();
-    }
-
-    // No email in API — try individual company profile URL if available
-    const firstResult = companies[0];
-    if (firstResult?.id || firstResult?.slug) {
-      const profileUrl = `https://www.hitta.se/foretag/${firstResult.slug || firstResult.id}`;
-      const email = await _scrapeHittaCompanyPage(profileUrl);
+    for (const c of items) {
+      if (!_nameMatches(c.displayName || c.name, companyName)) continue;
+      const email = hittaEmail(c);
       if (email) return email;
     }
-
     return null;
   } catch (e) {
-    console.error("[EmailFinder] Hitta.se API fel:", e?.message);
+    console.error("[EmailFinder] Hitta.se-fel:", e?.message);
     return null;
   }
 }
@@ -97,25 +81,6 @@ async function _scrapeHittaHtml(companyName, city) {
     const query = encodeURIComponent(`${companyName} ${city || ""}`.trim());
     const searchUrl = `https://www.hitta.se/s%C3%B6k?vad=${query}`;
     const resp = await fetch(searchUrl, {
-      signal: AbortSignal.timeout(SCRAPE_TIMEOUT),
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept-Language": "sv-SE,sv;q=0.9",
-      },
-    });
-    if (!resp.ok) return null;
-    const html = await resp.text();
-    const text = stripHtml(html);
-    const emails = extractEmails(text);
-    return emails[0] || null;
-  } catch (_) {
-    return null;
-  }
-}
-
-async function _scrapeHittaCompanyPage(url) {
-  try {
-    const resp = await fetch(url, {
       signal: AbortSignal.timeout(SCRAPE_TIMEOUT),
       headers: {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
