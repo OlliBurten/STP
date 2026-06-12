@@ -331,6 +331,10 @@ export async function generateCompanySuggestionsForUser(userId, { force = false 
       companyOrgNumber: true,
       companyLocation: true,
       suggestionsGeneratedAt: true,
+      userOrganizations: {
+        take: 1,
+        select: { organization: { select: { name: true, orgNumber: true, location: true } } },
+      },
     },
   });
   if (!user) return null;
@@ -338,12 +342,16 @@ export async function generateCompanySuggestionsForUser(userId, { force = false 
   if (role !== "COMPANY" && role !== "RECRUITER") return null;
   if (isTestAccountEmail(user.email)) return null;
   if (user.suggestionsGeneratedAt && !force) return null; // bara en gång per konto
-  if (!String(user.companyName || "").trim()) return null;
+
+  // Org-baserade åkerier har företagsuppgifterna på Organization, inte User.
+  const org = user.userOrganizations?.[0]?.organization || null;
+  const companyName = String(user.companyName || org?.name || "").trim();
+  if (!companyName) return null;
 
   const suggestions = await enrichCompanyProfile({
-    companyName: user.companyName,
-    orgNumber: user.companyOrgNumber,
-    location: user.companyLocation,
+    companyName,
+    orgNumber: user.companyOrgNumber || org?.orgNumber || null,
+    location: user.companyLocation || org?.location || null,
   });
 
   await prisma.user.update({
@@ -353,6 +361,6 @@ export async function generateCompanySuggestionsForUser(userId, { force = false 
       suggestionsGeneratedAt: new Date(),
     },
   });
-  console.log(`[CompanyEnrichment] Förslag genererade för ${user.companyName} (${Object.keys(suggestions.sources).length} källfält)`);
+  console.log(`[CompanyEnrichment] Förslag genererade för ${companyName} (${Object.keys(suggestions.sources).length} källfält)`);
   return suggestions;
 }
