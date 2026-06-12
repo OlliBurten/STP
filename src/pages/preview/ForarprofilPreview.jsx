@@ -277,7 +277,7 @@ const LinkCard = () => {
   const [copied, setCopied] = useState(false);
   const link = "transportplattformen.se/forare/oliver-harburt";
   const copy = () => {
-    navigator.clipboard?.writeText("https://" + link);
+    navigator.clipboard?.writeText("https://" + link).catch(() => {});
     setCopied(true);
     setTimeout(() => setCopied(false), 1600);
   };
