@@ -80,18 +80,35 @@ export async function renderJobHtml(id) {
     ? new Date(job.filledAt).toISOString()
     : new Date(new Date(job.published || job.createdAt).getTime() + 60 * 864e5).toISOString();
 
-  // baseSalary: strukturerade fält i första hand, annars tolka fritext ("X kr/tim" / "X kr/mån").
-  // Emitteras ALDRIG om löneuppgift saknas — hitta aldrig på löner.
+  // Tolkar "182,8 - 190,79 kr/timme" eller "32 000 kr/mån" → { min, max? }.
+  // Gränserna (lo/hi) skyddar mot feltolkningar — utanför dem emitteras hellre inget.
+  function parseSalaryRange(text, unitRe, lo, hi) {
+    const NUM = "(\\d[\\d\\s\\u00a0]*(?:,\\d+)?)";
+    const m = String(text).match(new RegExp(`${NUM}(?:\\s*[-–]\\s*${NUM})?\\s*kr\\s*\\/?\\s*${unitRe}`, "i"));
+    if (!m) return null;
+    const num = (s) => parseFloat(s.replace(/[\s ]/g, "").replace(",", "."));
+    let min = num(m[1]);
+    let max = m[2] != null ? num(m[2]) : null;
+    if (max != null && max < min) [min, max] = [max, min];
+    if (!Number.isFinite(min) || min < lo || min > hi || (max != null && (max < lo || max > hi))) return null;
+    return { min, max };
+  }
+
+  // baseSalary: strukturerade fält i första hand, annars tolka fritext ("X kr/tim" / "X kr/mån",
+  // inkl. svenska decimalkommatecken och intervall som "182,8 - 190,79 kr/timme").
+  // Emitteras ALDRIG om löneuppgift saknas eller ser orimlig ut — hitta aldrig på löner.
   let baseSalary = null;
   if (job.salaryMin) {
     baseSalary = { "@type": "MonetaryAmount", currency: "SEK", value: { "@type": "QuantitativeValue", minValue: job.salaryMin, ...(job.salaryMax ? { maxValue: job.salaryMax } : {}), unitText: "MONTH" } };
   } else if (job.salary) {
-    const hourMatch = job.salary.match(/(\d[\d\s]*)\s*kr\s*\/\s*tim/i);
-    const monthMatch = job.salary.match(/(\d[\d\s]*)\s*kr\s*\/\s*m[åa]n/i);
-    if (hourMatch) {
-      baseSalary = { "@type": "MonetaryAmount", currency: "SEK", value: { "@type": "QuantitativeValue", value: parseInt(hourMatch[1].replace(/\s/g, ""), 10), unitText: "HOUR" } };
-    } else if (monthMatch) {
-      baseSalary = { "@type": "MonetaryAmount", currency: "SEK", value: { "@type": "QuantitativeValue", value: parseInt(monthMatch[1].replace(/\s/g, ""), 10), unitText: "MONTH" } };
+    const hour = parseSalaryRange(job.salary, "tim", 50, 2000);
+    const month = hour ? null : parseSalaryRange(job.salary, "m[åa]n", 10000, 500000);
+    const range = hour || month;
+    if (range) {
+      baseSalary = {
+        "@type": "MonetaryAmount", currency: "SEK",
+        value: { "@type": "QuantitativeValue", ...(range.max ? { minValue: range.min, maxValue: range.max } : { value: range.min }), unitText: hour ? "HOUR" : "MONTH" },
+      };
     }
   }
 

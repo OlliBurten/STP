@@ -359,10 +359,28 @@ export default function JobDetail() {
       return { "@type": "MonetaryAmount", currency: "SEK", value: { "@type": "QuantitativeValue", minValue: job.salaryMin, ...(job.salaryMax ? { maxValue: job.salaryMax } : {}), unitText: "MONTH" } };
     }
     if (job.salary) {
-      const hourMatch = job.salary.match(/(\d[\d\s]*)\s*kr\s*\/\s*tim/i);
-      const monthMatch = job.salary.match(/(\d[\d\s]*)\s*kr\s*\/\s*m[åa]n/i);
-      if (hourMatch) { const val = parseInt(hourMatch[1].replace(/\s/g, ""), 10); return { "@type": "MonetaryAmount", currency: "SEK", value: { "@type": "QuantitativeValue", value: val, unitText: "HOUR" } }; }
-      if (monthMatch) { const val = parseInt(monthMatch[1].replace(/\s/g, ""), 10); return { "@type": "MonetaryAmount", currency: "SEK", value: { "@type": "QuantitativeValue", value: val, unitText: "MONTH" } }; }
+      // Klarar svenska decimalkomman och intervall ("182,8 - 190,79 kr/timme").
+      // Gränserna skyddar mot feltolkad fritext — utanför dem emitteras hellre inget.
+      const parseRange = (unitRe, lo, hi) => {
+        const NUM = "(\\d[\\d\\s\\u00a0]*(?:,\\d+)?)";
+        const m = job.salary.match(new RegExp(`${NUM}(?:\\s*[-–]\\s*${NUM})?\\s*kr\\s*\\/?\\s*${unitRe}`, "i"));
+        if (!m) return null;
+        const num = (s) => parseFloat(s.replace(/\s/g, "").replace(",", "."));
+        let min = num(m[1]);
+        let max = m[2] != null ? num(m[2]) : null;
+        if (max != null && max < min) [min, max] = [max, min];
+        if (!Number.isFinite(min) || min < lo || min > hi || (max != null && (max < lo || max > hi))) return null;
+        return { min, max };
+      };
+      const hour = parseRange("tim", 50, 2000);
+      const month = hour ? null : parseRange("m[åa]n", 10000, 500000);
+      const range = hour || month;
+      if (range) {
+        return {
+          "@type": "MonetaryAmount", currency: "SEK",
+          value: { "@type": "QuantitativeValue", ...(range.max ? { minValue: range.min, maxValue: range.max } : { value: range.min }), unitText: hour ? "HOUR" : "MONTH" },
+        };
+      }
     }
     return null;
   })();
