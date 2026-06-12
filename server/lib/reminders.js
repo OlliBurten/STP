@@ -15,6 +15,7 @@ import { prisma } from "./prisma.js";
 import { sendEmail, notifyJobTips, notifyJobExpiring, notifyJobAutoArchived } from "./email.js";
 import { issueEmailVerification } from "../routes/auth.js";
 import { isDriverMinimumProfileComplete } from "../utils/driverProfileRequirements.js";
+import { companyProfileChecklist, mergeCompanyProfile } from "./companyProfileChecklist.js";
 
 const FRONTEND_URL = (process.env.FRONTEND_URL || "https://transportplattformen.se")
   .split(",")[0]
@@ -72,12 +73,27 @@ export async function runProfileReminders() {
       id: true, email: true, name: true, role: true,
       companyName: true, companyOrgNumber: true, companySegmentDefaults: true,
       companyDescription: true, companyWebsite: true,
+      companyLocation: true, companyBransch: true, companyRegion: true,
       profileReminderCount: true,
       emailNotificationSettings: true,
       driverProfile: {
         select: {
           phone: true, primarySegment: true, region: true, location: true,
           licenses: true, availability: true, summary: true,
+        },
+      },
+      // Org-baserade åkerier har företagsuppgifterna på Organization —
+      // samma relation som GET /api/admin/users (server/routes/admin.js).
+      userOrganizations: {
+        where: { role: "OWNER" },
+        take: 1,
+        select: {
+          organization: {
+            select: {
+              name: true, orgNumber: true, description: true, website: true,
+              location: true, segmentDefaults: true, bransch: true, region: true,
+            },
+          },
         },
       },
     },
@@ -99,14 +115,22 @@ export async function runProfileReminders() {
       if (!u.driverProfile?.licenses?.length) missingItems.push("körkort");
       if (!u.driverProfile?.summary || u.driverProfile.summary.length < 20) missingItems.push("profiltext");
     } else {
-      const hasName = (u.companyName || u.name || "").trim().length > 0;
-      const hasOrg = (u.companyOrgNumber || "").trim().length > 0;
-      const hasSegments = Array.isArray(u.companySegmentDefaults) && u.companySegmentDefaults.length > 0;
-      incomplete = !hasName || !hasOrg || !hasSegments;
+      // COMPANY/RECRUITER: merga User-fält med ev. Organization-fält (User vinner)
+      // och utvärdera alla 8 punkter i den kanoniska checklistan.
+      const org = u.userOrganizations?.[0]?.organization || null;
+      const checklist = companyProfileChecklist(mergeCompanyProfile(u, org));
+      const missing = checklist.filter((c) => !c.ok);
+      missingItems = missing.map((c) => c.label);
+
+      // Rimlighetströskel mot tjatiga mejl: en enda saknad "nice to have"-punkt
+      // (t.ex. bara webbplats) motiverar inget mejl. Vi skickar bara om
+      //   • 2+ punkter saknas, ELLER
+      //   • någon matchningskritisk punkt saknas (segment/region/bransch —
+      //     utan dem fungerar inte matchningen mot förare alls).
+      const MATCH_CRITICAL = new Set(["companySegmentDefaults", "companyRegion", "companyBransch"]);
+      const missingCritical = missing.some((c) => MATCH_CRITICAL.has(c.key));
+      incomplete = missing.length >= 2 || missingCritical;
       if (!incomplete) continue;
-      if (!hasName) missingItems.push("företagsnamn");
-      if (!hasOrg) missingItems.push("organisationsnummer");
-      if (!hasSegments) missingItems.push("transportsegment");
     }
 
     const profileUrl = u.role === "DRIVER"

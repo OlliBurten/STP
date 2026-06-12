@@ -280,7 +280,11 @@ function DetailPanel({ u, detail, onClose, onVerify, onReject, onSuspend, onUnsu
   const verified = isVerified(u);
   const suspended = isSuspended(u);
   const warn     = warnings(u);
-  const profile  = profilePct(u);
+  const completion = getProfileCompletion(u);
+  const profile  = completion?.pct ?? 0;
+  // Per-punkt-checklista (förare 12 punkter, åkerier 8) — döljs för systemkontot.
+  const checklistItems = !isSystemAccount(u) ? (completion?.items ?? null) : null;
+  const missingLabels  = checklistItems ? checklistItems.filter(it => !it.ok).map(it => it.label) : [];
   const initials = u.name ? u.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : u.email?.[0]?.toUpperCase() || "?";
   const avatarBg = isComp ? "var(--amber)" : "var(--info)";
 
@@ -339,6 +343,24 @@ function DetailPanel({ u, detail, onClose, onVerify, onReject, onSuspend, onUnsu
               <div style={{ height: "100%", width: `${profile}%`, background: profile >= 75 ? "var(--success)" : profile >= 50 ? "var(--amber)" : "var(--danger)", borderRadius: 99 }} />
             </div>
             <span style={{ fontSize: "var(--text-sm)", fontWeight: 800, color: "var(--ink-900)", ...mono }}>{profile}%</span>
+          </div>
+        )}
+        {/* Per-punkt-checklista — så grundaren direkt ser vad som saknas inför ett samtal. */}
+        {checklistItems && (
+          <div style={{ marginBottom: 14 }}>
+            {missingLabels.length > 0 && (
+              <div style={{ padding: "7px 10px", marginBottom: 8, background: "var(--amber-tint)", border: "1px solid var(--amber)", borderRadius: 8, fontSize: "var(--text-2xs)", color: "var(--amber-text)", fontWeight: 700, lineHeight: 1.5 }}>
+                Saknas: {missingLabels.join(", ")}
+              </div>
+            )}
+            <div style={{ display: "flex", flexDirection: "column", gap: 5, fontSize: "var(--text-2xs)" }}>
+              {checklistItems.map(it => (
+                <div key={it.key} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ color: it.ok ? "var(--ink-400)" : "var(--ink-700)", fontWeight: it.ok ? 400 : 700 }}>{it.label}</span>
+                  <span style={{ color: it.ok ? "var(--success)" : "rgba(220,38,38,0.55)", fontWeight: 800, ...mono }}>{it.ok ? "✓" : "✗"}</span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>

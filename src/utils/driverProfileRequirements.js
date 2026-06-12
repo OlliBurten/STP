@@ -77,60 +77,62 @@ export function isDriverMinimumProfileComplete(profile) {
   );
 }
 
-// Returns { pct: number, colorClass: string } for use in admin UI.
+// Returns { pct: number, colorClass: string, items: [{ key, label, ok }] } for use in admin UI.
 // user must include driverProfile (for drivers) or company fields (for companies).
+// items = per-punkt-detaljer (svenska etiketter) — förare 12 punkter, åkerier 8.
+// OBS: åkeri-punkterna speglar server/lib/companyProfileChecklist.js — håll dem i synk.
 export function getProfileCompletion(user) {
   if (!user || user.isAdmin) return null;
 
   function t(v) { return String(v || "").trim(); }
   function digits(v) { return t(v).replace(/\D/g, ""); }
 
-  let checks = [];
+  let items = [];
 
   if (user.role === "DRIVER") {
     const p = user.driverProfile || {};
-    checks = [
+    items = [
       // Required (8)
-      t(user.name).length >= 2,
-      digits(p.phone).length >= 7,
-      t(p.primarySegment).length > 0,
-      t(p.location).length > 0,
-      t(p.region).length > 0,
-      Array.isArray(p.licenses) && p.licenses.length > 0,
-      t(p.availability).length > 0,
-      t(p.summary).length >= SUMMARY_MIN_LENGTH,
+      { key: "name", label: "Namn", ok: t(user.name).length >= 2 },
+      { key: "phone", label: "Telefonnummer", ok: digits(p.phone).length >= 7 },
+      { key: "primarySegment", label: "Primärt segment", ok: t(p.primarySegment).length > 0 },
+      { key: "location", label: "Ort", ok: t(p.location).length > 0 },
+      { key: "region", label: "Region", ok: t(p.region).length > 0 },
+      { key: "licenses", label: "Körkort", ok: Array.isArray(p.licenses) && p.licenses.length > 0 },
+      { key: "availability", label: "Tillgänglighet", ok: t(p.availability).length > 0 },
+      { key: "summary", label: "Profiltext", ok: t(p.summary).length >= SUMMARY_MIN_LENGTH },
       // Optional extras (4)
-      Array.isArray(p.certificates) && p.certificates.length > 0,
-      p.experience != null && (Array.isArray(p.experience) ? p.experience.length > 0 : true),
-      Array.isArray(p.regionsWilling) && p.regionsWilling.length > 0,
-      p.visibleToCompanies === true,
+      { key: "certificates", label: "Certifikat", ok: Array.isArray(p.certificates) && p.certificates.length > 0 },
+      { key: "experience", label: "Erfarenhet", ok: p.experience != null && (Array.isArray(p.experience) ? p.experience.length > 0 : true) },
+      { key: "regionsWilling", label: "Fler regioner", ok: Array.isArray(p.regionsWilling) && p.regionsWilling.length > 0 },
+      { key: "visibleToCompanies", label: "Synlig för åkerier", ok: p.visibleToCompanies === true },
     ];
   } else if (user.role === "COMPANY" || user.role === "RECRUITER") {
-    checks = [
+    items = [
       // Required (3)
-      t(user.companyName).length > 0 || t(user.name).length > 0,
-      t(user.companyOrgNumber).length > 0,
-      Array.isArray(user.companySegmentDefaults) && user.companySegmentDefaults.length > 0,
+      { key: "companyName", label: "Företagsnamn", ok: t(user.companyName).length > 0 || t(user.name).length > 0 },
+      { key: "companyOrgNumber", label: "Organisationsnummer", ok: t(user.companyOrgNumber).length > 0 },
+      { key: "companySegmentDefaults", label: "Transportsegment", ok: Array.isArray(user.companySegmentDefaults) && user.companySegmentDefaults.length > 0 },
       // Optional (5)
-      t(user.companyDescription).length > 0,
-      t(user.companyWebsite).length > 0,
-      t(user.companyLocation).length > 0,
-      Array.isArray(user.companyBransch) && user.companyBransch.length > 0,
-      t(user.companyRegion).length > 0,
+      { key: "companyDescription", label: "Företagsbeskrivning", ok: t(user.companyDescription).length > 0 },
+      { key: "companyWebsite", label: "Webbplats", ok: t(user.companyWebsite).length > 0 },
+      { key: "companyLocation", label: "Ort", ok: t(user.companyLocation).length > 0 },
+      { key: "companyBransch", label: "Bransch", ok: Array.isArray(user.companyBransch) && user.companyBransch.length > 0 },
+      { key: "companyRegion", label: "Region", ok: t(user.companyRegion).length > 0 },
     ];
   } else {
     return null;
   }
 
-  const filled = checks.filter(Boolean).length;
-  const pct = Math.round((filled / checks.length) * 100);
+  const filled = items.filter((i) => i.ok).length;
+  const pct = Math.round((filled / items.length) * 100);
 
   let colorClass;
   if (pct >= 75) colorClass = "bg-green-100 text-green-800";
   else if (pct >= 40) colorClass = "bg-amber-100 text-amber-800";
   else colorClass = "bg-red-100 text-red-800";
 
-  return { pct, colorClass };
+  return { pct, colorClass, items };
 }
 
 export { SUMMARY_MIN_LENGTH, SUMMARY_MAX_LENGTH };
