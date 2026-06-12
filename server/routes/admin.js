@@ -6,6 +6,7 @@ import { createNotification } from "../lib/notifications.js";
 import { notifyCompanyApproved } from "../lib/email.js";
 import { runVerificationReminders } from "../lib/verificationReminders.js";
 import { createAdminAuditLog, getAdminActorId, isAdminEmail } from "../lib/adminAccess.js";
+import { isTestAccountEmail, excludeTestAccountsWhere } from "../lib/testAccounts.js";
 import { JWT_SECRET } from "../lib/config.js";
 
 export const adminRouter = Router();
@@ -333,8 +334,10 @@ adminRouter.get("/summary", async (req, res, next) => {
       prisma.user.count({ where: { createdAt: { gte: since7d } } }),
       prisma.user.count({ where: { createdAt: { gte: since30d } } }),
       prisma.user.count({ where: { createdAt: { gte: since365d } } }),
-      prisma.user.count({ where: { role: "DRIVER" } }),
-      prisma.user.count({ where: { role: { in: ["COMPANY", "RECRUITER"] } } }),
+      // Exkluderar testkonton (delad heuristik i lib/testAccounts.js) så att
+      // sidopanelens räknare matchar adminens användarlista med standardfiltret på.
+      prisma.user.count({ where: { role: "DRIVER", ...excludeTestAccountsWhere } }),
+      prisma.user.count({ where: { role: { in: ["COMPANY", "RECRUITER"] }, ...excludeTestAccountsWhere } }),
       prisma.job.count(),
       prisma.job.count({ where: { status: "ACTIVE" } }),
       prisma.job.count({ where: { status: "HIDDEN" } }),
@@ -586,6 +589,9 @@ adminRouter.get("/users", async (req, res, next) => {
           companyBransch: firstNonEmpty(u.companyBransch, org?.bransch),
           companySegmentDefaults: firstNonEmpty(u.companySegmentDefaults, org?.segmentDefaults),
           isAdmin: isAdminEmail(u.email),
+          // Test-/utvecklarkonto enligt delad heuristik (server/lib/testAccounts.js).
+          // Admin-UI:t döljer dessa som standard så att statistiken speglar riktiga användare.
+          isTestAccount: isTestAccountEmail(u.email),
           emailVerifiedAt: u.emailVerifiedAt?.toISOString() ?? null,
           suspendedAt: u.suspendedAt?.toISOString() ?? null,
           lastWarnedAt: u.lastWarnedAt?.toISOString() ?? null,

@@ -13,8 +13,32 @@ const profilePct = u => getProfileCompletion(u)?.pct ?? 0;
 const isVerified    = u => isCompanyRole(u) ? u.companyStatus === "VERIFIED" : u.emailVerifiedAt != null;
 const isSuspended   = u => u.suspendedAt != null;
 const warnings      = u => u.warningCount || 0;
-// Somnat konto: aldrig inloggad, eller inte inloggad på 7+ dagar.
-const isStaleLogin  = u => !u.lastLoginAt || Date.now() - new Date(u.lastLoginAt).getTime() >= 7 * 86400000;
+// Test-/utvecklarkonto — flaggas av backend (delad heuristik i server/lib/testAccounts.js).
+// Döljs som standard i listan; alla räknare exkluderar dem när filtret är på.
+const isTestAccount = u => u.isTestAccount === true;
+// Systemkontot för Platsbanken-aggregeringen: SYSTEM-badge i stället för TEST, ingen profilprocent.
+const SYSTEM_ACCOUNT_EMAIL = "system-aggregated@stp.internal";
+const isSystemAccount = u => (u.email || "").toLowerCase() === SYSTEM_ACCOUNT_EMAIL;
+// Färgtrappa för "Senast inne": 0–6 dgr normal · 7–29 dgr varning (amber) · 30+ dgr/aldrig röd.
+const loginSeverity = u => {
+  if (!u.lastLoginAt) return "danger";
+  const days = (Date.now() - new Date(u.lastLoginAt).getTime()) / 86400000;
+  return days >= 30 ? "danger" : days >= 7 ? "warn" : "ok";
+};
+// Textfärg för "Senast inne" — fallback används vid normal (0–6 dgr) så raden behåller sin gråton.
+const loginColor = (u, fallback) => {
+  const s = loginSeverity(u);
+  return s === "danger" ? "var(--danger)" : s === "warn" ? "var(--amber)" : fallback;
+};
+
+// Liten grå badge vid namnet: TEST för testkonton, SYSTEM för Platsbanken-kontot.
+const AccountTypeBadge = ({ u }) => {
+  const label = isSystemAccount(u) ? "SYSTEM" : isTestAccount(u) ? "TEST" : null;
+  if (!label) return null;
+  return (
+    <span style={{ padding: "1px 6px", borderRadius: 4, background: "var(--line)", color: "var(--ink-500)", fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 0.5, flexShrink: 0, ...mono }}>{label}</span>
+  );
+};
 
 // ─── Filter pill ───────────────────────────────────────────────────────────────
 const FilterPill = ({ on, count, children, onClick, color }) => (
@@ -33,7 +57,7 @@ const FilterPill = ({ on, count, children, onClick, color }) => (
 );
 
 // ─── Users header ──────────────────────────────────────────────────────────────
-function UsersHeader({ users, selectedCount, filter, setFilter, onExportCsv, onStuckReminder, audience = "all" }) {
+function UsersHeader({ users, selectedCount, filter, setFilter, onExportCsv, onStuckReminder, audience = "all", showTest, setShowTest, testCount }) {
   const isCompanies = audience === "companies";
   const title = isCompanies ? "Åkerier" : audience === "drivers" ? "Förare" : "Användare";
   const filters = isCompanies
@@ -68,10 +92,21 @@ function UsersHeader({ users, selectedCount, filter, setFilter, onExportCsv, onS
           )}
         </div>
       </div>
-      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
         {filters.map(f => (
           <FilterPill key={f.v} on={filter === f.v} count={f.c} color={f.color} onClick={() => setFilter(f.v)}>{f.l}</FilterPill>
         ))}
+        {/* Diskret toggle: testkonton döljs som standard (heuristik i backend, isTestAccount). */}
+        {testCount > 0 && (
+          <button onClick={() => setShowTest(!showTest)} style={{
+            marginLeft: "auto", padding: "5px 10px", borderRadius: 99,
+            background: "transparent", border: "1px dashed var(--line-2)",
+            color: showTest ? "var(--ink-700)" : "var(--ink-400)",
+            fontSize: "var(--text-2xs)", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap",
+          }}>
+            {showTest ? `Dölj testkonton (${testCount})` : `Visa testkonton (${testCount})`}
+          </button>
+        )}
       </div>
     </div>
   );
@@ -121,7 +156,6 @@ function UserRow({ u, selected, isSelectedRow, onCheck, onSelect, compact, mobil
   const suspended = isSuspended(u);
   const warn     = warnings(u);
   const lastLogin = fmtRelative(u.lastLoginAt);
-  const staleLogin = isStaleLogin(u);
   const emailOk  = u.emailVerifiedAt != null;
   const created  = u.createdAt ? u.createdAt.slice(0, 10) : "";
   const initials = u.name ? u.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : u.email?.[0]?.toUpperCase() || "?";
@@ -154,6 +188,7 @@ function UserRow({ u, selected, isSelectedRow, onCheck, onSelect, compact, mobil
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 5, minWidth: 0 }}>
             <span style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-900)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{rowTitle}</span>
+            <AccountTypeBadge u={u} />
             <span title={emailOk ? "E-post verifierad" : "E-post ej verifierad"} style={{ display: "inline-flex", flexShrink: 0 }}>
               <Icon n={emailOk ? "check" : "x"} s={11} c={emailOk ? "var(--success)" : "var(--danger)"} />
             </span>
@@ -162,7 +197,7 @@ function UserRow({ u, selected, isSelectedRow, onCheck, onSelect, compact, mobil
         </div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3, flexShrink: 0 }}>
           <span style={{ display: "inline-block", padding: "3px 8px", borderRadius: 5, background: statusBadge.bg, color: statusBadge.c, fontSize: "var(--text-2xs)", fontWeight: 800, whiteSpace: "nowrap", ...mono }}>{statusBadge.l}</span>
-          <span style={{ fontSize: "var(--text-2xs)", color: staleLogin ? "var(--danger)" : "var(--ink-400)", whiteSpace: "nowrap", ...mono }}>{lastLogin}</span>
+          <span style={{ fontSize: "var(--text-2xs)", color: loginColor(u, "var(--ink-400)"), whiteSpace: "nowrap", ...mono }}>{lastLogin}</span>
         </div>
       </div>
     );
@@ -186,6 +221,7 @@ function UserRow({ u, selected, isSelectedRow, onCheck, onSelect, compact, mobil
         <div style={{ minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 5, minWidth: 0 }}>
             <span style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-900)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{rowTitle}</span>
+            <AccountTypeBadge u={u} />
             <span title={emailOk ? "E-post verifierad" : "E-post ej verifierad"} style={{ display: "inline-flex", flexShrink: 0 }}>
               <Icon n={emailOk ? "check" : "x"} s={11} c={emailOk ? "var(--success)" : "var(--danger)"} />
             </span>
@@ -205,16 +241,21 @@ function UserRow({ u, selected, isSelectedRow, onCheck, onSelect, compact, mobil
       </div>
 
       <div>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <div style={{ flex: 1, height: 4, background: "var(--paper-2)", borderRadius: 99, overflow: "hidden" }}>
-            <div style={{ height: "100%", width: `${profile}%`, background: profile >= 75 ? "var(--success)" : profile >= 50 ? "var(--amber)" : "var(--danger)", borderRadius: 99 }} />
+        {isSystemAccount(u) ? (
+          // Systemkontot har ingen riktig profil — visa "–" i stället för procentbar.
+          <span style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", fontWeight: 700, ...mono }}>–</span>
+        ) : (
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <div style={{ flex: 1, height: 4, background: "var(--paper-2)", borderRadius: 99, overflow: "hidden" }}>
+              <div style={{ height: "100%", width: `${profile}%`, background: profile >= 75 ? "var(--success)" : profile >= 50 ? "var(--amber)" : "var(--danger)", borderRadius: 99 }} />
+            </div>
+            <span style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", fontWeight: 700, minWidth: 32, textAlign: "right", ...mono }}>{profile}%</span>
           </div>
-          <span style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", fontWeight: 700, minWidth: 32, textAlign: "right", ...mono }}>{profile}%</span>
-        </div>
+        )}
       </div>
 
       {!compact && (
-        <div style={{ fontSize: "var(--text-2xs)", color: staleLogin ? "var(--danger)" : "var(--ink-500)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", ...mono }}>
+        <div style={{ fontSize: "var(--text-2xs)", color: loginColor(u, "var(--ink-500)"), overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", ...mono }}>
           {lastLogin}
         </div>
       )}
@@ -277,6 +318,7 @@ function DetailPanel({ u, detail, onClose, onVerify, onReject, onSuspend, onUnsu
             <div style={{ display: "flex", gap: 5, marginTop: 6 }}>
               <span style={{ padding: "2px 7px", borderRadius: 4, background: !isComp ? "var(--info-tint)" : "var(--amber-tint)", color: !isComp ? "var(--info)" : "var(--amber-text)", fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 0.4, ...mono }}>{isComp ? "COMPANY" : "DRIVER"}</span>
               <span style={{ display: "inline-block", padding: "2px 7px", borderRadius: 4, background: statusBadge.bg, color: statusBadge.c, fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 0.4, whiteSpace: "nowrap", ...mono }}>{statusBadge.l}</span>
+              <AccountTypeBadge u={u} />
             </div>
           </div>
         </div>
@@ -288,12 +330,17 @@ function DetailPanel({ u, detail, onClose, onVerify, onReject, onSuspend, onUnsu
 
       <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--line)" }}>
         <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.3, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 10 }}>Profil</div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-          <div style={{ flex: 1, height: 6, background: "var(--paper-2)", borderRadius: 99, overflow: "hidden" }}>
-            <div style={{ height: "100%", width: `${profile}%`, background: profile >= 75 ? "var(--success)" : profile >= 50 ? "var(--amber)" : "var(--danger)", borderRadius: 99 }} />
+        {isSystemAccount(u) ? (
+          // Systemkontot (Platsbanken-aggregeringen) har ingen riktig profil att mäta.
+          <div style={{ marginBottom: 14, fontSize: "var(--text-sm)", fontWeight: 800, color: "var(--ink-400)", ...mono }}>–</div>
+        ) : (
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+            <div style={{ flex: 1, height: 6, background: "var(--paper-2)", borderRadius: 99, overflow: "hidden" }}>
+              <div style={{ height: "100%", width: `${profile}%`, background: profile >= 75 ? "var(--success)" : profile >= 50 ? "var(--amber)" : "var(--danger)", borderRadius: 99 }} />
+            </div>
+            <span style={{ fontSize: "var(--text-sm)", fontWeight: 800, color: "var(--ink-900)", ...mono }}>{profile}%</span>
           </div>
-          <span style={{ fontSize: "var(--text-sm)", fontWeight: 800, color: "var(--ink-900)", ...mono }}>{profile}%</span>
-        </div>
+        )}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
           <StatBox label={isComp ? "Konversationer" : "Ansökningar"} value={convCount} />
           {isComp && <StatBox label="Annonser" value={jobCount} color="var(--amber-text)" />}
@@ -305,7 +352,7 @@ function DetailPanel({ u, detail, onClose, onVerify, onReject, onSuspend, onUnsu
         <div style={{ display: "flex", flexDirection: "column", gap: 7, fontSize: "var(--text-xs)" }}>
           <InfoRow label="Region"      value={u.driverProfile?.region || u.companyRegion || detail?.driverProfile?.region || "—"} />
           <InfoRow label="Skapad"      value={u.createdAt ? u.createdAt.slice(0, 10) : "—"} useMono />
-          <InfoRow label="Senast inne" value={fmtRelative(u.lastLoginAt)} valueColor={isStaleLogin(u) ? "var(--danger)" : undefined} />
+          <InfoRow label="Senast inne" value={fmtRelative(u.lastLoginAt)} valueColor={loginColor(u, undefined)} />
           <InfoRow label="Verifierad"  value={verified ? "Ja" : "Nej"} valueColor={verified ? "var(--success)" : "var(--amber)"} />
           <InfoRow label="E-post verifierad" value={u.emailVerifiedAt != null ? "Ja" : "Nej"} valueColor={u.emailVerifiedAt != null ? "var(--success)" : "var(--danger)"} />
           {warn > 0 && <InfoRow label="Varningar" value={String(warn)} valueColor="var(--amber)" useMono />}
@@ -426,15 +473,19 @@ export default function AdminUsersTab({
 }) {
   const [selected, setSelected] = useState(new Set());
   const [filter, setFilter] = useState("all");
+  const [showTest, setShowTest] = useState(false);
   const isMobile = useIsMobile(900);
 
   const allUsersRaw = Array.isArray(users) ? users : [];
   // Skopa till målgrupp: "drivers" = bara förare, "companies" = bara åkerier
-  const allUsers = audience === "drivers"
+  const scopedUsers = audience === "drivers"
     ? allUsersRaw.filter(u => !isCompanyRole(u))
     : audience === "companies"
       ? allUsersRaw.filter(u => isCompanyRole(u))
       : allUsersRaw;
+  // Testkonton döljs som standard — alla flikräknare/rubriker räknar då exklusive dem.
+  const testCount = scopedUsers.filter(isTestAccount).length;
+  const allUsers = showTest ? scopedUsers : scopedUsers.filter(u => !isTestAccount(u));
 
   const toggle = (id) => {
     const next = new Set(selected);
@@ -628,6 +679,9 @@ export default function AdminUsersTab({
           onExportCsv={handleCsvExport}
           onStuckReminder={handleStuckReminder}
           audience={audience}
+          showTest={showTest}
+          setShowTest={setShowTest}
+          testCount={testCount}
         />
         <BulkBar count={selected.size} onClear={() => setSelected(new Set())} onBulkSuspend={handleBulkSuspend} />
         {!isMobile && <TableHeader allSelected={allSelected} onSelectAll={toggleAll} compact={!!selectedUser} />}

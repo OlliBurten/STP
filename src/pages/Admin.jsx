@@ -423,8 +423,10 @@ export default function Admin() {
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         counts={{
-          users: ((summary?.users?.driversTotal ?? 0) + (summary?.users?.recruitersTotal ?? 0)) || undefined,
-          companies: summary?.verification?.verifiedCompanies || undefined,
+          // Samma definition som "Alla"-fliken i respektive vy: Förare = DRIVER-konton,
+          // Åkerier = COMPANY/RECRUITER-konton — båda exkl. testkonton (backend /summary).
+          users: summary?.users?.driversTotal || undefined,
+          companies: summary?.users?.recruitersTotal || undefined,
           companiesAlert: pendingCount || undefined,
           jobs: summary?.jobs?.active || undefined,
           moderationAlert: summary?.actionQueue?.openReports || undefined,
