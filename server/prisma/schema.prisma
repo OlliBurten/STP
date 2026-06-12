@@ -534,6 +534,17 @@ model OutreachProspect {
   @@index([region])
 }
 
+model OutreachAgentRun {
+  id          String   @id @default(cuid())
+  ranAt       DateTime @default(now())
+  regions     String?  // kommaseparerad lista över dagens regioner
+  stats       Json?    // hela stats-objektet från körningen
+  reportSent  Boolean  @default(false)
+  reportError String?  @db.Text
+
+  @@index([ranAt])
+}
+
 model Insight {
   id          String   @id @default(cuid())
   title       String

@@ -33,13 +33,19 @@ function stripHtml(html) {
 // ─── Stats ────────────────────────────────────────────────────────────────────
 outreachRouter.get("/stats", async (req, res, next) => {
   try {
-    const counts = await prisma.outreachProspect.groupBy({
-      by: ["status"],
-      _count: { _all: true },
-    });
+    const [counts, lastRun] = await Promise.all([
+      prisma.outreachProspect.groupBy({
+        by: ["status"],
+        _count: { _all: true },
+      }),
+      prisma.outreachAgentRun.findFirst({
+        orderBy: { ranAt: "desc" },
+        select: { ranAt: true, regions: true, reportSent: true, reportError: true },
+      }),
+    ]);
     const total = counts.reduce((s, c) => s + c._count._all, 0);
     const byStatus = Object.fromEntries(counts.map((c) => [c.status, c._count._all]));
-    res.json({ total, byStatus });
+    res.json({ total, byStatus, lastRun });
   } catch (e) { next(e); }
 });
 
