@@ -190,9 +190,11 @@ export default function Admin() {
   }
 
   async function handleFeedbackStatus(id, status) {
-    await updateFeedbackStatus(id, status);
-    setFeedbackItems((prev) => prev.map((f) => f.id === id ? { ...f, status } : f));
-    if (expandedFeedback?.id === id) setExpandedFeedback((f) => ({ ...f, status }));
+    try {
+      await updateFeedbackStatus(id, status);
+      setFeedbackItems((prev) => prev.map((f) => f.id === id ? { ...f, status } : f));
+      if (expandedFeedback?.id === id) setExpandedFeedback((f) => ({ ...f, status }));
+    } catch (_) {}
   }
 
   async function loadOutreach() {
