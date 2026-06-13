@@ -70,10 +70,10 @@ function toConversation(c) {
   return {
     id: c.id,
     driverId: c.driverId,
-    driverName: c.driver.name,
+    driverName: c.driver?.name ?? null,
     companyId: c.companyId,
     organizationId: c.organizationId ?? null,
-    companyName: c.company.companyName || c.company.name,
+    companyName: c.company?.companyName || c.company?.name || null,
     jobId: c.jobId,
     jobTitle: c.jobTitle,
     selectedByCompanyAt: c.selectedByCompanyAt?.toISOString() ?? null,
