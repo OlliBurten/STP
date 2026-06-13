@@ -493,6 +493,7 @@ export default function CompanyProfile() {
         setDraft(data);
         if (data?.emailNotificationSettings) setNotifSettings(data.emailNotificationSettings);
       })
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, [hasApi]);
 
