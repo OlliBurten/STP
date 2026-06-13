@@ -180,7 +180,7 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
   const handleSend = () => {
     const text = input.trim();
     if (!text) return;
-    sendMessage(conv.id, text, isDriver ? "driver" : "company");
+    sendMessage(conv.id, text, isDriver ? "driver" : "company").catch(() => {});
     setInput("");
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
