@@ -37,6 +37,7 @@ export default function ApplyModal({ job, onClose }) {
       });
       setConversationId(id);
       setSubmitted(true);
+    } catch (_) {
     } finally {
       setSending(false);
     }

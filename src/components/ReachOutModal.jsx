@@ -54,6 +54,7 @@ export default function ReachOutModal({ driver, jobs, onClose, onSuccess }) {
       setConversationId(id);
       setSubmitted(true);
       onSuccess?.();
+    } catch (_) {
     } finally {
       setSending(false);
     }
