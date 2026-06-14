@@ -22,6 +22,7 @@ export default function ReachOutModal({ driver, jobs, onClose, onSuccess }) {
   const [conversationId, setConversationId] = useState(null);
   const [sending, setSending] = useState(false);
   const [suggesting, setSuggesting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const selectedJob = selectedJobId ? jobs.find((j) => j.id === selectedJobId) : null;
   const effectiveCompany = mode === "invite" && selectedJob ? selectedJob.company : companyName;
@@ -38,6 +39,7 @@ export default function ReachOutModal({ driver, jobs, onClose, onSuccess }) {
 
     const job = mode === "invite" && selectedJobId ? jobs.find((j) => j.id === selectedJobId) : null;
     setSending(true);
+    setSubmitError("");
     try {
       const id = await createConversation({
         driverId: driver.id,
@@ -54,7 +56,8 @@ export default function ReachOutModal({ driver, jobs, onClose, onSuccess }) {
       setConversationId(id);
       setSubmitted(true);
       onSuccess?.();
-    } catch (_) {
+    } catch (err) {
+      setSubmitError(err?.message || "Kunde inte skicka förfrågan. Försök igen.");
     } finally {
       setSending(false);
     }
@@ -197,6 +200,9 @@ export default function ReachOutModal({ driver, jobs, onClose, onSuccess }) {
               />
             </div>
 
+            {submitError && (
+              <p style={{ color: "var(--danger)", fontSize: "var(--text-sm)", marginBottom: 12 }}>{submitError}</p>
+            )}
             <button
               type="submit"
               disabled={sending}
@@ -322,6 +328,9 @@ export default function ReachOutModal({ driver, jobs, onClose, onSuccess }) {
             />
           </div>
 
+          {submitError && (
+            <p className="mb-4 text-sm text-red-600">{submitError}</p>
+          )}
           <div className="flex gap-3">
             <button
               type="button"
