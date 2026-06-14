@@ -12,30 +12,30 @@ export const webhooksRouter = Router();
  * URL: https://nodejs-production-f3b9.up.railway.app/api/webhooks/sentry
  * Triggers: issue (new issue + regressions)
  */
-webhooksRouter.post("/sentry", async (req, res) => {
-  // Svara snabbt till Sentry — sen processas eventet asynkront
-  res.json({ ok: true });
-
-  const action = req.body?.action;
-
-  // Hantera bara nya issues och regressioner, inte resolved/assigned etc.
-  if (action && !["created", "triggered", "regression"].includes(action)) {
-    return;
+webhooksRouter.post("/sentry", async (req, res, next) => {
+  try {
+    res.json({ ok: true });
+    const action = req.body?.action;
+    if (action && !["created", "triggered", "regression"].includes(action)) return;
+    handleSentryEvent(req.body).catch((e) =>
+      console.error("[SentryWebhook] Fel:", e?.message || String(e))
+    );
+  } catch (e) {
+    next(e);
   }
-
-  handleSentryEvent(req.body).catch((e) =>
-    console.error("[SentryWebhook] Fel:", e?.message || String(e))
-  );
 });
 
 /**
  * POST /api/webhooks/sentry/process-backlog
  * Admin-only: hämta alla öppna Sentry-issues och försök auto-fixa dem.
  */
-webhooksRouter.post("/sentry/process-backlog", authMiddleware, requireAdmin, async (req, res) => {
-  res.json({ ok: true, message: "Backlog-processing startad, kör i bakgrunden" });
-
-  processBacklog().catch((e) =>
-    console.error("[SentryWebhook] Backlog-fel:", e?.message || String(e))
-  );
+webhooksRouter.post("/sentry/process-backlog", authMiddleware, requireAdmin, async (req, res, next) => {
+  try {
+    res.json({ ok: true, message: "Backlog-processing startad, kör i bakgrunden" });
+    processBacklog().catch((e) =>
+      console.error("[SentryWebhook] Backlog-fel:", e?.message || String(e))
+    );
+  } catch (e) {
+    next(e);
+  }
 });
