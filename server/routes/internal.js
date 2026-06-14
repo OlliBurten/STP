@@ -38,6 +38,16 @@ function tokenHash(token) {
 // Själva token-livslängden: kortast av inbjudans giltighet och 7 dagar.
 const INVITE_TOKEN_TTL_DAYS = 7;
 
+// Unikt fejk-org-nummer per demokonto (format NNNNNN-NNNN). Härleds ur e-posten
+// så att samma konto alltid får samma nummer (idempotent vid om-mintning) men
+// olika konton får olika — companyOrgNumber har en unik constraint i schemat.
+function demoOrgNumber(email) {
+  const h = crypto.createHash("sha256").update(String(email).toLowerCase()).digest("hex");
+  const n = parseInt(h.slice(0, 8), 16) % 100000000; // 8 siffror
+  const s = String(n).padStart(8, "0");
+  return `55${s.slice(0, 4)}-${s.slice(4, 8)}`; // 55NNNN-NNNN = 10 siffror
+}
+
 // ─── Levande demodata ────────────────────────────────────────────────────────
 // Ett demokonto ska kännas som ett aktivt, ifyllt konto — inte ett tomt skal.
 // Vi skapar därför realistisk data ägd av själva demokontot (format hämtat från
@@ -250,7 +260,11 @@ internalRouter.post("/", async (req, res, next) => {
     // till åkeri-funktionerna — utan org-nummer nekas "Mina annonser" m.m.
     const companyFields = wantsCompany
       ? {
-          companyOrgNumber: "559900-0001",
+          // Unikt (men fejk) org-nummer per konto — companyOrgNumber har en unik
+          // constraint, så ett delat nummer kraschade varje nytt åkeri-/BOTH-konto
+          // med 500. Härleds deterministiskt ur e-posten (om-mintning av samma
+          // konto ger samma nummer → ingen kollision vid update).
+          companyOrgNumber: demoOrgNumber(email),
           companyDescription: "Demobolag i Sveriges Transportplattform. Distribution, fjärr och tank i Skåne.",
           companyLocation: "Malmö",
           companyRegion: "Skåne",
