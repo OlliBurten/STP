@@ -159,7 +159,7 @@ function OmOss({ draft, setDraft }) {
     if (fetched.current || about.trim() || !draft?.companyOrgNumber) return;
     fetched.current = true;
     fetch(`/api/utils/company-lookup?orgnr=${encodeURIComponent(draft.companyOrgNumber)}`)
-      .then((r) => r.json())
+      .then((r) => { if (!r.ok) throw new Error('HTTP error'); return r.json(); })
       .then((d) => { if (d.verksamhetsbeskrivning) setBvHint(d.verksamhetsbeskrivning); })
       .catch(() => {});
   }, [about, draft?.companyOrgNumber]);
