@@ -23,8 +23,12 @@ function DemoRoleSwitch({ isCompany, onSwitch }) {
     <div style={{
       display: "inline-flex", alignItems: "center", gap: 2, padding: 3,
       borderRadius: 9, background: "rgba(255,255,255,0.07)",
-      border: "1px solid rgba(255,255,255,0.1)", marginRight: 16, flexShrink: 0,
+      border: "1px solid rgba(255,255,255,0.1)", marginRight: 24, flexShrink: 0,
     }} title="Demo: växla mellan åkeri- och förarvyn">
+      <span style={{
+        fontSize: 9, fontWeight: 800, letterSpacing: 0.8,
+        color: "rgba(232,237,237,0.45)", padding: "0 6px 0 4px", userSelect: "none",
+      }}>DEMO</span>
       {opts.map((o) => (
         <button
           key={o.key}
@@ -427,7 +431,7 @@ export default function AppTopNav() {
               boxShadow: "inset 0 -2px 0 rgba(0,0,0,0.25)",
             }}>S</div>
             <span style={{ fontWeight: 800, fontSize: "var(--text-lg)", letterSpacing: 0.5, color: "#e8eded" }}>STP</span>
-            {isCompany && (
+            {isCompany && !isDemoBoth && (
               <span style={{
                 fontSize: "var(--text-2xs)", color: "rgba(232,237,237,0.5)",
                 paddingLeft: 8, marginLeft: 4,
