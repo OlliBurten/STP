@@ -9,6 +9,10 @@ export function parseAdminEmails() {
 
 export function isAdminEmail(email) {
   if (!email) return false;
+  // Hård spärr: demo-miljön har ALDRIG admin-åtkomst. Adminpanelen är bara för
+  // grundaren i produktion — demokonton (kund/partner/investerare) ska aldrig
+  // kunna nå den, oavsett vad ADMIN_EMAILS råkar vara satt till på demo.
+  if (String(process.env.DEPLOYMENT || "").trim().toLowerCase() === "demo") return false;
   return parseAdminEmails().includes(String(email).trim().toLowerCase());
 }
 
