@@ -56,6 +56,8 @@ function verifyToken(req, res, next, token, optional = false) {
             role: true,
             suspendedAt: true,
             emailVerifiedAt: true,
+            isDemo: true,
+            demoExpiresAt: true,
           },
         }),
       ]);
@@ -113,6 +115,14 @@ function verifyToken(req, res, next, token, optional = false) {
       if (!user.emailVerifiedAt) {
         return res.status(403).json({
           error: "Verifiera din e-post innan du fortsätter.",
+        });
+      }
+      // Stoppa ett redan inloggat demokonto vid nästa API-anrop om det gått ut.
+      if (user.isDemo && user.demoExpiresAt && new Date(user.demoExpiresAt) < new Date()) {
+        if (optional) return next();
+        return res.status(403).json({
+          error: "Det här demokontot har gått ut.",
+          code: "DEMO_EXPIRED",
         });
       }
       req.userId = user.id;

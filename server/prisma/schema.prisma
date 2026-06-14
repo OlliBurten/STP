@@ -35,6 +35,12 @@ model User {
   policyAgreedAt     DateTime?                // När de godkände STP:s policy
   profileSuggestions Json?                    // Auto-genererade profilförslag (åkerier) — publiceras ALDRIG utan godkännande
   suggestionsGeneratedAt DateTime?            // När förslagen genererades (guard: en gång per konto)
+  // Demokonton — tidsbegränsade konton som delas ut till kunder/partners/investerare.
+  // Skapas ENBART i demo-miljön (DEPLOYMENT=demo). Räknas som icke-riktiga användare
+  // i statistik och exkluderas från alla utskick (se lib/testAccounts.js, reminders.js).
+  isDemo        Boolean   @default(false)
+  demoExpiresAt DateTime?                      // När demokontot slutar fungera (inloggning + API nekas)
+  demoLabel     String?                        // Fritext: vem kontot delats ut till, t.ex. "Investerare – Almi"
   suspendedAt DateTime?
   suspensionReason String?
   warningCount Int @default(0)

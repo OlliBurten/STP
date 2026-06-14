@@ -6,7 +6,16 @@ import { createNotification } from "../lib/notifications.js";
 import { notifyCompanyApproved } from "../lib/email.js";
 import { runVerificationReminders } from "../lib/verificationReminders.js";
 import { createAdminAuditLog, getAdminActorId, isAdminEmail } from "../lib/adminAccess.js";
-import { isTestAccountEmail, excludeTestAccountsWhere } from "../lib/testAccounts.js";
+import { isNonRealUser, excludeTestAndDemoAccountsWhere } from "../lib/testAccounts.js";
+import bcrypt from "bcryptjs";
+import {
+  isDemoEnvironment,
+  generateDemoEmail,
+  generateDemoPassword,
+  clampDemoDays,
+  demoExpiryDate,
+  isDemoExpired,
+} from "../lib/demoAccounts.js";
 import { JWT_SECRET } from "../lib/config.js";
 
 export const adminRouter = Router();
@@ -334,10 +343,10 @@ adminRouter.get("/summary", async (req, res, next) => {
       prisma.user.count({ where: { createdAt: { gte: since7d } } }),
       prisma.user.count({ where: { createdAt: { gte: since30d } } }),
       prisma.user.count({ where: { createdAt: { gte: since365d } } }),
-      // Exkluderar testkonton (delad heuristik i lib/testAccounts.js) så att
+      // Exkluderar test- OCH demokonton (delad heuristik i lib/testAccounts.js) så att
       // sidopanelens räknare matchar adminens användarlista med standardfiltret på.
-      prisma.user.count({ where: { role: "DRIVER", ...excludeTestAccountsWhere } }),
-      prisma.user.count({ where: { role: { in: ["COMPANY", "RECRUITER"] }, ...excludeTestAccountsWhere } }),
+      prisma.user.count({ where: { role: "DRIVER", ...excludeTestAndDemoAccountsWhere } }),
+      prisma.user.count({ where: { role: { in: ["COMPANY", "RECRUITER"] }, ...excludeTestAndDemoAccountsWhere } }),
       prisma.job.count(),
       prisma.job.count({ where: { status: "ACTIVE" } }),
       prisma.job.count({ where: { status: "HIDDEN" } }),
@@ -533,6 +542,9 @@ adminRouter.get("/users", async (req, res, next) => {
         lastWarnedAt: true,
         lastLoginAt: true,
         createdAt: true,
+        isDemo: true,
+        demoExpiresAt: true,
+        demoLabel: true,
         driverProfile: {
           select: {
             phone: true,
@@ -591,7 +603,9 @@ adminRouter.get("/users", async (req, res, next) => {
           isAdmin: isAdminEmail(u.email),
           // Test-/utvecklarkonto enligt delad heuristik (server/lib/testAccounts.js).
           // Admin-UI:t döljer dessa som standard så att statistiken speglar riktiga användare.
-          isTestAccount: isTestAccountEmail(u.email),
+          // Demokonton (isDemo) räknas som icke-riktiga på samma sätt som testkonton.
+          isTestAccount: isNonRealUser(u),
+          demoExpiresAt: u.demoExpiresAt?.toISOString() ?? null,
           emailVerifiedAt: u.emailVerifiedAt?.toISOString() ?? null,
           suspendedAt: u.suspendedAt?.toISOString() ?? null,
           lastWarnedAt: u.lastWarnedAt?.toISOString() ?? null,
@@ -1704,4 +1718,153 @@ adminRouter.patch("/feedback/:id", async (req, res, next) => {
     });
     res.json(updated);
   } catch (e) { next(e); }
+});
+
+// ─── Demokonton ─────────────────────────────────────────────────────────────
+// Tidsbegränsade konton som delas ut till kunder/partners/investerare så de kan
+// logga in och se hela plattformen fylld med demo-data. De skapas ENBART i
+// demo-miljön (separat DB + frontend) — aldrig i produktion, se guarden nedan.
+
+function demoLoginUrl() {
+  // FRONTEND_URL pekar på demo-frontend i demo-env. Faller tillbaka på localhost.
+  const first = (process.env.FRONTEND_URL || "")
+    .split(",")
+    .map((o) => o.trim().replace(/\/$/, ""))
+    .filter(Boolean)[0] || "http://localhost:5173";
+  return `${first}/login`;
+}
+
+// POST /api/admin/demo-accounts — skapa ett demokonto.
+adminRouter.post("/demo-accounts", async (req, res, next) => {
+  try {
+    // SÄKERHETSSPÄRR: demokonton får ALDRIG skapas i produktion. Produktionens
+    // backend har DEPLOYMENT=production; bara demo-miljön (DEPLOYMENT=demo) släpps
+    // igenom. Annars skulle ett demokonto med VERIFIED-status och förbiverifierad
+    // e-post kunna skapas mot riktig produktionsdata — det vill vi aldrig riskera.
+    if (!isDemoEnvironment()) {
+      return res.status(403).json({
+        error: "Demokonton kan bara skapas i demo-miljön",
+        code: "NOT_DEMO_ENV",
+      });
+    }
+
+    const role = String(req.body?.role || "").trim().toUpperCase();
+    if (role !== "DRIVER" && role !== "COMPANY") {
+      return res.status(400).json({ error: "Ogiltig roll. Välj DRIVER eller COMPANY." });
+    }
+    const label = String(req.body?.label || "").trim().slice(0, 200);
+    if (!label) {
+      return res.status(400).json({ error: "Ange en etikett (vem kontot delas ut till)." });
+    }
+    const days = clampDemoDays(req.body?.days ?? undefined);
+    const expiresAt = demoExpiryDate(days);
+
+    const password = generateDemoPassword();
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    // E-post är slumpgenererad; kollidera knappast, men gör några försök för säkerhets skull.
+    let user = null;
+    for (let attempt = 0; attempt < 5 && !user; attempt++) {
+      const email = generateDemoEmail(role);
+      const existing = await prisma.user.findUnique({ where: { email }, select: { id: true } });
+      if (existing) continue;
+      user = await prisma.user.create({
+        data: {
+          email,
+          passwordHash,
+          name: role === "COMPANY" ? `Demo Åkeri (${label})` : `Demo Förare (${label})`,
+          role,
+          emailVerifiedAt: new Date(),           // förkonfigurerat — ingen verifiering behövs
+          companyStatus: "VERIFIED",             // COMPANY slipper PENDING-spärren
+          isDemo: true,
+          demoExpiresAt: expiresAt,
+          demoLabel: label,
+        },
+      });
+    }
+    if (!user) {
+      return res.status(500).json({ error: "Kunde inte generera ett unikt demokonto. Försök igen." });
+    }
+
+    await createAdminAuditLog({
+      req,
+      action: "DEMO_ACCOUNT_CREATED",
+      targetUserId: user.id,
+      targetType: "USER",
+      metadata: { role, label, days, expiresAt: expiresAt.toISOString() },
+    });
+
+    return res.status(201).json({
+      loginUrl: demoLoginUrl(),
+      email: user.email,
+      password, // visas EN gång — sparas aldrig i klartext
+      role,
+      expiresAt: expiresAt.toISOString(),
+      label,
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// GET /api/admin/demo-accounts — lista alla demokonton (aktiva + utgångna).
+adminRouter.get("/demo-accounts", async (req, res, next) => {
+  try {
+    const accounts = await prisma.user.findMany({
+      where: { isDemo: true },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        demoLabel: true,
+        demoExpiresAt: true,
+        lastLoginAt: true,
+        createdAt: true,
+      },
+    });
+    const now = new Date();
+    res.json(
+      accounts.map((a) => ({
+        id: a.id,
+        email: a.email,
+        role: a.role,
+        label: a.demoLabel,
+        demoExpiresAt: a.demoExpiresAt?.toISOString() ?? null,
+        lastLoginAt: a.lastLoginAt?.toISOString() ?? null,
+        createdAt: a.createdAt.toISOString(),
+        status: isDemoExpired(a, now) ? "expired" : "active",
+      }))
+    );
+  } catch (e) {
+    next(e);
+  }
+});
+
+// DELETE /api/admin/demo-accounts/:id — återkalla (hård radering, bara demokonton).
+adminRouter.delete("/demo-accounts/:id", async (req, res, next) => {
+  try {
+    const target = await prisma.user.findUnique({
+      where: { id: req.params.id },
+      select: { id: true, isDemo: true, email: true, demoLabel: true },
+    });
+    if (!target) {
+      return res.status(404).json({ error: "Kontot hittades inte." });
+    }
+    // Skyddsspärr: radera ALDRIG ett icke-demokonto via den här routen.
+    if (!target.isDemo) {
+      return res.status(400).json({ error: "Det här är inte ett demokonto och kan inte raderas här." });
+    }
+    await prisma.user.delete({ where: { id: target.id } });
+    await createAdminAuditLog({
+      req,
+      action: "DEMO_ACCOUNT_REVOKED",
+      targetUserId: null, // användaren är raderad
+      targetType: "USER",
+      metadata: { email: target.email, label: target.demoLabel || null },
+    });
+    res.json({ ok: true });
+  } catch (e) {
+    next(e);
+  }
 });

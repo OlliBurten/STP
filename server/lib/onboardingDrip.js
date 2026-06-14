@@ -155,6 +155,7 @@ export async function runOnboardingDrip() {
     prisma.user.findMany({
       where: {
         role: "DRIVER",
+        isDemo: false, // demokonton ska aldrig få utskick
         createdAt: { gte: since1dAgo, lt: until1dAgo },
         onboardingDrip1SentAt: null,
       },
@@ -163,6 +164,7 @@ export async function runOnboardingDrip() {
     prisma.user.findMany({
       where: {
         role: "DRIVER",
+        isDemo: false, // demokonton ska aldrig få utskick
         createdAt: { gte: since3dAgo, lt: until3dAgo },
         onboardingDrip3SentAt: null,
       },
@@ -171,6 +173,7 @@ export async function runOnboardingDrip() {
     prisma.user.findMany({
       where: {
         role: "DRIVER",
+        isDemo: false, // demokonton ska aldrig få utskick
         createdAt: { gte: since7dAgo, lt: until7dAgo },
         onboardingDrip7SentAt: null,
       },

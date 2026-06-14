@@ -9,6 +9,10 @@ const columnMigrations = [
   // Profilberikning för åkerier (förslag som granskas innan publicering)
   `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "profileSuggestions" JSONB`,
   `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "suggestionsGeneratedAt" TIMESTAMP(3)`,
+  // Demokonton (tidsbegränsade konton för kund-/partner-/investerardemos, skapas bara i demo-miljön)
+  `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "isDemo" BOOLEAN NOT NULL DEFAULT false`,
+  `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "demoExpiresAt" TIMESTAMP(3)`,
+  `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "demoLabel" TEXT`,
 ];
 
 async function main() {

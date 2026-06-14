@@ -62,6 +62,7 @@ export async function runProfileReminders() {
     where: {
       emailVerifiedAt: { not: null },
       suspendedAt: null,
+      isDemo: false, // demokonton ska aldrig få utskick
       profileReminderCount: { lt: MAX_REMINDERS },
       OR: [
         { profileReminderSentAt: null },
@@ -252,6 +253,7 @@ export async function runJobMatchReminders() {
       role: "DRIVER",
       emailVerifiedAt: { not: null },
       suspendedAt: null,
+      isDemo: false, // demokonton ska aldrig få utskick
       OR: [
         { lastMatchJobEmailAt: null },
         { lastMatchJobEmailAt: { lt: cutoff } },
@@ -372,6 +374,7 @@ export async function runMessageReminders() {
     where: {
       emailVerifiedAt: { not: null },
       suspendedAt: null,
+      isDemo: false, // demokonton ska aldrig få utskick
       OR: [
         { messageReminderSentAt: null },
         { messageReminderSentAt: { lt: cooldownCutoff } },
@@ -468,6 +471,7 @@ export async function runInactivityReminders() {
     where: {
       emailVerifiedAt: { not: null },
       suspendedAt: null,
+      isDemo: false, // demokonton ska aldrig få utskick
       needsDriverOnboarding: false,
       needsRecruiterOnboarding: false,
       lastLoginAt: { lt: inactiveCutoff },
@@ -641,6 +645,7 @@ export async function runVerificationReminders() {
     where: {
       emailVerifiedAt: null,
       suspendedAt: null,
+      isDemo: false, // demokonton ska aldrig få utskick
       createdAt: { lt: delayCutoff },
       lastVerificationReminderAt: null, // only users who haven't received a reminder yet
     },
@@ -681,6 +686,7 @@ export async function runFastResponderUpdate() {
   const drivers = await prisma.driverProfile.findMany({
     where: {
       user: {
+        isDemo: false, // demokonton ska aldrig få utskick
         conversationsAsDriver: {
           some: { createdAt: { gte: cutoff } },
         },
@@ -769,6 +775,7 @@ export async function runCertExpiryReminders() {
       user: {
         emailVerifiedAt: { not: null },
         suspendedAt: null,
+        isDemo: false, // demokonton ska aldrig få utskick
       },
     },
     select: {
@@ -881,6 +888,7 @@ export async function runWeeklyProfileViewDigest() {
       role: "DRIVER",
       emailVerifiedAt: { not: null },
       suspendedAt: null,
+      isDemo: false, // demokonton ska aldrig få utskick
     },
     select: { id: true, email: true, name: true, emailNotificationSettings: true },
   });

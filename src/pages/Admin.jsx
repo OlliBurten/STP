@@ -30,6 +30,7 @@ import { T, INP, Btn, StatusBadge, SectionCard, useIsMobile, fmtDate } from "../
 import AdminOverviewTab from "../components/admin/AdminOverviewTab";
 import AdminUsersTab from "../components/admin/AdminUsersTab";
 import AdminOutreachTab from "../components/admin/AdminOutreachTab";
+import AdminDemoTab from "../components/admin/AdminDemoTab";
 import { AdminSidebar, AdminTopBar, AdminCmdK } from "../components/admin/AdminShell";
 
 
@@ -1407,6 +1408,11 @@ export default function Admin() {
             </div>
           </SectionCard>
           </div>
+        )}
+
+        {/* ── Demokonton ── */}
+        {activeTab === "demo" && (
+          <AdminDemoTab health={health} setError={setError} setSuccess={setSuccess} />
         )}
 
         {/* ── Inställningar ── */}

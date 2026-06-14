@@ -41,3 +41,22 @@ export const excludeTestAccountsWhere = {
     ...TEST_EMAIL_EXACT.map((e) => ({ email: { equals: e, mode: "insensitive" } })),
   ],
 };
+
+// Ett konto är "icke-riktigt" om det är ett testkonto ELLER ett demokonto.
+// Demokonton (isDemo=true) delas ut för demos och ska behandlas som testkonton
+// i admin-statistik och filter. Komplement till isTestAccountEmail (bryt inte den signaturen).
+export function isNonRealUser(user) {
+  if (!user) return false;
+  return Boolean(user.isDemo) || isTestAccountEmail(user.email);
+}
+
+// Prisma-where som exkluderar både testkonton OCH demokonton.
+// Använd denna i adminens räknare/listfilter så demokonton behandlas konsekvent.
+export const excludeTestAndDemoAccountsWhere = {
+  NOT: [
+    { isDemo: true },
+    ...TEST_EMAIL_SUFFIXES.map((s) => ({ email: { endsWith: s, mode: "insensitive" } })),
+    ...TEST_EMAIL_PREFIXES.map((p) => ({ email: { startsWith: p, mode: "insensitive" } })),
+    ...TEST_EMAIL_EXACT.map((e) => ({ email: { equals: e, mode: "insensitive" } })),
+  ],
+};

@@ -70,6 +70,7 @@ const NAV_GROUPS = [
     { id: "feedback",  l: "Feedback",   n: "feedback" },
   ]},
   { l: "System", items: [
+    { id: "demo",         l: "Demokonton",    n: "truck" },
     { id: "integrations", l: "Integrationer", n: "plug", badge: "MCP" },
     { id: "settings",     l: "Inställningar", n: "cog" },
   ]},

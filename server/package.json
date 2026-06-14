@@ -6,7 +6,7 @@
     "dev": "node emails/build.mjs && node --watch --import ./instrument.js server.js",
     "start": "node emails/build.mjs && npx prisma generate && node scripts/migrate-add-columns.js && (npx prisma db push --accept-data-loss 2>/dev/null || true) && node --import ./instrument.js server.js",
     "build:emails": "node emails/build.mjs",
-    "test": "node emails/build.mjs && APP_LISTEN=false node --test test/api.test.js test/companyProfileChecklist.test.js test/companyEnrichment.test.js",
+    "test": "node emails/build.mjs && APP_LISTEN=false node --test test/api.test.js test/companyProfileChecklist.test.js test/companyEnrichment.test.js test/demoAccounts.test.js",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",

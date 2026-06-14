@@ -113,3 +113,16 @@ export function deleteUser(id) {
 export function listSchools() {
   return apiGet("/api/admin/schools");
 }
+
+// ─── Demokonton ──────────────────────────────────────────────────────────────
+export function listDemoAccounts() {
+  return apiGet("/api/admin/demo-accounts");
+}
+
+export function createDemoAccount({ role, label, days }) {
+  return apiPost("/api/admin/demo-accounts", { role, label, days });
+}
+
+export function revokeDemoAccount(id) {
+  return apiDelete(`/api/admin/demo-accounts/${id}`);
+}

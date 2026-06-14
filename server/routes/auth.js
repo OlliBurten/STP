@@ -497,6 +497,13 @@ authRouter.post("/login", validateBody(loginSchema), async (req, res, next) => {
         code: "EMAIL_NOT_VERIFIED",
       });
     }
+    // Tidsbegränsat demokonto som passerat sitt utgångsdatum nekas inloggning.
+    if (user.isDemo && user.demoExpiresAt && new Date(user.demoExpiresAt) < new Date()) {
+      return res.status(403).json({
+        error: "Det här demokontot har gått ut.",
+        code: "DEMO_EXPIRED",
+      });
+    }
     const hadLoggedInBefore = Boolean(user.lastLoginAt);
     await prisma.user.update({
       where: { id: user.id },
