@@ -18,7 +18,7 @@ import { getBranschLabel } from "../data/bransch.js";
 import { getCertificateLabel } from "../data/profileData";
 import { scheduleTypes } from "../data/mockJobs";
 import { isJobOlderThan30Days } from "../utils/jobUtils.js";
-import { HeartFilledIcon, HeartOutlineIcon, LocationIcon, CheckIcon, WarningIcon } from "../components/Icons";
+import { HeartFilledIcon, HeartOutlineIcon, LocationIcon, CheckIcon, WarningIcon, StarFilledIcon } from "../components/Icons";
 import Breadcrumbs from "../components/Breadcrumbs";
 import LoadingBlock from "../components/LoadingBlock";
 import { useToast } from "../context/ToastContext";
