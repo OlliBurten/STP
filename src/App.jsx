@@ -71,6 +71,7 @@ const Messages              = lazyRetry(() => import("./pages/Messages"));
 const Login                 = lazyRetry(() => import("./pages/Login"));
 const VerifyEmail           = lazyRetry(() => import("./pages/VerifyEmail"));
 const ResetPassword         = lazyRetry(() => import("./pages/ResetPassword"));
+const DemoWelcome           = lazyRetry(() => import("./pages/DemoWelcome"));
 const Terms                 = lazyRetry(() => import("./pages/Terms"));
 const Privacy               = lazyRetry(() => import("./pages/Privacy"));
 const Admin                 = lazyRetry(() => import("./pages/Admin"));
@@ -314,7 +315,7 @@ function AppLayout() {
      pathname.startsWith("/onboarding/forare"));
 
   // Auth pages are standalone full-screen layouts — no site header/footer
-  const isAuthPage = ["/login", "/registrera", "/verifiera-email", "/aterstall-losenord"].some(p => pathname.startsWith(p));
+  const isAuthPage = ["/login", "/registrera", "/verifiera-email", "/aterstall-losenord", "/demo-valkommen"].some(p => pathname.startsWith(p));
 
   // Admin pages use their own sidebar layout — no top nav
   const isAdminPage = pathname.startsWith("/admin");
@@ -383,6 +384,7 @@ function AppLayout() {
                   <Route path="/invite/accept" element={<InviteAccept />} />
                   <Route path="/verifiera-email" element={<VerifyEmail />} />
                   <Route path="/aterstall-losenord" element={<ResetPassword />} />
+                  <Route path="/demo-valkommen" element={<DemoWelcome />} />
                   <Route path="/anvandarvillkor" element={<Terms />} />
                   <Route path="/integritet" element={<Privacy />} />
                   <Route

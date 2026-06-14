@@ -3,20 +3,18 @@ import jwt from "jsonwebtoken";
 import { prisma } from "../lib/prisma.js";
 import { authMiddleware, requireAdmin } from "../middleware/auth.js";
 import { createNotification } from "../lib/notifications.js";
-import { notifyCompanyApproved } from "../lib/email.js";
+import { notifyCompanyApproved, sendEmail } from "../lib/email.js";
 import { runVerificationReminders } from "../lib/verificationReminders.js";
 import { createAdminAuditLog, getAdminActorId, isAdminEmail } from "../lib/adminAccess.js";
 import { isNonRealUser, excludeTestAndDemoAccountsWhere } from "../lib/testAccounts.js";
-import bcrypt from "bcryptjs";
-import {
-  isDemoEnvironment,
-  generateDemoEmail,
-  generateDemoPassword,
-  clampDemoDays,
-  demoExpiryDate,
-  isDemoExpired,
-} from "../lib/demoAccounts.js";
 import { JWT_SECRET } from "../lib/config.js";
+import {
+  isDemoConfigured,
+  buildDemoWelcomeUrl,
+  createDemoInvite,
+  listDemoInvites,
+  deleteDemoInvite,
+} from "../lib/demoRemote.js";
 
 export const adminRouter = Router();
 const IMPERSONATION_TTL_SECONDS = 60 * 60 * 2;
@@ -1720,151 +1718,113 @@ adminRouter.patch("/feedback/:id", async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
-// ─── Demokonton ─────────────────────────────────────────────────────────────
-// Tidsbegränsade konton som delas ut till kunder/partners/investerare så de kan
-// logga in och se hela plattformen fylld med demo-data. De skapas ENBART i
-// demo-miljön (separat DB + frontend) — aldrig i produktion, se guarden nedan.
+// ─── Demoinbjudningar ───────────────────────────────────────────────────────
+// Grundaren sköter allt från PRODUKTIONENS adminpanel: skriver e-post + roll +
+// etikett → prod fjärrstyr demo-backenden (skapar konto + token i demo-DB:n) →
+// prod skickar inbjudningsmejlet (prod har RESEND_API_KEY). Mottagaren klickar i
+// mejlet, sätter eget lösenord på demo-frontendens välkomstsida och landar
+// inloggad i demo-miljön. Token avslöjas ALDRIG i API-svaret/UI:t — bara via mejl.
 
-function demoLoginUrl() {
-  // FRONTEND_URL pekar på demo-frontend i demo-env. Faller tillbaka på localhost.
-  const first = (process.env.FRONTEND_URL || "")
-    .split(",")
-    .map((o) => o.trim().replace(/\/$/, ""))
-    .filter(Boolean)[0] || "http://localhost:5173";
-  return `${first}/login`;
+// 503 om DEMO_API_URL/DEMO_SERVICE_SECRET saknas på prod.
+function ensureDemoConfigured(res) {
+  if (!isDemoConfigured()) {
+    res.status(503).json({
+      error: "Demo-miljön är inte konfigurerad",
+      code: "DEMO_NOT_CONFIGURED",
+    });
+    return false;
+  }
+  return true;
 }
 
-// POST /api/admin/demo-accounts — skapa ett demokonto.
-adminRouter.post("/demo-accounts", async (req, res, next) => {
-  try {
-    // SÄKERHETSSPÄRR: demokonton får ALDRIG skapas i produktion. Produktionens
-    // backend har DEPLOYMENT=production; bara demo-miljön (DEPLOYMENT=demo) släpps
-    // igenom. Annars skulle ett demokonto med VERIFIED-status och förbiverifierad
-    // e-post kunna skapas mot riktig produktionsdata — det vill vi aldrig riskera.
-    if (!isDemoEnvironment()) {
-      return res.status(403).json({
-        error: "Demokonton kan bara skapas i demo-miljön",
-        code: "NOT_DEMO_ENV",
-      });
-    }
+// Inbjudningsmejlets text. Varmt, svenskt, tydligt om att det är en demo-miljö.
+function demoInviteEmail({ welcomeUrl, demoExpiresAt }) {
+  const exp = demoExpiresAt
+    ? new Date(demoExpiresAt).toLocaleDateString("sv-SE", { day: "numeric", month: "long", year: "numeric" })
+    : null;
+  const text = [
+    "Hej!",
+    "Du har blivit inbjuden att utforska Sveriges Transportplattform i en demo-miljö. Här ser du hela plattformen fylld med exempeldata — inga riktiga användare berörs.",
+    "Klicka på knappen nedan för att sätta ditt lösenord och komma igång. Du loggas in direkt efteråt.",
+    exp ? `Inbjudan gäller t.o.m. ${exp}.` : null,
+    "Varmt välkommen!\nSveriges Transportplattform",
+  ].filter(Boolean).join("\n\n");
+  return {
+    subject: "Du är inbjuden till Sveriges Transportplattform (demo)",
+    heading: "Välkommen till demo-miljön",
+    text,
+    ctaUrl: welcomeUrl,
+    ctaText: "Kom igång",
+  };
+}
 
+// POST /api/admin/demo-invites — skapa demokonto i demo-miljön + mejla inbjudan.
+adminRouter.post("/demo-invites", async (req, res, next) => {
+  try {
+    if (!ensureDemoConfigured(res)) return;
+
+    const email = String(req.body?.email || "").trim().toLowerCase();
+    if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      return res.status(400).json({ error: "Ange en giltig e-postadress." });
+    }
     const role = String(req.body?.role || "").trim().toUpperCase();
     if (role !== "DRIVER" && role !== "COMPANY") {
       return res.status(400).json({ error: "Ogiltig roll. Välj DRIVER eller COMPANY." });
     }
     const label = String(req.body?.label || "").trim().slice(0, 200);
-    if (!label) {
-      return res.status(400).json({ error: "Ange en etikett (vem kontot delas ut till)." });
-    }
-    const days = clampDemoDays(req.body?.days ?? undefined);
-    const expiresAt = demoExpiryDate(days);
+    const days = req.body?.days;
 
-    const password = generateDemoPassword();
-    const passwordHash = await bcrypt.hash(password, 10);
+    // Fjärrstyr demo-backenden: skapar kontot + inbjudningstoken i demo-DB:n.
+    const created = await createDemoInvite({ email, role, label, days });
+    const welcomeUrl = buildDemoWelcomeUrl(created.token);
 
-    // E-post är slumpgenererad; kollidera knappast, men gör några försök för säkerhets skull.
-    let user = null;
-    for (let attempt = 0; attempt < 5 && !user; attempt++) {
-      const email = generateDemoEmail(role);
-      const existing = await prisma.user.findUnique({ where: { email }, select: { id: true } });
-      if (existing) continue;
-      user = await prisma.user.create({
-        data: {
-          email,
-          passwordHash,
-          name: role === "COMPANY" ? `Demo Åkeri (${label})` : `Demo Förare (${label})`,
-          role,
-          emailVerifiedAt: new Date(),           // förkonfigurerat — ingen verifiering behövs
-          companyStatus: "VERIFIED",             // COMPANY slipper PENDING-spärren
-          isDemo: true,
-          demoExpiresAt: expiresAt,
-          demoLabel: label,
-        },
-      });
-    }
-    if (!user) {
-      return res.status(500).json({ error: "Kunde inte generera ett unikt demokonto. Försök igen." });
-    }
+    // Skicka inbjudningsmejlet (prod har RESEND_API_KEY).
+    const mail = demoInviteEmail({ welcomeUrl, demoExpiresAt: created.demoExpiresAt });
+    await sendEmail({ to: email, ...mail });
 
     await createAdminAuditLog({
       req,
-      action: "DEMO_ACCOUNT_CREATED",
-      targetUserId: user.id,
+      action: "DEMO_INVITE_SENT",
+      targetUserId: null, // kontot lever i demo-DB:n, inte prod-DB:n
       targetType: "USER",
-      metadata: { role, label, days, expiresAt: expiresAt.toISOString() },
+      metadata: { email, role, label: label || null, demoExpiresAt: created.demoExpiresAt },
     });
 
-    return res.status(201).json({
-      loginUrl: demoLoginUrl(),
-      email: user.email,
-      password, // visas EN gång — sparas aldrig i klartext
-      role,
-      expiresAt: expiresAt.toISOString(),
-      label,
-    });
+    // Avslöja ALDRIG token i svaret — den går bara via mejl.
+    return res.status(201).json({ ok: true, email, demoExpiresAt: created.demoExpiresAt });
   } catch (e) {
+    if (e?.status) return res.status(e.status).json({ error: e.message });
     next(e);
   }
 });
 
-// GET /api/admin/demo-accounts — lista alla demokonton (aktiva + utgångna).
-adminRouter.get("/demo-accounts", async (req, res, next) => {
+// GET /api/admin/demo-invites — lista demokonton (proxar till demo).
+adminRouter.get("/demo-invites", async (req, res, next) => {
   try {
-    const accounts = await prisma.user.findMany({
-      where: { isDemo: true },
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        email: true,
-        role: true,
-        demoLabel: true,
-        demoExpiresAt: true,
-        lastLoginAt: true,
-        createdAt: true,
-      },
-    });
-    const now = new Date();
-    res.json(
-      accounts.map((a) => ({
-        id: a.id,
-        email: a.email,
-        role: a.role,
-        label: a.demoLabel,
-        demoExpiresAt: a.demoExpiresAt?.toISOString() ?? null,
-        lastLoginAt: a.lastLoginAt?.toISOString() ?? null,
-        createdAt: a.createdAt.toISOString(),
-        status: isDemoExpired(a, now) ? "expired" : "active",
-      }))
-    );
+    if (!ensureDemoConfigured(res)) return;
+    const list = await listDemoInvites();
+    res.json(Array.isArray(list) ? list : []);
   } catch (e) {
+    if (e?.status) return res.status(e.status).json({ error: e.message });
     next(e);
   }
 });
 
-// DELETE /api/admin/demo-accounts/:id — återkalla (hård radering, bara demokonton).
-adminRouter.delete("/demo-accounts/:id", async (req, res, next) => {
+// DELETE /api/admin/demo-invites/:id — återkalla demokonto (proxar till demo).
+adminRouter.delete("/demo-invites/:id", async (req, res, next) => {
   try {
-    const target = await prisma.user.findUnique({
-      where: { id: req.params.id },
-      select: { id: true, isDemo: true, email: true, demoLabel: true },
-    });
-    if (!target) {
-      return res.status(404).json({ error: "Kontot hittades inte." });
-    }
-    // Skyddsspärr: radera ALDRIG ett icke-demokonto via den här routen.
-    if (!target.isDemo) {
-      return res.status(400).json({ error: "Det här är inte ett demokonto och kan inte raderas här." });
-    }
-    await prisma.user.delete({ where: { id: target.id } });
+    if (!ensureDemoConfigured(res)) return;
+    const result = await deleteDemoInvite(req.params.id);
     await createAdminAuditLog({
       req,
-      action: "DEMO_ACCOUNT_REVOKED",
-      targetUserId: null, // användaren är raderad
+      action: "DEMO_INVITE_REVOKED",
+      targetUserId: null,
       targetType: "USER",
-      metadata: { email: target.email, label: target.demoLabel || null },
+      metadata: { email: result?.email || null, demoUserId: req.params.id },
     });
     res.json({ ok: true });
   } catch (e) {
+    if (e?.status) return res.status(e.status).json({ error: e.message });
     next(e);
   }
 });

@@ -43,6 +43,7 @@ import { outreachRouter } from "./routes/outreach.js";
 import { webhooksRouter } from "./routes/webhooks.js";
 import { applicationsRouter } from "./routes/applications.js";
 import { claimsRouter } from "./routes/claims.js";
+import { internalRouter } from "./routes/internal.js";
 import { isGoogleConfigured, isMicrosoftConfigured } from "./lib/oauth.js";
 import { JWT_SECRET } from "./lib/config.js";
 import { startReminderScheduler } from "./lib/reminderScheduler.js";
@@ -179,6 +180,10 @@ app.use("/api/outreach", outreachRouter);
 app.use("/api/webhooks", webhooksRouter);
 app.use("/api/applications", apiWriteLimiter, applicationsRouter);
 app.use("/api/claims", apiPublicLimiter, claimsRouter);
+// Interna service-endpoints för demokonton (skyddas av DEPLOYMENT=demo + service-secret i routern).
+// Mountas på den SPECIFIKA sökvägen — inte hela /api/internal — så routerns demo-guard
+// inte blockerar de befintliga cron-endpointsen (/api/internal/migrate, /send-reminders, /ingest-jobs).
+app.use("/api/internal/demo-invites", internalRouter);
 
 app.get("/", (_, res) => {
   res.json({

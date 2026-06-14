@@ -114,15 +114,16 @@ export function listSchools() {
   return apiGet("/api/admin/schools");
 }
 
-// ─── Demokonton ──────────────────────────────────────────────────────────────
-export function listDemoAccounts() {
-  return apiGet("/api/admin/demo-accounts");
+// ─── Demoinbjudningar ────────────────────────────────────────────────────────
+// Skapas från produktions-adminen, som fjärrstyr demo-miljön och mejlar inbjudan.
+export function listDemoInvites() {
+  return apiGet("/api/admin/demo-invites");
 }
 
-export function createDemoAccount({ role, label, days }) {
-  return apiPost("/api/admin/demo-accounts", { role, label, days });
+export function sendDemoInvite({ email, role, label, days }) {
+  return apiPost("/api/admin/demo-invites", { email, role, label, days });
 }
 
-export function revokeDemoAccount(id) {
-  return apiDelete(`/api/admin/demo-accounts/${id}`);
+export function revokeDemoInvite(id) {
+  return apiDelete(`/api/admin/demo-invites/${id}`);
 }

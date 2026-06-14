@@ -841,7 +841,9 @@ authRouter.post("/reset-password", validateBody(resetPasswordSchema), async (req
         passwordResetExpiresAt: null,
       },
     });
-    res.json({ ok: true, message: "Lösenord uppdaterat" });
+    // Returnera e-posten så att flöden som vill logga in användaren direkt
+    // (t.ex. demo-välkomstsidan) kan göra det utan att fråga efter den igen.
+    res.json({ ok: true, message: "Lösenord uppdaterat", email: user.email });
   } catch (e) {
     next(e);
   }

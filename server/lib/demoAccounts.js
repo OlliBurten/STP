@@ -2,13 +2,14 @@
 // partners och investerare så de kan logga in och se hela plattformen fylld med
 // (påhittad) data utan tillgång till produktionens riktiga användardata.
 //
-// SÄKERHET: Demokonton får ALDRIG skapas i produktion. De skapas bara i
-// demo-miljön (DEPLOYMENT=demo), som har en helt separat databas och frontend.
-// Guarden lever i route-lagret (server/routes/admin.js) via isDemoEnvironment().
+// SÄKERHET: Demokonton lever ENBART i demo-miljön (separat databas + frontend),
+// aldrig i produktion. Grundaren skapar dem från PRODUKTIONENS adminpanel, som
+// fjärrstyr demo-backenden över en intern service-endpoint (server/routes/
+// internal.js). Den endpointen släpper bara igenom anrop när DEPLOYMENT=demo
+// (isDemoEnvironment) OCH rätt service-secret medföljer.
 
 import crypto from "node:crypto";
 
-export const DEMO_EMAIL_DOMAIN = "demo.transportplattformen.se";
 export const DEMO_DEFAULT_DAYS = 30;
 export const DEMO_MAX_DAYS = 180;
 
@@ -18,23 +19,10 @@ export function isDemoEnvironment() {
   return (process.env.DEPLOYMENT || "").trim().toLowerCase() === "demo";
 }
 
-// Slumpmässig URL-säker sträng (a–z, 0–9) av given längd.
-function randomToken(length) {
-  const alphabet = "abcdefghijklmnopqrstuvwxyz0123456789";
-  const bytes = crypto.randomBytes(length);
-  let out = "";
-  for (let i = 0; i < length; i++) out += alphabet[bytes[i] % alphabet.length];
-  return out;
-}
-
-// E-post på formen demo-<role>-<8 slumptecken>@demo.transportplattformen.se
-export function generateDemoEmail(role) {
-  const r = String(role || "").trim().toLowerCase() === "company" ? "company" : "driver";
-  return `demo-${r}-${randomToken(8)}@${DEMO_EMAIL_DOMAIN}`;
-}
-
-// Starkt slumplösenord. Blandar versaler, gemener, siffror och ett specialtecken
-// så det uppfyller även strikta lösenordskrav. Visas EN gång för admin.
+// Starkt slumplösenord som sätts på demokontot vid skapande. Mottagaren använder
+// det aldrig — hen sätter ett eget lösenord via inbjudningslänken — men kontot får
+// ändå ett oanvändbart, oförutsägbart lösenord så det inte går att gissa sig in.
+// Blandar versaler, gemener, siffror och ett specialtecken.
 export function generateDemoPassword() {
   const lowers = "abcdefghijkmnpqrstuvwxyz";
   const uppers = "ABCDEFGHJKLMNPQRSTUVWXYZ";

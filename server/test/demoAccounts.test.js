@@ -7,7 +7,6 @@ import { describe, it } from "node:test";
 import assert from "node:assert";
 import {
   isDemoEnvironment,
-  generateDemoEmail,
   generateDemoPassword,
   clampDemoDays,
   demoExpiryDate,
@@ -15,19 +14,6 @@ import {
   DEMO_MAX_DAYS,
   DEMO_DEFAULT_DAYS,
 } from "../lib/demoAccounts.js";
-
-describe("generateDemoEmail", () => {
-  it("ger giltig e-post på rätt domän och form", () => {
-    const email = generateDemoEmail("DRIVER");
-    assert.match(email, /^demo-driver-[a-z0-9]{8}@demo\.transportplattformen\.se$/);
-  });
-  it("mappar COMPANY till company-prefix", () => {
-    assert.match(generateDemoEmail("COMPANY"), /^demo-company-[a-z0-9]{8}@/);
-  });
-  it("är unik mellan anrop (slumpdel)", () => {
-    assert.notStrictEqual(generateDemoEmail("DRIVER"), generateDemoEmail("DRIVER"));
-  });
-});
 
 describe("generateDemoPassword", () => {
   it("är starkt: 16 tecken med versal, gemen, siffra och specialtecken", () => {
