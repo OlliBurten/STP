@@ -389,8 +389,12 @@ button:disabled { cursor: not-allowed; }
      rastrera på fraktionspixlar. driver.js positionerar via left/top. */
   filter: none !important;
   backdrop-filter: none !important;
-  will-change: auto !important;
-  transform: none !important;
+  /* Gör popovern till ETT compositing-lager: kompositorn snäpper lagret till
+     device-pixelrutnätet vid ALLA skärmskalor (även bråkdels-DPR som 1.5/1.25
+     på skalade skärmar), så text och knappkanter blir skarpa i stället för
+     suddiga av subpixel-positionering. */
+  transform: translateZ(0) !important;
+  backface-visibility: hidden !important;
 }
 /* Neutralisera den globala button:active-nudgen (translateY 0.5px) som annars
    suddar texten i Nästa/Tillbaka vid klick. */
