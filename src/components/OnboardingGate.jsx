@@ -10,6 +10,7 @@ export function useOnboardingRequired() {
 
   if (!user) return false;
   if (isAdmin) return false;
+  if (user.isDemo) return false; // demokonton landar direkt i den fyllda vyn
   if (isDriver) return profileLoaded && !isDriverMinimumProfileComplete(profile);
   if (isCompany) return false; // companies use dashboard empty state instead
   return false;
@@ -34,6 +35,9 @@ export default function OnboardingGate({ children }) {
 
   if (!user) return children;
   if (isAdmin) return children;
+  // Demokonton (kund/partner/investerare) ska aldrig fastna i onboarding —
+  // de ska kunna utforska den fyllda dashboarden direkt.
+  if (user.isDemo) return children;
 
   if (SKIP_PATHS.some((p) => path === p || path.startsWith(p + "/"))) {
     return children;

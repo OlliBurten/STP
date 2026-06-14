@@ -385,6 +385,17 @@ button:disabled { cursor: not-allowed; }
   padding: 24px !important;
   max-width: 340px !important;
   font-family: var(--font) !important;
+  /* Skarp text: ingen ärvd filter/blur, ingen egen transform-layer som kan
+     rastrera på fraktionspixlar. driver.js positionerar via left/top. */
+  filter: none !important;
+  backdrop-filter: none !important;
+  will-change: auto !important;
+  transform: none !important;
+}
+/* Neutralisera den globala button:active-nudgen (translateY 0.5px) som annars
+   suddar texten i Nästa/Tillbaka vid klick. */
+.stp-tour-popover .driver-popover-footer button:not(:disabled):active {
+  transform: none !important;
 }
 .stp-tour-popover .driver-popover-title {
   font-size: 16px !important;

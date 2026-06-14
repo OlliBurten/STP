@@ -14,7 +14,7 @@ import { mapEmploymentToSegment } from "../data/segments";
 import PageMeta from "../components/PageMeta";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { useDriverTour } from "../hooks/useDriverTour";
-import { getProfileCompletion } from "../utils/driverProfileRequirements";
+import { getProfileCompletion, isDriverMinimumProfileComplete } from "../utils/driverProfileRequirements";
 import SwedenJobMap from "../components/SwedenJobMap";
 import { LAYOUT } from "../components/ui/layout.jsx";
 
@@ -287,7 +287,7 @@ export default function JobList() {
   usePageTitle("Lediga chaufförsjobb");
   const isMobile = useIsMobile();
   const { isDriver, hasApi, user } = useAuth();
-  const { profile } = useProfile();
+  const { profile, profileLoaded } = useProfile();
 
   const [tab,             setTab]             = useState("all");
   const [showMatch,       setShowMatch]       = useState(true);
@@ -308,7 +308,15 @@ export default function JobList() {
   const PAGE_SIZE = 20;
   const [page, setPage] = useState(1);
 
-  useDriverTour({ isDriver, user, profileLoaded: !jobsLoading });
+  // Starta turen först när jobben laddat, profilen laddat och föraren inte
+  // längre ska skickas till onboarding (OnboardingGate redirectar annars bort
+  // från denna vy). Förhindrar att turen krockar med onboarding-wizarden.
+  useDriverTour({
+    isDriver,
+    user,
+    profileLoaded:
+      !jobsLoading && profileLoaded && isDriverMinimumProfileComplete(profile),
+  });
 
   // Återställ till sida 1 när filter/flik/sökning ändras
   useEffect(() => { setPage(1); }, [tab, filters, mobileFilters]);

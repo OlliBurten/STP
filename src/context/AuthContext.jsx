@@ -60,6 +60,7 @@ function normalizeUser(u) {
     rawRole,
     isAdmin: Boolean(u.isAdmin),
     hadLoggedInBefore: Boolean(u.hadLoggedInBefore),
+    isDemo: Boolean(u.isDemo),
     shouldShowOnboarding: Boolean(u.shouldShowOnboarding),
     name: u.name,
     companyName: u.companyName,

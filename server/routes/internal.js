@@ -95,6 +95,11 @@ internalRouter.post("/", async (req, res, next) => {
       demoExpiresAt,
       emailVerifiedAt: new Date(),
       companyStatus: role === "COMPANY" ? "VERIFIED" : undefined,
+      // Demokonton ska landa direkt i den fyllda dashboarden — aldrig tvingas
+      // genom onboarding-wizarden (gäller även befintliga demokonton som
+      // återanvänds via update nedan).
+      needsDriverOnboarding: false,
+      needsRecruiterOnboarding: false,
       passwordResetTokenHash: tokenHash(raw),
       passwordResetExpiresAt,
     };

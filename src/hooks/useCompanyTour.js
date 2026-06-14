@@ -17,8 +17,103 @@ export function useCompanyTour({ isCompany, user, ready = true }) {
     if (window.innerWidth < 768) return;
 
     const timer = setTimeout(() => {
+      // Alla steg — element-steg pekar på faktiska data-tour-ankare i
+      // ForCompanies-dashboarden och AppTopNav. Intro/outro saknar element
+      // och är medvetet centrerade.
+      const allSteps = [
+        {
+          popover: {
+            title: "Välkommen till Sveriges Transportplattform! 👋",
+            description:
+              "Här hittar du kvalificerade CE- och C-förare direkt — utan rekryteringsavgifter eller mellanhänder. Den här guiden visar dig runt på 1 minut.",
+            side: "over",
+            align: "center",
+          },
+        },
+        {
+          element: "[data-tour='company-overview']",
+          popover: {
+            title: "Din översikt",
+            description:
+              "Här ser du statistik på dina annonser, nya ansökningar och obesvarade meddelanden — allt på ett ställe.",
+            side: "bottom",
+            align: "start",
+          },
+        },
+        {
+          element: "[data-tour='company-post-job']",
+          popover: {
+            title: "Publicera ett jobb",
+            description:
+              "Klicka här för att lägga ut en ny tjänst. Det tar 2 minuter — välj körkortskrav, region och typ av anställning. Helt gratis.",
+            side: "bottom",
+            align: "end",
+          },
+        },
+        {
+          element: "[data-tour='company-drivers']",
+          popover: {
+            title: "Hitta förare proaktivt",
+            description:
+              "Vänta inte på ansökningar — sök bland hundratals förare och filtrera på körkort, certifikat och region. Kontakta direkt de som passar.",
+            side: "bottom",
+            align: "end",
+          },
+        },
+        {
+          element: "[data-tour='company-jobs']",
+          popover: {
+            title: "Mina annonser",
+            description:
+              "Här hanterar du alla dina aktiva och avslutade jobbannonser. Du kan se hur många förare som visat intresse och skicka meddelanden direkt.",
+            side: "bottom",
+            align: "start",
+          },
+        },
+        {
+          element: "[data-tour='notifications']",
+          popover: {
+            title: "Notiser & meddelanden",
+            description:
+              "Här ser du när förare ansöker eller svarar. Svara snabbt — de bästa förarna har ofta flera alternativ.",
+            side: "bottom",
+            align: "end",
+          },
+        },
+        {
+          element: "[data-tour='user-menu']",
+          popover: {
+            title: "Företagsprofil",
+            description:
+              "Fyll i er företagsprofil — logga, beskrivning och kontaktinfo. Förare ser er profil och väljer aktivt åkerier de vill jobba för.",
+            side: "bottom",
+            align: "end",
+          },
+        },
+        {
+          popover: {
+            title: "Allt klart! 🎉",
+            description:
+              "Börja med att publicera ert första jobb — det tar 2 minuter och syns direkt för förare i er region. Välkommen till STP!",
+            side: "over",
+            align: "center",
+          },
+        },
+      ];
+
+      // Filtrera bort element-steg vars ankare inte finns i DOM så vi aldrig
+      // visar en centrerad spöksruta utan spotlight. Intro/outro (utan element)
+      // behålls alltid.
+      const steps = allSteps.filter(
+        (s) => !s.element || document.querySelector(s.element)
+      );
+
+      // Behöver minst ett riktigt highlight-steg utöver intro/outro.
+      const hasElementStep = steps.some((s) => s.element);
+      if (!hasElementStep) return;
+
       const driverObj = driver({
-        animate: true,
+        animate: false,
         overlayOpacity: 0.7,
         showProgress: true,
         progressText: "{{current}} av {{total}}",
@@ -30,86 +125,7 @@ export function useCompanyTour({ isCompany, user, ready = true }) {
         onDestroyed: () => {
           localStorage.setItem(STORAGE_KEY, "1");
         },
-        steps: [
-          {
-            popover: {
-              title: "Välkommen till Sveriges Transportplattform! 👋",
-              description:
-                "Här hittar du kvalificerade CE- och C-förare direkt — utan rekryteringsavgifter eller mellanhänder. Den här guiden visar dig runt på 1 minut.",
-              side: "over",
-              align: "center",
-            },
-          },
-          {
-            element: "[data-tour='company-overview']",
-            popover: {
-              title: "Din översikt",
-              description:
-                "Här ser du statistik på dina annonser, förare som matchas mot dina tjänster och dina senaste meddelanden — allt på ett ställe.",
-              side: "bottom",
-              align: "start",
-            },
-          },
-          {
-            element: "[data-tour='company-post-job']",
-            popover: {
-              title: "Publicera ett jobb",
-              description:
-                "Klicka här för att lägga ut en ny tjänst. Det tar 2 minuter — välj körkortskrav, region och typ av anställning. Helt gratis.",
-              side: "bottom",
-              align: "end",
-            },
-          },
-          {
-            element: "[data-tour='company-jobs']",
-            popover: {
-              title: "Mina annonser",
-              description:
-                "Här hanterar du alla dina aktiva och avslutade jobbannonser. Du kan se hur många förare som visat intresse och skicka meddelanden direkt.",
-              side: "bottom",
-              align: "start",
-            },
-          },
-          {
-            element: "[data-tour='company-drivers']",
-            popover: {
-              title: "Hitta förare proaktivt",
-              description:
-                "Vänta inte på ansökningar — sök bland hundratals förare och filtrera på körkort, certifikat och region. Kontakta direkt de som passar.",
-              side: "bottom",
-              align: "start",
-            },
-          },
-          {
-            element: "[data-tour='notifications']",
-            popover: {
-              title: "Notiser & meddelanden",
-              description:
-                "Här ser du när förare ansöker eller svarar. Svara snabbt — de bästa förarna har ofta flera alternativ.",
-              side: "bottom",
-              align: "end",
-            },
-          },
-          {
-            element: "[data-tour='user-menu']",
-            popover: {
-              title: "Företagsprofil",
-              description:
-                "Fyll i er företagsprofil — logga, beskrivning och kontaktinfo. Förare ser er profil och väljer aktivt åkerier de vill jobba för.",
-              side: "bottom",
-              align: "end",
-            },
-          },
-          {
-            popover: {
-              title: "Allt klart! 🎉",
-              description:
-                "Börja med att publicera ert första jobb — det tar 2 minuter och syns direkt för förare i er region. Välkommen till STP!",
-              side: "over",
-              align: "center",
-            },
-          },
-        ],
+        steps,
       });
 
       tourRef.current = driverObj;

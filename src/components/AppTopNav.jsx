@@ -395,7 +395,7 @@ export default function AppTopNav() {
               const isActive = location.pathname === it.path ||
                 (it.path !== "/foretag" && location.pathname.startsWith(it.path));
               return (
-                <button key={it.path} onClick={() => navigate(it.path)} data-tour={{ "/jobb": "jobs-link", "/meddelanden": "messages-link", "/favoriter": "favoriter-link" }[it.path]} style={{
+                <button key={it.path} onClick={() => navigate(it.path)} data-tour={{ "/jobb": "jobs-link", "/meddelanden": "messages-link", "/favoriter": "favoriter-link", "/foretag/annonser": "company-jobs" }[it.path]} style={{
                   padding: "8px 14px", height: 36,
                   background: isActive ? "rgba(255,255,255,0.08)" : "transparent",
                   borderRadius: 8, border: "none", cursor: "pointer",

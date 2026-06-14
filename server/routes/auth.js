@@ -152,6 +152,7 @@ function formatClientAuthUser(user, augmented = user, extra = {}) {
     companyOwnerId: augmented.companyOwnerId ?? undefined,
     organizationId: augmented.organizationId ?? undefined,
     emailVerifiedAt: augmented.emailVerifiedAt ?? null,
+    isDemo: Boolean(augmented.isDemo ?? user.isDemo),
     shouldShowOnboarding: getShouldShowOnboarding(user, augmented),
     ...extra,
   };
@@ -411,6 +412,7 @@ authRouter.get("/me", authMiddleware, async (req, res, next) => {
         lastLoginAt: true,
         needsDriverOnboarding: true,
         needsRecruiterOnboarding: true,
+        isDemo: true,
       },
     });
     if (!user) return res.status(404).json({ error: "Användaren hittades inte" });

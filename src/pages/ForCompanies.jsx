@@ -497,7 +497,14 @@ export default function ForCompanies() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useCompanyTour({ isCompany: true, user, ready: !loading });
+  // Starta turen först när dashboarden faktiskt visas: klar laddning, ett åkeri
+  // är kopplat (annars visas empty state) och företaget inte ska köra onboarding.
+  // (Demokonton har shouldShowOnboarding=false → turen får visas direkt.)
+  useCompanyTour({
+    isCompany: true,
+    user,
+    ready: !loading && Boolean(profile) && !user?.shouldShowOnboarding,
+  });
   const [jobViewStats, setJobViewStats] = useState({ weeks: Array(12).fill(0), total: 0 });
   const [matchingDrivers, setMatchingDrivers] = useState([]);
 
@@ -748,10 +755,10 @@ export default function ForCompanies() {
                   <Icon n="alert" size={11} /> Verifiering pågår
                 </Link>
               )}
-              <Link to="/foretag/chaufforer" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 16px", borderRadius: 10, background: "var(--card)", border: "1px solid var(--line-2)", fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--ink-900)", textDecoration: "none", boxShadow: "var(--sh-sm)" }}>
+              <Link data-tour="company-drivers" to="/foretag/chaufforer" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 16px", borderRadius: 10, background: "var(--card)", border: "1px solid var(--line-2)", fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--ink-900)", textDecoration: "none", boxShadow: "var(--sh-sm)" }}>
                 <Icon n="user" size={14} /> Hitta förare
               </Link>
-              <Link to="/foretag/annonsera" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 16px", borderRadius: 10, background: "var(--green)", border: "1px solid var(--green-deep)", fontSize: "var(--text-sm)", fontWeight: 700, color: "#fff", textDecoration: "none" }}>
+              <Link data-tour="company-post-job" to="/foretag/annonsera" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 16px", borderRadius: 10, background: "var(--green)", border: "1px solid var(--green-deep)", fontSize: "var(--text-sm)", fontWeight: 700, color: "#fff", textDecoration: "none" }}>
                 <Icon n="plus" size={14} /> Publicera annons
               </Link>
             </div>
@@ -765,7 +772,7 @@ export default function ForCompanies() {
         <WaitingAlert unreadCount={companyUnreadConversationCount} conversations={conversations} />
 
         {/* KPI-grid */}
-        <div className="dash-kpis">
+        <div className="dash-kpis" data-tour="company-overview">
           {kpis.map((k, i) => <KpiCard key={i} {...k} />)}
         </div>
 
