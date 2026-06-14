@@ -21,7 +21,7 @@ const CONVERSATIONS = [
 const stageMeta = { new: { label: "Ny", tone: "amber" }, contacted: { label: "Kontaktad", tone: "info" }, interviewing: { label: "På intervju", tone: "amber" }, selected: { label: "Utvald", tone: "success" }, declined: { label: "Avböjd", tone: "neutral" } };
 
 const ConvItem = ({ c, active, onClick }) => {
-  const last = c.messages[c.messages.length - 1];
+  const last = c.messages?.at(-1);
   const meta = stageMeta[c.stage];
   return (
     <button onClick={onClick} style={{ width: "100%", textAlign: "left", display: "block", padding: "14px 18px", background: active ? "var(--green-tint)" : "transparent", borderBottom: "1px solid var(--line)", borderLeft: active ? "3px solid var(--green)" : "3px solid transparent" }}
