@@ -299,8 +299,12 @@ function AppLayout() {
   const isMobile = useIsMobile();
   const { pathname } = useLocation();
 
+  // En öppnad meddelandetråd (/meddelanden/:id) är fullskärm med egen header +
+  // composer — dölj bottennaven där så den inte överlappar inmatningsfältet.
+  const onMessageThread = pathname.startsWith("/meddelanden/") && pathname !== "/meddelanden";
+
   // Show bottom nav on mobile for driver-relevant routes
-  const showBottomNav = isMobile && isDriver &&
+  const showBottomNav = isMobile && isDriver && !onMessageThread &&
     BOTTOM_NAV_PATHS.some((p) => pathname === p || pathname.startsWith(p));
 
   // Show global fixed header on the 4 main tabs only (not sub-routes like /meddelanden/:id)
@@ -599,7 +603,9 @@ function AppLayout() {
         </OnboardingGate>
               </div>
               {!hideChromeOnMobile && !isAuthPage && !isPreviewPage && <Footer />}
-              {!hideChromeOnMobile && !isAuthPage && !isPreviewPage && <FeedbackButton />}
+              {/* Flytande feedback-knapp bara på desktop — på mobil krockar den med
+                  sticky-CTA:er (ansök/kontakta) och tar dyrbar skärmyta. */}
+              {!isMobile && !hideChromeOnMobile && !isAuthPage && !isPreviewPage && <FeedbackButton />}
               <InstallPrompt />
               <CookieBanner />
               {showMobileHeader && <MobileHeader />}
