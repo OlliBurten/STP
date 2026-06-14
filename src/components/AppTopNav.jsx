@@ -10,42 +10,6 @@ import { useChat } from "../context/ChatContext";
 import { fetchNotifications, markNotificationRead, markAllNotificationsRead } from "../api/notifications.js";
 import { demoSwitchRole } from "../api/profile.js";
 
-/* ─── Demo role switch (åkeri ⇄ förare) ───────────────────────────────────── */
-// Visas BARA för demokonton med båda rollerna (user.isDemo && user.demoBoth).
-// Byter User.role i demo-DB:n, hämtar om /me och navigerar till rollens startsida.
-function DemoRoleSwitch({ isCompany, onSwitch }) {
-  const [busy, setBusy] = useState(false);
-  const opts = [
-    { key: "COMPANY", label: "Åkeri", active: isCompany },
-    { key: "DRIVER",  label: "Förare", active: !isCompany },
-  ];
-  return (
-    <div style={{
-      display: "inline-flex", alignItems: "center", gap: 2, padding: 3,
-      borderRadius: 9, background: "rgba(255,255,255,0.07)",
-      border: "1px solid rgba(255,255,255,0.1)", marginRight: 24, flexShrink: 0,
-    }} title="Växla mellan åkeri- och förarvyn">
-      {opts.map((o) => (
-        <button
-          key={o.key}
-          disabled={busy || o.active}
-          onClick={() => { if (!o.active && !busy) { setBusy(true); onSwitch(o.key).finally(() => setBusy(false)); } }}
-          style={{
-            padding: "5px 12px", borderRadius: 7, border: "none",
-            cursor: o.active ? "default" : "pointer", fontFamily: "inherit",
-            fontSize: "var(--text-xs)", fontWeight: 700,
-            background: o.active ? "var(--green)" : "transparent",
-            color: o.active ? "#fff" : "rgba(232,237,237,0.7)",
-            opacity: busy && !o.active ? 0.5 : 1,
-            transition: "background 120ms, color 120ms",
-          }}
-        >
-          {o.label}
-        </button>
-      ))}
-    </div>
-  );
-}
 
 /* ─── helpers ─────────────────────────────────────────────────────────────── */
 function initials(user) {
@@ -246,9 +210,10 @@ function SearchModal({ onClose }) {
 }
 
 /* ─── User dropdown ───────────────────────────────────────────────────────── */
-function UserMenu({ user, isCompany, onClose, onLogout }) {
+function UserMenu({ user, isCompany, isDemoBoth, onDemoSwitch, onClose, onLogout }) {
   const navigate = useNavigate();
   const go = (path) => { navigate(path); onClose(); };
+  const switchTo = async (role) => { onClose(); await onDemoSwitch?.(role); };
   return (
     <>
       <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 60 }} />
@@ -262,6 +227,22 @@ function UserMenu({ user, isCompany, onClose, onLogout }) {
           <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-900)" }}>{user?.name || user?.email}</div>
           <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-400)", marginTop: 2 }}>{isCompany ? "Åkeri-konto" : "Förarkonto"}</div>
         </div>
+        {isDemoBoth && (
+          <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--line)" }}>
+            <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 0.6, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 8 }}>Visa som</div>
+            <div style={{ display: "flex", gap: 4, padding: 3, borderRadius: 9, background: "var(--paper-2)", border: "1px solid var(--line)" }}>
+              {[{ key: "COMPANY", label: "Åkeri", active: isCompany }, { key: "DRIVER", label: "Förare", active: !isCompany }].map(o => (
+                <button key={o.key} disabled={o.active} onClick={() => { if (!o.active) switchTo(o.key); }} style={{
+                  flex: 1, padding: "6px 0", borderRadius: 7, border: "none",
+                  cursor: o.active ? "default" : "pointer", fontFamily: "inherit",
+                  fontSize: "var(--text-xs)", fontWeight: 700,
+                  background: o.active ? "var(--green)" : "transparent",
+                  color: o.active ? "#fff" : "var(--ink-500)",
+                }}>{o.label}</button>
+              ))}
+            </div>
+          </div>
+        )}
         {[
           isCompany
             ? { label: "Företagsprofil", path: "/foretag/profil", icon: "building" }
@@ -437,10 +418,6 @@ export default function AppTopNav() {
             )}
           </div>
 
-          {/* Demo: åkeri/förare-switch (bara BOTH-demokonton) */}
-          {isDemoBoth && (
-            <DemoRoleSwitch isCompany={isCompany} onSwitch={handleDemoSwitch} />
-          )}
 
           {/* Nav links */}
           <div style={{ display: "flex", gap: 2, flex: 1 }}>
@@ -540,6 +517,8 @@ export default function AppTopNav() {
         <UserMenu
           user={user}
           isCompany={isCompany}
+          isDemoBoth={isDemoBoth}
+          onDemoSwitch={handleDemoSwitch}
           onClose={() => setUserMenuOpen(false)}
           onLogout={handleLogout}
         />

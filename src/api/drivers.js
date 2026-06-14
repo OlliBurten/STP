@@ -1,7 +1,13 @@
 import { apiGet, apiPost } from "./client.js";
 
 export async function fetchDrivers(params = {}) {
-  const q = new URLSearchParams(params).toString();
+  // Strippa tomma värden — annars blir undefined till strängen "undefined" i
+  // query-strängen (?region=undefined…), vilket backend tolkar som ett filter
+  // och returnerar 0 förare. (Bug: Hitta förare visade inga förare som default.)
+  const clean = Object.fromEntries(
+    Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== "")
+  );
+  const q = new URLSearchParams(clean).toString();
   return apiGet(`/api/drivers${q ? `?${q}` : ""}`);
 }
 

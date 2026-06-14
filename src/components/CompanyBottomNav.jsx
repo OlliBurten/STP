@@ -34,7 +34,9 @@ export default function CompanyBottomNav({ unreadCount = 0 }) {
       display: "flex", justifyContent: "space-around",
       zIndex: 50,
     }}>
-      {TABS.map(({ id, label, to }) => {
+      {/* eslint-disable-next-line no-unused-vars -- Icon används som <Icon /> nedan; eslint
+          räknar inte JSX-användning här. Ta INTE bort den (det orsakade tidigare en runtime-krasch). */}
+      {TABS.map(({ id, label, to, Icon }) => {
         const on = isActive({ id }, pathname);
         return (
           <button
