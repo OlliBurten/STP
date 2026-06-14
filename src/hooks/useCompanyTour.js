@@ -122,6 +122,22 @@ export function useCompanyTour({ isCompany, user, ready = true }) {
         doneBtnText: "Kom igång! 🚀",
         allowClose: true,
         popoverClass: "stp-tour-popover",
+        // driver.js positionerar popovern via left/top som ofta hamnar på
+        // fraktionspixlar (t.ex. 502.5px) → suddig text. Runda till heltal och
+        // håll den skarp även när driver flyttar rutan mellan steg.
+        onPopoverRender: (popover) => {
+          const el = popover?.wrapper;
+          if (!el || el.__stpSnap) return;
+          el.__stpSnap = true;
+          const snap = () => {
+            const l = parseFloat(el.style.left);
+            const t = parseFloat(el.style.top);
+            if (!Number.isNaN(l) && Math.round(l) !== l) el.style.left = `${Math.round(l)}px`;
+            if (!Number.isNaN(t) && Math.round(t) !== t) el.style.top = `${Math.round(t)}px`;
+          };
+          snap();
+          new MutationObserver(snap).observe(el, { attributes: true, attributeFilter: ["style"] });
+        },
         onDestroyed: () => {
           localStorage.setItem(STORAGE_KEY, "1");
         },

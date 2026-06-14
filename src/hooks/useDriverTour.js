@@ -112,6 +112,21 @@ export function useDriverTour({ isDriver, user, profileLoaded }) {
         allowClose: true,
         overlayColor: "#000",
         popoverClass: "stp-tour-popover",
+        // Runda popoverns left/top till heltalspixlar — driver.js lägger den ofta
+        // på fraktionspixlar vilket gör texten suddig.
+        onPopoverRender: (popover) => {
+          const el = popover?.wrapper;
+          if (!el || el.__stpSnap) return;
+          el.__stpSnap = true;
+          const snap = () => {
+            const l = parseFloat(el.style.left);
+            const t = parseFloat(el.style.top);
+            if (!Number.isNaN(l) && Math.round(l) !== l) el.style.left = `${Math.round(l)}px`;
+            if (!Number.isNaN(t) && Math.round(t) !== t) el.style.top = `${Math.round(t)}px`;
+          };
+          snap();
+          new MutationObserver(snap).observe(el, { attributes: true, attributeFilter: ["style"] });
+        },
         onDestroyed: () => {
           localStorage.setItem(STORAGE_KEY, "1");
         },
