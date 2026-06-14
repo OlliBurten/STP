@@ -213,7 +213,7 @@ function SearchModal({ onClose }) {
             value={q}
             onChange={e => setQ(e.target.value)}
             onKeyDown={e => { if (e.key === "Enter" && filtered[0]) go(filtered[0].path); }}
-            placeholder="Sök jobb, åkerier, sidor..."
+            placeholder="Hoppa till sida…"
             style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontSize: "var(--text-lg)", color: "var(--ink-900)", fontFamily: "inherit" }}
           />
           <kbd style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: "var(--ink-500)", background: "var(--card-2)", border: "1px solid var(--line-2)", borderRadius: 6, padding: "3px 7px", fontFamily: "monospace" }}>ESC</kbd>
@@ -476,16 +476,14 @@ export default function AppTopNav() {
 
           {/* Right: search + bell + avatar */}
           <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-            {/* Search ⌘K */}
-            <button onClick={() => setSearchOpen(true)} style={{
-              padding: "7px 14px", borderRadius: 8, minWidth: 240,
-              background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)",
-              color: "rgba(232,237,237,0.65)", display: "inline-flex", alignItems: "center",
-              gap: 8, fontSize: "var(--text-sm)", cursor: "pointer", fontFamily: "inherit",
+            {/* Snabbnavigering (⌘K-kommandopalett) — kompakt ikon, ingen bred sökruta */}
+            <button onClick={() => setSearchOpen(true)} title="Snabbnavigering (⌘K)" aria-label="Snabbnavigering" style={{
+              width: 36, height: 36, borderRadius: 8,
+              background: "transparent", border: "none",
+              color: "rgba(232,237,237,0.75)", cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center",
             }}>
-              <Ico n="search" size={15} color="rgba(232,237,237,0.65)" sw={2} />
-              Sök jobb, åkerier…
-              <kbd style={{ marginLeft: "auto", fontSize: "var(--text-2xs)", fontFamily: "monospace", opacity: 0.65 }}>⌘K</kbd>
+              <Ico n="search" size={18} color="rgba(232,237,237,0.75)" sw={1.7} />
             </button>
 
             {/* Bell */}
