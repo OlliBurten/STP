@@ -6,7 +6,8 @@ import { useChat } from "../context/ChatContext";
 import { fetchMyJobs } from "../api/jobs.js";
 import { fetchMyCompanyProfile, fetchJobViewStats, fetchMatchingDrivers } from "../api/companies.js";
 import { usePageTitle } from "../hooks/usePageTitle.js";
-import { useCompanyTour } from "../hooks/useCompanyTour.js";
+import ProductTour from "../components/ProductTour";
+import { COMPANY_TOUR_STEPS } from "../data/tourSteps";
 import CompanyBottomNav from "../components/CompanyBottomNav";
 
 // ─── Icons ───────────────────────────────────────────────────────────────────
@@ -500,11 +501,7 @@ export default function ForCompanies() {
   // Starta turen först när dashboarden faktiskt visas: klar laddning, ett åkeri
   // är kopplat (annars visas empty state) och företaget inte ska köra onboarding.
   // (Demokonton har shouldShowOnboarding=false → turen får visas direkt.)
-  useCompanyTour({
-    isCompany: true,
-    user,
-    ready: !loading && Boolean(profile) && !user?.shouldShowOnboarding,
-  });
+  const tourReady = !loading && Boolean(profile) && !user?.shouldShowOnboarding;
   const [jobViewStats, setJobViewStats] = useState({ weeks: Array(12).fill(0), total: 0 });
   const [matchingDrivers, setMatchingDrivers] = useState([]);
 
@@ -728,6 +725,7 @@ export default function ForCompanies() {
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--paper)", color: "var(--ink-900)" }}>
+      <ProductTour steps={COMPANY_TOUR_STEPS} storageKey="stp_company_tour_done" enabled={tourReady} />
       <main style={{ maxWidth: "var(--w-app)", margin: "0 auto", padding: "32px 32px 80px" }}>
 
         {/* Hero */}

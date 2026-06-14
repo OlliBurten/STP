@@ -84,20 +84,41 @@ test.describe("Demo Båda-konto", () => {
     await page.waitForLoadState("networkidle");
   });
 
-  test("produktturens popover är ett snäppt compositing-lager (skarp text på skalade skärmar)", async ({ page }) => {
+  test("egen produktrundtur (ProductTour) renderas skarp utan driver.js", async ({ page }) => {
     await page.addInitScript(() => {
       try { localStorage.removeItem("stp_company_tour_done"); } catch (_) {}
     });
     await page.goto("/foretag");
     await page.waitForLoadState("networkidle");
-    const popover = page.locator(".driver-popover");
-    const appeared = await popover.first().waitFor({ state: "visible", timeout: 6000 }).then(() => true).catch(() => false);
+
+    // Den egna komponenten ska synas...
+    const popover = page.locator(".product-tour-popover");
+    const appeared = await popover.first().waitFor({ state: "visible", timeout: 8000 }).then(() => true).catch(() => false);
     test.skip(!appeared, "Produktturen visades inte (gejtad) i denna körning");
 
-    // Crispness-garantin: popovern ska ligga på ETT compositing-lager (translateZ)
-    // så kompositorn snäpper den till device-pixelrutnätet vid alla DPR (även 1.5).
-    const transform = await page.evaluate(() => getComputedStyle(document.querySelector(".driver-popover")).transform);
-    expect(transform, `transform=${transform}`).not.toBe("none");
+    // ...och driver.js ska vara helt borta.
+    await expect(page.locator(".driver-popover")).toHaveCount(0);
+
+    // Skarphetsgaranti: heltalspixlar (inga fraktioner i left/top) och INGEN
+    // text-shadow någonstans i popovern — det var hela buggen med driver.js.
+    const pos = await page.evaluate(() => {
+      const el = document.querySelector(".product-tour-popover");
+      const cs = getComputedStyle(el);
+      return { left: cs.left, top: cs.top };
+    });
+    expect(pos.left.endsWith(".5px"), `left=${pos.left}`).toBe(false);
+    expect(pos.top.endsWith(".5px"), `top=${pos.top}`).toBe(false);
+
+    const hasTextShadow = await page.evaluate(() => {
+      const root = document.querySelector(".product-tour-popover");
+      const all = [root, ...root.querySelectorAll("*")];
+      return all.some((n) => {
+        const ts = getComputedStyle(n).textShadow;
+        return ts && ts !== "none";
+      });
+    });
+    expect(hasTextShadow, "ingen text-shadow i popovern").toBe(false);
+
     await popover.first().screenshot({ path: "e2e/__screenshots__/tour-popover.png" });
   });
 });
