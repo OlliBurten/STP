@@ -418,7 +418,7 @@ export default function JobDetail() {
 
   // ── Company initials ──────────────────────────────────────────────────────
   const companyInitials = job.company
-    ? job.company.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()
+    ? job.company.split(" ").map((w) => w[0]).filter(Boolean).join("").slice(0, 2).toUpperCase() || "?"
     : "?";
 
   // ── Salary display ────────────────────────────────────────────────────────
