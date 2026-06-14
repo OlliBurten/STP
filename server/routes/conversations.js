@@ -77,6 +77,7 @@ function toConversation(c) {
     jobId: c.jobId,
     jobTitle: c.jobTitle,
     selectedByCompanyAt: c.selectedByCompanyAt?.toISOString() ?? null,
+    reviewedByCompanyAt: c.reviewedByCompanyAt?.toISOString() ?? null,
     readByCompanyAt: c.readByCompanyAt?.toISOString() ?? null,
     readByDriverAt: c.readByDriverAt?.toISOString() ?? null,
     rejectedByCompanyAt: c.rejectedByCompanyAt?.toISOString() ?? null,
