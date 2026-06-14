@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   adminCreateJob,
   getAdminSummary,
@@ -46,7 +46,14 @@ export default function Admin() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [insights, setInsights] = useState([]);
   const [insightsRunning, setInsightsRunning] = useState(false);
-  const [activeTab, setActiveTab] = useState("overview");
+  // Aktiv flik speglas i URL:en (?tab=...) så en hard refresh stannar kvar på
+  // samma flik i stället för att falla tillbaka till Översikt.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeTab, setActiveTabState] = useState(() => searchParams.get("tab") || "overview");
+  const setActiveTab = (tab) => {
+    setActiveTabState(tab);
+    setSearchParams((prev) => { const p = new URLSearchParams(prev); p.set("tab", tab); return p; }, { replace: true });
+  };
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
