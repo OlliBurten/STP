@@ -371,7 +371,7 @@ function ContactModal({ driver, jobs, onClose, onSent }) {
     setSending(true);
     setError("");
     try {
-      await createConversation({ driverId: driver.id, jobId: selectedJobId || undefined, message: msg });
+      await createConversation({ driverId: driver.id, jobId: selectedJobId || undefined, initialMessage: msg });
       setSent(true);
       onSent && onSent(driver.id);
     } catch (e) {
