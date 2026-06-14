@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useIsMobile } from "../hooks/useIsMobile";
+import { formatJobTitle } from "../utils/jobUtils";
 
 /* ── Match badge ─────────────────────────────────────────────────────────── */
 function MatchBadge({ score }) {
@@ -118,12 +119,13 @@ export default function JobCard({
                 fontSize: isMobile ? 15 : 17, fontWeight: 800,
                 color: "var(--ink-900)", letterSpacing: -0.3,
                 lineHeight: 1.25, marginBottom: 3,
-                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                overflow: "hidden", display: "-webkit-box",
+                WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
               }}>
-                {job.title}
+                {formatJobTitle(job.title)}
               </div>
               <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-                <span style={{ fontWeight: 600, color: "var(--ink-700)" }}>{job.company}</span>
+                <span style={{ fontWeight: 600, color: "var(--ink-700)", overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 1, WebkitBoxOrient: "vertical", wordBreak: "break-word" }}>{job.company}</span>
                 {job.source === "AGGREGATED" && !job.claimed ? (
                   <>
                     <span style={{ color: "var(--ink-300)" }}>·</span>

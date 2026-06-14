@@ -30,6 +30,34 @@ export function countOldActiveJobs(jobs) {
 }
 
 /**
+ * Branschförkortningar som alltid ska visas i versaler i jobbtitlar.
+ * Matchas skiftlägesokänsligt och som hela ord (ordgränser).
+ */
+const JOB_TITLE_UPPERCASE_ABBR = ["CE", "C", "ADR", "YKB", "LIA", "APL"];
+
+/**
+ * Normaliserar en importerad/inmatad jobbtitel för VISNING (rådata ändras ej).
+ * - Versaliserar första bokstaven i titeln.
+ * - Versaliserar kända förkortningar (CE, C, ADR, YKB, LIA, APL) oavsett hur de skrevs.
+ * - Kollapsar upprepade blanksteg.
+ * @param {string} title
+ * @returns {string}
+ */
+export function formatJobTitle(title) {
+  if (!title || typeof title !== "string") return title || "";
+  let t = title.replace(/\s+/g, " ").trim();
+  if (!t) return t;
+  // Versalisera förkortningar (hela ord)
+  for (const abbr of JOB_TITLE_UPPERCASE_ABBR) {
+    const re = new RegExp(`\\b${abbr}\\b`, "gi");
+    t = t.replace(re, abbr);
+  }
+  // Versalisera första tecknet
+  t = t.charAt(0).toUpperCase() + t.slice(1);
+  return t;
+}
+
+/**
  * Returnerar true om jobbet är 55+ dagar gammalt (snart auto-arkiveras vid 60 dagar).
  * Använder renewedAt som referens om det finns, annars published.
  */

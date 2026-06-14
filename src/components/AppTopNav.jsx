@@ -7,6 +7,7 @@ import { useState, useEffect, useRef } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useChat } from "../context/ChatContext";
+import { useIsMobile } from "../hooks/useIsMobile";
 import { fetchNotifications, markNotificationRead, markAllNotificationsRead } from "../api/notifications.js";
 import { demoSwitchRole } from "../api/profile.js";
 
@@ -287,6 +288,9 @@ export default function AppTopNav() {
   const { unreadCount = 0, companyUnreadConversationCount = 0 } = useChat();
   const navigate = useNavigate();
   const location = useLocation();
+  // På mobil sköts navigeringen av bottennaven (BottomNav / CompanyBottomNav).
+  // Dölj då topp-navens fliklänkar — behåll logga + sök/notis/avatar — så raden inte trängs/overflowar.
+  const isMobile = useIsMobile(900);
 
   const [searchOpen,  setSearchOpen]  = useState(false);
   const [notifOpen,   setNotifOpen]   = useState(false);
@@ -395,11 +399,11 @@ export default function AppTopNav() {
       }}>
         <div style={{
           maxWidth: "var(--w-app)", margin: "0 auto",
-          padding: "0 32px", height: 60,
+          padding: isMobile ? "0 16px" : "0 32px", height: 60,
           display: "flex", alignItems: "center", gap: 8,
         }}>
           {/* Logo */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginRight: 24, flexShrink: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginRight: isMobile ? 0 : 24, flexShrink: 0 }}>
             <div style={{
               width: 28, height: 28, borderRadius: 7,
               background: "var(--green)", color: "#fff",
@@ -419,8 +423,8 @@ export default function AppTopNav() {
           </div>
 
 
-          {/* Nav links */}
-          <div style={{ display: "flex", gap: 2, flex: 1 }}>
+          {/* Nav links — döljs på mobil (bottennaven sköter navigering där) */}
+          <div style={{ display: isMobile ? "none" : "flex", gap: 2, flex: 1 }}>
             {navItems.map(it => {
               const isActive = location.pathname === it.path ||
                 (it.path !== "/foretag" && location.pathname.startsWith(it.path));
@@ -446,6 +450,9 @@ export default function AppTopNav() {
               );
             })}
           </div>
+
+          {/* Spacer — håller höger-kontrollerna högerställda när fliklänkarna är dolda (mobil) */}
+          {isMobile && <div style={{ flex: 1 }} />}
 
           {/* Right: search + bell + avatar */}
           <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
@@ -493,9 +500,11 @@ export default function AppTopNav() {
                 display: "flex", alignItems: "center", justifyContent: "center",
                 border: "2px solid rgba(255,255,255,0.15)", flexShrink: 0,
               }}>{userInitials}</div>
-              <span style={{ fontSize: "var(--text-sm)", color: "#fff", fontWeight: 600, maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {user?.name || user?.email}
-              </span>
+              {!isMobile && (
+                <span style={{ fontSize: "var(--text-sm)", color: "#fff", fontWeight: 600, maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {user?.name || user?.email}
+                </span>
+              )}
               <Ico n="chevD" size={12} color="rgba(232,237,237,0.5)" sw={2} />
             </button>
           </div>

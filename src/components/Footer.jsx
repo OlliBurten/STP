@@ -64,9 +64,9 @@ export default function Footer() {
               <div style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 20 }}>
                 {col.heading}
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <div style={{ display: "flex", flexDirection: "column" }}>
                 {col.links.map((link) => (
-                  <Link key={link.label} to={link.to} style={{ fontSize: "var(--text-base)", color: "rgba(255,255,255,0.6)", textDecoration: "none" }} className="hover:text-white transition-colors">
+                  <Link key={link.label} to={link.to} style={{ fontSize: "var(--text-base)", color: "rgba(255,255,255,0.6)", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: 44, paddingTop: 4, paddingBottom: 4 }} className="hover:text-white transition-colors">
                     {link.label}
                   </Link>
                 ))}

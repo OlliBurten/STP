@@ -17,7 +17,7 @@ import { getCompanyReviewSummary } from "../api/reviews.js";
 import { getBranschLabel } from "../data/bransch.js";
 import { getCertificateLabel } from "../data/profileData";
 import { scheduleTypes } from "../data/mockJobs";
-import { isJobOlderThan30Days } from "../utils/jobUtils.js";
+import { isJobOlderThan30Days, formatJobTitle } from "../utils/jobUtils.js";
 import { HeartFilledIcon, HeartOutlineIcon, LocationIcon, CheckIcon, WarningIcon } from "../components/Icons";
 import Breadcrumbs from "../components/Breadcrumbs";
 import LoadingBlock from "../components/LoadingBlock";
@@ -527,7 +527,7 @@ export default function JobDetail() {
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
             </Link>
             {mobileScrolled && (
-              <div style={{ flex: 1, padding: "0 12px", fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-900)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{job.title}</div>
+              <div style={{ flex: 1, padding: "0 12px", fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-900)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{formatJobTitle(job.title)}</div>
             )}
             <div style={{ display: "flex", gap: 8 }}>
               <button
@@ -546,7 +546,7 @@ export default function JobDetail() {
                 {companyInitials}
               </div>
               <div style={{ flex: 1 }}>
-                <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, letterSpacing: -0.6, lineHeight: 1.2, marginBottom: 6, color: "var(--ink-900)" }}>{job.title}</h1>
+                <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, letterSpacing: -0.6, lineHeight: 1.2, marginBottom: 6, color: "var(--ink-900)" }}>{formatJobTitle(job.title)}</h1>
                 <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" }}>
                   <span style={{ fontWeight: 600, color: "var(--ink-700)" }}>{job.company}</span>
                   {job.source === "AGGREGATED" && !job.claimed ? null : job.companyVerified ? (
@@ -745,7 +745,7 @@ export default function JobDetail() {
                 {companyInitials}
               </div>
               <div style={{ flex: 1 }}>
-                <h1 style={{ fontSize: "clamp(22px,3vw,30px)", fontWeight: 900, letterSpacing: -0.8, color: "var(--ink-900)", lineHeight: 1.1, margin: "0 0 8px" }}>{job.title}</h1>
+                <h1 style={{ fontSize: "clamp(22px,3vw,30px)", fontWeight: 900, letterSpacing: -0.8, color: "var(--ink-900)", lineHeight: 1.1, margin: "0 0 8px" }}>{formatJobTitle(job.title)}</h1>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                   {job.userId
                     ? <Link to={`/foretag/${job.userId}`} style={{ fontSize: "var(--text-md)", fontWeight: 700, color: "var(--ink-900)", textDecoration: "none" }}>{job.company}</Link>
