@@ -24,11 +24,7 @@ function DemoRoleSwitch({ isCompany, onSwitch }) {
       display: "inline-flex", alignItems: "center", gap: 2, padding: 3,
       borderRadius: 9, background: "rgba(255,255,255,0.07)",
       border: "1px solid rgba(255,255,255,0.1)", marginRight: 24, flexShrink: 0,
-    }} title="Demo: växla mellan åkeri- och förarvyn">
-      <span style={{
-        fontSize: 9, fontWeight: 800, letterSpacing: 0.8,
-        color: "rgba(232,237,237,0.45)", padding: "0 6px 0 4px", userSelect: "none",
-      }}>DEMO</span>
+    }} title="Växla mellan åkeri- och förarvyn">
       {opts.map((o) => (
         <button
           key={o.key}
