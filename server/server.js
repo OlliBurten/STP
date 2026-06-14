@@ -581,7 +581,10 @@ process.on("SIGTERM", () => shutdown("SIGTERM").catch((e) => { console.error("[s
 process.on("SIGINT", () => shutdown("SIGINT").catch((e) => { console.error("[shutdown] Oväntat fel:", e); process.exit(1); }));
 
 if (process.env.APP_LISTEN !== "false") {
-  if (IS_PRODUCTION && !process.env.RESEND_API_KEY) {
+  // Demo-miljön skickar aldrig riktiga mejl (demokonton är förverifierade och
+  // exkluderade från utskick), så avsaknad av RESEND_API_KEY är förväntat där —
+  // döda bara skarp produktion på det, inte demo.
+  if (IS_PRODUCTION && DEPLOYMENT !== "demo" && !process.env.RESEND_API_KEY) {
     console.error(
       "\nKRITISKT: RESEND_API_KEY saknas i produktion. Verifieringsmail kan inte skickas. Sätt RESEND_API_KEY och EMAIL_FROM i Railway.\n"
     );
