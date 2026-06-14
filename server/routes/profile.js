@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
 import { authMiddleware, requireDriver, requireCompany } from "../middleware/auth.js";
+import { augmentCompanyMemberUser, formatClientAuthUser } from "./auth.js";
 import { generateCompanySuggestionsForUser } from "../lib/companyEnrichment.js";
 import { matchScore, driverYearsFromExperience } from "../utils/matchScore.js";
 import { isDriverMinimumProfileComplete } from "../utils/driverProfileRequirements.js";
@@ -74,6 +75,64 @@ profileRouter.post("/company/suggestions/regenerate", authMiddleware, requireCom
       });
     }
     res.json({ suggestions, generatedAt: new Date().toISOString() });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// ─── Demo: rollväxling (åkeri ⇄ förare) ──────────────────────────────────────
+// Endast för BOTH-demokonton (isDemo && demoBoth). Byter User.role mellan
+// COMPANY och DRIVER. Appen läser rollen från DB via /me, så resten följer
+// automatiskt. JWT är userId-baserad → token förblir giltig efter bytet.
+// OBS: registreras FÖRE profileRouter.use(requireDriver) nedan eftersom ett
+// konto i åkeri-läge (role=COMPANY) annars skulle nekas av requireDriver.
+profileRouter.post("/demo-switch-role", authMiddleware, async (req, res, next) => {
+  try {
+    const account = await prisma.user.findUnique({
+      where: { id: req.userId },
+      select: { id: true, isDemo: true, demoBoth: true },
+    });
+    if (!account || !account.isDemo || !account.demoBoth) {
+      return res.status(403).json({ error: "Rollväxling är bara tillgänglig för demokonton med båda rollerna." });
+    }
+    const target = String(req.body?.role || "").trim().toUpperCase();
+    if (target !== "COMPANY" && target !== "DRIVER") {
+      return res.status(400).json({ error: "Ogiltig roll. Välj COMPANY eller DRIVER." });
+    }
+    await prisma.user.update({
+      where: { id: account.id },
+      data: {
+        role: target,
+        // Åkeri-läget kräver VERIFIED för att kunna publicera/kontakta.
+        ...(target === "COMPANY" ? { companyStatus: "VERIFIED" } : {}),
+      },
+    });
+    const user = await prisma.user.findUnique({
+      where: { id: account.id },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        name: true,
+        companyName: true,
+        companyOrgNumber: true,
+        companyStatus: true,
+        companySegmentDefaults: true,
+        emailVerifiedAt: true,
+        lastLoginAt: true,
+        needsDriverOnboarding: true,
+        needsRecruiterOnboarding: true,
+        isDemo: true,
+        demoBoth: true,
+      },
+    });
+    const augmented = await augmentCompanyMemberUser(user);
+    return res.json(
+      formatClientAuthUser(user, augmented, {
+        hadLoggedInBefore: Boolean(user.lastLoginAt),
+        isAdmin: false,
+      })
+    );
   } catch (e) {
     next(e);
   }

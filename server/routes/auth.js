@@ -36,7 +36,7 @@ function isCompanyLikeRole(role) {
 }
 
 /** Augment user object for company/recruiter (Organization or legacy). */
-async function augmentCompanyMemberUser(user) {
+export async function augmentCompanyMemberUser(user) {
   if (!user || !isCompanyLikeRole(user.role)) return user;
   const uo = await prisma.userOrganization.findFirst({
     where: { userId: user.id },
@@ -139,7 +139,7 @@ function getShouldShowOnboarding(user, augmented = user) {
   return false;
 }
 
-function formatClientAuthUser(user, augmented = user, extra = {}) {
+export function formatClientAuthUser(user, augmented = user, extra = {}) {
   return {
     id: augmented.id,
     email: augmented.email,
@@ -153,6 +153,7 @@ function formatClientAuthUser(user, augmented = user, extra = {}) {
     organizationId: augmented.organizationId ?? undefined,
     emailVerifiedAt: augmented.emailVerifiedAt ?? null,
     isDemo: Boolean(augmented.isDemo ?? user.isDemo),
+    demoBoth: Boolean(augmented.demoBoth ?? user.demoBoth),
     shouldShowOnboarding: getShouldShowOnboarding(user, augmented),
     ...extra,
   };
@@ -413,6 +414,7 @@ authRouter.get("/me", authMiddleware, async (req, res, next) => {
         needsDriverOnboarding: true,
         needsRecruiterOnboarding: true,
         isDemo: true,
+        demoBoth: true,
       },
     });
     if (!user) return res.status(404).json({ error: "Användaren hittades inte" });

@@ -13,6 +13,8 @@ const columnMigrations = [
   `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "isDemo" BOOLEAN NOT NULL DEFAULT false`,
   `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "demoExpiresAt" TIMESTAMP(3)`,
   `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "demoLabel" TEXT`,
+  // Demokonto som kan växla mellan åkeri- och förarvyn (role BOTH)
+  `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "demoBoth" BOOLEAN NOT NULL DEFAULT false`,
 ];
 
 async function main() {

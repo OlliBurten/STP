@@ -1768,8 +1768,8 @@ adminRouter.post("/demo-invites", async (req, res, next) => {
       return res.status(400).json({ error: "Ange en giltig e-postadress." });
     }
     const role = String(req.body?.role || "").trim().toUpperCase();
-    if (role !== "DRIVER" && role !== "COMPANY") {
-      return res.status(400).json({ error: "Ogiltig roll. Välj DRIVER eller COMPANY." });
+    if (role !== "DRIVER" && role !== "COMPANY" && role !== "BOTH") {
+      return res.status(400).json({ error: "Ogiltig roll. Välj DRIVER, COMPANY eller BOTH." });
     }
     const label = String(req.body?.label || "").trim().slice(0, 200);
     const days = req.body?.days;

@@ -12,6 +12,7 @@ const DAY_OPTIONS = [
 ];
 
 function roleLabel(role) {
+  if (role === "BOTH") return "Åkeri + Förare";
   return role === "COMPANY" || role === "RECRUITER" ? "Åkeri" : "Förare";
 }
 
@@ -145,6 +146,7 @@ export default function AdminDemoTab({ health, setError, setSuccess }) {
                 <select value={form.role} onChange={(e) => setForm((p) => ({ ...p, role: e.target.value }))} style={INP}>
                   <option value="DRIVER">Förare</option>
                   <option value="COMPANY">Åkeri</option>
+                  <option value="BOTH">Båda</option>
                 </select>
               </div>
               <div>

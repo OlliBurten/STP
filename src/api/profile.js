@@ -1,5 +1,11 @@
-import { apiGet, apiPut, apiPatch } from "./client.js";
+import { apiGet, apiPut, apiPatch, apiPost } from "./client.js";
 import { track } from "../utils/posthog.js";
+
+// Demo: växla mellan åkeri- och förarvyn (bara för BOTH-demokonton).
+// Returnerar uppdaterad användare i samma form som /me.
+export async function demoSwitchRole(role) {
+  return apiPost("/api/profile/demo-switch-role", { role });
+}
 
 export async function fetchProfile() {
   return apiGet("/api/profile");

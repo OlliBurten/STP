@@ -61,6 +61,7 @@ function normalizeUser(u) {
     isAdmin: Boolean(u.isAdmin),
     hadLoggedInBefore: Boolean(u.hadLoggedInBefore),
     isDemo: Boolean(u.isDemo),
+    demoBoth: Boolean(u.demoBoth),
     shouldShowOnboarding: Boolean(u.shouldShowOnboarding),
     name: u.name,
     companyName: u.companyName,

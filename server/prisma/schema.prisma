@@ -41,6 +41,7 @@ model User {
   isDemo        Boolean   @default(false)
   demoExpiresAt DateTime?                      // När demokontot slutar fungera (inloggning + API nekas)
   demoLabel     String?                        // Fritext: vem kontot delats ut till, t.ex. "Investerare – Almi"
+  demoBoth      Boolean   @default(false)       // Demokonto som kan växla mellan åkeri- och förarvyn via header-switch
   suspendedAt DateTime?
   suspensionReason String?
   warningCount Int @default(0)

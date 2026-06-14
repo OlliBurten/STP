@@ -8,6 +8,44 @@ import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useChat } from "../context/ChatContext";
 import { fetchNotifications, markNotificationRead, markAllNotificationsRead } from "../api/notifications.js";
+import { demoSwitchRole } from "../api/profile.js";
+
+/* ─── Demo role switch (åkeri ⇄ förare) ───────────────────────────────────── */
+// Visas BARA för demokonton med båda rollerna (user.isDemo && user.demoBoth).
+// Byter User.role i demo-DB:n, hämtar om /me och navigerar till rollens startsida.
+function DemoRoleSwitch({ isCompany, onSwitch }) {
+  const [busy, setBusy] = useState(false);
+  const opts = [
+    { key: "COMPANY", label: "Åkeri", active: isCompany },
+    { key: "DRIVER",  label: "Förare", active: !isCompany },
+  ];
+  return (
+    <div style={{
+      display: "inline-flex", alignItems: "center", gap: 2, padding: 3,
+      borderRadius: 9, background: "rgba(255,255,255,0.07)",
+      border: "1px solid rgba(255,255,255,0.1)", marginRight: 16, flexShrink: 0,
+    }} title="Demo: växla mellan åkeri- och förarvyn">
+      {opts.map((o) => (
+        <button
+          key={o.key}
+          disabled={busy || o.active}
+          onClick={() => { if (!o.active && !busy) { setBusy(true); onSwitch(o.key).finally(() => setBusy(false)); } }}
+          style={{
+            padding: "5px 12px", borderRadius: 7, border: "none",
+            cursor: o.active ? "default" : "pointer", fontFamily: "inherit",
+            fontSize: "var(--text-xs)", fontWeight: 700,
+            background: o.active ? "var(--green)" : "transparent",
+            color: o.active ? "#fff" : "rgba(232,237,237,0.7)",
+            opacity: busy && !o.active ? 0.5 : 1,
+            transition: "background 120ms, color 120ms",
+          }}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 /* ─── helpers ─────────────────────────────────────────────────────────────── */
 function initials(user) {
@@ -264,7 +302,7 @@ function UserMenu({ user, isCompany, onClose, onLogout }) {
 
 /* ─── Main component ──────────────────────────────────────────────────────── */
 export default function AppTopNav() {
-  const { user, isCompany, isImpersonating, logout, stopViewAs } = useAuth();
+  const { user, isCompany, isImpersonating, logout, stopViewAs, refreshUser } = useAuth();
   const { unreadCount = 0, companyUnreadConversationCount = 0 } = useChat();
   const navigate = useNavigate();
   const location = useLocation();
@@ -329,6 +367,16 @@ export default function AppTopNav() {
     try { await stopViewAs(); window.location.assign("/admin"); } catch (_) {}
   };
 
+  // Demo BOTH-konto: växla roll, hämta om /me, gå till rollens startsida.
+  const isDemoBoth = Boolean(user?.isDemo && user?.demoBoth);
+  const handleDemoSwitch = async (role) => {
+    try {
+      await demoSwitchRole(role);
+      await refreshUser();
+      navigate(role === "COMPANY" ? "/foretag" : "/jobb");
+    } catch (_) {}
+  };
+
   // Nav items
   const driverNav = [
     { label: "Jobb",          path: "/jobb" },
@@ -388,6 +436,11 @@ export default function AppTopNav() {
               }}>Åkeri</span>
             )}
           </div>
+
+          {/* Demo: åkeri/förare-switch (bara BOTH-demokonton) */}
+          {isDemoBoth && (
+            <DemoRoleSwitch isCompany={isCompany} onSwitch={handleDemoSwitch} />
+          )}
 
           {/* Nav links */}
           <div style={{ display: "flex", gap: 2, flex: 1 }}>
