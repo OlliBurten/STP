@@ -61,7 +61,7 @@ const NAV_ITEMS = [
 const ME = { initials: "OH", label: "Oliver Harburt" };
 
 const ConvItem = ({ conv, active, onClick }) => {
-  const last = conv.messages[conv.messages.length - 1];
+  const last = conv.messages?.at(-1);
   const meta = stageMeta[conv.stage];
   return (
     <button onClick={onClick} style={{ width: "100%", textAlign: "left", display: "block", padding: "14px 18px", background: active ? "var(--green-tint)" : "transparent", borderBottom: "1px solid var(--line)", borderLeft: active ? "3px solid var(--green)" : "3px solid transparent" }}
