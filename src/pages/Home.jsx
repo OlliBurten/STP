@@ -124,11 +124,11 @@ export default function Home() {
           backgroundImage: "url('/hero.png')",
           backgroundSize: "cover",
           backgroundPosition: "center 55%",
-          minHeight: "100vh",
+          minHeight: isMobile ? "auto" : "100vh",
           display: "flex",
           flexDirection: "column",
-          paddingTop: 96,
-          paddingBottom: 48,
+          paddingTop: isMobile ? 92 : 96,
+          paddingBottom: isMobile ? 72 : 48,
           position: "relative",
           color: "#fff",
         }}
@@ -162,7 +162,7 @@ export default function Home() {
           }}>
             <span style={{ display: "block" }}>Rätt jobb.</span>
             <span style={{ display: "block", color: "var(--amber)" }}>Rätt förare.</span>
-            <span style={{ display: "block", color: "rgba(255,255,255,0.35)", fontWeight: 300 }}>Direkt.</span>
+            <span style={{ display: "block", color: "rgba(255,255,255,0.62)", fontWeight: 400 }}>Direkt.</span>
           </h1>
 
           {/* Lead */}
