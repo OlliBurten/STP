@@ -117,7 +117,7 @@ function UserRow({ u, selected, isSelectedRow, onCheck, onSelect, compact, mobil
   const warn     = warnings(u);
   const lastLogin = u.lastLoginAt ? fmtRelative(u.lastLoginAt) : "Aldrig";
   const created  = u.createdAt ? u.createdAt.slice(0, 10) : "";
-  const initials = u.name ? u.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : u.email?.[0]?.toUpperCase() || "?";
+  const initials = u.name ? u.name.split(" ").map(w => w[0]).filter(Boolean).join("").slice(0, 2).toUpperCase() : u.email?.[0]?.toUpperCase() || "?";
   const orgNr = u.companyOrgNumber ? String(u.companyOrgNumber).replace(/^(\d{6})(\d{4})$/, "$1-$2") : null;
   // För åkerier: visa åkeriets namn som titel, kontaktperson + e-post + org-nr i underraden.
   const rowTitle = isComp ? (u.companyName || u.name || u.email) : (u.name || u.email);
@@ -220,7 +220,7 @@ function DetailPanel({ u, detail, onClose, onVerify, onReject, onSuspend, onUnsu
   const suspended = isSuspended(u);
   const warn     = warnings(u);
   const profile  = u.profileCompletion ?? 0;
-  const initials = u.name ? u.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : u.email?.[0]?.toUpperCase() || "?";
+  const initials = u.name ? u.name.split(" ").map(w => w[0]).filter(Boolean).join("").slice(0, 2).toUpperCase() : u.email?.[0]?.toUpperCase() || "?";
   const avatarBg = isComp ? "var(--amber)" : "var(--info)";
 
   const statusBadge = suspended

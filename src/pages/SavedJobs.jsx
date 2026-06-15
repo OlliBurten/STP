@@ -18,7 +18,7 @@ function avatarBg(name) {
   return PALETTE[h % PALETTE.length];
 }
 function avatarInitials(name) {
-  return (name || "?").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+  return (name || "?").split(" ").map((w) => w[0]).filter(Boolean).join("").slice(0, 2).toUpperCase();
 }
 function relativeTime(iso) {
   if (!iso) return null;

@@ -76,7 +76,7 @@ const Select = ({ value, onChange, options, placeholder, width = 150 }) => (
 );
 
 const JobCard = ({ job, showMatch, saved, onSave }) => {
-  const initials = job.company.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+  const initials = (job.company || "?").split(" ").map((w) => w[0]).filter(Boolean).join("").slice(0, 2).toUpperCase();
   return (
     <article style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: "var(--r-lg)", padding: "22px 24px", boxShadow: "var(--sh-sm)", transition: "box-shadow .15s, border-color .15s", cursor: "pointer" }}
       onMouseEnter={(e) => { e.currentTarget.style.boxShadow = "var(--sh)"; e.currentTarget.style.borderColor = "var(--line-2)"; }}

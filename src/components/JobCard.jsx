@@ -55,7 +55,7 @@ export default function JobCard({
   const [hovered, setHovered] = useState(false);
   const isMobile = useIsMobile();
 
-  const initials = (job.company || "?").split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+  const initials = (job.company || "?").split(" ").map(w => w[0]).filter(Boolean).join("").slice(0, 2).toUpperCase();
   const isMatch  = matchScore != null && matchScore > 0;
 
   const formatDate = (dateStr) => {
