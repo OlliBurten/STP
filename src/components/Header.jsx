@@ -169,6 +169,12 @@ export default function Header({ onboarding = false }) {
   // Hamburgar/kryss-färg: mörk på ljus landing-header (scroll/öppen meny),
   // vit på mörk hjältebild (landing topp) och på mörka inre headers.
   const menuIconColor = landingLight ? "var(--ink-800)" : "rgba(255,255,255,0.9)";
+  // MenuButton-stil (rundad fyrkant) — anpassad till mörk hero vs ljus header.
+  const menuOnDark = !landingLight; // ljus ikon = mörk yta
+  const menuBtnBorder = menuOnDark ? "rgba(255,255,255,0.20)" : "rgba(20,32,32,0.12)";
+  const menuBtnBg = mobileOpen
+    ? (menuOnDark ? "rgba(255,255,255,0.12)" : "rgba(20,32,32,0.06)")
+    : (menuOnDark ? "rgba(255,255,255,0.06)" : "rgba(20,32,32,0.03)");
 
   // ── Nav link style (på mörk bakgrund) ────────────────────────────────────
   const navLinkClass = ({ isActive }) => isActive ? "dm-dark-nav-link active-dark" : "dm-dark-nav-link";
@@ -663,10 +669,8 @@ export default function Header({ onboarding = false }) {
               ref={menuButtonRef}
               type="button"
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="dm-mobile-menu-button p-2 -mr-2 rounded-lg min-h-[44px] min-w-[44px] flex items-center justify-center transition-colors"
-              style={{ color: menuIconColor, background: mobileOpen ? "rgba(0,0,0,0.04)" : "none", border: "none", cursor: "pointer" }}
-              onMouseEnter={e => { e.currentTarget.style.background = mobileOpen ? "rgba(0,0,0,0.07)" : "rgba(255,255,255,0.08)"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = mobileOpen ? "rgba(0,0,0,0.04)" : ""; }}
+              className="dm-mobile-menu-button -mr-1 flex items-center justify-center"
+              style={{ width: 42, height: 42, borderRadius: 13, color: menuIconColor, background: menuBtnBg, border: `1px solid ${menuBtnBorder}`, cursor: "pointer", transition: "background .15s, border-color .15s", flexShrink: 0 }}
               aria-label={mobileOpen ? "Stäng meny" : "Öppna meny"}
               aria-expanded={mobileOpen}
             >

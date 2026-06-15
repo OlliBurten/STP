@@ -24,7 +24,7 @@ const AUDIENCE = [
 ];
 const EXPLORE = [
   { key: "jobb",    to: "/jobb",            icon: "search", label: "Lediga jobb" },
-  { key: "guider",  to: "/branschinsikter", icon: "book",   label: "Guider" },
+  { key: "guider",  to: "/blogg",           icon: "book",   label: "Guider" },
   { key: "om",      to: "/om-oss",          icon: "info",   label: "Om STP" },
   { key: "kontakt", to: "/kontakt",         icon: "mail",   label: "Kontakt" },
 ];
@@ -136,7 +136,8 @@ export default function PublicMobileMenu({ open, onClose, triggerRef }) {
           width: "87%", maxWidth: 348,
           background: PANEL_BG, color: TXT,
           borderTopLeftRadius: 26, borderBottomLeftRadius: 26,
-          boxShadow: "-26px 0 60px rgba(0,0,0,0.45)",
+          // Skugga endast när öppen — annars blöder den in på högerkanten på alla sidor.
+          boxShadow: open ? "-26px 0 60px rgba(0,0,0,0.45)" : "none",
           paddingTop: "max(50px, env(safe-area-inset-top))",
           display: "flex", flexDirection: "column",
           transform: panelTransform, transition: panelTransition,
