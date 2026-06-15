@@ -3,7 +3,7 @@ import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useChat } from "../context/ChatContext";
 import { fetchNotifications, markNotificationRead, markAllNotificationsRead } from "../api/notifications.js";
-import { BellIcon, MenuIcon, CloseIcon, ChevronDownIcon } from "./Icons";
+import { BellIcon, ChevronDownIcon } from "./Icons";
 import Logo from "./Logo";
 import PublicMobileMenu from "./PublicMobileMenu";
 import { useIsMobile } from "../hooks/useIsMobile";
@@ -169,12 +169,12 @@ export default function Header({ onboarding = false }) {
   // Hamburgar/kryss-färg: mörk på ljus landing-header (scroll/öppen meny),
   // vit på mörk hjältebild (landing topp) och på mörka inre headers.
   const menuIconColor = landingLight ? "var(--ink-800)" : "rgba(255,255,255,0.9)";
-  // MenuButton-stil (rundad fyrkant) — anpassad till mörk hero vs ljus header.
+  // MenuButton-stil (rundad fyrkant, prototypvärden) — anpassad mörk hero vs ljus header.
   const menuOnDark = !landingLight; // ljus ikon = mörk yta
-  const menuBtnBorder = menuOnDark ? "rgba(255,255,255,0.20)" : "rgba(20,32,32,0.12)";
+  const menuBtnBorder = menuOnDark ? "rgba(245,247,243,0.20)" : "rgba(27,36,33,0.13)";
   const menuBtnBg = mobileOpen
-    ? (menuOnDark ? "rgba(255,255,255,0.12)" : "rgba(20,32,32,0.06)")
-    : (menuOnDark ? "rgba(255,255,255,0.06)" : "rgba(20,32,32,0.03)");
+    ? (menuOnDark ? "rgba(245,247,243,0.14)" : "rgba(27,36,33,0.06)")
+    : (menuOnDark ? "rgba(245,247,243,0.08)" : "rgba(27,36,33,0.03)");
 
   // ── Nav link style (på mörk bakgrund) ────────────────────────────────────
   const navLinkClass = ({ isActive }) => isActive ? "dm-dark-nav-link active-dark" : "dm-dark-nav-link";
@@ -670,11 +670,16 @@ export default function Header({ onboarding = false }) {
               type="button"
               onClick={() => setMobileOpen(!mobileOpen)}
               className="dm-mobile-menu-button -mr-1 flex items-center justify-center"
-              style={{ width: 42, height: 42, borderRadius: 13, color: menuIconColor, background: menuBtnBg, border: `1px solid ${menuBtnBorder}`, cursor: "pointer", transition: "background .15s, border-color .15s", flexShrink: 0 }}
+              style={{ width: 42, height: 42, borderRadius: 12, color: menuIconColor, background: menuBtnBg, border: `1px solid ${menuBtnBorder}`, cursor: "pointer", transition: "background .15s, border-color .15s", flexShrink: 0 }}
               aria-label={mobileOpen ? "Stäng meny" : "Öppna meny"}
               aria-expanded={mobileOpen}
             >
-              {mobileOpen ? <CloseIcon className="w-5 h-5" /> : <MenuIcon className="w-5 h-5" />}
+              {/* Brandstil: 2pt rundad, asymmetrisk 3:e linje */}
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <line x1="3.5" y1="7"  x2="20.5" y2="7"/>
+                <line x1="3.5" y1="12" x2="20.5" y2="12"/>
+                <line x1="3.5" y1="17" x2="14"   y2="17"/>
+              </svg>
             </button>
 
             {/* Desktop login / register */}
