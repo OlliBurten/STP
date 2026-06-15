@@ -72,11 +72,11 @@ const ConvItem = ({ conv, active, onClick }) => {
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
             <span style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{conv.company}</span>
-            <span style={{ fontSize: 11.5, color: "var(--ink-400)", flexShrink: 0 }}>{relShort(last.at)}</span>
+            <span style={{ fontSize: 11.5, color: "var(--ink-400)", flexShrink: 0 }}>{last ? relShort(last.at) : ""}</span>
           </div>
           <div style={{ fontSize: 12, color: "var(--ink-500)", marginTop: 1, marginBottom: 6, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{conv.jobTitle}</div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: 12.5, color: conv.unread ? "var(--ink-900)" : "var(--ink-500)", fontWeight: conv.unread ? 600 : 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>{last.from === "me" ? "Du: " : ""}{last.text}</span>
+            <span style={{ fontSize: 12.5, color: conv.unread ? "var(--ink-900)" : "var(--ink-500)", fontWeight: conv.unread ? 600 : 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>{last?.from === "me" ? "Du: " : ""}{last?.text}</span>
             {conv.unread > 0 && <span style={{ width: 18, height: 18, borderRadius: 9, background: "var(--green)", color: "#fff", fontSize: 11, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{conv.unread}</span>}
           </div>
           <div style={{ marginTop: 8 }}><Pill tone={meta.tone} size="sm">{meta.label}</Pill></div>
