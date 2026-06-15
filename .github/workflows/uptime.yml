@@ -1,0 +1,39 @@
+name: STP Uptime — LARM om denna failar
+
+# Övervakar att Transportplattformen lever, dygnet runt, på GitHubs servrar
+# (oberoende av Olivers dator). Failar jobbet om sajten eller API:t inte svarar
+# korrekt — då skickar GitHub automatiskt ett mejl till repo-ägaren.
+#
+# OBS: schemalagda workflows körs bara på default-branchen (main) och kan
+# fördröjas några minuter vid hög last hos GitHub. GitHub pausar schemalagda
+# workflows i repon utan aktivitet i 60 dagar — håll repot aktivt (sker av sig
+# självt vid normala deployer).
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"   # var 5:e minut (GitHubs minimum)
+  workflow_dispatch: {}      # tillåt manuell körning från Actions-fliken
+
+jobs:
+  uptime:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Kontrollera sajt + API-hälsa (3 försök för att undvika falsklarm)
+        run: |
+          SITE="https://transportplattformen.se"
+          API="https://nodejs-production-f3b9.up.railway.app/api/health"
+          check() {
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 20 "$SITE") || return 1
+            [ "$code" = "200" ] || { echo "Sajten svarade HTTP $code"; return 1; }
+            health=$(curl -s --max-time 20 "$API") || return 1
+            echo "$health" | grep -q '"ok":true' || { echo "API: ok!=true → $health"; return 1; }
+            echo "$health" | grep -q '"db":"ok"' || { echo "API: db!=ok → $health"; return 1; }
+            return 0
+          }
+          for i in 1 2 3; do
+            if check; then echo "STP OK ✅ (försök $i)"; exit 0; fi
+            echo "Försök $i misslyckades — väntar 30s och provar igen..."
+            sleep 30
+          done
+          echo "::error::STP svarar inte korrekt efter 3 försök — sajten eller API:t kan vara nere. Kolla Railway (backend) och Vercel (frontend)."
+          exit 1
