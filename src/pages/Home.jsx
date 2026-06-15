@@ -28,8 +28,6 @@ function useInView() {
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
-const ROTATE_WORDS = ["Förare", "Åkeri", "Match"];
-
 const FAQ_ITEMS = [
   { q: "Är STP ett bemanningsbolag?", a: "Nej. STP är inte ett bemanningsbolag. Vi möjliggör direktkontakt mellan förare och åkerier — utan mellanhänder som tar en del av lönen." },
   { q: "Kostar det något?", a: "STP är helt gratis under betafasen för alla förare och åkerier. Vi meddelar tydligt i god tid innan vi introducerar betalda funktioner." },
@@ -72,18 +70,8 @@ export default function Home() {
   const isMobile = useIsMobile();
   const { user, isDriver, isCompany, isAdmin } = useAuth();
 
-  const [wordIdx, setWordIdx] = useState(0);
-  const [wordVisible, setWordVisible] = useState(true);
   const [faqOpen, setFaqOpen] = useState(0);
   const [howTab, setHowTab] = useState("driver");
-
-  useEffect(() => {
-    const id = setInterval(() => {
-      setWordVisible(false);
-      setTimeout(() => { setWordIdx((i) => (i + 1) % ROTATE_WORDS.length); setWordVisible(true); }, 250);
-    }, 2600);
-    return () => clearInterval(id);
-  }, []);
 
   useEffect(() => {
     const jsonLd = {
@@ -165,39 +153,16 @@ export default function Home() {
         }}>
           {/* Headline */}
           <h1 style={{
-            fontSize: isMobile ? "clamp(54px,14vw,80px)" : "clamp(54px,7.4vw,108px)",
+            fontSize: isMobile ? "clamp(44px,11.5vw,72px)" : "clamp(52px,6.2vw,96px)",
             fontWeight: 900,
-            lineHeight: isMobile ? 1.08 : 1.0,
-            letterSpacing: isMobile ? -2 : -3,
+            lineHeight: 1.1,
+            letterSpacing: isMobile ? -1.5 : -3,
             color: "#fff",
-            whiteSpace: isMobile ? "normal" : "nowrap",
             marginBottom: 28,
           }}>
-            {isMobile ? (
-              <>
-                <span style={{ display: "block" }}>Rätt</span>
-                <span style={{
-                  display: "block", color: "var(--amber)",
-                  opacity: wordVisible ? 1 : 0,
-                  transform: wordVisible ? "translateY(0)" : "translateY(8px)",
-                  transition: "opacity .25s ease, transform .25s ease",
-                }}>{ROTATE_WORDS[wordIdx]}</span>
-                <span style={{ display: "block", color: "rgba(255,255,255,0.35)", fontWeight: 300 }}>Direkt</span>
-              </>
-            ) : (
-              <>
-                Rätt&nbsp;
-                <span style={{
-                  color: "var(--amber)",
-                  display: "inline-block",
-                  minWidth: "3.2ch",
-                  opacity: wordVisible ? 1 : 0,
-                  transform: wordVisible ? "translateY(0)" : "translateY(8px)",
-                  transition: "opacity .25s ease, transform .25s ease",
-                }}>{ROTATE_WORDS[wordIdx]}</span>
-                &nbsp;<span style={{ color: "rgba(255,255,255,0.35)", fontWeight: 300 }}>Direkt</span>
-              </>
-            )}
+            <span style={{ display: "block" }}>Rätt jobb.</span>
+            <span style={{ display: "block", color: "var(--amber)" }}>Rätt förare.</span>
+            <span style={{ display: "block", color: "rgba(255,255,255,0.35)", fontWeight: 300 }}>Direkt.</span>
           </h1>
 
           {/* Lead */}
@@ -912,7 +877,7 @@ export default function Home() {
               color: "rgba(255,255,255,0.82)", maxWidth: 540,
             }}>
               Skapa din profil eller registrera ditt åkeri på två minuter.
-              Helt gratis under betafasen.
+              Inga mellanhänder, inga avgifter.
             </p>
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap", flexDirection: isMobile ? "column" : "row" }}>
               <Link
@@ -952,8 +917,8 @@ export default function Home() {
           {/* 4 stat tiles */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gridAutoRows: "1fr", gap: 18 }}>
             {[
-              ["Gratis",      "Under beta"],
-              ["Inga avgifter", "Aldrig provision"],
+              ["Direkt",      "Inga mellanhänder"],
+              ["0 kr",        "Ingen provision"],
               ["2 min",       "Att komma igång"],
               ["Verifierat",  "Mot Bolagsverket"],
             ].map(([big, sub]) => (
