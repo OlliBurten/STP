@@ -93,7 +93,6 @@ export default function Home() {
 
   const [heroRef] = useInView();
   const [problemRef, problemInView] = useInView();
-  const [identityRef, identityInView] = useInView();
   const [solutionRef, solutionInView] = useInView();
   const [howRef, howInView] = useInView();
   const [segRef, segInView] = useInView();
@@ -271,133 +270,6 @@ export default function Home() {
                 <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.7 }}>{p.body}</p>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── IDENTITY — STP är / STP är inte ─────────────────────────────── */}
-      <section
-        ref={identityRef}
-        style={{
-          background: "var(--paper-2)",
-          padding: pad,
-          opacity: identityInView ? 1 : 0,
-          transform: identityInView ? "none" : "translateY(32px)",
-          transition: "opacity 0.7s ease-out, transform 0.7s ease-out",
-        }}
-      >
-        <div style={{ maxWidth: "var(--w-public)", margin: "0 auto" }}>
-          <div style={{ marginBottom: 56, maxWidth: 720 }}>
-            <div style={{
-              display: "inline-block", padding: "4px 12px", borderRadius: 999,
-              background: "var(--green-tint)", color: "var(--green-text)",
-              fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
-              marginBottom: 18,
-            }}>Vad är STP</div>
-            <h2 style={{
-              fontSize: "clamp(34px,4vw,54px)", fontWeight: 900,
-              letterSpacing: -1.8, lineHeight: 1.05,
-              color: "var(--ink-900)", marginBottom: 20,
-            }}>
-              En tydlig plattform.<br />Ingen otydlig mellanhand.
-            </h2>
-            <p style={{ fontSize: "var(--text-xl)", lineHeight: 1.7, color: "var(--ink-500)", fontWeight: 500 }}>
-              En enkel definition gör det lättare att veta om STP är för dig.
-            </p>
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 18 }}>
-            {/* STP är */}
-            <div style={{
-              background: "var(--card)", border: "1px solid var(--line)",
-              borderRadius: 20, padding: "30px 32px",
-              boxShadow: "var(--sh-sm)",
-            }}>
-              <div style={{
-                display: "flex", alignItems: "center", gap: 12,
-                marginBottom: 22, paddingBottom: 18,
-                borderBottom: "1px solid var(--line)",
-              }}>
-                <span style={{
-                  width: 34, height: 34, borderRadius: 10,
-                  background: "var(--green-tint)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  flexShrink: 0,
-                }}>
-                  <Icon name="check" size={17} color="var(--green-text)" stroke={2.6} />
-                </span>
-                <h3 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.5 }}>
-                  STP <span style={{ color: "var(--green)" }}>är</span>
-                </h3>
-              </div>
-              <ul style={{ display: "flex", flexDirection: "column", gap: 14, listStyle: "none", margin: 0, padding: 0 }}>
-                {[
-                  "En direkt matchningsplattform mellan förare och åkerier",
-                  "Strukturerad på körkort, certifikat, region och tillgänglighet",
-                  "Verifierade åkerier (mot Bolagsverket)",
-                  "Gratis just nu — inga dolda kostnader",
-                  "Du styr själv din synlighet och vad som visas",
-                ].map((it) => (
-                  <li key={it} style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                    <span style={{
-                      width: 20, height: 20, borderRadius: 10,
-                      background: "var(--success-tint)",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      flexShrink: 0, marginTop: 1,
-                    }}>
-                      <Icon name="check" size={11} color="var(--success)" stroke={3} />
-                    </span>
-                    <span style={{ fontSize: "var(--text-base)", color: "var(--ink-700)", lineHeight: 1.6, fontWeight: 500 }}>{it}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* STP är inte */}
-            <div style={{
-              background: "var(--card)", border: "1px solid var(--line)",
-              borderRadius: 20, padding: "30px 32px",
-              boxShadow: "var(--sh-sm)",
-            }}>
-              <div style={{
-                display: "flex", alignItems: "center", gap: 12,
-                marginBottom: 22, paddingBottom: 18,
-                borderBottom: "1px solid var(--line)",
-              }}>
-                <span style={{
-                  width: 34, height: 34, borderRadius: 10,
-                  background: "var(--danger-tint)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  flexShrink: 0,
-                }}>
-                  <Icon name="x" size={16} color="var(--danger)" stroke={2.6} />
-                </span>
-                <h3 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.5 }}>
-                  STP är <span style={{ color: "var(--danger)" }}>inte</span>
-                </h3>
-              </div>
-              <ul style={{ display: "flex", flexDirection: "column", gap: 14, listStyle: "none", margin: 0, padding: 0 }}>
-                {[
-                  "Ett bemanningsbolag som tar provision på din lön",
-                  "En generisk jobbsöksajt med fritext-CV",
-                  "En Facebook-grupp där annonser försvinner på 24 timmar",
-                  "En mellanhand mellan dig och din nästa arbetsgivare",
-                  "En plats för ogrundade arbetsgivare eller oseriösa aktörer",
-                ].map((it) => (
-                  <li key={it} style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                    <span style={{
-                      width: 20, height: 20, borderRadius: 10,
-                      background: "var(--danger-tint)",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      flexShrink: 0, marginTop: 1,
-                    }}>
-                      <Icon name="x" size={11} color="var(--danger)" stroke={3} />
-                    </span>
-                    <span style={{ fontSize: "var(--text-base)", color: "var(--ink-700)", lineHeight: 1.6, fontWeight: 500 }}>{it}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
           </div>
         </div>
       </section>
@@ -643,26 +515,6 @@ export default function Home() {
             ))}
           </div>
 
-          {/* Social proof */}
-          <div style={{
-            marginTop: 48,
-            background: "var(--card)", border: "1px solid var(--line)",
-            borderRadius: 16, padding: "22px 28px",
-            display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap",
-            boxShadow: "var(--sh-sm)",
-          }}>
-            <div style={{ display: "flex", gap: 22, flexWrap: "wrap" }}>
-              {["Gratis just nu", "Direktkontakt utan provision", "Verifierat mot Bolagsverket"].map((l) => (
-                <span key={l} style={{
-                  display: "inline-flex", alignItems: "center", gap: 8,
-                  fontSize: "var(--text-base)", fontWeight: 600, color: "var(--ink-900)",
-                }}>
-                  <Icon name="check" size={15} color="var(--success)" stroke={2.6} />
-                  {l}
-                </span>
-              ))}
-            </div>
-          </div>
         </div>
       </section>
 
