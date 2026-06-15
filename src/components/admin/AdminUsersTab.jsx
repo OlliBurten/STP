@@ -128,7 +128,17 @@ function BulkBar({ count, onClear, onBulkSuspend }) {
 }
 
 // ─── Table header ──────────────────────────────────────────────────────────────
-function TableHeader({ allSelected, onSelectAll, compact }) {
+function SortHead({ label, sortKey, sort, onSort }) {
+  const active = sort?.key === sortKey;
+  const arrow = !active ? "↕" : sort.dir === "desc" ? "↓" : "↑";
+  return (
+    <div onClick={() => onSort(sortKey)} style={{ cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4, userSelect: "none", color: active ? "var(--ink-700)" : undefined }} title="Sortera">
+      {label}<span style={{ fontSize: "0.9em", opacity: active ? 1 : 0.45 }}>{arrow}</span>
+    </div>
+  );
+}
+
+function TableHeader({ allSelected, onSelectAll, compact, sort, onSort }) {
   const cols = compact ? "36px 1fr 78px 116px 80px 36px" : "40px 1fr 90px 124px 80px 100px 90px 40px";
   return (
     <div style={{ display: "grid", gridTemplateColumns: cols, gap: 14, alignItems: "center", padding: "10px 18px", borderBottom: "1px solid var(--line)", borderLeft: "2px solid transparent", background: "var(--card)", fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.3, textTransform: "uppercase", color: "var(--ink-400)", position: "sticky", top: 0, zIndex: 5 }}>
@@ -141,8 +151,8 @@ function TableHeader({ allSelected, onSelectAll, compact }) {
       <div>Roll</div>
       <div>Status</div>
       <div>Profil</div>
-      {!compact && <div>Senast inne</div>}
-      {!compact && <div>Skapad</div>}
+      {!compact && <SortHead label="Senast inne" sortKey="login" sort={sort} onSort={onSort} />}
+      {!compact && <SortHead label="Skapad" sortKey="created" sort={sort} onSort={onSort} />}
       <div></div>
     </div>
   );
@@ -496,6 +506,9 @@ export default function AdminUsersTab({
   const [selected, setSelected] = useState(new Set());
   const [filter, setFilter] = useState("all");
   const [showTest, setShowTest] = useState(false);
+  // Sortering: klick på kolumnrubrik. null = serverns ordning (skapad, nyast först).
+  const [sort, setSort] = useState({ key: null, dir: "desc" });
+  const toggleSort = (key) => setSort(s => s.key === key ? { key, dir: s.dir === "desc" ? "asc" : "desc" } : { key, dir: "desc" });
   const isMobile = useIsMobile(900);
 
   const allUsersRaw = Array.isArray(users) ? users : [];
@@ -525,6 +538,15 @@ export default function AdminUsersTab({
     if (filter === "suspended")  return isSuspended(u);
     return true;
   });
+
+  // Sortera den filtrerade listan (om en kolumn valts). Saknat datum sorteras sist.
+  const sorted = sort.key ? [...filtered].sort((a, b) => {
+    const get = (u) => sort.key === "login"
+      ? (u.lastLoginAt ? new Date(u.lastLoginAt).getTime() : 0)
+      : new Date(u.createdAt || 0).getTime();
+    const va = get(a), vb = get(b);
+    return sort.dir === "asc" ? va - vb : vb - va;
+  }) : filtered;
 
   const allSelected = filtered.length > 0 && filtered.every(u => selected.has(u.id));
   const toggleAll = () => {
@@ -706,8 +728,8 @@ export default function AdminUsersTab({
           testCount={testCount}
         />
         <BulkBar count={selected.size} onClear={() => setSelected(new Set())} onBulkSuspend={handleBulkSuspend} />
-        {!isMobile && <TableHeader allSelected={allSelected} onSelectAll={toggleAll} compact={!!selectedUser} />}
-        {filtered.map(u => (
+        {!isMobile && <TableHeader allSelected={allSelected} onSelectAll={toggleAll} compact={!!selectedUser} sort={sort} onSort={toggleSort} />}
+        {sorted.map(u => (
           <UserRow
             key={u.id}
             u={u}
