@@ -30,7 +30,7 @@ function useInView() {
 
 const FAQ_ITEMS = [
   { q: "Är STP ett bemanningsbolag?", a: "Nej. STP är inte ett bemanningsbolag. Vi möjliggör direktkontakt mellan förare och åkerier — utan mellanhänder som tar en del av lönen." },
-  { q: "Kostar det något?", a: "STP är helt gratis under betafasen för alla förare och åkerier. Vi meddelar tydligt i god tid innan vi introducerar betalda funktioner." },
+  { q: "Kostar det något?", a: "STP är helt gratis just nu för alla förare och åkerier. Vi meddelar tydligt i god tid innan vi introducerar betalda funktioner." },
   { q: "Hur fungerar verifiering?", a: "Åkerier verifieras mot Bolagsverket. Förares körkort och certifikat byggs ut löpande i samarbete med branschen." },
   { q: "Vem äger min profil?", a: "Du äger din profil och styr vad som är synligt. Du kan stänga av synligheten, uppdatera uppgifter eller radera kontot när som helst." },
   { q: "Vad skiljer STP från vanliga jobbsajter?", a: "STP är byggt specifikt för transportbranschen. Profilen utgår från körkort, segment och tillgänglighet — inte ett generiskt CV." },
@@ -335,7 +335,7 @@ export default function Home() {
                   "En direkt matchningsplattform mellan förare och åkerier",
                   "Strukturerad på körkort, certifikat, region och tillgänglighet",
                   "Verifierade åkerier (mot Bolagsverket)",
-                  "Gratis under hela betafasen — inga dolda kostnader",
+                  "Gratis just nu — inga dolda kostnader",
                   "Du styr själv din synlighet och vad som visas",
                 ].map((it) => (
                   <li key={it} style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
@@ -604,7 +604,7 @@ export default function Home() {
               { n: 2, title: "Bygg din profil", body: "Fyll i körkort, certifikat, erfarenhet och tillgänglighet. Välj om du är synlig för åkerier." },
               { n: 3, title: "Bli matchad",     body: "Åkerier hittar dig automatiskt. Du kan också söka jobb direkt. All kontakt sker via plattformen." },
             ] : [
-              { n: 1, title: "Registrera åkeri",    body: "Verifiera ditt företag mot Bolagsverket. Snabbt, säkert och gratis under beta." },
+              { n: 1, title: "Registrera åkeri",    body: "Verifiera ditt företag mot Bolagsverket. Snabbt, säkert och gratis just nu." },
               { n: 2, title: "Publicera eller sök", body: "Lägg upp en jobbannons eller bläddra bland förare med rätt behörigheter i din region." },
               { n: 3, title: "Kontakta direkt",     body: "Ta kontakt utan mellanhänder. Ingen provision. Ingen avgift per kontakt." },
             ]).map((s) => (
@@ -652,7 +652,7 @@ export default function Home() {
             boxShadow: "var(--sh-sm)",
           }}>
             <div style={{ display: "flex", gap: 22, flexWrap: "wrap" }}>
-              {["Gratis under hela betafasen", "Direktkontakt utan provision", "Verifierat mot Bolagsverket"].map((l) => (
+              {["Gratis just nu", "Direktkontakt utan provision", "Verifierat mot Bolagsverket"].map((l) => (
                 <span key={l} style={{
                   display: "inline-flex", alignItems: "center", gap: 8,
                   fontSize: "var(--text-base)", fontWeight: 600, color: "var(--ink-900)",

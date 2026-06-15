@@ -23,7 +23,7 @@ const TALENT = [
 
 const COMPARE = {
   bemanning: ["Provision på varje timme föraren kör", "Föraren tillhör bemanningsbolaget", "Du ser sällan vem du får förrän de dyker upp", "Bindningstider och ramavtal"],
-  stp: ["Inga avgifter under betafasen", "Du äger relationen med föraren direkt", "Sök och se hela profilen innan kontakt", "Ingen bindningstid — säg upp när du vill"],
+  stp: ["Inga avgifter just nu", "Du äger relationen med föraren direkt", "Sök och se hela profilen innan kontakt", "Ingen bindningstid — säg upp när du vill"],
 };
 
 const STEPS = [
@@ -223,7 +223,7 @@ export default function ForCompaniesLanding() {
         <div style={S.container}>
           <div className="fa-grid">
             <div>
-              <div style={{ marginBottom: 24 }}><span style={S.eyebrow}>För åkerier · Gratis under beta</span></div>
+              <div style={{ marginBottom: 24 }}><span style={S.eyebrow}>För åkerier · Gratis just nu</span></div>
               <h1 style={{ fontSize: "clamp(38px,4.8vw,60px)", fontWeight: 900, letterSpacing: -2.4, lineHeight: 1.04, color: "var(--ink-900)", margin: "0 0 22px", textWrap: "balance" }}>
                 En <span style={{ color: "var(--amber)" }}>talangdatabas</span> — inte en annonstavla.
               </h1>
@@ -235,7 +235,7 @@ export default function ForCompaniesLanding() {
                 <Button variant="secondary" size="lg" onClick={() => scrollTo("sa-funkar")}>Se hur det funkar</Button>
               </div>
               <div style={{ display: "flex", gap: 26, flexWrap: "wrap" }}>
-                {[["36 %", "saknar förare"], ["Auto", "verifiering"], ["0 kr", "under beta"]].map(([b, s]) => (
+                {[["36 %", "saknar förare"], ["Auto", "verifiering"], ["0 kr", "just nu"]].map(([b, s]) => (
                   <div key={s} style={{ display: "flex", flexDirection: "column" }}>
                     <span style={{ fontSize: "var(--text-2xl)", fontWeight: 900, color: "var(--ink-900)", fontFamily: "var(--mono)", letterSpacing: -0.5 }}>{b}</span>
                     <span style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", fontWeight: 600 }}>{s}</span>
@@ -392,7 +392,7 @@ export default function ForCompaniesLanding() {
         lead="Skapa ett företagskonto, gå igenom onboardingen och lägg till ert åkeri. När grunden finns kan ni börja med Hitta förare direkt och publicera jobb vid behov."
         primaryLabel="Skapa företagskonto"
         secondaryLabel="Läs mer om STP"
-        stats={[["Gratis", "Under beta"], ["0 kr", "Aldrig provision"], ["Auto", "Verifiering"], ["Direkt", "Äg relationen"]]}
+        stats={[["Gratis", "Just nu"], ["0 kr", "Aldrig provision"], ["Auto", "Verifiering"], ["Direkt", "Äg relationen"]]}
         onPrimary={goRegister}
         onSecondary={() => navigate("/om-oss")}
       />

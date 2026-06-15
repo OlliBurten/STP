@@ -65,7 +65,7 @@ function BrandPanel() {
       {/* Headline */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", padding: "40px 0" }}>
         <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 12px", borderRadius: 999, background: "rgba(199,122,14,0.15)", border: "1px solid rgba(199,122,14,0.35)", color: "#f5c875", fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: 1.4, textTransform: "uppercase", alignSelf: "flex-start", marginBottom: 26 }}>
-          Beta · Gratis
+          Gratis just nu
         </div>
         <h1 style={{ fontSize: "var(--text-5xl)", fontWeight: 900, letterSpacing: -1.5, lineHeight: 1.1, marginBottom: 18, color: "#fff" }}>
           Branschens<br />egen plattform.
@@ -538,7 +538,7 @@ export default function Login() {
               <h1 style={{ fontSize: "var(--text-4xl)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.8, marginBottom: 6 }}>
                 {isDriver ? "Skapa förarkonto" : "Registrera åkeri"}
               </h1>
-              <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", marginBottom: 28 }}>Gratis under beta. Inga avgifter.</p>
+              <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", marginBottom: 28 }}>Gratis just nu. Inga avgifter.</p>
 
               <BankIDButton />
 
