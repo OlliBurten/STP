@@ -26,25 +26,9 @@ function useInView() {
   return [ref, inView];
 }
 
-function useCountUp(target, duration, active) {
-  const [val, setVal] = useState(0);
-  useEffect(() => {
-    if (!active) return;
-    let start = null;
-    const step = (ts) => {
-      if (!start) start = ts;
-      const prog = Math.min((ts - start) / duration, 1);
-      setVal(Math.round(prog * target));
-      if (prog < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  }, [active, target, duration]);
-  return val;
-}
-
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
-const ROTATE_WORDS = ["Förare.", "Åkeri.", "Match."];
+const ROTATE_WORDS = ["Förare", "Åkeri", "Match"];
 
 const FAQ_ITEMS = [
   { q: "Är STP ett bemanningsbolag?", a: "Nej. STP är inte ett bemanningsbolag. Vi möjliggör direktkontakt mellan förare och åkerier — utan mellanhänder som tar en del av lönen." },
@@ -119,7 +103,7 @@ export default function Home() {
     return () => document.getElementById("home-faq-jsonld")?.remove();
   }, []);
 
-  const [heroRef, heroInView] = useInView();
+  const [heroRef] = useInView();
   const [problemRef, problemInView] = useInView();
   const [identityRef, identityInView] = useInView();
   const [solutionRef, solutionInView] = useInView();
@@ -127,10 +111,6 @@ export default function Home() {
   const [segRef, segInView] = useInView();
   const [faqRef, faqInView] = useInView();
   const [ctaRef, ctaInView] = useInView();
-
-  const count1 = useCountUp(4080, 1600, heroInView);
-  const count2 = useCountUp(5662, 1600, heroInView);
-  const count3 = useCountUp(36, 1400, heroInView);
 
   if (user && !isAdmin) {
     if (isCompany) return <Navigate to="/foretag" replace />;
@@ -183,42 +163,41 @@ export default function Home() {
           position: "relative",
           zIndex: 1,
         }}>
-          {/* Eyebrow */}
-          <div style={{ display: "flex", alignItems: "center", marginBottom: 56 }}>
-            <div style={{
-              display: "inline-flex", alignItems: "center", gap: 8,
-              padding: "6px 14px", borderRadius: 999,
-              background: "rgba(245,166,35,0.15)",
-              border: "1px solid rgba(245,166,35,0.35)",
-              color: "#f5c875",
-              fontSize: "var(--text-2xs)", fontWeight: 700,
-              letterSpacing: 1.4, textTransform: "uppercase",
-            }}>
-              <span style={{ width: 6, height: 6, borderRadius: 3, background: "#f5c875", flexShrink: 0, display: "inline-block" }} />
-              Beta · Gratis att använda
-            </div>
-          </div>
-
           {/* Headline */}
           <h1 style={{
             fontSize: isMobile ? "clamp(54px,14vw,80px)" : "clamp(54px,7.4vw,108px)",
             fontWeight: 900,
-            lineHeight: 1.0,
+            lineHeight: isMobile ? 1.08 : 1.0,
             letterSpacing: isMobile ? -2 : -3,
             color: "#fff",
             whiteSpace: isMobile ? "normal" : "nowrap",
             marginBottom: 28,
           }}>
-            Rätt&nbsp;
-            <span style={{
-              color: "var(--amber)",
-              display: "inline-block",
-              minWidth: "3.2ch",
-              opacity: wordVisible ? 1 : 0,
-              transform: wordVisible ? "translateY(0)" : "translateY(8px)",
-              transition: "opacity .25s ease, transform .25s ease",
-            }}>{ROTATE_WORDS[wordIdx]}</span>
-            &nbsp;<span style={{ color: "rgba(255,255,255,0.35)", fontWeight: 300 }}>Direkt.</span>
+            {isMobile ? (
+              <>
+                <span style={{ display: "block" }}>Rätt</span>
+                <span style={{
+                  display: "block", color: "var(--amber)",
+                  opacity: wordVisible ? 1 : 0,
+                  transform: wordVisible ? "translateY(0)" : "translateY(8px)",
+                  transition: "opacity .25s ease, transform .25s ease",
+                }}>{ROTATE_WORDS[wordIdx]}</span>
+                <span style={{ display: "block", color: "rgba(255,255,255,0.35)", fontWeight: 300 }}>Direkt</span>
+              </>
+            ) : (
+              <>
+                Rätt&nbsp;
+                <span style={{
+                  color: "var(--amber)",
+                  display: "inline-block",
+                  minWidth: "3.2ch",
+                  opacity: wordVisible ? 1 : 0,
+                  transform: wordVisible ? "translateY(0)" : "translateY(8px)",
+                  transition: "opacity .25s ease, transform .25s ease",
+                }}>{ROTATE_WORDS[wordIdx]}</span>
+                &nbsp;<span style={{ color: "rgba(255,255,255,0.35)", fontWeight: 300 }}>Direkt</span>
+              </>
+            )}
           </h1>
 
           {/* Lead */}
@@ -227,9 +206,9 @@ export default function Home() {
             color: "rgba(255,255,255,0.78)", fontWeight: 500,
             maxWidth: 580, marginBottom: 32,
           }}>
-            Sveriges matchningsplattform för yrkesförare och transportföretag.
-            Inga mellanhänder. Inga avgifter. Inga generiska CV —
-            bara körkort, certifikat och tillgänglighet.
+            {isMobile
+              ? "Sveriges matchningsplattform för yrkesförare och åkerier. Inga mellanhänder, inga avgifter."
+              : "Sveriges matchningsplattform för yrkesförare och transportföretag. Inga mellanhänder. Inga avgifter. Inga generiska CV — bara körkort, certifikat och tillgänglighet."}
           </p>
 
           {/* CTAs */}
@@ -237,7 +216,8 @@ export default function Home() {
             <Link
               to="/jobb"
               style={{
-                display: "inline-flex", alignItems: "center", gap: 8,
+                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+                width: isMobile ? "100%" : "auto",
                 padding: "14px 24px", height: 50,
                 background: "var(--amber)", color: "#fff",
                 border: "1px solid var(--amber-deep)", borderRadius: 10,
@@ -254,6 +234,7 @@ export default function Home() {
               state={{ initialMode: "register", requiredRole: "company" }}
               style={{
                 display: "inline-flex", alignItems: "center", justifyContent: "center",
+                width: isMobile ? "100%" : "auto",
                 padding: "14px 24px", height: 50,
                 background: "rgba(255,255,255,0.08)", color: "#fff",
                 border: "1px solid rgba(255,255,255,0.22)", borderRadius: 10,
@@ -265,45 +246,6 @@ export default function Home() {
             >
               Jag är ett åkeri
             </Link>
-          </div>
-
-          {/* 4 stats at bottom */}
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(4, 1fr)",
-            gap: 0,
-            borderTop: "1px solid rgba(255,255,255,0.14)",
-            paddingTop: 28,
-          }}>
-            {[
-              { value: count1.toLocaleString("sv-SE"), label: "Lediga tjänster",      mono: true },
-              { value: count2.toLocaleString("sv-SE"), label: "Anställda i år",       mono: true },
-              { value: `${count3} %`,                  label: "Åkerier saknar förare", mono: true },
-              { value: "Gratis",                        label: "För föraren — alltid", mono: false, accent: true },
-            ].map((s, i) => (
-              <div key={s.label} style={{
-                padding: isMobile
-                  ? (i % 2 === 0 ? "12px 16px 12px 0" : "12px 0 12px 16px")
-                  : (i === 0 ? "0 28px 0 0" : "0 28px"),
-                borderLeft: isMobile
-                  ? (i % 2 !== 0 ? "1px solid rgba(255,255,255,0.10)" : "none")
-                  : (i > 0 ? "1px solid rgba(255,255,255,0.10)" : "none"),
-                borderTop: isMobile && i >= 2 ? "1px solid rgba(255,255,255,0.10)" : "none",
-                paddingTop: isMobile && i >= 2 ? 12 : undefined,
-                marginTop: isMobile && i >= 2 ? 12 : undefined,
-              }}>
-                <div style={{
-                  fontSize: isMobile ? 24 : 32, fontWeight: 800,
-                  color: s.accent ? "var(--amber)" : "#fff",
-                  letterSpacing: -0.8, lineHeight: 1.1, marginBottom: 8,
-                  fontFamily: s.mono ? "var(--mono)" : "var(--font)",
-                }}>{s.value}</div>
-                <div style={{
-                  fontSize: "var(--text-2xs)", color: "rgba(255,255,255,0.55)", fontWeight: 700,
-                  letterSpacing: 1.3, textTransform: "uppercase",
-                }}>{s.label}</div>
-              </div>
-            ))}
           </div>
         </div>
       </section>
@@ -532,12 +474,13 @@ export default function Home() {
                 kvalitetssäkrad plattform. Direkt kontakt. Inga mellanhänder.
                 Inga avgifter.
               </p>
-              <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+              <div style={{ display: "flex", gap: 12, flexWrap: "wrap", flexDirection: isMobile ? "column" : "row" }}>
                 <Link
                   to="/login"
                   state={{ initialMode: "register", requiredRole: "driver" }}
                   style={{
-                    display: "inline-flex", alignItems: "center", gap: 8,
+                    display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+                    width: isMobile ? "100%" : "auto",
                     background: "var(--green)", color: "#fff",
                     fontWeight: 700, fontSize: "var(--text-md)",
                     padding: "14px 28px", borderRadius: 12, textDecoration: "none",
@@ -549,7 +492,8 @@ export default function Home() {
                 <Link
                   to="/for-akerier"
                   style={{
-                    display: "inline-flex", alignItems: "center",
+                    display: "inline-flex", alignItems: "center", justifyContent: "center",
+                    width: isMobile ? "100%" : "auto",
                     background: "var(--card)", color: "var(--green-text)",
                     border: "1px solid var(--line-2)",
                     fontSize: "var(--text-md)", padding: "14px 28px", borderRadius: 12,
@@ -753,17 +697,6 @@ export default function Home() {
                 </span>
               ))}
             </div>
-            <div style={{ marginLeft: "auto" }}>
-              <span style={{
-                display: "inline-flex", alignItems: "center", gap: 6,
-                padding: "5px 12px", borderRadius: 999,
-                background: "var(--success-tint)", color: "var(--success)",
-                fontSize: "var(--text-xs)", fontWeight: 700,
-              }}>
-                <span style={{ width: 6, height: 6, borderRadius: 3, background: "var(--success)", flexShrink: 0 }} />
-                Gratis under beta
-              </span>
-            </div>
           </div>
         </div>
       </section>
@@ -808,9 +741,9 @@ export default function Home() {
 
             <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: 14 }}>
               {[
-                { tag: "Fast anställning", title: "Heltid",           desc: "Långsiktig roll. Visa erfarenhet, behörigheter och vad du söker.",                         icon: "building", stat: "65 %", statLabel: "av jobben på STP" },
-                { tag: "Flexibelt",        title: "Vikariat / Deltid", desc: "Hoppa in snabbt — extrapass, deltid eller kortare uppdrag.",                             icon: "cal",      stat: "27 %", statLabel: "av jobben på STP" },
-                { tag: "Utbildning",       title: "Praktik",           desc: "Elever, nybörjare och de i start av karriären som söker seriösa aktörer.",               icon: "star",     stat: "8 %",  statLabel: "av jobben på STP" },
+                { tag: "Fast anställning", title: "Heltid",           desc: "Långsiktig roll. Visa erfarenhet, behörigheter och vad du söker.",                         icon: "building" },
+                { tag: "Flexibelt",        title: "Vikariat / Deltid", desc: "Hoppa in snabbt — extrapass, deltid eller kortare uppdrag.",                             icon: "cal" },
+                { tag: "Utbildning",       title: "Praktik",           desc: "Elever, nybörjare och de i start av karriären som söker seriösa aktörer.",               icon: "star" },
               ].map((s) => (
                 <div key={s.title} style={{
                   background: "var(--card)", border: "1px solid var(--line)",
@@ -838,18 +771,8 @@ export default function Home() {
                   }}>{s.title}</h3>
                   <p style={{
                     fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.65,
-                    marginBottom: 20, flex: 1,
+                    flex: 1,
                   }}>{s.desc}</p>
-                  <div style={{
-                    paddingTop: 16, borderTop: "1px solid var(--line)",
-                    display: "flex", alignItems: "baseline", gap: 8,
-                  }}>
-                    <span style={{
-                      fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--green)",
-                      fontFamily: "var(--mono)", letterSpacing: -0.5,
-                    }}>{s.stat}</span>
-                    <span style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", fontWeight: 500 }}>{s.statLabel}</span>
-                  </div>
                 </div>
               ))}
             </div>
@@ -991,12 +914,13 @@ export default function Home() {
               Skapa din profil eller registrera ditt åkeri på två minuter.
               Helt gratis under betafasen.
             </p>
-            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", flexDirection: isMobile ? "column" : "row" }}>
               <Link
                 to="/login"
                 state={{ initialMode: "register", requiredRole: "driver" }}
                 style={{
-                  display: "inline-flex", alignItems: "center", gap: 8,
+                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+                  width: isMobile ? "100%" : "auto",
                   padding: "16px 32px",
                   background: "var(--amber)", color: "#fff",
                   border: "1px solid var(--amber-deep)", borderRadius: 12,
@@ -1012,7 +936,8 @@ export default function Home() {
                 to="/for-akerier"
                 state={{ initialMode: "register", requiredRole: "company" }}
                 style={{
-                  display: "inline-flex", alignItems: "center",
+                  display: "inline-flex", alignItems: "center", justifyContent: "center",
+                  width: isMobile ? "100%" : "auto",
                   padding: "16px 32px",
                   background: "rgba(255,255,255,0.10)", color: "#fff",
                   border: "1px solid rgba(255,255,255,0.25)", borderRadius: 12,
@@ -1025,7 +950,7 @@ export default function Home() {
           </div>
 
           {/* 4 stat tiles */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gridAutoRows: "1fr", gap: 18 }}>
             {[
               ["Gratis",      "Under beta"],
               ["Inga avgifter", "Aldrig provision"],
