@@ -5,6 +5,7 @@ import { useChat } from "../context/ChatContext";
 import { fetchNotifications, markNotificationRead, markAllNotificationsRead } from "../api/notifications.js";
 import { BellIcon, MenuIcon, CloseIcon, ChevronDownIcon } from "./Icons";
 import Logo from "./Logo";
+import PublicMobileMenu from "./PublicMobileMenu";
 import { useIsMobile } from "../hooks/useIsMobile";
 
 function initialsFromUser(user) {
@@ -50,6 +51,7 @@ export default function Header({ onboarding = false }) {
   const isLanding = !user && location.pathname === "/";
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen,       setMobileOpen]       = useState(false);
+  const menuButtonRef = useRef(null);
   const [notifOpen,        setNotifOpen]         = useState(false);
   const [navDropdownOpen,  setNavDropdownOpen]   = useState(false);
   const [userMenuOpen,     setUserMenuOpen]      = useState(false);
@@ -319,7 +321,10 @@ export default function Header({ onboarding = false }) {
 
   return (
     <>
-      {mobileOpen && (
+      {/* Utloggad: ny brand-meny (slide-in). Inloggad: scrim + dropdown nedan. */}
+      {!user && <PublicMobileMenu open={mobileOpen} onClose={closeMobile} triggerRef={menuButtonRef} />}
+
+      {user && mobileOpen && (
         <div
           onClick={closeMobile}
           style={{ position: "fixed", inset: 0, zIndex: 49, background: "rgba(10,20,20,0.45)", backdropFilter: "blur(2px)" }}
@@ -655,6 +660,7 @@ export default function Header({ onboarding = false }) {
 
             {/* Mobile menu button */}
             <button
+              ref={menuButtonRef}
               type="button"
               onClick={() => setMobileOpen(!mobileOpen)}
               className="dm-mobile-menu-button p-2 -mr-2 rounded-lg min-h-[44px] min-w-[44px] flex items-center justify-center transition-colors"
@@ -703,8 +709,8 @@ export default function Header({ onboarding = false }) {
           </div>
         </nav>
 
-        {/* Mobile menu panel */}
-        {mobileOpen && (
+        {/* Mobile menu panel (endast inloggat — utloggat använder PublicMobileMenu) */}
+        {user && mobileOpen && (
           <div
             className="dm-mobile-menu-panel"
             style={{
