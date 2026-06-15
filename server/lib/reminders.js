@@ -53,6 +53,63 @@ function normalizeForMinimumCheck(profile, name) {
 
 // ─── 1. Profile completion reminder ─────────────────────────────────────────
 
+/**
+ * Bygger ämne + brödtext för förarens profilpåminnelse.
+ *
+ * Förare ska LEDA MED JOBBEN (konvertering): mejlet börjar med antalet
+ * lediga jobb och säger sedan att vi matchar automatiskt när profilen är klar.
+ * Om jobCount är 0 (eller saknas) faller vi tillbaka på den gamla
+ * "din profil är inte klar"-texten — vi säger aldrig "0 jobb".
+ *
+ * regionLabel är förarens region om känd (→ "X lediga jobb i Skåne just nu"),
+ * annars null (→ totalt antal jobb på STP).
+ */
+export function buildDriverProfileReminderEmail({ name, missingItems = [], jobCount = 0, regionLabel = null, profileUrl }) {
+  const missingText = missingItems.length
+    ? ` Det saknas: ${missingItems.join(", ")}.`
+    : "";
+
+  // Fallback: inga jobb att haka på → gammal text (ingen jobb-krok).
+  if (!jobCount || jobCount <= 0) {
+    const subject = "Din förarprofil på STP är inte klar";
+    const text = [
+      `Hej ${name || ""},`,
+      "",
+      `Din förarprofil på Sveriges Transportplattform är inte komplett.${missingText ? "\n" + missingText.trim() + "\n" : ""}`,
+      "En fullständig profil ger dig bäst chans att matchas med rätt jobb och företag.",
+      "",
+      `Komplettera din profil här:`,
+      profileUrl,
+      "",
+      "Vill du inte få fler påminnelser kan du stänga av dem i dina inställningar.",
+      "",
+      "Med vänliga hälsningar,",
+      "Sveriges Transportplattform",
+    ].join("\n");
+    return { subject, text };
+  }
+
+  // Jobb-kroken: led med antalet lediga jobb.
+  const where = regionLabel ? `i ${regionLabel}` : "på STP";
+  const subject = `${jobCount} lediga jobb väntar — gör klart din profil`;
+  const text = [
+    `Hej ${name || ""},`,
+    "",
+    `Det finns ${jobCount} lediga jobb ${where} just nu — fyll i din profil så matchar vi dig mot rätt.`,
+    "",
+    `Vi matchar dig automatiskt med nya jobb när profilen är klar.${missingText}`,
+    "",
+    `Gör klart din profil här:`,
+    profileUrl,
+    "",
+    "Vill du inte få fler påminnelser kan du stänga av dem i dina inställningar.",
+    "",
+    "Med vänliga hälsningar,",
+    "Sveriges Transportplattform",
+  ].join("\n");
+  return { subject, text };
+}
+
 export async function runProfileReminders() {
   const MAX_REMINDERS = 3;
   const COOLDOWN_DAYS = 7;
@@ -100,6 +157,28 @@ export async function runProfileReminders() {
     },
   });
 
+  // Förare ska LEDA MED JOBBEN. Hämta totalt antal aktiva jobb EN gång (utanför
+  // loopen, för prestanda). Per-region-tal räknas lazy och cachas per region.
+  let activeJobTotal = 0;
+  try {
+    activeJobTotal = await prisma.job.count({ where: { status: "ACTIVE" } });
+  } catch (e) {
+    console.error("[Reminders:profile] Kunde inte räkna aktiva jobb:", e?.message);
+  }
+  const regionJobCountCache = new Map();
+  async function activeJobsInRegion(region) {
+    if (!region) return null;
+    if (regionJobCountCache.has(region)) return regionJobCountCache.get(region);
+    let count = null;
+    try {
+      count = await prisma.job.count({ where: { status: "ACTIVE", region } });
+    } catch (e) {
+      console.error(`[Reminders:profile] Kunde inte räkna jobb i ${region}:`, e?.message);
+    }
+    regionJobCountCache.set(region, count);
+    return count;
+  }
+
   let sent = 0;
   for (const u of users) {
     if (!isEnabled(u, "profileReminder")) continue;
@@ -134,30 +213,46 @@ export async function runProfileReminders() {
       if (!incomplete) continue;
     }
 
-    const profileUrl = u.role === "DRIVER"
-      ? `${FRONTEND_URL}/profil`
-      : `${FRONTEND_URL}/foretag/profil`;
+    let subject;
+    let text;
 
-    const missingText = missingItems.length
-      ? `\nDet saknas fortfarande: ${missingItems.join(", ")}.\n`
-      : "";
-
-    const roleText = u.role === "DRIVER" ? "förarprofil" : "företagsprofil";
-    const subject = `Din ${roleText} på STP är inte klar`;
-    const text = [
-      `Hej ${u.name || ""},`,
-      "",
-      `Din ${roleText} på Sveriges Transportplattform är inte komplett.${missingText}`,
-      "En fullständig profil ger dig bäst chans att matchas med rätt jobb och företag.",
-      "",
-      `Komplettera din profil här:`,
-      profileUrl,
-      "",
-      "Vill du inte få fler påminnelser kan du stänga av dem i dina inställningar.",
-      "",
-      "Med vänliga hälsningar,",
-      "Sveriges Transportplattform",
-    ].join("\n");
+    if (u.role === "DRIVER") {
+      // Led med jobben. Använd region-specifikt tal om förarens region är känd
+      // och har jobb; annars totalt antal aktiva jobb. Faller tillbaka på
+      // gammal text om jobCount blir 0 (sker i helpern).
+      const region = u.driverProfile?.region || null;
+      const regionCount = region ? await activeJobsInRegion(region) : null;
+      const useRegion = regionCount && regionCount > 0;
+      ({ subject, text } = buildDriverProfileReminderEmail({
+        name: u.name,
+        missingItems,
+        jobCount: useRegion ? regionCount : activeJobTotal,
+        regionLabel: useRegion ? region : null,
+        profileUrl: `${FRONTEND_URL}/profil`,
+      }));
+    } else {
+      // COMPANY/RECRUITER — OFÖRÄNDRAD text (ingen jobb-krok).
+      const profileUrl = `${FRONTEND_URL}/foretag/profil`;
+      const missingText = missingItems.length
+        ? `\nDet saknas fortfarande: ${missingItems.join(", ")}.\n`
+        : "";
+      const roleText = "företagsprofil";
+      subject = `Din ${roleText} på STP är inte klar`;
+      text = [
+        `Hej ${u.name || ""},`,
+        "",
+        `Din ${roleText} på Sveriges Transportplattform är inte komplett.${missingText}`,
+        "En fullständig profil ger dig bäst chans att matchas med rätt jobb och företag.",
+        "",
+        `Komplettera din profil här:`,
+        profileUrl,
+        "",
+        "Vill du inte få fler påminnelser kan du stänga av dem i dina inställningar.",
+        "",
+        "Med vänliga hälsningar,",
+        "Sveriges Transportplattform",
+      ].join("\n");
+    }
 
     try {
       await sendEmail({ to: u.email, subject, text });
