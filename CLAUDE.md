@@ -43,6 +43,22 @@ npm run dev
 
 ### Deployment
 
+**ALLTID använd `bash scripts/deploy.sh`** (kör från repo-roten). Den synkar mot
+`origin/main` först, **vägrar deploya vid divergens**, bygger, deployar både
+frontend (Vercel) + backend (Railway) och verifierar `/api/health`. Detta är den
+enda säkra vägen — manuella CLI-deployer nedan kringgår synk-gaten och kan skeppa
+gammal kod. `bash scripts/deploy.sh frontend|backend` för bara en tjänst.
+
+> ⚠️ **GitHub = sanningskälla. Synka före deploy.** Automatiska agenter
+> (daglig-sentry-triage m.fl.) pushar till `origin/main`; deploy sker via CLI från
+> en lokal kopia. Om den lokala kopian ligger efter `origin/main` skeppar en
+> CLI-deploy gammal kod (2026-06-15 saknade prod 27 kraschfixar av just denna
+> anledning). `deploy.sh` är gaten mot detta. Agenter/skript ska öppna **PR**, aldrig
+> pusha main: `server/lib/bugFixAgent.js` är i förslagsläge (mejlar, skriver ej kod),
+> `scripts/sentry-autofix.py` öppnar PR. Se minnet `project_git_divergence`.
+
+**Manuella kommandon (endast om deploy.sh inte fungerar):**
+
 **Frontend** — always run from project root (not server/):
 ```bash
 vercel --cwd /Users/harburt/Desktop/DriverMatch --prod   # Deploy to transportplattformen.se

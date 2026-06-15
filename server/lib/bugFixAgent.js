@@ -1,20 +1,25 @@
 /**
- * Bug Fix Agent — autonom felrättning för STP.
+ * Bug Fix Agent — autonom fel-ANALYS för STP (FÖRSLAGSLÄGE).
  *
  * Flöde:
  *   1. Ta emot Sentry-error med stack trace
  *   2. Identifiera vilken fil som orsakade felet
  *   3. Hämta filen från GitHub
- *   4. Claude analyserar + skriver fix
- *   5. Committa via GitHub API → Railway/Vercel auto-deployas
- *   6. Markera Sentry-issue som resolved
- *   7. Skicka rapport till Oliver
+ *   4. Claude analyserar + skriver ett fix-FÖRSLAG
+ *   5. Mejla förslaget till Oliver för manuell granskning
+ *
+ * VIKTIGT — servern skriver ALDRIG kod till repot:
+ *   Tidigare committade den fixar direkt till main via GitHub API och trodde
+ *   att det auto-deployade (det gör det inte — alla deployer är manuella CLI).
+ *   Det maskerade dessutom Sentry-fel (markerade som resolved fast inget
+ *   deployats) och orsakade tyst divergens mot lokal main. Nu föreslår den bara.
+ *   Faktiska fixar görs av daglig-sentry-triage (branch + PR) och deployas av
+ *   en människa via scripts/deploy.sh.
  *
  * Säkerhetsregler:
  *   - Rör aldrig: schema.prisma, auth.js, server.js, middleware/
- *   - Max 1 fil per fix
- *   - Om samma fil fixades för < 30 min sedan — skippa (undvika loopar)
- *   - Om Claude inte är säker — skicka bara analys, committa inte
+ *   - Max 1 fil per analys
+ *   - Om samma fil analyserades för < 30 min sedan — skippa (undvika loopar)
  */
 
 import Anthropic from "@anthropic-ai/sdk";
@@ -69,41 +74,11 @@ async function githubGet(path) {
   return resp.json();
 }
 
-async function githubCommit(path, content, message, sha) {
-  const { token, repo } = getGitHub();
-  const resp = await fetch(`https://api.github.com/repos/${repo}/contents/${path}`, {
-    method: "PUT",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: "application/vnd.github+json",
-      "X-GitHub-Api-Version": "2022-11-28",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      message,
-      content: Buffer.from(content).toString("base64"),
-      sha,
-      branch: "main",
-    }),
-  });
-  return resp.ok ? resp.json() : null;
-}
+// OBS: githubCommit (direkt skrivning till main) och sentryResolveIssue är
+// medvetet borttagna. Servern föreslår fixar via mejl men skriver aldrig kod
+// och markerar aldrig Sentry-issues som resolved (det maskerade verkliga fel).
 
 // ─── Sentry API helpers ───────────────────────────────────────────────────────
-
-async function sentryResolveIssue(issueId) {
-  if (!issueId) return;
-  const { token, org } = getSentry();
-  if (!token) return;
-  await fetch(`https://sentry.io/api/0/organizations/${org}/issues/${issueId}/`, {
-    method: "PUT",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ status: "resolved" }),
-  }).catch(() => {});
-}
 
 export async function sentryFetchUnresolvedIssues(limit = 50) {
   const { token, org } = getSentry();
@@ -253,28 +228,13 @@ FIX: [vad du ändrade, 1 mening]
     return { fixed: false, reason: "suspicious_diff" };
   }
 
-  // Committa till GitHub
-  const commitMsg = `fix: auto-fix ${target.path} — ${fixDescription.slice(0, 80)}\n\n[BugFixAgent] Triggered by Sentry: ${errorTitle.slice(0, 100)}\nCo-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>`;
+  // FÖRSLAGSLÄGE: skriv ALDRIG till repot från servern. Mejla förslaget så att
+  // en människa (eller daglig-sentry-triage via branch + PR) kan granska + deploya.
+  recentlyFixed.set(target.path, Date.now()); // anti-loop: undvik upprepade mejl om samma fil
+  console.log(`[BugFixAgent] Fix-förslag klart för ${target.path} — mejlar för granskning (committar ej)`);
+  await sendProposalEmail(errorTitle, target, explanation, fixDescription, issueId);
 
-  const result = await githubCommit(target.path, fixedCode, commitMsg, fileData.sha);
-
-  if (!result) {
-    console.log("[BugFixAgent] GitHub commit misslyckades");
-    return { fixed: false, reason: "commit_failed" };
-  }
-
-  recentlyFixed.set(target.path, Date.now());
-  console.log(`[BugFixAgent] Fix committad: ${target.path} — deployas automatiskt`);
-
-  // Markera Sentry-issue som resolved
-  if (issueId) {
-    await sentryResolveIssue(issueId);
-    console.log(`[BugFixAgent] Sentry issue ${issueId} markerad som resolved`);
-  }
-
-  await sendFixEmail(errorTitle, target, explanation, fixDescription, result);
-
-  return { fixed: true, file: target.path, explanation, fix: fixDescription };
+  return { fixed: false, reason: "proposal_sent", file: target.path, explanation, fix: fixDescription };
 }
 
 // ─── Backlog-processor: hämta och fixa alla öppna Sentry-issues ──────────────
@@ -336,24 +296,21 @@ export async function processBacklog() {
 
 // ─── Email-rapporter ──────────────────────────────────────────────────────────
 
-async function sendFixEmail(errorTitle, target, explanation, fix, commitResult) {
+async function sendProposalEmail(errorTitle, target, explanation, fix, issueId) {
   const adminEmails = getAdminEmails();
   if (!adminEmails.length) return;
 
-  const sha = commitResult?.commit?.sha?.slice(0, 7) || "?";
-  const subject = `✅ Auto-fix deployed: ${target.path}`;
-  const body = `BugFixAgent fixade ett produktionsfel och pushade till main.
+  const subject = `🛠️ Fix-förslag: ${target.path}`;
+  const body = `BugFixAgent analyserade ett produktionsfel och har ETT FÖRSLAG på fix.
+(Servern skriver aldrig kod själv — du eller daglig-sentry-triage implementerar och deployar.)
 
 FEL: ${errorTitle}
 FIL: ${target.path} (rad ~${target.line})
 
 ORSAK: ${explanation}
-FIX: ${fix}
+FÖRESLAGEN FIX: ${fix}
 
-Commit: ${sha} → deployas automatiskt inom ~2 min.
-
-Om fixen är fel: gå till GitHub och revertera commit ${sha}.
-https://github.com/${process.env.GITHUB_REPO}/commit/${commitResult?.commit?.sha || ""}`;
+Nästa steg: låt daglig-sentry-triage ta fram en PR, eller fixa manuellt och kör scripts/deploy.sh.${issueId ? `\nSentry-issue: ${issueId}` : ""}`;
 
   for (const to of adminEmails) {
     await sendEmail({ to, subject, text: body }).catch(() => {});

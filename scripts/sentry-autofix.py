@@ -4,10 +4,14 @@ STP Sentry Auto-Fix
 Usage: cd /path/to/STP && SENTRY_TOKEN=<token> python3 scripts/sentry-autofix.py
 
 Hämtar olösta Sentry-issues, tillämpar säkra kodfixar (optional chaining,
-saknade React-importer), committar en fix per issue, pushar, deployas till
-Railway om server/-filer ändrades, och markerar issues som resolved i Sentry.
+saknade React-importer) på en NY BRANCH och öppnar en PR för granskning.
+
+VIKTIGT — pushar ALDRIG till main, deployar ALDRIG, resolvar ALDRIG Sentry
+automatiskt. Tidigare gjorde skriptet allt detta direkt, vilket orsakade tyst
+divergens mot lokal main och maskerade fel. En människa granskar PR:en, mergar
+och deployar med scripts/deploy.sh. Kräver `gh` CLI authenticerad för PR.
 """
-import os, re, subprocess, sys
+import os, re, subprocess, sys, time
 import requests
 
 TOKEN = os.environ.get("SENTRY_TOKEN") or sys.exit("Sätt SENTRY_TOKEN miljövariabel")
@@ -150,6 +154,14 @@ def main():
     subprocess.run(["git", "config", "user.email", "sentry-agent@transportplattformen.se"], check=True)
     subprocess.run(["git", "config", "user.name", "STP Sentry Agent"], check=True)
 
+    # Jobba på en NY branch från senaste main — aldrig direkt på main.
+    subprocess.run(["git", "fetch", "origin", "main"], check=True)
+    branch = f"autofix/sentry-{int(time.time())}"
+    co = subprocess.run(["git", "checkout", "-b", branch, "origin/main"], capture_output=True, text=True)
+    if co.returncode != 0:
+        sys.exit(f"Kunde inte skapa branch {branch}: {co.stderr}")
+    print(f"Arbetsbranch: {branch} (från origin/main)")
+
     print("=== STP Sentry Auto-Fix ===")
     try:
         issues = sget(f"/organizations/{ORG}/issues/?limit=25&query=is:unresolved&sort=date")
@@ -232,26 +244,35 @@ def main():
 
     print(f"\nFixade {len(fixed)} issues: {fixed}")
 
-    if fixed:
-        r = subprocess.run(["git", "push", "origin", "main"], capture_output=True, text=True)
-        if r.returncode != 0:
-            print(f"Push misslyckades: {r.stderr}")
-            sys.exit(1)
-        print("Push lyckades")
-        for iid in fixed:
-            ok = sput(f"/issues/{iid}/", {"status": "resolved"})
-            print(f"Sentry #{iid} resolved: {ok}")
+    if not fixed:
+        print("Inga fixar — ingen branch pushas, ingen PR skapas.")
+        print("Klar!")
+        return
 
-    if backend_changed:
-        railway_token = os.environ.get("RAILWAY_TOKEN", "")
-        if railway_token:
-            print("Deployas backend till Railway...")
-            env = {**os.environ, "RAILWAY_TOKEN": railway_token}
-            r = subprocess.run(["railway", "up", "--service", "nodejs"], cwd="server", env=env)
-        else:
-            print("Sätt RAILWAY_TOKEN för att deploya backend")
+    # Pusha BRANCHEN (aldrig main) och öppna PR. Deployar INTE, resolvar INTE Sentry.
+    push = subprocess.run(["git", "push", "-u", "origin", branch], capture_output=True, text=True)
+    if push.returncode != 0:
+        print(f"Push av branch misslyckades: {push.stderr}")
+        sys.exit(1)
+    print(f"Branch pushad: {branch}")
 
-    print("Klar!")
+    body = (
+        "Automatiska säkra fixar (optional chaining / saknade React-importer) från "
+        "`scripts/sentry-autofix.py`.\n\n"
+        + "\n".join(f"- Sentry #{iid}" for iid in fixed)
+        + "\n\nGranska, merga och deploya sedan med `scripts/deploy.sh`. "
+        "Sentry-issues markeras INTE som resolved automatiskt — gör det efter verifierad deploy."
+    )
+    pr = subprocess.run(
+        ["gh", "pr", "create", "--base", "main", "--head", branch,
+         "--title", f"Sentry auto-fix: {len(fixed)} issue(s)", "--body", body],
+        capture_output=True, text=True,
+    )
+    print((pr.stdout or pr.stderr).strip())
+    if pr.returncode != 0:
+        print("PR kunde inte skapas automatiskt (är gh authenticerad?). "
+              f"Skapa den manuellt från branchen {branch}.")
+    print("INGEN deploy, INGEN auto-resolve. Granska PR och deploya manuellt. Klar!")
 
 
 if __name__ == "__main__":
