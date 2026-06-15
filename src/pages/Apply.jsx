@@ -80,7 +80,7 @@ function Toggle({ on, setOn, label, sub }) {
 // ─── JobContextSidebar ────────────────────────────────────────────────────────
 function JobContextSidebar({ job }) {
   if (!job) return null;
-  const initials = (job.company || "?").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+  const initials = (job.company || "?").split(" ").map((w) => w[0]).filter(Boolean).join("").slice(0, 2).toUpperCase();
   const salaryDisplay = job.salaryMin
     ? job.salaryMax
       ? `${job.salaryMin.toLocaleString("sv-SE")} – ${job.salaryMax.toLocaleString("sv-SE")} kr/mån`
@@ -313,13 +313,13 @@ export default function Apply() {
 
   // ── Mobile layout ──────────────────────────────────────────────────────────
   if (isMobile) {
-    const initials = (job?.company || "?").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+    const initials = (job?.company || "?").split(" ").map((w) => w[0]).filter(Boolean).join("").slice(0, 2).toUpperCase();
     const salaryDisplay = job?.salaryMin
       ? job?.salaryMax
         ? `${job.salaryMin.toLocaleString("sv-SE")} – ${job.salaryMax.toLocaleString("sv-SE")} kr/mån`
         : `Från ${job.salaryMin.toLocaleString("sv-SE")} kr/mån`
       : job?.salary || null;
-    const driverInitials = (profile?.name || user?.name || "?").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+    const driverInitials = (profile?.name || user?.name || "?").split(" ").map((w) => w[0]).filter(Boolean).join("").slice(0, 2).toUpperCase();
     const licenses = profile?.licenses || [];
     const certsLabels = (profile?.certificates || []).map(getCertificateLabel).filter(Boolean);
     const pctColor = pct == null ? null : pct >= 85 ? "var(--success)" : pct >= 70 ? "var(--amber)" : "var(--info)";
@@ -623,7 +623,7 @@ export default function Apply() {
     );
   }
 
-  const driverInitials = (profile?.name || "?").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+  const driverInitials = (profile?.name || "?").split(" ").map((w) => w[0]).filter(Boolean).join("").slice(0, 2).toUpperCase();
   const licenses = profile?.licenses || [];
   const certsLabels = (profile?.certificates || []).map(getCertificateLabel).filter(Boolean);
   const yearsExp = calcYearsExperience(profile?.experience);

@@ -937,12 +937,12 @@ export default function Settings() {
                 <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: 16, display: "flex", alignItems: "center", gap: 14, marginBottom: 8, boxShadow: "var(--sh-sm)" }}>
                   {isCompany ? (
                     <div style={{ width: 56, height: 56, borderRadius: 14, background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "var(--text-xl)", color: "#fff", flexShrink: 0 }}>
-                      {(user?.name || "?").split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()}
+                      {(user?.name || "?").split(" ").map(w => w[0]).filter(Boolean).join("").slice(0, 2).toUpperCase()}
                     </div>
                   ) : (
                     <div style={{ position: "relative", flexShrink: 0 }}>
                       <div style={{ width: 56, height: 56, borderRadius: 99, background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "var(--text-xl)", color: "#fff" }}>
-                        {(user?.name || "?").split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()}
+                        {(user?.name || "?").split(" ").map(w => w[0]).filter(Boolean).join("").slice(0, 2).toUpperCase()}
                       </div>
                       <div style={{ position: "absolute", bottom: -2, right: -2, width: 18, height: 18, borderRadius: 99, background: "var(--success)", border: "3px solid var(--card)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                         <Icon n="check" s={9} c="#fff" />

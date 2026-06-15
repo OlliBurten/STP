@@ -152,15 +152,15 @@ export function ProfileProvider({ children }) {
 
   const addExperience = (exp) => {
     const id = `exp-${Date.now()}`;
-    updateProfile({ experience: [...(profile.experience || []), { ...exp, id }] });
+    updateProfile({ experience: [...(profile.experience || []), { ...exp, id }] }).catch(() => {});
   };
 
   const updateExperience = (id, updates) => {
-    updateProfile({ experience: (profile.experience || []).map((e) => (e.id === id ? { ...e, ...updates } : e)) });
+    updateProfile({ experience: (profile.experience || []).map((e) => (e.id === id ? { ...e, ...updates } : e)) }).catch(() => {});
   };
 
   const removeExperience = (id) => {
-    updateProfile({ experience: (profile.experience || []).filter((e) => e.id !== id) });
+    updateProfile({ experience: (profile.experience || []).filter((e) => e.id !== id) }).catch(() => {});
   };
 
   return (

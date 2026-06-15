@@ -17,11 +17,13 @@ export default function ApplyModal({ job, onClose }) {
   const [conversationId, setConversationId] = useState(null);
   const [sending, setSending] = useState(false);
   const [suggesting, setSuggesting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const text = message.trim() || "Hej, jag är intresserad av detta jobb.";
     setSending(true);
+    setSubmitError("");
     try {
       const id = await createConversation({
         driverId: user?.id ?? profile.id,
@@ -37,6 +39,8 @@ export default function ApplyModal({ job, onClose }) {
       });
       setConversationId(id);
       setSubmitted(true);
+    } catch (err) {
+      setSubmitError(err?.message || "Kunde inte skicka ansökan. Försök igen.");
     } finally {
       setSending(false);
     }
@@ -134,6 +138,9 @@ export default function ApplyModal({ job, onClose }) {
             className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none mb-6"
           />
 
+          {submitError && (
+            <p className="mb-4 text-sm text-red-600">{submitError}</p>
+          )}
           <div className="flex gap-3">
             <button
               type="button"

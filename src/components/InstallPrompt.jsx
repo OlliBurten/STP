@@ -28,11 +28,13 @@ export default function InstallPrompt() {
 
   const handleInstall = async () => {
     if (!prompt) return;
-    prompt.prompt();
-    const { outcome } = await prompt.userChoice;
-    if (outcome === "accepted") {
-      setVisible(false);
-    }
+    try {
+      prompt.prompt();
+      const { outcome } = await prompt.userChoice;
+      if (outcome === "accepted") {
+        setVisible(false);
+      }
+    } catch (_) {}
     setPrompt(null);
   };
 

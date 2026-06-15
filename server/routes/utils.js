@@ -16,7 +16,8 @@ import { normalizeOrgNr, formatOrgNr, luhnValid, lookupBolagsverket } from "../l
 
 export const utilsRouter = Router();
 
-utilsRouter.get("/company-lookup", async (req, res) => {
+utilsRouter.get("/company-lookup", async (req, res, next) => {
+  try {
   const raw = (req.query.orgnr || "").trim();
   if (!raw) {
     return res.status(400).json({ error: "orgnr krävs" });
@@ -66,4 +67,7 @@ utilsRouter.get("/company-lookup", async (req, res) => {
     verksamhetsbeskrivning: bolag?.verksamhetsbeskrivning ?? null,
     source:                 bolag ? "bolagsverket" : "format-only",
   });
+  } catch (e) {
+    next(e);
+  }
 });

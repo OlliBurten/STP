@@ -21,7 +21,7 @@ const CONVERSATIONS = [
 const stageMeta = { new: { label: "Ny", tone: "amber" }, contacted: { label: "Kontaktad", tone: "info" }, interviewing: { label: "På intervju", tone: "amber" }, selected: { label: "Utvald", tone: "success" }, declined: { label: "Avböjd", tone: "neutral" } };
 
 const ConvItem = ({ c, active, onClick }) => {
-  const last = c.messages[c.messages.length - 1];
+  const last = c.messages?.at(-1);
   const meta = stageMeta[c.stage];
   return (
     <button onClick={onClick} style={{ width: "100%", textAlign: "left", display: "block", padding: "14px 18px", background: active ? "var(--green-tint)" : "transparent", borderBottom: "1px solid var(--line)", borderLeft: active ? "3px solid var(--green)" : "3px solid transparent" }}
@@ -39,7 +39,7 @@ const ConvItem = ({ c, active, onClick }) => {
             <span style={{ color: matchColor(c.match), fontWeight: 700, fontFamily: "var(--mono)", flexShrink: 0 }}>{c.match}%</span>
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: 12.5, color: c.unread ? "var(--ink-900)" : "var(--ink-500)", fontWeight: c.unread ? 600 : 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>{last.from === "company" ? "Du: " : ""}{last.text}</span>
+            <span style={{ fontSize: 12.5, color: c.unread ? "var(--ink-900)" : "var(--ink-500)", fontWeight: c.unread ? 600 : 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>{last?.from === "company" ? "Du: " : ""}{last?.text}</span>
             {c.unread > 0 && <span style={{ width: 18, height: 18, borderRadius: 9, background: "var(--green)", color: "#fff", fontSize: 11, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{c.unread}</span>}
           </div>
           <div style={{ marginTop: 8 }}><Pill tone={meta.tone} size="sm">{meta.label}</Pill></div>

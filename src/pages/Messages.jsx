@@ -40,7 +40,7 @@ const STAGE = {
 
 function avatarInitials(name) {
   if (!name) return "?";
-  return name.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
+  return name.split(" ").filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
 }
 function avatarBg(name) {
   const palette = ["#1F5F5C", "#1a3a5c", "#b45309", "#16a34a", "#1d4ed8", "#6d28d9"];
@@ -180,7 +180,7 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
   const handleSend = () => {
     const text = input.trim();
     if (!text) return;
-    sendMessage(conv.id, text, isDriver ? "driver" : "company");
+    sendMessage(conv.id, text, isDriver ? "driver" : "company").catch(() => {});
     setInput("");
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";

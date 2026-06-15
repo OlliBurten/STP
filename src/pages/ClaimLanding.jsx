@@ -132,7 +132,7 @@ export default function ClaimLanding() {
     );
   }
 
-  const companyInitials = (data.companyName || "?").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+  const companyInitials = (data.companyName || "?").split(" ").map((w) => w[0]).filter(Boolean).join("").slice(0, 2).toUpperCase();
 
   return (
     <main style={{ minHeight: "100vh", background: "var(--paper)", paddingBottom: 80 }}>

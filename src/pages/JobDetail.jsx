@@ -18,7 +18,7 @@ import { getBranschLabel } from "../data/bransch.js";
 import { getCertificateLabel } from "../data/profileData";
 import { scheduleTypes } from "../data/mockJobs";
 import { isJobOlderThan30Days, formatJobTitle } from "../utils/jobUtils.js";
-import { HeartFilledIcon, HeartOutlineIcon, LocationIcon, CheckIcon, WarningIcon } from "../components/Icons";
+import { HeartFilledIcon, HeartOutlineIcon, LocationIcon, CheckIcon, WarningIcon, StarFilledIcon } from "../components/Icons";
 import Breadcrumbs from "../components/Breadcrumbs";
 import LoadingBlock from "../components/LoadingBlock";
 import { useToast } from "../context/ToastContext";
@@ -445,7 +445,7 @@ export default function JobDetail() {
 
   // ── Company initials ──────────────────────────────────────────────────────
   const companyInitials = job.company
-    ? job.company.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()
+    ? job.company.split(" ").map((w) => w[0]).filter(Boolean).join("").slice(0, 2).toUpperCase() || "?"
     : "?";
 
   // ── Salary display ────────────────────────────────────────────────────────

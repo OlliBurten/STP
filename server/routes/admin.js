@@ -974,12 +974,12 @@ adminRouter.patch("/users/:id/verify-email", async (req, res, next) => {
       emailVerifiedAt: updated.emailVerifiedAt?.toISOString() ?? null,
       message: "E-post markerad som verifierad",
     });
-    await createAdminAuditLog({
+    createAdminAuditLog({
       req,
       action: "USER_EMAIL_VERIFIED",
       targetUserId: updated.id,
       targetType: "USER",
-    });
+    }).catch((err) => console.error("Audit log failed:", err));
   } catch (e) {
     next(e);
   }
@@ -1044,7 +1044,7 @@ adminRouter.patch("/users/:id/suspend", async (req, res, next) => {
       suspendedAt: updated.suspendedAt?.toISOString() ?? null,
       lastWarnedAt: updated.lastWarnedAt?.toISOString() ?? null,
     });
-    await createAdminAuditLog({
+    createAdminAuditLog({
       req,
       action: suspended ? "USER_SUSPENDED" : "USER_REACTIVATED",
       targetUserId: updated.id,
@@ -1052,7 +1052,7 @@ adminRouter.patch("/users/:id/suspend", async (req, res, next) => {
       metadata: {
         reason: updated.suspensionReason || null,
       },
-    });
+    }).catch((err) => console.error("Audit log failed:", err));
   } catch (e) {
     next(e);
   }
@@ -1112,7 +1112,7 @@ adminRouter.patch("/users/:id/warnings", async (req, res, next) => {
       lastWarnedAt: updated.lastWarnedAt?.toISOString() ?? null,
       suspendedAt: updated.suspendedAt?.toISOString() ?? null,
     });
-    await createAdminAuditLog({
+    createAdminAuditLog({
       req,
       action: action === "ADD" ? "USER_WARNING_ADDED" : "USER_WARNINGS_RESET",
       targetUserId: updated.id,
@@ -1120,7 +1120,7 @@ adminRouter.patch("/users/:id/warnings", async (req, res, next) => {
       metadata: {
         warningCount: updated.warningCount,
       },
-    });
+    }).catch((err) => console.error("Audit log failed:", err));
   } catch (e) {
     next(e);
   }
@@ -1231,7 +1231,7 @@ adminRouter.patch("/jobs/:id/status", async (req, res, next) => {
       ...updated,
       moderatedAt: updated.moderatedAt?.toISOString() ?? null,
     });
-    await createAdminAuditLog({
+    createAdminAuditLog({
       req,
       action: "JOB_STATUS_UPDATED",
       targetType: "JOB",
@@ -1240,7 +1240,7 @@ adminRouter.patch("/jobs/:id/status", async (req, res, next) => {
         status,
         moderationReason: updated.moderationReason || null,
       },
-    });
+    }).catch((err) => console.error("Audit log failed:", err));
   } catch (e) {
     next(e);
   }
@@ -1340,7 +1340,7 @@ adminRouter.patch("/reports/:id", async (req, res, next) => {
     });
 
     res.json({ ok: true });
-    await createAdminAuditLog({
+    createAdminAuditLog({
       req,
       action: "REPORT_UPDATED",
       targetUserId: report.reportedUserId || null,
@@ -1350,7 +1350,7 @@ adminRouter.patch("/reports/:id", async (req, res, next) => {
         status,
         addWarning,
       },
-    });
+    }).catch((err) => console.error("Audit log failed:", err));
   } catch (e) {
     next(e);
   }
@@ -1419,7 +1419,7 @@ adminRouter.patch("/reviews/:id", async (req, res, next) => {
       },
     });
     res.json(updated);
-    await createAdminAuditLog({
+    createAdminAuditLog({
       req,
       action: "REVIEW_UPDATED",
       targetType: "REVIEW",
@@ -1427,7 +1427,7 @@ adminRouter.patch("/reviews/:id", async (req, res, next) => {
         reviewId: updated.id,
         status: updated.status,
       },
-    });
+    }).catch((err) => console.error("Audit log failed:", err));
   } catch (e) {
     next(e);
   }

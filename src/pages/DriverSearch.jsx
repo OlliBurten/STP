@@ -18,7 +18,7 @@ import { mockJobs } from "../data/mockJobs";
 
 /* ── Helpers ── */
 function initials(name) {
-  return (name || "?").split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+  return (name || "?").split(" ").map((w) => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
 }
 
 function driverColor(driver) {
@@ -371,7 +371,7 @@ function ContactModal({ driver, jobs, onClose, onSent }) {
     setSending(true);
     setError("");
     try {
-      await createConversation({ driverId: driver.id, jobId: selectedJobId || undefined, message: msg });
+      await createConversation({ driverId: driver.id, jobId: selectedJobId || undefined, initialMessage: msg });
       setSent(true);
       onSent && onSent(driver.id);
     } catch (e) {

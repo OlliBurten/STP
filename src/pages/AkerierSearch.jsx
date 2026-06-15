@@ -66,7 +66,7 @@ function avatarColor(name) {
 
 function companyInitials(name) {
   if (!name) return "?";
-  return name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+  return name.split(" ").map((w) => w[0]).filter(Boolean).join("").slice(0, 2).toUpperCase();
 }
 
 // ── CompanyGridCard ──────────────────────────────────────────────────────────

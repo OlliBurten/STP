@@ -321,6 +321,7 @@ Format (exakt):
     });
 
     const raw = (message.content?.[0]?.text ?? '').trim();
+    if (!raw) throw new Error('AI returnerade tomt svar – hoppar över e-postgenerering');
     const subjectMatch = raw.match(/ÄMNE:\s*(.+)/);
     const bodyMatch = raw.match(/---\n([\s\S]+)/);
 

@@ -246,7 +246,7 @@ function PreviewSection({ title, items, body, fallback, color }) {
 
 function LivePreview({ form }) {
   const initials = form.company
-    ? form.company.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()
+    ? form.company.split(" ").map((w) => w[0]).filter(Boolean).join("").slice(0, 2).toUpperCase()
     : "?";
   const empLabel = { fast: "Fast anställning", vikariat: "Vikariat", tim: "Timanställning" };
   const schedLabel = SCHEDULE_OPTS.find((s) => s.value === form.schedule)?.label || form.schedule;

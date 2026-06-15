@@ -283,13 +283,17 @@ export default function MinaJobb() {
 
   async function handlePause(jobId, targetStatus) {
     const status = targetStatus || (jobs.find((j) => j.id === jobId)?.status === "ACTIVE" ? "HIDDEN" : "ACTIVE");
-    await updateJob(jobId, { status });
-    setJobs((prev) => prev.map((j) => j.id === jobId ? { ...j, status } : j));
+    try {
+      await updateJob(jobId, { status });
+      setJobs((prev) => prev.map((j) => j.id === jobId ? { ...j, status } : j));
+    } catch (_) {}
   }
 
   async function handleClose(jobId) {
-    await updateJob(jobId, { status: "REMOVED" });
-    setJobs((prev) => prev.map((j) => j.id === jobId ? { ...j, status: "REMOVED" } : j));
+    try {
+      await updateJob(jobId, { status: "REMOVED" });
+      setJobs((prev) => prev.map((j) => j.id === jobId ? { ...j, status: "REMOVED" } : j));
+    } catch (_) {}
   }
 
   const tabs = [

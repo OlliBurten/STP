@@ -194,9 +194,11 @@ export default function LoneKalkylator() {
     if (navigator.share) {
       try { await navigator.share({ title: "Lönekalkylatorn – STP", url }); } catch {}
     } else {
-      await navigator.clipboard.writeText(url);
-      setShared(true);
-      setTimeout(() => setShared(false), 2000);
+      try {
+        await navigator.clipboard.writeText(url);
+        setShared(true);
+        setTimeout(() => setShared(false), 2000);
+      } catch {}
     }
   };
 

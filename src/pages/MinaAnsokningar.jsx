@@ -33,7 +33,7 @@ function formatRel(iso) {
 
 function logoInitials(name) {
   if (!name) return "?";
-  return name.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
+  return name.split(" ").filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
 }
 
 // ─── Stage Tracker ────────────────────────────────────────────────────────────

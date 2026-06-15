@@ -70,13 +70,14 @@ function toConversation(c) {
   return {
     id: c.id,
     driverId: c.driverId,
-    driverName: c.driver.name,
+    driverName: c.driver?.name ?? null,
     companyId: c.companyId,
     organizationId: c.organizationId ?? null,
-    companyName: c.company.companyName || c.company.name,
+    companyName: c.company?.companyName || c.company?.name || null,
     jobId: c.jobId,
     jobTitle: c.jobTitle,
     selectedByCompanyAt: c.selectedByCompanyAt?.toISOString() ?? null,
+    reviewedByCompanyAt: c.reviewedByCompanyAt?.toISOString() ?? null,
     readByCompanyAt: c.readByCompanyAt?.toISOString() ?? null,
     readByDriverAt: c.readByDriverAt?.toISOString() ?? null,
     rejectedByCompanyAt: c.rejectedByCompanyAt?.toISOString() ?? null,
@@ -256,6 +257,7 @@ conversationsRouter.post("/", requireVerifiedIfCompany, validateBody(createConve
         messages: { orderBy: { createdAt: "asc" } },
       },
     });
+    if (!updated) return res.status(500).json({ error: "Konversationen kunde inte hämtas" });
     res.status(201).json(toConversation(updated));
   } catch (e) {
     next(e);

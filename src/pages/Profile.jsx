@@ -967,7 +967,7 @@ export default function Profile() {
               <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)" }}>{current?.visibleToCompanies ? "Åkerier kan hitta dig och kontakta dig direkt" : "Din profil är dold för åkerier"}</div>
             </div>
             <button
-              onClick={() => updateProfile({ visibleToCompanies: !current?.visibleToCompanies })}
+              onClick={() => updateProfile({ visibleToCompanies: !current?.visibleToCompanies }).catch(() => {})}
               style={{ width: 44, height: 26, borderRadius: 99, background: current?.visibleToCompanies ? "var(--success)" : "var(--ink-200)", border: "none", position: "relative", cursor: "pointer", flexShrink: 0, transition: "background .2s" }}
             >
               <div style={{ position: "absolute", top: 3, left: current?.visibleToCompanies ? 21 : 3, width: 20, height: 20, borderRadius: 99, background: "#fff", transition: "left .2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }}/>
@@ -990,7 +990,7 @@ export default function Profile() {
                 <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)" }}>{current?.openToWork ? "Grön ring visas runt din profilbild" : "Slå på för att visa att du söker aktivt"}</div>
               </div>
               <button
-                onClick={() => updateProfile({ openToWork: !current?.openToWork })}
+                onClick={() => updateProfile({ openToWork: !current?.openToWork }).catch(() => {})}
                 style={{ width: 44, height: 26, borderRadius: 99, background: current?.openToWork ? "var(--green)" : "var(--ink-200)", border: "none", position: "relative", cursor: "pointer", flexShrink: 0, transition: "background .2s" }}
               >
                 <div style={{ position: "absolute", top: 3, left: current?.openToWork ? 21 : 3, width: 20, height: 20, borderRadius: 99, background: "#fff", transition: "left .2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }}/>
@@ -1071,7 +1071,7 @@ export default function Profile() {
               navigator.clipboard.writeText(`https://transportplattformen.se/forare/${user?.id || ""}`).then(() => {
                 setLinkCopied(true);
                 setTimeout(() => setLinkCopied(false), 2000);
-              });
+              }).catch(() => {});
             }}
           />
         </div>
@@ -1750,7 +1750,7 @@ export default function Profile() {
                       navigator.clipboard.writeText(`https://transportplattformen.se/forare/${user.id}`).then(() => {
                         setLinkCopied(true);
                         setTimeout(() => setLinkCopied(false), 2000);
-                      });
+                      }).catch(() => {});
                     }} style={{ background: linkCopied ? "var(--success)" : "var(--ink-900)", color: "#fff", padding: "10px 14px", fontSize: "var(--text-xs)", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 6, border: "none", cursor: "pointer", transition: "background .2s", fontFamily: "inherit" }}>
                       {linkCopied ? "Kopierad ✓" : "Kopiera"}
                     </button>
@@ -1857,7 +1857,7 @@ export default function Profile() {
                 navigator.clipboard.writeText(`https://transportplattformen.se/forare/${user.id}`).then(() => {
                   setLinkCopied(true);
                   setTimeout(() => setLinkCopied(false), 2000);
-                });
+                }).catch(() => {});
               }}
             />
           </div>

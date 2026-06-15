@@ -168,7 +168,7 @@ function UserRow({ u, selected, isSelectedRow, onCheck, onSelect, compact, mobil
   const lastLogin = fmtRelative(u.lastLoginAt);
   const emailOk  = u.emailVerifiedAt != null;
   const created  = u.createdAt ? u.createdAt.slice(0, 10) : "";
-  const initials = u.name ? u.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : u.email?.[0]?.toUpperCase() || "?";
+  const initials = u.name ? u.name.split(" ").map(w => w[0]).filter(Boolean).join("").slice(0, 2).toUpperCase() : u.email?.[0]?.toUpperCase() || "?";
   const orgNr = u.companyOrgNumber ? String(u.companyOrgNumber).replace(/^(\d{6})(\d{4})$/, "$1-$2") : null;
   // För åkerier: visa åkeriets namn som titel, kontaktperson + e-post + org-nr i underraden.
   const rowTitle = isComp ? (u.companyName || u.name || u.email) : (u.name || u.email);
@@ -295,7 +295,7 @@ function DetailPanel({ u, detail, onClose, onVerify, onReject, onSuspend, onUnsu
   // Per-punkt-checklista (förare 12 punkter, åkerier 8) — döljs för systemkontot.
   const checklistItems = !isSystemAccount(u) ? (completion?.items ?? null) : null;
   const missingLabels  = checklistItems ? checklistItems.filter(it => !it.ok).map(it => it.label) : [];
-  const initials = u.name ? u.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : u.email?.[0]?.toUpperCase() || "?";
+  const initials = u.name ? u.name.split(" ").map(w => w[0]).filter(Boolean).join("").slice(0, 2).toUpperCase() : u.email?.[0]?.toUpperCase() || "?";
   const avatarBg = isComp ? "var(--amber)" : "var(--info)";
 
   const statusBadge = suspended
