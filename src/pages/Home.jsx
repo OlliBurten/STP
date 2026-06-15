@@ -127,8 +127,8 @@ export default function Home() {
           minHeight: isMobile ? "auto" : "100vh",
           display: "flex",
           flexDirection: "column",
-          paddingTop: isMobile ? 92 : 96,
-          paddingBottom: isMobile ? 72 : 48,
+          paddingTop: isMobile ? 112 : 96,
+          paddingBottom: isMobile ? 48 : 48,
           position: "relative",
           color: "#fff",
         }}
@@ -177,7 +177,7 @@ export default function Home() {
           </p>
 
           {/* CTAs */}
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 72, flexDirection: isMobile ? "column" : "row" }}>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: isMobile ? 0 : 72, flexDirection: isMobile ? "column" : "row" }}>
             <Link
               to="/jobb"
               style={{
