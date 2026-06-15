@@ -176,12 +176,15 @@ function InputField({ label, type = "text", id, value, onChange, placeholder, au
 
 /* ── Close button — back to homepage ─────────────────────────────────────── */
 function CloseButton() {
+  const isMobile = useIsMobile();
   return (
     <Link
       to="/"
       aria-label="Tillbaka till startsidan"
       style={{
-        position: "absolute", top: 40, right: 40, zIndex: 20,
+        // På mobil ska X:et spegla loggans 24px-inset (panelens sido-padding),
+        // annars hamnar krysset längre in mot mitten än S-loggan.
+        position: "absolute", top: isMobile ? 38 : 40, right: isMobile ? 24 : 40, zIndex: 20,
         width: 36, height: 36, borderRadius: 10,
         background: "var(--card)", border: "1px solid var(--line-2)",
         display: "flex", alignItems: "center", justifyContent: "center",

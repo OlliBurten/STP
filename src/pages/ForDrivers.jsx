@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { usePageTitle } from "../hooks/usePageTitle";
+import { useIsMobile } from "../hooks/useIsMobile";
 import PageMeta from "../components/PageMeta";
 import { Icon, Pill, Button, Card, Dot } from "../components/ui";
 import { TruckIcon, ClockIcon, BuildingIcon } from "../components/Icons";
@@ -48,7 +49,7 @@ const S = {
 
 /* ── Produkt-preview: förarprofil-kort (uppdaterad design v4) ─────────── */
 const ProfilePreview = () => (
-  <div style={{ position: "relative" }}>
+  <div style={{ position: "relative", minWidth: 0, maxWidth: "100%" }}>
     {/* skuggkort bakom (ren stapel, ingen rotation) */}
     <div style={{ position: "absolute", top: 16, left: 16, width: "100%", height: "100%", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 22, boxShadow: "var(--sh-sm)", opacity: 0.5 }} />
     <div style={{ position: "relative", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 22, boxShadow: "var(--sh-md)", overflow: "hidden" }}>
@@ -164,6 +165,7 @@ function FaqBlock({ items, lead, email }) {
 
 /* ── Grön CTA-sektion ─────────────────────────── */
 function GreenCTA({ title, lead, primaryLabel, secondaryLabel, stats, onPrimary, onSecondary }) {
+  const isMobile = useIsMobile();
   return (
     <section style={{ background: "linear-gradient(160deg, #14524f 0%, #0c3d3a 100%)", padding: "88px 0", color: "#fff" }}>
       <div style={{ ...S.container, maxWidth: "var(--w-read)" }}>
@@ -179,7 +181,7 @@ function GreenCTA({ title, lead, primaryLabel, secondaryLabel, stats, onPrimary,
             </button>
           </div>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 0, borderTop: "1px solid rgba(255,255,255,0.14)", marginTop: 48, paddingTop: 28, maxWidth: 820, marginLeft: "auto", marginRight: "auto" }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2,1fr)" : "repeat(4,1fr)", gap: isMobile ? "30px 16px" : 0, borderTop: "1px solid rgba(255,255,255,0.14)", marginTop: isMobile ? 36 : 48, paddingTop: isMobile ? 32 : 28, maxWidth: 820, marginLeft: "auto", marginRight: "auto" }}>
           {stats.map(([v, l]) => (
             <div key={l} style={{ textAlign: "center", padding: "0 6px" }}>
               <div style={{ fontSize: "var(--text-3xl)", fontWeight: 900, fontFamily: "var(--mono)", color: "var(--amber)", letterSpacing: -0.5 }}>{v}</div>
@@ -199,6 +201,7 @@ export default function ForDrivers() {
   usePageTitle("För yrkesförare – Hitta lastbilsjobb");
   const { user, isDriver, isCompany } = useAuth();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const jsonLd = { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: FAQS.map((item) => ({ "@type": "Question", name: item.q, acceptedAnswer: { "@type": "Answer", text: item.a } })) };
@@ -231,7 +234,7 @@ export default function ForDrivers() {
         .vis-grid{display:grid;grid-template-columns:0.9fr 1.1fr;gap:56px;align-items:center}
         .demand-grid{display:grid;grid-template-columns:0.8fr 1.2fr;gap:56px;align-items:center}
         .ff-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:0}
-        @media(max-width:980px){.ff-grid,.vis-grid,.demand-grid{grid-template-columns:1fr;gap:40px}.seg-grid,.ff-steps{grid-template-columns:1fr;gap:24px}.ff-steps>div{border-left:none!important;text-align:left!important}}
+        @media(max-width:980px){.ff-grid,.vis-grid,.demand-grid{grid-template-columns:1fr;gap:40px}.seg-grid,.ff-steps{grid-template-columns:1fr;gap:24px}.ff-steps>div{border-left:none!important;text-align:left!important;padding-left:0!important;padding-right:0!important}.ff-steps>div>div:first-child{margin-left:0!important}}
       `}</style>
 
       {/* ───────── HERO ───────── */}
@@ -239,8 +242,8 @@ export default function ForDrivers() {
         style={{
           background:
             "radial-gradient(1100px 520px at 88% -8%, rgba(31,95,92,0.10), transparent 60%), radial-gradient(800px 400px at 6% 12%, rgba(199,122,14,0.07), transparent 60%), var(--paper)",
-          paddingTop: 88,
-          paddingBottom: 96,
+          paddingTop: isMobile ? 24 : 88,
+          paddingBottom: isMobile ? 56 : 96,
         }}
       >
         <div style={S.container}>

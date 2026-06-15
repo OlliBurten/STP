@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { usePageTitle } from "../hooks/usePageTitle";
+import { useIsMobile } from "../hooks/useIsMobile";
 import PageMeta from "../components/PageMeta";
 
 const VALUES = [
@@ -20,6 +21,7 @@ const VALUES = [
 
 export default function About() {
   usePageTitle("Om oss");
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const jsonLd = {
@@ -47,10 +49,10 @@ export default function About() {
       <PageMeta title="Om STP – Sveriges Transportplattform" description="Lär dig mer om Sveriges Transportplattform – en direktkanal mellan yrkesförare och åkerier. Inga bemanningsbolag, full kontroll för föraren." canonical="/om-oss" />
 
       {/* Hero */}
-      <div style={{ background: "var(--paper)", padding: "72px 0 48px" }}>
-        <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 32px" }}>
+      <div style={{ background: "var(--paper)", padding: isMobile ? "24px 0 36px" : "72px 0 48px" }}>
+        <div style={{ maxWidth: 720, margin: "0 auto", padding: isMobile ? "0 20px" : "0 32px" }}>
           <span style={{ display: "inline-block", padding: "4px 12px", borderRadius: 999, fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", color: "var(--green-text)", background: "var(--green-tint)", marginBottom: 18 }}>Om STP</span>
-          <h1 style={{ fontSize: 44, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -2, lineHeight: 1.05, marginBottom: 20 }}>Branschens egen plattform — byggd av branschen.</h1>
+          <h1 style={{ fontSize: isMobile ? 32 : 44, fontWeight: 900, color: "var(--ink-900)", letterSpacing: isMobile ? -1.2 : -2, lineHeight: 1.08, marginBottom: 20 }}>Branschens egen plattform — byggd av branschen.</h1>
           <p style={{ fontSize: "var(--text-xl)", color: "var(--ink-500)", lineHeight: 1.7 }}>
             STP grundades för att lösa ett problem alla i transport känner igen: förare och åkerier hittar inte varandra utan dyra mellanhänder. Vi bygger en plattform där de möts direkt.
           </p>
@@ -58,8 +60,8 @@ export default function About() {
       </div>
 
       {/* Stats */}
-      <div style={{ maxWidth: "var(--w-public)", margin: "0 auto", padding: "0 32px 48px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 48 }}>
+      <div style={{ maxWidth: "var(--w-public)", margin: "0 auto", padding: isMobile ? "0 20px 36px" : "0 32px 48px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: isMobile ? 12 : 16, marginBottom: isMobile ? 40 : 48 }}>
           {[
             { v: "2 847+", l: "Registrerade användare" },
             { v: "629+",   l: "Åkerier på plattformen" },
@@ -88,11 +90,11 @@ export default function About() {
       </div>
 
       {/* Values */}
-      <div style={{ background: "var(--paper-2)", borderTop: "1px solid var(--line)", borderBottom: "1px solid var(--line)", padding: "64px 0" }}>
-        <div style={{ maxWidth: "var(--w-public)", margin: "0 auto", padding: "0 32px" }}>
+      <div style={{ background: "var(--paper-2)", borderTop: "1px solid var(--line)", borderBottom: "1px solid var(--line)", padding: isMobile ? "44px 0" : "64px 0" }}>
+        <div style={{ maxWidth: "var(--w-public)", margin: "0 auto", padding: isMobile ? "0 20px" : "0 32px" }}>
           <p style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: "var(--green-text)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 12 }}>Vad vi tror på</p>
           <h2 style={{ fontSize: "var(--text-4xl)", fontWeight: 900, letterSpacing: -0.8, color: "var(--ink-900)", marginBottom: 28 }}>Principer vi bygger efter</h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: 16 }}>
             {VALUES.map(({ title, text }) => (
               <div key={title} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "28px 24px" }}>
                 <div style={{ width: 40, height: 40, borderRadius: 10, background: "var(--green-tint)", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -107,9 +109,9 @@ export default function About() {
       </div>
 
       {/* CTA */}
-      <div style={{ padding: "64px 32px 80px" }}>
+      <div style={{ padding: isMobile ? "44px 20px 64px" : "64px 32px 80px" }}>
         <div style={{ maxWidth: 760, margin: "0 auto" }}>
-          <div style={{ background: "var(--green)", borderRadius: 20, padding: "48px 48px" }}>
+          <div style={{ background: "var(--green)", borderRadius: 20, padding: isMobile ? "32px 24px" : "48px 48px" }}>
             <p style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: "rgba(255,255,255,0.6)", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 12 }}>Var vi är nu</p>
             <h2 style={{ fontSize: "var(--text-4xl)", fontWeight: 900, color: "#fff", letterSpacing: -0.8, marginBottom: 14 }}>Plattformen testas med branschen</h2>
             <p style={{ fontSize: "var(--text-lg)", color: "rgba(255,255,255,0.75)", lineHeight: 1.75, marginBottom: 28, maxWidth: 520 }}>

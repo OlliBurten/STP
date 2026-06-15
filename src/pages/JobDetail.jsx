@@ -515,7 +515,7 @@ export default function JobDetail() {
 
           {/* Top bar */}
           <div style={{
-            position: "sticky", top: 0, zIndex: 20, padding: "4px 12px 10px",
+            position: "sticky", top: 0, zIndex: 20, padding: "14px 12px 10px",
             display: "flex", alignItems: "center", justifyContent: "space-between",
             background: mobileScrolled ? "rgba(245,242,236,0.94)" : "var(--paper)",
             backdropFilter: mobileScrolled ? "blur(14px)" : "none",

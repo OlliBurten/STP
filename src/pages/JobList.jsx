@@ -539,7 +539,7 @@ export default function JobList() {
         </button>
       </div>
 
-      <div style={{ padding: "0 20px 12px", display: "flex", gap: 6, overflowX: "auto" }}>
+      <div style={{ padding: "0 12px 12px", display: "flex", gap: 6, overflowX: "auto" }}>
         {[
           { v: "all",         l: "Alla jobb",      c: filteredJobs.length },
           { v: "recommended", l: "Rekommenderade", c: recommendedCount },
@@ -547,9 +547,9 @@ export default function JobList() {
         ].map(t => {
           const on = tab === t.v;
           return (
-            <button key={t.v} onClick={() => setTab(t.v)} style={{ padding: "7px 14px", borderRadius: 99, background: on ? "var(--green)" : "var(--card)", border: `1px solid ${on ? "var(--green)" : "var(--line-2)"}`, color: on ? "#fff" : "var(--ink-700)", fontSize: "var(--text-sm)", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 6, minHeight: 36, fontFamily: "inherit", boxShadow: "var(--sh-sm)" }}>
+            <button key={t.v} onClick={() => setTab(t.v)} style={{ flexShrink: 0, padding: "7px 9px", borderRadius: 99, background: on ? "var(--green)" : "var(--card)", border: `1px solid ${on ? "var(--green)" : "var(--line-2)"}`, color: on ? "#fff" : "var(--ink-700)", fontSize: "var(--text-xs)", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, minHeight: 36, fontFamily: "inherit", boxShadow: "var(--sh-sm)" }}>
               {t.l}
-              <span style={{ padding: "1px 7px", borderRadius: 99, background: on ? "rgba(255,255,255,0.2)" : "var(--paper-2)", fontSize: "var(--text-2xs)", fontWeight: 800 }}>{t.c}</span>
+              <span style={{ flexShrink: 0, padding: "1px 6px", borderRadius: 99, background: on ? "rgba(255,255,255,0.2)" : "var(--paper-2)", fontSize: "var(--text-2xs)", fontWeight: 800 }}>{t.c}</span>
             </button>
           );
         })}

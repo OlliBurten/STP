@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { usePageTitle } from "../hooks/usePageTitle";
+import { useIsMobile } from "../hooks/useIsMobile";
 import PageMeta from "../components/PageMeta";
 
 const FAQ = [
@@ -35,40 +36,37 @@ function FaqItem({ item }) {
 
 export default function Kontakt() {
   usePageTitle("Kontakt");
+  const isMobile = useIsMobile();
   return (
     <main style={{ background: "var(--paper)", minHeight: "100vh" }}>
       <PageMeta title="Kontakt – Sveriges Transportplattform" description="Kontakta Sveriges Transportplattform (STP) med frågor om samverkan, plattformen eller genomgång. Vi svarar på hello@transportplattformen.se." canonical="/kontakt" />
 
-      <div style={{ maxWidth: "var(--w-public)", margin: "0 auto", padding: "64px 32px 80px" }}>
+      <div style={{ maxWidth: "var(--w-public)", margin: "0 auto", padding: isMobile ? "24px 20px 64px" : "64px 32px 80px" }}>
         {/* Top grid: contact info + form */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 48, alignItems: "start", marginBottom: 64 }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: isMobile ? 28 : 48, alignItems: "start", marginBottom: isMobile ? 40 : 64 }}>
           {/* Left */}
           <div>
-            <h1 style={{ fontSize: 38, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.5, marginBottom: 14 }}>Hör av dig</h1>
-            <p style={{ fontSize: "var(--text-lg)", color: "var(--ink-500)", lineHeight: 1.7, marginBottom: 28 }}>
-              Frågor, feedback eller vill du veta mer? Vi svarar oftast samma dag.
+            <h1 style={{ fontSize: isMobile ? 30 : 38, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.2, marginBottom: 12 }}>Hör av dig</h1>
+            <p style={{ fontSize: "var(--text-lg)", color: "var(--ink-500)", lineHeight: 1.7, marginBottom: 24 }}>
+              Frågor, feedback eller vill du veta mer? Mejla oss så svarar vi oftast inom 1–2 vardagar.
             </p>
             {[
               { icon: "mail",  label: "E-post",  value: "hello@transportplattformen.se" },
-              { icon: "clock", label: "Support", value: "Vardagar 08–17" },
-              { icon: "pin",   label: "Kontor",  value: "Malmö, Sverige" },
             ].map(({ icon, label, value }) => (
-              <div key={label} style={{ display: "flex", gap: 13, alignItems: "center", marginBottom: 16 }}>
+              <a key={label} href="mailto:hello@transportplattformen.se" style={{ display: "flex", gap: 13, alignItems: "center", marginBottom: 16, textDecoration: "none" }}>
                 <span style={{ width: 42, height: 42, borderRadius: 11, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   {icon === "mail" && <svg viewBox="0 0 24 24" fill="none" stroke="var(--green-text)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,7 12,13 22,7"/></svg>}
-                  {icon === "clock" && <svg viewBox="0 0 24 24" fill="none" stroke="var(--green-text)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>}
-                  {icon === "pin" && <svg viewBox="0 0 24 24" fill="none" stroke="var(--green-text)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>}
                 </span>
                 <div>
                   <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", fontWeight: 600 }}>{label}</div>
                   <div style={{ fontSize: "var(--text-md)", fontWeight: 700, color: "var(--ink-900)" }}>{value}</div>
                 </div>
-              </div>
+              </a>
             ))}
           </div>
 
           {/* Right: contact form */}
-          <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, padding: "28px 30px" }}>
+          <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, padding: isMobile ? "24px 20px" : "28px 30px" }}>
             <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-500)", marginBottom: 18 }}>Skicka ett meddelande</div>
             {["Namn", "E-post"].map((l) => (
               <label key={l} style={{ display: "block", marginBottom: 16 }}>

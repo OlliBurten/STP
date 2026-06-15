@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { usePageTitle } from "../hooks/usePageTitle";
+import { useIsMobile } from "../hooks/useIsMobile";
 import PageMeta from "../components/PageMeta";
 import { Icon, Pill, Button, Card, Avatar, Dot } from "../components/ui";
 
@@ -148,6 +149,7 @@ function FaqBlock({ items, lead, email }) {
 
 /* ── Grön CTA-sektion ─────────────────────────── */
 function GreenCTA({ title, lead, primaryLabel, secondaryLabel, stats, onPrimary, onSecondary }) {
+  const isMobile = useIsMobile();
   return (
     <section style={{ background: "linear-gradient(160deg, #14524f 0%, #0c3d3a 100%)", padding: "88px 0", color: "#fff" }}>
       <div style={{ ...S.container, maxWidth: "var(--w-read)" }}>
@@ -163,7 +165,7 @@ function GreenCTA({ title, lead, primaryLabel, secondaryLabel, stats, onPrimary,
             </button>
           </div>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 0, borderTop: "1px solid rgba(255,255,255,0.14)", marginTop: 48, paddingTop: 28, maxWidth: 760, marginLeft: "auto", marginRight: "auto" }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2,1fr)" : "repeat(4,1fr)", gap: isMobile ? "30px 16px" : 0, borderTop: "1px solid rgba(255,255,255,0.14)", marginTop: isMobile ? 36 : 48, paddingTop: isMobile ? 32 : 28, maxWidth: 760, marginLeft: "auto", marginRight: "auto" }}>
           {stats.map(([v, l]) => (
             <div key={l} style={{ textAlign: "center" }}>
               <div style={{ fontSize: "var(--text-3xl)", fontWeight: 900, fontFamily: "var(--mono)", color: "var(--amber)", letterSpacing: -0.5 }}>{v}</div>
@@ -183,6 +185,7 @@ export default function ForCompaniesLanding() {
   usePageTitle("För åkerier – Hitta lastbilsförare på STP");
   const { user, isDriver, isCompany } = useAuth();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   if (user) {
     if (isCompany) return <Navigate to="/foretag" replace />;
@@ -205,7 +208,7 @@ export default function ForCompaniesLanding() {
         .talent-grid{display:grid;grid-template-columns:0.8fr 1.2fr;gap:56px;align-items:center}
         .two-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
         .steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0}
-        @media(max-width:980px){.fa-grid,.talent-grid{grid-template-columns:1fr;gap:40px}.cmp-grid,.two-grid,.steps-grid{grid-template-columns:1fr;gap:24px}.steps-grid>div{border-left:none!important;text-align:left!important}}
+        @media(max-width:980px){.fa-grid,.talent-grid{grid-template-columns:1fr;gap:40px}.cmp-grid,.two-grid,.steps-grid{grid-template-columns:1fr;gap:24px}.steps-grid>div{border-left:none!important;text-align:left!important;padding-left:0!important;padding-right:0!important}.steps-grid>div>div:first-child{margin-left:0!important}}
       `}</style>
 
       {/* ───────── HERO ───────── */}
@@ -213,8 +216,8 @@ export default function ForCompaniesLanding() {
         style={{
           background:
             "radial-gradient(1100px 520px at 90% -8%, rgba(31,95,92,0.10), transparent 60%), radial-gradient(800px 400px at 4% 14%, rgba(199,122,14,0.06), transparent 60%), var(--paper)",
-          paddingTop: 88,
-          paddingBottom: 96,
+          paddingTop: isMobile ? 24 : 88,
+          paddingBottom: isMobile ? 56 : 96,
         }}
       >
         <div style={S.container}>
