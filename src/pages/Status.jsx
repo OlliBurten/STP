@@ -19,6 +19,8 @@ function CheckRow({ label, url, check, lastAt, refreshTrigger }) {
     try {
       const result = await checkRef.current();
       setStatus(result);
+    } catch (e) {
+      setStatus({ ok: false, message: e.message || "Okänt fel" });
     } finally {
       setLoading(false);
     }
