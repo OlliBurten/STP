@@ -11,7 +11,7 @@ import { calcYearsExperience } from "../utils/profileUtils";
 import { useIsMobile } from "../hooks/useIsMobile";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-const PALETTE = ["#1F5F5C","#1a3a5c","#2D4A3E","#3a2a1a","#1a2a3a","#1a3a2a","#2a1a3a","#3a1a2a","#0d3d4f","#2a3a1a"];
+const PALETTE = ["#1E6B5B","#1a3a5c","#2D4A3E","#3a2a1a","#1a2a3a","#1a3a2a","#2a1a3a","#3a1a2a","#0d3d4f","#2a3a1a"];
 function avatarBg(name) {
   let h = 0;
   for (let i = 0; i < (name || "").length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xffff;
@@ -73,7 +73,7 @@ function FavJobCard({ job, matchData, onUnsave }) {
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
             <h3 style={{ fontSize: "var(--text-lg)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.3, lineHeight: 1.3 }}>{job.title}</h3>
-            <button onClick={(e) => { e.stopPropagation(); onUnsave(job.id); }} style={{ width: 32, height: 32, borderRadius: 8, flexShrink: 0, background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.3)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+            <button onClick={(e) => { e.stopPropagation(); onUnsave(job.id); }} style={{ width: 32, height: 32, borderRadius: 8, flexShrink: 0, background: "var(--amber-tint)", border: "1px solid rgba(242,164,28,0.3)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
               <Icon n="heart" s={14} c="var(--amber-deep)" />
             </button>
           </div>
@@ -134,7 +134,7 @@ function CompanyCard({ company, onUnsave }) {
           type="button"
           onClick={() => onUnsave(company.id)}
           title="Ta bort favorit"
-          style={{ width: 34, height: 34, borderRadius: 9, background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.2)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}
+          style={{ width: 34, height: 34, borderRadius: 9, background: "var(--amber-tint)", border: "1px solid rgba(242,164,28,0.2)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}
         >
           <Icon n="heart" s={13} c="var(--amber)" />
         </button>
@@ -294,7 +294,7 @@ export default function SavedJobs() {
           ) : tab === "jobs" ? (
             <>
               {expiredCount > 0 && (
-                <div style={{ padding: "11px 14px", background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.2)", borderRadius: 11, display: "flex", alignItems: "center", gap: 9 }}>
+                <div style={{ padding: "11px 14px", background: "var(--amber-tint)", border: "1px solid rgba(242,164,28,0.2)", borderRadius: 11, display: "flex", alignItems: "center", gap: 9 }}>
                   <Icon n="alert" s={14} c="var(--amber)"/>
                   <span style={{ fontSize: "var(--text-xs)", color: "var(--ink-700)", flex: 1 }}><strong style={{ color: "var(--amber-text)" }}>{expiredCount} avslutade jobb</strong></span>
                   <button onClick={handleRemoveExpired} style={{ fontSize: "var(--text-2xs)", color: "var(--amber-text)", fontWeight: 700, background: "transparent", border: "none", cursor: "pointer", fontFamily: "inherit" }}>Ta bort</button>
@@ -451,7 +451,7 @@ export default function SavedJobs() {
               <>
                 {/* Expired banner */}
                 {expiredCount > 0 && (
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.2)", borderRadius: 11, marginBottom: 18, fontSize: "var(--text-xs)" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", background: "var(--amber-tint)", border: "1px solid rgba(242,164,28,0.2)", borderRadius: 11, marginBottom: 18, fontSize: "var(--text-xs)" }}>
                     <Icon n="alert" s={14} c="var(--amber)" />
                     <span style={{ color: "var(--ink-700)" }}>
                       <strong style={{ color: "var(--amber-text)" }}>{expiredCount} {expiredCount === 1 ? "sparat jobb" : "sparade jobb"}</strong> {expiredCount === 1 ? "har avslutats" : "har avslutats"}. Vill du städa upp?

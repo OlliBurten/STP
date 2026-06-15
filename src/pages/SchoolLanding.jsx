@@ -62,7 +62,7 @@ export default function SchoolLanding() {
           {/* Skol-pill */}
           <div style={{
             display: "inline-flex", alignItems: "center", gap: 8,
-            background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.25)",
+            background: "var(--green-tint)", border: "1px solid rgba(30,107,91,0.25)",
             borderRadius: 99, padding: "5px 16px", marginBottom: 24,
           }}>
             <span style={{ fontSize: "var(--text-base)" }}>🏫</span>
@@ -147,7 +147,7 @@ export default function SchoolLanding() {
             }}>
               <div style={{
                 width: 36, height: 36, borderRadius: "50%", flexShrink: 0,
-                background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.2)",
+                background: "var(--green-tint)", border: "1px solid rgba(30,107,91,0.2)",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 fontSize: "var(--text-sm)", fontWeight: 800, color: "var(--green-text)",
               }}>
@@ -187,7 +187,7 @@ export default function SchoolLanding() {
         {/* ── Bottom CTA ── */}
         <div style={{
           background: "var(--green-tint)",
-          border: "1px solid rgba(31,95,92,0.2)", borderRadius: 20,
+          border: "1px solid rgba(30,107,91,0.2)", borderRadius: 20,
           padding: "clamp(28px, 5vw, 44px)", textAlign: "center",
         }}>
           <p style={{

@@ -113,7 +113,7 @@ function StepCard({ step, expanded, onToggle, onComplete }) {
           )}
 
           {step.status === "review" && (
-            <div style={{ padding: "12px 16px", background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.2)", borderRadius: 10, fontSize: "var(--text-sm)", color: "var(--amber-deep)", fontWeight: 600 }}>
+            <div style={{ padding: "12px 16px", background: "var(--amber-tint)", border: "1px solid rgba(242,164,28,0.2)", borderRadius: 10, fontSize: "var(--text-sm)", color: "var(--amber-deep)", fontWeight: 600 }}>
               Granskas av STP — vi återkommer inom 1–2 arbetsdagar.
             </div>
           )}

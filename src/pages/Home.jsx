@@ -186,7 +186,7 @@ export default function Home() {
                 background: "var(--amber)", color: "var(--ink-900)",
                 border: "1px solid var(--amber-deep)", borderRadius: 10,
                 fontWeight: 700, fontSize: "var(--text-md)",
-                boxShadow: "0 1px 0 var(--amber-deep), 0 4px 12px rgba(199,122,14,0.30)",
+                boxShadow: "0 1px 0 var(--amber-deep), 0 4px 12px rgba(242,164,28,0.30)",
                 textDecoration: "none",
               }}
             >
@@ -742,7 +742,7 @@ export default function Home() {
                   background: "var(--amber)", color: "var(--ink-900)",
                   border: "1px solid var(--amber-deep)", borderRadius: 12,
                   fontWeight: 700, fontSize: "var(--text-lg)",
-                  boxShadow: "0 1px 0 var(--amber-deep), 0 4px 12px rgba(199,122,14,0.30)",
+                  boxShadow: "0 1px 0 var(--amber-deep), 0 4px 12px rgba(242,164,28,0.30)",
                   textDecoration: "none",
                 }}
               >

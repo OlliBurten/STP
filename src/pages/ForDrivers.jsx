@@ -54,7 +54,7 @@ const ProfilePreview = () => (
     <div style={{ position: "absolute", top: 16, left: 16, width: "100%", height: "100%", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 22, boxShadow: "var(--sh-sm)", opacity: 0.5 }} />
     <div style={{ position: "relative", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 22, boxShadow: "var(--sh-md)", overflow: "hidden" }}>
       {/* topp-band med subtilt djup */}
-      <div style={{ height: 78, position: "relative", overflow: "hidden", background: "linear-gradient(125deg, #1F5F5C 0%, #2f746f 58%, #36857f 100%)" }}>
+      <div style={{ height: 78, position: "relative", overflow: "hidden", background: "linear-gradient(125deg, #1E6B5B 0%, #2f746f 58%, #36857f 100%)" }}>
         <div style={{ position: "absolute", right: -28, top: -52, width: 158, height: 158, borderRadius: "50%", background: "rgba(255,255,255,0.07)" }} />
         <div style={{ position: "absolute", right: 76, top: 20, width: 72, height: 72, borderRadius: "50%", background: "rgba(255,255,255,0.05)" }} />
         <div style={{ position: "absolute", left: 22, top: 18, display: "inline-flex", alignItems: "center", gap: 6, fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "rgba(255,255,255,0.82)" }}>
@@ -64,7 +64,7 @@ const ProfilePreview = () => (
 
       <div style={{ padding: "0 24px 24px", position: "relative", zIndex: 1 }}>
         <div style={{ display: "flex", alignItems: "flex-end", gap: 16, marginTop: -30, marginBottom: 16 }}>
-          <div style={{ width: 80, height: 80, borderRadius: "50%", background: "linear-gradient(150deg, #d9870f, #b96f0a)", border: "4px solid var(--card)", boxShadow: "0 8px 20px rgba(199,122,14,0.30)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: "var(--text-4xl)", letterSpacing: 0.5, flexShrink: 0 }}>OL</div>
+          <div style={{ width: 80, height: 80, borderRadius: "50%", background: "linear-gradient(150deg, #F2A41C, #C77A0E)", border: "4px solid var(--card)", boxShadow: "0 8px 20px rgba(242,164,28,0.30)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: "var(--text-4xl)", letterSpacing: 0.5, flexShrink: 0 }}>OL</div>
           <div style={{ paddingBottom: 2 }}>
             <div style={{ fontSize: "var(--text-2xl)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.5, whiteSpace: "nowrap" }}>Oliver Lind</div>
             <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", fontWeight: 500, whiteSpace: "nowrap" }}>Malmö, Skåne · 9 års erfarenhet</div>
@@ -92,7 +92,7 @@ const ProfilePreview = () => (
         </div>
 
         {/* senaste matchning (i kortet) */}
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 12, padding: "12px 14px", background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.14)", borderRadius: 13 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 12, padding: "12px 14px", background: "var(--green-tint)", border: "1px solid rgba(30,107,91,0.14)", borderRadius: 13 }}>
           <div style={{ width: 40, height: 40, borderRadius: 11, background: "var(--card)", boxShadow: "var(--sh-sm)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             <Icon name="truck" size={19} color="var(--green-text)" stroke={2} />
           </div>
@@ -108,7 +108,7 @@ const ProfilePreview = () => (
 
         {/* åtgärder */}
         <div style={{ display: "flex", gap: 8, marginTop: 18, paddingTop: 18, borderTop: "1px solid var(--line)" }}>
-          <div style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "12px", borderRadius: 10, background: "var(--green)", color: "#fff", fontSize: "var(--text-sm)", fontWeight: 700, boxShadow: "0 1px 0 var(--green-deep), 0 1px 2px rgba(31,95,92,0.25)" }}>
+          <div style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "12px", borderRadius: 10, background: "var(--green)", color: "#fff", fontSize: "var(--text-sm)", fontWeight: 700, boxShadow: "0 1px 0 var(--green-deep), 0 1px 2px rgba(30,107,91,0.25)" }}>
             <Icon name="eye" size={15} color="#fff" stroke={2} /> Förhandsgranska
           </div>
           <div style={{ width: 46, display: "inline-flex", alignItems: "center", justifyContent: "center", borderRadius: 10, background: "var(--card-2)", border: "1px solid var(--line-2)" }}>
@@ -241,7 +241,7 @@ export default function ForDrivers() {
       <section
         style={{
           background:
-            "radial-gradient(1100px 520px at 88% -8%, rgba(31,95,92,0.10), transparent 60%), radial-gradient(800px 400px at 6% 12%, rgba(199,122,14,0.07), transparent 60%), var(--paper)",
+            "radial-gradient(1100px 520px at 88% -8%, rgba(30,107,91,0.10), transparent 60%), radial-gradient(800px 400px at 6% 12%, rgba(242,164,28,0.07), transparent 60%), var(--paper)",
           paddingTop: isMobile ? 24 : 88,
           paddingBottom: isMobile ? 56 : 96,
         }}
@@ -392,7 +392,7 @@ export default function ForDrivers() {
           <div className="ff-steps">
             {STEPS.map((s, i) => (
               <div key={s.n} style={{ padding: "0 28px", borderLeft: i > 0 ? "1px solid var(--line)" : "none", textAlign: "center" }}>
-                <div style={{ width: 52, height: 52, borderRadius: "50%", background: "var(--green-tint)", color: "var(--green-text)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--text-xl)", fontFamily: "var(--mono)", margin: "0 auto 18px", border: "1px solid rgba(31,95,92,0.18)" }}>{s.n}</div>
+                <div style={{ width: 52, height: 52, borderRadius: "50%", background: "var(--green-tint)", color: "var(--green-text)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--text-xl)", fontFamily: "var(--mono)", margin: "0 auto 18px", border: "1px solid rgba(30,107,91,0.18)" }}>{s.n}</div>
                 <h3 style={{ fontSize: "var(--text-xl)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 9, letterSpacing: -0.3 }}>{s.title}</h3>
                 <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.6, textWrap: "pretty" }}>{s.body}</p>
               </div>

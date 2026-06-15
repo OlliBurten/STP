@@ -976,7 +976,7 @@ export default function Profile() {
 
           {/* Söker aktivt jobb (openToWork) */}
           {current?.visibleToCompanies && (
-            <div style={{ padding: "14px 16px", background: current?.openToWork ? "var(--green-tint)" : "var(--card)", border: `1px solid ${current?.openToWork ? "rgba(31,95,92,0.25)" : "var(--line)"}`, borderRadius: 13, display: "flex", alignItems: "center", gap: 12, boxShadow: "var(--sh-sm)" }}>
+            <div style={{ padding: "14px 16px", background: current?.openToWork ? "var(--green-tint)" : "var(--card)", border: `1px solid ${current?.openToWork ? "rgba(30,107,91,0.25)" : "var(--line)"}`, borderRadius: 13, display: "flex", alignItems: "center", gap: 12, boxShadow: "var(--sh-sm)" }}>
               <div style={{ width: 38, height: 38, borderRadius: 10, background: current?.openToWork ? "var(--green-tint)" : "var(--paper-2)", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid var(--line)", flexShrink: 0 }}>
                 <div style={{ width: 14, height: 14, borderRadius: "50%", background: current?.openToWork ? "var(--green)" : "var(--ink-300)" }} />
               </div>
@@ -1010,7 +1010,7 @@ export default function Profile() {
               <div style={{ height: 6, background: "var(--amber-tint-2)", borderRadius: 99, overflow: "hidden", marginBottom: 12 }}>
                 <div style={{ height: "100%", width: `${progressPct}%`, background: "var(--amber)", borderRadius: 99 }}/>
               </div>
-              <button onClick={startEditing} style={{ padding: "9px 16px", borderRadius: 99, background: "var(--amber)", border: "none", color: "#fff", fontSize: "var(--text-xs)", fontWeight: 700, cursor: "pointer", minHeight: 36, fontFamily: "inherit" }}>Komplettera nu →</button>
+              <button onClick={startEditing} style={{ padding: "9px 16px", borderRadius: 99, background: "var(--amber)", border: "none", color: "var(--ink-900)", fontSize: "var(--text-xs)", fontWeight: 700, cursor: "pointer", minHeight: 36, fontFamily: "inherit" }}>Komplettera nu →</button>
             </div>
           </div>
         )}
@@ -1169,7 +1169,7 @@ export default function Profile() {
                     display: "inline-flex", alignItems: "center", padding: "4px 11px", borderRadius: 999,
                     fontSize: "var(--text-xs)", fontWeight: 600, lineHeight: 1.4,
                     background: "var(--green)", color: "#fff",
-                    boxShadow: "0 1px 2px rgba(31,95,92,0.20), inset 0 -1px 0 rgba(0,0,0,0.10)",
+                    boxShadow: "0 1px 2px rgba(30,107,91,0.20), inset 0 -1px 0 rgba(0,0,0,0.10)",
                   }}>{l}</span>
                 ))}
                 {(current.certificates || []).slice(0, 4).map((cid) => {
@@ -1422,7 +1422,7 @@ export default function Profile() {
                             border: owned ? "1px solid var(--green-deep, var(--green))" : "1px dashed var(--line-2)",
                             color: owned ? "#fff" : "var(--ink-300)",
                             fontWeight: 800, fontSize: "var(--text-md)", letterSpacing: 0.3,
-                            boxShadow: owned ? "0 2px 6px rgba(31,95,92,0.20), inset 0 -2px 0 rgba(0,0,0,0.15)" : "none",
+                            boxShadow: owned ? "0 2px 6px rgba(30,107,91,0.20), inset 0 -2px 0 rgba(0,0,0,0.15)" : "none",
                           }}>{l}</div>
                         );
                       })}
@@ -1437,7 +1437,7 @@ export default function Profile() {
                           const certLabel = certificateTypes.find((c) => c.value === cid)?.label || cid.replace(/_/g, " ");
                           const dotColor = st ? (st.days < 0 ? "var(--danger)" : st.days < 90 ? "var(--danger)" : st.days < 180 ? "var(--amber)" : "var(--success)") : "var(--ink-300)";
                           const bg = st ? (st.days < 0 ? "var(--danger-tint)" : st.days < 90 ? "var(--danger-tint)" : st.days < 180 ? "var(--amber-tint)" : "var(--card-2)") : "var(--card-2)";
-                          const borderColor = st ? (st.days < 0 ? "rgba(185,28,59,0.18)" : st.days < 90 ? "rgba(185,28,59,0.18)" : st.days < 180 ? "rgba(199,122,14,0.20)" : "var(--line)") : "var(--line)";
+                          const borderColor = st ? (st.days < 0 ? "rgba(185,28,59,0.18)" : st.days < 90 ? "rgba(185,28,59,0.18)" : st.days < 180 ? "rgba(242,164,28,0.20)" : "var(--line)") : "var(--line)";
                           return (
                             <div key={cid} style={{
                               display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -1464,7 +1464,7 @@ export default function Profile() {
                           </div>
                         )}
                         {certWarnings.some((c) => c.status.days >= 0 && c.status.days < 180) && !certWarnings.some((c) => c.status.days < 0) && (
-                          <div style={{ marginTop: 8, padding: "12px 16px", borderRadius: 10, background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.20)" }}>
+                          <div style={{ marginTop: 8, padding: "12px 16px", borderRadius: 10, background: "var(--amber-tint)", border: "1px solid rgba(242,164,28,0.20)" }}>
                             <p style={{ fontSize: "var(--text-sm)", color: "var(--amber-text)", fontWeight: 600, marginBottom: 4 }}>Certifikat löper snart ut</p>
                             <button onClick={startEditing} style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--amber-text)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", padding: 0 }}>
                               Uppdatera utgångsdatum →
@@ -1782,7 +1782,7 @@ export default function Profile() {
                       const match = job.matchScore;
                       const matchColor = match >= 90 ? "var(--success)" : match >= 75 ? "var(--green-text)" : T.amber;
                       const matchBg = match >= 90 ? "var(--success-tint)" : match >= 75 ? "var(--green-tint)" : T.amberDim;
-                      const matchBorder = match >= 90 ? "rgba(31,122,58,0.25)" : match >= 75 ? "rgba(31,95,92,0.25)" : "rgba(199,122,14,0.25)";
+                      const matchBorder = match >= 90 ? "rgba(31,122,58,0.25)" : match >= 75 ? "rgba(30,107,91,0.25)" : "rgba(242,164,28,0.25)";
                       return (
                         <Link
                           key={job.id}

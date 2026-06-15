@@ -178,7 +178,7 @@ export default function CityJobList() {
             {/* Transport context */}
             <div style={{
               background: "var(--green-tint)",
-              border: "1px solid rgba(31,95,92,0.2)", borderRadius: 16, padding: "22px",
+              border: "1px solid rgba(30,107,91,0.2)", borderRadius: 16, padding: "22px",
             }}>
               <p style={{ fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--green-text)", marginBottom: 10 }}>
                 Transport i {city.name}

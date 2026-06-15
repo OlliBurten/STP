@@ -19,7 +19,7 @@ const inputBase = { width: "100%", padding: "12px 14px", borderRadius: 11, backg
 const Label = ({ children }) => <div style={{ fontSize: 12, fontWeight: 700, color: "var(--ink-500)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>{children}</div>;
 const TextInput = (p) => <input {...p} style={{ ...inputBase, ...(p.style || {}) }} />;
 const Chip = ({ label, selected, onClick }) => (
-  <button onClick={onClick} style={{ padding: "9px 15px", borderRadius: 999, fontSize: 13.5, fontWeight: 600, background: selected ? "var(--green)" : "var(--card)", color: selected ? "#fff" : "var(--ink-700)", border: `1px solid ${selected ? "var(--green-deep)" : "var(--line-2)"}`, boxShadow: selected ? "0 1px 3px rgba(31,95,92,0.2)" : "var(--sh-sm)" }}>{label}</button>
+  <button onClick={onClick} style={{ padding: "9px 15px", borderRadius: 999, fontSize: 13.5, fontWeight: 600, background: selected ? "var(--green)" : "var(--card)", color: selected ? "#fff" : "var(--ink-700)", border: `1px solid ${selected ? "var(--green-deep)" : "var(--line-2)"}`, boxShadow: selected ? "0 1px 3px rgba(30,107,91,0.2)" : "var(--sh-sm)" }}>{label}</button>
 );
 
 const ListEditor = ({ items, setItems, placeholder }) => {

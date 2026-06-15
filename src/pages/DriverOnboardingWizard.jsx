@@ -75,7 +75,7 @@ function ChoiceCard({ icon, label, desc, selected, onClick }) {
       padding: "18px 20px", borderRadius: 14, textAlign: "left",
       background: selected ? "var(--green-tint)" : "var(--card)",
       border: `1.5px solid ${selected ? "var(--green)" : "var(--line)"}`,
-      boxShadow: selected ? "0 2px 8px rgba(31,95,92,0.12)" : "var(--sh-sm)",
+      boxShadow: selected ? "0 2px 8px rgba(30,107,91,0.12)" : "var(--sh-sm)",
       transition: "all .15s", cursor: "pointer", fontFamily: "inherit",
     }}>
       <span style={{
@@ -394,7 +394,7 @@ export default function DriverOnboardingWizard() {
 
         {/* Internship sub-form */}
         {draft.isGymnasieelev === true && (
-          <div style={{ marginTop: 20, padding: "18px 20px", background: "var(--green-tint)", borderRadius: 12, border: "1px solid rgba(31,95,92,0.2)" }}>
+          <div style={{ marginTop: 20, padding: "18px 20px", background: "var(--green-tint)", borderRadius: 12, border: "1px solid rgba(30,107,91,0.2)" }}>
             <p style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--green-text)", marginBottom: 12 }}>Vilken typ av utbildning?</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {internshipTypeOptions.map((opt) => (
@@ -403,7 +403,7 @@ export default function DriverOnboardingWizard() {
                   style={{
                     display: "flex", alignItems: "center", justifyContent: "space-between",
                     padding: "12px 16px", borderRadius: 10, cursor: "pointer", textAlign: "left", fontFamily: "inherit",
-                    border: `1.5px solid ${draft.internshipType === opt.value ? "var(--green)" : "rgba(31,95,92,0.2)"}`,
+                    border: `1.5px solid ${draft.internshipType === opt.value ? "var(--green)" : "rgba(30,107,91,0.2)"}`,
                     background: draft.internshipType === opt.value ? "var(--card)" : "rgba(255,255,255,0.6)",
                     transition: "all .15s",
                   }}>
@@ -413,7 +413,7 @@ export default function DriverOnboardingWizard() {
                   </div>
                   <span style={{
                     width: 20, height: 20, borderRadius: 10, flexShrink: 0,
-                    border: `2px solid ${draft.internshipType === opt.value ? "var(--green)" : "rgba(31,95,92,0.3)"}`,
+                    border: `2px solid ${draft.internshipType === opt.value ? "var(--green)" : "rgba(30,107,91,0.3)"}`,
                     background: draft.internshipType === opt.value ? "var(--green)" : "transparent",
                     display: "flex", alignItems: "center", justifyContent: "center",
                     color: "#fff", fontSize: "var(--text-2xs)",
@@ -429,7 +429,7 @@ export default function DriverOnboardingWizard() {
                     type="text" value={draft.schoolName}
                     onChange={(e) => setDraft((p) => ({ ...p, schoolName: e.target.value }))}
                     placeholder="t.ex. Transportgymnasiet Stockholm"
-                    style={{ padding: "11px 14px", borderRadius: 9, background: "var(--card)", border: "1px solid rgba(31,95,92,0.25)", fontSize: "var(--text-base)", color: "var(--ink-900)", fontFamily: "inherit", outline: "none" }}
+                    style={{ padding: "11px 14px", borderRadius: 9, background: "var(--card)", border: "1px solid rgba(30,107,91,0.25)", fontSize: "var(--text-base)", color: "var(--ink-900)", fontFamily: "inherit", outline: "none" }}
                   />
                 </label>
               </div>
@@ -452,7 +452,7 @@ export default function DriverOnboardingWizard() {
                 display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", borderRadius: 12, textAlign: "left",
                 background: sel ? "var(--green)" : "var(--card)",
                 border: `1.5px solid ${sel ? "var(--green)" : "var(--line)"}`,
-                boxShadow: sel ? "0 2px 6px rgba(31,95,92,0.2)" : "var(--sh-sm)",
+                boxShadow: sel ? "0 2px 6px rgba(30,107,91,0.2)" : "var(--sh-sm)",
                 transition: "all .15s", cursor: "pointer", fontFamily: "inherit",
               }}>
                 <span style={{ fontSize: "var(--text-lg)", fontWeight: 800, color: sel ? "#fff" : "var(--ink-900)", minWidth: 34 }}>{l.c}</span>
@@ -534,7 +534,7 @@ export default function DriverOnboardingWizard() {
                     background: sel ? "var(--green)" : "var(--card)",
                     color: sel ? "#fff" : "var(--ink-700)",
                     border: `1px solid ${sel ? "var(--green)" : "var(--line)"}`,
-                    boxShadow: sel ? "0 1px 4px rgba(31,95,92,0.2)" : "var(--sh-sm)",
+                    boxShadow: sel ? "0 1px 4px rgba(30,107,91,0.2)" : "var(--sh-sm)",
                     transition: "all .15s",
                   }}>{r}</button>
                 );

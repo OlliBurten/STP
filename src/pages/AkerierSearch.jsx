@@ -55,7 +55,7 @@ function Stars({ rating, size = 11 }) {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-const AVATAR_PALETTE = ["#1F5F5C", "#1a3a5c", "#3a1a5c", "#5c1a2a", "#1a5c3a", "#3a5c1a", "#5c3a1a", "#1a4a5c"];
+const AVATAR_PALETTE = ["#1E6B5B", "#1a3a5c", "#3a1a5c", "#5c1a2a", "#1a5c3a", "#3a5c1a", "#5c3a1a", "#1a4a5c"];
 
 function avatarColor(name) {
   if (!name) return AVATAR_PALETTE[0];
@@ -109,7 +109,7 @@ function CompanyGridCard({ c, user, saved, onToggleSave }) {
           )}
         </div>
         {user && (
-          <button type="button" onClick={handleSave} disabled={saving} style={{ width: 30, height: 30, borderRadius: 8, flexShrink: 0, background: saved ? "var(--amber-tint)" : "var(--card-2)", border: `1px solid ${saved ? "rgba(199,122,14,0.3)" : "var(--line-2)"}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: saved ? "var(--amber-deep)" : "var(--ink-400)" }}>
+          <button type="button" onClick={handleSave} disabled={saving} style={{ width: 30, height: 30, borderRadius: 8, flexShrink: 0, background: saved ? "var(--amber-tint)" : "var(--card-2)", border: `1px solid ${saved ? "rgba(242,164,28,0.3)" : "var(--line-2)"}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: saved ? "var(--amber-deep)" : "var(--ink-400)" }}>
             <Icon n={saved ? "heartFilled" : "heartOutline"} s={13} />
           </button>
         )}

@@ -75,7 +75,7 @@ const Thread = ({ c }) => {
           return (
             <div key={i} style={{ display: "flex", justifyContent: mine ? "flex-end" : "flex-start" }}>
               <div style={{ maxWidth: "72%" }}>
-                <div style={{ padding: "11px 15px", borderRadius: 14, borderBottomRightRadius: mine ? 4 : 14, borderBottomLeftRadius: mine ? 14 : 4, background: mine ? "var(--green)" : "var(--card)", color: mine ? "#fff" : "var(--ink-900)", border: mine ? "none" : "1px solid var(--line)", boxShadow: mine ? "0 1px 2px rgba(31,95,92,0.2)" : "var(--sh-sm)", fontSize: 14, lineHeight: 1.55, textWrap: "pretty" }}>{m.text}</div>
+                <div style={{ padding: "11px 15px", borderRadius: 14, borderBottomRightRadius: mine ? 4 : 14, borderBottomLeftRadius: mine ? 14 : 4, background: mine ? "var(--green)" : "var(--card)", color: mine ? "#fff" : "var(--ink-900)", border: mine ? "none" : "1px solid var(--line)", boxShadow: mine ? "0 1px 2px rgba(30,107,91,0.2)" : "var(--sh-sm)", fontSize: 14, lineHeight: 1.55, textWrap: "pretty" }}>{m.text}</div>
                 <div style={{ fontSize: 11, color: "var(--ink-400)", marginTop: 4, textAlign: mine ? "right" : "left" }}>{clock(m.at)}</div>
               </div>
             </div>

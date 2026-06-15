@@ -64,7 +64,7 @@ function BrandPanel() {
 
       {/* Headline */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", padding: "40px 0" }}>
-        <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 12px", borderRadius: 999, background: "rgba(199,122,14,0.15)", border: "1px solid rgba(199,122,14,0.35)", color: "#f5c875", fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: 1.4, textTransform: "uppercase", alignSelf: "flex-start", marginBottom: 26 }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 12px", borderRadius: 999, background: "rgba(242,164,28,0.15)", border: "1px solid rgba(242,164,28,0.35)", color: "#f5c875", fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: 1.4, textTransform: "uppercase", alignSelf: "flex-start", marginBottom: 26 }}>
           Gratis just nu
         </div>
         <h1 style={{ fontSize: "var(--text-5xl)", fontWeight: 900, letterSpacing: -1.5, lineHeight: 1.1, marginBottom: 18, color: "#fff" }}>

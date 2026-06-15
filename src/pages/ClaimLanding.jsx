@@ -157,7 +157,7 @@ export default function ClaimLanding() {
         <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, padding: "36px 40px", boxShadow: "var(--sh-sm)", marginBottom: 20, textAlign: "center" }}>
 
           {/* Company avatar */}
-          <div style={{ width: 72, height: 72, borderRadius: 18, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--text-3xl)", margin: "0 auto 20px", boxShadow: "0 4px 16px rgba(31,95,92,0.25)" }}>
+          <div style={{ width: 72, height: 72, borderRadius: 18, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--text-3xl)", margin: "0 auto 20px", boxShadow: "0 4px 16px rgba(30,107,91,0.25)" }}>
             {companyInitials}
           </div>
 
@@ -192,7 +192,7 @@ export default function ClaimLanding() {
                 type="button"
                 onClick={handleActivate}
                 disabled={activating}
-                style={{ display: "inline-flex", alignItems: "center", gap: 9, padding: "15px 32px", borderRadius: 12, background: "var(--green)", color: "#fff", fontSize: "var(--text-lg)", fontWeight: 800, border: "none", cursor: activating ? "not-allowed" : "pointer", boxShadow: "0 4px 16px rgba(31,95,92,0.3)", opacity: activating ? 0.7 : 1 }}
+                style={{ display: "inline-flex", alignItems: "center", gap: 9, padding: "15px 32px", borderRadius: 12, background: "var(--green)", color: "#fff", fontSize: "var(--text-lg)", fontWeight: 800, border: "none", cursor: activating ? "not-allowed" : "pointer", boxShadow: "0 4px 16px rgba(30,107,91,0.3)", opacity: activating ? 0.7 : 1 }}
               >
                 {activating ? "Aktiverar..." : "Koppla annonser till mitt konto"}
                 {!activating && <Icon n="arrow" s={15} c="#fff" />}
@@ -203,7 +203,7 @@ export default function ClaimLanding() {
               <button
                 type="button"
                 onClick={handleRegister}
-                style={{ display: "inline-flex", alignItems: "center", gap: 9, padding: "15px 32px", borderRadius: 12, background: "var(--green)", color: "#fff", fontSize: "var(--text-lg)", fontWeight: 800, border: "none", cursor: "pointer", boxShadow: "0 4px 16px rgba(31,95,92,0.3)", letterSpacing: -0.2 }}
+                style={{ display: "inline-flex", alignItems: "center", gap: 9, padding: "15px 32px", borderRadius: 12, background: "var(--green)", color: "#fff", fontSize: "var(--text-lg)", fontWeight: 800, border: "none", cursor: "pointer", boxShadow: "0 4px 16px rgba(30,107,91,0.3)", letterSpacing: -0.2 }}
               >
                 Skapa gratis konto och se kandidaterna
                 <Icon n="arrow" s={15} c="#fff" />
@@ -292,7 +292,7 @@ export default function ClaimLanding() {
             <button
               type="button"
               onClick={handleRegister}
-              style={{ display: "inline-flex", alignItems: "center", gap: 9, padding: "15px 32px", borderRadius: 12, background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, border: "none", cursor: "pointer", boxShadow: "0 4px 16px rgba(31,95,92,0.3)" }}
+              style={{ display: "inline-flex", alignItems: "center", gap: 9, padding: "15px 32px", borderRadius: 12, background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, border: "none", cursor: "pointer", boxShadow: "0 4px 16px rgba(30,107,91,0.3)" }}
             >
               Kom igång — det är gratis
               <Icon n="arrow" s={14} c="#fff" />

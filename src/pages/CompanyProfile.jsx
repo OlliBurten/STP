@@ -43,7 +43,7 @@ function SuggestionHint({ text, onUse }) {
         <span style={{ fontWeight: 700, color: "var(--ink-500)" }}>Förslag:</span> {text}
       </span>
       <button type="button" onClick={onUse}
-        style={{ flexShrink: 0, padding: "3px 12px", borderRadius: 99, background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.25)", color: "var(--green-text)", fontSize: "var(--text-2xs)", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+        style={{ flexShrink: 0, padding: "3px 12px", borderRadius: 99, background: "var(--green-tint)", border: "1px solid rgba(30,107,91,0.25)", color: "var(--green-text)", fontSize: "var(--text-2xs)", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
         Använd
       </button>
     </div>
@@ -144,7 +144,7 @@ function GrundInfo({ draft, setDraft, isMobile, sug }) {
             const on = (draft?.companySegmentDefaults || []).includes(seg.value);
             return (
               <button key={seg.value} type="button" onClick={() => toggleSeg(seg.value)}
-                style={{ padding: "8px 14px", borderRadius: 99, background: on ? "var(--green-tint)" : "var(--paper-2)", border: `1px solid ${on ? "rgba(31,95,92,0.3)" : "var(--line)"}`, color: on ? "var(--green-text)" : "var(--ink-500)", fontSize: "var(--text-xs)", fontWeight: 600, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 5 }}>
+                style={{ padding: "8px 14px", borderRadius: 99, background: on ? "var(--green-tint)" : "var(--paper-2)", border: `1px solid ${on ? "rgba(30,107,91,0.3)" : "var(--line)"}`, color: on ? "var(--green-text)" : "var(--ink-500)", fontSize: "var(--text-xs)", fontWeight: 600, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 5 }}>
                 {on && <CheckIcon />}{seg.label}
               </button>
             );
@@ -219,7 +219,7 @@ function OmOss({ draft, setDraft, sug }) {
         )}
       </Field>
 
-      <div style={{ marginTop: 8, padding: "12px 16px", background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.2)", borderRadius: 11, fontSize: "var(--text-xs)", color: "var(--ink-700)", lineHeight: 1.55 }}>
+      <div style={{ marginTop: 8, padding: "12px 16px", background: "var(--amber-tint)", border: "1px solid rgba(242,164,28,0.2)", borderRadius: 11, fontSize: "var(--text-xs)", color: "var(--ink-700)", lineHeight: 1.55 }}>
         <strong style={{ color: "var(--amber-text)" }}>Tips:</strong> Nämn om ni har kollektivavtal, hur bilflottan ser ut, och om förare är hemma kvällarna.
       </div>
     </div>
@@ -330,7 +330,7 @@ function Verifiering({ draft, setDraft }) {
         </label>
       </div>
 
-      <Link to="/foretag/verifiering" style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 99, background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.2)", color: "var(--green-text)", fontSize: "var(--text-xs)", fontWeight: 700, textDecoration: "none" }}>
+      <Link to="/foretag/verifiering" style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 99, background: "var(--green-tint)", border: "1px solid rgba(30,107,91,0.2)", color: "var(--green-text)", fontSize: "var(--text-xs)", fontWeight: 700, textDecoration: "none" }}>
         Hantera verifiering →
       </Link>
     </div>
@@ -414,7 +414,7 @@ function TeamTab({ isOwner, invites, setInvites, toast }) {
       {inviteError && <div style={{ marginTop: 10, padding: "10px 14px", borderRadius: 10, background: "rgba(220,38,38,0.06)", border: "1px solid rgba(220,38,38,0.15)", color: "var(--danger)", fontSize: "var(--text-sm)" }}>{inviteError}</div>}
 
       {lastDevInviteLink && (
-        <div style={{ marginTop: 12, padding: "14px 16px", borderRadius: 12, background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.2)" }}>
+        <div style={{ marginTop: 12, padding: "14px 16px", borderRadius: 12, background: "var(--amber-tint)", border: "1px solid rgba(242,164,28,0.2)" }}>
           <div style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--amber-text)", marginBottom: 8 }}>Länk att dela manuellt</div>
           <code style={{ display: "block", fontSize: "var(--text-2xs)", color: "var(--ink-700)", wordBreak: "break-all", lineHeight: 1.6 }}>{lastDevInviteLink}</code>
           <button type="button" onClick={() => navigator.clipboard.writeText(lastDevInviteLink).then(() => toast.success("Kopierad"), () => {})}
@@ -652,7 +652,7 @@ export default function CompanyProfile() {
       <div style={{ maxWidth: "var(--w-read)", margin: "0 auto", padding: isMobile ? "20px 20px 100px" : "28px 32px 80px" }}>
         {/* Auto-genererade profilförslag — fyller bara i utkastet, användaren sparar själv */}
         {sugCount > 0 && (
-          <div style={{ marginBottom: 20, padding: "14px 18px", borderRadius: 14, background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.2)", display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
+          <div style={{ marginBottom: 20, padding: "14px 18px", borderRadius: 14, background: "var(--green-tint)", border: "1px solid rgba(30,107,91,0.2)", display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
             <div style={{ flex: 1, minWidth: 220 }}>
               <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--green-text)", marginBottom: 3 }}>
                 Vi har tagit fram {sugCount} förslag till er profil
@@ -670,7 +670,7 @@ export default function CompanyProfile() {
 
         {/* Varning */}
         {draft && (!Array.isArray(draft.companyBransch) || draft.companyBransch.length === 0 || !draft.companyRegion) && (
-          <div style={{ marginBottom: 20, padding: "14px 18px", borderRadius: 14, background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.25)", display: "flex", gap: 12, alignItems: "flex-start" }}>
+          <div style={{ marginBottom: 20, padding: "14px 18px", borderRadius: 14, background: "var(--amber-tint)", border: "1px solid rgba(242,164,28,0.25)", display: "flex", gap: 12, alignItems: "flex-start" }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
             <div>
               <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--amber-text)", marginBottom: 3 }}>Syns inte i Hitta åkerier ännu</div>

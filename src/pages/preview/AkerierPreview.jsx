@@ -37,7 +37,7 @@ const CompanyCard = ({ c, onSave }) => (
         <h3 style={{ fontSize: 15.5, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.3, lineHeight: 1.25 }}>{c.name}</h3>
         <div style={{ fontSize: 12.5, color: "var(--ink-500)", marginTop: 3, display: "flex", alignItems: "center", gap: 5 }}><Icon name="pin" size={11} color="var(--ink-500)" stroke={1.8} /> {c.city}, {c.region}</div>
       </div>
-      <button onClick={(e) => { e.stopPropagation(); onSave(c.id); }} style={{ width: 30, height: 30, borderRadius: 8, flexShrink: 0, background: c.saved ? "var(--amber-tint)" : "var(--card-2)", border: `1px solid ${c.saved ? "rgba(199,122,14,0.3)" : "var(--line-2)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="heart" size={13} color={c.saved ? "var(--amber-deep)" : "var(--ink-400)"} stroke={c.saved ? 0 : 2} /></button>
+      <button onClick={(e) => { e.stopPropagation(); onSave(c.id); }} style={{ width: 30, height: 30, borderRadius: 8, flexShrink: 0, background: c.saved ? "var(--amber-tint)" : "var(--card-2)", border: `1px solid ${c.saved ? "rgba(242,164,28,0.3)" : "var(--line-2)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="heart" size={13} color={c.saved ? "var(--amber-deep)" : "var(--ink-400)"} stroke={c.saved ? 0 : 2} /></button>
     </div>
     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
       <StarRow rating={c.rating} /><span style={{ fontSize: 12.5, color: "var(--ink-700)", fontWeight: 600 }}>{c.rating}</span><span style={{ fontSize: 11.5, color: "var(--ink-400)" }}>({c.reviews})</span>

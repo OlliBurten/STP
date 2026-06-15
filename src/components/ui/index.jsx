@@ -55,10 +55,10 @@ export const Icon = ({ name, size = 16, color = "currentColor", stroke = 1.8, st
 /* ────── Pill / Tag ────── */
 export const Pill = ({ tone = "neutral", children, icon, onRemove, size = "md" }) => {
   const tones = {
-    primary: { bg: "var(--green)", color: "#fff", border: "var(--green)", shadow: "0 1px 2px rgba(31,95,92,0.20), inset 0 -1px 0 rgba(0,0,0,0.10)" },
+    primary: { bg: "var(--green)", color: "#fff", border: "var(--green)", shadow: "0 1px 2px rgba(30,107,91,0.20), inset 0 -1px 0 rgba(0,0,0,0.10)" },
     soft: { bg: "var(--green-tint)", color: "var(--green-text)", border: "transparent" },
     amber: { bg: "var(--amber-tint)", color: "var(--amber-text)", border: "transparent" },
-    amberSolid: { bg: "var(--amber)", color: "#fff", border: "var(--amber)" },
+    amberSolid: { bg: "var(--amber)", color: "var(--ink-900)", border: "var(--amber)" },
     success: { bg: "var(--success-tint)", color: "var(--success)", border: "transparent" },
     danger: { bg: "var(--danger-tint)", color: "var(--danger)", border: "transparent" },
     dangerSolid: { bg: "var(--danger)", color: "#fff", border: "var(--danger)" },
@@ -105,11 +105,11 @@ export const Dot = ({ tone = "success", size = 7 }) => {
 /* ────── Button ────── */
 export const Button = ({ children, variant = "primary", size = "md", icon, iconRight, onClick, disabled, style, type = "button", full }) => {
   const variants = {
-    primary: { bg: "var(--green)", color: "#fff", border: "1px solid var(--green-deep)", shadow: "0 1px 0 var(--green-deep), 0 1px 2px rgba(31,95,92,0.25)" },
+    primary: { bg: "var(--green)", color: "#fff", border: "1px solid var(--green-deep)", shadow: "0 1px 0 var(--green-deep), 0 1px 2px rgba(30,107,91,0.25)" },
     secondary: { bg: "#fff", color: "var(--ink-900)", border: "1px solid var(--line-2)", shadow: "var(--sh-sm)" },
     ghost: { bg: "transparent", color: "var(--ink-900)", border: "1px solid transparent" },
     dark: { bg: "var(--ink-900)", color: "#fff", border: "1px solid var(--ink-900)", shadow: "var(--sh-sm)" },
-    amber: { bg: "var(--amber)", color: "#fff", border: "1px solid var(--amber-deep)", shadow: "0 1px 0 var(--amber-deep), 0 1px 2px rgba(199,122,14,0.30)" },
+    amber: { bg: "var(--amber)", color: "var(--ink-900)", border: "1px solid var(--amber-deep)", shadow: "0 1px 0 var(--amber-deep), 0 1px 2px rgba(242,164,28,0.30)" },
     danger: { bg: "#fff", color: "var(--danger)", border: "1px solid rgba(185,28,59,0.30)" },
     link: { bg: "transparent", color: "var(--green)", border: "1px solid transparent" },
   };
@@ -230,7 +230,7 @@ export const TopNav = ({ items, active, onActive, currentUser, brand = "STP", br
             }}>
               {it.label}
               {it.badge != null && (
-                <span style={{ background: "var(--amber)", color: "#fff", fontSize: "var(--text-2xs)", fontWeight: 800, padding: "1px 6px", borderRadius: 8, lineHeight: 1.3 }}>{it.badge}</span>
+                <span style={{ background: "var(--amber)", color: "var(--ink-900)", fontSize: "var(--text-2xs)", fontWeight: 800, padding: "1px 6px", borderRadius: 8, lineHeight: 1.3 }}>{it.badge}</span>
               )}
             </button>
           );
@@ -259,7 +259,7 @@ export const TopNav = ({ items, active, onActive, currentUser, brand = "STP", br
           <button key={it.id} onClick={() => onActive?.(it.id)} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "4px 2px", background: "transparent", position: "relative" }}>
             <Icon name={ic} size={20} color={isActive ? "var(--amber)" : "rgba(232,237,237,0.6)"} stroke={2} />
             <span style={{ fontSize: "var(--text-2xs)", fontWeight: isActive ? 700 : 500, color: isActive ? "#fff" : "rgba(232,237,237,0.6)", whiteSpace: "nowrap" }}>{it.label}</span>
-            {it.badge != null && <span style={{ position: "absolute", top: -1, left: "calc(50% + 6px)", background: "var(--amber)", color: "#fff", fontSize: "var(--text-2xs)", fontWeight: 800, padding: "0 5px", borderRadius: 7, lineHeight: 1.5 }}>{it.badge}</span>}
+            {it.badge != null && <span style={{ position: "absolute", top: -1, left: "calc(50% + 6px)", background: "var(--amber)", color: "var(--ink-900)", fontSize: "var(--text-2xs)", fontWeight: 800, padding: "0 5px", borderRadius: 7, lineHeight: 1.5 }}>{it.badge}</span>}
           </button>
         );
       })}
@@ -321,7 +321,7 @@ export const Notice = ({ tone = "info", title, children, action, icon }) => {
   const tones = {
     info: { bg: "var(--info-tint)", border: "rgba(27,90,138,0.18)", color: "var(--info)", iconName: "info" },
     success: { bg: "var(--success-tint)", border: "rgba(31,122,58,0.18)", color: "var(--success)", iconName: "check" },
-    amber: { bg: "var(--amber-tint)", border: "rgba(199,122,14,0.22)", color: "var(--amber-text)", iconName: "alert" },
+    amber: { bg: "var(--amber-tint)", border: "rgba(242,164,28,0.22)", color: "var(--amber-text)", iconName: "alert" },
     danger: { bg: "var(--danger-tint)", border: "rgba(185,28,59,0.20)", color: "var(--danger)", iconName: "alert" },
     neutral: { bg: "var(--card-2)", border: "var(--line-2)", color: "var(--ink-700)", iconName: "info" },
   };

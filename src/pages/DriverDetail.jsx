@@ -13,7 +13,7 @@ import PageMeta from "../components/PageMeta";
 import DriverProfileView from "../components/DriverProfileView.jsx";
 
 function driverColor(driver) {
-  const colors = ["var(--amber)","#1F5F5C","var(--info)","#a78bfa","#f472b6","#34d399"];
+  const colors = ["var(--amber)","#1E6B5B","var(--info)","#a78bfa","#f472b6","#34d399"];
   const str = driver?.id || driver?.name || "x";
   let h = 0;
   for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;

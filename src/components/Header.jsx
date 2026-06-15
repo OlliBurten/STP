@@ -157,7 +157,7 @@ export default function Header({ onboarding = false }) {
       : "var(--ink-900)";
 
   const headerBorder = isImpersonating
-    ? "1px solid rgba(199,122,14,0.45)"
+    ? "1px solid rgba(242,164,28,0.45)"
     : isLanding
       ? landingLight ? "1px solid var(--line)" : "1px solid transparent"
       : "1px solid rgba(255,255,255,0.06)";
@@ -638,9 +638,9 @@ export default function Header({ onboarding = false }) {
                   type="button"
                   onClick={handleStopViewAs}
                   className="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold transition-colors"
-                  style={{ background: "rgba(199,122,14,0.15)", color: "var(--amber)", border: "1px solid rgba(199,122,14,0.3)" }}
-                  onMouseEnter={e => { e.currentTarget.style.background = "rgba(199,122,14,0.25)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = "rgba(199,122,14,0.15)"; }}
+                  style={{ background: "rgba(242,164,28,0.15)", color: "var(--amber)", border: "1px solid rgba(242,164,28,0.3)" }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "rgba(242,164,28,0.25)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = "rgba(242,164,28,0.15)"; }}
                   title={`Visar som: ${user?.name || user?.email}`}
                 >
                   <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: "var(--amber)" }} />
@@ -810,7 +810,7 @@ export default function Header({ onboarding = false }) {
                     <button
                       type="button"
                       onClick={() => { closeMobile(); handleStopViewAs(); }}
-                      style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", padding: "10px 16px", borderRadius: 10, background: "var(--amber-tint)", color: "var(--amber-text)", border: "1px solid rgba(199,122,14,0.3)", fontSize: "var(--text-sm)", fontWeight: 600, fontFamily: "inherit", cursor: "pointer" }}
+                      style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", padding: "10px 16px", borderRadius: 10, background: "var(--amber-tint)", color: "var(--amber-text)", border: "1px solid rgba(242,164,28,0.3)", fontSize: "var(--text-sm)", fontWeight: 600, fontFamily: "inherit", cursor: "pointer" }}
                     >
                       <span style={{ width: 6, height: 6, borderRadius: 99, background: "var(--amber)", flexShrink: 0 }} />
                       Avsluta view as

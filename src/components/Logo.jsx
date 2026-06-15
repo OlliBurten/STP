@@ -7,7 +7,7 @@ const VIEWBOX_WIDTH = 80;
 const VIEWBOX_HEIGHT = 32;
 
 export default function Logo({ className = "", height = 40, variant = "default" }) {
-  const fill = variant === "light" ? "#ffffff" : "#1F5F5C";
+  const fill = variant === "light" ? "#ffffff" : "#1E6B5B";
   const width = height * (VIEWBOX_WIDTH / VIEWBOX_HEIGHT);
   return (
     <svg

@@ -220,7 +220,7 @@ function DriverKontoSection({ user }) {
           <input style={{ ...inputStyle, color: "var(--ink-400)" }} value={user?.email || ""} disabled />
         </Field>
         <div style={{ marginTop: 4 }}>
-          <Link to="/profil" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 16px", borderRadius: 10, background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.2)", fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--green-text)", textDecoration: "none" }}>
+          <Link to="/profil" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 16px", borderRadius: 10, background: "var(--green-tint)", border: "1px solid rgba(30,107,91,0.2)", fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--green-text)", textDecoration: "none" }}>
             Redigera profil (telefon, ort, erfarenhet m.m.) →
           </Link>
         </div>
@@ -232,7 +232,7 @@ function DriverKontoSection({ user }) {
         <button
           type="button"
           onClick={() => { localStorage.removeItem("stp_driver_tour_done"); window.location.href = "/jobb"; }}
-          style={{ padding: "10px 18px", borderRadius: 10, background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.2)", color: "var(--green-text)", fontWeight: 700, fontSize: "var(--text-sm)", cursor: "pointer", fontFamily: "inherit" }}
+          style={{ padding: "10px 18px", borderRadius: 10, background: "var(--green-tint)", border: "1px solid rgba(30,107,91,0.2)", color: "var(--green-text)", fontWeight: 700, fontSize: "var(--text-sm)", cursor: "pointer", fontFamily: "inherit" }}
         >
           Starta om guiden
         </button>
@@ -267,8 +267,8 @@ function DriverVerifieringSection({ profile }) {
   return (
     <>
       <Card title="Verifiering" sub="Verifierade förare får svar 2× snabbare och syns högre i sökresultat.">
-        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", background: verifiedCount > 0 ? "var(--success-tint)" : "var(--amber-tint)", border: `1px solid ${verifiedCount > 0 ? "rgba(31,122,58,0.2)" : "rgba(199,122,14,0.2)"}`, borderRadius: 11 }}>
-          <div style={{ width: 36, height: 36, borderRadius: 99, background: verifiedCount > 0 ? "rgba(31,122,58,0.15)" : "rgba(199,122,14,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", background: verifiedCount > 0 ? "var(--success-tint)" : "var(--amber-tint)", border: `1px solid ${verifiedCount > 0 ? "rgba(31,122,58,0.2)" : "rgba(242,164,28,0.2)"}`, borderRadius: 11 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 99, background: verifiedCount > 0 ? "rgba(31,122,58,0.15)" : "rgba(242,164,28,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <Icon n={verifiedCount > 0 ? "check" : "shield"} s={17} c={verifiedCount > 0 ? "var(--success)" : "var(--amber)"} />
           </div>
           <div style={{ flex: 1 }}>
@@ -300,7 +300,7 @@ function DriverVerifieringSection({ profile }) {
           ))}
         </div>
 
-        <div style={{ padding: "16px 18px", borderRadius: 12, background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.2)", display: "flex", alignItems: "flex-start", gap: 14 }}>
+        <div style={{ padding: "16px 18px", borderRadius: 12, background: "var(--amber-tint)", border: "1px solid rgba(242,164,28,0.2)", display: "flex", alignItems: "flex-start", gap: 14 }}>
           <Icon n="mail" s={18} c="var(--amber)" />
           <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-700)", lineHeight: 1.6 }}>
             <strong style={{ color: "var(--amber)" }}>Verifiering sker via support.</strong>{" "}
@@ -674,9 +674,9 @@ function CompanyKontoSection({ user }) {
           ))}
         </div>
         <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 8 }}>
-          <Link to="/foretag/profil" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderRadius: 12, background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.2)", textDecoration: "none" }}
-            onMouseEnter={e => e.currentTarget.style.borderColor = "rgba(31,95,92,0.4)"}
-            onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(31,95,92,0.2)"}>
+          <Link to="/foretag/profil" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderRadius: 12, background: "var(--green-tint)", border: "1px solid rgba(30,107,91,0.2)", textDecoration: "none" }}
+            onMouseEnter={e => e.currentTarget.style.borderColor = "rgba(30,107,91,0.4)"}
+            onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(30,107,91,0.2)"}>
             <div>
               <p style={{ fontSize: "var(--text-base)", fontWeight: 600, color: "var(--ink-900)", margin: "0 0 2px" }}>Redigera företagsprofil</p>
               <p style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", margin: 0 }}>Beskrivning, kontaktuppgifter, bransch</p>
@@ -701,7 +701,7 @@ function CompanyKontoSection({ user }) {
                 <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-900)" }}>{m.n}</div>
                 <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)" }}>{m.e}</div>
               </div>
-              <span style={{ padding: "3px 9px", borderRadius: 99, background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.2)", fontSize: "var(--text-2xs)", fontWeight: 700, color: "var(--amber)" }}>{m.r}</span>
+              <span style={{ padding: "3px 9px", borderRadius: 99, background: "var(--amber-tint)", border: "1px solid rgba(242,164,28,0.2)", fontSize: "var(--text-2xs)", fontWeight: 700, color: "var(--amber)" }}>{m.r}</span>
             </div>
           ))}
         </div>
@@ -713,7 +713,7 @@ function CompanyKontoSection({ user }) {
         <button
           type="button"
           onClick={() => { localStorage.removeItem("stp_company_tour_done"); window.location.href = "/foretag"; }}
-          style={{ padding: "10px 18px", borderRadius: 10, background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.2)", color: "var(--green-text)", fontWeight: 700, fontSize: "var(--text-sm)", cursor: "pointer", fontFamily: "inherit" }}
+          style={{ padding: "10px 18px", borderRadius: 10, background: "var(--green-tint)", border: "1px solid rgba(30,107,91,0.2)", color: "var(--green-text)", fontWeight: 700, fontSize: "var(--text-sm)", cursor: "pointer", fontFamily: "inherit" }}
         >
           Starta om guiden
         </button>
@@ -786,8 +786,8 @@ function CompanyVerifieringSection({ user }) {
 
   return (
     <Card title="Företagsverifiering" sub="Verifierade åkerier får 3× fler ansökningar i snitt.">
-      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", background: isVerified ? "var(--success-tint)" : "var(--amber-tint)", border: `1px solid ${isVerified ? "rgba(31,122,58,0.2)" : "rgba(199,122,14,0.2)"}`, borderRadius: 11, marginBottom: 18 }}>
-        <div style={{ width: 36, height: 36, borderRadius: 99, background: isVerified ? "rgba(31,122,58,0.15)" : "rgba(199,122,14,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", background: isVerified ? "var(--success-tint)" : "var(--amber-tint)", border: `1px solid ${isVerified ? "rgba(31,122,58,0.2)" : "rgba(242,164,28,0.2)"}`, borderRadius: 11, marginBottom: 18 }}>
+        <div style={{ width: 36, height: 36, borderRadius: 99, background: isVerified ? "rgba(31,122,58,0.15)" : "rgba(242,164,28,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <Icon n={isVerified ? "check" : "shield"} s={17} c={isVerified ? "var(--success)" : "var(--amber)"} />
         </div>
         <div style={{ flex: 1 }}>
@@ -803,7 +803,7 @@ function CompanyVerifieringSection({ user }) {
       </div>
 
       {!isVerified && (
-        <div style={{ padding: "14px 16px", borderRadius: 11, background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.2)", fontSize: "var(--text-sm)", color: "var(--ink-700)", lineHeight: 1.6 }}>
+        <div style={{ padding: "14px 16px", borderRadius: 11, background: "var(--amber-tint)", border: "1px solid rgba(242,164,28,0.2)", fontSize: "var(--text-sm)", color: "var(--ink-700)", lineHeight: 1.6 }}>
           Har du frågor om verifieringen?{" "}
           <a href="mailto:support@transportplattformen.se" style={{ color: "var(--amber)", textDecoration: "underline" }}>
             Kontakta support

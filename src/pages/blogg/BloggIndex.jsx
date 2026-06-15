@@ -155,9 +155,9 @@ export default function BloggIndex() {
         {/* Featured article — intentional dark branded gradient bg */}
         <Link
           to={featured.to}
-          style={{ display: "block", marginBottom: 32, borderRadius: 20, overflow: "hidden", textDecoration: "none", border: "1px solid rgba(31,95,92,0.35)" }}
+          style={{ display: "block", marginBottom: 32, borderRadius: 20, overflow: "hidden", textDecoration: "none", border: "1px solid rgba(30,107,91,0.35)" }}
         >
-          <div style={{ background: "linear-gradient(135deg, #1F5F5C 0%, #0f3533 100%)", padding: "40px 40px 36px" }}>
+          <div style={{ background: "linear-gradient(135deg, #1E6B5B 0%, #0f3533 100%)", padding: "40px 40px 36px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
               <span style={{ fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.6)" }}>
                 Toppguide

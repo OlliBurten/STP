@@ -89,7 +89,7 @@ const SearchPreview = () => (
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 16 }}>
         {[["Skåne", true], ["CE", true], ["Fjärr", true], ["Söker aktivt", false]].map(([f, on]) => (
-          <span key={f} style={{ fontSize: "var(--text-xs)", fontWeight: 600, padding: "6px 12px", borderRadius: 999, background: on ? "var(--green-tint)" : "var(--card)", color: on ? "var(--green-text)" : "var(--ink-500)", border: on ? "1px solid rgba(31,95,92,0.18)" : "1px solid var(--line-2)", display: "inline-flex", alignItems: "center", gap: 6 }}>{on && <Icon name="check" size={11} color="var(--green-text)" stroke={2.6} />}{f}</span>
+          <span key={f} style={{ fontSize: "var(--text-xs)", fontWeight: 600, padding: "6px 12px", borderRadius: 999, background: on ? "var(--green-tint)" : "var(--card)", color: on ? "var(--green-text)" : "var(--ink-500)", border: on ? "1px solid rgba(30,107,91,0.18)" : "1px solid var(--line-2)", display: "inline-flex", alignItems: "center", gap: 6 }}>{on && <Icon name="check" size={11} color="var(--green-text)" stroke={2.6} />}{f}</span>
         ))}
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 11 }}>
@@ -215,7 +215,7 @@ export default function ForCompaniesLanding() {
       <section
         style={{
           background:
-            "radial-gradient(1100px 520px at 90% -8%, rgba(31,95,92,0.10), transparent 60%), radial-gradient(800px 400px at 4% 14%, rgba(199,122,14,0.06), transparent 60%), var(--paper)",
+            "radial-gradient(1100px 520px at 90% -8%, rgba(30,107,91,0.10), transparent 60%), radial-gradient(800px 400px at 4% 14%, rgba(242,164,28,0.06), transparent 60%), var(--paper)",
           paddingTop: isMobile ? 24 : 88,
           paddingBottom: isMobile ? 56 : 96,
         }}
@@ -348,7 +348,7 @@ export default function ForCompaniesLanding() {
               </p>
               <div style={{ display: "flex", alignItems: "center" }}>
                 {["AL", "MK", "SP"].map((ini, i) => (
-                  <div key={ini} style={{ marginLeft: i > 0 ? -8 : 0, width: 32, height: 32, borderRadius: "50%", background: i === 0 ? "var(--green)" : i === 1 ? "var(--amber)" : "var(--ink-700)", border: "2px solid var(--card)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: "var(--text-2xs)" }}>{ini}</div>
+                  <div key={ini} style={{ marginLeft: i > 0 ? -8 : 0, width: 32, height: 32, borderRadius: "50%", background: i === 0 ? "var(--green)" : i === 1 ? "var(--amber)" : "var(--ink-700)", border: "2px solid var(--card)", display: "flex", alignItems: "center", justifyContent: "center", color: i === 1 ? "var(--ink-900)" : "#fff", fontWeight: 700, fontSize: "var(--text-2xs)" }}>{ini}</div>
                 ))}
                 <span style={{ marginLeft: 10, fontSize: "var(--text-sm)", color: "var(--ink-500)", fontWeight: 600 }}>+ obegränsat antal platser</span>
               </div>
@@ -367,7 +367,7 @@ export default function ForCompaniesLanding() {
           <div className="steps-grid">
             {STEPS.map((s, i) => (
               <div key={s.n} style={{ padding: "0 28px", borderLeft: i > 0 ? "1px solid var(--line)" : "none", textAlign: "center" }}>
-                <div style={{ width: 52, height: 52, borderRadius: "50%", background: "var(--green-tint)", color: "var(--green-text)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--text-xl)", fontFamily: "var(--mono)", margin: "0 auto 18px", border: "1px solid rgba(31,95,92,0.18)" }}>{s.n}</div>
+                <div style={{ width: 52, height: 52, borderRadius: "50%", background: "var(--green-tint)", color: "var(--green-text)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--text-xl)", fontFamily: "var(--mono)", margin: "0 auto 18px", border: "1px solid rgba(30,107,91,0.18)" }}>{s.n}</div>
                 <h3 style={{ fontSize: "var(--text-xl)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 9, letterSpacing: -0.3 }}>{s.title}</h3>
                 <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.6, textWrap: "pretty" }}>{s.body}</p>
               </div>

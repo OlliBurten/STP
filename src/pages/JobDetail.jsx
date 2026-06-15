@@ -532,7 +532,7 @@ export default function JobDetail() {
             <div style={{ display: "flex", gap: 8 }}>
               <button
                 onClick={() => { const s2 = !isSaved; setIsSaved(s2); if (s2) saveJob(job.id).catch(() => setIsSaved(false)); else unsaveJob(job.id).catch(() => setIsSaved(true)); }}
-                style={{ width: 38, height: 38, borderRadius: 999, background: isSaved ? "var(--amber-tint)" : "var(--card)", border: `1px solid ${isSaved ? "rgba(199,122,14,0.3)" : "var(--line)"}`, boxShadow: "var(--sh-sm)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: isSaved ? "var(--amber-deep)" : "var(--ink-500)" }}
+                style={{ width: 38, height: 38, borderRadius: 999, background: isSaved ? "var(--amber-tint)" : "var(--card)", border: `1px solid ${isSaved ? "rgba(242,164,28,0.3)" : "var(--line)"}`, boxShadow: "var(--sh-sm)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: isSaved ? "var(--amber-deep)" : "var(--ink-500)" }}
               >
                 <svg viewBox="0 0 24 24" fill={isSaved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" width="15" height="15"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
               </button>
@@ -691,7 +691,7 @@ export default function JobDetail() {
           </div>
           <button
             onClick={() => { const s2 = !isSaved; setIsSaved(s2); if (s2) saveJob(job.id).catch(() => setIsSaved(false)); else unsaveJob(job.id).catch(() => setIsSaved(true)); }}
-            style={{ width: 48, height: 48, borderRadius: 12, background: isSaved ? "var(--amber-tint)" : "var(--paper-2)", border: `1px solid ${isSaved ? "rgba(199,122,14,0.3)" : "var(--line-2)"}`, color: isSaved ? "var(--amber-deep)" : "var(--ink-500)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
+            style={{ width: 48, height: 48, borderRadius: 12, background: isSaved ? "var(--amber-tint)" : "var(--paper-2)", border: `1px solid ${isSaved ? "rgba(242,164,28,0.3)" : "var(--line-2)"}`, color: isSaved ? "var(--amber-deep)" : "var(--ink-500)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
           >
             <svg viewBox="0 0 24 24" fill={isSaved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" width="17" height="17"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
           </button>
@@ -699,12 +699,12 @@ export default function JobDetail() {
             job.externalApplyUrl ? (
               <a href={job.externalApplyUrl} target="_blank" rel="noopener noreferrer"
                 onClick={() => track("apply_initiated", { jobId: job.id, jobTitle: job.title, source: "sticky_external" })}
-                style={{ flex: 1.4, padding: "14px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, textDecoration: "none", textAlign: "center", boxShadow: "0 4px 14px rgba(31,95,92,0.3)" }}
+                style={{ flex: 1.4, padding: "14px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, textDecoration: "none", textAlign: "center", boxShadow: "0 4px 14px rgba(30,107,91,0.3)" }}
               >Ansök ↗</a>
             ) : (
               <Link to={`/jobb/${id}/ansok`}
                 onClick={() => track("apply_initiated", { jobId: job.id, jobTitle: job.title, source: "sticky" })}
-                style={{ flex: 1.4, padding: "14px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, textDecoration: "none", textAlign: "center", boxShadow: "0 4px 14px rgba(31,95,92,0.3)" }}
+                style={{ flex: 1.4, padding: "14px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, textDecoration: "none", textAlign: "center", boxShadow: "0 4px 14px rgba(30,107,91,0.3)" }}
               >Ansök nu →</Link>
             )
           ) : (
@@ -1044,13 +1044,13 @@ export default function JobDetail() {
                 job.externalApplyUrl ? (
                   <a href={job.externalApplyUrl} target="_blank" rel="noopener noreferrer"
                     onClick={() => track("apply_initiated", { jobId: job.id, jobTitle: job.title, source: "panel_external" })}
-                    style={{ display: "block", width: "100%", padding: "15px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, textDecoration: "none", textAlign: "center", letterSpacing: -0.3, boxSizing: "border-box", boxShadow: "0 4px 14px rgba(31,95,92,0.25)" }}>
+                    style={{ display: "block", width: "100%", padding: "15px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, textDecoration: "none", textAlign: "center", letterSpacing: -0.3, boxSizing: "border-box", boxShadow: "0 4px 14px rgba(30,107,91,0.25)" }}>
                     Ansök på företagets hemsida ↗
                   </a>
                 ) : (
                   <Link to={`/jobb/${id}/ansok`}
                     onClick={() => track("apply_initiated", { jobId: job.id, jobTitle: job.title, source: "panel" })}
-                    style={{ display: "block", width: "100%", padding: "15px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, textDecoration: "none", textAlign: "center", letterSpacing: -0.3, boxSizing: "border-box", boxShadow: "0 4px 14px rgba(31,95,92,0.25)" }}>
+                    style={{ display: "block", width: "100%", padding: "15px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, textDecoration: "none", textAlign: "center", letterSpacing: -0.3, boxSizing: "border-box", boxShadow: "0 4px 14px rgba(30,107,91,0.25)" }}>
                     Ansök nu →
                   </Link>
                 )
@@ -1066,7 +1066,7 @@ export default function JobDetail() {
               )}
               {isDriver && (
                 <button type="button" onClick={handleToggleSave}
-                  style={{ width: "100%", padding: "11px", borderRadius: "var(--r-md)", background: isSaved ? "var(--amber-tint)" : "var(--card)", border: isSaved ? "1px solid rgba(199,122,14,0.30)" : "1px solid var(--line-2)", color: isSaved ? "var(--amber-deep)" : "var(--ink-700)", fontSize: "var(--text-sm)", fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, transition: "all .15s", fontFamily: "var(--font)" }}>
+                  style={{ width: "100%", padding: "11px", borderRadius: "var(--r-md)", background: isSaved ? "var(--amber-tint)" : "var(--card)", border: isSaved ? "1px solid rgba(242,164,28,0.30)" : "1px solid var(--line-2)", color: isSaved ? "var(--amber-deep)" : "var(--ink-700)", fontSize: "var(--text-sm)", fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, transition: "all .15s", fontFamily: "var(--font)" }}>
                   {isSaved ? <HeartFilledIcon style={{ width: 14, height: 14 }} /> : <HeartOutlineIcon style={{ width: 14, height: 14 }} />}
                   {isSaved ? "Sparat" : "Spara jobb"}
                 </button>

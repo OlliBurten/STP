@@ -40,7 +40,7 @@ const Funnel = ({ j }) => {
 const AdCard = ({ j }) => {
   const meta = statusMeta[j.status];
   return (
-    <Card padding="20px 24px" style={{ background: j.lowTraffic ? "var(--amber-tint)" : "var(--card)", borderColor: j.lowTraffic ? "rgba(199,122,14,0.22)" : "var(--line)" }}>
+    <Card padding="20px 24px" style={{ background: j.lowTraffic ? "var(--amber-tint)" : "var(--card)", borderColor: j.lowTraffic ? "rgba(242,164,28,0.22)" : "var(--line)" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 14, marginBottom: 16 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>

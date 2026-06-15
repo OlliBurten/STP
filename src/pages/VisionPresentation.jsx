@@ -219,7 +219,7 @@ export default function VisionPresentation() {
         </div>
 
         {/* CTA */}
-        <div style={{ background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.2)", borderRadius: 20, padding: "40px" }}>
+        <div style={{ background: "var(--green-tint)", border: "1px solid rgba(30,107,91,0.2)", borderRadius: 20, padding: "40px" }}>
           <p style={{ ...label, color: "var(--green-text)" }}>Kontakt & samarbete</p>
           <h2 style={h2style}>Vill ni vara med och bygga detta?</h2>
           <p style={{ ...body, marginBottom: 28 }}>

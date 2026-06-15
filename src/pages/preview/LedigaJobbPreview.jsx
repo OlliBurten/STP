@@ -101,7 +101,7 @@ const JobCard = ({ job, showMatch, saved, onSave }) => {
             </div>
             <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
               {showMatch && <MatchBadge pct={job.match} />}
-              <button onClick={(e) => { e.stopPropagation(); onSave(job.id); }} style={{ width: 36, height: 36, borderRadius: 9, background: saved ? "var(--amber-tint)" : "var(--card-2)", border: `1px solid ${saved ? "rgba(199,122,14,0.30)" : "var(--line-2)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <button onClick={(e) => { e.stopPropagation(); onSave(job.id); }} style={{ width: 36, height: 36, borderRadius: 9, background: saved ? "var(--amber-tint)" : "var(--card-2)", border: `1px solid ${saved ? "rgba(242,164,28,0.30)" : "var(--line-2)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <Icon name="heart" size={15} color={saved ? "var(--amber-deep)" : "var(--ink-500)"} stroke={saved ? 0 : 2} />
               </button>
             </div>

@@ -105,7 +105,7 @@ export default function RegionJobList() {
         )}
 
         {/* CTA för åkerier */}
-        <div style={{ borderRadius: 18, background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.2)", padding: isMobile ? "24px 20px" : "28px 32px", display: "flex", flexDirection: isMobile ? "column" : "row", alignItems: isMobile ? "flex-start" : "center", gap: 20, marginBottom: 40 }}>
+        <div style={{ borderRadius: 18, background: "var(--green-tint)", border: "1px solid rgba(30,107,91,0.2)", padding: isMobile ? "24px 20px" : "28px 32px", display: "flex", flexDirection: isMobile ? "column" : "row", alignItems: isMobile ? "flex-start" : "center", gap: 20, marginBottom: 40 }}>
           <div style={{ flex: 1 }}>
             <h3 style={{ fontSize: "var(--text-lg)", fontWeight: 700, color: "var(--ink-900)", margin: "0 0 4px" }}>Åkeri i {region.name}?</h3>
             <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", margin: 0 }}>

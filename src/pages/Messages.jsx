@@ -33,7 +33,7 @@ function getStage(conv) {
 
 const STAGE = {
   applied:  { label: "Skickad",  color: "var(--info)",    bg: "var(--info-tint)",    border: "rgba(37,99,235,0.2)"   },
-  seen:     { label: "Sedd",     color: "var(--amber)",   bg: "var(--amber-tint)",   border: "rgba(199,122,14,0.2)"  },
+  seen:     { label: "Sedd",     color: "var(--amber)",   bg: "var(--amber-tint)",   border: "rgba(242,164,28,0.2)"  },
   selected: { label: "Utvald",   color: "var(--success)", bg: "var(--success-tint)", border: "rgba(31,122,58,0.2)"   },
   rejected: { label: "Avslutad", color: "var(--ink-400)", bg: "var(--paper-2)",      border: "var(--line)"           },
 };
@@ -43,7 +43,7 @@ function avatarInitials(name) {
   return name.split(" ").filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
 }
 function avatarBg(name) {
-  const palette = ["#1F5F5C", "#1a3a5c", "#b45309", "#16a34a", "#1d4ed8", "#6d28d9"];
+  const palette = ["#1E6B5B", "#1a3a5c", "#b45309", "#16a34a", "#1d4ed8", "#6d28d9"];
   let h = 0;
   for (let i = 0; i < (name || "").length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xffff;
   return palette[h % palette.length];
@@ -296,7 +296,7 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
             </Link>
           )}
           {!isMobile && isDriver && (
-            <button type="button" onClick={onReview} disabled={!canReview} style={{ padding: "6px 10px", borderRadius: 8, background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.2)", color: !canReview ? "var(--ink-300)" : "var(--amber)", fontSize: "var(--text-2xs)", fontWeight: 600, cursor: canReview ? "pointer" : "not-allowed", fontFamily: "inherit", whiteSpace: "nowrap" }}>
+            <button type="button" onClick={onReview} disabled={!canReview} style={{ padding: "6px 10px", borderRadius: 8, background: "var(--amber-tint)", border: "1px solid rgba(242,164,28,0.2)", color: !canReview ? "var(--ink-300)" : "var(--amber)", fontSize: "var(--text-2xs)", fontWeight: 600, cursor: canReview ? "pointer" : "not-allowed", fontFamily: "inherit", whiteSpace: "nowrap" }}>
               {reviewLabel}
             </button>
           )}
@@ -423,7 +423,7 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
           {stage !== "selected" && (
             <div style={{ marginTop: 6, display: "flex", gap: 6, flexWrap: "wrap" }}>
               {showQuick && quickReplies.map((r) => (
-                <button key={r} type="button" onClick={() => { setInput(r); setShowQuick(false); }} style={{ padding: "6px 12px", borderRadius: 99, background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.2)", color: "var(--amber)", fontSize: "var(--text-xs)", fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+                <button key={r} type="button" onClick={() => { setInput(r); setShowQuick(false); }} style={{ padding: "6px 12px", borderRadius: 99, background: "var(--amber-tint)", border: "1px solid rgba(242,164,28,0.2)", color: "var(--amber)", fontSize: "var(--text-xs)", fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
                   {r.length > 40 ? r.slice(0, 40) + "…" : r}
                 </button>
               ))}
@@ -569,7 +569,7 @@ export default function Messages() {
 
       {/* Banners */}
       {!isDriver && companyUnreadConversationCount > 0 && (
-        <div style={{ padding: "10px 24px", background: "var(--amber-tint)", borderBottom: "1px solid rgba(199,122,14,0.2)", fontSize: "var(--text-sm)", color: "var(--amber-text)", flexShrink: 0 }}>
+        <div style={{ padding: "10px 24px", background: "var(--amber-tint)", borderBottom: "1px solid rgba(242,164,28,0.2)", fontSize: "var(--text-sm)", color: "var(--amber-text)", flexShrink: 0 }}>
           Ni har <strong>{companyUnreadConversationCount}</strong> nya ansökningar att granska. Svarar ni inom 24h ökar chansen att hitta rätt kandidat.
         </div>
       )}
@@ -628,7 +628,7 @@ export default function Messages() {
                       <button
                         key={k}
                         onClick={() => setStageFilter(k)}
-                        style={{ padding: isMobile ? "8px 14px" : "6px 11px", borderRadius: 99, background: active ? "var(--green-tint)" : "var(--paper-2)", border: active ? "1px solid rgba(31,95,92,0.3)" : "1px solid var(--line)", color: active ? "var(--green-text)" : "var(--ink-500)", fontSize: isMobile ? 12.5 : 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", flexShrink: 0, display: "flex", alignItems: "center", gap: 5, minHeight: isMobile ? 36 : "auto" }}
+                        style={{ padding: isMobile ? "8px 14px" : "6px 11px", borderRadius: 99, background: active ? "var(--green-tint)" : "var(--paper-2)", border: active ? "1px solid rgba(30,107,91,0.3)" : "1px solid var(--line)", color: active ? "var(--green-text)" : "var(--ink-500)", fontSize: isMobile ? 12.5 : 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", flexShrink: 0, display: "flex", alignItems: "center", gap: 5, minHeight: isMobile ? 36 : "auto" }}
                       >
                         {l}
                         {isMobile ? <span style={{ padding: "1px 6px", borderRadius: 99, background: active ? "var(--green-tint)" : "var(--paper-2)", fontSize: "var(--text-2xs)", fontWeight: 800 }}>{c}</span> : (c > 0 && ` · ${c}`)}

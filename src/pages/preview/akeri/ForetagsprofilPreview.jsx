@@ -19,7 +19,7 @@ const ChipMulti = ({ options, selected, onToggle }) => (
   <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
     {options.map((o) => {
       const on = selected.includes(o);
-      return <button key={o} onClick={() => onToggle(o)} style={{ padding: "8px 14px", borderRadius: 999, fontSize: 13, fontWeight: 600, background: on ? "var(--green)" : "var(--card)", color: on ? "#fff" : "var(--ink-700)", border: `1px solid ${on ? "var(--green-deep)" : "var(--line-2)"}`, boxShadow: on ? "0 1px 3px rgba(31,95,92,0.2)" : "var(--sh-sm)" }}>{o}</button>;
+      return <button key={o} onClick={() => onToggle(o)} style={{ padding: "8px 14px", borderRadius: 999, fontSize: 13, fontWeight: 600, background: on ? "var(--green)" : "var(--card)", color: on ? "#fff" : "var(--ink-700)", border: `1px solid ${on ? "var(--green-deep)" : "var(--line-2)"}`, boxShadow: on ? "0 1px 3px rgba(30,107,91,0.2)" : "var(--sh-sm)" }}>{o}</button>;
     })}
   </div>
 );

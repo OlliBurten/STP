@@ -126,7 +126,7 @@ export default function AkeriOnboardingPreview() {
                 {SEGMENTS.map((s) => {
                   const sel = segments.includes(s.id);
                   return (
-                    <button key={s.id} onClick={() => toggle(segments, setSegments, s.id)} style={{ display: "flex", gap: 12, alignItems: "center", padding: "16px 16px", borderRadius: 12, textAlign: "left", background: sel ? "var(--green-tint)" : "var(--card)", border: `1.5px solid ${sel ? "var(--green)" : "var(--line-2)"}`, boxShadow: sel ? "0 2px 6px rgba(31,95,92,0.12)" : "var(--sh-sm)" }}>
+                    <button key={s.id} onClick={() => toggle(segments, setSegments, s.id)} style={{ display: "flex", gap: 12, alignItems: "center", padding: "16px 16px", borderRadius: 12, textAlign: "left", background: sel ? "var(--green-tint)" : "var(--card)", border: `1.5px solid ${sel ? "var(--green)" : "var(--line-2)"}`, boxShadow: sel ? "0 2px 6px rgba(30,107,91,0.12)" : "var(--sh-sm)" }}>
                       <span style={{ width: 40, height: 40, borderRadius: 10, background: sel ? "var(--green)" : "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icon name={s.icon} size={18} color={sel ? "#fff" : "var(--green-text)"} stroke={2} /></span>
                       <div><div style={{ fontSize: 14.5, fontWeight: 700, color: "var(--ink-900)" }}>{s.label}</div><div style={{ fontSize: 12, color: "var(--ink-500)", marginTop: 1 }}>{s.desc}</div></div>
                     </button>
@@ -143,7 +143,7 @@ export default function AkeriOnboardingPreview() {
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 28 }}>
                 {REGIONS.map((r) => {
                   const sel = regions.includes(r);
-                  return <button key={r} onClick={() => toggle(regions, setRegions, r)} style={{ padding: "9px 15px", borderRadius: 999, fontSize: 13.5, fontWeight: 600, background: sel ? "var(--green)" : "var(--card)", color: sel ? "#fff" : "var(--ink-700)", border: `1px solid ${sel ? "var(--green-deep)" : "var(--line-2)"}`, boxShadow: sel ? "0 1px 3px rgba(31,95,92,0.2)" : "var(--sh-sm)" }}>{r}</button>;
+                  return <button key={r} onClick={() => toggle(regions, setRegions, r)} style={{ padding: "9px 15px", borderRadius: 999, fontSize: 13.5, fontWeight: 600, background: sel ? "var(--green)" : "var(--card)", color: sel ? "#fff" : "var(--ink-700)", border: `1px solid ${sel ? "var(--green-deep)" : "var(--line-2)"}`, boxShadow: sel ? "0 1px 3px rgba(30,107,91,0.2)" : "var(--sh-sm)" }}>{r}</button>;
                 })}
               </div>
               <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink-700)", marginBottom: 10 }}>Antal förare</div>

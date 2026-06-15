@@ -280,7 +280,7 @@ function DoneScreen({ form }) {
           { icon: "search", title: "Sök bland förare",       desc: "Bläddra bland verifierade yrkesförare direkt",             to: "/forare" },
         ].map((item, i) => (
           <Link key={i} to={item.to}
-            style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 14px", borderRadius: 11, background: item.primary ? "var(--green-tint)" : "transparent", textDecoration: "none", color: "var(--ink-900)", transition: "background .15s", border: item.primary ? "1px solid rgba(31,95,92,0.15)" : "1px solid transparent", marginBottom: i < 2 ? 4 : 0 }}>
+            style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 14px", borderRadius: 11, background: item.primary ? "var(--green-tint)" : "transparent", textDecoration: "none", color: "var(--ink-900)", transition: "background .15s", border: item.primary ? "1px solid rgba(30,107,91,0.15)" : "1px solid transparent", marginBottom: i < 2 ? 4 : 0 }}>
             <div style={{ width: 38, height: 38, borderRadius: 10, background: item.primary ? "var(--green-tint)" : "var(--paper-2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               <Icon n={item.icon} s={16} c={item.primary ? "var(--green-text)" : "var(--ink-400)"} />
             </div>

@@ -43,7 +43,7 @@ const DriverCard = ({ d, onStar, starred }) => (
             <div style={{ fontSize: 15.5, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.2 }}>{d.name}</div>
             <div style={{ fontSize: 12.5, color: "var(--ink-500)", marginTop: 2 }}>{d.loc} · {d.exp} års erfarenhet</div>
           </div>
-          <button onClick={(e) => { e.stopPropagation(); onStar(d.id); }} style={{ width: 32, height: 32, borderRadius: 8, background: starred ? "var(--amber-tint)" : "var(--card-2)", border: `1px solid ${starred ? "rgba(199,122,14,0.3)" : "var(--line-2)"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <button onClick={(e) => { e.stopPropagation(); onStar(d.id); }} style={{ width: 32, height: 32, borderRadius: 8, background: starred ? "var(--amber-tint)" : "var(--card-2)", border: `1px solid ${starred ? "rgba(242,164,28,0.3)" : "var(--line-2)"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             <Icon name="star" size={14} color={starred ? "var(--amber-deep)" : "var(--ink-400)"} stroke={starred ? 0 : 2} />
           </button>
         </div>

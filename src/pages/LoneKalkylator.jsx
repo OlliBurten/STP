@@ -305,8 +305,8 @@ export default function LoneKalkylator() {
 
           {/* Resultat */}
           <div style={{
-            background: "linear-gradient(135deg, rgba(31,95,92,0.35) 0%, rgba(31,95,92,0.12) 100%)",
-            border: "1px solid rgba(31,95,92,0.4)", borderRadius: 16, padding: "26px",
+            background: "linear-gradient(135deg, rgba(30,107,91,0.35) 0%, rgba(30,107,91,0.12) 100%)",
+            border: "1px solid rgba(30,107,91,0.4)", borderRadius: 16, padding: "26px",
           }}>
 
             {/* Avtalets lönebotten */}

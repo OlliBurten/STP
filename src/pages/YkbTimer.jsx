@@ -198,7 +198,7 @@ export default function YkbTimer() {
 
               <div style={{
                 background: "var(--green-tint)",
-                border: "1px solid rgba(31,95,92,0.2)",
+                border: "1px solid rgba(30,107,91,0.2)",
                 borderRadius: 16, padding: "26px",
               }}>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
@@ -218,7 +218,7 @@ export default function YkbTimer() {
                   </div>
                 </div>
 
-                <div style={{ borderTop: "1px solid rgba(31,95,92,0.2)", paddingTop: 16 }}>
+                <div style={{ borderTop: "1px solid rgba(30,107,91,0.2)", paddingTop: 16 }}>
                   <p style={{ fontSize: "var(--text-xs)", color: "var(--ink-400)", marginBottom: 4 }}>Om du förnyar innan {formatDate(result.expiry)}:</p>
                   <p style={{ fontSize: "var(--text-base)", color: "var(--green-text)", fontWeight: 600 }}>
                     Nytt utgångsdatum → {formatDate(result.newExpiry)}

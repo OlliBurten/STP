@@ -242,7 +242,7 @@ function PerformanceChart({ weeks, total }) {
       <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 6, height: 80 }}>
         {data.map((v, i) => (
           <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-            <div style={{ width: "100%", height: `${(v / max) * 100}%`, background: i === data.length - 1 ? "linear-gradient(180deg,var(--amber),#d97706)" : "linear-gradient(180deg,#1F5F5C,#0e3a37)", borderRadius: 4, position: "relative", minHeight: 4 }}>
+            <div style={{ width: "100%", height: `${(v / max) * 100}%`, background: i === data.length - 1 ? "linear-gradient(180deg,var(--amber),#d97706)" : "linear-gradient(180deg,#1E6B5B,#0e3a37)", borderRadius: 4, position: "relative", minHeight: 4 }}>
               {i === data.length - 1 && v > 0 && (
                 <div style={{ position: "absolute", top: -22, left: "50%", transform: "translateX(-50%)", fontSize: "var(--text-2xs)", fontWeight: 800, color: "var(--amber-text)", whiteSpace: "nowrap" }}>{v}</div>
               )}

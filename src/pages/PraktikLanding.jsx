@@ -7,7 +7,7 @@ const SEGMENTS = [
     id: "student",
     color: "var(--green-text)",
     bg: "var(--green-tint)",
-    border: "rgba(31,95,92,0.2)",
+    border: "rgba(30,107,91,0.2)",
     label: "För elever & praktikanter",
     icon: "🎓",
     intro: "Du har valt rätt yrke. Nu hjälper STP dig att hitta rätt åkeri — oavsett om du söker feriejobb, APL-plats eller din första riktiga tjänst.",
@@ -110,7 +110,7 @@ export default function PraktikLanding() {
         padding: "80px 24px 72px",
       }}>
         <div style={{ maxWidth: 860, margin: "0 auto", textAlign: "center" }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.25)", borderRadius: 99, padding: "5px 16px", marginBottom: 28 }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "var(--green-tint)", border: "1px solid rgba(30,107,91,0.25)", borderRadius: 99, padding: "5px 16px", marginBottom: 28 }}>
             <div style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--green)" }} />
             <span style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--green-text)", letterSpacing: "0.06em" }}>Praktik & APL</span>
           </div>
@@ -230,7 +230,7 @@ export default function PraktikLanding() {
         {/* ── Partner CTA ── */}
         <div style={{
           background: "var(--green-tint)",
-          border: "1px solid rgba(31,95,92,0.2)", borderRadius: 20, padding: "44px",
+          border: "1px solid rgba(30,107,91,0.2)", borderRadius: 20, padding: "44px",
           textAlign: "center",
         }}>
           <p style={{ fontSize: "var(--text-xs)", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--green-text)", marginBottom: 14 }}>

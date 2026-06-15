@@ -83,7 +83,7 @@ export default function JobCard({
         display: "block",
         textDecoration: "none",
         background: featured ? "var(--amber-tint)" : "var(--card)",
-        border: `1px solid ${featured ? "rgba(199,122,14,0.25)" : hovered ? "var(--line-2)" : "var(--line)"}`,
+        border: `1px solid ${featured ? "rgba(242,164,28,0.25)" : hovered ? "var(--line-2)" : "var(--line)"}`,
         borderRadius: "var(--r-lg)",
         padding: isMobile ? "16px" : "22px 24px",
         boxShadow: hovered ? "var(--sh)" : "var(--sh-sm)",
@@ -158,7 +158,7 @@ export default function JobCard({
                   style={{
                     width: 36, height: 36, borderRadius: 9,
                     background: isSaved ? "var(--amber-tint)" : "var(--card-2)",
-                    border: `1px solid ${isSaved ? "rgba(199,122,14,0.30)" : "var(--line-2)"}`,
+                    border: `1px solid ${isSaved ? "rgba(242,164,28,0.30)" : "var(--line-2)"}`,
                     display: "flex", alignItems: "center", justifyContent: "center",
                     cursor: "pointer", color: isSaved ? "var(--amber-deep)" : "var(--ink-500)",
                     transition: "all .15s",

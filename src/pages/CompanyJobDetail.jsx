@@ -218,7 +218,7 @@ export default function CompanyJobDetail() {
 
   const TONE_COLORS = {
     info:    { bg: "var(--info-tint)",    color: "var(--info)",    border: "rgba(27,90,138,0.2)" },
-    amber:   { bg: "var(--amber-tint)",   color: "var(--amber-text)", border: "rgba(199,122,14,0.2)" },
+    amber:   { bg: "var(--amber-tint)",   color: "var(--amber-text)", border: "rgba(242,164,28,0.2)" },
     success: { bg: "var(--success-tint)", color: "var(--success)", border: "rgba(31,122,58,0.2)" },
   };
 
@@ -246,7 +246,7 @@ export default function CompanyJobDetail() {
                 <div>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
                     <h1 style={{ fontSize: "var(--text-4xl)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.8 }}>{job.title}</h1>
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 99, background: isActive ? "var(--success-tint)" : "var(--amber-tint)", border: `1px solid ${isActive ? "rgba(31,122,58,0.2)" : "rgba(199,122,14,0.2)"}`, fontSize: "var(--text-2xs)", fontWeight: 700, color: isActive ? "var(--success)" : "var(--amber-text)" }}>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 99, background: isActive ? "var(--success-tint)" : "var(--amber-tint)", border: `1px solid ${isActive ? "rgba(31,122,58,0.2)" : "rgba(242,164,28,0.2)"}`, fontSize: "var(--text-2xs)", fontWeight: 700, color: isActive ? "var(--success)" : "var(--amber-text)" }}>
                       <span style={{ width: 5, height: 5, borderRadius: 99, background: isActive ? "var(--success)" : "var(--amber)" }} />
                       {isActive ? "Aktiv" : "Pausad"}
                     </span>

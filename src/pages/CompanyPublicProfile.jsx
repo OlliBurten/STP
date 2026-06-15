@@ -42,7 +42,7 @@ function Icon({ n, s = 16, c = "currentColor", filled = false }) {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-const AVATAR_PALETTE = ["#1F5F5C", "#1a3a5c", "#3a1a5c", "#5c1a2a", "#1a5c3a", "#3a5c1a", "#5c3a1a", "#1a4a5c"];
+const AVATAR_PALETTE = ["#1E6B5B", "#1a3a5c", "#3a1a5c", "#5c1a2a", "#1a5c3a", "#3a5c1a", "#5c3a1a", "#1a4a5c"];
 
 function avatarColor(name) {
   if (!name) return AVATAR_PALETTE[0];
@@ -240,7 +240,7 @@ export default function CompanyPublicProfile() {
           style={{ flex: 1, overflowY: "auto", paddingBottom: "max(env(safe-area-inset-bottom), 80px)" }}
         >
           {/* Cover with sticky top bar */}
-          <div style={{ position: "relative", height: 120, background: `linear-gradient(135deg, ${color} 0%, #1F5F5C 100%)` }}>
+          <div style={{ position: "relative", height: 120, background: `linear-gradient(135deg, ${color} 0%, #1E6B5B 100%)` }}>
             <div style={{
               position: "sticky", top: 0, padding: "48px 14px 6px",
               display: "flex", alignItems: "center", justifyContent: "space-between", zIndex: 10,

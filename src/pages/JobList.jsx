@@ -732,7 +732,7 @@ export default function JobList() {
         <>
             {/* Profile completion banner */}
             {showProfileBanner && (
-              <div style={{ marginTop: 24, marginBottom: 0, borderRadius: "var(--r-lg)", border: "1px solid rgba(199,122,14,0.25)", background: "var(--amber-tint)", overflow: "hidden" }}>
+              <div style={{ marginTop: 24, marginBottom: 0, borderRadius: "var(--r-lg)", border: "1px solid rgba(242,164,28,0.25)", background: "var(--amber-tint)", overflow: "hidden" }}>
                 <div style={{ height: 3, background: "var(--amber-tint-2)" }}>
                   <div style={{ height: "100%", width: `${profileCompletion.pct}%`, background: "var(--amber)", borderRadius: 99, transition: "width 0.4s ease" }} />
                 </div>

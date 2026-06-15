@@ -137,7 +137,7 @@ const ActiveJobs = () => (
     <SectionLabel accessory={<a href="#" style={{ fontSize: 13, fontWeight: 700, color: "var(--green)" }}>Se alla →</a>}>Era annonser</SectionLabel>
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       {ACTIVE_JOBS.map((j) => (
-        <a key={j.title} href="#" style={{ display: "block", padding: "14px 16px", background: j.stagnant ? "var(--amber-tint)" : "var(--card-2)", border: `1px solid ${j.stagnant ? "rgba(199,122,14,0.22)" : "var(--line)"}`, borderRadius: 11, color: "inherit" }}>
+        <a key={j.title} href="#" style={{ display: "block", padding: "14px 16px", background: j.stagnant ? "var(--amber-tint)" : "var(--card-2)", border: `1px solid ${j.stagnant ? "rgba(242,164,28,0.22)" : "var(--line)"}`, borderRadius: 11, color: "inherit" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 6 }}>
             <div style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.3, color: "var(--ink-900)", flex: 1 }}>{j.title}</div>
             {j.hot && <Pill tone="amberSolid" size="sm">HOT</Pill>}
@@ -157,7 +157,7 @@ const ActiveJobs = () => (
 const Suggested = () => (
   <Card>
     <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 6 }}>
-      <span style={{ width: 28, height: 28, borderRadius: 7, background: "var(--amber)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="star" size={13} color="#fff" stroke={0} /></span>
+      <span style={{ width: 28, height: 28, borderRadius: 7, background: "var(--amber)", color: "var(--ink-900)", display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="star" size={13} color="#fff" stroke={0} /></span>
       <h3 style={{ fontSize: 14.5, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.3, flex: 1 }}>Förare som matchar er</h3>
       <a href="#" style={{ fontSize: 13, fontWeight: 700, color: "var(--amber-deep)" }}>Sök alla →</a>
     </div>

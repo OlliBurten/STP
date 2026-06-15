@@ -684,8 +684,8 @@ export default function Admin() {
                           <p style={{ fontWeight: 600, color: T.text, margin: 0, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{j.title}</p>
                           {j.source === "AGGREGATED" && (
                             j.sourceUrl
-                              ? <a href={j.sourceUrl} target="_blank" rel="noopener noreferrer" title="Öppna på Platsbanken" style={{ fontSize: "var(--text-2xs)", fontWeight: 700, padding: "1px 6px", borderRadius: 99, background: "rgba(31,95,92,0.1)", color: T.green, textDecoration: "none", whiteSpace: "nowrap" }}>AF ↗</a>
-                              : <span style={{ fontSize: "var(--text-2xs)", fontWeight: 700, padding: "1px 6px", borderRadius: 99, background: "rgba(31,95,92,0.1)", color: T.green, whiteSpace: "nowrap" }}>AF</span>
+                              ? <a href={j.sourceUrl} target="_blank" rel="noopener noreferrer" title="Öppna på Platsbanken" style={{ fontSize: "var(--text-2xs)", fontWeight: 700, padding: "1px 6px", borderRadius: 99, background: "rgba(30,107,91,0.1)", color: T.green, textDecoration: "none", whiteSpace: "nowrap" }}>AF ↗</a>
+                              : <span style={{ fontSize: "var(--text-2xs)", fontWeight: 700, padding: "1px 6px", borderRadius: 99, background: "rgba(30,107,91,0.1)", color: T.green, whiteSpace: "nowrap" }}>AF</span>
                           )}
                         </div>
                         <p style={{ fontSize: "var(--text-2xs)", color: T.muted, margin: "2px 0 0", maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{j.company}</p>

@@ -18,7 +18,7 @@ const TopBar = () => (
   </div>
 );
 const ChoiceCard = ({ icon, label, desc, selected, onClick }) => (
-  <button onClick={onClick} style={{ width: "100%", display: "flex", gap: 16, alignItems: "center", padding: "20px 22px", borderRadius: 14, textAlign: "left", background: selected ? "var(--green-tint)" : "var(--card)", border: `1.5px solid ${selected ? "var(--green)" : "var(--line-2)"}`, boxShadow: selected ? "0 2px 8px rgba(31,95,92,0.12)" : "var(--sh-sm)" }}>
+  <button onClick={onClick} style={{ width: "100%", display: "flex", gap: 16, alignItems: "center", padding: "20px 22px", borderRadius: 14, textAlign: "left", background: selected ? "var(--green-tint)" : "var(--card)", border: `1.5px solid ${selected ? "var(--green)" : "var(--line-2)"}`, boxShadow: selected ? "0 2px 8px rgba(30,107,91,0.12)" : "var(--sh-sm)" }}>
     <span style={{ width: 48, height: 48, borderRadius: 12, flexShrink: 0, background: selected ? "var(--green)" : "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name={icon} size={22} color={selected ? "#fff" : "var(--green-text)"} stroke={2} /></span>
     <div style={{ flex: 1 }}><div style={{ fontSize: 16, fontWeight: 700, color: "var(--ink-900)" }}>{label}</div><div style={{ fontSize: 13.5, color: "var(--ink-500)", marginTop: 3, lineHeight: 1.5 }}>{desc}</div></div>
     <span style={{ width: 24, height: 24, borderRadius: 12, flexShrink: 0, border: `2px solid ${selected ? "var(--green)" : "var(--line-2)"}`, background: selected ? "var(--green)" : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>{selected && <Icon name="check" size={12} color="#fff" stroke={3} />}</span>
@@ -102,7 +102,7 @@ export default function OnboardingForarePreview() {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 28 }}>
                 {LICENSES.map((l) => {
                   const sel = licenses.includes(l.c);
-                  return <button key={l.c} onClick={() => toggle(licenses, setLicenses, l.c)} style={{ display: "flex", alignItems: "center", gap: 13, padding: "14px 16px", borderRadius: 12, textAlign: "left", background: sel ? "var(--green)" : "var(--card)", border: `1.5px solid ${sel ? "var(--green-deep)" : "var(--line-2)"}`, boxShadow: sel ? "0 2px 6px rgba(31,95,92,0.2)" : "var(--sh-sm)" }}><span style={{ fontSize: 17, fontWeight: 800, color: sel ? "#fff" : "var(--ink-900)", minWidth: 34 }}>{l.c}</span><span style={{ fontSize: 12.5, color: sel ? "rgba(255,255,255,0.85)" : "var(--ink-500)" }}>{l.d}</span></button>;
+                  return <button key={l.c} onClick={() => toggle(licenses, setLicenses, l.c)} style={{ display: "flex", alignItems: "center", gap: 13, padding: "14px 16px", borderRadius: 12, textAlign: "left", background: sel ? "var(--green)" : "var(--card)", border: `1.5px solid ${sel ? "var(--green-deep)" : "var(--line-2)"}`, boxShadow: sel ? "0 2px 6px rgba(30,107,91,0.2)" : "var(--sh-sm)" }}><span style={{ fontSize: 17, fontWeight: 800, color: sel ? "#fff" : "var(--ink-900)", minWidth: 34 }}>{l.c}</span><span style={{ fontSize: 12.5, color: sel ? "rgba(255,255,255,0.85)" : "var(--ink-500)" }}>{l.d}</span></button>;
                 })}
               </div>
               <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink-700)", marginBottom: 10 }}>Certifikat (valfritt)</div>
@@ -120,7 +120,7 @@ export default function OnboardingForarePreview() {
                 </label>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink-700)", marginBottom: 10 }}>Din region</div>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>{REGIONS.map((r) => { const sel = region === r; return <button key={r} onClick={() => setRegion(r)} style={{ padding: "9px 15px", borderRadius: 999, fontSize: 13.5, fontWeight: 600, background: sel ? "var(--green)" : "var(--card)", color: sel ? "#fff" : "var(--ink-700)", border: `1px solid ${sel ? "var(--green-deep)" : "var(--line-2)"}`, boxShadow: sel ? "0 1px 3px rgba(31,95,92,0.2)" : "var(--sh-sm)" }}>{r}</button>; })}</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>{REGIONS.map((r) => { const sel = region === r; return <button key={r} onClick={() => setRegion(r)} style={{ padding: "9px 15px", borderRadius: 999, fontSize: 13.5, fontWeight: 600, background: sel ? "var(--green)" : "var(--card)", color: sel ? "#fff" : "var(--ink-700)", border: `1px solid ${sel ? "var(--green-deep)" : "var(--line-2)"}`, boxShadow: sel ? "0 1px 3px rgba(30,107,91,0.2)" : "var(--sh-sm)" }}>{r}</button>; })}</div>
                 </div>
               </div>
             </div>

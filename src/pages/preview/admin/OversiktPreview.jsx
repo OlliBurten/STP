@@ -74,7 +74,7 @@ export default function OversiktPreview() {
           </Card>
         </div>
         <aside style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-          <Card style={{ background: "var(--amber-tint)", borderColor: "rgba(199,122,14,0.22)" }}>
+          <Card style={{ background: "var(--amber-tint)", borderColor: "rgba(242,164,28,0.22)" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
               <h3 style={{ fontSize: 14.5, fontWeight: 800, color: "var(--ink-900)" }}>Verifieringskö</h3>
               <Pill tone="amberSolid" size="sm">{VERIFY_QUEUE.length}</Pill>

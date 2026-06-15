@@ -46,7 +46,7 @@ export default function DriverAcquisitionLanding() {
           <span style={{
             fontSize: "var(--text-xs)", fontWeight: 700, letterSpacing: "0.04em",
             padding: "5px 12px", borderRadius: 99,
-            background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.25)",
+            background: "var(--green-tint)", border: "1px solid rgba(30,107,91,0.25)",
             color: "var(--green-text)",
           }}>
             Gratis · Ingen app

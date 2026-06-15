@@ -95,7 +95,7 @@ function AdCard({ job, pipeline, onPause, onClose }) {
   return (
     <div style={{
       background: lowTraffic ? "var(--amber-tint)" : "var(--card)",
-      border: `1px solid ${lowTraffic ? "rgba(199,122,14,0.22)" : "var(--line)"}`,
+      border: `1px solid ${lowTraffic ? "rgba(242,164,28,0.22)" : "var(--line)"}`,
       borderRadius: 14, padding: "20px 24px", boxShadow: "var(--sh-sm)",
       opacity: status === "closed" ? 0.75 : 1,
     }}>

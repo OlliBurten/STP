@@ -324,7 +324,7 @@ export default function Apply() {
     const certsLabels = (profile?.certificates || []).map(getCertificateLabel).filter(Boolean);
     const pctColor = pct == null ? null : pct >= 85 ? "var(--success)" : pct >= 70 ? "var(--amber)" : "var(--info)";
     const pctBg = pct == null ? null : pct >= 85 ? "var(--success-tint)" : pct >= 70 ? "var(--amber-tint)" : "var(--info-tint)";
-    const pctBorder = pct == null ? null : pct >= 85 ? "rgba(31,122,58,0.3)" : pct >= 70 ? "rgba(199,122,14,0.3)" : "rgba(27,90,138,0.3)";
+    const pctBorder = pct == null ? null : pct >= 85 ? "rgba(31,122,58,0.3)" : pct >= 70 ? "rgba(242,164,28,0.3)" : "rgba(27,90,138,0.3)";
 
     if (jobLoading) {
       return (

@@ -55,7 +55,7 @@ const Hero = () => {
         </h1>
         <p style={{ fontSize: 19, lineHeight: 1.6, color: "rgba(255,255,255,0.78)", fontWeight: 500, marginBottom: 32, maxWidth: 580 }}>Sveriges matchningsplattform för yrkesförare och transportföretag. Inga mellanhänder. Inga avgifter. Inga generiska CV — bara körkort, certifikat och tillgänglighet.</p>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 72 }}>
-          <button style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 24px", height: 50, background: "var(--amber)", color: "#fff", border: "1px solid var(--amber-deep)", borderRadius: 10, fontWeight: 700, fontSize: 15, boxShadow: "0 1px 0 var(--amber-deep), 0 4px 12px rgba(199,122,14,0.30)", cursor: "pointer", fontFamily: "var(--font)" }}>Se lediga jobb<Icon name="arrow" size={15} stroke={2.2} /></button>
+          <button style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 24px", height: 50, background: "var(--amber)", color: "var(--ink-900)", border: "1px solid var(--amber-deep)", borderRadius: 10, fontWeight: 700, fontSize: 15, boxShadow: "0 1px 0 var(--amber-deep), 0 4px 12px rgba(242,164,28,0.30)", cursor: "pointer", fontFamily: "var(--font)" }}>Se lediga jobb<Icon name="arrow" size={15} stroke={2.2} /></button>
           <button style={{ padding: "14px 24px", height: 50, background: "rgba(255,255,255,0.08)", color: "#fff", border: "1px solid rgba(255,255,255,0.22)", borderRadius: 10, fontWeight: 600, fontSize: 15, backdropFilter: "blur(6px)", cursor: "pointer", fontFamily: "var(--font)" }}>Jag är ett åkeri</button>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 0, borderTop: "1px solid rgba(255,255,255,0.14)", paddingTop: 28 }}>
@@ -92,7 +92,7 @@ const LiveBand = () => {
               </Card>
             );
           })}
-          <div style={{ background: "var(--amber)", borderRadius: "var(--r-lg)", padding: "18px 22px", display: "flex", flexDirection: "column", justifyContent: "center", color: "#fff", boxShadow: "0 4px 14px rgba(199,122,14,0.22)" }}>
+          <div style={{ background: "var(--amber)", borderRadius: "var(--r-lg)", padding: "18px 22px", display: "flex", flexDirection: "column", justifyContent: "center", color: "#fff", boxShadow: "0 4px 14px rgba(242,164,28,0.22)" }}>
             <div style={{ fontSize: 30, fontWeight: 900, lineHeight: 1, letterSpacing: -1, marginBottom: 6 }}>5 662</div>
             <div style={{ fontSize: 12.5, lineHeight: 1.45, fontWeight: 500, opacity: 0.95 }}>Förare nyanställda<br />senaste 12 månaderna</div>
           </div>

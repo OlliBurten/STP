@@ -100,7 +100,7 @@ export default function HittaPraktik() {
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {STEPS.map((s) => (
             <div key={s.n} style={{ display: "flex", gap: 20, alignItems: "flex-start", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "20px 22px" }}>
-              <span style={{ fontSize: "var(--text-sm)", fontWeight: 800, color: "var(--green-text)", background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.2)", borderRadius: 8, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{s.n}</span>
+              <span style={{ fontSize: "var(--text-sm)", fontWeight: 800, color: "var(--green-text)", background: "var(--green-tint)", border: "1px solid rgba(30,107,91,0.2)", borderRadius: 8, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{s.n}</span>
               <div>
                 <div style={{ fontWeight: 700, color: "var(--ink-900)", fontSize: "var(--text-md)", marginBottom: 4 }}>{s.title}</div>
                 <div style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.6 }}>{s.body}</div>
@@ -112,7 +112,7 @@ export default function HittaPraktik() {
 
       {/* Varför STP */}
       <section style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px 72px" }}>
-        <div style={{ background: "var(--green-tint)", border: "1px solid rgba(31,95,92,0.2)", borderRadius: 16, padding: "32px 28px" }}>
+        <div style={{ background: "var(--green-tint)", border: "1px solid rgba(30,107,91,0.2)", borderRadius: 16, padding: "32px 28px" }}>
           <h2 style={{ fontSize: "var(--text-xl)", fontWeight: 800, color: "var(--green-text)", margin: "0 0 20px" }}>Varför STP istället för att ringa runt?</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             {[

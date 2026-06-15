@@ -41,7 +41,7 @@ function expiryStatus(dateStr) {
 }
 
 function driverColor(id) {
-  const colors = ["var(--amber)","#1F5F5C","var(--info)","#a78bfa","#f472b6","#34d399"];
+  const colors = ["var(--amber)","#1E6B5B","var(--info)","#a78bfa","#f472b6","#34d399"];
   let h = 0;
   for (let i = 0; i < (id||"x").length; i++) h = (h * 31 + (id||"x").charCodeAt(i)) >>> 0;
   return colors[h % colors.length];
@@ -521,7 +521,7 @@ export default function DriverProfileView({
                   display: "inline-flex", alignItems: "center", padding: "4px 11px", borderRadius: 999,
                   fontSize: "var(--text-xs)", fontWeight: 600,
                   background: "var(--green)", color: "#fff",
-                  boxShadow: "0 1px 2px rgba(31,95,92,0.20), inset 0 -1px 0 rgba(0,0,0,0.10)",
+                  boxShadow: "0 1px 2px rgba(30,107,91,0.20), inset 0 -1px 0 rgba(0,0,0,0.10)",
                 }}>{l}</span>
               ))}
               {(profile.certificates || []).slice(0, 4).map((cid) => {
@@ -536,7 +536,7 @@ export default function DriverProfileView({
                   </span>
                 );
                 if (st.days < 180) return (
-                  <span key={cid} style={{ padding: "4px 11px", borderRadius: 999, fontSize: "var(--text-xs)", fontWeight: 600, background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.2)", color: "var(--amber-text)" }}>{label} · {st.label}</span>
+                  <span key={cid} style={{ padding: "4px 11px", borderRadius: 999, fontSize: "var(--text-xs)", fontWeight: 600, background: "var(--amber-tint)", border: "1px solid rgba(242,164,28,0.2)", color: "var(--amber-text)" }}>{label} · {st.label}</span>
                 );
                 return <span key={cid} style={{ padding: "4px 11px", borderRadius: 999, fontSize: "var(--text-xs)", fontWeight: 600, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-700)" }}>{label}</span>;
               })}
@@ -604,7 +604,7 @@ export default function DriverProfileView({
             <>
               {/* AI-sammanfattning (company mode) */}
               {mode === "company" && (driverSummaryLoading || driverSummary) && (
-                <div style={{ background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.2)", borderRadius: 12, padding: "18px 22px" }}>
+                <div style={{ background: "var(--amber-tint)", border: "1px solid rgba(242,164,28,0.2)", borderRadius: 12, padding: "18px 22px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
                     <span style={{ color: "var(--amber-text)", display: "inline-flex" }}><SparkIcon /></span>
                     <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", color: "var(--amber-text)" }}>AI-sammanfattning</div>
@@ -619,7 +619,7 @@ export default function DriverProfileView({
 
               {/* Utgångna certifikat-varning */}
               {expiredCerts.length > 0 && (
-                <div style={{ padding: "14px 18px", borderRadius: 12, background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.2)" }}>
+                <div style={{ padding: "14px 18px", borderRadius: 12, background: "var(--amber-tint)", border: "1px solid rgba(242,164,28,0.2)" }}>
                   {expiredCerts.map((cid) => (
                     <p key={cid} style={{ fontSize: "var(--text-sm)", color: "var(--amber-text)", fontWeight: 600, margin: "0 0 4px" }}>
                       ⚠ {getCertificateLabel(cid)} är utgånget — du kan missa matchningar från åkerier som kräver detta certifikat.
@@ -661,7 +661,7 @@ export default function DriverProfileView({
                           {(exp.vehicleTypes?.length > 0 || exp.jobType) && (
                             <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 6 }}>
                               {(exp.vehicleTypes || []).map((v) => <span key={v} style={{ padding: "3px 8px", borderRadius: 6, fontSize: "var(--text-2xs)", background: "var(--paper-2)", color: "var(--ink-500)", border: "1px solid var(--line)" }}>{EXP_VEHICLE_TYPES.find((x) => x.value === v)?.label || v}</span>)}
-                              {exp.jobType && <span style={{ padding: "3px 8px", borderRadius: 6, fontSize: "var(--text-2xs)", background: "var(--green-tint)", color: "var(--green-text)", border: "1px solid rgba(31,95,92,0.2)" }}>{EXP_JOB_TYPES.find((x) => x.value === exp.jobType)?.label || exp.jobType}</span>}
+                              {exp.jobType && <span style={{ padding: "3px 8px", borderRadius: 6, fontSize: "var(--text-2xs)", background: "var(--green-tint)", color: "var(--green-text)", border: "1px solid rgba(30,107,91,0.2)" }}>{EXP_JOB_TYPES.find((x) => x.value === exp.jobType)?.label || exp.jobType}</span>}
                             </div>
                           )}
                           {exp.description && <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", marginTop: 6 }}>{exp.description}</div>}

@@ -24,7 +24,7 @@ const JobCard = ({ job, onRemove }) => (
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
           <h3 style={{ fontSize: 16, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.3, lineHeight: 1.3 }}>{job.title}</h3>
-          <button onClick={() => onRemove(job.id)} style={{ width: 32, height: 32, borderRadius: 8, flexShrink: 0, background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="heart" size={14} color="var(--amber-deep)" stroke={0} /></button>
+          <button onClick={() => onRemove(job.id)} style={{ width: 32, height: 32, borderRadius: 8, flexShrink: 0, background: "var(--amber-tint)", border: "1px solid rgba(242,164,28,0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="heart" size={14} color="var(--amber-deep)" stroke={0} /></button>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 3, fontSize: 13, color: "var(--ink-500)" }}><span style={{ fontWeight: 600, color: "var(--ink-700)" }}>{job.company}</span>{job.verified && <Icon name="check" size={11} color="var(--success)" stroke={3} />}<span>· {job.location}</span></div>
       </div>
@@ -50,7 +50,7 @@ const CompanyCard = ({ c, onRemove }) => (
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
           <div><h3 style={{ fontSize: 16, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.3 }}>{c.name}</h3><div style={{ fontSize: 13, color: "var(--ink-500)", marginTop: 2 }}>{c.location}</div></div>
-          <button onClick={() => onRemove(c.id)} style={{ width: 32, height: 32, borderRadius: 8, flexShrink: 0, background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="heart" size={14} color="var(--amber-deep)" stroke={0} /></button>
+          <button onClick={() => onRemove(c.id)} style={{ width: 32, height: 32, borderRadius: 8, flexShrink: 0, background: "var(--amber-tint)", border: "1px solid rgba(242,164,28,0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="heart" size={14} color="var(--amber-deep)" stroke={0} /></button>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 12, flexWrap: "wrap" }}>
           <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><StarRow rating={c.rating} /><span style={{ fontSize: 13, color: "var(--ink-700)", fontWeight: 600 }}>{c.rating}</span><span style={{ fontSize: 12, color: "var(--ink-400)" }}>({c.reviews})</span></span>

@@ -112,7 +112,7 @@ const Basics = () => (
 const CertRow = ({ cert }) => {
   const conf = {
     valid: { dot: "success", text: "var(--ink-500)", weight: 500, bg: "var(--card-2)", border: "var(--line)" },
-    expiring: { dot: "amber", text: "var(--amber-text)", weight: 600, bg: "var(--amber-tint)", border: "rgba(199,122,14,0.20)" },
+    expiring: { dot: "amber", text: "var(--amber-text)", weight: 600, bg: "var(--amber-tint)", border: "rgba(242,164,28,0.20)" },
     expired: { dot: "danger", text: "var(--danger)", weight: 700, bg: "var(--danger-tint)", border: "rgba(185,28,59,0.18)" },
   }[cert.status];
   return (
@@ -133,7 +133,7 @@ const Certificates = () => (
       {["B", "C1", "C1E", "C", "CE"].map((l) => {
         const owned = D.licenses.includes(l);
         return (
-          <div key={l} style={{ width: 54, height: 54, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", background: owned ? "var(--green)" : "transparent", border: owned ? "1px solid var(--green-deep)" : "1px dashed var(--line-2)", color: owned ? "#fff" : "var(--ink-300)", fontWeight: 800, fontSize: 15, letterSpacing: 0.3, boxShadow: owned ? "0 2px 6px rgba(31,95,92,0.20), inset 0 -2px 0 rgba(0,0,0,0.15)" : "none" }}>{l}</div>
+          <div key={l} style={{ width: 54, height: 54, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", background: owned ? "var(--green)" : "transparent", border: owned ? "1px solid var(--green-deep)" : "1px dashed var(--line-2)", color: owned ? "#fff" : "var(--ink-300)", fontWeight: 800, fontSize: 15, letterSpacing: 0.3, boxShadow: owned ? "0 2px 6px rgba(30,107,91,0.20), inset 0 -2px 0 rgba(0,0,0,0.15)" : "none" }}>{l}</div>
         );
       })}
     </div>

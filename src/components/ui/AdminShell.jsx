@@ -40,7 +40,7 @@ export const AdminShell = ({ active, onNav, title, sub, headerAction, children, 
                 <button key={it.id} onClick={() => onNav && onNav(it.id)} style={{ width: "100%", display: "flex", alignItems: "center", gap: 11, padding: "9px 10px", borderRadius: 8, marginBottom: 2, background: on ? "rgba(255,255,255,0.10)" : "transparent", color: on ? "#fff" : "rgba(255,255,255,0.65)", fontSize: "var(--text-sm)", fontWeight: on ? 700 : 500, textAlign: "left" }}>
                   <Icon name={it.icon} size={16} color={on ? "var(--amber)" : "rgba(255,255,255,0.5)"} stroke={2} />
                   <span style={{ flex: 1 }}>{it.label}</span>
-                  {it.badge && <span style={{ background: "var(--amber)", color: "#fff", fontSize: "var(--text-2xs)", fontWeight: 800, padding: "1px 6px", borderRadius: 8 }}>{it.badge}</span>}
+                  {it.badge && <span style={{ background: "var(--amber)", color: "var(--ink-900)", fontSize: "var(--text-2xs)", fontWeight: 800, padding: "1px 6px", borderRadius: 8 }}>{it.badge}</span>}
                 </button>
               );
             })}
