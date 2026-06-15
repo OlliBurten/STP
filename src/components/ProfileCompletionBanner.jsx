@@ -82,27 +82,29 @@ export default function ProfileCompletionBanner({ pct, missing, profileUrl, stor
           <span style={{ fontSize: "var(--text-xs)", fontWeight: 800, color: "var(--ink-900)", fontVariantNumeric: "tabular-nums" }}>{pct}%</span>
         </div>
 
-        {/* Text */}
-        <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-600)", flex: 1, minWidth: 0, margin: 0 }}>
+        {/* Text — naturlig bredd så knappen hamnar tätt efter (inte utsträckt) */}
+        <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-600)", minWidth: 0, margin: 0 }}>
           <span style={{ fontWeight: 700, color: "var(--ink-900)" }}>Din profil är ofullständig.</span>{" "}
           Saknar: {shown.map((m) => m.label).join(", ")}{extra > 0 ? ` och ${extra} till` : ""}.
         </p>
 
-        {/* CTA + stäng */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
-          <Link to={profileUrl} style={{
-            background: "var(--green)", color: "#fff", textDecoration: "none",
-            padding: "7px 14px", borderRadius: 8, fontSize: "var(--text-xs)", fontWeight: 700, whiteSpace: "nowrap",
-          }}>
-            Fyll i nu →
-          </Link>
-          <button onClick={dismiss} aria-label="Stäng" style={{
-            background: "none", border: "none", cursor: "pointer", color: "var(--ink-400)",
-            fontSize: "var(--text-xl)", lineHeight: 1, padding: "0 4px",
-          }}>
-            ×
-          </button>
-        </div>
+        {/* Primär-CTA sitter tätt efter texten */}
+        <Link to={profileUrl} style={{
+          flexShrink: 0,
+          background: "var(--green)", color: "#fff", textDecoration: "none",
+          padding: "7px 14px", borderRadius: 8, fontSize: "var(--text-xs)", fontWeight: 700, whiteSpace: "nowrap",
+        }}>
+          Fyll i nu →
+        </Link>
+
+        {/* Stäng — längst ut till höger */}
+        <button onClick={dismiss} aria-label="Stäng" style={{
+          marginLeft: "auto", flexShrink: 0,
+          background: "none", border: "none", cursor: "pointer", color: "var(--ink-400)",
+          fontSize: "var(--text-xl)", lineHeight: 1, padding: "0 4px",
+        }}>
+          ×
+        </button>
       </div>
     </div>
   );
