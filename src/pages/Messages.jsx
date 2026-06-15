@@ -84,7 +84,7 @@ function ConvItem({ conv, isDriver, isActive, basePath, isMobile }) {
               {avatarInitials(other)}
             </div>
             {unread && (
-              <div style={{ position: "absolute", top: -3, right: -3, minWidth: 18, height: 18, padding: "0 5px", borderRadius: 99, background: "var(--amber)", color: "#fff", fontSize: "var(--text-2xs)", fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid var(--card)" }}>1</div>
+              <div style={{ position: "absolute", top: -3, right: -3, minWidth: 18, height: 18, padding: "0 5px", borderRadius: 99, background: "var(--amber)", color: "var(--ink-900)", fontSize: "var(--text-2xs)", fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid var(--card)" }}>1</div>
             )}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -149,7 +149,7 @@ function ConvItem({ conv, isDriver, isActive, basePath, isMobile }) {
               </span>
             )}
             {unread && (
-              <span style={{ marginLeft: "auto", minWidth: 18, height: 18, padding: "0 5px", borderRadius: 99, background: "var(--amber)", color: "#fff", fontSize: "var(--text-2xs)", fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ marginLeft: "auto", minWidth: 18, height: 18, padding: "0 5px", borderRadius: 99, background: "var(--amber)", color: "var(--ink-900)", fontSize: "var(--text-2xs)", fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 1
               </span>
             )}

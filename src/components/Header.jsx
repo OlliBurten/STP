@@ -257,7 +257,7 @@ export default function Header({ onboarding = false }) {
                 <span style={{ ...navLinkStyle(isActive), display: "inline-flex", alignItems: "center", gap: 6 }}>
                   Meddelanden
                   {(unreadCount > 0 || selectedNotificationCount > 0) && (
-                    <span style={{ minWidth: 18, height: 18, padding: "0 5px", borderRadius: 99, background: "var(--amber)", color: "#fff", fontSize: "var(--text-2xs)", fontWeight: 800, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                    <span style={{ minWidth: 18, height: 18, padding: "0 5px", borderRadius: 99, background: "var(--amber)", color: "var(--ink-900)", fontSize: "var(--text-2xs)", fontWeight: 800, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
                       {unreadCount + selectedNotificationCount > 99 ? "99+" : unreadCount + selectedNotificationCount}
                     </span>
                   )}
@@ -288,7 +288,7 @@ export default function Header({ onboarding = false }) {
                 <span style={{ ...navLinkStyle(isActive), display: "inline-flex", alignItems: "center", gap: 6 }}>
                   Meddelanden
                   {companyUnreadConversationCount > 0 && (
-                    <span style={{ minWidth: 18, height: 18, padding: "0 5px", borderRadius: 99, background: "var(--amber)", color: "#fff", fontSize: "var(--text-2xs)", fontWeight: 800, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                    <span style={{ minWidth: 18, height: 18, padding: "0 5px", borderRadius: 99, background: "var(--amber)", color: "var(--ink-900)", fontSize: "var(--text-2xs)", fontWeight: 800, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
                       {companyUnreadConversationCount > 99 ? "99+" : companyUnreadConversationCount}
                     </span>
                   )}
@@ -446,7 +446,7 @@ export default function Header({ onboarding = false }) {
                 to="/foretag/annonsera"
                 style={{
                   padding: "8px 16px", borderRadius: 9,
-                  background: "var(--amber)", color: "#fff",
+                  background: "var(--amber)", color: "var(--ink-900)",
                   fontSize: "var(--text-sm)", fontWeight: 700, textDecoration: "none",
                   display: "inline-flex", alignItems: "center", gap: 6,
                   whiteSpace: "nowrap",
@@ -477,7 +477,7 @@ export default function Header({ onboarding = false }) {
                     <span style={{
                       position: "absolute", top: 7, right: 8,
                       minWidth: 16, height: 16, padding: "0 4px", borderRadius: 99,
-                      background: "var(--amber)", color: "#fff",
+                      background: "var(--amber)", color: "var(--ink-900)",
                       fontSize: "var(--text-2xs)", fontWeight: 800,
                       display: "flex", alignItems: "center", justifyContent: "center",
                       border: "2px solid var(--ink-900)",
@@ -763,7 +763,7 @@ export default function Header({ onboarding = false }) {
                           }}>
                             {item.label}
                             {item.badge > 0 && (
-                              <span style={{ minWidth: 18, height: 18, padding: "0 5px", borderRadius: 99, background: "var(--amber)", color: "#fff", fontSize: "var(--text-2xs)", fontWeight: 800, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                              <span style={{ minWidth: 18, height: 18, padding: "0 5px", borderRadius: 99, background: "var(--amber)", color: "var(--ink-900)", fontSize: "var(--text-2xs)", fontWeight: 800, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
                                 {item.badge > 99 ? "99+" : item.badge}
                               </span>
                             )}
@@ -801,7 +801,7 @@ export default function Header({ onboarding = false }) {
                     <Link
                       to="/foretag/annonsera"
                       onClick={closeMobile}
-                      style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", padding: "12px 16px", borderRadius: 10, background: "var(--amber)", color: "#fff", fontSize: "var(--text-base)", fontWeight: 700, textDecoration: "none", boxShadow: "0 1px 0 var(--amber-deep)" }}
+                      style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", padding: "12px 16px", borderRadius: 10, background: "var(--amber)", color: "var(--ink-900)", fontSize: "var(--text-base)", fontWeight: 700, textDecoration: "none", boxShadow: "0 1px 0 var(--amber-deep)" }}
                     >
                       + Publicera jobb
                     </Link>

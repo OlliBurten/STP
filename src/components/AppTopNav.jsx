@@ -384,7 +384,7 @@ export default function AppTopNav() {
     <>
       {/* Impersonation banner */}
       {isImpersonating && (
-        <div style={{ background: "var(--amber)", color: "#fff", textAlign: "center", fontSize: "var(--text-xs)", fontWeight: 700, padding: "6px 16px", display: "flex", alignItems: "center", justifyContent: "center", gap: 12 }}>
+        <div style={{ background: "var(--amber)", color: "var(--ink-900)", textAlign: "center", fontSize: "var(--text-xs)", fontWeight: 700, padding: "6px 16px", display: "flex", alignItems: "center", justifyContent: "center", gap: 12 }}>
           Visningsläge — du ser plattformen som {user?.name || user?.email}
           <button onClick={handleStopViewAs} style={{ background: "rgba(0,0,0,0.2)", border: "none", color: "#fff", fontSize: "var(--text-xs)", fontWeight: 700, padding: "3px 10px", borderRadius: 6, cursor: "pointer", fontFamily: "inherit" }}>
             Avsluta visning
@@ -441,7 +441,7 @@ export default function AppTopNav() {
                   {it.label}
                   {it.badge > 0 && (
                     <span style={{
-                      background: "var(--amber)", color: "#fff",
+                      background: "var(--amber)", color: "var(--ink-900)",
                       fontSize: "var(--text-2xs)", fontWeight: 800,
                       padding: "1px 6px", borderRadius: 8, lineHeight: 1.3,
                     }}>{it.badge}</span>

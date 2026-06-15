@@ -746,7 +746,7 @@ export default function JobList() {
                     <p style={{ fontSize: "var(--text-sm)", color: "var(--amber-text)", margin: "0 0 12px", lineHeight: 1.5 }}>
                       Fyll i din profil så kan åkerier hitta och kontakta dig direkt.
                     </p>
-                    <Link to="/profil" style={{ display: "inline-block", padding: "9px 20px", borderRadius: "var(--r)", background: "var(--amber)", color: "#fff", fontSize: "var(--text-sm)", fontWeight: 700, textDecoration: "none" }}>
+                    <Link to="/profil" style={{ display: "inline-block", padding: "9px 20px", borderRadius: "var(--r)", background: "var(--amber)", color: "var(--ink-900)", fontSize: "var(--text-sm)", fontWeight: 700, textDecoration: "none" }}>
                       Slutför profil →
                     </Link>
                   </div>

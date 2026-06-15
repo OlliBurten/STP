@@ -7,39 +7,39 @@
    STP — Light design tokens
 ═══════════════════════════════════════════════════════════ */
 :root {
-  /* Asfalt (mörk ink) — nav, primärtext, mörka knappar */
-  --ink-900: #0a1a1a;
-  --ink-800: #14282a;
-  --ink-700: #2a3a3c;
-  --ink-500: #5a6669;
-  --ink-400: #7d878a;
-  --ink-300: #b5bcbe;
-  --ink-200: #d8dcdd;
+  /* Asfalt (mörk ink) — nav, primärtext, mörka knappar — brandbook: Asfalt #1B2421 / Stål #79847D */
+  --ink-900: #1B2421;
+  --ink-800: #243430;
+  --ink-700: #38453f;
+  --ink-500: #79847D;
+  --ink-400: #98a29b;
+  --ink-300: #bfc6bf;
+  --ink-200: #dce3dd;
 
-  /* Paper (ljusa ytor) */
-  --paper:   #f5f2ec;
-  --paper-2: #ede9e1;
+  /* Paper (ljusa ytor) — brandbook: Strålkastare #F5F7F3 (sval off-white) */
+  --paper:   #f5f7f3;
+  --paper-2: #eaefe9;
   --card:    #ffffff;
-  --card-2:  #fbfaf6;
+  --card-2:  #fafcf8;
 
   /* Linjer */
   --line:        rgba(20,32,32,0.07);
   --line-2:      rgba(20,32,32,0.13);
   --line-strong: rgba(20,32,32,0.20);
 
-  /* Brand accenter */
-  --green:        #1F5F5C;
-  --green-deep:   #154240;
-  --green-soft:   #4a8a87;
-  --green-tint:   #e7eeed;
-  --green-tint-2: #d6e1df;
-  --green-text:   #0F3F3C;
+  /* Brand accenter — brandbook: Väggrön #1E6B5B, Bärnsten #F2A41C */
+  --green:        #1E6B5B;
+  --green-deep:   #16544A;
+  --green-soft:   #4f928a;
+  --green-tint:   #e6eeea;
+  --green-tint-2: #dce3dd;
+  --green-text:   #0F4339;
 
-  --amber:        #C77A0E;
-  --amber-deep:   #985a06;
-  --amber-tint:   #fbf0db;
-  --amber-tint-2: #f5e3bd;
-  --amber-text:   #7a4d08;
+  --amber:        #F2A41C;
+  --amber-deep:   #C77A0E;
+  --amber-tint:   #fcefcf;
+  --amber-tint-2: #f8e0a8;
+  --amber-text:   #8a5a08;
 
   /* Status */
   --success:      #1f7a3a;

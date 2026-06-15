@@ -108,7 +108,7 @@ function AdCard({ job, pipeline, onPause, onClose }) {
               {meta.label}
             </span>
             {hot && (
-              <span style={{ padding: "3px 9px", borderRadius: 99, background: "var(--amber)", color: "#fff", fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 0.3 }}>HOT</span>
+              <span style={{ padding: "3px 9px", borderRadius: 99, background: "var(--amber)", color: "var(--ink-900)", fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 0.3 }}>HOT</span>
             )}
             {lowTraffic && (
               <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 9px", borderRadius: 99, background: "var(--amber-tint-2)", color: "var(--amber-deep)", fontSize: "var(--text-2xs)", fontWeight: 800 }}>

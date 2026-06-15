@@ -173,7 +173,7 @@ function GreenCTA({ title, lead, primaryLabel, secondaryLabel, stats, onPrimary,
           <h2 style={{ fontSize: "clamp(30px,4vw,44px)", fontWeight: 900, letterSpacing: -1.6, lineHeight: 1.12, marginBottom: 18 }}>{title}</h2>
           <p style={{ fontSize: "var(--text-xl)", lineHeight: 1.65, color: "rgba(240,250,249,0.7)", marginBottom: 32 }}>{lead}</p>
           <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
-            <button onClick={onPrimary} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 26px", height: 50, background: "var(--amber)", color: "#fff", border: "1px solid var(--amber-deep)", borderRadius: 10, fontWeight: 700, fontSize: "var(--text-md)", cursor: "pointer", fontFamily: "inherit" }}>
+            <button onClick={onPrimary} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 26px", height: 50, background: "var(--amber)", color: "var(--ink-900)", border: "1px solid var(--amber-deep)", borderRadius: 10, fontWeight: 700, fontSize: "var(--text-md)", cursor: "pointer", fontFamily: "inherit" }}>
               {primaryLabel} <Icon name="arrow" size={15} stroke={2.2} />
             </button>
             <button onClick={onSecondary} style={{ display: "inline-flex", alignItems: "center", padding: "14px 26px", height: 50, background: "rgba(255,255,255,0.08)", color: "#fff", border: "1px solid rgba(255,255,255,0.22)", borderRadius: 10, fontWeight: 600, fontSize: "var(--text-md)", cursor: "pointer", fontFamily: "inherit" }}>
