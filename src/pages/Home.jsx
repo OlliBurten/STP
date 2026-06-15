@@ -278,7 +278,7 @@ export default function Home() {
       <section
         ref={solutionRef}
         style={{
-          background: "var(--paper)",
+          background: "var(--green-tint-2)",
           padding: pad,
           opacity: solutionInView ? 1 : 0,
           transform: solutionInView ? "none" : "translateY(32px)",
@@ -379,7 +379,7 @@ export default function Home() {
         ref={howRef}
         id="sa-fungerar-det"
         style={{
-          background: "var(--paper-2)",
+          background: "var(--paper)",
           padding: pad,
           opacity: howInView ? 1 : 0,
           transform: howInView ? "none" : "translateY(32px)",
@@ -522,7 +522,7 @@ export default function Home() {
       <section
         ref={segRef}
         style={{
-          background: "var(--paper)",
+          background: "var(--green-tint-2)",
           padding: pad,
           opacity: segInView ? 1 : 0,
           transform: segInView ? "none" : "translateY(32px)",
@@ -601,7 +601,7 @@ export default function Home() {
       <section
         ref={faqRef}
         style={{
-          background: "var(--paper-2)",
+          background: "var(--paper)",
           padding: pad,
           opacity: faqInView ? 1 : 0,
           transform: faqInView ? "none" : "translateY(32px)",
