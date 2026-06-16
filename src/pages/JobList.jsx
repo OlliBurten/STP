@@ -510,7 +510,8 @@ export default function JobList() {
     <div style={{ background: "var(--paper)", minHeight: "100vh" }}>
       <PageMeta description="Bläddra bland lediga lastbilsjobb i Sverige." canonical="/jobb" />
 
-      <div style={{ padding: "0 20px 14px", paddingTop: "calc(env(safe-area-inset-top, 0px) + 84px)" }}>
+      {/* Förare på mobil = header-lös helskärm (clearar notch). Utloggat/företag = header finns → ~24px. */}
+      <div style={{ padding: "0 20px 14px", paddingTop: isDriver ? "calc(env(safe-area-inset-top, 0px) + 84px)" : 24 }}>
         <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, letterSpacing: -0.8, color: "var(--ink-900)", margin: "0 0 4px" }}>
           {isGymnasieelev ? "Praktikplatser" : "Lediga jobb"}
         </h1>
