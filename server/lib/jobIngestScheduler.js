@@ -27,10 +27,10 @@ export function startJobIngestScheduler() {
   if (started) return;
   started = true;
 
-  // Every 15 minutes — JobStream delta feed (no API key required)
-  cron.schedule("*/15 * * * *", async () => {
+  // Every 30 minutes — JobStream delta feed (no API key required)
+  cron.schedule("*/30 * * * *", async () => {
     try {
-      const since = new Date(Date.now() - 20 * 60 * 1000)
+      const since = new Date(Date.now() - 35 * 60 * 1000)
         .toISOString()
         .replace("Z", "");
       await runIngestor({ source: "jobstream", since });

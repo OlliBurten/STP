@@ -110,8 +110,8 @@ ${url ? `URL: ${url}` : ""}`;
 
     console.log(`[SentryAgent] ${severity} alert skickat: ${errorTitle}`);
 
-    // Försök auto-fixa om vi har GitHub-credentials och felet är CRITICAL/WARNING
-    if (process.env.GITHUB_TOKEN && process.env.GITHUB_REPO) {
+    // Försök auto-fixa ENDAST vid CRITICAL (Sonnet × hela källfiler är dyrt — spara budget).
+    if (process.env.GITHUB_TOKEN && process.env.GITHUB_REPO && severity === "CRITICAL") {
       attemptBugFix(payload).then((result) => {
         if (result.fixed) {
           console.log(`[SentryAgent] Auto-fix deployed: ${result.file}`);
