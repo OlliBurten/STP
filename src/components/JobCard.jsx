@@ -113,7 +113,7 @@ export default function JobCard({
         {/* Content */}
         <div style={{ flex: 1, minWidth: 0 }}>
           {/* Title row */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10, marginBottom: isMobile ? 4 : 6 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
             <div style={{ minWidth: 0, flex: 1 }}>
               <div style={{
                 fontSize: isMobile ? 15 : 17, fontWeight: 800,
@@ -172,66 +172,65 @@ export default function JobCard({
               )}
             </div>
           </div>
-
-          {/* Pills row: licenses + employment + location */}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 14, marginBottom: 12 }}>
-            {(job.license || []).map(l => <Pill key={l} tone="primary">{l}</Pill>)}
-            <Pill tone="neutral">{employmentLabel}</Pill>
-            {job.location && (
-              <Pill tone="soft">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                {job.location}
-              </Pill>
-            )}
-          </div>
-
-          {/* Description (desktop only) */}
-          {!isMobile && job.description && (
-            <p style={{
-              fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.6,
-              marginBottom: 14,
-              overflow: "hidden", display: "-webkit-box",
-              WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
-            }}>
-              {job.description}
-            </p>
-          )}
-
-          {/* Footer: salary + published date */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 14, borderTop: "1px solid var(--line)" }}>
-            {salaryDisplay
-              ? <div style={{ fontSize: isMobile ? 13 : 14, fontWeight: 700, color: "var(--ink-900)", fontFamily: "var(--mono)" }}>{salaryDisplay}</div>
-              : <div />
-            }
-            {job.published && (
-              <span style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)" }}>Publ. {formatDate(job.published)}</span>
-            )}
-          </div>
-
-          {/* Match criteria chips */}
-          {matchCriteria.length > 0 && (
-            <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap", gap: 5 }}>
-              {matchCriteria.map(c => (
-                <span
-                  key={c.label}
-                  style={{
-                    display: "inline-flex", alignItems: "center", gap: 4,
-                    padding: "2px 8px", borderRadius: 99, fontSize: "var(--text-2xs)", fontWeight: 500,
-                    background: c.met ? "var(--success-tint)" : "var(--paper-2)",
-                    color: c.met ? "var(--success)" : "var(--ink-400)",
-                  }}
-                >
-                  {c.met
-                    ? <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 12 10 18 20 6"/></svg>
-                    : <span style={{ opacity: 0.5 }}>–</span>
-                  }
-                  {c.label}
-                </span>
-              ))}
-            </div>
-          )}
         </div>
       </div>
+
+      {/* Description (desktop only) */}
+      {!isMobile && job.description && (
+        <p style={{
+          fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.6,
+          margin: "14px 0 0",
+          overflow: "hidden", display: "-webkit-box",
+          WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+        }}>
+          {job.description}
+        </p>
+      )}
+
+      {/* Meta row (full width): licenses + employment + location · salary / date right-aligned */}
+      <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 8, marginTop: 14 }}>
+        {(job.license || []).map(l => <Pill key={l} tone="primary">{l}</Pill>)}
+        <Pill tone="neutral">{employmentLabel}</Pill>
+        {job.location && (
+          <Pill tone="soft">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            {job.location}
+          </Pill>
+        )}
+        {(salaryDisplay || job.published) && (
+          <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 10, paddingLeft: 8 }}>
+            {salaryDisplay && (
+              <span style={{ fontSize: isMobile ? 13 : 14, fontWeight: 700, color: "var(--ink-900)", fontFamily: "var(--mono)", whiteSpace: "nowrap" }}>{salaryDisplay}</span>
+            )}
+            {job.published && (
+              <span style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", whiteSpace: "nowrap" }}>{formatDate(job.published)}</span>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Match criteria chips */}
+      {matchCriteria.length > 0 && (
+        <div style={{ marginTop: 12, display: "flex", flexWrap: "wrap", gap: 5 }}>
+          {matchCriteria.map(c => (
+            <span
+              key={c.label}
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 4,
+                padding: "2px 8px", borderRadius: 99, fontSize: "var(--text-2xs)", fontWeight: 500,
+                background: c.met ? "var(--success-tint)" : "var(--paper-2)",
+                color: c.met ? "var(--success)" : "var(--ink-400)",
+              }}
+            >
+              {c.met
+                ? <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 12 10 18 20 6"/></svg>
+                : <span style={{ opacity: 0.5 }}>–</span>
+              }
+              {c.label}
+            </span>
+          ))}
+        </div>
+      )}
     </Link>
   );
 }
