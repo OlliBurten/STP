@@ -121,11 +121,12 @@ export async function runJobEnrichment({ limit = 2000, concurrency = 4 } = {}) {
         const ex = await extractJobFields(j.title, j.description);
         if (!ex) { errors++; continue; }
         const data = {
-          // tasks/offers är String[] i schemat; requirements är String? → lagras bara i enrichmentRaw
+          // tasks/offers är String[]; requirements är String? → lagras som JSON-array
           tasks: ex.tasks,
           offers: ex.offers,
           enrichmentRaw: { ...(j.enrichmentRaw || {}), aiExtractedAt: new Date().toISOString(), ai: ex },
         };
+        if (ex.requirements?.length) data.requirements = JSON.stringify(ex.requirements);
         if (ex.certificates.length) data.certificates = ex.certificates;
         if (ex.salary) data.salary = ex.salary;
         if (ex.salaryMin) data.salaryMin = ex.salaryMin;
@@ -136,9 +137,9 @@ export async function runJobEnrichment({ limit = 2000, concurrency = 4 } = {}) {
       } catch (e) {
         // Billing errors are unrecoverable for the whole run — abort all workers
         // to avoid spamming the Anthropic API with thousands of doomed requests.
-        if (e?.status === 400 && String(e?.message).includes("credit balance")) {
+        if (e?.status === 400 && /credit balance|usage limit/i.test(String(e?.message))) {
           aborted = true;
-          console.error("[JobEnricher] Anthropic-kredit slut — avbryter berikningskörning");
+          console.error("[JobEnricher] Anthropic-gräns nådd (kredit/usage limit) — avbryter berikningskörning");
           return;
         }
         errors++;

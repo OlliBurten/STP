@@ -240,6 +240,16 @@ export default function JobDetail() {
   const jobAbout  = job?.aboutJob || job?.description || "";
   const jobTasks  = (job?.tasks?.length > 0 ? job.tasks : null) ?? parsedExtra?.tasks ?? [];
   const jobOffers = (job?.offers?.length > 0 ? job.offers : null) ?? parsedExtra?.offers ?? [];
+  // requirements är String? i schemat (JSON-array från berikaren, eller fritext) → normalisera till lista
+  const jobRequirements = (() => {
+    const r = job?.requirements;
+    if (Array.isArray(r)) return r;
+    if (typeof r === "string" && r.trim()) {
+      try { const p = JSON.parse(r); if (Array.isArray(p)) return p; } catch { /* fritext */ }
+      return r.split("\n").map((s) => s.replace(/^[-•*]\s*/, "").trim()).filter(Boolean);
+    }
+    return [];
+  })();
 
   const [apiDrivers, setApiDrivers] = useState([]);
   useEffect(() => {
@@ -558,7 +568,7 @@ export default function JobDetail() {
           </div>
 
           {/* Hero */}
-          <div style={{ padding: "6px 18px 0" }}>
+          <div style={{ padding: "18px 18px 0" }}>
             <div style={{ display: "flex", gap: 14, alignItems: "flex-start", marginBottom: 14 }}>
               <div style={{ width: 56, height: 56, borderRadius: 14, background: "var(--paper-2)", border: "1px solid var(--line-2)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 17, color: "var(--ink-700)", flexShrink: 0 }}>
                 {companyInitials}
@@ -634,10 +644,10 @@ export default function JobDetail() {
                 <BulletList items={jobOffers} accent="success" />
               </div>
             )}
-            {(job.requirements || []).length > 0 && (
+            {jobRequirements.length > 0 && (
               <div style={{ marginTop: 24 }}>
                 <h2 style={mSecH}>Krav på dig</h2>
-                <BulletList items={job.requirements} />
+                <BulletList items={jobRequirements} />
               </div>
             )}
             {isDriver && profile && reqTotal > 0 && (
