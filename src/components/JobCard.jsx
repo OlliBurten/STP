@@ -25,7 +25,9 @@ function Pill({ children, tone = "neutral", icon }) {
   const tones = {
     primary: { bg: "var(--green)",      color: "#fff",              border: "var(--green)", shadow: "0 1px 2px rgba(31,95,92,0.20), inset 0 -1px 0 rgba(0,0,0,0.10)" },
     soft:    { bg: "var(--green-tint)", color: "var(--green-text)", border: "transparent" },
-    neutral: { bg: "var(--paper-2)",    color: "var(--ink-700)",    border: "transparent" },
+    /* Varm beige (prototypens --paper-2) — hålls åtskild från den gröna soft-chippen.
+       Hårdkodad här i st f globala --paper-2 (kall grön-grå, används överallt). */
+    neutral: { bg: "#ede9e1",           color: "var(--ink-700)",    border: "transparent" },
   };
   const s = tones[tone] || tones.neutral;
   return (
@@ -170,13 +172,16 @@ export default function JobCard({
         }}>
           {salaryDisplay}
         </div>
-        {pct != null ? (
-          <span style={{ display: "inline-flex", alignItems: "center", padding: "4px 10px", borderRadius: 999, background: pct >= 85 ? "var(--success-tint)" : "var(--green-tint)", flexShrink: 0 }}>
-            <span style={{ fontSize: 13, fontWeight: 800, fontFamily: "var(--mono)", color: matchColor(pct) }}>{pct}%</span>
-          </span>
-        ) : job.published ? (
-          <span style={{ fontSize: 12, color: "var(--ink-400)", whiteSpace: "nowrap", flexShrink: 0 }}>{formatDate(job.published)}</span>
-        ) : null}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+          {job.published && (
+            <span style={{ fontSize: 12, color: "var(--ink-400)", whiteSpace: "nowrap" }}>{formatDate(job.published)}</span>
+          )}
+          {pct != null && (
+            <span style={{ display: "inline-flex", alignItems: "center", padding: "4px 10px", borderRadius: 999, background: pct >= 85 ? "var(--success-tint)" : "var(--green-tint)" }}>
+              <span style={{ fontSize: 13, fontWeight: 800, fontFamily: "var(--mono)", color: matchColor(pct) }}>{pct}%</span>
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Match criteria chips (logged-in driver, matched jobs) */}
