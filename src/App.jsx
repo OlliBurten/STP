@@ -303,8 +303,12 @@ function AppLayout() {
   // composer — dölj bottennaven där så den inte överlappar inmatningsfältet.
   const onMessageThread = pathname.startsWith("/meddelanden/") && pathname !== "/meddelanden";
 
+  // Jobbdetaljen (/jobb/:id) är en egen fullskärmsvy (egen back-bar + fast Ansök-bar)
+  // för ALLA på mobil — dölj global header/footer/bottennav där, precis som prototypen.
+  const isJobDetailMobile = isMobile && !!matchPath("/jobb/:id", pathname);
+
   // Show bottom nav on mobile for driver-relevant routes
-  const showBottomNav = isMobile && isDriver && !onMessageThread &&
+  const showBottomNav = isMobile && isDriver && !onMessageThread && !isJobDetailMobile &&
     BOTTOM_NAV_PATHS.some((p) => pathname === p || pathname.startsWith(p));
 
   // Show global fixed header on the 4 main tabs only (not sub-routes like /meddelanden/:id)
@@ -332,12 +336,12 @@ function AppLayout() {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ overflowX: "clip" }}>
-      {!hideChromeOnMobile && !isAuthPage && !isAdminPage && !isOnboardingPage && !isPreviewPage && (
+      {!hideChromeOnMobile && !isJobDetailMobile && !isAuthPage && !isAdminPage && !isOnboardingPage && !isPreviewPage && (
         user ? <AppTopNav /> : <Header onboarding={onboarding} />
       )}
       {/* Profilbanner sitter tätt under headern (utanför pt-16-paddingen) */}
       <DriverCompletionNudge />
-      <div className={hideChromeOnMobile || isAuthPage || isOnboardingPage || isPreviewPage ? "flex-1" : `flex-1 ${isImpersonating ? "pt-[104px]" : "pt-16"}`}>
+      <div className={hideChromeOnMobile || isJobDetailMobile || isAuthPage || isOnboardingPage || isPreviewPage ? "flex-1" : `flex-1 ${isImpersonating ? "pt-[104px]" : "pt-16"}`}>
         <OnboardingGate>
         <Suspense fallback={<div className="min-h-[60vh]" />}>
         <Routes>
@@ -602,7 +606,7 @@ function AppLayout() {
         </Suspense>
         </OnboardingGate>
               </div>
-              {!hideChromeOnMobile && !isAuthPage && !isPreviewPage && <Footer />}
+              {!hideChromeOnMobile && !isJobDetailMobile && !isAuthPage && !isPreviewPage && <Footer />}
               {/* Flytande feedback-knapp bara på desktop — på mobil krockar den med
                   sticky-CTA:er (ansök/kontakta) och tar dyrbar skärmyta. */}
               {!isMobile && !hideChromeOnMobile && !isAuthPage && !isPreviewPage && <FeedbackButton />}
