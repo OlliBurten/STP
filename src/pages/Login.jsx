@@ -330,8 +330,9 @@ export default function Login() {
     const u = data.user;
     if (u?.isAdmin) { setTimeout(() => navigate(from?.startsWith("/admin") ? from : "/admin", { replace: true }), 0); return; }
     const isRecruiter = ["COMPANY", "RECRUITER"].includes(String(u?.role || "").toUpperCase());
-    const target = isRecruiter ? "/foretag" : u?.shouldShowOnboarding ? "/onboarding/forare" : from || "/";
-    setTimeout(() => navigate(target, { replace: true }), 0);
+    const goingToOnboarding = !isRecruiter && u?.shouldShowOnboarding;
+    const target = isRecruiter ? "/foretag" : goingToOnboarding ? "/onboarding/forare" : from || "/";
+    setTimeout(() => navigate(target, { replace: true, state: goingToOnboarding ? { from } : undefined }), 0);
   };
 
   // ── Form submit ──────────────────────────────────────────────────────────
@@ -360,7 +361,7 @@ export default function Login() {
         const loggedInUser = await loginWithApi(email.trim(), password);
         if (loggedInUser.isAdmin)          { navigate(from?.startsWith("/admin") ? from : "/admin", { replace: true }); return; }
         if (loggedInUser.role === "recruiter") { navigate("/foretag", { replace: true }); return; }
-        if (loggedInUser.shouldShowOnboarding) { navigate("/onboarding/forare", { replace: true }); return; }
+        if (loggedInUser.shouldShowOnboarding) { navigate("/onboarding/forare", { state: { from }, replace: true }); return; }
       }
       if (mode !== "forgot") navigate(from, { replace: true });
     } catch (err) {

@@ -11,7 +11,7 @@ const Icons = {
   bell:   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>,
   user:   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
 };
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useNavigate, useLocation } from "react-router-dom";
 import { useProfile } from "../context/ProfileContext";
 import { useAuth } from "../context/AuthContext";
 import { track, setPersonProperties } from "../utils/posthog.js";
@@ -105,6 +105,11 @@ export default function DriverOnboardingWizard() {
   const { user, token } = useAuth();
   const { profile, profileLoaded, updateProfile } = useProfile();
   const navigate = useNavigate();
+  const location = useLocation();
+  // Varifrån användaren kom (t.ex. ett jobb de ville söka). Bevaras genom onboarding
+  // så de återvänder dit i stället för att tappa bort jobbet.
+  const returnTo = location.state?.from;
+  const returningToJob = typeof returnTo === "string" && returnTo.startsWith("/jobb/");
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
@@ -160,9 +165,10 @@ export default function DriverOnboardingWizard() {
     return () => clearTimeout(analyzeRef.current);
   }, [draft.summary, step, token]);
 
-  // Redirect if profile already complete (skip if we're showing the done screen)
+  // Redirect if profile already complete (skip if we're showing the done screen).
+  // Kom de från ett jobb (för att söka) → skicka tillbaka dit, annars profilen.
   if (!done && profileLoaded && isDriverMinimumProfileComplete(profile)) {
-    return <Navigate to="/profil" replace />;
+    return <Navigate to={returningToJob ? returnTo : "/profil"} replace />;
   }
 
   // ── canNext per step ─────────────────────────────────────────────────────────
@@ -319,10 +325,10 @@ export default function DriverOnboardingWizard() {
               ))}
             </div>
             <button
-              onClick={() => navigate("/jobb")}
+              onClick={() => navigate(returningToJob ? returnTo : "/jobb")}
               style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "14px 24px", borderRadius: 12, background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, border: "none", cursor: "pointer", fontFamily: "inherit", marginBottom: 10 }}
             >
-              {matchCount !== null && matchCount > 0 ? `Se ${matchCount} jobb i ${draft.region}` : "Se lediga jobb"}
+              {returningToJob ? "Tillbaka till jobbet" : (matchCount !== null && matchCount > 0 ? `Se ${matchCount} jobb i ${draft.region}` : "Se lediga jobb")}
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
             </button>
             <button
