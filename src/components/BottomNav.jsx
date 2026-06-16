@@ -6,17 +6,21 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useChat } from "../context/ChatContext";
 import { useAuth } from "../context/AuthContext";
 
-// Inline SVG icons
+// Inline SVG icons (matchar prototypen STP Mobil Sparat Ljust)
 const IC = {
-  briefcase: (
+  search: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="22" height="22">
-      <rect x="2" y="7" width="20" height="14" rx="2"/>
-      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
     </svg>
   ),
-  star: (
-    <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/>
+  heart: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="22" height="22">
+      <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+    </svg>
+  ),
+  check: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="22" height="22">
+      <polyline points="20 6 9 17 4 12"/>
     </svg>
   ),
   msg: (
@@ -33,10 +37,11 @@ const IC = {
 };
 
 const TABS = [
-  { id: "jobs",    label: "Jobb",   icon: "briefcase", paths: ["/jobb"] },
-  { id: "saved",   label: "Favoriter", icon: "star",   paths: ["/favoriter"] },
-  { id: "inbox",   label: "Inkorg", icon: "msg",       paths: ["/meddelanden", "/mina-ansokningar"] },
-  { id: "profile", label: "Profil", icon: "user",      paths: ["/profil"] },
+  { id: "jobs",    label: "Jobb",    icon: "search", paths: ["/jobb"] },
+  { id: "saved",   label: "Sparat",  icon: "heart",  paths: ["/favoriter"] },
+  { id: "ansok",   label: "Ansökn.", icon: "check",  paths: ["/mina-ansokningar"] },
+  { id: "inbox",   label: "Inkorg",  icon: "msg",    paths: ["/meddelanden"] },
+  { id: "profile", label: "Profil",  icon: "user",   paths: ["/profil"] },
 ];
 
 export default function BottomNav() {

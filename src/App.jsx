@@ -311,9 +311,9 @@ function AppLayout() {
   const showBottomNav = isMobile && isDriver && !onMessageThread && !isJobDetailMobile &&
     BOTTOM_NAV_PATHS.some((p) => pathname === p || pathname.startsWith(p));
 
-  // Show global fixed header on the 4 main tabs only (not sub-routes like /meddelanden/:id)
+  // Show global fixed header on the main bottom-nav tabs only (not sub-routes like /meddelanden/:id)
   const showMobileHeader = isMobile && isDriver &&
-    ["/jobb", "/favoriter", "/meddelanden", "/profil"].includes(pathname);
+    ["/jobb", "/favoriter", "/mina-ansokningar", "/meddelanden", "/profil"].includes(pathname);
 
   // On mobile + driver pages: hide the desktop header and footer
   const hideChromeOnMobile = isMobile && isDriver &&
