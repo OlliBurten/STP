@@ -69,11 +69,16 @@ export default function JobCard({
     job.employment === "fast"     ? "Fast"     :
     job.employment === "vikariat" ? "Vikariat" : "Timjobb";
 
-  const salaryDisplay = job.salaryMin
-    ? job.salaryMax
-      ? `${job.salaryMin.toLocaleString("sv-SE")} – ${job.salaryMax.toLocaleString("sv-SE")} kr/mån`
-      : `Från ${job.salaryMin.toLocaleString("sv-SE")} kr/mån`
-    : job.salary || null;
+  const hasSalary = !!(job.salaryMin || job.salaryMax || job.salary);
+  const salaryDisplay = hasSalary
+    ? job.salaryMin
+      ? job.salaryMax
+        ? `${job.salaryMin.toLocaleString("sv-SE")} – ${job.salaryMax.toLocaleString("sv-SE")} kr/mån`
+        : `Från ${job.salaryMin.toLocaleString("sv-SE")} kr/mån`
+      : job.salary
+    : job.kollektivavtal === true
+      ? "Enligt kollektivavtal"
+      : "Lön ej angiven";
 
   const isImported = job.source === "AGGREGATED" && !job.claimed;
 
@@ -157,8 +162,13 @@ export default function JobCard({
 
       {/* Divider + bottom row: salary left · match% (or date) right */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, paddingTop: 12, borderTop: "1px solid var(--line)", minHeight: 21 }}>
-        <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--ink-900)", fontFamily: "var(--mono)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-          {salaryDisplay || ""}
+        <div style={{
+          fontSize: 13.5, fontWeight: hasSalary ? 700 : 600,
+          color: hasSalary ? "var(--ink-900)" : "var(--ink-400)",
+          fontFamily: hasSalary ? "var(--mono)" : "inherit",
+          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+        }}>
+          {salaryDisplay}
         </div>
         {pct != null ? (
           <span style={{ display: "inline-flex", alignItems: "center", padding: "4px 10px", borderRadius: 999, background: pct >= 85 ? "var(--success-tint)" : "var(--green-tint)", flexShrink: 0 }}>
