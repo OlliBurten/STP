@@ -19,13 +19,29 @@ import { getProfileCompletion, isDriverMinimumProfileComplete } from "../utils/d
 import SwedenJobMap from "../components/SwedenJobMap";
 import { LAYOUT } from "../components/ui/layout.jsx";
 
-/* ── Filter sections for mobile bottom sheet ─────────────────────────────── */
-const FILTER_SECTIONS = [
-  { title: "Körkort",    key: "license",    items: [{ l:"C", v:"C" }, { l:"CE", v:"CE" }] },
-  { title: "Anställning",key: "employment", items: [{ l:"Fast", v:"fast" }, { l:"Vikariat", v:"vikariat" }, { l:"Tim", v:"tim" }] },
-  { title: "Jobbtyp",    key: "jobType",    items: [{ l:"Fjärrkörning", v:"fjärrkörning" }, { l:"Distribution", v:"distribution" }, { l:"Lokalt", v:"lokalt" }] },
-  { title: "Region",     key: "region",     items: [{ l:"Skåne", v:"Skåne" }, { l:"Stockholm", v:"Stockholm" }, { l:"V. Götaland", v:"Västra Götaland" }, { l:"Halland", v:"Halland" }, { l:"Norrbotten", v:"Norrbotten" }] },
-];
+/* ── Filter-etiketter (alternativen härleds data-drivet ur jobben) ───────── */
+const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
+const EMP_LABELS = { fast: "Fast", vikariat: "Vikariat", tim: "Tim", deltid: "Deltid" };
+const JOBTYPE_LABELS = { lokalt: "Lokalt", distribution: "Distribution", "fjärrkörning": "Fjärrkörning", timjobb: "Timjobb" };
+const CERT_LABELS = { YKB: "YKB", ADR: "ADR", ADR_Tank: "ADR Tank", Digitalt_fardskrivarkort: "Digitalt färdskrivarkort" };
+const empLabel = (v) => EMP_LABELS[v] || cap(v);
+const jobTypeLabel = (v) => JOBTYPE_LABELS[v] || cap(v);
+const certLabel = (v) => CERT_LABELS[v] || String(v).replace(/_/g, " ");
+
+/* Härled tillgängliga filter-alternativ ur de faktiska jobben (sorterat efter antal). */
+function deriveFacets(jobs) {
+  const reg = new Map(), jt = new Map(), cert = new Map(), emp = new Map();
+  const lic = new Set();
+  for (const j of jobs) {
+    if (j.region) reg.set(j.region, (reg.get(j.region) || 0) + 1);
+    if (j.jobType) jt.set(j.jobType, (jt.get(j.jobType) || 0) + 1);
+    (j.license || []).forEach((l) => lic.add(l));
+    (j.certificates || []).forEach((c) => cert.set(c, (cert.get(c) || 0) + 1));
+    if (j.employment) emp.set(j.employment, (emp.get(j.employment) || 0) + 1);
+  }
+  const byCount = (m) => [...m.entries()].sort((a, b) => b[1] - a[1]).map(([v]) => v);
+  return { regions: byCount(reg), jobTypes: byCount(jt), licenses: [...lic].sort(), certificates: byCount(cert), employments: byCount(emp) };
+}
 
 /* ── Icons ───────────────────────────────────────────────────────────────── */
 const SearchIcon = () => (
@@ -88,27 +104,21 @@ function FilterSelect({ value, onChange, options, placeholder, width = 150 }) {
 }
 
 /* ── FilterBar ───────────────────────────────────────────────────────────── */
-function FilterBar({ filters, setFilters, onOpenAll }) {
-  const LICENSE_OPTS    = [{ value: "CE", label: "CE-körkort" }, { value: "C", label: "C-körkort" }];
-  const EMPLOYMENT_OPTS = [{ value: "fast", label: "Fast tjänst" }, { value: "vikariat", label: "Vikariat" }, { value: "tim", label: "Timjobb" }];
-  const REGION_OPTS = [
-    { value: "Skåne",            label: "Skåne" },
-    { value: "Stockholm",        label: "Stockholm" },
-    { value: "Västra Götaland",  label: "Västra Götaland" },
-    { value: "Halland",          label: "Halland" },
-    { value: "Uppsala",          label: "Uppsala" },
-    { value: "Norrbotten",       label: "Norrbotten" },
-    { value: "Västernorrland",   label: "Västernorrland" },
-  ];
+function FilterBar({ filters, setFilters, onOpenAll, facets }) {
+  // Data-drivet ur de faktiska jobben (inga statiska listor som driver isär).
+  const LICENSE_OPTS    = facets.licenses.map(v => ({ value: v, label: `${v}-körkort` }));
+  const EMPLOYMENT_OPTS = facets.employments.map(v => ({ value: v, label: empLabel(v) }));
+  const REGION_OPTS     = facets.regions.map(v => ({ value: v, label: v }));
 
   const activeChips = [];
   if (filters.license)    activeChips.push({ key: "license",    label: filters.license + "-körkort" });
   if (filters.employment) activeChips.push({ key: "employment", label: filters.employment === "fast" ? "Fast tjänst" : filters.employment === "vikariat" ? "Vikariat" : "Timjobb" });
   if (filters.region)     activeChips.push({ key: "region",     label: filters.region });
-  if (filters.jobType)    activeChips.push({ key: "jobType",    label: filters.jobType });
+  if (filters.jobType)    activeChips.push({ key: "jobType",    label: jobTypeLabel(filters.jobType) });
+  if (filters.certificate) activeChips.push({ key: "certificate", label: certLabel(filters.certificate) });
 
   const clearChip = key => setFilters(f => ({ ...f, [key]: "" }));
-  const clearAll  = ()   => setFilters(f => ({ ...f, region: "", license: "", employment: "", jobType: "", search: "" }));
+  const clearAll  = ()   => setFilters(f => ({ ...f, region: "", license: "", employment: "", jobType: "", search: "", certificate: "" }));
 
   return (
     <div style={{ paddingTop: 22, paddingBottom: 14 }}>
@@ -297,13 +307,14 @@ export default function JobList() {
   const [savedJobIds,     setSavedJobIds]     = useState(new Set());
   const [drawerOpen,      setDrawerOpen]      = useState(false);
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
-  const [mobileFilters,   setMobileFilters]   = useState({ license: "", employment: "", jobType: "", region: "" });
+  const [mobileFilters,   setMobileFilters]   = useState({ license: "", employment: "", jobType: "", region: "", certificate: "" });
+  const EMPTY_MOBILE_FILTERS = { license: "", employment: "", jobType: "", region: "", certificate: "" };
   const [bannerDismissed, setBannerDismissed] = useState(() => {
     try { return sessionStorage.getItem("stp_profile_banner_dismissed") === "1"; } catch { return false; }
   });
   const [filters, setFilters] = useState({
     search: "", region: "", license: "", segment: "",
-    jobType: "", employment: "", bransch: "", minSalary: "",
+    jobType: "", employment: "", bransch: "", minSalary: "", certificate: "",
   });
   const [view, setView] = useState("list");
   const PAGE_SIZE = 20;
@@ -348,6 +359,24 @@ export default function JobList() {
 
   const isGymnasieelev = Boolean(profile?.isGymnasieelev);
 
+  // Data-drivna filter-alternativ — alltid i synk med de faktiska jobben.
+  const facets = useMemo(() => deriveFacets(jobs), [jobs]);
+  const filterSections = useMemo(() => [
+    { title: "Körkort",     key: "license",     items: facets.licenses.map(v => ({ l: v, v })) },
+    { title: "Anställning", key: "employment",  items: facets.employments.map(v => ({ l: empLabel(v), v })) },
+    { title: "Jobbtyp",     key: "jobType",     items: facets.jobTypes.map(v => ({ l: jobTypeLabel(v), v })) },
+    { title: "Certifikat",  key: "certificate", items: facets.certificates.map(v => ({ l: certLabel(v), v })) },
+    { title: "Region",      key: "region",      items: facets.regions.map(v => ({ l: v, v })) },
+  ].filter(s => s.items.length), [facets]);
+  // Färdiga {value,label}-listor för desktop-drawern (select-format).
+  const drawerFacets = useMemo(() => ({
+    regions:      facets.regions.map(v => ({ value: v, label: v })),
+    licenses:     facets.licenses.map(v => ({ value: v, label: `${v}-körkort` })),
+    jobTypes:     facets.jobTypes.map(v => ({ value: v, label: jobTypeLabel(v) })),
+    employments:  facets.employments.map(v => ({ value: v, label: empLabel(v) })),
+    certificates: facets.certificates.map(v => ({ value: v, label: certLabel(v) })),
+  }), [facets]);
+
   const filteredJobs = useMemo(() => jobs.filter(job => {
     const jobSegment = job.segment || mapEmploymentToSegment(job.employment);
     if (isGymnasieelev && jobSegment !== "INTERNSHIP") return false;
@@ -358,6 +387,7 @@ export default function JobList() {
       && (!filters.segment    || jobSegment === filters.segment)
       && (!filters.jobType    || job.jobType === filters.jobType)
       && (!filters.employment || job.employment === filters.employment)
+      && (!filters.certificate || job.certificates?.includes(filters.certificate))
       && (!filters.bransch    || (job.bransch && job.bransch === filters.bransch));
   }), [jobs, filters, isGymnasieelev]);
 
@@ -467,7 +497,8 @@ export default function JobList() {
       (!mobileFilters.license    || j.license?.includes(mobileFilters.license)) &&
       (!mobileFilters.employment || j.employment === mobileFilters.employment) &&
       (!mobileFilters.jobType    || j.jobType === mobileFilters.jobType) &&
-      (!mobileFilters.region     || j.region === mobileFilters.region)
+      (!mobileFilters.region     || j.region === mobileFilters.region) &&
+      (!mobileFilters.certificate || j.certificates?.includes(mobileFilters.certificate))
     );
   }, [tab, filteredJobs, matchDataMap, recommendedIds, savedJobIds, mobileFilters]);
 
@@ -574,7 +605,7 @@ export default function JobList() {
           <Pagination page={mSafePage} totalPages={mTotalPages} onChange={goToPage} />
         )}
         {!jobsLoading && mobileJobs.length === 0 && (
-          <EmptyState tabKey={tab} onReset={() => { setFilters(f => ({ ...f, search: "", region: "", license: "", employment: "", jobType: "" })); setMobileFilters({ license: "", employment: "", jobType: "", region: "" }); setTab("all"); }} />
+          <EmptyState tabKey={tab} onReset={() => { setFilters(f => ({ ...f, search: "", region: "", license: "", employment: "", jobType: "", certificate: "" })); setMobileFilters(EMPTY_MOBILE_FILTERS); setTab("all"); }} />
         )}
       </div>
 
@@ -582,10 +613,10 @@ export default function JobList() {
         open={filterSheetOpen}
         onClose={() => setFilterSheetOpen(false)}
         title="Filter"
-        footerLeft={{ label: "Rensa", onClick: () => setMobileFilters({ license: "", employment: "", jobType: "", region: "" }) }}
+        footerLeft={{ label: "Rensa", onClick: () => setMobileFilters(EMPTY_MOBILE_FILTERS) }}
         footerRight={{ label: "Visa resultat", onClick: () => setFilterSheetOpen(false) }}
       >
-        {FILTER_SECTIONS.map(sec => (
+        {filterSections.map(sec => (
           <div key={sec.key} style={{ marginBottom: 24 }}>
             <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 10 }}>{sec.title}</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
@@ -766,6 +797,7 @@ export default function JobList() {
             <FilterBar
               filters={filters}
               setFilters={setFilters}
+              facets={facets}
               onOpenAll={() => setDrawerOpen(true)}
             />
 
@@ -855,6 +887,7 @@ export default function JobList() {
         onClose={() => setDrawerOpen(false)}
         filters={filters}
         setFilters={setFilters}
+        facets={drawerFacets}
       />
     </div>
   );

@@ -1,5 +1,4 @@
 import { useEscapeKey } from "../hooks/useEscapeKey";
-import { jobTypes, employmentTypes, licenseTypes, regions } from "../data/mockJobs";
 import { segmentOptions } from "../data/segments";
 import { transportSegmentGroups } from "../data/bransch.js";
 import { CloseIcon } from "./Icons";
@@ -39,9 +38,10 @@ function Field({ label, children }) {
   );
 }
 
-export default function FilterDrawer({ open, filters, onChange: setFilters, onClose }) {
+export default function FilterDrawer({ open, filters, setFilters, onClose, facets = {} }) {
   useEscapeKey(onClose, open);
   if (!open) return null;
+  const { regions = [], licenses = [], jobTypes = [], employments = [], certificates = [] } = facets;
   const handleChange = (key, value) => setFilters((f) => ({ ...f, [key]: value }));
 
   const clearFilters = () =>
@@ -54,6 +54,7 @@ export default function FilterDrawer({ open, filters, onChange: setFilters, onCl
       employment: "",
       bransch: "",
       minSalary: "",
+      certificate: "",
     }));
 
   return (
@@ -89,14 +90,14 @@ export default function FilterDrawer({ open, filters, onChange: setFilters, onCl
           <Field label="Region">
             <select value={filters.region} onChange={(e) => handleChange("region", e.target.value)} style={selectStyle}>
               <option value="" style={optStyle}>Alla regioner</option>
-              {regions.map((r) => <option key={r} value={r} style={optStyle}>{r}</option>)}
+              {regions.map((r) => <option key={r.value} value={r.value} style={optStyle}>{r.label}</option>)}
             </select>
           </Field>
 
           <Field label="Körkort">
             <select value={filters.license} onChange={(e) => handleChange("license", e.target.value)} style={selectStyle}>
               <option value="" style={optStyle}>Alla körkort</option>
-              {licenseTypes.map((l) => <option key={l.value} value={l.value} style={optStyle}>{l.label}</option>)}
+              {licenses.map((l) => <option key={l.value} value={l.value} style={optStyle}>{l.label}</option>)}
             </select>
           </Field>
 
@@ -110,9 +111,18 @@ export default function FilterDrawer({ open, filters, onChange: setFilters, onCl
           <Field label="Anställning">
             <select value={filters.employment} onChange={(e) => handleChange("employment", e.target.value)} style={selectStyle}>
               <option value="" style={optStyle}>Alla</option>
-              {employmentTypes.map((e) => <option key={e.value} value={e.value} style={optStyle}>{e.label}</option>)}
+              {employments.map((e) => <option key={e.value} value={e.value} style={optStyle}>{e.label}</option>)}
             </select>
           </Field>
+
+          {certificates.length > 0 && (
+            <Field label="Certifikat">
+              <select value={filters.certificate || ""} onChange={(e) => handleChange("certificate", e.target.value)} style={selectStyle}>
+                <option value="" style={optStyle}>Alla certifikat</option>
+                {certificates.map((c) => <option key={c.value} value={c.value} style={optStyle}>{c.label}</option>)}
+              </select>
+            </Field>
+          )}
 
           <Field label="Segment">
             <select value={filters.segment} onChange={(e) => handleChange("segment", e.target.value)} style={selectStyle}>
