@@ -540,7 +540,9 @@ export default function JobList() {
         </button>
       </div>
 
-      <div style={{ padding: "0 12px 12px", display: "flex", gap: 6, overflowX: "auto" }}>
+      {/* Flikar bara för inloggad förare — Rekommenderade/Sparade kräver konto/profil */}
+      {isDriver && (
+      <div style={{ padding: "0 20px 12px", display: "flex", gap: 6, overflowX: "auto" }}>
         {[
           { v: "all",         l: "Alla jobb",      c: filteredJobs.length },
           { v: "recommended", l: "Rekommenderade", c: recommendedCount },
@@ -555,6 +557,7 @@ export default function JobList() {
           );
         })}
       </div>
+      )}
 
       <div style={{ padding: "4px 20px 100px", display: "flex", flexDirection: "column", gap: 10 }}>
         {jobsLoading && <Skeletons count={4} />}
