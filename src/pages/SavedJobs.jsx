@@ -174,7 +174,7 @@ function CompanyCard({ company, onUnsave }) {
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function SavedJobs() {
-  usePageTitle("Favoriter");
+  usePageTitle("Sparat");
   const isMobile = useIsMobile();
   const { hasApi, isDriver } = useAuth();
   const { profile } = useProfile();
@@ -264,11 +264,11 @@ export default function SavedJobs() {
 
     return (
       <div style={{ background: "var(--paper)", minHeight: "100vh", paddingBottom: 90, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
-        <PageMeta title="Favoriter – STP" />
+        <PageMeta title="Sparat – STP" />
 
         {/* Title */}
         <div style={{ padding: "0 20px 14px", paddingTop: "calc(env(safe-area-inset-top, 0px) + 84px)" }}>
-          <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, letterSpacing: -1, marginBottom: 4, color: "var(--ink-900)" }}>Favoriter</h1>
+          <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, letterSpacing: -1, marginBottom: 4, color: "var(--ink-900)" }}>Sparat</h1>
           <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)" }}>Dina sparade jobb och åkerier</div>
         </div>
 
@@ -303,10 +303,10 @@ export default function SavedJobs() {
               {jobs.length === 0 ? (
                 <div style={{ padding: "60px 24px", textAlign: "center", marginTop: 8 }}>
                   <div style={{ width: 60, height: 60, margin: "0 auto 16px", borderRadius: 99, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <Icon n="star" s={26} c="var(--green)"/>
+                    <Icon n="heart" s={26} c="var(--green)"/>
                   </div>
                   <div style={{ fontSize: "var(--text-md)", fontWeight: 700, marginBottom: 6, color: "var(--ink-900)" }}>Inga sparade jobb</div>
-                  <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", marginBottom: 18 }}>Tryck på stjärnan för att spara — så hittar du tillbaka.</div>
+                  <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", marginBottom: 18 }}>Tryck på hjärtat för att spara — så hittar du tillbaka.</div>
                   <Link to="/jobb" style={{ padding: "11px 20px", borderRadius: 99, background: "var(--green)", color: "#fff", fontSize: "var(--text-sm)", fontWeight: 800, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 7 }}>
                     Bläddra jobb <Icon n="arrow" s={13} c="#fff"/>
                   </Link>
@@ -355,10 +355,10 @@ export default function SavedJobs() {
               {companies.length === 0 ? (
                 <div style={{ padding: "60px 24px", textAlign: "center", marginTop: 8 }}>
                   <div style={{ width: 60, height: 60, margin: "0 auto 16px", borderRadius: 99, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <Icon n="star" s={26} c="var(--green)"/>
+                    <Icon n="heart" s={26} c="var(--green)"/>
                   </div>
                   <div style={{ fontSize: "var(--text-md)", fontWeight: 700, marginBottom: 6, color: "var(--ink-900)" }}>Inga sparade åkerier</div>
-                  <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", marginBottom: 18 }}>Tryck på stjärnan för att följa ett åkeri.</div>
+                  <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", marginBottom: 18 }}>Tryck på hjärtat för att följa ett åkeri.</div>
                   <Link to="/akerier" style={{ padding: "11px 20px", borderRadius: 99, background: "var(--green)", color: "#fff", fontSize: "var(--text-sm)", fontWeight: 800, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 7 }}>
                     Hitta åkerier <Icon n="arrow" s={13} c="#fff"/>
                   </Link>
@@ -393,7 +393,7 @@ export default function SavedJobs() {
 
   return (
     <main style={{ background: "var(--paper)", minHeight: "100vh" }}>
-      <PageMeta title="Favoriter – STP" />
+      <PageMeta title="Sparat – STP" />
 
       {/* Page header */}
       <div style={{ background: "var(--paper)", borderBottom: "1px solid var(--line)", paddingTop: 32, paddingBottom: 12 }}>

@@ -146,7 +146,7 @@ function SearchModal({ onClose }) {
     { label: "Lediga jobb",     path: "/jobb",             hint: "J" },
     { label: "Åkerier",         path: "/akerier",           hint: "Å" },
     { label: "Meddelanden",     path: "/meddelanden",       hint: "M" },
-    { label: "Favoriter",       path: "/favoriter",         hint: "F" },
+    { label: "Sparat",          path: "/favoriter",         hint: "F" },
     { label: "Min profil",      path: "/profil",            hint: "P" },
     { label: "Inställningar",   path: "/installningar",     hint: "I" },
   ];
@@ -367,7 +367,7 @@ export default function AppTopNav() {
     { label: "Jobb",          path: "/jobb" },
     { label: "Åkerier",       path: "/akerier" },
     { label: "Meddelanden",   path: "/meddelanden",       badge: unreadCount || 0 },
-    { label: "Favoriter",     path: "/favoriter" },
+    { label: "Sparat",        path: "/favoriter" },
   ];
   const companyNav = [
     { label: "Dashboard",     path: "/foretag" },

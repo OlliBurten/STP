@@ -202,7 +202,7 @@ export const Tabs = ({ value, onChange, items, style }) => (
 );
 
 /* ────── TopNav — mörk asfalt-strip ────── */
-const TAB_ICON = { "Jobb": "search", "Lediga jobb": "search", "Åkerier": "truck", "Hitta förare": "search", "Annonser": "building", "Översikt": "building", "Meddelanden": "msg", "Inkorg": "msg", "Favoriter": "heart", "Mina ansökningar": "check", "Företagsprofil": "user", "Profil": "user" };
+const TAB_ICON = { "Jobb": "search", "Lediga jobb": "search", "Åkerier": "truck", "Hitta förare": "search", "Annonser": "building", "Översikt": "building", "Meddelanden": "msg", "Inkorg": "msg", "Favoriter": "heart", "Sparat": "heart", "Mina ansökningar": "check", "Företagsprofil": "user", "Profil": "user" };
 
 export const TopNav = ({ items, active, onActive, currentUser, brand = "STP", brandSub, rightExtras, sticky = true }) => (
   <>
