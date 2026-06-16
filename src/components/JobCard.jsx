@@ -118,7 +118,7 @@ export default function JobCard({
               <div style={{
                 fontSize: isMobile ? 15 : 17, fontWeight: 800,
                 color: "var(--ink-900)", letterSpacing: -0.3,
-                lineHeight: 1.25, marginBottom: 3,
+                lineHeight: 1.25, marginBottom: 3, minHeight: "2.5em",
                 overflow: "hidden", display: "-webkit-box",
                 WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
               }}>
@@ -175,19 +175,19 @@ export default function JobCard({
         </div>
       </div>
 
-      {/* Description (desktop only) */}
-      {!isMobile && job.description && (
+      {/* Description (desktop only) — reserved height so cards stay equal even without text */}
+      {!isMobile && (
         <p style={{
           fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.6,
-          margin: "14px 0 0",
+          margin: "14px 0 0", minHeight: "3.2em",
           overflow: "hidden", display: "-webkit-box",
           WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
         }}>
-          {job.description}
+          {job.description || ""}
         </p>
       )}
 
-      {/* Meta row (full width): licenses + employment + location · salary / date right-aligned */}
+      {/* Pills row (full width): licenses + employment + location */}
       <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 8, marginTop: 14 }}>
         {(job.license || []).map(l => <Pill key={l} tone="primary">{l}</Pill>)}
         <Pill tone="neutral">{employmentLabel}</Pill>
@@ -197,15 +197,15 @@ export default function JobCard({
             {job.location}
           </Pill>
         )}
-        {(salaryDisplay || job.published) && (
-          <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 10, paddingLeft: 8 }}>
-            {salaryDisplay && (
-              <span style={{ fontSize: isMobile ? 13 : 14, fontWeight: 700, color: "var(--ink-900)", fontFamily: "var(--mono)", whiteSpace: "nowrap" }}>{salaryDisplay}</span>
-            )}
-            {job.published && (
-              <span style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", whiteSpace: "nowrap" }}>{formatDate(job.published)}</span>
-            )}
-          </div>
+      </div>
+
+      {/* Bottom meta row — always present (salary left · date right) so every card has the same height */}
+      <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginTop: 10, minHeight: 18 }}>
+        {salaryDisplay && (
+          <span style={{ fontSize: isMobile ? 13 : 14, fontWeight: 700, color: "var(--ink-900)", fontFamily: "var(--mono)", whiteSpace: "nowrap" }}>{salaryDisplay}</span>
+        )}
+        {job.published && (
+          <span style={{ marginLeft: "auto", fontSize: "var(--text-2xs)", color: "var(--ink-400)", whiteSpace: "nowrap" }}>{formatDate(job.published)}</span>
         )}
       </div>
 
