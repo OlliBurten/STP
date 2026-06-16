@@ -118,32 +118,31 @@ export default function JobCard({
               <div style={{
                 fontSize: isMobile ? 15 : 17, fontWeight: 800,
                 color: "var(--ink-900)", letterSpacing: -0.3,
-                lineHeight: 1.25, marginBottom: 3, minHeight: "2.5em",
-                overflow: "hidden", display: "-webkit-box",
-                WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+                lineHeight: 1.25, marginBottom: 3,
+                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
               }}>
                 {formatJobTitle(job.title)}
               </div>
-              <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-                <span style={{ fontWeight: 600, color: "var(--ink-700)", overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 1, WebkitBoxOrient: "vertical", wordBreak: "break-word" }}>{job.company}</span>
+              <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", display: "flex", alignItems: "center", gap: 6, flexWrap: "nowrap", overflow: "hidden", whiteSpace: "nowrap" }}>
+                <span style={{ fontWeight: 600, color: "var(--ink-700)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0, flexShrink: 1 }}>{job.company}</span>
                 {job.source === "AGGREGATED" && !job.claimed ? (
                   <>
-                    <span style={{ color: "var(--ink-300)" }}>·</span>
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: "var(--text-xs)", color: "var(--ink-400)", fontWeight: 500 }}>
+                    <span style={{ color: "var(--ink-300)", flexShrink: 0 }}>·</span>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: "var(--text-xs)", color: "var(--ink-400)", fontWeight: 500, flexShrink: 0 }}>
                       Importerad annons
                     </span>
                   </>
                 ) : job.companyVerified ? (
                   <>
-                    <span style={{ color: "var(--ink-300)" }}>·</span>
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: "var(--text-xs)", color: "var(--success)", fontWeight: 600 }}>
+                    <span style={{ color: "var(--ink-300)", flexShrink: 0 }}>·</span>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: "var(--text-xs)", color: "var(--success)", fontWeight: 600, flexShrink: 0 }}>
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 12 10 18 20 6"/></svg>
                       Verifierat
                     </span>
                   </>
                 ) : null}
                 {job.kollektivavtal === true && (
-                  <span style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", fontWeight: 500 }}>Kollektivavtal</span>
+                  <span style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", fontWeight: 500, flexShrink: 0 }}>Kollektivavtal</span>
                 )}
               </div>
             </div>
