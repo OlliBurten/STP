@@ -43,9 +43,18 @@ export default function OnboardingGate({ children }) {
     return children;
   }
 
+  // Sidor där en ofullständig profil MÅSTE kompletteras först (förarens privata ytor +
+  // själva ansökan). På publika/browse-sidor (hem, jobb, jobbdetalj) får ofullständiga
+  // förare vara kvar — så en refresh laddar där man var i stället för att bouncas till
+  // onboarding. Post-signup pushas man ändå till onboarding direkt via Login.
+  const REQUIRES_ONBOARDING = ["/profil", "/meddelanden", "/favoriter", "/mina-ansokningar"];
+  const pathNeedsOnboarding =
+    REQUIRES_ONBOARDING.some((p) => path === p || path.startsWith(p + "/")) ||
+    /^\/jobb\/[^/]+\/ansok$/.test(path); // ansökningsformuläret
+
   if (isDriver) {
     if (!profileLoaded) return children;
-    if (!isDriverMinimumProfileComplete(profile) && path !== "/onboarding/forare") {
+    if (!isDriverMinimumProfileComplete(profile) && path !== "/onboarding/forare" && pathNeedsOnboarding) {
       return <Navigate to="/onboarding/forare" state={{ from: path }} replace />;
     }
   }
