@@ -168,7 +168,7 @@ export default function Header({ onboarding = false }) {
 
   // Hamburgar/kryss-färg: mörk på ljus landing-header (scroll/öppen meny),
   // vit på mörk hjältebild (landing topp) och på mörka inre headers.
-  const menuIconColor = landingLight ? "var(--ink-800)" : "rgba(255,255,255,0.9)";
+  const menuIconColor = landingLight ? "var(--ink-800)" : "#F5F7F3"; // Strålkastare på mörkt (brandbook, 1:1 m. spec)
   // MenuButton-stil (rundad fyrkant, prototypvärden) — anpassad mörk hero vs ljus header.
   const menuOnDark = !landingLight; // ljus ikon = mörk yta
   const menuBtnBorder = menuOnDark ? "rgba(245,247,243,0.20)" : "rgba(27,36,33,0.13)";
