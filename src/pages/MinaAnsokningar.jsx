@@ -252,26 +252,34 @@ function AppCard({ conv }) {
 }
 
 // ─── Mobile mini-funnel ───────────────────────────────────────────────────────
-function MiniProgressBar({ stage }) {
-  const stageIdx = stage === "rejected" || stage === "selected" ? 3
-    : stage === "review" ? 2 : stage === "seen" ? 1 : 0;
+// ─── Stegspår (matchar prototypens Tracker) ───────────────────────────────────
+const M_STAGE_ORDER = ["applied", "seen", "review", "decision"];
+const M_STAGE_TXT = { applied: "Skickad", seen: "Sedd", review: "I urval", decision: "Beslut" };
+
+function MobileStageTracker({ stage }) {
   const isRejected = stage === "rejected";
-  const steps = ["applied", "seen", "review", "decision"];
+  const isSelected = stage === "selected";
+  const idx = isSelected || isRejected ? 3 : stage === "review" ? 2 : stage === "seen" ? 1 : 0;
+  const activeColor = isRejected ? "var(--danger)" : isSelected ? "var(--success)" : "var(--amber)";
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-      {steps.map((s, i) => {
-        const reached = i <= stageIdx;
-        const isLast = i === steps.length - 1;
-        const color = !reached ? "var(--ink-200)"
-          : isLast && stage === "selected" ? "var(--success)"
-          : isLast && isRejected ? "var(--ink-300)"
-          : i <= 1 ? "var(--info)" : "var(--amber)";
+    <div style={{ display: "flex", alignItems: "center", marginTop: 12 }}>
+      {M_STAGE_ORDER.map((s, i) => {
+        const done = i <= idx;
+        const isLast = i === M_STAGE_ORDER.length - 1;
+        const color = !done ? "var(--ink-200)" : (s === "decision") ? activeColor : "var(--green)";
+        const label = s === "decision" ? (isSelected ? "Utvald" : isRejected ? "Nej" : "Beslut") : M_STAGE_TXT[s];
+        const nextDone = i + 1 <= idx;
         return (
-          <div key={s} style={{ display: "flex", alignItems: "center", flex: isLast ? 0 : 1, gap: 4 }}>
-            <div style={{ width: 14, height: 14, borderRadius: 99, background: reached ? color : "transparent", border: reached ? "none" : "1.5px dashed var(--line-2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              {reached && !isRejected && <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" width="8" height="8"><polyline points="20 6 9 17 4 12"/></svg>}
+          <div key={s} style={{ display: "flex", alignItems: "center", flex: isLast ? "0 0 auto" : 1 }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, flexShrink: 0 }}>
+              <span style={{ width: 16, height: 16, borderRadius: 8, background: done ? color : "var(--paper-2)", border: done ? "none" : "2px solid var(--line-2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                {done && (s === "decision" && isRejected
+                  ? <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" width="8" height="8"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  : <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" width="8" height="8"><polyline points="20 6 9 17 4 12"/></svg>)}
+              </span>
+              <span style={{ fontSize: 9.5, fontWeight: 600, color: done ? "var(--ink-600)" : "var(--ink-400)", whiteSpace: "nowrap" }}>{label}</span>
             </div>
-            {!isLast && <div style={{ flex: 1, height: 2, background: i < stageIdx ? color : "var(--line)", borderRadius: 99 }}/>}
+            {!isLast && <div style={{ flex: 1, height: 2, margin: "0 4px", marginBottom: 16, background: nextDone ? "var(--green)" : "var(--line-2)" }}/>}
           </div>
         );
       })}
@@ -279,15 +287,21 @@ function MiniProgressBar({ stage }) {
   );
 }
 
-// ─── Mobile App Card ──────────────────────────────────────────────────────────
+const M_STATUS_PILL = {
+  selected: { bg: "var(--success-tint)", color: "var(--success)",    label: "Utvald",     dot: true },
+  rejected: { bg: "var(--danger-tint)",  color: "var(--danger)",     label: "Ej aktuell", dot: false },
+  review:   { bg: "var(--amber-tint)",   color: "var(--amber-text)", label: "I urval",    dot: true },
+  seen:     { bg: "var(--info-tint)",    color: "var(--info)",       label: "Sedd",       dot: false },
+  applied:  { bg: "var(--paper-2)",      color: "var(--ink-700)",    label: "Skickad",    dot: false },
+};
+
+// ─── Mobile App Card (matchar prototypen STP Mobil Mina Ansökningar) ──────────
 function MobileAppCard({ conv }) {
   const stage = getStage(conv);
   const isRejected = stage === "rejected";
   const lastMsg = conv.messages?.[conv.messages.length - 1];
   const hasUnread = !conv.readByDriverAt && lastMsg?.sender !== "driver" && !!lastMsg;
-  const STAGE_LABEL = { applied: "Skickad", seen: "Sedd", review: "I urval", selected: "Utvald", rejected: "Ej aktuell" };
-  const STAGE_COLOR = { applied: "var(--ink-400)", seen: "var(--info)", review: "var(--amber)", selected: "var(--success)", rejected: "var(--ink-300)" };
-  const STAGE_BG    = { applied: "var(--paper-2)", seen: "var(--info-tint)", review: "var(--amber-tint)", selected: "var(--success-tint)", rejected: "var(--paper-2)" };
+  const p = M_STATUS_PILL[stage] || M_STATUS_PILL.applied;
 
   return (
     <Link
@@ -295,34 +309,34 @@ function MobileAppCard({ conv }) {
       style={{
         display: "block", textDecoration: "none",
         background: "var(--card)", border: "1px solid var(--line)",
-        borderRadius: 14, padding: 16, opacity: isRejected ? 0.7 : 1,
+        borderRadius: 16, padding: 16, opacity: isRejected ? 0.7 : 1,
         boxShadow: "var(--sh-sm)",
       }}
     >
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 11, marginBottom: 12 }}>
-        <div style={{ position: "relative", flexShrink: 0 }}>
-          <div style={{ width: 42, height: 42, borderRadius: 11, background: "var(--paper-2)", border: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "var(--text-sm)", color: "var(--ink-700)" }}>
-            {logoInitials(conv.companyName)}
-          </div>
-          {hasUnread && <div style={{ position: "absolute", top: -3, right: -3, width: 12, height: 12, borderRadius: 99, background: "var(--success)", border: "2px solid var(--card)" }}/>}
+      <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+        <div style={{ width: 42, height: 42, borderRadius: 10, background: "var(--paper-2)", border: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 13, color: "var(--ink-700)", flexShrink: 0 }}>
+          {logoInitials(conv.companyName)}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
-            <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-900)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>{conv.jobTitle || "Okänd tjänst"}</div>
-            <span style={{ padding: "3px 8px", borderRadius: 6, background: STAGE_BG[stage], color: STAGE_COLOR[stage], fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 0.3, flexShrink: 0 }}>{(STAGE_LABEL[stage] || "").toUpperCase()}</span>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+            <h3 style={{ fontSize: 14.5, fontWeight: 800, color: "var(--ink-900)", lineHeight: 1.3, margin: 0, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{conv.jobTitle || "Okänd tjänst"}</h3>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "3px 9px", borderRadius: 999, background: p.bg, color: p.color, fontSize: 11.5, fontWeight: 600, whiteSpace: "nowrap", flexShrink: 0 }}>
+              {p.dot && <span style={{ width: 5, height: 5, borderRadius: 99, background: p.color }}/>}
+              {p.label}
+            </span>
           </div>
-          <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)" }}>{conv.companyName}</div>
+          <div style={{ fontSize: 12.5, color: "var(--ink-500)", marginTop: 2 }}>{conv.companyName} · Ansökt {formatRel(conv.createdAt)}</div>
         </div>
       </div>
 
-      <div style={{ marginBottom: 10 }}>
-        <MiniProgressBar stage={stage}/>
-      </div>
+      <MobileStageTracker stage={stage} />
 
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "var(--text-2xs)", color: "var(--ink-400)" }}>
-        <span>Ansökt {formatRel(conv.createdAt)}</span>
-        {hasUnread && <span style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: "var(--success)" }}>Nytt meddelande</span>}
-      </div>
+      {hasUnread && (
+        <div style={{ marginTop: 12, width: "100%", padding: "10px", borderRadius: 10, background: "var(--green)", color: "#fff", fontSize: 13.5, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Nytt meddelande från {(conv.companyName || "").split(" ")[0]}
+        </div>
+      )}
     </Link>
   );
 }
@@ -375,38 +389,32 @@ export default function MinaAnsokningar() {
       <div style={{ background: "var(--paper)", minHeight: "100vh", paddingBottom: 80 }}>
         <PageMeta title="Mina ansökningar – STP" />
 
-        {/* Header */}
-        <div style={{ background: "var(--paper)", borderBottom: "1px solid var(--line)", padding: "20px 20px 0" }}>
-          <p style={{ fontSize: "var(--text-2xs)", fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 8 }}>För förare</p>
+        {/* Header + filter — matchar prototypen STP Mobil Mina Ansökningar.
+            Topp-padding klarar den fixed:a MobileHeader (samma mönster som JobList). */}
+        <div style={{ background: "var(--paper)", padding: "calc(env(safe-area-inset-top, 0px) + 84px) 18px 0" }}>
           <h1 style={{ fontSize: "var(--text-4xl)", fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1, marginBottom: 14 }}>Mina ansökningar</h1>
 
-          {/* Tab bar */}
-          <div style={{ display: "flex", overflowX: "auto", gap: 0 }}>
+          {/* Filter-pills */}
+          <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 14 }}>
             {tabs.map((t) => {
               const isActive = tab === t.k;
               return (
                 <button key={t.k} onClick={() => setTab(t.k)} style={{
-                  padding: "10px 14px 12px", position: "relative", flexShrink: 0,
-                  fontSize: "var(--text-sm)", fontWeight: isActive ? 700 : 500,
-                  color: isActive ? "var(--ink-900)" : "var(--ink-500)",
-                  background: "none", border: "none", cursor: "pointer", fontFamily: "inherit",
-                  display: "inline-flex", alignItems: "center", gap: 6,
+                  flexShrink: 0, padding: "7px 14px", borderRadius: 999,
+                  fontSize: 13, fontWeight: 600,
+                  background: isActive ? "var(--green)" : "var(--card)",
+                  color: isActive ? "#fff" : "var(--ink-700)",
+                  border: `1px solid ${isActive ? "var(--green-deep)" : "var(--line-2)"}`,
+                  boxShadow: "var(--sh-sm)", cursor: "pointer", fontFamily: "inherit",
                 }}>
                   {t.l}
-                  <span style={{
-                    padding: "1px 7px", borderRadius: 999,
-                    background: isActive ? "var(--green-tint)" : "var(--paper-2)",
-                    color: isActive ? "var(--green-text)" : "var(--ink-500)",
-                    fontSize: "var(--text-2xs)", fontWeight: 800,
-                  }}>{t.c}</span>
-                  {isActive && <span style={{ position: "absolute", left: 14, right: 14, bottom: -1, height: 3, background: "var(--green)", borderRadius: "3px 3px 0 0" }}/>}
                 </button>
               );
             })}
           </div>
         </div>
 
-        <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 10 }}>
+        <div style={{ padding: "4px 18px", display: "flex", flexDirection: "column", gap: 12 }}>
           {loading ? (
             <div style={{ padding: "40px 0", textAlign: "center", color: "var(--ink-400)", fontSize: "var(--text-base)" }}>Hämtar dina ansökningar...</div>
           ) : error ? (
