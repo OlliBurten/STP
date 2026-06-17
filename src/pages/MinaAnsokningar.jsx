@@ -391,7 +391,7 @@ export default function MinaAnsokningar() {
 
         {/* Header + filter — matchar prototypen STP Mobil Mina Ansökningar.
             Topp-padding klarar den fixed:a MobileHeader (samma mönster som JobList). */}
-        <div style={{ background: "var(--paper)", padding: "calc(env(safe-area-inset-top, 0px) + 84px) 18px 0" }}>
+        <div style={{ background: "var(--paper)", padding: "calc(env(safe-area-inset-top, 0px) + 20px) 18px 0" }}>
           <h1 style={{ fontSize: "var(--text-4xl)", fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1, marginBottom: 14 }}>Mina ansökningar</h1>
 
           {/* Filter-pills */}

@@ -5,6 +5,7 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useChat } from "../context/ChatContext";
 import { useAuth } from "../context/AuthContext";
+import { useNotifications } from "../context/NotificationContext";
 
 // Inline SVG icons (matchar prototypen STP Mobil Sparat Ljust)
 const IC = {
@@ -48,6 +49,7 @@ export default function BottomNav() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { unreadCount } = useChat();
+  const { unreadCount: notifUnread } = useNotifications();
   const { isDriver } = useAuth();
 
   if (!isDriver) return null;
@@ -83,7 +85,8 @@ export default function BottomNav() {
     }}>
       {TABS.map((tab) => {
         const on = active === tab.id;
-        const badge = tab.id === "inbox" ? (unreadCount || 0) : 0;
+        const badge = tab.id === "inbox" ? (unreadCount || 0)
+          : tab.id === "profile" ? (notifUnread || 0) : 0;
         return (
           <button
             key={tab.id}

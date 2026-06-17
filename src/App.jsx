@@ -16,7 +16,7 @@ import Header from "./components/Header";
 import AppTopNav from "./components/AppTopNav";
 import Footer from "./components/Footer";
 import BottomNav from "./components/BottomNav";
-import MobileHeader from "./components/MobileHeader";
+import { NotificationProvider } from "./context/NotificationContext";
 import { useAuth } from "./context/AuthContext";
 import { useProfile } from "./context/ProfileContext";
 import { useIsMobile } from "./hooks/useIsMobile";
@@ -310,10 +310,6 @@ function AppLayout() {
   // Show bottom nav on mobile for driver-relevant routes
   const showBottomNav = isMobile && isDriver && !onMessageThread && !isJobDetailMobile &&
     BOTTOM_NAV_PATHS.some((p) => pathname === p || pathname.startsWith(p));
-
-  // Show global fixed header on the main bottom-nav tabs only (not sub-routes like /meddelanden/:id)
-  const showMobileHeader = isMobile && isDriver &&
-    ["/jobb", "/favoriter", "/mina-ansokningar", "/meddelanden", "/profil"].includes(pathname);
 
   // On mobile + driver pages: hide the desktop header and footer
   const hideChromeOnMobile = isMobile && isDriver &&
@@ -612,7 +608,6 @@ function AppLayout() {
               {!isMobile && !hideChromeOnMobile && !isAuthPage && !isPreviewPage && <FeedbackButton />}
               <InstallPrompt />
               <CookieBanner />
-              {showMobileHeader && <MobileHeader />}
               {showBottomNav && <BottomNav />}
             </div>
   );
@@ -630,6 +625,7 @@ function App() {
           <ConnectivityGate>
           <OAuthProviders>
             <AuthProvider>
+              <NotificationProvider>
               <ProfileProvider>
                 <ChatProvider>
                   <ToastProvider>
@@ -644,6 +640,7 @@ function App() {
                   </ToastProvider>
                 </ChatProvider>
               </ProfileProvider>
+              </NotificationProvider>
             </AuthProvider>
           </OAuthProviders>
           </ConnectivityGate>

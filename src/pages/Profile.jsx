@@ -1,7 +1,24 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, Navigate, useSearchParams } from "react-router-dom";
+import { Link, Navigate, useSearchParams, useNavigate } from "react-router-dom";
 import { useProfile } from "../context/ProfileContext";
 import { useAuth } from "../context/AuthContext";
+import { useNotifications } from "../context/NotificationContext";
+
+// Notis-hjälpare (samma som gamla MobileHeader-klockan)
+function notifRel(ts) {
+  if (!ts) return "";
+  const diff = Date.now() - new Date(ts).getTime();
+  if (diff < 60000) return "Just nu";
+  if (diff < 3600000) return `${Math.floor(diff / 60000)} min sedan`;
+  if (diff < 86400000) return `${Math.floor(diff / 3600000)} tim sedan`;
+  return new Date(ts).toLocaleDateString("sv-SE", { day: "numeric", month: "short" });
+}
+function notifDot(type) {
+  if (type === "MATCH_JOBS" || type === "MATCH_DRIVERS") return "var(--amber)";
+  if (type === "MESSAGE") return "var(--success)";
+  if (type === "APPLICATION") return "var(--info)";
+  return "var(--ink-300)";
+}
 import DriverProfileView from "../components/DriverProfileView.jsx";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { useIsMobile } from "../hooks/useIsMobile";
@@ -543,6 +560,8 @@ export default function Profile() {
   usePageTitle("Min profil");
   const { user, token, hasApi, isAdmin } = useAuth();
   const { profile, profileLoaded, updateProfile, profileSaving, profileSaveError } = useProfile();
+  const navigate = useNavigate();
+  const { list: notifList, unreadCount: notifUnread, markRead: markNotifRead, markAllRead: markAllNotifRead } = useNotifications();
   const toast = useToast();
 
   const [editing, setEditing] = useState(false);
@@ -911,7 +930,7 @@ export default function Profile() {
     );
 
     return (
-      <div style={{ background: "var(--paper)", minHeight: "100vh", color: "var(--ink-900)", paddingBottom: 100, paddingTop: "calc(env(safe-area-inset-top, 0px) + 84px)", fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+      <div style={{ background: "var(--paper)", minHeight: "100vh", color: "var(--ink-900)", paddingBottom: 100, paddingTop: "calc(env(safe-area-inset-top, 0px) + 20px)", fontFamily: "'DM Sans', system-ui, sans-serif" }}>
 
         {/* Hero card */}
         <div style={{ padding: "0 20px 20px" }}>
@@ -952,6 +971,41 @@ export default function Profile() {
               <div style={{ fontSize: "var(--text-xl)", fontWeight: 800, marginBottom: 2, color: "var(--success)", fontFamily: "var(--mono)" }}>{profileStats?.conversationCount ?? 0}</div>
               <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", fontWeight: 600 }}>Kontaktade dig</div>
             </div>
+          </div>
+        </div>
+
+        {/* Notiser-flöde (klockans innehåll bor nu här, badge:as på Profil-fliken) */}
+        <div style={{ padding: "0 20px 20px" }}>
+          <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, boxShadow: "var(--sh-sm)", overflow: "hidden" }}>
+            <div style={{ padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: notifList.length ? "1px solid var(--line)" : "none" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="var(--ink-500)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="17" height="17"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                <span style={{ fontSize: 15, fontWeight: 800, color: "var(--ink-900)" }}>Notiser</span>
+                {notifUnread > 0 && (
+                  <span style={{ minWidth: 18, height: 18, padding: "0 5px", borderRadius: 99, background: "var(--amber)", color: "#000", fontSize: 11, fontWeight: 800, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{notifUnread > 9 ? "9+" : notifUnread}</span>
+                )}
+              </div>
+              {notifUnread > 0 && (
+                <button type="button" onClick={markAllNotifRead} style={{ fontSize: 12, fontWeight: 700, color: "var(--green-text)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>Markera alla lästa</button>
+              )}
+            </div>
+            {notifList.length === 0 ? (
+              <div style={{ padding: "20px 16px", textAlign: "center", fontSize: 13, color: "var(--ink-400)" }}>Inga nya notiser</div>
+            ) : notifList.slice(0, 6).map((n) => (
+              <button
+                key={n.id}
+                type="button"
+                onClick={() => { markNotifRead(n.id); if (n.link) navigate(n.link); }}
+                style={{ width: "100%", padding: "12px 16px", display: "flex", gap: 11, alignItems: "flex-start", background: !n.readAt ? "var(--paper-2)" : "transparent", border: "none", borderBottom: "1px solid var(--line)", cursor: "pointer", textAlign: "left", fontFamily: "inherit" }}
+              >
+                <span style={{ width: 7, height: 7, borderRadius: 99, background: notifDot(n.type), marginTop: 6, flexShrink: 0 }} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13.5, lineHeight: 1.4, color: "var(--ink-900)", fontWeight: !n.readAt ? 700 : 400 }}>{n.title}</div>
+                  {n.body && <div style={{ fontSize: 11.5, color: "var(--ink-500)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{n.body}</div>}
+                  <div style={{ fontSize: 11, color: "var(--ink-400)", marginTop: 3 }}>{notifRel(n.createdAt)}</div>
+                </div>
+              </button>
+            ))}
           </div>
         </div>
 
