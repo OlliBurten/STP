@@ -270,9 +270,12 @@ function DriverCompletionNudge() {
   const { user, isDriver } = useAuth();
   const { profile, profileLoaded } = useProfile();
   const { pathname } = useLocation();
+  const isMobile = useIsMobile();
   const isOnboarding = ONBOARDING_PATHS.some((p) => matchPath(p, pathname));
   const hasOwnCompletionUI = COMPLETION_SELF_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"));
-  if (!isDriver || !profileLoaded || !user || user.isAdmin || isOnboarding || hasOwnCompletionUI) return null;
+  // På mobil tar bannern för mycket plats — profilsidan har en egen prompt, så
+  // den globala bannern visas bara på desktop. (Beslut: ägaren 2026-06-17.)
+  if (isMobile || !isDriver || !profileLoaded || !user || user.isAdmin || isOnboarding || hasOwnCompletionUI) return null;
   const p = { ...profile, name: profile?.name || user.name };
   const items = DRIVER_ITEMS.map((item) => ({ label: item.label, done: item.fn(p) }));
   const pct = Math.round((items.filter((i) => i.done).length / items.length) * 100);

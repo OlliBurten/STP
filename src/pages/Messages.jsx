@@ -68,6 +68,47 @@ function ConvItem({ conv, isDriver, isActive, basePath, isMobile }) {
     : (!conv.readByCompanyAt);
   const s = stage ? (STAGE[stage] ?? STAGE.applied) : null;
 
+  // Mobile driver: row matching STP Mobil Inkorg-prototypen
+  // (neutral fyrkantig logga-ruta, grön oläst-räknare, mjuk stage-pill)
+  if (isMobile && isDriver) {
+    return (
+      <Link
+        to={`${basePath}/${conv.id}`}
+        style={{ display: "block", padding: "14px 18px", textDecoration: "none", borderBottom: "1px solid var(--line)" }}
+      >
+        <div style={{ display: "flex", gap: 13, alignItems: "flex-start" }}>
+          <div style={{ width: 46, height: 46, borderRadius: 12, background: "var(--paper-2)", border: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "var(--text-base)", fontWeight: 800, color: "var(--ink-700)", flexShrink: 0 }}>
+            {avatarInitials(other)}
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
+              <span style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{other}</span>
+              <span style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", flexShrink: 0 }}>{relTime}</span>
+            </div>
+            {conv.jobTitle && (
+              <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", marginTop: 1, marginBottom: 5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{conv.jobTitle}</div>
+            )}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: "var(--text-sm)", color: unread ? "var(--ink-900)" : "var(--ink-500)", fontWeight: unread ? 600 : 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
+                {lastMsg?.sender === "driver" ? "Du: " : ""}{lastMsg?.content || "—"}
+              </span>
+              {unread && (
+                <span style={{ minWidth: 18, height: 18, padding: "0 5px", borderRadius: 9, background: "var(--green)", color: "#fff", fontSize: "var(--text-2xs)", fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>1</span>
+              )}
+            </div>
+            {s && (
+              <div style={{ marginTop: 7 }}>
+                <span style={{ display: "inline-flex", alignItems: "center", padding: "3px 9px", borderRadius: 999, background: s.bg, color: s.color, border: `1px solid ${s.border}`, fontSize: "var(--text-2xs)", fontWeight: 600, lineHeight: 1.4, whiteSpace: "nowrap" }}>
+                  {s.label}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      </Link>
+    );
+  }
+
   // Mobile company: compact row matching åkeri inkorg design
   if (isMobile && !isDriver) {
     const stageColor = conv.selectedByCompanyAt ? "var(--success)" : conv.readByCompanyAt ? "var(--amber)" : "var(--info)";
@@ -466,6 +507,7 @@ export default function Messages() {
     : [];
   const [companyFilter, setCompanyFilter] = useState("");
   const [stageFilter, setStageFilter] = useState("all");
+  const [filterMenuOpen, setFilterMenuOpen] = useState(false);
   const [conversationReview, setConversationReview] = useState(null);
 
   const driverId = user?.id ?? profile?.id;
@@ -589,53 +631,120 @@ export default function Messages() {
             className="sidebar-panel"
           >
             <div style={{ padding: isMobile ? "0 20px 12px" : "40px 18px 16px", paddingTop: isMobile ? "calc(env(safe-area-inset-top, 0px) + 20px)" : undefined, borderBottom: "1px solid var(--line)", flexShrink: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: isMobile ? 6 : 14 }}>
-                <h1 style={{ fontSize: isMobile ? "var(--text-3xl)" : 20, fontWeight: 800, color: "var(--ink-900)", letterSpacing: isMobile ? -0.8 : -0.4 }}>
-                  Inkorg
-                </h1>
-                {!isMobile && unreadCount > 0 && <span style={{ padding: "2px 9px", borderRadius: 999, background: "var(--success-tint)", border: "1px solid rgba(31,122,58,0.2)", fontSize: "var(--text-2xs)", fontWeight: 800, color: "var(--success)" }}>{unreadCount} nya</span>}
-              </div>
-              {!isMobile && (
-                <div style={{ position: "relative" }}>
-                  <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--ink-400)", display: "inline-flex" }}>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 15, height: 15 }}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                  </span>
-                  <input placeholder="Sök konversation..." style={{ width: "100%", padding: "9px 14px 9px 36px", background: "var(--card-2)", border: "1px solid var(--line-2)", borderRadius: 9, fontSize: "var(--text-sm)", color: "var(--ink-900)", outline: "none", fontFamily: "inherit", boxSizing: "border-box" }} readOnly />
-                </div>
-              )}
-              {isMobile && (
-                <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", marginBottom: 10 }}>
-                  {unreadCount > 0 ? `${unreadCount} olästa meddelanden` : "Inga olästa meddelanden"}
-                </div>
-              )}
+              {isMobile ? (
+                <>
+                  {/* Titel + filter-ikon (Messenger-stil — chips ersatta av en meny) */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, position: "relative" }}>
+                    <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.8 }}>
+                      Inkorg
+                    </h1>
+                    <button
+                      type="button"
+                      onClick={() => setFilterMenuOpen((v) => !v)}
+                      aria-label="Filtrera konversationer"
+                      style={{ position: "relative", width: 40, height: 40, borderRadius: 12, background: filterMenuOpen || stageFilter !== "all" ? "var(--green-tint)" : "var(--card)", border: `1px solid ${filterMenuOpen || stageFilter !== "all" ? "var(--green)" : "var(--line-2)"}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}
+                    >
+                      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke={stageFilter !== "all" ? "var(--green)" : "var(--ink-700)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="10" y1="18" x2="14" y2="18"/></svg>
+                      {stageFilter !== "all" && <span style={{ position: "absolute", top: -3, right: -3, width: 10, height: 10, borderRadius: 99, background: "var(--amber)", border: "2px solid var(--card)" }} />}
+                    </button>
 
-              {/* Company filter (multi-org) */}
-              {!isDriver && companies.length > 1 && (
-                <select
-                  value={companyFilter}
-                  onChange={(e) => setCompanyFilter(e.target.value)}
-                  style={{ width: "100%", padding: "8px 10px", borderRadius: 9, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-900)", fontSize: "var(--text-sm)", outline: "none", marginBottom: 10, fontFamily: "inherit", appearance: "none" }}
-                >
-                  {companies.map((c) => <option key={c} value={c}>{c}</option>)}
-                </select>
-              )}
+                    {filterMenuOpen && (
+                      <>
+                        <div onClick={() => setFilterMenuOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 40 }} />
+                        <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: 50, minWidth: 210, background: "var(--card)", border: "1px solid var(--line-2)", borderRadius: 14, boxShadow: "0 8px 28px rgba(20,32,32,0.16)", padding: 6 }}>
+                          {STAGE_FILTERS.filter(({ k }) => isDriver ? true : ["all", "unread", "selected", "active"].includes(k)).map(({ k, l, c }) => {
+                            const active = stageFilter === k;
+                            return (
+                              <button
+                                key={k}
+                                type="button"
+                                onClick={() => { setStageFilter(k); setFilterMenuOpen(false); }}
+                                style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "11px 12px", borderRadius: 10, background: active ? "var(--green-tint)" : "transparent", border: "none", cursor: "pointer", fontFamily: "inherit", textAlign: "left" }}
+                              >
+                                <span style={{ fontSize: "var(--text-sm)", fontWeight: active ? 700 : 500, color: active ? "var(--green-text)" : "var(--ink-800)" }}>{l}</span>
+                                <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                  {c > 0 && <span style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: active ? "var(--green)" : "var(--ink-400)" }}>{c}</span>}
+                                  {active && <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </>
+                    )}
+                  </div>
 
-              {/* Stage filter pills */}
-              <div style={{ display: "flex", gap: 8, rowGap: 8, flexWrap: isMobile ? "nowrap" : "wrap", overflowX: isMobile ? "auto" : "visible", marginTop: isMobile ? 0 : 4 }}>
-                  {STAGE_FILTERS.filter(({ k }) => isDriver ? true : ["all", "unread", "selected", "active"].includes(k)).map(({ k, l, c }) => {
-                    const active = stageFilter === k;
-                    return (
-                      <button
-                        key={k}
-                        onClick={() => setStageFilter(k)}
-                        style={{ padding: isMobile ? "7px 14px" : "6px 11px", borderRadius: 999, background: active ? "var(--green)" : "var(--card)", border: `1px solid ${active ? "var(--green-deep)" : "var(--line-2)"}`, color: active ? "#fff" : "var(--ink-700)", fontSize: isMobile ? 13 : 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", flexShrink: 0, display: "flex", alignItems: "center", gap: 5, minHeight: isMobile ? 36 : "auto", boxShadow: "var(--sh-sm)" }}
-                      >
-                        {l}
-                        {!isMobile && c > 0 && ` · ${c}`}
+                  {/* Aktiv filter-rad / oläst-räknare */}
+                  {stageFilter !== "all" ? (
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6 }}>
+                      <span style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)" }}>
+                        Visar: <strong style={{ color: "var(--ink-800)", fontWeight: 700 }}>{(STAGE_FILTERS.find((f) => f.k === stageFilter) || {}).l}</strong>
+                      </span>
+                      <button type="button" onClick={() => setStageFilter("all")} style={{ fontSize: "var(--text-xs)", color: "var(--green)", fontWeight: 700, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", padding: 0 }}>
+                        Rensa
                       </button>
-                    );
-                  })}
-              </div>
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", marginTop: 6 }}>
+                      {unreadCount > 0 ? `${unreadCount} olästa meddelanden` : "Inga olästa meddelanden"}
+                    </div>
+                  )}
+
+                  {/* Company filter (multi-org) */}
+                  {!isDriver && companies.length > 1 && (
+                    <select
+                      value={companyFilter}
+                      onChange={(e) => setCompanyFilter(e.target.value)}
+                      style={{ width: "100%", padding: "8px 10px", borderRadius: 9, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-900)", fontSize: "var(--text-sm)", outline: "none", marginTop: 10, fontFamily: "inherit", appearance: "none" }}
+                    >
+                      {companies.map((c) => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  )}
+                </>
+              ) : (
+                <>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+                    <h1 style={{ fontSize: 20, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.4 }}>
+                      Inkorg
+                    </h1>
+                    {unreadCount > 0 && <span style={{ padding: "2px 9px", borderRadius: 999, background: "var(--success-tint)", border: "1px solid rgba(31,122,58,0.2)", fontSize: "var(--text-2xs)", fontWeight: 800, color: "var(--success)" }}>{unreadCount} nya</span>}
+                  </div>
+                  <div style={{ position: "relative" }}>
+                    <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--ink-400)", display: "inline-flex" }}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 15, height: 15 }}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    </span>
+                    <input placeholder="Sök konversation..." style={{ width: "100%", padding: "9px 14px 9px 36px", background: "var(--card-2)", border: "1px solid var(--line-2)", borderRadius: 9, fontSize: "var(--text-sm)", color: "var(--ink-900)", outline: "none", fontFamily: "inherit", boxSizing: "border-box" }} readOnly />
+                  </div>
+
+                  {/* Company filter (multi-org) */}
+                  {!isDriver && companies.length > 1 && (
+                    <select
+                      value={companyFilter}
+                      onChange={(e) => setCompanyFilter(e.target.value)}
+                      style={{ width: "100%", padding: "8px 10px", borderRadius: 9, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-900)", fontSize: "var(--text-sm)", outline: "none", marginTop: 10, marginBottom: 10, fontFamily: "inherit", appearance: "none" }}
+                    >
+                      {companies.map((c) => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  )}
+
+                  {/* Stage filter pills */}
+                  <div style={{ display: "flex", gap: 8, rowGap: 8, flexWrap: "wrap", marginTop: 12 }}>
+                    {STAGE_FILTERS.filter(({ k }) => isDriver ? true : ["all", "unread", "selected", "active"].includes(k)).map(({ k, l, c }) => {
+                      const active = stageFilter === k;
+                      return (
+                        <button
+                          key={k}
+                          onClick={() => setStageFilter(k)}
+                          style={{ padding: "6px 11px", borderRadius: 999, background: active ? "var(--green)" : "var(--card)", border: `1px solid ${active ? "var(--green-deep)" : "var(--line-2)"}`, color: active ? "#fff" : "var(--ink-700)", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", flexShrink: 0, display: "flex", alignItems: "center", gap: 5, boxShadow: "var(--sh-sm)" }}
+                        >
+                          {l}
+                          {c > 0 && ` · ${c}`}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
             </div>
 
             <div style={{ flex: 1, overflowY: "auto", paddingBottom: isMobile ? "calc(env(safe-area-inset-bottom, 0px) + 120px)" : 0 }}>
