@@ -627,7 +627,7 @@ export default function Messages() {
 
           {/* ── Sidebar ── */}
           <div
-            style={{ display: id && isMobile ? "none" : "flex", width: isMobile ? "100%" : undefined, background: "var(--card)", borderRight: "1px solid var(--line)", flexDirection: "column", overflow: "hidden", flexShrink: 0 }}
+            style={{ display: id && isMobile ? "none" : "flex", width: isMobile ? "100%" : undefined, background: isMobile ? "var(--paper)" : "var(--card)", borderRight: "1px solid var(--line)", flexDirection: "column", overflow: "hidden", flexShrink: 0 }}
             className="sidebar-panel"
           >
             <div style={{ padding: isMobile ? "0 20px 12px" : "40px 18px 16px", paddingTop: isMobile ? "calc(env(safe-area-inset-top, 0px) + 20px)" : undefined, borderBottom: "1px solid var(--line)", flexShrink: 0 }}>
