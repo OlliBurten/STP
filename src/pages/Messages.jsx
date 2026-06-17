@@ -440,7 +440,7 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function Messages() {
-  usePageTitle("Meddelanden");
+  usePageTitle("Inkorg");
   const isMobile = useIsMobile();
   const { id } = useParams();
   const { user, hasApi } = useAuth();
@@ -590,8 +590,8 @@ export default function Messages() {
           >
             <div style={{ padding: isMobile ? "0 20px 12px" : "40px 18px 16px", paddingTop: isMobile ? "calc(env(safe-area-inset-top, 0px) + 20px)" : undefined, borderBottom: "1px solid var(--line)", flexShrink: 0 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: isMobile ? 6 : 14 }}>
-                <h1 style={{ fontSize: isMobile ? 26 : 20, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.4 }}>
-                  Meddelanden
+                <h1 style={{ fontSize: isMobile ? "var(--text-3xl)" : 20, fontWeight: 800, color: "var(--ink-900)", letterSpacing: isMobile ? -0.8 : -0.4 }}>
+                  Inkorg
                 </h1>
                 {!isMobile && unreadCount > 0 && <span style={{ padding: "2px 9px", borderRadius: 999, background: "var(--success-tint)", border: "1px solid rgba(31,122,58,0.2)", fontSize: "var(--text-2xs)", fontWeight: 800, color: "var(--success)" }}>{unreadCount} nya</span>}
               </div>
@@ -628,10 +628,10 @@ export default function Messages() {
                       <button
                         key={k}
                         onClick={() => setStageFilter(k)}
-                        style={{ padding: isMobile ? "8px 14px" : "6px 11px", borderRadius: 99, background: active ? "var(--green-tint)" : "var(--paper-2)", border: active ? "1px solid rgba(30,107,91,0.3)" : "1px solid var(--line)", color: active ? "var(--green-text)" : "var(--ink-500)", fontSize: isMobile ? 12.5 : 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", flexShrink: 0, display: "flex", alignItems: "center", gap: 5, minHeight: isMobile ? 36 : "auto" }}
+                        style={{ padding: isMobile ? "7px 14px" : "6px 11px", borderRadius: 999, background: active ? "var(--green)" : "var(--card)", border: `1px solid ${active ? "var(--green-deep)" : "var(--line-2)"}`, color: active ? "#fff" : "var(--ink-700)", fontSize: isMobile ? 13 : 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", flexShrink: 0, display: "flex", alignItems: "center", gap: 5, minHeight: isMobile ? 36 : "auto", boxShadow: "var(--sh-sm)" }}
                       >
                         {l}
-                        {isMobile ? <span style={{ padding: "1px 6px", borderRadius: 99, background: active ? "var(--green-tint)" : "var(--paper-2)", fontSize: "var(--text-2xs)", fontWeight: 800 }}>{c}</span> : (c > 0 && ` · ${c}`)}
+                        {!isMobile && c > 0 && ` · ${c}`}
                       </button>
                     );
                   })}
