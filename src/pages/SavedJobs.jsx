@@ -268,7 +268,7 @@ export default function SavedJobs() {
 
         {/* Title */}
         <div style={{ padding: "0 20px 14px", paddingTop: "calc(env(safe-area-inset-top, 0px) + 20px)" }}>
-          <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, letterSpacing: -1, marginBottom: 4, color: "var(--ink-900)" }}>Sparat</h1>
+          <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, letterSpacing: -0.8, marginBottom: 4, color: "var(--ink-900)" }}>Sparat</h1>
           <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)" }}>Dina sparade jobb och åkerier</div>
         </div>
 

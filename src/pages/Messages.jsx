@@ -676,7 +676,7 @@ export default function Messages() {
 
                   {/* Aktiv filter-rad / oläst-räknare */}
                   {stageFilter !== "all" ? (
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
                       <span style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)" }}>
                         Visar: <strong style={{ color: "var(--ink-800)", fontWeight: 700 }}>{(STAGE_FILTERS.find((f) => f.k === stageFilter) || {}).l}</strong>
                       </span>
@@ -685,7 +685,7 @@ export default function Messages() {
                       </button>
                     </div>
                   ) : (
-                    <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", marginTop: 6 }}>
+                    <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", marginTop: 4 }}>
                       {unreadCount > 0 ? `${unreadCount} olästa meddelanden` : "Inga olästa meddelanden"}
                     </div>
                   )}
