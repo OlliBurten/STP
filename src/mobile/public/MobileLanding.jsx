@@ -1,6 +1,5 @@
-// STP Mobile — public landing. Ported from STP Mobil Landing, wired to real
-// routes. The prototype's external hero image + Sweden-map SVG assets aren't in
-// the repo, so the hero uses the gradient layers and the map uses city dots.
+// STP Mobile — public landing. Ported 1:1 from STP Mobil Landing, wired to real
+// routes. Hero photo (/hero.webp) + real Sweden map (swedenGeo + CITY_XY).
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import MobileShell from "../MobileShell";
@@ -9,18 +8,7 @@ import { SWE_LAN_PATHS, SWE_VIEW } from "../../data/swedenGeo";
 import { CITY_XY } from "../../data/swedenCityCoords";
 
 const AMBER = "var(--amber-bright)";
-
-function useNav() {
-  const navigate = useNavigate();
-  return {
-    register: (role) => navigate(`/registrera${role ? `?role=${role}` : ""}`),
-    login: () => navigate("/login?start=login"),
-    jobs: () => navigate("/jobb"),
-    jobsCity: (c) => navigate(`/jobb?stad=${encodeURIComponent(c)}`),
-    jobsRegion: (r) => navigate(`/jobb?region=${encodeURIComponent(r)}`),
-    home: () => navigate("/"),
-  };
-}
+const MAIL = "mailto:hello@transportplattformen.se";
 
 const Eyebrow = ({ children, onDark }) => (
   <span style={{ display: "inline-block", padding: "6px 13px", borderRadius: 999, fontSize: 12, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", background: onDark ? "rgba(255,255,255,0.1)" : "var(--green-tint)", color: onDark ? "#fff" : "var(--green-text)" }}>{children}</span>
@@ -41,18 +29,34 @@ const BtnGhost = ({ children, onClick, onDark }) => (
   <button onClick={onClick} className="press" style={{ width: "100%", height: 58, padding: "0 24px", borderRadius: 15, background: onDark ? "rgba(255,255,255,0.08)" : "var(--card)", border: `1px solid ${onDark ? "rgba(255,255,255,0.25)" : "var(--line-2)"}`, color: onDark ? "#fff" : "var(--ink-900)", fontWeight: 700, fontSize: 16.5, display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>{children}</button>
 );
 
-const CITIES = ["Stockholm", "Göteborg", "Malmö", "Linköping", "Norrköping", "Jönköping", "Helsingborg", "Västerås", "Örebro", "Uppsala", "Sundsvall", "Umeå", "Luleå", "Gävle", "Borås"];
-const REGIONS = ["Stockholm", "Skåne", "Västra Götaland", "Halland", "Östergötland", "Jönköping", "Kronoberg", "Kalmar", "Blekinge", "Södermanland", "Örebro", "Västmanland", "Dalarna", "Värmland", "Uppsala"];
+function useNav() {
+  const navigate = useNavigate();
+  return {
+    register: (role) => navigate(`/registrera${role ? `?role=${role}` : ""}`),
+    login: () => navigate("/login?start=login"),
+    jobs: () => navigate("/jobb"),
+    jobsCity: (c) => navigate(`/jobb?stad=${encodeURIComponent(c)}`),
+    jobsRegion: (r) => navigate(`/jobb?region=${encodeURIComponent(r)}`),
+    privacy: () => navigate("/integritet"),
+    terms: () => navigate("/anvandarvillkor"),
+    home: () => navigate("/"),
+    mail: () => { window.location.href = MAIL; },
+  };
+}
+
+const CITIES = ["Stockholm", "Göteborg", "Malmö", "Linköping", "Norrköping", "Jönköping", "Helsingborg", "Västerås", "Örebro", "Uppsala", "Sundsvall", "Umeå", "Luleå", "Gävle", "Borås", "Eskilstuna", "Karlstad", "Växjö"];
+const REGIONS = ["Stockholm", "Skåne", "Västra Götaland", "Halland", "Östergötland", "Jönköping", "Kronoberg", "Kalmar", "Blekinge", "Gotland", "Södermanland", "Örebro", "Västmanland", "Dalarna", "Värmland", "Uppsala", "Gävleborg", "Västernorrland", "Jämtland", "Västerbotten", "Norrbotten"];
+
 const PROBLEMS = [
   ["01", "Ingen struktur", "Körkort, erfarenhet och tillgänglighet begrävs i fritext och kommentarsfält. Ingen vet vem som är seriös."],
   ["02", "Mellanhänder äter lönen", "Bemanningsbolag tar mellan 25–40 % av lönen. Föraren förlorar. Åkeriet betalar mer. Ingen vinner."],
-  ["03", "Bra kandidater försvinner", "En jobbannons lever 24 timmar på sociala medier. Rätt förare ser den aldrig."],
+  ["03", "Bra kandidater försvinner", "En jobbannons lever 24 timmar på sociala medier. Rätt förare ser den aldrig. Åkeriet upprepar processen."],
 ];
 const FEATURES = [
-  ["user", "Smart matchning", "Matchas baserat på körkort, region, segment och tillgänglighet."],
-  ["building", "Verifierade åkerier", "Åkerier verifieras mot Bolagsverket. Förare ser bara seriösa aktörer."],
-  ["msg", "Direktkontakt", "Inga mellanhänder. Inga provisioner. Förare och åkeri pratar direkt."],
-  ["eye", "Du styr din synlighet", "Som förare bestämmer du om du är synlig och vem som ser din profil."],
+  ["user", "Smart matchning", "Matchas baserat på körkort, region, segment och tillgänglighet. Systemet rankar förare och jobb automatiskt."],
+  ["building", "Verifierade åkerier", "Åkerier verifieras mot Bolagsverket. Förare ser bara seriösa aktörer — inga ogrundade annonsörer."],
+  ["msg", "Direktkontakt", "Inga mellanhänder. Inga provisioner. Förare och åkeri pratar direkt — som det borde vara."],
+  ["eye", "Du styr din synlighet", "Som förare bestämmer du om du är synlig, om du visar telefonnummer, och vem som ser din profil."],
 ];
 const SEGMENTS = [
   ["building", "FAST ANSTÄLLNING", "Heltid", "Långsiktig roll. Visa erfarenhet, behörigheter och vad du söker."],
@@ -60,22 +64,46 @@ const SEGMENTS = [
   ["star", "UTBILDNING", "Praktik", "Elever, nybörjare och de i start av karriären som söker seriösa aktörer."],
 ];
 const FAQS = [
-  ["Är STP ett bemanningsbolag?", "Nej. STP möjliggör direktkontakt mellan förare och åkerier — utan mellanhänder som tar en del av lönen."],
-  ["Kostar det något?", "För förare är STP alltid gratis. Åkerier kommer igång gratis och betalar först för utökade funktioner."],
-  ["Hur fungerar verifiering?", "Åkerier verifieras mot Bolagsverket med F-skattsedel och trafiktillstånd."],
-  ["Vem äger min profil?", "Du. Din profil är din — du styr vad som visas och kan ta bort den när du vill."],
+  ["Är STP ett bemanningsbolag?", "Nej. STP är inte ett bemanningsbolag. Vi möjliggör direktkontakt mellan förare och åkerier — utan mellanhänder som tar en del av lönen."],
+  ["Kostar det något?", "För förare är STP alltid gratis. Åkerier kommer igång gratis och betalar först för utökade funktioner när de vill nå fler förare."],
+  ["Hur fungerar verifiering?", "Åkerier verifieras mot Bolagsverket med F-skattsedel och trafiktillstånd. Förare ser bara seriösa, kontrollerade arbetsgivare."],
+  ["Vem äger min profil?", "Du. Din profil är din — du styr vad som visas, kan dela den som CV och ta bort den när du vill."],
+  ["Vad skiljer STP från vanliga jobbsajter?", "STP är byggt enbart för transportbranschen. Matchning sker på körkort, behörigheter och region — inte en allmän annonstavla."],
 ];
+const STATS = [["Direkt", "Inga mellanhänder"], ["0 kr", "Ingen provision"], ["2 min", "Att komma igång"], ["Verifierat", "Mot Bolagsverket"]];
 const STEPS = {
-  forare: { label: "FÖR FÖRARE", tag: "Hitta ditt nästa jobb — utan att jaga annonser i grupper.", items: [["Skapa konto", "Registrera dig som förare på 2 minuter."], ["Bygg din profil", "Fyll i körkort, certifikat och tillgänglighet."], ["Bli matchad", "Åkerier hittar dig automatiskt. Du kan också söka jobb direkt."]] },
-  akeri: { label: "FÖR ÅKERIER", tag: "Hitta rätt förare — verifierade och redo att köra.", items: [["Registrera åkeri", "Koppla ert organisationsnummer — vi hämtar uppgifterna automatiskt."], ["Publicera & sök", "Lägg upp jobb eller sök proaktivt bland verifierade förare."], ["Anställ", "Hantera ansökningar i en tydlig pipeline. Ingen provision."]] },
+  forare: { label: "FÖR FÖRARE", tag: "Hitta ditt nästa jobb — utan att jaga annonser i grupper.", items: [["Skapa konto", "Registrera dig som förare på 2 minuter. Välj körkort, region och vad du söker."], ["Bygg din profil", "Fyll i körkort, certifikat, erfarenhet och tillgänglighet. Välj om du är synlig för åkerier."], ["Bli matchad", "Åkerier hittar dig automatiskt. Du kan också söka jobb direkt. All kontakt sker via plattformen."]] },
+  akeri: { label: "FÖR ÅKERIER", tag: "Hitta rätt förare — verifierade och redo att köra.", items: [["Registrera åkeri", "Koppla ert organisationsnummer — vi hämtar uppgifterna automatiskt från Bolagsverket."], ["Publicera & sök", "Lägg upp jobb eller sök proaktivt bland verifierade förare i er region."], ["Anställ", "Hantera ansökningar och kontakt i en tydlig pipeline. Inga mellanhänder, ingen provision."]] },
 };
+const MAP_CITIES = [["Stockholm", true], ["Göteborg", true], ["Malmö", true], ["Sundsvall", false], ["Umeå", false], ["Luleå", false], ["Örebro", false], ["Jönköping", false]];
 
-function Menu({ open, onClose, nav, openPage }) {
+// "Visa, inte berätta" — matchnings-förhandsvisning
+const JobPreview = () => (
+  <div style={{ background: "var(--card)", borderRadius: 18, padding: "18px", boxShadow: "var(--sh-md)", border: "1px solid var(--line)" }}>
+    <div style={{ display: "flex", alignItems: "flex-start", gap: 13 }}>
+      <div style={{ width: 46, height: 46, borderRadius: 13, background: "var(--green-tint)", color: "var(--green-text)", fontWeight: 800, fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>NF</div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 17, fontWeight: 800, letterSpacing: -0.3, color: "var(--ink-900)" }}>Fjärrförare CE</div>
+        <div style={{ fontSize: 13.5, color: "var(--ink-500)", marginTop: 2 }}>Nordfrakt AB · Malmö</div>
+      </div>
+      <div style={{ textAlign: "center", flexShrink: 0 }}>
+        <div style={{ fontSize: 20, fontWeight: 800, color: "var(--success)", letterSpacing: -0.5, lineHeight: 1 }}>94%</div>
+        <div style={{ fontSize: 10.5, fontWeight: 700, color: "var(--ink-400)", letterSpacing: 0.5, marginTop: 2 }}>MATCH</div>
+      </div>
+    </div>
+    <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginTop: 14 }}>
+      {["CE", "Heltid", "ADR", "Fjärr"].map((t) => <span key={t} style={{ fontSize: 12.5, fontWeight: 700, color: "var(--ink-600)", background: "var(--paper-2)", padding: "5px 11px", borderRadius: 8 }}>{t}</span>)}
+    </div>
+  </div>
+);
+
+function Menu({ open, onClose, nav, openPage, toSteps }) {
   if (!open) return null;
   const explore = [
     ["search", "Lediga jobb", nav.jobs], ["truck", "För förare", () => openPage("forforare")],
-    ["building", "För åkerier", () => openPage("forakerier")], ["cap", "Praktik & APL", () => openPage("praktik")],
-    ["heart", "Om STP", () => openPage("omstp")], ["mail", "Kontakt", () => openPage("kontakt")],
+    ["building", "För åkerier", () => openPage("forakerier")], ["info", "Så fungerar STP", toSteps],
+    ["cap", "Praktik & APL", () => openPage("praktik")], ["heart", "Om STP", () => openPage("omstp")],
+    ["mail", "Kontakt", () => openPage("kontakt")],
   ];
   return (
     <div style={{ position: "absolute", inset: 0, zIndex: 60 }}>
@@ -100,8 +128,6 @@ function Menu({ open, onClose, nav, openPage }) {
     </div>
   );
 }
-
-const MAP_CITIES = [["Stockholm", true], ["Göteborg", true], ["Malmö", true], ["Sundsvall", false], ["Umeå", false], ["Luleå", false], ["Örebro", false], ["Jönköping", false]];
 
 function PageShell({ title, children, onClose }) {
   return (
@@ -137,13 +163,12 @@ const BenefitList = ({ items }) => (
   </div>
 );
 
-const MAIL = "mailto:hello@transportplattformen.se";
 const SUBPAGES = {
-  forforare: { title: "För förare", hero: ["För förare", "Ditt nästa körjobb — utan mellanhänder.", "Bygg en profil som visar dina behörigheter. Bli hittad av seriösa åkerier — eller sök själv. Alltid gratis.", "linear-gradient(160deg,#3a4b40,#1B2421)"], benefits: [["star", "Alltid gratis", "STP är och förblir kostnadsfritt för dig som förare."], ["user", "Du äger din profil", "Körkort, certifikat och erfarenhet samlat på ett ställe."], ["building", "Bara verifierade åkerier", "Åkerier kontrolleras mot Bolagsverket."], ["search", "Matchning på det som räknas", "Du matchas på körkortsklass, behörigheter och region."], ["msg", "Direktkontakt", "Prata direkt med åkeriet. Inga bemanningsbolag emellan."]], cta: ["forare", "Skapa förarprofil"] },
-  forakerier: { title: "För åkerier", hero: ["För åkerier", "Hitta rätt förare — verifierade och redo att köra.", "Sök proaktivt bland förare i er region eller publicera jobb. Ingen provision."], benefits: [["search", "Sök bland verifierade förare", "Filtrera på körkort, behörigheter och region."], ["doc", "Publicera jobb gratis", "Kom igång utan kostnad."], ["msg", "Ingen provision", "Ni betalar aldrig en del av lönen."], ["building", "Tydlig pipeline", "Hantera ansökningar i ett enkelt flöde."], ["shield", "Bygg ert arbetsgivarvarumärke", "En verifierad företagsprofil med omdömen."]], cta: ["akeri", "Registrera åkeri"] },
-  praktik: { title: "Praktik & APL", hero: ["Praktik & APL", "För elever, skolor och blivande förare.", "STP kopplar ihop elever och praktikanter med seriösa åkerier som tar emot APL.", "linear-gradient(160deg,#7a5418,#3a2a0c)"], benefits: [["cap", "För dig som studerar", "Söker du APL-plats eller ditt första jobb? Skapa en profil."], ["building", "För åkerier som handleder", "Ta emot praktikanter och bygg upp framtidens förare."], ["star", "Seriösa aktörer", "Alla åkerier på STP är verifierade."]], cta: ["forare", "Skapa profil"] },
-  omstp: { title: "Om STP", hero: ["Om STP", "Transportbranschen förtjänar en ärlig plattform.", "STP byggs för att förare och åkerier ska hitta varandra direkt — utan mellanhänder som tar en del av lönen."], benefits: [["heart", "Förarens sida", "Föraren ska aldrig betala för att bli sedd. Gratis, alltid."], ["shield", "Kvalitet före kvantitet", "Vi släpper hellre in färre, verifierade åkerier."], ["msg", "Transparens", "Direkt kontakt, tydliga villkor och inga dolda avgifter."]], cta: ["forare", "Kom igång gratis"] },
-  kontakt: { title: "Kontakt", hero: ["Kontakt", "Hör av dig direkt.", "STP drivs av en liten oberoende grund – du når oss direkt.", "linear-gradient(160deg,#154240,#0d2a28)"], benefits: [["mail", "E-post", "hello@transportplattformen.se — vi svarar oftast inom ett dygn."]], cta: ["forare", "Skapa konto"] },
+  forforare: { title: "För förare", hero: ["För förare", "Ditt nästa körjobb — utan mellanhänder.", "Bygg en profil som visar dina behörigheter. Bli hittad av seriösa åkerier — eller sök själv. Alltid gratis.", "linear-gradient(160deg,#3a4b40,#1B2421)"], benefits: [["star", "Alltid gratis", "STP är och förblir kostnadsfritt för dig som förare. Inga avgifter, ingen provision på din lön."], ["user", "Du äger din profil", "Körkort, certifikat och erfarenhet samlat på ett ställe. Dela den som digitalt CV — eller ta bort den när du vill."], ["building", "Bara verifierade åkerier", "Åkerier kontrolleras mot Bolagsverket. Du slipper oseriösa annonsörer och Facebook-bluffar."], ["search", "Matchning på det som räknas", "Du matchas på körkortsklass, behörigheter, region och tillgänglighet — inte en allmän annonstavla."], ["msg", "Direktkontakt", "Prata direkt med åkeriet. Inga bemanningsbolag mellan dig och jobbet."], ["eye", "Du styr din synlighet", "Bestäm själv om du är synlig, om numret visas och vem som ser din profil."]], cta: ["forare", "Skapa förarprofil"] },
+  forakerier: { title: "För åkerier", hero: ["För åkerier", "Hitta rätt förare — verifierade och redo att köra.", "Sök proaktivt bland förare i er region eller publicera jobb. Ni når seriösa, kontaktbara förare direkt — ingen provision."], benefits: [["search", "Sök bland verifierade förare", "Filtrera på körkortsklass, behörigheter, region och tillgänglighet. Hitta rätt profil på minuter."], ["doc", "Publicera jobb gratis", "Kom igång utan kostnad. Betala först för utökad räckvidd när ni vill nå fler förare."], ["msg", "Ingen provision", "Ni betalar aldrig en del av lönen. Kontakten sker direkt mellan er och föraren."], ["building", "Tydlig pipeline", "Hantera ansökningar och kandidater i ett enkelt flöde — från intresse till anställning."], ["shield", "Bygg ert arbetsgivarvarumärke", "En verifierad företagsprofil med omdömen gör att fler bra förare vågar höra av sig."], ["user", "Team-konton", "Bjud in kollegor med olika roller — rekryterare och admin — under samma åkeri."]], cta: ["akeri", "Registrera åkeri"] },
+  praktik: { title: "Praktik & APL", hero: ["Praktik & APL", "För elever, skolor och blivande förare.", "STP kopplar ihop elever och praktikanter med seriösa åkerier som tar emot APL — arbetsplatsförlagt lärande.", "linear-gradient(160deg,#7a5418,#3a2a0c)"], benefits: [["cap", "För dig som studerar", "Söker du APL-plats eller ditt första jobb efter utbildningen? Skapa en profil och visa var du är på vägen."], ["building", "För åkerier som handleder", "Ta emot praktikanter och bygg upp framtidens förare. Hitta motiverade elever i er region."], ["star", "Seriösa aktörer", "Alla åkerier på STP är verifierade — trygg praktik för både elev och skola."]], cta: ["forare", "Skapa profil"] },
+  omstp: { title: "Om STP", hero: ["Om STP", "Transportbranschen förtjänar en ärlig plattform.", "STP byggs för att förare och åkerier ska hitta varandra direkt — utan mellanhänder som tar en del av lönen."], benefits: [["heart", "Förarens sida", "Föraren ska aldrig betala för att bli sedd. Gratis, alltid."], ["shield", "Kvalitet före kvantitet", "Vi släpper hellre in färre, verifierade åkerier än många oseriösa."], ["msg", "Transparens", "Direkt kontakt, tydliga villkor och inga dolda avgifter."]], cta: ["forare", "Hör av dig"] },
+  kontakt: { title: "Kontakt", hero: ["Kontakt", "Hör av dig direkt.", "STP drivs av en liten oberoende grund – inga supportköer, inga formulär som försvinner. Du når oss direkt.", "linear-gradient(160deg,#154240,#0d2a28)"], benefits: [["mail", "E-post", "hello@transportplattformen.se — vi svarar oftast inom ett dygn, vardagar."]], cta: ["forare", "Skicka feedback"] },
 };
 
 function SubPage({ id, onClose, nav }) {
@@ -155,13 +180,26 @@ function SubPage({ id, onClose, nav }) {
       <div style={{ padding: "32px 22px 40px" }}>
         <BenefitList items={p.benefits} />
         <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 30 }}>
-          <BtnGreen full onClick={() => (id === "kontakt" ? (window.location.href = MAIL) : nav.register(p.cta[0]))}>{p.cta[1]} <Icon name="arrow" size={19} color="#fff" stroke={2.4} /></BtnGreen>
+          <BtnGreen full onClick={() => (id === "kontakt" ? nav.mail() : nav.register(p.cta[0]))}>{p.cta[1]} <Icon name="arrow" size={19} color="#fff" stroke={2.4} /></BtnGreen>
           <BtnGhost onClick={nav.jobs}>Se lediga jobb</BtnGhost>
         </div>
       </div>
     </PageShell>
   );
 }
+
+const FooterCol = ({ title, items }) => (
+  <div style={{ marginBottom: 24 }}>
+    <div style={{ fontSize: 11.5, fontWeight: 800, letterSpacing: 1.5, color: "rgba(255,255,255,0.4)", marginBottom: 14 }}>{title}</div>
+    <div style={{ display: "flex", flexDirection: "column", gap: 13 }}>{items.map(([t, fn]) => <a key={t} onClick={fn} className="press" style={{ fontSize: 15, color: "rgba(255,255,255,0.75)", cursor: "pointer" }}>{t}</a>)}</div>
+  </div>
+);
+const ChipWrap = ({ title, items, onItem }) => (
+  <div style={{ marginBottom: 24 }}>
+    <div style={{ fontSize: 11.5, fontWeight: 800, letterSpacing: 1.5, color: "rgba(255,255,255,0.4)", marginBottom: 14 }}>{title}</div>
+    <div style={{ display: "flex", flexWrap: "wrap", gap: "13px 18px" }}>{items.map((i) => <a key={i} onClick={() => onItem(i)} className="press" style={{ fontSize: 14.5, color: "rgba(255,255,255,0.6)", cursor: "pointer" }}>{i}</a>)}</div>
+  </div>
+);
 
 export default function MobileLanding() {
   const nav = useNav();
@@ -170,9 +208,9 @@ export default function MobileLanding() {
   const [page, setPage] = useState(null);
   const [who, setWho] = useState("forare");
   const [faq, setFaq] = useState(0);
-  const scRef = useRef(null);
   const stepsRef = useRef(null);
   const s = STEPS[who];
+  const toSteps = () => { setPage(null); setTimeout(() => stepsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 60); };
 
   return (
     <MobileShell>
@@ -181,7 +219,7 @@ export default function MobileLanding() {
         <button onClick={() => setMenu(true)} className="press" style={{ width: 44, height: 44, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", color: scrolled ? "var(--ink-800)" : "#fff", filter: scrolled ? "none" : "drop-shadow(0 1px 3px rgba(0,0,0,0.45))" }}><Icon name="menu" size={24} stroke={2.2} /></button>
       </div>
 
-      <div ref={scRef} className="app-scroll" onScroll={(e) => setScrolled(e.target.scrollTop > 30)} style={{ flex: 1, overflowY: "auto", overflowX: "hidden" }}>
+      <div className="app-scroll" onScroll={(e) => setScrolled(e.target.scrollTop > 30)} style={{ flex: 1, overflowY: "auto", overflowX: "hidden" }}>
         {/* HERO */}
         <section style={{ position: "relative", minHeight: 660, display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "0 22px 40px", overflow: "hidden", background: "linear-gradient(160deg,#2a3a37 0%,var(--asphalt) 45%,var(--night) 100%)" }}>
           <img src="/hero.webp" alt="Lastbil på svensk landsväg" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 40%" }} onError={(e) => { e.currentTarget.style.display = "none"; }} />
@@ -189,12 +227,12 @@ export default function MobileLanding() {
           <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(15,21,19,0.94) 0%,rgba(15,21,19,0.45) 42%,rgba(15,21,19,0.25) 70%,rgba(15,21,19,0.5) 100%)" }} />
           <div style={{ position: "absolute", inset: 0, background: "radial-gradient(120% 70% at 80% 12%,rgba(242,164,28,0.18) 0%,transparent 55%)" }} />
           <div style={{ position: "relative" }}>
-            <h1 style={{ fontSize: 56, fontWeight: 800, letterSpacing: -2, lineHeight: 0.98, marginBottom: 22, textShadow: "0 2px 30px rgba(0,0,0,0.4)" }}>
+            <h1 style={{ fontSize: 58, fontWeight: 800, letterSpacing: -2, lineHeight: 0.98, marginBottom: 22, textShadow: "0 2px 30px rgba(0,0,0,0.4)" }}>
               <span style={{ color: "#fff", display: "block" }}>Rätt jobb.</span>
               <span style={{ color: AMBER, display: "block" }}>Rätt förare.</span>
               <span style={{ color: "rgba(255,255,255,0.6)", display: "block" }}>Direkt.</span>
             </h1>
-            <p style={{ fontSize: 18, lineHeight: 1.5, color: "rgba(255,255,255,0.85)", marginBottom: 28, maxWidth: 330 }}>Sveriges matchningsplattform för yrkesförare och åkerier. Inga mellanhänder, inga avgifter.</p>
+            <p style={{ fontSize: 18, lineHeight: 1.5, color: "rgba(255,255,255,0.85)", marginBottom: 28, maxWidth: 330, textShadow: "0 1px 12px rgba(0,0,0,0.5)" }}>Sveriges matchningsplattform för yrkesförare och åkerier. Inga mellanhänder, inga avgifter.</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <BtnAmber full onClick={nav.jobs}>Se lediga jobb <Icon name="arrow" size={19} color="#1a1200" stroke={2.4} /></BtnAmber>
               <BtnGhost onDark onClick={() => nav.register("akeri")}>Jag är ett åkeri</BtnGhost>
@@ -205,8 +243,8 @@ export default function MobileLanding() {
         {/* PROBLEM */}
         <section style={{ background: "var(--paper)", padding: "54px 22px 56px" }}>
           <Eyebrow>Bakgrund</Eyebrow>
-          <h2 style={{ fontSize: 36, fontWeight: 800, letterSpacing: -1.2, lineHeight: 1.05, margin: "18px 0 16px" }}>Branschen förtjänar bättre.</h2>
-          <p style={{ fontSize: 17, lineHeight: 1.55, color: "var(--ink-500)", marginBottom: 36 }}>Idag matchas förare och åkerier via Facebook-grupper och bemanningsbolag som tar en del av lönen. Det behöver inte vara så.</p>
+          <h2 style={{ fontSize: 36, fontWeight: 800, letterSpacing: -1.2, lineHeight: 1.05, margin: "18px 0 16px", textWrap: "balance" }}>Branschen förtjänar bättre.</h2>
+          <p style={{ fontSize: 17, lineHeight: 1.55, color: "var(--ink-500)", marginBottom: 36 }}>Idag matchas förare och åkerier via Facebook-grupper, generiska jobbsajter och bemanningsbolag som tar en del av lönen. Det behöver inte vara så.</p>
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             {PROBLEMS.map(([n, t, d]) => (
               <div key={n} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 20, padding: "26px 22px", boxShadow: "var(--sh-sm)" }}>
@@ -218,15 +256,17 @@ export default function MobileLanding() {
           </div>
         </section>
 
-        {/* SOLUTION */}
+        {/* SOLUTION + FEATURES */}
         <section style={{ background: "var(--paper-2)", padding: "54px 22px 56px", borderTop: "1px solid var(--line)" }}>
           <Eyebrow>Lösningen</Eyebrow>
-          <h2 style={{ fontSize: 36, fontWeight: 800, letterSpacing: -1.2, lineHeight: 1.05, margin: "18px 0 16px" }}>En samlande plattform för hela branschen.</h2>
-          <p style={{ fontSize: 17, lineHeight: 1.55, color: "var(--ink-600)", marginBottom: 28 }}>STP samlar förare och åkerier i en transparent och kvalitetssäkrad plattform. Direkt kontakt. Inga avgifter.</p>
-          <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 32 }}>
+          <h2 style={{ fontSize: 36, fontWeight: 800, letterSpacing: -1.2, lineHeight: 1.05, margin: "18px 0 16px", textWrap: "balance" }}>En samlande plattform för hela branschen.</h2>
+          <p style={{ fontSize: 17, lineHeight: 1.55, color: "var(--ink-600)", marginBottom: 28 }}>STP samlar förare och åkerier i en transparent och kvalitetssäkrad plattform. Direkt kontakt. Inga mellanhänder. Inga avgifter.</p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 28 }}>
             <BtnGreen full onClick={() => nav.register("forare")}>Skapa förarprofil <Icon name="arrow" size={19} color="#fff" stroke={2.4} /></BtnGreen>
             <BtnGhost onClick={() => nav.register("akeri")}>Registrera åkeri</BtnGhost>
           </div>
+          <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", color: "var(--green-text)", marginBottom: 11 }}>Så ser en matchning ut</div>
+          <div style={{ marginBottom: 36 }}><JobPreview /></div>
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             {FEATURES.map(([ic, t, d]) => (
               <div key={t} style={{ background: "var(--card)", borderRadius: 20, padding: "22px 20px", boxShadow: "var(--sh-sm)", display: "flex", gap: 16 }}>
@@ -242,10 +282,11 @@ export default function MobileLanding() {
           <div style={{ textAlign: "center", marginBottom: 26 }}>
             <Eyebrow>Kom igång</Eyebrow>
             <h2 style={{ fontSize: 36, fontWeight: 800, letterSpacing: -1.2, lineHeight: 1.05, margin: "16px 0 12px" }}>Tre steg. Det är allt.</h2>
+            <p style={{ fontSize: 16.5, lineHeight: 1.5, color: "var(--ink-500)" }}>Kom igång på tre steg — oavsett om du är förare eller åkeri.</p>
           </div>
           <div style={{ display: "flex", gap: 5, padding: 5, background: "var(--card)", border: "1px solid var(--line-2)", borderRadius: 14, maxWidth: 330, margin: "0 auto 30px" }}>
             {[["forare", "Jag är förare"], ["akeri", "Jag är ett åkeri"]].map(([id, l]) => (
-              <button key={id} onClick={() => setWho(id)} className="press" style={{ flex: 1, height: 44, borderRadius: 10, fontSize: 14.5, fontWeight: 700, background: who === id ? "var(--green)" : "transparent", color: who === id ? "#fff" : "var(--ink-500)" }}>{l}</button>
+              <button key={id} onClick={() => setWho(id)} className="press" style={{ flex: 1, height: 44, borderRadius: 10, fontSize: 14.5, fontWeight: 700, background: who === id ? "var(--green)" : "transparent", color: who === id ? "#fff" : "var(--ink-500)", transition: "background .2s" }}>{l}</button>
             ))}
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -265,7 +306,7 @@ export default function MobileLanding() {
         <section style={{ background: "var(--night)", padding: "54px 22px 58px", color: "#fff" }}>
           <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: 1.6, textTransform: "uppercase", color: "#7fc0bb", marginBottom: 13 }}>I hela landet</div>
           <h2 style={{ fontSize: 34, fontWeight: 800, letterSpacing: -1.1, lineHeight: 1.06, marginBottom: 12, maxWidth: 300 }}>Förare behövs överallt</h2>
-          <p style={{ fontSize: 16.5, lineHeight: 1.5, color: "rgba(255,255,255,0.7)", marginBottom: 22, maxWidth: 310 }}>Från Skåne till Norrbotten dyker det upp nya uppdrag hos verifierade åkerier.</p>
+          <p style={{ fontSize: 16.5, lineHeight: 1.5, color: "rgba(255,255,255,0.7)", marginBottom: 18, maxWidth: 310 }}>Från Skåne till Norrbotten dyker det upp nya uppdrag hos verifierade åkerier. Hitta jobben nära dig.</p>
           <div style={{ display: "flex", justifyContent: "center", margin: "6px 0 26px" }}>
             <svg viewBox={`${SWE_VIEW.x} ${SWE_VIEW.y} ${SWE_VIEW.w} ${SWE_VIEW.h}`} preserveAspectRatio="xMidYMid meet" style={{ width: 232, height: "auto", overflow: "visible" }}>
               {Object.keys(SWE_LAN_PATHS).map((code) => (
@@ -302,8 +343,9 @@ export default function MobileLanding() {
         {/* SEGMENTS */}
         <section style={{ background: "var(--paper-2)", padding: "54px 22px 56px", borderTop: "1px solid var(--line)" }}>
           <Eyebrow>Tre vägar in</Eyebrow>
-          <h2 style={{ fontSize: 36, fontWeight: 800, letterSpacing: -1.2, lineHeight: 1.05, margin: "18px 0 16px" }}>Alla förare söker inte samma sak.</h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: 16, marginTop: 16 }}>
+          <h2 style={{ fontSize: 36, fontWeight: 800, letterSpacing: -1.2, lineHeight: 1.05, margin: "18px 0 16px", textWrap: "balance" }}>Alla förare söker inte samma sak.</h2>
+          <p style={{ fontSize: 17, lineHeight: 1.55, color: "var(--ink-600)", marginBottom: 32 }}>STP är byggt runt tre tydliga segment som gör det lättare att matcha rätt behov med rätt profil.</p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             {SEGMENTS.map(([ic, tag, t, d]) => (
               <div key={t} style={{ background: "var(--card)", borderRadius: 20, padding: "24px 22px", boxShadow: "var(--sh-sm)" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
@@ -320,7 +362,9 @@ export default function MobileLanding() {
         {/* FAQ */}
         <section style={{ background: "var(--paper)", padding: "54px 22px 56px" }}>
           <Eyebrow>FAQ</Eyebrow>
-          <h2 style={{ fontSize: 36, fontWeight: 800, letterSpacing: -1.2, lineHeight: 1.05, margin: "18px 0 18px" }}>Vanliga frågor</h2>
+          <h2 style={{ fontSize: 36, fontWeight: 800, letterSpacing: -1.2, lineHeight: 1.05, margin: "18px 0 12px" }}>Vanliga frågor</h2>
+          <p style={{ fontSize: 16.5, color: "var(--ink-500)", marginBottom: 18 }}>Saknar du något? Hör av dig direkt.</p>
+          <a href={MAIL} style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 16, fontWeight: 700, color: "var(--green)", marginBottom: 28 }}>hello@transportplattformen.se <Icon name="arrow" size={17} color="var(--green)" stroke={2.2} /></a>
           <div style={{ background: "var(--card)", borderRadius: 20, boxShadow: "var(--sh-sm)", overflow: "hidden" }}>
             {FAQS.map(([q, a], i) => {
               const on = faq === i;
@@ -339,28 +383,39 @@ export default function MobileLanding() {
 
         {/* FINAL CTA */}
         <section style={{ background: "var(--green)", padding: "56px 22px 60px", color: "#fff" }}>
-          <h2 style={{ fontSize: 38, fontWeight: 800, letterSpacing: -1.4, lineHeight: 1.05, marginBottom: 18 }}>Sluta leta i Facebook-grupper. Börja matcha rätt.</h2>
-          <p style={{ fontSize: 17, lineHeight: 1.5, color: "rgba(255,255,255,0.8)", marginBottom: 28 }}>Skapa din profil eller registrera ditt åkeri på två minuter.</p>
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <h2 style={{ fontSize: 38, fontWeight: 800, letterSpacing: -1.4, lineHeight: 1.05, marginBottom: 18, textWrap: "balance" }}>Sluta leta i Facebook-grupper. Börja matcha rätt.</h2>
+          <p style={{ fontSize: 17, lineHeight: 1.5, color: "rgba(255,255,255,0.8)", marginBottom: 28 }}>Skapa din profil eller registrera ditt åkeri på två minuter. Inga mellanhänder, inga avgifter.</p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 32 }}>
             <BtnAmber full onClick={() => nav.register("forare")}>Skapa förarprofil <Icon name="arrow" size={19} color="#1a1200" stroke={2.4} /></BtnAmber>
             <BtnGhost onDark onClick={() => nav.register("akeri")}>Jag är ett åkeri</BtnGhost>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            {STATS.map(([v, l]) => (
+              <div key={v} style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 16, padding: "18px" }}>
+                <div style={{ fontSize: 26, fontWeight: 800, letterSpacing: -0.8, marginBottom: 4 }}>{v}</div>
+                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.65)" }}>{l}</div>
+              </div>
+            ))}
           </div>
         </section>
 
         {/* FOOTER */}
         <footer style={{ background: "var(--night)", padding: "44px 22px calc(34px + var(--stpm-safe-bottom))", color: "#fff" }}>
           <Logo light />
-          <p style={{ fontSize: 15, lineHeight: 1.55, color: "rgba(255,255,255,0.65)", margin: "16px 0 24px", maxWidth: 320 }}>Sveriges matchningsplattform för yrkesförare och transportföretag.</p>
-          <div style={{ fontSize: 11.5, fontWeight: 800, letterSpacing: 1.5, color: "rgba(255,255,255,0.4)", marginBottom: 14 }}>JOBB PER STAD</div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "12px 16px", marginBottom: 24 }}>{CITIES.map((c) => <a key={c} onClick={() => nav.jobsCity(c)} className="press" style={{ fontSize: 14.5, color: "rgba(255,255,255,0.6)", cursor: "pointer" }}>{c}</a>)}</div>
-          <div style={{ fontSize: 11.5, fontWeight: 800, letterSpacing: 1.5, color: "rgba(255,255,255,0.4)", marginBottom: 14 }}>JOBB PER REGION</div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "12px 16px", marginBottom: 24 }}>{REGIONS.map((r) => <a key={r} onClick={() => nav.jobsRegion(r)} className="press" style={{ fontSize: 14.5, color: "rgba(255,255,255,0.6)", cursor: "pointer" }}>{r}</a>)}</div>
+          <p style={{ fontSize: 15, lineHeight: 1.55, color: "rgba(255,255,255,0.65)", margin: "16px 0 14px", maxWidth: 320 }}>Sveriges matchningsplattform för yrkesförare och transportföretag. Direkt kontakt utan mellanhänder.</p>
+          <a href={MAIL} style={{ fontSize: 15, color: "rgba(255,255,255,0.75)", display: "inline-block", marginBottom: 32 }}>hello@transportplattformen.se</a>
+          <FooterCol title="PLATTFORMEN" items={[["Lediga jobb", nav.jobs], ["Så fungerar STP", toSteps], ["För förare", () => setPage("forforare")], ["För åkerier", () => setPage("forakerier")], ["Praktik & APL", () => setPage("praktik")]]} />
+          <FooterCol title="OM STP" items={[["Om oss", () => setPage("omstp")], ["Kontakt", () => setPage("kontakt")], ["Användarvillkor", nav.terms], ["Integritetspolicy", nav.privacy]]} />
+          <div style={{ height: 1, background: "rgba(255,255,255,0.1)", margin: "6px 0 26px" }} />
+          <ChipWrap title="CE-JOBB PER STAD" items={CITIES} onItem={nav.jobsCity} />
+          <ChipWrap title="LASTBILSJOBB PER REGION" items={REGIONS} onItem={nav.jobsRegion} />
           <div style={{ height: 1, background: "rgba(255,255,255,0.1)", margin: "6px 0 22px" }} />
-          <p style={{ fontSize: 13.5, color: "rgba(255,255,255,0.55)" }}>© 2026 Sveriges Transportplattform</p>
+          <p style={{ fontSize: 13.5, color: "rgba(255,255,255,0.55)", lineHeight: 1.6, marginBottom: 14 }}>© 2026 Sveriges Transportplattform</p>
+          <div style={{ display: "flex", gap: 18, fontSize: 13.5, color: "rgba(255,255,255,0.4)" }}><a onClick={nav.privacy} className="press" style={{ cursor: "pointer" }}>Integritetspolicy</a><a onClick={nav.terms} className="press" style={{ cursor: "pointer" }}>Villkor</a><span>v1.0.0</span></div>
         </footer>
       </div>
 
-      <Menu open={menu} onClose={() => setMenu(false)} nav={nav} openPage={(id) => { setMenu(false); setPage(id); }} />
+      <Menu open={menu} onClose={() => setMenu(false)} nav={nav} openPage={(id) => { setMenu(false); setPage(id); }} toSteps={() => { setMenu(false); toSteps(); }} />
       {page && <SubPage id={page} onClose={() => setPage(null)} nav={nav} />}
     </MobileShell>
   );
