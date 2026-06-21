@@ -5,6 +5,8 @@ import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import MobileShell from "../MobileShell";
 import { Icon } from "../ui";
+import { SWE_LAN_PATHS, SWE_VIEW } from "../../data/swedenGeo";
+import { CITY_XY } from "../../data/swedenCityCoords";
 
 const AMBER = "var(--amber-bright)";
 
@@ -181,7 +183,10 @@ export default function MobileLanding() {
 
       <div ref={scRef} className="app-scroll" onScroll={(e) => setScrolled(e.target.scrollTop > 30)} style={{ flex: 1, overflowY: "auto", overflowX: "hidden" }}>
         {/* HERO */}
-        <section style={{ position: "relative", minHeight: 640, display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "0 22px 40px", overflow: "hidden", background: "linear-gradient(160deg,#2a3a37 0%,var(--asphalt) 45%,var(--night) 100%)" }}>
+        <section style={{ position: "relative", minHeight: 660, display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "0 22px 40px", overflow: "hidden", background: "linear-gradient(160deg,#2a3a37 0%,var(--asphalt) 45%,var(--night) 100%)" }}>
+          <img src="/hero.webp" alt="Lastbil på svensk landsväg" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 40%" }} onError={(e) => { e.currentTarget.style.display = "none"; }} />
+          <div style={{ position: "absolute", inset: 0, background: "rgba(15,21,19,0.15)" }} />
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(15,21,19,0.94) 0%,rgba(15,21,19,0.45) 42%,rgba(15,21,19,0.25) 70%,rgba(15,21,19,0.5) 100%)" }} />
           <div style={{ position: "absolute", inset: 0, background: "radial-gradient(120% 70% at 80% 12%,rgba(242,164,28,0.18) 0%,transparent 55%)" }} />
           <div style={{ position: "relative" }}>
             <h1 style={{ fontSize: 56, fontWeight: 800, letterSpacing: -2, lineHeight: 0.98, marginBottom: 22, textShadow: "0 2px 30px rgba(0,0,0,0.4)" }}>
@@ -261,14 +266,37 @@ export default function MobileLanding() {
           <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: 1.6, textTransform: "uppercase", color: "#7fc0bb", marginBottom: 13 }}>I hela landet</div>
           <h2 style={{ fontSize: 34, fontWeight: 800, letterSpacing: -1.1, lineHeight: 1.06, marginBottom: 12, maxWidth: 300 }}>Förare behövs överallt</h2>
           <p style={{ fontSize: 16.5, lineHeight: 1.5, color: "rgba(255,255,255,0.7)", marginBottom: 22, maxWidth: 310 }}>Från Skåne till Norrbotten dyker det upp nya uppdrag hos verifierade åkerier.</p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 26 }}>
-            {MAP_CITIES.map(([n, big], i) => (
-              <button key={n} onClick={() => nav.jobsCity(n)} className="press" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "9px 14px", borderRadius: 999, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#fff", fontSize: 14, fontWeight: 600 }}>
-                <span style={{ width: 8, height: 8, borderRadius: 4, background: big ? AMBER : "var(--green-soft)", animation: `stpm-pop 2.6s ${i * 0.25}s infinite` }} />{n}
-              </button>
-            ))}
+          <div style={{ display: "flex", justifyContent: "center", margin: "6px 0 26px" }}>
+            <svg viewBox={`${SWE_VIEW.x} ${SWE_VIEW.y} ${SWE_VIEW.w} ${SWE_VIEW.h}`} preserveAspectRatio="xMidYMid meet" style={{ width: 232, height: "auto", overflow: "visible" }}>
+              {Object.keys(SWE_LAN_PATHS).map((code) => (
+                <path key={code} d={SWE_LAN_PATHS[code]} fill="rgba(122,205,184,0.09)" stroke="rgba(150,220,200,0.22)" strokeWidth="0.6" vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
+              ))}
+              {MAP_CITIES.filter(([n]) => CITY_XY[n]).map(([n, big], i) => {
+                const { x, y } = CITY_XY[n];
+                const col = big ? AMBER : "var(--green-soft)";
+                const r = big ? 8 : 5.5;
+                return (
+                  <g key={n} onClick={() => nav.jobsCity(n)} style={{ cursor: "pointer" }}>
+                    <circle cx={x} cy={y} r={r} fill={col} opacity="0.18">
+                      <animate attributeName="r" values={`${r};${r + 16};${r + 16}`} dur="2.8s" begin={`${i * 0.3}s`} repeatCount="indefinite" />
+                      <animate attributeName="opacity" values="0.55;0;0" dur="2.8s" begin={`${i * 0.3}s`} repeatCount="indefinite" />
+                    </circle>
+                    <circle cx={x} cy={y} r={r} fill={col} stroke="var(--night)" strokeWidth="1.4" vectorEffect="non-scaling-stroke" />
+                  </g>
+                );
+              })}
+              {MAP_CITIES.filter(([n, big]) => big && CITY_XY[n]).map(([n]) => {
+                const { x, y } = CITY_XY[n];
+                const right = x > SWE_VIEW.w / 2;
+                return (
+                  <text key={n + "-l"} x={x + (right ? -16 : 16)} y={y + 2} textAnchor={right ? "end" : "start"} dominantBaseline="middle" fill="#fff" fontWeight="800" fontSize="22" fontFamily="var(--font)" style={{ paintOrder: "stroke" }} stroke="var(--night)" strokeWidth="5">{n}</text>
+                );
+              })}
+            </svg>
           </div>
-          <button onClick={nav.jobs} className="press" style={{ display: "inline-flex", alignItems: "center", gap: 10, height: 56, padding: "0 26px", borderRadius: 15, background: "rgba(242,164,28,0.08)", border: `1px solid ${AMBER}`, color: AMBER, fontWeight: 700, fontSize: 16 }}>Se lediga jobb <Icon name="arrow" size={18} color={AMBER} stroke={2.2} /></button>
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <button onClick={nav.jobs} className="press" style={{ display: "inline-flex", alignItems: "center", gap: 10, height: 56, padding: "0 26px", borderRadius: 15, background: "rgba(242,164,28,0.08)", border: `1px solid ${AMBER}`, color: AMBER, fontWeight: 700, fontSize: 16 }}>Se lediga jobb i din region <Icon name="arrow" size={18} color={AMBER} stroke={2.2} /></button>
+          </div>
         </section>
 
         {/* SEGMENTS */}
