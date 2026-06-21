@@ -7,7 +7,7 @@ import { mockJobs } from "../../data/mockJobs";
 import { useApi } from "../../api/client";
 import { toJobView } from "../driver/jobAdapter";
 import MobileShell from "../MobileShell";
-import { Icon, Sheet, Pill, Card, Button } from "../ui";
+import { Icon, Pill, Card } from "../ui";
 
 const LICENSES = ["C1", "C1E", "C", "CE"];
 const TYPES = ["Heltid", "Vikariat", "Praktik"];
@@ -22,13 +22,19 @@ function Logo() {
   );
 }
 
-function JobCard({ job, onOpen }) {
+function JobCard({ job, idx = 0, saved, onOpen, onSave }) {
+  const [popKey, setPopKey] = useState(0);
   return (
-    <Card onClick={onOpen} className="press" style={{ padding: "15px 16px" }}>
+    <Card onClick={onOpen} className="press" style={{ padding: "15px 16px", animation: `stpm-fade-up .3s ${Math.min(idx, 8) * 0.04}s both` }}>
       <div style={{ display: "flex", gap: 12 }}>
         <div style={{ width: 44, height: 44, borderRadius: 12, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontWeight: 800, fontSize: 14, color: "var(--green-text)" }}>{job.initials}</div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <h3 style={{ fontSize: 15.5, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.2, lineHeight: 1.25 }}>{job.title}</h3>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+            <h3 style={{ fontSize: 15.5, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.2, lineHeight: 1.25 }}>{job.title}</h3>
+            <button onClick={(e) => { e.stopPropagation(); onSave(); if (!saved) setPopKey((k) => k + 1); }} style={{ flexShrink: 0, marginTop: -2 }} aria-label="Spara jobb">
+              <span key={popKey} style={{ display: "inline-block", animation: saved ? "stpm-pop .4s" : "none" }}><Icon name="bookmark" size={19} color={saved ? "var(--green)" : "var(--ink-300)"} stroke={2} style={{ fill: saved ? "var(--green)" : "none" }} /></span>
+            </button>
+          </div>
           <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--ink-500)", marginTop: 2, marginBottom: 9 }}>
             <span>{job.company}</span>{job.verified && <Icon name="check2" size={14} color="var(--green)" stroke={2.2} />}<span>· {job.location}</span>
           </div>
@@ -61,7 +67,12 @@ export default function MobileGuestJobs() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [detail, setDetail] = useState(null);
   const [gate, setGate] = useState(null);
+  const [saved, setSaved] = useState(() => new Set());
   const [limit, setLimit] = useState(PAGE);
+
+  // Guests can't really save — tapping fills the bookmark then opens the gate
+  // (teaser), exactly like the prototype.
+  const toggleSave = (id) => { setSaved((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; }); setTimeout(() => setGate({ action: "save" }), 260); };
 
   useEffect(() => {
     let alive = true;
@@ -124,7 +135,7 @@ export default function MobileGuestJobs() {
               <p style={{ fontSize: 14.5, color: "var(--ink-500)", lineHeight: 1.5 }}>Prova att rensa filtren eller söka bredare.</p>
             </div>
           )}
-          {shown.map((job) => <JobCard key={job.id} job={job} onOpen={() => setDetail(job)} />)}
+          {shown.map((job, i) => <JobCard key={job.id} job={job} idx={i} saved={saved.has(job.id)} onOpen={() => setDetail(job)} onSave={() => toggleSave(job.id)} />)}
           {remaining > 0 && (
             <button onClick={() => setLimit((l) => l + PAGE)} className="press" style={{ height: 50, borderRadius: 13, background: "var(--card)", border: "1px solid var(--line-2)", color: "var(--ink-700)", fontWeight: 700, fontSize: 14.5, marginTop: 2 }}>Visa fler · {remaining} kvar</button>
           )}
@@ -138,23 +149,33 @@ export default function MobileGuestJobs() {
         </div>
       </div>
 
-      {/* filter sheet */}
-      <Sheet open={filterOpen} onClose={() => { setFilterOpen(false); setLimit(PAGE); }} title="Filtrera">
-        <div style={{ padding: "20px 22px 26px" }}>
-          {[["Körkort", LICENSES, "lic"], ["Anställning", TYPES, "type"], ["Region", regions, "region"]].map(([label, opts, key]) => (
-            <div key={key} style={{ marginBottom: 22 }}>
-              <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: 0.6, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 11 }}>{label}</div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 9 }}>
-                {opts.map((o) => {
-                  const on = filter[key].includes(o);
-                  return <button key={o} onClick={() => setFilter((f) => ({ ...f, [key]: on ? f[key].filter((x) => x !== o) : [...f[key], o] }))} className="press" style={{ padding: "9px 15px", borderRadius: 11, fontSize: 14, fontWeight: 700, border: on ? "1px solid var(--green)" : "1px solid var(--line-2)", background: on ? "var(--green-tint)" : "var(--card)", color: on ? "var(--green-text)" : "var(--ink-600)" }}>{o}</button>;
-                })}
-              </div>
+      {/* filter sheet — inline (matchar prototypens FilterSheet 1:1: grab-handle,
+          header med Filtrera + Rensa-räknare, scroll, sticky "Visa jobb"-footer) */}
+      {filterOpen && (
+        <div style={{ position: "absolute", inset: 0, zIndex: 70, display: "flex", alignItems: "flex-end" }}>
+          <div onClick={() => { setFilterOpen(false); setLimit(PAGE); }} style={{ position: "absolute", inset: 0, background: "rgba(8,12,11,0.5)", animation: "stpm-fade-in .2s" }} />
+          <div style={{ position: "relative", width: "100%", maxHeight: "82%", background: "var(--paper)", borderRadius: "26px 26px 0 0", display: "flex", flexDirection: "column", animation: "stpm-sheet-up .3s cubic-bezier(.32,.72,0,1)" }}>
+            <div style={{ padding: "10px 22px 0" }}><div style={{ width: 38, height: 5, borderRadius: 3, background: "var(--line-2)", margin: "0 auto 14px" }} /></div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 22px 14px", borderBottom: "1px solid var(--line)" }}>
+              <h3 style={{ fontSize: 19, fontWeight: 800, letterSpacing: -0.4 }}>Filtrera</h3>
+              {activeCount > 0 && <button onClick={() => setFilter({ region: [], lic: [], type: [] })} className="press" style={{ fontSize: 14, fontWeight: 700, color: "var(--green)" }}>Rensa ({activeCount})</button>}
             </div>
-          ))}
-          <Button variant="primary" size="lg" full onClick={() => { setFilterOpen(false); setLimit(PAGE); }}>Visa jobb</Button>
+            <div className="app-scroll" style={{ flex: 1, overflowY: "auto", padding: "20px 22px 8px" }}>
+              {[["Körkort", LICENSES, "lic"], ["Anställning", TYPES, "type"], ["Region", regions, "region"]].map(([label, opts, key]) => (
+                <div key={key}>
+                  <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: 0.6, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 11 }}>{label}</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 9, marginBottom: 24 }}>
+                    {opts.map((o) => { const on = filter[key].includes(o); return <button key={o} onClick={() => setFilter((f) => ({ ...f, [key]: on ? f[key].filter((x) => x !== o) : [...f[key], o] }))} className="press" style={{ padding: "9px 15px", borderRadius: 11, fontSize: 14, fontWeight: 700, border: on ? "1px solid var(--green)" : "1px solid var(--line-2)", background: on ? "var(--green-tint)" : "var(--card)", color: on ? "var(--green-text)" : "var(--ink-600)" }}>{o}</button>; })}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div style={{ padding: "12px 22px calc(26px + var(--stpm-safe-bottom))", borderTop: "1px solid var(--line)" }}>
+              <button onClick={() => { setFilterOpen(false); setLimit(PAGE); }} className="press" style={{ width: "100%", height: 54, borderRadius: 14, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: 16 }}>Visa jobb</button>
+            </div>
+          </div>
         </div>
-      </Sheet>
+      )}
 
       {/* job detail */}
       {detail && (
@@ -162,6 +183,7 @@ export default function MobileGuestJobs() {
           <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 16px", borderBottom: "1px solid var(--line)", background: "rgba(245,242,236,0.95)", backdropFilter: "blur(10px)", flexShrink: 0, paddingTop: "calc(13px + var(--stpm-safe-top))" }}>
             <button onClick={() => setDetail(null)} className="press" style={{ width: 40, height: 40, borderRadius: 11, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--card)", border: "1px solid var(--line-2)" }}><Icon name="arrowLeft" size={20} stroke={2} /></button>
             <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: -0.3, flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{detail.title}</span>
+            <button onClick={() => toggleSave(detail.id)} className="press" aria-label="Spara" style={{ width: 40, height: 40, borderRadius: 11, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--card)", border: "1px solid var(--line-2)" }}><Icon name="bookmark" size={19} color={saved.has(detail.id) ? "var(--green)" : "var(--ink-400)"} stroke={2} style={{ fill: saved.has(detail.id) ? "var(--green)" : "none" }} /></button>
           </div>
           <div className="app-scroll" style={{ flex: 1, overflowY: "auto", padding: "22px 20px 120px" }}>
             <div style={{ display: "flex", gap: 14, marginBottom: 18 }}>
@@ -195,7 +217,7 @@ export default function MobileGuestJobs() {
             )}
           </div>
           <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "14px 20px calc(22px + var(--stpm-safe-bottom))", background: "rgba(245,242,236,0.96)", backdropFilter: "blur(10px)", borderTop: "1px solid var(--line)", display: "flex", gap: 11 }}>
-            <button onClick={() => setGate({ action: "save" })} className="press" style={{ height: 54, padding: "0 20px", borderRadius: 14, background: "var(--card)", border: "1px solid var(--line-2)", color: "var(--ink-800)", fontWeight: 700, fontSize: 15.5, display: "flex", alignItems: "center", gap: 8 }}><Icon name="bookmark" size={18} color="var(--ink-500)" stroke={2} />Spara</button>
+            <button onClick={() => toggleSave(detail.id)} className="press" style={{ height: 54, padding: "0 20px", borderRadius: 14, background: "var(--card)", border: "1px solid var(--line-2)", color: "var(--ink-800)", fontWeight: 700, fontSize: 15.5, display: "flex", alignItems: "center", gap: 8 }}><Icon name="bookmark" size={18} color={saved.has(detail.id) ? "var(--green)" : "var(--ink-500)"} stroke={2} style={{ fill: saved.has(detail.id) ? "var(--green)" : "none" }} />Spara</button>
             <button onClick={() => setGate({ action: "apply" })} className="press" style={{ flex: 1, height: 54, borderRadius: 14, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>Ansök <Icon name="arrow" size={19} color="#fff" stroke={2.4} /></button>
           </div>
         </div>
