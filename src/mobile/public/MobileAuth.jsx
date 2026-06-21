@@ -190,7 +190,7 @@ export default function MobileAuth() {
       <div className="view-enter" style={{ flex: 1, padding: "8px 26px 30px" }}>
         <div style={{ width: 54, height: 54, borderRadius: 16, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}><Icon name="lock" size={26} color="var(--green)" stroke={2} /></div>
         <h1 style={{ fontSize: 27, fontWeight: 800, letterSpacing: -0.6, color: "var(--ink-900)", marginBottom: 8 }}>Glömt lösenordet?</h1>
-        <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.5, marginBottom: 26 }}>Skriv din e-post så skickar vi en länk för att välja ett nytt.</p>
+        <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.5, marginBottom: 26 }}>Ingen fara. Skriv din e-post så skickar vi en länk för att välja ett nytt.</p>
         <Field label="E-post" type="email" icon="mail" value={email} onChange={setEmail} placeholder="namn@exempel.se" autoComplete="email" inputMode="email" error={err.email} onEnter={submitForgot} />
         <Button variant="primary" size="lg" full busy={busy} onClick={submitForgot} style={{ marginTop: 6 }}>Skicka återställningslänk</Button>
         <div style={{ textAlign: "center", marginTop: 22, fontSize: 14.5, color: "var(--ink-500)" }}>Kom du på det? <button onClick={() => go("login")} style={{ fontWeight: 800, color: "var(--green)" }}>Logga in</button></div>
@@ -202,8 +202,13 @@ export default function MobileAuth() {
         <div style={{ width: 54, height: 54, borderRadius: 16, background: "var(--success-tint)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}><Icon name="mail" size={26} color="var(--success)" stroke={2} /></div>
         <h1 style={{ fontSize: 27, fontWeight: 800, letterSpacing: -0.6, color: "var(--ink-900)", marginBottom: 8 }}>Kolla din inkorg</h1>
         <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.5, marginBottom: 8 }}>Vi har skickat en återställningslänk till</p>
-        <p style={{ fontSize: 15.5, fontWeight: 800, color: "var(--ink-900)", marginBottom: 26 }}>{email || "din e-post"}</p>
+        <p style={{ fontSize: 15.5, fontWeight: 800, color: "var(--ink-900)", marginBottom: 18 }}>{email || "din e-post"}</p>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "13px 14px", background: "var(--info-tint)", borderRadius: 12, marginBottom: 22 }}>
+          <Icon name="info" size={17} color="var(--info)" stroke={2} style={{ flexShrink: 0, marginTop: 1 }} />
+          <span style={{ fontSize: 13, color: "var(--ink-700)", lineHeight: 1.45 }}>Hittar du inget? Kolla skräpposten. Länken gäller i 30 minuter.</span>
+        </div>
         <Button variant="primary" size="lg" full onClick={() => go("login")}>Tillbaka till inloggning</Button>
+        <div style={{ textAlign: "center", marginTop: 20, fontSize: 14.5, color: "var(--ink-500)" }}>Inget mejl? <button onClick={submitForgot} style={{ fontWeight: 800, color: "var(--green)" }}>Skicka igen</button></div>
       </div>
     );
   }

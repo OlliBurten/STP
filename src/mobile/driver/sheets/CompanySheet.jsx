@@ -55,7 +55,7 @@ export default function CompanySheet({ name, companyId, ctx, close }) {
         ) : (
           <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", background: "var(--paper-2)", borderRadius: 13, marginBottom: 18 }}>
             <Icon name="info" size={18} color="var(--ink-400)" stroke={2} style={{ flexShrink: 0 }} />
-            <span style={{ fontSize: 13, color: "var(--ink-500)", lineHeight: 1.4 }}>Ännu inte verifierad av STP.</span>
+            <span style={{ fontSize: 13, color: "var(--ink-500)", lineHeight: 1.4 }}>Ännu inte verifierad av STP. F-skatt och trafiktillstånd är inte kontrollerade.</span>
           </div>
         )}
         {c.id && (

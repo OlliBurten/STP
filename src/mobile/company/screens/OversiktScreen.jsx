@@ -21,6 +21,16 @@ export default function OversiktScreen({ ctx, go }) {
     ...ctx.threads.filter((t) => t.unread).slice(0, 3).map((t) => ({ id: "t" + t.id, who: t.name, txt: "nytt meddelande", job: t.jobTitle, icon: "msg", tone: ["var(--amber-tint)", "var(--amber)"], onClick: () => ctx.setChat(t.conv) })),
   ].slice(0, 6);
   const firstName = (c.contact?.name || ctx.user?.name || "").split(" ")[0] || "där";
+  const compItems = [
+    ["Beskrivning", !!(c.about && c.about.trim().length >= 20)],
+    ["Förmåner", Array.isArray(c.perks) && c.perks.length > 0],
+    ["Webbplats", !!(c.website && String(c.website).trim())],
+    ["Grundat år", c.founded != null && c.founded !== ""],
+    ["Antal anställda", c.employees != null && c.employees !== ""],
+    ["Fordon", c.fleet != null && c.fleet !== ""],
+  ];
+  const comp = Math.round((compItems.filter(([, ok]) => ok).length / compItems.length) * 100);
+  const miss = compItems.filter(([, ok]) => !ok).map(([l]) => l);
 
   return (
     <>
@@ -40,8 +50,26 @@ export default function OversiktScreen({ ctx, go }) {
                 <div style={{ width: 38, height: 38, borderRadius: 11, background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icon name="alert" size={19} color="var(--amber)" stroke={2.1} /></div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 15, fontWeight: 800, color: "var(--amber-text)" }}>Få fler sökande – verifiera er</div>
-                  <p style={{ fontSize: 13, color: "var(--ink-700)", lineHeight: 1.45, margin: "3px 0 11px" }}>Verifierade åkerier får en grön <b>Verifierad av STP</b>-stämpel. Krävs för att publicera annonser.</p>
+                  <p style={{ fontSize: 13, color: "var(--ink-700)", lineHeight: 1.45, margin: "3px 0 11px" }}>Verifierade åkerier får en grön <b>Verifierad av STP</b>-stämpel som förare litar på – och fler vågar söka. Krävs för att publicera annonser.</p>
                   <Button variant="amber" size="sm" onClick={() => ctx.setSheet({ type: "verifiering" })}>Verifiera er</Button>
+                </div>
+              </div>
+            </Card>
+          )}
+
+          {comp < 100 && (
+            <Card style={{ padding: "16px", marginBottom: 16 }}>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                <div style={{ width: 38, height: 38, borderRadius: 11, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icon name="building" size={19} color="var(--green)" stroke={2} /></div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                    <div style={{ fontSize: 15, fontWeight: 800, color: "var(--ink-900)" }}>Komplettera profilen</div>
+                    <span style={{ fontSize: 13, fontWeight: 800, color: "var(--green)", fontFamily: "var(--mono)" }}>{comp}%</span>
+                  </div>
+                  <p style={{ fontSize: 12.5, color: "var(--ink-500)", margin: "2px 0 10px" }}>Kompletta profiler får fler sökande</p>
+                  <div style={{ height: 7, borderRadius: 4, background: "var(--paper-2)", overflow: "hidden", marginBottom: 10 }}><div style={{ height: "100%", width: `${comp}%`, background: "var(--green)", borderRadius: 4 }} /></div>
+                  {miss.length > 0 && <p style={{ fontSize: 12.5, color: "var(--ink-400)", marginBottom: 12, lineHeight: 1.4 }}>Saknas: {miss.join(", ")}</p>}
+                  <Button variant="secondary" size="sm" onClick={() => ctx.setSheet({ type: "completeProfile" })}>Slutför</Button>
                 </div>
               </div>
             </Card>

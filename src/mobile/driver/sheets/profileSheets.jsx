@@ -92,7 +92,8 @@ export function SettingsSheet({ ctx, close }) {
       <Label style={{ margin: "20px 0 2px" }}>Konto</Label>
       <Row label="Personuppgifter" onClick={() => ctx.setSheet({ type: "personal" })} />
       <Row label="Byt lösenord" onClick={() => ctx.setSheet({ type: "password" })} />
-      <Row label="Integritet & data" onClick={() => ctx.setSheet({ type: "privacy" })} last />
+      <Row label="Integritet & data" onClick={() => ctx.setSheet({ type: "privacy" })} />
+      <Row label="Visa introduktion igen" onClick={() => { close(); ctx.navigate?.("/onboarding/forare"); }} last />
       <div style={{ marginTop: 20 }}><Row label="Logga ut" danger last onClick={() => ctx.setSheet({ type: "logout" })} /></div>
       {ctx.user?.email && <p style={{ textAlign: "center", fontSize: 11.5, color: "var(--ink-400)", marginTop: 18 }}>Inloggad som {ctx.user.email}</p>}
     </div>
@@ -135,6 +136,7 @@ export function PasswordSheet({ ctx, close }) {
       <div style={{ padding: "36px 30px 52px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
         <div style={{ width: 74, height: 74, borderRadius: 24, background: "var(--success-tint)", display: "flex", alignItems: "center", justifyContent: "center", animation: "stpm-pop .5s" }}><Icon name="check" size={36} color="var(--success)" stroke={2.5} /></div>
         <h2 style={{ fontSize: 20, fontWeight: 800, color: "var(--ink-900)" }}>Lösenordet uppdaterat</h2>
+        <p style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.5, maxWidth: 250 }}>Använd ditt nya lösenord nästa gång du loggar in.</p>
         <Button variant="secondary" size="lg" full onClick={close} style={{ marginTop: 8 }}>Klar</Button>
       </div>
     );

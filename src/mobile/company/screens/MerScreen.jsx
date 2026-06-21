@@ -7,7 +7,7 @@ const MerRow = ({ icon, label, sub, right, onClick, danger, last }) => (
   <button onClick={onClick} className="press" style={{ display: "flex", alignItems: "center", gap: 13, width: "100%", textAlign: "left", padding: "15px 0", borderBottom: last ? "none" : "1px solid var(--line)" }}>
     <div style={{ width: 36, height: 36, borderRadius: 10, background: danger ? "var(--danger-tint)" : "var(--paper-2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icon name={icon} size={18} color={danger ? "var(--danger)" : "var(--ink-700)"} stroke={2} /></div>
     <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 15, fontWeight: 700, color: danger ? "var(--danger)" : "var(--ink-900)" }}>{label}</div>{sub && <div style={{ fontSize: 12.5, color: "var(--ink-400)", marginTop: 1 }}>{sub}</div>}</div>
-    {right || <Icon name="chevRight" size={18} color="var(--ink-300)" stroke={2.2} />}
+    {right || (!danger && <Icon name="chevRight" size={18} color="var(--ink-300)" stroke={2.2} />)}
   </button>
 );
 
@@ -17,6 +17,8 @@ export default function MerScreen({ ctx }) {
   const c = ctx.company;
   const activeMembers = (c.members || []).filter((m) => m.status === "active").length;
   const pendingMembers = (c.members || []).filter((m) => m.status === "pending").length;
+  const compChecks = [!!(c.about && c.about.trim().length >= 20), Array.isArray(c.perks) && c.perks.length > 0, !!(c.website && String(c.website).trim()), c.founded != null && c.founded !== "", c.employees != null && c.employees !== "", c.fleet != null && c.fleet !== ""];
+  const completion = Math.round((compChecks.filter(Boolean).length / compChecks.length) * 100);
 
   return (
     <>
@@ -47,7 +49,7 @@ export default function MerScreen({ ctx }) {
 
           <Label style={{ margin: "6px 0 4px" }}>Företag</Label>
           <Card style={{ padding: "0 16px", marginBottom: 16 }}>
-            <MerRow icon="building" label="Företagsprofil" onClick={() => ctx.setSheet({ type: "editCompany" })} />
+            <MerRow icon="building" label="Företagsprofil" sub={`${completion}% komplett`} onClick={() => ctx.setSheet({ type: "editCompany" })} />
             <MerRow icon="award" label="Verifiering" right={c.verified ? <Pill tone="success" size="sm"><Icon name="check" size={11} color="var(--success)" stroke={3} />Verifierad</Pill> : <Pill tone="amber" size="sm">Ej klar</Pill>} onClick={() => ctx.setSheet({ type: "verifiering" })} />
             <MerRow icon="user" label="Team" sub={`${activeMembers} medlemmar`} right={pendingMembers ? <Pill tone="amber" size="sm">{pendingMembers} inbjudna</Pill> : undefined} onClick={() => ctx.setSheet({ type: "team" })} />
             <MerRow icon="star" label="Omdömen" sub={`${c.reviewCount} omdömen från förare`} onClick={() => ctx.setSheet({ type: "reviews" })} last />

@@ -87,7 +87,7 @@ export default function MobileGuestJobs() {
   const remaining = list.length - shown.length;
 
   let heading = "Lediga jobb", sub = "Alla verifierade åkerier på ett ställe";
-  if (stad) { heading = `Förarjobb i ${stad}`; sub = `${list.length} lediga ${list.length === 1 ? "tjänst" : "tjänster"}`; }
+  if (stad) { heading = `Förarjobb i ${stad}`; sub = `${list.length} lediga ${list.length === 1 ? "tjänst" : "tjänster"} i ${stad}`; }
   else if (filter.region.length === 1) { heading = `Förarjobb i ${filter.region[0]}`; sub = `${list.length} lediga tjänster`; }
   else if (initLic) { heading = `${initLic}-jobb i Sverige`; sub = `${list.length} lediga tjänster`; }
 
@@ -101,6 +101,7 @@ export default function MobileGuestJobs() {
       </div>
       <div className="app-scroll" onScroll={onScroll} style={{ flex: 1, overflowY: "auto" }}>
         <div style={{ padding: "16px 20px 14px" }}>
+          {(stad || initRegion || initLic) && <button onClick={() => navigate("/jobb")} className="press" style={{ display: "inline-flex", alignItems: "center", gap: 5, marginBottom: 12, fontSize: 13.5, fontWeight: 700, color: "var(--green)" }}><Icon name="arrowLeft" size={15} stroke={2.3} />Alla jobb</button>}
           <h1 style={{ fontSize: 30, fontWeight: 800, letterSpacing: -1, lineHeight: 1.08, marginBottom: 6 }}>{heading}</h1>
           <p style={{ fontSize: 15.5, color: "var(--ink-500)", marginBottom: 18 }}>{sub}</p>
           <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
@@ -172,7 +173,7 @@ export default function MobileGuestJobs() {
             </div>
             {detail.verified && (
               <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "11px 14px", borderRadius: 12, background: "var(--green-tint)", marginBottom: 18 }}>
-                <Icon name="shield" size={19} color="var(--green)" stroke={1.9} /><span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--green-text)" }}>Verifierat åkeri</span>
+                <Icon name="shield" size={19} color="var(--green)" stroke={1.9} /><span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--green-text)" }}>Verifierat åkeri · org.nr kontrollerat mot Bolagsverket</span>
               </div>
             )}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 11, marginBottom: 22 }}>
@@ -185,6 +186,13 @@ export default function MobileGuestJobs() {
             </div>
             {detail.desc && <><h2 style={{ fontSize: 16, fontWeight: 800, marginBottom: 9 }}>Om tjänsten</h2><p style={{ fontSize: 15, lineHeight: 1.62, color: "var(--ink-700)", marginBottom: 24 }}>{detail.desc}</p></>}
             {detail.reqs.length > 0 && <><h2 style={{ fontSize: 16, fontWeight: 800, marginBottom: 11 }}>Krav & meriter</h2><div style={{ display: "flex", flexDirection: "column", gap: 10 }}>{detail.reqs.map((r, i) => <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 11 }}><div style={{ width: 22, height: 22, borderRadius: 7, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}><Icon name="check" size={13} color="var(--green)" stroke={2.6} /></div><span style={{ fontSize: 14.5, lineHeight: 1.45, color: "var(--ink-700)" }}>{r}</span></div>)}</div></>}
+            {detail.company && (
+              <div style={{ display: "flex", alignItems: "center", gap: 13, marginTop: 24, padding: "15px 16px", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16 }}>
+                <div style={{ width: 46, height: 46, borderRadius: 13, background: "var(--green-tint)", color: "var(--green-text)", fontSize: 16, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{(detail.company || "?").slice(0, 2).toUpperCase()}</div>
+                <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 15.5, fontWeight: 800, color: "var(--ink-900)" }}>{detail.company}</div>{detail.region && <div style={{ fontSize: 13, color: "var(--ink-500)", marginTop: 1 }}>{detail.region}</div>}</div>
+                <Icon name="chevRight" size={18} color="var(--ink-300)" stroke={2.2} />
+              </div>
+            )}
           </div>
           <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "14px 20px calc(22px + var(--stpm-safe-bottom))", background: "rgba(245,242,236,0.96)", backdropFilter: "blur(10px)", borderTop: "1px solid var(--line)", display: "flex", gap: 11 }}>
             <button onClick={() => setGate({ action: "save" })} className="press" style={{ height: 54, padding: "0 20px", borderRadius: 14, background: "var(--card)", border: "1px solid var(--line-2)", color: "var(--ink-800)", fontWeight: 700, fontSize: 15.5, display: "flex", alignItems: "center", gap: 8 }}><Icon name="bookmark" size={18} color="var(--ink-500)" stroke={2} />Spara</button>

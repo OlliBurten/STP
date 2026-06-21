@@ -19,7 +19,7 @@ export function PublishSheet({ ctx, close }) {
     <div style={{ padding: "10px 24px 30px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center" }}>
       <div style={{ width: 84, height: 84, borderRadius: 26, background: "var(--success-tint)", display: "flex", alignItems: "center", justifyContent: "center", animation: "stpm-pop .5s" }}><Icon name="check" size={42} color="var(--success)" stroke={2.6} /></div>
       <h2 style={{ fontSize: 23, fontWeight: 800, letterSpacing: -0.5, color: "var(--ink-900)", margin: "20px 0 8px" }}>Annonsen är publicerad</h2>
-      <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.5, maxWidth: 280, marginBottom: 24 }}>“{d.title}” är nu synlig för matchande förare i {d.location || "din region"}.</p>
+      <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.5, maxWidth: 280, marginBottom: 24 }}>“{d.title}” är nu synlig för matchande förare i {d.location || "din region"}. Du får en notis när första ansökan kommer in.</p>
       <Button variant="primary" size="lg" full onClick={close}>Klar</Button>
     </div>
   );
@@ -42,7 +42,11 @@ export function PublishSheet({ ctx, close }) {
           </>}
           {step === 1 && <>
             <Label style={{ marginBottom: 9 }}>Arbetsuppgifter</Label>
-            <textarea value={d.tasks} onChange={(e) => up("tasks", e.target.value)} placeholder="Beskriv rollen kort." rows={6} style={{ width: "100%", padding: "13px 15px", borderRadius: 13, border: "1px solid var(--line-2)", background: "#fff", fontSize: 15, color: "var(--ink-900)", outline: "none", resize: "none", lineHeight: 1.5, fontFamily: "var(--font)" }} />
+            <textarea value={d.tasks} onChange={(e) => up("tasks", e.target.value)} placeholder="Beskriv rollen – t.ex. fjärrkörning Malmö–Stockholm, lastning och lossning, kundkontakt." rows={6} style={{ width: "100%", padding: "13px 15px", borderRadius: 13, border: "1px solid var(--line-2)", background: "#fff", fontSize: 15, color: "var(--ink-900)", outline: "none", resize: "none", lineHeight: 1.5, fontFamily: "var(--font)" }} />
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 9, marginTop: 12, padding: "12px 14px", background: "var(--green-tint)", borderRadius: 12 }}>
+              <Icon name="spark" size={16} color="var(--green)" stroke={0} style={{ fill: "var(--green)", flexShrink: 0, marginTop: 1 }} />
+              <span style={{ fontSize: 12.5, color: "var(--green-text)", lineHeight: 1.45 }}>STP fyller automatiskt i en proffsig beskrivning från dina val om du lämnar fältet kort.</span>
+            </div>
           </>}
           {step === 2 && <>
             <Label style={{ marginBottom: 9 }}>Körkortskrav</Label>
@@ -54,6 +58,7 @@ export function PublishSheet({ ctx, close }) {
           </>}
           {step === 3 && <>
             <Label style={{ marginBottom: 9 }}>Vad erbjuder ni?</Label>
+            <p style={{ fontSize: 13, color: "var(--ink-500)", lineHeight: 1.5, margin: "-2px 0 12px" }}>Välj de förmåner som gäller – de visas tydligt i annonsen och höjer matchningen.</p>
             <div style={{ display: "flex", gap: 9, flexWrap: "wrap" }}>{["Kollektivavtal", "Tjänstepension", "Friskvårdsbidrag", "Fast schema", "Moderna fordon", "Övertidsersättning", "Utbildning", "Bonus"].map((p) => <Chip key={p} active={d.perks.includes(p)} onClick={() => toggle("perks", p)}>{p}</Chip>)}</div>
             <div style={{ marginTop: 22, padding: "15px 16px", background: "var(--paper-2)", borderRadius: 14 }}>
               <Label style={{ marginBottom: 8 }}>Sammanfattning</Label>
@@ -128,8 +133,15 @@ export function CandidateSheet({ ctx, id, close }) {
         <div><div style={{ fontSize: 12, color: "var(--ink-400)", fontWeight: 700 }}>SÖKER</div><div style={{ fontSize: 14.5, fontWeight: 700, color: "var(--ink-900)", marginTop: 2 }}>{job ? job.title : "–"}</div></div>
         <Pill tone={stageTone(c.stage)}>{stageLabel(c.stage)}</Pill>
       </div>
+      {c.note && (
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "13px 14px", background: "var(--green-tint)", borderRadius: 13, marginBottom: 16 }}>
+          <Icon name="spark" size={16} color="var(--green)" stroke={0} style={{ fill: "var(--green)", flexShrink: 0, marginTop: 1 }} />
+          <div><div style={{ fontSize: 12, fontWeight: 700, color: "var(--green-text)", marginBottom: 2 }}>Skräddarsytt meddelande</div><p style={{ fontSize: 13.5, color: "var(--ink-800)", lineHeight: 1.5 }}>{c.note}</p></div>
+        </div>
+      )}
       <Label style={{ marginBottom: 9 }}>Körkort & behörigheter</Label>
       <div style={{ marginBottom: 18 }}><LicRow licenses={c.licenses} certs={c.certs} /></div>
+      <Button variant="secondary" size="lg" full icon={<Icon name="eye" size={17} stroke={2} />} style={{ marginBottom: 10 }} onClick={() => ctx.setSheet({ type: "driver", id: c.id, fromCand: true })}>Visa hela profilen</Button>
       <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
         <Button variant="secondary" size="lg" full icon={<Icon name="msg" size={17} stroke={2} />} onClick={() => { if (c.conv) ctx.setChat(c.conv); close(); }}>Meddela</Button>
         {next && <Button variant="primary" size="lg" full onClick={() => ctx.moveCandidate(c.id, next.id)} iconRight={<Icon name="arrow" size={17} stroke={2.3} />}>{next.label.replace(/e$/, "")}</Button>}
@@ -190,18 +202,26 @@ export function ContactDriverSheet({ ctx, id, close }) {
     await ctx.contactDriver({ driverId: d.id, jobId, jobTitle: job?.title, message: msg });
     setBusy(false); setSent(true);
   };
+  const aiGen = () => {
+    const first = String(d.name).split(" ")[0];
+    const job = ctx.jobs.find((j) => j.id === jobId);
+    setMsg(`Hej ${first}!\n\nVi på ${ctx.company.name} har ${job?.title ? `en tjänst som ${job.title}` : "en ledig tjänst"} som vi tror skulle passa dig bra utifrån din profil och erfarenhet. Hör gärna av dig om du är intresserad så berättar vi mer.\n\nVänliga hälsningar,\n${ctx.company.name}`);
+  };
   return (
     <div style={{ padding: "4px 22px 26px" }}>
       <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 16 }}>
         <Avatar initials={d.initials} size={48} color="var(--green)" />
-        <div><div style={{ fontSize: 16, fontWeight: 800, color: "var(--ink-900)" }}>{d.name}</div><div style={{ fontSize: 13, color: "var(--ink-500)" }}>{d.location}</div></div>
+        <div><div style={{ fontSize: 16, fontWeight: 800, color: "var(--ink-900)" }}>{d.name}</div><div style={{ fontSize: 13, color: "var(--ink-500)" }}>{d.exp ? `${d.exp} år · ` : ""}{d.location}</div></div>
       </div>
       {activeJobs.length > 0 && <>
-        <Label style={{ marginBottom: 9 }}>Vilken tjänst?</Label>
+        <Label style={{ marginBottom: 9 }}>Gäller annons</Label>
         <div style={{ display: "flex", gap: 9, flexWrap: "wrap", marginBottom: 16 }}>{activeJobs.map((j) => <Chip key={j.id} active={jobId === j.id} onClick={() => setJobId(j.id)}>{j.title}</Chip>)}</div>
       </>}
-      <Label style={{ marginBottom: 9 }}>Meddelande</Label>
-      <textarea value={msg} onChange={(e) => setMsg(e.target.value)} placeholder={`Hej ${String(d.name).split(" ")[0]}! Vi har en tjänst som kan passa dig…`} rows={4} style={{ width: "100%", padding: "13px 15px", borderRadius: 13, border: "1px solid var(--line-2)", background: "var(--card-2)", fontSize: 15, color: "var(--ink-900)", outline: "none", resize: "none", lineHeight: 1.5, marginBottom: 16, fontFamily: "var(--font)" }} />
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 9 }}>
+        <Label style={{ marginBottom: 0 }}>Meddelande</Label>
+        <button onClick={aiGen} className="press" style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12.5, fontWeight: 700, color: "var(--green)" }}><Icon name="spark" size={14} color="var(--green)" stroke={0} style={{ fill: "var(--green)" }} />Skriv med STP</button>
+      </div>
+      <textarea value={msg} onChange={(e) => setMsg(e.target.value)} placeholder="Skriv ett personligt meddelande…" rows={4} style={{ width: "100%", padding: "13px 15px", borderRadius: 13, border: "1px solid var(--line-2)", background: "var(--card-2)", fontSize: 15, color: "var(--ink-900)", outline: "none", resize: "none", lineHeight: 1.5, marginBottom: 16, fontFamily: "var(--font)" }} />
       <Button variant="primary" size="lg" full busy={busy} disabled={!msg.trim()} icon={!busy ? <Icon name="send" size={17} stroke={2} /> : undefined} onClick={submit}>Skicka meddelande</Button>
     </div>
   );
@@ -215,10 +235,10 @@ export function DriverFilterSheet({ ctx, close }) {
     <div style={{ padding: "0 22px 26px" }}>
       <Label style={{ marginBottom: 10 }}>Segment</Label>
       <div style={{ display: "flex", gap: 9, flexWrap: "wrap", marginBottom: 22 }}>{[["alla", "Alla"], ["heltid", "Heltid"], ["vikariepool", "Vikariepool"], ["praktik", "Praktik"]].map(([id, l]) => <Chip key={id} active={f.seg === id} onClick={() => setF((s) => ({ ...s, seg: id }))}>{l}</Chip>)}</div>
-      <Label style={{ marginBottom: 10 }}>Körkort</Label>
+      <Label style={{ marginBottom: 10 }}>Körkort (minst)</Label>
       <div style={{ display: "flex", gap: 9, flexWrap: "wrap", marginBottom: 22 }}>{["C1", "C1E", "C", "CE"].map((l) => <Chip key={l} active={f.lic.includes(l)} onClick={() => toggleLic(l)}>{l}</Chip>)}</div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0 22px" }}>
-        <span style={{ fontSize: 15, fontWeight: 600, color: "var(--ink-900)" }}>Endast de som söker jobb</span>
+        <div><div style={{ fontSize: 15, fontWeight: 600, color: "var(--ink-900)" }}>Endast tillgängliga</div><div style={{ fontSize: 12.5, color: "var(--ink-500)", marginTop: 1 }}>Förare som söker jobb just nu</div></div>
         <Switch on={f.onlyAvail} onToggle={() => setF((s) => ({ ...s, onlyAvail: !s.onlyAvail }))} />
       </div>
       <div style={{ display: "flex", gap: 10 }}>

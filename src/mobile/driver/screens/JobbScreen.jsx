@@ -98,9 +98,9 @@ export default function JobbScreen({ ctx }) {
               ) : (
                 comps.slice(0, shown).map((c) => <CompanyCard key={c.id || c.name} c={c} ctx={ctx} />)
               )}
-              {remaining > 0 && (
+              {remaining > 0 ? (
                 <button onClick={() => setShown((s) => s + 12)} className="press" style={{ padding: "13px 0", borderRadius: 13, background: "var(--card)", border: "1px solid var(--line-2)", boxShadow: "var(--sh-sm)", fontSize: 14.5, fontWeight: 700, color: "var(--ink-800)", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>Visa fler<span style={{ fontSize: 12.5, color: "var(--ink-400)", fontWeight: 600 }}>· {remaining} kvar</span></button>
-              )}
+              ) : comps.length > 0 && <p style={{ textAlign: "center", fontSize: 12, color: "var(--ink-400)", padding: "8px 0", lineHeight: 1.5 }}>Alla åkerier anslutna till STP – även de utan lediga jobb just nu</p>}
             </>
           )}
         </div>

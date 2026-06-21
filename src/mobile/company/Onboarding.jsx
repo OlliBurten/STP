@@ -78,7 +78,7 @@ export default function CompanyOnboarding() {
             </button>
             <div style={{ display: "flex", gap: 10, padding: "13px 14px", background: "var(--paper-2)", borderRadius: 12, marginTop: 14 }}>
               <Icon name="info" size={17} color="var(--ink-400)" stroke={2} style={{ flexShrink: 0, marginTop: 1 }} />
-              <span style={{ fontSize: 12.5, color: "var(--ink-500)", lineHeight: 1.45 }}>Innan ni kan publicera verifierar STP företaget med F-skattsedel och trafiktillstånd.</span>
+              <span style={{ fontSize: 12.5, color: "var(--ink-500)", lineHeight: 1.45 }}>Innan ni kan publicera verifierar STP företaget med F-skattsedel och trafiktillstånd. Felaktiga uppgifter kan leda till avstängning.</span>
             </div>
           </>}
           {step === 2 && <>

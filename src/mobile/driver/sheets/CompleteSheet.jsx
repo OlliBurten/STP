@@ -21,7 +21,7 @@ export default function CompleteSheet({ ctx, close }) {
         </div>
         <div>
           <div style={{ fontSize: 16, fontWeight: 800, color: "var(--ink-900)" }}>Nästan där</div>
-          <div style={{ fontSize: 13.5, color: "var(--ink-500)" }}>Kompletta profiler får fler svar.</div>
+          <div style={{ fontSize: 13.5, color: "var(--ink-500)" }}>Kompletta profiler får 3× fler svar.</div>
         </div>
       </div>
       {missing.length === 0 ? (
@@ -34,8 +34,8 @@ export default function CompleteSheet({ ctx, close }) {
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {missing.map((m) => (
             <button key={m.key} onClick={() => { close(); ctx.editProfile?.(m.key); }} className="press" style={{ display: "flex", alignItems: "center", gap: 13, padding: "14px", background: "var(--card-2)", border: "1px solid var(--line)", borderRadius: 13, textAlign: "left", width: "100%" }}>
-              <div style={{ width: 40, height: 40, borderRadius: 11, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icon name="user" size={18} color="var(--green)" stroke={1.9} /></div>
-              <div style={{ flex: 1 }}><div style={{ fontSize: 14.5, fontWeight: 700, color: "var(--ink-900)" }}>{m.label}</div><div style={{ fontSize: 12.5, color: "var(--ink-500)" }}>Lägg till för att stärka din profil</div></div>
+              <div style={{ width: 40, height: 40, borderRadius: 11, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icon name={m.icon || "user"} size={18} color="var(--green)" stroke={1.9} /></div>
+              <div style={{ flex: 1 }}><div style={{ fontSize: 14.5, fontWeight: 700, color: "var(--ink-900)" }}>{m.label}</div><div style={{ fontSize: 12.5, color: "var(--ink-500)" }}>{m.desc || "Lägg till för att stärka din profil"}</div></div>
               <Icon name="chevRight" size={18} color="var(--ink-300)" stroke={2.2} />
             </button>
           ))}

@@ -6,6 +6,7 @@ import { Icon, Label, Field, Button, Pill, Avatar, Switch, Stars, SheetBack } fr
 import { SegPill } from "../ui";
 import { setActiveOrgId } from "../../../api/client";
 import { getCompanyReviewSummary } from "../../../api/reviews";
+import { updateCompanyNotificationSettings } from "../../../api/companies";
 
 const Row = ({ label, sub, right, onClick, danger, last }) => (
   <button onClick={onClick} className="press" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 0", borderBottom: last ? "none" : "1px solid var(--line)", textAlign: "left" }}>
@@ -21,15 +22,22 @@ export function EditCompanySheet({ ctx, close }) {
   const [city, setCity] = useState(c.city || "");
   const [website, setWebsite] = useState(c.website || "");
   const [about, setAbout] = useState(c.about || "");
-  const save = () => { ctx.updateCompany({ name, location: city, website, description: about }); close(); };
+  const [cpName, setCpName] = useState(c.contact?.name || "");
+  const [cpRole, setCpRole] = useState(c.contact?.role || "");
+  const [cpPhone, setCpPhone] = useState(c.contact?.phone || "");
+  const save = () => { ctx.updateCompany({ name, location: city, website, description: about, contact: { ...(c.contact || {}), name: cpName, role: cpRole, phone: cpPhone } }); close(); };
   return (
     <div style={{ padding: "4px 22px 26px" }}>
       <Field label="Företagsnamn" value={name} onChange={setName} />
       <Field label="Ort" value={city} onChange={setCity} />
       <Field label="Webbplats" value={website} onChange={setWebsite} placeholder="https://" />
       <Label style={{ marginBottom: 8 }}>Företagsbeskrivning</Label>
-      <textarea value={about} onChange={(e) => setAbout(e.target.value)} rows={5} placeholder="Berätta om ert åkeri…" style={{ width: "100%", padding: "13px 15px", borderRadius: 13, border: "1px solid var(--line-2)", background: "#fff", fontSize: 15, color: "var(--ink-900)", outline: "none", resize: "none", lineHeight: 1.5, marginBottom: 18, fontFamily: "var(--font)" }} />
-      <Button variant="primary" size="lg" full onClick={save}>Spara profil</Button>
+      <textarea value={about} onChange={(e) => setAbout(e.target.value)} rows={5} placeholder="Berätta om ert åkeri…" style={{ width: "100%", padding: "13px 15px", borderRadius: 13, border: "1px solid var(--line-2)", background: "#fff", fontSize: 15, color: "var(--ink-900)", outline: "none", resize: "none", lineHeight: 1.5, marginBottom: 22, fontFamily: "var(--font)" }} />
+      <Label style={{ marginBottom: 10 }}>Kontaktperson</Label>
+      <Field label="Namn" value={cpName} onChange={setCpName} />
+      <Field label="Roll" value={cpRole} onChange={setCpRole} placeholder="t.ex. Trafikledare" />
+      <Field label="Telefon" type="tel" inputMode="tel" value={cpPhone} onChange={setCpPhone} />
+      <Button variant="primary" size="lg" full onClick={save}>Spara ändringar</Button>
     </div>
   );
 }
@@ -37,9 +45,15 @@ export const CompleteProfileSheet = EditCompanySheet;
 
 /* ── Settings ── */
 export function SettingsSheet({ ctx, close }) {
+  const [notif, setNotif] = useState({ applications: true, messages: true, weekly: true });
+  const toggle = (k) => setNotif((n) => { const next = { ...n, [k]: !n[k] }; if (ctx.hasApi) updateCompanyNotificationSettings(next).catch(() => {}); return next; });
   return (
     <div style={{ padding: "0 22px 26px" }}>
-      <Label style={{ margin: "0 0 2px" }}>Konto</Label>
+      <Label style={{ margin: "0 0 2px" }}>Notiser</Label>
+      <Row label="Nya ansökningar" right={<Switch on={notif.applications} onToggle={() => toggle("applications")} />} />
+      <Row label="Nya meddelanden" right={<Switch on={notif.messages} onToggle={() => toggle("messages")} />} />
+      <Row label="Veckosammanfattning" right={<Switch on={notif.weekly} onToggle={() => toggle("weekly")} />} last />
+      <Label style={{ margin: "20px 0 2px" }}>Konto</Label>
       <Row label="Företagsprofil" onClick={() => ctx.setSheet({ type: "editCompany" })} />
       {/* Abonnemang/billing dolt tills vidare — ej redo att fakturera åkerier. */}
       <Row label="Team & roller" onClick={() => ctx.setSheet({ type: "team" })} last />
@@ -55,6 +69,7 @@ export function TeamSheet({ ctx, close }) {
   const invites = ctx.invites || [];
   return (
     <div style={{ padding: "4px 22px 26px" }}>
+      <p style={{ fontSize: 13.5, color: "var(--ink-500)", lineHeight: 1.5, marginBottom: 16 }}>Personer med tillgång till {ctx.company.name}. <b style={{ color: "var(--ink-800)" }}>Admin</b> kan publicera, hantera team och betalning. <b style={{ color: "var(--ink-800)" }}>Rekryterare</b> hanterar annonser och kandidater.</p>
       <Label style={{ marginBottom: 11 }}>Medlemmar</Label>
       <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 18 }}>
         {members.length === 0 && <p style={{ fontSize: 13.5, color: "var(--ink-400)" }}>Bara du för tillfället.</p>}
@@ -114,7 +129,7 @@ export function ReviewsSheet({ ctx }) {
       {ctx.company.rating != null && (
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
           <div style={{ fontSize: 38, fontWeight: 800, color: "var(--ink-900)", fontFamily: "var(--mono)" }}>{Number(ctx.company.rating).toFixed(1)}</div>
-          <div><Stars rating={ctx.company.rating} size={16} /><div style={{ fontSize: 12.5, color: "var(--ink-500)", marginTop: 2 }}>{ctx.company.reviewCount} omdömen</div></div>
+          <div><Stars rating={ctx.company.rating} size={16} /><div style={{ fontSize: 12.5, color: "var(--ink-500)", marginTop: 2 }}>Baserat på {ctx.company.reviewCount} omdömen från förare som arbetat hos er.</div></div>
         </div>
       )}
       {reviews.length === 0 ? (
@@ -155,7 +170,8 @@ export function VerificationSheet({ ctx, close }) {
     <div style={{ padding: "4px 22px 26px" }}>
       <div style={{ width: 56, height: 56, borderRadius: 16, background: verified ? "var(--success-tint)" : "var(--amber-tint)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}><Icon name="shield" size={26} color={verified ? "var(--success)" : "var(--amber-deep)"} stroke={2} /></div>
       <h2 style={{ fontSize: 21, fontWeight: 800, color: "var(--ink-900)", marginBottom: 8 }}>{verified ? "Ni är verifierade" : "Verifiera ert åkeri"}</h2>
-      <p style={{ fontSize: 14.5, color: "var(--ink-600)", lineHeight: 1.55, marginBottom: 18 }}>{verified ? "Er profil visar en grön Verifierad av STP-stämpel. Förare litar på verifierade åkerier." : "Vi kontrollerar ert organisationsnummer mot Bolagsverket (F-skatt + trafiktillstånd). Det krävs för att publicera annonser."}</p>
+      <p style={{ fontSize: 14.5, color: "var(--ink-600)", lineHeight: 1.55, marginBottom: 16 }}>{verified ? "Er profil visar en grön Verifierad av STP-stämpel. Förare litar på verifierade åkerier." : "Vi kontrollerar ert organisationsnummer mot Bolagsverket (F-skatt + trafiktillstånd). Det krävs för att publicera annonser."}</p>
+      {!verified && <div style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "13px 14px", background: "var(--success-tint)", borderRadius: 12, marginBottom: 16 }}><Icon name="check" size={17} color="var(--success)" stroke={2.4} style={{ flexShrink: 0, marginTop: 1 }} /><span style={{ fontSize: 13, color: "var(--green-text)", lineHeight: 1.45 }}>Verifierade åkerier får en <b>Verifierad av STP</b>-stämpel som förare litar på – fler vågar söka era jobb.</span></div>}
       {!verified && <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "13px 14px", background: "var(--info-tint)", borderRadius: 12, marginBottom: 18 }}><Icon name="info" size={17} color="var(--info)" stroke={2} style={{ flexShrink: 0 }} /><span style={{ fontSize: 13, color: "var(--ink-700)", lineHeight: 1.45 }}>Org.nr {ctx.company.orgnr || "—"} granskas av STP. Ni får en notis när det är klart.</span></div>}
       <Button variant="primary" size="lg" full onClick={close}>{verified ? "Stäng" : "Jag förstår"}</Button>
     </div>
@@ -187,16 +203,25 @@ export function OrgSwitcherSheet({ ctx, close }) {
   const switchTo = (id) => { try { setActiveOrgId(id); } catch { /* */ } window.location.reload(); };
   return (
     <div style={{ padding: "4px 22px 26px" }}>
-      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 14 }}>
-        {orgs.length === 0 && <p style={{ fontSize: 13.5, color: "var(--ink-400)" }}>{ctx.company.name}</p>}
-        {orgs.map((o) => (
-          <button key={o.id} onClick={() => switchTo(o.id)} className="press" style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 14px", background: "var(--card-2)", border: "1px solid var(--line)", borderRadius: 13, textAlign: "left" }}>
-            <Avatar initials={(o.name || "?").slice(0, 2).toUpperCase()} size={42} color="var(--green-deep)" />
-            <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 15, fontWeight: 700, color: "var(--ink-900)" }}>{o.name}</div><div style={{ fontSize: 12.5, color: "var(--ink-500)" }}>{o.role || o.myRole || "Medlem"}</div></div>
-            <Icon name="chevRight" size={18} color="var(--ink-300)" stroke={2.2} />
-          </button>
-        ))}
+      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 14px", background: "var(--card-2)", border: "1px solid var(--line)", borderRadius: 14, marginBottom: 18 }}>
+        <Avatar initials={(ctx.user?.name || ctx.company.name || "?").slice(0, 2).toUpperCase()} size={42} color="var(--ink-400)" />
+        <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 14.5, fontWeight: 700, color: "var(--ink-900)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{ctx.user?.name || ctx.company.name}</div>{ctx.user?.email && <div style={{ fontSize: 12.5, color: "var(--ink-500)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{ctx.user.email}</div>}</div>
       </div>
+      <Label style={{ marginBottom: 10 }}>Dina åkerier</Label>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 16 }}>
+        {orgs.length === 0 && <p style={{ fontSize: 13.5, color: "var(--ink-400)" }}>{ctx.company.name}</p>}
+        {orgs.map((o) => {
+          const active = o.name === ctx.company.name;
+          return (
+            <button key={o.id} onClick={() => switchTo(o.id)} className="press" style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 14px", background: "var(--card-2)", border: `1px solid ${active ? "var(--green)" : "var(--line)"}`, borderRadius: 13, textAlign: "left" }}>
+              <Avatar initials={(o.name || "?").slice(0, 2).toUpperCase()} size={42} color="var(--green-deep)" />
+              <div style={{ flex: 1, minWidth: 0 }}><div style={{ display: "flex", alignItems: "center", gap: 6 }}><span style={{ fontSize: 15, fontWeight: 700, color: "var(--ink-900)" }}>{o.name}</span>{o.verified && <Icon name="check" size={13} color="#fff" stroke={3} style={{ background: "var(--success)", borderRadius: 7, padding: 1.5 }} />}</div><div style={{ fontSize: 12.5, color: "var(--ink-500)" }}>{[o.role || o.myRole || "Medlem", o.city].filter(Boolean).join(" · ")}</div></div>
+              {active ? <Icon name="check" size={18} color="var(--green)" stroke={2.6} /> : <Icon name="chevRight" size={18} color="var(--ink-300)" stroke={2.2} />}
+            </button>
+          );
+        })}
+      </div>
+      <p style={{ fontSize: 12.5, color: "var(--ink-400)", lineHeight: 1.5, textAlign: "center" }}>Hanterar du flera åkerier? Lägg till dem och växla när som helst – ett konto, alla bolag.</p>
     </div>
   );
 }
@@ -227,7 +252,7 @@ export function SupportSheet({ close }) {
 export function LogoutSheet({ ctx, close }) {
   return (
     <div style={{ padding: "4px 22px 26px" }}>
-      <p style={{ fontSize: 15, color: "var(--ink-700)", lineHeight: 1.55, marginBottom: 20 }}>Vill du logga ut från STP?</p>
+      <p style={{ fontSize: 15, color: "var(--ink-700)", lineHeight: 1.55, marginBottom: 20 }}>Vill du logga ut från STP? Du kan logga in igen när som helst.</p>
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         <Button variant="danger" size="lg" full icon={<Icon name="logout" size={18} stroke={2.1} />} onClick={() => { close(); ctx.logout?.(); ctx.navigate?.("/"); }}>Logga ut</Button>
         <Button variant="secondary" size="lg" full onClick={close}>Avbryt</Button>

@@ -104,6 +104,7 @@ export function CompanyDataProvider({ children }) {
           location: a.location || "",
           when: a.createdAt ? "Ny" : "",
           new: !a.readByCompanyAt,
+          note: a.coverLetter || a.note || a.message || a.firstMessage || "",
           conv: { id: a.conversationId || a.id },
         });
       }
