@@ -1,0 +1,97 @@
+/* ════════════════════════════════════════════════════════════════
+   STP MOBILE — scoped design layer
+   Everything here is confined to the `.stp-mobile` subtree so the new
+   mobile reskin never touches desktop. The palette is the warm
+   prototype palette (STP Mobil/*.html) and intentionally differs from
+   the cool brand-book tokens in index.css :root. Keyframes are prefixed
+   `stpm-` to avoid colliding with the global keyframes in index.css.
+   ════════════════════════════════════════════════════════════════ */
+
+.stp-mobile {
+  /* Ink */
+  --ink-900:#0a1a1a; --ink-800:#14282a; --ink-700:#2a3a3c; --ink-600:#3f4d50; --ink-500:#5a6669;
+  --ink-400:#7d878a; --ink-300:#b5bcbe; --ink-200:#d8dcdd; --ink-100:#eceeef;
+
+  /* Surfaces */
+  --paper:#f5f2ec; --paper-2:#ede9e1; --card:#ffffff; --card-2:#fbfaf6;
+
+  /* Lines */
+  --line:rgba(20,32,32,0.07); --line-2:rgba(20,32,32,0.13); --line-strong:rgba(20,32,32,0.20);
+
+  /* Brand */
+  --green:#1F5F5C; --green-deep:#154240; --green-soft:#4a8a87;
+  --green-tint:#e7eeed; --green-tint-2:#d6e1df; --green-text:#0F3F3C;
+  --amber:#C77A0E; --amber-deep:#985a06; --amber-tint:#fbf0db; --amber-tint-2:#f5e3bd; --amber-text:#7a4d08;
+  --amber-bright:#F2A41C;
+  --night:#0F1513; --asphalt:#1B2421;
+
+  /* Status */
+  --success:#1f7a3a; --success-tint:#e0efe4; --danger:#b91c3b; --danger-tint:#fbe4e8;
+  --info:#1b5a8a; --info-tint:#e1ecf5;
+
+  /* Shadows */
+  --sh-sm:0 1px 2px rgba(15,22,22,0.04),0 1px 3px rgba(15,22,22,0.05);
+  --sh:0 1px 2px rgba(15,22,22,0.04),0 6px 20px rgba(15,22,22,0.05);
+  --sh-md:0 2px 6px rgba(15,22,22,0.05),0 10px 30px rgba(15,22,22,0.07);
+  --sh-lg:0 8px 16px rgba(15,22,22,0.08),0 24px 48px rgba(15,22,22,0.14);
+
+  /* Type */
+  --font:'DM Sans',system-ui,sans-serif; --mono:'JetBrains Mono',ui-monospace,monospace;
+
+  /* Safe-area, exposed so screens can compose against it */
+  --stpm-safe-top:env(safe-area-inset-top,0px);
+  --stpm-safe-bottom:env(safe-area-inset-bottom,0px);
+
+  font-family:var(--font);
+  color:var(--ink-900);
+  background:var(--paper);
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+/* Reset inside the mobile tree only */
+.stp-mobile *,
+.stp-mobile *::before,
+.stp-mobile *::after { box-sizing:border-box; }
+.stp-mobile button { background:none; border:none; padding:0; cursor:pointer; font:inherit; color:inherit; -webkit-tap-highlight-color:transparent; }
+.stp-mobile a { color:inherit; text-decoration:none; }
+.stp-mobile input, .stp-mobile textarea, .stp-mobile select { font-family:var(--font); }
+
+/* Hidden scrollbars for in-app scroll regions */
+.stp-mobile .app-scroll::-webkit-scrollbar,
+.stp-mobile .scroll::-webkit-scrollbar { width:0; height:0; }
+.stp-mobile .app-scroll, .stp-mobile .scroll { scrollbar-width:none; }
+
+/* Press feedback */
+.stp-mobile .press { transition:transform .08s ease; }
+.stp-mobile .press:active { transform:scale(0.97); }
+
+/* Tab transition wrapper */
+.stp-mobile .tab-enter { animation:stpm-tab-in .3s cubic-bezier(.32,.72,0,1); }
+
+@keyframes stpm-fade-in { from { opacity:0; } to { opacity:1; } }
+@keyframes stpm-fade-up { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+@keyframes stpm-slide-up { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+@keyframes stpm-sheet-up { from { transform:translateY(100%); } to { transform:translateY(0); } }
+@keyframes stpm-sheet-in { from { transform:translateX(100%); } to { transform:translateX(0); } }
+@keyframes stpm-menu-in { from { transform:translateX(100%); } to { transform:translateX(0); } }
+@keyframes stpm-tab-in { from { transform:translateX(16px); opacity:0; } to { transform:none; opacity:1; } }
+@keyframes stpm-pop { 0% { transform:scale(1); } 40% { transform:scale(1.32); } 100% { transform:scale(1); } }
+@keyframes stpm-shake { 0%,100% { transform:translateX(0); } 20%,60% { transform:translateX(-6px); } 40%,80% { transform:translateX(6px); } }
+@keyframes stpm-spin { to { transform:rotate(360deg); } }
+@keyframes stpm-rise-up { from { transform:translateY(22px); } to { transform:translateY(0); } }
+@keyframes stpm-count-up { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+@keyframes stpm-slide-in-r { from { opacity:0; transform:translateX(14px); } to { opacity:1; transform:translateX(0); } }
+@keyframes stpm-shimmer { 0% { background-position:-280px 0; } 100% { background-position:280px 0; } }
+
+/* Horizontal snap-scroller (hide scrollbar) */
+.stp-mobile .hscroll::-webkit-scrollbar { display:none; }
+.stp-mobile .hscroll { scrollbar-width:none; }
+
+/* Skeleton loading block */
+.stp-mobile .skel {
+  background:linear-gradient(90deg,var(--paper-2) 25%,#e4e0d6 50%,var(--paper-2) 75%);
+  background-size:560px 100%;
+  border-radius:10px;
+  animation:stpm-shimmer 1.3s linear infinite;
+}

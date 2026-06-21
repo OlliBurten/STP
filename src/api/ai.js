@@ -29,3 +29,8 @@ export function fetchDriverSummary(driverId) {
 export function fetchProfileTips() {
   return apiPost("/api/ai/profile-tips", {});
 }
+
+/** Generera ett personligt brev för föraren — { jobId? } (driver only). */
+export function generateCoverLetter(params = {}) {
+  return apiPost("/api/ai/cover-letter", params);
+}

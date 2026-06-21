@@ -102,6 +102,10 @@ model User {
   adminAuditTargets     AdminAuditLog[] @relation("AdminAuditTarget")
   adminImpersonationSessions AdminImpersonationSession[] @relation("AdminImpersonationActor")
   impersonatedBySessions     AdminImpersonationSession[] @relation("AdminImpersonationTarget")
+
+  // Vikariepool / inhopp (extra-pass)
+  shiftsCreated  Shift[] @relation("ShiftCompany")
+  shiftsAccepted Shift[] @relation("ShiftDriver")
 }
 
 model PushSubscription {
@@ -179,6 +183,7 @@ model Organization {
   conversations    Conversation[]
   reviews          CompanyReview[] @relation("ReviewOrganization")
   invites          OrganizationInvite[]
+  shifts           Shift[]
 }
 
 model UserOrganization {
@@ -260,6 +265,8 @@ model DriverProfile {
   fastResponder       Boolean  @default(false) // svarar på meddelanden inom 24h
   preferredEmployment String[] @default([])   // ["fast", "vikariat", "timjobb", "egenanstald"]
   openToWork          Boolean  @default(false) // styr "SÖKER JOBB"-ringen på profilen
+  availableForShifts  Boolean  @default(false) // "Tillgänglig för inhopp" (vikariepool)
+  photoUrl            String?  @db.Text         // profilbild (data-URL eller extern URL)
   slug                String?  @unique         // t.ex. "oliver-harburt-abc123" för publik URL
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
@@ -330,6 +337,37 @@ model Job {
   savedBy SavedJob[]
   views   JobView[]
   applications Application[]
+}
+
+// Vikariepool / inhopp — ett extrapass ett åkeri erbjuder. Förare med
+// availableForShifts=true kan se och ta lediga pass som matchar deras
+// behörighet och region.
+model Shift {
+  id             String   @id @default(cuid())
+  companyId      String
+  company        User     @relation("ShiftCompany", fields: [companyId], references: [id], onDelete: Cascade)
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  role           String   // "Distributionsförare"
+  companyName    String
+  location       String
+  region         String?
+  date           String   // "Tor 19 jun" eller ISO
+  startTime      String?  // "06:00"
+  endTime        String?  // "14:00"
+  hours          Int?
+  pay            String   // "240 kr/tim"
+  license        String?  // krav: "C" | "CE"
+  urgency        String?  // "Akut" | "Imorgon" | null
+  status         String   @default("OPEN") // OPEN | TAKEN | CANCELLED
+  acceptedById   String?
+  acceptedBy     User?    @relation("ShiftDriver", fields: [acceptedById], references: [id], onDelete: SetNull)
+  acceptedAt     DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([status, region])
+  @@index([companyId, status])
 }
 
 model SavedJob {

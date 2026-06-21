@@ -118,6 +118,16 @@ export const apiPut = (path, body, options) => api("PUT", path, body, options);
 export const apiPatch = (path, body, options) => api("PATCH", path, body, options);
 export const apiDelete = (path, options) => api("DELETE", path, null, options);
 
+// Fetch a binary response (e.g. a generated PDF) as a Blob, with auth header.
+export async function apiBlob(path) {
+  const token = getToken();
+  const res = await fetch(`${API_URL}${path}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!res.ok) throw new Error("Nedladdningen misslyckades");
+  return res.blob();
+}
+
 export function useApi() {
   return !!API_URL;
 }

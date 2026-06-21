@@ -25,3 +25,11 @@ export async function updateProfile(data) {
 export async function updateNotificationSettings(settings) {
   return apiPatch("/api/profile/notification-settings", settings);
 }
+
+export async function fetchDriverActivity() {
+  return apiGet("/api/profile/activity");
+}
+
+export async function exportMyData() {
+  return apiGet("/api/profile/export");
+}

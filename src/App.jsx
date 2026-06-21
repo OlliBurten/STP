@@ -24,6 +24,9 @@ import ProfileCompletionBanner from "./components/ProfileCompletionBanner";
 import FeedbackButton from "./components/FeedbackButton";
 import InstallPrompt from "./components/InstallPrompt";
 import CookieBanner from "./components/CookieBanner";
+import { DRIVER_MOBILE_PREFIXES } from "./mobile/driver/tabs";
+// Shared driver completion items (same source as the mobile driver app)
+import { DRIVER_ITEMS } from "./utils/driverCompletion";
 
 // Wraps lazy() to intercept stale-chunk errors after a new deployment.
 // If the chunk URL no longer exists (404 → not valid JS), reload immediately
@@ -53,6 +56,12 @@ function lazyRetry(importFn) {
 }
 
 // Lazy-loaded pages — each becomes its own chunk
+const DriverMobileApp       = lazyRetry(() => import("./mobile/driver/DriverMobileApp"));
+const MobileDriverOnboarding = lazyRetry(() => import("./mobile/driver/Onboarding"));
+const MobileAuth            = lazyRetry(() => import("./mobile/public/MobileAuth"));
+const MobileLanding         = lazyRetry(() => import("./mobile/public/MobileLanding"));
+const MobileGuestJobs       = lazyRetry(() => import("./mobile/public/MobileGuestJobs"));
+const CompanyMobileApp      = lazyRetry(() => import("./mobile/company/CompanyMobileApp"));
 const Home                  = lazyRetry(() => import("./pages/Home"));
 const ForDrivers            = lazyRetry(() => import("./pages/ForDrivers"));
 const ForCompaniesLanding   = lazyRetry(() => import("./pages/ForCompaniesLanding"));
@@ -247,20 +256,6 @@ function ScrollManager() {
   return null;
 }
 
-const DRIVER_ITEMS = [
-  { key: "name",             label: "Namn",                   fn: (p) => String(p.name || "").trim().length >= 2 },
-  { key: "phone",            label: "Telefonnummer",           fn: (p) => String(p.phone || "").replace(/\D/g, "").length >= 7 },
-  { key: "primarySegment",   label: "Primärt segment",         fn: (p) => String(p.primarySegment || "").trim().length > 0 },
-  { key: "location",         label: "Ort",                    fn: (p) => String(p.location || "").trim().length > 0 },
-  { key: "region",           label: "Region",                  fn: (p) => String(p.region || "").trim().length > 0 },
-  { key: "licenses",         label: "Körkort",                 fn: (p) => Array.isArray(p.licenses) && p.licenses.length > 0 },
-  { key: "availability",     label: "Tillgänglighet",          fn: (p) => String(p.availability || "").trim().length > 0 },
-  { key: "summary",          label: "Profiltext (20+ tecken)", fn: (p) => String(p.summary || "").trim().length >= 20 },
-  { key: "visibleToCompanies", label: "Synlig för åkerier",   fn: (p) => p.visibleToCompanies === true },
-  { key: "experience",       label: "Erfarenhet",              fn: (p) => Array.isArray(p.experience) && p.experience.length > 0 },
-  { key: "certificates",     label: "Certifikat (YKB/ADR)",   fn: (p) => Array.isArray(p.certificates) && p.certificates.length > 0 },
-  { key: "regionsWilling",   label: "Körregioner",             fn: (p) => Array.isArray(p.regionsWilling) && p.regionsWilling.length > 0 },
-];
 
 const ONBOARDING_PATHS = ["/onboarding/forare", "/foretag/onboarding"];
 // Sidor som har en egen kompletteringsvy — visa inte den globala bannern där (redundant)
@@ -333,22 +328,53 @@ function AppLayout() {
   // STP (4) design-preview screens render standalone (egen TopNav) — ingen global chrome
   const isPreviewPage = pathname.startsWith("/preview/");
 
+  // Mobil publik reskin (utloggad): Landing ("/") och guest-jobb ("/jobb") har
+  // egen header/meny → dölj global chrome. (/jobb/:id hanteras separat.)
+  const isMobilePublicScreen = isMobile && !user && (pathname === "/" || pathname === "/jobb");
+
+  // ── NEW MOBILE (reskin) ──────────────────────────────────────────────
+  // On mobile, a logged-in driver gets the fully rebuilt STP Mobil app
+  // (own shell, tab bar, sheets). This wholly replaces the desktop chrome +
+  // page bodies for the driver-app routes — desktop is untouched.
+  const isDriverMobileRoute = DRIVER_MOBILE_PREFIXES.some(
+    (p) => pathname === p || pathname.startsWith(p + "/") || pathname.startsWith(p)
+  );
+  if (isMobile && isDriver && isDriverMobileRoute && !isAuthPage && !isAdminPage && !isOnboardingPage && !isPreviewPage) {
+    return (
+      <Suspense fallback={<div className="min-h-screen" />}>
+        <DriverMobileApp />
+      </Suspense>
+    );
+  }
+
+  // Mobile company (Åkeri) app — own shell + tab bar, replaces desktop chrome
+  // for the company dashboard routes (not /foretag/:id public profile or onboarding).
+  const isCompanyMobileRoute = pathname === "/foretag"
+    || ["/foretag/annonser", "/foretag/chaufforer", "/foretag/meddelanden", "/foretag/mer", "/foretag/profil"].some((p) => pathname === p || pathname.startsWith(p + "/"));
+  if (isMobile && isCompany && isCompanyMobileRoute && !isAuthPage && !isAdminPage && !isOnboardingPage && !isPreviewPage) {
+    return (
+      <Suspense fallback={<div className="min-h-screen" />}>
+        <CompanyMobileApp />
+      </Suspense>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col" style={{ overflowX: "clip" }}>
-      {!hideChromeOnMobile && !isJobDetailMobile && !isAuthPage && !isAdminPage && !isOnboardingPage && !isPreviewPage && (
+      {!hideChromeOnMobile && !isMobilePublicScreen && !isJobDetailMobile && !isAuthPage && !isAdminPage && !isOnboardingPage && !isPreviewPage && (
         user ? <AppTopNav /> : <Header onboarding={onboarding} />
       )}
       {/* Profilbanner sitter tätt under headern (utanför pt-16-paddingen) */}
       <DriverCompletionNudge />
-      <div className={hideChromeOnMobile || isJobDetailMobile || isAuthPage || isOnboardingPage || isPreviewPage ? "flex-1" : `flex-1 ${isImpersonating ? "pt-[104px]" : "pt-16"}`}>
+      <div className={hideChromeOnMobile || isMobilePublicScreen || isJobDetailMobile || isAuthPage || isOnboardingPage || isPreviewPage ? "flex-1" : `flex-1 ${isImpersonating ? "pt-[104px]" : "pt-16"}`}>
         <OnboardingGate>
         <Suspense fallback={<div className="min-h-[60vh]" />}>
         <Routes>
-                  <Route path="/" element={<Home />} />
+                  <Route path="/" element={isMobile && !user ? <MobileLanding /> : (isMobile && isDriver ? <Navigate to="/hem" replace /> : <Home />)} />
                   <Route path="/forare" element={<ForDrivers />} />
                   <Route path="/forare/:id" element={<PublicDriverProfile />} />
                   <Route path="/for-akerier" element={<ForCompaniesLanding />} />
-                  <Route path="/jobb" element={<JobList />} />
+                  <Route path="/jobb" element={isMobile && !user ? <MobileGuestJobs /> : <JobList />} />
                   <Route path="/jobb/:id" element={<JobDetail />} />
                   <Route path="/jobb/:id/ansok" element={<Apply />} />
                   <Route path="/akerier" element={<AkerierSearch />} />
@@ -383,9 +409,9 @@ function AppLayout() {
                   <Route path="/skola/:slug" element={<SchoolLanding />} />
                   <Route path="/uppdateringar" element={<PatchNotes />} />
                   <Route path="/vision" element={<VisionPresentation />} />
-                  <Route path="/login" element={<Login />} />
+                  <Route path="/login" element={isMobile && !user ? <MobileAuth /> : <Login />} />
                   {/* Direktlänk till registrering — besökare skriver in /registrera för hand */}
-                  <Route path="/registrera" element={<Navigate to="/login?mode=register" replace />} />
+                  <Route path="/registrera" element={isMobile && !user ? <MobileAuth /> : <Navigate to="/login?mode=register" replace />} />
                   <Route path="/anslut/:token" element={<ClaimLanding />} />
                   <Route path="/avregistrera/:token" element={<OptOut />} />
                   <Route path="/invite/accept" element={<InviteAccept />} />
@@ -424,7 +450,7 @@ function AppLayout() {
                     path="/onboarding/forare"
                     element={
                       <ProtectedRoute requiredRole="driver">
-                        <DriverOnboardingWizard />
+                        {isMobile ? <MobileDriverOnboarding /> : <DriverOnboardingWizard />}
                       </ProtectedRoute>
                     }
                   />
@@ -605,7 +631,7 @@ function AppLayout() {
         </Suspense>
         </OnboardingGate>
               </div>
-              {!hideChromeOnMobile && !isJobDetailMobile && !isAuthPage && !isPreviewPage && <Footer />}
+              {!hideChromeOnMobile && !isMobilePublicScreen && !isJobDetailMobile && !isAuthPage && !isPreviewPage && <Footer />}
               {/* Flytande feedback-knapp bara på desktop — på mobil krockar den med
                   sticky-CTA:er (ansök/kontakta) och tar dyrbar skärmyta. */}
               {!isMobile && !hideChromeOnMobile && !isAuthPage && !isPreviewPage && <FeedbackButton />}
