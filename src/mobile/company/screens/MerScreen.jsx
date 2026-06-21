@@ -55,7 +55,7 @@ export default function MerScreen({ ctx }) {
 
           <Label style={{ margin: "6px 0 4px" }}>Konto</Label>
           <Card style={{ padding: "0 16px", marginBottom: 16 }}>
-            <MerRow icon="bolt" label="Abonnemang" sub={`Plan: ${c.plan}`} right={<Pill tone="soft" size="sm">{c.plan}</Pill>} onClick={() => ctx.setSheet({ type: "plan" })} />
+            {/* Abonnemang/billing dolt tills vidare — ej redo att fakturera åkerier. */}
             <MerRow icon="settings" label="Inställningar" onClick={() => ctx.setSheet({ type: "settings" })} />
             <MerRow icon="info" label="Hjälp & support" onClick={() => ctx.setSheet({ type: "support" })} last />
           </Card>

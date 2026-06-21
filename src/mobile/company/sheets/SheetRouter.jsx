@@ -2,7 +2,10 @@
 import React from "react";
 import { Sheet } from "../../ui";
 import { PublishSheet, PipelineSheet, CandidateSheet, DriverSheet, ContactDriverSheet, DriverFilterSheet } from "./coreSheets";
-import { EditCompanySheet, CompleteProfileSheet, SettingsSheet, TeamSheet, InviteSheet, ReviewsSheet, PlanSheet, VerificationSheet, PublicProfileSheet, OrgSwitcherSheet, NotiserSheet, SupportSheet, LogoutSheet } from "./merSheets";
+// PlanSheet (abonnemang/billing) finns kvar i merSheets men är avwirad tills vidare
+// — vi fakturerar inte åkerier än. Återaktivera: importera PlanSheet, lägg tillbaka
+// `plan`-raden i CONFIG + grenen nedan, samt entry points i MerScreen/SettingsSheet.
+import { EditCompanySheet, CompleteProfileSheet, SettingsSheet, TeamSheet, InviteSheet, ReviewsSheet, VerificationSheet, PublicProfileSheet, OrgSwitcherSheet, NotiserSheet, SupportSheet, LogoutSheet } from "./merSheets";
 
 const CONFIG = {
   publish: { full: true },
@@ -17,7 +20,6 @@ const CONFIG = {
   team: { title: "Team", full: true },
   invite: { title: "Bjud in" },
   reviews: { title: "Omdömen", full: true },
-  plan: { title: "Abonnemang" },
   verifiering: { title: "Verifiering" },
   publicProfile: { title: "Publik profil", full: true },
   orgSwitcher: { title: "Dina åkerier" },
@@ -45,7 +47,6 @@ export default function CompanySheetRouter({ ctx }) {
   else if (type === "team") body = <TeamSheet ctx={ctx} close={close} />;
   else if (type === "invite") body = <InviteSheet ctx={ctx} close={close} />;
   else if (type === "reviews") body = <ReviewsSheet ctx={ctx} close={close} />;
-  else if (type === "plan") body = <PlanSheet ctx={ctx} close={close} />;
   else if (type === "verifiering") body = <VerificationSheet ctx={ctx} close={close} />;
   else if (type === "publicProfile") body = <PublicProfileSheet ctx={ctx} close={close} />;
   else if (type === "orgSwitcher") body = <OrgSwitcherSheet ctx={ctx} close={close} />;

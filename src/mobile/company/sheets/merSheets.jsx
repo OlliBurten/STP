@@ -41,8 +41,8 @@ export function SettingsSheet({ ctx, close }) {
     <div style={{ padding: "0 22px 26px" }}>
       <Label style={{ margin: "0 0 2px" }}>Konto</Label>
       <Row label="Företagsprofil" onClick={() => ctx.setSheet({ type: "editCompany" })} />
-      <Row label="Team & roller" onClick={() => ctx.setSheet({ type: "team" })} />
-      <Row label="Abonnemang" onClick={() => ctx.setSheet({ type: "plan" })} last />
+      {/* Abonnemang/billing dolt tills vidare — ej redo att fakturera åkerier. */}
+      <Row label="Team & roller" onClick={() => ctx.setSheet({ type: "team" })} last />
       <div style={{ marginTop: 20 }}><Row label="Logga ut" danger last onClick={() => ctx.setSheet({ type: "logout" })} /></div>
       {ctx.user?.email && <p style={{ textAlign: "center", fontSize: 11.5, color: "var(--ink-400)", marginTop: 18 }}>Inloggad som {ctx.user.email}</p>}
     </div>
