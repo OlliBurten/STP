@@ -23,8 +23,11 @@ export function startReminderScheduler() {
     }
   }, { timezone: "Europe/Stockholm" });
 
-  // Every day at 09:00 Stockholm time — autonomous outreach agent (3 regions/day, full rotation weekly)
-  cron.schedule("0 9 * * *", async () => {
+  // Autonom outreach-agent — 3 regioner per körning, beständig rotationsmarkör.
+  // Default mån/ons/fre 09:00 (3×/vecka) i st f dagligen → lägre AI-kostnad + bättre
+  // leveransrykte. Full rotation av alla 21 regioner sker över 7 körningar (~2,5 vecka).
+  // Styrbart via OUTREACH_CRON (cron-uttryck).
+  cron.schedule(process.env.OUTREACH_CRON || "0 9 * * 1,3,5", async () => {
     try {
       await runOutreachAgent();
     } catch (e) {
@@ -50,5 +53,5 @@ export function startReminderScheduler() {
     }
   }, { timezone: "Europe/Stockholm" });
 
-  console.log("[ReminderScheduler] Started — reminders 08:00 + outreach 09:00 + onboarding drip 10:00 daily | PI agent 07:00 Mondays");
+  console.log(`[ReminderScheduler] Started — reminders 08:00 + onboarding drip 10:00 daily | outreach "${process.env.OUTREACH_CRON || "0 9 * * 1,3,5"}" | PI agent 07:00 Mondays`);
 }

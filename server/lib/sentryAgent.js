@@ -18,6 +18,37 @@ function getAdminEmails() {
     .filter(Boolean);
 }
 
+// ── Storm-skydd ──────────────────────────────────────────────────────────────
+// Varje Sentry-webhook → ett betalt Haiku-anrop. En felstorm (samma bugg tusentals
+// gånger, eller många olika fel på kort tid) kan dränera AI-budgeten. Två spärrar:
+//   1. Dedup: analysera samma issue max en gång per DEDUP_WINDOW_MS.
+//   2. Timtak: max MAX_PER_HOUR AI-analyser per timme (process-minne).
+// Båda styrbara via env. Skippade events mejlas inte (men loggas).
+const DEDUP_WINDOW_MS = Math.max(0, Number(process.env.SENTRY_DEDUP_MIN) || 30) * 60 * 1000;
+const MAX_PER_HOUR = Math.max(1, Number(process.env.SENTRY_MAX_PER_HOUR) || 20);
+const seenIssues = new Map(); // issueKey → senast analyserad (ms)
+let hourBucket = -1;
+let hourCount = 0;
+
+function rateLimited(issueKey) {
+  const now = Date.now();
+  // Timtak
+  const bucket = Math.floor(now / 3_600_000);
+  if (bucket !== hourBucket) { hourBucket = bucket; hourCount = 0; }
+  if (hourCount >= MAX_PER_HOUR) return "timtak";
+  // Dedup på issue
+  const last = seenIssues.get(issueKey);
+  if (last && now - last < DEDUP_WINDOW_MS) return "dedup";
+  // Släpp igenom + bokför
+  seenIssues.set(issueKey, now);
+  hourCount++;
+  if (seenIssues.size > 500) {
+    // Städa gamla nycklar så minnet inte växer obegränsat
+    for (const [k, t] of seenIssues) if (now - t > DEDUP_WINDOW_MS) seenIssues.delete(k);
+  }
+  return null;
+}
+
 /**
  * Analyserar ett Sentry-event med Claude och skickar alert till admin vid CRITICAL/WARNING.
  * @param {object} payload - Sentry webhook payload
@@ -38,6 +69,14 @@ export async function handleSentryEvent(payload) {
     const level = event.level || "error";
     const count = issue.count || issue.times_seen || 1;
     const issueUrl = issue.web_url || issue.permalink || "";
+
+    // Storm-skydd: hoppa över AI-analys vid dedup/timtak så en felstorm inte tömmer budgeten.
+    const issueKey = issue.id || issue.short_id || errorTitle;
+    const limited = rateLimited(issueKey);
+    if (limited) {
+      console.warn(`[SentryAgent] Hoppar över AI-analys (${limited}): ${errorTitle}`);
+      return { severity: "WARNING", skipped: true, reason: limited };
+    }
 
     const anthropic = getAnthropic();
 

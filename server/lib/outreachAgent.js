@@ -67,12 +67,23 @@ function summarizeError(e) {
 }
 
 /**
- * Dag-index (0–6) → vilka 3 regioner körs idag.
- * 21 regioner / 7 dagar = 3 regioner per dag, full rotation på 1 vecka.
+ * Beständig rotationsmarkör → vilka 3 regioner körs den här körningen.
+ * Tidigare nycklades valet på veckodag (getDay()*3), vilket krävde att agenten
+ * kördes ALLA 7 dagar för att täcka alla 21 regioner. Nu räknas antalet tidigare
+ * körningar istället: varje körning går vidare till nästa 3 regioner oavsett dag.
+ * Det gör att kadensen kan sänkas (t.ex. 3 dagar/vecka) utan att tappa täckning —
+ * full rotation av alla 21 regioner sker över 7 körningar.
  */
-function getTodaysRegions() {
-  const day = new Date().getDay(); // 0=sön, 1=mån, ... 6=lör
-  const index = day * 3;
+async function getNextRegions() {
+  let priorRuns = 0;
+  try {
+    priorRuns = await prisma.outreachAgentRun.count();
+  } catch (e) {
+    console.error("[OutreachAgent] Kunde inte läsa rotationsmarkör, faller tillbaka på veckodag:", e?.message);
+    priorRuns = new Date().getDay();
+  }
+  const cycleIndex = priorRuns % 7; // 7 körningar = full rotation (7 × 3 = 21)
+  const index = cycleIndex * 3;
   return REGIONS.slice(index, index + 3);
 }
 
@@ -636,8 +647,8 @@ export async function runOutreachAgent({ dryRun = false, regions: overrideRegion
   };
 
   try {
-    // 3 regioner per dag, alla 21 täcks på en vecka
-    const regions = overrideRegions || getTodaysRegions();
+    // 3 regioner per körning, alla 21 täcks över 7 körningar (beständig markör)
+    const regions = overrideRegions || await getNextRegions();
     stats.regionsProcessed = regions;
 
     console.log(`[OutreachAgent] Regioner idag: ${regions.join(", ")}`);

@@ -103,28 +103,76 @@ export async function extractJobFields(title, description) {
  * Berika aggregerade jobb som inte AI-extraherats än.
  * @param {object} opts - { limit, concurrency }
  */
-export async function runJobEnrichment({ limit = 2000, concurrency = 4 } = {}) {
+// Max antal misslyckade AI-försök innan ett jobb ges upp. Utan detta retryas
+// jobb som failar (parse-fel, 429, 5xx) varje schema-cykel för evigt → tyst kostnadsläcka.
+const MAX_ENRICH_ATTEMPTS = 3;
+
+// Markera ett jobb i enrichmentRaw (permanent skip eller räknat försök) så det
+// inte plockas upp av todo-filtret igen i onödan. Ingen AI, bara en DB-update.
+async function markEnrich(jobId, prevRaw, patch) {
+  try {
+    await prisma.job.update({
+      where: { id: jobId },
+      data: { enrichmentRaw: { ...(prevRaw || {}), ...patch } },
+    });
+  } catch (e) {
+    console.error("[JobEnricher] Kunde inte markera jobb:", e?.message);
+  }
+}
+
+export async function runJobEnrichment({ limit = 2000, concurrency = 3 } = {}) {
+  // Tak på antal AI-anrop per körning så en stor backlog inte töms i ett enda dyrt
+  // svep. Backloggen betas av gradvis över flera cykler. Justera via ENRICH_MAX_PER_RUN.
+  const perRun = Math.max(1, Number(process.env.ENRICH_MAX_PER_RUN) || 250);
+
   const jobs = await prisma.job.findMany({
     where: { source: "AGGREGATED", status: "ACTIVE" },
     select: { id: true, title: true, description: true, enrichmentRaw: true },
     take: limit,
   });
-  const todo = jobs.filter((j) => !(j.enrichmentRaw && j.enrichmentRaw.aiExtractedAt));
-  let enriched = 0, errors = 0;
+  // Berika bara jobb som (1) inte redan berikats, (2) inte permanent överhoppats,
+  // (3) inte redan failat MAX_ENRICH_ATTEMPTS gånger. Tak per körning via slice.
+  const todo = jobs.filter((j) => {
+    const raw = j.enrichmentRaw || {};
+    if (raw.aiExtractedAt) return false;
+    if (raw.aiSkipped) return false;
+    if ((raw.aiAttempts || 0) >= MAX_ENRICH_ATTEMPTS) return false;
+    return true;
+  }).slice(0, perRun);
+
+  let enriched = 0, errors = 0, skipped = 0;
   let idx = 0;
   let aborted = false;
 
   async function worker() {
     while (idx < todo.length && !aborted) {
       const j = todo[idx++];
+      const prevRaw = j.enrichmentRaw || {};
+
+      // För kort beskrivning → ingen AI behövs (extractJobFields returnerar ändå null).
+      // Markera permanent skip så jobbet lämnar kön istället för att väljas varje cykel.
+      if (!j.description || j.description.trim().length < 40) {
+        await markEnrich(j.id, prevRaw, { aiSkipped: true, aiSkipReason: "too_short" });
+        skipped++;
+        continue;
+      }
+
       try {
         const ex = await extractJobFields(j.title, j.description);
-        if (!ex) { errors++; continue; }
+        if (!ex) {
+          // API svarade men svaret kunde inte tolkas → räkna försöket (ger upp efter N).
+          await markEnrich(j.id, prevRaw, {
+            aiAttempts: (prevRaw.aiAttempts || 0) + 1,
+            aiAttemptedAt: new Date().toISOString(),
+          });
+          errors++;
+          continue;
+        }
         const data = {
           // tasks/offers är String[]; requirements är String? → lagras som JSON-array
           tasks: ex.tasks,
           offers: ex.offers,
-          enrichmentRaw: { ...(j.enrichmentRaw || {}), aiExtractedAt: new Date().toISOString(), ai: ex },
+          enrichmentRaw: { ...prevRaw, aiExtractedAt: new Date().toISOString(), ai: ex },
         };
         if (ex.requirements?.length) data.requirements = JSON.stringify(ex.requirements);
         if (ex.certificates.length) data.certificates = ex.certificates;
@@ -142,11 +190,16 @@ export async function runJobEnrichment({ limit = 2000, concurrency = 4 } = {}) {
           console.error("[JobEnricher] Anthropic-gräns nådd (kredit/usage limit) — avbryter berikningskörning");
           return;
         }
+        // Övriga fel (nätverk, 429, 5xx) → räkna försöket så jobbet inte retryas i evighet.
+        await markEnrich(j.id, prevRaw, {
+          aiAttempts: (prevRaw.aiAttempts || 0) + 1,
+          aiAttemptedAt: new Date().toISOString(),
+        });
         errors++;
       }
     }
   }
 
   await Promise.all(Array.from({ length: concurrency }, () => worker()));
-  return { active: jobs.length, todo: todo.length, enriched, errors, aborted };
+  return { active: jobs.length, todo: todo.length, enriched, errors, skipped, aborted };
 }

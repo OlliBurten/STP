@@ -23,14 +23,22 @@ async function enrichNew(label) {
 
 let started = false;
 
+// Kadens styrbar via env (cron-uttryck). Default sänkt för att hålla AI-budgeten nere:
+// delta-feeden var 2:a timme räcker gott för ett jobbtorg, full reconciliation var 12:e timme.
+const JOBSTREAM_CRON = process.env.JOB_INGEST_JOBSTREAM_CRON || "0 */2 * * *";
+const JOBSEARCH_CRON = process.env.JOB_INGEST_JOBSEARCH_CRON || "0 */12 * * *";
+// Lookback-fönster för delta-feeden (minuter). Måste täcka intervallet + marginal så
+// inga jobb missas mellan körningarna. Ingestorn upsertar → överlapp är ofarligt/gratis.
+const JOBSTREAM_LOOKBACK_MIN = Math.max(35, Number(process.env.JOB_INGEST_LOOKBACK_MIN) || 130);
+
 export function startJobIngestScheduler() {
   if (started) return;
   started = true;
 
-  // Every 30 minutes — JobStream delta feed (no API key required)
-  cron.schedule("*/30 * * * *", async () => {
+  // JobStream delta-feed (gratis hämtning; endast nya jobb berikas med AI)
+  cron.schedule(JOBSTREAM_CRON, async () => {
     try {
-      const since = new Date(Date.now() - 35 * 60 * 1000)
+      const since = new Date(Date.now() - JOBSTREAM_LOOKBACK_MIN * 60 * 1000)
         .toISOString()
         .replace("Z", "");
       await runIngestor({ source: "jobstream", since });
@@ -40,8 +48,8 @@ export function startJobIngestScheduler() {
     }
   }, { timezone: "Europe/Stockholm" });
 
-  // Every 6 hours — full JobSearch snapshot for reconciliation (marks removed jobs)
-  cron.schedule("0 */6 * * *", async () => {
+  // Full JobSearch-snapshot för reconciliation (markerar borttagna jobb)
+  cron.schedule(JOBSEARCH_CRON, async () => {
     try {
       await runIngestor({ source: "jobsearch" });
       await enrichNew("jobsearch");
@@ -50,5 +58,5 @@ export function startJobIngestScheduler() {
     }
   }, { timezone: "Europe/Stockholm" });
 
-  console.log("[JobIngestScheduler] Started — jobstream var 15:e minut + jobsearch reconciliation var 6:e timme");
+  console.log(`[JobIngestScheduler] Started — jobstream "${JOBSTREAM_CRON}" + jobsearch reconciliation "${JOBSEARCH_CRON}"`);
 }
