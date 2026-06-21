@@ -75,12 +75,16 @@ export function EditProfileSheet({ ctx, close }) {
 
 /* ---- Settings ---- */
 export function SettingsSheet({ ctx, close }) {
-  const Row = ({ label, sub, right, danger, onClick, last }) => (
-    <button onClick={onClick} className="press" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 0", borderBottom: last ? "none" : "1px solid var(--line)", textAlign: "left" }}>
+  const Row = ({ label, sub, right, danger, onClick, last }) => {
+    const inner = (<>
       <div><div style={{ fontSize: 14.5, fontWeight: 600, color: danger ? "var(--danger)" : "var(--ink-900)" }}>{label}</div>{sub && <div style={{ fontSize: 12.5, color: "var(--ink-500)", marginTop: 1 }}>{sub}</div>}</div>
-      {right || (!danger && <Icon name="chevRight" size={18} color="var(--ink-300)" stroke={2.2} />)}
-    </button>
-  );
+      {right || (!danger && onClick && <Icon name="chevRight" size={18} color="var(--ink-300)" stroke={2.2} />)}
+    </>);
+    const style = { width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 0", borderBottom: last ? "none" : "1px solid var(--line)", textAlign: "left" };
+    return onClick
+      ? <button onClick={onClick} className="press" style={style}>{inner}</button>
+      : <div style={style}>{inner}</div>;
+  };
   return (
     <div style={{ padding: "0 22px 26px" }}>
       <Label style={{ margin: "0 0 2px" }}>Tillgänglighet</Label>
@@ -158,12 +162,16 @@ export function PasswordSheet({ ctx, close }) {
 export function PrivacySheet({ ctx, close }) {
   const [confirmDel, setConfirmDel] = useState(false);
   const [busy, setBusy] = useState(false);
-  const Row = ({ label, sub, right, danger, last, onClick }) => (
-    <button onClick={onClick} disabled={!onClick} className={onClick ? "press" : ""} style={{ width: "100%", textAlign: "left", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 0", borderBottom: last ? "none" : "1px solid var(--line)", cursor: onClick ? "pointer" : "default" }}>
+  const Row = ({ label, sub, right, danger, last, onClick }) => {
+    const inner = (<>
       <div><div style={{ fontSize: 14.5, fontWeight: 600, color: danger ? "var(--danger)" : "var(--ink-900)" }}>{label}</div>{sub && <div style={{ fontSize: 12.5, color: "var(--ink-500)", marginTop: 1 }}>{sub}</div>}</div>
       {right || (!danger && onClick && <Icon name="chevRight" size={18} color="var(--ink-300)" stroke={2.2} />)}
-    </button>
-  );
+    </>);
+    const style = { width: "100%", textAlign: "left", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 0", borderBottom: last ? "none" : "1px solid var(--line)" };
+    return onClick
+      ? <button onClick={onClick} className="press" style={{ ...style, cursor: "pointer" }}>{inner}</button>
+      : <div style={style}>{inner}</div>;
+  };
   const exportData = async () => {
     let data;
     try { data = ctx.hasApi ? await exportMyData() : { profile: ctx.profile, exportedAt: new Date().toISOString() }; }

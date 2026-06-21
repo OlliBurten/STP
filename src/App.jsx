@@ -61,6 +61,7 @@ const MobileDriverOnboarding = lazyRetry(() => import("./mobile/driver/Onboardin
 const MobileAuth            = lazyRetry(() => import("./mobile/public/MobileAuth"));
 const MobileLanding         = lazyRetry(() => import("./mobile/public/MobileLanding"));
 const MobileGuestJobs       = lazyRetry(() => import("./mobile/public/MobileGuestJobs"));
+const MobileLegal           = lazyRetry(() => import("./mobile/public/MobileLegal"));
 const CompanyMobileApp      = lazyRetry(() => import("./mobile/company/CompanyMobileApp"));
 const MobileCompanyOnboarding = lazyRetry(() => import("./mobile/company/Onboarding"));
 const Home                  = lazyRetry(() => import("./pages/Home"));
@@ -333,6 +334,10 @@ function AppLayout() {
   // egen header/meny → dölj global chrome. (/jobb/:id hanteras separat.)
   const isMobilePublicScreen = isMobile && !user && (pathname === "/" || pathname === "/jobb");
 
+  // Mobil juridik (villkor/integritet): egen mobil-shell (back-bar + doc-toggle)
+  // ersätter desktop-tvåkolumnslayouten. Gäller oavsett inloggning.
+  const isMobileLegal = isMobile && (pathname === "/anvandarvillkor" || pathname === "/integritet");
+
   // ── NEW MOBILE (reskin) ──────────────────────────────────────────────
   // On mobile, a logged-in driver gets the fully rebuilt STP Mobil app
   // (own shell, tab bar, sheets). This wholly replaces the desktop chrome +
@@ -362,12 +367,12 @@ function AppLayout() {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ overflowX: "clip" }}>
-      {!hideChromeOnMobile && !isMobilePublicScreen && !isJobDetailMobile && !isAuthPage && !isAdminPage && !isOnboardingPage && !isPreviewPage && (
+      {!hideChromeOnMobile && !isMobilePublicScreen && !isMobileLegal && !isJobDetailMobile && !isAuthPage && !isAdminPage && !isOnboardingPage && !isPreviewPage && (
         user ? <AppTopNav /> : <Header onboarding={onboarding} />
       )}
       {/* Profilbanner sitter tätt under headern (utanför pt-16-paddingen) */}
       <DriverCompletionNudge />
-      <div className={hideChromeOnMobile || isMobilePublicScreen || isJobDetailMobile || isAuthPage || isOnboardingPage || isPreviewPage ? "flex-1" : `flex-1 ${isImpersonating ? "pt-[104px]" : "pt-16"}`}>
+      <div className={hideChromeOnMobile || isMobilePublicScreen || isMobileLegal || isJobDetailMobile || isAuthPage || isOnboardingPage || isPreviewPage ? "flex-1" : `flex-1 ${isImpersonating ? "pt-[104px]" : "pt-16"}`}>
         <OnboardingGate>
         <Suspense fallback={<div className="min-h-[60vh]" />}>
         <Routes>
@@ -419,8 +424,8 @@ function AppLayout() {
                   <Route path="/verifiera-email" element={<VerifyEmail />} />
                   <Route path="/aterstall-losenord" element={<ResetPassword />} />
                   <Route path="/demo-valkommen" element={<DemoWelcome />} />
-                  <Route path="/anvandarvillkor" element={<Terms />} />
-                  <Route path="/integritet" element={<Privacy />} />
+                  <Route path="/anvandarvillkor" element={isMobile ? <MobileLegal defaultDoc="terms" /> : <Terms />} />
+                  <Route path="/integritet" element={isMobile ? <MobileLegal defaultDoc="privacy" /> : <Privacy />} />
                   <Route
                     path="/admin"
                     element={
@@ -632,7 +637,7 @@ function AppLayout() {
         </Suspense>
         </OnboardingGate>
               </div>
-              {!hideChromeOnMobile && !isMobilePublicScreen && !isJobDetailMobile && !isAuthPage && !isPreviewPage && <Footer />}
+              {!hideChromeOnMobile && !isMobilePublicScreen && !isMobileLegal && !isJobDetailMobile && !isAuthPage && !isPreviewPage && <Footer />}
               {/* Flytande feedback-knapp bara på desktop — på mobil krockar den med
                   sticky-CTA:er (ansök/kontakta) och tar dyrbar skärmyta. */}
               {!isMobile && !hideChromeOnMobile && !isAuthPage && !isPreviewPage && <FeedbackButton />}

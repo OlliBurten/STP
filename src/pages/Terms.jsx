@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { usePageTitle } from "../hooks/usePageTitle";
 
-const DOCS = {
+export const DOCS = {
   terms: {
     title: "Användarvillkor",
     updated: "Senast uppdaterad 16 maj 2026",

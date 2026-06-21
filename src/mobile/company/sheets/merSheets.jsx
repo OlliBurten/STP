@@ -8,12 +8,18 @@ import { setActiveOrgId } from "../../../api/client";
 import { getCompanyReviewSummary } from "../../../api/reviews";
 import { updateCompanyNotificationSettings } from "../../../api/companies";
 
-const Row = ({ label, sub, right, onClick, danger, last }) => (
-  <button onClick={onClick} className="press" style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 0", borderBottom: last ? "none" : "1px solid var(--line)", textAlign: "left" }}>
+const Row = ({ label, sub, right, onClick, danger, last }) => {
+  const inner = (<>
     <div><div style={{ fontSize: 14.5, fontWeight: 600, color: danger ? "var(--danger)" : "var(--ink-900)" }}>{label}</div>{sub && <div style={{ fontSize: 12.5, color: "var(--ink-500)", marginTop: 1 }}>{sub}</div>}</div>
     {right || (!danger && onClick && <Icon name="chevRight" size={18} color="var(--ink-300)" stroke={2.2} />)}
-  </button>
-);
+  </>);
+  const style = { width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 0", borderBottom: last ? "none" : "1px solid var(--line)", textAlign: "left" };
+  // Toggle rows (Switch in `right`, no row onClick) must not be a <button> — a
+  // nested <button> is invalid HTML. Render a <div> there instead.
+  return onClick
+    ? <button onClick={onClick} className="press" style={style}>{inner}</button>
+    : <div style={style}>{inner}</div>;
+};
 
 /* ── Edit company profile → ctx.updateCompany ── */
 export function EditCompanySheet({ ctx, close }) {
