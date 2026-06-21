@@ -201,16 +201,21 @@ export default function MobileGuestJobs() {
         </div>
       )}
 
-      {/* gate */}
-      <Sheet open={!!gate} onClose={() => setGate(null)}>
-        <div style={{ padding: "4px 22px 30px" }}>
-          <div style={{ width: 54, height: 54, borderRadius: 15, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}><Icon name="lock" size={24} color="var(--green)" stroke={1.9} /></div>
-          <h3 style={{ fontSize: 22, fontWeight: 800, letterSpacing: -0.5, marginBottom: 8, lineHeight: 1.15 }}>{gate?.action === "apply" ? "Skapa profil för att ansöka" : "Skapa profil för att spara"}</h3>
-          <p style={{ fontSize: 15.5, lineHeight: 1.55, color: "var(--ink-600)", marginBottom: 22 }}>Det är gratis för förare och tar två minuter. Med en profil kan du ansöka direkt, spara jobb och få nya matchningar.</p>
-          <button onClick={() => navigate("/registrera?role=forare")} className="press" style={{ width: "100%", height: 54, borderRadius: 14, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: 16, marginBottom: 11, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>Skapa förarprofil <Icon name="arrow" size={19} color="#fff" stroke={2.4} /></button>
-          <button onClick={() => navigate("/login?start=login")} className="press" style={{ width: "100%", height: 54, borderRadius: 14, background: "var(--card)", border: "1px solid var(--line-2)", color: "var(--ink-800)", fontWeight: 700, fontSize: 16 }}>Jag har redan ett konto</button>
+      {/* gate — inline bottom-sheet (zIndex 80, ovanför jobbdetaljens overlay som
+          ligger på zIndex 60). Matchar prototypens GateSheet 1:1. */}
+      {gate && (
+        <div style={{ position: "absolute", inset: 0, zIndex: 80, display: "flex", alignItems: "flex-end" }}>
+          <div onClick={() => setGate(null)} style={{ position: "absolute", inset: 0, background: "rgba(8,12,11,0.55)", animation: "stpm-fade-in .2s" }} />
+          <div style={{ position: "relative", width: "100%", background: "var(--paper)", borderRadius: "26px 26px 0 0", padding: "10px 22px calc(30px + var(--stpm-safe-bottom))", animation: "stpm-sheet-up .3s cubic-bezier(.32,.72,0,1)" }}>
+            <div style={{ width: 38, height: 5, borderRadius: 3, background: "var(--line-2)", margin: "0 auto 20px" }} />
+            <div style={{ width: 54, height: 54, borderRadius: 15, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}><Icon name="lock" size={24} color="var(--green)" stroke={1.9} /></div>
+            <h3 style={{ fontSize: 22, fontWeight: 800, letterSpacing: -0.5, marginBottom: 8, lineHeight: 1.15 }}>{gate?.action === "apply" ? "Skapa profil för att ansöka" : "Skapa profil för att spara"}</h3>
+            <p style={{ fontSize: 15.5, lineHeight: 1.55, color: "var(--ink-600)", marginBottom: 22 }}>Det är gratis för förare och tar två minuter. Med en profil kan du ansöka direkt, spara jobb och få nya matchningar.</p>
+            <button onClick={() => navigate("/registrera?role=forare")} className="press" style={{ width: "100%", height: 54, borderRadius: 14, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: 16, marginBottom: 11, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>Skapa förarprofil <Icon name="arrow" size={19} color="#fff" stroke={2.4} /></button>
+            <button onClick={() => navigate("/login?start=login")} className="press" style={{ width: "100%", height: 54, borderRadius: 14, background: "var(--card)", border: "1px solid var(--line-2)", color: "var(--ink-800)", fontWeight: 700, fontSize: 16 }}>Jag har redan ett konto</button>
+          </div>
         </div>
-      </Sheet>
+      )}
     </MobileShell>
   );
 }
