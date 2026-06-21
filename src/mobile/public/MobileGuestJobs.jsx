@@ -10,8 +10,13 @@ import MobileShell from "../MobileShell";
 import { Icon, Pill, Card } from "../ui";
 
 const LICENSES = ["C1", "C1E", "C", "CE"];
-const TYPES = ["Heltid", "Vikariat", "Praktik"];
+const TYPES = ["Heltid", "Deltid", "Praktik"];
 const PAGE = 8;
+
+// Prototypens publika jobb-vy har bara tre anställningsformer: Heltid / Deltid /
+// Praktik. Riktig data har fler (Vikariat, Timanställning) — vi buntar ihop allt
+// som inte är heltid/praktik till "Deltid" så skärmen följer prototypen 1:1.
+const protoType = (t) => { const s = String(t).toLowerCase(); if (s.includes("praktik")) return "Praktik"; if (s.includes("heltid") || s === "fast") return "Heltid"; return "Deltid"; };
 
 function Logo() {
   return (
@@ -83,7 +88,7 @@ export default function MobileGuestJobs() {
     return () => { alive = false; };
   }, [hasApi]);
 
-  const jobs = useMemo(() => rawJobs.map((j) => toJobView(j)), [rawJobs]);
+  const jobs = useMemo(() => rawJobs.map((j) => { const v = toJobView(j); return { ...v, type: protoType(v.type) }; }), [rawJobs]);
   const regions = useMemo(() => [...new Set(jobs.map((j) => j.region).filter(Boolean))], [jobs]);
 
   let list = jobs;
