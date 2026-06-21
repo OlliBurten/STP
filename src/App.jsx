@@ -62,6 +62,7 @@ const MobileAuth            = lazyRetry(() => import("./mobile/public/MobileAuth
 const MobileLanding         = lazyRetry(() => import("./mobile/public/MobileLanding"));
 const MobileGuestJobs       = lazyRetry(() => import("./mobile/public/MobileGuestJobs"));
 const CompanyMobileApp      = lazyRetry(() => import("./mobile/company/CompanyMobileApp"));
+const MobileCompanyOnboarding = lazyRetry(() => import("./mobile/company/Onboarding"));
 const Home                  = lazyRetry(() => import("./pages/Home"));
 const ForDrivers            = lazyRetry(() => import("./pages/ForDrivers"));
 const ForCompaniesLanding   = lazyRetry(() => import("./pages/ForCompaniesLanding"));
@@ -519,7 +520,7 @@ function AppLayout() {
                     path="/foretag/onboarding"
                     element={
                       <ProtectedRoute requiredRole="company">
-                        <CompanyOnboardingWizard />
+                        {isMobile ? <MobileCompanyOnboarding /> : <CompanyOnboardingWizard />}
                       </ProtectedRoute>
                     }
                   />

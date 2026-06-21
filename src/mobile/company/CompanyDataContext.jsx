@@ -14,6 +14,7 @@ import { useChat } from "../../context/ChatContext";
 import { fetchMyCompanyProfile, updateMyCompanyProfile, fetchJobViewStats, fetchMatchingDrivers, listInvites, createInvite, revokeInvite } from "../../api/companies";
 import { fetchMyJobs, createJob, fetchJobApplicants } from "../../api/jobs";
 import { fetchDrivers } from "../../api/drivers";
+import { setConversationStage } from "../../api/conversations";
 import { fetchMyOrganizations } from "../../api/organizations";
 import { initialsFor } from "../driver/jobAdapter";
 
@@ -90,10 +91,10 @@ export function CompanyDataProvider({ children }) {
     for (const { jobId, applicants } of apps) {
       const stages = { ...EMPTY_STAGES };
       for (const a of applicants) {
-        const stage = a.stage || (a.rejectedByCompanyAt ? "avslag" : a.selectedByCompanyAt ? "anstalld" : a.reviewedByCompanyAt ? "intervjuad" : a.readByCompanyAt ? "kontaktad" : "ny");
+        const stage = a.pipelineStage || (a.rejectedByCompanyAt ? "avslag" : a.selectedByCompanyAt ? "anstalld" : a.reviewedByCompanyAt ? "intervjuad" : a.readByCompanyAt ? "kontaktad" : "ny");
         stages[stage] = (stages[stage] || 0) + 1;
         cands.push({
-          id: a.id || a.conversationId || `${jobId}-${cands.length}`,
+          id: a.conversationId || a.id || `${jobId}-${cands.length}`,
           name: a.driverName || a.name || "Förare",
           initials: initialsFor(a.driverName || a.name),
           jobId, stage,
@@ -103,7 +104,7 @@ export function CompanyDataProvider({ children }) {
           location: a.location || "",
           when: a.createdAt ? "Ny" : "",
           new: !a.readByCompanyAt,
-          conv: a,
+          conv: { id: a.conversationId || a.id },
         });
       }
       stageByJob[jobId] = stages;
@@ -146,8 +147,11 @@ export function CompanyDataProvider({ children }) {
   const toggleSaveDriver = useCallback((id) => setSavedDrivers((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; }), []);
   const [driverFilter, setDriverFilter] = useState({ seg: "alla", lic: [], onlyAvail: false });
 
-  // ── Candidate pipeline move (local — no backend stage model) ─────
-  const moveCandidate = useCallback((id, stage) => setCandidates((cs) => cs.map((c) => (c.id === id ? { ...c, stage } : c))), []);
+  // ── Candidate pipeline move → persists via PATCH /conversations/:id/stage ─
+  const moveCandidate = useCallback((id, stage) => {
+    setCandidates((cs) => cs.map((c) => (c.id === id ? { ...c, stage } : c))); // optimistic
+    if (hasApi) setConversationStage(id, stage).catch(() => {});
+  }, [hasApi]);
 
   // ── Publish a job ────────────────────────────────────────────────
   const publishJob = useCallback(async (d) => {

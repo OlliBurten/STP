@@ -28,3 +28,7 @@ export async function selectConversation(conversationId) {
 export async function rejectConversation(conversationId) {
   return apiPatch(`/api/conversations/${conversationId}/reject`);
 }
+
+export async function setConversationStage(conversationId, stage) {
+  return apiPatch(`/api/conversations/${conversationId}/stage`, { stage });
+}

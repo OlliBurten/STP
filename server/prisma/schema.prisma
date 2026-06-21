@@ -432,6 +432,7 @@ model Conversation {
   readByDriverAt    DateTime?    // förare har öppnat konversationen (läs-kvitto för företag)
   rejectedByCompanyAt DateTime?  // företag avvisade
   rejectReason      String?      // frivillig text vid avvisning
+  pipelineStage     String?      // rekryteringssteg: ny|kontaktad|intervjuad|anstalld|avslag (åkeri-pipeline)
   startDate         String?      // "now" | "month" | ISO-datum — förare anger tillträde
   allowSimilarContact Boolean    @default(false)  // förare tillåter kontakt om liknande jobb
   createdAt DateTime @default(now())
