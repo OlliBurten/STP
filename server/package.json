@@ -37,6 +37,7 @@
     "jwks-rsa": "^4.0.1",
     "node-cron": "^4.2.1",
     "organisationsnummer": "^1.2.0",
+    "pdfkit": "^0.19.1",
     "prisma": "^6.0.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",

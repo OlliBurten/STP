@@ -8,6 +8,7 @@ import {
   suggestMessage,
   summarizeDriverProfile,
   generateProfileTips,
+  generateCoverLetter,
 } from "../lib/ai.js";
 
 export const aiRouter = Router();
@@ -23,6 +24,34 @@ function requireAiKey(req, res, next) {
   }
   next();
 }
+
+// ─── 0. Personligt brev — förare genererar ett CV-brev ───────────────────────
+aiRouter.post("/cover-letter", authMiddleware, requireAiKey, async (req, res, next) => {
+  try {
+    if (req.role !== "DRIVER") return res.status(403).json({ error: "Endast förare" });
+    const { jobId } = req.body || {};
+    const [driverUser, job] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: req.userId },
+        select: { name: true, driverProfile: { select: { licenses: true, certificates: true, region: true, primarySegment: true, summary: true, experience: true } } },
+      }),
+      jobId ? prisma.job.findUnique({ where: { id: jobId }, select: { title: true, company: true, region: true } }) : Promise.resolve(null),
+    ]);
+    if (!driverUser) return res.status(404).json({ error: "Profil saknas" });
+    const exp = Array.isArray(driverUser.driverProfile?.experience) ? driverUser.driverProfile.experience : [];
+    const now = new Date().getFullYear();
+    const yearsExperience = exp.reduce((sum, e) => {
+      const start = Number(e.startYear) || now;
+      const end = e.current ? now : Number(e.endYear) || start;
+      return sum + Math.max(0, end - start);
+    }, 0);
+    const driver = { name: driverUser.name, ...driverUser.driverProfile, yearsExperience };
+    const letter = await generateCoverLetter(driver, job);
+    res.json({ letter });
+  } catch (e) {
+    next(e);
+  }
+});
 
 // ─── 1. Match explanation — driver views a job ────────────────────────────────
 

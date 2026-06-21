@@ -1,4 +1,5 @@
 import { Router } from "express";
+import PDFDocument from "pdfkit";
 import { prisma } from "../lib/prisma.js";
 import { authMiddleware, requireDriver, requireCompany } from "../middleware/auth.js";
 import { augmentCompanyMemberUser, formatClientAuthUser } from "./auth.js";
@@ -193,6 +194,8 @@ function formatProfileResponse(profile, user) {
     soloWorkOk: profile.soloWorkOk ?? null,
     preferredEmployment: profile.preferredEmployment ?? [],
     openToWork: profile.openToWork ?? false,
+    availableForShifts: profile.availableForShifts ?? false,
+    photoUrl: profile.photoUrl ?? null,
     slug: profile.slug ?? null,
   };
 }
@@ -399,6 +402,8 @@ profileRouter.put("/", async (req, res, next) => {
     if (Array.isArray(body.preferredEmployment)) data.preferredEmployment = body.preferredEmployment;
     if (Array.isArray(body.experienceTypes)) data.experienceTypes = body.experienceTypes;
     if (body.openToWork !== undefined) data.openToWork = Boolean(body.openToWork);
+    if (body.availableForShifts !== undefined) data.availableForShifts = Boolean(body.availableForShifts);
+    if (body.photoUrl !== undefined) data.photoUrl = body.photoUrl ? String(body.photoUrl) : null;
     if (data.isGymnasieelev) {
       data.primarySegment = "INTERNSHIP";
       data.secondarySegments = [];
@@ -511,9 +516,11 @@ profileRouter.post("/analyze-summary", async (req, res, next) => {
 
 profileRouter.patch("/notification-settings", async (req, res, next) => {
   try {
-    const allowed = ["profileReminder", "jobMatch", "messageReminder", "inactivity"];
+    const allowed = ["profileReminder", "jobMatch", "messageReminder", "inactivity", "weekly"];
     const incoming = req.body || {};
-    const settings = {};
+    // Merge into existing settings so partial updates don't clobber other keys.
+    const current = await prisma.user.findUnique({ where: { id: req.userId }, select: { emailNotificationSettings: true } });
+    const settings = { ...(current?.emailNotificationSettings && typeof current.emailNotificationSettings === "object" ? current.emailNotificationSettings : {}) };
     for (const key of allowed) {
       if (key in incoming) settings[key] = Boolean(incoming[key]);
     }
@@ -523,6 +530,115 @@ profileRouter.patch("/notification-settings", async (req, res, next) => {
       select: { emailNotificationSettings: true },
     });
     res.json({ emailNotificationSettings: user.emailNotificationSettings });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// ─── CV som PDF (driver) ─────────────────────────────────────────────────────
+profileRouter.get("/cv.pdf", async (req, res, next) => {
+  try {
+    const [user, profile, reviews] = await Promise.all([
+      prisma.user.findUnique({ where: { id: req.userId }, select: { name: true, email: true } }),
+      prisma.driverProfile.findUnique({ where: { userId: req.userId } }),
+      prisma.driverReview.findMany({ where: { driverProfile: { userId: req.userId } }, take: 5, orderBy: { createdAt: "desc" } }),
+    ]);
+    const name = user?.name || "Förare";
+    const exp = Array.isArray(profile?.experience) ? profile.experience : [];
+
+    const doc = new PDFDocument({ size: "A4", margin: 50 });
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="stp-cv-${(profile?.slug || "profil")}.pdf"`);
+    doc.pipe(res);
+
+    const GREEN = "#1E6B5B";
+    const INK = "#1B2421";
+    const MUT = "#79847D";
+    const heading = (t) => doc.moveDown(0.8).fillColor(GREEN).fontSize(13).font("Helvetica-Bold").text(t.toUpperCase(), { characterSpacing: 1 }).moveDown(0.3);
+
+    doc.fillColor(INK).fontSize(26).font("Helvetica-Bold").text(name);
+    doc.fillColor(MUT).fontSize(11).font("Helvetica").text([profile?.location, profile?.region].filter(Boolean).join(", ") || "");
+    if (user?.email) doc.fillColor(MUT).text(user.email);
+    doc.moveDown(0.2).strokeColor("#dce3dd").lineWidth(1).moveTo(50, doc.y + 4).lineTo(545, doc.y + 4).stroke();
+
+    if (profile?.summary) { heading("Om mig"); doc.fillColor(INK).fontSize(11).font("Helvetica").text(profile.summary, { lineGap: 2 }); }
+
+    heading("Behörigheter");
+    doc.fillColor(INK).fontSize(11).font("Helvetica")
+      .text(`Körkort: ${(profile?.licenses || []).join(", ") || "—"}`)
+      .text(`Certifikat: ${(profile?.certificates || []).join(", ") || "—"}`)
+      .text(`Regioner: ${(profile?.regionsWilling || []).join(", ") || "—"}`);
+
+    if (exp.length) {
+      heading("Erfarenhet");
+      exp.forEach((e) => {
+        const period = `${e.startYear || ""}${e.current ? " – nu" : e.endYear ? ` – ${e.endYear}` : ""}`;
+        doc.fillColor(INK).fontSize(11.5).font("Helvetica-Bold").text(`${e.role || e.title || "Roll"}${e.company ? ` · ${e.company}` : ""}`);
+        doc.fillColor(MUT).fontSize(10).font("Helvetica").text(period).moveDown(0.3);
+      });
+    }
+
+    if (reviews.length) {
+      heading("Omdömen");
+      reviews.forEach((r) => {
+        doc.fillColor(GREEN).fontSize(11).font("Helvetica-Bold").text(`${"★".repeat(Math.round(r.rating || 0))}${"☆".repeat(5 - Math.round(r.rating || 0))}  `, { continued: true }).fillColor(MUT).font("Helvetica").text(r.companyName || "Åkeri");
+        if (r.comment) doc.fillColor(INK).fontSize(10.5).font("Helvetica").text(`"${r.comment}"`, { lineGap: 1 });
+        doc.moveDown(0.3);
+      });
+    }
+
+    doc.moveDown(1).fillColor(MUT).fontSize(9).font("Helvetica").text("Skapad via Transportplattformen (STP)", { align: "center" });
+    doc.end();
+  } catch (e) {
+    next(e);
+  }
+});
+
+// ─── GDPR-export: ladda ner all min data ─────────────────────────────────────
+profileRouter.get("/export", async (req, res, next) => {
+  try {
+    const [user, profile, conversations, applications, reviews, savedJobs] = await Promise.all([
+      prisma.user.findUnique({ where: { id: req.userId }, select: { id: true, email: true, name: true, role: true, createdAt: true, emailNotificationSettings: true } }),
+      prisma.driverProfile.findUnique({ where: { userId: req.userId } }),
+      prisma.conversation.findMany({ where: { driverId: req.userId }, include: { messages: true } }),
+      prisma.application.findMany({ where: { driverId: req.userId } }),
+      prisma.driverReview.findMany({ where: { driverProfile: { userId: req.userId } } }),
+      prisma.savedJob.findMany({ where: { userId: req.userId } }),
+    ]);
+    res.setHeader("Content-Disposition", "attachment; filename=stp-mina-data.json");
+    res.json({ exportedAt: new Date().toISOString(), user, profile, conversations, applications, reviews, savedJobs });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// ─── Aktivitetsflöde för förarens startsida (Hem) ────────────────────────────
+// Slår ihop "vem tittade på din profil" (DriverProfileView) med senaste notiser.
+profileRouter.get("/activity", async (req, res, next) => {
+  try {
+    const driverUserId = req.userId;
+    const [views, notifications] = await Promise.all([
+      prisma.driverProfileView.findMany({ where: { driverUserId }, orderBy: { createdAt: "desc" }, take: 10 }),
+      prisma.notification.findMany({ where: { userId: driverUserId }, orderBy: { createdAt: "desc" }, take: 12 }),
+    ]);
+
+    const viewerIds = [...new Set(views.map((v) => v.viewerUserId))];
+    const viewers = viewerIds.length
+      ? await prisma.user.findMany({ where: { id: { in: viewerIds } }, select: { id: true, name: true, companyName: true } })
+      : [];
+    const viewerById = new Map(viewers.map((u) => [u.id, u.companyName || u.name || "Ett åkeri"]));
+
+    const items = [];
+    for (const v of views) {
+      items.push({ id: `view-${v.id}`, type: "view", icon: "eye", tone: "info", text: `${viewerById.get(v.viewerUserId) || "Ett åkeri"} tittade på din profil`, createdAt: v.createdAt });
+    }
+    for (const n of notifications) {
+      const tone = n.type === "SELECTED" || n.type === "MESSAGE" ? "success" : n.type === "MATCH_JOBS" ? "primary" : "info";
+      const icon = n.type === "MESSAGE" ? "msg" : n.type === "MATCH_JOBS" ? "truck" : n.type === "SELECTED" ? "check" : "info";
+      items.push({ id: `notif-${n.id}`, type: "notification", icon, tone, text: n.title || n.body || "Ny händelse", createdAt: n.createdAt });
+    }
+    items.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    res.json(items.slice(0, 10));
   } catch (e) {
     next(e);
   }

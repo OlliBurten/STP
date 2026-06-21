@@ -264,6 +264,31 @@ conversationsRouter.post("/", requireVerifiedIfCompany, validateBody(createConve
   }
 });
 
+// Åkeri-pipeline: flytta en kandidat mellan rekryteringssteg.
+const PIPELINE_STAGES = ["ny", "kontaktad", "intervjuad", "anstalld", "avslag"];
+conversationsRouter.patch("/:id/stage", requireCompany, requireVerifiedCompany, attachCompanyContext, async (req, res, next) => {
+  try {
+    const { stage } = req.body || {};
+    if (!PIPELINE_STAGES.includes(stage)) return res.status(400).json({ error: "Ogiltigt steg" });
+    const conv = await prisma.conversation.findUnique({ where: { id: req.params.id } });
+    if (!conv) return res.status(404).json({ error: "Konversation hittades inte" });
+    const hasCompanyAccess = req.organizationId
+      ? conv.organizationId === req.organizationId
+      : conv.companyId === effectiveCompanyId(req) && !conv.organizationId;
+    if (!hasCompanyAccess) return res.status(403).json({ error: "Ingen åtkomst" });
+    const data = { pipelineStage: stage };
+    // Spegla i de befintliga tidsstämplarna så driver-vyn (Ansökt) hålls i synk.
+    if (stage === "anstalld") data.selectedByCompanyAt = conv.selectedByCompanyAt || new Date();
+    if (stage === "avslag") data.rejectedByCompanyAt = conv.rejectedByCompanyAt || new Date();
+    if (stage === "intervjuad") data.reviewedByCompanyAt = conv.reviewedByCompanyAt || new Date();
+    if (stage === "kontaktad") data.readByCompanyAt = conv.readByCompanyAt || new Date();
+    const updated = await prisma.conversation.update({ where: { id: conv.id }, data });
+    res.json({ id: updated.id, pipelineStage: updated.pipelineStage });
+  } catch (e) {
+    next(e);
+  }
+});
+
 conversationsRouter.patch("/:id/reject", requireCompany, requireVerifiedCompany, async (req, res, next) => {
   try {
     const conv = await prisma.conversation.findUnique({

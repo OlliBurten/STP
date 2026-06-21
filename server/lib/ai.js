@@ -179,6 +179,46 @@ Svara ENBART med meddelandet, ingen rubrik eller extra text.`,
   return message.content?.[0]?.text?.trim() || "";
 }
 
+// ─── 4b. Personligt brev (cover letter) för förare ───────────────────────────
+
+/**
+ * Generate a full personal cover letter for a driver (Profil → "Personligt brev").
+ * @param {object} driver - name, licenses, certificates, region, primarySegment,
+ *                          summary, yearsExperience
+ * @param {object|null} job - optional { title, company, region }
+ * @returns {Promise<string>} Cover letter in Swedish
+ */
+export async function generateCoverLetter(driver, job = null) {
+  const client = getClient();
+
+  const driverContext = [
+    `Förare: ${driver.name}`,
+    `Körkort: ${(driver.licenses || []).join(", ") || "ej angivet"}`,
+    `Certifikat: ${(driver.certificates || []).join(", ") || "inga"}`,
+    `Region: ${driver.region || "ej angivet"}`,
+    driver.yearsExperience ? `Erfarenhet: ${driver.yearsExperience} år` : null,
+    driver.primarySegment ? `Segment: ${driver.primarySegment}` : null,
+    driver.summary ? `Profiltext: "${driver.summary.slice(0, 300)}"` : null,
+  ].filter(Boolean).join("\n");
+
+  const jobContext = job
+    ? `Tjänsten gäller: ${job.title} på ${job.company}${job.region ? ` i ${job.region}` : ""}`
+    : "Inget specifikt jobb — skriv ett generellt personligt brev som föraren kan återanvända.";
+
+  const message = await withRetry(() => client.messages.create({
+    model: "claude-haiku-4-5-20251001",
+    max_tokens: 450,
+    system: `Du är en karriärassistent för en svensk transportplattform.
+Skriv ett personligt brev på svenska i jag-form från förarens perspektiv.
+Brevet ska vara 3–5 korta stycken: inledning, erfarenhet/behörigheter, varför hen passar, avslutande hälsning.
+Var konkret och professionell, undvik klichéer. Avsluta med "Med vänlig hälsning," och förarens namn.
+Svara ENBART med brevet.`,
+    messages: [{ role: "user", content: `${driverContext}\n${jobContext}` }],
+  }));
+
+  return message.content?.[0]?.text?.trim() || "";
+}
+
 // ─── 5. Driver summary — sammanfatta förarprofil för åkeri ────────────────────
 
 /**
