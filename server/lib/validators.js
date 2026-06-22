@@ -101,6 +101,11 @@ export const resendVerificationSchema = z.object({
   verificationBaseUrl: z.string().url().max(500).optional(),
 });
 
+export const verifyEmailCodeSchema = z.object({
+  email: z.string().min(1, "E-post krävs").email("Ogiltig e-postadress").max(255),
+  code: z.string().regex(/^\d{6}$/, "Koden ska vara 6 siffror"),
+});
+
 export const oauthGoogleSchema = z.object({
   credential: z.string().min(1, "Credential krävs"),
   role: z.enum(["DRIVER", "COMPANY"]).optional(),

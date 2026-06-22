@@ -175,6 +175,7 @@ app.use("/api/auth/resend-verification", sensitiveAuthLimiter);
 app.use("/api/auth/request-password-reset", sensitiveAuthLimiter);
 app.use("/api/auth/reset-password", sensitiveAuthLimiter);
 app.use("/api/auth/verify-email", sensitiveAuthLimiter);
+app.use("/api/auth/verify-email-code", sensitiveAuthLimiter);
 app.use("/api/auth", authRouter);
 app.use("/api/jobs", apiPublicLimiter, jobsRouter);
 app.use("/api/profile", profileRouter);

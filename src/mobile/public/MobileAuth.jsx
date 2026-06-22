@@ -14,7 +14,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { requestPasswordReset, resendVerification } from "../../api/auth";
+import { requestPasswordReset, resendVerification, verifyEmailCode } from "../../api/auth";
 import OAuthButtons from "../../components/OAuthButtons";
 import MobileShell from "../MobileShell";
 import { Icon } from "../ui";
@@ -67,6 +67,37 @@ function Strength({ pw }) {
   );
 }
 
+// 6-siffrig kod-input. Ett enda dolt fält håller värdet (robust paste + iOS
+// numeriskt tangentbord + one-time-code-autofyll); 6 rutor är bara visuella.
+function CodeInput({ value, onChange, error, disabled }) {
+  const ref = React.useRef(null);
+  const boxes = Array.from({ length: 6 }, (_, i) => value[i] || "");
+  return (
+    <div onClick={() => ref.current?.focus()} style={{ position: "relative", marginBottom: error ? 6 : 18 }}>
+      <input
+        ref={ref}
+        value={value}
+        autoFocus
+        disabled={disabled}
+        onChange={(e) => onChange(e.target.value.replace(/\D/g, "").slice(0, 6))}
+        inputMode="numeric"
+        autoComplete="one-time-code"
+        maxLength={6}
+        aria-label="Verifieringskod"
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0, border: "none", outline: "none", caretColor: "transparent", cursor: "pointer", fontSize: 16 }}
+      />
+      <div style={{ display: "flex", gap: 8 }}>
+        {boxes.map((d, i) => {
+          const active = !disabled && i === Math.min(value.length, 5) && value.length < 6;
+          return (
+            <div key={i} style={{ flex: 1, height: 58, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, fontWeight: 800, color: "var(--ink-900)", borderRadius: 13, background: "#fff", border: `1.5px solid ${error ? "var(--danger)" : active ? "var(--green)" : d ? "var(--line-strong)" : "var(--line-2)"}`, boxShadow: active ? "0 0 0 3px rgba(31,95,92,0.10)" : "none", transition: "border-color .15s,box-shadow .15s" }}>{d}</div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 const OrDivider = () => (
   <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "4px 0" }}>
     <div style={{ flex: 1, height: 1, background: "var(--line-2)" }} />
@@ -91,6 +122,9 @@ export default function MobileAuth() {
   const [err, setErr] = useState({});
   const [busy, setBusy] = useState(false);
   const [resent, setResent] = useState(false);
+  const [code, setCode] = useState("");
+  const [codeErr, setCodeErr] = useState("");
+  const [verifying, setVerifying] = useState(false);
 
   const go = (v) => { setErr({}); setBusy(false); setView(v); };
   const from = params.get("from") || "/";
@@ -102,6 +136,33 @@ export default function MobileAuth() {
     navigate(from.startsWith("/foretag") ? "/jobb" : (from === "/" ? "/hem" : from), { replace: true });
   };
 
+  // Verifiera 6-siffrig kod → backend loggar in oss direkt (returnerar token).
+  const submitCode = async (codeArg) => {
+    const c = codeArg ?? code;
+    if (c.length !== 6 || verifying) return;
+    setVerifying(true); setCodeErr("");
+    try {
+      const data = await verifyEmailCode(email.trim(), c);
+      if (data?.alreadyVerified) { setVerifying(false); setResent(false); go("login"); return; }
+      if (data?.token && data?.user) {
+        const u = loginWithOAuthResponse({ user: data.user, token: data.token });
+        afterAuth(u);
+        return; // navigerar bort — lämna verifying på
+      }
+      setVerifying(false); setCodeErr("Något gick fel. Försök igen.");
+    } catch (ex) {
+      setVerifying(false);
+      setCode("");
+      setCodeErr(ex?.message || "Fel kod. Försök igen.");
+    }
+  };
+
+  // Auto-skicka när alla 6 siffror är ifyllda.
+  useEffect(() => {
+    if (view === "verify" && code.length === 6 && !verifying) submitCode(code);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [code, view]);
+
   // Create the account for a chosen role. The backend emails a verification
   // link and login is gated until it's clicked — so we land on the "verify"
   // screen (the email-link equivalent of the prototype's OTP step), not the app.
@@ -111,7 +172,7 @@ export default function MobileAuth() {
       await registerWithApi({
         email: email.trim(), password: pw, role: r === "akeri" ? "company" : "driver", name: name.trim(),
       });
-      setRole(r); setFlow("register"); setBusy(false); setResent(false); setView("verify");
+      setRole(r); setFlow("register"); setBusy(false); setResent(false); setCode(""); setCodeErr(""); setView("verify");
     } catch (ex) {
       setBusy(false);
       const msg = ex?.message || "Kunde inte skapa konto";
@@ -121,6 +182,7 @@ export default function MobileAuth() {
   };
 
   const resend = async () => {
+    setCode(""); setCodeErr("");
     try { await resendVerification(email.trim(), typeof window !== "undefined" ? window.location.origin : undefined); setResent(true); }
     catch { setResent(true); }
   };
@@ -146,7 +208,7 @@ export default function MobileAuth() {
       setBusy(false);
       const msg = ex?.message || "Fel e-post eller lösenord";
       // Unverified account → send them to the verify screen so they can resend.
-      if (/verifiera|not.?verif|EMAIL_NOT_VERIFIED/i.test(msg)) { setResent(false); setFlow("register"); setView("verify"); }
+      if (/verifiera|not.?verif|EMAIL_NOT_VERIFIED/i.test(msg)) { setResent(false); setCode(""); setCodeErr(""); setFlow("register"); resend(); setView("verify"); }
       else setErr({ pw: msg });
     }
   };
@@ -265,20 +327,25 @@ export default function MobileAuth() {
       </div>
     );
   } else {
-    // verify — email-link equivalent of the prototype's OTP step. The backend
-    // gates login on a clicked verification link, so we ask the user to open it.
+    // verify — 6-siffrig kod (OTP). Användaren skriver in koden från mejlet;
+    // backend loggar in direkt vid rätt kod. Länken i mejlet funkar som reserv.
     body = (
       <div className="view-enter" style={{ flex: 1, display: "flex", flexDirection: "column", padding: "24px 26px 30px" }}>
         <div style={{ width: 54, height: 54, borderRadius: 16, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}><Icon name="shield" size={26} color="var(--green)" stroke={2} /></div>
-        <h1 style={{ fontSize: 27, fontWeight: 800, letterSpacing: -0.6, color: "var(--ink-900)", marginBottom: 8 }}>Verifiera din e-post</h1>
-        <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.5, marginBottom: 4 }}>Vi skickade en verifieringslänk till</p>
-        <p style={{ fontSize: 15.5, fontWeight: 800, color: "var(--ink-900)", marginBottom: 24 }}>{email || "din e-post"}</p>
-        <div style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "13px 15px", background: "var(--info-tint)", borderRadius: 13, marginBottom: 26 }}>
+        <h1 style={{ fontSize: 27, fontWeight: 800, letterSpacing: -0.6, color: "var(--ink-900)", marginBottom: 8 }}>Skriv in koden</h1>
+        <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.5, marginBottom: 4 }}>Vi skickade en 6-siffrig kod till</p>
+        <p style={{ fontSize: 15.5, fontWeight: 800, color: "var(--ink-900)", marginBottom: 22 }}>{email || "din e-post"}</p>
+        <CodeInput value={code} onChange={(v) => { setCode(v); if (codeErr) setCodeErr(""); }} error={!!codeErr} disabled={verifying} />
+        {codeErr
+          ? <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 18 }}><Icon name="alert" size={13} color="var(--danger)" stroke={2.2} /><span style={{ fontSize: 12.5, color: "var(--danger)", fontWeight: 600 }}>{codeErr}</span></div>
+          : <div style={{ height: 4 }} />}
+        <Button variant="primary" full busy={verifying} disabled={code.length !== 6} onClick={() => submitCode()}>Verifiera & logga in</Button>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "13px 15px", background: "var(--info-tint)", borderRadius: 13, margin: "22px 0 0" }}>
           <Icon name="info" size={18} color="var(--info)" stroke={2} style={{ flexShrink: 0, marginTop: 1 }} />
-          <span style={{ fontSize: 13, color: "var(--ink-700)", lineHeight: 1.45 }}>Öppna länken i mejlet för att aktivera kontot. Sen kan du logga in. Hittar du inget? Kolla skräpposten.</span>
+          <span style={{ fontSize: 13, color: "var(--ink-700)", lineHeight: 1.45 }}>Koden gäller i 10 minuter. Hittar du inget? Kolla skräpposten — eller öppna länken i mejlet istället.</span>
         </div>
-        <Button variant="primary" full onClick={() => go("login")}>Tillbaka till inloggning</Button>
-        <div style={{ textAlign: "center", marginTop: 18, fontSize: 14, color: "var(--ink-500)" }}>{resent ? <span style={{ color: "var(--success)", fontWeight: 700 }}>Mejlet skickades igen ✓</span> : <>Inget mejl? <button onClick={resend} style={{ fontWeight: 800, color: "var(--green)" }}>Skicka igen</button></>}</div>
+        <div style={{ textAlign: "center", marginTop: 18, fontSize: 14, color: "var(--ink-500)" }}>{resent ? <span style={{ color: "var(--success)", fontWeight: 700 }}>Ny kod skickad ✓</span> : <>Ingen kod? <button onClick={resend} style={{ fontWeight: 800, color: "var(--green)" }}>Skicka igen</button></>}</div>
+        <div style={{ textAlign: "center", marginTop: 14, fontSize: 13.5, color: "var(--ink-400)" }}><button onClick={() => go("login")} style={{ fontWeight: 700, color: "var(--ink-500)" }}>Tillbaka till inloggning</button></div>
       </div>
     );
   }

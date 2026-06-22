@@ -14,6 +14,11 @@ model User {
   emailVerifiedAt DateTime?
   emailVerificationTokenHash String?
   emailVerificationExpiresAt DateTime?
+  // 6-siffrig verifieringskod (mobil) — hashad, kort TTL (10 min) + försöksspärr.
+  // Lever parallellt med token-länken ovan (samma mejl skickar båda).
+  emailVerificationCodeHash String?
+  emailVerificationCodeExpiresAt DateTime?
+  emailVerificationCodeAttempts Int @default(0)
   passwordResetTokenHash String?
   passwordResetExpiresAt DateTime?
   role         String   // DRIVER | COMPANY | RECRUITER (COMPANY deprecated, migreras till RECRUITER)

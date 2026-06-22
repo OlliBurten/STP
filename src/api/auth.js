@@ -16,6 +16,11 @@ export async function verifyEmail(token) {
   return apiGet(`/api/auth/verify-email?token=${encodeURIComponent(token)}`);
 }
 
+/** Verifiera via 6-siffrig kod. Vid lyckad verifiering → { ok, token, user } (auto-inloggning). */
+export async function verifyEmailCode(email, code) {
+  return apiPost("/api/auth/verify-email-code", { email, code });
+}
+
 export async function resendVerification(email, verificationBaseUrl) {
   return apiPost("/api/auth/resend-verification", {
     email,

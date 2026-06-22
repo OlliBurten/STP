@@ -12,6 +12,7 @@ import {
   resetPasswordSchema,
   changePasswordSchema,
   resendVerificationSchema,
+  verifyEmailCodeSchema,
   oauthGoogleSchema,
   oauthMicrosoftSchema,
   oauthCompleteSchema,
@@ -100,7 +101,9 @@ export async function augmentCompanyMemberUser(user) {
 }
 import { JWT_SECRET } from "../lib/config.js";
 const OAUTH_COMPLETE_PURPOSE = "oauth-complete";
-const EMAIL_VERIFY_TTL_MS = 24 * 60 * 60 * 1000; // 24h
+const EMAIL_VERIFY_TTL_MS = 24 * 60 * 60 * 1000; // 24h (länk)
+const EMAIL_VERIFY_CODE_TTL_MS = 10 * 60 * 1000; // 10 min (6-siffrig kod)
+const EMAIL_VERIFY_CODE_MAX_ATTEMPTS = 5; // fel-gissningar innan koden dör
 const RESET_TTL_MS = 60 * 60 * 1000; // 1h
 
 function normalizeOrgNumber(value) {
@@ -115,6 +118,11 @@ function tokenHash(token) {
 
 function createRawToken() {
   return crypto.randomBytes(32).toString("hex");
+}
+
+// 6-siffrig kod, kryptografiskt slumpad (000000–999999).
+function createVerificationCode() {
+  return String(crypto.randomInt(0, 1_000_000)).padStart(6, "0");
 }
 
 const allowedFrontendOrigins = () =>
@@ -171,12 +179,18 @@ function resolveVerificationBaseUrl(provided) {
 export async function issueEmailVerification(userId, email, baseUrlOverride) {
   const baseUrl = baseUrlOverride ? resolveVerificationBaseUrl(baseUrlOverride) : frontendBaseUrl();
   const raw = createRawToken();
-  const expiresAt = new Date(Date.now() + EMAIL_VERIFY_TTL_MS);
+  const code = createVerificationCode();
+  const now = Date.now();
   await prisma.user.update({
     where: { id: userId },
     data: {
+      // Länk (24h) och kod (10 min) lever parallellt — användaren kan klicka
+      // länken ELLER skriva in koden. Koden nollställer försöksräknaren.
       emailVerificationTokenHash: tokenHash(raw),
-      emailVerificationExpiresAt: expiresAt,
+      emailVerificationExpiresAt: new Date(now + EMAIL_VERIFY_TTL_MS),
+      emailVerificationCodeHash: tokenHash(code),
+      emailVerificationCodeExpiresAt: new Date(now + EMAIL_VERIFY_CODE_TTL_MS),
+      emailVerificationCodeAttempts: 0,
     },
   });
   const verifyUrl = `${baseUrl}/verifiera-email?token=${raw}`;
@@ -184,7 +198,7 @@ export async function issueEmailVerification(userId, email, baseUrlOverride) {
     to: email,
     subject: "Verifiera din e-post – Sveriges Transportplattform",
     heading: "Verifiera din e-post",
-    text: `Hej!\n\nKlicka på knappen nedan för att verifiera din e-postadress och aktivera ditt konto.\n\nLänken är giltig i 24 timmar. Om du inte skapade kontot kan du ignorera detta mejl.`,
+    text: `Hej!\n\nDin verifieringskod är:\n\n${code}\n\nSkriv in koden i appen för att aktivera ditt konto. Koden gäller i 10 minuter.\n\nDu kan också klicka på knappen nedan för att verifiera direkt. Länken gäller i 24 timmar.\n\nOm du inte skapade kontot kan du ignorera detta mejl.`,
     ctaUrl: verifyUrl,
     ctaText: "Verifiera e-post",
   });
@@ -742,6 +756,93 @@ authRouter.get("/verify-email", async (req, res, next) => {
       console.error("Welcome email (post-verify) failed:", welcomeErr);
     }
     res.json({ ok: true, message: "E-post verifierad" });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// Verifiera via 6-siffrig kod (mobil). Lyckas → loggar in användaren direkt
+// (returnerar JWT som login). Hård försöksspärr + kort TTL skyddar den låga
+// entropin (1 000 000 kombinationer). Path:n rate-limitas i server.js.
+authRouter.post("/verify-email-code", validateBody(verifyEmailCodeSchema), async (req, res, next) => {
+  try {
+    const email = String(req.body.email || "").trim().toLowerCase();
+    const code = String(req.body.code || "");
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    // Generiskt fel — avslöja inte om kontot finns.
+    const invalid = (msg = "Koden är ogiltig eller har gått ut. Begär en ny.") =>
+      res.status(400).json({ error: msg, code: "INVALID_CODE" });
+
+    if (!user) return invalid();
+    if (user.emailVerifiedAt) {
+      // Redan verifierad — ingen auto-inloggning (inget lösenordsbevis här).
+      return res.json({ ok: true, alreadyVerified: true });
+    }
+    if (!user.emailVerificationCodeHash || !user.emailVerificationCodeExpiresAt ||
+        user.emailVerificationCodeExpiresAt < new Date()) {
+      return invalid();
+    }
+    if (user.emailVerificationCodeAttempts >= EMAIL_VERIFY_CODE_MAX_ATTEMPTS) {
+      // Bränn koden så brute-force inte kan fortsätta — tvinga ny kod.
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { emailVerificationCodeHash: null, emailVerificationCodeExpiresAt: null },
+      });
+      return invalid("För många försök. Begär en ny kod.");
+    }
+    if (tokenHash(code) !== user.emailVerificationCodeHash) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { emailVerificationCodeAttempts: { increment: 1 } },
+      });
+      const left = EMAIL_VERIFY_CODE_MAX_ATTEMPTS - (user.emailVerificationCodeAttempts + 1);
+      return res.status(400).json({
+        error: left > 0 ? `Fel kod. ${left} försök kvar.` : "För många försök. Begär en ny kod.",
+        code: "WRONG_CODE",
+        attemptsLeft: Math.max(0, left),
+      });
+    }
+
+    // Korrekt kod → verifiera + nollställ alla verifieringsfält.
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        emailVerifiedAt: new Date(),
+        emailVerificationTokenHash: null,
+        emailVerificationExpiresAt: null,
+        emailVerificationCodeHash: null,
+        emailVerificationCodeExpiresAt: null,
+        emailVerificationCodeAttempts: 0,
+        lastLoginAt: new Date(),
+      },
+    });
+    // Spegla uppdateringen i minnet så svaret (formatClientAuthUser) får rätt
+    // emailVerifiedAt — annars skickar vi tillbaka det inaktuella null-värdet.
+    user.emailVerifiedAt = new Date();
+    user.lastLoginAt = new Date();
+    try {
+      await sendWelcomeEmail({ to: user.email, name: user.name, role: user.role });
+    } catch (welcomeErr) {
+      console.error("Welcome email (post-verify-code) failed:", welcomeErr);
+    }
+
+    // Auto-inloggning — samma token-utgivning som /login.
+    const augmented = await augmentCompanyMemberUser(user);
+    const token = jwt.sign(
+      {
+        userId: user.id,
+        role: user.role,
+        ...(augmented.companyOwnerId && { companyOwnerId: augmented.companyOwnerId }),
+      },
+      JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+    res.json({
+      ok: true,
+      token,
+      user: formatClientAuthUser(user, augmented, { isAdmin: isAdminEmail(user.email) }),
+    });
   } catch (e) {
     next(e);
   }
