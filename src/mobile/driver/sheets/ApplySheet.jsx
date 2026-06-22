@@ -33,7 +33,15 @@ export default function ApplySheet({ job, ctx, close }) {
   const submit = async () => {
     if (imp && !consent) return;
     setSending(true);
-    await ctx.apply(job, { message: msg, consent });
+    // ctx.apply sparar optimistiskt lokalt och sväljer nätverksfel. Men om nätet
+    // hänger (kall/långsam prod-backend) får knappen ALDRIG snurra för evigt —
+    // timeouta efter 12s och fortsätt (Ansökt-vyn reconciliar riktig status).
+    try {
+      await Promise.race([
+        ctx.apply(job, { message: msg, consent }),
+        new Promise((resolve) => setTimeout(resolve, 12000)),
+      ]);
+    } catch { /* optimistiskt redan satt */ }
     setSending(false);
     setDone(true);
     setTimeout(close, 1700);
@@ -58,8 +66,8 @@ export default function ApplySheet({ job, ctx, close }) {
   return (
     <div style={{ padding: "0 22px 26px" }}>
       <div style={{ display: "flex", gap: 11, alignItems: "center", padding: "13px 14px", background: "var(--card-2)", borderRadius: 13, border: "1px solid var(--line)", marginBottom: 16 }}>
-        <div style={{ width: 42, height: 42, borderRadius: 11, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 14, color: "var(--green-text)" }}>{job.initials}</div>
-        <div><div style={{ fontSize: 15, fontWeight: 800, color: "var(--ink-900)" }}>{job.title}</div><div style={{ fontSize: 13, color: "var(--ink-500)" }}>{job.company}</div></div>
+        <div style={{ width: 42, height: 42, borderRadius: 11, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 14, color: "var(--green-text)", flexShrink: 0 }}>{job.initials}</div>
+        <div style={{ minWidth: 0 }}><div style={{ fontSize: 15, fontWeight: 800, color: "var(--ink-900)" }}>{job.title}</div><div style={{ fontSize: 13, color: "var(--ink-500)" }}>{job.company}</div></div>
       </div>
       {imp ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 11, marginBottom: 16, padding: "15px 15px", background: "var(--info-tint)", borderRadius: 13 }}>
@@ -76,9 +84,9 @@ export default function ApplySheet({ job, ctx, close }) {
           <span style={{ fontSize: 13.5, color: "var(--ink-800)", fontWeight: 600, lineHeight: 1.4 }}>Din profil, körkort och behörigheter bifogas automatiskt.</span>
         </div>
       )}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 9 }}>
-        <Label style={{ margin: 0 }}>Meddelande {imp ? "(följer med din profil)" : "till åkeriet"} <span style={{ textTransform: "none", fontWeight: 500, color: "var(--ink-400)" }}>(valfritt)</span></Label>
-        <button onClick={genDraft} disabled={aiBusy} className="press" style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12.5, fontWeight: 800, color: "var(--amber-deep)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 9 }}>
+        <Label style={{ margin: 0, minWidth: 0 }}>Meddelande <span style={{ textTransform: "none", fontWeight: 500, color: "var(--ink-400)" }}>(valfritt)</span></Label>
+        <button onClick={genDraft} disabled={aiBusy} className="press" style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12.5, fontWeight: 800, color: "var(--amber-deep)", whiteSpace: "nowrap", flexShrink: 0 }}>
           <Icon name={aiBusy ? "refresh" : "spark"} size={14} color="var(--amber-deep)" stroke={aiBusy ? 2.2 : 0} style={aiBusy ? { animation: "stpm-spin .8s linear infinite" } : { fill: "var(--amber-deep)" }} />
           {aiBusy ? "Skriver…" : "Skapa med AI"}
         </button>

@@ -9,6 +9,8 @@ export default function DetailSheet({ job, ctx, close }) {
   const savedNow = ctx.saved.has(job.id);
   const appliedNow = ctx.applied.has(job.id);
   const [showRaw, setShowRaw] = useState(false);
+  const [showFull, setShowFull] = useState(false);
+  const longDesc = (job.desc || "").length > 320;
   return (
     <div>
       <div style={{ padding: "6px 22px 0" }}>
@@ -54,7 +56,8 @@ export default function DetailSheet({ job, ctx, close }) {
         {job.desc && (
           <>
             <Label style={{ marginBottom: 8 }}>Om tjänsten</Label>
-            <p style={{ fontSize: 14.5, color: "var(--ink-700)", lineHeight: 1.6, marginBottom: job.rawDesc ? 12 : 18 }}>{job.desc}</p>
+            <p style={{ fontSize: 14.5, color: "var(--ink-700)", lineHeight: 1.6, marginBottom: (longDesc || job.rawDesc) ? 8 : 18, whiteSpace: "pre-line", ...(longDesc && !showFull ? { display: "-webkit-box", WebkitLineClamp: 6, WebkitBoxOrient: "vertical", overflow: "hidden" } : {}) }}>{job.desc}</p>
+            {longDesc && <button onClick={() => setShowFull((v) => !v)} className="press" style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 13.5, fontWeight: 700, color: "var(--green)", marginBottom: job.rawDesc ? 12 : 18 }}>{showFull ? "Visa mindre" : "Visa mer"}<Icon name="chevDown" size={15} stroke={2.2} style={{ transform: showFull ? "rotate(180deg)" : "none", transition: "transform .2s" }} /></button>}
           </>
         )}
         {job.rawDesc && (
