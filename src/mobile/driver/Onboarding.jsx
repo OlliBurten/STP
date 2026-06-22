@@ -46,8 +46,22 @@ export default function DriverOnboarding() {
     setBusy(true);
     const primarySegment = INTENT_TO_SEGMENT[intent[0]] || "FULLTIME";
     const region = regions[0] || "";
+    // Onboardingen är medvetet lättviktig (3 steg), men backend rensar bara
+    // needsDriverOnboarding när minimiprofilen är komplett — den kräver även
+    // location, availability och summary. Härled dem (utan att skriva över
+    // befintliga värden för en återvändande förare) så att en slutförd
+    // onboarding faktiskt markeras klar; annars hamnar man i onboardingen igen
+    // vid nästa inloggning.
+    const intentLabel = intent.includes("heltid") ? "heltidsjobb" : intent.includes("deltid") ? "deltid eller extrajobb" : "praktikplats";
+    const genSummary = `Yrkesförare${lic.length ? ` med ${lic.join(", ")}-behörighet` : ""}. Söker ${intentLabel}${regions.length ? ` i ${regions.join(", ")}` : ""}.`;
+    const keepSummary = String(profile?.summary || "").trim().length >= 20;
     try {
-      await updateProfile({ name: name.trim(), phone: phone.trim(), licenses: lic, regionsWilling: regions, region, primarySegment });
+      await updateProfile({
+        name: name.trim(), phone: phone.trim(), licenses: lic, regionsWilling: regions, region, primarySegment,
+        location: String(profile?.location || "").trim() || regions[0] || region,
+        availability: String(profile?.availability || "").trim() || "Omgående",
+        summary: keepSummary ? profile.summary : genSummary,
+      });
     } catch { /* keep going — local state still updates */ }
     setBusy(false);
     navigate("/hem", { replace: true });
