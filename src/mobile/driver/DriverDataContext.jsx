@@ -139,7 +139,17 @@ export function DriverDataProvider({ children }) {
   }, [hasApi]);
 
   // ── Derived job views (with match %) ─────────────────────────────
-  const jobs = useMemo(() => rawJobs.map((j) => toJobView(j, profile)), [rawJobs, profile]);
+  // Match-% beror BARA på matchningsrelevanta profilfält. Beräkna en stabil
+  // signatur (innehåll, inte referens) så att 381 jobb inte ommatchas varje
+  // gång ett orelaterat fält ändras — t.ex. när man togglar "Söker aktivt jobb"
+  // eller sparar namn. Annars blev varje toggle en 381×matchScore-omräkning som
+  // hackar på riktiga enheter.
+  const matchSig = useMemo(() => JSON.stringify([
+    profile.licenses, profile.region, profile.regionsWilling, profile.primarySegment,
+    profile.certificates, (profile.experience || []).length, profile.privateMatchNotes,
+  ]), [profile.licenses, profile.region, profile.regionsWilling, profile.primarySegment, profile.certificates, profile.experience, profile.privateMatchNotes]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const jobs = useMemo(() => rawJobs.map((j) => toJobView(j, profile)), [rawJobs, matchSig]);
   const companyActiveJobs = useCallback(
     (name) => jobs.filter((j) => j.company === name && !j.imported),
     [jobs]
