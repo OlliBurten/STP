@@ -134,9 +134,9 @@ export default function ProfilScreen({ ctx }) {
             <Label style={{ marginBottom: 4 }}>Verifierat av STP</Label>
             <p style={{ fontSize: 12.5, color: "var(--ink-400)", marginBottom: 13, lineHeight: 1.4 }}>Vad STP själva intygar för åkerier.</p>
             {[
-              { ok: true, label: "Körkort granskat", sub: "Av STP · BankID-kontroll snart" },
+              { ok: Array.isArray(p.licenses) && p.licenses.length > 0, label: "Körkort", sub: (Array.isArray(p.licenses) && p.licenses.length > 0) ? "Angivet · granskas av STP" : "Inte tillagt än" },
               { ok: false, label: "Identitet med BankID", sub: "Kommer snart" },
-              { ok: true, label: "Tidigare arbetsgivare", sub: "Referenser kan kontaktas" },
+              { ok: experience.length > 0, label: "Tidigare arbetsgivare", sub: experience.length > 0 ? "Referenser kan kontaktas" : "Inte tillagt än" },
             ].map((r, i, arr) => (
               <div key={r.label} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: i < arr.length - 1 ? "1px solid var(--line)" : "none" }}>
                 <div style={{ width: 30, height: 30, borderRadius: 9, background: r.ok ? "var(--success-tint)" : "var(--paper-2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icon name={r.ok ? "check" : "clock"} size={15} color={r.ok ? "var(--success)" : "var(--ink-400)"} stroke={2.4} /></div>

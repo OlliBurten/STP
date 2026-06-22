@@ -5,6 +5,9 @@
 import React from "react";
 import { Icon } from "../../ui";
 
+// Vilket sheet varje saknat fält öppnar (resten → profilredigeraren).
+const SHEET_FOR = { phone: "personal", certificates: "addDoc", regionsWilling: "prefs", visibleToCompanies: "privacy" };
+
 export default function CompleteSheet({ ctx, close }) {
   const { pct, missing } = ctx.completion;
   const R = 24;
@@ -33,7 +36,7 @@ export default function CompleteSheet({ ctx, close }) {
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {missing.map((m) => (
-            <button key={m.key} onClick={() => { close(); ctx.editProfile?.(m.key); }} className="press" style={{ display: "flex", alignItems: "center", gap: 13, padding: "14px", background: "var(--card-2)", border: "1px solid var(--line)", borderRadius: 13, textAlign: "left", width: "100%" }}>
+            <button key={m.key} onClick={() => ctx.setSheet({ type: SHEET_FOR[m.key] || "editProfile", focus: m.key })} className="press" style={{ display: "flex", alignItems: "center", gap: 13, padding: "14px", background: "var(--card-2)", border: "1px solid var(--line)", borderRadius: 13, textAlign: "left", width: "100%" }}>
               <div style={{ width: 40, height: 40, borderRadius: 11, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icon name={m.icon || "user"} size={18} color="var(--green)" stroke={1.9} /></div>
               <div style={{ flex: 1 }}><div style={{ fontSize: 14.5, fontWeight: 700, color: "var(--ink-900)" }}>{m.label}</div><div style={{ fontSize: 12.5, color: "var(--ink-500)" }}>{m.desc || "Lägg till för att stärka din profil"}</div></div>
               <Icon name="chevRight" size={18} color="var(--ink-300)" stroke={2.2} />

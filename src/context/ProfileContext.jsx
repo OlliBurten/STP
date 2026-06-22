@@ -128,8 +128,11 @@ export function ProfileProvider({ children }) {
 
   const updateProfile = async (updates) => {
     const nextProfile = { ...profile, ...updates };
+    // Optimistiskt: uppdatera lokalt direkt så att togglar/fält känns omedelbara
+    // (annars "fastnar" switcharna tills API-rundresan är klar). Backend-svaret
+    // reconcilias sedan in via mergeSavedProfile.
+    setProfile(nextProfile);
     if (!hasApi || !isDriver || !token) {
-      setProfile(nextProfile);
       setProfileSaveError("");
       return nextProfile;
     }

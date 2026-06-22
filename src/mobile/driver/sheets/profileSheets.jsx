@@ -28,8 +28,10 @@ export function EditProfileSheet({ ctx, close }) {
   const upExp = (i, k, v) => setExp(exp.map((e, idx) => (idx === i ? { ...e, [k]: v } : e)));
   const rmExp = (i) => setExp(exp.filter((_, idx) => idx !== i));
   const save = () => {
-    ctx.updateProfile({ name, location: loc, region, licenses: lic });
-    ctx.saveExperience(exp.filter((e) => e.role || e.company));
+    // EN enda uppdatering — tidigare två samtidiga updateProfile-anrop (ett utan
+    // erfarenheten) tävlade, och fel anrop kunde vinna → tillagd erfarenhet
+    // försvann. Skicka allt i samma payload.
+    ctx.updateProfile({ name, location: loc, region, licenses: lic, experience: exp.filter((e) => e.role || e.company) });
     close();
   };
   const selStyle = { flex: 1, minWidth: 0, height: 42, padding: "0 10px", border: "1px solid var(--line-2)", borderRadius: 9, background: "#fff", outline: "none", fontSize: 14, color: "var(--ink-800)", WebkitAppearance: "none", appearance: "none" };
@@ -61,10 +63,10 @@ export function EditProfileSheet({ ctx, close }) {
               <span style={{ color: "var(--ink-400)", fontSize: 13 }}>–</span>
               {e.current ? <div style={{ ...selStyle, display: "flex", alignItems: "center", color: "var(--ink-400)" }}>Nu</div> : <select value={e.endYear || nowY} onChange={(ev) => upExp(i, "endYear", +ev.target.value)} style={selStyle}>{YEARS.map((y) => <option key={y} value={y}>{y}</option>)}</select>}
             </div>
-            <button onClick={() => upExp(i, "current", !e.current)} className="press" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "2px 0" }}>
+            <div onClick={() => upExp(i, "current", !e.current)} className="press" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "2px 0", cursor: "pointer" }}>
               <span style={{ fontSize: 13.5, fontWeight: 600, color: "var(--ink-800)" }}>Jobbar här nu</span>
               <Switch on={!!e.current} onToggle={() => upExp(i, "current", !e.current)} />
-            </button>
+            </div>
           </div>
         ))}
       </div>
