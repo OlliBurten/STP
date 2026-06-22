@@ -31,7 +31,7 @@ export default function ProfilScreen({ ctx }) {
           <div style={{ textAlign: "center", padding: "4px 0 4px" }}>
             <button onClick={() => ctx.setSheet({ type: "photo" })} className="press" style={{ position: "relative", width: 92, margin: "0 auto 16px", display: "block" }} aria-label="Byt profilbild">
               <Avatar initials={p.initials || (p.name || "?").slice(0, 1).toUpperCase()} src={p.photoUrl} size={84} ring={ctx.seeking} style={{ margin: "0 auto" }} />
-              <span style={{ position: "absolute", right: 2, bottom: ctx.seeking ? 8 : 0, width: 26, height: 26, borderRadius: 13, background: "var(--card)", border: "1px solid var(--line-2)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "var(--sh-sm)" }}><Icon name="edit" size={13} color="var(--ink-600)" stroke={2} /></span>
+              <span style={{ position: "absolute", right: 0, top: 2, width: 26, height: 26, borderRadius: 13, background: "var(--card)", border: "1px solid var(--line-2)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "var(--sh-sm)" }}><Icon name="edit" size={13} color="var(--ink-600)" stroke={2} /></span>
               {ctx.seeking && <span style={{ position: "absolute", bottom: -6, left: "50%", transform: "translateX(-50%)", background: "var(--success)", color: "#fff", fontSize: 9, fontWeight: 800, letterSpacing: 0.3, padding: "3px 10px", borderRadius: 999, whiteSpace: "nowrap", border: "2px solid var(--paper)" }}>SÖKER JOBB</span>}
             </button>
             <h1 style={{ fontSize: 23, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.5, marginBottom: 4 }}>{p.name || "Din profil"}</h1>
