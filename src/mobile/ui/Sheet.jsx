@@ -7,6 +7,7 @@ import Icon from "./Icon";
 export default function Sheet({ open, onClose, children, title, full }) {
   const [drag, setDrag] = useState(0);
   const start = useRef(null);
+  const dragRef = useRef(0);
   const [mounted, setMounted] = useState(open);
 
   useEffect(() => {
@@ -21,15 +22,19 @@ export default function Sheet({ open, onClose, children, title, full }) {
 
   if (!mounted && !open) return null;
 
-  const onDown = (e) => { start.current = e.touches ? e.touches[0].clientY : e.clientY; };
+  // Pointer events (inte touch) + pointer-capture + touch-action:none gör drag-
+  // för-att-stänga tillförlitlig på iOS — annars tolkar webbläsaren gesten som
+  // scroll och drag-handtaget kändes "dött". Funkar även med mus.
+  const onDown = (e) => { start.current = e.clientY; dragRef.current = 0; try { e.currentTarget.setPointerCapture?.(e.pointerId); } catch { /* */ } };
   const onMove = (e) => {
     if (start.current == null) return;
-    const y = e.touches ? e.touches[0].clientY : e.clientY;
-    const d = y - start.current;
-    if (d > 0) setDrag(d);
+    const d = e.clientY - start.current;
+    if (d > 0) { dragRef.current = d; setDrag(d); }
   };
   const onUp = () => {
-    if (drag > 110) onClose();
+    // Läs dragRef (alltid live) i st f drag-state — undviker stale closure.
+    if (dragRef.current > 90) onClose();
+    dragRef.current = 0;
     setDrag(0);
     start.current = null;
   };
@@ -49,8 +54,8 @@ export default function Sheet({ open, onClose, children, title, full }) {
           animation: open && drag === 0 && start.current == null ? "stpm-sheet-up .34s cubic-bezier(.32,.72,0,1)" : "none",
         }}
       >
-        <div onTouchStart={onDown} onTouchMove={onMove} onTouchEnd={onUp} onMouseDown={onDown} style={{ padding: "10px 0 6px", flexShrink: 0, cursor: "grab", display: "flex", justifyContent: "center" }}>
-          <div style={{ width: 38, height: 5, borderRadius: 3, background: "var(--ink-200)" }} />
+        <div onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} style={{ padding: "12px 0 8px", flexShrink: 0, cursor: "grab", display: "flex", justifyContent: "center", touchAction: "none" }}>
+          <div style={{ width: 40, height: 5, borderRadius: 3, background: "var(--ink-200)" }} />
         </div>
         {title && (
           <div style={{ padding: "2px 22px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0, borderBottom: "1px solid var(--line)" }}>
