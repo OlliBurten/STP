@@ -22,11 +22,14 @@ applicationsRouter.post(
   requireDriver,
   async (req, res, next) => {
     try {
-      const { jobId, messageFromDriver, consentToShare } = req.body;
+      const { jobId, messageFromDriver, consentToShare, appliedVia } = req.body;
       const driverId = req.userId;
+      // "af_external" = föraren sökte direkt via AF:s länk. Då delar STP inte
+      // profilen → samtycke krävs inte (vi loggar bara leaden).
+      const external = appliedVia === "af_external";
 
-      // Consent is non-negotiable
-      if (!consentToShare) {
+      // Consent krävs för STP-vidarebefordran (men inte för extern AF-ansökan).
+      if (!external && !consentToShare) {
         return res.status(400).json({ error: "Samtycke krävs för att skicka ansökan." });
       }
 
@@ -61,15 +64,17 @@ applicationsRouter.post(
         data: {
           driverId,
           jobId,
-          consentToShare: true,
-          messageFromDriver: messageFromDriver?.trim() || null,
-          status: "SUBMITTED",
+          consentToShare: external ? false : true,
+          appliedVia: external ? "af_external" : "stp",
+          messageFromDriver: external ? null : (messageFromDriver?.trim() || null),
+          status: external ? "FORWARDED" : "SUBMITTED",
         },
         select: { id: true, createdAt: true, status: true },
       });
 
-      // For unclaimed AGGREGATED jobs: trigger outreach (async, don't block response)
-      if (job.source === "AGGREGATED" && !job.claimed && job.organizationNumber) {
+      // STP-outreach bara för STP-vidarebefordrade ansökningar (inte när föraren
+      // redan sökt direkt via AF).
+      if (!external && job.source === "AGGREGATED" && !job.claimed && job.organizationNumber) {
         const appCount = await prisma.application.count({
           where: {
             jobId: { in: await prisma.job.findMany({

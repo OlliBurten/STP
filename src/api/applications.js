@@ -4,8 +4,8 @@ import { apiGet, apiPost } from "./client.js";
  * Submit an application for an AGGREGATED/unclaimed job.
  * consentToShare must be true — the backend will reject if false.
  */
-export function submitApplication({ jobId, messageFromDriver, consentToShare }) {
-  return apiPost("/api/applications", { jobId, messageFromDriver, consentToShare });
+export function submitApplication({ jobId, messageFromDriver, consentToShare, appliedVia }) {
+  return apiPost("/api/applications", { jobId, messageFromDriver, consentToShare, appliedVia });
 }
 
 /**

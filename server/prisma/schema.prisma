@@ -641,7 +641,11 @@ model Application {
   // SUBMITTED → FORWARDED → VIEWED_BY_COMPANY → CLOSED
   status            String   @default("SUBMITTED")
 
-  // GDPR — must be true at creation, cannot be created without consent
+  // "stp" = sökt via STP (vi vidarebefordrar) | "af_external" = sökte direkt via
+  // AF:s länk (vi fångar leaden, men delar inte profilen).
+  appliedVia        String   @default("stp")
+
+  // GDPR — true när STP delar profilen; false vid af_external (föraren söker själv)
   consentToShare    Boolean
 
   messageFromDriver String?

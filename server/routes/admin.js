@@ -336,6 +336,8 @@ adminRouter.get("/summary", async (req, res, next) => {
       openReportsCount,
       newFeedbackCount,
       latestApplications,
+      latestJobApplications,
+      afExternalApplicationCount,
     ] = await Promise.all([
       prisma.user.count({ where: { createdAt: { gte: since24h } } }),
       prisma.user.count({ where: { createdAt: { gte: since7d } } }),
@@ -411,6 +413,21 @@ adminRouter.get("/summary", async (req, res, next) => {
           company: { select: { companyName: true, name: true } },
         },
       }),
+      // Riktiga Application-poster (aggregerade + AF-externa ansökningar). Skild
+      // från konversationerna ovan — dessa fångar förar-leads på importerade jobb.
+      prisma.application.findMany({
+        orderBy: { createdAt: "desc" },
+        take: 8,
+        select: {
+          id: true,
+          createdAt: true,
+          status: true,
+          appliedVia: true,
+          driver: { select: { name: true, email: true } },
+          job: { select: { title: true, company: true, source: true } },
+        },
+      }),
+      prisma.application.count({ where: { appliedVia: "af_external" } }),
     ]);
 
     res.json({
@@ -457,6 +474,18 @@ adminRouter.get("/summary", async (req, res, next) => {
         companyName: c.company?.companyName || c.company?.name || "Okänt åkeri",
         createdAt: toIso(c.createdAt),
       })),
+      // Förar-ansökningar på jobbannonser (inkl. AF-externa leads)
+      latestJobApplications: (latestJobApplications ?? []).map((a) => ({
+        id: a.id,
+        jobTitle: a.job?.title || "Okänt jobb",
+        companyName: a.job?.company || "Okänt åkeri",
+        driverName: a.driver?.name || a.driver?.email || "Okänd förare",
+        status: a.status,
+        appliedVia: a.appliedVia,
+        source: a.job?.source || null,
+        createdAt: toIso(a.createdAt),
+      })),
+      afExternalApplications: afExternalApplicationCount,
       actionQueue: {
         openReports: openReportsCount,
         newFeedback: newFeedbackCount,

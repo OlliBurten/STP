@@ -173,7 +173,7 @@ function SystemPulse({ health, setActiveTab }) {
 }
 
 // ─── Activity feed ─────────────────────────────────────────────────────────────
-function ActivityFeed({ latestUsers, latestApplications, onOpenUser }) {
+function ActivityFeed({ latestUsers, latestApplications, latestJobApplications, onOpenUser }) {
   const [tab, setTab] = React.useState("Alla");
   const tabs = ["Alla", "Förare", "Åkeri", "Jobb"];
 
@@ -198,6 +198,23 @@ function ActivityFeed({ latestUsers, latestApplications, onOpenUser }) {
       time: fmtDate(a.createdAt),
       icon: "users",
       color: "var(--amber)",
+      type: "Förare",
+    });
+  });
+  // Riktiga jobb-ansökningar (inkl. AF-externa leads). af_external = föraren sökte
+  // direkt via Arbetsförmedlingens länk — vi fångade ändå leaden i STP.
+  (latestJobApplications || []).slice(0, 5).forEach((a) => {
+    const external = a.appliedVia === "af_external";
+    items.push({
+      t: "app",
+      who: a.driverName,
+      a: external
+        ? `sökte ${a.jobTitle || "jobb"} via AF`
+        : `sökte ${a.jobTitle || "jobb"}`,
+      tag: external ? "via AF" : null,
+      time: fmtDate(a.createdAt),
+      icon: external ? "outreach" : "users",
+      color: external ? "var(--info)" : "var(--amber)",
       type: "Förare",
     });
   });
@@ -232,6 +249,7 @@ function ActivityFeed({ latestUsers, latestApplications, onOpenUser }) {
             </div>
             <div style={{ flex: 1, minWidth: 0, fontSize: "var(--text-xs)", color: "var(--ink-700)", lineHeight: 1.4 }}>
               <strong style={{ fontWeight: 700 }}>{it.who}</strong> <span style={{ color: "var(--ink-500)" }}>{it.a}</span>
+              {it.tag && <span style={{ marginLeft: 6, padding: "1px 6px", borderRadius: 5, background: "var(--info-tint, #e8f0fe)", color: "var(--info, #2563eb)", fontSize: "var(--text-2xs)", fontWeight: 700, ...mono }}>{it.tag}</span>}
             </div>
             <span style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", ...mono }}>{it.time}</span>
           </div>
@@ -457,6 +475,7 @@ export default function AdminOverviewTab({
           <ActivityFeed
             latestUsers={summary?.latestUsers}
             latestApplications={summary?.latestApplications}
+            latestJobApplications={summary?.latestJobApplications}
             onOpenUser={(id, type) => {
               // Åkerier öppnas i Åkerier-fliken, förare i Förare-fliken
               setActiveTab(type === "Åkeri" ? "companies" : "users");

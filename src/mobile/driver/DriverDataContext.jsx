@@ -337,6 +337,19 @@ export function DriverDataProvider({ children }) {
     } catch { /* keep optimistic state; surfaced via Ansökt refresh */ }
   }, [hasApi, chat, user, profile.name, refreshApplications]);
 
+  // Föraren sökte direkt via AF:s länk → registrera leaden i STP (utan
+  // profildelning/samtycke) så vi fångar konto + data, sen öppnas AF-länken.
+  const applyExternal = useCallback((job) => {
+    const jobId = typeof job === "string" ? job : job?.id;
+    if (!jobId) return;
+    setAppliedLocal((s) => new Set(s).add(jobId)); // optimistic
+    if (hasApi) {
+      submitApplication({ jobId, appliedVia: "af_external", consentToShare: false })
+        .then(refreshApplications)
+        .catch(() => {});
+    }
+  }, [hasApi, refreshApplications]);
+
   const sendMessage = useCallback((convId, text) => chat.sendMessage?.(convId, text, "driver"), [chat]);
   const markChatSeen = useCallback((convId) => chat.markConversationSeen?.(convId), [chat]);
   const getConversation = useCallback((id) => chat.getConversation?.(id) || convs.find((c) => c.id === id) || null, [chat, convs]);
@@ -352,7 +365,7 @@ export function DriverDataProvider({ children }) {
     available, setAvailable,
     shifts, acceptedShifts, acceptShift,
     activity,
-    applied, apply, refreshApplications,
+    applied, apply, applyExternal, refreshApplications,
     filter, setFilter,
     threads, applications, sendMessage, markChatSeen, getConversation,
     chat,

@@ -60,7 +60,7 @@ export default function ApplySheet({ job, ctx, close }) {
             : `${job.company} har fått din profil. Du ser status under Ansökt.`}
         </p>
         {imp && job.externalApplyUrl && (
-          <a href={job.externalApplyUrl} target="_blank" rel="noopener noreferrer" className="press" style={{ display: "inline-flex", alignItems: "center", gap: 7, marginTop: 6, padding: "12px 18px", borderRadius: 13, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: 14.5 }}>
+          <a href={job.externalApplyUrl} target="_blank" rel="noopener noreferrer" onClick={() => ctx.applyExternal?.(job)} className="press" style={{ display: "inline-flex", alignItems: "center", gap: 7, marginTop: 6, padding: "12px 18px", borderRadius: 13, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: 14.5 }}>
             Ansök via Arbetsförmedlingen <Icon name="arrow" size={16} stroke={2.3} color="#fff" />
           </a>
         )}
