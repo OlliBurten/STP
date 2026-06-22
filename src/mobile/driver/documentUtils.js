@@ -20,9 +20,12 @@ function fmtDate(iso) {
 }
 
 export function certStatus(expiryIso) {
-  if (!expiryIso) return { status: "verified", expiry: "Tillagd i din profil", dot: "success" };
+  // Inget uppladdat dokument finns — det här är en självangiven behörighet.
+  // Visa den INTE som grön "verifierad/Giltigt" (det vilseleder), utan som
+  // angiven/ej verifierad tills ett giltighetsdatum lagts till.
+  if (!expiryIso) return { status: "listed", expiry: "Angiven · ej verifierad", dot: "muted" };
   const d = new Date(expiryIso);
-  if (Number.isNaN(d.getTime())) return { status: "verified", expiry: "Tillagd i din profil", dot: "success" };
+  if (Number.isNaN(d.getTime())) return { status: "listed", expiry: "Angiven · ej verifierad", dot: "muted" };
   const days = Math.round((d.getTime() - Date.now()) / 86400000);
   if (days < 0) return { status: "expired", expiry: `Utgånget sedan ${fmtDate(expiryIso)}`, dot: "danger" };
   if (days < 90) return { status: "expiring", expiry: `Går ut ${fmtDate(expiryIso)}`, dot: "amber" };
