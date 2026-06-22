@@ -146,7 +146,8 @@ export default function MobileAuth() {
       if (data?.alreadyVerified) { setVerifying(false); setResent(false); go("login"); return; }
       if (data?.token && data?.user) {
         const u = loginWithOAuthResponse({ user: data.user, token: data.token });
-        afterAuth(u);
+        // Defer (se onOAuth) — undvik ProtectedRoute-race mot ny inloggad förare.
+        setTimeout(() => afterAuth(u), 0);
         return; // navigerar bort — lämna verifying på
       }
       setVerifying(false); setCodeErr("Något gick fel. Försök igen.");
@@ -203,7 +204,7 @@ export default function MobileAuth() {
     if (!pw) e.pw = "Ange ditt lösenord";
     setErr(e); if (Object.keys(e).length) return;
     setBusy(true);
-    try { const u = await loginWithApi(email.trim(), pw); afterAuth(u); }
+    try { const u = await loginWithApi(email.trim(), pw); setTimeout(() => afterAuth(u), 0); }
     catch (ex) {
       setBusy(false);
       const msg = ex?.message || "Fel e-post eller lösenord";
@@ -220,7 +221,16 @@ export default function MobileAuth() {
     catch { go("forgotSent"); } // don't leak which emails exist
   };
 
-  const onOAuth = (data) => { try { loginWithOAuthResponse(data); afterAuth(data?.user); } catch { /* */ } };
+  const onOAuth = (data) => {
+    try {
+      const u = loginWithOAuthResponse(data);
+      // Skjut upp navigeringen ett tick så auth-staten hinner committas innan
+      // ProtectedRoute renderar /onboarding/forare — annars är isDriver ännu
+      // false och guarden bouncar till /login (= register-vyn). Samma mönster
+      // som desktop Login.jsx.
+      setTimeout(() => afterAuth(u), 0);
+    } catch { /* */ }
+  };
 
   const pwToggle = (
     <button onClick={() => setShowPw((s) => !s)} className="press" style={{ display: "flex", padding: 4 }}><Icon name={showPw ? "eyeOff" : "eye"} size={19} color="var(--ink-400)" stroke={2} /></button>
