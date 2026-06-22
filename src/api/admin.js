@@ -24,6 +24,11 @@ export function getAdminSummary() {
   return apiGet("/api/admin/summary");
 }
 
+/** Ansökningsstatistik: totalt, STP-vidarebefordrade (mejlade) vs AF-direkt, populäraste jobben. */
+export function getApplicationStats() {
+  return apiGet("/api/admin/application-stats");
+}
+
 /** Nyckeltal från externa tjänster (Sentry/Plausible/PostHog/Resend) — 5 min cache på servern. */
 export function getStackOverview() {
   return apiGet("/api/admin/stack-overview");

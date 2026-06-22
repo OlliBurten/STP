@@ -1,8 +1,73 @@
 import React from "react";
 import { Icon } from "./AdminShell.jsx";
 import { fmtDate, useIsMobile } from "./adminShared.jsx";
+import { getApplicationStats } from "../../api/admin.js";
 
 const mono = { fontFamily: "'JetBrains Mono',monospace", fontFeatureSettings: '"tnum"' };
+
+// ─── Ansökningsstatistik ────────────────────────────────────────────────────────
+function ApplicationStats() {
+  const [data, setData] = React.useState(null);
+  const [err, setErr] = React.useState(false);
+  React.useEffect(() => {
+    let alive = true;
+    getApplicationStats().then((d) => alive && setData(d)).catch(() => alive && setErr(true));
+    return () => { alive = false; };
+  }, []);
+
+  const card = { background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, overflow: "hidden" };
+  if (err) return null;
+
+  const stats = data ? [
+    { l: "Mejlade till företag", v: data.forwardedByEmail, c: "var(--success)", hint: "STP vidarebefordrade ansökan" },
+    { l: "Via AF-länk", v: data.afExternal, c: "var(--info)", hint: "förare sökte direkt hos AF" },
+    { l: "Registrerade (ej mejl)", v: data.recordedOnly, c: "var(--amber)", hint: "väntar / inget kontaktmejl" },
+  ] : [];
+
+  return (
+    <div style={card}>
+      <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <span style={{ fontSize: "var(--text-sm)", fontWeight: 800, letterSpacing: -0.2, color: "var(--ink-900)" }}>Ansökningar</span>
+        <span style={{ fontSize: "var(--text-sm)", fontWeight: 800, color: "var(--ink-900)", ...mono }}>{data ? data.total.toLocaleString() : "…"}<span style={{ color: "var(--ink-400)", fontWeight: 500, fontSize: "var(--text-2xs)" }}> totalt</span></span>
+      </div>
+      {!data ? (
+        <div style={{ padding: "20px 18px", textAlign: "center", fontSize: "var(--text-xs)", color: "var(--ink-400)" }}>Laddar…</div>
+      ) : (
+        <>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", borderBottom: "1px solid var(--line)" }}>
+            {stats.map((s, i) => (
+              <div key={s.l} title={s.hint} style={{ padding: "12px 14px", borderRight: i < 2 ? "1px solid var(--line)" : "none" }}>
+                <div style={{ fontSize: "var(--text-xl)", fontWeight: 800, color: s.c, ...mono }}>{s.v.toLocaleString()}</div>
+                <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", fontWeight: 600, marginTop: 2, lineHeight: 1.25 }}>{s.l}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ padding: "10px 18px 6px", fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 0.4, textTransform: "uppercase", color: "var(--ink-400)" }}>Populäraste jobben</div>
+          <div style={{ maxHeight: 260, overflowY: "auto", paddingBottom: 6 }}>
+            {data.topJobs.length === 0 ? (
+              <div style={{ padding: "12px 18px", fontSize: "var(--text-xs)", color: "var(--ink-400)" }}>Inga ansökningar än.</div>
+            ) : data.topJobs.map((j, i) => {
+              const tag = j.source !== "AGGREGATED" ? { t: "STP-jobb", c: "var(--ink-500)" }
+                : j.emailed ? { t: "mejlad", c: "var(--success)" }
+                : j.reachableViaStp ? { t: "har mejl", c: "var(--amber-text)" }
+                : { t: "endast AF", c: "var(--info)" };
+              return (
+                <div key={j.jobId} style={{ padding: "9px 18px", display: "flex", alignItems: "center", gap: 11, borderBottom: i < data.topJobs.length - 1 ? "1px solid var(--line)" : "none" }}>
+                  <span style={{ fontSize: "var(--text-sm)", fontWeight: 800, color: "var(--ink-900)", ...mono, minWidth: 18 }}>{j.count}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--ink-800)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{j.title}</div>
+                    <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{j.company}</div>
+                  </div>
+                  <span style={{ flexShrink: 0, padding: "2px 7px", borderRadius: 5, background: "var(--paper-2)", color: tag.c, fontSize: "var(--text-2xs)", fontWeight: 700 }}>{tag.t}</span>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 // ─── Section header ────────────────────────────────────────────────────────────
 function SectionHeader({ title, sub, action }) {
@@ -483,6 +548,7 @@ export default function AdminOverviewTab({
             }}
           />
           <OnboardingFunnel onboarding={onboarding} />
+          <ApplicationStats />
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <ActionQueue

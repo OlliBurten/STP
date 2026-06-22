@@ -496,6 +496,87 @@ adminRouter.get("/summary", async (req, res, next) => {
   }
 });
 
+// Statistik över förar-ansökningar på jobbannonser: hur många, vilka jobb är
+// populära, och om ansökan vidarebefordrades via mejl (STP) eller gick via AF:s
+// direktlänk. "Mejlad" = jobbets org har ett EmployerClaim med outreachSentAt satt.
+adminRouter.get("/application-stats", async (req, res, next) => {
+  try {
+    const [total, byVia, topJobsRaw] = await Promise.all([
+      prisma.application.count(),
+      prisma.application.groupBy({ by: ["appliedVia"], _count: { _all: true } }),
+      prisma.application.groupBy({
+        by: ["jobId"],
+        _count: { _all: true },
+        orderBy: { _count: { jobId: "desc" } },
+        take: 12,
+      }),
+    ]);
+
+    const viaCount = (v) => byVia.find((b) => b.appliedVia === v)?._count._all ?? 0;
+    const stpApplications = viaCount("stp");
+    const afExternal = viaCount("af_external");
+
+    // Hämta jobbdetaljer för topplistan
+    const jobIds = topJobsRaw.map((t) => t.jobId);
+    const jobs = jobIds.length
+      ? await prisma.job.findMany({
+          where: { id: { in: jobIds } },
+          select: {
+            id: true, title: true, company: true, source: true, claimed: true,
+            organizationNumber: true, applyEmail: true, employerEmail: true,
+          },
+        })
+      : [];
+    const jobById = new Map(jobs.map((j) => [j.id, j]));
+
+    // Vilka org har vi faktiskt mejlat? (outreachSentAt satt)
+    const orgNumbers = [...new Set(jobs.map((j) => j.organizationNumber).filter(Boolean))];
+    const claims = orgNumbers.length
+      ? await prisma.employerClaim.findMany({
+          where: { organizationNumber: { in: orgNumbers }, outreachSentAt: { not: null } },
+          select: { organizationNumber: true, outreachSentAt: true, claimedAt: true },
+        })
+      : [];
+    const emailedOrgs = new Set(claims.map((c) => c.organizationNumber));
+
+    const topJobs = topJobsRaw.map((t) => {
+      const j = jobById.get(t.jobId);
+      const reachable = j ? !!(j.applyEmail || j.employerEmail) : false;
+      return {
+        jobId: t.jobId,
+        count: t._count._all,
+        title: j?.title || "(borttaget jobb)",
+        company: j?.company || "—",
+        source: j?.source || null,
+        reachableViaStp: j && j.source === "AGGREGATED" && !j.claimed ? reachable : null,
+        emailed: j?.organizationNumber ? emailedOrgs.has(j.organizationNumber) : false,
+      };
+    });
+
+    // Hur många STP-ansökningar gick till företag vi faktiskt mejlat?
+    const forwardedByEmail = await prisma.application.count({
+      where: {
+        appliedVia: "stp",
+        job: { organizationNumber: { in: [...emailedOrgs] } },
+      },
+    }).catch(() => 0);
+
+    res.json({
+      total,
+      stpApplications,
+      afExternal,
+      // STP-ansökningar där ett mejl faktiskt gått till företaget
+      forwardedByEmail: emailedOrgs.size ? forwardedByEmail : 0,
+      // STP-ansökningar som bara ligger registrerade (inget mejl skickat ännu)
+      recordedOnly: Math.max(0, stpApplications - (emailedOrgs.size ? forwardedByEmail : 0)),
+      companiesEmailed: emailedOrgs.size,
+      topJobs,
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
 adminRouter.get("/schools", async (req, res, next) => {
   try {
     const rows = await prisma.driverProfile.groupBy({
