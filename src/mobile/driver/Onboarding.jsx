@@ -3,7 +3,7 @@
 // region/regionsWilling via updateProfile → clears needsDriverOnboarding and lets
 // OnboardingGate through. Renders for mobile drivers at /onboarding/forare.
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useProfile } from "../../context/ProfileContext";
 import MobileShell from "../MobileShell";
@@ -21,6 +21,7 @@ const INTENT_TO_SEGMENT = { heltid: "FULLTIME", deltid: "FLEX", praktik: "INTERN
 
 export default function DriverOnboarding() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const { profile, updateProfile } = useProfile();
   const [step, setStep] = useState(0);
@@ -64,7 +65,11 @@ export default function DriverOnboarding() {
       });
     } catch { /* keep going — local state still updates */ }
     setBusy(false);
-    navigate("/hem", { replace: true });
+    // Återför till jobbet föraren ville ansöka på (satt via gate → auth → state),
+    // annars hem. Ignorera publika/auth-vägar som return-mål.
+    const from = location.state?.from;
+    const returnTo = from && from.startsWith("/jobb") ? from : "/hem";
+    navigate(returnTo, { replace: true });
   };
   const next = () => { if (step < STEPS - 1) setStep(step + 1); else finish(); };
   const back = () => step > 0 && setStep(step - 1);

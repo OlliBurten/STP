@@ -132,7 +132,9 @@ export default function MobileAuth() {
   const afterAuth = (u) => {
     if (u?.isAdmin) return navigate("/admin", { replace: true });
     if (u?.role === "recruiter" || u?.rawRole === "COMPANY") return navigate("/foretag", { replace: true });
-    if (u?.shouldShowOnboarding) return navigate("/onboarding/forare", { replace: true });
+    // Nya förare → onboarding. Skicka med `from` så de återförs till jobbet de
+    // ville ansöka på efter att onboardingen är klar (annars tappas kontexten).
+    if (u?.shouldShowOnboarding) return navigate("/onboarding/forare", { replace: true, state: { from } });
     navigate(from.startsWith("/foretag") ? "/jobb" : (from === "/" ? "/hem" : from), { replace: true });
   };
 

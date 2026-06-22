@@ -19,7 +19,7 @@ import ChatScreen from "./screens/ChatScreen";
 import ProfilScreen from "./screens/ProfilScreen";
 
 function DriverShell() {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const navigate = useNavigate();
   const data = useDriverData();
   const active = tabForPath(pathname);
@@ -30,6 +30,22 @@ function DriverShell() {
   // (t.ex. telefonens bakåt-gest/-knapp) måste de stängas — annars blir en öppen
   // sheet/chatt kvar ovanpå den nya sidan och äter alla klick ("knapparna dör").
   useEffect(() => { setSheet(null); setChat(null); }, [pathname]);
+
+  // Deep-link: /jobb?open=<id> öppnar jobbets detalj-sheet. Används när en gäst
+  // loggat in/registrerat sig från ett jobb och ska tillbaka till just det jobbet.
+  // Deklareras EFTER clear-effekten ovan → körs efter den på mount, så sheeten
+  // inte rensas direkt. Väntar in data.jobs (async) och städar bort ?open sen.
+  useEffect(() => {
+    const params = new URLSearchParams(search);
+    const openId = params.get("open");
+    if (!openId) return;
+    const job = (data.jobs || []).find((j) => String(j.id) === String(openId));
+    if (!job) return; // jobben kanske inte laddade än → kör om när data.jobs ändras
+    setSheet({ type: "detail", job });
+    params.delete("open");
+    navigate({ pathname, search: params.toString() ? `?${params}` : "" }, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search, data.jobs]);
 
   const setTab = (id) => {
     const tab = DRIVER_TABS.find((t) => t.id === id);

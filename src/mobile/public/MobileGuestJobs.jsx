@@ -77,7 +77,7 @@ export default function MobileGuestJobs() {
 
   // Guests can't really save — tapping fills the bookmark then opens the gate
   // (teaser), exactly like the prototype.
-  const toggleSave = (id) => { setSaved((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; }); setTimeout(() => setGate({ action: "save" }), 260); };
+  const toggleSave = (id) => { setSaved((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; }); setTimeout(() => setGate({ action: "save", jobId: id }), 260); };
 
   useEffect(() => {
     let alive = true;
@@ -223,7 +223,7 @@ export default function MobileGuestJobs() {
           </div>
           <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "14px 20px calc(22px + var(--stpm-safe-bottom))", background: "rgba(245,242,236,0.96)", backdropFilter: "blur(10px)", borderTop: "1px solid var(--line)", display: "flex", gap: 11 }}>
             <button onClick={() => toggleSave(detail.id)} className="press" style={{ height: 54, padding: "0 20px", borderRadius: 14, background: "var(--card)", border: "1px solid var(--line-2)", color: "var(--ink-800)", fontWeight: 700, fontSize: 15.5, display: "flex", alignItems: "center", gap: 8 }}><Icon name="bookmark" size={18} color={saved.has(detail.id) ? "var(--green)" : "var(--ink-500)"} stroke={2} style={{ fill: saved.has(detail.id) ? "var(--green)" : "none" }} />Spara</button>
-            <button onClick={() => setGate({ action: "apply" })} className="press" style={{ flex: 1, height: 54, borderRadius: 14, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>Ansök <Icon name="arrow" size={19} color="#fff" stroke={2.4} /></button>
+            <button onClick={() => setGate({ action: "apply", jobId: detail.id })} className="press" style={{ flex: 1, height: 54, borderRadius: 14, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>Ansök <Icon name="arrow" size={19} color="#fff" stroke={2.4} /></button>
           </div>
         </div>
       )}
@@ -238,8 +238,8 @@ export default function MobileGuestJobs() {
             <div style={{ width: 54, height: 54, borderRadius: 15, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}><Icon name="lock" size={24} color="var(--green)" stroke={1.9} /></div>
             <h3 style={{ fontSize: 22, fontWeight: 800, letterSpacing: -0.5, marginBottom: 8, lineHeight: 1.15 }}>{gate?.action === "apply" ? "Skapa profil för att ansöka" : "Skapa profil för att spara"}</h3>
             <p style={{ fontSize: 15.5, lineHeight: 1.55, color: "var(--ink-600)", marginBottom: 22 }}>Det är gratis för förare och tar två minuter. Med en profil kan du ansöka direkt, spara jobb och få nya matchningar.</p>
-            <button onClick={() => navigate("/registrera?role=forare")} className="press" style={{ width: "100%", height: 54, borderRadius: 14, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: 16, marginBottom: 11, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>Skapa förarprofil <Icon name="arrow" size={19} color="#fff" stroke={2.4} /></button>
-            <button onClick={() => navigate("/login?start=login")} className="press" style={{ width: "100%", height: 54, borderRadius: 14, background: "var(--card)", border: "1px solid var(--line-2)", color: "var(--ink-800)", fontWeight: 700, fontSize: 16 }}>Jag har redan ett konto</button>
+            <button onClick={() => navigate(`/registrera?role=forare${gate?.jobId ? `&from=${encodeURIComponent(`/jobb?open=${gate.jobId}`)}` : ""}`)} className="press" style={{ width: "100%", height: 54, borderRadius: 14, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: 16, marginBottom: 11, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>Skapa förarprofil <Icon name="arrow" size={19} color="#fff" stroke={2.4} /></button>
+            <button onClick={() => navigate(`/login?start=login${gate?.jobId ? `&from=${encodeURIComponent(`/jobb?open=${gate.jobId}`)}` : ""}`)} className="press" style={{ width: "100%", height: 54, borderRadius: 14, background: "var(--card)", border: "1px solid var(--line-2)", color: "var(--ink-800)", fontWeight: 700, fontSize: 16 }}>Jag har redan ett konto</button>
           </div>
         </div>
       )}
