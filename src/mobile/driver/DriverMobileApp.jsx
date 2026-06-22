@@ -4,7 +4,7 @@
 // Data comes from <DriverDataProvider> (real contexts/APIs); this shell adds
 // navigation + sheet UI state and passes a merged `ctx` to each screen,
 // matching the prototype's screen signatures.
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import MobileShell from "../MobileShell";
 import { TabBar } from "../ui";
@@ -25,6 +25,11 @@ function DriverShell() {
   const active = tabForPath(pathname);
   const [sheet, setSheet] = useState(null);
   const [chat, setChat] = useState(null);
+
+  // Sheets/chat är lokal overlay-state, inte URL-backad. När rutten ändras
+  // (t.ex. telefonens bakåt-gest/-knapp) måste de stängas — annars blir en öppen
+  // sheet/chatt kvar ovanpå den nya sidan och äter alla klick ("knapparna dör").
+  useEffect(() => { setSheet(null); setChat(null); }, [pathname]);
 
   const setTab = (id) => {
     const tab = DRIVER_TABS.find((t) => t.id === id);

@@ -1,5 +1,5 @@
 // STP Mobile — company (Åkeri) logged-in app shell. 5 URL-backed tabs + sheets.
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import MobileShell from "../MobileShell";
 import { TabBar } from "../ui";
@@ -20,6 +20,10 @@ function CompanyShell() {
   const active = companyTabForPath(pathname);
   const [sheet, setSheet] = useState(null);
   const [openChat, setOpenChat] = useState(null);
+
+  // Stäng overlays (sheet/chatt) vid ruttändring — annars blir de kvar ovanpå
+  // den nya sidan vid telefonens bakåt-gest och blockerar alla klick.
+  useEffect(() => { setSheet(null); setOpenChat(null); }, [pathname]);
 
   const setTab = (id) => {
     const tab = COMPANY_TABS.find((t) => t.id === id);

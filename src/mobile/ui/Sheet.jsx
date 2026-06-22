@@ -10,7 +10,13 @@ export default function Sheet({ open, onClose, children, title, full }) {
   const [mounted, setMounted] = useState(open);
 
   useEffect(() => {
-    if (open) { setMounted(true); setDrag(0); }
+    if (open) { setMounted(true); setDrag(0); return; }
+    // Stängning sker via CSS-transition (inte animation) → onAnimationEnd nedan
+    // fyrar aldrig på close, så `mounted` fastnade på true och en osynlig
+    // (pointer-events:none) sheet-div blev kvar i DOM:en efter varje stängning.
+    // Avmontera explicit efter transitionen i stället.
+    const t = setTimeout(() => setMounted(false), 360);
+    return () => clearTimeout(t);
   }, [open]);
 
   if (!mounted && !open) return null;
