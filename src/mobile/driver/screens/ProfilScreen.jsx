@@ -115,7 +115,7 @@ export default function ProfilScreen({ ctx }) {
           <Card style={{ padding: "18px", background: "linear-gradient(135deg,var(--green),var(--green-deep))", border: "none", color: "#fff" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 7 }}><Icon name="award" size={19} color="#fff" stroke={2} /><span style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", opacity: 0.8 }}>Din STP-profil</span></div>
             <h2 style={{ fontSize: 18, fontWeight: 800, letterSpacing: -0.3, marginBottom: 6 }}>Ditt CV – alltid uppdaterat</h2>
-            <p style={{ fontSize: 13.5, lineHeight: 1.5, opacity: 0.85, marginBottom: 15 }}>Dela din verifierade profil med vilket åkeri som helst – även utanför STP.</p>
+            <p style={{ fontSize: 13.5, lineHeight: 1.5, opacity: 0.85, marginBottom: 15 }}>Dela din STP-profil med vilket åkeri som helst – även utanför STP.</p>
             <div style={{ display: "flex", gap: 10 }}>
               <button onClick={() => ctx.setSheet({ type: "share" })} className="press" style={{ flex: 1, height: 46, borderRadius: 12, background: "#fff", color: "var(--green-deep)", fontWeight: 800, fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}><Icon name="share" size={17} stroke={2.2} />Dela profil</button>
               <button onClick={() => ctx.setSheet({ type: "share" })} className="press" style={{ width: 46, height: 46, borderRadius: 12, background: "rgba(255,255,255,0.16)", display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="download" size={19} color="#fff" stroke={2.2} /></button>
@@ -129,25 +129,6 @@ export default function ProfilScreen({ ctx }) {
             <Icon name="chevRight" size={18} color="var(--ink-300)" stroke={2.2} />
           </Card>
 
-          {/* verifierat av STP */}
-          <Card style={{ padding: "16px" }}>
-            <Label style={{ marginBottom: 4 }}>Verifierat av STP</Label>
-            <p style={{ fontSize: 12.5, color: "var(--ink-400)", marginBottom: 13, lineHeight: 1.4 }}>Vad STP själva intygar för åkerier.</p>
-            {[
-              { ok: Array.isArray(p.licenses) && p.licenses.length > 0, label: "Körkort", sub: (Array.isArray(p.licenses) && p.licenses.length > 0) ? "Angivet · granskas av STP" : "Inte tillagt än" },
-              { ok: false, label: "Identitet med BankID", sub: "Kommer snart" },
-              { ok: experience.length > 0, label: "Tidigare arbetsgivare", sub: experience.length > 0 ? "Referenser kan kontaktas" : "Inte tillagt än" },
-            ].map((r, i, arr) => (
-              <div key={r.label} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: i < arr.length - 1 ? "1px solid var(--line)" : "none" }}>
-                <div style={{ width: 30, height: 30, borderRadius: 9, background: r.ok ? "var(--success-tint)" : "var(--paper-2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icon name={r.ok ? "check" : "clock"} size={15} color={r.ok ? "var(--success)" : "var(--ink-400)"} stroke={2.4} /></div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)" }}>{r.label}</div>
-                  <div style={{ fontSize: 12.5, color: r.ok ? "var(--success)" : "var(--ink-400)", marginTop: 1 }}>{r.sub}</div>
-                </div>
-              </div>
-            ))}
-            <div style={{ marginTop: 13, padding: "11px 13px", background: "var(--green-tint)", borderRadius: 11, fontSize: 12.5, color: "var(--green-text)", lineHeight: 1.45 }}>Verifierade profiler får fler svar från åkerier.</div>
-          </Card>
 
           {/* experience */}
           <Card style={{ padding: "16px" }}>
