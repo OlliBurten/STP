@@ -302,7 +302,7 @@ export function AddDocSheet({ ctx, close }) {
   const add = () => { ctx.addDocument(type[0], expiry || undefined); close(); };
   return (
     <div style={{ padding: "4px 22px 26px" }}>
-      <Label style={{ marginBottom: 11 }}>Välj intyg</Label>
+      <Label style={{ marginBottom: 11 }}>Välj behörighet</Label>
       <div style={{ display: "flex", flexDirection: "column", gap: 9, marginBottom: 18 }}>
         {DOC_TYPES.map((t) => { const on = type && type[0] === t[0]; return (
           <button key={t[0]} onClick={() => setType(t)} className="press" style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px", background: on ? "var(--green-tint)" : "var(--card-2)", border: `1px solid ${on ? "var(--green)" : "var(--line)"}`, borderRadius: 13, textAlign: "left" }}>
@@ -313,8 +313,9 @@ export function AddDocSheet({ ctx, close }) {
         ); })}
       </div>
       <Label style={{ marginBottom: 8 }}>Giltigt t.o.m. <span style={{ textTransform: "none", fontWeight: 500, color: "var(--ink-400)" }}>(valfritt)</span></Label>
-      <input type="date" value={expiry} onChange={(e) => setExpiry(e.target.value)} style={{ width: "100%", height: 50, padding: "0 15px", borderRadius: 12, border: "1px solid var(--line-2)", background: "#fff", fontSize: 15.5, color: "var(--ink-900)", outline: "none", marginBottom: 18 }} />
-      <Button variant="primary" size="lg" full disabled={!type} icon={<Icon name="plus" size={18} stroke={2.2} />} onClick={add}>Lägg till intyg</Button>
+      <input type="date" value={expiry} onChange={(e) => setExpiry(e.target.value)} style={{ width: "100%", height: 50, padding: "0 15px", borderRadius: 12, border: "1px solid var(--line-2)", background: "#fff", fontSize: 15.5, color: "var(--ink-900)", outline: "none", marginBottom: 8 }} />
+      <p style={{ fontSize: 12.5, color: "var(--ink-400)", lineHeight: 1.45, marginBottom: 18 }}>Ange giltighetsdatum så ser åkerier att din behörighet är aktuell. Utan datum visas den som angiven men inte verifierad.</p>
+      <Button variant="primary" size="lg" full disabled={!type} icon={<Icon name="plus" size={18} stroke={2.2} />} onClick={add}>Lägg till behörighet</Button>
     </div>
   );
 }

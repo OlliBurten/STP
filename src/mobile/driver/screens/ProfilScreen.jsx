@@ -86,7 +86,7 @@ export default function ProfilScreen({ ctx }) {
           {/* dokument & intyg (real certificates + expiry status) */}
           <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "2px 4px 10px" }}>
-              <Label>Dokument & intyg</Label>
+              <Label>Behörigheter & certifikat</Label>
               {urgentDocs > 0 && <Pill tone="amber" size="sm" icon={<Dot tone="amber" size={5} />}>{urgentDocs} behöver åtgärd</Pill>}
             </div>
             {documents.length > 0 ? (
@@ -106,9 +106,9 @@ export default function ProfilScreen({ ctx }) {
                 })}
               </Card>
             ) : (
-              <Card style={{ padding: "18px 16px", textAlign: "center", fontSize: 13.5, color: "var(--ink-500)" }}>Inga intyg tillagda än.</Card>
+              <Card style={{ padding: "18px 16px", textAlign: "center", fontSize: 13.5, color: "var(--ink-500)" }}>Inga behörigheter tillagda än.</Card>
             )}
-            <button onClick={() => ctx.setSheet({ type: "addDoc" })} className="press" style={{ marginTop: 10, width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "13px", fontSize: 14, fontWeight: 700, color: "var(--green)", background: "var(--card)", border: "1px dashed var(--line-2)", borderRadius: 13 }}><Icon name="plus" size={17} stroke={2.2} />Lägg till dokument</button>
+            <button onClick={() => ctx.setSheet({ type: "addDoc" })} className="press" style={{ marginTop: 10, width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "13px", fontSize: 14, fontWeight: 700, color: "var(--green)", background: "var(--card)", border: "1px dashed var(--line-2)", borderRadius: 13 }}><Icon name="plus" size={17} stroke={2.2} />Lägg till behörighet</button>
           </div>
 
           {/* dela CV */}
