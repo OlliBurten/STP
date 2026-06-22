@@ -250,7 +250,8 @@ export default function MobileAuth() {
           {err.agree && <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 16 }}><Icon name="alert" size={13} color="var(--danger)" stroke={2.2} /><span style={{ fontSize: 12.5, color: "var(--danger)", fontWeight: 600 }}>{err.agree}</span></div>}
           <Button variant="primary" full busy={busy} onClick={submitRegister}>Skapa konto</Button>
           <div style={{ margin: "18px 0" }}><OrDivider /></div>
-          <OAuthButtons onSuccess={onOAuth} onError={() => {}} requiredRole={role === "akeri" ? "company" : "driver"} />
+          {err.oauth && <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 12 }}><Icon name="alert" size={13} color="var(--danger)" stroke={2.2} /><span style={{ fontSize: 12.5, color: "var(--danger)", fontWeight: 600 }}>{err.oauth}</span></div>}
+          <OAuthButtons onSuccess={onOAuth} onError={(m) => setErr((e) => ({ ...e, oauth: m || "" }))} authMode="register" requiredRole={role === "akeri" ? "company" : "driver"} />
           <div style={{ textAlign: "center", marginTop: 20, fontSize: 14.5, color: "var(--ink-500)" }}>Har du redan ett konto? <button onClick={() => go("login")} style={{ fontWeight: 800, color: "var(--green)", whiteSpace: "nowrap" }}>Logga in</button></div>
         </div>
       </div>
@@ -266,7 +267,8 @@ export default function MobileAuth() {
           <div style={{ display: "flex", justifyContent: "flex-end", marginTop: -4, marginBottom: 20 }}><button onClick={() => go("forgot")} style={{ fontSize: 13.5, fontWeight: 700, color: "var(--green)", whiteSpace: "nowrap" }}>Glömt lösenord?</button></div>
           <Button variant="primary" full busy={busy} onClick={submitLogin}>Logga in</Button>
           <div style={{ margin: "18px 0" }}><OrDivider /></div>
-          <OAuthButtons onSuccess={onOAuth} onError={() => {}} />
+          {err.oauth && <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 12 }}><Icon name="alert" size={13} color="var(--danger)" stroke={2.2} /><span style={{ fontSize: 12.5, color: "var(--danger)", fontWeight: 600 }}>{err.oauth}</span></div>}
+          <OAuthButtons onSuccess={onOAuth} onError={(m) => setErr((e) => ({ ...e, oauth: m || "" }))} authMode="login" />
           <div style={{ textAlign: "center", marginTop: 20, fontSize: 14.5, color: "var(--ink-500)" }}>Inget konto än? <button onClick={() => go("register")} style={{ fontWeight: 800, color: "var(--green)", whiteSpace: "nowrap" }}>Skapa konto</button></div>
         </div>
       </div>
