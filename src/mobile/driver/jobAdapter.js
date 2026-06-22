@@ -67,6 +67,9 @@ export function toJobView(job, profile) {
     pay: payLabel(job),
     posted: timeAgo(job.published || job.createdAt),
     imported: job.source === "AGGREGATED",
+    // true = STP kan vidarebefordra ansökan (kontaktmejl finns). false = bara
+    // AF-länken funkar. null för STP-egna jobb (alltid på plattformen).
+    reachableViaStp: job.reachableViaStp ?? null,
     deadline: job.applicationDeadline || null,
     verified: Boolean(job.companyVerified),
     desc: job.description || "",

@@ -13,6 +13,9 @@ export default function ApplySheet({ job, ctx, close }) {
   const [aiBusy, setAiBusy] = useState(false);
   const [sending, setSending] = useState(false);
   const imp = job.imported;
+  // Importerat jobb UTAN kontaktmejl → STP kan inte vidarebefordra. Visa bara
+  // AF-länken (vi loggar ändå leaden för framtida notiser/jobb).
+  const afOnly = imp && job.reachableViaStp === false && job.externalApplyUrl;
   const p = ctx.profile;
 
   // Real AI first-message suggestion (driver). Falls back to a local draft.
@@ -64,6 +67,29 @@ export default function ApplySheet({ job, ctx, close }) {
             Ansök via Arbetsförmedlingen <Icon name="arrow" size={16} stroke={2.3} color="#fff" />
           </a>
         )}
+      </div>
+    );
+  }
+
+  // Importerat jobb utan kontaktmejl → enda fungerande vägen är AF:s länk.
+  // Vi loggar leaden (applyExternal) och skickar föraren till AF.
+  if (afOnly) {
+    return (
+      <div style={{ padding: "0 22px 26px" }}>
+        <div style={{ display: "flex", gap: 11, alignItems: "center", padding: "13px 14px", background: "var(--card-2)", borderRadius: 13, border: "1px solid var(--line)", marginBottom: 16 }}>
+          <div style={{ width: 42, height: 42, borderRadius: 11, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 14, color: "var(--green-text)", flexShrink: 0 }}>{job.initials}</div>
+          <div style={{ minWidth: 0 }}><div style={{ fontSize: 15, fontWeight: 800, color: "var(--ink-900)" }}>{job.title}</div><div style={{ fontSize: 13, color: "var(--ink-500)" }}>{job.company}</div></div>
+        </div>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "13px 14px", background: "var(--info-tint)", borderRadius: 12, marginBottom: 16 }}>
+          <Icon name="info" size={18} color="var(--info)" stroke={2.2} />
+          <span style={{ fontSize: 13.5, color: "var(--ink-800)", lineHeight: 1.45 }}>{job.company} tar emot ansökningar direkt via Arbetsförmedlingen. Klicka nedan för att ansöka där — det tar någon minut.</span>
+        </div>
+        <a href={job.externalApplyUrl} target="_blank" rel="noopener noreferrer" onClick={() => { ctx.applyExternal?.(job); setTimeout(close, 400); }} className="press" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "15px 18px", borderRadius: 13, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: 15 }}>
+          Ansök via Arbetsförmedlingen <Icon name="arrow" size={17} stroke={2.3} color="#fff" />
+        </a>
+        <p style={{ fontSize: 12.5, color: "var(--ink-400)", lineHeight: 1.5, marginTop: 12, textAlign: "center" }}>
+          Vi sparar jobbet under <strong style={{ color: "var(--ink-600)" }}>Ansökt</strong> så du kan följa det och få notiser om liknande jobb.
+        </p>
       </div>
     );
   }

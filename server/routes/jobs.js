@@ -222,6 +222,12 @@ jobsRouter.get("/", validateQuery(jobsListQuerySchema), async (req, res, next) =
       // Exponera AF:s ansöknings-URL för importerade jobb → garanterad väg att
       // ansöka (säkerhetsnät: vidarebefordran via mejl når inte alla företag).
       externalApplyUrl: j.externalApplyUrl ?? j.sourceUrl ?? null,
+      // Har det importerade jobbet en kontaktmejl? → STP kan vidarebefordra
+      // ansökan (claim-länk till företaget). Saknas mejl visar mobilen bara
+      // AF-länken. Exponerar bara JA/NEJ, aldrig själva adressen.
+      reachableViaStp: (j.source === "AGGREGATED" && !j.claimed)
+        ? !!(j.applyEmail || j.employerEmail)
+        : null,
       description: j.description,
       requirements: parseRequirements(j.requirements),
       status: j.status,
