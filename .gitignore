@@ -61,3 +61,6 @@ hero image.png
 # Playwright auth state (contains OAuth tokens — never commit)
 playwright/.auth/
 server/playwright/.auth/
+
+# Lösa logo-/bildfiler i repo-roten
+stp logo white .png
