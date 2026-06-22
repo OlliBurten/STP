@@ -14,6 +14,7 @@
  */
 
 import { prisma } from "./prisma.js";
+import { notifyDriversOfNewJobs } from "./matchAlerts.js";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -410,10 +411,21 @@ export async function runIngestor({ dryRun = false, source = "jobsearch", since 
   let removed = 0;
   const errors = [];
 
+  // Vilka externalId fanns redan? Allt utanför denna mängd blir ett NYTT jobb →
+  // kandidat för match-notis till förare. (Upsert säger inte själv ny vs ändrad.)
+  const existingExternalIds = new Set(
+    (await prisma.job.findMany({
+      where: { externalId: { in: filtered.map((h) => h.id) } },
+      select: { externalId: true },
+    })).map((j) => j.externalId)
+  );
+  const newExternalIds = [];
+
   // Upsert active jobs
   for (const hit of filtered) {
     try {
       const record = mapJobToRecord(hit, systemUserId);
+      if (!existingExternalIds.has(hit.id)) newExternalIds.push(hit.id);
       await prisma.job.upsert({
         where: { externalId: hit.id },
         create: record,
@@ -483,6 +495,20 @@ export async function runIngestor({ dryRun = false, source = "jobsearch", since 
 
   if (errors.length > 0) {
     console.error("[JobIngestor] Fel vid upsert:", errors.slice(0, 5));
+  }
+
+  // Match-notiser för nyskapade jobb (batchat per förare). Blockerar inte
+  // ingestionen — fel loggas men fäller inte körningen.
+  if (newExternalIds.length > 0) {
+    try {
+      const newJobs = await prisma.job.findMany({
+        where: { externalId: { in: newExternalIds }, status: "ACTIVE" },
+        select: { id: true },
+      });
+      await notifyDriversOfNewJobs(newJobs.map((j) => j.id));
+    } catch (e) {
+      console.error("[JobIngestor] Match-notis-fel:", e?.message || e);
+    }
   }
 
   return { fetched: hits.length, curated: filtered.length, upserted, removed, errors: errors.length };
