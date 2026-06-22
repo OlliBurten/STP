@@ -40,6 +40,15 @@ function resolveSegment(segment, employment) {
   return "FULLTIME";
 }
 
+// Sista ansökningsdag (YYYY-MM-DD). Föredra kolumnen; fall tillbaka på AF:s
+// råfält så att redan importerade jobb visar deadline utan re-ingest.
+function serializeDeadline(j) {
+  const raw = j?.applicationDeadline || j?.enrichmentRaw?.application_deadline;
+  if (!raw) return null;
+  const d = new Date(raw);
+  return Number.isNaN(d.getTime()) ? null : d.toISOString().slice(0, 10);
+}
+
 async function sendDriverMatchAlertsForJob(job) {
   if (!MATCH_ALERTS_ENABLED) return;
   try {
@@ -149,6 +158,7 @@ jobsRouter.get("/mine", authMiddleware, requireCompany, attachCompanyContext, re
       segment: resolveSegment(j.segment, j.employment),
       moderationReason: j.moderationReason || null,
       published: j.published.toISOString().slice(0, 10),
+      applicationDeadline: serializeDeadline(j),
       applicantCount: j._count.conversations,
       viewCount: j._count.views,
     }));
@@ -214,6 +224,7 @@ jobsRouter.get("/", validateQuery(jobsListQuerySchema), async (req, res, next) =
       requirements: parseRequirements(j.requirements),
       status: j.status,
       published: j.published.toISOString().slice(0, 10),
+      applicationDeadline: serializeDeadline(j),
       updatedAt: j.updatedAt.toISOString(),
       contact: j.contact,
       physicalWorkRequired: j.physicalWorkRequired ?? null,

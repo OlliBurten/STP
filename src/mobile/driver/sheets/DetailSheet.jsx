@@ -53,6 +53,18 @@ export default function DetailSheet({ job, ctx, close }) {
             <div style={{ fontSize: 14, fontWeight: 800, color: "var(--ink-900)" }}>{job.posted || "—"}</div>
           </div>
         </div>
+        {job.deadline && (() => {
+          const d = new Date(job.deadline);
+          if (Number.isNaN(d.getTime())) return null;
+          const passed = d.getTime() < Date.now() - 86400000;
+          const fmt = d.toLocaleDateString("sv-SE", { day: "numeric", month: "long", year: "numeric" });
+          return (
+            <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "11px 14px", borderRadius: 12, background: passed ? "var(--danger-tint)" : "var(--amber-tint)", marginBottom: 18 }}>
+              <Icon name="clock" size={17} color={passed ? "var(--danger)" : "var(--amber-deep)"} stroke={2} style={{ flexShrink: 0 }} />
+              <span style={{ fontSize: 13.5, fontWeight: 700, color: passed ? "var(--danger)" : "var(--amber-text)" }}>{passed ? `Ansökningstiden gick ut ${fmt}` : `Sök senast ${fmt}`}</span>
+            </div>
+          );
+        })()}
         {job.desc && (
           <>
             <Label style={{ marginBottom: 8 }}>Om tjänsten</Label>

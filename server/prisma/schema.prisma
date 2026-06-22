@@ -318,6 +318,7 @@ model Job {
   // Aggregation fields (JobTech Dev / Platsbanken)
   source             String   @default("ORGANIC") // ORGANIC | AGGREGATED
   externalId         String?  @unique
+  applicationDeadline DateTime? // sista ansökningsdag (från AF application_deadline)
   sourceUrl          String?
   sourceEmployerName String?
   claimed            Boolean  @default(false)

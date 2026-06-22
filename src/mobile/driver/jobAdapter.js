@@ -67,6 +67,7 @@ export function toJobView(job, profile) {
     pay: payLabel(job),
     posted: timeAgo(job.published || job.createdAt),
     imported: job.source === "AGGREGATED",
+    deadline: job.applicationDeadline || null,
     verified: Boolean(job.companyVerified),
     desc: job.description || "",
     reqs: Array.isArray(job.requirements) ? job.requirements : [],
