@@ -18,7 +18,7 @@ export default function AnsokScreen({ ctx }) {
       <div style={{ padding: "12px 16px 12px", flexShrink: 0, background: "var(--paper)", position: "relative", zIndex: 4, boxShadow: sy > 4 ? "0 6px 16px -8px rgba(15,22,22,0.22)" : "none", transition: "box-shadow .2s" }}>
         <Segment value={seg} onChange={setSeg} items={[{ id: "aktiva", label: "Aktiva" }, { id: "alla", label: "Alla" }]} />
       </div>
-      <ScrollArea onScroll={(e) => setSy(e.target.scrollTop)} onRefresh={(done) => { ctx.chat?.refreshConversations?.(); setTimeout(done, 700); }}>
+      <ScrollArea onScroll={(e) => setSy(e.target.scrollTop)} onRefresh={(done) => { ctx.chat?.refreshConversations?.(); ctx.refreshApplications?.(); setTimeout(done, 700); }}>
         <div style={{ padding: "6px 16px 24px", display: "flex", flexDirection: "column", gap: 12 }}>
           {apps.length === 0 && (
             <Empty icon={seg === "aktiva" ? "check" : "list"} title={seg === "aktiva" ? "Inga aktiva ansökningar" : "Inga ansökningar än"} text={seg === "aktiva" ? "Dina pågående ansökningar visas här. Sök ett jobb så är du igång." : "När du söker ditt första jobb dyker det upp här."} action={<Button variant="secondary" size="md" onClick={() => ctx.setTab("jobb")}>Hitta jobb</Button>} />

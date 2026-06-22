@@ -20,7 +20,7 @@ import { submitApplication, fetchMyApplications } from "../../api/applications";
 import { updateNotificationSettings, fetchDriverActivity } from "../../api/profile";
 import { fetchAvailableShifts, acceptShift as apiAcceptShift } from "../../api/shifts";
 import { mockJobs } from "../../data/mockJobs";
-import { initialsFor } from "./jobAdapter";
+import { initialsFor, timeAgo } from "./jobAdapter";
 import { getProfileCompletion } from "../../utils/driverCompletion";
 import { toJobView } from "./jobAdapter";
 import { toThread, toApplication } from "./chatAdapter";
@@ -267,14 +267,17 @@ export function DriverDataProvider({ children }) {
   }, [hasApi, refreshShifts]);
 
   // ── Applications (aggregated) + applied set + apply() ────────────
-  const [aggApplied, setAggApplied] = useState(() => new Set());
+  // Aggregerade/importerade ansökningar = egna Application-rader (ingen
+  // konversation, eftersom företaget inte är på STP). Hämta HELA listan, inte
+  // bara jobId:n — annars syns de aldrig på Ansökt-sidan.
+  const [aggApps, setAggApps] = useState([]);
   const [appliedLocal, setAppliedLocal] = useState(() => new Set());
-  useEffect(() => {
+  const refreshApplications = useCallback(() => {
     if (!hasApi) return;
-    let alive = true;
-    fetchMyApplications().then((apps) => { if (alive && Array.isArray(apps)) setAggApplied(new Set(apps.map((a) => a.jobId).filter(Boolean))); }).catch(() => {});
-    return () => { alive = false; };
+    fetchMyApplications().then((apps) => { if (Array.isArray(apps)) setAggApps(apps); }).catch(() => {});
   }, [hasApi]);
+  useEffect(() => { refreshApplications(); }, [refreshApplications]);
+  const aggApplied = useMemo(() => new Set(aggApps.map((a) => a.jobId).filter(Boolean)), [aggApps]);
   const [filter, setFilter] = useState({ type: "alla", lic: [], cert: [] });
 
   // ── Conversations → threads (Inkorg) + applications (Ansökt) ─────
@@ -283,7 +286,27 @@ export function DriverDataProvider({ children }) {
     return Array.isArray(list) ? list : [];
   }, [chat, user]);
   const threads = useMemo(() => convs.map(toThread), [convs]);
-  const applications = useMemo(() => convs.filter((c) => c.jobId).map(toApplication), [convs]);
+  const convApplications = useMemo(() => convs.filter((c) => c.jobId).map(toApplication), [convs]);
+
+  // Aggregerade ansökningar → samma kort-shape som konversations-ansökningar.
+  const aggApplications = useMemo(() => aggApps.map((a) => ({
+    id: a.id,
+    jobId: a.jobId,
+    title: a.job?.title || "Ansökan",
+    company: a.job?.company || "Företag",
+    stage: { id: "applied", label: "Skickad", tone: "neutral", step: 1 },
+    when: timeAgo(a.createdAt),
+    note: null,
+    imported: a.job?.source === "AGGREGATED",
+    conv: null,
+  })), [aggApps]);
+
+  // Ansökt-listan = konversations-ansökningar + aggregerade, deduppade på jobId
+  // (föredra konversationen — den är rikare/har stage).
+  const applications = useMemo(() => {
+    const byJob = new Set(convApplications.map((a) => a.jobId));
+    return [...convApplications, ...aggApplications.filter((a) => !byJob.has(a.jobId))];
+  }, [convApplications, aggApplications]);
 
   // applied = on-platform conversations + aggregated applications + optimistic
   const applied = useMemo(() => {
@@ -302,15 +325,17 @@ export function DriverDataProvider({ children }) {
       const aggregated = job.imported && !job.claimed;
       if (aggregated) {
         await submitApplication({ jobId: job.id, messageFromDriver: message, consentToShare: consent });
+        refreshApplications(); // ladda om så ansökan syns direkt på Ansökt
       } else if (job.userId || job.companyUserId) {
         await chat.createConversation?.({
           driverId: user?.id, companyId: job.userId || job.companyUserId,
           driverName: profile.name, companyName: job.company,
           jobId: job.id, jobTitle: job.title, initialMessage: message, sender: "driver",
         });
+        chat.refreshConversations?.();
       }
     } catch { /* keep optimistic state; surfaced via Ansökt refresh */ }
-  }, [hasApi, chat, user, profile.name]);
+  }, [hasApi, chat, user, profile.name, refreshApplications]);
 
   const sendMessage = useCallback((convId, text) => chat.sendMessage?.(convId, text, "driver"), [chat]);
   const markChatSeen = useCallback((convId) => chat.markConversationSeen?.(convId), [chat]);
@@ -327,7 +352,7 @@ export function DriverDataProvider({ children }) {
     available, setAvailable,
     shifts, acceptedShifts, acceptShift,
     activity,
-    applied, apply,
+    applied, apply, refreshApplications,
     filter, setFilter,
     threads, applications, sendMessage, markChatSeen, getConversation,
     chat,
