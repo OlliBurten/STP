@@ -289,17 +289,28 @@ export function DriverDataProvider({ children }) {
   const convApplications = useMemo(() => convs.filter((c) => c.jobId).map(toApplication), [convs]);
 
   // Aggregerade ansökningar → samma kort-shape som konversations-ansökningar.
-  const aggApplications = useMemo(() => aggApps.map((a) => ({
-    id: a.id,
-    jobId: a.jobId,
-    title: a.job?.title || "Ansökan",
-    company: a.job?.company || "Företag",
-    stage: { id: "applied", label: "Skickad", tone: "neutral", step: 1 },
-    when: timeAgo(a.createdAt),
-    note: null,
-    imported: a.job?.source === "AGGREGATED",
-    conv: null,
-  })), [aggApps]);
+  // Ärlig status per ansökan i st f generiskt "Skickad":
+  //   • af_external → föraren sökte direkt via Arbetsförmedlingen
+  //   • forwarded   → STP har faktiskt mejlat företaget (claim-länk)
+  //   • annars      → mottagen av STP, ännu inte vidarebefordrad
+  const aggApplications = useMemo(() => aggApps.map((a) => {
+    const stage = a.appliedVia === "af_external"
+      ? { id: "applied", label: "Sökt via AF", tone: "info", step: 1 }
+      : a.forwarded
+        ? { id: "applied", label: "Vidarebefordrad", tone: "soft", step: 1 }
+        : { id: "applied", label: "Mottagen", tone: "neutral", step: 1 };
+    return {
+      id: a.id,
+      jobId: a.jobId,
+      title: a.job?.title || "Ansökan",
+      company: a.job?.company || "Företag",
+      stage,
+      when: timeAgo(a.createdAt),
+      note: null,
+      imported: a.job?.source === "AGGREGATED",
+      conv: null,
+    };
+  }), [aggApps]);
 
   // Ansökt-listan = konversations-ansökningar + aggregerade, deduppade på jobId
   // (föredra konversationen — den är rikare/har stage).

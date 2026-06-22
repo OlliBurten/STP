@@ -119,17 +119,35 @@ applicationsRouter.get(
             select: {
               id: true, title: true, company: true, location: true, region: true,
               source: true, claimed: true, status: true, published: true,
-              sourceUrl: true,
+              sourceUrl: true, organizationNumber: true,
             },
           },
         },
       });
+
+      // Vilka av jobbens företag har STP faktiskt mejlat? (outreachSentAt satt på
+      // EmployerClaim). Avgör om en STP-ansökan är "vidarebefordrad" eller bara
+      // "mottagen" — så förarens status säger sanningen, inte ett generiskt "Skickad".
+      const orgNumbers = [...new Set(applications.map((a) => a.job?.organizationNumber).filter(Boolean))];
+      const emailedOrgs = new Set(
+        orgNumbers.length
+          ? (await prisma.employerClaim.findMany({
+              where: { organizationNumber: { in: orgNumbers }, outreachSentAt: { not: null } },
+              select: { organizationNumber: true },
+            })).map((c) => c.organizationNumber)
+          : []
+      );
 
       return res.json(
         applications.map((a) => ({
           id: a.id,
           jobId: a.jobId,
           status: a.status,
+          appliedVia: a.appliedVia,
+          // true = STP har mejlat företaget om den här annonsens org.
+          forwarded: a.appliedVia === "stp" && a.job?.organizationNumber
+            ? emailedOrgs.has(a.job.organizationNumber)
+            : false,
           createdAt: a.createdAt,
           job: {
             id: a.job.id,
