@@ -219,7 +219,9 @@ jobsRouter.get("/", validateQuery(jobsListQuerySchema), async (req, res, next) =
       salary: j.salary,
       salaryMin: j.salaryMin ?? null,
       salaryMax: j.salaryMax ?? null,
-      externalApplyUrl: j.source === "AGGREGATED" ? null : (j.externalApplyUrl ?? null),
+      // Exponera AF:s ansöknings-URL för importerade jobb → garanterad väg att
+      // ansöka (säkerhetsnät: vidarebefordran via mejl når inte alla företag).
+      externalApplyUrl: j.externalApplyUrl ?? j.sourceUrl ?? null,
       description: j.description,
       requirements: parseRequirements(j.requirements),
       status: j.status,

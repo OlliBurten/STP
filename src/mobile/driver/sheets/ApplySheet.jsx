@@ -54,11 +54,16 @@ export default function ApplySheet({ job, ctx, close }) {
           <Icon name="check" size={36} color="var(--success)" stroke={2.5} />
         </div>
         <h2 style={{ fontSize: 20, fontWeight: 800, color: "var(--ink-900)" }}>{imp ? "Ansökan mottagen!" : "Ansökan skickad!"}</h2>
-        <p style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.5, maxWidth: 262 }}>
+        <p style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.5, maxWidth: 270 }}>
           {imp
-            ? `Vi kontaktar nu ${job.company} åt dig. Du följer allt under Ansökt — svar kan dröja eftersom företaget inte är på STP än.`
+            ? `Vi har tagit emot din ansökan. ${job.company} finns inte på STP än — ansök gärna även direkt hos arbetsgivaren så du är säker på att de ser den.`
             : `${job.company} har fått din profil. Du ser status under Ansökt.`}
         </p>
+        {imp && job.externalApplyUrl && (
+          <a href={job.externalApplyUrl} target="_blank" rel="noopener noreferrer" className="press" style={{ display: "inline-flex", alignItems: "center", gap: 7, marginTop: 6, padding: "12px 18px", borderRadius: 13, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: 14.5 }}>
+            Ansök via Arbetsförmedlingen <Icon name="arrow" size={16} stroke={2.3} color="#fff" />
+          </a>
+        )}
       </div>
     );
   }
@@ -99,6 +104,11 @@ export default function ApplySheet({ job, ctx, close }) {
         </button>
       )}
       <Button variant="primary" size="lg" full onClick={submit} busy={sending} disabled={imp && !consent} icon={<Icon name={imp ? "forward" : "send"} size={17} stroke={2} />}>{imp ? "Skicka & vidarebefordra" : "Skicka ansökan"}</Button>
+      {imp && job.externalApplyUrl && (
+        <a href={job.externalApplyUrl} target="_blank" rel="noopener noreferrer" className="press" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginTop: 12, fontSize: 13.5, fontWeight: 700, color: "var(--green)" }}>
+          Eller ansök direkt hos arbetsgivaren <Icon name="arrow" size={15} stroke={2.2} color="var(--green)" />
+        </a>
+      )}
     </div>
   );
 }
