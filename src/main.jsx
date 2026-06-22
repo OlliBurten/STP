@@ -56,7 +56,10 @@ setTimeout(() => {
       sendDefaultPii: false,
       tracesSampleRate: import.meta.env.PROD ? 0.1 : 1.0,
       integrations: [Sentry.replayIntegration({ maskAllText: true, maskAllInputs: true, blockAllMedia: true })],
-      replaysSessionSampleRate: 0.3,
+      // Spela INTE in vanliga sessioner kontinuerligt — rrweb-inspelning av DOM
+      // gör mobilen märkbart trög (konstant hack). Behåll inspelning enbart när
+      // ett fel inträffar (då är den värdefull för felsökning).
+      replaysSessionSampleRate: 0,
       replaysOnErrorSampleRate: 1.0,
       beforeSend(event, hint) {
         // Chunk-laddningsfel uppstår när en användare har en gammal flik öppen

@@ -29,12 +29,12 @@ export function initPostHog() {
         person_profiles: "identified_only",
         capture_pageview: true,
         capture_pageleave: true,
-        session_recording: {
-          maskAllInputs: true,         // Dölj lösenord och känsliga fält
-          maskInputOptions: { password: true },
-          recordCrossOriginIframes: false,
-        },
-        autocapture: true,             // Automatisk klick/formulär-tracking
+        // Session-inspelning (rrweb) av DOM gör mobilen märkbart trög — stäng av
+        // den kontinuerliga inspelningen. Händelse-/sidanalys (autocapture +
+        // pageviews) behålls. Vill man ha inspelningar igen: sampla hårt via
+        // PostHog-projektets inställningar i st f att spela in alla sessioner.
+        disable_session_recording: true,
+        autocapture: true,             // Automatisk klick/formulär-tracking (lättviktig)
       });
       // Spela upp anrop som gjordes innan init var klar (identify/track/…)
       queue.flush(posthog);
