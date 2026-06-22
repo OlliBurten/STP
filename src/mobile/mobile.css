@@ -68,6 +68,7 @@
 
 /* Tab transition wrapper */
 .stp-mobile .tab-enter { animation:stpm-tab-in .3s cubic-bezier(.32,.72,0,1); }
+.stp-mobile .view-enter { animation:stpm-tab-in .3s cubic-bezier(.32,.72,0,1); }
 
 @keyframes stpm-fade-in { from { opacity:0; } to { opacity:1; } }
 @keyframes stpm-fade-up { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }

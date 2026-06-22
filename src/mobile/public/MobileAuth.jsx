@@ -1,16 +1,39 @@
-// STP Mobile — Auth (login / register / forgot). Ported from STP Mobil Auth,
-// wired to the real AuthContext. The prototype's 6-digit OTP step is replaced
-// by the real flow: register logs you in immediately and a verification link is
-// emailed; drivers continue to onboarding, companies to their dashboard.
+// STP Mobile — Auth. Ported pixel-for-pixel from STP Mobil Auth, wired to the
+// real AuthContext.
+//
+// Prototype flow: welcome → register → verify(OTP) → rolechoice → done, + login,
+// forgot/forgotSent, exists. Reconciled with the real backend:
+//   • welcome — omitted: the Landing page ("/") IS the welcome (same headline/CTA).
+//   • verify(OTP) — omitted: the backend verifies via an emailed link, not a
+//     6-digit code, and register logs you straight in. So register → rolechoice
+//     → done (account is created when the role is picked, or immediately if the
+//     role came in via ?role=).
+//   • Social buttons — the real OAuthButtons (Google/Microsoft) replace the
+//     prototype's mock buttons; BankID ("Snart") is dropped.
+// Every other view matches the prototype 1:1 in markup, spacing and copy.
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { requestPasswordReset } from "../../api/auth";
+import { requestPasswordReset, resendVerification } from "../../api/auth";
 import OAuthButtons from "../../components/OAuthButtons";
 import MobileShell from "../MobileShell";
-import { Icon, Button } from "../ui";
+import { Icon } from "../ui";
 
-// Richer auth field (icon, inline error, focus ring, enter-to-submit, right slot).
+/* ── primitives (ported from the prototype) ── */
+const Button = ({ children, variant = "primary", size = "lg", icon, iconRight, onClick, disabled, full, busy, style }) => {
+  const v = {
+    primary: { bg: "var(--green)", c: "#fff", b: "var(--green-deep)", sh: "0 1px 0 var(--green-deep),0 2px 6px rgba(31,95,92,0.28)" },
+    secondary: { bg: "#fff", c: "var(--ink-900)", b: "var(--line-2)", sh: "var(--sh-sm)" },
+    ghost: { bg: "transparent", c: "var(--ink-900)", b: "transparent" },
+  }[variant];
+  const sz = { md: { p: "10px 18px", f: 14, h: 46, r: 12 }, lg: { p: "13px 22px", f: 15.5, h: 54, r: 14 } }[size];
+  return (
+    <button onClick={onClick} disabled={disabled || busy} className="press" style={{ display: full ? "flex" : "inline-flex", alignItems: "center", justifyContent: "center", gap: 9, fontWeight: 700, cursor: disabled || busy ? "not-allowed" : "pointer", opacity: disabled ? 0.45 : 1, lineHeight: 1, whiteSpace: "nowrap", background: v.bg, color: v.c, border: `1px solid ${v.b}`, boxShadow: v.sh, padding: sz.p, fontSize: sz.f, height: sz.h, borderRadius: sz.r, width: full ? "100%" : "auto", ...style }}>
+      {busy ? <span style={{ width: 18, height: 18, border: "2px solid rgba(255,255,255,0.4)", borderTopColor: "#fff", borderRadius: "50%", animation: "stpm-spin .7s linear infinite" }} /> : <>{icon}{children}{iconRight}</>}
+    </button>
+  );
+};
+
 function Field({ label, type = "text", value, onChange, placeholder, icon, error, autoComplete, onEnter, right, inputMode }) {
   const [focus, setFocus] = useState(false);
   return (
@@ -31,15 +54,6 @@ function Field({ label, type = "text", value, onChange, placeholder, icon, error
 const validEmail = (e) => /\S+@\S+\.\S+/.test(e);
 const strength = (pw) => { let s = 0; if (pw.length >= 8) s++; if (/[A-Z]/.test(pw)) s++; if (/[0-9]/.test(pw)) s++; if (/[^A-Za-z0-9]/.test(pw)) s++; return s; };
 
-function Logo() {
-  return (
-    <div style={{ display: "inline-flex", alignItems: "center", gap: 11 }}>
-      <div style={{ width: 46, height: 46, borderRadius: 14, background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "inset 0 -3px 0 rgba(0,0,0,0.18)" }}><Icon name="truck" size={25} color="#fff" stroke={2} /></div>
-      <span style={{ fontSize: 24, fontWeight: 900, letterSpacing: -0.5, color: "var(--ink-900)" }}>STP</span>
-    </div>
-  );
-}
-
 function Strength({ pw }) {
   if (!pw) return null;
   const s = strength(pw);
@@ -53,15 +67,13 @@ function Strength({ pw }) {
   );
 }
 
-function OrDivider() {
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "16px 0" }}>
-      <div style={{ flex: 1, height: 1, background: "var(--line-2)" }} />
-      <span style={{ fontSize: 12.5, color: "var(--ink-400)", fontWeight: 600 }}>eller</span>
-      <div style={{ flex: 1, height: 1, background: "var(--line-2)" }} />
-    </div>
-  );
-}
+const OrDivider = () => (
+  <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "4px 0" }}>
+    <div style={{ flex: 1, height: 1, background: "var(--line-2)" }} />
+    <span style={{ fontSize: 12.5, color: "var(--ink-400)", fontWeight: 600 }}>eller</span>
+    <div style={{ flex: 1, height: 1, background: "var(--line-2)" }} />
+  </div>
+);
 
 export default function MobileAuth() {
   const navigate = useNavigate();
@@ -69,18 +81,16 @@ export default function MobileAuth() {
   const { loginWithApi, registerWithApi, loginWithOAuthResponse } = useAuth();
 
   const [view, setView] = useState(params.get("start") === "login" ? "login" : "register");
+  const [flow, setFlow] = useState(params.get("start") === "login" ? "login" : "register");
   const [role, setRole] = useState(params.get("role") === "akeri" ? "akeri" : params.get("role") === "forare" ? "forare" : null);
   const [name, setName] = useState("");
-  const [companyName, setCompanyName] = useState("");
-  const [orgNr, setOrgNr] = useState("");
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [agree, setAgree] = useState(false);
   const [err, setErr] = useState({});
   const [busy, setBusy] = useState(false);
-
-  useEffect(() => { setErr({}); }, [view]);
+  const [resent, setResent] = useState(false);
 
   const go = (v) => { setErr({}); setBusy(false); setView(v); };
   const from = params.get("from") || "/";
@@ -92,6 +102,39 @@ export default function MobileAuth() {
     navigate(from.startsWith("/foretag") ? "/jobb" : (from === "/" ? "/hem" : from), { replace: true });
   };
 
+  // Create the account for a chosen role. The backend emails a verification
+  // link and login is gated until it's clicked — so we land on the "verify"
+  // screen (the email-link equivalent of the prototype's OTP step), not the app.
+  const doRegister = async (r) => {
+    setBusy(true); setErr({});
+    try {
+      await registerWithApi({
+        email: email.trim(), password: pw, role: r === "akeri" ? "company" : "driver", name: name.trim(),
+      });
+      setRole(r); setFlow("register"); setBusy(false); setResent(false); setView("verify");
+    } catch (ex) {
+      setBusy(false);
+      const msg = ex?.message || "Kunde inte skapa konto";
+      if (/finns redan|already|används redan|existerar/i.test(msg)) { setView("exists"); }
+      else { setErr({ email: msg }); setView("register"); }
+    }
+  };
+
+  const resend = async () => {
+    try { await resendVerification(email.trim(), typeof window !== "undefined" ? window.location.origin : undefined); setResent(true); }
+    catch { setResent(true); }
+  };
+
+  const submitRegister = () => {
+    const e = {};
+    if (name.trim().length < 2) e.name = "Ange ditt fullständiga namn";
+    if (!validEmail(email)) e.email = "Ogiltig e-postadress";
+    if (pw.length < 8) e.pw = "Minst 8 tecken";
+    if (!agree) e.agree = "Du måste godkänna villkoren";
+    setErr(e); if (Object.keys(e).length) return;
+    if (role) doRegister(role); else go("rolechoice");
+  };
+
   const submitLogin = async () => {
     const e = {};
     if (!validEmail(email)) e.email = "Ogiltig e-postadress";
@@ -99,30 +142,12 @@ export default function MobileAuth() {
     setErr(e); if (Object.keys(e).length) return;
     setBusy(true);
     try { const u = await loginWithApi(email.trim(), pw); afterAuth(u); }
-    catch (ex) { setErr({ pw: ex?.message || "Fel e-post eller lösenord" }); setBusy(false); }
-  };
-
-  const submitRegister = async () => {
-    const e = {};
-    if (name.trim().length < 2) e.name = "Ange ditt fullständiga namn";
-    if (!validEmail(email)) e.email = "Ogiltig e-postadress";
-    if (pw.length < 8) e.pw = "Minst 8 tecken";
-    if (role === "akeri" && companyName.trim().length < 2) e.companyName = "Ange företagsnamn";
-    if (!agree) e.agree = "Du måste godkänna villkoren";
-    setErr(e); if (Object.keys(e).length) return;
-    setBusy(true);
-    try {
-      const { user } = await registerWithApi({
-        email: email.trim(), password: pw, role: role === "akeri" ? "company" : "driver", name: name.trim(),
-        companyName: role === "akeri" ? companyName.trim() : undefined,
-        companyOrgNumber: role === "akeri" ? orgNr.trim() || undefined : undefined,
-      });
-      afterAuth(user);
-    } catch (ex) {
-      const msg = ex?.message || "Kunde inte skapa konto";
-      if (/finns redan|already/i.test(msg)) { setErr({ email: "Det finns redan ett konto med denna e-post" }); }
-      else setErr({ email: msg });
+    catch (ex) {
       setBusy(false);
+      const msg = ex?.message || "Fel e-post eller lösenord";
+      // Unverified account → send them to the verify screen so they can resend.
+      if (/verifiera|not.?verif|EMAIL_NOT_VERIFIED/i.test(msg)) { setResent(false); setFlow("register"); setView("verify"); }
+      else setErr({ pw: msg });
     }
   };
 
@@ -139,88 +164,136 @@ export default function MobileAuth() {
     <button onClick={() => setShowPw((s) => !s)} className="press" style={{ display: "flex", padding: 4 }}><Icon name={showPw ? "eyeOff" : "eye"} size={19} color="var(--ink-400)" stroke={2} /></button>
   );
 
-  const back = view === "register" || view === "login" ? null : view === "forgot" ? () => go("login") : view === "forgotSent" ? () => go("forgot") : null;
+  // back-button targets per view (prototype backMap; welcome → our Landing "/")
+  const backMap = { register: () => navigate("/"), login: () => navigate("/"), forgot: () => go("login"), forgotSent: () => go("forgot"), exists: () => go("register"), verify: () => go("login") };
+  const back = backMap[view] || null;
+  const headerless = view === "rolechoice";
 
+  /* ── views ── */
   let body;
   if (view === "register") {
     body = (
-      <div className="view-enter app-scroll" style={{ flex: 1, overflowY: "auto", padding: "8px 26px 30px" }}>
-        <h1 style={{ fontSize: 27, fontWeight: 800, letterSpacing: -0.6, color: "var(--ink-900)", marginBottom: 6 }}>Skapa ditt konto</h1>
-        <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.45, marginBottom: 20 }}>{role === "akeri" ? "Registrera ert åkeri och hitta rätt förare." : "Tar en minut. Sen bygger vi din förarprofil."}</p>
-        <div style={{ display: "flex", gap: 8, padding: 5, background: "var(--paper-2)", borderRadius: 13, marginBottom: 20 }}>
-          {[["forare", "Jag är förare"], ["akeri", "Vi är ett åkeri"]].map(([r, l]) => (
-            <button key={r} onClick={() => setRole(r)} className="press" style={{ flex: 1, height: 42, borderRadius: 9, fontSize: 13.5, fontWeight: 700, background: role === r ? "var(--card)" : "transparent", color: role === r ? "var(--ink-900)" : "var(--ink-500)", boxShadow: role === r ? "var(--sh-sm)" : "none" }}>{l}</button>
-          ))}
+      <div className="view-enter app-scroll" style={{ flex: 1, display: "flex", flexDirection: "column", overflowY: "auto" }}>
+        <div style={{ padding: "24px 26px 30px" }}>
+          <h1 style={{ fontSize: 27, fontWeight: 800, letterSpacing: -0.6, color: "var(--ink-900)", marginBottom: 6 }}>Skapa ditt konto</h1>
+          <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.45, marginBottom: 24 }}>Tar en minut. Sen bygger vi din förarprofil.</p>
+          <Field label="Fullständigt namn" icon="user" value={name} onChange={setName} placeholder="För- och efternamn" autoComplete="name" error={err.name} />
+          <Field label="E-post" type="email" icon="mail" value={email} onChange={setEmail} placeholder="namn@exempel.se" autoComplete="email" inputMode="email" error={err.email} />
+          <Field label="Lösenord" type={showPw ? "text" : "password"} icon="lock" value={pw} onChange={setPw} placeholder="Minst 8 tecken" autoComplete="new-password" error={err.pw} right={pwToggle} onEnter={submitRegister} />
+          <Strength pw={pw} />
+          <button onClick={() => { setAgree((a) => !a); setErr((e) => ({ ...e, agree: undefined })); }} style={{ display: "flex", alignItems: "flex-start", gap: 11, textAlign: "left", marginBottom: err.agree ? 6 : 20 }}>
+            <span style={{ width: 23, height: 23, flexShrink: 0, borderRadius: 7, border: `1.5px solid ${err.agree ? "var(--danger)" : agree ? "var(--green)" : "var(--line-strong)"}`, background: agree ? "var(--green)" : "#fff", display: "flex", alignItems: "center", justifyContent: "center", marginTop: 1, transition: "all .15s" }}>{agree && <Icon name="check" size={14} color="#fff" stroke={3} />}</span>
+            <span style={{ fontSize: 13, color: "var(--ink-500)", lineHeight: 1.45 }}>Jag godkänner STP:s <a onClick={(e) => { e.preventDefault(); navigate("/anvandarvillkor"); }} style={{ color: "var(--green)" }}>användarvillkor</a> och <a onClick={(e) => { e.preventDefault(); navigate("/integritet"); }} style={{ color: "var(--green)" }}>integritetspolicy</a>.</span>
+          </button>
+          {err.agree && <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 16 }}><Icon name="alert" size={13} color="var(--danger)" stroke={2.2} /><span style={{ fontSize: 12.5, color: "var(--danger)", fontWeight: 600 }}>{err.agree}</span></div>}
+          <Button variant="primary" full busy={busy} onClick={submitRegister}>Skapa konto</Button>
+          <div style={{ margin: "18px 0" }}><OrDivider /></div>
+          <OAuthButtons onSuccess={onOAuth} onError={() => {}} requiredRole={role === "akeri" ? "company" : "driver"} />
+          <div style={{ textAlign: "center", marginTop: 20, fontSize: 14.5, color: "var(--ink-500)" }}>Har du redan ett konto? <button onClick={() => go("login")} style={{ fontWeight: 800, color: "var(--green)", whiteSpace: "nowrap" }}>Logga in</button></div>
         </div>
-        <Field label="Fullständigt namn" icon="user" value={name} onChange={setName} placeholder="För- och efternamn" autoComplete="name" error={err.name} />
-        {role === "akeri" && <>
-          <Field label="Företagsnamn" icon="building" value={companyName} onChange={setCompanyName} placeholder="Åkeriets namn" error={err.companyName} />
-          <Field label="Org.nummer (valfritt)" value={orgNr} onChange={setOrgNr} placeholder="556xxx-xxxx" />
-        </>}
-        <Field label="E-post" type="email" icon="mail" value={email} onChange={setEmail} placeholder="namn@exempel.se" autoComplete="email" inputMode="email" error={err.email} />
-        <Field label="Lösenord" type={showPw ? "text" : "password"} icon="lock" value={pw} onChange={setPw} placeholder="Minst 8 tecken" autoComplete="new-password" error={err.pw} right={pwToggle} onEnter={submitRegister} />
-        <Strength pw={pw} />
-        <button onClick={() => { setAgree((a) => !a); setErr((e) => ({ ...e, agree: undefined })); }} style={{ display: "flex", alignItems: "flex-start", gap: 11, textAlign: "left", marginBottom: err.agree ? 6 : 18 }}>
-          <span style={{ width: 23, height: 23, flexShrink: 0, borderRadius: 7, border: `1.5px solid ${err.agree ? "var(--danger)" : agree ? "var(--green)" : "var(--line-strong)"}`, background: agree ? "var(--green)" : "#fff", display: "flex", alignItems: "center", justifyContent: "center", marginTop: 1 }}>{agree && <Icon name="check" size={14} color="#fff" stroke={3} />}</span>
-          <span style={{ fontSize: 13, color: "var(--ink-500)", lineHeight: 1.45 }}>Jag godkänner STP:s användarvillkor och integritetspolicy.</span>
-        </button>
-        {err.agree && <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 14 }}><Icon name="alert" size={13} color="var(--danger)" stroke={2.2} /><span style={{ fontSize: 12.5, color: "var(--danger)", fontWeight: 600 }}>{err.agree}</span></div>}
-        <Button variant="primary" size="lg" full busy={busy} onClick={submitRegister}>Skapa konto</Button>
-        <OrDivider />
-        <OAuthButtons onSuccess={onOAuth} onError={() => {}} requiredRole={role === "akeri" ? "company" : "driver"} />
-        <div style={{ textAlign: "center", marginTop: 20, fontSize: 14.5, color: "var(--ink-500)" }}>Har du redan ett konto? <button onClick={() => go("login")} style={{ fontWeight: 800, color: "var(--green)" }}>Logga in</button></div>
       </div>
     );
   } else if (view === "login") {
     body = (
-      <div className="view-enter app-scroll" style={{ flex: 1, overflowY: "auto", padding: "8px 26px 30px" }}>
-        <h1 style={{ fontSize: 27, fontWeight: 800, letterSpacing: -0.6, color: "var(--ink-900)", marginBottom: 6 }}>Välkommen tillbaka</h1>
-        <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.45, marginBottom: 24 }}>Logga in för att se dina matchningar och svar.</p>
-        <Field label="E-post" type="email" icon="mail" value={email} onChange={setEmail} placeholder="namn@exempel.se" autoComplete="email" inputMode="email" error={err.email} />
-        <Field label="Lösenord" type={showPw ? "text" : "password"} icon="lock" value={pw} onChange={setPw} placeholder="Ditt lösenord" autoComplete="current-password" error={err.pw} right={pwToggle} onEnter={submitLogin} />
-        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: -4, marginBottom: 20 }}><button onClick={() => go("forgot")} style={{ fontSize: 13.5, fontWeight: 700, color: "var(--green)" }}>Glömt lösenord?</button></div>
-        <Button variant="primary" size="lg" full busy={busy} onClick={submitLogin}>Logga in</Button>
-        <OrDivider />
-        <OAuthButtons onSuccess={onOAuth} onError={() => {}} />
-        <div style={{ textAlign: "center", marginTop: 20, fontSize: 14.5, color: "var(--ink-500)" }}>Inget konto än? <button onClick={() => go("register")} style={{ fontWeight: 800, color: "var(--green)" }}>Skapa konto</button></div>
+      <div className="view-enter app-scroll" style={{ flex: 1, display: "flex", flexDirection: "column", overflowY: "auto" }}>
+        <div style={{ padding: "24px 26px 30px" }}>
+          <h1 style={{ fontSize: 27, fontWeight: 800, letterSpacing: -0.6, color: "var(--ink-900)", marginBottom: 6 }}>Välkommen tillbaka</h1>
+          <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.45, marginBottom: 24 }}>Logga in för att se dina matchningar och svar.</p>
+          <Field label="E-post" type="email" icon="mail" value={email} onChange={setEmail} placeholder="namn@exempel.se" autoComplete="email" inputMode="email" error={err.email} />
+          <Field label="Lösenord" type={showPw ? "text" : "password"} icon="lock" value={pw} onChange={setPw} placeholder="Ditt lösenord" autoComplete="current-password" error={err.pw} right={pwToggle} onEnter={submitLogin} />
+          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: -4, marginBottom: 20 }}><button onClick={() => go("forgot")} style={{ fontSize: 13.5, fontWeight: 700, color: "var(--green)", whiteSpace: "nowrap" }}>Glömt lösenord?</button></div>
+          <Button variant="primary" full busy={busy} onClick={submitLogin}>Logga in</Button>
+          <div style={{ margin: "18px 0" }}><OrDivider /></div>
+          <OAuthButtons onSuccess={onOAuth} onError={() => {}} />
+          <div style={{ textAlign: "center", marginTop: 20, fontSize: 14.5, color: "var(--ink-500)" }}>Inget konto än? <button onClick={() => go("register")} style={{ fontWeight: 800, color: "var(--green)", whiteSpace: "nowrap" }}>Skapa konto</button></div>
+        </div>
       </div>
     );
   } else if (view === "forgot") {
     body = (
-      <div className="view-enter" style={{ flex: 1, padding: "8px 26px 30px" }}>
+      <div className="view-enter" style={{ flex: 1, display: "flex", flexDirection: "column", padding: "24px 26px 30px" }}>
         <div style={{ width: 54, height: 54, borderRadius: 16, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}><Icon name="lock" size={26} color="var(--green)" stroke={2} /></div>
         <h1 style={{ fontSize: 27, fontWeight: 800, letterSpacing: -0.6, color: "var(--ink-900)", marginBottom: 8 }}>Glömt lösenordet?</h1>
         <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.5, marginBottom: 26 }}>Ingen fara. Skriv din e-post så skickar vi en länk för att välja ett nytt.</p>
         <Field label="E-post" type="email" icon="mail" value={email} onChange={setEmail} placeholder="namn@exempel.se" autoComplete="email" inputMode="email" error={err.email} onEnter={submitForgot} />
-        <Button variant="primary" size="lg" full busy={busy} onClick={submitForgot} style={{ marginTop: 6 }}>Skicka återställningslänk</Button>
+        <Button variant="primary" full busy={busy} onClick={submitForgot} style={{ marginTop: 6 }}>Skicka återställningslänk</Button>
         <div style={{ textAlign: "center", marginTop: 22, fontSize: 14.5, color: "var(--ink-500)" }}>Kom du på det? <button onClick={() => go("login")} style={{ fontWeight: 800, color: "var(--green)" }}>Logga in</button></div>
       </div>
     );
-  } else {
+  } else if (view === "forgotSent") {
     body = (
-      <div className="view-enter" style={{ flex: 1, padding: "8px 26px 30px" }}>
+      <div className="view-enter" style={{ flex: 1, display: "flex", flexDirection: "column", padding: "24px 26px 30px" }}>
         <div style={{ width: 54, height: 54, borderRadius: 16, background: "var(--success-tint)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}><Icon name="mail" size={26} color="var(--success)" stroke={2} /></div>
         <h1 style={{ fontSize: 27, fontWeight: 800, letterSpacing: -0.6, color: "var(--ink-900)", marginBottom: 8 }}>Kolla din inkorg</h1>
         <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.5, marginBottom: 8 }}>Vi har skickat en återställningslänk till</p>
-        <p style={{ fontSize: 15.5, fontWeight: 800, color: "var(--ink-900)", marginBottom: 18 }}>{email || "din e-post"}</p>
-        <div style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "13px 14px", background: "var(--info-tint)", borderRadius: 12, marginBottom: 22 }}>
-          <Icon name="info" size={17} color="var(--info)" stroke={2} style={{ flexShrink: 0, marginTop: 1 }} />
+        <p style={{ fontSize: 15.5, fontWeight: 800, color: "var(--ink-900)", marginBottom: 26 }}>{email || "din e-post"}</p>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "13px 15px", background: "var(--info-tint)", borderRadius: 13, marginBottom: 26 }}>
+          <Icon name="info" size={18} color="var(--info)" stroke={2} style={{ flexShrink: 0, marginTop: 1 }} />
           <span style={{ fontSize: 13, color: "var(--ink-700)", lineHeight: 1.45 }}>Hittar du inget? Kolla skräpposten. Länken gäller i 30 minuter.</span>
         </div>
-        <Button variant="primary" size="lg" full onClick={() => go("login")}>Tillbaka till inloggning</Button>
-        <div style={{ textAlign: "center", marginTop: 20, fontSize: 14.5, color: "var(--ink-500)" }}>Inget mejl? <button onClick={submitForgot} style={{ fontWeight: 800, color: "var(--green)" }}>Skicka igen</button></div>
+        <Button variant="primary" full onClick={() => go("login")}>Tillbaka till inloggning</Button>
+        <div style={{ textAlign: "center", marginTop: 18, fontSize: 14, color: "var(--ink-500)" }}>Inget mejl? <button onClick={submitForgot} style={{ fontWeight: 800, color: "var(--green)" }}>Skicka igen</button></div>
+      </div>
+    );
+  } else if (view === "exists") {
+    body = (
+      <div className="view-enter" style={{ flex: 1, display: "flex", flexDirection: "column", padding: "24px 26px 30px" }}>
+        <div style={{ width: 54, height: 54, borderRadius: 16, background: "var(--amber-tint)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}><Icon name="info" size={26} color="var(--amber-deep)" stroke={2} /></div>
+        <h1 style={{ fontSize: 27, fontWeight: 800, letterSpacing: -0.6, color: "var(--ink-900)", marginBottom: 8 }}>Du har redan ett konto</h1>
+        <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.5, marginBottom: 6 }}>Det finns redan ett STP-konto kopplat till</p>
+        <p style={{ fontSize: 15.5, fontWeight: 800, color: "var(--ink-900)", marginBottom: 26 }}>{email}</p>
+        <Button variant="primary" full onClick={() => { setPw(""); go("login"); }}>Logga in istället</Button>
+        <div style={{ height: 11 }} />
+        <Button variant="secondary" full onClick={() => go("forgot")}>Jag har glömt lösenordet</Button>
+        <div style={{ textAlign: "center", marginTop: 20, fontSize: 14, color: "var(--ink-500)" }}>Fel e-post? <button onClick={() => go("register")} style={{ fontWeight: 800, color: "var(--green)" }}>Ändra</button></div>
+      </div>
+    );
+  } else if (view === "rolechoice") {
+    body = (
+      <div className="view-enter" style={{ flex: 1, display: "flex", flexDirection: "column", padding: "24px 26px 30px" }}>
+        <h1 style={{ fontSize: 27, fontWeight: 800, letterSpacing: -0.6, color: "var(--ink-900)", marginBottom: 8 }}>Hur vill du använda STP?</h1>
+        <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.5, marginBottom: 26 }}>Välj så anpassar vi STP för dig. Du kan inte byta typ senare – men du kan skapa båda med samma inloggning.</p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          {[["forare", "truck", "Jag är förare", "Hitta körningar, bygg din profil och ansök på sekunder."], ["akeri", "building", "Vi är ett åkeri", "Lägg upp jobb, hitta förare och hantera ansökningar."]].map(([r, ic, t, d]) => (
+            <button key={r} onClick={() => doRegister(r)} disabled={busy} className="press" style={{ display: "flex", alignItems: "center", gap: 15, padding: "20px 18px", borderRadius: 18, textAlign: "left", background: "#fff", border: "1px solid var(--line-2)", boxShadow: "var(--sh-sm)", opacity: busy ? 0.6 : 1 }}>
+              <div style={{ width: 52, height: 52, borderRadius: 14, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icon name={ic} size={26} color="var(--green)" stroke={2} /></div>
+              <div style={{ flex: 1 }}><div style={{ fontSize: 17, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.3 }}>{t}</div><div style={{ fontSize: 13.5, color: "var(--ink-500)", marginTop: 3, lineHeight: 1.4 }}>{d}</div></div>
+              <Icon name="arrow" size={20} color="var(--ink-300)" stroke={2.2} />
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  } else {
+    // verify — email-link equivalent of the prototype's OTP step. The backend
+    // gates login on a clicked verification link, so we ask the user to open it.
+    body = (
+      <div className="view-enter" style={{ flex: 1, display: "flex", flexDirection: "column", padding: "24px 26px 30px" }}>
+        <div style={{ width: 54, height: 54, borderRadius: 16, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}><Icon name="shield" size={26} color="var(--green)" stroke={2} /></div>
+        <h1 style={{ fontSize: 27, fontWeight: 800, letterSpacing: -0.6, color: "var(--ink-900)", marginBottom: 8 }}>Verifiera din e-post</h1>
+        <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.5, marginBottom: 4 }}>Vi skickade en verifieringslänk till</p>
+        <p style={{ fontSize: 15.5, fontWeight: 800, color: "var(--ink-900)", marginBottom: 24 }}>{email || "din e-post"}</p>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "13px 15px", background: "var(--info-tint)", borderRadius: 13, marginBottom: 26 }}>
+          <Icon name="info" size={18} color="var(--info)" stroke={2} style={{ flexShrink: 0, marginTop: 1 }} />
+          <span style={{ fontSize: 13, color: "var(--ink-700)", lineHeight: 1.45 }}>Öppna länken i mejlet för att aktivera kontot. Sen kan du logga in. Hittar du inget? Kolla skräpposten.</span>
+        </div>
+        <Button variant="primary" full onClick={() => go("login")}>Tillbaka till inloggning</Button>
+        <div style={{ textAlign: "center", marginTop: 18, fontSize: 14, color: "var(--ink-500)" }}>{resent ? <span style={{ color: "var(--success)", fontWeight: 700 }}>Mejlet skickades igen ✓</span> : <>Inget mejl? <button onClick={resend} style={{ fontWeight: 800, color: "var(--green)" }}>Skicka igen</button></>}</div>
       </div>
     );
   }
 
   return (
     <MobileShell style={{ background: "var(--paper)" }}>
-      <div style={{ display: "flex", alignItems: "center", height: 56, padding: "0 18px", flexShrink: 0, justifyContent: "space-between" }}>
-        {back
-          ? <button onClick={back} className="press" style={{ width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 11, background: "#fff", border: "1px solid var(--line-2)", boxShadow: "var(--sh-sm)" }}><Icon name="arrowLeft" size={20} color="var(--ink-900)" stroke={2.2} /></button>
-          : <button onClick={() => navigate("/")} className="press"><Logo /></button>}
-        <div style={{ width: 40 }} />
-      </div>
+      {headerless ? (
+        <div style={{ height: 6, flexShrink: 0 }} />
+      ) : (
+        <div style={{ display: "flex", alignItems: "center", height: 48, padding: "0 18px", flexShrink: 0 }}>
+          {back
+            ? <button onClick={back} className="press" style={{ width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 11, background: "#fff", border: "1px solid var(--line-2)", boxShadow: "var(--sh-sm)" }}><Icon name="arrowLeft" size={20} color="var(--ink-900)" stroke={2.2} /></button>
+            : <div style={{ width: 40 }} />}
+        </div>
+      )}
       {body}
     </MobileShell>
   );
