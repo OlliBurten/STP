@@ -134,6 +134,17 @@ const internalLimiter = rateLimit({
   message: { error: "Too many requests to internal endpoint" },
 });
 
+// Hårdare gräns för endpoints som mejlar (lösenordsåterställning, ny verifiering)
+// eller exponerar en token-gissningsyta (reset/verify). Skyddar mot mejl-spam
+// och brute-force av engångstokens. Per IP.
+const sensitiveAuthLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: IS_TEST ? 10000 : 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "För många försök. Vänta en stund och försök igen." },
+});
+
 app.use(requestIdMiddleware);
 app.use(cors({ origin: corsOrigin, credentials: true }));
 app.use(express.json({ limit: "1mb" }));
@@ -159,10 +170,17 @@ app.use("/api/auth/register", authLimiter);
 app.use("/api/auth/google", authLimiter);
 app.use("/api/auth/microsoft", authLimiter);
 app.use("/api/auth/oauth-complete", authLimiter);
+// Mejl-/token-känsliga auth-vägar: hårdare gräns (10/15min) mot spam + brute-force.
+app.use("/api/auth/resend-verification", sensitiveAuthLimiter);
+app.use("/api/auth/request-password-reset", sensitiveAuthLimiter);
+app.use("/api/auth/reset-password", sensitiveAuthLimiter);
+app.use("/api/auth/verify-email", sensitiveAuthLimiter);
 app.use("/api/auth", authRouter);
 app.use("/api/jobs", apiPublicLimiter, jobsRouter);
 app.use("/api/profile", profileRouter);
-app.use("/api/drivers", driversRouter);
+// Publik förarsökning kan skördas → tak per IP (120/min). Inloggade dashboard-
+// anrop (me/stats m.fl.) ligger gott under det.
+app.use("/api/drivers", apiPublicLimiter, driversRouter);
 app.use("/api/conversations", apiWriteLimiter, conversationsRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/reports", reportsRouter);
