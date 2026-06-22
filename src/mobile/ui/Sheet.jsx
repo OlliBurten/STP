@@ -60,7 +60,7 @@ export default function Sheet({ open, onClose, children, title, full }) {
             </button>
           </div>
         )}
-        <div className="app-scroll" style={{ overflowY: "auto", overflowX: "hidden", WebkitOverflowScrolling: "touch", paddingTop: title ? 18 : 0 }}>{children}</div>
+        <div className="app-scroll" style={{ overflowY: "auto", overflowX: "hidden", paddingTop: title ? 18 : 0 }}>{children}</div>
       </div>
     </div>
   );

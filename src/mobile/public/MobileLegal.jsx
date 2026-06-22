@@ -35,7 +35,7 @@ export default function MobileLegal({ defaultDoc = "terms" }) {
       </div>
 
       {/* document */}
-      <div className="app-scroll" style={{ flex: 1, overflowY: "auto", WebkitOverflowScrolling: "touch" }}>
+      <div className="app-scroll" style={{ flex: 1, overflowY: "auto" }}>
         <div style={{ padding: "20px 22px calc(40px + var(--stpm-safe-bottom))", maxWidth: 640, margin: "0 auto" }}>
           <h1 style={{ fontSize: 28, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.8, marginBottom: 6 }}>{d.title}</h1>
           <p style={{ fontSize: 13, color: "var(--ink-400)", marginBottom: 26 }}>{d.updated}</p>

@@ -36,7 +36,7 @@ export default function ScrollArea({ children, onRefresh, scrollRef, onScroll, s
       onTouchStart={onRefresh ? onTouchStart : undefined}
       onTouchMove={onRefresh ? onTouchMove : undefined}
       onTouchEnd={onRefresh ? onTouchEnd : undefined}
-      style={{ flex: 1, overflowY: "auto", overflowX: "hidden", WebkitOverflowScrolling: "touch", position: "relative", ...style }}
+      style={{ flex: 1, overflowY: "auto", overflowX: "hidden", position: "relative", ...style }}
     >
       {onRefresh && (
         <div style={{ height: pull, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", transition: startY.current == null ? "height .25s" : "none" }}>
