@@ -552,13 +552,18 @@ export default function JobDetail() {
               <div style={{ flex: 1, padding: "0 12px", fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-900)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{formatJobTitle(job.title)}</div>
             )}
             <div style={{ display: "flex", gap: 8 }}>
+              {/* Spara kräver inloggad förare — visa inte för gäster (knappen
+                  failade tyst + återställdes annars). Dela är kvar för alla. */}
+              {isDriver && (
               <button
                 onClick={() => { const s2 = !isSaved; setIsSaved(s2); if (s2) saveJob(job.id).catch(() => setIsSaved(false)); else unsaveJob(job.id).catch(() => setIsSaved(true)); }}
                 aria-label={isSaved ? "Ta bort från favoriter" : "Spara jobb"}
+                aria-pressed={isSaved}
                 style={{ width: 38, height: 38, borderRadius: 999, background: isSaved ? "var(--amber-tint)" : "var(--card)", border: `1px solid ${isSaved ? "rgba(199,122,14,0.3)" : "var(--line)"}`, boxShadow: "var(--sh-sm)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: isSaved ? "var(--amber-deep)" : "var(--ink-500)" }}
               >
                 <svg viewBox="0 0 24 24" fill={isSaved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" width="15" height="15"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
               </button>
+              )}
               <button onClick={handleShare} aria-label="Dela jobb"
                 style={{ width: 38, height: 38, borderRadius: 999, background: "var(--card)", border: "1px solid var(--line)", boxShadow: "var(--sh-sm)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-500)" }}
               >

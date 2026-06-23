@@ -318,7 +318,7 @@ export default function MobileLanding() {
                 const col = big ? AMBER : "var(--green-soft)";
                 const r = big ? 8 : 5.5;
                 return (
-                  <g key={n} onClick={() => nav.jobsCity(n)} style={{ cursor: "pointer" }}>
+                  <g key={n} onClick={() => nav.jobsCity(n)} role="button" tabIndex={0} aria-label={`Visa jobb i ${n}`} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); nav.jobsCity(n); } }} style={{ cursor: "pointer" }}>
                     <circle cx={x} cy={y} r={r} fill={col} opacity="0.18">
                       <animate attributeName="r" values={`${r};${r + 16};${r + 16}`} dur="2.8s" begin={`${i * 0.3}s`} repeatCount="indefinite" />
                       <animate attributeName="opacity" values="0.55;0;0" dur="2.8s" begin={`${i * 0.3}s`} repeatCount="indefinite" />
@@ -336,6 +336,7 @@ export default function MobileLanding() {
               })}
             </svg>
           </div>
+          <p style={{ textAlign: "center", fontSize: 13, color: "rgba(255,255,255,0.55)", margin: "-12px 0 20px" }}>Tryck på en stad för att se jobben där.</p>
           <div style={{ display: "flex", justifyContent: "center" }}>
             <button onClick={nav.jobs} className="press" style={{ display: "inline-flex", alignItems: "center", gap: 10, height: 56, padding: "0 26px", borderRadius: 15, background: "rgba(242,164,28,0.08)", border: `1px solid ${AMBER}`, color: AMBER, fontWeight: 700, fontSize: 16 }}>Se lediga jobb i din region <Icon name="arrow" size={18} color={AMBER} stroke={2.2} /></button>
           </div>
