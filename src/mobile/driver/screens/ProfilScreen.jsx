@@ -15,6 +15,18 @@ const DOC_STATUS_LABEL = { verified: "Giltigt", expiring: "Går snart ut", expir
 
 export default function ProfilScreen({ ctx }) {
   const [sy, setSy] = useState(0);
+  const [tipped, setTipped] = useState(false);
+  // Tipsa en kollega om STP (word-of-mouth = stor kanal bland förare). Native
+  // share om tillgängligt, annars kopiera länk. UTM-taggad för attribution.
+  const tipColleague = async () => {
+    const url = "https://transportplattformen.se/?utm_source=forartips&utm_medium=referral";
+    const text = "Jag hittar förarjobb på STP – direkt från åkerier, inga bemanningsföretag, gratis.";
+    try {
+      if (navigator.share) { await navigator.share({ title: "STP – Sveriges Transportplattform", text, url }); return; }
+      await navigator.clipboard?.writeText(`${text} ${url}`);
+      setTipped(true); setTimeout(() => setTipped(false), 2500);
+    } catch { /* avbruten / inget API */ }
+  };
   const p = ctx.profile;
   const pct = ctx.completion.pct;
   const experience = Array.isArray(p.experience) ? p.experience : [];
@@ -125,6 +137,16 @@ export default function ProfilScreen({ ctx }) {
               <button onClick={() => ctx.setSheet({ type: "share" })} className="press" style={{ flex: 1, height: 46, borderRadius: 12, background: "#fff", color: "var(--green-deep)", fontWeight: 800, fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}><Icon name="share" size={17} stroke={2.2} />Dela profil</button>
               <button onClick={() => ctx.setSheet({ type: "share" })} className="press" style={{ width: 46, height: 46, borderRadius: 12, background: "rgba(255,255,255,0.16)", display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="download" size={19} color="#fff" stroke={2.2} /></button>
             </div>
+          </Card>
+
+          {/* tipsa en kollega — word-of-mouth */}
+          <Card style={{ padding: "16px", display: "flex", alignItems: "center", gap: 13 }}>
+            <div style={{ width: 46, height: 46, borderRadius: 13, background: "var(--amber-tint)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icon name="share" size={20} color="var(--amber-deep)" stroke={2} /></div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 15, fontWeight: 800, color: "var(--ink-900)" }}>Tipsa en kollega</div>
+              <div style={{ fontSize: 12.5, color: tipped ? "var(--green-text)" : "var(--ink-500)", marginTop: 1 }}>{tipped ? "Länk kopierad ✓" : "Känner du nån som söker körning? Dela STP."}</div>
+            </div>
+            <button onClick={tipColleague} className="press" aria-label="Tipsa en kollega om STP" style={{ flexShrink: 0, padding: "10px 15px", borderRadius: 11, background: "var(--amber)", border: "1px solid var(--amber-deep)", color: "#1a1200", fontWeight: 800, fontSize: 13.5, minHeight: 44 }}>Dela</button>
           </Card>
 
           {/* AI brev */}
