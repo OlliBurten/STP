@@ -29,7 +29,10 @@ function jsonLdScript(obj) {
   return `<script type="application/ld+json">${json}</script>`;
 }
 
-function htmlShell({ title, description, canonical, jsonLd, body, robots = "index,follow" }) {
+function htmlShell({ title, description, canonical, jsonLd, body, robots = "index,follow", image }) {
+  // OG-bild: per-sida om angiven (annars varumärkesbilden) — så delningar i FB-
+  // grupper/LinkedIn visar ett snyggt kort i st f en naken länk.
+  const ogImage = image || `${SITE}/hero.png`;
   return `<!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -44,6 +47,13 @@ function htmlShell({ title, description, canonical, jsonLd, body, robots = "inde
 <meta property="og:description" content="${esc(description)}">
 <meta property="og:url" content="${esc(canonical)}">
 <meta property="og:site_name" content="Sveriges Transportplattform">
+<meta property="og:image" content="${esc(ogImage)}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="${esc(title)}">
+<meta name="twitter:description" content="${esc(description)}">
+<meta name="twitter:image" content="${esc(ogImage)}">
 ${jsonLd ? jsonLdScript(jsonLd) : ""}
 </head>
 <body>
