@@ -11,6 +11,15 @@ export default function FilterSheet({ ctx, close }) {
   const apply = () => { ctx.setFilter({ type, lic, cert }); close(); };
   const clear = () => { setType("alla"); setLic([]); setCert([]); ctx.setFilter({ type: "alla", lic: [], cert: [] }); close(); };
 
+  // Prospektivt antal träffar för nuvarande val (samma predikat som JobbScreen).
+  const matchCount = (ctx.jobs || []).filter((j) => {
+    if (type !== "alla" && !String(j.type).toLowerCase().includes(type)) return false;
+    if (lic.length && !lic.some((l) => j.licenses.includes(l))) return false;
+    if (cert.length && !cert.every((c) => (j.certificates || []).includes(c))) return false;
+    return true;
+  }).length;
+  const applyLabel = matchCount === 0 ? "Inga jobb matchar" : `Visa ${matchCount} jobb`;
+
   const chip = (active, label, onClick) => (
     <button key={label} onClick={onClick} className="press" style={{ padding: "9px 16px", borderRadius: 11, fontWeight: 700, fontSize: 14, background: active ? "var(--green)" : "#fff", color: active ? "#fff" : "var(--ink-700)", border: `1px solid ${active ? "var(--green-deep)" : "var(--line-2)"}` }}>{label}</button>
   );
@@ -31,7 +40,7 @@ export default function FilterSheet({ ctx, close }) {
       </div>
       <div style={{ display: "flex", gap: 10 }}>
         <Button variant="secondary" size="lg" onClick={clear} style={{ flex: 1 }}>Rensa</Button>
-        <Button variant="primary" size="lg" onClick={apply} style={{ flex: 2 }}>Visa jobb</Button>
+        <Button variant="primary" size="lg" onClick={apply} disabled={matchCount === 0} style={{ flex: 2 }}>{applyLabel}</Button>
       </div>
     </div>
   );

@@ -10,6 +10,8 @@ import { Header, ScrollArea, Card, Pill, Dot, Stars, Label, Avatar, Button, Icon
 import { PRO_LIC, ownedLicenses, highestLic, expPeriod } from "../licenseUtils";
 
 const DOC_TONE = { verified: "success", expiring: "amber", expired: "danger", listed: "muted" };
+// Explicit text status so status isn't conveyed by dot/text color alone (colorblind-safe).
+const DOC_STATUS_LABEL = { verified: "Giltigt", expiring: "Går snart ut", expired: "Utgånget", listed: "Angiven" };
 
 export default function ProfilScreen({ ctx }) {
   const [sy, setSy] = useState(0);
@@ -24,7 +26,7 @@ export default function ProfilScreen({ ctx }) {
   return (
     <>
       <Header title="Profil" scrollY={sy}
-        right={<button onClick={() => ctx.setSheet({ type: "settings" })} className="press" style={{ width: 38, height: 38, borderRadius: 11, display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="settings" size={20} color="var(--ink-700)" stroke={1.9} /></button>} />
+        right={<button onClick={() => ctx.setSheet({ type: "settings" })} className="press" aria-label="Inställningar" style={{ width: 44, height: 44, borderRadius: 11, display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="settings" size={20} color="var(--ink-700)" stroke={1.9} /></button>} />
       <ScrollArea onScroll={(e) => setSy(e.target.scrollTop)}>
         <div style={{ padding: "0 16px 24px", display: "flex", flexDirection: "column", gap: 14 }}>
           {/* hero */}
@@ -98,7 +100,10 @@ export default function ProfilScreen({ ctx }) {
                       <div style={{ width: 42, height: 42, borderRadius: 11, background: "var(--paper-2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icon name="file" size={19} color="var(--ink-500)" stroke={1.8} /></div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 7 }}><span style={{ fontSize: 14.5, fontWeight: 700, color: "var(--ink-900)" }}>{d.name}</span><Dot tone={DOC_TONE[d.status] || "muted"} size={6} /></div>
-                        <div style={{ fontSize: 12.5, color: d.status === "expired" ? "var(--danger)" : d.status === "expiring" ? "var(--amber-deep)" : "var(--ink-500)", marginTop: 1, fontWeight: d.status === "verified" || d.status === "listed" ? 400 : 600 }}>{d.expiry}</div>
+                        <div style={{ fontSize: 12.5, color: d.status === "expired" ? "var(--danger)" : d.status === "expiring" ? "var(--amber-deep)" : "var(--ink-500)", marginTop: 1, fontWeight: d.status === "verified" || d.status === "listed" ? 400 : 600 }}>
+                          <span style={{ fontWeight: 700 }}>{DOC_STATUS_LABEL[d.status] || "Angiven"}</span>
+                          {d.expiry ? <span style={{ fontWeight: 400, color: "var(--ink-500)" }}> · {d.expiry}</span> : null}
+                        </div>
                       </div>
                       {urgent ? <Pill tone="amber" size="sm">Förnya</Pill> : <Icon name="chevRight" size={18} color="var(--ink-300)" stroke={2.2} />}
                     </button>
@@ -134,7 +139,7 @@ export default function ProfilScreen({ ctx }) {
           <Card style={{ padding: "16px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 11 }}>
               <Label>Erfarenhet</Label>
-              <button onClick={() => ctx.setSheet({ type: "editProfile", focus: "exp" })} className="press" style={{ fontSize: 13, fontWeight: 700, color: "var(--green)" }}>Redigera</button>
+              <button onClick={() => ctx.setSheet({ type: "editProfile", focus: "exp" })} className="press" aria-label="Redigera erfarenhet" style={{ fontSize: 13, fontWeight: 700, color: "var(--green)", padding: "12px 8px", margin: "-12px -8px", minHeight: 44, display: "flex", alignItems: "center" }}>Redigera</button>
             </div>
             {experience.length === 0 ? (
               <p style={{ fontSize: 13.5, color: "var(--ink-400)", padding: "4px 0" }}>Ingen erfarenhet tillagd än.</p>

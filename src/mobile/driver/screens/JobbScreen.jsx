@@ -41,7 +41,8 @@ export default function JobbScreen({ ctx }) {
   const [hidden, setHidden] = useState(null); // senast dolda jobbet (för Ångra-bannern)
   const savedCount = ctx.saved.size;
   const f = ctx.filter;
-  const fActive = f.type !== "alla" || f.lic.length > 0 || f.cert.length > 0;
+  const fCount = (f.type !== "alla" ? 1 : 0) + f.lic.length + f.cert.length;
+  const fActive = fCount > 0;
   const searchOrFilterActive = q.trim() !== "" || fActive || seg !== "alla";
 
   // Svep-höger döljer jobbet (lokalt, denna vy) — visa en transient Ångra-banner i ~4s.
@@ -71,9 +72,9 @@ export default function JobbScreen({ ctx }) {
   const remaining = total - shown;
 
   const filterBtn = isJobb ? (
-    <button onClick={() => ctx.setSheet({ type: "filter" })} className="press" style={{ position: "relative", width: 38, height: 38, borderRadius: 11, background: fActive ? "var(--green-tint)" : "var(--card)", border: `1px solid ${fActive ? "var(--green)" : "var(--line-2)"}`, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "var(--sh-sm)" }}>
+    <button onClick={() => ctx.setSheet({ type: "filter" })} aria-label={fActive ? `Filter aktivt, ${fCount} val` : "Filter"} className="press" style={{ position: "relative", width: 38, height: 38, borderRadius: 11, background: fActive ? "var(--green-tint)" : "var(--card)", border: `1px solid ${fActive ? "var(--green)" : "var(--line-2)"}`, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "var(--sh-sm)" }}>
       <Icon name="sliders" size={18} color={fActive ? "var(--green)" : "var(--ink-700)"} stroke={2} />
-      {fActive && <span style={{ position: "absolute", top: -3, right: -3, width: 10, height: 10, borderRadius: 5, background: "var(--amber)", border: "1.5px solid var(--paper)" }} />}
+      {fActive && <span style={{ position: "absolute", top: -6, right: -6, minWidth: 17, height: 17, padding: "0 4px", borderRadius: 9, background: "var(--amber)", border: "1.5px solid var(--paper)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10.5, fontWeight: 800, color: "var(--ink-900)", lineHeight: 1 }}>{fCount}</span>}
     </button>
   ) : null;
 
@@ -108,7 +109,7 @@ export default function JobbScreen({ ctx }) {
                 list.slice(0, shown).map((j, i) => <JobCard key={j.id} job={j} ctx={ctx} idx={i} onHide={onHide} />)
               )}
               {remaining > 0 ? (
-                <button onClick={() => setShown((s) => s + 12)} className="press" style={{ padding: "13px 0", borderRadius: 13, background: "var(--card)", border: "1px solid var(--line-2)", boxShadow: "var(--sh-sm)", fontSize: 14.5, fontWeight: 700, color: "var(--ink-800)", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>Visa fler<span style={{ fontSize: 12.5, color: "var(--ink-400)", fontWeight: 600 }}>· {remaining} kvar</span></button>
+                <p style={{ textAlign: "center", fontSize: 12.5, color: "var(--ink-400)", fontWeight: 600, padding: "8px 0" }}>{remaining} fler jobb</p>
               ) : list.length > 0 && <p style={{ textAlign: "center", fontSize: 12, color: "var(--ink-400)", padding: "8px 0" }}>Svep ett kort åt vänster för att spara · höger för att dölja</p>}
             </>
           ) : (
@@ -119,7 +120,7 @@ export default function JobbScreen({ ctx }) {
                 comps.slice(0, shown).map((c) => <CompanyCard key={c.id || c.name} c={c} ctx={ctx} />)
               )}
               {remaining > 0 ? (
-                <button onClick={() => setShown((s) => s + 12)} className="press" style={{ padding: "13px 0", borderRadius: 13, background: "var(--card)", border: "1px solid var(--line-2)", boxShadow: "var(--sh-sm)", fontSize: 14.5, fontWeight: 700, color: "var(--ink-800)", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>Visa fler<span style={{ fontSize: 12.5, color: "var(--ink-400)", fontWeight: 600 }}>· {remaining} kvar</span></button>
+                <p style={{ textAlign: "center", fontSize: 12.5, color: "var(--ink-400)", fontWeight: 600, padding: "8px 0" }}>{remaining} fler åkerier</p>
               ) : comps.length > 0 && <p style={{ textAlign: "center", fontSize: 12, color: "var(--ink-400)", padding: "8px 0", lineHeight: 1.5 }}>Alla åkerier anslutna till STP – även de utan lediga jobb just nu</p>}
             </>
           )}

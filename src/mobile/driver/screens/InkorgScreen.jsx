@@ -10,8 +10,8 @@ export default function InkorgScreen({ ctx }) {
 
   return (
     <>
-      <Header title="Inkorg" scrollY={sy} big="Inkorg" sub={`${unread} olästa`} />
-      <ScrollArea onScroll={(e) => setSy(e.target.scrollTop)} onRefresh={(done) => { ctx.chat?.refreshConversations?.(); setTimeout(done, 700); }}>
+      <Header title="Inkorg" scrollY={sy} big="Inkorg" sub={unread === 0 ? "Allt läst" : `${unread} olästa`} />
+      <ScrollArea onScroll={(e) => setSy(e.target.scrollTop)} onRefresh={(done) => { const r = ctx.chat?.refreshConversations?.(); r?.finally ? r.finally(() => done()) : setTimeout(done, 700); }}>
         <div style={{ padding: "6px 16px 24px" }}>
           {ctx.chat?.conversationsLoading && threads.length === 0 ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>

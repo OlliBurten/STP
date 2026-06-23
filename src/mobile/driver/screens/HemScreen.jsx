@@ -40,7 +40,7 @@ export default function HemScreen({ ctx }) {
         title="Hem" scrollY={sy} big={`Hej ${firstName(p.name) || "där"} 👋`} sub={seekLine}
         right={<button onClick={() => ctx.setTab("profil")} className="press" aria-label="Öppna profil"><Avatar initials={p.initials || (firstName(p.name)[0] || "?")} src={p.photoUrl} size={34} ring={ctx.seeking} /></button>}
       />
-      <ScrollArea onScroll={(e) => setSy(e.target.scrollTop)} onRefresh={(done) => { ctx.notifications?.refresh?.(); setTimeout(done, 700); }}>
+      <ScrollArea onScroll={(e) => setSy(e.target.scrollTop)} onRefresh={(done) => { ctx.notifications?.refresh?.(); ctx.refreshJobs?.(); ctx.refreshActivity?.(); ctx.refreshShifts?.(); setTimeout(done, 700); }}>
         <div style={{ padding: "4px 16px 24px", display: "flex", flexDirection: "column", gap: 14 }}>
           {/* Status — visible to companies */}
           <Card style={{ padding: "4px 16px", overflow: "hidden", borderLeft: ctx.seeking ? undefined : "3px solid var(--amber-deep)" }}>
@@ -124,14 +124,14 @@ export default function HemScreen({ ctx }) {
             <div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "2px 4px 10px" }}>
                 <Label>Nya matchningar</Label>
-                <button onClick={() => ctx.setTab("jobb")} style={{ fontSize: 13, fontWeight: 700, color: "var(--green)", whiteSpace: "nowrap", flexShrink: 0 }}>Visa alla</button>
+                <button onClick={() => ctx.setTab("jobb")} aria-label="Visa alla matchningar" style={{ fontSize: 13, fontWeight: 700, color: "var(--green)", whiteSpace: "nowrap", flexShrink: 0, padding: "12px 4px", margin: "-12px -4px", minHeight: 44 }}>Visa alla</button>
               </div>
               <div className="hscroll" style={{ display: "flex", gap: 11, overflowX: "auto", margin: 0, padding: "0 0 4px", scrollSnapType: "x mandatory" }}>
                 {topMatches.map((j, i) => (
                   <Card key={j.id} onClick={() => ctx.setSheet({ type: "detail", job: j })} className="press" style={{ padding: "14px", minWidth: 215, maxWidth: 215, scrollSnapAlign: "start", flexShrink: 0, animation: `stpm-slide-in-r .3s ${i * 0.05}s both` }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 9 }}>
                       <div style={{ width: 38, height: 38, borderRadius: 10, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 13, color: "var(--green-text)" }}>{j.initials}</div>
-                      <Pill tone={matchTone(j.match)} size="sm" icon={<Dot tone="success" size={5} />}>{j.match}%</Pill>
+                      <Pill tone={matchTone(j.match)} size="sm" icon={j.match >= 90 ? <Icon name="star" size={11} stroke={0} color="var(--success)" style={{ fill: "var(--success)" }} /> : <Dot tone="success" size={5} />}>{j.match >= 90 ? `Toppmatch · ${j.match}%` : `${j.match}%`}</Pill>
                     </div>
                     <h3 style={{ fontSize: 14.5, fontWeight: 800, color: "var(--ink-900)", lineHeight: 1.25, marginBottom: 3 }}>{j.title}</h3>
                     <div style={{ fontSize: 12.5, color: "var(--ink-500)", marginBottom: 10 }}>{j.company} · {j.location}</div>

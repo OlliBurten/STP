@@ -42,6 +42,14 @@ export function DriverDataProvider({ children }) {
   const [savedIds, setSavedIds] = useState(() => new Set());
 
   // ── Jobs ──────────────────────────────────────────────────────────
+  const refreshJobs = useCallback(async () => {
+    try {
+      const data = hasApi ? await fetchJobs() : mockJobs;
+      setRawJobs(Array.isArray(data) && data.length ? data : mockJobs);
+    } catch {
+      setRawJobs(mockJobs); // dev / no-backend fallback
+    }
+  }, [hasApi]);
   useEffect(() => {
     let alive = true;
     (async () => {
@@ -380,8 +388,9 @@ export function DriverDataProvider({ children }) {
     seeking, setSeeking,
     searchable, setSearchable,
     available, setAvailable,
-    shifts, acceptedShifts, acceptShift,
-    activity,
+    shifts, acceptedShifts, acceptShift, refreshShifts,
+    activity, refreshActivity,
+    refreshJobs,
     applied, apply, applyExternal, refreshApplications, appsLoading, appsError,
     filter, setFilter,
     threads, applications, sendMessage, markChatSeen, getConversation,

@@ -94,7 +94,8 @@ export function ChatProvider({ children }) {
   }, [hasApi, token]);
 
   const refreshConversations = useCallback(() => {
-    refreshRef.current?.();
+    // Returnera promisen så anropare kan await:a (t.ex. pull-to-refresh-spinner).
+    return refreshRef.current?.();
   }, []);
 
   useEffect(() => {
