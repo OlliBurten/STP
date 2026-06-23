@@ -208,12 +208,14 @@ export function CompanyDataProvider({ children }) {
   // ── Threads (company conversations) ──────────────────────────────
   const threads = useMemo(() => {
     const list = company.name ? (chat.getCompanyConversations?.(company.name) || chat.conversations || []) : (chat.conversations || []);
+    // Koppla kandidatens pipeline-steg (ny/kontaktad/…) till tråden via konversations-id.
+    const stageByConv = new Map(candidates.map((cand) => [cand.id, cand.stage]));
     return (Array.isArray(list) ? list : []).map((c) => {
       const msgs = Array.isArray(c.messages) ? c.messages : [];
       const last = msgs[msgs.length - 1];
-      return { id: c.id, name: c.driverName || "Förare", initials: initialsFor(c.driverName), jobTitle: c.jobTitle || "", last: last ? (last.sender === "company" ? "Du: " : "") + last.content : "", when: last?.timestamp ? timeAgo(last.timestamp) : "", unread: chat.isConversationUnread ? chat.isConversationUnread(c) : (!!last && last.sender === "driver"), conv: c };
+      return { id: c.id, name: c.driverName || "Förare", initials: initialsFor(c.driverName), jobTitle: c.jobTitle || "", stage: stageByConv.get(c.id) || null, last: last ? (last.sender === "company" ? "Du: " : "") + last.content : "", when: last?.timestamp ? timeAgo(last.timestamp) : "", unread: chat.isConversationUnread ? chat.isConversationUnread(c) : (!!last && last.sender === "driver"), conv: c };
     });
-  }, [chat, company.name]);
+  }, [chat, company.name, candidates]);
 
   const value = {
     loading, error, company, verified, kpis, jobs, candidates, drivers, orgs, invites,

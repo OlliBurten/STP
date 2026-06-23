@@ -238,7 +238,7 @@ export function ContactDriverSheet({ ctx, id, close }) {
       </>}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 9 }}>
         <Label style={{ marginBottom: 0 }}>Meddelande</Label>
-        <button onClick={aiGen} className="press" style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12.5, fontWeight: 700, color: "var(--green)" }}><Icon name="spark" size={14} color="var(--green)" stroke={0} style={{ fill: "var(--green)" }} />Skriv med STP</button>
+        <button onClick={aiGen} className="press" style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12.5, fontWeight: 700, color: "var(--green)" }}><Icon name="spark" size={14} color="var(--green)" stroke={0} style={{ fill: "var(--green)" }} />Skapa utkast</button>
       </div>
       <textarea id="contact-driver-msg" aria-label="Meddelande" value={msg} onChange={(e) => setMsg(e.target.value)} placeholder="Skriv ett personligt meddelande…" rows={4} style={{ width: "100%", padding: "13px 15px", borderRadius: 13, border: "1px solid var(--line-2)", background: "var(--card-2)", fontSize: 15, color: "var(--ink-900)", outline: "none", resize: "none", lineHeight: 1.5, marginBottom: 16, fontFamily: "var(--font)" }} />
       <Button variant="primary" size="lg" full busy={busy} disabled={busy || !msg.trim()} icon={!busy ? <Icon name="send" size={17} stroke={2} /> : undefined} onClick={submit}>Skicka meddelande</Button>

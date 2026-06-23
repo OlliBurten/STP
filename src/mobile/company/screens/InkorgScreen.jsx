@@ -1,7 +1,7 @@
 // Company — Inkorg (message threads). Ported from STP Mobil Åkeri.
 import React, { useState } from "react";
-import { Header, ScrollArea, Card, Avatar, Empty, Button } from "../../ui";
-import { CompanyLoading, CompanyError } from "../ui";
+import { Header, ScrollArea, Card, Avatar, Empty, Button, Pill } from "../../ui";
+import { CompanyLoading, CompanyError, stageLabel, stageTone } from "../ui";
 
 export default function InkorgScreen({ ctx, go }) {
   const [sy, setSy] = useState(0);
@@ -14,7 +14,7 @@ export default function InkorgScreen({ ctx, go }) {
   const unread = threads.filter((t) => t.unread).length;
   return (
     <>
-      <Header title="Inkorg" scrollY={sy} big="Inkorg" sub={`${unread} olästa`} />
+      <Header title="Inkorg" scrollY={sy} big="Inkorg" sub={unread === 0 ? "Allt läst" : `${unread} olästa`} />
       <ScrollArea onScroll={(e) => setSy(e.target.scrollTop)} onRefresh={(done) => { ctx.chat?.refreshConversations?.(); setTimeout(done, 700); }}>
         <div style={{ padding: "6px 16px 24px" }}>
           {threads.length === 0 ? (
@@ -29,7 +29,10 @@ export default function InkorgScreen({ ctx, go }) {
                       <span style={{ fontSize: 15.5, fontWeight: t.unread ? 800 : 700, color: "var(--ink-900)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{t.name}</span>
                       <span style={{ fontSize: 12, color: t.unread ? "var(--amber-text)" : "var(--ink-400)", fontWeight: t.unread ? 700 : 500, flexShrink: 0 }}>{t.when}</span>
                     </div>
-                    {t.jobTitle && <div style={{ fontSize: 12.5, color: "var(--green)", fontWeight: 600, margin: "1px 0 2px" }}>{t.jobTitle}</div>}
+                    <div style={{ display: "flex", alignItems: "center", gap: 7, margin: "1px 0 2px", flexWrap: "wrap" }}>
+                      {t.jobTitle && <span style={{ fontSize: 12.5, color: "var(--green)", fontWeight: 600 }}>{t.jobTitle}</span>}
+                      {t.stage && <Pill tone={stageTone(t.stage)} size="sm">{stageLabel(t.stage)}</Pill>}
+                    </div>
                     <div style={{ fontSize: 13.5, color: t.unread ? "var(--ink-700)" : "var(--ink-400)", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: t.unread ? 600 : 400 }}>{t.last || "Ny konversation"}</div>
                   </div>
                 </button>
