@@ -1,0 +1,42 @@
+name: CI
+
+# Bygg-gate på varje PR/push (fångar kompileringsfel innan deploy) + en
+# rök-test mot prod efter varje main-push (fångar trasig publik yta live).
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    name: Build + lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Build (hård gate)
+        run: npm run build
+      - name: Lint (informativ — pre-existing varningar fäller inte bygget)
+        run: npm run lint || true
+
+  prod-smoke:
+    name: Prod-rök-test (E2E mot live)
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      # Endast färska/pålitliga rök-tester här så gaten är meningsfull (grön = OK).
+      # public-pages.spec.js har inaktuella assertions (gammal hero-copy/auth-knappar)
+      # och bör uppdateras separat innan den läggs till i gaten.
+      - name: Mobil rök-test mot prod (publik UI monterar + renderar)
+        run: PLAYWRIGHT_BASE_URL=https://transportplattformen.se npx playwright test e2e/mobile-smoke.spec.js --project=chromium --reporter=line
