@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation, useSearchParams } from "react-router-do
 import { usePageTitle } from "../hooks/usePageTitle";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { useAuth, LOGOUT_REASON_KEY } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import { requestPasswordReset, resendVerification } from "../api/auth";
 import { EyeIcon, EyeOffIcon } from "../components/Icons";
 import OAuthButtons from "../components/OAuthButtons";
@@ -221,6 +222,7 @@ function NoticeActions({ children }) {
 ═══════════════════════════════════════════════════════════ */
 export default function Login() {
   usePageTitle("Logga in");
+  const toast = useToast();
   const {
     loginAsDriver,
     loginAsCompany,
@@ -299,6 +301,8 @@ export default function Login() {
     setError(""); setInfo(""); setOauthPickingRole(false);
     loginWithOAuthResponse(data);
     const u = data.user;
+    // Befintligt konto via "Registrera" → sömlös inloggning + en liten hälsning.
+    if (u?.hadLoggedInBefore) toast.success("Välkommen tillbaka!");
     if (u?.isAdmin) { setTimeout(() => navigate(from?.startsWith("/admin") ? from : "/admin", { replace: true }), 0); return; }
     const isRecruiter = ["COMPANY", "RECRUITER"].includes(String(u?.role || "").toUpperCase());
     const goingToOnboarding = !isRecruiter && u?.shouldShowOnboarding;

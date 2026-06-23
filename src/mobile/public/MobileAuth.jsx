@@ -14,6 +14,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { useToast } from "../../context/ToastContext";
 import { requestPasswordReset, resendVerification, verifyEmailCode } from "../../api/auth";
 import OAuthButtons from "../../components/OAuthButtons";
 import MobileShell from "../MobileShell";
@@ -109,6 +110,7 @@ const OrDivider = () => (
 export default function MobileAuth() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
+  const toast = useToast();
   const { loginWithApi, registerWithApi, loginWithOAuthResponse } = useAuth();
 
   const [view, setView] = useState(params.get("start") === "login" ? "login" : "register");
@@ -226,6 +228,10 @@ export default function MobileAuth() {
   const onOAuth = (data) => {
     try {
       const u = loginWithOAuthResponse(data);
+      // Valde du Registrera men kontot fanns redan (återkommande användare) →
+      // vi loggar in dig sömlöst; en liten "välkommen tillbaka" gör det tydligt
+      // att du inte skapade ett nytt konto.
+      if (u?.hadLoggedInBefore) toast.success("Välkommen tillbaka!");
       // Skjut upp navigeringen ett tick så auth-staten hinner committas innan
       // ProtectedRoute renderar /onboarding/forare — annars är isDriver ännu
       // false och guarden bouncar till /login (= register-vyn). Samma mönster
