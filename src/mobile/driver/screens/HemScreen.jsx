@@ -38,22 +38,28 @@ export default function HemScreen({ ctx }) {
     <>
       <Header
         title="Hem" scrollY={sy} big={`Hej ${firstName(p.name) || "där"} 👋`} sub={seekLine}
-        right={<button onClick={() => ctx.setTab("profil")} className="press"><Avatar initials={p.initials || (firstName(p.name)[0] || "?")} src={p.photoUrl} size={34} ring={ctx.seeking} /></button>}
+        right={<button onClick={() => ctx.setTab("profil")} className="press" aria-label="Öppna profil"><Avatar initials={p.initials || (firstName(p.name)[0] || "?")} src={p.photoUrl} size={34} ring={ctx.seeking} /></button>}
       />
       <ScrollArea onScroll={(e) => setSy(e.target.scrollTop)} onRefresh={(done) => { ctx.notifications?.refresh?.(); setTimeout(done, 700); }}>
         <div style={{ padding: "4px 16px 24px", display: "flex", flexDirection: "column", gap: 14 }}>
           {/* Status — visible to companies */}
-          <Card style={{ padding: "4px 16px", overflow: "hidden" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "15px 0" }}>
+          <Card style={{ padding: "4px 16px", overflow: "hidden", borderLeft: ctx.seeking ? undefined : "3px solid var(--amber-deep)" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "15px 0", borderBottom: ctx.seeking ? "none" : "1px solid var(--line)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
-                <div style={{ width: 38, height: 38, borderRadius: 11, background: ctx.seeking ? "var(--success-tint)" : "var(--paper-2)", display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="truck" size={19} color={ctx.seeking ? "var(--success)" : "var(--ink-400)"} stroke={1.9} /></div>
+                <div style={{ width: 38, height: 38, borderRadius: 11, background: ctx.seeking ? "var(--success-tint)" : "var(--amber-tint)", display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="truck" size={19} color={ctx.seeking ? "var(--success)" : "var(--amber-deep)"} stroke={1.9} /></div>
                 <div>
                   <div style={{ fontSize: 14.5, fontWeight: 700, color: "var(--ink-900)" }}>Söker aktivt jobb</div>
-                  <div style={{ fontSize: 12, color: "var(--ink-500)" }}>{ctx.seeking ? "Åkerier ser dig och kan höra av sig" : "Pausad – du syns inte och får inga matchningar"}</div>
+                  <div style={{ fontSize: 12, color: "var(--ink-500)" }}>{ctx.seeking ? "Åkerier ser dig och kan höra av sig" : "Jobbsökning pausad"}</div>
                 </div>
               </div>
-              <Switch on={ctx.seeking} onToggle={() => ctx.setSeeking((v) => !v)} />
+              <Switch on={ctx.seeking} onToggle={() => ctx.setSeeking((v) => !v)} label="Söker aktivt jobb" />
             </div>
+            {!ctx.seeking && (
+              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 0 14px" }}>
+                <Icon name="alert" size={16} color="var(--amber-deep)" stroke={2} />
+                <span style={{ fontSize: 13, fontWeight: 700, color: "var(--amber-text)", lineHeight: 1.35 }}>Du syns inte för åkerier just nu</span>
+              </div>
+            )}
           </Card>
 
           {/* Inhopp / vikariepool */}
@@ -66,7 +72,7 @@ export default function HemScreen({ ctx }) {
                   <div style={{ fontSize: 12, color: "var(--ink-500)" }}>{ctx.available ? "Åkerier kan erbjuda dig extrapass" : "Få extrapass när åkerier behöver akut"}</div>
                 </div>
               </div>
-              <Switch on={ctx.available} tone="amber" onToggle={() => ctx.setAvailable((v) => !v)} />
+              <Switch on={ctx.available} tone="amber" onToggle={() => ctx.setAvailable((v) => !v)} label="Tillgänglig för inhopp" />
             </div>
             {ctx.available && (
               shifts.length === 0 ? (

@@ -20,6 +20,8 @@ export function EditProfileSheet({ ctx, close }) {
   const [region, setRegion] = useState(p.region || "");
   const [lic, setLic] = useState(Array.isArray(p.licenses) ? p.licenses : []);
   const [exp, setExp] = useState(Array.isArray(p.experience) ? p.experience : []);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
   const nowY = new Date().getFullYear();
   const YEARS = []; for (let y = nowY; y >= 1985; y--) YEARS.push(y);
 
@@ -27,12 +29,18 @@ export function EditProfileSheet({ ctx, close }) {
   const addExp = () => setExp([...exp, { id: `exp-${Date.now()}`, role: "", company: "", startYear: nowY, endYear: nowY, current: true }]);
   const upExp = (i, k, v) => setExp(exp.map((e, idx) => (idx === i ? { ...e, [k]: v } : e)));
   const rmExp = (i) => setExp(exp.filter((_, idx) => idx !== i));
-  const save = () => {
+  const save = async () => {
     // EN enda uppdatering — tidigare två samtidiga updateProfile-anrop (ett utan
     // erfarenheten) tävlade, och fel anrop kunde vinna → tillagd erfarenhet
     // försvann. Skicka allt i samma payload.
-    ctx.updateProfile({ name, location: loc, region, licenses: lic, experience: exp.filter((e) => e.role || e.company) });
-    close();
+    setBusy(true); setErr("");
+    try {
+      await ctx.updateProfile({ name, location: loc, region, licenses: lic, experience: exp.filter((e) => e.role || e.company) });
+      close();
+    } catch {
+      setErr("Kunde inte spara. Försök igen.");
+      setBusy(false);
+    }
   };
   const selStyle = { flex: 1, minWidth: 0, height: 42, padding: "0 10px", border: "1px solid var(--line-2)", borderRadius: 9, background: "#fff", outline: "none", fontSize: 14, color: "var(--ink-800)", WebkitAppearance: "none", appearance: "none" };
 
@@ -70,7 +78,8 @@ export function EditProfileSheet({ ctx, close }) {
           </div>
         ))}
       </div>
-      <Button variant="primary" size="lg" full onClick={save}>Spara profil</Button>
+      {err && <p style={{ fontSize: 12.5, color: "var(--danger)", marginBottom: 12 }}>{err}</p>}
+      <Button variant="primary" size="lg" full busy={busy} disabled={busy} onClick={save}>Spara profil</Button>
     </div>
   );
 }
@@ -111,13 +120,30 @@ export function PersonalSheet({ ctx, close }) {
   const p = ctx.profile;
   const [name, setName] = useState(p.name || "");
   const [phone, setPhone] = useState(p.phone || "");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const save = async () => {
+    setBusy(true); setErr("");
+    try {
+      await ctx.updateProfile({ name, phone });
+      close();
+    } catch {
+      setErr("Kunde inte spara. Försök igen.");
+      setBusy(false);
+    }
+  };
   return (
     <div style={{ padding: "4px 22px 26px" }}>
       <SheetBack label="Inställningar" onBack={() => ctx.setSheet({ type: "settings" })} />
       <Field label="Fullständigt namn" value={name} onChange={setName} />
-      <Field label="E-post" value={ctx.user?.email || ""} onChange={() => {}} />
+      <div style={{ marginBottom: 16 }}>
+        <Label style={{ marginBottom: 8 }}>E-post</Label>
+        <div style={{ width: "100%", minHeight: 50, padding: "0 15px", display: "flex", alignItems: "center", borderRadius: 12, border: "1px solid var(--line)", background: "var(--card-2)", fontSize: 15.5, color: "var(--ink-400)" }}>{ctx.user?.email || "—"}</div>
+        <div style={{ fontSize: 12, color: "var(--ink-400)", marginTop: 6, lineHeight: 1.4 }}>Kontakta support för att byta e-post.</div>
+      </div>
       <Field label="Telefon" type="tel" inputMode="tel" value={phone} onChange={setPhone} />
-      <Button variant="primary" size="lg" full onClick={() => { ctx.updateProfile({ name, phone }); close(); }}>Spara ändringar</Button>
+      {err && <p style={{ fontSize: 12.5, color: "var(--danger)", marginBottom: 12 }}>{err}</p>}
+      <Button variant="primary" size="lg" full busy={busy} disabled={busy} onClick={save}>Spara ändringar</Button>
     </div>
   );
 }
@@ -268,8 +294,20 @@ export function PhotoSheet({ ctx, close }) {
 export function PrefsSheet({ ctx, close }) {
   const [cities, setCities] = useState(Array.isArray(ctx.profile.regionsWilling) ? ctx.profile.regionsWilling : []);
   const [q, setQ] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
   const add = (n) => { const v = (n || "").trim(); if (v && !cities.some((c) => c.toLowerCase() === v.toLowerCase())) setCities([...cities, v]); setQ(""); };
   const rm = (n) => setCities(cities.filter((c) => c !== n));
+  const savePrefs = async () => {
+    setBusy(true); setErr("");
+    try {
+      await ctx.savePrefs(cities);
+      close();
+    } catch {
+      setErr("Kunde inte spara. Försök igen.");
+      setBusy(false);
+    }
+  };
   return (
     <div style={{ padding: "4px 22px 26px" }}>
       <p style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.5, marginBottom: 16 }}>Lägg till en eller flera orter – vi visar jobb där först.</p>
@@ -289,7 +327,8 @@ export function PrefsSheet({ ctx, close }) {
           <div style={{ display: "flex", flexWrap: "wrap", gap: 9 }}>{POPULAR_CITIES.filter((c) => !cities.includes(c)).map((c) => <button key={c} onClick={() => add(c)} className="press" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 14px", borderRadius: 11, background: "#fff", border: "1px solid var(--line-2)", fontWeight: 600, fontSize: 14.5, color: "var(--ink-800)" }}><Icon name="plus" size={14} color="var(--ink-400)" stroke={2.4} />{c}</button>)}</div>
         </div>
       )}
-      <Button variant="primary" size="lg" full disabled={!cities.length} onClick={() => { ctx.savePrefs(cities); close(); }}>Spara {cities.length || ""} {cities.length === 1 ? "ort" : "orter"}</Button>
+      {err && <p style={{ fontSize: 12.5, color: "var(--danger)", marginBottom: 12 }}>{err}</p>}
+      <Button variant="primary" size="lg" full disabled={!cities.length || busy} busy={busy} onClick={savePrefs}>Spara {cities.length || ""} {cities.length === 1 ? "ort" : "orter"}</Button>
     </div>
   );
 }
@@ -299,7 +338,19 @@ const DOC_TYPES = [["YKB", "Yrkeskompetensbevis"], ["ADR", "Tank / styckegods"],
 export function AddDocSheet({ ctx, close }) {
   const [type, setType] = useState(null);
   const [expiry, setExpiry] = useState("");
-  const add = () => { ctx.addDocument(type[0], expiry || undefined); close(); };
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const today = new Date().toISOString().slice(0, 10);
+  const add = async () => {
+    setBusy(true); setErr("");
+    try {
+      await ctx.addDocument(type[0], expiry || undefined);
+      close();
+    } catch {
+      setErr("Kunde inte spara. Försök igen.");
+      setBusy(false);
+    }
+  };
   return (
     <div style={{ padding: "4px 22px 26px" }}>
       <Label style={{ marginBottom: 11 }}>Välj behörighet</Label>
@@ -313,17 +364,25 @@ export function AddDocSheet({ ctx, close }) {
         ); })}
       </div>
       <Label style={{ marginBottom: 8 }}>Giltigt t.o.m. <span style={{ textTransform: "none", fontWeight: 500, color: "var(--ink-400)" }}>(valfritt)</span></Label>
-      <input type="date" value={expiry} onChange={(e) => setExpiry(e.target.value)} style={{ width: "100%", height: 50, padding: "0 15px", borderRadius: 12, border: "1px solid var(--line-2)", background: "#fff", fontSize: 15.5, color: "var(--ink-900)", outline: "none", marginBottom: 8 }} />
+      <input type="date" min={today} value={expiry} onChange={(e) => setExpiry(e.target.value)} style={{ width: "100%", height: 50, padding: "0 15px", borderRadius: 12, border: "1px solid var(--line-2)", background: "#fff", fontSize: 15.5, color: "var(--ink-900)", outline: "none", marginBottom: 8 }} />
       <p style={{ fontSize: 12.5, color: "var(--ink-400)", lineHeight: 1.45, marginBottom: 18 }}>Ange giltighetsdatum så ser åkerier att din behörighet är aktuell. Utan datum visas den som angiven men inte verifierad.</p>
-      <Button variant="primary" size="lg" full disabled={!type} icon={<Icon name="plus" size={18} stroke={2.2} />} onClick={add}>Lägg till behörighet</Button>
+      {err && <p style={{ fontSize: 12.5, color: "var(--danger)", marginBottom: 12 }}>{err}</p>}
+      <Button variant="primary" size="lg" full disabled={!type || busy} busy={busy} icon={!busy ? <Icon name="plus" size={18} stroke={2.2} /> : undefined} onClick={add}>Lägg till behörighet</Button>
     </div>
   );
 }
 
 /* ---- Certificate detail + remove ---- */
 export function DocDetailSheet({ doc, ctx, close }) {
+  const [confirmDel, setConfirmDel] = useState(false);
+  const [busy, setBusy] = useState(false);
   const toneFor = { verified: "success", expiring: "amber", expired: "danger", listed: "neutral" }[doc.status] || "neutral";
   const labelFor = { verified: "Giltigt", expiring: "Går snart ut", expired: "Utgånget", listed: "Tillagd" }[doc.status] || "Tillagd";
+  const removeDoc = async () => {
+    setBusy(true);
+    try { await ctx.removeDocument(doc.id); close(); }
+    catch { setBusy(false); }
+  };
   return (
     <div style={{ padding: "4px 22px 26px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 13, marginBottom: 18 }}>
@@ -340,10 +399,20 @@ export function DocDetailSheet({ doc, ctx, close }) {
           <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--ink-900)" }}>{doc.expiry}</span>
         </div>
       </div>
-      <div style={{ display: "flex", gap: 10 }}>
-        <Button variant="secondary" size="lg" icon={<Icon name="refresh" size={17} stroke={2} />} style={{ flex: 1 }} onClick={() => ctx.setSheet({ type: "renew", doc })}>Förnya</Button>
-        <Button variant="danger" size="lg" icon={<Icon name="x" size={17} stroke={2.2} />} style={{ flex: 1 }} onClick={() => { ctx.removeDocument(doc.id); close(); }}>Ta bort</Button>
-      </div>
+      {confirmDel ? (
+        <div>
+          <p style={{ fontSize: 13.5, color: "var(--ink-700)", lineHeight: 1.5, marginBottom: 12 }}>Ta bort {doc.name}? Behörigheten försvinner från din profil.</p>
+          <div style={{ display: "flex", gap: 10 }}>
+            <Button variant="secondary" size="lg" style={{ flex: 1 }} onClick={() => setConfirmDel(false)}>Avbryt</Button>
+            <Button variant="danger" size="lg" busy={busy} style={{ flex: 1 }} onClick={removeDoc}>Ta bort</Button>
+          </div>
+        </div>
+      ) : (
+        <div style={{ display: "flex", gap: 10 }}>
+          <Button variant="secondary" size="lg" icon={<Icon name="refresh" size={17} stroke={2} />} style={{ flex: 1 }} onClick={() => ctx.setSheet({ type: "renew", doc })}>Förnya</Button>
+          <Button variant="danger" size="lg" icon={<Icon name="x" size={17} stroke={2.2} />} style={{ flex: 1 }} onClick={() => setConfirmDel(true)}>Ta bort</Button>
+        </div>
+      )}
     </div>
   );
 }
@@ -351,6 +420,7 @@ export function DocDetailSheet({ doc, ctx, close }) {
 /* ---- Renew a certificate (update its expiry) ---- */
 export function RenewSheet({ doc, ctx, close }) {
   const [expiry, setExpiry] = useState("");
+  const today = new Date().toISOString().slice(0, 10);
   return (
     <div style={{ padding: "4px 22px 26px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 11, padding: "14px", background: doc.status === "expired" ? "var(--danger-tint)" : "var(--amber-tint)", borderRadius: 13, marginBottom: 16 }}>
@@ -359,7 +429,7 @@ export function RenewSheet({ doc, ctx, close }) {
       </div>
       <p style={{ fontSize: 14, color: "var(--ink-700)", lineHeight: 1.55, marginBottom: 16 }}>Ange det nya giltighetsdatumet för ditt {doc.name}.</p>
       <Label style={{ marginBottom: 8 }}>Nytt giltighetsdatum</Label>
-      <input type="date" value={expiry} onChange={(e) => setExpiry(e.target.value)} style={{ width: "100%", height: 50, padding: "0 15px", borderRadius: 12, border: "1px solid var(--line-2)", background: "#fff", fontSize: 15.5, color: "var(--ink-900)", outline: "none", marginBottom: 18 }} />
+      <input type="date" min={today} value={expiry} onChange={(e) => setExpiry(e.target.value)} style={{ width: "100%", height: 50, padding: "0 15px", borderRadius: 12, border: "1px solid var(--line-2)", background: "#fff", fontSize: 15.5, color: "var(--ink-900)", outline: "none", marginBottom: 18 }} />
       <Button variant="primary" size="lg" full disabled={!expiry} icon={<Icon name="check" size={18} stroke={2.5} />} onClick={() => { ctx.renewDocument(doc.id, expiry); close(); }}>Markera som förnyat</Button>
     </div>
   );

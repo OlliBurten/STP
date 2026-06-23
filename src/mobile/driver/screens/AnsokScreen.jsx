@@ -2,7 +2,7 @@
 // conversations (each application = a conversation tied to a job). Stage pipeline
 // is derived from the company-side timestamps via chatAdapter.
 import React, { useState } from "react";
-import { Header, ScrollArea, Card, Pill, Segment, Empty, Button, Icon } from "../../ui";
+import { Header, ScrollArea, Card, Pill, Segment, Empty, Button, Icon, SkeletonRow } from "../../ui";
 
 export default function AnsokScreen({ ctx }) {
   const [sy, setSy] = useState(0);
@@ -20,17 +20,29 @@ export default function AnsokScreen({ ctx }) {
       </div>
       <ScrollArea onScroll={(e) => setSy(e.target.scrollTop)} onRefresh={(done) => { ctx.chat?.refreshConversations?.(); ctx.refreshApplications?.(); setTimeout(done, 700); }}>
         <div style={{ padding: "6px 16px 24px", display: "flex", flexDirection: "column", gap: 12 }}>
-          {apps.length === 0 && (
+          {ctx.appsLoading && all.length === 0 ? (
+            <>
+              <SkeletonRow />
+              <SkeletonRow />
+              <SkeletonRow />
+            </>
+          ) : ctx.appsError && all.length === 0 ? (
+            <Card style={{ padding: "16px", display: "flex", flexDirection: "column", gap: 12, alignItems: "flex-start" }}>
+              <span style={{ fontSize: 14, fontWeight: 600, color: "var(--ink-800)" }}>Kunde inte ladda dina ansökningar.</span>
+              <Button variant="secondary" size="md" onClick={() => ctx.refreshApplications?.()}>Försök igen</Button>
+            </Card>
+          ) : apps.length === 0 ? (
             <Empty icon={seg === "aktiva" ? "check" : "list"} title={seg === "aktiva" ? "Inga aktiva ansökningar" : "Inga ansökningar än"} text={seg === "aktiva" ? "Dina pågående ansökningar visas här. Sök ett jobb så är du igång." : "När du söker ditt första jobb dyker det upp här."} action={<Button variant="secondary" size="md" onClick={() => ctx.setTab("jobb")}>Hitta jobb</Button>} />
-          )}
+          ) : null}
           {apps.map((a, i) => {
             const job = ctx.jobById(a.jobId);
             const st = a.stage;
             const steps = ["Skickad", "Läst", "Svar"];
             const rejected = st.id === "rejected";
             const noteTone = st.id === "selected" ? "success" : "info";
+            const hasResponse = a.conv && st.id === "selected";
             return (
-              <Card key={a.id} className="press" onClick={() => (job ? ctx.setSheet({ type: "detail", job }) : ctx.setChat(a.conv))} style={{ padding: "15px 16px", animation: `stpm-fade-up .3s ${i * 0.04}s both` }}>
+              <Card key={a.id} className="press" onClick={() => (hasResponse ? ctx.setChat(a.conv) : job ? ctx.setSheet({ type: "detail", job }) : ctx.setChat(a.conv))} style={{ padding: "15px 16px", animation: `stpm-fade-up .3s ${i * 0.04}s both` }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: !rejected ? 12 : 0, gap: 8 }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <h3 style={{ fontSize: 15.5, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.2 }}>{a.title}</h3>

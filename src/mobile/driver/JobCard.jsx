@@ -5,7 +5,7 @@ import { Card, Pill, Dot, Icon } from "../ui";
 
 const matchTone = (m) => (m >= 90 ? "success" : m >= 80 ? "soft" : "neutral");
 
-export default function JobCard({ job, ctx, idx }) {
+export default function JobCard({ job, ctx, idx, onHide }) {
   const savedNow = ctx.saved.has(job.id);
   const [dx, setDx] = useState(0);
   const [popKey, setPopKey] = useState(0);
@@ -29,7 +29,8 @@ export default function JobCard({ job, ctx, idx }) {
   };
   const onUp = () => {
     if (dx <= -56) { if (!savedNow) { ctx.toggleSave(job.id); setPopKey((k) => k + 1); } }
-    else if (dx >= 56) { if (savedNow) ctx.toggleSave(job.id); }
+    // Dölj = mer avsiktligt svep (70px) så en oavsiktlig touch inte slänger bort jobbet.
+    else if (dx >= 70) { if (savedNow) ctx.toggleSave(job.id); onHide?.(job); }
     setDx(0); startX.current = null;
     setTimeout(() => { moved.current = false; }, 40);
   };

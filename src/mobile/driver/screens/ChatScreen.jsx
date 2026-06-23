@@ -9,21 +9,28 @@ export default function ChatScreen({ ctx }) {
   const opened = ctx.chat;
   const conv = (opened && (ctx.getConversation(opened.id) || opened)) || null;
   const [val, setVal] = useState("");
+  const [sendError, setSendError] = useState(false);
   const endRef = useRef(null);
   const id = conv?.id;
 
   useEffect(() => { if (id) ctx.markChatSeen(id); }, [id]);
 
-  const messages = (conv?.messages || []).map((m) => ({ me: m.sender === "driver", text: m.content, t: timeAgo(m.timestamp) }));
+  const messages = (conv?.messages || []).map((m) => ({ id: m.id, me: m.sender === "driver", text: m.content, t: timeAgo(m.timestamp) }));
   useEffect(() => { if (endRef.current) endRef.current.scrollTo(0, 99999); }, [messages.length]);
 
   if (!conv) return null;
 
-  const send = () => {
+  const send = async () => {
     const text = val.trim();
     if (!text) return;
-    ctx.sendMessage(conv.id, text);
     setVal("");
+    setSendError(false);
+    try {
+      await ctx.sendMessage(conv.id, text);
+    } catch {
+      setVal(text);
+      setSendError(true);
+    }
   };
 
   return (
@@ -41,7 +48,7 @@ export default function ChatScreen({ ctx }) {
           <div style={{ margin: "auto", textAlign: "center", color: "var(--ink-400)", fontSize: 13.5, lineHeight: 1.5, maxWidth: 240 }}>Inga meddelanden än. Säg hej!</div>
         )}
         {messages.map((m, i) => (
-          <div key={i} style={{ display: "flex", justifyContent: m.me ? "flex-end" : "flex-start" }}>
+          <div key={m.id ?? i} style={{ display: "flex", justifyContent: m.me ? "flex-end" : "flex-start" }}>
             <div style={{ maxWidth: "78%" }}>
               <div style={{ padding: "10px 14px", borderRadius: m.me ? "16px 16px 4px 16px" : "16px 16px 16px 4px", background: m.me ? "var(--green)" : "var(--card)", color: m.me ? "#fff" : "var(--ink-900)", fontSize: 14, lineHeight: 1.45, border: m.me ? "none" : "1px solid var(--line)", boxShadow: "var(--sh-sm)" }}>{m.text}</div>
               <div style={{ fontSize: 10.5, color: "var(--ink-400)", marginTop: 3, textAlign: m.me ? "right" : "left", padding: "0 4px" }}>{m.t}</div>
@@ -49,9 +56,14 @@ export default function ChatScreen({ ctx }) {
           </div>
         ))}
       </div>
-      <div style={{ padding: "10px 14px calc(14px + var(--stpm-safe-bottom))", borderTop: "1px solid var(--line)", background: "var(--card)", display: "flex", alignItems: "center", gap: 9, flexShrink: 0 }}>
-        <input value={val} onChange={(e) => setVal(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()} placeholder="Skriv ett meddelande…" style={{ flex: 1, height: 44, padding: "0 16px", borderRadius: 22, border: "1px solid var(--line-2)", background: "var(--paper)", fontSize: 14.5, outline: "none", color: "var(--ink-900)" }} />
-        <button onClick={send} className="press" style={{ width: 44, height: 44, borderRadius: 22, background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 2px 6px rgba(31,95,92,0.3)" }}><Icon name="send" size={19} color="#fff" stroke={2} /></button>
+      <div style={{ padding: "10px 14px calc(14px + var(--stpm-safe-bottom))", borderTop: "1px solid var(--line)", background: "var(--card)", display: "flex", flexDirection: "column", gap: 8, flexShrink: 0 }}>
+        {sendError && (
+          <div style={{ fontSize: 12.5, color: "var(--danger, #c0392b)", padding: "0 4px", display: "flex", alignItems: "center", gap: 5 }}>Kunde inte skicka — försök igen</div>
+        )}
+        <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+          <input value={val} onChange={(e) => { setVal(e.target.value); if (sendError) setSendError(false); }} onKeyDown={(e) => e.key === "Enter" && send()} placeholder="Skriv ett meddelande…" style={{ flex: 1, height: 44, padding: "0 16px", borderRadius: 22, border: "1px solid var(--line-2)", background: "var(--paper)", fontSize: 14.5, outline: "none", color: "var(--ink-900)" }} />
+          <button onClick={send} disabled={!val.trim()} className="press" style={{ width: 44, height: 44, borderRadius: 22, background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 2px 6px rgba(31,95,92,0.3)", opacity: val.trim() ? 1 : 0.4, cursor: val.trim() ? "pointer" : "not-allowed" }}><Icon name="send" size={19} color="#fff" stroke={2} /></button>
+        </div>
       </div>
     </div>
   );

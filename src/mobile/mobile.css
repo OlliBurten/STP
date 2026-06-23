@@ -66,6 +66,31 @@
 .stp-mobile .press { transition:transform .08s ease; }
 .stp-mobile .press:active { transform:scale(0.97); }
 
+/* Tangentbords-/switch-fokus: synlig ring på alla interaktiva element. Pekfokus
+   (mus/touch) visar inget tack vare :focus-visible. */
+.stp-mobile button:focus-visible,
+.stp-mobile a:focus-visible,
+.stp-mobile input:focus-visible,
+.stp-mobile textarea:focus-visible,
+.stp-mobile select:focus-visible,
+.stp-mobile [role="switch"]:focus-visible,
+.stp-mobile [tabindex]:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Skelett-laddning (shimmer) */
+.stp-mobile .stpm-skel {
+  background: linear-gradient(100deg, var(--card-2) 30%, var(--line) 50%, var(--card-2) 70%);
+  background-size: 200% 100%;
+  animation: stpm-shimmer 1.3s ease-in-out infinite;
+}
+@keyframes stpm-shimmer { from { background-position:200% 0; } to { background-position:-200% 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .stp-mobile .stpm-skel { animation:none; }
+}
+
 /* Tab transition wrapper */
 .stp-mobile .tab-enter { animation:stpm-tab-in .3s cubic-bezier(.32,.72,0,1); }
 .stp-mobile .view-enter { animation:stpm-tab-in .3s cubic-bezier(.32,.72,0,1); }

@@ -3,7 +3,7 @@
 // Åkerier mode is wired to the companies API; the mock-only category chips are
 // dropped (real companies have no `cat` field) — search + rating sort kept.
 import React, { useState, useEffect } from "react";
-import { Header, ScrollArea, Card, Pill, Segment, Empty, Icon, Stars } from "../../ui";
+import { Header, ScrollArea, Card, Pill, Segment, Empty, Icon, Stars, Button, SkeletonRow } from "../../ui";
 import JobCard from "../JobCard";
 
 function CompanyCard({ c, ctx }) {
@@ -38,9 +38,19 @@ export default function JobbScreen({ ctx }) {
   const [seg, setSeg] = useState("alla");
   const [q, setQ] = useState("");
   const [shown, setShown] = useState(15);
+  const [hidden, setHidden] = useState(null); // senast dolda jobbet (för Ångra-bannern)
   const savedCount = ctx.saved.size;
   const f = ctx.filter;
   const fActive = f.type !== "alla" || f.lic.length > 0 || f.cert.length > 0;
+  const searchOrFilterActive = q.trim() !== "" || fActive || seg !== "alla";
+
+  // Svep-höger döljer jobbet (lokalt, denna vy) — visa en transient Ångra-banner i ~4s.
+  const onHide = (job) => {
+    setHidden(job);
+    setTimeout(() => setHidden((h) => (h && h.id === job.id ? null : h)), 4000);
+  };
+  const undoHide = () => setHidden(null);
+  const clearFilters = () => { setQ(""); setSeg("alla"); ctx.setFilter({ type: "alla", lic: [], cert: [] }); };
 
   let list = ctx.jobs;
   if (seg === "match") list = list.filter((j) => j.match != null && j.match >= 85);
@@ -49,6 +59,7 @@ export default function JobbScreen({ ctx }) {
   if (f.lic.length) list = list.filter((j) => f.lic.some((l) => j.licenses.includes(l)));
   if (f.cert.length) list = list.filter((j) => f.cert.every((c) => (j.certificates || []).includes(c)));
   if (q) list = list.filter((j) => (j.title + j.company + j.location).toLowerCase().includes(q.toLowerCase()));
+  if (hidden) list = list.filter((j) => j.id !== hidden.id);
 
   let comps = ctx.companies.slice().sort((a, b) => (b.rating ?? -1) - (a.rating ?? -1));
   if (q) comps = comps.filter((c) => (c.name + (c.location || "") + (c.region || "")).toLowerCase().includes(q.toLowerCase()));
@@ -73,7 +84,7 @@ export default function JobbScreen({ ctx }) {
         <Segment value={mode} onChange={setMode} items={[{ id: "jobb", label: "Jobb" }, { id: "akerier", label: "Åkerier" }]} />
         <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "0 13px", height: 44, background: "var(--card)", border: "1px solid var(--line-2)", borderRadius: 12, boxShadow: "var(--sh-sm)" }}>
           <Icon name="search" size={18} color="var(--ink-400)" stroke={2} />
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={isJobb ? "Sök titel, åkeri, ort…" : "Sök åkeri eller ort…"} style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontSize: 14.5, color: "var(--ink-900)" }} />
+          <input aria-label="Sök jobb" value={q} onChange={(e) => setQ(e.target.value)} placeholder={isJobb ? "Sök titel, åkeri, ort…" : "Sök åkeri eller ort…"} style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontSize: 14.5, color: "var(--ink-900)" }} />
           {q && <button onClick={() => setQ("")}><Icon name="x" size={16} color="var(--ink-400)" stroke={2.2} /></button>}
         </div>
         {isJobb && <Segment value={seg} onChange={setSeg} items={[{ id: "alla", label: "Alla" }, { id: "match", label: "Matchande" }, { id: "sparat", label: "Sparade", badge: savedCount || null }]} />}
@@ -83,9 +94,18 @@ export default function JobbScreen({ ctx }) {
           {isJobb ? (
             <>
               {list.length === 0 ? (
-                <Empty icon={seg === "sparat" ? "bookmark" : "search"} title={seg === "sparat" ? "Inga sparade jobb än" : "Inga träffar"} text={seg === "sparat" ? "Svep ett jobbkort åt vänster eller tryck på bokmärket för att spara det till senare." : "Justera din sökning eller filtren för att se fler jobb."} />
+                ctx.jobsLoading ? (
+                  Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
+                ) : (
+                  <Empty
+                    icon={seg === "sparat" ? "bookmark" : "search"}
+                    title={seg === "sparat" ? "Inga sparade jobb än" : "Inga träffar"}
+                    text={seg === "sparat" ? "Svep ett jobbkort åt vänster eller tryck på bokmärket för att spara det till senare." : "Justera din sökning eller filtren för att se fler jobb."}
+                    action={searchOrFilterActive ? <Button variant="secondary" size="sm" onClick={clearFilters}>Rensa filter</Button> : null}
+                  />
+                )
               ) : (
-                list.slice(0, shown).map((j, i) => <JobCard key={j.id} job={j} ctx={ctx} idx={i} />)
+                list.slice(0, shown).map((j, i) => <JobCard key={j.id} job={j} ctx={ctx} idx={i} onHide={onHide} />)
               )}
               {remaining > 0 ? (
                 <button onClick={() => setShown((s) => s + 12)} className="press" style={{ padding: "13px 0", borderRadius: 13, background: "var(--card)", border: "1px solid var(--line-2)", boxShadow: "var(--sh-sm)", fontSize: 14.5, fontWeight: 700, color: "var(--ink-800)", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>Visa fler<span style={{ fontSize: 12.5, color: "var(--ink-400)", fontWeight: 600 }}>· {remaining} kvar</span></button>
@@ -105,6 +125,14 @@ export default function JobbScreen({ ctx }) {
           )}
         </div>
       </ScrollArea>
+      {hidden && (
+        <div style={{ position: "fixed", left: 16, right: 16, bottom: "calc(64px + var(--stpm-safe-bottom) + 12px)", zIndex: 50, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "12px 16px", background: "var(--ink-900)", color: "#fff", borderRadius: 14, boxShadow: "0 8px 24px -8px rgba(15,22,22,0.45)", animation: "stpm-fade-up .26s both" }}>
+          <span style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13.5, fontWeight: 600 }}>
+            <Icon name="x" size={15} stroke={2.2} color="rgba(255,255,255,0.7)" />Jobb dolt
+          </span>
+          <button onClick={undoHide} className="press" style={{ flexShrink: 0, fontSize: 13.5, fontWeight: 800, color: "var(--amber)", background: "transparent", border: "none", padding: "4px 4px" }}>Ångra</button>
+        </div>
+      )}
     </>
   );
 }

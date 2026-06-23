@@ -115,13 +115,32 @@ export const SheetBack = ({ label = "Inställningar", onBack }) => (
   </button>
 );
 
-export const Switch = ({ on, onToggle, tone = "green" }) => (
+export const Switch = ({ on, onToggle, tone = "green", label }) => (
   <button
+    role="switch"
+    aria-checked={!!on}
+    aria-label={label}
     onClick={(e) => { e.stopPropagation(); onToggle(); }}
     style={{ width: 46, height: 28, borderRadius: 14, position: "relative", flexShrink: 0, background: on ? (tone === "green" ? "var(--green)" : "var(--amber)") : "var(--ink-200)", border: "1px solid", borderColor: on ? (tone === "green" ? "var(--green-deep)" : "var(--amber-deep)") : "var(--line-2)", transition: "background .2s,border-color .2s" }}
   >
     <span style={{ position: "absolute", top: 2, left: on ? 20 : 2, width: 22, height: 22, borderRadius: 11, background: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,0.28)", transition: "left .2s cubic-bezier(.32,.72,0,1)" }} />
   </button>
+);
+
+// Skelett-platshållare för list-laddning (matchar slutlig layout, inte en spinner).
+export const Skeleton = ({ height = 16, width = "100%", radius = 8, style }) => (
+  <div className="stpm-skel" style={{ height, width, borderRadius: radius, ...style }} />
+);
+
+// Ett list-kort-skelett (avatar + två textrader) — används av Inkorg/Ansökt/Jobb.
+export const SkeletonRow = () => (
+  <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16 }}>
+    <Skeleton height={44} width={44} radius={12} style={{ flexShrink: 0 }} />
+    <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
+      <Skeleton height={13} width="62%" />
+      <Skeleton height={11} width="40%" />
+    </div>
+  </div>
 );
 
 export const Segment = ({ items, value, onChange }) => (

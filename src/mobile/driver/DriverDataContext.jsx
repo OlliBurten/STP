@@ -272,9 +272,15 @@ export function DriverDataProvider({ children }) {
   // bara jobId:n — annars syns de aldrig på Ansökt-sidan.
   const [aggApps, setAggApps] = useState([]);
   const [appliedLocal, setAppliedLocal] = useState(() => new Set());
+  const [appsLoading, setAppsLoading] = useState(true);
+  const [appsError, setAppsError] = useState(false);
   const refreshApplications = useCallback(() => {
-    if (!hasApi) return;
-    fetchMyApplications().then((apps) => { if (Array.isArray(apps)) setAggApps(apps); }).catch(() => {});
+    if (!hasApi) { setAppsLoading(false); return; }
+    setAppsError(false);
+    return fetchMyApplications()
+      .then((apps) => { if (Array.isArray(apps)) setAggApps(apps); })
+      .catch(() => setAppsError(true))
+      .finally(() => setAppsLoading(false));
   }, [hasApi]);
   useEffect(() => { refreshApplications(); }, [refreshApplications]);
   const aggApplied = useMemo(() => new Set(aggApps.map((a) => a.jobId).filter(Boolean)), [aggApps]);
@@ -376,7 +382,7 @@ export function DriverDataProvider({ children }) {
     available, setAvailable,
     shifts, acceptedShifts, acceptShift,
     activity,
-    applied, apply, applyExternal, refreshApplications,
+    applied, apply, applyExternal, refreshApplications, appsLoading, appsError,
     filter, setFilter,
     threads, applications, sendMessage, markChatSeen, getConversation,
     chat,
