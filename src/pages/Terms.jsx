@@ -13,7 +13,7 @@ export const DOCS = {
       },
       {
         id: "konton", h: "2. Konton och registrering",
-        p: ["Du måste vara minst 18 år och ange korrekta uppgifter vid registrering. Du ansvarar för att hålla ditt lösenord konfidentiellt och för all aktivitet som sker via ditt konto.", "Vi förbehåller oss rätten att kräva e-postverifiering och, för företagskonton, manuell verifiering innan full åtkomst ges."],
+        p: ["Du måste vara minst 18 år och ange korrekta uppgifter vid registrering. Du ansvarar för att hålla ditt lösenord konfidentiellt och för all aktivitet som sker via ditt konto.", "Vi förbehåller oss rätten att kräva e-postverifiering och, för företagskonton, verifiering av organisationsnummer (automatiskt mot Bolagsverket, eller manuellt vid behov) innan full åtkomst ges."],
       },
       {
         id: "forare", h: "3. Förares ansvar",

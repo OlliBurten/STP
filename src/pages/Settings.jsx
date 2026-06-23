@@ -792,12 +792,12 @@ function CompanyVerifieringSection({ user }) {
         </div>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: "var(--text-base)", fontWeight: 800, color: isVerified ? "var(--success)" : "var(--amber)" }}>
-            {isVerified ? "Verifierat företag" : "Verifiering pågår"}
+            {isVerified ? "Verifierat företag" : "Inte verifierad än"}
           </div>
           <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)" }}>
             {isVerified
-              ? "Ert företag är granskat och godkänt av STP."
-              : "Vår granskare kontrollerar era uppgifter. Detta tar vanligtvis 1–2 arbetsdagar."}
+              ? "Verifierat automatiskt mot Bolagsverket via ert organisationsnummer."
+              : "Vi kunde inte automatiskt bekräfta att ert org.nr är ett transport-/åkeriföretag (SNI). Mejla hello@transportplattformen.se så hjälper vi er."}
           </div>
         </div>
       </div>

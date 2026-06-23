@@ -285,13 +285,18 @@ authRouter.post("/register", validateBody(registerSchema), async (req, res, next
       console.error("Email verification send failed:", mailError);
     }
     try {
-      await notifyAdminNewRegistration({
-        role: user.role,
-        name: user.name,
-        email: user.email,
-        companyName: user.companyName ?? undefined,
-        companyOrgNumber: user.companyOrgNumber ?? undefined,
-      });
+      // Notisen till admin behövs bara när ett åkeri INTE auto-verifierades mot
+      // Bolagsverket (kantfall som kräver en människa). Auto-verifierade åkerier
+      // är redan klara → ingen admin-åtgärd, ingen notis.
+      if (user.role !== "COMPANY" || user.companyStatus === "PENDING") {
+        await notifyAdminNewRegistration({
+          role: user.role,
+          name: user.name,
+          email: user.email,
+          companyName: user.companyName ?? undefined,
+          companyOrgNumber: user.companyOrgNumber ?? undefined,
+        });
+      }
     } catch (notifyErr) {
       console.error("Admin new-registration notify failed:", notifyErr);
     }

@@ -178,7 +178,7 @@ export default function VisionPresentation() {
                 "Gratis för förare — alltid.",
               ]},
               { title: "För åkerier", items: [
-                "Registrera ett företagskonto — verifieras manuellt av STP.",
+                "Registrera ett företagskonto — verifieras automatiskt mot Bolagsverket via org.nr.",
                 "Sök bland förare med filter på körkort, certifikat, region och segment.",
                 "Publicera jobbannonser och ta emot intresseanmälningar direkt.",
                 "Bygg en synlig och trovärdig profil på plattformen över tid.",

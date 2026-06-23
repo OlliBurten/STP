@@ -234,7 +234,7 @@ export async function sendWelcomeEmail({ to, name, role, frontendBaseUrl }) {
       to,
       subject,
       heading: "Välkommen till STP!",
-      text: `Hej ${name || ""}!\n\nVälkommen till Sveriges Transportplattform. Ert konto är skapat och väntar på verifiering.\n\nVi granskar nya företagskonton manuellt. Det tar vanligtvis 1–2 vardagar. Vi hör av oss när ni är verifierade och kan börja publicera jobb.`,
+      text: `Hej ${name || ""}!\n\nVälkommen till Sveriges Transportplattform. Ert konto är skapat.\n\nVi verifierar er automatiskt mot Bolagsverket via ert organisationsnummer. Är ni registrerade som ett transport-/åkeriföretag är ni verifierade direkt och kan publicera jobb med en gång. Kunde vi inte bekräfta det automatiskt? Mejla hello@transportplattformen.se så hjälper vi er.`,
       ctaUrl: base ? `${base}/foretag` : undefined,
       ctaText: "Gå till er sida",
     });
