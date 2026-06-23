@@ -97,35 +97,6 @@ function BrandPanel() {
   );
 }
 
-/* ── BankID button — "Kommer snart"-läge (streckad, inaktiv) ─────────────────── */
-function BankIDButton() {
-  return (
-    <button
-      type="button"
-      disabled
-      style={{
-        width: "100%", height: 48, borderRadius: 11, marginBottom: 12,
-        background: "transparent", border: "1px dashed var(--line-strong)",
-        display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
-        fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-700)",
-        cursor: "not-allowed", fontFamily: "inherit",
-      }}
-    >
-      <span style={{ width: 26, height: 26, borderRadius: 6, background: "var(--ink-400)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "var(--text-2xs)", fontWeight: 800 }}>
-        ID
-      </span>
-      BankID
-      <span style={{
-        fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 0.6, textTransform: "uppercase",
-        background: "var(--amber-tint)", color: "var(--amber-text)",
-        padding: "4px 10px", borderRadius: 99,
-      }}>
-        Kommer snart
-      </span>
-    </button>
-  );
-}
-
 /* ── Divider ──────────────────────────────────────────────────────────────── */
 function OrDivider() {
   return (
@@ -541,8 +512,6 @@ export default function Login() {
               </h1>
               <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", marginBottom: 28 }}>Gratis just nu. Inga avgifter.</p>
 
-              <BankIDButton />
-
               <OAuthSection
                 onSuccess={handleOAuthSuccess}
                 onError={(msg) => { setError(msg); setInfo(""); setOauthPickingRole(false); }}
@@ -699,7 +668,6 @@ export default function Login() {
                   from={from}
                   mode="login"
                 />
-                <BankIDButton />
                 <OrDivider />
               </>
             )}

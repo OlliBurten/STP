@@ -1,4 +1,8 @@
-import { apiGet, apiPatch } from "./client.js";
+import { apiGet, apiPatch, apiPost } from "./client.js";
+
+/** Publikt kontakt-/feedbackformulär → POST /api/feedback (mejlar admin). */
+export const submitFeedback = ({ name, email, message }) =>
+  apiPost("/api/feedback", { name, email, message });
 
 export const listFeedback = (filters) => {
   const params = new URLSearchParams();

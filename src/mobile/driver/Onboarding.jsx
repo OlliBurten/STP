@@ -103,7 +103,7 @@ export default function DriverOnboarding() {
               <input value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" inputMode="tel" placeholder="070-123 45 67" style={{ width: "100%", height: 54, padding: "0 16px", borderRadius: 13, border: "1px solid var(--line-2)", background: "#fff", fontSize: 17, color: "var(--ink-900)", outline: "none", marginBottom: 14 }} />
               <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "12px 14px", background: "var(--info-tint)", borderRadius: 12 }}>
                 <Icon name="info" size={17} color="var(--info)" stroke={2} style={{ flexShrink: 0 }} />
-                <span style={{ fontSize: 12.5, color: "var(--ink-700)", lineHeight: 1.4 }}>Snart kan du logga in med <b>BankID</b> – då slipper du fylla i något alls.</span>
+                <span style={{ fontSize: 12.5, color: "var(--ink-700)", lineHeight: 1.4 }}>Ditt nummer visas aldrig publikt – det används bara så åkerier kan kontakta dig om ett jobb.</span>
               </div>
             </>
           )}

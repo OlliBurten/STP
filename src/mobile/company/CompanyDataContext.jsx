@@ -171,8 +171,12 @@ export function CompanyDataProvider({ children }) {
   }, [hasApi, refresh]);
 
   const moveCandidate = useCallback((id, stage) => {
-    setCandidates((cs) => cs.map((c) => (c.id === id ? { ...c, stage } : c))); // optimistic
-    if (hasApi) setConversationStage(id, stage).catch(() => {});
+    let prev;
+    setCandidates((cs) => cs.map((c) => { if (c.id === id) { prev = c.stage; return { ...c, stage }; } return c; })); // optimistic
+    if (hasApi) setConversationStage(id, stage).catch(() => {
+      // Återställ optimistisk ändring vid fel så listan inte ljuger om ett steg som inte sparades.
+      setCandidates((cs) => cs.map((c) => (c.id === id ? { ...c, stage: prev } : c)));
+    });
   }, [hasApi]);
 
   // ── Publish a job ────────────────────────────────────────────────

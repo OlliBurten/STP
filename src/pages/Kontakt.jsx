@@ -2,6 +2,7 @@ import { useState } from "react";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { useIsMobile } from "../hooks/useIsMobile";
 import PageMeta from "../components/PageMeta";
+import { submitFeedback } from "../api/feedback";
 
 const FAQ = [
   { q: "Hur snabbt svarar ni?", a: "Vi svarar normalt inom 1–2 vardagar. Vid enklare frågor ofta samma dag." },
@@ -37,6 +38,14 @@ function FaqItem({ item }) {
 export default function Kontakt() {
   usePageTitle("Kontakt");
   const isMobile = useIsMobile();
+  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [status, setStatus] = useState("idle"); // idle | sending | sent | error
+  const submitContact = async () => {
+    if (!form.message.trim() || status === "sending") return;
+    setStatus("sending");
+    try { await submitFeedback(form); setStatus("sent"); }
+    catch { setStatus("error"); }
+  };
   return (
     <main style={{ background: "var(--paper)", minHeight: "100vh" }}>
       <PageMeta title="Kontakt – Sveriges Transportplattform" description="Kontakta Sveriges Transportplattform (STP) med frågor om samverkan, plattformen eller genomgång. Vi svarar på hello@transportplattformen.se." canonical="/kontakt" />
@@ -68,29 +77,46 @@ export default function Kontakt() {
           {/* Right: contact form */}
           <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, padding: isMobile ? "24px 20px" : "28px 30px" }}>
             <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-500)", marginBottom: 18 }}>Skicka ett meddelande</div>
-            {["Namn", "E-post"].map((l) => (
-              <label key={l} style={{ display: "block", marginBottom: 16 }}>
-                <span style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-700)", display: "block", marginBottom: 8 }}>{l}</span>
-                <input
-                  type={l === "E-post" ? "email" : "text"}
-                  style={{ width: "100%", padding: "11px 14px", borderRadius: 10, background: "var(--card-2)", border: "1px solid var(--line-2)", fontSize: "var(--text-base)", color: "var(--ink-900)", outline: "none", fontFamily: "inherit" }}
-                />
-              </label>
-            ))}
-            <label style={{ display: "block", marginBottom: 18 }}>
-              <span style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-700)", display: "block", marginBottom: 8 }}>Meddelande</span>
-              <textarea
-                rows={4}
-                style={{ width: "100%", padding: "12px 14px", borderRadius: 10, background: "var(--card-2)", border: "1px solid var(--line-2)", fontSize: "var(--text-base)", color: "var(--ink-900)", outline: "none", fontFamily: "inherit", lineHeight: 1.5, resize: "vertical" }}
-              />
-            </label>
-            <button
-              type="button"
-              style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "13px 24px", borderRadius: 10, background: "var(--green)", color: "#fff", fontSize: "var(--text-base)", fontWeight: 800, border: "none", cursor: "pointer", fontFamily: "inherit" }}
-            >
-              Skicka
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-            </button>
+            {status === "sent" ? (
+              <div style={{ padding: "16px 16px", borderRadius: 12, background: "var(--green-tint)", color: "var(--green-text)", fontSize: "var(--text-base)", lineHeight: 1.6, fontWeight: 600 }}>
+                Tack! Vi har tagit emot ditt meddelande och svarar oftast inom 1–2 vardagar.
+              </div>
+            ) : (
+              <>
+                {[["Namn", "name", "text"], ["E-post", "email", "email"]].map(([l, k, t]) => (
+                  <label key={k} style={{ display: "block", marginBottom: 16 }}>
+                    <span style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-700)", display: "block", marginBottom: 8 }}>{l}</span>
+                    <input
+                      type={t}
+                      value={form[k]}
+                      onChange={(e) => setForm((f) => ({ ...f, [k]: e.target.value }))}
+                      style={{ width: "100%", padding: "11px 14px", borderRadius: 10, background: "var(--card-2)", border: "1px solid var(--line-2)", fontSize: "var(--text-base)", color: "var(--ink-900)", outline: "none", fontFamily: "inherit" }}
+                    />
+                  </label>
+                ))}
+                <label style={{ display: "block", marginBottom: 18 }}>
+                  <span style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-700)", display: "block", marginBottom: 8 }}>Meddelande</span>
+                  <textarea
+                    rows={4}
+                    value={form.message}
+                    onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
+                    style={{ width: "100%", padding: "12px 14px", borderRadius: 10, background: "var(--card-2)", border: "1px solid var(--line-2)", fontSize: "var(--text-base)", color: "var(--ink-900)", outline: "none", fontFamily: "inherit", lineHeight: 1.5, resize: "vertical" }}
+                  />
+                </label>
+                {status === "error" && (
+                  <div style={{ marginBottom: 12, fontSize: "var(--text-sm)", color: "var(--danger)", fontWeight: 600 }}>Kunde inte skicka just nu. Försök igen eller mejla hello@transportplattformen.se.</div>
+                )}
+                <button
+                  type="button"
+                  onClick={submitContact}
+                  disabled={status === "sending" || !form.message.trim()}
+                  style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "13px 24px", borderRadius: 10, background: "var(--green)", color: "#fff", fontSize: "var(--text-base)", fontWeight: 800, border: "none", cursor: status === "sending" || !form.message.trim() ? "not-allowed" : "pointer", opacity: status === "sending" || !form.message.trim() ? 0.5 : 1, fontFamily: "inherit" }}
+                >
+                  {status === "sending" ? "Skickar…" : "Skicka"}
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </button>
+              </>
+            )}
           </div>
         </div>
 
