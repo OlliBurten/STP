@@ -116,8 +116,20 @@ export function ChatProvider({ children }) {
         (c) => c.selectedByCompanyAt && seenSelectedMap[c.id] !== c.selectedByCompanyAt
       ).length
     : 0;
+  // Enad oläst-logik (samma för förare & åkeri): motparten skrev sist OCH det är
+  // nyare än senast jag öppnade konversationen (convSeenMap, satt av
+  // markConversationSeen). Gör att läsning faktiskt rensar oläst-markeringen.
+  const isConversationUnread = useCallback((c) => {
+    const lastMsg = c?.messages?.[c.messages.length - 1];
+    if (!lastMsg) return false;
+    const fromOther = isCompany ? lastMsg.sender === "driver" : lastMsg.sender === "company";
+    if (!fromOther) return false;
+    const lastSeen = convSeenMap[c.id];
+    return !lastSeen || new Date(lastMsg.timestamp) > new Date(lastSeen);
+  }, [convSeenMap, isCompany]);
+
   const companyUnreadConversationCount = isCompany
-    ? list.filter((c) => !c.readByCompanyAt).length
+    ? list.filter(isConversationUnread).length
     : 0;
 
   const createConversation = useCallback(
@@ -253,6 +265,7 @@ export function ChatProvider({ children }) {
         unreadCount,
         selectedNotificationCount,
         companyUnreadConversationCount,
+        isConversationUnread,
         markConversationSeen,
         markSelectedNotificationsSeen,
         refreshConversations,

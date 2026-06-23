@@ -1,6 +1,6 @@
 // Company app — small shared UI pieces ported from STP Mobil Åkeri.
 import React from "react";
-import { Icon, Pill } from "../ui";
+import { Icon, Pill, Button } from "../ui";
 
 export const SEG = {
   heltid: { label: "Heltid", tone: "soft" },
@@ -50,5 +50,16 @@ export const CompanyLoading = () => (
   <div style={{ flex: 1, overflow: "hidden" }}>
     <div style={{ padding: "14px 20px" }}><div className="skel" style={{ width: 200, height: 30, marginBottom: 8 }} /><div className="skel" style={{ width: 130, height: 15 }} /></div>
     <div style={{ padding: "4px 20px", display: "flex", flexDirection: "column", gap: 14 }}>{[0, 1, 2].map((i) => <div key={i} className="skel" style={{ height: i === 0 ? 120 : 90, borderRadius: 16 }} />)}</div>
+  </div>
+);
+
+// Felläge med "Försök igen" — visas när en kritisk hämtning fallit, så ett
+// backend-fel inte renderas som ett tomt "du har inga annonser"-läge.
+export const CompanyError = ({ onRetry, text = "Kunde inte hämta data. Kontrollera din uppkoppling och försök igen." }) => (
+  <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "48px 28px", textAlign: "center", gap: 12 }}>
+    <div style={{ width: 56, height: 56, borderRadius: 16, background: "var(--danger-tint)", display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="alert" size={26} color="var(--danger)" stroke={2.2} /></div>
+    <div style={{ fontSize: 16, fontWeight: 800, color: "var(--ink-900)" }}>Kunde inte ladda</div>
+    <p style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.5, maxWidth: 280 }}>{text}</p>
+    {onRetry && <Button variant="secondary" size="md" onClick={onRetry}>Försök igen</Button>}
   </div>
 );

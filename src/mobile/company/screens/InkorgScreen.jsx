@@ -1,12 +1,16 @@
 // Company — Inkorg (message threads). Ported from STP Mobil Åkeri.
 import React, { useState } from "react";
 import { Header, ScrollArea, Card, Avatar, Empty, Button } from "../../ui";
-import { CompanyLoading } from "../ui";
+import { CompanyLoading, CompanyError } from "../ui";
 
 export default function InkorgScreen({ ctx, go }) {
   const [sy, setSy] = useState(0);
-  if (ctx.loading) return <CompanyLoading />;
   const threads = ctx.threads;
+  // Full-skärms laddning bara vid första hämtningen — annars behåll header/lista
+  // under refresh så vyn inte "blinkar" tom.
+  if (ctx.loading && !threads.length) return <CompanyLoading />;
+  // Felläge före tom-läget, annars renderas ett backend-fel som "Inga meddelanden än".
+  if (ctx.error) return <CompanyError onRetry={ctx.refresh} text="Kunde inte ladda inkorgen." />;
   const unread = threads.filter((t) => t.unread).length;
   return (
     <>
@@ -18,7 +22,7 @@ export default function InkorgScreen({ ctx, go }) {
           ) : (
             <Card style={{ padding: "0 16px", overflow: "hidden" }}>
               {threads.map((t, i) => (
-                <button key={t.id} onClick={() => ctx.setChat(t.conv)} className="press" style={{ display: "flex", alignItems: "center", gap: 13, width: "100%", textAlign: "left", padding: "15px 0", borderBottom: i < threads.length - 1 ? "1px solid var(--line)" : "none" }}>
+                <button key={t.id} onClick={() => ctx.setChat(t.conv)} aria-label={`${t.name}${t.unread ? ", oläst" : ""}${t.when ? ", " + t.when : ""}`} className="press" style={{ display: "flex", alignItems: "center", gap: 13, width: "100%", textAlign: "left", padding: "15px 0", borderBottom: i < threads.length - 1 ? "1px solid var(--line)" : "none" }}>
                   <div style={{ position: "relative" }}><Avatar initials={t.initials} size={46} color="var(--green)" />{t.unread && <span style={{ position: "absolute", top: -1, right: -1, width: 13, height: 13, borderRadius: 7, background: "var(--amber)", border: "2px solid var(--card)" }} />}</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>

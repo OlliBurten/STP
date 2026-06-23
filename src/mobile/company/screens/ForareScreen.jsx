@@ -1,7 +1,7 @@
 // Company — Hitta förare (driver search). Ported from STP Mobil Åkeri.
 import React, { useState, useEffect } from "react";
 import { Header, ScrollArea, Card, Avatar, Button, Empty, Icon } from "../../ui";
-import { MatchChip, LicRow, CompanyLoading } from "../ui";
+import { MatchChip, LicRow, CompanyLoading, CompanyError } from "../ui";
 import { ownedLicenses } from "../../driver/licenseUtils";
 
 function DriverCard({ d, ctx }) {
@@ -33,7 +33,10 @@ export default function ForareScreen({ ctx }) {
   const [shown, setShown] = useState(15);
   const f = ctx.driverFilter;
   useEffect(() => { setShown(15); }, [q, f]);
-  if (ctx.loading) return <CompanyLoading />;
+  // Full-skärms-laddning bara vid första hämtningen — annars behåller vi header +
+  // sök så en pull-to-refresh inte blinkar bort hela chrome:t.
+  if (ctx.loading && !ctx.drivers.length) return <CompanyLoading />;
+  if (ctx.error) return <CompanyError onRetry={ctx.refresh} text="Kunde inte hämta förare." />;
 
   let list = ctx.drivers.slice();
   if (f.seg !== "alla") list = list.filter((d) => d.segment === f.seg);
@@ -42,19 +45,21 @@ export default function ForareScreen({ ctx }) {
   if (q.trim()) { const s = q.trim().toLowerCase(); list = list.filter((d) => d.name.toLowerCase().includes(s) || (d.location || "").toLowerCase().includes(s)); }
   list.sort((a, b) => (b.match ?? 0) - (a.match ?? 0));
   const activeFilters = (f.seg !== "alla" ? 1 : 0) + (f.lic.length ? 1 : 0) + (f.onlyAvail ? 1 : 0);
+  const isFiltered = activeFilters > 0 || !!q.trim();
   const remaining = list.length - shown;
   const onScrollMore = (e) => { setSy(e.target.scrollTop); const el = e.target; if (el.scrollHeight - el.scrollTop - el.clientHeight < 340) setShown((s) => (s < list.length ? s + 12 : s)); };
 
   return (
     <>
-      <Header title="Hitta förare" scrollY={sy} big="Hitta förare" sub={`${ctx.drivers.length} förare`} />
+      <Header title="Hitta förare" scrollY={sy} big="Hitta förare" sub={isFiltered ? `${list.length} av ${ctx.drivers.length} förare` : `${ctx.drivers.length} förare`} />
       <div style={{ padding: "0 20px 12px", flexShrink: 0, background: "var(--paper)", position: "relative", zIndex: 4 }}>
         <div style={{ display: "flex", gap: 10 }}>
           <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 10, height: 46, padding: "0 14px", borderRadius: 13, background: "#fff", border: "1px solid var(--line-2)" }}>
             <Icon name="search" size={19} color="var(--ink-400)" stroke={2} />
-            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Namn eller ort" style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontSize: 15, color: "var(--ink-900)" }} />
+            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Namn eller ort" aria-label="Sök förare" style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontSize: 15, color: "var(--ink-900)" }} />
+            {q && <button onClick={() => setQ("")} aria-label="Rensa sökning" className="press" style={{ flexShrink: 0, width: 44, height: 44, marginRight: -10, borderRadius: 11, background: "transparent", border: "none", display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="x" size={18} color="var(--ink-400)" stroke={2.2} /></button>}
           </div>
-          <button onClick={() => ctx.setSheet({ type: "driverFilter" })} className="press" style={{ position: "relative", width: 46, height: 46, borderRadius: 13, background: activeFilters ? "var(--green)" : "#fff", border: `1px solid ${activeFilters ? "var(--green-deep)" : "var(--line-2)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <button onClick={() => ctx.setSheet({ type: "driverFilter" })} aria-label={activeFilters ? `Filter, ${activeFilters} aktiva` : "Filter"} className="press" style={{ position: "relative", width: 46, height: 46, borderRadius: 13, background: activeFilters ? "var(--green)" : "#fff", border: `1px solid ${activeFilters ? "var(--green-deep)" : "var(--line-2)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <Icon name="sliders" size={19} color={activeFilters ? "#fff" : "var(--ink-700)"} stroke={2} />
             {activeFilters > 0 && <span style={{ position: "absolute", top: -5, right: -5, minWidth: 17, height: 17, borderRadius: 9, background: "var(--amber)", color: "#fff", fontSize: 10, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", border: "1.5px solid var(--paper)" }}>{activeFilters}</span>}
           </button>
@@ -62,11 +67,10 @@ export default function ForareScreen({ ctx }) {
       </div>
       <ScrollArea onScroll={onScrollMore} onRefresh={(done) => { ctx.refresh(); setTimeout(done, 700); }}>
         <div style={{ padding: "4px 20px 26px" }}>
-          <div style={{ fontSize: 13, color: "var(--ink-500)", marginBottom: 12, fontWeight: 600 }}>{list.length} förare matchar</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {list.length === 0 && <Empty icon="search" title="Inga förare matchar" text="Pröva att bredda dina filter eller sök på en annan ort." action={<Button variant="secondary" size="md" onClick={() => ctx.setDriverFilter({ seg: "alla", lic: [], onlyAvail: false })}>Rensa filter</Button>} />}
+            {list.length === 0 && <Empty icon="search" title={q.trim() ? `Inga träffar för "${q.trim()}"` : "Inga förare matchar"} text="Pröva att bredda dina filter eller sök på en annan ort." action={isFiltered ? <Button variant="secondary" size="md" onClick={() => { ctx.setDriverFilter({ seg: "alla", lic: [], onlyAvail: false }); setQ(""); }}>Rensa filter</Button> : null} />}
             {list.slice(0, shown).map((d) => <DriverCard key={d.id} d={d} ctx={ctx} />)}
-            {remaining > 0 && <button onClick={() => setShown((s) => s + 12)} className="press" style={{ padding: "13px 0", borderRadius: 13, background: "var(--card)", border: "1px solid var(--line-2)", boxShadow: "var(--sh-sm)", fontSize: 14.5, fontWeight: 700, color: "var(--ink-800)", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>Visa fler<span style={{ fontSize: 12.5, color: "var(--ink-400)", fontWeight: 600 }}>· {remaining} kvar</span></button>}
+            {remaining > 0 && <div style={{ padding: "13px 0", textAlign: "center", fontSize: 13, color: "var(--ink-400)", fontWeight: 600 }}>{remaining} fler · skrolla för mer</div>}
           </div>
         </div>
       </ScrollArea>

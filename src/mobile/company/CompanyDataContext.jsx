@@ -16,7 +16,7 @@ import { fetchMyJobs, createJob, fetchJobApplicants } from "../../api/jobs";
 import { fetchDrivers } from "../../api/drivers";
 import { setConversationStage } from "../../api/conversations";
 import { fetchMyOrganizations } from "../../api/organizations";
-import { initialsFor } from "../driver/jobAdapter";
+import { initialsFor, timeAgo } from "../driver/jobAdapter";
 
 const Ctx = createContext(null);
 export const useCompanyData = () => useContext(Ctx);
@@ -29,6 +29,7 @@ export function CompanyDataProvider({ children }) {
   const chat = useChat();
 
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [apiCompany, setApiCompany] = useState(null);
   const [kpis, setKpis] = useState({ newApps: 0, unread: 0, activeJobs: 0, views: 0 });
   const [rawJobs, setRawJobs] = useState([]);
@@ -71,14 +72,19 @@ export function CompanyDataProvider({ children }) {
   const refresh = useCallback(async () => {
     if (!hasApi) { setLoading(false); return; }
     setLoading(true);
+    setError(false);
+    // Spåra om en KRITISK hämtning (profil/jobb/förare) faller — då ska skärmen
+    // visa ett felläge med "Försök igen", inte ett "du har inga annonser"-tomläge.
+    let failed = false;
     const [prof, stats, jobs, drv, organizations, inv] = await Promise.all([
-      fetchMyCompanyProfile().catch(() => null),
+      fetchMyCompanyProfile().catch(() => { failed = true; return null; }),
       fetchJobViewStats().catch(() => null),
-      fetchMyJobs().catch(() => []),
-      fetchMatchingDrivers().catch(() => fetchDrivers().catch(() => [])),
+      fetchMyJobs().catch(() => { failed = true; return null; }),
+      fetchMatchingDrivers().catch(() => fetchDrivers().catch(() => { failed = true; return []; })),
       fetchMyOrganizations().catch(() => []),
       listInvites().catch(() => []),
     ]);
+    setError(failed);
     if (prof) setApiCompany(prof);
     if (Array.isArray(organizations)) setOrgs(organizations);
     if (Array.isArray(inv)) setInvites(inv);
@@ -157,27 +163,28 @@ export function CompanyDataProvider({ children }) {
   // ── Publish a job ────────────────────────────────────────────────
   const publishJob = useCallback(async (d) => {
     if (!hasApi) return;
-    try {
-      await createJob({
-        title: d.title, location: d.location, region: "",
-        segment: d.segment === "vikariepool" ? "FLEX" : d.segment === "praktik" ? "INTERNSHIP" : "FULLTIME",
-        employment: d.type === "Vikariat" ? "vikariat" : d.type === "Timanställd" ? "tim" : "fast",
-        license: d.lic, certificates: d.certs, jobType: "fjärrkörning",
-        description: d.tasks || "", tasks: d.tasks ? [d.tasks] : [], offers: d.perks || [],
-        experience: d.minExp ? `${d.minExp}+` : "0-1", contact: user?.email || "",
-      });
-      refresh();
-    } catch { /* ignore */ }
+    // Låt fel bubbla upp till anroparen (PublishSheet) så den kan visa fel +
+    // behålla wizard-inputen i st f att fejka "publicerad".
+    await createJob({
+      title: d.title, location: d.location, region: "",
+      segment: d.segment === "vikariepool" ? "FLEX" : d.segment === "praktik" ? "INTERNSHIP" : "FULLTIME",
+      employment: d.type === "Vikariat" ? "vikariat" : d.type === "Timanställd" ? "tim" : "fast",
+      license: d.lic, certificates: d.certs, jobType: "fjärrkörning",
+      description: d.tasks || "", tasks: d.tasks ? [d.tasks] : [], offers: d.perks || [],
+      experience: d.minExp ? `${d.minExp}+` : "0-1", contact: user?.email || "",
+    });
+    refresh();
   }, [hasApi, user, refresh]);
 
   // ── Contact a driver → conversation ──────────────────────────────
   const contactDriver = useCallback(async ({ driverId, jobId, jobTitle, message }) => {
     if (!hasApi) return;
-    try { await chat.createConversation?.({ driverId, companyId: user?.id, companyName: company.name, jobId, jobTitle, initialMessage: message, sender: "company" }); }
-    catch { /* ignore */ }
+    // Propagera fel → ContactDriverSheet kan visa "kunde inte skicka".
+    await chat.createConversation?.({ driverId, companyId: user?.id, companyName: company.name, jobId, jobTitle, initialMessage: message, sender: "company" });
   }, [hasApi, chat, user, company.name]);
 
-  const updateCompany = useCallback((patch) => { updateMyCompanyProfile(patch).then(refresh).catch(() => {}); }, [refresh]);
+  // Returnerar promisen och sväljer INTE fel → EditCompanySheet kan await:a + fånga.
+  const updateCompany = useCallback((patch) => updateMyCompanyProfile(patch).then(refresh), [refresh]);
 
   // ── Threads (company conversations) ──────────────────────────────
   const threads = useMemo(() => {
@@ -185,12 +192,12 @@ export function CompanyDataProvider({ children }) {
     return (Array.isArray(list) ? list : []).map((c) => {
       const msgs = Array.isArray(c.messages) ? c.messages : [];
       const last = msgs[msgs.length - 1];
-      return { id: c.id, name: c.driverName || "Förare", initials: initialsFor(c.driverName), jobTitle: c.jobTitle || "", last: last ? (last.sender === "company" ? "Du: " : "") + last.content : "", when: "", unread: !!last && last.sender === "driver", conv: c };
+      return { id: c.id, name: c.driverName || "Förare", initials: initialsFor(c.driverName), jobTitle: c.jobTitle || "", last: last ? (last.sender === "company" ? "Du: " : "") + last.content : "", when: last?.timestamp ? timeAgo(last.timestamp) : "", unread: chat.isConversationUnread ? chat.isConversationUnread(c) : (!!last && last.sender === "driver"), conv: c };
     });
   }, [chat, company.name]);
 
   const value = {
-    loading, company, verified, kpis, jobs, candidates, drivers, orgs, invites,
+    loading, error, company, verified, kpis, jobs, candidates, drivers, orgs, invites,
     savedDrivers, toggleSaveDriver, driverFilter, setDriverFilter,
     moveCandidate, publishJob, contactDriver, updateCompany, refresh,
     threads, chat, createInvite, revokeInvite,

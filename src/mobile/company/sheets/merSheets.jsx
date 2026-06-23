@@ -31,7 +31,19 @@ export function EditCompanySheet({ ctx, close }) {
   const [cpName, setCpName] = useState(c.contact?.name || "");
   const [cpRole, setCpRole] = useState(c.contact?.role || "");
   const [cpPhone, setCpPhone] = useState(c.contact?.phone || "");
-  const save = () => { ctx.updateCompany({ name, location: city, website, description: about, contact: { ...(c.contact || {}), name: cpName, role: cpRole, phone: cpPhone } }); close(); };
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const save = async () => {
+    setBusy(true); setErr("");
+    try {
+      await ctx.updateCompany({ name, location: city, website, description: about, contact: { ...(c.contact || {}), name: cpName, role: cpRole, phone: cpPhone } });
+      close();
+    } catch {
+      setErr("Det gick inte att spara. Kontrollera anslutningen och försök igen.");
+    } finally {
+      setBusy(false);
+    }
+  };
   return (
     <div style={{ padding: "4px 22px 26px" }}>
       <Field label="Företagsnamn" value={name} onChange={setName} />
@@ -43,7 +55,8 @@ export function EditCompanySheet({ ctx, close }) {
       <Field label="Namn" value={cpName} onChange={setCpName} />
       <Field label="Roll" value={cpRole} onChange={setCpRole} placeholder="t.ex. Trafikledare" />
       <Field label="Telefon" type="tel" inputMode="tel" value={cpPhone} onChange={setCpPhone} />
-      <Button variant="primary" size="lg" full onClick={save}>Spara ändringar</Button>
+      {err && <p role="alert" style={{ fontSize: 13, color: "var(--danger)", lineHeight: 1.45, marginBottom: 12 }}>{err}</p>}
+      <Button variant="primary" size="lg" full busy={busy} disabled={busy} onClick={save}>Spara ändringar</Button>
     </div>
   );
 }
@@ -51,14 +64,38 @@ export const CompleteProfileSheet = EditCompanySheet;
 
 /* ── Settings ── */
 export function SettingsSheet({ ctx, close }) {
-  const [notif, setNotif] = useState({ applications: true, messages: true, weekly: true });
-  const toggle = (k) => setNotif((n) => { const next = { ...n, [k]: !n[k] }; if (ctx.hasApi) updateCompanyNotificationSettings(next).catch(() => {}); return next; });
+  // Seed from saved company notification settings if the context exposes them;
+  // ctx.company currently has no such field (CompanyDataContext doesn't map one),
+  // so this falls back to all-on until a notificationSettings field is surfaced.
+  const saved = ctx.company?.notificationSettings;
+  const [notif, setNotif] = useState({
+    applications: saved?.applications ?? true,
+    messages: saved?.messages ?? true,
+    weekly: saved?.weekly ?? true,
+  });
+  const [notifErr, setNotifErr] = useState("");
+  const toggle = (k) => {
+    setNotifErr("");
+    setNotif((n) => {
+      const prev = n[k];
+      const next = { ...n, [k]: !prev };
+      if (ctx.hasApi) {
+        updateCompanyNotificationSettings(next).catch(() => {
+          // Revert the optimistic change + tell the user it didn't stick.
+          setNotif((cur) => ({ ...cur, [k]: prev }));
+          setNotifErr("Det gick inte att spara notisinställningen. Försök igen.");
+        });
+      }
+      return next;
+    });
+  };
   return (
     <div style={{ padding: "0 22px 26px" }}>
       <Label style={{ margin: "0 0 2px" }}>Notiser</Label>
-      <Row label="Nya ansökningar" right={<Switch on={notif.applications} onToggle={() => toggle("applications")} />} />
-      <Row label="Nya meddelanden" right={<Switch on={notif.messages} onToggle={() => toggle("messages")} />} />
-      <Row label="Veckosammanfattning" right={<Switch on={notif.weekly} onToggle={() => toggle("weekly")} />} last />
+      <Row label="Nya ansökningar" right={<Switch on={notif.applications} onToggle={() => toggle("applications")} label="Nya ansökningar" />} />
+      <Row label="Nya meddelanden" right={<Switch on={notif.messages} onToggle={() => toggle("messages")} label="Nya meddelanden" />} />
+      <Row label="Veckosammanfattning" right={<Switch on={notif.weekly} onToggle={() => toggle("weekly")} label="Veckosammanfattning" />} last />
+      {notifErr && <p role="alert" style={{ fontSize: 12.5, color: "var(--danger)", lineHeight: 1.45, marginTop: 8 }}>{notifErr}</p>}
       <Label style={{ margin: "20px 0 2px" }}>Konto</Label>
       <Row label="Företagsprofil" onClick={() => ctx.setSheet({ type: "editCompany" })} />
       {/* Abonnemang/billing dolt tills vidare — ej redo att fakturera åkerier. */}
@@ -73,6 +110,8 @@ export function SettingsSheet({ ctx, close }) {
 export function TeamSheet({ ctx, close }) {
   const members = ctx.company.members || [];
   const invites = ctx.invites || [];
+  const [confirmId, setConfirmId] = useState(null);
+  const revoke = (id) => { setConfirmId(null); ctx.revokeInvite(id).then(ctx.refresh); };
   return (
     <div style={{ padding: "4px 22px 26px" }}>
       <p style={{ fontSize: 13.5, color: "var(--ink-500)", lineHeight: 1.5, marginBottom: 16 }}>Personer med tillgång till {ctx.company.name}. <b style={{ color: "var(--ink-800)" }}>Admin</b> kan publicera, hantera team och betalning. <b style={{ color: "var(--ink-800)" }}>Rekryterare</b> hanterar annonser och kandidater.</p>
@@ -90,7 +129,14 @@ export function TeamSheet({ ctx, close }) {
           <div key={i.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", background: "var(--card-2)", border: "1px solid var(--line)", borderRadius: 13 }}>
             <Avatar initials={(i.email || "?").slice(0, 2).toUpperCase()} size={40} color="var(--ink-400)" />
             <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 14, color: "var(--ink-700)" }}>{i.email}</div></div>
-            <button onClick={() => ctx.revokeInvite(i.id).then(ctx.refresh)} className="press" style={{ fontSize: 12.5, fontWeight: 700, color: "var(--danger)" }}>Ta bort</button>
+            {confirmId === i.id ? (
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <button onClick={() => revoke(i.id)} className="press" aria-label={`Bekräfta att ta bort inbjudan till ${i.email}`} style={{ minHeight: 44, display: "flex", alignItems: "center", padding: "0 10px", fontSize: 12.5, fontWeight: 700, color: "var(--danger)" }}>Ta bort?</button>
+                <button onClick={() => setConfirmId(null)} className="press" aria-label="Avbryt" style={{ minHeight: 44, display: "flex", alignItems: "center", padding: "0 10px", fontSize: 12.5, fontWeight: 700, color: "var(--ink-500)" }}>Avbryt</button>
+              </div>
+            ) : (
+              <button onClick={() => setConfirmId(i.id)} className="press" aria-label={`Ta bort inbjudan till ${i.email}`} style={{ minHeight: 44, display: "flex", alignItems: "center", padding: "0 10px", fontSize: 12.5, fontWeight: 700, color: "var(--danger)" }}>Ta bort</button>
+            )}
           </div>
         ))}
       </div>
@@ -103,6 +149,10 @@ export function InviteSheet({ ctx, close }) {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [emailErr, setEmailErr] = useState("");
+  const valid = /\S+@\S+\.\S+/.test(email.trim());
+  // Field has no onBlur hook; catch the bubbled blur from the wrapping div instead.
+  const onBlur = () => setEmailErr(email.trim() && !valid ? "Ange en giltig e-postadress" : "");
   const submit = async () => { setBusy(true); try { await ctx.createInvite(email.trim()); ctx.refresh(); setSent(true); } catch { /* */ } finally { setBusy(false); } };
   if (sent) return (
     <div style={{ padding: "20px 24px 30px", textAlign: "center" }}>
@@ -115,8 +165,11 @@ export function InviteSheet({ ctx, close }) {
   return (
     <div style={{ padding: "4px 22px 26px" }}>
       <SheetBack label="Team" onBack={() => ctx.setSheet({ type: "team" })} />
-      <Field label="E-postadress" type="email" value={email} onChange={setEmail} placeholder="kollega@åkeri.se" />
-      <Button variant="primary" size="lg" full busy={busy} disabled={!/\S+@\S+\.\S+/.test(email)} onClick={submit}>Skicka inbjudan</Button>
+      <div onBlur={onBlur} style={{ marginBottom: emailErr ? 0 : -16 }}>
+        <Field label="E-postadress" type="email" value={email} onChange={(v) => { setEmail(v); if (emailErr) setEmailErr(""); }} placeholder="kollega@åkeri.se" />
+      </div>
+      {emailErr && <p role="alert" style={{ fontSize: 13, color: "var(--danger)", lineHeight: 1.45, margin: "-6px 0 16px" }}>{emailErr}</p>}
+      <Button variant="primary" size="lg" full busy={busy} disabled={!valid} onClick={submit}>Skicka inbjudan</Button>
     </div>
   );
 }
@@ -256,12 +309,25 @@ export function SupportSheet({ close }) {
 }
 
 export function LogoutSheet({ ctx, close }) {
+  const [busy, setBusy] = useState(false);
+  const doLogout = async () => {
+    setBusy(true);
+    try {
+      // logout may be async — settle it before navigating so we don't navigate
+      // away mid-logout and leave a half-cleared session.
+      await ctx.logout?.();
+      close();
+      ctx.navigate?.("/");
+    } catch {
+      setBusy(false);
+    }
+  };
   return (
     <div style={{ padding: "4px 22px 26px" }}>
       <p style={{ fontSize: 15, color: "var(--ink-700)", lineHeight: 1.55, marginBottom: 20 }}>Vill du logga ut från STP? Du kan logga in igen när som helst.</p>
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        <Button variant="danger" size="lg" full icon={<Icon name="logout" size={18} stroke={2.1} />} onClick={() => { close(); ctx.logout?.(); ctx.navigate?.("/"); }}>Logga ut</Button>
-        <Button variant="secondary" size="lg" full onClick={close}>Avbryt</Button>
+        <Button variant="danger" size="lg" full busy={busy} disabled={busy} icon={<Icon name="logout" size={18} stroke={2.1} />} onClick={doLogout}>Logga ut</Button>
+        <Button variant="secondary" size="lg" full disabled={busy} onClick={close}>Avbryt</Button>
       </div>
     </div>
   );

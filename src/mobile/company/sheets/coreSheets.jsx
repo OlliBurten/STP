@@ -4,11 +4,14 @@ import { Icon, Label, Field, Button, Pill, Avatar, Switch } from "../../ui";
 import { SEG, STAGES, SegPill, MatchChip, LicRow, Chip, stageLabel, stageTone } from "../ui";
 import { ownedLicenses } from "../../driver/licenseUtils";
 
+const SR_ONLY = { position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", border: 0 };
+
 /* ── Publish job (4 steps) → ctx.publishJob ── */
 export function PublishSheet({ ctx, close }) {
   const [step, setStep] = useState(0);
   const [done, setDone] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
   const [d, setD] = useState({ title: "", location: "", segment: "heltid", type: "Heltid", lic: ["CE"], certs: [], minExp: "0", tasks: "", perks: [] });
   const up = (k, v) => setD((s) => ({ ...s, [k]: v }));
   const toggle = (k, v) => setD((s) => ({ ...s, [k]: s[k].includes(v) ? s[k].filter((x) => x !== v) : [...s[k], v] }));
@@ -33,7 +36,7 @@ export function PublishSheet({ ctx, close }) {
       <div className="app-scroll" key={step} style={{ flex: 1, overflowY: "auto", padding: "4px 22px 12px" }}>
         <div className="tab-enter">
           {step === 0 && <>
-            <Field label="Jobbtitel" value={d.title} onChange={(v) => up("title", v)} placeholder="t.ex. Fjärrförare CE" />
+            <Field label="Jobbtitel *" value={d.title} onChange={(v) => up("title", v)} placeholder="t.ex. Fjärrförare CE" />
             <Field label="Ort" value={d.location} onChange={(v) => up("location", v)} placeholder="t.ex. Malmö" />
             <Label style={{ marginBottom: 9 }}>Segment</Label>
             <div style={{ display: "flex", gap: 9, marginBottom: 18, flexWrap: "wrap" }}>{Object.keys(SEG).map((s) => <Chip key={s} active={d.segment === s} onClick={() => up("segment", s)}>{SEG[s].label}</Chip>)}</div>
@@ -42,7 +45,7 @@ export function PublishSheet({ ctx, close }) {
           </>}
           {step === 1 && <>
             <Label style={{ marginBottom: 9 }}>Arbetsuppgifter</Label>
-            <textarea value={d.tasks} onChange={(e) => up("tasks", e.target.value)} placeholder="Beskriv rollen – t.ex. fjärrkörning Malmö–Stockholm, lastning och lossning, kundkontakt." rows={6} style={{ width: "100%", padding: "13px 15px", borderRadius: 13, border: "1px solid var(--line-2)", background: "#fff", fontSize: 15, color: "var(--ink-900)", outline: "none", resize: "none", lineHeight: 1.5, fontFamily: "var(--font)" }} />
+            <textarea aria-label="Arbetsuppgifter" value={d.tasks} onChange={(e) => up("tasks", e.target.value)} placeholder="Beskriv rollen – t.ex. fjärrkörning Malmö–Stockholm, lastning och lossning, kundkontakt." rows={6} style={{ width: "100%", padding: "13px 15px", borderRadius: 13, border: "1px solid var(--line-2)", background: "#fff", fontSize: 15, color: "var(--ink-900)", outline: "none", resize: "none", lineHeight: 1.5, fontFamily: "var(--font)" }} />
             <div style={{ display: "flex", alignItems: "flex-start", gap: 9, marginTop: 12, padding: "12px 14px", background: "var(--green-tint)", borderRadius: 12 }}>
               <Icon name="spark" size={16} color="var(--green)" stroke={0} style={{ fill: "var(--green)", flexShrink: 0, marginTop: 1 }} />
               <span style={{ fontSize: 12.5, color: "var(--green-text)", lineHeight: 1.45 }}>STP fyller automatiskt i en proffsig beskrivning från dina val om du lämnar fältet kort.</span>
@@ -68,9 +71,16 @@ export function PublishSheet({ ctx, close }) {
           </>}
         </div>
       </div>
-      <div style={{ padding: "12px 22px calc(26px + var(--stpm-safe-bottom))", flexShrink: 0, display: "flex", gap: 10, borderTop: "1px solid var(--line)" }}>
-        {step > 0 && <Button variant="secondary" size="lg" onClick={() => setStep(step - 1)} style={{ flex: "0 0 auto", paddingLeft: 18, paddingRight: 18 }}><Icon name="arrowLeft" size={18} color="var(--ink-700)" stroke={2.2} /></Button>}
-        <Button variant={step === 3 ? "amber" : "primary"} size="lg" full busy={busy} disabled={!canNext} onClick={async () => { if (step < 3) setStep(step + 1); else { setBusy(true); await ctx.publishJob(d); setBusy(false); setDone(true); } }} iconRight={!busy && step < 3 ? <Icon name="arrow" size={18} stroke={2.2} /> : undefined}>{step < 3 ? "Fortsätt" : "Publicera"}</Button>
+      <div style={{ padding: "12px 22px calc(26px + var(--stpm-safe-bottom))", flexShrink: 0, borderTop: "1px solid var(--line)" }}>
+        {err && <div role="alert" style={{ display: "flex", alignItems: "flex-start", gap: 9, padding: "11px 14px", background: "var(--danger-tint)", borderRadius: 12, marginBottom: 12 }}>
+          <Icon name="alert" size={16} color="var(--danger)" stroke={2.2} style={{ flexShrink: 0, marginTop: 1 }} />
+          <span style={{ fontSize: 13, color: "var(--danger)", lineHeight: 1.4 }}>{err}</span>
+        </div>}
+        {step === 0 && !canNext && d.title.length > 0 && <div style={{ fontSize: 12.5, color: "var(--ink-400)", marginBottom: 10, fontWeight: 600 }}>Jobbtiteln måste vara minst 3 tecken.</div>}
+        <div style={{ display: "flex", gap: 10 }}>
+          {step > 0 && <Button variant="secondary" size="lg" onClick={() => setStep(step - 1)} style={{ flex: "0 0 auto", paddingLeft: 18, paddingRight: 18 }}><Icon name="arrowLeft" size={18} color="var(--ink-700)" stroke={2.2} /><span style={SR_ONLY}>Tillbaka</span></Button>}
+          <Button variant={step === 3 ? "amber" : "primary"} size="lg" full busy={busy} disabled={!canNext} onClick={async () => { if (step < 3) setStep(step + 1); else { setErr(""); setBusy(true); try { await ctx.publishJob(d); setDone(true); } catch { setErr("Kunde inte publicera. Försök igen."); } finally { setBusy(false); } } }} iconRight={!busy && step < 3 ? <Icon name="arrow" size={18} stroke={2.2} /> : undefined}>{step < 3 ? "Fortsätt" : "Publicera"}</Button>
+        </div>
       </div>
     </div>
   );
@@ -118,6 +128,7 @@ export function PipelineSheet({ ctx, jobId, close }) {
 
 /* ── Candidate detail ── */
 export function CandidateSheet({ ctx, id, close }) {
+  const [confirmReject, setConfirmReject] = useState(false);
   const c = ctx.candidates.find((x) => x.id === id);
   if (!c) return null;
   const job = ctx.jobs.find((j) => j.id === c.jobId);
@@ -146,7 +157,15 @@ export function CandidateSheet({ ctx, id, close }) {
         <Button variant="secondary" size="lg" full icon={<Icon name="msg" size={17} stroke={2} />} onClick={() => { if (c.conv) ctx.setChat(c.conv); close(); }}>Meddela</Button>
         {next && <Button variant="primary" size="lg" full onClick={() => ctx.moveCandidate(c.id, next.id)} iconRight={<Icon name="arrow" size={17} stroke={2.3} />}>{next.label.replace(/e$/, "")}</Button>}
       </div>
-      {c.stage !== "avslag" && c.stage !== "anstalld" && <button onClick={() => ctx.moveCandidate(c.id, "avslag")} className="press" style={{ width: "100%", textAlign: "center", fontSize: 13.5, fontWeight: 700, color: "var(--danger)", padding: "8px 0" }}>Avböj kandidat</button>}
+      {c.stage !== "avslag" && c.stage !== "anstalld" && (confirmReject ? (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16, padding: "8px 0" }}>
+          <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--ink-700)" }}>Avböj {String(c.name).split(" ")[0]}?</span>
+          <button onClick={() => setConfirmReject(false)} className="press" style={{ fontSize: 13.5, fontWeight: 700, color: "var(--ink-600)" }}>Avbryt</button>
+          <button onClick={() => ctx.moveCandidate(c.id, "avslag")} className="press" style={{ fontSize: 13.5, fontWeight: 700, color: "var(--danger)" }}>Avböj</button>
+        </div>
+      ) : (
+        <button onClick={() => setConfirmReject(true)} className="press" style={{ width: "100%", textAlign: "center", fontSize: 13.5, fontWeight: 700, color: "var(--danger)", padding: "8px 0" }}>Avböj kandidat</button>
+      ))}
     </div>
   );
 }
@@ -172,7 +191,7 @@ export function DriverSheet({ ctx, id, close }) {
       <Label style={{ marginBottom: 9 }}>Körkort & behörigheter</Label>
       <div style={{ marginBottom: 20 }}><LicRow licenses={d.licenses} certs={d.certs} /></div>
       <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
-        <Button variant="secondary" size="lg" onClick={() => ctx.toggleSaveDriver(d.id)} style={{ flex: "0 0 auto", paddingLeft: 16, paddingRight: 16 }}><Icon name="bookmark" size={18} color={saved ? "var(--green)" : "var(--ink-600)"} stroke={2} style={{ fill: saved ? "var(--green)" : "none" }} /></Button>
+        <Button variant="secondary" size="lg" onClick={() => ctx.toggleSaveDriver(d.id)} style={{ flex: "0 0 auto", paddingLeft: 16, paddingRight: 16 }}><Icon name="bookmark" size={18} color={saved ? "var(--green)" : "var(--ink-600)"} stroke={2} style={{ fill: saved ? "var(--green)" : "none" }} /><span style={SR_ONLY}>{saved ? "Ta bort sparad förare" : "Spara förare"}</span></Button>
         <Button variant="primary" size="lg" full icon={<Icon name="msg" size={17} stroke={2} />} onClick={() => ctx.setSheet({ type: "contactDriver", id: d.id })}>Kontakta {String(d.name).split(" ")[0]}</Button>
       </div>
     </div>
@@ -221,8 +240,8 @@ export function ContactDriverSheet({ ctx, id, close }) {
         <Label style={{ marginBottom: 0 }}>Meddelande</Label>
         <button onClick={aiGen} className="press" style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12.5, fontWeight: 700, color: "var(--green)" }}><Icon name="spark" size={14} color="var(--green)" stroke={0} style={{ fill: "var(--green)" }} />Skriv med STP</button>
       </div>
-      <textarea value={msg} onChange={(e) => setMsg(e.target.value)} placeholder="Skriv ett personligt meddelande…" rows={4} style={{ width: "100%", padding: "13px 15px", borderRadius: 13, border: "1px solid var(--line-2)", background: "var(--card-2)", fontSize: 15, color: "var(--ink-900)", outline: "none", resize: "none", lineHeight: 1.5, marginBottom: 16, fontFamily: "var(--font)" }} />
-      <Button variant="primary" size="lg" full busy={busy} disabled={!msg.trim()} icon={!busy ? <Icon name="send" size={17} stroke={2} /> : undefined} onClick={submit}>Skicka meddelande</Button>
+      <textarea id="contact-driver-msg" aria-label="Meddelande" value={msg} onChange={(e) => setMsg(e.target.value)} placeholder="Skriv ett personligt meddelande…" rows={4} style={{ width: "100%", padding: "13px 15px", borderRadius: 13, border: "1px solid var(--line-2)", background: "var(--card-2)", fontSize: 15, color: "var(--ink-900)", outline: "none", resize: "none", lineHeight: 1.5, marginBottom: 16, fontFamily: "var(--font)" }} />
+      <Button variant="primary" size="lg" full busy={busy} disabled={busy || !msg.trim()} icon={!busy ? <Icon name="send" size={17} stroke={2} /> : undefined} onClick={submit}>Skicka meddelande</Button>
     </div>
   );
 }
