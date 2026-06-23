@@ -16,7 +16,7 @@ export function PublishSheet({ ctx, close }) {
   const up = (k, v) => setD((s) => ({ ...s, [k]: v }));
   const toggle = (k, v) => setD((s) => ({ ...s, [k]: s[k].includes(v) ? s[k].filter((x) => x !== v) : [...s[k], v] }));
   const STEPS = ["Grundinfo", "Roll", "Krav", "Förmåner"];
-  const canNext = step === 0 ? d.title.trim().length > 2 : true;
+  const canNext = step === 0 ? d.title.trim().length > 2 : step === 2 ? d.lic.length > 0 : true;
 
   if (done) return (
     <div style={{ padding: "10px 24px 30px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center" }}>
@@ -52,8 +52,9 @@ export function PublishSheet({ ctx, close }) {
             </div>
           </>}
           {step === 2 && <>
-            <Label style={{ marginBottom: 9 }}>Körkortskrav</Label>
-            <div style={{ display: "flex", gap: 9, marginBottom: 18, flexWrap: "wrap" }}>{["C1", "C1E", "C", "CE"].map((l) => <Chip key={l} active={d.lic.includes(l)} onClick={() => toggle("lic", l)}>{l}</Chip>)}</div>
+            <Label style={{ marginBottom: 9 }}>Körkortskrav *</Label>
+            <div style={{ display: "flex", gap: 9, marginBottom: d.lic.length === 0 ? 7 : 18, flexWrap: "wrap" }}>{["C1", "C1E", "C", "CE"].map((l) => <Chip key={l} active={d.lic.includes(l)} onClick={() => toggle("lic", l)}>{l}</Chip>)}</div>
+            {d.lic.length === 0 && <div style={{ fontSize: 12.5, color: "var(--ink-400)", marginBottom: 18, fontWeight: 600 }}>Välj minst ett körkortskrav.</div>}
             <Label style={{ marginBottom: 9 }}>Behörigheter / intyg</Label>
             <div style={{ display: "flex", gap: 9, marginBottom: 18, flexWrap: "wrap" }}>{["YKB", "ADR", "Truckkort", "Kran"].map((c) => <Chip key={c} active={d.certs.includes(c)} onClick={() => toggle("certs", c)}>{c}</Chip>)}</div>
             <Label style={{ marginBottom: 9 }}>Minsta erfarenhet</Label>
@@ -206,6 +207,7 @@ export function ContactDriverSheet({ ctx, id, close }) {
   const [msg, setMsg] = useState("");
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
   if (!d) return null;
   if (sent) return (
     <div style={{ padding: "10px 24px 30px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center" }}>
@@ -216,10 +218,16 @@ export function ContactDriverSheet({ ctx, id, close }) {
     </div>
   );
   const submit = async () => {
-    setBusy(true);
+    setErr(""); setBusy(true);
     const job = ctx.jobs.find((j) => j.id === jobId);
-    await ctx.contactDriver({ driverId: d.id, jobId, jobTitle: job?.title, message: msg });
-    setBusy(false); setSent(true);
+    try {
+      await ctx.contactDriver({ driverId: d.id, jobId, jobTitle: job?.title, message: msg });
+      setSent(true);
+    } catch {
+      setErr("Det gick inte att skicka meddelandet. Försök igen.");
+    } finally {
+      setBusy(false);
+    }
   };
   const aiGen = () => {
     const first = String(d.name).split(" ")[0];
@@ -232,15 +240,24 @@ export function ContactDriverSheet({ ctx, id, close }) {
         <Avatar initials={d.initials} size={48} color="var(--green)" />
         <div><div style={{ fontSize: 16, fontWeight: 800, color: "var(--ink-900)" }}>{d.name}</div><div style={{ fontSize: 13, color: "var(--ink-500)" }}>{d.exp ? `${d.exp} år · ` : ""}{d.location}</div></div>
       </div>
-      {activeJobs.length > 0 && <>
+      {activeJobs.length > 0 ? <>
         <Label style={{ marginBottom: 9 }}>Gäller annons</Label>
         <div style={{ display: "flex", gap: 9, flexWrap: "wrap", marginBottom: 16 }}>{activeJobs.map((j) => <Chip key={j.id} active={jobId === j.id} onClick={() => setJobId(j.id)}>{j.title}</Chip>)}</div>
-      </>}
+      </> : (
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 9, padding: "12px 14px", background: "var(--paper-2)", borderRadius: 12, marginBottom: 16 }}>
+          <Icon name="info" size={16} color="var(--ink-400)" stroke={2} style={{ flexShrink: 0, marginTop: 1 }} />
+          <span style={{ fontSize: 12.5, color: "var(--ink-500)", lineHeight: 1.45 }}>Publicera en annons först för att koppla meddelandet.</span>
+        </div>
+      )}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 9 }}>
         <Label style={{ marginBottom: 0 }}>Meddelande</Label>
         <button onClick={aiGen} className="press" style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12.5, fontWeight: 700, color: "var(--green)" }}><Icon name="spark" size={14} color="var(--green)" stroke={0} style={{ fill: "var(--green)" }} />Skapa utkast</button>
       </div>
       <textarea id="contact-driver-msg" aria-label="Meddelande" value={msg} onChange={(e) => setMsg(e.target.value)} placeholder="Skriv ett personligt meddelande…" rows={4} style={{ width: "100%", padding: "13px 15px", borderRadius: 13, border: "1px solid var(--line-2)", background: "var(--card-2)", fontSize: 15, color: "var(--ink-900)", outline: "none", resize: "none", lineHeight: 1.5, marginBottom: 16, fontFamily: "var(--font)" }} />
+      {err && <div role="alert" style={{ display: "flex", alignItems: "flex-start", gap: 9, padding: "11px 14px", background: "var(--danger-tint)", borderRadius: 12, marginBottom: 16 }}>
+        <Icon name="alert" size={16} color="var(--danger)" stroke={2.2} style={{ flexShrink: 0, marginTop: 1 }} />
+        <span style={{ fontSize: 13, color: "var(--danger)", lineHeight: 1.4 }}>{err}</span>
+      </div>}
       <Button variant="primary" size="lg" full busy={busy} disabled={busy || !msg.trim()} icon={!busy ? <Icon name="send" size={17} stroke={2} /> : undefined} onClick={submit}>Skicka meddelande</Button>
     </div>
   );

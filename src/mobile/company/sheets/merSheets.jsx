@@ -33,6 +33,11 @@ export function EditCompanySheet({ ctx, close }) {
   const [cpPhone, setCpPhone] = useState(c.contact?.phone || "");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const [siteHint, setSiteHint] = useState("");
+  const onWebsiteBlur = () => {
+    const v = website.trim();
+    setSiteHint(v && !/^https?:\/\//i.test(v) ? "Lägg till https:// så blir länken klickbar" : "");
+  };
   const save = async () => {
     setBusy(true); setErr("");
     try {
@@ -46,9 +51,9 @@ export function EditCompanySheet({ ctx, close }) {
   };
   return (
     <div style={{ padding: "4px 22px 26px" }}>
-      <Field label="Företagsnamn" value={name} onChange={setName} />
+      <Field label="Företagsnamn" value={name} onChange={setName} required />
       <Field label="Ort" value={city} onChange={setCity} />
-      <Field label="Webbplats" value={website} onChange={setWebsite} placeholder="https://" />
+      <Field label="Webbplats" value={website} onChange={(v) => { setWebsite(v); if (siteHint) setSiteHint(""); }} onBlur={onWebsiteBlur} placeholder="https://" sub={siteHint || undefined} />
       <Label style={{ marginBottom: 8 }}>Företagsbeskrivning</Label>
       <textarea value={about} onChange={(e) => setAbout(e.target.value)} rows={5} placeholder="Berätta om ert åkeri…" style={{ width: "100%", padding: "13px 15px", borderRadius: 13, border: "1px solid var(--line-2)", background: "#fff", fontSize: 15, color: "var(--ink-900)", outline: "none", resize: "none", lineHeight: 1.5, marginBottom: 22, fontFamily: "var(--font)" }} />
       <Label style={{ marginBottom: 10 }}>Kontaktperson</Label>
@@ -56,7 +61,7 @@ export function EditCompanySheet({ ctx, close }) {
       <Field label="Roll" value={cpRole} onChange={setCpRole} placeholder="t.ex. Trafikledare" />
       <Field label="Telefon" type="tel" inputMode="tel" value={cpPhone} onChange={setCpPhone} />
       {err && <p role="alert" style={{ fontSize: 13, color: "var(--danger)", lineHeight: 1.45, marginBottom: 12 }}>{err}</p>}
-      <Button variant="primary" size="lg" full busy={busy} disabled={busy} onClick={save}>Spara ändringar</Button>
+      <Button variant="primary" size="lg" full busy={busy} disabled={busy || !name.trim()} onClick={save}>Spara ändringar</Button>
     </div>
   );
 }

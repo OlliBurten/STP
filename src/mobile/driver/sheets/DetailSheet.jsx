@@ -11,6 +11,12 @@ export default function DetailSheet({ job, ctx, close }) {
   const [showRaw, setShowRaw] = useState(false);
   const [showFull, setShowFull] = useState(false);
   const longDesc = (job.desc || "").length > 320;
+  // Ansökningstiden gått ut? (samma tröskel som deadline-bannern nedan)
+  const deadlinePassed = (() => {
+    if (!job.deadline) return false;
+    const d = new Date(job.deadline);
+    return !Number.isNaN(d.getTime()) && d.getTime() < Date.now() - 86400000;
+  })();
   return (
     <div>
       <div style={{ padding: "6px 22px 0" }}>
@@ -56,7 +62,7 @@ export default function DetailSheet({ job, ctx, close }) {
         {job.deadline && (() => {
           const d = new Date(job.deadline);
           if (Number.isNaN(d.getTime())) return null;
-          const passed = d.getTime() < Date.now() - 86400000;
+          const passed = deadlinePassed;
           const fmt = d.toLocaleDateString("sv-SE", { day: "numeric", month: "long", year: "numeric" });
           return (
             <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "11px 14px", borderRadius: 12, background: passed ? "var(--danger-tint)" : "var(--amber-tint)", marginBottom: 18 }}>
@@ -96,11 +102,13 @@ export default function DetailSheet({ job, ctx, close }) {
         )}
       </div>
       <div style={{ position: "sticky", bottom: 0, padding: "14px 22px 26px", background: "var(--card)", borderTop: "1px solid var(--line)", display: "flex", gap: 10 }}>
-        <button onClick={() => ctx.toggleSave(job.id)} className="press" style={{ width: 52, height: 52, borderRadius: 13, border: "1px solid var(--line-2)", background: savedNow ? "var(--green-tint)" : "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        <button onClick={() => ctx.toggleSave(job.id)} className="press" aria-label={savedNow ? "Ta bort sparat jobb" : "Spara jobb"} aria-pressed={savedNow} style={{ width: 52, height: 52, borderRadius: 13, border: "1px solid var(--line-2)", background: savedNow ? "var(--green-tint)" : "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
           <Icon name="bookmark" size={21} color={savedNow ? "var(--green)" : "var(--ink-400)"} stroke={2} style={{ fill: savedNow ? "var(--green)" : "none" }} />
         </button>
         {appliedNow ? (
           <Button variant="secondary" size="lg" full disabled icon={<Icon name="check" size={18} stroke={2.5} color="var(--success)" />} style={{ flex: 1 }}>Ansökt</Button>
+        ) : deadlinePassed ? (
+          <Button variant="secondary" size="lg" full disabled icon={<Icon name="clock" size={18} stroke={2} color="var(--ink-400)" />} style={{ flex: 1 }}>Ansökningstiden har gått ut</Button>
         ) : (
           <Button variant="primary" size="lg" full onClick={() => ctx.setSheet({ type: "apply", job })} iconRight={<Icon name="arrow" size={17} stroke={2.2} />} style={{ flex: 1 }}>Ansök nu</Button>
         )}

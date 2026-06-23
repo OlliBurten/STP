@@ -40,12 +40,15 @@ export default function Kontakt() {
   const isMobile = useIsMobile();
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [status, setStatus] = useState("idle"); // idle | sending | sent | error
+  const emailValid = /\S+@\S+\.\S+/.test(form.email.trim());
+  const canSubmit = form.message.trim() && emailValid;
   const submitContact = async () => {
-    if (!form.message.trim() || status === "sending") return;
+    if (!canSubmit || status === "sending") return;
     setStatus("sending");
     try { await submitFeedback(form); setStatus("sent"); }
     catch { setStatus("error"); }
   };
+  const resetForm = () => { setForm({ name: "", email: "", message: "" }); setStatus("idle"); };
   return (
     <main style={{ background: "var(--paper)", minHeight: "100vh" }}>
       <PageMeta title="Kontakt – Sveriges Transportplattform" description="Kontakta Sveriges Transportplattform (STP) med frågor om samverkan, plattformen eller genomgång. Vi svarar på hello@transportplattformen.se." canonical="/kontakt" />
@@ -80,20 +83,34 @@ export default function Kontakt() {
             {status === "sent" ? (
               <div style={{ padding: "16px 16px", borderRadius: 12, background: "var(--green-tint)", color: "var(--green-text)", fontSize: "var(--text-base)", lineHeight: 1.6, fontWeight: 600 }}>
                 Tack! Vi har tagit emot ditt meddelande och svarar oftast inom 1–2 vardagar.
+                <div style={{ marginTop: 12 }}>
+                  <button type="button" onClick={resetForm} style={{ background: "none", border: "none", padding: 0, fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--green)", cursor: "pointer", fontFamily: "inherit", textDecoration: "underline" }}>
+                    Skicka ett till
+                  </button>
+                </div>
               </div>
             ) : (
               <>
-                {[["Namn", "name", "text"], ["E-post", "email", "email"]].map(([l, k, t]) => (
+                {[["Namn", "name", "text"], ["E-post", "email", "email"]].map(([l, k, t]) => {
+                  const showEmailErr = k === "email" && form.email.trim() && !emailValid;
+                  return (
                   <label key={k} style={{ display: "block", marginBottom: 16 }}>
                     <span style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-700)", display: "block", marginBottom: 8 }}>{l}</span>
                     <input
                       type={t}
                       value={form[k]}
                       onChange={(e) => setForm((f) => ({ ...f, [k]: e.target.value }))}
-                      style={{ width: "100%", padding: "11px 14px", borderRadius: 10, background: "var(--card-2)", border: "1px solid var(--line-2)", fontSize: "var(--text-base)", color: "var(--ink-900)", outline: "none", fontFamily: "inherit" }}
+                      autoComplete={k === "email" ? "email" : "name"}
+                      inputMode={k === "email" ? "email" : undefined}
+                      aria-invalid={showEmailErr ? true : undefined}
+                      style={{ width: "100%", padding: "11px 14px", borderRadius: 10, background: "var(--card-2)", border: `1px solid ${showEmailErr ? "var(--danger)" : "var(--line-2)"}`, fontSize: "var(--text-base)", color: "var(--ink-900)", outline: "none", fontFamily: "inherit" }}
                     />
+                    {showEmailErr && (
+                      <span style={{ display: "block", marginTop: 6, fontSize: "var(--text-sm)", color: "var(--danger)", fontWeight: 600 }}>Vi behöver din e-post för att kunna svara.</span>
+                    )}
                   </label>
-                ))}
+                  );
+                })}
                 <label style={{ display: "block", marginBottom: 18 }}>
                   <span style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-700)", display: "block", marginBottom: 8 }}>Meddelande</span>
                   <textarea
@@ -109,8 +126,8 @@ export default function Kontakt() {
                 <button
                   type="button"
                   onClick={submitContact}
-                  disabled={status === "sending" || !form.message.trim()}
-                  style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "13px 24px", borderRadius: 10, background: "var(--green)", color: "#fff", fontSize: "var(--text-base)", fontWeight: 800, border: "none", cursor: status === "sending" || !form.message.trim() ? "not-allowed" : "pointer", opacity: status === "sending" || !form.message.trim() ? 0.5 : 1, fontFamily: "inherit" }}
+                  disabled={status === "sending" || !canSubmit}
+                  style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "13px 24px", borderRadius: 10, background: "var(--green)", color: "#fff", fontSize: "var(--text-base)", fontWeight: 800, border: "none", cursor: status === "sending" || !canSubmit ? "not-allowed" : "pointer", opacity: status === "sending" || !canSubmit ? 0.5 : 1, fontFamily: "inherit" }}
                 >
                   {status === "sending" ? "Skickar…" : "Skicka"}
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>

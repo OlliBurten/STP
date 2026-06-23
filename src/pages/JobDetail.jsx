@@ -463,8 +463,8 @@ export default function JobDetail() {
       return (
         <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", background: "var(--paper-2)", borderRadius: "var(--r-md)", border: "1px solid var(--line-2)" }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ink-300)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          <span style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)" }}>Logga in för att se lönen</span>
-          <Link to="/login" state={{ from: `/jobb/${id}` }} style={{ marginLeft: "auto", fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--green)", textDecoration: "none" }}>Logga in →</Link>
+          <span style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)" }}>Skapa konto för att se lönen</span>
+          <Link to="/login" state={{ from: `/jobb/${id}`, initialMode: "register", requiredRole: "driver" }} style={{ marginLeft: "auto", fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--green)", textDecoration: "none" }}>Skapa konto →</Link>
         </div>
       );
     }
@@ -492,7 +492,7 @@ export default function JobDetail() {
   const scheduleLabel = job.schedule ? (scheduleTypes.find((s) => s.value === job.schedule)?.label ?? job.schedule) : null;
 
   const salaryFactVal = !user
-    ? "Logga in för att se"
+    ? "Skapa konto för att se"
     : job.salaryMin
       ? `${job.salaryMin.toLocaleString("sv-SE")}${job.salaryMax ? `–${job.salaryMax.toLocaleString("sv-SE")}` : "+"} kr/mån`
       : job.salary ? "Enl. lönebesked" : "Ej angiven";
@@ -885,9 +885,9 @@ export default function JobDetail() {
                 </Link>
               )
             ) : !user ? (
-              <Link to="/login" state={{ from: `/jobb/${id}`, requiredRole: "driver" }}
+              <Link to="/login" state={{ from: `/jobb/${id}`, initialMode: "register", requiredRole: "driver" }}
                 style={{ padding: "13px 24px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, textDecoration: "none" }}>
-                Logga in för att ansöka
+                Skapa konto för att ansöka
               </Link>
             ) : null}
           </div>
@@ -1063,9 +1063,9 @@ export default function JobDetail() {
                   <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", margin: 0, lineHeight: 1.6 }}>Företagsläge — ansökningsknappen visas enbart för förare.</p>
                 </div>
               ) : (
-                <Link to="/login" state={{ from: `/jobb/${id}`, requiredRole: "driver" }}
+                <Link to="/login" state={{ from: `/jobb/${id}`, initialMode: "register", requiredRole: "driver" }}
                   style={{ display: "block", width: "100%", padding: "15px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, textDecoration: "none", textAlign: "center", letterSpacing: -0.3, boxSizing: "border-box" }}>
-                  Logga in för att ansöka
+                  Skapa konto för att ansöka
                 </Link>
               )}
               {isDriver && (
@@ -1109,10 +1109,10 @@ export default function JobDetail() {
                 Skicka meddelande
               </Link>
             ) : (
-              <Link to="/login" state={{ from: `/jobb/${id}`, requiredRole: "driver" }}
+              <Link to="/login" state={{ from: `/jobb/${id}`, initialMode: "register", requiredRole: "driver" }}
                 style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, width: "100%", padding: "11px", borderRadius: "var(--r-md)", background: "var(--ink-900)", color: "#fff", fontSize: "var(--text-sm)", fontWeight: 700, textDecoration: "none", boxSizing: "border-box" }}>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                Skicka meddelande
+                Skapa konto för att skriva
               </Link>
             )}
             {job.contact && (

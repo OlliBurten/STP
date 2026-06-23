@@ -72,12 +72,14 @@ export default function MobileGuestJobs() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [detail, setDetail] = useState(null);
   const [gate, setGate] = useState(null);
-  const [saved, setSaved] = useState(() => new Set());
+  // Guests can't actually save, so bookmarks always render unfilled (honest —
+  // no fake fill). Kept as an empty Set so the saved.has(...) call sites work.
+  const saved = useMemo(() => new Set(), []);
   const [limit, setLimit] = useState(PAGE);
 
-  // Guests can't really save — tapping fills the bookmark then opens the gate
-  // (teaser), exactly like the prototype.
-  const toggleSave = (id) => { setSaved((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; }); setTimeout(() => setGate({ action: "save", jobId: id }), 260); };
+  // Guests can't really save — tapping a bookmark opens the sign-up gate
+  // immediately (no fake fill, so it doesn't feel like bait-and-switch).
+  const toggleSave = (id) => { setGate({ action: "save", jobId: id }); };
 
   useEffect(() => {
     let alive = true;
@@ -113,7 +115,10 @@ export default function MobileGuestJobs() {
     <MobileShell>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", flexShrink: 0, borderBottom: scrolled ? "1px solid var(--line)" : "1px solid transparent", background: "rgba(245,242,236,0.92)", backdropFilter: "blur(12px)" }}>
         <button onClick={() => navigate("/")} className="press"><Logo /></button>
-        <button onClick={() => navigate("/login?start=login")} className="press" style={{ height: 38, padding: "0 16px", borderRadius: 11, background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: 14 }}>Logga in</button>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <button onClick={() => navigate("/login?start=login")} className="press" style={{ height: 38, padding: "0 14px", borderRadius: 11, background: "var(--card)", border: "1px solid var(--line-2)", color: "var(--ink-800)", fontWeight: 700, fontSize: 14 }}>Logga in</button>
+          <button onClick={() => navigate("/registrera?role=forare")} className="press" style={{ height: 38, padding: "0 14px", borderRadius: 11, background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: 14 }}>Skapa konto</button>
+        </div>
       </div>
       <div className="app-scroll" onScroll={onScroll} style={{ flex: 1, overflowY: "auto" }}>
         <div style={{ padding: "16px 20px 14px" }}>
@@ -137,7 +142,10 @@ export default function MobileGuestJobs() {
             <div style={{ textAlign: "center", padding: "48px 20px" }}>
               <div style={{ width: 60, height: 60, borderRadius: 16, background: "var(--paper-2)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}><Icon name="search" size={26} color="var(--ink-300)" stroke={1.8} /></div>
               <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>Inga jobb matchar</h3>
-              <p style={{ fontSize: 14.5, color: "var(--ink-500)", lineHeight: 1.5 }}>Prova att rensa filtren eller söka bredare.</p>
+              <p style={{ fontSize: 14.5, color: "var(--ink-500)", lineHeight: 1.5, marginBottom: 18 }}>Prova att rensa filtren eller söka bredare.</p>
+              {(q.trim() || activeCount > 0 || stad || initRegion || initLic) && (
+                <button onClick={() => { setQ(""); setFilter({ region: [], lic: [], type: [] }); setLimit(PAGE); if (stad || initRegion || initLic) navigate("/jobb"); }} className="press" style={{ display: "inline-flex", alignItems: "center", gap: 7, height: 46, padding: "0 20px", borderRadius: 13, background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: 14.5 }}><Icon name="x" size={16} color="#fff" stroke={2.4} />Rensa filter</button>
+              )}
             </div>
           )}
           {shown.map((job, i) => <JobCard key={job.id} job={job} idx={i} saved={saved.has(job.id)} onOpen={() => setDetail(job)} onSave={() => toggleSave(job.id)} />)}

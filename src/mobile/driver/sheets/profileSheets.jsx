@@ -262,16 +262,24 @@ function fileToResizedDataUrl(file, max = 512) {
 export function PhotoSheet({ ctx, close }) {
   const p = ctx.profile;
   const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
   const inputRef = React.useRef(null);
   const onPick = async (e) => {
     const file = e.target.files?.[0];
+    if (e.target) e.target.value = ""; // återställ så samma fil kan väljas igen
     if (!file) return;
+    setErr("");
+    if (!file.type.startsWith("image/")) { setErr("Filen är ingen bild. Välj en JPG eller PNG."); return; }
+    if (file.size > 10 * 1024 * 1024) { setErr("Bilden är för stor (max 10 MB). Välj en mindre bild."); return; }
     setBusy(true);
     try {
       const dataUrl = await fileToResizedDataUrl(file);
       await ctx.updateProfile({ photoUrl: dataUrl });
       close();
-    } catch { setBusy(false); }
+    } catch {
+      setErr("Kunde inte läsa bilden. Prova en JPG eller PNG.");
+      setBusy(false);
+    }
   };
   return (
     <div style={{ padding: "4px 22px 30px" }}>
@@ -282,6 +290,7 @@ export function PhotoSheet({ ctx, close }) {
         </div>
         <p style={{ fontSize: 13, color: "var(--ink-500)", textAlign: "center", maxWidth: 240, lineHeight: 1.45 }}>En tydlig bild på dig ökar svaren från åkerier.</p>
       </div>
+      {err && <p style={{ fontSize: 12.5, color: "var(--danger)", textAlign: "center", marginBottom: 12 }}>{err}</p>}
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         <Button variant="primary" size="lg" full busy={busy} icon={!busy ? <Icon name="plus" size={18} stroke={2.2} /> : undefined} onClick={() => inputRef.current?.click()}>Välj bild</Button>
         {p.photoUrl && <Button variant="secondary" size="lg" full onClick={() => { ctx.updateProfile({ photoUrl: null }); close(); }}>Ta bort bild</Button>}
@@ -485,15 +494,18 @@ export function AiSheet({ ctx, close }) {
   const [letter, setLetter] = useState("");
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [fellBack, setFellBack] = useState(false);
   const p = ctx.profile;
   const localDraft = () => `Hej,\n\nJag är förare${Array.isArray(p.licenses) && p.licenses.length ? ` med ${p.licenses.join(" ")}-behörighet` : ""}${ctx.expYears ? ` och ${ctx.expYears} års erfarenhet` : ""}. Jag är van vid att ta ansvar för både fordon och leverans och söker nya körningar${p.region ? ` i ${p.region}` : ""}.\n\nMed vänlig hälsning,\n${p.name || ""}`;
   const generate = async () => {
-    setBusy(true);
+    setBusy(true); setFellBack(false);
     try {
       const res = ctx.hasApi ? await generateCoverLetter({}) : null;
-      setLetter(res?.letter || localDraft());
+      if (res?.letter) { setLetter(res.letter); }
+      else { setLetter(localDraft()); setFellBack(true); }
     } catch {
       setLetter(localDraft());
+      setFellBack(true);
     } finally {
       setBusy(false);
     }
@@ -510,7 +522,8 @@ export function AiSheet({ ctx, close }) {
         </>
       ) : (
         <>
-          <div style={{ padding: "16px", background: "var(--card-2)", border: "1px solid var(--line)", borderRadius: 13, fontSize: 14, color: "var(--ink-700)", lineHeight: 1.6, marginBottom: 16, whiteSpace: "pre-wrap" }}>{letter}</div>
+          {fellBack && <p style={{ fontSize: 12.5, color: "var(--ink-500)", lineHeight: 1.45, marginBottom: 10 }}>Kunde inte nå AI — här är ett utkast du kan redigera.</p>}
+          <textarea value={letter} onChange={(e) => setLetter(e.target.value)} rows={9} aria-label="Personligt brev" style={{ width: "100%", padding: "16px", background: "var(--card-2)", border: "1px solid var(--line)", borderRadius: 13, fontSize: 14, color: "var(--ink-700)", lineHeight: 1.6, marginBottom: 16, fontFamily: "inherit", resize: "vertical", outline: "none", boxSizing: "border-box" }} />
           <div style={{ display: "flex", gap: 10 }}>
             <Button variant="secondary" size="lg" onClick={generate} busy={busy} style={{ flex: 1 }}>Gör om</Button>
             <Button variant="primary" size="lg" onClick={() => { try { navigator.clipboard?.writeText(letter); } catch { /* */ } setCopied(true); setTimeout(close, 700); }} icon={<Icon name="check" size={17} stroke={2.5} />} style={{ flex: 1 }}>{copied ? "Kopierad!" : "Kopiera"}</Button>

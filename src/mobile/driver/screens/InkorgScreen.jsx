@@ -20,6 +20,8 @@ export default function InkorgScreen({ ctx }) {
               <SkeletonRow />
               <SkeletonRow />
             </div>
+          ) : ctx.chat?.conversationsError && threads.length === 0 ? (
+            <Empty icon="alert" title="Kunde inte hämta meddelanden" text="Något gick fel när dina samtal skulle laddas. Kontrollera din uppkoppling och försök igen." action={<Button variant="secondary" size="md" onClick={() => ctx.chat?.refreshConversations?.()}>Försök igen</Button>} />
           ) : threads.length === 0 ? (
             <Empty icon="msg" title="Inga meddelanden än" text="När ett åkeri svarar på din ansökan dyker samtalet upp här." action={<Button variant="secondary" size="md" onClick={() => ctx.setTab("jobb")}>Hitta jobb att söka</Button>} />
           ) : (

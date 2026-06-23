@@ -18,7 +18,7 @@ function JobCardCompany({ job, ctx }) {
   const [manage, setManage] = useState(false);
   const [confirmDel, setConfirmDel] = useState(false);
   const act = (e, status) => { e.stopPropagation(); ctx.setJobStatus?.(job.id, status)?.catch?.(() => {}); };
-  const aBtn = { display: "inline-flex", alignItems: "center", gap: 6, minHeight: 40, padding: "0 13px", borderRadius: 10, border: "1px solid var(--line-2)", background: "var(--card-2)", fontSize: 13, fontWeight: 700, color: "var(--ink-700)", cursor: "pointer" };
+  const aBtn = { display: "inline-flex", alignItems: "center", gap: 6, minHeight: 44, padding: "0 13px", borderRadius: 10, border: "1px solid var(--line-2)", background: "var(--card-2)", fontSize: 13, fontWeight: 700, color: "var(--ink-700)", cursor: "pointer" };
   const dBtn = { ...aBtn, border: "1px solid var(--danger)", background: "var(--danger-tint)", color: "var(--danger)" };
   return (
     <Card className="press" onClick={openCard} style={{ padding: "16px", cursor: "pointer" }}>

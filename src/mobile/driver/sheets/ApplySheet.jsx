@@ -20,6 +20,8 @@ export default function ApplySheet({ job, ctx, close }) {
 
   // Real AI first-message suggestion (driver). Falls back to a local draft.
   const genDraft = async () => {
+    // Skriv inte över förarens egen text utan att fråga.
+    if (msg.trim() && !window.confirm("Ersätta ditt meddelande med ett AI-utkast?")) return;
     setAiBusy(true);
     try {
       const res = ctx.hasApi ? await suggestMessage({ jobId: job.id }) : null;
@@ -47,7 +49,10 @@ export default function ApplySheet({ job, ctx, close }) {
     } catch { /* optimistiskt redan satt */ }
     setSending(false);
     setDone(true);
-    setTimeout(close, 1700);
+    // Importerade jobb med AF-länk visar en "Ansök via Arbetsförmedlingen"-CTA på
+    // success-vyn (den riktiga ansökningsvägen). Auto-stäng INTE då — låt föraren
+    // dröja kvar tills den klickat länken eller stänger själv.
+    if (!(imp && job.externalApplyUrl)) setTimeout(close, 1700);
   };
 
   if (done) {
@@ -60,7 +65,7 @@ export default function ApplySheet({ job, ctx, close }) {
         <p style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.5, maxWidth: 270 }}>
           {imp
             ? `Vi har tagit emot din ansökan. ${job.company} finns inte på STP än — ansök gärna även direkt hos arbetsgivaren så du är säker på att de ser den.`
-            : `${job.company} har fått din profil. Du ser status under Ansökt.`}
+            : `Vi skickar din ansökan till ${job.company}. Du ser status under Ansökt.`}
         </p>
         {imp && job.externalApplyUrl && (
           <a href={job.externalApplyUrl} target="_blank" rel="noopener noreferrer" onClick={() => ctx.applyExternal?.(job)} className="press" style={{ display: "inline-flex", alignItems: "center", gap: 7, marginTop: 6, padding: "12px 18px", borderRadius: 13, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: 14.5 }}>
@@ -124,7 +129,7 @@ export default function ApplySheet({ job, ctx, close }) {
       </div>
       <textarea value={msg} onChange={(e) => setMsg(e.target.value)} placeholder="Berätta kort varför du passar för rollen – eller låt AI skriva åt dig…" style={{ width: "100%", minHeight: 96, padding: "13px 14px", borderRadius: 12, border: "1px solid var(--line-2)", background: "var(--card-2)", fontSize: 14.5, lineHeight: 1.5, outline: "none", resize: "none", color: "var(--ink-900)", marginBottom: 16, fontFamily: "var(--font)" }} />
       {imp && (
-        <button onClick={() => setConsent((c) => !c)} style={{ display: "flex", alignItems: "flex-start", gap: 11, padding: "13px 14px", background: consent ? "var(--green-tint)" : "var(--card-2)", border: `1px solid ${consent ? "var(--green)" : "var(--line-2)"}`, borderRadius: 12, marginBottom: 16, textAlign: "left", width: "100%", transition: "background .15s,border-color .15s" }}>
+        <button role="checkbox" aria-checked={consent} onClick={() => setConsent((c) => !c)} style={{ display: "flex", alignItems: "flex-start", gap: 11, padding: "13px 14px", background: consent ? "var(--green-tint)" : "var(--card-2)", border: `1px solid ${consent ? "var(--green)" : "var(--line-2)"}`, borderRadius: 12, marginBottom: 16, textAlign: "left", width: "100%", transition: "background .15s,border-color .15s" }}>
           <div style={{ width: 24, height: 24, borderRadius: 7, flexShrink: 0, background: consent ? "var(--green)" : "#fff", border: `1px solid ${consent ? "var(--green-deep)" : "var(--line-2)"}`, display: "flex", alignItems: "center", justifyContent: "center", marginTop: 1 }}>{consent && <Icon name="check" size={15} color="#fff" stroke={3} />}</div>
           <span style={{ fontSize: 13, color: "var(--ink-700)", lineHeight: 1.45 }}>Jag godkänner att STP skickar min profil till {job.company}.</span>
         </button>

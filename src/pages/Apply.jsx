@@ -205,7 +205,8 @@ export default function Apply() {
   const [message, setMessage] = useState("");
   const [startDate, setStartDate] = useState("month");
   const [salaryExp, setSalaryExp] = useState(null);
-  const [allowMatch, setAllowMatch] = useState(true);
+  // Default OFF — the phone is private until the driver explicitly opts in.
+  const [allowMatch, setAllowMatch] = useState(false);
   const [sending, setSending] = useState(false);
   const [suggesting, setSuggesting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -266,6 +267,21 @@ export default function Apply() {
     setSuggesting(false);
   };
 
+  // Map start-date choice → Swedish label (covers both mobile and desktop key sets).
+  const START_LABELS = { now: "Omgående", "2w": "Om 2 veckor", month: "Inom 1 månad", "3months": "Inom 3 månader", date: "Efter överenskommelse", other: "Efter överenskommelse" };
+
+  // Compose the full message the company receives: the driver's personal text
+  // plus the start-date and (if filled) salary expectation, so these controls
+  // actually reach the company instead of being silently dropped.
+  const composeMessage = (base) => {
+    const parts = [base && base.trim()].filter(Boolean);
+    const startLabel = START_LABELS[startDate];
+    if (startLabel) parts.push(`Kan börja: ${startLabel}`);
+    const salary = (salaryExp || "").trim();
+    if (salary) parts.push(`Lönekrav: ${salary}`);
+    return parts.join("\n\n");
+  };
+
   const handleSubmit = async () => {
     if (!job || !profile) return;
     setError("");
@@ -282,7 +298,7 @@ export default function Apply() {
       if (isAggregatedUnclaimed) {
         await submitApplication({
           jobId: job.id,
-          messageFromDriver: message.trim() || null,
+          messageFromDriver: composeMessage(message) || null,
           consentToShare: true,
         });
         setSubmitted(true);
@@ -297,10 +313,12 @@ export default function Apply() {
         companyName: job.company,
         jobId: job.id,
         jobTitle: job.title,
-        initialMessage: message.trim() || "Hej, jag är intresserad av detta jobb.",
+        initialMessage: composeMessage(message) || "Hej, jag är intresserad av detta jobb.",
         sender: "driver",
         driverEmail: profile.showEmailToCompanies ? profile.email : null,
-        driverPhone: profile.showPhoneToCompanies ? profile.phone : null,
+        // Honor the in-form "Visa mitt telefonnummer" toggle (default OFF) —
+        // share the phone only when the driver opted in for this application.
+        driverPhone: allowMatch ? profile.phone : null,
       });
       setConversationId(convId);
       setSubmitted(true);

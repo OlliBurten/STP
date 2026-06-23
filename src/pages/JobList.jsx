@@ -223,25 +223,6 @@ function Sidebar({ profile }) {
         </Link>
       </div>
 
-      {/* Sparade sökningar */}
-      <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: "var(--r-lg)", padding: "20px 22px", boxShadow: "var(--sh-sm)" }}>
-        <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.3, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 14 }}>Sparade sökningar</div>
-        {[
-          { label: "CE Skåne, fast", count: 4 },
-          { label: "ADR-tjänster",   count: 2 },
-        ].map(s => (
-          <div key={s.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid var(--line)" }}>
-            <span style={{ fontSize: "var(--text-sm)", color: "var(--ink-900)", fontWeight: 600 }}>{s.label}</span>
-            <span style={{ display: "inline-flex", alignItems: "center", padding: "3px 9px", borderRadius: 999, background: "var(--green-tint)", color: "var(--green-text)", fontSize: "var(--text-2xs)", fontWeight: 600 }}>
-              {s.count} nya
-            </span>
-          </div>
-        ))}
-        <button style={{ marginTop: 12, background: "none", border: "none", padding: 0, fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--green)", cursor: "pointer", fontFamily: "var(--font)" }}>
-          + Spara nuvarande sökning
-        </button>
-      </div>
-
       {/* Tips */}
       <div style={{ background: "var(--card-2)", border: "1px solid var(--line)", borderRadius: "var(--r-lg)", padding: "20px 22px", boxShadow: "var(--sh-sm)" }}>
         <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
@@ -304,6 +285,7 @@ export default function JobList() {
   const [showMatch,       setShowMatch]       = useState(true);
   const [jobs,            setJobs]            = useState(() => hasApi ? [] : mockJobs);
   const [jobsLoading,     setJobsLoading]     = useState(hasApi);
+  const [jobsError,       setJobsError]       = useState(false);
   const [savedJobIds,     setSavedJobIds]     = useState(new Set());
   const [drawerOpen,      setDrawerOpen]      = useState(false);
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
@@ -333,13 +315,16 @@ export default function JobList() {
   // Återställ till sida 1 när filter/flik/sökning ändras
   useEffect(() => { setPage(1); }, [tab, filters, mobileFilters]);
 
+  const [reloadKey, setReloadKey] = useState(0);
   useEffect(() => {
     if (!hasApi) return;
     setJobsLoading(true);
+    setJobsError(false);
     fetchJobs({ bransch: filters.bransch || undefined, minSalary: filters.minSalary || undefined })
-      .then(setJobs).catch(() => setJobs([]))
+      .then(data => { setJobs(data); setJobsError(false); })
+      .catch(() => { setJobs([]); setJobsError(true); })
       .finally(() => setJobsLoading(false));
-  }, [hasApi, filters.bransch, filters.minSalary]);
+  }, [hasApi, filters.bransch, filters.minSalary, reloadKey]);
 
   useEffect(() => {
     if (!hasApi || !isDriver) { setSavedJobIds(new Set()); return; }
@@ -521,6 +506,21 @@ export default function JobList() {
     </div>
   );
 
+  const ErrorState = ({ onRetry }) => (
+    <div style={{ textAlign: "center", padding: "64px 32px", background: "var(--card)", borderRadius: "var(--r-lg)", border: "1px solid var(--line)" }}>
+      <div style={{ width: 56, height: 56, borderRadius: 14, background: "var(--paper-2)", margin: "0 auto 18px", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-500)" }}>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <h3 style={{ fontSize: "var(--text-xl)", fontWeight: 700, color: "var(--ink-900)", marginBottom: 6 }}>Kunde inte hämta jobb</h3>
+      <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", marginBottom: 20 }}>Något gick fel på vår sida — det är inte dina filter. Försök igen.</p>
+      <button onClick={onRetry} style={{ padding: "10px 22px", borderRadius: "var(--r)", background: "var(--green)", border: "1px solid var(--green-deep)", color: "#fff", fontWeight: 700, cursor: "pointer", fontFamily: "inherit", fontSize: "var(--text-base)" }}>
+        Försök igen
+      </button>
+    </div>
+  );
+
+  const retryFetch = () => setReloadKey(k => k + 1);
+
   const Skeletons = ({ count = 5 }) => (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       {[...Array(count)].map((_, i) => (
@@ -592,7 +592,8 @@ export default function JobList() {
 
       <div style={{ padding: "4px 20px 100px", display: "flex", flexDirection: "column", gap: 10 }}>
         {jobsLoading && <Skeletons count={4} />}
-        {!jobsLoading && pagedMobileJobs.map(job => (
+        {!jobsLoading && jobsError && <ErrorState onRetry={retryFetch} />}
+        {!jobsLoading && !jobsError && pagedMobileJobs.map(job => (
           <JobCard
             key={job.id} job={job}
             matchScore={isDriver && driverForMatch ? (matchDataMap[job.id]?.pct ?? null) : null}
@@ -601,10 +602,10 @@ export default function JobList() {
             onToggleSave={handleToggleSave}
           />
         ))}
-        {!jobsLoading && mobileJobs.length > 0 && (
+        {!jobsLoading && !jobsError && mobileJobs.length > 0 && (
           <Pagination page={mSafePage} totalPages={mTotalPages} onChange={goToPage} />
         )}
-        {!jobsLoading && mobileJobs.length === 0 && (
+        {!jobsLoading && !jobsError && mobileJobs.length === 0 && (
           <EmptyState tabKey={tab} onReset={() => { setFilters(f => ({ ...f, search: "", region: "", license: "", employment: "", jobType: "", certificate: "" })); setMobileFilters(EMPTY_MOBILE_FILTERS); setTab("all"); }} />
         )}
       </div>
@@ -844,17 +845,19 @@ export default function JobList() {
                 </div>
               </div>
             ) : (
-              /* Jobs grid: 1fr + 320px sidebar */
-              <div className="stp-jobs-grid">
+              /* Jobs grid: 1fr + 320px sidebar (sidebar visas bara för förare) */
+              <div className="stp-jobs-grid" style={isDriver ? undefined : { gridTemplateColumns: "minmax(0, 1fr)" }}>
                 {/* Job list */}
                 <div className="stp-fade-up" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                   {jobsLoading && <Skeletons count={5} />}
 
-                  {!jobsLoading && displayJobs.length === 0 && (
+                  {!jobsLoading && jobsError && <ErrorState onRetry={retryFetch} />}
+
+                  {!jobsLoading && !jobsError && displayJobs.length === 0 && (
                     <EmptyState tabKey={tab} onReset={() => { setFilters(f => ({ ...f, search: "", region: "", license: "", employment: "", jobType: "" })); setTab("all"); }} />
                   )}
 
-                  {!jobsLoading && pagedJobs.map(job => {
+                  {!jobsLoading && !jobsError && pagedJobs.map(job => {
                     const data = matchDataMap[job.id];
                     return (
                       <JobCard
@@ -869,13 +872,13 @@ export default function JobList() {
                     );
                   })}
 
-                  {!jobsLoading && displayJobs.length > 0 && (
+                  {!jobsLoading && !jobsError && displayJobs.length > 0 && (
                     <Pagination page={safePage} totalPages={totalPages} onChange={goToPage} />
                   )}
                 </div>
 
-                {/* Sidebar */}
-                <Sidebar profile={profile} />
+                {/* Sidebar — endast för inloggad förare (sökstatus/synlighet kräver profil) */}
+                {isDriver && <Sidebar profile={profile} />}
               </div>
             )}
         </>

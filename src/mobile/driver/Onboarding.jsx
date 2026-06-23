@@ -32,6 +32,7 @@ export default function DriverOnboarding() {
   const [cityQ, setCityQ] = useState("");
   const [intent, setIntent] = useState([]);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
 
   const toggleLic = (l) => setLic((s) => (s.includes(l) ? s.filter((x) => x !== l) : [...s, l]));
   const toggleIntent = (i) => setIntent((s) => (s.includes(i) ? s.filter((x) => x !== i) : [...s, i]));
@@ -42,9 +43,13 @@ export default function DriverOnboarding() {
   const canNext = step === 0
     ? name.trim().length > 1 && phone.replace(/\D/g, "").length >= 7
     : step === 1 ? lic.length > 0 : (regions.length > 0 && intent.length > 0);
+  const nextHint = step === 0
+    ? "Fyll i namn och telefonnummer"
+    : step === 1 ? "Välj minst ett körkort" : "Välj minst en ort och vad du söker";
 
   const finish = async () => {
     setBusy(true);
+    setError("");
     const primarySegment = INTENT_TO_SEGMENT[intent[0]] || "FULLTIME";
     const region = regions[0] || "";
     // Onboardingen är medvetet lättviktig (3 steg), men backend rensar bara
@@ -63,7 +68,15 @@ export default function DriverOnboarding() {
         availability: String(profile?.availability || "").trim() || "Omgående",
         summary: keepSummary ? profile.summary : genSummary,
       });
-    } catch { /* keep going — local state still updates */ }
+    } catch {
+      // Sparningen misslyckades (t.ex. offline). Stanna kvar på steget så att
+      // föraren kan försöka igen — navigera INTE vidare, annars tror föraren
+      // att profilen sparats medan needsDriverOnboarding aldrig rensas och de
+      // bounce:as tillbaka in i onboardingen vid nästa start.
+      setError("Kunde inte spara. Kontrollera din uppkoppling och försök igen.");
+      setBusy(false);
+      return;
+    }
     setBusy(false);
     // Återför till jobbet föraren ville ansöka på (satt via gate → auth → state),
     // annars hem. Ignorera publika/auth-vägar som return-mål.
@@ -75,7 +88,7 @@ export default function DriverOnboarding() {
   const back = () => step > 0 && setStep(step - 1);
 
   const Chip = ({ active, onClick, children }) => (
-    <button onClick={onClick} className="press" style={{ padding: "12px 18px", borderRadius: 13, fontWeight: 700, fontSize: 15, background: active ? "var(--green)" : "#fff", color: active ? "#fff" : "var(--ink-800)", border: `1.5px solid ${active ? "var(--green-deep)" : "var(--line-2)"}` }}>{children}</button>
+    <button onClick={onClick} aria-pressed={active} className="press" style={{ padding: "12px 18px", borderRadius: 13, fontWeight: 700, fontSize: 15, background: active ? "var(--green)" : "#fff", color: active ? "#fff" : "var(--ink-800)", border: `1.5px solid ${active ? "var(--green-deep)" : "var(--line-2)"}` }}>{children}</button>
   );
 
   const q = cityQ.trim().toLowerCase();
@@ -87,7 +100,10 @@ export default function DriverOnboarding() {
     <MobileShell>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 18px 0", flexShrink: 0 }}>
         <button onClick={back} className="press" style={{ width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", opacity: step > 0 ? 1 : 0, pointerEvents: step > 0 ? "auto" : "none" }}><Icon name="arrowLeft" size={22} color="var(--ink-900)" stroke={2.2} /></button>
-        <div style={{ display: "flex", gap: 6 }}>{[0, 1, 2].map((i) => <span key={i} style={{ width: i === step ? 22 : 7, height: 7, borderRadius: 4, background: i === step ? "var(--green)" : i < step ? "var(--green-soft)" : "var(--ink-200)", transition: "all .25s" }} />)}</div>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
+          <div style={{ display: "flex", gap: 6 }}>{[0, 1, 2].map((i) => <span key={i} style={{ width: i === step ? 22 : 7, height: 7, borderRadius: 4, background: i === step ? "var(--green)" : i < step ? "var(--green-soft)" : "var(--ink-200)", transition: "all .25s" }} />)}</div>
+          <span aria-live="polite" style={{ fontSize: 11.5, fontWeight: 600, color: "var(--ink-400)", letterSpacing: 0.1 }}>{`Steg ${step + 1} av ${STEPS}`}</span>
+        </div>
         <div style={{ width: 36, flexShrink: 0 }} />
       </div>
       <div className="app-scroll" key={step} style={{ flex: 1, overflowY: "auto", padding: "24px 24px 12px" }}>
@@ -98,9 +114,9 @@ export default function DriverOnboarding() {
               <h1 style={{ fontSize: 27, fontWeight: 800, letterSpacing: -0.7, color: "var(--ink-900)", lineHeight: 1.15, marginBottom: 8 }}>Välkommen till STP</h1>
               <p style={{ fontSize: 15.5, color: "var(--ink-500)", lineHeight: 1.5, marginBottom: 26 }}>Sveriges plattform för yrkesförare. Vi behöver bara tre saker för att börja visa jobb som passar dig.</p>
               <Label style={{ marginBottom: 9 }}>Fullständigt namn</Label>
-              <input value={name} onChange={(e) => setName(e.target.value)} placeholder="För- och efternamn" style={{ width: "100%", height: 54, padding: "0 16px", borderRadius: 13, border: "1px solid var(--line-2)", background: "#fff", fontSize: 17, color: "var(--ink-900)", outline: "none", marginBottom: 18 }} />
+              <input value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" placeholder="För- och efternamn" style={{ width: "100%", height: 54, padding: "0 16px", borderRadius: 13, border: "1px solid var(--line-2)", background: "#fff", fontSize: 17, color: "var(--ink-900)", outline: "none", marginBottom: 18 }} />
               <Label style={{ marginBottom: 9 }}>Ditt mobilnummer</Label>
-              <input value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" inputMode="tel" placeholder="070-123 45 67" style={{ width: "100%", height: 54, padding: "0 16px", borderRadius: 13, border: "1px solid var(--line-2)", background: "#fff", fontSize: 17, color: "var(--ink-900)", outline: "none", marginBottom: 14 }} />
+              <input value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" inputMode="tel" autoComplete="tel" placeholder="070-123 45 67" style={{ width: "100%", height: 54, padding: "0 16px", borderRadius: 13, border: "1px solid var(--line-2)", background: "#fff", fontSize: 17, color: "var(--ink-900)", outline: "none", marginBottom: 14 }} />
               <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "12px 14px", background: "var(--info-tint)", borderRadius: 12 }}>
                 <Icon name="info" size={17} color="var(--info)" stroke={2} style={{ flexShrink: 0 }} />
                 <span style={{ fontSize: 12.5, color: "var(--ink-700)", lineHeight: 1.4 }}>Ditt nummer visas aldrig publikt – det används bara så åkerier kan kontakta dig om ett jobb.</span>
@@ -150,6 +166,15 @@ export default function DriverOnboarding() {
         </div>
       </div>
       <div style={{ padding: "12px 22px calc(22px + var(--stpm-safe-bottom))", flexShrink: 0 }}>
+        {error && (
+          <div role="alert" style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 13px", marginBottom: 11, background: "var(--danger-tint, #fbeceb)", border: "1px solid var(--danger, #d4503e)", borderRadius: 11 }}>
+            <Icon name="info" size={16} color="var(--danger, #d4503e)" stroke={2.2} style={{ flexShrink: 0 }} />
+            <span style={{ fontSize: 13, color: "var(--ink-700)", lineHeight: 1.4 }}>{error}</span>
+          </div>
+        )}
+        {!canNext && !error && (
+          <p style={{ fontSize: 13, color: "var(--ink-400)", textAlign: "center", marginBottom: 10, lineHeight: 1.4 }}>{nextHint}</p>
+        )}
         <Button variant="primary" size="lg" full busy={busy} disabled={!canNext} onClick={next} iconRight={!busy && step < STEPS - 1 ? <Icon name="arrow" size={18} stroke={2.2} /> : !busy ? <Icon name="check" size={18} stroke={2.5} /> : undefined}>{step < STEPS - 1 ? "Fortsätt" : "Kom igång"}</Button>
       </div>
     </MobileShell>

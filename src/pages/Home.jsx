@@ -21,7 +21,10 @@ function useInView() {
     if (window.innerWidth < 768) return;
     const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setInView(true); }, { threshold: 0.08 });
     obs.observe(el);
-    return () => obs.disconnect();
+    // Säkerhetsnät: om observern aldrig fyrar (t.ex. layout-bugg eller
+    // ovanlig viewport) ska sektionen ändå bli synlig — aldrig osynlig.
+    const fallback = setTimeout(() => setInView(true), 1200);
+    return () => { obs.disconnect(); clearTimeout(fallback); };
   }, []);
   return [ref, inView];
 }
@@ -194,6 +197,23 @@ export default function Home() {
               <Icon name="arrow" size={15} stroke={2.2} />
             </Link>
             <Link
+              to="/login"
+              state={{ initialMode: "register", requiredRole: "driver" }}
+              style={{
+                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+                width: isMobile ? "100%" : "auto",
+                padding: "14px 24px", height: 50,
+                background: "var(--green)", color: "#fff",
+                border: "1px solid var(--green-deep)", borderRadius: 10,
+                fontWeight: 700, fontSize: "var(--text-md)",
+                boxShadow: "0 4px 12px rgba(30,107,91,0.30)",
+                textDecoration: "none",
+              }}
+            >
+              Skapa förarprofil
+              <Icon name="arrow" size={15} stroke={2.2} />
+            </Link>
+            <Link
               to="/for-akerier"
               state={{ initialMode: "register", requiredRole: "company" }}
               style={{
@@ -250,7 +270,7 @@ export default function Home() {
           <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: 18 }}>
             {[
               { no: "01", title: "Ingen struktur",          body: "Körkort, erfarenhet och tillgänglighet begrävs i fritext och kommentarsfält. Ingen vet vem som är seriös." },
-              { no: "02", title: "Mellanhänder äter lönen", body: "Bemanningsbolag tar mellan 25–40 % av lönen. Föraren förlorar. Åkeriet betalar mer. Ingen vinner." },
+              { no: "02", title: "Mellanhänder äter lönen", body: "Bemanningsbolag tar en stor del av lönen. Föraren förlorar. Åkeriet betalar mer. Ingen vinner." },
               { no: "03", title: "Bra kandidater försvinner", body: "En jobbannons lever 24 timmar på sociala medier. Rätt förare ser den aldrig. Åkeriet upprepar processen." },
             ].map((p) => (
               <div key={p.no} style={{

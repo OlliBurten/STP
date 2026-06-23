@@ -57,6 +57,7 @@ export function ChatProvider({ children }) {
   const [conversations, setConversations] = useState(loadConversations);
   const [apiConversations, setApiConversations] = useState([]);
   const [conversationsLoading, setConversationsLoading] = useState(false);
+  const [conversationsError, setConversationsError] = useState(false);
   const [seenSelectedMap, setSeenSelectedMap] = useState(loadSeenSelectedMap);
   const [convSeenMap, setConvSeenMap] = useState(loadConvSeenMap);
 
@@ -73,10 +74,12 @@ export function ChatProvider({ children }) {
       setConversationsLoading(true);
       return fetchConversations()
         .then((data) => {
-          if (active) setApiConversations(Array.isArray(data) ? data : []);
+          if (active) { setApiConversations(Array.isArray(data) ? data : []); setConversationsError(false); }
         })
         .catch(() => {
-          if (active) setApiConversations([]);
+          // Behåll ev. tidigare laddade konversationer; flagga fel så UI:t kan visa
+          // "kunde inte ladda" i st f ett missvisande "inga meddelanden".
+          if (active) setConversationsError(true);
         })
         .finally(() => {
           if (active) setConversationsLoading(false);
@@ -270,6 +273,7 @@ export function ChatProvider({ children }) {
         markSelectedNotificationsSeen,
         refreshConversations,
         conversationsLoading,
+        conversationsError,
       }}
     >
       {children}

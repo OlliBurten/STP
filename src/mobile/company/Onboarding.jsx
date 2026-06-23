@@ -45,7 +45,10 @@ export default function CompanyOnboarding() {
     <MobileShell>
       <div style={{ padding: "8px 24px 0", flexShrink: 0, display: "flex", alignItems: "center", gap: 10 }}>
         {step > 0 ? <button onClick={() => setStep(step - 1)} className="press" style={{ width: 38, height: 38, display: "flex", alignItems: "center", justifyContent: "center", marginLeft: -8 }}><Icon name="arrowLeft" size={22} color="var(--ink-700)" stroke={2.2} /></button> : <div style={{ width: 30 }} />}
-        <div style={{ flex: 1, display: "flex", gap: 6 }}>{[0, 1, 2].map((i) => <div key={i} style={{ flex: 1, height: 5, borderRadius: 3, background: i <= step ? "var(--green)" : "var(--paper-2)", transition: "background .3s" }} />)}</div>
+        <div style={{ flex: 1 }}>
+          <div style={{ display: "flex", gap: 6 }}>{[0, 1, 2].map((i) => <div key={i} style={{ flex: 1, height: 5, borderRadius: 3, background: i <= step ? "var(--green)" : "var(--paper-2)", transition: "background .3s" }} />)}</div>
+          <div style={{ fontSize: 12.5, color: "var(--ink-400)", fontWeight: 700, marginTop: 8 }}>Steg {step + 1} av {STEPS}</div>
+        </div>
         <div style={{ width: 30 }} />
       </div>
       <div className="app-scroll" key={step} style={{ flex: 1, overflowY: "auto", padding: "24px 24px 12px" }}>
@@ -61,12 +64,12 @@ export default function CompanyOnboarding() {
             <input value={orgnr} onChange={(e) => { setOrgnr(e.target.value); setConfirmed(false); }} placeholder="556XXX-XXXX" inputMode="numeric" style={{ width: "100%", height: 54, padding: "0 16px", borderRadius: 13, border: "1px solid var(--line-2)", background: "#fff", fontSize: 17, color: "var(--ink-900)", outline: "none", fontFamily: "var(--mono)", marginBottom: 14 }} />
             {confirmed ? (
               <div style={{ padding: "16px", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 8 }}><Icon name="check" size={18} color="var(--success)" stroke={2.6} /><span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--success)" }}>Klart att verifieras</span></div>
-                <div style={{ fontSize: 17, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.3 }}>{companyName}</div>
-                <div style={{ fontSize: 13.5, color: "var(--ink-600)", marginTop: 4 }}>Org.nr {orgnr}</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 8 }}><Icon name="check" size={18} color="var(--success)" stroke={2.6} /><span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--success)" }}>Skickas för verifiering</span></div>
+                {companyName !== "Ert åkeri" && <div style={{ fontSize: 17, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.3 }}>{companyName}</div>}
+                <div style={{ fontSize: 13.5, color: "var(--ink-600)", marginTop: companyName !== "Ert åkeri" ? 4 : 0 }}>Org.nr {orgnr}</div>
               </div>
             ) : (
-              <Button variant="dark" size="lg" full disabled={orgnr.replace(/\D/g, "").length < 6} onClick={() => setConfirmed(true)}>Bekräfta uppgifter</Button>
+              <Button variant="dark" size="lg" full disabled={orgnr.replace(/\D/g, "").length < 6} onClick={() => setConfirmed(true)}>Spara organisationsnummer</Button>
             )}
           </>}
           {step === 1 && <>

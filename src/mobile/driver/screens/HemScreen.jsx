@@ -4,7 +4,7 @@
 //     yet → shows an empty-state instead of fabricated shifts (flagged).
 //   • Activity feed is derived from NotificationContext (empty-state if none).
 import React, { useState } from "react";
-import { Header, ScrollArea, Card, Pill, Dot, Avatar, Switch, Label, Icon, Empty } from "../../ui";
+import { Header, ScrollArea, Card, Pill, Dot, Avatar, Switch, Label, Icon, Empty, Button } from "../../ui";
 import { timeAgo } from "../jobAdapter";
 
 const matchTone = (m) => (m >= 90 ? "success" : m >= 80 ? "soft" : "neutral");
@@ -120,7 +120,16 @@ export default function HemScreen({ ctx }) {
           )}
 
           {/* New matches */}
-          {topMatches.length > 0 && (
+          {ctx.jobsError ? (
+            <div>
+              <Label style={{ padding: "2px 4px 10px" }}>Nya matchningar</Label>
+              <Card style={{ padding: "20px 16px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+                <Icon name="alert" size={20} color="var(--amber-deep)" stroke={2} />
+                <div style={{ fontSize: 13.5, color: "var(--ink-500)", lineHeight: 1.5 }}>Kunde inte ladda matchningar.</div>
+                <Button variant="secondary" size="sm" onClick={() => ctx.refreshJobs?.()}>Försök igen</Button>
+              </Card>
+            </div>
+          ) : topMatches.length > 0 && (
             <div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "2px 4px 10px" }}>
                 <Label>Nya matchningar</Label>

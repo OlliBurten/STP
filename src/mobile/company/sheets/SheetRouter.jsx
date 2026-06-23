@@ -8,7 +8,7 @@ import { PublishSheet, PipelineSheet, CandidateSheet, DriverSheet, ContactDriver
 import { EditCompanySheet, CompleteProfileSheet, SettingsSheet, TeamSheet, InviteSheet, ReviewsSheet, VerificationSheet, PublicProfileSheet, OrgSwitcherSheet, NotiserSheet, SupportSheet, LogoutSheet } from "./merSheets";
 
 const CONFIG = {
-  publish: { full: true },
+  publish: { full: true, title: "Publicera jobb" },
   pipeline: { full: true, title: "Kandidater" },
   candidate: { title: "Kandidat" },
   driver: { title: "Förarprofil", full: true },

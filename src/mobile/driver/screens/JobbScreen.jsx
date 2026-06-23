@@ -80,13 +80,13 @@ export default function JobbScreen({ ctx }) {
 
   return (
     <>
-      <Header title={isJobb ? "Jobb" : "Åkerier"} scrollY={sy} big={isJobb ? "Hitta jobb" : "Hitta åkerier"} sub={isJobb ? `${list.length} jobb` : `${comps.length} åkerier`} right={filterBtn} />
+      <Header title={isJobb ? "Jobb" : "Åkerier"} scrollY={sy} big={isJobb ? "Hitta jobb" : "Hitta åkerier"} sub={isJobb ? (ctx.jobsLoading ? "Laddar…" : `${list.length} jobb`) : `${comps.length} åkerier`} right={filterBtn} />
       <div style={{ padding: "12px 16px 12px", display: "flex", flexDirection: "column", gap: 11, flexShrink: 0, background: "var(--paper)", position: "relative", zIndex: 4, boxShadow: sy > 4 ? "0 6px 16px -8px rgba(15,22,22,0.22)" : "none", transition: "box-shadow .2s" }}>
         <Segment value={mode} onChange={setMode} items={[{ id: "jobb", label: "Jobb" }, { id: "akerier", label: "Åkerier" }]} />
         <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "0 13px", height: 44, background: "var(--card)", border: "1px solid var(--line-2)", borderRadius: 12, boxShadow: "var(--sh-sm)" }}>
           <Icon name="search" size={18} color="var(--ink-400)" stroke={2} />
           <input aria-label="Sök jobb" value={q} onChange={(e) => setQ(e.target.value)} placeholder={isJobb ? "Sök titel, åkeri, ort…" : "Sök åkeri eller ort…"} style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontSize: 14.5, color: "var(--ink-900)" }} />
-          {q && <button onClick={() => setQ("")}><Icon name="x" size={16} color="var(--ink-400)" stroke={2.2} /></button>}
+          {q && <button onClick={() => setQ("")} aria-label="Rensa sökning"><Icon name="x" size={16} color="var(--ink-400)" stroke={2.2} /></button>}
         </div>
         {isJobb && <Segment value={seg} onChange={setSeg} items={[{ id: "alla", label: "Alla" }, { id: "match", label: "Matchande" }, { id: "sparat", label: "Sparade", badge: savedCount || null }]} />}
       </div>
@@ -95,7 +95,16 @@ export default function JobbScreen({ ctx }) {
           {isJobb ? (
             <>
               {list.length === 0 ? (
-                ctx.jobsLoading ? (
+                ctx.jobsError ? (
+                  <Card style={{ padding: "24px 16px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+                    <div style={{ width: 56, height: 56, borderRadius: 18, background: "var(--amber-tint)", display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="alert" size={24} color="var(--amber-deep)" stroke={2} /></div>
+                    <div>
+                      <h3 style={{ fontSize: 16, fontWeight: 800, color: "var(--ink-900)", marginBottom: 4 }}>Kunde inte ladda jobb</h3>
+                      <p style={{ fontSize: 13.5, color: "var(--ink-500)", lineHeight: 1.5 }}>Något gick fel. Kontrollera din uppkoppling och försök igen.</p>
+                    </div>
+                    <Button variant="secondary" size="md" onClick={() => ctx.refreshJobs?.()}>Försök igen</Button>
+                  </Card>
+                ) : ctx.jobsLoading ? (
                   Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
                 ) : (
                   <Empty

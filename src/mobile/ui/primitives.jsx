@@ -52,7 +52,7 @@ export const Avatar = ({ initials, src, size = 40, color = "var(--green)", ring,
   </div>
 );
 
-export const Button = ({ children, variant = "primary", size = "md", icon, iconRight, onClick, disabled, busy, full, style, type }) => {
+export const Button = ({ children, variant = "primary", size = "md", icon, iconRight, onClick, disabled, busy, full, style, type, ariaLabel, title }) => {
   const v = {
     primary: { bg: "var(--green)", c: "#fff", b: "var(--green-deep)", sh: "0 1px 0 var(--green-deep),0 2px 6px rgba(31,95,92,0.28)" },
     secondary: { bg: "#fff", c: "var(--ink-900)", b: "var(--line-2)", sh: "var(--sh-sm)" },
@@ -67,6 +67,8 @@ export const Button = ({ children, variant = "primary", size = "md", icon, iconR
       type={type}
       onClick={onClick}
       disabled={disabled || busy}
+      aria-label={ariaLabel}
+      title={title}
       className="press"
       style={{
         display: full ? "flex" : "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
@@ -96,15 +98,17 @@ export const Card = ({ children, style, onClick, className = "" }) => (
   <div onClick={onClick} className={className} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, boxShadow: "var(--sh-sm)", ...style }}>{children}</div>
 );
 
-export const Field = ({ label, value, onChange, type = "text", placeholder, sub, inputMode, autoComplete }) => (
+export const Field = ({ label, value, onChange, type = "text", placeholder, sub, inputMode, autoComplete, required, error, onBlur, disabled }) => (
   <div style={{ marginBottom: 16 }}>
-    {label && <Label style={{ marginBottom: 8 }}>{label}</Label>}
+    {label && <Label style={{ marginBottom: 8 }}>{label}{required && <span style={{ color: "var(--danger)" }}> *</span>}</Label>}
     <input
-      type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
-      inputMode={inputMode} autoComplete={autoComplete}
-      style={{ width: "100%", height: 50, padding: "0 15px", borderRadius: 12, border: "1px solid var(--line-2)", background: "#fff", fontSize: 15.5, color: "var(--ink-900)", outline: "none", WebkitAppearance: "none" }}
+      type={type} value={value} onChange={(e) => onChange(e.target.value)} onBlur={onBlur} placeholder={placeholder}
+      inputMode={inputMode} autoComplete={autoComplete} disabled={disabled} aria-invalid={!!error}
+      style={{ width: "100%", height: 50, padding: "0 15px", borderRadius: 12, border: `1px solid ${error ? "var(--danger)" : "var(--line-2)"}`, background: disabled ? "var(--card-2)" : "#fff", fontSize: 15.5, color: disabled ? "var(--ink-400)" : "var(--ink-900)", outline: "none", WebkitAppearance: "none" }}
     />
-    {sub && <div style={{ fontSize: 12, color: "var(--ink-400)", marginTop: 6, lineHeight: 1.4 }}>{sub}</div>}
+    {error
+      ? <div role="alert" style={{ fontSize: 12, color: "var(--danger)", marginTop: 6, lineHeight: 1.4, fontWeight: 600 }}>{error}</div>
+      : sub && <div style={{ fontSize: 12, color: "var(--ink-400)", marginTop: 6, lineHeight: 1.4 }}>{sub}</div>}
   </div>
 );
 

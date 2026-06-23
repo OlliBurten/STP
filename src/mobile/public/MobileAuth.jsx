@@ -239,9 +239,8 @@ export default function MobileAuth() {
   );
 
   // back-button targets per view (prototype backMap; welcome → our Landing "/")
-  const backMap = { register: () => navigate("/"), login: () => navigate("/"), forgot: () => go("login"), forgotSent: () => go("forgot"), exists: () => go("register"), verify: () => go("login") };
+  const backMap = { register: () => navigate("/"), login: () => navigate("/"), forgot: () => go("login"), forgotSent: () => go("forgot"), exists: () => go("register"), verify: () => go("login"), rolechoice: () => go("register") };
   const back = backMap[view] || null;
-  const headerless = view === "rolechoice";
 
   /* ── views ── */
   let body;
@@ -328,7 +327,7 @@ export default function MobileAuth() {
     body = (
       <div className="view-enter" style={{ flex: 1, display: "flex", flexDirection: "column", padding: "24px 26px 30px" }}>
         <h1 style={{ fontSize: 27, fontWeight: 800, letterSpacing: -0.6, color: "var(--ink-900)", marginBottom: 8 }}>Hur vill du använda STP?</h1>
-        <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.5, marginBottom: 26 }}>Välj så anpassar vi STP för dig. Du kan inte byta typ senare – men du kan skapa båda med samma inloggning.</p>
+        <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.5, marginBottom: 26 }}>Välj så anpassar vi STP för dig. Ändrar du dig kan du skapa den andra typen med samma inloggning.</p>
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           {[["forare", "truck", "Jag är förare", "Hitta körningar, bygg din profil och ansök på sekunder."], ["akeri", "building", "Vi är ett åkeri", "Lägg upp jobb, hitta förare och hantera ansökningar."]].map(([r, ic, t, d]) => (
             <button key={r} onClick={() => doRegister(r)} disabled={busy} className="press" style={{ display: "flex", alignItems: "center", gap: 15, padding: "20px 18px", borderRadius: 18, textAlign: "left", background: "#fff", border: "1px solid var(--line-2)", boxShadow: "var(--sh-sm)", opacity: busy ? 0.6 : 1 }}>
@@ -366,15 +365,11 @@ export default function MobileAuth() {
 
   return (
     <MobileShell style={{ background: "var(--paper)" }}>
-      {headerless ? (
-        <div style={{ height: 6, flexShrink: 0 }} />
-      ) : (
-        <div style={{ display: "flex", alignItems: "center", height: 48, padding: "0 18px", flexShrink: 0 }}>
-          {back
-            ? <button onClick={back} className="press" style={{ width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 11, background: "#fff", border: "1px solid var(--line-2)", boxShadow: "var(--sh-sm)" }}><Icon name="arrowLeft" size={20} color="var(--ink-900)" stroke={2.2} /></button>
-            : <div style={{ width: 40 }} />}
-        </div>
-      )}
+      <div style={{ display: "flex", alignItems: "center", height: 48, padding: "0 18px", flexShrink: 0 }}>
+        {back
+          ? <button onClick={back} className="press" style={{ width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 11, background: "#fff", border: "1px solid var(--line-2)", boxShadow: "var(--sh-sm)" }}><Icon name="arrowLeft" size={20} color="var(--ink-900)" stroke={2.2} /></button>
+          : <div style={{ width: 40 }} />}
+      </div>
       {body}
     </MobileShell>
   );

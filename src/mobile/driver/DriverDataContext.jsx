@@ -39,6 +39,7 @@ export function DriverDataProvider({ children }) {
 
   const [rawJobs, setRawJobs] = useState([]);
   const [jobsLoading, setJobsLoading] = useState(true);
+  const [jobsError, setJobsError] = useState(false);
   const [savedIds, setSavedIds] = useState(() => new Set());
 
   // ── Jobs ──────────────────────────────────────────────────────────
@@ -46,19 +47,23 @@ export function DriverDataProvider({ children }) {
     try {
       const data = hasApi ? await fetchJobs() : mockJobs;
       setRawJobs(Array.isArray(data) && data.length ? data : mockJobs);
+      setJobsError(false);
     } catch {
-      setRawJobs(mockJobs); // dev / no-backend fallback
+      if (hasApi) setJobsError(true); else setRawJobs(mockJobs); // dev / no-backend fallback
     }
   }, [hasApi]);
   useEffect(() => {
     let alive = true;
     (async () => {
       setJobsLoading(true);
+      setJobsError(false);
       try {
         const data = hasApi ? await fetchJobs() : mockJobs;
-        if (alive) setRawJobs(Array.isArray(data) && data.length ? data : mockJobs);
+        if (alive) { setRawJobs(Array.isArray(data) && data.length ? data : mockJobs); }
       } catch {
-        if (alive) setRawJobs(mockJobs); // dev / no-backend fallback
+        // Prod: flagga fel (UI visar "kunde inte ladda" i st f "inga jobb").
+        // Dev/utan backend: behåll mock-fallback.
+        if (alive) { if (hasApi) setJobsError(true); else setRawJobs(mockJobs); }
       } finally {
         if (alive) setJobsLoading(false);
       }
@@ -382,7 +387,7 @@ export function DriverDataProvider({ children }) {
   const value = {
     profile, profileLoaded,
     completion,
-    jobs, matchedJobs, jobsLoading, jobById,
+    jobs, matchedJobs, jobsLoading, jobsError, jobById,
     savedIds, toggleSave, saved: savedIds,
     companies, companyActiveJobs, savedCompanyIds, toggleSaveCompany,
     seeking, setSeeking,
