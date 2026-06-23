@@ -12,7 +12,7 @@ import React, { createContext, useContext, useEffect, useMemo, useState, useCall
 import { useAuth } from "../../context/AuthContext";
 import { useChat } from "../../context/ChatContext";
 import { fetchMyCompanyProfile, updateMyCompanyProfile, fetchJobViewStats, fetchMatchingDrivers, listInvites, createInvite, revokeInvite } from "../../api/companies";
-import { fetchMyJobs, createJob, fetchJobApplicants } from "../../api/jobs";
+import { fetchMyJobs, createJob, updateJob, fetchJobApplicants } from "../../api/jobs";
 import { fetchDrivers } from "../../api/drivers";
 import { setConversationStage } from "../../api/conversations";
 import { fetchMyOrganizations } from "../../api/organizations";
@@ -155,6 +155,21 @@ export function CompanyDataProvider({ children }) {
   const [driverFilter, setDriverFilter] = useState({ seg: "alla", lic: [], onlyAvail: false });
 
   // ── Candidate pipeline move → persists via PATCH /conversations/:id/stage ─
+  // Pausa (HIDDEN) / återpublicera (ACTIVE) / ta bort (REMOVED) en annons.
+  // Backend: PATCH /api/jobs/:id (ägarkontrollerad). Optimistisk + revert vid fel.
+  const setJobStatus = useCallback(async (id, status) => {
+    // REMOVED → ta bort ur listan direkt; annars uppdatera statusen optimistiskt.
+    setRawJobs((js) => status === "REMOVED" ? js.filter((j) => j.id !== id) : js.map((j) => (j.id === id ? { ...j, status } : j)));
+    if (!hasApi) return;
+    try {
+      await updateJob(id, { status });
+      refresh();
+    } catch (e) {
+      refresh(); // återställ från servern vid fel
+      throw e;
+    }
+  }, [hasApi, refresh]);
+
   const moveCandidate = useCallback((id, stage) => {
     setCandidates((cs) => cs.map((c) => (c.id === id ? { ...c, stage } : c))); // optimistic
     if (hasApi) setConversationStage(id, stage).catch(() => {});
@@ -199,7 +214,7 @@ export function CompanyDataProvider({ children }) {
   const value = {
     loading, error, company, verified, kpis, jobs, candidates, drivers, orgs, invites,
     savedDrivers, toggleSaveDriver, driverFilter, setDriverFilter,
-    moveCandidate, publishJob, contactDriver, updateCompany, refresh,
+    moveCandidate, publishJob, contactDriver, updateCompany, setJobStatus, refresh,
     threads, chat, createInvite, revokeInvite,
     user, hasApi, logout,
   };

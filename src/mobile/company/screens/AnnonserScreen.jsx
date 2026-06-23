@@ -14,6 +14,12 @@ function JobCardCompany({ job, ctx }) {
   const openCard = () => ctx.setSheet(isDraft ? { type: "publish", id: job.id } : { type: "pipeline", id: job.id });
   // Kompakt textuell uppdelning bredvid den färgkodade stapeln (stapeln ensam är otillgänglig för färgblinda).
   const breakdown = STAGES.map((s) => ({ label: s.label, n: job.stages[s.id] || 0 })).filter((x) => x.n > 0);
+  // Hantera-åtgärder (pausa/återpublicera/ta bort) — backend PATCH /api/jobs/:id.
+  const [manage, setManage] = useState(false);
+  const [confirmDel, setConfirmDel] = useState(false);
+  const act = (e, status) => { e.stopPropagation(); ctx.setJobStatus?.(job.id, status)?.catch?.(() => {}); };
+  const aBtn = { display: "inline-flex", alignItems: "center", gap: 6, minHeight: 40, padding: "0 13px", borderRadius: 10, border: "1px solid var(--line-2)", background: "var(--card-2)", fontSize: 13, fontWeight: 700, color: "var(--ink-700)", cursor: "pointer" };
+  const dBtn = { ...aBtn, border: "1px solid var(--danger)", background: "var(--danger-tint)", color: "var(--danger)" };
   return (
     <Card className="press" onClick={openCard} style={{ padding: "16px", cursor: "pointer" }}>
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10, marginBottom: 9 }}>
@@ -36,6 +42,27 @@ function JobCardCompany({ job, ctx }) {
           {breakdown.length > 0 && (
             <div style={{ fontSize: 12, color: "var(--ink-500)", marginTop: 7, lineHeight: 1.4 }}>{breakdown.map((x) => `${x.n} ${x.label.toLowerCase()}`).join(" · ")}</div>
           )}
+          {/* Hantera annons: pausa/återpublicera/ta bort */}
+          <div onClick={(e) => e.stopPropagation()} style={{ marginTop: 12, borderTop: "1px solid var(--line)", paddingTop: 10 }}>
+            {!manage ? (
+              <button onClick={(e) => { e.stopPropagation(); setManage(true); }} className="press" style={{ display: "inline-flex", alignItems: "center", gap: 6, minHeight: 40, background: "none", border: "none", padding: "0 2px", fontSize: 13, fontWeight: 700, color: "var(--ink-500)", cursor: "pointer" }} aria-label="Hantera annons"><Icon name="sliders" size={15} color="var(--ink-500)" stroke={2} />Hantera annons</button>
+            ) : (
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+                {job.status === "aktiv"
+                  ? <button onClick={(e) => act(e, "HIDDEN")} className="press" style={aBtn}><Icon name="eyeOff" size={14} color="var(--ink-700)" stroke={2} />Pausa</button>
+                  : <button onClick={(e) => act(e, "ACTIVE")} className="press" style={aBtn}><Icon name="refresh" size={14} color="var(--ink-700)" stroke={2} />Återpublicera</button>}
+                {!confirmDel ? (
+                  <button onClick={(e) => { e.stopPropagation(); setConfirmDel(true); }} className="press" style={dBtn}><Icon name="x" size={14} color="var(--danger)" stroke={2.2} />Ta bort</button>
+                ) : (
+                  <>
+                    <span style={{ fontSize: 13, color: "var(--ink-600)", fontWeight: 600 }}>Säker?</span>
+                    <button onClick={(e) => { e.stopPropagation(); setConfirmDel(false); }} className="press" style={aBtn}>Avbryt</button>
+                    <button onClick={(e) => act(e, "REMOVED")} className="press" style={dBtn}>Ta bort</button>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
         </>
       ) : (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
