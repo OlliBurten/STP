@@ -155,7 +155,7 @@ export default function Header({ onboarding = false }) {
   const headerBg = isImpersonating
     ? "rgba(10,20,20,0.97)"
     : isLanding
-      ? landingLight ? "rgba(245,242,236,0.97)" : "transparent"
+      ? landingLight ? "rgba(245,242,236,0.72)" : "transparent"
       : "var(--ink-900)";
 
   const headerBorder = isImpersonating
