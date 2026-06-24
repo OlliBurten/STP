@@ -4,6 +4,7 @@
  * Company users get "Åkeri" sub-label next to the logo.
  */
 import { useState, useEffect, useRef } from "react";
+import Logo from "./Logo";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useChat } from "../context/ChatContext";
@@ -404,14 +405,7 @@ export default function AppTopNav() {
         }}>
           {/* Logo */}
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginRight: isMobile ? 0 : 24, flexShrink: 0 }}>
-            <div style={{
-              width: 28, height: 28, borderRadius: 7,
-              background: "var(--green)", color: "#fff",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontWeight: 900, fontSize: "var(--text-sm)",
-              boxShadow: "inset 0 -2px 0 rgba(0,0,0,0.25)",
-            }}>S</div>
-            <span style={{ fontWeight: 800, fontSize: "var(--text-lg)", letterSpacing: 0.5, color: "#e8eded" }}>STP</span>
+            <Logo height={26} variant="light" />
             {isCompany && !isDemoBoth && (
               <span style={{
                 fontSize: "var(--text-2xs)", color: "rgba(232,237,237,0.5)",

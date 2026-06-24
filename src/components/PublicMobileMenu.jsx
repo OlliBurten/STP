@@ -147,8 +147,7 @@ export default function PublicMobileMenu({ open, onClose, triggerRef }) {
         {/* Header: märke + stäng */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 22px 22px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-            <div style={{ width: 28, height: 28, borderRadius: 7, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 12, boxShadow: "inset 0 -2px 0 rgba(0,0,0,0.25)" }}>S</div>
-            <span style={{ fontWeight: 800, fontSize: 16, color: TXT, letterSpacing: 0.5 }}>STP</span>
+            <img src="/stp-logo-white.png" alt="STP – Sveriges Transportplattform" style={{ height: 26, width: "auto", display: "block" }} />
           </div>
           <button
             ref={closeRef}

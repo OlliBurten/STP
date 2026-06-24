@@ -756,8 +756,7 @@ function TopBar({ onSkip }) {
   return (
     <div style={{ height: 60, borderBottom: "1px solid var(--line)", background: "var(--card)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 24px", flexShrink: 0 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <div style={{ width: 28, height: 28, borderRadius: 7, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--text-xs)" }}>S</div>
-        <span style={{ fontWeight: 800, fontSize: "var(--text-md)", color: "var(--ink-900)", letterSpacing: 0.5 }}>STP</span>
+        <img src="/stp-logo.png" alt="STP – Sveriges Transportplattform" style={{ height: 26, width: "auto", display: "block" }} />
       </div>
       {onSkip && (
         <button onClick={onSkip} style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", fontWeight: 600, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>

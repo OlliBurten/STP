@@ -123,7 +123,7 @@ export default function Home() {
         id="top"
         style={{
           background: "var(--ink-900)",
-          backgroundImage: "url('/hero.png')",
+          backgroundImage: "url('/hero.webp')",
           backgroundSize: "cover",
           backgroundPosition: "center 55%",
           minHeight: isMobile ? "auto" : "100vh",
@@ -194,23 +194,6 @@ export default function Home() {
               }}
             >
               Se lediga jobb
-              <Icon name="arrow" size={15} stroke={2.2} />
-            </Link>
-            <Link
-              to="/login"
-              state={{ initialMode: "register", requiredRole: "driver" }}
-              style={{
-                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-                width: isMobile ? "100%" : "auto",
-                padding: "14px 24px", height: 50,
-                background: "var(--green)", color: "#fff",
-                border: "1px solid var(--green-deep)", borderRadius: 10,
-                fontWeight: 700, fontSize: "var(--text-md)",
-                boxShadow: "0 4px 12px rgba(30,107,91,0.30)",
-                textDecoration: "none",
-              }}
-            >
-              Skapa förarprofil
               <Icon name="arrow" size={15} stroke={2.2} />
             </Link>
             <Link

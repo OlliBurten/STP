@@ -344,19 +344,7 @@ export default function Header({ onboarding = false }) {
           {/* Logo */}
           <div className="flex items-center shrink-0 overflow-visible">
             <Link to={platformAdminSession ? "/admin" : "/"} style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-              <div style={{
-                width: 30, height: 30, borderRadius: 7,
-                background: "var(--green)", color: "#fff",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontWeight: 900, fontSize: "var(--text-sm)",
-                boxShadow: "inset 0 -2px 0 rgba(0,0,0,0.20)",
-                flexShrink: 0,
-              }}>S</div>
-              <span style={{
-                fontWeight: 800, fontSize: "var(--text-xl)", letterSpacing: 0.5,
-                color: isLanding ? (landingLight ? "var(--ink-900)" : "#fff") : "#fff",
-                transition: "color .25s",
-              }}>STP</span>
+              <Logo height={isLanding ? 30 : 28} variant={isLanding && landingLight ? "default" : "light"} />
             </Link>
           </div>
 

@@ -3,6 +3,7 @@
  * Shows STP logo, notification bell with panel, and user avatar.
  */
 import { useState, useEffect, useRef } from "react";
+import Logo from "./Logo";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useChat } from "../context/ChatContext";
@@ -119,12 +120,7 @@ export default function MobileHeader() {
       }}>
         {/* Logo — matchar desktop (grön S-box + STP) */}
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div style={{
-            width: 28, height: 28, borderRadius: 7, background: "var(--green)", color: "#fff",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontWeight: 900, fontSize: "var(--text-sm)", boxShadow: "inset 0 -2px 0 rgba(0,0,0,0.25)",
-          }}>S</div>
-          <span style={{ fontWeight: 800, letterSpacing: 0.5, fontSize: "var(--text-xl)", color: "var(--ink-900)" }}>STP</span>
+          <Logo height={28} />
         </div>
 
         {/* Right: bell + avatar */}

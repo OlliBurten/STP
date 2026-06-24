@@ -142,8 +142,7 @@ export default function ClaimLanding() {
       <div style={{ background: "var(--card)", borderBottom: "1px solid var(--line)", padding: "0 32px" }}>
         <div style={{ maxWidth: "var(--w-read)", margin: "0 auto", height: 56, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <Link to="/" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
-            <div style={{ width: 26, height: 26, borderRadius: 6, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--text-xs)" }}>S</div>
-            <span style={{ fontWeight: 800, fontSize: "var(--text-lg)", color: "var(--ink-900)", letterSpacing: 0.2 }}>STP</span>
+            <img src="/stp-logo.png" alt="STP – Sveriges Transportplattform" style={{ height: 24, width: "auto", display: "block" }} />
           </Link>
           <Link to="/login" style={{ fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--ink-500)", textDecoration: "none" }}>
             Redan konto? Logga in →

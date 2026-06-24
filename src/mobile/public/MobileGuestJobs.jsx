@@ -20,10 +20,7 @@ const protoType = (t) => { const s = String(t).toLowerCase(); if (s.includes("pr
 
 function Logo() {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-      <div style={{ width: 30, height: 30, borderRadius: 8, background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ fontSize: 15, fontWeight: 900, color: "#fff", letterSpacing: -0.5 }}>S</span></div>
-      <span style={{ fontSize: 18, fontWeight: 900, letterSpacing: -0.6, color: "var(--ink-900)" }}>STP</span>
-    </div>
+    <img src="/stp-logo.png" alt="STP – Sveriges Transportplattform" style={{ height: 28, width: "auto", display: "block" }} />
   );
 }
 

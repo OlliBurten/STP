@@ -59,8 +59,7 @@ function BrandPanel() {
     }}>
       {/* Logo — klickbar, tillbaka till startsidan */}
       <Link to="/" aria-label="Till startsidan" style={{ display: "inline-flex", alignItems: "center", gap: 10, alignSelf: "flex-start", color: "#fff", textDecoration: "none", cursor: "pointer" }}>
-        <div style={{ width: 30, height: 30, borderRadius: 7, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--text-sm)", boxShadow: "inset 0 -2px 0 rgba(0,0,0,0.25)" }}>S</div>
-        <span style={{ fontWeight: 800, fontSize: "var(--text-xl)", letterSpacing: 0.5 }}>STP</span>
+        <img src="/stp-logo-white.png" alt="STP – Sveriges Transportplattform" style={{ height: 28, width: "auto", display: "block" }} />
       </Link>
 
       {/* Headline */}
@@ -179,8 +178,7 @@ function MobileLogo() {
   return (
     <div style={{ marginBottom: 24 }}>
       <Link to="/" aria-label="Till startsidan" style={{ display: "inline-flex", alignItems: "center", gap: 9, color: "var(--ink-900)", textDecoration: "none" }}>
-        <div style={{ width: 32, height: 32, borderRadius: 8, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--text-base)", boxShadow: "inset 0 -2px 0 rgba(0,0,0,0.25)" }}>S</div>
-        <span style={{ fontWeight: 800, fontSize: "var(--text-2xl)", letterSpacing: 0.5, color: "var(--ink-900)" }}>STP</span>
+        <img src="/stp-logo.png" alt="STP – Sveriges Transportplattform" style={{ height: 32, width: "auto", display: "block" }} />
       </Link>
     </div>
   );

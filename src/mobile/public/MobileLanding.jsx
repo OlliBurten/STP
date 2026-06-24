@@ -14,10 +14,11 @@ const Eyebrow = ({ children, onDark }) => (
   <span style={{ display: "inline-block", padding: "6px 13px", borderRadius: 999, fontSize: 12, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", background: onDark ? "rgba(255,255,255,0.1)" : "var(--green-tint)", color: onDark ? "#fff" : "var(--green-text)" }}>{children}</span>
 );
 const Logo = ({ light }) => (
-  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-    <div style={{ width: 34, height: 34, borderRadius: 9, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "inset 0 -2px 0 rgba(0,0,0,0.2)" }}>S</div>
-    <span style={{ fontSize: 19, fontWeight: 800, letterSpacing: -0.3, color: light ? "#fff" : "var(--ink-900)" }}>STP</span>
-  </div>
+  <img
+    src={light ? "/stp-logo-white.png" : "/stp-logo.png"}
+    alt="STP – Sveriges Transportplattform"
+    style={{ height: 30, width: "auto", display: "block" }}
+  />
 );
 const BtnAmber = ({ children, onClick, full }) => (
   <button onClick={onClick} className="press" style={{ width: full ? "100%" : "auto", height: 58, padding: "0 24px", borderRadius: 15, background: AMBER, color: "#1a1200", fontWeight: 800, fontSize: 16.5, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, boxShadow: "0 8px 22px rgba(242,164,28,0.3)" }}>{children}</button>
@@ -222,7 +223,7 @@ export default function MobileLanding() {
       <div className="app-scroll" onScroll={(e) => setScrolled(e.target.scrollTop > 30)} style={{ flex: 1, overflowY: "auto", overflowX: "hidden" }}>
         {/* HERO */}
         <section style={{ position: "relative", minHeight: 660, display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "0 22px 40px", overflow: "hidden", background: "linear-gradient(160deg,#2a3a37 0%,var(--asphalt) 45%,var(--night) 100%)" }}>
-          <img src="/hero.webp" alt="Lastbil på svensk landsväg" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 40%" }} onError={(e) => { e.currentTarget.style.display = "none"; }} />
+          <img src="/hero-mobile.webp" alt="Lastbil på svensk landsväg" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 35%" }} onError={(e) => { e.currentTarget.src = "/hero.webp"; }} />
           <div style={{ position: "absolute", inset: 0, background: "rgba(15,21,19,0.15)" }} />
           <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(15,21,19,0.94) 0%,rgba(15,21,19,0.45) 42%,rgba(15,21,19,0.25) 70%,rgba(15,21,19,0.5) 100%)" }} />
           <div style={{ position: "absolute", inset: 0, background: "radial-gradient(120% 70% at 80% 12%,rgba(242,164,28,0.18) 0%,transparent 55%)" }} />
@@ -234,9 +235,8 @@ export default function MobileLanding() {
             </h1>
             <p style={{ fontSize: 18, lineHeight: 1.5, color: "rgba(255,255,255,0.85)", marginBottom: 28, maxWidth: 330, textShadow: "0 1px 12px rgba(0,0,0,0.5)" }}>Sveriges matchningsplattform för yrkesförare och åkerier. Inga mellanhänder, inga avgifter.</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              <BtnAmber full onClick={() => nav.register("forare")}>Skapa förarprofil <Icon name="arrow" size={19} color="#1a1200" stroke={2.4} /></BtnAmber>
-              <BtnGhost onDark onClick={nav.jobs}>Se lediga jobb</BtnGhost>
-              <button onClick={() => nav.register("akeri")} className="press" style={{ background: "transparent", border: "none", color: "rgba(255,255,255,0.78)", fontWeight: 700, fontSize: 15, padding: "4px 0", marginTop: 2, textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>Jag är ett åkeri →</button>
+              <BtnAmber full onClick={nav.jobs}>Se lediga jobb <Icon name="arrow" size={19} color="#1a1200" stroke={2.4} /></BtnAmber>
+              <BtnGhost onDark onClick={() => nav.register("akeri")}>Jag är ett åkeri</BtnGhost>
             </div>
           </div>
         </section>

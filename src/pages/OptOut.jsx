@@ -38,8 +38,7 @@ export default function OptOut() {
       <PageMeta title="Avregistrering – STP" noindex />
       <div style={{ maxWidth: 480, width: "100%", textAlign: "center" }}>
         <Link to="/" style={{ display: "inline-flex", alignItems: "center", gap: 6, marginBottom: 32, textDecoration: "none" }}>
-          <div style={{ width: 26, height: 26, borderRadius: 6, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--text-xs)" }}>S</div>
-          <span style={{ fontWeight: 800, fontSize: "var(--text-lg)", color: "var(--ink-900)", letterSpacing: 0.2 }}>STP</span>
+          <img src="/stp-logo.png" alt="STP – Sveriges Transportplattform" style={{ height: 24, width: "auto", display: "block" }} />
         </Link>
 
         <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, padding: "36px 32px", boxShadow: "var(--sh-sm)" }}>

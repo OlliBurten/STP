@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import Logo from "./Logo";
 import { CURRENT_VERSION } from "../lib/releaseNotes";
 import { regionPages } from "../data/regions";
 import { cityPages } from "../data/cities";
@@ -47,15 +48,7 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <Link to="/" className="inline-flex items-center mb-5" style={{ gap: 10, textDecoration: "none" }}>
-              <div style={{
-                width: 30, height: 30, borderRadius: 7,
-                background: "var(--green)", color: "#fff",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontWeight: 900, fontSize: "var(--text-sm)",
-                boxShadow: "inset 0 -2px 0 rgba(0,0,0,0.20)",
-                flexShrink: 0,
-              }}>S</div>
-              <span style={{ fontWeight: 800, fontSize: "var(--text-xl)", letterSpacing: 0.5, color: "#fff" }}>STP</span>
+              <Logo height={32} variant="light" />
             </Link>
             <p style={{ fontSize: "var(--text-base)", color: "rgba(255,255,255,0.5)", lineHeight: 1.7, maxWidth: 260, marginBottom: 16 }}>
               Sveriges matchningsplattform för yrkesförare och transportföretag. Direkt kontakt utan mellanhänder.

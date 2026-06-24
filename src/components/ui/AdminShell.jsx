@@ -26,8 +26,7 @@ export const AdminShell = ({ active, onNav, title, sub, headerAction, children, 
   <div style={{ minHeight: "100vh", display: "grid", gridTemplateColumns: "232px 1fr", background: "var(--paper)" }}>
     <aside style={{ background: "var(--ink-900)", color: "rgba(255,255,255,0.7)", display: "flex", flexDirection: "column", position: "sticky", top: 0, height: "100vh" }}>
       <div style={{ padding: "18px 20px", borderBottom: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", gap: 10 }}>
-        <div style={{ width: 28, height: 28, borderRadius: 7, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "var(--text-xs)" }}>S</div>
-        <span style={{ fontWeight: 800, fontSize: "var(--text-md)", color: "#fff", letterSpacing: 0.5 }}>STP</span>
+        <img src="/stp-logo-white.png" alt="STP" style={{ height: 24, width: "auto", display: "block" }} />
         <span style={{ fontSize: "var(--text-2xs)", fontWeight: 800, color: "var(--amber)", letterSpacing: 1, textTransform: "uppercase", paddingLeft: 8, marginLeft: 2, borderLeft: "1px solid rgba(255,255,255,0.15)" }}>Admin</span>
       </div>
       <nav style={{ flex: 1, overflowY: "auto", padding: "14px 12px" }}>
