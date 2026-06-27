@@ -13,6 +13,7 @@ import { notifyRecommendedJobMatch } from "../lib/email.js";
 import { createNotification } from "../lib/notifications.js";
 import { validateBody, validateQuery } from "../middleware/validate.js";
 import { createJobSchema, jobsListQuerySchema, patchJobSchema } from "../lib/validators.js";
+import { effectiveCompanyId, hasJobCompanyAccess, jobCompanyAccessFilter } from "../lib/jobAccess.js";
 
 export const jobsRouter = Router();
 
@@ -303,16 +304,8 @@ jobsRouter.get("/saved", authMiddleware, requireDriver, async (req, res, next) =
   }
 });
 
-function effectiveCompanyId(req) {
-  return req.companyOwnerId ?? req.userId;
-}
-
 function effectiveJobFilter(req) {
-  const cid = effectiveCompanyId(req);
-  if (req.organizationId) {
-    return { OR: [{ organizationId: req.organizationId }, { userId: cid }] };
-  }
-  return { userId: cid };
+  return jobCompanyAccessFilter(req);
 }
 
 jobsRouter.get("/:id/applicants", authMiddleware, requireCompany, attachCompanyContext, requireVerifiedCompany, async (req, res, next) => {
@@ -321,10 +314,7 @@ jobsRouter.get("/:id/applicants", authMiddleware, requireCompany, attachCompanyC
       where: { id: req.params.id },
     });
     if (!job) return res.status(404).json({ error: "Jobbet hittades inte" });
-    const hasAccess =
-      (job.organizationId && job.organizationId === req.organizationId) ||
-      job.userId === effectiveCompanyId(req);
-    if (!hasAccess) return res.status(403).json({ error: "Ingen åtkomst" });
+    if (!hasJobCompanyAccess(req, job)) return res.status(403).json({ error: "Ingen åtkomst" });
     const convos = await prisma.conversation.findMany({
       where: { jobId: job.id },
       include: {
@@ -460,10 +450,7 @@ jobsRouter.get("/:id", optionalAuthMiddleware, attachCompanyContext, async (req,
             ? [
                 {
                   status: { in: ["HIDDEN", "REMOVED"] },
-                  OR: [
-                    { userId: effectiveCompanyId(req) },
-                    ...(req.organizationId ? [{ organizationId: req.organizationId }] : []),
-                  ],
+                  ...effectiveJobFilter(req),
                 },
               ]
             : []),
@@ -601,10 +588,7 @@ jobsRouter.get("/:id/stats", authMiddleware, requireCompany, attachCompanyContex
   try {
     const job = await prisma.job.findUnique({ where: { id: req.params.id } });
     if (!job) return res.status(404).json({ error: "Jobbet hittades inte" });
-    const hasAccess =
-      (job.organizationId && job.organizationId === req.organizationId) ||
-      job.userId === effectiveCompanyId(req);
-    if (!hasAccess) return res.status(403).json({ error: "Ingen åtkomst" });
+    if (!hasJobCompanyAccess(req, job)) return res.status(403).json({ error: "Ingen åtkomst" });
 
     const [viewCount, savedCount, conversationCount] = await Promise.all([
       prisma.jobView.count({ where: { jobId: job.id } }),
@@ -743,10 +727,7 @@ jobsRouter.post("/:id/renew", authMiddleware, requireCompany, attachCompanyConte
   try {
     const job = await prisma.job.findUnique({ where: { id: req.params.id } });
     if (!job) return res.status(404).json({ error: "Jobbet hittades inte" });
-    const hasAccess =
-      (job.organizationId && job.organizationId === req.organizationId) ||
-      job.userId === effectiveCompanyId(req);
-    if (!hasAccess) return res.status(403).json({ error: "Ingen åtkomst" });
+    if (!hasJobCompanyAccess(req, job)) return res.status(403).json({ error: "Ingen åtkomst" });
     const now = new Date();
     const updated = await prisma.job.update({
       where: { id: job.id },
@@ -770,10 +751,7 @@ jobsRouter.patch("/:id", authMiddleware, requireCompany, attachCompanyContext, r
       where: { id: req.params.id },
     });
     if (!job) return res.status(404).json({ error: "Jobbet hittades inte" });
-    const hasAccess =
-      (job.organizationId && job.organizationId === req.organizationId) ||
-      job.userId === effectiveCompanyId(req);
-    if (!hasAccess) return res.status(403).json({ error: "Ingen åtkomst" });
+    if (!hasJobCompanyAccess(req, job)) return res.status(403).json({ error: "Ingen åtkomst" });
     const body = req.body;
     const data = {};
     if (body.status !== undefined) data.status = body.status;
