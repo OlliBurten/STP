@@ -3,7 +3,7 @@ import { prisma } from "../lib/prisma.js";
 import { isAdminEmail } from "../lib/adminAccess.js";
 import { JWT_SECRET } from "../lib/config.js";
 
-function isCompanyRole(role) {
+export function isCompanyRole(role) {
   const normalized = String(role || "").trim().toUpperCase();
   return normalized === "COMPANY" || normalized === "RECRUITER";
 }
