@@ -54,7 +54,8 @@ setTimeout(() => {
       dsn,
       environment: import.meta.env.MODE,
       sendDefaultPii: false,
-      tracesSampleRate: import.meta.env.PROD ? 0.1 : 1.0,
+      // Nästan ingen tracing i prod — skydda felkvoten (den åts upp helt i juni).
+      tracesSampleRate: import.meta.env.PROD ? 0.01 : 1.0,
       integrations: [Sentry.replayIntegration({ maskAllText: true, maskAllInputs: true, blockAllMedia: true })],
       // Spela INTE in vanliga sessioner kontinuerligt — rrweb-inspelning av DOM
       // gör mobilen märkbart trög (konstant hack). Behåll inspelning enbart när

@@ -7,8 +7,9 @@ Sentry.init({
   environment: process.env.DEPLOYMENT || process.env.NODE_ENV || "development",
   sendDefaultPii: true,
 
-  // Sample 10% of traces in production to control Sentry costs
-  tracesSampleRate: IS_PRODUCTION ? 0.1 : 1.0,
+  // Nästan ingen tracing i prod — transaktionsvolymen (botar, cron, health-pings)
+  // rate-limitades ändå bort och riskerar att tränga ut felkvoten, som är det viktiga.
+  tracesSampleRate: IS_PRODUCTION ? 0.01 : 1.0,
 
   // Strip SQL query parameters and email addresses from Sentry breadcrumbs
   beforeSend(event) {

@@ -26,14 +26,17 @@ export function startReminderScheduler() {
   // Autonom outreach-agent — 3 regioner per körning, beständig rotationsmarkör.
   // Default mån/ons/fre 09:00 (3×/vecka) i st f dagligen → lägre AI-kostnad + bättre
   // leveransrykte. Full rotation av alla 21 regioner sker över 7 körningar (~2,5 vecka).
-  // Styrbart via OUTREACH_CRON (cron-uttryck).
-  cron.schedule(process.env.OUTREACH_CRON || "0 9 * * 1,3,5", async () => {
-    try {
-      await runOutreachAgent();
-    } catch (e) {
-      console.error("[OutreachScheduler] Uncaught error:", e?.message);
-    }
-  }, { timezone: "Europe/Stockholm" });
+  // Styrbart via OUTREACH_CRON (cron-uttryck). OUTREACH_ENABLED=false pausar helt
+  // (inga AI-anrop, inga mejl) — strategin är förare-först tills förar-sidan har volym.
+  if (process.env.OUTREACH_ENABLED !== "false") {
+    cron.schedule(process.env.OUTREACH_CRON || "0 9 * * 1,3,5", async () => {
+      try {
+        await runOutreachAgent();
+      } catch (e) {
+        console.error("[OutreachScheduler] Uncaught error:", e?.message);
+      }
+    }, { timezone: "Europe/Stockholm" });
+  }
 
   // Every day at 10:00 Stockholm time — onboarding drip (dag 1/3/7)
   cron.schedule("0 10 * * *", async () => {
@@ -44,14 +47,17 @@ export function startReminderScheduler() {
     }
   }, { timezone: "Europe/Stockholm" });
 
-  // Every Monday at 07:00 Stockholm time — product intelligence agent
-  cron.schedule("0 7 * * 1", async () => {
-    try {
-      await runProductIntelligenceAgent();
-    } catch (e) {
-      console.error("[PIAgent] Uncaught error:", e?.message);
-    }
-  }, { timezone: "Europe/Stockholm" });
+  // Every Monday at 07:00 Stockholm time — product intelligence agent.
+  // PI_AGENT_ENABLED=false pausar (ger för lite signal vid låg trafik).
+  if (process.env.PI_AGENT_ENABLED !== "false") {
+    cron.schedule("0 7 * * 1", async () => {
+      try {
+        await runProductIntelligenceAgent();
+      } catch (e) {
+        console.error("[PIAgent] Uncaught error:", e?.message);
+      }
+    }, { timezone: "Europe/Stockholm" });
+  }
 
-  console.log(`[ReminderScheduler] Started — reminders 08:00 + onboarding drip 10:00 daily | outreach "${process.env.OUTREACH_CRON || "0 9 * * 1,3,5"}" | PI agent 07:00 Mondays`);
+  console.log(`[ReminderScheduler] Started — reminders 08:00 + onboarding drip 10:00 daily | outreach ${process.env.OUTREACH_ENABLED === "false" ? "AV" : `"${process.env.OUTREACH_CRON || "0 9 * * 1,3,5"}"`} | PI agent ${process.env.PI_AGENT_ENABLED === "false" ? "AV" : "07:00 Mondays"}`);
 }
