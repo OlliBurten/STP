@@ -314,7 +314,13 @@ app.get("/api/ssr/lastbilsjobb/:slug", async (req, res) => {
 });
 
 app.get("/api/ssr/static/:key", async (req, res) => {
-  try { const { renderStaticHtml } = await import("./lib/seoRender.js"); ssrSend(res, renderStaticHtml(req.params.key === "home" ? "" : req.params.key), "Sidan hittades inte"); }
+  try {
+    const { renderStaticHtml, renderJobsHubHtml } = await import("./lib/seoRender.js");
+    const html = req.params.key === "jobb"
+      ? await renderJobsHubHtml()
+      : renderStaticHtml(req.params.key === "home" ? "" : req.params.key);
+    ssrSend(res, html, "Sidan hittades inte");
+  }
   catch (e) { console.error("[ssr-static]", e?.message || e); res.status(500).type("html").send('<!DOCTYPE html><html lang="sv"><head><meta name="robots" content="noindex"></head><body></body></html>'); }
 });
 

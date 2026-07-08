@@ -215,6 +215,21 @@ function jobsListHtml(jobs) {
   return `<ul>${jobs.map(j => `<li><a href="${SITE}/jobb/${j.id}">${esc(j.title)}</a> – ${esc(j.company)}${j.location ? `, ${esc(j.location)}` : ""}</li>`).join("")}</ul>`;
 }
 
+// ─── Länk-nav mellan landningssidor (intern länkgraf för crawlers) ───────────
+function regionLinksHtml(excludeSlug) {
+  const items = regionPages
+    .filter(r => r.slug !== excludeSlug)
+    .map(r => `<li><a href="${SITE}/lastbilsjobb/${r.slug}">Lastbilsjobb i ${esc(r.name)}</a></li>`);
+  return `<nav><h2>Lastbilsjobb per län</h2><ul>${items.join("")}</ul></nav>`;
+}
+
+function cityLinksHtml(excludeSlug) {
+  const items = cityPages
+    .filter(c => c.slug !== excludeSlug)
+    .map(c => `<li><a href="${SITE}/ce-jobb/${c.slug}">CE-jobb i ${esc(c.name)}</a></li>`);
+  return `<nav><h2>CE-jobb per stad</h2><ul>${items.join("")}</ul></nav>`;
+}
+
 // ─── Stad-landningssida (/ce-jobb/:slug) ──────────────────────────────────────
 export async function renderCityHtml(slug) {
   const city = cityPages.find(c => c.slug === slug);
@@ -232,6 +247,8 @@ export async function renderCityHtml(slug) {
   ${city.transport ? `<section><h2>Transportmarknaden i ${esc(city.name)}</h2><p>${esc(city.transport)}</p></section>` : ""}
   ${(city.highlights || []).length ? `<section><h2>Kännetecken</h2><ul>${city.highlights.map(h => `<li>${esc(h)}</li>`).join("")}</ul></section>` : ""}
   <section><h2>Lediga jobb i ${esc(city.region)}</h2>${jobsListHtml(jobs)}</section>
+  <p><a href="${SITE}/jobb">Alla lediga lastbilsjobb i Sverige</a></p>
+  ${cityLinksHtml(city.slug)}
 </main>`;
   return htmlShell({ title, description, canonical, jsonLd, body });
 }
@@ -250,6 +267,8 @@ export async function renderRegionHtml(slug) {
   <h1>Lastbilsjobb i ${esc(region.name)}</h1>
   <p>${esc(region.desc || "")}</p>
   <section><h2>Lediga jobb i ${esc(region.name)}</h2>${jobsListHtml(jobs)}</section>
+  <p><a href="${SITE}/jobb">Alla lediga lastbilsjobb i Sverige</a></p>
+  ${regionLinksHtml(region.slug)}
 </main>`;
   return htmlShell({ title, description, canonical, jsonLd, body });
 }
@@ -311,6 +330,30 @@ export function renderStaticHtml(key) {
 <main>
   <h1>${esc(p.h1)}</h1>
   ${p.paras.map(t => `<p>${esc(t)}</p>`).join("\n  ")}
+</main>`;
+  return htmlShell({ title: p.title, description: p.description, canonical, jsonLd, body });
+}
+
+// ─── Jobb-hubb (/jobb) — crawlerns väg in till alla annonser och landningssidor ─
+// SPA-listan kräver JS; utan denna ser sökmotorer en tom sida och länkgrafen
+// bryts vid roten. Hubben länkar län + städer + senaste annonserna.
+export async function renderJobsHubHtml() {
+  const p = STATIC_PAGES["jobb"];
+  const canonical = `${SITE}/${p.path}`;
+  const jobs = await prisma.job.findMany({
+    where: { status: "ACTIVE" },
+    select: { id: true, title: true, company: true, location: true },
+    orderBy: { published: "desc" },
+    take: 60,
+  });
+  const jsonLd = { "@context": "https://schema.org", "@type": "CollectionPage", name: p.title, description: p.description, url: canonical };
+  const body = `
+<main>
+  <h1>${esc(p.h1)}</h1>
+  ${p.paras.map(t => `<p>${esc(t)}</p>`).join("\n  ")}
+  ${regionLinksHtml()}
+  ${cityLinksHtml()}
+  <section><h2>Senaste annonserna</h2>${jobsListHtml(jobs)}</section>
 </main>`;
   return htmlShell({ title: p.title, description: p.description, canonical, jsonLd, body });
 }
