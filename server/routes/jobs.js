@@ -13,6 +13,7 @@ import { notifyRecommendedJobMatch } from "../lib/email.js";
 import { createNotification } from "../lib/notifications.js";
 import { validateBody, validateQuery } from "../middleware/validate.js";
 import { createJobSchema, jobsListQuerySchema, patchJobSchema } from "../lib/validators.js";
+import { dedupeAggregatedJobs } from "../lib/jobDedupe.js";
 
 export const jobsRouter = Router();
 
@@ -186,7 +187,8 @@ jobsRouter.get("/", validateQuery(jobsListQuerySchema), async (req, res, next) =
         organization: { select: { status: true } },
       },
     });
-    const companyIds = [...new Set(jobs.map((j) => j.userId))];
+    const visibleJobs = dedupeAggregatedJobs(jobs);
+    const companyIds = [...new Set(visibleJobs.map((j) => j.userId))];
     const reviewAggregates = companyIds.length
       ? await prisma.companyReview.groupBy({
           by: ["companyId"],
@@ -201,7 +203,7 @@ jobsRouter.get("/", validateQuery(jobsListQuerySchema), async (req, res, next) =
     const reviewByCompany = new Map(
       reviewAggregates.map((r) => [r.companyId, { avg: r._avg.rating, count: r._count._all }])
     );
-    const list = jobs.map((j) => ({
+    const list = visibleJobs.map((j) => ({
       companyUserId: j.userId,
       id: j.id,
       title: j.title,

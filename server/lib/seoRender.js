@@ -8,6 +8,7 @@
  */
 
 import { prisma } from "./prisma.js";
+import { dedupeAggregatedJobs } from "./jobDedupe.js";
 import { cityPages } from "./seoCities.js";
 import { regionPages } from "./seoRegions.js";
 import { blogArticles } from "./seoBlog.js";
@@ -202,12 +203,13 @@ export async function renderCompanyHtml(id) {
 // ─── Jobblista-fragment (för stad/region-sidor) ───────────────────────────────
 async function activeJobsInRegion(region, take = 40) {
   if (!region) return [];
-  return prisma.job.findMany({
+  const rows = await prisma.job.findMany({
     where: { status: "ACTIVE", region },
-    select: { id: true, title: true, company: true, location: true },
+    select: { id: true, title: true, company: true, location: true, source: true, claimed: true },
     orderBy: { published: "desc" },
-    take,
+    take: take * 2, // hämta med marginal — dubbletter filtreras bort nedan
   });
+  return dedupeAggregatedJobs(rows).slice(0, take);
 }
 
 function jobsListHtml(jobs) {
@@ -340,12 +342,13 @@ export function renderStaticHtml(key) {
 export async function renderJobsHubHtml() {
   const p = STATIC_PAGES["jobb"];
   const canonical = `${SITE}/${p.path}`;
-  const jobs = await prisma.job.findMany({
+  const rows = await prisma.job.findMany({
     where: { status: "ACTIVE" },
-    select: { id: true, title: true, company: true, location: true },
+    select: { id: true, title: true, company: true, location: true, source: true, claimed: true },
     orderBy: { published: "desc" },
-    take: 60,
+    take: 120,
   });
+  const jobs = dedupeAggregatedJobs(rows).slice(0, 60);
   const jsonLd = { "@context": "https://schema.org", "@type": "CollectionPage", name: p.title, description: p.description, url: canonical };
   const body = `
 <main>

@@ -192,6 +192,10 @@ const NON_TRUCK_KEYWORDS = [
   "truckförare", "gaffeltruck", "motviktstruck", "lagerarbetare", "terminalarbetare",
   "taxi", "taxiförare", "bussförare", "busschaufför", "personbil", "traktor",
   "väktare", "säljare", "montör", "mekaniker", "renhållningsarbetare",
+  // Hantverksyrken som AF ibland felkategoriserar in i förargruppen
+  // ("Självgående Snickare"/"målare" slank igenom 2026-07)
+  "snickare", "målare", "elektriker", "svetsare", "murare", "plåtslagare",
+  "golvläggare", "takläggare", "plattsättare", "ställningsbyggare", "städare", "kock",
 ];
 
 function passesQualityFilter(hit) {
