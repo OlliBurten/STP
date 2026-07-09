@@ -1,6 +1,6 @@
 // STP Mobile — public (logged-out) job list. Ported from STP Mobil Jobb,
 // wired to the real jobs API. Saving/applying opens a sign-up gate.
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { fetchJobs } from "../../api/jobs";
 import { mockJobs } from "../../data/mockJobs";
@@ -208,14 +208,26 @@ export default function MobileGuestJobs() {
                 <Icon name="shield" size={19} color="var(--green)" stroke={1.9} /><span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--green-text)" }}>Verifierat åkeri · org.nr kontrollerat mot Bolagsverket</span>
               </div>
             )}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 11, marginBottom: 22 }}>
-              {[["money", "Lön", detail.pay], ["pin", "Ort", detail.location], ["clock", "Omfattning", detail.type], ["building", "Körkort", detail.licenses.join(" · ")]].map(([ic, l, v]) => (
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 11, marginBottom: detail.deadline ? 11 : 22 }}>
+              {[["Lön", detail.pay], ["Ort", detail.location], ["Omfattning", detail.type], ["Körkort", detail.licenses.join(" · ")]].map(([l, v]) => (
                 <div key={l} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 13, padding: "13px 14px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6 }}><Icon name={ic} size={15} color="var(--ink-400)" stroke={1.9} /><span style={{ fontSize: 11.5, fontWeight: 800, letterSpacing: 0.4, textTransform: "uppercase", color: "var(--ink-400)" }}>{l}</span></div>
+                  <div style={{ fontSize: 11.5, fontWeight: 800, letterSpacing: 0.4, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 6 }}>{l}</div>
                   <div style={{ fontSize: 14.5, fontWeight: 700, color: "var(--ink-900)", lineHeight: 1.3 }}>{v}</div>
                 </div>
               ))}
             </div>
+            {detail.deadline && (() => {
+              const d = new Date(detail.deadline);
+              if (Number.isNaN(d.getTime())) return null;
+              const passed = d.getTime() < Date.now();
+              const fmt = d.toLocaleDateString("sv-SE", { day: "numeric", month: "long", year: "numeric" });
+              return (
+                <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "11px 14px", borderRadius: 12, background: passed ? "var(--danger-tint)" : "var(--amber-tint)", marginBottom: 22 }}>
+                  <Icon name="clock" size={17} color={passed ? "var(--danger)" : "var(--amber-deep)"} stroke={2} style={{ flexShrink: 0 }} />
+                  <span style={{ fontSize: 13.5, fontWeight: 700, color: passed ? "var(--danger)" : "var(--amber-text)" }}>{passed ? `Ansökningstiden gick ut ${fmt}` : `Sök senast ${fmt}`}</span>
+                </div>
+              );
+            })()}
             {detail.desc && <><h2 style={{ fontSize: 16, fontWeight: 800, marginBottom: 9 }}>Om tjänsten</h2><p style={{ fontSize: 15, lineHeight: 1.62, color: "var(--ink-700)", marginBottom: 24 }}>{detail.desc}</p></>}
             {detail.reqs.length > 0 && <><h2 style={{ fontSize: 16, fontWeight: 800, marginBottom: 11 }}>Krav & meriter</h2><div style={{ display: "flex", flexDirection: "column", gap: 10 }}>{detail.reqs.map((r, i) => <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 11 }}><div style={{ width: 22, height: 22, borderRadius: 7, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}><Icon name="check" size={13} color="var(--green)" stroke={2.6} /></div><span style={{ fontSize: 14.5, lineHeight: 1.45, color: "var(--ink-700)" }}>{r}</span></div>)}</div></>}
             {detail.company && (

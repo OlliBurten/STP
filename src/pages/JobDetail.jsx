@@ -63,6 +63,27 @@ function BulletList({ items, fallback, accent = "primary" }) {
   );
 }
 
+function deadlineInfo(job) {
+  const d = job?.applicationDeadline ? new Date(job.applicationDeadline) : null;
+  if (!d || Number.isNaN(d.getTime())) return null;
+  return {
+    passed: d.getTime() < Date.now(),
+    fmt: d.toLocaleDateString("sv-SE", { day: "numeric", month: "long", year: "numeric" }),
+  };
+}
+
+function DeadlineBanner({ job, style }) {
+  const dl = deadlineInfo(job);
+  if (!dl) return null;
+  return (
+    <div style={{ padding: "11px 13px", borderRadius: 12, background: dl.passed ? "var(--danger-tint)" : "var(--amber-tint)", ...style }}>
+      <span style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: dl.passed ? "var(--danger)" : "var(--amber-text)" }}>
+        {dl.passed ? `Ansökningstiden gick ut ${dl.fmt}` : `Sista ansökningsdag: ${dl.fmt}`}
+      </span>
+    </div>
+  );
+}
+
 function FactRow({ label, value, highlight, missing }) {
   return (
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12, padding: "10px 0", borderBottom: "1px solid var(--line)" }}>
@@ -627,6 +648,7 @@ export default function JobDetail() {
                 </div>
               ))}
             </div>
+            <DeadlineBanner job={job} style={{ marginBottom: 14 }} />
           </div>
 
           {/* Sections (stacked — som prototypen, inga flikar) */}
@@ -1093,6 +1115,7 @@ export default function JobDetail() {
             <FactRow label="Tillträde"    value={job.start || "Ej angiven"} missing={!job.start} />
             <FactRow label="Ort"          value={job.location || "—"} />
             <FactRow label="Körkort"      value={[...(job.license || []), ...(job.certificates || []).map(getCertificateLabel)].join(", ") || "—"} />
+            {(() => { const dl = deadlineInfo(job); return dl && <FactRow label="Sista ansökningsdag" value={dl.passed ? `Gick ut ${dl.fmt}` : dl.fmt} highlight={!dl.passed} />; })()}
             {job.rolling && (
               <div style={{ marginTop: 14, padding: "10px 12px", background: "var(--amber-tint)", border: "1px solid var(--amber-tint-2)", borderRadius: "var(--r)", display: "flex", gap: 8, alignItems: "flex-start" }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
