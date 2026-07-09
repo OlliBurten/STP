@@ -16,7 +16,7 @@ const DEFAULT_IMAGE = `${BASE_URL}/hero.png`;
  *     jsonLd={{ "@context": "https://schema.org", "@type": "JobPosting", ... }}
  *   />
  */
-export default function PageMeta({ title, description, canonical, image, type = "website", jsonLd }) {
+export default function PageMeta({ title, description, canonical, image, type = "website", jsonLd, robots }) {
   const fullTitle = title
     ? `${title} – ${SITE_NAME}`
     : `${SITE_NAME} – Jobb & rekrytering av yrkesförare`;
@@ -27,6 +27,7 @@ export default function PageMeta({ title, description, canonical, image, type = 
     <Helmet>
       <title>{fullTitle}</title>
       {description && <meta name="description" content={description} />}
+      {robots && <meta name="robots" content={robots} />}
       {fullCanonical && <link rel="canonical" href={fullCanonical} />}
 
       <meta property="og:type" content={type} />

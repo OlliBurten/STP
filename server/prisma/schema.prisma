@@ -684,3 +684,20 @@ model EmployerClaim {
   @@index([claimToken])
   @@index([claimedByUserId])
 }
+
+// Jobbevakning via mejl — kräver INTE konto (B2C-tillväxt). Dubbel opt-in:
+// skapas overifierad, confirmedAt sätts via token-länk i bekräftelsemejlet.
+model JobAlert {
+  id             String    @id @default(cuid())
+  email          String
+  region         String?
+  licenses       String[]  @default([])
+  token          String    @unique @default(cuid())
+  confirmedAt    DateTime?
+  unsubscribedAt DateTime?
+  lastSentAt     DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@index([email])
+  @@index([confirmedAt, unsubscribedAt])
+}

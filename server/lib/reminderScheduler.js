@@ -7,6 +7,7 @@ import { runAllReminders } from "./reminders.js";
 import { runOutreachAgent } from "./outreachAgent.js";
 import { runOnboardingDrip } from "./onboardingDrip.js";
 import { runProductIntelligenceAgent } from "./productIntelligenceAgent.js";
+import { runJobAlertDispatch } from "./jobAlerts.js";
 
 let started = false;
 
@@ -34,6 +35,18 @@ export function startReminderScheduler() {
         await runOutreachAgent();
       } catch (e) {
         console.error("[OutreachScheduler] Uncaught error:", e?.message);
+      }
+    }, { timezone: "Europe/Stockholm" });
+  }
+
+  // Daglig jobbevaknings-digest 08:30 — nya jobb till bekräftade bevakningar
+  // (utan konto). JOB_ALERTS_ENABLED=false stänger av.
+  if (process.env.JOB_ALERTS_ENABLED !== "false") {
+    cron.schedule("30 8 * * *", async () => {
+      try {
+        await runJobAlertDispatch();
+      } catch (e) {
+        console.error("[JobAlerts] Uncaught error:", e?.message);
       }
     }, { timezone: "Europe/Stockholm" });
   }

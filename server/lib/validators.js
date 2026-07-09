@@ -91,6 +91,12 @@ export const resetPasswordSchema = z.object({
   password: z.string().min(8, "Lösenordet måste vara minst 8 tecken").max(200),
 });
 
+export const jobAlertCreateSchema = z.object({
+  email: z.string().trim().toLowerCase().min(1, "E-post krävs").email("Ogiltig e-postadress").max(254),
+  region: z.string().trim().min(1).max(60).nullish(),
+  licenses: z.array(z.string().trim().max(8)).max(5).optional(),
+});
+
 export const changePasswordSchema = z.object({
   currentPassword: z.string().min(1, "Nuvarande lösenord krävs"),
   newPassword: z.string().min(8, "Lösenordet måste vara minst 8 tecken").max(200),

@@ -41,6 +41,7 @@ import { utilsRouter } from "./routes/utils.js";
 import { schoolsRouter } from "./routes/schools.js";
 import { outreachRouter } from "./routes/outreach.js";
 import { webhooksRouter } from "./routes/webhooks.js";
+import { jobAlertsRouter } from "./routes/jobAlerts.js";
 import { applicationsRouter } from "./routes/applications.js";
 import { claimsRouter } from "./routes/claims.js";
 import { shiftsRouter } from "./routes/shifts.js";
@@ -178,6 +179,8 @@ app.use("/api/auth/verify-email", sensitiveAuthLimiter);
 app.use("/api/auth/verify-email-code", sensitiveAuthLimiter);
 app.use("/api/auth", authRouter);
 app.use("/api/jobs", apiPublicLimiter, jobsRouter);
+// Mejlande publik endpoint → samma hårda limiter som lösenordsåterställning
+app.use("/api/job-alerts", sensitiveAuthLimiter, jobAlertsRouter);
 app.use("/api/profile", profileRouter);
 // Publik förarsökning kan skördas → tak per IP (120/min). Inloggade dashboard-
 // anrop (me/stats m.fl.) ligger gott under det.

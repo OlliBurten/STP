@@ -6,6 +6,7 @@ import JobCard from "../components/JobCard";
 import BottomSheet from "../components/BottomSheet";
 import FilterDrawer from "../components/FilterDrawer";
 import { useAuth } from "../context/AuthContext";
+import JobAlertSignup from "../components/JobAlertSignup";
 import { useProfile } from "../context/ProfileContext";
 import { calcYearsExperience } from "../utils/profileUtils";
 import { getMatchCriteria, matchScore } from "../utils/matchUtils";
@@ -874,6 +875,11 @@ export default function JobList() {
 
                   {!jobsLoading && !jobsError && displayJobs.length > 0 && (
                     <Pagination page={safePage} totalPages={totalPages} onChange={goToPage} />
+                  )}
+
+                  {/* Jobbevakning via mejl — bara utloggade (inloggade förare har match-notiser) */}
+                  {!user && !jobsLoading && !jobsError && (
+                    <JobAlertSignup region={filters.region || null} style={{ marginTop: 18 }} />
                   )}
                 </div>
 

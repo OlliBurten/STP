@@ -68,6 +68,7 @@ const Home                  = lazyRetry(() => import("./pages/Home"));
 const ForDrivers            = lazyRetry(() => import("./pages/ForDrivers"));
 const ForCompaniesLanding   = lazyRetry(() => import("./pages/ForCompaniesLanding"));
 const JobList               = lazyRetry(() => import("./pages/JobList"));
+const JobAlertAction        = lazyRetry(() => import("./pages/JobAlertAction"));
 const JobDetail             = lazyRetry(() => import("./pages/JobDetail"));
 const Apply                 = lazyRetry(() => import("./pages/Apply"));
 const ForCompanies          = lazyRetry(() => import("./pages/ForCompanies"));
@@ -382,6 +383,7 @@ function AppLayout() {
                   <Route path="/for-akerier" element={<ForCompaniesLanding />} />
                   <Route path="/jobb" element={isMobile && !user ? <MobileGuestJobs /> : <JobList />} />
                   <Route path="/jobb/:id" element={<JobDetail />} />
+                  <Route path="/bevakning/:action" element={<JobAlertAction />} />
                   <Route path="/jobb/:id/ansok" element={<Apply />} />
                   <Route path="/akerier" element={<AkerierSearch />} />
                   <Route path="/foretag" element={isCompany ? <ForCompanies /> : <ForCompaniesLanding />} />
