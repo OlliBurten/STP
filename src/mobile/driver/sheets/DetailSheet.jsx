@@ -5,7 +5,7 @@ import { Icon, Pill, Dot, Label, Button } from "../../ui";
 
 const matchTone = (m) => (m >= 90 ? "success" : m >= 80 ? "soft" : "neutral");
 
-export default function DetailSheet({ job, ctx, close }) {
+export default function DetailSheet({ job, ctx, close: _close }) {
   const savedNow = ctx.saved.has(job.id);
   const appliedNow = ctx.applied.has(job.id);
   const [showRaw, setShowRaw] = useState(false);
@@ -45,7 +45,7 @@ export default function DetailSheet({ job, ctx, close }) {
           <div style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "12px 14px", background: "var(--info-tint)", borderRadius: 12, marginTop: 14 }}>
             <Icon name="info" size={17} color="var(--info)" stroke={2} style={{ flexShrink: 0, marginTop: 1 }} />
             <span style={{ fontSize: 12.5, color: "var(--ink-700)", lineHeight: 1.45 }}>
-              <b style={{ color: "var(--ink-900)" }}>Hämtad från {job.source === "AGGREGATED" ? "extern källa" : job.source}.</b> {job.company} finns inte på STP än — när du ansöker sköter vi kontakten med företaget åt dig.
+              <b style={{ color: "var(--ink-900)" }}>Hämtad från {job.source === "AGGREGATED" ? "extern källa" : job.source}.</b> {job.company} finns inte på STP än — du ansöker direkt hos arbetsgivaren, och vi registrerar ansökan här så du kan följa den.
             </span>
           </div>
         )}

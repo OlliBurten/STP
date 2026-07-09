@@ -72,9 +72,11 @@ applicationsRouter.post(
         select: { id: true, createdAt: true, status: true },
       });
 
-      // STP-outreach bara för STP-vidarebefordrade ansökningar (inte när föraren
-      // redan sökt direkt via AF).
-      if (!external && job.source === "AGGREGATED" && !job.claimed && job.organizationNumber) {
+      // Claim-mejl till företaget även när föraren söker via arbetsgivarens egen
+      // kanal (af_external) — arbetsgivarens kanal är primär sedan 2026-07-09,
+      // och claim-kroken ("förare hittade er annons via STP") är STP:s
+      // konverteringsmotor mot åkerier. Throttle 7d/org ligger i outreachEngine.
+      if (job.source === "AGGREGATED" && !job.claimed && job.organizationNumber) {
         const appCount = await prisma.application.count({
           where: {
             jobId: { in: await prisma.job.findMany({

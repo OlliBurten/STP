@@ -11,6 +11,7 @@ import { useAuth } from "../context/AuthContext";
 import { useProfile } from "../context/ProfileContext";
 import { getDriverMatchHighlights, getMatchingDriversForJob, matchScore } from "../utils/matchUtils";
 import { fetchJob, fetchJobApplicants, fetchSavedJobs, saveJob, unsaveJob, trackJobView, fetchJobStats } from "../api/jobs.js";
+import { submitApplication } from "../api/applications.js";
 import { fetchMatchExplanation, screenApplicant as screenApplicantApi } from "../api/ai.js";
 import { selectConversation, rejectConversation } from "../api/conversations.js";
 import { getCompanyReviewSummary } from "../api/reviews.js";
@@ -518,6 +519,18 @@ export default function JobDetail() {
       ? `${job.salaryMin.toLocaleString("sv-SE")}${job.salaryMax ? `–${job.salaryMax.toLocaleString("sv-SE")}` : "+"} kr/mån`
       : job.salary ? "Enl. lönebesked" : "Ej angiven";
 
+  // Arbetsgivarens kanal är PRIMÄR för importerade/oclaimade jobb (2026-07-09):
+  // föraren ansöker där ansökan garanterat läses; STP loggar leaden i bakgrunden
+  // (syns under Ansökt) och claim-mejlet till företaget triggas av backend.
+  const isEmployerChannel = job.source === "AGGREGATED" && !job.claimed && !!job.originalPostingUrl;
+  const employerApplyUrl = isEmployerChannel ? job.originalPostingUrl : job.externalApplyUrl;
+  const handleExternalApply = (source) => {
+    track("apply_initiated", { jobId: job.id, jobTitle: job.title, source });
+    if (isEmployerChannel && isDriver) {
+      submitApplication({ jobId: job.id, appliedVia: "af_external", consentToShare: false }).catch(() => {});
+    }
+  };
+
   // ── Mobile render ──────────────────────────────────────────────────────────
   if (isMobile) {
     const mPct = driverMatch != null ? driverMatch.pct : null;
@@ -727,9 +740,9 @@ export default function JobDetail() {
             )}
           </div>
           {isDriver ? (
-            job.externalApplyUrl ? (
-              <a href={job.externalApplyUrl} target="_blank" rel="noopener noreferrer"
-                onClick={() => track("apply_initiated", { jobId: job.id, jobTitle: job.title, source: "sticky_external" })}
+            employerApplyUrl ? (
+              <a href={employerApplyUrl} target="_blank" rel="noopener noreferrer"
+                onClick={() => handleExternalApply("sticky_external")}
                 style={{ flex: 1.4, padding: "14px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, textDecoration: "none", textAlign: "center", boxShadow: "0 4px 14px rgba(30,107,91,0.3)" }}
               >Ansök ↗</a>
             ) : (
@@ -894,14 +907,14 @@ export default function JobDetail() {
           <div style={{ padding: "22px 26px", background: "var(--green-tint)", border: "1px solid var(--green-tint-2)", borderRadius: "var(--r-lg)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 18, flexWrap: "wrap" }}>
             <div>
               <div style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)", marginBottom: 4 }}>Redo att ansöka?</div>
-              <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)" }}>Din profil skickas direkt — ingen extra ansökan behövs.</div>
+              <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)" }}>{isEmployerChannel ? "Du ansöker direkt hos arbetsgivaren — vi registrerar ansökan under Ansökt." : "Din profil skickas direkt — ingen extra ansökan behövs."}</div>
             </div>
             {isDriver ? (
-              job.externalApplyUrl ? (
-                <a href={job.externalApplyUrl} target="_blank" rel="noopener noreferrer"
-                  onClick={() => track("apply_initiated", { jobId: job.id, jobTitle: job.title, source: "bottom_external" })}
+              employerApplyUrl ? (
+                <a href={employerApplyUrl} target="_blank" rel="noopener noreferrer"
+                  onClick={() => handleExternalApply("bottom_external")}
                   style={{ padding: "13px 24px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 7, whiteSpace: "nowrap" }}>
-                  Ansök på företagets hemsida ↗
+                  {isEmployerChannel ? "Ansök hos arbetsgivaren ↗" : "Ansök på företagets hemsida ↗"}
                 </a>
               ) : (
                 <Link to={`/jobb/${id}/ansok`}
@@ -1072,11 +1085,11 @@ export default function JobDetail() {
             {/* CTA */}
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {isDriver ? (
-                job.externalApplyUrl ? (
-                  <a href={job.externalApplyUrl} target="_blank" rel="noopener noreferrer"
-                    onClick={() => track("apply_initiated", { jobId: job.id, jobTitle: job.title, source: "panel_external" })}
+                employerApplyUrl ? (
+                  <a href={employerApplyUrl} target="_blank" rel="noopener noreferrer"
+                    onClick={() => handleExternalApply("panel_external")}
                     style={{ display: "block", width: "100%", padding: "15px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, textDecoration: "none", textAlign: "center", letterSpacing: -0.3, boxSizing: "border-box", boxShadow: "0 4px 14px rgba(30,107,91,0.25)" }}>
-                    Ansök på företagets hemsida ↗
+                    {isEmployerChannel ? "Ansök hos arbetsgivaren ↗" : "Ansök på företagets hemsida ↗"}
                   </a>
                 ) : (
                   <Link to={`/jobb/${id}/ansok`}

@@ -13,9 +13,11 @@ export default function ApplySheet({ job, ctx, close }) {
   const [aiBusy, setAiBusy] = useState(false);
   const [sending, setSending] = useState(false);
   const imp = job.imported;
-  // Importerat jobb UTAN kontaktmejl → STP kan inte vidarebefordra. Visa bara
-  // AF-länken (vi loggar ändå leaden för framtida notiser/jobb).
-  const afOnly = imp && job.reachableViaStp === false && job.externalApplyUrl;
+  // Arbetsgivarens kanal är PRIMÄR för importerade jobb (2026-07-09): föraren
+  // ansöker där ansökan garanterat läses. STP loggar leaden (syns under Ansökt)
+  // och backend claim-mejlar företaget. Composer-flödet nedan gäller bara
+  // STP-egna/claimade jobb (+ fallback för importerat helt utan länk).
+  const external = imp && job.externalApplyUrl;
   const p = ctx.profile;
 
   // Real AI first-message suggestion (driver). Falls back to a local draft.
@@ -49,10 +51,7 @@ export default function ApplySheet({ job, ctx, close }) {
     } catch { /* optimistiskt redan satt */ }
     setSending(false);
     setDone(true);
-    // Importerade jobb med AF-länk visar en "Ansök via Arbetsförmedlingen"-CTA på
-    // success-vyn (den riktiga ansökningsvägen). Auto-stäng INTE då — låt föraren
-    // dröja kvar tills den klickat länken eller stänger själv.
-    if (!(imp && job.externalApplyUrl)) setTimeout(close, 1700);
+    setTimeout(close, 1700);
   };
 
   if (done) {
@@ -64,21 +63,16 @@ export default function ApplySheet({ job, ctx, close }) {
         <h2 style={{ fontSize: 20, fontWeight: 800, color: "var(--ink-900)" }}>{imp ? "Ansökan mottagen!" : "Ansökan skickad!"}</h2>
         <p style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.5, maxWidth: 270 }}>
           {imp
-            ? `Vi har tagit emot din ansökan. ${job.company} finns inte på STP än — ansök gärna även direkt hos arbetsgivaren så du är säker på att de ser den.`
+            ? `Vi har registrerat din ansökan och kontaktar ${job.company} åt dig. Du följer status under Ansökt.`
             : `Vi skickar din ansökan till ${job.company}. Du ser status under Ansökt.`}
         </p>
-        {imp && job.externalApplyUrl && (
-          <a href={job.externalApplyUrl} target="_blank" rel="noopener noreferrer" onClick={() => ctx.applyExternal?.(job)} className="press" style={{ display: "inline-flex", alignItems: "center", gap: 7, marginTop: 6, padding: "12px 18px", borderRadius: 13, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: 14.5 }}>
-            Ansök via Arbetsförmedlingen <Icon name="arrow" size={16} stroke={2.3} color="#fff" />
-          </a>
-        )}
       </div>
     );
   }
 
-  // Importerat jobb utan kontaktmejl → enda fungerande vägen är AF:s länk.
-  // Vi loggar leaden (applyExternal) och skickar föraren till AF.
-  if (afOnly) {
+  // Importerat jobb → skicka föraren till arbetsgivarens riktiga kanal.
+  // Leaden loggas (applyExternal) och backend claim-mejlar företaget.
+  if (external) {
     return (
       <div style={{ padding: "0 22px 26px" }}>
         <div style={{ display: "flex", gap: 11, alignItems: "center", padding: "13px 14px", background: "var(--card-2)", borderRadius: 13, border: "1px solid var(--line)", marginBottom: 16 }}>
@@ -87,13 +81,13 @@ export default function ApplySheet({ job, ctx, close }) {
         </div>
         <div style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "13px 14px", background: "var(--info-tint)", borderRadius: 12, marginBottom: 16 }}>
           <Icon name="info" size={18} color="var(--info)" stroke={2.2} />
-          <span style={{ fontSize: 13.5, color: "var(--ink-800)", lineHeight: 1.45 }}>{job.company} tar emot ansökningar direkt via Arbetsförmedlingen. Klicka nedan för att ansöka där — det tar någon minut.</span>
+          <span style={{ fontSize: 13.5, color: "var(--ink-800)", lineHeight: 1.45 }}>{job.company} tar emot ansökningar via sin egen kanal. Klicka nedan för att ansöka där — vi registrerar samtidigt jobbet under <strong>Ansökt</strong> och meddelar företaget att du hittade det på STP.</span>
         </div>
         <a href={job.externalApplyUrl} target="_blank" rel="noopener noreferrer" onClick={() => { ctx.applyExternal?.(job); setTimeout(close, 400); }} className="press" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "15px 18px", borderRadius: 13, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: 15 }}>
-          Ansök via Arbetsförmedlingen <Icon name="arrow" size={17} stroke={2.3} color="#fff" />
+          Ansök hos arbetsgivaren <Icon name="arrow" size={17} stroke={2.3} color="#fff" />
         </a>
         <p style={{ fontSize: 12.5, color: "var(--ink-400)", lineHeight: 1.5, marginTop: 12, textAlign: "center" }}>
-          Vi sparar jobbet under <strong style={{ color: "var(--ink-600)" }}>Ansökt</strong> så du kan följa det och få notiser om liknande jobb.
+          Du kan följa jobbet och få notiser om liknande under <strong style={{ color: "var(--ink-600)" }}>Ansökt</strong>.
         </p>
       </div>
     );
@@ -135,11 +129,6 @@ export default function ApplySheet({ job, ctx, close }) {
         </button>
       )}
       <Button variant="primary" size="lg" full onClick={submit} busy={sending} disabled={imp && !consent} icon={<Icon name={imp ? "forward" : "send"} size={17} stroke={2} />}>{imp ? "Skicka & vidarebefordra" : "Skicka ansökan"}</Button>
-      {imp && job.externalApplyUrl && (
-        <a href={job.externalApplyUrl} target="_blank" rel="noopener noreferrer" className="press" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginTop: 12, fontSize: 13.5, fontWeight: 700, color: "var(--green)" }}>
-          Eller ansök direkt hos arbetsgivaren <Icon name="arrow" size={15} stroke={2.2} color="var(--green)" />
-        </a>
-      )}
     </div>
   );
 }

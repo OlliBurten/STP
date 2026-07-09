@@ -329,6 +329,41 @@ export default function Apply() {
     }
   };
 
+  // ── Importerat/oclaimat jobb: arbetsgivarens kanal är primär (2026-07-09) ──
+  // JobDetail länkar inte längre hit för importerade jobb, men djuplänkar ska
+  // inte hamna i det gamla vidarebefordringsflödet — skicka till arbetsgivaren
+  // och logga leaden.
+  if (job && isAggregatedUnclaimed && job.originalPostingUrl) {
+    const registerExternal = () => {
+      submitApplication({ jobId: job.id, appliedVia: "af_external", consentToShare: false }).catch(() => {});
+      setSubmitted(true);
+    };
+    return (
+      <main style={{ maxWidth: 560, margin: "0 auto", padding: "56px 24px 96px" }}>
+        <h1 style={{ fontSize: "var(--text-2xl)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 6 }}>{job.title}</h1>
+        <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", marginBottom: 20 }}>{job.company}{job.location ? ` · ${job.location}` : ""}</p>
+        {submitted ? (
+          <div style={{ padding: "16px 18px", background: "var(--success-tint)", borderRadius: "var(--r-md)", marginBottom: 20 }}>
+            <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-800)", lineHeight: 1.6, margin: 0 }}>
+              <strong>Registrerad!</strong> Jobbet ligger nu under Ansökt så du kan följa det. Slutför ansökan hos arbetsgivaren om fliken inte öppnades.
+            </p>
+          </div>
+        ) : (
+          <div style={{ padding: "16px 18px", background: "var(--info-tint)", borderRadius: "var(--r-md)", marginBottom: 20 }}>
+            <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-800)", lineHeight: 1.6, margin: 0 }}>
+              Annonsen kommer från en extern källa och {job.company} tar emot ansökningar via sin egen kanal. Du ansöker där — vi registrerar samtidigt jobbet under <strong>Ansökt</strong> och meddelar företaget att du hittade det på STP.
+            </p>
+          </div>
+        )}
+        <a href={job.originalPostingUrl} target="_blank" rel="noopener noreferrer" onClick={registerExternal}
+          style={{ display: "block", padding: "15px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, textDecoration: "none", textAlign: "center" }}>
+          Ansök hos arbetsgivaren ↗
+        </a>
+        <Link to={`/jobb/${id}`} style={{ display: "block", textAlign: "center", marginTop: 16, fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--ink-500)" }}>← Tillbaka till annonsen</Link>
+      </main>
+    );
+  }
+
   // ── Mobile layout ──────────────────────────────────────────────────────────
   if (isMobile) {
     const initials = (job?.company || "?").split(" ").map((w) => w[0]).filter(Boolean).join("").slice(0, 2).toUpperCase();
