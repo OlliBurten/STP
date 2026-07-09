@@ -480,16 +480,8 @@ export default function JobDetail() {
     : "?";
 
   // ── Salary display ────────────────────────────────────────────────────────
+  // Helt öppet — inga gates (beslut 2026-07-09): lönen visas för alla besökare.
   function SalaryDisplay({ sidebar }) {
-    if (!user) {
-      return (
-        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", background: "var(--paper-2)", borderRadius: "var(--r-md)", border: "1px solid var(--line-2)" }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ink-300)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          <span style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)" }}>Skapa konto för att se lönen</span>
-          <Link to="/login" state={{ from: `/jobb/${id}`, initialMode: "register", requiredRole: "driver" }} style={{ marginLeft: "auto", fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--green)", textDecoration: "none" }}>Skapa konto →</Link>
-        </div>
-      );
-    }
     if (job.salaryMin) {
       return (
         <div>
@@ -513,11 +505,9 @@ export default function JobDetail() {
   const empLabel = job.employment === "fast" ? "Fast anställning" : job.employment === "vikariat" ? "Vikariat" : "Timanställning";
   const scheduleLabel = job.schedule ? (scheduleTypes.find((s) => s.value === job.schedule)?.label ?? job.schedule) : null;
 
-  const salaryFactVal = !user
-    ? "Skapa konto för att se"
-    : job.salaryMin
-      ? `${job.salaryMin.toLocaleString("sv-SE")}${job.salaryMax ? `–${job.salaryMax.toLocaleString("sv-SE")}` : "+"} kr/mån`
-      : job.salary ? "Enl. lönebesked" : "Ej angiven";
+  const salaryFactVal = job.salaryMin
+    ? `${job.salaryMin.toLocaleString("sv-SE")}${job.salaryMax ? `–${job.salaryMax.toLocaleString("sv-SE")}` : "+"} kr/mån`
+    : job.salary ? "Enl. lönebesked" : "Ej angiven";
 
   // Arbetsgivarens kanal är PRIMÄR för importerade/oclaimade jobb (2026-07-09):
   // föraren ansöker där ansökan garanterat läses; STP loggar leaden i bakgrunden
@@ -751,6 +741,11 @@ export default function JobDetail() {
                 style={{ flex: 1.4, padding: "14px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, textDecoration: "none", textAlign: "center", boxShadow: "0 4px 14px rgba(30,107,91,0.3)" }}
               >Ansök nu →</Link>
             )
+          ) : isEmployerChannel ? (
+            <a href={employerApplyUrl} target="_blank" rel="noopener noreferrer"
+              onClick={() => handleExternalApply("sticky_guest_external")}
+              style={{ flex: 1.4, padding: "14px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, textDecoration: "none", textAlign: "center", boxShadow: "0 4px 14px rgba(30,107,91,0.3)" }}
+            >Ansök ↗</a>
           ) : (
             <Link to="/login" state={{ from: `/jobb/${id}`, requiredRole: "driver" }}
               style={{ flex: 1.4, padding: "14px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, textDecoration: "none", textAlign: "center" }}
@@ -925,10 +920,24 @@ export default function JobDetail() {
                 </Link>
               )
             ) : !user ? (
-              <Link to="/login" state={{ from: `/jobb/${id}`, initialMode: "register", requiredRole: "driver" }}
-                style={{ padding: "13px 24px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, textDecoration: "none" }}>
-                Skapa konto för att ansöka
-              </Link>
+              isEmployerChannel ? (
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
+                  <a href={employerApplyUrl} target="_blank" rel="noopener noreferrer"
+                    onClick={() => handleExternalApply("bottom_guest_external")}
+                    style={{ padding: "13px 24px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 7, whiteSpace: "nowrap" }}>
+                    Ansök hos arbetsgivaren ↗
+                  </a>
+                  <Link to="/login" state={{ from: `/jobb/${id}`, initialMode: "register", requiredRole: "driver" }}
+                    style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--green)", textDecoration: "none" }}>
+                    Skapa gratis konto — följ ansökningar & få matchningar →
+                  </Link>
+                </div>
+              ) : (
+                <Link to="/login" state={{ from: `/jobb/${id}`, initialMode: "register", requiredRole: "driver" }}
+                  style={{ padding: "13px 24px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, textDecoration: "none" }}>
+                  Skapa konto för att ansöka
+                </Link>
+              )
             ) : null}
           </div>
 
@@ -1102,6 +1111,18 @@ export default function JobDetail() {
                 <div style={{ padding: "12px 14px", borderRadius: "var(--r)", background: "var(--paper-2)", border: "1px solid var(--line)" }}>
                   <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", margin: 0, lineHeight: 1.6 }}>Företagsläge — ansökningsknappen visas enbart för förare.</p>
                 </div>
+              ) : isEmployerChannel ? (
+                <>
+                  <a href={employerApplyUrl} target="_blank" rel="noopener noreferrer"
+                    onClick={() => handleExternalApply("panel_guest_external")}
+                    style={{ display: "block", width: "100%", padding: "15px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, textDecoration: "none", textAlign: "center", letterSpacing: -0.3, boxSizing: "border-box", boxShadow: "0 4px 14px rgba(30,107,91,0.25)" }}>
+                    Ansök hos arbetsgivaren ↗
+                  </a>
+                  <Link to="/login" state={{ from: `/jobb/${id}`, initialMode: "register", requiredRole: "driver" }}
+                    style={{ display: "block", textAlign: "center", fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--green)", textDecoration: "none" }}>
+                    Skapa gratis konto — följ ansökningar & få matchningar →
+                  </Link>
+                </>
               ) : (
                 <Link to="/login" state={{ from: `/jobb/${id}`, initialMode: "register", requiredRole: "driver" }}
                   style={{ display: "block", width: "100%", padding: "15px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, textDecoration: "none", textAlign: "center", letterSpacing: -0.3, boxSizing: "border-box" }}>
@@ -1123,7 +1144,7 @@ export default function JobDetail() {
             <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, color: "var(--ink-400)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 4 }}>Snabbfakta</div>
             <FactRow label="Anställning"  value={empLabel} />
             <FactRow label="Schema"       value={scheduleLabel || "Ej angiven"} missing={!scheduleLabel} />
-            <FactRow label="Lön"          value={salaryFactVal} highlight={!!user && !!(job.salaryMin || job.salary)} missing={!!user && !job.salaryMin && !job.salary} />
+            <FactRow label="Lön"          value={salaryFactVal} highlight={!!(job.salaryMin || job.salary)} missing={!job.salaryMin && !job.salary} />
             {job.salaryNote && <FactRow label="Lönenotering" value={job.salaryNote} />}
             <FactRow label="Tillträde"    value={job.start || "Ej angiven"} missing={!job.start} />
             <FactRow label="Ort"          value={job.location || "—"} />
