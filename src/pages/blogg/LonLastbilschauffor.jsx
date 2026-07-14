@@ -3,6 +3,7 @@ import { usePageMeta } from "../../hooks/usePageMeta";
 import ArticleJsonLd from "../../components/ArticleJsonLd";
 import BlogPost from "../../components/BlogPost";
 import BlogInlineCta from "../../components/BlogInlineCta";
+import { regionPages } from "../../data/regions";
 
 const TITLE = "Vad tjänar en lastbilschaufför i Sverige?";
 const DESC = "Löner för lastbilschaufförer 2025 — vad påverkar lönen, skillnader per körkortsbehörighet, bransch och kollektivavtal.";
@@ -100,6 +101,18 @@ export default function LonLastbilschauffor() {
         </ul>
 
         <BlogInlineCta role="driver" />
+
+        <h2 className="text-xl font-semibold text-slate-900 mt-8">Lön i ditt län</h2>
+        <p>
+          Se vad aktuella annonser faktiskt erbjuder där du bor:
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {regionPages.map((r) => (
+            <Link key={r.slug} to={`/lon/${r.slug}`} className="px-3 py-1.5 rounded-lg border border-slate-200 text-sm text-slate-600 hover:border-emerald-600 hover:text-emerald-700 no-underline">
+              {r.name}
+            </Link>
+          ))}
+        </div>
 
         <h2 className="text-xl font-semibold text-slate-900 mt-8">Kollektivavtal — stor skillnad</h2>
         <p>

@@ -655,6 +655,15 @@ model Application {
 
   messageFromDriver String?
 
+  // "Fick du jobbet?"-uppföljning (mejl ~7 dagar efter ansökan). Utfallet är
+  // både produktdata (tillsätts jobben?) och marknadsföring (berättelser).
+  // Nullable + genereras vid utskick — klient-sidiga defaults fylls inte av
+  // db push på befintliga rader.
+  outcomeToken       String?   @unique
+  outcomeRequestedAt DateTime?
+  outcome            String?   // "GOT_JOB" | "NO_JOB" | "IN_PROCESS"
+  outcomeAt          DateTime?
+
   @@unique([driverId, jobId])
   @@index([jobId])
   @@index([driverId, createdAt])

@@ -4,6 +4,7 @@ import { fetchJobs } from "../api/jobs";
 import { usePageMeta } from "../hooks/usePageMeta";
 import { getRegionBySlug, regionPages } from "../data/regions";
 import JobCard from "../components/JobCard";
+import JobAlertSignup from "../components/JobAlertSignup";
 import ArticleJsonLd from "../components/ArticleJsonLd";
 import { useIsMobile } from "../hooks/useIsMobile";
 
@@ -120,6 +121,16 @@ export default function RegionJobList() {
             Lägg upp annons gratis
           </Link>
         </div>
+
+        {/* Lönesidan — bevisat starkaste innehållet (löneartikeln: ~30 min time-on-page) */}
+        <p style={{ marginBottom: 28 }}>
+          <Link to={`/lon/${region.slug}`} style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--green)", textDecoration: "none" }}>
+            Vad tjänar en lastbilschaufför i {region.name}? Se lönespannen →
+          </Link>
+        </p>
+
+        {/* Jobbmail-fångst — länssidorna är SEO-trafikens landningspunkt */}
+        <JobAlertSignup region={region.name} style={{ marginBottom: 28 }} />
 
         {/* Other regions */}
         <div style={{ borderTop: "1px solid var(--line)", paddingTop: 28 }}>

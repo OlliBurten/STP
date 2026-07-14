@@ -8,6 +8,7 @@ import { runOutreachAgent } from "./outreachAgent.js";
 import { runOnboardingDrip } from "./onboardingDrip.js";
 import { runProductIntelligenceAgent } from "./productIntelligenceAgent.js";
 import { runJobAlertDispatch } from "./jobAlerts.js";
+import { runApplicationFollowup } from "./applicationFollowup.js";
 
 let started = false;
 
@@ -47,6 +48,18 @@ export function startReminderScheduler() {
         await runJobAlertDispatch();
       } catch (e) {
         console.error("[JobAlerts] Uncaught error:", e?.message);
+      }
+    }, { timezone: "Europe/Stockholm" });
+  }
+
+  // Daglig "Fick du jobbet?"-uppföljning 11:00 — mejlar förare ~7 dagar efter
+  // ansökan och ber om utfall via token-länkar. FOLLOWUP_ENABLED=false stänger av.
+  if (process.env.FOLLOWUP_ENABLED !== "false") {
+    cron.schedule("0 11 * * *", async () => {
+      try {
+        await runApplicationFollowup();
+      } catch (e) {
+        console.error("[Followup] Uncaught error:", e?.message);
       }
     }, { timezone: "Europe/Stockholm" });
   }

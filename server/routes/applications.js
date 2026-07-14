@@ -215,3 +215,19 @@ applicationsRouter.get(
     }
   }
 );
+
+// ─── "Fick du jobbet?"-utfall — publik, token-baserad (länk i uppföljningsmejl) ─
+applicationsRouter.post("/outcome", async (req, res, next) => {
+  try {
+    const { token, svar } = req.body || {};
+    if (!token || typeof token !== "string" || token.length > 100) {
+      return res.status(400).json({ error: "Ogiltig token" });
+    }
+    const { recordApplicationOutcome } = await import("../lib/applicationFollowup.js");
+    const app = await recordApplicationOutcome(token, svar);
+    if (!app) return res.status(404).json({ error: "Ogiltig eller förbrukad länk" });
+    res.json({ ok: true, outcome: app.outcome, jobTitle: app.job.title, company: app.job.company });
+  } catch (e) {
+    next(e);
+  }
+});

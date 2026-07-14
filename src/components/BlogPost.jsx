@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import JobAlertSignup from "./JobAlertSignup";
 
 /**
  * Light-themed wrapper for all blog article pages.
@@ -17,6 +18,8 @@ export default function BlogPost({ breadcrumb, children }) {
           <span style={{ color: "var(--ink-500)" }}>{breadcrumb}</span>
         </nav>
         {children}
+        {/* Jobbmail-fångst — bloggens SEO-trafik är den mest köpstarka (30 min time-on-page på löneartikeln) */}
+        <JobAlertSignup style={{ marginTop: 40 }} />
       </div>
     </main>
   );

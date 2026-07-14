@@ -4,6 +4,7 @@ import { fetchJobs } from "../api/jobs";
 import { usePageMeta } from "../hooks/usePageMeta";
 import { getCityBySlug, cityPages } from "../data/cities";
 import JobCard from "../components/JobCard";
+import JobAlertSignup from "../components/JobAlertSignup";
 import { useIsMobile } from "../hooks/useIsMobile";
 
 function Chip({ children }) {
@@ -213,6 +214,9 @@ export default function CityJobList() {
                 Skapa profil gratis →
               </Link>
             </div>
+
+            {/* Jobbmail-fångst — stadssidorna är SEO-trafikens landningspunkt */}
+            <JobAlertSignup region={city.region} />
 
             {/* Nearby cities */}
             {nearbyCities.length > 0 && (

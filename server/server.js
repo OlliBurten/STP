@@ -327,6 +327,11 @@ app.get("/api/ssr/static/:key", async (req, res) => {
   catch (e) { console.error("[ssr-static]", e?.message || e); res.status(500).type("html").send('<!DOCTYPE html><html lang="sv"><head><meta name="robots" content="noindex"></head><body></body></html>'); }
 });
 
+app.get("/api/ssr/lon/:slug", async (req, res) => {
+  try { const { renderSalaryRegionHtml } = await import("./lib/seoRender.js"); ssrSend(res, await renderSalaryRegionHtml(req.params.slug), "Sidan hittades inte"); }
+  catch (e) { console.error("[ssr-lon]", e?.message || e); res.status(500).type("html").send('<!DOCTYPE html><html lang="sv"><head><meta name="robots" content="noindex"></head><body></body></html>'); }
+});
+
 app.get("/api/ssr/blogg", async (req, res) => {
   try { const { renderBlogIndexHtml } = await import("./lib/seoRender.js"); ssrSend(res, renderBlogIndexHtml(), "Bloggen hittades inte"); }
   catch (e) { console.error("[ssr-blog-index]", e?.message || e); res.status(500).type("html").send('<!DOCTYPE html><html lang="sv"><head><meta name="robots" content="noindex"></head><body></body></html>'); }

@@ -25,6 +25,11 @@
       "destination": "https://nodejs-production-f3b9.up.railway.app/api/ssr/lastbilsjobb/:slug"
     },
     {
+      "source": "/lon/:slug",
+      "has": [{ "type": "header", "key": "user-agent", "value": ".*([Bb]ot|[Cc]rawler|[Ss]pider|Slurp|facebookexternalhit|Embedly|Quora|Pinterest).*" }],
+      "destination": "https://nodejs-production-f3b9.up.railway.app/api/ssr/lon/:slug"
+    },
+    {
       "source": "/",
       "has": [{ "type": "header", "key": "user-agent", "value": ".*([Bb]ot|[Cc]rawler|[Ss]pider|Slurp|facebookexternalhit|Embedly|Quora|Pinterest).*" }],
       "destination": "https://nodejs-production-f3b9.up.railway.app/api/ssr/static/home"

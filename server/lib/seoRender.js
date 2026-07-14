@@ -336,6 +336,57 @@ export function renderStaticHtml(key) {
   return htmlShell({ title: p.title, description: p.description, canonical, jsonLd, body });
 }
 
+// ─── Lön-per-län (/lon/:slug) — programmatisk lönesida ───────────────────────
+// Riksnivå = samma granskade spann som löneartikeln (SCB/Medlingsinstitutet);
+// regional del bygger enbart på vad aktuella annonser i länet faktiskt anger.
+const NATIONAL_SALARY_ROWS = [
+  ["C (lastbil utan släp)", "28 000 kr", "24 000–32 000 kr"],
+  ["CE (dragbil + semi)", "33 000 kr", "28 000–42 000 kr"],
+  ["CE + ADR Tank", "36 000 kr", "30 000–45 000 kr"],
+];
+
+export async function renderSalaryRegionHtml(slug) {
+  const region = regionPages.find(r => r.slug === slug);
+  if (!region) return null;
+  const canonical = `${SITE}/lon/${region.slug}`;
+  const title = `Lastbilschaufför lön i ${region.name} — aktuella siffror & lediga jobb | Transportplattformen`;
+  const description = `Vad tjänar en lastbilschaufför i ${region.name}? Granskade lönespann för C/CE + vad aktuella annonser i länet faktiskt erbjuder.`;
+  const rows = await prisma.job.findMany({
+    where: { status: "ACTIVE", region: region.name },
+    select: { id: true, title: true, company: true, location: true, source: true, claimed: true, salaryMin: true, salaryMax: true },
+    orderBy: { published: "desc" },
+    take: 120,
+  });
+  const jobs = dedupeAggregatedJobs(rows);
+  const withSalary = jobs.filter(j => j.salaryMin);
+  const fmtN = n => n.toLocaleString("sv-SE");
+  const lo = withSalary.length ? Math.min(...withSalary.map(j => j.salaryMin)) : null;
+  const hi = withSalary.length ? Math.max(...withSalary.map(j => j.salaryMax || j.salaryMin)) : null;
+  const jsonLd = { "@context": "https://schema.org", "@type": "Article", headline: `Lastbilschaufför lön i ${region.name}`, description, url: canonical, author: { "@type": "Organization", name: "Sveriges Transportplattform" } };
+  const body = `
+<main>
+  <h1>Lastbilschaufför lön i ${esc(region.name)}</h1>
+  <p>${esc(description)}</p>
+  <section>
+    <h2>Lön efter behörighet (riksnivå)</h2>
+    <table><tr><th>Behörighet</th><th>Ungefärlig medellön</th><th>Spann</th></tr>
+    ${NATIONAL_SALARY_ROWS.map(r => `<tr>${r.map(c => `<td>${esc(c)}</td>`).join("")}</tr>`).join("")}
+    </table>
+    <p><small>Uppskattningar baserade på branschjämförelser. Källa: SCB lönestrukturstatistik, Medlingsinstitutet.</small></p>
+  </section>
+  <section>
+    <h2>Vad annonserna i ${esc(region.name)} erbjuder just nu</h2>
+    ${withSalary.length
+      ? `<p>${withSalary.length} av ${jobs.length} aktiva annonser i ${esc(region.name)} anger lön öppet — spann ${fmtN(lo)}${hi !== lo ? `–${fmtN(hi)}` : ""} kr/mån.</p>
+         <ul>${withSalary.slice(0, 8).map(j => `<li><a href="${SITE}/jobb/${j.id}">${esc(j.title)}</a> — ${esc(j.company)}: ${fmtN(j.salaryMin)}${j.salaryMax ? `–${fmtN(j.salaryMax)}` : "+"} kr/mån</li>`).join("")}</ul>`
+      : `<p>Just nu anger ingen av de ${jobs.length} aktiva annonserna i ${esc(region.name)} lön öppet — "enligt kollektivavtal" är norm i branschen.</p>`}
+    <p><a href="${SITE}/lastbilsjobb/${region.slug}">Alla lediga lastbilsjobb i ${esc(region.name)}</a> · <a href="${SITE}/lon-kalkylator">Lönekalkylatorn</a> · <a href="${SITE}/blogg/lon-lastbilschauffor">Hela löneguiden</a></p>
+  </section>
+  <nav><h2>Lön i andra län</h2><ul>${regionPages.filter(r => r.slug !== slug).map(r => `<li><a href="${SITE}/lon/${r.slug}">Lastbilschaufför lön i ${esc(r.name)}</a></li>`).join("")}</ul></nav>
+</main>`;
+  return htmlShell({ title, description, canonical, jsonLd, body });
+}
+
 // ─── Jobb-hubb (/jobb) — crawlerns väg in till alla annonser och landningssidor ─
 // SPA-listan kräver JS; utan denna ser sökmotorer en tom sida och länkgrafen
 // bryts vid roten. Hubben länkar län + städer + senaste annonserna.

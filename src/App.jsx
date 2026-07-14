@@ -69,6 +69,7 @@ const ForDrivers            = lazyRetry(() => import("./pages/ForDrivers"));
 const ForCompaniesLanding   = lazyRetry(() => import("./pages/ForCompaniesLanding"));
 const JobList               = lazyRetry(() => import("./pages/JobList"));
 const JobAlertAction        = lazyRetry(() => import("./pages/JobAlertAction"));
+const FollowupOutcome       = lazyRetry(() => import("./pages/FollowupOutcome"));
 const JobDetail             = lazyRetry(() => import("./pages/JobDetail"));
 const Apply                 = lazyRetry(() => import("./pages/Apply"));
 const ForCompanies          = lazyRetry(() => import("./pages/ForCompanies"));
@@ -149,6 +150,7 @@ const VisionPresentation    = lazyRetry(() => import("./pages/VisionPresentation
 const Settings              = lazyRetry(() => import("./pages/Settings"));
 const CompanyJobDetail      = lazyRetry(() => import("./pages/CompanyJobDetail"));
 const RegionJobList         = lazyRetry(() => import("./pages/RegionJobList"));
+const LonRegion             = lazyRetry(() => import("./pages/LonRegion"));
 const PraktikLanding        = lazyRetry(() => import("./pages/PraktikLanding"));
 const SchoolLanding         = lazyRetry(() => import("./pages/SchoolLanding"));
 const HittaPraktik          = lazyRetry(() => import("./pages/HittaPraktik"));
@@ -384,6 +386,7 @@ function AppLayout() {
                   <Route path="/jobb" element={isMobile && !user ? <MobileGuestJobs /> : <JobList />} />
                   <Route path="/jobb/:id" element={<JobDetail />} />
                   <Route path="/bevakning/:action" element={<JobAlertAction />} />
+                  <Route path="/uppfoljning" element={<FollowupOutcome />} />
                   <Route path="/jobb/:id/ansok" element={<Apply />} />
                   <Route path="/akerier" element={<AkerierSearch />} />
                   <Route path="/foretag" element={isCompany ? <ForCompanies /> : <ForCompaniesLanding />} />
@@ -392,6 +395,7 @@ function AppLayout() {
                   <Route path="/branschinsikter" element={<Branschinsikter />} />
                   <Route path="/branschinsikter/kompetenslaget-2025" element={<Kompetenslaget2025 />} />
                   <Route path="/lastbilsjobb/:regionSlug" element={<RegionJobList />} />
+                  <Route path="/lon/:regionSlug" element={<LonRegion />} />
                   <Route path="/ce-jobb/:citySlug" element={<CityJobList />} />
                   <Route path="/blogg" element={<BloggIndex />} />
                   <Route path="/blogg/ce-korkort-sverige" element={<CeKorkortSverige />} />
