@@ -606,10 +606,12 @@ export default function Messages() {
     } catch (e) { toast.error(e.message || "Kunde inte skicka omdöme."); }
   };
 
-  // Navbaren är sticky (i flödet) — ingen negativ margin på main, annars hamnar
-  // sidtoppen bakom baren och rubriken kläms mot headern.
+  // App-skalet ger allt sidinnehåll paddingTop 64 (pt-16). Den här sidan är en
+  // fullhöjds tvåkolumnslayout — nollställ skalets padding med -64 så panelernas
+  // bakgrund når ända upp till navbaren (annars blir det ett vitt glapp).
+  // Rubrikens luft sätts i sidopanelens egen paddingTop nedan.
   return (
-    <main style={{ background: "var(--paper)", height: isMobile ? "100dvh" : "calc(100vh - 64px)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+    <main style={{ background: "var(--paper)", height: isMobile ? "100dvh" : "calc(100vh - 64px)", marginTop: isMobile ? 0 : -64, display: "flex", flexDirection: "column", overflow: "hidden" }}>
 
       {/* Banners */}
       {!isDriver && companyUnreadConversationCount > 0 && (
@@ -632,7 +634,7 @@ export default function Messages() {
             style={{ display: id && isMobile ? "none" : "flex", width: isMobile ? "100%" : undefined, background: isMobile ? "var(--paper)" : "var(--card)", borderRight: "1px solid var(--line)", flexDirection: "column", overflow: "hidden", flexShrink: 0 }}
             className="sidebar-panel"
           >
-            <div style={{ padding: isMobile ? "0 20px 12px" : "40px 18px 16px", paddingTop: isMobile ? "calc(env(safe-area-inset-top, 0px) + 20px)" : undefined, borderBottom: "1px solid var(--line)", flexShrink: 0 }}>
+            <div style={{ padding: isMobile ? "0 20px 12px" : "56px 18px 16px", paddingTop: isMobile ? "calc(env(safe-area-inset-top, 0px) + 20px)" : undefined, borderBottom: "1px solid var(--line)", flexShrink: 0 }}>
               {isMobile ? (
                 <>
                   {/* Titel + filter-ikon (Messenger-stil — chips ersatta av en meny) */}
