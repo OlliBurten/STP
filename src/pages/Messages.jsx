@@ -606,9 +606,9 @@ export default function Messages() {
     } catch (e) { toast.error(e.message || "Kunde inte skicka omdöme."); }
   };
 
+  // Navbaren är sticky (i flödet) — ingen negativ margin på main, annars hamnar
+  // sidtoppen bakom baren och rubriken kläms mot headern.
   return (
-    {/* Navbaren är sticky (i flödet) — ingen negativ margin, annars hamnar
-        sidtoppen bakom baren och rubriken kläms mot headern. */}
     <main style={{ background: "var(--paper)", height: isMobile ? "100dvh" : "calc(100vh - 64px)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
 
       {/* Banners */}
