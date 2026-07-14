@@ -634,7 +634,9 @@ export default function Messages() {
             style={{ display: id && isMobile ? "none" : "flex", width: isMobile ? "100%" : undefined, background: isMobile ? "var(--paper)" : "var(--card)", borderRight: "1px solid var(--line)", flexDirection: "column", overflow: "hidden", flexShrink: 0 }}
             className="sidebar-panel"
           >
-            <div style={{ padding: isMobile ? "0 20px 12px" : "56px 18px 16px", paddingTop: isMobile ? "calc(env(safe-area-inset-top, 0px) + 20px)" : undefined, borderBottom: "1px solid var(--line)", flexShrink: 0 }}>
+            {/* OBS: paddingTop får inte vara undefined — React tolkar det som
+                "unset" och raderar toppen ur padding-shorthanden (desktop fick 0). */}
+            <div style={{ padding: isMobile ? "0 20px 12px" : "56px 18px 16px", paddingTop: isMobile ? "calc(env(safe-area-inset-top, 0px) + 20px)" : "56px", borderBottom: "1px solid var(--line)", flexShrink: 0 }}>
               {isMobile ? (
                 <>
                   {/* Titel + filter-ikon (Messenger-stil — chips ersatta av en meny) */}
