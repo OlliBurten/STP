@@ -41,7 +41,7 @@ const TABS = [
   { id: "jobs",    label: "Jobb",    icon: "search", paths: ["/jobb"] },
   { id: "saved",   label: "Sparat",  icon: "heart",  paths: ["/favoriter"] },
   { id: "ansok",   label: "Ansökn.", icon: "check",  paths: ["/mina-ansokningar"] },
-  { id: "inbox",   label: "Inkorg",  icon: "msg",    paths: ["/meddelanden"] },
+  { id: "inbox",   label: "Meddelanden",  icon: "msg",    paths: ["/meddelanden"] },
   { id: "profile", label: "Profil",  icon: "user",   paths: ["/profil"] },
 ];
 

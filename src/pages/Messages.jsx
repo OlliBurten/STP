@@ -481,7 +481,7 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function Messages() {
-  usePageTitle("Inkorg");
+  usePageTitle("Meddelanden");
   const isMobile = useIsMobile();
   const { id } = useParams();
   const { user, hasApi } = useAuth();
@@ -607,7 +607,9 @@ export default function Messages() {
   };
 
   return (
-    <main style={{ background: "var(--paper)", height: isMobile ? "100dvh" : "calc(100vh - 64px)", marginTop: isMobile ? 0 : -64, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+    {/* Navbaren är sticky (i flödet) — ingen negativ margin, annars hamnar
+        sidtoppen bakom baren och rubriken kläms mot headern. */}
+    <main style={{ background: "var(--paper)", height: isMobile ? "100dvh" : "calc(100vh - 64px)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
 
       {/* Banners */}
       {!isDriver && companyUnreadConversationCount > 0 && (
@@ -636,7 +638,7 @@ export default function Messages() {
                   {/* Titel + filter-ikon (Messenger-stil — chips ersatta av en meny) */}
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, position: "relative" }}>
                     <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.8 }}>
-                      Inkorg
+                      Meddelanden
                     </h1>
                     <button
                       type="button"
@@ -705,7 +707,7 @@ export default function Messages() {
                 <>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
                     <h1 style={{ fontSize: 20, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.4 }}>
-                      Inkorg
+                      Meddelanden
                     </h1>
                     {unreadCount > 0 && <span style={{ padding: "2px 9px", borderRadius: 999, background: "var(--success-tint)", border: "1px solid rgba(31,122,58,0.2)", fontSize: "var(--text-2xs)", fontWeight: 800, color: "var(--success)" }}>{unreadCount} nya</span>}
                   </div>

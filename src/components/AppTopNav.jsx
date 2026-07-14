@@ -108,9 +108,14 @@ function NotifPanel({ notifs, unreadCount, onClose, onClickItem, onMarkAll }) {
                   <Ico n={conf.icon} size={15} color={conf.color} sw={2} />
                 </span>
                 <div style={{ flex: 1, minWidth: 0 }}>
+                  {/* API:t skickar title/body (Notification-modellen) — fel fältnamn
+                      här gjorde att varje notis visade fallbacken "Notis". */}
                   <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-900)", lineHeight: 1.45, fontWeight: unread ? 600 : 400 }}>
-                    {n.text || n.message || "Notis"}
+                    {n.title || n.text || n.message || "Notis"}
                   </div>
+                  {n.body && (
+                    <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", lineHeight: 1.4, marginTop: 2, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{n.body}</div>
+                  )}
                   <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-400)", marginTop: 3 }}>{timeAgo(n.createdAt)}</div>
                 </div>
                 {unread && <span style={{ width: 8, height: 8, borderRadius: 4, background: "var(--green)", flexShrink: 0, marginTop: 6 }} />}
