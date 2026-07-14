@@ -71,6 +71,9 @@ export function toJobView(job, profile) {
     // AF-länken funkar. null för STP-egna jobb (alltid på plattformen).
     reachableViaStp: job.reachableViaStp ?? null,
     deadline: job.applicationDeadline || null,
+    // AF-paritet: mejl-ansökan + referens/kontakt/adress/lönetyp (spreaden ovan
+    // tar med applyEmail m.fl. — merit normaliseras här)
+    merit: job.qualifications?.niceToHave || [],
     verified: Boolean(job.companyVerified),
     desc: job.description || "",
     reqs: Array.isArray(job.requirements) ? job.requirements : [],

@@ -18,6 +18,14 @@ export default function ApplySheet({ job, ctx, close }) {
   // och backend claim-mejlar företaget. Composer-flödet nedan gäller bara
   // STP-egna/claimade jobb (+ fallback för importerat helt utan länk).
   const external = imp && job.externalApplyUrl;
+  // Mejl-ansökan slår redirect: annonsen säger "ansök via mail" → föraren mejlar
+  // arbetsgivaren direkt från STP (AF är datakälla, inte destination).
+  const applyEmail = imp ? job.applyEmail : null;
+  const mailtoHref = applyEmail
+    ? `mailto:${applyEmail}?subject=${encodeURIComponent(`Ansökan: ${job.applicationReference || job.title}`)}&body=${encodeURIComponent(
+        `Hej!\n\nJag söker tjänsten "${job.title}"${job.applicationReference ? ` (referens: ${job.applicationReference})` : ""} som jag hittade via Transportplattformen.\n\n[Berätta kort om dig själv, din behörighet och erfarenhet.]\n\nMed vänliga hälsningar,\n${ctx.profile?.name || ""}`
+      )}`
+    : null;
   const p = ctx.profile;
 
   // Real AI first-message suggestion (driver). Falls back to a local draft.
@@ -81,10 +89,14 @@ export default function ApplySheet({ job, ctx, close }) {
         </div>
         <div style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "13px 14px", background: "var(--info-tint)", borderRadius: 12, marginBottom: 16 }}>
           <Icon name="info" size={18} color="var(--info)" stroke={2.2} />
-          <span style={{ fontSize: 13.5, color: "var(--ink-800)", lineHeight: 1.45 }}>{job.company} tar emot ansökningar via sin egen kanal. Klicka nedan för att ansöka där — vi registrerar samtidigt jobbet under <strong>Ansökt</strong> och meddelar företaget att du hittade det på STP.</span>
+          <span style={{ fontSize: 13.5, color: "var(--ink-800)", lineHeight: 1.45 }}>
+            {applyEmail
+              ? <>{job.company} tar emot ansökningar via mejl{job.applicationReference ? <> — ange referens <strong>{job.applicationReference}</strong></> : null}. Knappen öppnar ett färdigt mejl, och vi registrerar jobbet under <strong>Ansökt</strong>.</>
+              : <>{job.company} tar emot ansökningar via sin egen kanal. Klicka nedan för att ansöka där — vi registrerar samtidigt jobbet under <strong>Ansökt</strong> och meddelar företaget att du hittade det på STP.</>}
+          </span>
         </div>
-        <a href={job.externalApplyUrl} target="_blank" rel="noopener noreferrer" onClick={() => { ctx.applyExternal?.(job); setTimeout(close, 400); }} className="press" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "15px 18px", borderRadius: 13, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: 15 }}>
-          Ansök hos arbetsgivaren <Icon name="arrow" size={17} stroke={2.3} color="#fff" />
+        <a href={mailtoHref || job.externalApplyUrl} target={mailtoHref ? undefined : "_blank"} rel="noopener noreferrer" onClick={() => { ctx.applyExternal?.(job); setTimeout(close, 400); }} className="press" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "15px 18px", borderRadius: 13, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: 15 }}>
+          {applyEmail ? "Ansök via mejl" : "Ansök hos arbetsgivaren"} <Icon name={applyEmail ? "mail" : "arrow"} size={17} stroke={2.3} color="#fff" />
         </a>
         <p style={{ fontSize: 12.5, color: "var(--ink-400)", lineHeight: 1.5, marginTop: 12, textAlign: "center" }}>
           Du kan följa jobbet och få notiser om liknande under <strong style={{ color: "var(--ink-600)" }}>Ansökt</strong>.

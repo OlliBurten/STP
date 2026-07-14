@@ -100,6 +100,26 @@ export default function DetailSheet({ job, ctx, close: _close }) {
             </div>
           </>
         )}
+        {(job.merit || []).length > 0 && (
+          <>
+            <Label style={{ marginBottom: 10 }}>Meriterande</Label>
+            <div style={{ display: "flex", flexDirection: "column", gap: 9, marginBottom: 20 }}>
+              {job.merit.map((r, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div style={{ width: 22, height: 22, borderRadius: 7, background: "var(--amber-tint)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icon name="plus" size={13} color="var(--amber-deep)" stroke={3} /></div>
+                  <span style={{ fontSize: 14, color: "var(--ink-800)" }}>{r}</span>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+        {(job.applicationReference || job.contactName || job.contactPhone || job.workplaceAddress) && (
+          <div style={{ background: "var(--card-2)", border: "1px solid var(--line)", borderRadius: 12, padding: "12px 14px", marginBottom: 20, display: "flex", flexDirection: "column", gap: 6 }}>
+            {job.applicationReference && <span style={{ fontSize: 13 }}><strong style={{ color: "var(--ink-900)" }}>Referens:</strong> <span style={{ color: "var(--ink-700)" }}>{job.applicationReference}</span></span>}
+            {(job.contactName || job.contactPhone) && <span style={{ fontSize: 13 }}><strong style={{ color: "var(--ink-900)" }}>Kontakt:</strong> <span style={{ color: "var(--ink-700)" }}>{[job.contactName, job.contactPhone].filter(Boolean).join(" · ")}</span></span>}
+            {job.workplaceAddress && <span style={{ fontSize: 13 }}><strong style={{ color: "var(--ink-900)" }}>Arbetsplats:</strong> <span style={{ color: "var(--ink-700)" }}>{job.workplaceAddress}</span></span>}
+          </div>
+        )}
       </div>
       <div style={{ position: "sticky", bottom: 0, padding: "14px 22px 26px", background: "var(--card)", borderTop: "1px solid var(--line)", display: "flex", gap: 10 }}>
         <button onClick={() => ctx.toggleSave(job.id)} className="press" aria-label={savedNow ? "Ta bort sparat jobb" : "Spara jobb"} aria-pressed={savedNow} style={{ width: 52, height: 52, borderRadius: 13, border: "1px solid var(--line-2)", background: savedNow ? "var(--green-tint)" : "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>

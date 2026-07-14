@@ -8,79 +8,79 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String?  // null för OAuth-användare (Google, Microsoft)
-  emailVerifiedAt DateTime?
-  emailVerificationTokenHash String?
-  emailVerificationExpiresAt DateTime?
+  id                             String    @id @default(cuid())
+  email                          String    @unique
+  passwordHash                   String? // null för OAuth-användare (Google, Microsoft)
+  emailVerifiedAt                DateTime?
+  emailVerificationTokenHash     String?
+  emailVerificationExpiresAt     DateTime?
   // 6-siffrig verifieringskod (mobil) — hashad, kort TTL (10 min) + försöksspärr.
   // Lever parallellt med token-länken ovan (samma mejl skickar båda).
-  emailVerificationCodeHash String?
+  emailVerificationCodeHash      String?
   emailVerificationCodeExpiresAt DateTime?
-  emailVerificationCodeAttempts Int @default(0)
-  passwordResetTokenHash String?
-  passwordResetExpiresAt DateTime?
-  role         String   // DRIVER | COMPANY | RECRUITER (COMPANY deprecated, migreras till RECRUITER)
-  name         String
-  companyName  String?  // for companies
-  companyOrgNumber String? @unique // for companies
-  companyDescription String?
-  companyWebsite String?
-  companyContactEmail String?  // synlig för inloggade förare i åkeridatabasen
-  companyContactPhone String?  // synlig för inloggade förare i åkeridatabasen
-  companyLocation String?
-  companySegmentDefaults String[] @default([])
-  companyBransch    String[]  @default([])  // t.ex. ["tank", "distribution"] – för sök åkerier
-  companyRegion     String?                 // t.ex. Stockholm, Skåne – för sök åkerier
-  companyStatus String @default("VERIFIED") // PENDING | VERIFIED | REJECTED
-  fSkattsedel        Boolean  @default(false) // F-skattsedel (arbetsgivaransvar)
-  industryOrgMember  Boolean  @default(false) // Branschorganisation-medlem
-  industryOrgName    String?                  // Namn på branschorganisation
-  policyAgreedAt     DateTime?                // När de godkände STP:s policy
-  profileSuggestions Json?                    // Auto-genererade profilförslag (åkerier) — publiceras ALDRIG utan godkännande
-  suggestionsGeneratedAt DateTime?            // När förslagen genererades (guard: en gång per konto)
+  emailVerificationCodeAttempts  Int       @default(0)
+  passwordResetTokenHash         String?
+  passwordResetExpiresAt         DateTime?
+  role                           String // DRIVER | COMPANY | RECRUITER (COMPANY deprecated, migreras till RECRUITER)
+  name                           String
+  companyName                    String? // for companies
+  companyOrgNumber               String?   @unique // for companies
+  companyDescription             String?
+  companyWebsite                 String?
+  companyContactEmail            String? // synlig för inloggade förare i åkeridatabasen
+  companyContactPhone            String? // synlig för inloggade förare i åkeridatabasen
+  companyLocation                String?
+  companySegmentDefaults         String[]  @default([])
+  companyBransch                 String[]  @default([]) // t.ex. ["tank", "distribution"] – för sök åkerier
+  companyRegion                  String? // t.ex. Stockholm, Skåne – för sök åkerier
+  companyStatus                  String    @default("VERIFIED") // PENDING | VERIFIED | REJECTED
+  fSkattsedel                    Boolean   @default(false) // F-skattsedel (arbetsgivaransvar)
+  industryOrgMember              Boolean   @default(false) // Branschorganisation-medlem
+  industryOrgName                String? // Namn på branschorganisation
+  policyAgreedAt                 DateTime? // När de godkände STP:s policy
+  profileSuggestions             Json? // Auto-genererade profilförslag (åkerier) — publiceras ALDRIG utan godkännande
+  suggestionsGeneratedAt         DateTime? // När förslagen genererades (guard: en gång per konto)
   // Demokonton — tidsbegränsade konton som delas ut till kunder/partners/investerare.
   // Skapas ENBART i demo-miljön (DEPLOYMENT=demo). Räknas som icke-riktiga användare
   // i statistik och exkluderas från alla utskick (se lib/testAccounts.js, reminders.js).
-  isDemo        Boolean   @default(false)
-  demoExpiresAt DateTime?                      // När demokontot slutar fungera (inloggning + API nekas)
-  demoLabel     String?                        // Fritext: vem kontot delats ut till, t.ex. "Investerare – Almi"
-  demoBoth      Boolean   @default(false)       // Demokonto som kan växla mellan åkeri- och förarvyn via header-switch
-  suspendedAt DateTime?
-  suspensionReason String?
-  warningCount Int @default(0)
-  lastWarningReason String?
-  lastWarnedAt DateTime?
-  createdAt    DateTime @default(now())
+  isDemo                         Boolean   @default(false)
+  demoExpiresAt                  DateTime? // När demokontot slutar fungera (inloggning + API nekas)
+  demoLabel                      String? // Fritext: vem kontot delats ut till, t.ex. "Investerare – Almi"
+  demoBoth                       Boolean   @default(false) // Demokonto som kan växla mellan åkeri- och förarvyn via header-switch
+  suspendedAt                    DateTime?
+  suspensionReason               String?
+  warningCount                   Int       @default(0)
+  lastWarningReason              String?
+  lastWarnedAt                   DateTime?
+  createdAt                      DateTime  @default(now())
 
-  driverProfile   DriverProfile?
-  jobs            Job[]             @relation("JobOwner")
-  conversationsAsDriver  Conversation[] @relation("Driver")
-  conversationsAsCompany Conversation[] @relation("Company")
-  messages        Message[]
-  reportsCreated  Report[] @relation("ReportCreator")
-  reportsReceived Report[] @relation("ReportTarget")
-  reviewsWritten CompanyReview[] @relation("ReviewAuthor")
-  reviewsReceived CompanyReview[] @relation("ReviewCompany")
-  certificateSuggestions CertificateSuggestion[]
-  savedJobs       SavedJob[]
-  savedCompanies  SavedCompany[] @relation("SavedCompanyFollower")
-  savedByDrivers  SavedCompany[] @relation("SavedCompanyTarget")
-  notifications   Notification[] @relation("NotificationRecipient")
-  pushSubscriptions PushSubscription[]
-  lastMatchJobEmailAt    DateTime?  // driver: last time we sent "matching jobs" email
-  lastMatchDriverEmailAt DateTime?  // company: last time we sent "matching driver" email
-  lastLoginAt            DateTime?  // senaste inloggning (alla metoder)
-  lastVerificationReminderAt DateTime?  // senaste påminnelse om e-postverifiering
-  needsDriverOnboarding    Boolean  @default(false)
-  needsRecruiterOnboarding Boolean  @default(false)
+  driverProfile              DriverProfile?
+  jobs                       Job[]                   @relation("JobOwner")
+  conversationsAsDriver      Conversation[]          @relation("Driver")
+  conversationsAsCompany     Conversation[]          @relation("Company")
+  messages                   Message[]
+  reportsCreated             Report[]                @relation("ReportCreator")
+  reportsReceived            Report[]                @relation("ReportTarget")
+  reviewsWritten             CompanyReview[]         @relation("ReviewAuthor")
+  reviewsReceived            CompanyReview[]         @relation("ReviewCompany")
+  certificateSuggestions     CertificateSuggestion[]
+  savedJobs                  SavedJob[]
+  savedCompanies             SavedCompany[]          @relation("SavedCompanyFollower")
+  savedByDrivers             SavedCompany[]          @relation("SavedCompanyTarget")
+  notifications              Notification[]          @relation("NotificationRecipient")
+  pushSubscriptions          PushSubscription[]
+  lastMatchJobEmailAt        DateTime? // driver: last time we sent "matching jobs" email
+  lastMatchDriverEmailAt     DateTime? // company: last time we sent "matching driver" email
+  lastLoginAt                DateTime? // senaste inloggning (alla metoder)
+  lastVerificationReminderAt DateTime? // senaste påminnelse om e-postverifiering
+  needsDriverOnboarding      Boolean                 @default(false)
+  needsRecruiterOnboarding   Boolean                 @default(false)
 
   // Email notification preferences — all on by default, user can opt out
-  emailNotificationSettings Json     @default("{}")
+  emailNotificationSettings Json      @default("{}")
   // Reminder tracking (to enforce cooldowns and max-send limits)
   profileReminderSentAt     DateTime?
-  profileReminderCount      Int      @default(0)
+  profileReminderCount      Int       @default(0)
   messageReminderSentAt     DateTime?
   inactivityReminderSentAt  DateTime?
   // Onboarding drip emails (dag 1 / 3 / 7 efter registrering)
@@ -88,23 +88,23 @@ model User {
   onboardingDrip3SentAt     DateTime?
   onboardingDrip7SentAt     DateTime?
 
-  driverReviewsWritten   DriverReview[]   @relation("DriverReviewAuthor")
+  driverReviewsWritten DriverReview[] @relation("DriverReviewAuthor")
 
   // Applications (driver → aggregated job)
-  applications           Application[]    @relation("ApplicationDriver")
-  employerClaims         EmployerClaim[]  @relation("EmployerClaimUser")
+  applications   Application[]   @relation("ApplicationDriver")
+  employerClaims EmployerClaim[] @relation("EmployerClaimUser")
 
   // Team invites (deprecated - använd OrganizationInvite)
-  companyInvites         CompanyInvite[]  @relation("CompanyInvites")
-  companyInvitesSent     CompanyInvite[]  @relation("InviterInvites")
-  companyMembersLed     CompanyMember[]  @relation("CompanyMembersLed")
-  companyMembership     CompanyMember?   @relation("CompanyMembership")
+  companyInvites     CompanyInvite[] @relation("CompanyInvites")
+  companyInvitesSent CompanyInvite[] @relation("InviterInvites")
+  companyMembersLed  CompanyMember[] @relation("CompanyMembersLed")
+  companyMembership  CompanyMember?  @relation("CompanyMembership")
 
   // Multi-org: rekryterare kan ha flera åkerier
-  userOrganizations     UserOrganization[]
-  organizationInvitesSent OrganizationInvite[] @relation("OrganizationInviter")
-  adminAuditLogs        AdminAuditLog[] @relation("AdminAuditActor")
-  adminAuditTargets     AdminAuditLog[] @relation("AdminAuditTarget")
+  userOrganizations          UserOrganization[]
+  organizationInvitesSent    OrganizationInvite[]        @relation("OrganizationInviter")
+  adminAuditLogs             AdminAuditLog[]             @relation("AdminAuditActor")
+  adminAuditTargets          AdminAuditLog[]             @relation("AdminAuditTarget")
   adminImpersonationSessions AdminImpersonationSession[] @relation("AdminImpersonationActor")
   impersonatedBySessions     AdminImpersonationSession[] @relation("AdminImpersonationTarget")
 
@@ -126,12 +126,12 @@ model PushSubscription {
 }
 
 model AdminImpersonationSession {
-  id           String   @id @default(cuid())
+  id           String          @id @default(cuid())
   adminUserId  String
-  adminUser    User     @relation("AdminImpersonationActor", fields: [adminUserId], references: [id], onDelete: Cascade)
+  adminUser    User            @relation("AdminImpersonationActor", fields: [adminUserId], references: [id], onDelete: Cascade)
   targetUserId String
-  targetUser   User     @relation("AdminImpersonationTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
-  startedAt    DateTime @default(now())
+  targetUser   User            @relation("AdminImpersonationTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
+  startedAt    DateTime        @default(now())
   endedAt      DateTime?
   expiresAt    DateTime
   ipAddress    String?
@@ -144,20 +144,20 @@ model AdminImpersonationSession {
 }
 
 model AdminAuditLog {
-  id                     String   @id @default(cuid())
+  id                     String                     @id @default(cuid())
   adminUserId            String
-  adminUser              User     @relation("AdminAuditActor", fields: [adminUserId], references: [id], onDelete: Cascade)
+  adminUser              User                       @relation("AdminAuditActor", fields: [adminUserId], references: [id], onDelete: Cascade)
   adminEmail             String?
   action                 String
   targetUserId           String?
-  targetUser             User?    @relation("AdminAuditTarget", fields: [targetUserId], references: [id], onDelete: SetNull)
+  targetUser             User?                      @relation("AdminAuditTarget", fields: [targetUserId], references: [id], onDelete: SetNull)
   targetType             String?
   impersonationSessionId String?
   impersonationSession   AdminImpersonationSession? @relation(fields: [impersonationSessionId], references: [id], onDelete: SetNull)
   metadata               Json?
   ipAddress              String?
   userAgent              String?
-  createdAt              DateTime @default(now())
+  createdAt              DateTime                   @default(now())
 
   @@index([adminUserId, createdAt])
   @@index([targetUserId, createdAt])
@@ -166,39 +166,39 @@ model AdminAuditLog {
 }
 
 model Organization {
-  id               String   @id @default(cuid())
-  name             String
-  orgNumber        String   @unique
-  description      String?
-  website          String?
-  location         String?
-  segmentDefaults  String[] @default([])
-  bransch          String[] @default([])
-  region           String?
-  status           String   @default("PENDING") // PENDING | VERIFIED | REJECTED
-  fleet            Int?     // antal fordon i flottan
-  employeeCount    String?  // t.ex. "50-100", "100-250"
-  foundedYear      Int?     // grundat år
-  acceptsPraktik   Boolean  @default(false) // öppen för praktikanter
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id              String   @id @default(cuid())
+  name            String
+  orgNumber       String   @unique
+  description     String?
+  website         String?
+  location        String?
+  segmentDefaults String[] @default([])
+  bransch         String[] @default([])
+  region          String?
+  status          String   @default("PENDING") // PENDING | VERIFIED | REJECTED
+  fleet           Int? // antal fordon i flottan
+  employeeCount   String? // t.ex. "50-100", "100-250"
+  foundedYear     Int? // grundat år
+  acceptsPraktik  Boolean  @default(false) // öppen för praktikanter
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   userOrganizations UserOrganization[]
-  jobs             Job[]
-  conversations    Conversation[]
-  reviews          CompanyReview[] @relation("ReviewOrganization")
-  invites          OrganizationInvite[]
-  shifts           Shift[]
+  jobs              Job[]
+  conversations     Conversation[]
+  reviews           CompanyReview[]      @relation("ReviewOrganization")
+  invites           OrganizationInvite[]
+  shifts            Shift[]
 }
 
 model UserOrganization {
-  id             String   @id @default(cuid())
+  id             String       @id @default(cuid())
   userId         String
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  role           String   @default("MEMBER") // OWNER | ADMIN | MEMBER
-  joinedAt       DateTime @default(now())
+  role           String       @default("MEMBER") // OWNER | ADMIN | MEMBER
+  joinedAt       DateTime     @default(now())
 
   @@unique([userId, organizationId])
   @@index([organizationId])
@@ -206,16 +206,16 @@ model UserOrganization {
 }
 
 model OrganizationInvite {
-  id             String   @id @default(cuid())
+  id             String       @id @default(cuid())
   email          String
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   invitedById    String
-  inviter        User     @relation("OrganizationInviter", fields: [invitedById], references: [id], onDelete: Cascade)
-  tokenHash      String   @unique
+  inviter        User         @relation("OrganizationInviter", fields: [invitedById], references: [id], onDelete: Cascade)
+  tokenHash      String       @unique
   expiresAt      DateTime
-  status         String   @default("PENDING")
-  createdAt      DateTime @default(now())
+  status         String       @default("PENDING")
+  createdAt      DateTime     @default(now())
 
   @@unique([email, organizationId])
   @@index([tokenHash])
@@ -223,165 +223,174 @@ model OrganizationInvite {
 }
 
 model Notification {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation("NotificationRecipient", fields: [userId], references: [id], onDelete: Cascade)
-  type      String   // MESSAGE | APPLICATION | SELECTED | MATCH_JOBS | MATCH_DRIVERS | JOB_UPDATED
-  title     String
-  body      String?
-  link      String?
+  id                    String    @id @default(cuid())
+  userId                String
+  user                  User      @relation("NotificationRecipient", fields: [userId], references: [id], onDelete: Cascade)
+  type                  String // MESSAGE | APPLICATION | SELECTED | MATCH_JOBS | MATCH_DRIVERS | JOB_UPDATED
+  title                 String
+  body                  String?
+  link                  String?
   relatedConversationId String?
   relatedJobId          String?
-  actorName String?   // who triggered (e.g. sender name, company name)
-  readAt    DateTime?
-  createdAt DateTime @default(now())
+  actorName             String? // who triggered (e.g. sender name, company name)
+  readAt                DateTime?
+  createdAt             DateTime  @default(now())
 
   @@index([userId, readAt, createdAt])
 }
 
 model DriverProfile {
-  id                  String   @id @default(cuid())
+  id                   String   @id @default(cuid())
   userId               String   @unique
-  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  location            String?
-  region              String?
-  email               String?  // can override user email for display
-  phone               String?
-  summary             String?
-  privateMatchNotes   String?
-  licenses            String[] // ["CE", "C"]
-  certificates        String[] // ["YKB", "ADR"]
-  availability        String?  // open, vikariat, tim, fast, inactive
-  primarySegment      String?  // FULLTIME | FLEX | INTERNSHIP
-  secondarySegments   String[] @default([])
-  experienceTypes     String[] @default([])  // körningar föraren HAR erfarenhet av (boostar matchning)
-  visibleToCompanies  Boolean  @default(true)
-  regionsWilling      String[] // ["Skåne", "Halland"]
-  showEmailToCompanies Boolean @default(false)
-  showPhoneToCompanies Boolean @default(false)
-  experience          Json?    // [{ id, company, role, startYear, endYear, current, description }]
-  certExpiry          Json?    // { "YKB": "2027-03-01", "ADR klass 3": "2026-06-01", ... }
-  isGymnasieelev      Boolean  @default(false)
-  schoolName          String?
-  studyProgram        String?  // t.ex. "Transportprogrammet", "Fordon och Transport"
-  graduationYear      Int?     // förväntad examen, t.ex. 2026
-  physicalWorkOk      Boolean? // fysiskt tungt arbete ok
-  soloWorkOk          Boolean? // ensamarbete ok
-  fastResponder       Boolean  @default(false) // svarar på meddelanden inom 24h
-  preferredEmployment String[] @default([])   // ["fast", "vikariat", "timjobb", "egenanstald"]
-  openToWork          Boolean  @default(false) // styr "SÖKER JOBB"-ringen på profilen
-  availableForShifts  Boolean  @default(false) // "Tillgänglig för inhopp" (vikariepool)
-  photoUrl            String?  @db.Text         // profilbild (data-URL eller extern URL)
-  slug                String?  @unique         // t.ex. "oliver-harburt-abc123" för publik URL
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  location             String?
+  region               String?
+  email                String? // can override user email for display
+  phone                String?
+  summary              String?
+  privateMatchNotes    String?
+  licenses             String[] // ["CE", "C"]
+  certificates         String[] // ["YKB", "ADR"]
+  availability         String? // open, vikariat, tim, fast, inactive
+  primarySegment       String? // FULLTIME | FLEX | INTERNSHIP
+  secondarySegments    String[] @default([])
+  experienceTypes      String[] @default([]) // körningar föraren HAR erfarenhet av (boostar matchning)
+  visibleToCompanies   Boolean  @default(true)
+  regionsWilling       String[] // ["Skåne", "Halland"]
+  showEmailToCompanies Boolean  @default(false)
+  showPhoneToCompanies Boolean  @default(false)
+  experience           Json? // [{ id, company, role, startYear, endYear, current, description }]
+  certExpiry           Json? // { "YKB": "2027-03-01", "ADR klass 3": "2026-06-01", ... }
+  isGymnasieelev       Boolean  @default(false)
+  schoolName           String?
+  studyProgram         String? // t.ex. "Transportprogrammet", "Fordon och Transport"
+  graduationYear       Int? // förväntad examen, t.ex. 2026
+  physicalWorkOk       Boolean? // fysiskt tungt arbete ok
+  soloWorkOk           Boolean? // ensamarbete ok
+  fastResponder        Boolean  @default(false) // svarar på meddelanden inom 24h
+  preferredEmployment  String[] @default([]) // ["fast", "vikariat", "timjobb", "egenanstald"]
+  openToWork           Boolean  @default(false) // styr "SÖKER JOBB"-ringen på profilen
+  availableForShifts   Boolean  @default(false) // "Tillgänglig för inhopp" (vikariepool)
+  photoUrl             String?  @db.Text // profilbild (data-URL eller extern URL)
+  slug                 String?  @unique // t.ex. "oliver-harburt-abc123" för publik URL
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 
-  reviews             DriverReview[]
+  reviews DriverReview[]
 }
 
 model Job {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation("JobOwner", fields: [userId], references: [id], onDelete: Cascade)
-  organizationId String?
-  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
-  title       String
-  company     String   // company name
-  description String
-  location    String
-  region      String
-  license     String[] // ["CE", "C"]
-  certificates String[]
-  jobType     String   // fjärrkörning, lokalt, distribution, timjobb
-  bransch     String?  // t.ex. tank, soppor – för filter "bransch"
-  employment  String   // fast, vikariat, tim
-  segment     String   @default("FULLTIME") // FULLTIME | FLEX | INTERNSHIP
-  schedule    String?  // dag, kväll, natt, blandat, flex, skift, veckopendling
-  experience  String?  // 0-1, 1-3, 3-5, 5+, 1-2, 2-5, 5-10, 10+
-  salary      String?
-  salaryMin   Int?     // kr/mån
-  salaryMax   Int?     // kr/mån
-  externalApplyUrl String? // om ansökan sker via extern sida
+  id                   String        @id @default(cuid())
+  userId               String
+  user                 User          @relation("JobOwner", fields: [userId], references: [id], onDelete: Cascade)
+  organizationId       String?
+  organization         Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  title                String
+  company              String // company name
+  description          String
+  location             String
+  region               String
+  license              String[] // ["CE", "C"]
+  certificates         String[]
+  jobType              String // fjärrkörning, lokalt, distribution, timjobb
+  bransch              String? // t.ex. tank, soppor – för filter "bransch"
+  employment           String // fast, vikariat, tim
+  segment              String        @default("FULLTIME") // FULLTIME | FLEX | INTERNSHIP
+  schedule             String? // dag, kväll, natt, blandat, flex, skift, veckopendling
+  experience           String? // 0-1, 1-3, 3-5, 5+, 1-2, 2-5, 5-10, 10+
+  salary               String?
+  salaryMin            Int? // kr/mån
+  salaryMax            Int? // kr/mån
+  externalApplyUrl     String? // om ansökan sker via extern sida
   physicalWorkRequired Boolean? // fysiskt krävande arbete
-  soloWorkOk  Boolean? // ensamarbete ok för rollen
-  requirements String? // JSON or text
-  extraRequirements String?
-  aboutJob     String?   @db.Text  // "Om jobbet" — fritext
-  tasks        String[]  @default([])  // "Arbetsuppgifter" — punktlista
-  offers       String[]  @default([])  // "Vi erbjuder" — punktlista
-  contact     String   // email
-  status      String   @default("ACTIVE") // ACTIVE | HIDDEN | REMOVED
-  moderatedAt DateTime?
-  moderationReason String?
-  published   DateTime @default(now())
-  filledAt    DateTime? // när annonsen stängdes (tillsatt)
-  kollektivavtal Boolean? // kollektivavtal ja/nej
-  tips30SentAt   DateTime? // när 30-dagars tips-mail skickades
-  warningSentAt  DateTime? // när 55-dagars förnyelse-varning skickades
-  renewedAt      DateTime? // när företaget senast förnyade annonsen
+  soloWorkOk           Boolean? // ensamarbete ok för rollen
+  requirements         String? // JSON or text
+  extraRequirements    String?
+  aboutJob             String?       @db.Text // "Om jobbet" — fritext
+  tasks                String[]      @default([]) // "Arbetsuppgifter" — punktlista
+  offers               String[]      @default([]) // "Vi erbjuder" — punktlista
+  contact              String // email
+  status               String        @default("ACTIVE") // ACTIVE | HIDDEN | REMOVED
+  moderatedAt          DateTime?
+  moderationReason     String?
+  published            DateTime      @default(now())
+  filledAt             DateTime? // när annonsen stängdes (tillsatt)
+  kollektivavtal       Boolean? // kollektivavtal ja/nej
+  tips30SentAt         DateTime? // när 30-dagars tips-mail skickades
+  warningSentAt        DateTime? // när 55-dagars förnyelse-varning skickades
+  renewedAt            DateTime? // när företaget senast förnyade annonsen
 
   // Aggregation fields (JobTech Dev / Platsbanken)
-  source             String   @default("ORGANIC") // ORGANIC | AGGREGATED
-  externalId         String?  @unique
+  source              String    @default("ORGANIC") // ORGANIC | AGGREGATED
+  externalId          String?   @unique
   applicationDeadline DateTime? // sista ansökningsdag (från AF application_deadline)
-  sourceUrl          String?
-  sourceEmployerName String?
-  claimed            Boolean  @default(false)
-  enrichmentRaw      Json?
+  sourceUrl           String?
+  sourceEmployerName  String?
+  claimed             Boolean   @default(false)
+  enrichmentRaw       Json?
 
   // Employer contact data (from AF — never exposed publicly, used for outreach + claim)
   employerEmail      String?
   employerPhone      String?
-  applyEmail         String?  // application_details.email / application_contacts[].email
-  organizationNumber String?  // employer.organization_number — links to EmployerClaim
+  applyEmail         String? // application_details.email / application_contacts[].email
+  organizationNumber String? // employer.organization_number — links to EmployerClaim
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  // AF-paritet (2026-07-15): STP ska visa allt AF visar — utan redirect.
+  // För mejl-ansökningsjobb exponeras applyEmail publikt (AF gör det redan).
+  applicationReference String? // application_details.reference — "ange referens X"
+  applyViaAf           Boolean @default(false) // ansökan kräver AF-inloggning
+  contactName          String? // application_contacts[0].name
+  contactPhone         String? // application_contacts[0].phone_number
+  workplaceAddress     String? // "Kolonilottsvägen 47, 137 58 Tungelsta"
+  salaryType           String? // salary_type.label — "Fast månads- vecko- eller timlön"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   conversations Conversation[]
-  reports Report[]
-  savedBy SavedJob[]
-  views   JobView[]
-  applications Application[]
+  reports       Report[]
+  savedBy       SavedJob[]
+  views         JobView[]
+  applications  Application[]
 }
 
 // Vikariepool / inhopp — ett extrapass ett åkeri erbjuder. Förare med
 // availableForShifts=true kan se och ta lediga pass som matchar deras
 // behörighet och region.
 model Shift {
-  id             String   @id @default(cuid())
+  id             String        @id @default(cuid())
   companyId      String
-  company        User     @relation("ShiftCompany", fields: [companyId], references: [id], onDelete: Cascade)
+  company        User          @relation("ShiftCompany", fields: [companyId], references: [id], onDelete: Cascade)
   organizationId String?
   organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
-  role           String   // "Distributionsförare"
+  role           String // "Distributionsförare"
   companyName    String
   location       String
   region         String?
-  date           String   // "Tor 19 jun" eller ISO
-  startTime      String?  // "06:00"
-  endTime        String?  // "14:00"
+  date           String // "Tor 19 jun" eller ISO
+  startTime      String? // "06:00"
+  endTime        String? // "14:00"
   hours          Int?
-  pay            String   // "240 kr/tim"
-  license        String?  // krav: "C" | "CE"
-  urgency        String?  // "Akut" | "Imorgon" | null
-  status         String   @default("OPEN") // OPEN | TAKEN | CANCELLED
+  pay            String // "240 kr/tim"
+  license        String? // krav: "C" | "CE"
+  urgency        String? // "Akut" | "Imorgon" | null
+  status         String        @default("OPEN") // OPEN | TAKEN | CANCELLED
   acceptedById   String?
-  acceptedBy     User?    @relation("ShiftDriver", fields: [acceptedById], references: [id], onDelete: SetNull)
+  acceptedBy     User?         @relation("ShiftDriver", fields: [acceptedById], references: [id], onDelete: SetNull)
   acceptedAt     DateTime?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
   @@index([status, region])
   @@index([companyId, status])
 }
 
 model SavedJob {
-  id String @id @default(cuid())
-  userId String
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  jobId String
-  job Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobId     String
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
 
   @@unique([userId, jobId])
@@ -403,7 +412,7 @@ model JobView {
   id        String   @id @default(cuid())
   jobId     String
   job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  userId    String?  // null for anonymous viewers
+  userId    String? // null for anonymous viewers
   ipAddress String?
   createdAt DateTime @default(now())
 
@@ -414,7 +423,7 @@ model JobView {
 model DriverProfileView {
   id           String   @id @default(cuid())
   driverUserId String
-  viewerUserId String   // the company/recruiter who viewed
+  viewerUserId String // the company/recruiter who viewed
   createdAt    DateTime @default(now())
 
   @@index([driverUserId, createdAt])
@@ -422,61 +431,61 @@ model DriverProfileView {
 }
 
 model Conversation {
-  id        String   @id @default(cuid())
-  driverId  String
-  driver    User     @relation("Driver", fields: [driverId], references: [id], onDelete: Cascade)
-  companyId String
-  company   User     @relation("Company", fields: [companyId], references: [id], onDelete: Cascade)
-  organizationId String?
-  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
-  jobId     String?
-  job       Job?     @relation(fields: [jobId], references: [id], onDelete: SetNull)
-  jobTitle  String?
-  selectedByCompanyAt DateTime?  // company marked driver as "utvald"
-  readByCompanyAt   DateTime?    // företag har öppnat konversationen (= "Sedd")
-  reviewedByCompanyAt DateTime?  // företag plockade till urval (= "I urval")
-  readByDriverAt    DateTime?    // förare har öppnat konversationen (läs-kvitto för företag)
-  rejectedByCompanyAt DateTime?  // företag avvisade
-  rejectReason      String?      // frivillig text vid avvisning
-  pipelineStage     String?      // rekryteringssteg: ny|kontaktad|intervjuad|anstalld|avslag (åkeri-pipeline)
-  startDate         String?      // "now" | "month" | ISO-datum — förare anger tillträde
-  allowSimilarContact Boolean    @default(false)  // förare tillåter kontakt om liknande jobb
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                  String        @id @default(cuid())
+  driverId            String
+  driver              User          @relation("Driver", fields: [driverId], references: [id], onDelete: Cascade)
+  companyId           String
+  company             User          @relation("Company", fields: [companyId], references: [id], onDelete: Cascade)
+  organizationId      String?
+  organization        Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  jobId               String?
+  job                 Job?          @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  jobTitle            String?
+  selectedByCompanyAt DateTime? // company marked driver as "utvald"
+  readByCompanyAt     DateTime? // företag har öppnat konversationen (= "Sedd")
+  reviewedByCompanyAt DateTime? // företag plockade till urval (= "I urval")
+  readByDriverAt      DateTime? // förare har öppnat konversationen (läs-kvitto för företag)
+  rejectedByCompanyAt DateTime? // företag avvisade
+  rejectReason        String? // frivillig text vid avvisning
+  pipelineStage       String? // rekryteringssteg: ny|kontaktad|intervjuad|anstalld|avslag (åkeri-pipeline)
+  startDate           String? // "now" | "month" | ISO-datum — förare anger tillträde
+  allowSimilarContact Boolean       @default(false) // förare tillåter kontakt om liknande jobb
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
 
   messages Message[]
-  reports Report[]
-  reviews CompanyReview[]
+  reports  Report[]
+  reviews  CompanyReview[]
 }
 
 model Message {
-  id             String   @id @default(cuid())
+  id             String       @id @default(cuid())
   conversationId String
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   senderId       String
-  sender         User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
-  senderRole     String   // driver | company
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  senderRole     String // driver | company
   content        String
-  createdAt      DateTime @default(now())
+  createdAt      DateTime     @default(now())
 }
 
 model Report {
-  id String @id @default(cuid())
-  reporterId String
-  reporter User @relation("ReportCreator", fields: [reporterId], references: [id], onDelete: Cascade)
-  reportedUserId String?
-  reportedUser User? @relation("ReportTarget", fields: [reportedUserId], references: [id], onDelete: SetNull)
-  jobId String?
-  job Job? @relation(fields: [jobId], references: [id], onDelete: SetNull)
-  conversationId String?
-  conversation Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
-  category String // PAYMENT | BEHAVIOR | SCAM | SPAM | OTHER
-  description String
-  status String @default("OPEN") // OPEN | IN_REVIEW | RESOLVED | DISMISSED
-  resolutionNote String?
-  reviewedAt DateTime?
+  id                   String        @id @default(cuid())
+  reporterId           String
+  reporter             User          @relation("ReportCreator", fields: [reporterId], references: [id], onDelete: Cascade)
+  reportedUserId       String?
+  reportedUser         User?         @relation("ReportTarget", fields: [reportedUserId], references: [id], onDelete: SetNull)
+  jobId                String?
+  job                  Job?          @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  conversationId       String?
+  conversation         Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  category             String // PAYMENT | BEHAVIOR | SCAM | SPAM | OTHER
+  description          String
+  status               String        @default("OPEN") // OPEN | IN_REVIEW | RESOLVED | DISMISSED
+  resolutionNote       String?
+  reviewedAt           DateTime?
   reviewedByAdminEmail String?
-  createdAt DateTime @default(now())
+  createdAt            DateTime      @default(now())
 }
 
 model CompanyInvite {
@@ -510,25 +519,24 @@ model CompanyMember {
 }
 
 model CompanyReview {
-  id String @id @default(cuid())
-  companyId String
-  company User @relation("ReviewCompany", fields: [companyId], references: [id], onDelete: Cascade)
-  organizationId String?
-  organization Organization? @relation("ReviewOrganization", fields: [organizationId], references: [id], onDelete: SetNull)
-  authorId String
-  author User @relation("ReviewAuthor", fields: [authorId], references: [id], onDelete: Cascade)
-  conversationId String
-  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  rating Int
-  comment String?
-  status String @default("PUBLISHED") // PUBLISHED | HIDDEN
+  id               String        @id @default(cuid())
+  companyId        String
+  company          User          @relation("ReviewCompany", fields: [companyId], references: [id], onDelete: Cascade)
+  organizationId   String?
+  organization     Organization? @relation("ReviewOrganization", fields: [organizationId], references: [id], onDelete: SetNull)
+  authorId         String
+  author           User          @relation("ReviewAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  conversationId   String
+  conversation     Conversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  rating           Int
+  comment          String?
+  status           String        @default("PUBLISHED") // PUBLISHED | HIDDEN
   moderationReason String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 
   @@unique([authorId, conversationId])
 }
-
 
 model CertificateSuggestion {
   id        String   @id @default(cuid())
@@ -541,21 +549,21 @@ model CertificateSuggestion {
 }
 
 model Feedback {
-  id               String    @id @default(cuid())
-  message          String    @db.Text
-  senderEmail      String?
-  senderName       String?
+  id              String    @id @default(cuid())
+  message         String    @db.Text
+  senderEmail     String?
+  senderName      String?
   // AI-analys
-  priority         String?   // HIGH | MEDIUM | LOW
-  category         String?   // BUG | FUNKTION | UX | INNEHÅLL | KONTO | ÖVRIGT
-  aiSummary        String?
-  aiAction         String?
-  analyzedAt       DateTime?
-  autoReplySentAt  DateTime?
+  priority        String? // HIGH | MEDIUM | LOW
+  category        String? // BUG | FUNKTION | UX | INNEHÅLL | KONTO | ÖVRIGT
+  aiSummary       String?
+  aiAction        String?
+  analyzedAt      DateTime?
+  autoReplySentAt DateTime?
   // Admin-hantering
-  status           String    @default("NEW") // NEW | REVIEWED | DONE | DISMISSED
-  adminNote        String?
-  createdAt        DateTime  @default(now())
+  status          String    @default("NEW") // NEW | REVIEWED | DONE | DISMISSED
+  adminNote       String?
+  createdAt       DateTime  @default(now())
 
   @@index([status])
   @@index([priority])
@@ -571,7 +579,7 @@ model OutreachProspect {
   phone            String?
   region           String?
   city             String?
-  source           String?   // "hitta" | "manual"
+  source           String? // "hitta" | "manual"
   status           String    @default("NEW")
   // NEW | ENRICHED | READY | SENT | BOUNCED | UNSUBSCRIBED
   generatedSubject String?
@@ -591,8 +599,8 @@ model OutreachProspect {
 model OutreachAgentRun {
   id          String   @id @default(cuid())
   ranAt       DateTime @default(now())
-  regions     String?  // kommaseparerad lista över dagens regioner
-  stats       Json?    // hela stats-objektet från körningen
+  regions     String? // kommaseparerad lista över dagens regioner
+  stats       Json? // hela stats-objektet från körningen
   reportSent  Boolean  @default(false)
   reportError String?  @db.Text
 
@@ -603,12 +611,12 @@ model Insight {
   id          String   @id @default(cuid())
   title       String
   description String   @db.Text
-  category    String   // UX | FEATURE | CONTENT | GROWTH | BUG | DATA
-  priority    String   // HIGH | MEDIUM | LOW
-  effort      String   // LOW | MEDIUM | HIGH
-  dataPoints  String   @db.Text  // JSON-array med stödjande datapunkter
+  category    String // UX | FEATURE | CONTENT | GROWTH | BUG | DATA
+  priority    String // HIGH | MEDIUM | LOW
+  effort      String // LOW | MEDIUM | HIGH
+  dataPoints  String   @db.Text // JSON-array med stödjande datapunkter
   status      String   @default("NEW") // NEW | IN_PROGRESS | DONE | DISMISSED
-  weekOf      String   // "2026-W20" — en körning per vecka
+  weekOf      String // "2026-W20" — en körning per vecka
   generatedAt DateTime @default(now())
 
   @@index([status])
@@ -622,36 +630,36 @@ model DriverReview {
   driverProfile DriverProfile @relation(fields: [driverId], references: [id], onDelete: Cascade)
   authorId      String
   author        User          @relation("DriverReviewAuthor", fields: [authorId], references: [id], onDelete: Cascade)
-  rating        Int           // 1–5
+  rating        Int // 1–5
   comment       String?
-  isVerified    Boolean       @default(true)  // "Riktigt åkeri föraren jobbat hos"
+  isVerified    Boolean       @default(true) // "Riktigt åkeri föraren jobbat hos"
   createdAt     DateTime      @default(now())
 
-  @@unique([driverId, authorId])  // one review per company per driver
+  @@unique([driverId, authorId]) // one review per company per driver
   @@index([driverId])
 }
 
 // ─── Föraransökan på aggregerat jobb ─────────────────────────────────────────
 
 model Application {
-  id                String   @id @default(cuid())
-  createdAt         DateTime @default(now())
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
 
-  driverId          String
-  driver            User     @relation("ApplicationDriver", fields: [driverId], references: [id], onDelete: Cascade)
+  driverId String
+  driver   User   @relation("ApplicationDriver", fields: [driverId], references: [id], onDelete: Cascade)
 
-  jobId             String
-  job               Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  jobId String
+  job   Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
   // SUBMITTED → FORWARDED → VIEWED_BY_COMPANY → CLOSED
-  status            String   @default("SUBMITTED")
+  status String @default("SUBMITTED")
 
   // "stp" = sökt via STP (vi vidarebefordrar) | "af_external" = sökte direkt via
   // AF:s länk (vi fångar leaden, men delar inte profilen).
-  appliedVia        String   @default("stp")
+  appliedVia String @default("stp")
 
   // GDPR — true när STP delar profilen; false vid af_external (föraren söker själv)
-  consentToShare    Boolean
+  consentToShare Boolean
 
   messageFromDriver String?
 
@@ -661,7 +669,7 @@ model Application {
   // db push på befintliga rader.
   outcomeToken       String?   @unique
   outcomeRequestedAt DateTime?
-  outcome            String?   // "GOT_JOB" | "NO_JOB" | "IN_PROCESS"
+  outcome            String? // "GOT_JOB" | "NO_JOB" | "IN_PROCESS"
   outcomeAt          DateTime?
 
   @@unique([driverId, jobId])
@@ -672,23 +680,23 @@ model Application {
 // ─── Åkeri-claim (när ett seedat åkeri tar över sina annonser) ─────────────
 
 model EmployerClaim {
-  id                 String   @id @default(cuid())
-  createdAt          DateTime @default(now())
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
 
-  organizationNumber String   @unique
-  claimToken         String   @unique @default(cuid())
+  organizationNumber String @unique
+  claimToken         String @unique @default(cuid())
 
   // Set when an employer has registered and claimed the org
-  claimedByUserId    String?
-  claimedBy          User?    @relation("EmployerClaimUser", fields: [claimedByUserId], references: [id], onDelete: SetNull)
-  claimedAt          DateTime?
+  claimedByUserId String?
+  claimedBy       User?     @relation("EmployerClaimUser", fields: [claimedByUserId], references: [id], onDelete: SetNull)
+  claimedAt       DateTime?
 
   // Outreach tracking
-  outreachSentAt     DateTime?
-  outreachCount      Int      @default(0)
+  outreachSentAt DateTime?
+  outreachCount  Int       @default(0)
 
   // B2B opt-out — if set, no further outreach to this org
-  optedOutAt         DateTime?
+  optedOutAt DateTime?
 
   @@index([claimToken])
   @@index([claimedByUserId])

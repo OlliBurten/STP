@@ -270,13 +270,18 @@ export default function MobileGuestJobs() {
           </div>
           <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "14px 20px calc(22px + var(--stpm-safe-bottom))", background: "rgba(245,242,236,0.96)", backdropFilter: "blur(10px)", borderTop: "1px solid var(--line)", display: "flex", gap: 11 }}>
             <button onClick={() => toggleSave(detail.id)} className="press" style={{ height: 54, padding: "0 20px", borderRadius: 14, background: "var(--card)", border: "1px solid var(--line-2)", color: "var(--ink-800)", fontWeight: 700, fontSize: 15.5, display: "flex", alignItems: "center", gap: 8 }}><Icon name="bookmark" size={18} color={saved.has(detail.id) ? "var(--green)" : "var(--ink-500)"} stroke={2} style={{ fill: saved.has(detail.id) ? "var(--green)" : "none" }} />Spara</button>
-            {detail.imported && detail.externalApplyUrl ? (
+            {detail.imported && (detail.applyEmail || detail.externalApplyUrl) ? (
               /* Helt öppet — inga gates (2026-07-09): gäster ansöker direkt hos
-                 arbetsgivaren. Konto säljs på egna meriter (spara/bevaka/matcha). */
-              <a href={detail.externalApplyUrl} target="_blank" rel="noopener noreferrer"
-                onClick={() => track("apply_initiated", { jobId: detail.id, jobTitle: detail.title, source: "guest_mobile_external" })}
+                 arbetsgivaren. Mejl-jobb (2026-07-15): färdigt mejl istället för
+                 AF-redirect — AF är datakälla, inte destination. */
+              <a
+                href={detail.applyEmail
+                  ? `mailto:${detail.applyEmail}?subject=${encodeURIComponent(`Ansökan: ${detail.applicationReference || detail.title}`)}&body=${encodeURIComponent(`Hej!\n\nJag söker tjänsten "${detail.title}"${detail.applicationReference ? ` (referens: ${detail.applicationReference})` : ""} som jag hittade via Transportplattformen.\n\n[Berätta kort om dig själv, din behörighet och erfarenhet.]\n\nMed vänliga hälsningar,\n`)}`
+                  : detail.externalApplyUrl}
+                target={detail.applyEmail ? undefined : "_blank"} rel="noopener noreferrer"
+                onClick={() => track("apply_initiated", { jobId: detail.id, jobTitle: detail.title, source: detail.applyEmail ? "guest_mobile_email" : "guest_mobile_external" })}
                 className="press" style={{ flex: 1, height: 54, borderRadius: 14, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, textDecoration: "none" }}>
-                Ansök hos arbetsgivaren <Icon name="arrow" size={19} color="#fff" stroke={2.4} />
+                {detail.applyEmail ? "Ansök via mejl" : "Ansök hos arbetsgivaren"} <Icon name={detail.applyEmail ? "mail" : "arrow"} size={19} color="#fff" stroke={2.4} />
               </a>
             ) : (
               <button onClick={() => setGate({ action: "apply", jobId: detail.id })} className="press" style={{ flex: 1, height: 54, borderRadius: 14, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>Ansök <Icon name="arrow" size={19} color="#fff" stroke={2.4} /></button>

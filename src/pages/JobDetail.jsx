@@ -265,13 +265,23 @@ export default function JobDetail() {
   // requirements är String? i schemat (JSON-array från berikaren, eller fritext) → normalisera till lista
   const jobRequirements = (() => {
     const r = job?.requirements;
-    if (Array.isArray(r)) return r;
-    if (typeof r === "string" && r.trim()) {
-      try { const p = JSON.parse(r); if (Array.isArray(p)) return p; } catch { /* fritext */ }
-      return r.split("\n").map((s) => s.replace(/^[-•*]\s*/, "").trim()).filter(Boolean);
+    const base = (() => {
+      if (Array.isArray(r)) return r;
+      if (typeof r === "string" && r.trim()) {
+        try { const p = JSON.parse(r); if (Array.isArray(p)) return p; } catch { /* fritext */ }
+        return r.split("\n").map((s) => s.replace(/^[-•*]\s*/, "").trim()).filter(Boolean);
+      }
+      return [];
+    })();
+    // AF-paritet: arbetsgivarens strukturerade krav (must_have) unionas in —
+    // AI-listan täcker oftast samma, dubbletter filtreras skiftlägesokänsligt.
+    const seen = new Set(base.map((s) => s.toLowerCase().trim()));
+    for (const q of job?.qualifications?.mustHave || []) {
+      if (!seen.has(q.toLowerCase().trim())) { base.push(q); seen.add(q.toLowerCase().trim()); }
     }
-    return [];
+    return base;
   })();
+  const jobMerits = job?.qualifications?.niceToHave || [];
 
   const [apiDrivers, setApiDrivers] = useState([]);
   useEffect(() => {
@@ -513,10 +523,19 @@ export default function JobDetail() {
   // föraren ansöker där ansökan garanterat läses; STP loggar leaden i bakgrunden
   // (syns under Ansökt) och claim-mejlet till företaget triggas av backend.
   const isEmployerChannel = job.source === "AGGREGATED" && !job.claimed && !!job.originalPostingUrl;
-  const employerApplyUrl = isEmployerChannel ? job.originalPostingUrl : job.externalApplyUrl;
+  // Mejl-ansökan slår redirect: säger annonsen "ansök via mail" stannar föraren
+  // på STP och mejlar arbetsgivaren direkt (AF är datakälla, inte destination).
+  const applyEmailChannel = job.source === "AGGREGATED" && !job.claimed && job.applyEmail ? job.applyEmail : null;
+  const mailtoApplyHref = applyEmailChannel
+    ? `mailto:${applyEmailChannel}?subject=${encodeURIComponent(`Ansökan: ${job.applicationReference || job.title}`)}&body=${encodeURIComponent(
+        `Hej!\n\nJag söker tjänsten "${job.title}"${job.applicationReference ? ` (referens: ${job.applicationReference})` : ""} som jag hittade via Transportplattformen.\n\n[Berätta kort om dig själv, din behörighet och erfarenhet.]\n\nMed vänliga hälsningar,\n`
+      )}`
+    : null;
+  const employerApplyUrl = applyEmailChannel ? mailtoApplyHref : (isEmployerChannel ? job.originalPostingUrl : job.externalApplyUrl);
+  const applyCtaLabel = applyEmailChannel ? "Ansök via mejl" : "Ansök hos arbetsgivaren ↗";
   const handleExternalApply = (source) => {
     track("apply_initiated", { jobId: job.id, jobTitle: job.title, source });
-    if (isEmployerChannel && isDriver) {
+    if ((isEmployerChannel || applyEmailChannel) && isDriver) {
       submitApplication({ jobId: job.id, appliedVia: "af_external", consentToShare: false }).catch(() => {});
     }
   };
@@ -652,6 +671,14 @@ export default function JobDetail() {
               ))}
             </div>
             <DeadlineBanner job={job} style={{ marginBottom: 14 }} />
+            {(job.salaryType || job.workplaceAddress || job.applicationReference || job.contactName || job.contactPhone) && (
+              <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, padding: "4px 13px", marginBottom: 14 }}>
+                {job.salaryType && <FactRow label="Lönetyp" value={job.salaryType} />}
+                {job.workplaceAddress && <FactRow label="Arbetsplats" value={job.workplaceAddress} />}
+                {job.applicationReference && <FactRow label="Referens" value={job.applicationReference} highlight />}
+                {(job.contactName || job.contactPhone) && <FactRow label="Kontakt" value={[job.contactName, job.contactPhone].filter(Boolean).join(" · ")} />}
+              </div>
+            )}
           </div>
 
           {/* Sections (stacked — som prototypen, inga flikar) */}
@@ -678,6 +705,12 @@ export default function JobDetail() {
               <div style={{ marginTop: 24 }}>
                 <h2 style={mSecH}>Krav på dig</h2>
                 <BulletList items={jobRequirements} />
+              </div>
+            )}
+            {jobMerits.length > 0 && (
+              <div style={{ marginTop: 24 }}>
+                <h2 style={mSecH}>Meriterande</h2>
+                <BulletList items={jobMerits} accent="success" />
               </div>
             )}
             {isDriver && profile && reqTotal > 0 && (
@@ -888,12 +921,19 @@ export default function JobDetail() {
           <BulletList items={jobTasks} fallback="Arbetsuppgifter specificeras vid intervju — kontakta företaget för mer information." />
 
           <SectionHeading>Vi söker dig som</SectionHeading>
-          {job.requirements?.length > 0
-            ? <BulletList items={job.requirements} />
+          {jobRequirements.length > 0
+            ? <BulletList items={jobRequirements} />
             : job.experience
               ? <BulletList items={[`Min. erfarenhet: ${job.experience === "0-1" ? "0–1 år" : job.experience === "1-2" ? "1–2 år" : job.experience === "2-5" ? "2–5 år" : job.experience === "5-10" ? "5–10 år" : "10+ år"}`]} />
               : <p style={{ fontSize: "var(--text-md)", color: "var(--ink-400)", lineHeight: 1.8, fontStyle: "italic", margin: 0 }}>Krav specificeras vid kontakt.</p>
           }
+
+          {jobMerits.length > 0 && (
+            <>
+              <SectionHeading>Meriterande</SectionHeading>
+              <BulletList items={jobMerits} accent="success" />
+            </>
+          )}
 
           <SectionHeading>Vi erbjuder</SectionHeading>
           <BulletList items={jobOffers} accent="success" fallback="Mer om vad vi erbjuder berättar vi gärna vid en intervju." />
@@ -902,14 +942,14 @@ export default function JobDetail() {
           <div style={{ padding: "22px 26px", background: "var(--green-tint)", border: "1px solid var(--green-tint-2)", borderRadius: "var(--r-lg)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 18, flexWrap: "wrap" }}>
             <div>
               <div style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)", marginBottom: 4 }}>Redo att ansöka?</div>
-              <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)" }}>{isEmployerChannel ? "Du ansöker direkt hos arbetsgivaren — vi registrerar ansökan under Ansökt." : "Din profil skickas direkt — ingen extra ansökan behövs."}</div>
+              <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)" }}>{applyEmailChannel ? "Du mejlar arbetsgivaren direkt — vi registrerar ansökan under Ansökt." : isEmployerChannel ? "Du ansöker direkt hos arbetsgivaren — vi registrerar ansökan under Ansökt." : "Din profil skickas direkt — ingen extra ansökan behövs."}</div>
             </div>
             {isDriver ? (
               employerApplyUrl ? (
                 <a href={employerApplyUrl} target="_blank" rel="noopener noreferrer"
                   onClick={() => handleExternalApply("bottom_external")}
                   style={{ padding: "13px 24px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 7, whiteSpace: "nowrap" }}>
-                  {isEmployerChannel ? "Ansök hos arbetsgivaren ↗" : "Ansök på företagets hemsida ↗"}
+                  {isEmployerChannel || applyEmailChannel ? applyCtaLabel : "Ansök på företagets hemsida ↗"}
                 </a>
               ) : (
                 <Link to={`/jobb/${id}/ansok`}
@@ -925,7 +965,7 @@ export default function JobDetail() {
                   <a href={employerApplyUrl} target="_blank" rel="noopener noreferrer"
                     onClick={() => handleExternalApply("bottom_guest_external")}
                     style={{ padding: "13px 24px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 7, whiteSpace: "nowrap" }}>
-                    Ansök hos arbetsgivaren ↗
+                    {applyCtaLabel}
                   </a>
                   <Link to="/login" state={{ from: `/jobb/${id}`, initialMode: "register", requiredRole: "driver" }}
                     style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--green)", textDecoration: "none" }}>
@@ -1098,7 +1138,7 @@ export default function JobDetail() {
                   <a href={employerApplyUrl} target="_blank" rel="noopener noreferrer"
                     onClick={() => handleExternalApply("panel_external")}
                     style={{ display: "block", width: "100%", padding: "15px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, textDecoration: "none", textAlign: "center", letterSpacing: -0.3, boxSizing: "border-box", boxShadow: "0 4px 14px rgba(30,107,91,0.25)" }}>
-                    {isEmployerChannel ? "Ansök hos arbetsgivaren ↗" : "Ansök på företagets hemsida ↗"}
+                    {isEmployerChannel || applyEmailChannel ? applyCtaLabel : "Ansök på företagets hemsida ↗"}
                   </a>
                 ) : (
                   <Link to={`/jobb/${id}/ansok`}
@@ -1116,7 +1156,7 @@ export default function JobDetail() {
                   <a href={employerApplyUrl} target="_blank" rel="noopener noreferrer"
                     onClick={() => handleExternalApply("panel_guest_external")}
                     style={{ display: "block", width: "100%", padding: "15px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, textDecoration: "none", textAlign: "center", letterSpacing: -0.3, boxSizing: "border-box", boxShadow: "0 4px 14px rgba(30,107,91,0.25)" }}>
-                    Ansök hos arbetsgivaren ↗
+                    {applyCtaLabel}
                   </a>
                   <Link to="/login" state={{ from: `/jobb/${id}`, initialMode: "register", requiredRole: "driver" }}
                     style={{ display: "block", textAlign: "center", fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--green)", textDecoration: "none" }}>
@@ -1149,6 +1189,10 @@ export default function JobDetail() {
             <FactRow label="Tillträde"    value={job.start || "Ej angiven"} missing={!job.start} />
             <FactRow label="Ort"          value={job.location || "—"} />
             <FactRow label="Körkort"      value={[...(job.license || []), ...(job.certificates || []).map(getCertificateLabel)].join(", ") || "—"} />
+            {job.salaryType && <FactRow label="Lönetyp" value={job.salaryType} />}
+            {job.workplaceAddress && <FactRow label="Arbetsplats" value={job.workplaceAddress} />}
+            {job.applicationReference && <FactRow label="Referens" value={job.applicationReference} highlight />}
+            {(job.contactName || job.contactPhone) && <FactRow label="Kontakt" value={[job.contactName, job.contactPhone].filter(Boolean).join(" · ")} />}
             {(() => { const dl = deadlineInfo(job); return dl && <FactRow label="Sista ansökningsdag" value={dl.passed ? `Gick ut ${dl.fmt}` : dl.fmt} highlight={!dl.passed} />; })()}
             {job.rolling && (
               <div style={{ marginTop: 14, padding: "10px 12px", background: "var(--amber-tint)", border: "1px solid var(--amber-tint-2)", borderRadius: "var(--r)", display: "flex", gap: 8, alignItems: "flex-start" }}>

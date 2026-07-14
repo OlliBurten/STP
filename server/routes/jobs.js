@@ -41,6 +41,38 @@ function resolveSegment(segment, employment) {
   return "FULLTIME";
 }
 
+// AF-paritet: strukturerade krav/meriterande från AF:s must_have/nice_to_have
+// (ligger i enrichmentRaw sedan ingest). Returnerar läsbara etiketter.
+function qualificationLabels(group) {
+  if (!group || typeof group !== "object") return [];
+  const out = [];
+  for (const key of ["work_experiences", "education", "skills", "languages", "driving_license"]) {
+    for (const item of group[key] || []) {
+      if (item?.label) out.push(key === "driving_license" ? `Körkort: ${item.label}` : item.label);
+    }
+  }
+  return out;
+}
+
+// Publika AF-paritetsfält för importerade/oclaimade jobb. applyEmail exponeras
+// medvetet: AF visar den öppet på annonsen, och den ÄR ansökningsvägen —
+// "Ansök via mejl" på STP ersätter redirecten till AF.
+function serializeAfParity(j) {
+  if (j.source !== "AGGREGATED" || j.claimed) return {};
+  return {
+    applyEmail: j.applyEmail ?? null,
+    applicationReference: j.applicationReference ?? null,
+    contactName: j.contactName ?? null,
+    contactPhone: j.contactPhone ?? null,
+    workplaceAddress: j.workplaceAddress ?? null,
+    salaryType: j.salaryType ?? null,
+    qualifications: {
+      mustHave: qualificationLabels(j.enrichmentRaw?.must_have),
+      niceToHave: qualificationLabels(j.enrichmentRaw?.nice_to_have),
+    },
+  };
+}
+
 // Sista ansökningsdag (YYYY-MM-DD). Föredra kolumnen; fall tillbaka på AF:s
 // råfält så att redan importerade jobb visar deadline utan re-ingest.
 function serializeDeadline(j) {
@@ -235,6 +267,7 @@ jobsRouter.get("/", validateQuery(jobsListQuerySchema), async (req, res, next) =
       status: j.status,
       published: j.published.toISOString().slice(0, 10),
       applicationDeadline: serializeDeadline(j),
+      ...serializeAfParity(j),
       updatedAt: j.updatedAt.toISOString(),
       contact: j.contact,
       physicalWorkRequired: j.physicalWorkRequired ?? null,
@@ -537,6 +570,7 @@ jobsRouter.get("/:id", optionalAuthMiddleware, attachCompanyContext, async (req,
       extraRequirements: job.extraRequirements,
       published: job.published.toISOString().slice(0, 10),
       applicationDeadline: serializeDeadline(job),
+      ...serializeAfParity(job),
       updatedAt: job.updatedAt.toISOString(),
       contact: job.contact,
       userId: job.userId,

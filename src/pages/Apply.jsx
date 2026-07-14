@@ -355,9 +355,13 @@ export default function Apply() {
             </p>
           </div>
         )}
-        <a href={job.originalPostingUrl} target="_blank" rel="noopener noreferrer" onClick={registerExternal}
+        <a
+          href={job.applyEmail
+            ? `mailto:${job.applyEmail}?subject=${encodeURIComponent(`Ansökan: ${job.applicationReference || job.title}`)}&body=${encodeURIComponent(`Hej!\n\nJag söker tjänsten "${job.title}"${job.applicationReference ? ` (referens: ${job.applicationReference})` : ""} som jag hittade via Transportplattformen.\n\n[Berätta kort om dig själv, din behörighet och erfarenhet.]\n\nMed vänliga hälsningar,\n`)}`
+            : job.originalPostingUrl}
+          target={job.applyEmail ? undefined : "_blank"} rel="noopener noreferrer" onClick={registerExternal}
           style={{ display: "block", padding: "15px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, textDecoration: "none", textAlign: "center" }}>
-          Ansök hos arbetsgivaren ↗
+          {job.applyEmail ? "Ansök via mejl" : "Ansök hos arbetsgivaren ↗"}
         </a>
         <Link to={`/jobb/${id}`} style={{ display: "block", textAlign: "center", marginTop: 16, fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--ink-500)" }}>← Tillbaka till annonsen</Link>
       </main>

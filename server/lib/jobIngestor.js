@@ -325,6 +325,15 @@ function mapJobToRecord(hit, systemUserId) {
     null;
   const organizationNumber = hit.employer?.organization_number || null;
 
+  // AF-paritet: referens, kontaktperson, arbetsplatsadress och lönetyp visas
+  // på STP:s annonssida — AF är datakälla, inte destination.
+  const contact0 = hit.application_contacts?.[0] || null;
+  const wa = hit.workplace_address || {};
+  const workplaceAddress = [
+    wa.street_address,
+    [wa.postcode, wa.city || wa.municipality].filter(Boolean).join(" "),
+  ].filter(Boolean).join(", ") || null;
+
   // Parse deadline
   let deadline = null;
   if (hit.application_deadline) {
@@ -358,6 +367,12 @@ function mapJobToRecord(hit, systemUserId) {
     employerPhone,
     applyEmail,
     organizationNumber,
+    applicationReference: hit.application_details?.reference || null,
+    applyViaAf: !!hit.application_details?.via_af,
+    contactName: contact0?.name || null,
+    contactPhone: contact0?.phone_number || hit.employer?.phone_number || null,
+    workplaceAddress,
+    salaryType: hit.salary_type?.label || null,
     enrichmentRaw: {
       occupation_group: hit.occupation_group,
       driving_license: hit.driving_license,
@@ -453,6 +468,12 @@ export async function runIngestor({ dryRun = false, source = "jobsearch", since 
           employerPhone: record.employerPhone,
           applyEmail: record.applyEmail,
           organizationNumber: record.organizationNumber,
+          applicationReference: record.applicationReference,
+          applyViaAf: record.applyViaAf,
+          contactName: record.contactName,
+          contactPhone: record.contactPhone,
+          workplaceAddress: record.workplaceAddress,
+          salaryType: record.salaryType,
         },
       });
       upserted++;

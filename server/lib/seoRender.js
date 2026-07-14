@@ -24,6 +24,18 @@ function esc(s) {
     .replace(/"/g, "&quot;");
 }
 
+// AF:s must_have/nice_to_have → läsbara etiketter (samma logik som routes/jobs.js)
+function qualificationLabels(group) {
+  if (!group || typeof group !== "object") return [];
+  const out = [];
+  for (const key of ["work_experiences", "education", "skills", "languages", "driving_license"]) {
+    for (const item of group[key] || []) {
+      if (item?.label) out.push(key === "driving_license" ? `Körkort: ${item.label}` : item.label);
+    }
+  }
+  return out;
+}
+
 // Säker JSON-LD: undvik </script>-injektion
 function jsonLdScript(obj) {
   const json = JSON.stringify(obj).replace(/</g, "\\u003c");
@@ -73,7 +85,10 @@ export async function renderJobHtml(id) {
       location: true, region: true, jobType: true, employment: true, salary: true,
       salaryMin: true, salaryMax: true, license: true, certificates: true,
       tasks: true, offers: true, published: true, createdAt: true, filledAt: true,
-      status: true, sourceUrl: true,
+      status: true, sourceUrl: true, source: true, claimed: true,
+      applyEmail: true, applicationReference: true, contactName: true,
+      contactPhone: true, workplaceAddress: true, salaryType: true,
+      applicationDeadline: true, enrichmentRaw: true,
     },
   });
   if (!job || job.status !== "ACTIVE") return null;
@@ -123,6 +138,14 @@ export async function renderJobHtml(id) {
     }
   }
 
+  // "gata, postnr ort" → delar för JSON-LD (deterministiskt format från ingestorn)
+  const addressParts = (() => {
+    if (!job.workplaceAddress) return {};
+    const [street, rest] = job.workplaceAddress.split(", ");
+    const pm = (rest || "").match(/^(\d{3}\s?\d{2})\s/);
+    return { street: street || null, postalCode: pm ? pm[1] : null };
+  })();
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "JobPosting",
@@ -133,12 +156,14 @@ export async function renderJobHtml(id) {
     employmentType: EMPLOYMENT_TYPE_MAP[job.employment] || "FULL_TIME",
     url: canonical,
     hiringOrganization: { "@type": "Organization", name: job.company, sameAs: SITE },
-    // Gatuadress/postnummer finns inte i datamodellen — utelämna hellre än att skicka tomt/påhittat.
-    // Googles riktlinjer: ange så många adressfält som finns; locality+region+country räcker.
+    // Gatuadress/postnummer från AF:s workplace_address när den finns (formatet
+    // "gata, postnr ort" byggs av ingestorn) — annars locality+region+country.
     jobLocation: {
       "@type": "Place",
       address: {
         "@type": "PostalAddress",
+        ...(addressParts.street ? { streetAddress: addressParts.street } : {}),
+        ...(addressParts.postalCode ? { postalCode: addressParts.postalCode } : {}),
         ...(job.location ? { addressLocality: job.location } : {}),
         ...(job.region ? { addressRegion: job.region } : {}),
         addressCountry: "SE",
@@ -151,6 +176,12 @@ export async function renderJobHtml(id) {
   };
 
   const reqs = [...(job.license || []).map(l => `${l}-körkort`), ...(job.certificates || [])];
+  const isImported = job.source === "AGGREGATED" && !job.claimed;
+  const mustHave = isImported ? qualificationLabels(job.enrichmentRaw?.must_have) : [];
+  const niceToHave = isImported ? qualificationLabels(job.enrichmentRaw?.nice_to_have) : [];
+  const deadlineFmt = job.applicationDeadline
+    ? new Date(job.applicationDeadline).toLocaleDateString("sv-SE", { day: "numeric", month: "long", year: "numeric" })
+    : null;
   const body = `
 <main>
   <h1>${esc(job.title)}</h1>
@@ -160,10 +191,18 @@ export async function renderJobHtml(id) {
     ${job.employment ? `<li>Anställning: ${esc(job.employment)}</li>` : ""}
     ${reqs.length ? `<li>Krav: ${esc(reqs.join(", "))}</li>` : ""}
     ${job.salary ? `<li>Lön: ${esc(job.salary)}</li>` : ""}
+    ${job.salaryType ? `<li>Lönetyp: ${esc(job.salaryType)}</li>` : ""}
+    ${job.workplaceAddress ? `<li>Arbetsplats: ${esc(job.workplaceAddress)}</li>` : ""}
+    ${deadlineFmt ? `<li>Sista ansökningsdag: ${esc(deadlineFmt)}</li>` : ""}
+    ${isImported && job.applicationReference ? `<li>Ange referens: ${esc(job.applicationReference)}</li>` : ""}
   </ul>
   ${about ? `<section><h2>Om jobbet</h2><p>${esc(about).replace(/\n+/g, "</p><p>")}</p></section>` : ""}
   ${(job.tasks || []).length ? `<section><h2>Arbetsuppgifter</h2><ul>${job.tasks.map(t => `<li>${esc(t)}</li>`).join("")}</ul></section>` : ""}
   ${(job.offers || []).length ? `<section><h2>Vi erbjuder</h2><ul>${job.offers.map(o => `<li>${esc(o)}</li>`).join("")}</ul></section>` : ""}
+  ${mustHave.length ? `<section><h2>Arbetsgivarens krav</h2><ul>${mustHave.map(q => `<li>${esc(q)}</li>`).join("")}</ul></section>` : ""}
+  ${niceToHave.length ? `<section><h2>Meriterande</h2><ul>${niceToHave.map(q => `<li>${esc(q)}</li>`).join("")}</ul></section>` : ""}
+  ${isImported && (job.contactName || job.contactPhone) ? `<section><h2>Kontakt</h2><p>${esc([job.contactName, job.contactPhone].filter(Boolean).join(" · "))}</p></section>` : ""}
+  ${isImported && job.applyEmail ? `<p><a href="mailto:${esc(job.applyEmail)}">Ansök via mejl</a></p>` : ""}
 </main>`;
 
   return htmlShell({ title, description, canonical, jsonLd, body });
