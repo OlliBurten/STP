@@ -16,28 +16,38 @@ const T = {
 };
 
 /**
- * RIKTVÄRDEN baserade på Transportavtalet 2025–2027 (Svenska Transportarbetare-
- * förbundet) och branschdata — inte exakta tariffbelopp (tarifftabellen ligger
- * bakom Transports medlemsinloggning).
+ * Avtalets lönebottnar — VERIFIERADE publicerade nivåer, Transportavtalet
+ * 2025–2027, lastbilsförare/åkeri (källor: transport.se avtalsnyheten +
+ * transportarbetaren.se "Så blev de nya lönerna — avtal för avtal"):
  *
- * Verifierat från transport.se/publicerat/avtal-klart-transportavtalet-2025:
- *   Åkeri-höjning 1 april 2025: +874–1 124 kr/mån
- *   Åkeri-höjning 1 april 2026: +770–1 028 kr/mån (INRÄKNAD nedan, graderad
- *   lägst→högst över erfarenhetsstegen — så avtalets tariffer är byggda)
- *   Avtalsvärde: 6,8 % över två år.
+ *   Ingångslön:      2025: 31 037 kr | 2026: 31 807 kr
+ *   Efter sex år:    2025: 32 170 kr | 2026: 33 198 kr
+ *   + premiekompensation 2–5 kr per arbetad timme (≈ 350–870 kr/mån vid heltid)
+ *
+ * Avtalstariffen slutar vid sex år — därefter är bottnen densamma; högre lön
+ * för mer erfarna är MARKNAD, inte avtal (fångas i MARKET_EXP_FACTOR nedan).
+ * Mellanstegen (1–2 år, 2–5 år) är linjärt interpolerade mellan de två
+ * publicerade nivåerna — markeras som interpolerade i UI:t.
  *
  * OB-tillägg (avtalsenliga procenttal):
  *   Natt 22:00–06:00: +25% på timlönen
  *   Helg (lör/sön):   +50%
  *   Röd dag:           +100%
  *
- * Regional variation och certifikatbonus är marknadsdata, inte avtalstextens siffror.
- * Uppdatera mot riktiga tarifftabellen när den finns (backlog).
+ * Regional variation, erfarenhetsfaktor över avtalsgolvet och certifikatbonus
+ * är marknadsdata — inte avtalstextens siffror.
  */
 
-// Riktvärden per erfarenhetsnivå (index 0–6), fr.o.m. 1 april 2026
-// (2025-nivåer + avtalets verifierade åkeri-höjning 770→1 028 kr graderat)
-const BASE_BY_EXP = [32980, 33030, 33660, 34400, 35650, 36990, 38200];
+// Avtalets lönebotten per erfarenhetsnivå (index 0–6), fr.o.m. 1 april 2026.
+// Exakta: index 0–1 (ingång 31 807) och 4–6 (sexårsnivån 33 198).
+// Interpolerade: index 2–3.
+const BASE_BY_EXP = [31807, 31807, 32155, 32780, 33198, 33198, 33198];
+const EXP_EXACT   = [true, true, false, false, true, true, true];
+
+// Marknadens erfarenhetspremie ÖVER avtalsgolvet (avtalet slutar vid 6 år men
+// marknaden fortsätter: snittet är ~33 600 och erfarna 10+ år ligger ~35 000–
+// 35 500 enligt publicerad statistik) — skattning, inte avtal.
+const MARKET_EXP_FACTOR = [0.99, 0.99, 1.00, 1.01, 1.03, 1.05, 1.06];
 
 // Körtyp påverkar inte avtalsminimum men styr var man hamnar i avtalets spann.
 // Fjärrkörning → övre änden, distribution → mitt, tim → nedre änden.
@@ -172,15 +182,19 @@ export default function LoneKalkylator() {
   const [shared, setShared] = useState(false);
 
   const agreementBase = BASE_BY_EXP[expLevel] ?? BASE_BY_EXP[0];
+  // (EXP_EXACT och MARKET_EXP_FACTOR indexeras likadant)
   const jobFactor = JOB_TYPE_FACTOR[jobType] ?? 1.0;
   const regionFactor = REGION_MARKET_FACTOR[region] ?? 1.0;
   const certBonus = selectedCerts.reduce((s, c) => s + (CERT_MARKET_BONUS[c] ?? 0), 0);
 
-  // Avtalets lönebotten för denna erfarenhetsnivå (utan regionjustering)
-  const contractMin = Math.round(agreementBase / 500) * 500;
+  // Avtalets lönebotten — exakta publicerade belopp visas orundade;
+  // interpolerade mellansteg avrundas till närmaste 50 kr.
+  const expIsExact = EXP_EXACT[expLevel] ?? false;
+  const contractMin = expIsExact ? agreementBase : Math.round(agreementBase / 50) * 50;
 
   // Marknadslön = avtal × körtyp × region + certifikatbonus
-  const marketRaw = agreementBase * jobFactor * regionFactor + certBonus;
+  const expMarketFactor = MARKET_EXP_FACTOR[expLevel] ?? 1.0;
+  const marketRaw = agreementBase * jobFactor * regionFactor * expMarketFactor + certBonus;
   const marketMid = Math.round(marketRaw / 500) * 500;
   const marketLow = Math.round(marketRaw * 0.93 / 500) * 500;
   const marketHigh = Math.round(marketRaw * 1.07 / 500) * 500;
@@ -223,7 +237,7 @@ export default function LoneKalkylator() {
             Lönekalkylatorn
           </h1>
           <p style={{ fontSize: "var(--text-md)", color: T.sub, lineHeight: 1.6, margin: "0 0 14px" }}>
-            Riktvärden baserade på Transportavtalet 2025–2027 och branschdata — avtalets höjning per 1 april 2026 (åkeri +770–1 028 kr/mån) är inräknad. Ange dina uppgifter och få en uppskattad avtalsnivå och marknadslön.
+            Byggd på Transportavtalets publicerade lönebottnar för 2026 (ingång 31 807 kr, efter sex år 33 198 kr) och branschdata för marknadslönen. Ange dina uppgifter och se avtalets golv och en uppskattad marknadslön.
           </p>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "var(--success-tint)", border: "1px solid var(--success)", borderRadius: 99, padding: "4px 12px" }}>
             <div style={{ width: 6, height: 6, borderRadius: "50%", background: T.green }} />
@@ -312,13 +326,16 @@ export default function LoneKalkylator() {
             {/* Avtalets lönebotten */}
             <div style={{ marginBottom: 20 }}>
               <p style={{ fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.teal, marginBottom: 4 }}>
-                Uppskattad avtalsnivå
+                Avtalets lönebotten (2026)
               </p>
               <p style={{ fontSize: 36, fontWeight: 900, color: T.text, letterSpacing: -1, lineHeight: 1 }}>
                 {contractMin.toLocaleString("sv-SE")} <span style={{ fontSize: "var(--text-xl)", fontWeight: 400, color: T.sub }}>kr/mån</span>
               </p>
               <p style={{ fontSize: "var(--text-xs)", color: T.sub, marginTop: 4 }}>
-                Riktvärde för {expLevels.find(e => e.value === expLevel)?.label.toLowerCase()} förare — baserat på Transportavtalet 2025–2027
+                {expIsExact
+                  ? `Publicerad avtalsnivå för ${expLevels.find(e => e.value === expLevel)?.label.toLowerCase()} förare — Transportavtalet 2025–2027`
+                  : "Interpolerat mellan avtalets publicerade nivåer (ingång 31 807 / efter 6 år 33 198 kr)"}
+                {" "}· + premiekompensation 2–5 kr/tim
               </p>
             </div>
 
@@ -383,7 +400,7 @@ export default function LoneKalkylator() {
             <p style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: T.teal, marginBottom: 8 }}>Om lönedatan</p>
             <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 6 }}>
               {[
-                "Nivåerna är riktvärden baserade på Transportavtalet 2025–2027 (ca 55 300 anställda) och branschdata — inte exakta tariffbelopp. Avtalets verifierade höjning per 1 april 2026 (åkeri +770–1 028 kr/mån, transport.se) är inräknad.",
+                "Avtalsbottnarna är publicerade nivåer för lastbilsförare 2026: ingångslön 31 807 kr, efter sex år 33 198 kr (+ premiekompensation 2–5 kr/tim). Källor: transport.se och Transportarbetaren. Mellanstegen är interpolerade.",
                 "OB-procentsatserna (25 %, 50 %, 100 %) är avtalsenliga och gäller för alla som omfattas av avtalet.",
                 "Marknadslön och regionfaktor baseras på marknadsdata — inte avtalstexten. Avtalets lönebottnar är nationellt enhetliga.",
                 "Faktisk lön sätts av arbetsgivaren och kan vara högre än avtalets minimum. Avtalet sätter golvet, inte taket.",
