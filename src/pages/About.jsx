@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { useIsMobile } from "../hooks/useIsMobile";
@@ -20,6 +20,15 @@ const VALUES = [
 ];
 
 export default function About() {
+  // Ärlighetsregeln: inga fejkade siffror. Jobbantalet hämtas live — de andra
+  // två korten är påståenden som alltid är sanna.
+  const [jobCount, setJobCount] = useState(null);
+  useEffect(() => {
+    import("../api/jobs.js").then(({ fetchJobs }) => fetchJobs())
+      .then((list) => { if (Array.isArray(list) && list.length) setJobCount(list.length); })
+      .catch(() => {});
+  }, []);
+
   usePageTitle("Om oss");
   const isMobile = useIsMobile();
 
@@ -63,8 +72,8 @@ export default function About() {
       <div style={{ maxWidth: "var(--w-public)", margin: "0 auto", padding: isMobile ? "0 20px 36px" : "0 32px 48px" }}>
         <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: isMobile ? 12 : 16, marginBottom: isMobile ? 40 : 48 }}>
           {[
-            { v: "2 847+", l: "Registrerade användare" },
-            { v: "629+",   l: "Åkerier på plattformen" },
+            { v: jobCount != null ? String(jobCount) : "—", l: "Lediga jobb just nu" },
+            { v: "Dagligen", l: "Uppdateras automatiskt" },
             { v: "0 kr",   l: "Provision — alltid" },
           ].map(({ v, l }) => (
             <div key={l} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "26px 28px" }}>
