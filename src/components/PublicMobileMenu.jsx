@@ -49,17 +49,15 @@ export default function PublicMobileMenu({ open, onClose, triggerRef }) {
   const navigate = useNavigate();
   const panelRef = useRef(null);
   const closeRef = useRef(null);
-  const reduced  = useRef(false);
+  // Lazy state (inte ref): rowAnim läser värdet under render, och refs får inte
+  // läsas i render. matchMedia är stabilt för sessionen — en läsning räcker.
+  const [reduced] = useState(() => typeof window !== "undefined"
+    && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches);
 
   // svep-att-stänga
   const [dragX, setDragX] = useState(0);
   const [dragging, setDragging] = useState(false);
   const startX = useRef(0);
-
-  useEffect(() => {
-    reduced.current = typeof window !== "undefined"
-      && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-  }, []);
 
   // Esc + fokushantering
   useEffect(() => {
@@ -97,7 +95,7 @@ export default function PublicMobileMenu({ open, onClose, triggerRef }) {
     ? "none"
     : "transform .34s cubic-bezier(.32,.72,0,1)";
 
-  const rowAnim = (i) => reduced.current ? {} : {
+  const rowAnim = (i) => reduced ? {} : {
     opacity: open ? 1 : 0,
     transform: open ? "translateY(0)" : "translateY(6px)",
     transition: "opacity .3s ease, transform .3s ease",

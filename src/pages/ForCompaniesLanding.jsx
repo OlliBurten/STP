@@ -34,7 +34,7 @@ const STEPS = [
 
 const FAQS = [
   { q: "Hur snabbt kan vi börja hitta förare?", a: "Direkt. Med ett giltigt organisationsnummer verifieras ert konto automatiskt under registreringen — ni kan söka bland förare och publicera jobb direkt efter att ni skapat kontot." },
-  { q: "Kostar det att använda STP?", a: "STP är gratis just nu för alla åkerier. Vi meddelar tydligt i god tid innan vi introducerar betalda funktioner." },
+  { q: "Kostar det att använda STP?", a: "STP är gratis för alla åkerier. Vi meddelar tydligt i god tid innan vi introducerar betalda funktioner." },
   { q: "Vad skiljer STP från bemanningsbolag?", a: "STP är inte ett bemanningsbolag. Ni kontaktar förare direkt utan mellanhänder, vilket innebär lägre kostnad och att ni äger relationen med föraren från dag ett." },
   { q: "Kan vi se förare innan de ansökt?", a: "Ja. Med Hitta förare söker ni bland förare som är synliga och filtrerar på körkort, region, certifikat och tillgänglighet — och kontaktar dem direkt." },
   { q: "Kan flera från teamet använda kontot?", a: "Ja. Bjud in teammedlemmar under onboardingen eller efteråt, så kan fler i organisationen söka förare och hantera konversationer." },
@@ -223,7 +223,7 @@ export default function ForCompaniesLanding() {
         <div style={S.container}>
           <div className="fa-grid">
             <div>
-              <div style={{ marginBottom: 24 }}><span style={S.eyebrow}>För åkerier · Gratis just nu</span></div>
+              <div style={{ marginBottom: 24 }}><span style={S.eyebrow}>För åkerier · Gratis</span></div>
               <h1 style={{ fontSize: "clamp(38px,4.8vw,60px)", fontWeight: 900, letterSpacing: -2.4, lineHeight: 1.04, color: "var(--ink-900)", margin: "0 0 22px", textWrap: "balance" }}>
                 En <span style={{ color: "var(--amber)" }}>talangdatabas</span> — inte en annonstavla.
               </h1>
