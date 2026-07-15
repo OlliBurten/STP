@@ -289,10 +289,38 @@ async function fetchJobStreamDelta(since) {
 
 // ─── Job mapping ─────────────────────────────────────────────────────────────
 
+// AF:s beskrivning → strukturerad läsbar text. `text` använder ENKEL \n som
+// styckesbrytare (ser ut som en klump med pre-line-rendering); `text_formatted`
+// har riktiga <p>/<li>-stycken. Konvertera HTML → text med dubbla radbrytningar
+// mellan stycken och punktlistor — ingen HTML lagras (noll XSS-yta).
+function afDescriptionToText(desc) {
+  const html = desc?.text_formatted;
+  if (html) {
+    const t = html
+      .replace(/<\/?(ul|ol)[^>]*>/gi, "\n")
+      .replace(/<li[^>]*>/gi, "\n• ")
+      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(/<\/(p|div|h[1-6]|li)>/gi, "\n\n")
+      .replace(/<[^>]+>/g, "")
+      .replace(/&nbsp;/gi, " ")
+      .replace(/&amp;/gi, "&")
+      .replace(/&lt;/gi, "<")
+      .replace(/&gt;/gi, ">")
+      .replace(/&quot;/gi, '"')
+      .replace(/&#39;|&apos;/gi, "'")
+      .replace(/[ \t]+\n/g, "\n")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
+    if (t) return t;
+  }
+  // Fallback: dubbla enkla radbrytningar så styckena får luft
+  return (desc?.text || "").trim().replace(/\n+/g, "\n\n");
+}
+
 function mapJobToRecord(hit, systemUserId) {
   const title = hit.headline || "Lastbilsförare";
   const employer = hit.employer?.name || "Okänt företag";
-  const description = hit.description?.text || "";
+  const description = afDescriptionToText(hit.description);
   const location =
     hit.workplace_address?.municipality ||
     hit.workplace_address?.city ||

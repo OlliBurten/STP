@@ -258,7 +258,7 @@ export default function MobileGuestJobs() {
                 </div>
               );
             })()}
-            {detail.desc && <><h2 style={{ fontSize: 16, fontWeight: 800, marginBottom: 9 }}>Om tjänsten</h2><p style={{ fontSize: 15, lineHeight: 1.62, color: "var(--ink-700)", marginBottom: 24 }}>{detail.desc}</p></>}
+            {detail.desc && <><h2 style={{ fontSize: 16, fontWeight: 800, marginBottom: 9 }}>Om tjänsten</h2><p style={{ fontSize: 15, lineHeight: 1.62, color: "var(--ink-700)", marginBottom: 24, whiteSpace: "pre-line" }}>{detail.desc}</p></>}
             {detail.reqs.length > 0 && <><h2 style={{ fontSize: 16, fontWeight: 800, marginBottom: 11 }}>Krav & meriter</h2><div style={{ display: "flex", flexDirection: "column", gap: 10 }}>{detail.reqs.map((r, i) => <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 11 }}><div style={{ width: 22, height: 22, borderRadius: 7, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}><Icon name="check" size={13} color="var(--green)" stroke={2.6} /></div><span style={{ fontSize: 14.5, lineHeight: 1.45, color: "var(--ink-700)" }}>{r}</span></div>)}</div></>}
             {detail.company && (
               <div style={{ display: "flex", alignItems: "center", gap: 13, marginTop: 24, padding: "15px 16px", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16 }}>
