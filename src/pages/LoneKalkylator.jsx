@@ -147,9 +147,9 @@ function ChipGroup({ label, value, options, multi, onChange, note }) {
               else onChange(val);
             }} style={{
               padding: "8px 16px", borderRadius: 8,
-              border: `1px solid ${active ? T.amber : T.border}`,
-              background: active ? "var(--amber-tint)" : "var(--paper-2)",
-              color: active ? T.amber : T.sub,
+              border: `1px solid ${active ? "var(--green)" : T.border}`,
+              background: active ? "var(--green-tint)" : "var(--paper-2)",
+              color: active ? "var(--green-text)" : T.sub,
               fontSize: "var(--text-sm)", fontWeight: active ? 700 : 500, cursor: "pointer",
             }}>
               {lab}
@@ -216,7 +216,7 @@ export default function LoneKalkylator() {
         </Link>
 
         <div style={{ marginBottom: 36 }}>
-          <span style={{ fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: T.amber, display: "block", marginBottom: 10 }}>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 14px", borderRadius: 999, background: "var(--green-tint)", color: "var(--green-text)", fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>
             Branschverktyg
           </span>
           <h1 style={{ fontSize: 32, fontWeight: 900, color: T.text, letterSpacing: -1, margin: "0 0 10px" }}>
@@ -294,7 +294,7 @@ export default function LoneKalkylator() {
                     <input
                       type="range" min={0} max={max} value={value}
                       onChange={(e) => set(Number(e.target.value))}
-                      style={{ flex: 1, accentColor: T.amber }}
+                      style={{ flex: 1, accentColor: "var(--green)" }}
                     />
                     <span style={{ fontSize: "var(--text-base)", fontWeight: 700, color: T.text, minWidth: 24, textAlign: "right" }}>{value}</span>
                   </div>
@@ -323,7 +323,7 @@ export default function LoneKalkylator() {
             </div>
 
             <div style={{ borderTop: "1px solid var(--line)", paddingTop: 18, marginBottom: 18 }}>
-              <p style={{ fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.amber, marginBottom: 4 }}>
+              <p style={{ fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.teal, marginBottom: 4 }}>
                 Uppskattad marknadslön
               </p>
               <p style={{ fontSize: 42, fontWeight: 900, color: T.text, letterSpacing: -1.5, lineHeight: 1 }}>
@@ -339,14 +339,14 @@ export default function LoneKalkylator() {
               <div style={{ background: "var(--amber-tint)", border: "1px solid rgba(245,166,35,0.2)", borderRadius: 10, padding: "14px 16px", marginBottom: 18 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
                   <div>
-                    <p style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: T.amber, marginBottom: 2 }}>+ OB-tillägg</p>
+                    <p style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--amber-text)", marginBottom: 2 }}>+ OB-tillägg</p>
                     <p style={{ fontSize: "var(--text-xs)", color: T.sub }}>
                       {nightDays > 0 ? `${nightDays} nattpass × 25%` : ""}
                       {nightDays > 0 && weekendDays > 0 ? " + " : ""}
                       {weekendDays > 0 ? `${weekendDays} helgpass × 50%` : ""}
                     </p>
                   </div>
-                  <p style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: T.amber }}>
+                  <p style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--amber-text)" }}>
                     +{obAmount.toLocaleString("sv-SE")} kr
                   </p>
                 </div>
@@ -360,7 +360,7 @@ export default function LoneKalkylator() {
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               <Link to="/jobb" style={{
                 flex: 1, textAlign: "center", padding: "10px 16px", borderRadius: 10,
-                background: T.amber, color: "#000", fontSize: "var(--text-sm)", fontWeight: 800, textDecoration: "none",
+                background: "var(--green)", color: "#fff", fontSize: "var(--text-sm)", fontWeight: 800, textDecoration: "none",
               }}>Se lediga jobb</Link>
               <button type="button" onClick={handleShare} style={{
                 padding: "10px 16px", borderRadius: 10, border: `1px solid ${T.border}`,
@@ -407,7 +407,7 @@ export default function LoneKalkylator() {
             </p>
             <Link to="/login" style={{
               display: "inline-block", padding: "10px 20px", borderRadius: 10,
-              background: T.amber, color: "#000", fontSize: "var(--text-sm)", fontWeight: 800, textDecoration: "none",
+              background: "var(--green)", color: "#fff", fontSize: "var(--text-sm)", fontWeight: 800, textDecoration: "none",
             }}>Skapa gratis profil →</Link>
           </Card>
 
