@@ -21,7 +21,7 @@ const BENEFITS = [
 ];
 
 const TRUST = [
-  { label: "100% gratis just nu" },
+  { label: "Alltid 100% gratis för förare" },
   { label: "Åkerier verifieras mot Bolagsverket" },
   { label: "Inga avgifter, inga dolda villkor" },
   { label: "Byggs i Sverige, för svenska förare" },
@@ -169,7 +169,7 @@ export default function DriverAcquisitionLanding() {
               <strong style={{ color: "var(--ink-700)" }}>Vem är vi?</strong>{" "}
               Sveriges Transportplattform (STP) är ett projekt byggt i Sverige av Oliver Harburt,
               med målet att göra det enklare för lastbilsförare att hitta jobb utan mellanhänder.
-              Plattformen är gratis just nu och vi tar inga provisioner. Frågor?{" "}
+              Plattformen är alltid gratis för förare och vi tar inga provisioner. Frågor?{" "}
               <a href="mailto:support@transportplattformen.se" style={{ color: "var(--green-text)", textDecoration: "none" }}>
                 support@transportplattformen.se
               </a>

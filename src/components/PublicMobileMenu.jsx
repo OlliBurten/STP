@@ -234,7 +234,7 @@ export default function PublicMobileMenu({ open, onClose, triggerRef }) {
             Logga in
           </button>
           <p style={{ fontSize: 11.5, fontWeight: 400, color: SUB, textAlign: "center", marginTop: 14 }}>
-            Gratis just nu · Inga mellanhänder
+            Alltid gratis för förare · Inga mellanhänder
           </p>
         </div>
       </div>

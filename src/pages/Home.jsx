@@ -33,7 +33,7 @@ function useInView() {
 
 const FAQ_ITEMS = [
   { q: "Är STP ett bemanningsbolag?", a: "Nej. STP är inte ett bemanningsbolag. Vi möjliggör direktkontakt mellan förare och åkerier — utan mellanhänder som tar en del av lönen." },
-  { q: "Kostar det något?", a: "STP är helt gratis just nu för alla förare och åkerier. Vi meddelar tydligt i god tid innan vi introducerar betalda funktioner." },
+  { q: "Kostar det något?", a: "STP är alltid gratis för förare — profil, jobbsök och ansökningar kostar aldrig något. För åkerier är det gratis just nu; vi meddelar tydligt i god tid innan betalda funktioner introduceras." },
   { q: "Hur fungerar verifiering?", a: "Åkerier verifieras mot Bolagsverket. Förares körkort och certifikat byggs ut löpande i samarbete med branschen." },
   { q: "Vem äger min profil?", a: "Du äger din profil och styr vad som är synligt. Du kan stänga av synligheten, uppdatera uppgifter eller radera kontot när som helst." },
   { q: "Vad skiljer STP från vanliga jobbsajter?", a: "STP är byggt specifikt för transportbranschen. Profilen utgår från körkort, segment och tillgänglighet — inte ett generiskt CV." },

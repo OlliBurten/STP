@@ -809,6 +809,20 @@ export default function JobList() {
               onOpenAll={() => setDrawerOpen(true)}
             />
 
+            {/* Gäst-banner: gratis-löftet + kontots morötter (enda gäst-ytan som
+                saknade en registrerings-CTA). Ansökan är alltid gate-fri. */}
+            {!user && (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, flexWrap: "wrap", padding: "13px 18px", background: "var(--green-tint)", border: "1px solid rgba(30,107,91,0.18)", borderRadius: 12, marginBottom: 16 }}>
+                <span style={{ fontSize: "var(--text-sm)", color: "var(--ink-800)", lineHeight: 1.5 }}>
+                  <strong>Helt gratis att söka jobb — inget konto krävs.</strong> Med ett gratis konto kan du dessutom spara jobb, följa ansökningar och få matchningar.
+                </span>
+                <Link to="/login" state={{ from: "/jobb", initialMode: "register", requiredRole: "driver" }}
+                  style={{ padding: "9px 18px", borderRadius: 9, background: "var(--green)", color: "#fff", fontSize: "var(--text-sm)", fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" }}>
+                  Skapa förarkonto
+                </Link>
+              </div>
+            )}
+
             {view === "map" ? (
               <div className="stp-fade-up" style={{ paddingTop: 24 }}>
                 <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", marginBottom: 16, fontWeight: 500, maxWidth: "var(--w-form)" }}>
