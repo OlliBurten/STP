@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useIsMobile } from "../hooks/useIsMobile";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { track } from "../utils/posthog.js";
 import PageMeta from "../components/PageMeta";
 import { mockJobs } from "../data/mockJobs";
@@ -144,6 +144,7 @@ function MatchRing({ pct }) {
 
 export default function JobDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { user, isDriver, isCompany, hasApi, activeOrg } = useAuth();
   const isMobile = useIsMobile();
   const { profile } = useProfile();
@@ -325,6 +326,11 @@ export default function JobDetail() {
   };
 
   const handleToggleSave = async () => {
+    // Gäster ser Spara-knappen (registrerings-morot) — klick leder till konto
+    if (!user) {
+      navigate("/login", { state: { from: `/jobb/${id}`, initialMode: "register", requiredRole: "driver" } });
+      return;
+    }
     if (!isDriver || !hasApi || !job?.id) return;
     const next = !isSaved;
     setIsSaved(next);
@@ -595,11 +601,11 @@ export default function JobDetail() {
               <div style={{ flex: 1, padding: "0 12px", fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-900)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{formatJobTitle(job.title)}</div>
             )}
             <div style={{ display: "flex", gap: 8 }}>
-              {/* Spara kräver inloggad förare — visa inte för gäster (knappen
-                  failade tyst + återställdes annars). Dela är kvar för alla. */}
-              {isDriver && (
+              {/* Spara syns även för gäster — klick leder till konto (morot:
+                  spara/bevaka/matchningar kräver konto, ansökan gör det inte). */}
+              {(isDriver || !user) && (
               <button
-                onClick={() => { const s2 = !isSaved; setIsSaved(s2); if (s2) saveJob(job.id).catch(() => setIsSaved(false)); else unsaveJob(job.id).catch(() => setIsSaved(true)); }}
+                onClick={handleToggleSave}
                 aria-label={isSaved ? "Ta bort från favoriter" : "Spara jobb"}
                 aria-pressed={isSaved}
                 style={{ width: 38, height: 38, borderRadius: 999, background: isSaved ? "var(--amber-tint)" : "var(--card)", border: `1px solid ${isSaved ? "rgba(199,122,14,0.3)" : "var(--line)"}`, boxShadow: "var(--sh-sm)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: isSaved ? "var(--amber-deep)" : "var(--ink-500)" }}
@@ -942,7 +948,7 @@ export default function JobDetail() {
           <div style={{ padding: "22px 26px", background: "var(--green-tint)", border: "1px solid var(--green-tint-2)", borderRadius: "var(--r-lg)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 18, flexWrap: "wrap" }}>
             <div>
               <div style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)", marginBottom: 4 }}>Redo att ansöka?</div>
-              <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)" }}>{applyEmailChannel ? "Du mejlar arbetsgivaren direkt — vi registrerar ansökan under Ansökt." : isEmployerChannel ? "Du ansöker direkt hos arbetsgivaren — vi registrerar ansökan under Ansökt." : "Din profil skickas direkt — ingen extra ansökan behövs."}</div>
+              <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)" }}>{applyEmailChannel ? (user ? "Du mejlar arbetsgivaren direkt — vi registrerar ansökan under Ansökt." : "Du mejlar arbetsgivaren direkt — inget konto behövs.") : isEmployerChannel ? (user ? "Du ansöker direkt hos arbetsgivaren — vi registrerar ansökan under Ansökt." : "Du ansöker direkt hos arbetsgivaren — inget konto behövs.") : "Din profil skickas direkt — ingen extra ansökan behövs."}</div>
             </div>
             {isDriver ? (
               employerApplyUrl ? (
@@ -1169,7 +1175,7 @@ export default function JobDetail() {
                   Skapa konto för att ansöka
                 </Link>
               )}
-              {isDriver && (
+              {(isDriver || !user) && (
                 <button type="button" onClick={handleToggleSave}
                   style={{ width: "100%", padding: "11px", borderRadius: "var(--r-md)", background: isSaved ? "var(--amber-tint)" : "var(--card)", border: isSaved ? "1px solid rgba(242,164,28,0.30)" : "1px solid var(--line-2)", color: isSaved ? "var(--amber-deep)" : "var(--ink-700)", fontSize: "var(--text-sm)", fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, transition: "all .15s", fontFamily: "var(--font)" }}>
                   {isSaved ? <HeartFilledIcon style={{ width: 14, height: 14 }} /> : <HeartOutlineIcon style={{ width: 14, height: 14 }} />}
@@ -1204,25 +1210,46 @@ export default function JobDetail() {
             )}
           </div>
 
-          {/* Kontakt */}
+          {/* Kontakt — importerade jobb: arbetsgivarens riktiga uppgifter (företaget
+              finns inte på STP, plattformsmeddelanden går ingenstans). STP-egna/
+              claimade jobb: meddelande via plattformen som förut. */}
           <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: "var(--r-lg)", padding: "20px 24px", boxShadow: "var(--sh-sm)" }}>
             <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, color: "var(--ink-400)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 10 }}>Kontakt</div>
-            <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", marginBottom: 12, lineHeight: 1.55 }}>Frågor om tjänsten? Skicka ett meddelande via plattformen.</p>
-            {isDriver ? (
-              <Link to={`/jobb/${id}/ansok`}
-                style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, width: "100%", padding: "11px", borderRadius: "var(--r-md)", background: "var(--ink-900)", color: "#fff", fontSize: "var(--text-sm)", fontWeight: 700, textDecoration: "none", boxSizing: "border-box" }}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                Skicka meddelande
-              </Link>
+            {job.source === "AGGREGATED" && !job.claimed ? (
+              (job.contactName || job.contactPhone || job.applyEmail) ? (
+                <>
+                  <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", marginBottom: 12, lineHeight: 1.55 }}>Frågor om tjänsten? Kontakta arbetsgivaren direkt.</p>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {job.contactName && <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-900)" }}>{job.contactName}</div>}
+                    {job.contactPhone && <a href={`tel:${job.contactPhone.replace(/[^\d+]/g, "")}`} style={{ fontSize: "var(--text-sm)", color: "var(--green)", fontWeight: 600, textDecoration: "none" }}>{job.contactPhone}</a>}
+                    {job.applyEmail && <a href={`mailto:${job.applyEmail}`} style={{ fontSize: "var(--text-sm)", color: "var(--green)", fontWeight: 600, textDecoration: "none", overflowWrap: "anywhere" }}>{job.applyEmail}</a>}
+                  </div>
+                </>
+              ) : (
+                <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", margin: 0, lineHeight: 1.55 }}>
+                  Annonsen saknar kontaktuppgifter{job.originalPostingUrl ? <> — se <a href={job.originalPostingUrl} target="_blank" rel="noopener noreferrer" style={{ color: "var(--green)", fontWeight: 600 }}>originalannonsen</a>.</> : "."}
+                </p>
+              )
             ) : (
-              <Link to="/login" state={{ from: `/jobb/${id}`, initialMode: "register", requiredRole: "driver" }}
-                style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, width: "100%", padding: "11px", borderRadius: "var(--r-md)", background: "var(--ink-900)", color: "#fff", fontSize: "var(--text-sm)", fontWeight: 700, textDecoration: "none", boxSizing: "border-box" }}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                Skapa konto för att skriva
-              </Link>
-            )}
-            {job.contact && (
-              <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", marginTop: 14, fontFamily: "var(--mono)", letterSpacing: 0.2 }}>{job.contact}</div>
+              <>
+                <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", marginBottom: 12, lineHeight: 1.55 }}>Frågor om tjänsten? Skicka ett meddelande via plattformen.</p>
+                {isDriver ? (
+                  <Link to={`/jobb/${id}/ansok`}
+                    style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, width: "100%", padding: "11px", borderRadius: "var(--r-md)", background: "var(--ink-900)", color: "#fff", fontSize: "var(--text-sm)", fontWeight: 700, textDecoration: "none", boxSizing: "border-box" }}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    Skicka meddelande
+                  </Link>
+                ) : (
+                  <Link to="/login" state={{ from: `/jobb/${id}`, initialMode: "register", requiredRole: "driver" }}
+                    style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, width: "100%", padding: "11px", borderRadius: "var(--r-md)", background: "var(--ink-900)", color: "#fff", fontSize: "var(--text-sm)", fontWeight: 700, textDecoration: "none", boxSizing: "border-box" }}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    Skapa konto för att skriva
+                  </Link>
+                )}
+                {job.contact && !job.contact.endsWith("@stp.internal") && (
+                  <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", marginTop: 14, fontFamily: "var(--mono)", letterSpacing: 0.2 }}>{job.contact}</div>
+                )}
+              </>
             )}
           </div>
 

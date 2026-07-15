@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { mockJobs } from "../data/mockJobs";
 import JobCard from "../components/JobCard";
@@ -334,7 +334,13 @@ export default function JobList() {
       .catch(() => setSavedJobIds(new Set()));
   }, [hasApi, isDriver]);
 
+  const navigate = useNavigate();
   const handleToggleSave = async (jobId, shouldSave) => {
+    // Gäster: Spara är en registrerings-morot — klick leder till konto
+    if (!user) {
+      navigate("/login", { state: { from: "/jobb", initialMode: "register", requiredRole: "driver" } });
+      return;
+    }
     setSavedJobIds(prev => { const next = new Set(prev); shouldSave ? next.add(jobId) : next.delete(jobId); return next; });
     try {
       if (shouldSave) await saveJob(jobId); else await unsaveJob(jobId);
@@ -598,7 +604,7 @@ export default function JobList() {
           <JobCard
             key={job.id} job={job}
             matchScore={isDriver && driverForMatch ? (matchDataMap[job.id]?.pct ?? null) : null}
-            showSave={isDriver && hasApi}
+            showSave={(isDriver && hasApi) || !user}
             isSaved={savedJobIds.has(job.id)}
             onToggleSave={handleToggleSave}
           />
@@ -866,7 +872,7 @@ export default function JobList() {
                         job={job}
                         matchScore={showMatch ? (data?.pct ?? null) : null}
                         matchCriteria={showMatch && data?.pct > 0 ? getMatchCriteria(driverForMatch, job, data?.details) : []}
-                        showSave={isDriver && hasApi}
+                        showSave={(isDriver && hasApi) || !user}
                         isSaved={savedJobIds.has(job.id)}
                         onToggleSave={handleToggleSave}
                       />
