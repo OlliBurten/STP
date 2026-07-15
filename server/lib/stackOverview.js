@@ -29,6 +29,18 @@ const fetchJson = async (url, opts = {}, timeoutMs = 6000) => {
   return res.json();
 };
 
+// Återanvändbar HogQL-fråga mot PostHog (samtyckt trafik, EU-projektet).
+export async function posthogHogQL(query, timeoutMs = 10000) {
+  const key = process.env.POSTHOG_PERSONAL_API_KEY;
+  if (!key) return null;
+  const data = await fetchJson(`${POSTHOG_HOST}/api/projects/${POSTHOG_PROJECT_ID}/query/`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ query: { kind: "HogQLQuery", query } }),
+  }, timeoutMs);
+  return data?.results ?? [];
+}
+
 // ── Sentry: olösta fel ──────────────────────────────────────────────────────
 async function fetchSentry() {
   const token = process.env.SENTRY_API_TOKEN;

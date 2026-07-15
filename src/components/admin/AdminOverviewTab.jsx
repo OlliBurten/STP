@@ -1,7 +1,7 @@
 import React from "react";
 import { Icon } from "./AdminShell.jsx";
 import { fmtDate, useIsMobile } from "./adminShared.jsx";
-import { getApplicationStats } from "../../api/admin.js";
+import { getApplicationStats, getPosthogActivity } from "../../api/admin.js";
 
 const mono = { fontFamily: "'JetBrains Mono',monospace", fontFeatureSettings: '"tnum"' };
 
@@ -23,6 +23,10 @@ function ApplicationStats() {
     { l: "Via AF-länk", v: data.afExternal, c: "var(--info)", hint: "förare sökte direkt hos AF" },
     { l: "Registrerade (ej mejl)", v: data.recordedOnly, c: "var(--amber)", hint: "väntar / inget kontaktmejl" },
   ] : [];
+
+  const viaBadge = (a) => a.appliedVia === "af_external"
+    ? { t: "arbetsgivarens kanal", c: "var(--info)" }
+    : { t: "via STP", c: "var(--success)" };
 
   return (
     <div style={card}>
@@ -59,6 +63,95 @@ function ApplicationStats() {
                     <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{j.company}</div>
                   </div>
                   <span style={{ flexShrink: 0, padding: "2px 7px", borderRadius: 5, background: "var(--paper-2)", color: tag.c, fontSize: "var(--text-2xs)", fontWeight: 700 }}>{tag.t}</span>
+                </div>
+              );
+            })}
+          </div>
+          {(data.latest || []).length > 0 && (
+            <>
+              <div style={{ padding: "10px 18px 6px", borderTop: "1px solid var(--line)", fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 0.4, textTransform: "uppercase", color: "var(--ink-400)" }}>Senaste ansökningarna</div>
+              <div style={{ maxHeight: 300, overflowY: "auto", paddingBottom: 6 }}>
+                {data.latest.map((a, i) => {
+                  const b = viaBadge(a);
+                  return (
+                    <div key={a.id} style={{ padding: "9px 18px", display: "flex", alignItems: "center", gap: 11, borderBottom: i < data.latest.length - 1 ? "1px solid var(--line)" : "none" }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--ink-800)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                          {a.driverName} <span style={{ color: "var(--ink-400)", fontWeight: 500 }}>sökte</span> {a.jobTitle}
+                        </div>
+                        <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                          {a.company} · {new Date(a.createdAt).toLocaleString("sv-SE", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                          {a.outcome === "GOT_JOB" ? " · 🎉 fick jobbet" : a.outcome === "NO_JOB" ? " · blev inget" : a.outcome === "IN_PROCESS" ? " · process pågår" : ""}
+                        </div>
+                      </div>
+                      <span style={{ flexShrink: 0, padding: "2px 7px", borderRadius: 5, background: "var(--paper-2)", color: b.c, fontSize: "var(--text-2xs)", fontWeight: 700 }}>{b.t}</span>
+                      {a.emailed && <span style={{ flexShrink: 0, padding: "2px 7px", borderRadius: 5, background: "var(--success-tint)", color: "var(--success)", fontSize: "var(--text-2xs)", fontWeight: 700 }}>mejlad</span>}
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+// ─── PostHog-aktivitet (7 dagar) — inkluderar anonyma gäster ───────────────────
+function PosthogActivity() {
+  const [data, setData] = React.useState(null);
+  const [err, setErr] = React.useState(false);
+  React.useEffect(() => {
+    let alive = true;
+    getPosthogActivity().then((d) => alive && setData(d)).catch(() => alive && setErr(true));
+    return () => { alive = false; };
+  }, []);
+  if (err || (data && !data.configured)) return null;
+
+  const EVENT_LABEL = {
+    apply_initiated: { t: "Ansökningsklick", c: "var(--success)" },
+    job_alert_created: { t: "Ny bevakning", c: "var(--info)" },
+    user_registered: { t: "Registrering", c: "var(--amber-text)" },
+  };
+  const counts = data ? [
+    { l: "Ansökningsklick", v: data.counts7d.applyClicks, c: "var(--success)" },
+    { l: "Bevakningar", v: data.counts7d.jobAlerts, c: "var(--info)" },
+    { l: "Registreringar", v: data.counts7d.registrations, c: "var(--amber-text)" },
+  ] : [];
+
+  return (
+    <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, overflow: "hidden" }}>
+      <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <span style={{ fontSize: "var(--text-sm)", fontWeight: 800, letterSpacing: -0.2, color: "var(--ink-900)" }}>Aktivitet — 7 dagar</span>
+        <span style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", fontWeight: 600 }}>PostHog · inkl. gäster</span>
+      </div>
+      {!data ? (
+        <div style={{ padding: "20px 18px", textAlign: "center", fontSize: "var(--text-xs)", color: "var(--ink-400)" }}>Laddar…</div>
+      ) : (
+        <>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", borderBottom: "1px solid var(--line)" }}>
+            {counts.map((c, i) => (
+              <div key={c.l} style={{ padding: "12px 14px", borderRight: i < 2 ? "1px solid var(--line)" : "none" }}>
+                <div style={{ fontSize: "var(--text-xl)", fontWeight: 800, color: c.c, ...mono }}>{Number(c.v).toLocaleString()}</div>
+                <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", fontWeight: 600, marginTop: 2 }}>{c.l}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ maxHeight: 280, overflowY: "auto", paddingBottom: 6 }}>
+            {data.recent.length === 0 ? (
+              <div style={{ padding: "12px 18px", fontSize: "var(--text-xs)", color: "var(--ink-400)" }}>Inga händelser senaste veckan.</div>
+            ) : data.recent.map((e, i) => {
+              const lab = EVENT_LABEL[e.event] || { t: e.event, c: "var(--ink-500)" };
+              return (
+                <div key={i} style={{ padding: "8px 18px", display: "flex", alignItems: "center", gap: 10, borderBottom: i < data.recent.length - 1 ? "1px solid var(--line)" : "none" }}>
+                  <span style={{ flexShrink: 0, padding: "2px 7px", borderRadius: 5, background: "var(--paper-2)", color: lab.c, fontSize: "var(--text-2xs)", fontWeight: 700 }}>{lab.t}</span>
+                  <span style={{ flex: 1, minWidth: 0, fontSize: "var(--text-2xs)", color: "var(--ink-600)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    {e.jobTitle || e.region || ""}{e.source ? ` · ${e.source}` : ""}
+                  </span>
+                  <span style={{ flexShrink: 0, fontSize: "var(--text-2xs)", color: "var(--ink-400)" }}>
+                    {new Date(e.timestamp).toLocaleString("sv-SE", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                  </span>
                 </div>
               );
             })}
@@ -549,6 +642,7 @@ export default function AdminOverviewTab({
           />
           <OnboardingFunnel onboarding={onboarding} />
           <ApplicationStats />
+          <PosthogActivity />
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <ActionQueue

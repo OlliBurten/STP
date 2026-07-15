@@ -516,6 +516,16 @@ adminRouter.get("/application-stats", async (req, res, next) => {
     const stpApplications = viaCount("stp");
     const afExternal = viaCount("af_external");
 
+    // Senaste ansökningarna — vem sökte vad, när och via vilken väg
+    const latestRaw = await prisma.application.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 20,
+      include: {
+        driver: { select: { name: true, email: true } },
+        job: { select: { id: true, title: true, company: true, organizationNumber: true } },
+      },
+    });
+
     // Hämta jobbdetaljer för topplistan
     const jobIds = topJobsRaw.map((t) => t.jobId);
     const jobs = jobIds.length
@@ -529,8 +539,12 @@ adminRouter.get("/application-stats", async (req, res, next) => {
       : [];
     const jobById = new Map(jobs.map((j) => [j.id, j]));
 
-    // Vilka org har vi faktiskt mejlat? (outreachSentAt satt)
-    const orgNumbers = [...new Set(jobs.map((j) => j.organizationNumber).filter(Boolean))];
+    // Vilka org har vi faktiskt mejlat? (outreachSentAt satt) — täck både
+    // topplistans och senaste-listans organisationer
+    const orgNumbers = [...new Set([
+      ...jobs.map((j) => j.organizationNumber),
+      ...latestRaw.map((a) => a.job?.organizationNumber),
+    ].filter(Boolean))];
     const claims = orgNumbers.length
       ? await prisma.employerClaim.findMany({
           where: { organizationNumber: { in: orgNumbers }, outreachSentAt: { not: null } },
@@ -571,6 +585,50 @@ adminRouter.get("/application-stats", async (req, res, next) => {
       recordedOnly: Math.max(0, stpApplications - (emailedOrgs.size ? forwardedByEmail : 0)),
       companiesEmailed: emailedOrgs.size,
       topJobs,
+      latest: latestRaw.map((a) => ({
+        id: a.id,
+        driverName: a.driver?.name || "(okänd)",
+        driverEmail: a.driver?.email || null,
+        jobId: a.job?.id || null,
+        jobTitle: a.job?.title || "(borttaget jobb)",
+        company: a.job?.company || "—",
+        appliedVia: a.appliedVia,
+        outcome: a.outcome || null,
+        createdAt: a.createdAt,
+        emailed: a.job?.organizationNumber ? emailedOrgs.has(a.job.organizationNumber) : false,
+      })),
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// PostHog-aktivitet till admin-översikten: nyckelhändelser 7 dagar (inkl.
+// anonyma gäster — DB-ansökningarna visar bara inloggade) + senaste händelser.
+adminRouter.get("/posthog-activity", async (req, res, next) => {
+  try {
+    const { posthogHogQL } = await import("../lib/stackOverview.js");
+    const [counts, recent] = await Promise.all([
+      posthogHogQL(
+        "select event, count() from events where event in ('apply_initiated','job_alert_created','user_registered','job_viewed') and timestamp > now() - interval 7 day group by event"
+      ),
+      posthogHogQL(
+        "select event, timestamp, properties.jobTitle, properties.source, properties.region from events where event in ('apply_initiated','job_alert_created','user_registered') and timestamp > now() - interval 7 day order by timestamp desc limit 40"
+      ),
+    ]);
+    if (counts === null) return res.json({ configured: false });
+    const countByEvent = Object.fromEntries((counts || []).map((r) => [r[0], r[1]]));
+    res.json({
+      configured: true,
+      counts7d: {
+        applyClicks: countByEvent.apply_initiated ?? 0,
+        jobAlerts: countByEvent.job_alert_created ?? 0,
+        registrations: countByEvent.user_registered ?? 0,
+        jobViews: countByEvent.job_viewed ?? 0,
+      },
+      recent: (recent || []).map((r) => ({
+        event: r[0], timestamp: r[1], jobTitle: r[2] || null, source: r[3] || null, region: r[4] || null,
+      })),
     });
   } catch (e) {
     next(e);

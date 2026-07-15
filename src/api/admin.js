@@ -30,6 +30,10 @@ export function getApplicationStats() {
 }
 
 /** Nyckeltal från externa tjänster (Sentry/Plausible/PostHog/Resend) — 5 min cache på servern. */
+export function getPosthogActivity() {
+  return apiGet("/api/admin/posthog-activity");
+}
+
 export function getStackOverview() {
   return apiGet("/api/admin/stack-overview");
 }
