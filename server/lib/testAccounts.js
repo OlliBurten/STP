@@ -20,7 +20,17 @@ export const TEST_EMAIL_SUFFIXES = [
 
 export const TEST_EMAIL_PREFIXES = ["test@", "debugtest@", "testuser", "e2e-", "qa-"];
 
-export const TEST_EMAIL_EXACT = ["test@forare.se"];
+// Ägarens egna konton (Oliver) — riktiga konton men ska ALDRIG räknas i
+// statistik/nyckeltal: egna testansökningar och admin-aktivitet förorenar
+// måtten (beslut 2026-07-16). Exkluderas överallt via listorna nedan.
+export const OWNER_EMAILS = [
+  "oliverharburt@gmail.com",
+  "harburt.oliver@gmail.com",
+  "oliver@transportplattformen.se",
+  "oliver@cloudscience.se",
+];
+
+export const TEST_EMAIL_EXACT = ["test@forare.se", ...OWNER_EMAILS];
 
 export function isTestAccountEmail(email) {
   const e = String(email || "").trim().toLowerCase();

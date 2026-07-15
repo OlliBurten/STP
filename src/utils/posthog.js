@@ -46,9 +46,24 @@ export function initPostHog() {
   return initPromise;
 }
 
+// Ägar-/testkonton spåras inte alls (spegel av server/lib/testAccounts.js —
+// uppdatera BÅDA vid ändring). Opt-out är beständig i webbläsaren, så även
+// ägarens anonyma surf i samma webbläsare slutar räknas efter första inlogget.
+const NO_TRACK_EMAILS = [
+  "oliverharburt@gmail.com",
+  "harburt.oliver@gmail.com",
+  "oliver@transportplattformen.se",
+  "oliver@cloudscience.se",
+];
+
 /** Identifiera inloggad användare — körs vid login och vid sidladdning om redan inloggad */
 export function identifyUser(user) {
   if (!user?.id) return;
+  const email = String(user.email || "").toLowerCase();
+  if (NO_TRACK_EMAILS.includes(email) || email.startsWith("test@") || email.endsWith("@example.com") || email.endsWith("@stp.internal")) {
+    queue.run((ph) => ph.opt_out_capturing());
+    return;
+  }
   queue.run((ph) => ph.identify(user.id, {
     email: user.email,
     name: user.name,

@@ -6,7 +6,7 @@ import { createNotification } from "../lib/notifications.js";
 import { notifyCompanyApproved, sendEmail } from "../lib/email.js";
 import { runVerificationReminders } from "../lib/verificationReminders.js";
 import { createAdminAuditLog, getAdminActorId, isAdminEmail } from "../lib/adminAccess.js";
-import { isNonRealUser, excludeTestAndDemoAccountsWhere } from "../lib/testAccounts.js";
+import { isNonRealUser, excludeTestAndDemoAccountsWhere, OWNER_EMAILS, TEST_EMAIL_EXACT } from "../lib/testAccounts.js";
 import { JWT_SECRET } from "../lib/config.js";
 import {
   isDemoConfigured,
@@ -501,12 +501,15 @@ adminRouter.get("/summary", async (req, res, next) => {
 // direktlänk. "Mejlad" = jobbets org har ett EmployerClaim med outreachSentAt satt.
 adminRouter.get("/application-stats", async (req, res, next) => {
   try {
+    // Test-/ägarkonton räknas aldrig (testAccounts.js är källan)
+    const realDriver = { driver: excludeTestAndDemoAccountsWhere };
     const [total, byVia, topJobsRaw] = await Promise.all([
-      prisma.application.count(),
-      prisma.application.groupBy({ by: ["appliedVia"], _count: { _all: true } }),
+      prisma.application.count({ where: realDriver }),
+      prisma.application.groupBy({ by: ["appliedVia"], _count: { _all: true }, where: realDriver }),
       prisma.application.groupBy({
         by: ["jobId"],
         _count: { _all: true },
+        where: realDriver,
         orderBy: { _count: { jobId: "desc" } },
         take: 12,
       }),
@@ -518,6 +521,7 @@ adminRouter.get("/application-stats", async (req, res, next) => {
 
     // Senaste ansökningarna — vem sökte vad, när och via vilken väg
     const latestRaw = await prisma.application.findMany({
+      where: realDriver,
       orderBy: { createdAt: "desc" },
       take: 20,
       include: {
@@ -572,6 +576,7 @@ adminRouter.get("/application-stats", async (req, res, next) => {
       where: {
         appliedVia: "stp",
         job: { organizationNumber: { in: [...emailedOrgs] } },
+        ...realDriver,
       },
     }).catch(() => 0);
 
@@ -608,12 +613,16 @@ adminRouter.get("/application-stats", async (req, res, next) => {
 adminRouter.get("/posthog-activity", async (req, res, next) => {
   try {
     const { posthogHogQL } = await import("../lib/stackOverview.js");
+    // Identifierade ägar-/testsessioner filtreras (anonyma gäst-klick från
+    // ägaren kan inte särskiljas server-side — klienten opt:ar ut vid inlogg).
+    const excluded = [...new Set([...OWNER_EMAILS, ...TEST_EMAIL_EXACT])].map((e) => `'${e}'`).join(",");
+    const excludeOwnersHogQL = `and (person.properties.email is null or lower(person.properties.email) not in (${excluded}))`;
     const [counts, recent] = await Promise.all([
       posthogHogQL(
-        "select event, count() from events where event in ('apply_initiated','job_alert_created','user_registered','job_viewed') and timestamp > now() - interval 7 day group by event"
+        `select event, count() from events where event in ('apply_initiated','job_alert_created','user_registered','job_viewed') and timestamp > now() - interval 7 day ${excludeOwnersHogQL} group by event`
       ),
       posthogHogQL(
-        "select event, timestamp, properties.jobTitle, properties.source, properties.region from events where event in ('apply_initiated','job_alert_created','user_registered') and timestamp > now() - interval 7 day order by timestamp desc limit 40"
+        `select event, timestamp, properties.jobTitle, properties.source, properties.region from events where event in ('apply_initiated','job_alert_created','user_registered') and timestamp > now() - interval 7 day ${excludeOwnersHogQL} order by timestamp desc limit 40`
       ),
     ]);
     if (counts === null) return res.json({ configured: false });
