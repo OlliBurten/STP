@@ -45,6 +45,7 @@ function JobCard({ job, idx = 0, saved, onOpen, onSave }) {
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
             {job.licenses.map((l) => <Pill key={l} tone="outline" size="sm">{l}</Pill>)}
             <Pill tone="neutral" size="sm">{job.type}</Pill>
+            {job.bemanning && <Pill tone="amber" size="sm">Bemanning</Pill>}
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 11, paddingTop: 11, borderTop: "1px solid var(--line)" }}>
             <span style={{ fontSize: 13, fontWeight: 700, color: "var(--ink-800)" }}>{job.pay}</span>
@@ -236,6 +237,11 @@ export default function MobileGuestJobs() {
             {detail.verified && (
               <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "11px 14px", borderRadius: 12, background: "var(--green-tint)", marginBottom: 18 }}>
                 <Icon name="shield" size={19} color="var(--green)" stroke={1.9} /><span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--green-text)" }}>Verifierat åkeri · org.nr kontrollerat mot Bolagsverket</span>
+              </div>
+            )}
+            {detail.bemanning && (
+              <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "11px 14px", borderRadius: 12, background: "var(--amber-tint)", marginBottom: 18 }}>
+                <Icon name="info" size={19} color="var(--amber-text)" stroke={1.9} /><span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--amber-text)" }}>Bemanningsföretag · du anställs av bemanningsbolaget, inte åkeriet</span>
               </div>
             )}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 11, marginBottom: detail.deadline ? 11 : 22 }}>

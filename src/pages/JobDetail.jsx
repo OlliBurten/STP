@@ -669,6 +669,7 @@ export default function JobDetail() {
               <Pill tone="soft">{empLabel}</Pill>
               {scheduleLabel && <Pill tone="neutral">{scheduleLabel}</Pill>}
               {job.kollektivavtal === true && <Pill tone="info">Kollektivavtal</Pill>}
+              {job.bemanning && <Pill tone="amber">Bemanning</Pill>}
               {job.rolling && <Pill tone="amber">Rekrytering pågår</Pill>}
             </div>
 
@@ -873,6 +874,7 @@ export default function JobDetail() {
                 <Pill tone="neutral">Ej verifierat</Pill>
               )}
               {job.kollektivavtal === true && <Pill tone="info">Kollektivavtal</Pill>}
+              {job.bemanning && <Pill tone="amber">Bemanning</Pill>}
               {job.rolling && <Pill tone="amber">⚡ Rekrytering pågår</Pill>}
             </div>
 

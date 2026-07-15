@@ -186,6 +186,34 @@ function isStaffingEmployer(name = "", description = "") {
   return false;
 }
 
+// ─── Plattforms-/fiskeaktörer — konkurrerande jobbplattformar vars "annonser"
+// är kandidatfiske in i deras egen databas, inte riktiga jobb. Blockas HELT
+// (ägarbeslut 2026-07-16; Förartjänst Jobbförmedling var fallet som avslöjade det).
+const PLATFORM_ACTOR_KEYWORDS = ["jobbförmedling", "förartjänst", "jobbplattform"];
+function isPlatformActor(name = "") {
+  const n = String(name).toLowerCase();
+  return PLATFORM_ACTOR_KEYWORDS.some((k) => n.includes(k));
+}
+
+// ─── Bemanningsdetektering (TAGG, inte block — annonserna är riktiga C/CE-jobb
+// och behålls; ägarbeslut 2026-07-16). Namnord matchas ENBART mot företags-
+// namnet ("personal" i beskrivningar är vardagssvenska); frasdetekteringen mot
+// beskrivningen är avsiktligt exakt ("till vår kund" = bemannings-tell).
+const STAFFING_NAME_WORDS = [
+  "bemanning", "rekrytering", "recruitment", "uthyrning", "interim",
+  "personal", "manning", "staffing", "consulting", "konsult",
+];
+const STAFFING_DESC_PHRASES = [
+  "till vår kund", "hos vår kund", "vår kund i", "kunduppdrag", "konsultuppdrag", "uthyrd till",
+];
+function detectStaffing(name = "", description = "") {
+  const n = String(name).toLowerCase();
+  const d = String(description).toLowerCase();
+  if (STAFFING_NAME_WORDS.some((w) => n.includes(w))) return true;
+  if (getStaffingBrands().some((b) => n.includes(b))) return true;
+  return STAFFING_DESC_PHRASES.some((f) => d.includes(f));
+}
+
 // Tydliga icke-lastbilsroller (budbil/paketbil = B-körkort, truck = gaffeltruck, m.m.)
 const NON_TRUCK_KEYWORDS = [
   "budbil", "paketbil", "paketbud", "matbud", "hemleverans", "last mile",
@@ -395,6 +423,7 @@ function mapJobToRecord(hit, systemUserId) {
     employerPhone,
     applyEmail,
     organizationNumber,
+    isStaffing: detectStaffing(employer, description),
     applicationReference: hit.application_details?.reference || null,
     applyViaAf: !!hit.application_details?.via_af,
     contactName: contact0?.name || null,
@@ -433,7 +462,8 @@ export async function runIngestor({ dryRun = false, source = "jobsearch", since 
   // Curation pass
   const filtered = hits.filter((h) => {
     if (h.removed) return false;
-    if (isStaffingEmployer(h.employer?.name, h.description?.text || "")) {
+    // Bemanning BEHÅLLS (taggas isStaffing) — endast plattforms-/fiskeaktörer blockas
+    if (isPlatformActor(h.employer?.name)) {
       return false;
     }
     if (!passesQualityFilter(h)) {
@@ -496,6 +526,7 @@ export async function runIngestor({ dryRun = false, source = "jobsearch", since 
           employerPhone: record.employerPhone,
           applyEmail: record.applyEmail,
           organizationNumber: record.organizationNumber,
+          isStaffing: record.isStaffing,
           applicationReference: record.applicationReference,
           applyViaAf: record.applyViaAf,
           contactName: record.contactName,

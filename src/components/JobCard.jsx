@@ -28,6 +28,7 @@ function Pill({ children, tone = "neutral", icon }) {
     /* Varm beige (prototypens --paper-2) — hålls åtskild från den gröna soft-chippen.
        Hårdkodad här i st f globala --paper-2 (kall grön-grå, används överallt). */
     neutral: { bg: "#ede9e1",           color: "var(--ink-700)",    border: "transparent" },
+    amber:   { bg: "var(--amber-tint)", color: "var(--amber-text)", border: "transparent" },
   };
   const s = tones[tone] || tones.neutral;
   return (
@@ -159,6 +160,7 @@ export default function JobCard({
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
         {(job.license || []).map(l => <Pill key={l} tone="primary">{l}</Pill>)}
         <Pill tone="neutral">{employmentLabel}</Pill>
+        {job.bemanning && <Pill tone="amber">Bemanning</Pill>}
         {job.location && <Pill tone="soft" icon={<PinIcon />}>{job.location}</Pill>}
       </div>
 

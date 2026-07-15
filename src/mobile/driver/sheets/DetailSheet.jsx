@@ -40,6 +40,7 @@ export default function DetailSheet({ job, ctx, close: _close }) {
           {job.match != null && <Pill tone={matchTone(job.match)} icon={<Dot tone="success" size={5} />}>{job.match}% match</Pill>}
           {job.licenses.map((l) => <Pill key={l} tone="soft">{l}</Pill>)}
           <Pill tone="neutral">{job.type}</Pill>
+          {job.bemanning && <Pill tone="amber">Bemanning</Pill>}
         </div>
         {job.imported && (
           <div style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "12px 14px", background: "var(--info-tint)", borderRadius: 12, marginTop: 14 }}>
