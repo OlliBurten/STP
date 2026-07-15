@@ -16,16 +16,15 @@ const T = {
 };
 
 /**
- * Löner baserade på Transportavtalet 2025–2027 (Svenska Transportarbetareförbundet).
- * Lönebottnar gäller fr.o.m. 1 april 2025.
+ * RIKTVÄRDEN baserade på Transportavtalet 2025–2027 (Svenska Transportarbetare-
+ * förbundet) och branschdata — inte exakta tariffbelopp (tarifftabellen ligger
+ * bakom Transports medlemsinloggning).
  *
- * Avtalets lönebottnar:
- *   Ny (0–1 år):   32 214 kr/mån
- *   1–2 år:        32 800 kr/mån (skattning inom avtalat spann)
- *   2–5 år:        33 500 kr/mån
- *   5–10 år:       34 710 kr/mån
- *   10–15 år:      36 000 kr/mån (skattning, avtalat max ~37 170)
- *   15+ år:        37 170 kr/mån (avtalat max för fjärrkörning)
+ * Verifierat från transport.se/publicerat/avtal-klart-transportavtalet-2025:
+ *   Åkeri-höjning 1 april 2025: +874–1 124 kr/mån
+ *   Åkeri-höjning 1 april 2026: +770–1 028 kr/mån (INRÄKNAD nedan, graderad
+ *   lägst→högst över erfarenhetsstegen — så avtalets tariffer är byggda)
+ *   Avtalsvärde: 6,8 % över två år.
  *
  * OB-tillägg (avtalsenliga procenttal):
  *   Natt 22:00–06:00: +25% på timlönen
@@ -33,11 +32,12 @@ const T = {
  *   Röd dag:           +100%
  *
  * Regional variation och certifikatbonus är marknadsdata, inte avtalstextens siffror.
- * Källan är Transport.se och Transportarbetaren.se.
+ * Uppdatera mot riktiga tarifftabellen när den finns (backlog).
  */
 
-// Avtalets lönebottnar per erfarenhetsnivå (index 0–6)
-const BASE_BY_EXP = [32214, 32214, 32800, 33500, 34710, 36000, 37170];
+// Riktvärden per erfarenhetsnivå (index 0–6), fr.o.m. 1 april 2026
+// (2025-nivåer + avtalets verifierade åkeri-höjning 770→1 028 kr graderat)
+const BASE_BY_EXP = [32980, 33030, 33660, 34400, 35650, 36990, 38200];
 
 // Körtyp påverkar inte avtalsminimum men styr var man hamnar i avtalets spann.
 // Fjärrkörning → övre änden, distribution → mitt, tim → nedre änden.
@@ -171,7 +171,7 @@ export default function LoneKalkylator() {
   const [weekendDays, setWeekendDays] = useState(0);
   const [shared, setShared] = useState(false);
 
-  const agreementBase = BASE_BY_EXP[expLevel] ?? 32214;
+  const agreementBase = BASE_BY_EXP[expLevel] ?? BASE_BY_EXP[0];
   const jobFactor = JOB_TYPE_FACTOR[jobType] ?? 1.0;
   const regionFactor = REGION_MARKET_FACTOR[region] ?? 1.0;
   const certBonus = selectedCerts.reduce((s, c) => s + (CERT_MARKET_BONUS[c] ?? 0), 0);
@@ -223,7 +223,7 @@ export default function LoneKalkylator() {
             Lönekalkylatorn
           </h1>
           <p style={{ fontSize: "var(--text-md)", color: T.sub, lineHeight: 1.6, margin: "0 0 14px" }}>
-            Riktvärden baserade på Transportavtalet 2025–2027 och branschdata. Ange dina uppgifter och få en uppskattad avtalsnivå och marknadslön. Obs: avtalets höjning per 1 april 2026 (770–1 028 kr/mån) kan göra att faktiska nivåer ligger något högre.
+            Riktvärden baserade på Transportavtalet 2025–2027 och branschdata — avtalets höjning per 1 april 2026 (åkeri +770–1 028 kr/mån) är inräknad. Ange dina uppgifter och få en uppskattad avtalsnivå och marknadslön.
           </p>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "var(--success-tint)", border: "1px solid var(--success)", borderRadius: 99, padding: "4px 12px" }}>
             <div style={{ width: 6, height: 6, borderRadius: "50%", background: T.green }} />
@@ -383,7 +383,7 @@ export default function LoneKalkylator() {
             <p style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: T.teal, marginBottom: 8 }}>Om lönedatan</p>
             <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 6 }}>
               {[
-                "Nivåerna är riktvärden baserade på Transportavtalet 2025–2027 (ca 55 300 anställda) och branschdata — inte exakta tariffbelopp. Höjningen per 1 april 2026 (770–1 028 kr/mån) är inte exakt inräknad.",
+                "Nivåerna är riktvärden baserade på Transportavtalet 2025–2027 (ca 55 300 anställda) och branschdata — inte exakta tariffbelopp. Avtalets verifierade höjning per 1 april 2026 (åkeri +770–1 028 kr/mån, transport.se) är inräknad.",
                 "OB-procentsatserna (25 %, 50 %, 100 %) är avtalsenliga och gäller för alla som omfattas av avtalet.",
                 "Marknadslön och regionfaktor baseras på marknadsdata — inte avtalstexten. Avtalets lönebottnar är nationellt enhetliga.",
                 "Faktisk lön sätts av arbetsgivaren och kan vara högre än avtalets minimum. Avtalet sätter golvet, inte taket.",
