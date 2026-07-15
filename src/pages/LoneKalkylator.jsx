@@ -206,7 +206,7 @@ export default function LoneKalkylator() {
     <main style={{ minHeight: "100vh", background: T.bg, paddingTop: 96 }}>
       <PageMeta
         title="Lönekalkylatorn – vad borde en lastbilschaufför tjäna?"
-        description={`Räkna ut vad du borde tjäna som lastbilschaufför i Sverige. Baserat på Transportavtalet 2025–2027. Avtalets lönebotten: ${contractMin.toLocaleString("sv-SE")} kr/mån.`}
+        description={`Räkna ut vad du borde tjäna som lastbilschaufför i Sverige. Riktvärden baserade på Transportavtalet 2025–2027 och branschdata.`}
         canonical="/lon-kalkylator"
       />
 
@@ -223,7 +223,7 @@ export default function LoneKalkylator() {
             Lönekalkylatorn
           </h1>
           <p style={{ fontSize: "var(--text-md)", color: T.sub, lineHeight: 1.6, margin: "0 0 14px" }}>
-            Baserad på Transportavtalet 2025–2027. Ange dina uppgifter och få avtalets lönebotten och en uppskattad marknadslön.
+            Riktvärden baserade på Transportavtalet 2025–2027 och branschdata. Ange dina uppgifter och få en uppskattad avtalsnivå och marknadslön. Obs: avtalets höjning per 1 april 2026 (770–1 028 kr/mån) kan göra att faktiska nivåer ligger något högre.
           </p>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "var(--success-tint)", border: "1px solid var(--success)", borderRadius: 99, padding: "4px 12px" }}>
             <div style={{ width: 6, height: 6, borderRadius: "50%", background: T.green }} />
@@ -312,13 +312,13 @@ export default function LoneKalkylator() {
             {/* Avtalets lönebotten */}
             <div style={{ marginBottom: 20 }}>
               <p style={{ fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.teal, marginBottom: 4 }}>
-                Avtalets lönebotten
+                Uppskattad avtalsnivå
               </p>
               <p style={{ fontSize: 36, fontWeight: 900, color: T.text, letterSpacing: -1, lineHeight: 1 }}>
                 {contractMin.toLocaleString("sv-SE")} <span style={{ fontSize: "var(--text-xl)", fontWeight: 400, color: T.sub }}>kr/mån</span>
               </p>
               <p style={{ fontSize: "var(--text-xs)", color: T.sub, marginTop: 4 }}>
-                Transportavtalet 2025 — minimum för {expLevels.find(e => e.value === expLevel)?.label.toLowerCase()} förare
+                Riktvärde för {expLevels.find(e => e.value === expLevel)?.label.toLowerCase()} förare — baserat på Transportavtalet 2025–2027
               </p>
             </div>
 
@@ -383,7 +383,7 @@ export default function LoneKalkylator() {
             <p style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: T.teal, marginBottom: 8 }}>Om lönedatan</p>
             <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 6 }}>
               {[
-                "Lönebottnar hämtade från Transportavtalet 2025–2027. Gäller ca 55 300 anställda.",
+                "Nivåerna är riktvärden baserade på Transportavtalet 2025–2027 (ca 55 300 anställda) och branschdata — inte exakta tariffbelopp. Höjningen per 1 april 2026 (770–1 028 kr/mån) är inte exakt inräknad.",
                 "OB-procentsatserna (25 %, 50 %, 100 %) är avtalsenliga och gäller för alla som omfattas av avtalet.",
                 "Marknadslön och regionfaktor baseras på marknadsdata — inte avtalstexten. Avtalets lönebottnar är nationellt enhetliga.",
                 "Faktisk lön sätts av arbetsgivaren och kan vara högre än avtalets minimum. Avtalet sätter golvet, inte taket.",

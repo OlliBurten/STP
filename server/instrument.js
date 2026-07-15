@@ -25,6 +25,11 @@ Sentry.init({
     if (errValue.includes("credit balance is too low")) {
       return null;
     }
+    // Anthropic rate-limit/överlast likaså — junis felstorm åt upp hela månadens
+    // Sentry-kvot med exakt sådana här operationella fel (agenterna retryar själva).
+    if (errValue.includes("rate_limit_error") || errValue.includes("overloaded_error")) {
+      return null;
+    }
 
     if (Array.isArray(event.breadcrumbs?.values)) {
       event.breadcrumbs.values = event.breadcrumbs.values.map((b) => {

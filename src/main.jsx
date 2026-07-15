@@ -76,6 +76,18 @@ setTimeout(() => {
         ) {
           return null;
         }
+        // Skript injicerade av in-app-webbläsare (Facebook/Instagram på iOS
+        // pratar med window.webkit.messageHandlers) och tillägg — inte vår kod.
+        // FB är vår största trafikkanal, så det här bruset växer annars.
+        const frames = event?.exception?.values?.[0]?.stacktrace?.frames || [];
+        const lastFn = frames[frames.length - 1]?.function || "";
+        if (
+          msg.includes("webkit.messageHandlers") ||
+          lastFn === "sendDataToNative" ||
+          msg.includes("@webkit-masked-url")
+        ) {
+          return null;
+        }
         return event;
       },
     });

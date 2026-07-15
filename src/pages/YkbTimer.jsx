@@ -287,6 +287,10 @@ export default function YkbTimer() {
             </Card>
           )}
 
+          <p style={{ fontSize: "var(--text-xs)", color: "var(--ink-400)", lineHeight: 1.6, marginBottom: 18 }}>
+            Regler enligt Transportstyrelsen: YKB kräver 35 timmars fortbildning vart femte år; förnyelsen räknas från kortets utgångsdatum. Verktyget är en påminnelsehjälp — dubbelkolla alltid ditt datum på ditt yrkeskompetensbevis.
+          </p>
+
           {/* Cross-link */}
           <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "20px 22px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
             <div>
