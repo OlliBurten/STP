@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { mockJobs } from "../data/mockJobs";
 import JobCard from "../components/JobCard";
@@ -295,10 +295,21 @@ export default function JobList() {
   const [bannerDismissed, setBannerDismissed] = useState(() => {
     try { return sessionStorage.getItem("stp_profile_banner_dismissed") === "1"; } catch { return false; }
   });
-  const [filters, setFilters] = useState({
-    search: "", region: "", license: "", segment: "",
-    jobType: "", employment: "", bransch: "", minSalary: "", certificate: "",
+  // Filtren speglas i URL:en → delbara sökningar ("CE-jobb i Norrbotten"-länk
+  // i ett FB-inlägg), bakåtknapp och omladdning tappar inget.
+  const FILTER_KEYS = ["search", "region", "license", "segment", "jobType", "employment", "bransch", "minSalary", "certificate"];
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [filters, setFilters] = useState(() => {
+    const init = { search: "", region: "", license: "", segment: "", jobType: "", employment: "", bransch: "", minSalary: "", certificate: "" };
+    for (const k of FILTER_KEYS) { const v = searchParams.get(k); if (v) init[k] = v; }
+    return init;
   });
+  useEffect(() => {
+    // Bevara okända parametrar (utm_* m.fl.) — rör bara filternycklarna.
+    const next = new URLSearchParams(searchParams);
+    for (const k of FILTER_KEYS) { if (filters[k]) next.set(k, filters[k]); else next.delete(k); }
+    if (next.toString() !== searchParams.toString()) setSearchParams(next, { replace: true });
+  }, [filters]); // eslint-disable-line react-hooks/exhaustive-deps
   const [view, setView] = useState("list");
   const PAGE_SIZE = 20;
   const [page, setPage] = useState(1);
@@ -809,6 +820,18 @@ export default function JobList() {
               onOpenAll={() => setDrawerOpen(true)}
             />
 
+            {/* Ärlighetsvarning: minimilön filtrerar på ANGIVEN lön — bara ~1/3 av
+                annonserna anger siffror, resten ("enligt kollektivavtal") döljs. */}
+            {filters.minSalary && (
+              <div style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "12px 16px", background: "var(--amber-tint)", border: "1px solid rgba(242,164,28,0.25)", borderRadius: 12, marginBottom: 16 }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span style={{ fontSize: "var(--text-sm)", color: "var(--amber-text)", lineHeight: 1.55 }}>
+                  Lönefiltret visar bara annonser som anger lön i siffror. De flesta annonser säger "enligt kollektivavtal" och döljs nu — de kan betala lika bra eller bättre.{" "}
+                  <button onClick={() => setFilters(f => ({ ...f, minSalary: "" }))} style={{ background: "none", border: "none", padding: 0, color: "var(--amber-text)", fontWeight: 700, textDecoration: "underline", cursor: "pointer", fontSize: "inherit", fontFamily: "inherit" }}>Ta bort lönefiltret</button>
+                </span>
+              </div>
+            )}
+
             {/* Gäst-banner: gratis-löftet + kontots morötter (enda gäst-ytan som
                 saknade en registrerings-CTA). Ansökan är alltid gate-fri. */}
             {!user && (
@@ -899,7 +922,7 @@ export default function JobList() {
 
                   {/* Jobbevakning via mejl — bara utloggade (inloggade förare har match-notiser) */}
                   {!user && !jobsLoading && !jobsError && (
-                    <JobAlertSignup region={filters.region || null} style={{ marginTop: 18 }} />
+                    <JobAlertSignup region={filters.region || null} licenses={filters.license ? [filters.license] : []} style={{ marginTop: 18 }} />
                   )}
                 </div>
 

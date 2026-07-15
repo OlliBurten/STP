@@ -83,7 +83,7 @@ export default function MobileGuestJobs() {
     if (!alertEmail.trim() || alertStatus === "sending") return;
     setAlertStatus("sending");
     try {
-      await createJobAlert({ email: alertEmail, region: filter.region[0] || null });
+      await createJobAlert({ email: alertEmail, region: filter.region[0] || null, licenses: filter.lic || [] });
       setAlertStatus("done");
     } catch {
       setAlertStatus("error");

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { createJobAlert } from "../api/jobAlerts";
 
-export default function JobAlertSignup({ region = null, style }) {
+export default function JobAlertSignup({ region = null, licenses = [], style }) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState("idle"); // idle | sending | done | error
 
@@ -12,7 +12,7 @@ export default function JobAlertSignup({ region = null, style }) {
     if (!email.trim() || status === "sending") return;
     setStatus("sending");
     try {
-      await createJobAlert({ email, region });
+      await createJobAlert({ email, region, licenses });
       setStatus("done");
     } catch {
       setStatus("error");
@@ -38,7 +38,7 @@ export default function JobAlertSignup({ region = null, style }) {
   return (
     <div style={card}>
       <h3 style={{ fontSize: "var(--text-lg)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 4 }}>
-        Bevaka nya jobb{region ? ` i ${region}` : ""}
+        Bevaka nya {licenses.length ? `${licenses.join("/")}-jobb` : "jobb"}{region ? ` i ${region}` : ""}
       </h3>
       <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-600)", lineHeight: 1.6, marginBottom: 14 }}>
         Få ett mejl när nya lastbilsjobb läggs upp — inget konto behövs.
