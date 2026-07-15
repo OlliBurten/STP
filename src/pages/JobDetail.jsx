@@ -539,6 +539,16 @@ export default function JobDetail() {
     : null;
   const employerApplyUrl = applyEmailChannel ? mailtoApplyHref : (isEmployerChannel ? job.originalPostingUrl : job.externalApplyUrl);
   const applyCtaLabel = applyEmailChannel ? "Ansök via mejl" : "Ansök hos arbetsgivaren ↗";
+  const copyApplyEmail = async () => {
+    try {
+      await navigator.clipboard.writeText(applyEmailChannel);
+      track("apply_initiated", { jobId: job.id, jobTitle: job.title, source: "copy_email" });
+      if (isDriver) submitApplication({ jobId: job.id, appliedVia: "af_external", consentToShare: false }).catch(() => {});
+      toast.success("Mejladressen kopierad!");
+    } catch {
+      toast.info(applyEmailChannel);
+    }
+  };
   const handleExternalApply = (source) => {
     track("apply_initiated", { jobId: job.id, jobTitle: job.title, source });
     if ((isEmployerChannel || applyEmailChannel) && isDriver) {
@@ -770,7 +780,7 @@ export default function JobDetail() {
           </div>
           {isDriver ? (
             employerApplyUrl ? (
-              <a href={employerApplyUrl} target="_blank" rel="noopener noreferrer"
+              <a href={employerApplyUrl} target={applyEmailChannel ? undefined : "_blank"} rel={applyEmailChannel ? undefined : "noopener noreferrer"}
                 onClick={() => handleExternalApply("sticky_external")}
                 style={{ flex: 1.4, padding: "14px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, textDecoration: "none", textAlign: "center", boxShadow: "0 4px 14px rgba(30,107,91,0.3)" }}
               >Ansök ↗</a>
@@ -781,7 +791,7 @@ export default function JobDetail() {
               >Ansök nu →</Link>
             )
           ) : isEmployerChannel ? (
-            <a href={employerApplyUrl} target="_blank" rel="noopener noreferrer"
+            <a href={employerApplyUrl} target={applyEmailChannel ? undefined : "_blank"} rel={applyEmailChannel ? undefined : "noopener noreferrer"}
               onClick={() => handleExternalApply("sticky_guest_external")}
               style={{ flex: 1.4, padding: "14px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, textDecoration: "none", textAlign: "center", boxShadow: "0 4px 14px rgba(30,107,91,0.3)" }}
             >Ansök ↗</a>
@@ -949,10 +959,15 @@ export default function JobDetail() {
             <div>
               <div style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)", marginBottom: 4 }}>Redo att ansöka?</div>
               <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)" }}>{applyEmailChannel ? (user ? "Du mejlar arbetsgivaren direkt — vi registrerar ansökan under Ansökt." : "Du mejlar arbetsgivaren direkt — inget konto behövs.") : isEmployerChannel ? (user ? "Du ansöker direkt hos arbetsgivaren — vi registrerar ansökan under Ansökt." : "Du ansöker direkt hos arbetsgivaren — inget konto behövs.") : "Din profil skickas direkt — ingen extra ansökan behövs."}</div>
+              {applyEmailChannel && (
+                <button onClick={copyApplyEmail} style={{ background: "none", border: "none", padding: 0, marginTop: 6, fontSize: "var(--text-xs)", color: "var(--green)", fontWeight: 600, cursor: "pointer", fontFamily: "inherit", textAlign: "left" }}>
+                  Öppnas ingen mejlapp? Kopiera adressen: {applyEmailChannel}
+                </button>
+              )}
             </div>
             {isDriver ? (
               employerApplyUrl ? (
-                <a href={employerApplyUrl} target="_blank" rel="noopener noreferrer"
+                <a href={employerApplyUrl} target={applyEmailChannel ? undefined : "_blank"} rel={applyEmailChannel ? undefined : "noopener noreferrer"}
                   onClick={() => handleExternalApply("bottom_external")}
                   style={{ padding: "13px 24px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 7, whiteSpace: "nowrap" }}>
                   {isEmployerChannel || applyEmailChannel ? applyCtaLabel : "Ansök på företagets hemsida ↗"}
@@ -968,7 +983,7 @@ export default function JobDetail() {
             ) : !user ? (
               isEmployerChannel ? (
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
-                  <a href={employerApplyUrl} target="_blank" rel="noopener noreferrer"
+                  <a href={employerApplyUrl} target={applyEmailChannel ? undefined : "_blank"} rel={applyEmailChannel ? undefined : "noopener noreferrer"}
                     onClick={() => handleExternalApply("bottom_guest_external")}
                     style={{ padding: "13px 24px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 7, whiteSpace: "nowrap" }}>
                     {applyCtaLabel}
@@ -1141,7 +1156,7 @@ export default function JobDetail() {
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {isDriver ? (
                 employerApplyUrl ? (
-                  <a href={employerApplyUrl} target="_blank" rel="noopener noreferrer"
+                  <a href={employerApplyUrl} target={applyEmailChannel ? undefined : "_blank"} rel={applyEmailChannel ? undefined : "noopener noreferrer"}
                     onClick={() => handleExternalApply("panel_external")}
                     style={{ display: "block", width: "100%", padding: "15px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, textDecoration: "none", textAlign: "center", letterSpacing: -0.3, boxSizing: "border-box", boxShadow: "0 4px 14px rgba(30,107,91,0.25)" }}>
                     {isEmployerChannel || applyEmailChannel ? applyCtaLabel : "Ansök på företagets hemsida ↗"}
@@ -1159,7 +1174,7 @@ export default function JobDetail() {
                 </div>
               ) : isEmployerChannel ? (
                 <>
-                  <a href={employerApplyUrl} target="_blank" rel="noopener noreferrer"
+                  <a href={employerApplyUrl} target={applyEmailChannel ? undefined : "_blank"} rel={applyEmailChannel ? undefined : "noopener noreferrer"}
                     onClick={() => handleExternalApply("panel_guest_external")}
                     style={{ display: "block", width: "100%", padding: "15px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, textDecoration: "none", textAlign: "center", letterSpacing: -0.3, boxSizing: "border-box", boxShadow: "0 4px 14px rgba(30,107,91,0.25)" }}>
                     {applyCtaLabel}
