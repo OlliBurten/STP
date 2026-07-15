@@ -358,6 +358,7 @@ adminRouter.get("/summary", async (req, res, next) => {
       }),
       prisma.organization.count({ where: { status: "VERIFIED" } }),
       prisma.user.findMany({
+        where: excludeTestAndDemoAccountsWhere,
         orderBy: { createdAt: "desc" },
         take: 5,
         select: {
@@ -402,7 +403,7 @@ adminRouter.get("/summary", async (req, res, next) => {
       prisma.report.count({ where: { status: "OPEN" } }),
       prisma.feedback.count({ where: { status: "NEW" } }),
       prisma.conversation.findMany({
-        where: { jobId: { not: null } },
+        where: { jobId: { not: null }, driver: excludeTestAndDemoAccountsWhere },
         orderBy: { createdAt: "desc" },
         take: 8,
         select: {
@@ -416,6 +417,7 @@ adminRouter.get("/summary", async (req, res, next) => {
       // Riktiga Application-poster (aggregerade + AF-externa ansökningar). Skild
       // från konversationerna ovan — dessa fångar förar-leads på importerade jobb.
       prisma.application.findMany({
+        where: { driver: excludeTestAndDemoAccountsWhere },
         orderBy: { createdAt: "desc" },
         take: 8,
         select: {
@@ -427,7 +429,7 @@ adminRouter.get("/summary", async (req, res, next) => {
           job: { select: { title: true, company: true, source: true } },
         },
       }),
-      prisma.application.count({ where: { appliedVia: "af_external" } }),
+      prisma.application.count({ where: { appliedVia: "af_external", driver: excludeTestAndDemoAccountsWhere } }),
     ]);
 
     res.json({
