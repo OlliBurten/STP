@@ -233,16 +233,22 @@ export default function Login() {
   const location  = useLocation();
   const [searchParams] = useSearchParams();
   const from          = location.state?.from || "/";
-  const requiredRole  = location.state?.requiredRole || searchParams.get("requiredRole");
+  // Accepterar även ?role= och state.role (äldre länkar) — normaliserat till driver/company.
+  const rawRole       = location.state?.requiredRole || location.state?.role
+                     || searchParams.get("requiredRole") || searchParams.get("role");
+  const requiredRole  = ["company", "akeri"].includes(String(rawRole || "").toLowerCase()) ? "company"
+                      : ["driver", "forare"].includes(String(rawRole || "").toLowerCase()) ? "driver"
+                      : null;
   const requestedMode = location.state?.initialMode || (searchParams.get("mode") === "register" ? "register" : null);
   const claimToken    = location.state?.claimToken || searchParams.get("claimToken") || null;
 
   // State machine: login | register_pick | register_driver | register_company | forgot | sent | verified
   const getInitialMode = () => {
     if (requestedMode === "register") {
-      if (requiredRole === "driver")  return "register_driver";
       if (requiredRole === "company") return "register_company";
-      return "register_pick";
+      // B2C-först: förare är standard — åkerier når sin registrering via
+      // footern/"För åkerier"-sidan (länkar med requiredRole=company).
+      return "register_driver";
     }
     if (requestedMode === "forgot") return "forgot";
     return "login";
@@ -279,14 +285,14 @@ export default function Login() {
     // Reagera bara på riktiga navigationer — inte StrictMode/dev-omkörningar med samma key
     if (lastLocationKey.current === location.key) return;
     lastLocationKey.current = location.key;
-    const stateMode = location.state?.initialMode;
+    const stateMode = location.state?.initialMode
+      || (searchParams.get("mode") === "register" ? "register" : null);
     if (!stateMode || stateMode === "login") {
       setMode("login"); setError(""); setInfo(""); setShowResendVerification(false);
     } else if (stateMode === "register") {
-      const r = location.state?.requiredRole;
-      if (r === "driver") goTo("register_driver");
-      else if (r === "company") goTo("register_company");
-      else goTo("register_pick");
+      const r = location.state?.requiredRole || location.state?.role || searchParams.get("role");
+      if (["company", "akeri"].includes(String(r || "").toLowerCase())) goTo("register_company");
+      else goTo("register_driver");
     }
   }, [location.key]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -502,7 +508,7 @@ export default function Login() {
             <div style={transitionStyle}>
               {isMobile && <MobileLogo />}
               <button
-                onClick={() => goTo("register_pick")}
+                onClick={() => goTo("login")}
                 style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--ink-500)", marginBottom: 18, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", padding: 0 }}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="11 5 5 12 11 19"/><line x1="5" y1="12" x2="21" y2="12"/></svg>
@@ -512,7 +518,9 @@ export default function Login() {
               <h1 style={{ fontSize: "var(--text-4xl)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.8, marginBottom: 6 }}>
                 {isDriver ? "Skapa förarkonto" : "Registrera åkeri"}
               </h1>
-              <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", marginBottom: 28 }}>Alltid gratis för förare. Inga avgifter.</p>
+              <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", marginBottom: 28 }}>
+                {isDriver ? "Alltid gratis för förare. Inga avgifter." : "Gratis att komma igång. Hitta förare direkt — utan mellanhänder."}
+              </p>
 
               <OAuthSection
                 onSuccess={handleOAuthSuccess}
@@ -618,6 +626,21 @@ export default function Login() {
                 <button onClick={() => goTo("login")} style={{ color: "var(--green)", fontWeight: 700, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: "inherit" }}>
                   Logga in
                 </button>
+              </p>
+              <p style={{ textAlign: "center", fontSize: "var(--text-sm)", color: "var(--ink-400)", marginTop: 10 }}>
+                {isDriver ? (
+                  <>Är ni ett åkeri?{" "}
+                    <button onClick={() => goTo("register_company")} style={{ color: "var(--ink-500)", fontWeight: 600, textDecoration: "underline", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: "inherit" }}>
+                      Registrera företag
+                    </button>
+                  </>
+                ) : (
+                  <>Är du förare?{" "}
+                    <button onClick={() => goTo("register_driver")} style={{ color: "var(--ink-500)", fontWeight: 600, textDecoration: "underline", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: "inherit" }}>
+                      Skapa förarkonto
+                    </button>
+                  </>
+                )}
               </p>
             </div>
           </div>
@@ -791,7 +814,7 @@ export default function Login() {
             {mode === "login" && (
               <p style={{ textAlign: "center", fontSize: "var(--text-base)", color: "var(--ink-500)", marginTop: 22 }}>
                 Inget konto?{" "}
-                <button onClick={() => goTo("register_pick")} style={{ color: "var(--green)", fontWeight: 700, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: "inherit" }}>
+                <button onClick={() => goTo("register_driver")} style={{ color: "var(--green)", fontWeight: 700, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: "inherit" }}>
                   Skapa konto
                 </button>
               </p>

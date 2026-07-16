@@ -12,7 +12,7 @@
 //     prototype's mock buttons; BankID ("Snart") is dropped.
 // Every other view matches the prototype 1:1 in markup, spacing and copy.
 import React, { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
 import { requestPasswordReset, resendVerification, verifyEmailCode } from "../../api/auth";
@@ -110,12 +110,20 @@ const OrDivider = () => (
 export default function MobileAuth() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
+  const location = useLocation();
   const toast = useToast();
   const { loginWithApi, registerWithApi, loginWithOAuthResponse } = useAuth();
 
   const [view, setView] = useState(params.get("start") === "login" ? "login" : "register");
   const [flow, setFlow] = useState(params.get("start") === "login" ? "login" : "register");
-  const [role, setRole] = useState(params.get("role") === "akeri" ? "akeri" : params.get("role") === "forare" ? "forare" : null);
+  // Roll från query (?role=) eller navigationsstate (requiredRole) — company/akeri ⇒ åkeri.
+  const presetRole = (() => {
+    const r = String(params.get("role") || location.state?.requiredRole || location.state?.role || "").toLowerCase();
+    if (["akeri", "company"].includes(r)) return "akeri";
+    if (["forare", "driver"].includes(r)) return "forare";
+    return null;
+  })();
+  const [role, setRole] = useState(presetRole);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
@@ -332,17 +340,17 @@ export default function MobileAuth() {
   } else if (view === "rolechoice") {
     body = (
       <div className="view-enter" style={{ flex: 1, display: "flex", flexDirection: "column", padding: "24px 26px 30px" }}>
-        <h1 style={{ fontSize: 27, fontWeight: 800, letterSpacing: -0.6, color: "var(--ink-900)", marginBottom: 8 }}>Hur vill du använda STP?</h1>
-        <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.5, marginBottom: 26 }}>Välj så anpassar vi STP för dig. Ändrar du dig kan du skapa den andra typen med samma inloggning.</p>
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          {[["forare", "truck", "Jag är förare", "Hitta körningar, bygg din profil och ansök på sekunder."], ["akeri", "building", "Vi är ett åkeri", "Lägg upp jobb, hitta förare och hantera ansökningar."]].map(([r, ic, t, d]) => (
-            <button key={r} onClick={() => doRegister(r)} disabled={busy} className="press" style={{ display: "flex", alignItems: "center", gap: 15, padding: "20px 18px", borderRadius: 18, textAlign: "left", background: "#fff", border: "1px solid var(--line-2)", boxShadow: "var(--sh-sm)", opacity: busy ? 0.6 : 1 }}>
-              <div style={{ width: 52, height: 52, borderRadius: 14, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icon name={ic} size={26} color="var(--green)" stroke={2} /></div>
-              <div style={{ flex: 1 }}><div style={{ fontSize: 17, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.3 }}>{t}</div><div style={{ fontSize: 13.5, color: "var(--ink-500)", marginTop: 3, lineHeight: 1.4 }}>{d}</div></div>
-              <Icon name="arrow" size={20} color="var(--ink-300)" stroke={2.2} />
-            </button>
-          ))}
-        </div>
+        <h1 style={{ fontSize: 27, fontWeight: 800, letterSpacing: -0.6, color: "var(--ink-900)", marginBottom: 8 }}>Nästan klart</h1>
+        <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.5, marginBottom: 26 }}>STP är byggt för dig som kör lastbil — hitta körningar, bygg din profil och ansök på sekunder.</p>
+        <button onClick={() => doRegister("forare")} disabled={busy} className="press" style={{ display: "flex", alignItems: "center", gap: 15, padding: "20px 18px", borderRadius: 18, textAlign: "left", background: "#fff", border: "1.5px solid var(--green)", boxShadow: "var(--sh-sm)", opacity: busy ? 0.6 : 1 }}>
+          <div style={{ width: 52, height: 52, borderRadius: 14, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icon name="truck" size={26} color="var(--green)" stroke={2} /></div>
+          <div style={{ flex: 1 }}><div style={{ fontSize: 17, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.3 }}>Skapa förarkonto</div><div style={{ fontSize: 13.5, color: "var(--ink-500)", marginTop: 3, lineHeight: 1.4 }}>Gratis, alltid.</div></div>
+          <Icon name="arrow" size={20} color="var(--green)" stroke={2.2} />
+        </button>
+        <p style={{ textAlign: "center", fontSize: 13.5, color: "var(--ink-400)", marginTop: 22 }}>
+          Är ni ett åkeri?{" "}
+          <button onClick={() => doRegister("akeri")} disabled={busy} style={{ fontWeight: 700, color: "var(--ink-500)", textDecoration: "underline", background: "none", border: "none", fontFamily: "inherit", fontSize: "inherit" }}>Registrera företag</button>
+        </p>
       </div>
     );
   } else {

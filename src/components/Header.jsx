@@ -687,7 +687,7 @@ export default function Header({ onboarding = false }) {
                 </Link>
                 <Link
                   to="/login"
-                  state={{ initialMode: "register" }}
+                  state={{ initialMode: "register", requiredRole: "driver" }}
                   className="dm-header-primary-cta"
                   style={{
                     background: "var(--green)", color: "#fff",
@@ -833,7 +833,7 @@ export default function Header({ onboarding = false }) {
                 <div className="flex flex-col gap-2">
                   <Link
                     to="/login"
-                    state={{ initialMode: "register" }}
+                    state={{ initialMode: "register", requiredRole: "driver" }}
                     onClick={closeMobile}
                     style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", padding: "12px 16px", borderRadius: 10, background: "var(--green)", color: "#fff", fontSize: "var(--text-base)", fontWeight: 700, textDecoration: "none", boxShadow: "0 1px 0 var(--green-deep)" }}
                   >

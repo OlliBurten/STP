@@ -116,7 +116,7 @@ export default function HittaCeChauffor() {
           <div className="flex flex-col sm:flex-row gap-3">
             <Link
               to="/login"
-              state={{ initialMode: "register" }}
+              state={{ initialMode: "register", requiredRole: "company" }}
               className="inline-block bg-[var(--color-primary)] text-white px-5 py-2.5 rounded-lg font-medium text-center hover:opacity-90 transition-opacity text-sm"
             >
               Skapa företagskonto gratis
