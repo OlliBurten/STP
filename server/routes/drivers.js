@@ -70,8 +70,10 @@ driversRouter.get("/", authMiddleware, requireCompany, requireVerifiedCompany, a
       return {
         id: p.userId,
         name: p.user?.name || "",
-        email: p.email || p.user?.email,
-        phone: p.phone,
+        // Kontaktuppgifter lämnar servern bara om föraren valt att visa dem —
+        // klienten ska aldrig vara enda spärren för persondata.
+        email: p.showEmailToCompanies ? (p.email || p.user?.email) : null,
+        phone: p.showPhoneToCompanies ? p.phone : null,
         location: p.location,
         region: p.region,
         regionsWilling: p.regionsWilling,
@@ -379,8 +381,8 @@ driversRouter.get("/:id", authMiddleware, requireCompany, requireVerifiedCompany
     res.json({
       id: profile.userId,
       name: profile.user?.name || "",
-      email: profile.email || profile.user?.email,
-      phone: profile.phone,
+      email: profile.showEmailToCompanies ? (profile.email || profile.user?.email) : null,
+      phone: profile.showPhoneToCompanies ? profile.phone : null,
       location: profile.location,
       region: profile.region,
       regionsWilling: profile.regionsWilling,

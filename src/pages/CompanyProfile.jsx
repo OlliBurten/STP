@@ -262,20 +262,21 @@ function Formaner({ draft, setDraft }) {
 }
 
 function Verifiering({ draft, setDraft }) {
+  const { user } = useAuth();
+  const bolagsverketOk = user?.companyStatus === "VERIFIED";
   const fSkatt = Boolean(draft?.fSkattsedel);
   const kollektiv = Boolean(draft?.industryOrgMember);
 
   return (
     <div>
       <h2 style={{ fontSize: "var(--text-xl)", fontWeight: 800, marginBottom: 6, letterSpacing: -0.3, color: "var(--ink-900)" }}>Verifiering</h2>
-      <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", marginBottom: 24 }}>Era verifierade märken visas publikt. Hantera filer och status via Verifierings-sidan.</p>
+      <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", marginBottom: 24 }}>Bolagsverket-kontrollen sker automatiskt via ert organisationsnummer. Övriga märken intygar ni själva — de visas publikt på er profil.</p>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
         {[
+          { label: "Bolagsverket", verified: bolagsverketOk, sub: bolagsverketOk ? "Organisationsnummer kontrollerat" : "Kontrolleras automatiskt via organisationsnumret" },
           { label: "F-skattsedel", verified: fSkatt, sub: fSkatt ? "Intygas av er" : "Ej bekräftat ännu" },
-          { label: "Trafiktillstånd", verified: false, sub: "Ladda upp dokument i verifieringsflödet" },
           { label: "Branschorganisation", verified: kollektiv, sub: draft?.industryOrgName || (kollektiv ? "Bekräftat" : "Ej bekräftat") },
-          { label: "Bolagsverket", verified: false, sub: "Kräver organisationsnummer" },
         ].map((item, i) => (
           <div key={i} style={{ padding: "14px 16px", background: "var(--card)", border: `1px solid ${item.verified ? "rgba(31,122,58,0.2)" : "var(--line)"}`, borderRadius: 11, display: "flex", alignItems: "center", gap: 12, boxShadow: "var(--sh-sm)" }}>
             <div style={{ width: 32, height: 32, borderRadius: 99, background: item.verified ? "var(--success-tint)" : "var(--paper-2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -330,9 +331,6 @@ function Verifiering({ draft, setDraft }) {
         </label>
       </div>
 
-      <Link to="/foretag/verifiering" style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 99, background: "var(--green-tint)", border: "1px solid rgba(30,107,91,0.2)", color: "var(--green-text)", fontSize: "var(--text-xs)", fontWeight: 700, textDecoration: "none" }}>
-        Hantera verifiering →
-      </Link>
     </div>
   );
 }

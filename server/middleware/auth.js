@@ -228,7 +228,11 @@ export async function requireVerifiedCompany(req, res, next) {
         return res.status(403).json({ error: "Företaget hittades inte" });
       }
       if (!companyUser.companyOrgNumber) {
-        return next();
+        // Utan organisationsnummer har ingen Bolagsverket-kontroll kunnat ske —
+        // att släppa igenom här kringgick SNI-gaten (hål stängt 2026-07-16).
+        return res.status(403).json({
+          error: "Lägg till ert företag (organisationsnummer) innan ni kan publicera jobb och kontakta förare.",
+        });
       }
       if (companyUser.companyStatus !== "VERIFIED") {
         return res.status(403).json({

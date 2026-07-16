@@ -61,7 +61,9 @@ export async function augmentCompanyMemberUser(user) {
   if (!membership) {
     return {
       ...user,
-      companyStatus: user.companyOrgNumber ? user.companyStatus : "VERIFIED",
+      // Utan org-nr finns inget att verifiera — läses som PENDING så att
+      // klienten visar "lägg till företag"-vägen i stället för öppna grindar.
+      companyStatus: user.companyOrgNumber ? user.companyStatus : "PENDING",
     };
   }
   const ownerUo = await prisma.userOrganization.findFirst({
@@ -230,7 +232,9 @@ authRouter.post("/register", validateBody(registerSchema), async (req, res, next
     const hasCompanyAtReg = role === "COMPANY" && companyName?.trim() && normalizedOrgNumber;
     // SNI-grind även här (legacy-väg med org-nr vid registrering): auto-VERIFIED endast om
     // Bolagsverket bekräftar transportverksamhet (SNI 49/52/53). Annars PENDING → manuell granskning.
-    let companyStatus = "VERIFIED";
+    // Företag är PENDING tills SNI-gaten (Bolagsverket) släppt igenom dem —
+    // antingen här (org-nr vid registrering) eller när de skapar sin organisation.
+    let companyStatus = role === "COMPANY" ? "PENDING" : "VERIFIED";
     if (role === "COMPANY" && hasCompanyAtReg) {
       const bolag = await lookupBolagsverket(normalizedOrgNumber);
       companyStatus = bolag?.isTransport === true && !bolag.isDeregistered ? "VERIFIED" : "PENDING";
@@ -577,7 +581,7 @@ async function findOrCreateOAuthUser(claims, role) {
       needsRecruiterOnboarding: role === "COMPANY",
       companyName: isCompany ? null : undefined,
       companyOrgNumber: isCompany ? null : undefined,
-      companyStatus: "VERIFIED",
+      companyStatus: isCompany ? "PENDING" : "VERIFIED",
     },
     select: {
       id: true,

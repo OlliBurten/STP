@@ -270,13 +270,13 @@ function DoneScreen({ form }) {
         Välkommen till STP{form.companyName ? ` — ${form.companyName}` : ""}!
       </h1>
       <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.55, maxWidth: 440, margin: "0 auto 32px" }}>
-        Ert konto är skapat. För att börja anställa behöver ni verifiera er och publicera er första annons.
+        Ert konto är skapat och företaget kontrolleras automatiskt mot Bolagsverket. Nästa steg: publicera er första annons.
       </p>
 
       <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: 6, textAlign: "left", marginBottom: 24 }}>
         {[
           { icon: "truck",  title: "Publicera annons",       desc: "Beskriv tjänsten — vi matchar förare automatiskt · 5 min", to: "/foretag/annonser/ny", primary: true },
-          { icon: "shield", title: "Verifiera åkeriet",      desc: "Ladda upp F-skatt och trafiktillstånd · 4 min",            to: "/foretag/verifiering" },
+          { icon: "shield", title: "Komplettera företagsprofilen", desc: "Beskrivning, förmåner och fakta som förare ser · 3 min",  to: "/foretag/profil" },
           { icon: "search", title: "Sök bland förare",       desc: "Bläddra bland verifierade yrkesförare direkt",             to: "/forare" },
         ].map((item, i) => (
           <Link key={i} to={item.to}

@@ -47,40 +47,21 @@ function daysAgo(dateStr) {
 
 // ─── Verifieringsgate ────────────────────────────────────────────────────────
 function VerificationGate({ isMobile }) {
-  const steps = [
-    { done: true,  label: "E-post bekräftad" },
-    { done: true,  label: "Företagsuppgifter ifyllda" },
-    { done: false, label: "F-skattsedel uppladdad",    action: "Ladda upp" },
-    { done: false, label: "Trafiktillstånd verifierat", action: "Ladda upp" },
-  ];
+  // Ärlig status: verifieringen är en automatisk Bolagsverket-kontroll av
+  // org.nr (transport-SNI). PENDING = manuell granskning — inget företaget
+  // kan "ladda upp" för att skynda på.
   return (
     <div style={{ marginBottom: 28, background: "var(--amber-tint)", border: "1px solid var(--amber)", borderRadius: 20, padding: isMobile ? 20 : 28 }}>
-      {/* Header: ikon + titel */}
       <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 12 }}>
         <div style={{ width: 40, height: 40, borderRadius: 11, background: "var(--amber-tint)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
           <Icon n="shield" size={20} color="var(--amber)" />
         </div>
-        <div style={{ fontSize: isMobile ? 15 : 18, fontWeight: 800, letterSpacing: -0.4, lineHeight: 1.25, color: "var(--ink-900)" }}>Slutför verifiering för att börja rekrytera</div>
+        <div style={{ fontSize: isMobile ? 15 : 18, fontWeight: 800, letterSpacing: -0.4, lineHeight: 1.25, color: "var(--ink-900)" }}>Verifiering pågår</div>
       </div>
-      <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", lineHeight: 1.5, marginBottom: 16 }}>
-        2 av 4 steg klara. Verifiering tar normalt 1 arbetsdag.
-      </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {steps.map((s, i) => (
-          <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "11px 14px", background: s.done ? "var(--success-tint)" : "var(--paper-2)", border: `1px solid ${s.done ? "var(--success)" : "var(--line)"}`, borderRadius: 11 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-              <div style={{ width: 22, height: 22, borderRadius: 99, background: s.done ? "var(--success)" : "var(--paper-2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                {s.done && <Icon n="check" size={12} color="#fff" />}
-              </div>
-              <span style={{ fontSize: "var(--text-sm)", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "var(--ink-700)" }}>{s.label}</span>
-            </div>
-            {!s.done && (
-              <Link to="/installningar" style={{ padding: "6px 14px", borderRadius: 99, background: "var(--green)", color: "#fff", fontSize: "var(--text-xs)", fontWeight: 800, textDecoration: "none", flexShrink: 0 }}>
-                {s.action}
-              </Link>
-            )}
-          </div>
-        ))}
+      <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-700)", lineHeight: 1.55 }}>
+        Vi kontrollerar ert organisationsnummer mot Bolagsverket. Transportföretag verifieras
+        oftast direkt — annars granskar vi manuellt, normalt inom en arbetsdag. Ni behöver inte
+        göra något; vi mejlar när ni är verifierade och kan publicera annonser och kontakta förare.
       </div>
     </div>
   );
