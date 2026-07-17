@@ -10,7 +10,7 @@ export function validateBody(schema) {
       req.body = result.data;
       return next();
     }
-    const first = result.error?.errors?.[0];
+    const first = result.error?.issues?.[0] ?? result.error?.errors?.[0];
     const message = first?.message || "Ogiltiga data";
     return res.status(400).json({ error: message });
   };
@@ -27,7 +27,7 @@ export function validateQuery(schema) {
       req.query = result.data;
       return next();
     }
-    const first = result.error?.errors?.[0];
+    const first = result.error?.issues?.[0] ?? result.error?.errors?.[0];
     const message = first?.message || "Ogiltiga filter";
     return res.status(400).json({ error: message });
   };
