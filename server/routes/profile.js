@@ -6,6 +6,7 @@ import { augmentCompanyMemberUser, formatClientAuthUser } from "./auth.js";
 import { generateCompanySuggestionsForUser } from "../lib/companyEnrichment.js";
 import { matchScore, driverYearsFromExperience } from "../utils/matchScore.js";
 import { isDriverMinimumProfileComplete } from "../utils/driverProfileRequirements.js";
+import { isFullName, normalizeFullName, FULL_NAME_ERROR } from "../lib/nameUtils.js";
 import { notifyRecommendedDriverMatch } from "../lib/email.js";
 import { createNotification } from "../lib/notifications.js";
 import { analyzeSummary } from "../lib/analyzeSummary.js";
@@ -407,6 +408,14 @@ profileRouter.put("/", async (req, res, next) => {
     if (data.isGymnasieelev) {
       data.primarySegment = "INTERNSHIP";
       data.secondarySegments = [];
+    }
+
+    // Fullt namn krävs (för- och efternamn) — normaliseras med versaler per namndel
+    if (body.name !== undefined) {
+      body.name = normalizeFullName(body.name);
+      if (!isFullName(body.name)) {
+        return res.status(400).json({ error: FULL_NAME_ERROR });
+      }
     }
 
     // Auto-generate slug once (when name is first set and no slug exists yet)

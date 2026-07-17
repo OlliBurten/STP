@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isFullName, normalizeFullName, FULL_NAME_ERROR } from "./nameUtils.js";
 import { isValidSwedishOrgNumber } from "./companyVerify.js";
 
 /** Transportsegment – måste matcha src/data/bransch.js branschValues */
@@ -61,7 +62,7 @@ export const registerSchema = z
     email: z.string().min(1, "E-post krävs").email("Ogiltig e-postadress").max(255),
     password: z.string().min(8, "Lösenordet måste vara minst 8 tecken").max(200),
     role: z.enum(["DRIVER", "COMPANY"], { errorMap: () => ({ message: "Roll måste vara DRIVER eller COMPANY" }) }),
-    name: z.string().min(1, "Namn krävs").max(200).transform((s) => s.trim()),
+    name: z.string().min(1, "Namn krävs").max(200).transform((s) => normalizeFullName(s)),
     companyName: z.string().max(200).optional(),
     companyOrgNumber: z.string().max(20).optional(),
     verificationBaseUrl: z.string().url().max(500).optional(),
@@ -75,7 +76,11 @@ export const registerSchema = z
       return name.length > 0 && isValidSwedishOrgNumber(org);
     },
     { message: "Företagsnamn och giltigt organisationsnummer krävs (eller lämna tomt och lägg till i nästa steg)", path: ["companyOrgNumber"] }
-  );
+  )
+  .refine((data) => data.role !== "DRIVER" || isFullName(data.name), {
+    message: FULL_NAME_ERROR,
+    path: ["name"],
+  });
 
 export const loginSchema = z.object({
   email: z.string().min(1, "E-post krävs").max(255),

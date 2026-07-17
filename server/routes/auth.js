@@ -3,6 +3,7 @@ import crypto from "node:crypto";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { prisma } from "../lib/prisma.js";
+import { normalizeFullName } from "../lib/nameUtils.js";
 import { sendEmail, notifyAdminNewRegistration, sendWelcomeEmail, notifyPasswordChanged } from "../lib/email.js";
 import { validateBody } from "../middleware/validate.js";
 import {
@@ -576,7 +577,7 @@ async function findOrCreateOAuthUser(claims, role) {
       passwordHash: null,
       emailVerifiedAt: new Date(),
       role,
-      name,
+      name: normalizeFullName(name),
       needsDriverOnboarding: role === "DRIVER",
       needsRecruiterOnboarding: role === "COMPANY",
       companyName: isCompany ? null : undefined,
