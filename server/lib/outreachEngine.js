@@ -51,10 +51,21 @@ export async function optOutClaim(token) {
 /**
  * Triggered after a driver submits an Application to an unclaimed AGGREGATED job.
  *
- * @param {object} job          — full Job record (must include organizationNumber, applyEmail, employerEmail, company, title, id, sourceUrl)
- * @param {number} applicationCount — total number of applications for this org so far
+ * Ärlighetsregeln (ägarbeslut 2026-07-17): vi påstår bara det vi VET.
+ *  - forwarded   = ansökningar via STP med delad profil — kandidaten finns hos oss → "har sökt".
+ *  - clickThroughs = vidareklick till arbetsgivarens egen kanal (inloggade af_external
+ *    + anonyma gäster). Vi vet INTE att en ansökan slutfördes → "har klickat vidare
+ *    för att söka", aldrig "har sökt".
+ *
+ * @param {object} job — full Job record (must include organizationNumber, applyEmail, employerEmail, company, title, id, sourceUrl)
+ * @param {{ forwarded?: number, clickThroughs?: number } | number} counts — antal per signaltyp
+ *   (bakåtkompatibelt: ett rent tal tolkas som clickThroughs)
  */
-export async function triggerOutreach(job, applicationCount) {
+export async function triggerOutreach(job, counts) {
+  const { forwarded = 0, clickThroughs = 0 } =
+    typeof counts === "number" ? { clickThroughs: counts } : (counts || {});
+  const total = forwarded + clickThroughs;
+  if (total === 0) return { skipped: true, reason: "no_signals" };
   if (!job.organizationNumber) {
     console.log("[Outreach] Jobb saknar organizationNumber — hoppar över");
     return { skipped: true, reason: "no_org_number" };
@@ -86,18 +97,34 @@ export async function triggerOutreach(job, applicationCount) {
   const claimUrl = `${BASE_URL}/anslut/${claim.claimToken}`;
   const optOutUrl = `${BASE_URL}/avregistrera/${claim.claimToken}`;
 
-  const subjectLine = `${applicationCount > 1 ? `${applicationCount} förare har sökt` : "En förare har sökt"} er annons på STP`;
+  // Ämne och huvudmening speglar den starkaste SANNA signalen.
+  const subjectLine = forwarded > 0
+    ? `${forwarded > 1 ? `${forwarded} förare har sökt` : "En förare har sökt"} er annons via STP`
+    : `${clickThroughs > 1 ? `${clickThroughs} förare har visat intresse för` : "En förare har visat intresse för"} er annons via STP`;
+
+  const signalLines = [];
+  if (forwarded > 0) {
+    signalLines.push(
+      `${forwarded > 1 ? `${forwarded} lastbilsförare har` : "En lastbilsförare har"} sökt er tjänst "${job.title}" via Sveriges Transportplattform (STP) och delat sin profil med er.`
+    );
+  }
+  if (clickThroughs > 0) {
+    signalLines.push(
+      `${clickThroughs > 1 ? `${clickThroughs} förare har` : `${forwarded > 0 ? "Ytterligare en" : "En"} förare har`} klickat vidare från STP för att söka tjänsten "${job.title}" via er egen kanal — en eventuell ansökan landar i så fall direkt hos er (mejl eller er ansökningssida), inte hos oss.`
+    );
+  }
 
   const bodyText = [
     `Hej ${job.company},`,
     "",
-    `${applicationCount > 1 ? `${applicationCount} kvalificerade lastbilsförare har` : "En kvalificerad lastbilsförare har"} sökt er tjänst "${job.title}" via Sveriges Transportplattform (STP).`,
-    "",
-    "För att se kandidaterna och ta över er annons på STP, klicka på länken nedan:",
+    ...signalLines.flatMap((l) => [l, ""]),
+    forwarded > 0
+      ? "För att se kandidaterna och ta över er annons på STP, klicka på länken nedan:"
+      : "För att se intresset för era annonser och ta över dem på STP, klicka på länken nedan:",
     "",
     claimUrl,
     "",
-    "Det är gratis att se ansökningarna och skapa ett konto. Ni bestämmer sedan om ni vill bli aktiva på plattformen.",
+    "Det är gratis att skapa ett konto. Ni bestämmer sedan om ni vill bli aktiva på plattformen.",
     "",
     "──",
     `STP hittade er annons på Arbetsförmedlingen och publicerade den för att nå rätt förare. Ni kan alltid se originalannonsen här: ${job.sourceUrl || "arbetsformedlingen.se"}`,
@@ -131,7 +158,7 @@ export async function triggerOutreach(job, applicationCount) {
     console.log(`  Claim-URL: ${claimUrl}`);
     console.log(`  Org.nr:   ${job.organizationNumber}`);
     console.log(`  Jobb:     ${job.title} @ ${job.company}`);
-    console.log(`  Ansök.nr: ${applicationCount}`);
+    console.log(`  Signaler: ${forwarded} sökta (STP), ${clickThroughs} vidareklick`);
     if (!contactEmail) {
       console.log("  OBS: Ingen kontakte-post hittad — inget skulle skickas ens i auto-läge");
     }

@@ -77,15 +77,19 @@ applicationsRouter.post(
       // och claim-kroken ("förare hittade er annons via STP") är STP:s
       // konverteringsmotor mot åkerier. Throttle 7d/org ligger i outreachEngine.
       if (job.source === "AGGREGATED" && !job.claimed && job.organizationNumber) {
-        const appCount = await prisma.application.count({
-          where: {
-            jobId: { in: await prisma.job.findMany({
-              where: { organizationNumber: job.organizationNumber, source: "AGGREGATED" },
-              select: { id: true },
-            }).then(jobs => jobs.map(j => j.id)) },
-          },
+        const orgJobs = await prisma.job.findMany({
+          where: { organizationNumber: job.organizationNumber, source: "AGGREGATED" },
+          select: { id: true, guestApplyClicks: true },
         });
-        triggerOutreach(job, appCount).catch((err) => {
+        const jobIds = orgJobs.map((j) => j.id);
+        // Ärligt räknat: "har sökt" = STP-ansökningar med delad profil; vidareklick
+        // (af_external + gäster) är bara intresse-signaler — se outreachEngine.
+        const [forwarded, afClicks] = await Promise.all([
+          prisma.application.count({ where: { jobId: { in: jobIds }, appliedVia: "stp" } }),
+          prisma.application.count({ where: { jobId: { in: jobIds }, appliedVia: "af_external" } }),
+        ]);
+        const guestClicks = orgJobs.reduce((sum, j) => sum + (j.guestApplyClicks || 0), 0);
+        triggerOutreach(job, { forwarded, clickThroughs: afClicks + guestClicks }).catch((err) => {
           console.error("[Outreach] Fel:", err?.message || String(err));
         });
       }

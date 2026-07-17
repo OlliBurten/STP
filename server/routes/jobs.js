@@ -514,12 +514,14 @@ jobsRouter.post("/:id/guest-apply-click", async (req, res, next) => {
         where: { organizationNumber: job.organizationNumber, source: "AGGREGATED" },
         select: { id: true, guestApplyClicks: true },
       });
-      const appCount = await prisma.application.count({
-        where: { jobId: { in: orgJobs.map((j) => j.id) } },
-      });
+      const jobIds = orgJobs.map((j) => j.id);
+      const [forwarded, afClicks] = await Promise.all([
+        prisma.application.count({ where: { jobId: { in: jobIds }, appliedVia: "stp" } }),
+        prisma.application.count({ where: { jobId: { in: jobIds }, appliedVia: "af_external" } }),
+      ]);
       const guestClicks = orgJobs.reduce((sum, j) => sum + (j.guestApplyClicks || 0), 0);
       const { triggerOutreach } = await import("../lib/outreachEngine.js");
-      triggerOutreach(job, Math.max(1, appCount + guestClicks)).catch((err) => {
+      triggerOutreach(job, { forwarded, clickThroughs: afClicks + guestClicks }).catch((err) => {
         console.error("[Outreach] Gäst-lead-fel:", err?.message || String(err));
       });
     }
