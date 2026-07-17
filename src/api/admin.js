@@ -39,6 +39,16 @@ export function getExposureOutcomes() {
   return apiGet("/api/admin/exposure-outcomes");
 }
 
+/** Trafiköversikt 7d (PostHog): besökare, källor, städer, gäst/inloggad, toppjobb. */
+export function getAdminTraffic() {
+  return apiGet("/api/admin/traffic");
+}
+
+/** Tillväxt-loopar: jobbevakningar + claim-mejl-tratten. */
+export function getGrowthFunnel() {
+  return apiGet("/api/admin/growth-funnel");
+}
+
 export function getStackOverview() {
   return apiGet("/api/admin/stack-overview");
 }

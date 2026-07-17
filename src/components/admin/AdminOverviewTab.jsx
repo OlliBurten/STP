@@ -1,7 +1,7 @@
 import React from "react";
 import { Icon } from "./AdminShell.jsx";
 import { fmtDate, useIsMobile } from "./adminShared.jsx";
-import { getApplicationStats, getPosthogActivity, getExposureOutcomes } from "../../api/admin.js";
+import { getApplicationStats, getPosthogActivity, getExposureOutcomes, getAdminTraffic, getGrowthFunnel } from "../../api/admin.js";
 
 const mono = { fontFamily: "'JetBrains Mono',monospace", fontFeatureSettings: '"tnum"' };
 
@@ -162,6 +162,78 @@ function PosthogActivity() {
   );
 }
 
+// ─── Trafik — 7 dagar (PostHog): källor, geografi, gäster, toppjobb ────────────
+function TrafficPanel() {
+  const [data, setData] = React.useState(null);
+  const [err, setErr] = React.useState(false);
+  React.useEffect(() => {
+    let alive = true;
+    getAdminTraffic().then((d) => alive && setData(d)).catch(() => alive && setErr(true));
+    return () => { alive = false; };
+  }, []);
+  if (err || (data && !data.configured)) return null;
+
+  const fmtDomain = (d) => d === "$direct" ? "Direkt" : d.replace(/^(www|m|lm|l)\./, "");
+  return (
+    <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, overflow: "hidden" }}>
+      <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <span style={{ fontSize: "var(--text-sm)", fontWeight: 800, letterSpacing: -0.2, color: "var(--ink-900)" }}>Trafik — 7 dagar</span>
+        <span style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", fontWeight: 600 }}>PostHog · exkl. ägarkonton</span>
+      </div>
+      {!data ? (
+        <div style={{ padding: "20px 18px", textAlign: "center", fontSize: "var(--text-xs)", color: "var(--ink-400)" }}>Laddar…</div>
+      ) : (
+        <>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", borderBottom: "1px solid var(--line)" }}>
+            {[
+              { l: "Besökare", v: data.visitors, c: "var(--green-text)" },
+              { l: "Sidvisningar", v: data.pageviews, c: "var(--ink-900)" },
+              { l: "Gäster", v: data.guests, c: "var(--info)" },
+              { l: "Inloggade", v: data.loggedIn, c: "var(--success)" },
+            ].map((c, i) => (
+              <div key={c.l} style={{ padding: "12px 14px", borderRight: i < 3 ? "1px solid var(--line)" : "none" }}>
+                <div style={{ fontSize: "var(--text-xl)", fontWeight: 800, color: c.c, ...mono }}>{Number(c.v).toLocaleString()}</div>
+                <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", fontWeight: 600, marginTop: 2 }}>{c.l}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0 }}>
+            <div style={{ borderRight: "1px solid var(--line)", padding: "10px 18px 12px" }}>
+              <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 8 }}>Källor</div>
+              {data.referrers.slice(0, 6).map((r) => (
+                <div key={r.domain} style={{ display: "flex", justifyContent: "space-between", fontSize: "var(--text-2xs)", color: "var(--ink-600)", padding: "3px 0" }}>
+                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{fmtDomain(r.domain)}</span>
+                  <b style={{ color: "var(--ink-900)", ...mono }}>{r.visitors}</b>
+                </div>
+              ))}
+            </div>
+            <div style={{ padding: "10px 18px 12px" }}>
+              <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 8 }}>Städer</div>
+              {data.cities.filter((c) => c.city !== "Okänd").slice(0, 6).map((c) => (
+                <div key={c.city} style={{ display: "flex", justifyContent: "space-between", fontSize: "var(--text-2xs)", color: "var(--ink-600)", padding: "3px 0" }}>
+                  <span>{c.city}</span>
+                  <b style={{ color: "var(--ink-900)", ...mono }}>{c.visitors}</b>
+                </div>
+              ))}
+            </div>
+          </div>
+          {data.topClickedJobs.length > 0 && (
+            <div style={{ borderTop: "1px solid var(--line)", padding: "10px 18px 12px" }}>
+              <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 8 }}>Mest sökta jobb (klick · personer)</div>
+              {data.topClickedJobs.slice(0, 5).map((j) => (
+                <div key={j.title} style={{ display: "flex", justifyContent: "space-between", gap: 10, fontSize: "var(--text-2xs)", color: "var(--ink-600)", padding: "3px 0" }}>
+                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{j.title}</span>
+                  <b style={{ flexShrink: 0, color: "var(--ink-900)", ...mono }}>{j.clicks} · {j.people}</b>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
 // ─── "Tillsatt efter STP-exponering" — indikation, inte bevis ──────────────────
 function ExposureOutcomes() {
   const [data, setData] = React.useState(null);
@@ -201,6 +273,65 @@ function ExposureOutcomes() {
           </div>
         </>
       )}
+    </div>
+  );
+}
+
+// ─── Nya förare (7d) — redan hämtat i /onboarding men visades aldrig ───────────
+function NewDriversCard({ newDrivers, onOpenUser }) {
+  if (!Array.isArray(newDrivers)) return null;
+  return (
+    <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, overflow: "hidden" }}>
+      <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <span style={{ fontSize: "var(--text-sm)", fontWeight: 800, letterSpacing: -0.2, color: "var(--ink-900)" }}>Nya förare — 7 dagar</span>
+        <span style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", fontWeight: 600 }}>{newDrivers.length} st</span>
+      </div>
+      {newDrivers.length === 0 ? (
+        <div style={{ padding: "14px 18px", fontSize: "var(--text-xs)", color: "var(--ink-400)" }}>Inga nya förare senaste veckan.</div>
+      ) : (
+        <div style={{ maxHeight: 240, overflowY: "auto", paddingBottom: 6 }}>
+          {newDrivers.map((d, i) => (
+            <button key={d.id} onClick={() => onOpenUser && onOpenUser(d.id)} style={{ width: "100%", textAlign: "left", background: "none", border: "none", cursor: "pointer", padding: "8px 18px", display: "flex", alignItems: "center", gap: 10, borderBottom: i < newDrivers.length - 1 ? "1px solid var(--line)" : "none", fontFamily: "inherit" }}>
+              <span style={{ flex: 1, minWidth: 0, fontSize: "var(--text-2xs)", color: "var(--ink-900)", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.name || d.email}</span>
+              <span style={{ flexShrink: 0, padding: "2px 7px", borderRadius: 5, fontSize: "var(--text-2xs)", fontWeight: 700, background: d.pct >= 75 ? "var(--success-tint)" : d.pct >= 50 ? "var(--amber-tint)" : "var(--paper-2)", color: d.pct >= 75 ? "var(--success)" : d.pct >= 50 ? "var(--amber-text)" : "var(--ink-500)" }}>{d.pct}% profil</span>
+              <span style={{ flexShrink: 0, fontSize: "var(--text-2xs)", color: "var(--ink-400)" }}>{new Date(d.createdAt).toLocaleDateString("sv-SE", { day: "numeric", month: "short" })}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Tillväxt-loopar: bevakningar + claim-mejl ─────────────────────────────────
+function GrowthFunnelCard() {
+  const [data, setData] = React.useState(null);
+  React.useEffect(() => {
+    let alive = true;
+    getGrowthFunnel().then((d) => alive && setData(d)).catch(() => {});
+    return () => { alive = false; };
+  }, []);
+  if (!data) return null;
+  const rows = [
+    { l: "Bevakningar (bekräftade)", v: `${data.jobAlerts.confirmed} av ${data.jobAlerts.total}` },
+    { l: "Bevakningar avslutade", v: String(data.jobAlerts.unsubscribed) },
+    { l: "Åkerier mejlade (claim)", v: String(data.claims.emailed) },
+    { l: "Annonser claimade", v: String(data.claims.claimed) },
+    { l: "Claim opt-out", v: String(data.claims.optedOut) },
+  ];
+  return (
+    <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, overflow: "hidden" }}>
+      <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--line)" }}>
+        <span style={{ fontSize: "var(--text-sm)", fontWeight: 800, letterSpacing: -0.2, color: "var(--ink-900)" }}>Tillväxt-loopar</span>
+      </div>
+      <div style={{ padding: "8px 18px 12px" }}>
+        {rows.map((r) => (
+          <div key={r.l} style={{ display: "flex", justifyContent: "space-between", gap: 10, padding: "5px 0", fontSize: "var(--text-2xs)", color: "var(--ink-600)" }}>
+            <span>{r.l}</span>
+            <b style={{ color: "var(--ink-900)", ...mono }}>{r.v}</b>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -607,7 +738,6 @@ export default function AdminOverviewTab({
   const drivers      = summary?.users?.driversTotal ?? null;
   const companies    = summary?.users?.recruitersTotal ?? null;
   const activeJobs   = summary?.jobs?.active ?? null;
-  const conversations = summary?.activity?.conversations ?? null;
 
   // Deltas — use period to pick the right window
   const newUsersInPeriod = period === "7d" ? summary?.users?.new7d : period === "30d" ? summary?.users?.new30d : null;
@@ -662,10 +792,10 @@ export default function AdminOverviewTab({
           color="var(--info)"
         />
         <Metric
-          label="Konversationer"
-          value={conversations != null ? String(conversations) : noDataStr}
+          label="Matchbara profiler"
+          value={summary?.driverProfiles?.completeMinimum != null ? String(summary.driverProfiles.completeMinimum) : noDataStr}
           delta={null}
-          trend={conversations != null ? `${summary?.activity?.messages ?? "?"} meddelanden totalt` : "Ingen data"}
+          trend={summary?.driverProfiles?.total != null ? `av ${summary.driverProfiles.total} förarprofiler` : "Ingen data"}
           color="var(--info)"
         />
       </div>
@@ -673,6 +803,20 @@ export default function AdminOverviewTab({
       {/* Two-column main */}
       <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 360px", gap: 14 }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          {/* Tillväxt-först (audit 2026-07-18): trafik → tratt → nya förare →
+              ansökningar → aktivitet → exponering. Live-flödet sist (dublett-info). */}
+          <TrafficPanel />
+          <OnboardingFunnel onboarding={onboarding} />
+          <NewDriversCard
+            newDrivers={onboarding?.newDrivers}
+            onOpenUser={(id) => {
+              setActiveTab("users");
+              loadUserDetail && loadUserDetail(id).catch((e) => setError && setError(e.message || "Kunde inte öppna användare"));
+            }}
+          />
+          <ApplicationStats />
+          <PosthogActivity />
+          <ExposureOutcomes />
           <ActivityFeed
             latestUsers={summary?.latestUsers}
             latestApplications={summary?.latestApplications}
@@ -683,10 +827,6 @@ export default function AdminOverviewTab({
               loadUserDetail && loadUserDetail(id).catch((e) => setError && setError(e.message || "Kunde inte öppna användare"));
             }}
           />
-          <OnboardingFunnel onboarding={onboarding} />
-          <ApplicationStats />
-          <PosthogActivity />
-      <ExposureOutcomes />
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <ActionQueue
@@ -698,8 +838,8 @@ export default function AdminOverviewTab({
             setActiveTab={setActiveTab}
             onStuckReminder={onStuckReminder}
           />
+          <GrowthFunnelCard />
           <SystemPulse health={health} setActiveTab={setActiveTab} />
-          <IntegrationsCard health={health} />
         </div>
       </div>
     </div>

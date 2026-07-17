@@ -689,6 +689,68 @@ adminRouter.get("/posthog-activity", async (req, res, next) => {
   }
 });
 
+// ── Trafiköversikt (PostHog) — besökare, kanaler, geografi, gäst/inloggad,
+// mest klickade jobb. Samma ägar-/testfiltrering som posthog-activity.
+adminRouter.get("/traffic", async (req, res, next) => {
+  try {
+    const { posthogHogQL } = await import("../lib/stackOverview.js");
+    const excluded = [...new Set([...OWNER_EMAILS, ...TEST_EMAIL_EXACT])].map((e) => `'${e}'`).join(",");
+    const notOwner = `and (person.properties.email is null or lower(person.properties.email) not in (${excluded}))`;
+    const [overview, channels, cities, split, topJobs] = await Promise.all([
+      posthogHogQL(
+        `select count(distinct distinct_id), count() from events where event = '$pageview' and timestamp > now() - interval 7 day ${notOwner}`
+      ),
+      posthogHogQL(
+        `select coalesce(nullIf(properties.$referring_domain, ''), '$direct'), count(distinct distinct_id) from events where event = '$pageview' and timestamp > now() - interval 7 day ${notOwner} group by 1 order by 2 desc limit 8`
+      ),
+      posthogHogQL(
+        `select coalesce(nullIf(properties.$geoip_city_name, ''), 'Okänd'), count(distinct distinct_id) from events where event = '$pageview' and timestamp > now() - interval 7 day ${notOwner} group by 1 order by 2 desc limit 10`
+      ),
+      posthogHogQL(
+        `select if(person.properties.email is null, 'gäst', 'inloggad'), count(distinct distinct_id) from events where event = '$pageview' and timestamp > now() - interval 7 day ${notOwner} group by 1`
+      ),
+      posthogHogQL(
+        `select properties.jobTitle, count(), count(distinct distinct_id) from events where event = 'apply_initiated' and timestamp > now() - interval 7 day and properties.jobTitle is not null ${notOwner} group by 1 order by 2 desc limit 8`
+      ),
+    ]);
+    if (overview === null) return res.json({ configured: false });
+    const splitMap = Object.fromEntries((split || []).map((r) => [r[0], r[1]]));
+    res.json({
+      configured: true,
+      windowDays: 7,
+      visitors: overview?.[0]?.[0] ?? 0,
+      pageviews: overview?.[0]?.[1] ?? 0,
+      guests: splitMap["gäst"] ?? 0,
+      loggedIn: splitMap["inloggad"] ?? 0,
+      referrers: (channels || []).map((r) => ({ domain: r[0], visitors: r[1] })),
+      cities: (cities || []).map((r) => ({ city: r[0], visitors: r[1] })),
+      topClickedJobs: (topJobs || []).map((r) => ({ title: r[0], clicks: r[1], people: r[2] })),
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// ── Tillväxt-loopar: jobbevakningar (B2C-fångst) + claim-mejl (B2B-konvertering) ─
+adminRouter.get("/growth-funnel", async (req, res, next) => {
+  try {
+    const [alertsTotal, alertsConfirmed, alertsUnsubscribed, claimsEmailed, claimsClaimed, claimsOptedOut] = await Promise.all([
+      prisma.jobAlert.count(),
+      prisma.jobAlert.count({ where: { confirmedAt: { not: null }, unsubscribedAt: null } }),
+      prisma.jobAlert.count({ where: { unsubscribedAt: { not: null } } }),
+      prisma.employerClaim.count({ where: { outreachSentAt: { not: null } } }),
+      prisma.employerClaim.count({ where: { claimedAt: { not: null } } }),
+      prisma.employerClaim.count({ where: { optedOutAt: { not: null } } }),
+    ]);
+    res.json({
+      jobAlerts: { total: alertsTotal, confirmed: alertsConfirmed, unsubscribed: alertsUnsubscribed },
+      claims: { emailed: claimsEmailed, claimed: claimsClaimed, optedOut: claimsOptedOut },
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
 adminRouter.get("/schools", async (req, res, next) => {
   try {
     const rows = await prisma.driverProfile.groupBy({

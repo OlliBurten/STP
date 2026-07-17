@@ -75,7 +75,7 @@ function getStaffingBrands() {
 // AF uses "Stockholms Län", "Västra Götalands Län" etc.  STP uses bare names.
 const REGION_MAP = {
   "stockholms län": "Stockholm",
-  "uppsalas län": "Uppsala",
+  "uppsala län": "Uppsala",
   "södermanlands län": "Södermanland",
   "östergötlands län": "Östergötland",
   "jönköpings län": "Jönköping",
