@@ -11,7 +11,7 @@ import DriverCard from "../components/DriverCard";
 import { useAuth } from "../context/AuthContext";
 import { useProfile } from "../context/ProfileContext";
 import { getDriverMatchHighlights, getMatchingDriversForJob, matchScore } from "../utils/matchUtils";
-import { fetchJob, fetchJobApplicants, fetchSavedJobs, saveJob, unsaveJob, trackJobView, fetchJobStats } from "../api/jobs.js";
+import { fetchJob, fetchJobApplicants, fetchSavedJobs, saveJob, unsaveJob, trackJobView, fetchJobStats, registerGuestApplyClick } from "../api/jobs.js";
 import { submitApplication } from "../api/applications.js";
 import { fetchMatchExplanation, screenApplicant as screenApplicantApi } from "../api/ai.js";
 import { selectConversation, rejectConversation } from "../api/conversations.js";
@@ -554,6 +554,9 @@ export default function JobDetail() {
     track("apply_initiated", { jobId: job.id, jobTitle: job.title, source });
     if ((isEmployerChannel || applyEmailChannel) && isDriver) {
       submitApplication({ jobId: job.id, appliedVia: "af_external", consentToShare: false }).catch(() => {});
+    } else if ((isEmployerChannel || applyEmailChannel) && !user) {
+      // Gäst: anonym lead → claim-mejl till arbetsgivaren
+      registerGuestApplyClick(job.id);
     }
   };
 

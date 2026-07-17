@@ -298,7 +298,7 @@ export function NotiserSheet({ ctx }) {
   return (
     <div style={{ padding: "10px 22px 30px", textAlign: "center" }}>
       <div style={{ width: 60, height: 60, borderRadius: 18, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}><Icon name="bell" size={26} color="var(--green)" stroke={1.9} /></div>
-      <p style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.5 }}>Ansökningar och meddelanden visas på Översikt och i Inkorgen. Du får en notis när något händer.</p>
+      <p style={{ fontSize: 14, color: "var(--ink-500)", lineHeight: 1.5 }}>Ansökningar och meddelanden visas på Översikt och under Meddelanden. Du får en notis när något händer.</p>
     </div>
   );
 }

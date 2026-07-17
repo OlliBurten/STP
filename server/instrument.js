@@ -30,6 +30,15 @@ Sentry.init({
     if (errValue.includes("rate_limit_error") || errValue.includes("overloaded_error")) {
       return null;
     }
+    // Anthropic usage-limits (MAX-planens 429:or) — samma kvotflod-risk som juni,
+    // men med annan feltext än rate_limit_error. Operationellt, aldrig en bugg.
+    if (
+      errValue.includes("usage limit") ||
+      errValue.includes("usage_limit") ||
+      /anthropic|claude/i.test(errValue) && errValue.includes("429")
+    ) {
+      return null;
+    }
 
     if (Array.isArray(event.breadcrumbs?.values)) {
       event.breadcrumbs.values = event.breadcrumbs.values.map((b) => {

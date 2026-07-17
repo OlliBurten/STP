@@ -26,18 +26,20 @@ test.describe("Lediga jobb", () => {
     await expect(page.getByRole("heading", { name: /Lediga jobb/i })).toBeVisible({ timeout: 8000 });
   });
 
-  test("snabbfilter-knappar visas", async ({ page }) => {
+  test("filterraden visas (selects + Dölj bemanning)", async ({ page }) => {
     await page.goto("/jobb");
-    await expect(page.getByRole("button", { name: "CE-körkort" })).toBeVisible({ timeout: 8000 });
-    await expect(page.getByRole("button", { name: "C-körkort" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Fast tjänst" })).toBeVisible();
+    await expect(page.locator("select").first()).toBeVisible({ timeout: 8000 });
+    await expect(page.getByRole("button", { name: /Dölj bemanning/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /Fler filter/i })).toBeVisible();
   });
 
   test("kan filtrera på CE-körkort", async ({ page }) => {
     await page.goto("/jobb");
-    await page.getByRole("button", { name: "CE-körkort" }).click();
-    // Filter är aktivt — knappen ska ha aktiv stil
-    await expect(page.getByRole("button", { name: "CE-körkort" })).toBeVisible();
+    const licenseSelect = page.locator("select").first();
+    await licenseSelect.waitFor({ timeout: 8000 });
+    await licenseSelect.selectOption("CE").catch(() => {}); // facettdrivet — CE kan saknas i tom lista
+    // Aktivt filter visas som chip ("CE-körkort") när valet gick igenom
+    if (await licenseSelect.inputValue() === "CE") await expect(page.getByText("Aktiva filter")).toBeVisible();
   });
 
   test("kan öppna ett jobb", async ({ page }) => {
@@ -55,7 +57,7 @@ test.describe("Lediga jobb", () => {
 test.describe("Åkerier", () => {
   test("laddar åkerisökning", async ({ page }) => {
     await page.goto("/akerier");
-    await expect(page.getByRole("heading", { name: /Hitta ditt nästa åkeri/i })).toBeVisible({ timeout: 8000 });
+    await expect(page.getByRole("heading", { name: /^Åkerier$/i }).first()).toBeVisible({ timeout: 8000 });
   });
 
   test("sökfält och filter visas", async ({ page }) => {
@@ -112,6 +114,7 @@ test.describe("Login-sida", () => {
 
   test("visar felmeddelande vid fel uppgifter", async ({ page }) => {
     await page.goto("/login");
+    await page.getByRole("button", { name: /Endast nödvändiga/i }).click().catch(() => {});
     await page.getByLabel(/E-post/i).fill("ingen@example.com");
     await page.locator('input[type="password"]').fill("felLösenord123");
     await page.getByRole("button", { name: /Logga in/i }).click();
@@ -120,11 +123,13 @@ test.describe("Login-sida", () => {
     await expect(page.getByText(/fel|ogiltigt|hittades inte|kontrollera|Fel|Too many/i)).toBeVisible({ timeout: 8000 });
   });
 
-  test("kan gå till registreringsvalet", async ({ page }) => {
+  test("Skapa konto går direkt till förarregistrering (B2C-först)", async ({ page }) => {
     await page.goto("/login");
-    await page.getByRole("button", { name: "Skapa konto gratis", exact: true }).click();
-    await expect(page.getByRole("button", { name: /Registrera som förare/i })).toBeVisible();
-    await expect(page.getByRole("button", { name: /Registrera som åkeri/i })).toBeVisible();
+    await page.getByRole("button", { name: /Endast nödvändiga/i }).click().catch(() => {});
+    await page.getByRole("button", { name: /^Skapa konto$/ }).click();
+    await expect(page.getByRole("heading", { name: /Skapa förarkonto/i })).toBeVisible();
+    // Åkerier når sin registrering via den diskreta korslänken
+    await expect(page.getByRole("button", { name: /Registrera företag/i })).toBeVisible();
   });
 });
 

@@ -340,6 +340,8 @@ model Job {
   // Bemanningsannons (ägarbeslut 2026-07-16: behålls + märks ärligt i UI:t;
   // plattforms-/fiskeaktörer blockas helt vid ingest)
   isStaffing           Boolean @default(false)
+  // Anonyma gäst-ansökningsklick (mailto/extern) — driver claim-mejl utan konto
+  guestApplyClicks     Int     @default(0)
   applicationReference String? // application_details.reference — "ange referens X"
   applyViaAf           Boolean @default(false) // ansökan kräver AF-inloggning
   contactName          String? // application_contacts[0].name

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { fetchJobs } from "../../api/jobs";
 import { createJobAlert } from "../../api/jobAlerts";
+import { registerGuestApplyClick } from "../../api/jobs";
 import { track } from "../../utils/posthog.js";
 import { withUtm } from "../../utils/utm.js";
 import { mockJobs } from "../../data/mockJobs";
@@ -291,7 +292,7 @@ export default function MobileGuestJobs() {
                   ? `mailto:${detail.applyEmail}?subject=${encodeURIComponent(`Ansökan: ${detail.applicationReference || detail.title}`)}&body=${encodeURIComponent(`Hej!\n\nJag söker tjänsten "${detail.title}"${detail.applicationReference ? ` (referens: ${detail.applicationReference})` : ""} som jag hittade via Transportplattformen.\n\n[Berätta kort om dig själv, din behörighet och erfarenhet.]\n\nMed vänliga hälsningar,\n`)}`
                   : withUtm(detail.externalApplyUrl)}
                 target={detail.applyEmail ? undefined : "_blank"} rel="noopener noreferrer"
-                onClick={() => track("apply_initiated", { jobId: detail.id, jobTitle: detail.title, source: detail.applyEmail ? "guest_mobile_email" : "guest_mobile_external" })}
+                onClick={() => { track("apply_initiated", { jobId: detail.id, jobTitle: detail.title, source: detail.applyEmail ? "guest_mobile_email" : "guest_mobile_external" }); registerGuestApplyClick(detail.id); }}
                 className="press" style={{ flex: 1, height: 54, borderRadius: 14, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, textDecoration: "none" }}>
                 {detail.applyEmail ? "Ansök via mejl" : "Ansök hos arbetsgivaren"} <Icon name={detail.applyEmail ? "mail" : "arrow"} size={19} color="#fff" stroke={2.4} />
               </a>

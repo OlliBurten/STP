@@ -14,7 +14,7 @@ export default function InkorgScreen({ ctx, go }) {
   const unread = threads.filter((t) => t.unread).length;
   return (
     <>
-      <Header title="Inkorg" scrollY={sy} big="Inkorg" sub={unread === 0 ? "Allt läst" : `${unread} olästa`} />
+      <Header title="Meddelanden" scrollY={sy} big="Meddelanden" sub={unread === 0 ? "Allt läst" : `${unread} olästa`} />
       <ScrollArea onScroll={(e) => setSy(e.target.scrollTop)} onRefresh={(done) => { ctx.chat?.refreshConversations?.(); setTimeout(done, 700); }}>
         <div style={{ padding: "6px 16px 24px" }}>
           {threads.length === 0 ? (

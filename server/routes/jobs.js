@@ -485,6 +485,50 @@ jobsRouter.delete("/saved-companies/:companyId", authMiddleware, requireDriver, 
 
 // ─── Job by id ────────────────────────────────────────────────────────────────
 
+// ── Gäst-ansökningsklick (publikt, ingen auth) ────────────────────────────────
+// Sedan gäster kan söka utan konto (2026-07-09) genererar deras klick inga
+// claim-mejl — konverteringsmotorn mot åkerier tappade sin signal. Denna
+// endpoint räknar klicket anonymt och triggar samma claim-mejl som inloggade
+// ansökningar ("X förare har sökt er annons"). Skydd: klienten skickar max en
+// gång per jobb och webbläsare (localStorage), och outreachEngine har redan
+// 7-dagars-throttle per organisation + opt-out.
+jobsRouter.post("/:id/guest-apply-click", async (req, res, next) => {
+  try {
+    const job = await prisma.job.findUnique({
+      where: { id: req.params.id },
+      select: {
+        id: true, title: true, company: true, status: true, source: true,
+        claimed: true, organizationNumber: true, applyEmail: true,
+        employerEmail: true, sourceUrl: true,
+      },
+    });
+    if (!job || job.status !== "ACTIVE" || job.source !== "AGGREGATED" || job.claimed) {
+      return res.json({ ok: true }); // tyst no-op — inget att läcka till anonyma anrop
+    }
+    await prisma.job.update({
+      where: { id: job.id },
+      data: { guestApplyClicks: { increment: 1 } },
+    });
+    if (job.organizationNumber) {
+      const orgJobs = await prisma.job.findMany({
+        where: { organizationNumber: job.organizationNumber, source: "AGGREGATED" },
+        select: { id: true, guestApplyClicks: true },
+      });
+      const appCount = await prisma.application.count({
+        where: { jobId: { in: orgJobs.map((j) => j.id) } },
+      });
+      const guestClicks = orgJobs.reduce((sum, j) => sum + (j.guestApplyClicks || 0), 0);
+      const { triggerOutreach } = await import("../lib/outreachEngine.js");
+      triggerOutreach(job, Math.max(1, appCount + guestClicks)).catch((err) => {
+        console.error("[Outreach] Gäst-lead-fel:", err?.message || String(err));
+      });
+    }
+    return res.json({ ok: true });
+  } catch (e) {
+    next(e);
+  }
+});
+
 jobsRouter.get("/:id", optionalAuthMiddleware, attachCompanyContext, async (req, res, next) => {
   try {
     const job = await prisma.job.findFirst({

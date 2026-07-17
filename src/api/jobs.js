@@ -57,6 +57,19 @@ export function trackJobView(jobId) {
   return apiPost(`/api/jobs/${jobId}/view`, {});
 }
 
+/**
+ * Gäst-ansökningsklick → claim-mejl till arbetsgivaren ("X förare har sökt…").
+ * Max en gång per jobb och webbläsare (localStorage-vakt) — fire-and-forget.
+ */
+export function registerGuestApplyClick(jobId) {
+  try {
+    const key = `stp_guest_apply_${jobId}`;
+    if (localStorage.getItem(key)) return;
+    localStorage.setItem(key, "1");
+  } catch { /* private mode — skicka ändå, servern tål dubbletter */ }
+  apiPost(`/api/jobs/${jobId}/guest-apply-click`, {}).catch(() => {});
+}
+
 /** Hämta statistik för ett jobb (endast för annonsens ägare) */
 export async function fetchJobStats(jobId) {
   return apiGet(`/api/jobs/${jobId}/stats`);

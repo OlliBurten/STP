@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
+import { useIsMobile } from "../hooks/useIsMobile";
 import { useNavigate, Link } from "react-router-dom";
 import { createOrganization } from "../api/organizations.js";
 import { useAuth } from "../context/AuthContext";
@@ -16,6 +17,7 @@ const inputStyle = {
 
 export default function AddCompany() {
   const { refreshOrgs, switchOrg } = useAuth();
+  const isMobile = useIsMobile();
   const navigate = useNavigate();
   const [saving, setSaving]   = useState(false);
   const [error, setError]     = useState("");
@@ -120,11 +122,11 @@ export default function AddCompany() {
         <div style={{ height: 3, background: "var(--green)", width: "50%" }} />
       </div>
 
-      <div style={{ maxWidth: "var(--w-form)", margin: "0 auto", padding: "48px 24px 0" }}>
+      <div style={{ maxWidth: "var(--w-form)", margin: "0 auto", padding: isMobile ? "24px 20px 0" : "48px 24px 0" }}>
         {/* Tillbaka */}
         <Link to="/foretag" style={{
           display: "inline-flex", alignItems: "center", gap: 6,
-          fontSize: "var(--text-sm)", color: "var(--ink-400)", textDecoration: "none", marginBottom: 36,
+          fontSize: "var(--text-sm)", color: "var(--ink-400)", textDecoration: "none", marginBottom: isMobile ? 22 : 36,
         }}>
           ← Tillbaka
         </Link>
@@ -132,7 +134,7 @@ export default function AddCompany() {
         <p style={{ fontSize: "var(--text-xs)", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--amber-text)", marginBottom: 12 }}>
           Lägg till åkeri
         </p>
-        <h1 style={{ fontSize: "var(--text-5xl)", fontWeight: 900, lineHeight: 1.1, marginBottom: 12 }}>
+        <h1 style={{ fontSize: isMobile ? "clamp(30px, 8.5vw, 40px)" : "var(--text-5xl)", fontWeight: 900, lineHeight: 1.1, marginBottom: 12 }}>
           Ange ert<br />
           <span style={{ color: "var(--green-text)" }}>organisationsnummer.</span>
         </h1>
