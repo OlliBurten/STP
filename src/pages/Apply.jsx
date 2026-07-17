@@ -336,8 +336,13 @@ export default function Apply() {
   // och logga leaden.
   if (job && isAggregatedUnclaimed && job.originalPostingUrl) {
     const registerExternal = () => {
-      submitApplication({ jobId: job.id, appliedVia: "af_external", consentToShare: false }).catch(() => {});
-      setSubmitted(true);
+      submitApplication({ jobId: job.id, appliedVia: "af_external", consentToShare: false })
+        .then(() => setSubmitted(true))
+        .catch((err) => {
+          // 409 = redan registrerad → sant att den ligger under Ansökt. Annat fel:
+          // påstå inget vi inte vet — länken till arbetsgivaren fungerar ändå.
+          if (/redan sökt/i.test(err?.message || "")) setSubmitted(true);
+        });
     };
     return (
       <main style={{ maxWidth: 560, margin: "0 auto", padding: "56px 24px 96px" }}>

@@ -327,6 +327,7 @@ export function DriverDataProvider({ children }) {
       when: timeAgo(a.createdAt),
       note: null,
       imported: a.job?.source === "AGGREGATED",
+      externalUrl: a.job?.originalPostingUrl || null,
       conv: null,
     };
   }), [aggApps]);

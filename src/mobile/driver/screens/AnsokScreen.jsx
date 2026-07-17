@@ -59,6 +59,11 @@ export default function AnsokScreen({ ctx }) {
                   </div>
                   <Pill tone={st.tone} size="sm">{st.label}</Pill>
                 </div>
+                {a.externalUrl && (
+                  <a href={a.externalUrl} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} style={{ display: "inline-block", fontSize: 12, fontWeight: 700, color: "var(--green)", textDecoration: "underline", marginBottom: 10 }}>
+                    Originalannonsen ↗
+                  </a>
+                )}
                 {!rejected && (
                   <div style={{ display: "flex", gap: 6, marginBottom: a.note ? 12 : 0 }}>
                     {steps.map((s, si) => {

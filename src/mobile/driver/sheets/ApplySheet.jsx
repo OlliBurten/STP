@@ -18,7 +18,7 @@ export default function ApplySheet({ job, ctx, close }) {
   // ansöker där ansökan garanterat läses. STP loggar leaden (syns under Ansökt)
   // och backend claim-mejlar företaget. Composer-flödet nedan gäller bara
   // STP-egna/claimade jobb (+ fallback för importerat helt utan länk).
-  const external = imp && job.externalApplyUrl;
+  const external = imp && (job.externalApplyUrl || job.applyEmail);
   // Mejl-ansökan slår redirect: annonsen säger "ansök via mail" → föraren mejlar
   // arbetsgivaren direkt från STP (AF är datakälla, inte destination).
   const applyEmail = imp ? job.applyEmail : null;

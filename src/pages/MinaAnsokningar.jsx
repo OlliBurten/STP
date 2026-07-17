@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { fetchConversations } from "../api/conversations.js";
+import { fetchMyApplications } from "../api/applications.js";
 import { useAuth } from "../context/AuthContext";
 import LoadingBlock from "../components/LoadingBlock";
 import PageMeta from "../components/PageMeta";
@@ -350,13 +351,23 @@ export default function MinaAnsokningar() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [tab, setTab] = useState("all");
+  const [externalApps, setExternalApps] = useState([]);
 
   useEffect(() => {
     if (!hasApi) { setLoading(false); return; }
     setLoading(true);
     setError(null);
-    fetchConversations()
-      .then((convs) => setApplications(convs.filter((c) => c.jobId)))
+    Promise.all([
+      fetchConversations(),
+      fetchMyApplications().catch(() => []), // registrerade ansökningar (importjobb) — får inte fälla sidan
+    ])
+      .then(([convs, apps]) => {
+        setApplications(convs.filter((c) => c.jobId));
+        // Ansökningar utan konversation = sökta via arbetsgivarens kanal (importjobb).
+        // Desktop visade aldrig dessa trots löftet "syns under Ansökt" (fixat 2026-07-18).
+        const convJobIds = new Set(convs.map((c) => c.jobId).filter(Boolean));
+        setExternalApps((Array.isArray(apps) ? apps : []).filter((a) => a.jobId && !convJobIds.has(a.jobId)));
+      })
       .catch((e) => setError(e.message || "Kunde inte hämta dina ansökningar"))
       .finally(() => setLoading(false));
   }, [hasApi]);
@@ -382,6 +393,39 @@ export default function MinaAnsokningar() {
     { k: "selected", l: "Utvald",     c: counts.selected },
     { k: "closed",   l: "Ej aktuell", c: counts.closed },
   ];
+
+  const externalStatusLabel = (a) =>
+    a.appliedVia === "af_external" ? "Sökt via arbetsgivarens kanal"
+    : a.forwarded ? "Vidarebefordrad till åkeriet"
+    : "Mottagen — förmedlas när åkeriet ansluter";
+
+  const ExternalAppsSection = ({ compact }) => externalApps.length === 0 ? null : (
+    <div style={{ marginTop: compact ? 8 : 0 }}>
+      <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)", margin: "6px 0 10px" }}>
+        Sökta hos arbetsgivaren
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {externalApps.map((a) => (
+          <div key={a.id} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "16px 18px", boxShadow: "var(--sh-sm)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "flex-start" }}>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: "var(--text-md)", fontWeight: 700, color: "var(--ink-900)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.job?.title || "Jobb"}</div>
+                <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", marginTop: 2 }}>{a.job?.company}{a.job?.location ? ` · ${a.job.location}` : ""}</div>
+              </div>
+              <span style={{ flexShrink: 0, fontSize: "var(--text-2xs)", color: "var(--ink-400)" }}>{new Date(a.createdAt).toLocaleDateString("sv-SE", { day: "numeric", month: "short" })}</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10, flexWrap: "wrap" }}>
+              <span style={{ padding: "3px 10px", borderRadius: 999, background: "var(--green-tint)", color: "var(--green-text)", fontSize: "var(--text-2xs)", fontWeight: 700 }}>{externalStatusLabel(a)}</span>
+              {a.job?.status === "REMOVED" && <span style={{ padding: "3px 10px", borderRadius: 999, background: "var(--paper-2)", color: "var(--ink-500)", fontSize: "var(--text-2xs)", fontWeight: 700 }}>Annonsen borttagen</span>}
+              {a.job?.originalPostingUrl && (
+                <a href={a.job.originalPostingUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: "var(--green)", textDecoration: "underline" }}>Originalannonsen ↗</a>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 
   // ── Mobile ───────────────────────────────────────────────────────────────
   if (isMobile) {
@@ -425,6 +469,7 @@ export default function MinaAnsokningar() {
               <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)" }}>När du söker jobb dyker de upp här med status.</p>
             </div>
           ) : list.map((conv) => <MobileAppCard key={conv.id} conv={conv} />)}
+          {!loading && !error && tab === "all" && <ExternalAppsSection compact />}
         </div>
       </div>
     );
@@ -487,6 +532,7 @@ export default function MinaAnsokningar() {
             {list.map((conv) => <AppCard key={conv.id} conv={conv} />)}
           </div>
         )}
+        {!loading && !error && tab === "all" && <div style={{ marginTop: 20 }}><ExternalAppsSection /></div>}
       </div>
     </main>
   );

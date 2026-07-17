@@ -12,7 +12,7 @@ import { useAuth } from "../context/AuthContext";
 import { useProfile } from "../context/ProfileContext";
 import { getDriverMatchHighlights, getMatchingDriversForJob, matchScore } from "../utils/matchUtils";
 import { fetchJob, fetchJobApplicants, fetchSavedJobs, saveJob, unsaveJob, trackJobView, fetchJobStats, registerGuestApplyClick } from "../api/jobs.js";
-import { submitApplication } from "../api/applications.js";
+import { submitApplication, checkApplication } from "../api/applications.js";
 import { fetchMatchExplanation, screenApplicant as screenApplicantApi } from "../api/ai.js";
 import { selectConversation, rejectConversation } from "../api/conversations.js";
 import { getCompanyReviewSummary } from "../api/reviews.js";
@@ -152,6 +152,8 @@ export default function JobDetail() {
   const toast = useToast();
   const confirm = useConfirm();
   const [job, setJob] = useState(() => (!hasApi ? mockJobs.find((j) => j.id === id) : null));
+  // Redan sökt? (ISO-datum eller null) — visar banner + stoppar dubbelregistrering
+  const [alreadyApplied, setAlreadyApplied] = useState(null);
   const [jobLoading, setJobLoading] = useState(hasApi);
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [reviewSummary, setReviewSummary] = useState(null);
@@ -202,6 +204,13 @@ export default function JobDetail() {
     fetchSavedJobs()
       .then((saved) => setIsSaved((saved || []).some((j) => j.id === id)))
       .catch(() => setIsSaved(false));
+  }, [hasApi, isDriver, id]);
+
+  useEffect(() => {
+    if (!hasApi || !isDriver || !id) return;
+    checkApplication(id)
+      .then((r) => setAlreadyApplied(r?.applied ? (r.application?.createdAt || true) : null))
+      .catch(() => {});
   }, [hasApi, isDriver, id]);
 
   useEffect(() => {
@@ -552,8 +561,10 @@ export default function JobDetail() {
   };
   const handleExternalApply = (source) => {
     track("apply_initiated", { jobId: job.id, jobTitle: job.title, source });
-    if ((isEmployerChannel || applyEmailChannel) && isDriver) {
-      submitApplication({ jobId: job.id, appliedVia: "af_external", consentToShare: false }).catch(() => {});
+    if ((isEmployerChannel || applyEmailChannel) && isDriver && !alreadyApplied) {
+      submitApplication({ jobId: job.id, appliedVia: "af_external", consentToShare: false })
+        .then(() => setAlreadyApplied(new Date().toISOString()))
+        .catch(() => {});
     } else if ((isEmployerChannel || applyEmailChannel) && !user) {
       // Gäst: anonym lead → claim-mejl till arbetsgivaren
       registerGuestApplyClick(job.id);
@@ -959,6 +970,17 @@ export default function JobDetail() {
 
           <SectionHeading>Vi erbjuder</SectionHeading>
           <BulletList items={jobOffers} accent="success" fallback="Mer om vad vi erbjuder berättar vi gärna vid en intervju." />
+
+          {/* Redan sökt-banner (desktop saknade helt denna state — fixat 2026-07-18) */}
+          {alreadyApplied && (
+            <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", background: "var(--success-tint)", border: "1px solid var(--success)", borderRadius: "var(--r-md)", marginBottom: 14 }}>
+              <span style={{ color: "var(--success)", fontWeight: 800 }}>✓</span>
+              <span style={{ fontSize: "var(--text-sm)", color: "var(--ink-800)" }}>
+                Du har sökt det här jobbet{typeof alreadyApplied === "string" ? ` ${new Date(alreadyApplied).toLocaleDateString("sv-SE", { day: "numeric", month: "long" })}` : ""} — det ligger under{" "}
+                <Link to="/mina-ansokningar" style={{ color: "var(--green)", fontWeight: 700 }}>Mina ansökningar</Link>.
+              </span>
+            </div>
+          )}
 
           {/* Bottom apply rail */}
           <div style={{ padding: "22px 26px", background: "var(--green-tint)", border: "1px solid var(--green-tint-2)", borderRadius: "var(--r-lg)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 18, flexWrap: "wrap" }}>
