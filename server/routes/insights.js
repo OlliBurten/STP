@@ -24,7 +24,7 @@ const median = (arr) => {
   return s.length % 2 ? s[mid] : Math.round((s[mid - 1] + s[mid]) / 2);
 };
 
-async function buildInsights() {
+export async function buildInsights() {
   const since30d = new Date(Date.now() - 30 * 864e5);
 
   const activeJobs = await prisma.job.findMany({
@@ -122,6 +122,18 @@ async function buildInsights() {
       licenses: driverLicenses,
     },
   };
+}
+
+/** Daglig snapshot (idempotent per dag) — anropas av ingest-schedulern. */
+export async function snapshotInsights() {
+  const day = new Date().toISOString().slice(0, 10);
+  const data = await buildInsights();
+  await prisma.insightSnapshot.upsert({
+    where: { day },
+    update: { data },
+    create: { day, data },
+  });
+  return day;
 }
 
 insightsRouter.get("/", async (req, res, next) => {

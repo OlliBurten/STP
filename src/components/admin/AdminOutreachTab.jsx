@@ -43,7 +43,7 @@ export default function AdminOutreachTab({
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
         <div>
-          <p style={{ fontSize: "var(--text-lg)", fontWeight: 700, color: T.text, margin: 0 }}>Outreach</p>
+          <p style={{ fontSize: "var(--text-lg)", fontWeight: 700, color: T.text, margin: 0 }}>Prospektering (kall outreach)</p>
           <p style={{ fontSize: "var(--text-xs)", color: T.muted, margin: "3px 0 0" }}>
             Agent kör automatiskt varje måndag 09:00 — bearbetar 7 regioner/vecka på 3-veckors rotation.
           </p>

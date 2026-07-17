@@ -709,6 +709,16 @@ model EmployerClaim {
 
 // Jobbevakning via mejl — kräver INTE konto (B2C-tillväxt). Dubbel opt-in:
 // skapas overifierad, confirmedAt sätts via token-länk i bekräftelsemejlet.
+// Daglig ögonblicksbild av den aggregerade marknadsdatan (/api/insikter).
+// Grunden för säljbara trendrapporter — publika sidan visar bara NUläget,
+// historiken (tidsserier per region/behörighet/lön) är betalprodukten.
+model InsightSnapshot {
+  id        String   @id @default(cuid())
+  day       String   @unique // "YYYY-MM-DD"
+  data      Json
+  createdAt DateTime @default(now())
+}
+
 model JobAlert {
   id             String    @id @default(cuid())
   email          String

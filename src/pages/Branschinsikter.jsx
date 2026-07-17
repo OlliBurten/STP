@@ -56,7 +56,7 @@ export default function Branschinsikter() {
     <main style={{ background: "var(--paper)", minHeight: "100vh", paddingTop: 48 }}>
       <PageMeta
         title="Branschinsikter – transport & åkeri"
-        description="Aktuell statistik om lastbilsförar-marknaden: efterfrågan per region och behörighet, anställningsformer och bemanningsandel. Aggregerad data från STP, uppdateras löpande."
+        description="Aktuell statistik om lastbilsförar-marknaden: efterfrågan per region och behörighet, anställningsformer och bemanningsandel. Uppdateras löpande."
         canonical="/branschinsikter"
       />
       <div style={{ maxWidth: 1176, margin: "0 auto", padding: "0 32px 96px" }}>
@@ -64,9 +64,8 @@ export default function Branschinsikter() {
           Branschinsikter
         </h1>
         <p style={{ fontSize: "var(--text-lg)", color: "var(--ink-500)", lineHeight: 1.65, margin: "0 0 12px", maxWidth: 640 }}>
-          Aktuell bild av lastbilsförar-marknaden i Sverige — byggd på STP:s egen jobbdata
-          (annonser importerade från Arbetsförmedlingen plus direktannonser) och plattformens förarbas.
-          Enbart aggregerad statistik, aldrig enskilda individer.
+          Aktuell bild av lastbilsförar-marknaden i Sverige — byggd på STP:s samlade jobb- och förardata.
+          Enbart aggregerad statistik.
         </p>
         {data && (
           <p style={{ fontSize: "var(--text-xs)", color: "var(--ink-400)", margin: "0 0 36px" }}>

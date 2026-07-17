@@ -52,6 +52,14 @@ export function startJobIngestScheduler() {
   cron.schedule(JOBSEARCH_CRON, async () => {
     try {
       await runIngestor({ source: "jobsearch" });
+      // Marknadssnapshot efter fulla svepet — idempotent per dag (trendhistorik)
+      try {
+        const { snapshotInsights } = await import("../routes/insights.js");
+        const day = await snapshotInsights();
+        console.log(`[InsightSnapshot] Sparad för ${day}`);
+      } catch (err) {
+        console.error("[InsightSnapshot] Fel:", err?.message || String(err));
+      }
       await enrichNew("jobsearch");
     } catch (e) {
       console.error("[JobIngestScheduler] Uncaught error (jobsearch reconciliation):", e?.message);

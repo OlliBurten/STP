@@ -54,7 +54,6 @@ export const Icon = ({ n, s = 18, c = "currentColor" }) => (
 const NAV_GROUPS = [
   { l: "Plattform", items: [
     { id: "overview", l: "Översikt",      n: "grid" },
-    { id: "pulse",    l: "System & pulse", n: "pulse" },
   ]},
   { l: "Hantera", items: [
     { id: "users",      l: "Förare",    n: "users" },
@@ -65,7 +64,7 @@ const NAV_GROUPS = [
     { id: "schools",    l: "Skolor",    n: "school" },
   ]},
   { l: "Tillväxt", items: [
-    { id: "outreach",  l: "Outreach",   n: "outreach" },
+    { id: "outreach",  l: "Prospektering", n: "outreach" },
     { id: "insights",  l: "AI-insikter",n: "spark" },
     { id: "feedback",  l: "Feedback",   n: "feedback" },
   ]},
@@ -291,7 +290,6 @@ export function AdminCmdK({ open, onClose, onChange, onAction }) {
     { id: "overview", l: "Översikt" }, { id: "users", l: "Förare" },
     { id: "companies", l: "Åkerier" }, { id: "jobs", l: "Jobb" },
     { id: "moderation", l: "Moderering" }, { id: "insights", l: "AI-insikter" },
-    { id: "pulse", l: "System & pulse" },
   ];
   const noHits = !searching && results.users.length === 0 && results.jobs.length === 0;
 
