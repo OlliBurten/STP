@@ -41,6 +41,7 @@ function useNav() {
     privacy: () => navigate("/integritet"),
     terms: () => navigate("/anvandarvillkor"),
     home: () => navigate("/"),
+    go: (path) => navigate(path),
     mail: () => { window.location.href = MAIL; },
   };
 }
@@ -50,7 +51,7 @@ const REGIONS = ["Stockholm", "Skåne", "Västra Götaland", "Halland", "Österg
 
 const PROBLEMS = [
   ["01", "Ingen struktur", "Körkort, erfarenhet och tillgänglighet begrävs i fritext och kommentarsfält. Ingen vet vem som är seriös."],
-  ["02", "Mellanhänder äter lönen", "Bemanningsbolag tar mellan 25–40 % av lönen. Föraren förlorar. Åkeriet betalar mer. Ingen vinner."],
+  ["02", "Mellanhänder äter lönen", "Bemanningsbolag tar en stor del av lönen. Föraren förlorar. Åkeriet betalar mer. Ingen vinner."],
   ["03", "Bra kandidater försvinner", "En jobbannons lever 24 timmar på sociala medier. Rätt förare ser den aldrig. Åkeriet upprepar processen."],
 ];
 const FEATURES = [
@@ -104,6 +105,7 @@ function Menu({ open, onClose, nav, openPage, toSteps }) {
     ["search", "Lediga jobb", nav.jobs], ["truck", "För förare", () => openPage("forforare")],
     ["building", "För åkerier", () => openPage("forakerier")], ["info", "Så fungerar STP", toSteps],
     ["cap", "Praktik & APL", () => openPage("praktik")], ["heart", "Om STP", () => openPage("omstp")],
+    ["book", "Guider & blogg", () => nav.go("/blogg")], ["list", "Lönekalkylatorn", () => nav.go("/lon-kalkylator")],
     ["mail", "Kontakt", () => openPage("kontakt")],
   ];
   return (
@@ -228,15 +230,16 @@ export default function MobileLanding() {
           <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(15,21,19,0.94) 0%,rgba(15,21,19,0.45) 42%,rgba(15,21,19,0.25) 70%,rgba(15,21,19,0.5) 100%)" }} />
           <div style={{ position: "absolute", inset: 0, background: "radial-gradient(120% 70% at 80% 12%,rgba(242,164,28,0.18) 0%,transparent 55%)" }} />
           <div style={{ position: "relative" }}>
-            <h1 style={{ fontSize: 58, fontWeight: 800, letterSpacing: -2, lineHeight: 0.98, marginBottom: 22, textShadow: "0 2px 30px rgba(0,0,0,0.4)" }}>
-              <span style={{ color: "#fff", display: "block" }}>Rätt jobb.</span>
-              <span style={{ color: AMBER, display: "block" }}>Rätt förare.</span>
-              <span style={{ color: "rgba(255,255,255,0.6)", display: "block" }}>Direkt.</span>
+            <h1 style={{ fontSize: 54, fontWeight: 800, letterSpacing: -2, lineHeight: 1.02, marginBottom: 22, textShadow: "0 2px 30px rgba(0,0,0,0.4)" }}>
+              <span style={{ color: "#fff", display: "block" }}>Ditt nästa</span>
+              <span style={{ color: AMBER, display: "block" }}>lastbilsjobb.</span>
+              <span style={{ color: "rgba(255,255,255,0.6)", display: "block" }}>Utan krångel.</span>
             </h1>
-            <p style={{ fontSize: 18, lineHeight: 1.5, color: "rgba(255,255,255,0.85)", marginBottom: 28, maxWidth: 330, textShadow: "0 1px 12px rgba(0,0,0,0.5)" }}>Sveriges matchningsplattform för yrkesförare och åkerier. Inga mellanhänder, inga avgifter.</p>
+            <p style={{ fontSize: 18, lineHeight: 1.5, color: "rgba(255,255,255,0.85)", marginBottom: 28, maxWidth: 330, textShadow: "0 1px 12px rgba(0,0,0,0.5)" }}>Sök C- och CE-jobb direkt — utan konto, alltid gratis.</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <BtnAmber full onClick={nav.jobs}>Se lediga jobb <Icon name="arrow" size={19} color="#1a1200" stroke={2.4} /></BtnAmber>
-              <BtnGhost onDark onClick={() => nav.register("akeri")}>Jag är ett åkeri</BtnGhost>
+              <BtnGhost onDark onClick={() => nav.register("forare")}>Skapa konto — alltid gratis</BtnGhost>
+              <button onClick={() => nav.register("akeri")} className="press" style={{ background: "none", border: "none", color: "rgba(255,255,255,0.55)", fontSize: 14, fontWeight: 600, textDecoration: "underline", padding: "4px 0" }}>Är ni ett åkeri? Hitta förare här</button>
             </div>
           </div>
         </section>
@@ -407,6 +410,7 @@ export default function MobileLanding() {
           <p style={{ fontSize: 15, lineHeight: 1.55, color: "rgba(255,255,255,0.65)", margin: "16px 0 14px", maxWidth: 320 }}>Sveriges matchningsplattform för yrkesförare och transportföretag. Direkt kontakt utan mellanhänder.</p>
           <a href={MAIL} style={{ fontSize: 15, color: "rgba(255,255,255,0.75)", display: "inline-block", marginBottom: 32 }}>hello@transportplattformen.se</a>
           <FooterCol title="PLATTFORMEN" items={[["Lediga jobb", nav.jobs], ["Så fungerar STP", toSteps], ["För förare", () => setPage("forforare")], ["För åkerier", () => setPage("forakerier")], ["Praktik & APL", () => setPage("praktik")]]} />
+          <FooterCol title="VERKTYG" items={[["Lönekalkylatorn", () => nav.go("/lon-kalkylator")], ["YKB-timer", () => nav.go("/ykb-timer")], ["Guider & blogg", () => nav.go("/blogg")], ["Branschinsikter", () => nav.go("/branschinsikter")]]} />
           <FooterCol title="OM STP" items={[["Om oss", () => setPage("omstp")], ["Kontakt", () => setPage("kontakt")], ["Användarvillkor", nav.terms], ["Integritetspolicy", nav.privacy]]} />
           <div style={{ height: 1, background: "rgba(255,255,255,0.1)", margin: "6px 0 26px" }} />
           <ChipWrap title="CE-JOBB PER STAD" items={CITIES} onItem={nav.jobsCity} />
