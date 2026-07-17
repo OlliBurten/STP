@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import MobileShell from "../MobileShell";
-import { TabBar } from "../ui";
+import { TabBar, Icon, Button } from "../ui";
 import { COMPANY_TABS, companyTabForPath } from "./tabs";
 import { CompanyDataProvider, useCompanyData } from "./CompanyDataContext";
 import CompanySheetRouter from "./sheets/SheetRouter";
@@ -42,6 +42,26 @@ function CompanyShell() {
   };
 
   const unread = data.kpis?.unread || null;
+
+  // Inget åkeri kopplat ännu (och ingen legacy-koppling via org.nr) → samma
+  // dash-först-flöde som desktop: prompta "Lägg till åkeri" i st f tom dash.
+  if (!data.loading && (data.orgs?.length || 0) === 0 && !data.company?.orgnr) {
+    return (
+      <MobileShell>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "0 30px", textAlign: "center" }}>
+          <div style={{ width: 68, height: 68, borderRadius: 20, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
+            <Icon name="building" size={30} color="var(--green)" stroke={1.9} />
+          </div>
+          <h1 style={{ fontSize: 25, fontWeight: 800, letterSpacing: -0.6, color: "var(--ink-900)", marginBottom: 10 }}>Välkommen till STP</h1>
+          <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.55, marginBottom: 26 }}>
+            Ditt konto är skapat. Lägg till ditt åkeri med organisationsnumret — resten fyller vi i automatiskt.
+          </p>
+          <Button variant="primary" full onClick={() => navigate("/foretag/lagg-till-akeri")}>Lägg till ditt åkeri</Button>
+          <p style={{ fontSize: 12.5, color: "var(--ink-400)", marginTop: 14 }}>Gratis för åkerier · Ingen bindningstid</p>
+        </div>
+      </MobileShell>
+    );
+  }
 
   return (
     <MobileShell>

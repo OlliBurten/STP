@@ -66,17 +66,19 @@ organizationsRouter.post("/", validateBody(createOrganizationSchema), async (req
     }
     const status = bolag?.isTransport === true ? "VERIFIED" : "PENDING";
 
+    // Bolagsverkets uppgifter är auktoritativa — klientens värden är bara fallback
+    // (t.ex. när API:t är nere och slagningen returnerade null).
     const org = await prisma.organization.create({
       data: {
-        name: body.name.trim(),
+        name: (bolag?.companyName || body.name || "").trim(),
         orgNumber: orgNum,
-        description: body.description?.trim() || null,
+        description: body.description?.trim() || bolag?.verksamhetsbeskrivning || null,
         website: body.website?.trim() || null,
-        location: body.location?.trim() || null,
+        location: bolag?.city || body.location?.trim() || null,
         segmentDefaults: Array.isArray(body.segmentDefaults) ? body.segmentDefaults : [],
         bransch: Array.isArray(body.bransch) ? body.bransch : [],
-        region: body.region?.trim() || null,
-        foundedYear: body.foundedYear ?? null,
+        region: bolag?.region || body.region?.trim() || null,
+        foundedYear: bolag?.foundedYear ?? body.foundedYear ?? null,
         status,
       },
     });

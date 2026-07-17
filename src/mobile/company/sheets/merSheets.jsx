@@ -285,7 +285,10 @@ export function OrgSwitcherSheet({ ctx, close }) {
           );
         })}
       </div>
-      <p style={{ fontSize: 12.5, color: "var(--ink-400)", lineHeight: 1.5, textAlign: "center" }}>Hanterar du flera åkerier? Lägg till dem och växla när som helst – ett konto, alla bolag.</p>
+      <button onClick={() => { close(); ctx.navigate("/foretag/lagg-till-akeri"); }} className="press" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", padding: "13px 14px", background: "var(--green-tint)", border: "1px dashed var(--green)", borderRadius: 13, color: "var(--green-text)", fontSize: 15, fontWeight: 700, marginBottom: 12 }}>
+        <Icon name="plus" size={17} color="var(--green-text)" stroke={2.4} /> Lägg till åkeri
+      </button>
+      <p style={{ fontSize: 12.5, color: "var(--ink-400)", lineHeight: 1.5, textAlign: "center" }}>Ett konto, alla bolag — växla när som helst.</p>
     </div>
   );
 }

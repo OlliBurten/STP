@@ -48,6 +48,7 @@ export default function AddCompany() {
           loading: false,
           valid: data.valid,
           isTransport: data.isTransport ?? null,
+          nameFromLookup: Boolean(data.companyName),
           error: data.valid ? null : (data.error || "Ogiltigt organisationsnummer"),
         });
         setForm(p => ({
@@ -136,7 +137,7 @@ export default function AddCompany() {
           <span style={{ color: "var(--green-text)" }}>organisationsnummer.</span>
         </h1>
         <p style={{ fontSize: "var(--text-md)", color: "var(--ink-500)", lineHeight: 1.7, marginBottom: 36 }}>
-          Vi hämtar företagsuppgifter automatiskt från Bolagsverket — ni behöver bara ert organisationsnummer.
+          Vi hämtar företagsuppgifterna automatiskt — ni behöver bara ert organisationsnummer.
         </p>
 
         {/* Orgnummer */}
@@ -207,8 +208,8 @@ export default function AddCompany() {
           )}
         </div>
 
-        {/* Företagsnamn — visas när orgnr är validerat */}
-        {orgLookup.valid === true && !orgLookup.loading && orgLookup.isTransport !== false && (
+        {/* Företagsnamn — endast som fallback när slagningen inte gav något namn */}
+        {orgLookup.valid === true && !orgLookup.loading && orgLookup.isTransport !== false && !orgLookup.nameFromLookup && (
           <div style={{ marginBottom: 24 }}>
             <p style={{ fontSize: "var(--text-xs)", fontWeight: 600, color: "var(--ink-500)", marginBottom: 8 }}>
               Företagsnamn *
@@ -224,7 +225,7 @@ export default function AddCompany() {
             />
             {!form.name.trim() && (
               <p style={{ marginTop: 6, fontSize: "var(--text-xs)", color: "var(--ink-400)" }}>
-                Bolagsverket returnerade inget namn — ange det manuellt.
+                Vi hittade inget företagsnamn — ange det manuellt.
               </p>
             )}
           </div>
