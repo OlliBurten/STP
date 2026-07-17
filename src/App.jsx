@@ -63,7 +63,6 @@ const MobileLanding         = lazyRetry(() => import("./mobile/public/MobileLand
 const MobileGuestJobs       = lazyRetry(() => import("./mobile/public/MobileGuestJobs"));
 const MobileLegal           = lazyRetry(() => import("./mobile/public/MobileLegal"));
 const CompanyMobileApp      = lazyRetry(() => import("./mobile/company/CompanyMobileApp"));
-const MobileCompanyOnboarding = lazyRetry(() => import("./mobile/company/Onboarding"));
 const Home                  = lazyRetry(() => import("./pages/Home"));
 const ForDrivers            = lazyRetry(() => import("./pages/ForDrivers"));
 const ForCompaniesLanding   = lazyRetry(() => import("./pages/ForCompaniesLanding"));
@@ -132,7 +131,6 @@ const SavedJobs             = lazyRetry(() => import("./pages/SavedJobs"));
 const CompanyProfile        = lazyRetry(() => import("./pages/CompanyProfile"));
 const CompanyPublicProfile  = lazyRetry(() => import("./pages/CompanyPublicProfile"));
 const DriverOnboardingWizard   = lazyRetry(() => import("./pages/DriverOnboardingWizard"));
-const CompanyOnboardingWizard  = lazyRetry(() => import("./pages/CompanyOnboardingWizard"));
 // const CompanyVerification   = lazyRetry(() => import("./pages/CompanyVerification")); // Disabled until F-skatt/trafiktillstånd APIs are integrated
 const AddCompany            = lazyRetry(() => import("./pages/AddCompany"));
 const CompanyTeam           = lazyRetry(() => import("./pages/CompanyTeam"));
@@ -262,7 +260,7 @@ function ScrollManager() {
 }
 
 
-const ONBOARDING_PATHS = ["/onboarding/forare", "/foretag/onboarding"];
+const ONBOARDING_PATHS = ["/onboarding/forare"];
 // Sidor som har en egen kompletteringsvy — visa inte den globala bannern där (redundant)
 const COMPLETION_SELF_PATHS = ["/profil", "/installningar"];
 
@@ -328,7 +326,7 @@ function AppLayout() {
   const isAdminPage = pathname.startsWith("/admin");
 
   // Onboarding wizards are full-screen standalone layouts — no top nav
-  const isOnboardingPage = pathname.startsWith("/onboarding/") || pathname.startsWith("/foretag/onboarding");
+  const isOnboardingPage = pathname.startsWith("/onboarding/");
 
   // STP (4) design-preview screens render standalone (egen TopNav) — ingen global chrome
   const isPreviewPage = pathname.startsWith("/preview/");
@@ -527,14 +525,8 @@ function AppLayout() {
                       </ProtectedRoute>
                     }
                   />
-                  <Route
-                    path="/foretag/onboarding"
-                    element={
-                      <ProtectedRoute requiredRole="company">
-                        {isMobile ? <MobileCompanyOnboarding /> : <CompanyOnboardingWizard />}
-                      </ProtectedRoute>
-                    }
-                  />
+                  {/* Gamla wizard-rutten — företags-onboarding är numera dash → "Lägg till åkeri" */}
+                  <Route path="/foretag/onboarding" element={<Navigate to="/foretag" replace />} />
                   <Route
                     path="/foretag/annonsera"
                     element={

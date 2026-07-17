@@ -567,7 +567,7 @@ export default function ForCompanies() {
     { label: "Nya ansökningar",        value: newApplications,               delta: newApplications > 0 ? `+${newApplications} idag` : "Inga nya",              tone: "amber",   icon: "user",      to: "/foretag/annonser" },
     { label: "Obesvarade meddelanden", value: companyUnreadConversationCount, delta: companyUnreadConversationCount > 0 ? "Kräver svar" : "Alla besvarade",      tone: "danger",  icon: "msg",       to: "/foretag/meddelanden" },
     { label: "Aktiva annonser",        value: activeJobs.length,             delta: jobs.length > 0 ? `av ${jobs.length} publicerade` : "Publicera ett jobb",   tone: "primary", icon: "briefcase", to: "/foretag/annonser" },
-    { label: "Profilvisningar",        value: jobViewStats.total || "—",     delta: "+24 % denna vecka",                                                         tone: "success", icon: "eye" },
+    { label: "Profilvisningar",        value: jobViewStats.total || "—",     delta: (jobViewStats.weeks?.[11] || 0) > 0 ? `+${jobViewStats.weeks[11]} denna vecka` : "Inga denna vecka", tone: "success", icon: "eye" },
   ];
 
   if (isMobile) {
