@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { track } from "../utils/posthog.js";
+import { withUtm } from "../utils/utm.js";
 import PageMeta from "../components/PageMeta";
 import { mockJobs } from "../data/mockJobs";
 import { mockDrivers } from "../data/mockDrivers";
@@ -537,7 +538,7 @@ export default function JobDetail() {
         `Hej!\n\nJag söker tjänsten "${job.title}"${job.applicationReference ? ` (referens: ${job.applicationReference})` : ""} som jag hittade via Transportplattformen.\n\n[Berätta kort om dig själv, din behörighet och erfarenhet.]\n\nMed vänliga hälsningar,\n`
       )}`
     : null;
-  const employerApplyUrl = applyEmailChannel ? mailtoApplyHref : (isEmployerChannel ? job.originalPostingUrl : job.externalApplyUrl);
+  const employerApplyUrl = applyEmailChannel ? mailtoApplyHref : withUtm(isEmployerChannel ? job.originalPostingUrl : job.externalApplyUrl);
   const applyCtaLabel = applyEmailChannel ? "Ansök via mejl" : "Ansök hos arbetsgivaren ↗";
   const copyApplyEmail = async () => {
     try {

@@ -41,7 +41,7 @@ export default function JobbScreen({ ctx }) {
   const [hidden, setHidden] = useState(null); // senast dolda jobbet (för Ångra-bannern)
   const savedCount = ctx.saved.size;
   const f = ctx.filter;
-  const fCount = (f.type !== "alla" ? 1 : 0) + f.lic.length + f.cert.length;
+  const fCount = (f.type !== "alla" ? 1 : 0) + f.lic.length + f.cert.length + (f.hideBemanning ? 1 : 0);
   const fActive = fCount > 0;
   const searchOrFilterActive = q.trim() !== "" || fActive || seg !== "alla";
 
@@ -51,7 +51,7 @@ export default function JobbScreen({ ctx }) {
     setTimeout(() => setHidden((h) => (h && h.id === job.id ? null : h)), 4000);
   };
   const undoHide = () => setHidden(null);
-  const clearFilters = () => { setQ(""); setSeg("alla"); ctx.setFilter({ type: "alla", lic: [], cert: [] }); };
+  const clearFilters = () => { setQ(""); setSeg("alla"); ctx.setFilter({ type: "alla", lic: [], cert: [], hideBemanning: false }); };
 
   let list = ctx.jobs;
   if (seg === "match") list = list.filter((j) => j.match != null && j.match >= 85);
@@ -59,6 +59,7 @@ export default function JobbScreen({ ctx }) {
   if (f.type !== "alla") list = list.filter((j) => String(j.type).toLowerCase().includes(f.type));
   if (f.lic.length) list = list.filter((j) => f.lic.some((l) => j.licenses.includes(l)));
   if (f.cert.length) list = list.filter((j) => f.cert.every((c) => (j.certificates || []).includes(c)));
+  if (f.hideBemanning) list = list.filter((j) => !j.bemanning);
   if (q) list = list.filter((j) => (j.title + j.company + j.location).toLowerCase().includes(q.toLowerCase()));
   if (hidden) list = list.filter((j) => j.id !== hidden.id);
 

@@ -5,6 +5,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { fetchJobs } from "../../api/jobs";
 import { createJobAlert } from "../../api/jobAlerts";
 import { track } from "../../utils/posthog.js";
+import { withUtm } from "../../utils/utm.js";
 import { mockJobs } from "../../data/mockJobs";
 import { useApi } from "../../api/client";
 import { toJobView } from "../driver/jobAdapter";
@@ -68,7 +69,7 @@ export default function MobileGuestJobs() {
   const [rawJobs, setRawJobs] = useState([]);
   const [scrolled, setScrolled] = useState(false);
   const [q, setQ] = useState("");
-  const [filter, setFilter] = useState({ region: initRegion ? [initRegion] : [], lic: initLic ? [initLic] : [], type: [] });
+  const [filter, setFilter] = useState({ region: initRegion ? [initRegion] : [], lic: initLic ? [initLic] : [], type: [], hideBemanning: false });
   const [filterOpen, setFilterOpen] = useState(false);
   const [detail, setDetail] = useState(null);
   const [gate, setGate] = useState(null);
@@ -112,9 +113,10 @@ export default function MobileGuestJobs() {
   if (filter.region.length) list = list.filter((j) => filter.region.includes(j.region));
   if (filter.lic.length) list = list.filter((j) => filter.lic.some((l) => j.licenses.includes(l)));
   if (filter.type.length) list = list.filter((j) => filter.type.some((t) => String(j.type).toLowerCase().includes(t.toLowerCase())));
+  if (filter.hideBemanning) list = list.filter((j) => !j.bemanning);
   if (q.trim()) { const Q = q.toLowerCase(); list = list.filter((j) => (j.title + j.company + j.location + j.region).toLowerCase().includes(Q)); }
 
-  const activeCount = filter.region.length + filter.lic.length + filter.type.length;
+  const activeCount = filter.region.length + filter.lic.length + filter.type.length + (filter.hideBemanning ? 1 : 0);
   const shown = list.slice(0, limit);
   const remaining = list.length - shown.length;
 
@@ -158,7 +160,7 @@ export default function MobileGuestJobs() {
               <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>Inga jobb matchar</h3>
               <p style={{ fontSize: 14.5, color: "var(--ink-500)", lineHeight: 1.5, marginBottom: 18 }}>Prova att rensa filtren eller söka bredare.</p>
               {(q.trim() || activeCount > 0 || stad || initRegion || initLic) && (
-                <button onClick={() => { setQ(""); setFilter({ region: [], lic: [], type: [] }); setLimit(PAGE); if (stad || initRegion || initLic) navigate("/jobb"); }} className="press" style={{ display: "inline-flex", alignItems: "center", gap: 7, height: 46, padding: "0 20px", borderRadius: 13, background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: 14.5 }}><Icon name="x" size={16} color="#fff" stroke={2.4} />Rensa filter</button>
+                <button onClick={() => { setQ(""); setFilter({ region: [], lic: [], type: [], hideBemanning: false }); setLimit(PAGE); if (stad || initRegion || initLic) navigate("/jobb"); }} className="press" style={{ display: "inline-flex", alignItems: "center", gap: 7, height: 46, padding: "0 20px", borderRadius: 13, background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: 14.5 }}><Icon name="x" size={16} color="#fff" stroke={2.4} />Rensa filter</button>
               )}
             </div>
           )}
@@ -199,7 +201,7 @@ export default function MobileGuestJobs() {
             <div style={{ padding: "10px 22px 0" }}><div style={{ width: 38, height: 5, borderRadius: 3, background: "var(--line-2)", margin: "0 auto 14px" }} /></div>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 22px 14px", borderBottom: "1px solid var(--line)" }}>
               <h3 style={{ fontSize: 19, fontWeight: 800, letterSpacing: -0.4 }}>Filtrera</h3>
-              {activeCount > 0 && <button onClick={() => setFilter({ region: [], lic: [], type: [] })} className="press" style={{ fontSize: 14, fontWeight: 700, color: "var(--green)" }}>Rensa ({activeCount})</button>}
+              {activeCount > 0 && <button onClick={() => setFilter({ region: [], lic: [], type: [], hideBemanning: false })} className="press" style={{ fontSize: 14, fontWeight: 700, color: "var(--green)" }}>Rensa ({activeCount})</button>}
             </div>
             <div className="app-scroll" style={{ flex: 1, overflowY: "auto", padding: "20px 22px 8px" }}>
               {[["Körkort", LICENSES, "lic"], ["Anställning", TYPES, "type"], ["Region", regions, "region"]].map(([label, opts, key]) => (
@@ -210,6 +212,10 @@ export default function MobileGuestJobs() {
                   </div>
                 </div>
               ))}
+              <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: 0.6, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 11 }}>Arbetsgivare</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 9, marginBottom: 24 }}>
+                <button onClick={() => setFilter((f) => ({ ...f, hideBemanning: !f.hideBemanning }))} className="press" style={{ padding: "9px 15px", borderRadius: 11, fontSize: 14, fontWeight: 700, border: filter.hideBemanning ? "1px solid var(--green)" : "1px solid var(--line-2)", background: filter.hideBemanning ? "var(--green-tint)" : "var(--card)", color: filter.hideBemanning ? "var(--green-text)" : "var(--ink-600)" }}>Dölj bemanning</button>
+              </div>
             </div>
             <div style={{ padding: "12px 22px calc(26px + var(--stpm-safe-bottom))", borderTop: "1px solid var(--line)" }}>
               <button onClick={() => { setFilterOpen(false); setLimit(PAGE); }} className="press" style={{ width: "100%", height: 54, borderRadius: 14, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: 16 }}>Visa jobb</button>
@@ -283,7 +289,7 @@ export default function MobileGuestJobs() {
               <a
                 href={detail.applyEmail
                   ? `mailto:${detail.applyEmail}?subject=${encodeURIComponent(`Ansökan: ${detail.applicationReference || detail.title}`)}&body=${encodeURIComponent(`Hej!\n\nJag söker tjänsten "${detail.title}"${detail.applicationReference ? ` (referens: ${detail.applicationReference})` : ""} som jag hittade via Transportplattformen.\n\n[Berätta kort om dig själv, din behörighet och erfarenhet.]\n\nMed vänliga hälsningar,\n`)}`
-                  : detail.externalApplyUrl}
+                  : withUtm(detail.externalApplyUrl)}
                 target={detail.applyEmail ? undefined : "_blank"} rel="noopener noreferrer"
                 onClick={() => track("apply_initiated", { jobId: detail.id, jobTitle: detail.title, source: detail.applyEmail ? "guest_mobile_email" : "guest_mobile_external" })}
                 className="press" style={{ flex: 1, height: 54, borderRadius: 14, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, textDecoration: "none" }}>

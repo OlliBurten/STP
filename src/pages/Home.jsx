@@ -162,9 +162,9 @@ export default function Home() {
             color: "#fff",
             marginBottom: 28,
           }}>
-            <span style={{ display: "block" }}>Rätt jobb.</span>
-            <span style={{ display: "block", color: "var(--amber)" }}>Rätt förare.</span>
-            <span style={{ display: "block", color: "rgba(255,255,255,0.62)", fontWeight: 400 }}>Direkt.</span>
+            <span style={{ display: "block" }}>Ditt nästa</span>
+            <span style={{ display: "block", color: "var(--amber)" }}>lastbilsjobb.</span>
+            <span style={{ display: "block", color: "rgba(255,255,255,0.62)", fontWeight: 400 }}>Utan krångel.</span>
           </h1>
 
           {/* Lead */}
@@ -174,8 +174,8 @@ export default function Home() {
             maxWidth: 580, marginBottom: 32,
           }}>
             {isMobile
-              ? "Sveriges matchningsplattform för yrkesförare och åkerier. Inga mellanhänder, inga avgifter."
-              : "Sveriges matchningsplattform för yrkesförare och transportföretag. Inga mellanhänder. Inga avgifter. Inga generiska CV — bara körkort, certifikat och tillgänglighet."}
+              ? "Sveriges jobbplattform för lastbilsförare. Sök C- och CE-jobb direkt — utan konto, alltid gratis."
+              : "Sveriges jobbplattform för lastbilsförare. Sök hundratals C- och CE-jobb direkt — utan konto, utan CV, alltid gratis. Inga mellanhänder som tar del av din lön."}
           </p>
 
           {/* CTAs */}
@@ -197,8 +197,8 @@ export default function Home() {
               <Icon name="arrow" size={15} stroke={2.2} />
             </Link>
             <Link
-              to="/for-akerier"
-              state={{ initialMode: "register", requiredRole: "company" }}
+              to="/login"
+              state={{ initialMode: "register", requiredRole: "driver" }}
               style={{
                 display: "inline-flex", alignItems: "center", justifyContent: "center",
                 width: isMobile ? "100%" : "auto",
@@ -211,9 +211,12 @@ export default function Home() {
                 textDecoration: "none",
               }}
             >
-              Jag är ett åkeri
+              Skapa konto — alltid gratis
             </Link>
           </div>
+          <Link to="/for-akerier" style={{ display: "inline-block", marginTop: isMobile ? 18 : -52, fontSize: "var(--text-sm)", fontWeight: 600, color: "rgba(255,255,255,0.55)", textDecoration: "underline" }}>
+            Är ni ett åkeri? Hitta förare här →
+          </Link>
         </div>
       </section>
 

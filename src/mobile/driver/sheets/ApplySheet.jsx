@@ -3,6 +3,7 @@
 // model call — flagged as a discrepancy). Submit records the application
 // locally this turn; real submission lands with the Ansökt screen wiring.
 import React, { useState } from "react";
+import { withUtm } from "../../../utils/utm.js";
 import { Icon, Label, Button } from "../../ui";
 import { suggestMessage } from "../../../api/ai";
 
@@ -95,7 +96,7 @@ export default function ApplySheet({ job, ctx, close }) {
               : <>{job.company} tar emot ansökningar via sin egen kanal. Klicka nedan för att ansöka där — vi registrerar samtidigt jobbet under <strong>Ansökt</strong> och meddelar företaget att du hittade det på STP.</>}
           </span>
         </div>
-        <a href={mailtoHref || job.externalApplyUrl} target={mailtoHref ? undefined : "_blank"} rel="noopener noreferrer" onClick={() => { ctx.applyExternal?.(job); setTimeout(close, 400); }} className="press" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "15px 18px", borderRadius: 13, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: 15 }}>
+        <a href={mailtoHref || withUtm(job.externalApplyUrl)} target={mailtoHref ? undefined : "_blank"} rel="noopener noreferrer" onClick={() => { ctx.applyExternal?.(job); setTimeout(close, 400); }} className="press" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "15px 18px", borderRadius: 13, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: 15 }}>
           {applyEmail ? "Ansök via mejl" : "Ansök hos arbetsgivaren"} <Icon name={applyEmail ? "mail" : "arrow"} size={17} stroke={2.3} color="#fff" />
         </a>
         <p style={{ fontSize: 12.5, color: "var(--ink-400)", lineHeight: 1.5, marginTop: 12, textAlign: "center" }}>

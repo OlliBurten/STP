@@ -297,7 +297,7 @@ export function DriverDataProvider({ children }) {
   }, [hasApi]);
   useEffect(() => { refreshApplications(); }, [refreshApplications]);
   const aggApplied = useMemo(() => new Set(aggApps.map((a) => a.jobId).filter(Boolean)), [aggApps]);
-  const [filter, setFilter] = useState({ type: "alla", lic: [], cert: [] });
+  const [filter, setFilter] = useState({ type: "alla", lic: [], cert: [], hideBemanning: false });
 
   // ── Conversations → threads (Inkorg) + applications (Ansökt) ─────
   const convs = useMemo(() => {

@@ -117,9 +117,10 @@ function FilterBar({ filters, setFilters, onOpenAll, facets }) {
   if (filters.region)     activeChips.push({ key: "region",     label: filters.region });
   if (filters.jobType)    activeChips.push({ key: "jobType",    label: jobTypeLabel(filters.jobType) });
   if (filters.certificate) activeChips.push({ key: "certificate", label: certLabel(filters.certificate) });
+  if (filters.hideBemanning) activeChips.push({ key: "hideBemanning", label: "Bemanning dold" });
 
   const clearChip = key => setFilters(f => ({ ...f, [key]: "" }));
-  const clearAll  = ()   => setFilters(f => ({ ...f, region: "", license: "", employment: "", jobType: "", search: "", certificate: "" }));
+  const clearAll  = ()   => setFilters(f => ({ ...f, region: "", license: "", employment: "", jobType: "", search: "", certificate: "", hideBemanning: "" }));
 
   return (
     <div style={{ paddingTop: 22, paddingBottom: 14 }}>
@@ -158,6 +159,21 @@ function FilterBar({ filters, setFilters, onOpenAll, facets }) {
           options={REGION_OPTS}      placeholder="Region"      width={148}
         />
 
+        <button
+          onClick={() => setFilters(f => ({ ...f, hideBemanning: f.hideBemanning ? "" : "1" }))}
+          title="Visa bara jobb där du anställs direkt av arbetsgivaren"
+          style={{
+            display: "inline-flex", alignItems: "center", gap: 7,
+            padding: "11px 14px", borderRadius: 10,
+            background: filters.hideBemanning ? "var(--green-tint)" : "var(--card)",
+            border: `1px solid ${filters.hideBemanning ? "var(--green)" : "var(--line-2)"}`,
+            color: filters.hideBemanning ? "var(--green-text)" : "var(--ink-900)",
+            fontSize: "var(--text-sm)", fontWeight: filters.hideBemanning ? 700 : 600,
+            boxShadow: "var(--sh-sm)", cursor: "pointer", fontFamily: "var(--font)",
+          }}>
+          {filters.hideBemanning ? <CheckIcon /> : null}
+          Dölj bemanning
+        </button>
         <button onClick={onOpenAll} style={{
           display: "inline-flex", alignItems: "center", gap: 7,
           padding: "11px 14px", borderRadius: 10,
@@ -297,10 +313,10 @@ export default function JobList() {
   });
   // Filtren speglas i URL:en → delbara sökningar ("CE-jobb i Norrbotten"-länk
   // i ett FB-inlägg), bakåtknapp och omladdning tappar inget.
-  const FILTER_KEYS = ["search", "region", "license", "segment", "jobType", "employment", "bransch", "minSalary", "certificate"];
+  const FILTER_KEYS = ["search", "region", "license", "segment", "jobType", "employment", "bransch", "minSalary", "certificate", "hideBemanning"];
   const [searchParams, setSearchParams] = useSearchParams();
   const [filters, setFilters] = useState(() => {
-    const init = { search: "", region: "", license: "", segment: "", jobType: "", employment: "", bransch: "", minSalary: "", certificate: "" };
+    const init = { search: "", region: "", license: "", segment: "", jobType: "", employment: "", bransch: "", minSalary: "", certificate: "", hideBemanning: "" };
     for (const k of FILTER_KEYS) { const v = searchParams.get(k); if (v) init[k] = v; }
     return init;
   });
@@ -391,7 +407,8 @@ export default function JobList() {
       && (!filters.jobType    || job.jobType === filters.jobType)
       && (!filters.employment || job.employment === filters.employment)
       && (!filters.certificate || job.certificates?.includes(filters.certificate))
-      && (!filters.bransch    || (job.bransch && job.bransch === filters.bransch));
+      && (!filters.bransch    || (job.bransch && job.bransch === filters.bransch))
+      && (!filters.hideBemanning || !job.bemanning);
   }), [jobs, filters, isGymnasieelev]);
 
   const REGION_CODE_MAP = {

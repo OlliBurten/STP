@@ -8,6 +8,7 @@ import { suggestMessage } from "../api/ai.js";
 import { submitApplication } from "../api/applications.js";
 import { getCertificateLabel } from "../data/profileData";
 import { matchScore } from "../utils/matchUtils";
+import { withUtm } from "../utils/utm.js";
 import { calcYearsExperience } from "../utils/profileUtils";
 import PageMeta from "../components/PageMeta";
 import { useIsMobile } from "../hooks/useIsMobile";
@@ -358,7 +359,7 @@ export default function Apply() {
         <a
           href={job.applyEmail
             ? `mailto:${job.applyEmail}?subject=${encodeURIComponent(`Ansökan: ${job.applicationReference || job.title}`)}&body=${encodeURIComponent(`Hej!\n\nJag söker tjänsten "${job.title}"${job.applicationReference ? ` (referens: ${job.applicationReference})` : ""} som jag hittade via Transportplattformen.\n\n[Berätta kort om dig själv, din behörighet och erfarenhet.]\n\nMed vänliga hälsningar,\n`)}`
-            : job.originalPostingUrl}
+            : withUtm(job.originalPostingUrl)}
           target={job.applyEmail ? undefined : "_blank"} rel="noopener noreferrer" onClick={registerExternal}
           style={{ display: "block", padding: "15px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontSize: "var(--text-md)", fontWeight: 800, textDecoration: "none", textAlign: "center" }}>
           {job.applyEmail ? "Ansök via mejl" : "Ansök hos arbetsgivaren ↗"}

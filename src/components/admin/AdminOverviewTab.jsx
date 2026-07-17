@@ -1,7 +1,7 @@
 import React from "react";
 import { Icon } from "./AdminShell.jsx";
 import { fmtDate, useIsMobile } from "./adminShared.jsx";
-import { getApplicationStats, getPosthogActivity } from "../../api/admin.js";
+import { getApplicationStats, getPosthogActivity, getExposureOutcomes } from "../../api/admin.js";
 
 const mono = { fontFamily: "'JetBrains Mono',monospace", fontFeatureSettings: '"tnum"' };
 
@@ -155,6 +155,49 @@ function PosthogActivity() {
                 </div>
               );
             })}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ─── "Tillsatt efter STP-exponering" — indikation, inte bevis ──────────────────
+function ExposureOutcomes() {
+  const [data, setData] = React.useState(null);
+  const [err, setErr] = React.useState(false);
+  React.useEffect(() => {
+    let alive = true;
+    getExposureOutcomes().then((d) => alive && setData(d)).catch(() => alive && setErr(true));
+    return () => { alive = false; };
+  }, []);
+  if (err) return null;
+
+  return (
+    <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, overflow: "hidden" }}>
+      <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <span style={{ fontSize: "var(--text-sm)", fontWeight: 800, letterSpacing: -0.2, color: "var(--ink-900)" }}>Tillsatta efter STP-exponering — 30 dagar</span>
+        <span style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", fontWeight: 600 }}>indikation, inte bevis</span>
+      </div>
+      {!data ? (
+        <div style={{ padding: "20px 18px", textAlign: "center", fontSize: "var(--text-xs)", color: "var(--ink-400)" }}>Laddar…</div>
+      ) : (
+        <>
+          <div style={{ padding: "10px 18px", fontSize: "var(--text-2xs)", color: "var(--ink-500)", borderBottom: "1px solid var(--line)", lineHeight: 1.5 }}>
+            {data.removedTotal} importjobb försvann ur källan (= oftast tillsatta/avpublicerade). <b style={{ color: "var(--ink-900)" }}>{data.exposedCount}</b> hade fått exponering via STP först, varav <b style={{ color: "var(--success)" }}>{data.withApplications}</b> med registrerade ansökningar.
+          </div>
+          <div style={{ maxHeight: 260, overflowY: "auto", paddingBottom: 6 }}>
+            {data.jobs.length === 0 ? (
+              <div style={{ padding: "12px 18px", fontSize: "var(--text-xs)", color: "var(--ink-400)" }}>Inga exponerade jobb togs bort senaste 30 dagarna.</div>
+            ) : data.jobs.map((j, i) => (
+              <div key={j.id} style={{ padding: "8px 18px", display: "flex", alignItems: "center", gap: 10, borderBottom: i < data.jobs.length - 1 ? "1px solid var(--line)" : "none" }}>
+                <span style={{ flex: 1, minWidth: 0, fontSize: "var(--text-2xs)", color: "var(--ink-700)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  <b style={{ color: "var(--ink-900)" }}>{j.title}</b> · {j.company}{j.bemanning ? " · Bemanning" : ""}
+                </span>
+                {j.applications > 0 && <span style={{ flexShrink: 0, padding: "2px 7px", borderRadius: 5, background: "var(--success-tint)", color: "var(--success)", fontSize: "var(--text-2xs)", fontWeight: 700 }}>{j.applications} ans.</span>}
+                <span style={{ flexShrink: 0, fontSize: "var(--text-2xs)", color: "var(--ink-400)" }}>{j.views} visn. · borta {j.removedAt}</span>
+              </div>
+            ))}
           </div>
         </>
       )}
@@ -643,6 +686,7 @@ export default function AdminOverviewTab({
           <OnboardingFunnel onboarding={onboarding} />
           <ApplicationStats />
           <PosthogActivity />
+      <ExposureOutcomes />
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <ActionQueue

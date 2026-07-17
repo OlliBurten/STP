@@ -354,9 +354,16 @@ adminRouter.get("/summary", async (req, res, next) => {
       prisma.conversation.count(),
       prisma.message.count(),
       prisma.user.count({
-        where: { role: "COMPANY", companyStatus: "VERIFIED", companyOrgNumber: { not: null } },
+        where: {
+          role: { in: ["COMPANY", "RECRUITER"] },
+          ...excludeTestAndDemoAccountsWhere,
+          OR: [
+            { companyStatus: "VERIFIED", companyOrgNumber: { not: null } },
+            { userOrganizations: { some: { organization: { status: "VERIFIED" } } } },
+          ],
+        },
       }),
-      prisma.organization.count({ where: { status: "VERIFIED" } }),
+      Promise.resolve(0),
       prisma.user.findMany({
         where: excludeTestAndDemoAccountsWhere,
         orderBy: { createdAt: "desc" },
@@ -453,7 +460,7 @@ adminRouter.get("/summary", async (req, res, next) => {
         messages: totalMessages,
       },
       verification: {
-        verifiedCompanies: verifiedLegacyCompanies + verifiedOrganizations,
+        verifiedCompanies: verifiedLegacyCompanies,
         pendingCompanies: pendingLegacyCompanies + pendingOrganizations,
         acceptsPraktikCompanies,
       },
@@ -612,6 +619,42 @@ adminRouter.get("/application-stats", async (req, res, next) => {
 
 // PostHog-aktivitet till admin-översikten: nyckelhändelser 7 dagar (inkl.
 // anonyma gäster — DB-ansökningarna visar bara inloggade) + senaste händelser.
+// ── "Tillsatt efter STP-exponering" — AGGREGATED-jobb som försvann ur källan
+// (REMOVED av reconciliation = oftast tillsatt/avpublicerat) EFTER att ha fått
+// visningar eller ansökningar via STP. Indikation, inte bevis — märks så i UI:t.
+adminRouter.get("/exposure-outcomes", async (req, res, next) => {
+  try {
+    const since30d = new Date(Date.now() - 30 * 864e5);
+    const removedJobs = await prisma.job.findMany({
+      where: { source: "AGGREGATED", status: "REMOVED", updatedAt: { gte: since30d } },
+      select: {
+        id: true, title: true, company: true, updatedAt: true, isStaffing: true,
+        _count: { select: { views: true, applications: true } },
+      },
+    });
+    const exposed = removedJobs
+      .filter((j) => j._count.views > 0 || j._count.applications > 0)
+      .sort((a, b) => (b._count.applications - a._count.applications) || (b._count.views - a._count.views));
+    res.json({
+      windowDays: 30,
+      removedTotal: removedJobs.length,
+      exposedCount: exposed.length,
+      withApplications: exposed.filter((j) => j._count.applications > 0).length,
+      jobs: exposed.slice(0, 25).map((j) => ({
+        id: j.id,
+        title: j.title,
+        company: j.company,
+        bemanning: j.isStaffing,
+        removedAt: j.updatedAt.toISOString().slice(0, 10),
+        views: j._count.views,
+        applications: j._count.applications,
+      })),
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
 adminRouter.get("/posthog-activity", async (req, res, next) => {
   try {
     const { posthogHogQL } = await import("../lib/stackOverview.js");

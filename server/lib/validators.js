@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { isFullName, normalizeFullName, FULL_NAME_ERROR } from "./nameUtils.js";
+import { emailDomainTypoSuggestion } from "./emailDomainCheck.js";
 import { isValidSwedishOrgNumber } from "./companyVerify.js";
 
 /** Transportsegment – måste matcha src/data/bransch.js branschValues */
@@ -80,6 +81,17 @@ export const registerSchema = z
   .refine((data) => data.role !== "DRIVER" || isFullName(data.name), {
     message: FULL_NAME_ERROR,
     path: ["name"],
+  })
+  .superRefine((data, ctx) => {
+    // Typo-skydd: "hotmail.con" m.fl. skapar konton som aldrig kan verifieras
+    const suggestion = emailDomainTypoSuggestion(data.email);
+    if (suggestion) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["email"],
+        message: `Kontrollera e-postadressen — menade du @${suggestion}?`,
+      });
+    }
   });
 
 export const loginSchema = z.object({

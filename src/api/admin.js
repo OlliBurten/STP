@@ -34,6 +34,11 @@ export function getPosthogActivity() {
   return apiGet("/api/admin/posthog-activity");
 }
 
+/** "Tillsatt efter STP-exponering" — borttagna importjobb som hann få visningar/ansökningar. */
+export function getExposureOutcomes() {
+  return apiGet("/api/admin/exposure-outcomes");
+}
+
 export function getStackOverview() {
   return apiGet("/api/admin/stack-overview");
 }
