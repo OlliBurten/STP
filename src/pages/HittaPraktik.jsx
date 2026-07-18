@@ -34,7 +34,7 @@ const FAQ = [
   },
   {
     q: "Vad är skillnaden mot att ringa runt till åkerier?",
-    a: "På STP ser du direkt vilka åkerier som faktiskt är öppna för praktikanter, istället för att ringa ett dussintal som säger nej.",
+    a: "Du ser direkt vilka åkerier som tar emot praktikanter.",
   },
   {
     q: "Kan jag även söka sommarvikariat och extrajobb?",

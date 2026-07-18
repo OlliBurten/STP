@@ -530,7 +530,7 @@ export default function Apply() {
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value.slice(0, MAX_MSG))}
-              placeholder="Berätta kort varför du söker detta jobb. Åkerier som får ett personligt meddelande svarar 2× snabbare."
+              placeholder="Berätta kort varför du söker jobbet."
               rows={4}
               style={{ width: "100%", padding: "14px 16px", borderRadius: 13, background: "var(--card)", border: "1px solid var(--line-2)", color: "var(--ink-900)", fontSize: "var(--text-base)", lineHeight: 1.5, fontFamily: "inherit", resize: "none", outline: "none" }}
             />
@@ -750,7 +750,7 @@ export default function Apply() {
               <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value.slice(0, MAX_MSG))}
-                placeholder="Berätta kort varför du är intresserad av tjänsten. Ett par rader räcker — det gör skillnad."
+                placeholder="Berätta kort varför du är intresserad."
                 rows={4}
                 style={{ width: "100%", padding: "14px 16px", background: "var(--card-2)", border: "1px solid var(--line-2)", borderRadius: 11, fontSize: "var(--text-base)", color: "var(--ink-900)", fontFamily: "inherit", lineHeight: 1.6, resize: "vertical", outline: "none" }}
                 onFocus={(e) => { e.target.style.borderColor = "var(--green)"; }}
@@ -811,7 +811,7 @@ export default function Apply() {
               <Card style={{ background: "var(--amber-tint)", border: "1px solid var(--amber-tint-2)" }}>
                 <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-800)", lineHeight: 1.65, marginBottom: 14 }}>
                   <strong style={{ color: "var(--amber-text)" }}>Det här åkeriet är inte anslutet till STP ännu.</strong>
-                  {" "}Vi förmedlar din intresseanmälan och kontaktar dem åt dig. Du kan även söka direkt via{" "}
+                  {" "}Vi vidarebefordrar din anmälan. Du kan även söka via{" "}
                   {job?.originalPostingUrl
                     ? <a href={job.originalPostingUrl} target="_blank" rel="noopener noreferrer" style={{ color: "var(--green)", fontWeight: 700 }}>originalannonsen ↗</a>
                     : "originalannonsen"

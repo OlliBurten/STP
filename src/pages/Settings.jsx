@@ -207,7 +207,7 @@ function DriverKontoSection({ user }) {
         />
       )}
 
-      <Card title="Personuppgifter" sub="Grundläggande kontoinformation. Kontakta /profil för att redigera telefon, ort och mer.">
+      <Card title="Personuppgifter" sub="Telefon och ort redigerar du på din profil.">
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16 }}>
           <Field label="Förnamn">
             <input style={{ ...inputStyle, color: "var(--ink-400)" }} value={nameParts[0] || ""} disabled title="Ändra via Support" />
@@ -425,7 +425,7 @@ function SekretessSection({ profile: initialProfile }) {
               <p style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", lineHeight: 1.55, margin: 0 }}>
                 {openToWork
                   ? "En grön ring visas runt din profilbild — åkerier ser att du aktivt söker."
-                  : "Slå på för att visa en grön ring runt din profilbild och signalera att du är öppen för erbjudanden."}
+                  : "Visa att du är öppen för erbjudanden."}
               </p>
             </div>
             <Toggle checked={openToWork} onChange={toggleOpenToWork} disabled={saving} />
@@ -487,7 +487,7 @@ function SokprefSection({ profile: initialProfile }) {
   const SEGMENTS = ["Fjärr", "Distribution", "Tank", "Bygg", "Skog", "Container", "Internationell", "Bemanning"];
 
   return (
-    <Card title="Vad letar du efter?" sub="Används för att beräkna din matchning mot lediga jobb. Ju mer specifik, desto bättre matchning.">
+    <Card title="Vad letar du efter?" sub="Mer specifikt ger bättre matchning.">
       <Field label="Körkort jag har">
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {["C", "CE"].map((l) => {

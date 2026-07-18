@@ -173,9 +173,7 @@ export default function Home() {
             color: "rgba(255,255,255,0.78)", fontWeight: 500,
             maxWidth: 580, marginBottom: 32,
           }}>
-            {isMobile
-              ? "Sveriges jobbplattform för lastbilsförare. Sök C- och CE-jobb direkt — utan konto, alltid gratis."
-              : "Sveriges jobbplattform för lastbilsförare. Sök hundratals C- och CE-jobb direkt — utan konto, utan CV, alltid gratis. Inga mellanhänder som tar del av din lön."}
+            Sök hundratals C- och CE-jobb direkt. Utan konto, alltid gratis.
           </p>
 
           {/* CTAs */}
@@ -255,9 +253,9 @@ export default function Home() {
 
           <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: 18 }}>
             {[
-              { no: "01", title: "Ingen struktur",          body: "Körkort, erfarenhet och tillgänglighet begrävs i fritext och kommentarsfält. Ingen vet vem som är seriös." },
-              { no: "02", title: "Mellanhänder äter lönen", body: "Bemanningsbolag tar en stor del av lönen. Föraren förlorar. Åkeriet betalar mer. Ingen vinner." },
-              { no: "03", title: "Bra kandidater försvinner", body: "En jobbannons lever 24 timmar på sociala medier. Rätt förare ser den aldrig. Åkeriet upprepar processen." },
+              { no: "01", title: "Ingen struktur",          body: "Körkort och erfarenhet begravs i fritext och kommentarsfält." },
+              { no: "02", title: "Mellanhänder äter lönen", body: "Bemanningsbolag tar en stor del av lönen." },
+              { no: "03", title: "Bra kandidater försvinner", body: "En annons lever 24 timmar på sociala medier — rätt förare ser den aldrig." },
             ].map((p) => (
               <div key={p.no} style={{
                 background: "var(--card)", border: "1px solid var(--line)",
@@ -350,10 +348,10 @@ export default function Home() {
 
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               {[
-                { icon: "user",     title: "Smart matchning",       body: "Matchas baserat på körkort, region, segment och tillgänglighet. Systemet rankar förare och jobb automatiskt." },
-                { icon: "building", title: "Verifierade åkerier",   body: "Åkerier verifieras mot Bolagsverket. Förare ser bara seriösa aktörer — inga ogrundade annonsörer." },
-                { icon: "msg",      title: "Direktkontakt",         body: "Inga mellanhänder. Inga provisioner. Förare och åkeri pratar direkt — som det borde vara." },
-                { icon: "eye",      title: "Du styr din synlighet", body: "Som förare bestämmer du om du är synlig, om du visar telefonnummer, och vem som ser din profil." },
+                { icon: "user",     title: "Smart matchning",       body: "Matchas på körkort, region och tillgänglighet." },
+                { icon: "building", title: "Verifierade åkerier",   body: "Alla åkerier verifieras mot Bolagsverket." },
+                { icon: "msg",      title: "Direktkontakt",         body: "Förare och åkeri pratar direkt. Ingen provision." },
+                { icon: "eye",      title: "Du styr din synlighet", body: "Du bestämmer vem som ser din profil." },
               ].map((f) => (
                 <div key={f.title} style={{
                   background: "var(--card)", border: "1px solid var(--line)",
@@ -478,13 +476,13 @@ export default function Home() {
           {/* Step cards */}
           <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: 18 }}>
             {(howTab === "driver" ? [
-              { n: 1, title: "Skapa konto",     body: "Registrera dig som förare på 2 minuter. Välj körkort, region och vad du söker." },
-              { n: 2, title: "Bygg din profil", body: "Fyll i körkort, certifikat, erfarenhet och tillgänglighet. Välj om du är synlig för åkerier." },
-              { n: 3, title: "Bli matchad",     body: "Åkerier hittar dig automatiskt. Du kan också söka jobb direkt. All kontakt sker via plattformen." },
+              { n: 1, title: "Skapa konto",     body: "Registrera dig på 2 minuter — körkort, region, vad du söker." },
+              { n: 2, title: "Bygg din profil", body: "Certifikat, erfarenhet, tillgänglighet — du väljer synlighet." },
+              { n: 3, title: "Bli matchad",     body: "Åkerier hittar dig — eller sök jobb själv." },
             ] : [
-              { n: 1, title: "Registrera åkeri",    body: "Verifiera ditt företag mot Bolagsverket. Snabbt, säkert och gratis." },
-              { n: 2, title: "Publicera eller sök", body: "Lägg upp en jobbannons eller bläddra bland förare med rätt behörigheter i din region." },
-              { n: 3, title: "Kontakta direkt",     body: "Ta kontakt utan mellanhänder. Ingen provision. Ingen avgift per kontakt." },
+              { n: 1, title: "Registrera åkeri",    body: "Verifieras automatiskt på organisationsnumret. Gratis." },
+              { n: 2, title: "Publicera eller sök", body: "Annonsera eller sök förare med rätt behörigheter." },
+              { n: 3, title: "Kontakta direkt",     body: "Kontakta förare direkt. Ingen provision." },
             ]).map((s) => (
               <div key={s.n} style={{
                 background: "var(--card)", border: "1px solid var(--line)",

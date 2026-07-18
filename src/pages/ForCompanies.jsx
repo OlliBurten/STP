@@ -389,7 +389,7 @@ function SearchabilityCard({ profile }) {
       </div>
       <p style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", marginBottom: 14, lineHeight: 1.55 }}>
         {allDone
-          ? "Ert åkeri visas i förares sök och kan hittas utan att ni behöver ha aktiva jobb uppe."
+          ? "Syns i förares sök även utan aktiva jobb."
           : "Fyll i nedan för att visas i åkeridatabasen — förare kan då hitta och följa er direkt."}
       </p>
       <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: 16 }}>

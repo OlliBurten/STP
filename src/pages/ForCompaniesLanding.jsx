@@ -33,9 +33,9 @@ const STEPS = [
 ];
 
 const FAQS = [
-  { q: "Hur snabbt kan vi börja hitta förare?", a: "Direkt. Med ett giltigt organisationsnummer verifieras ert konto automatiskt under registreringen — ni kan söka bland förare och publicera jobb direkt efter att ni skapat kontot." },
+  { q: "Hur snabbt kan vi börja hitta förare?", a: "Direkt. Kontot verifieras automatiskt på organisationsnumret." },
   { q: "Kostar det att använda STP?", a: "STP är gratis för alla åkerier. Vi meddelar tydligt i god tid innan vi introducerar betalda funktioner." },
-  { q: "Vad skiljer STP från bemanningsbolag?", a: "STP är inte ett bemanningsbolag. Ni kontaktar förare direkt utan mellanhänder, vilket innebär lägre kostnad och att ni äger relationen med föraren från dag ett." },
+  { q: "Vad skiljer STP från bemanningsbolag?", a: "STP är inte ett bemanningsbolag — ni kontaktar förare direkt och äger relationen." },
   { q: "Kan vi se förare innan de ansökt?", a: "Ja. Med Hitta förare söker ni bland förare som är synliga och filtrerar på körkort, region, certifikat och tillgänglighet — och kontaktar dem direkt." },
   { q: "Kan flera från teamet använda kontot?", a: "Ja. Bjud in teammedlemmar under onboardingen eller efteråt, så kan fler i organisationen söka förare och hantera konversationer." },
 ];

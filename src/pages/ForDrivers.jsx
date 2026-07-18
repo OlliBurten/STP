@@ -19,9 +19,9 @@ const DEMAND = [
 ];
 
 const SEGMENTS = [
-  { Icon: TruckIcon, title: "Heltid", tag: "Fast anställning", body: "Söker du en långsiktig roll? Visa erfarenhet, behörigheter och vilken typ av tjänst som passar dig.", points: ["Fasta tjänster", "Långsiktiga åkerier"] },
-  { Icon: ClockIcon, title: "Vikarie & deltid", tag: "Flexibelt", body: "Vill du vara flexibel och hoppa in snabbt? Matchas mot vikariat, extrapass och kortare behov.", points: ["Extrapass", "Kortare uppdrag"] },
-  { Icon: BuildingIcon, title: "Praktik", tag: "I början av karriären", body: "Elev eller ny i yrket? Hitta seriösa företag att växa med — från gymnasiet, AF eller Komvux.", points: ["Praktikplatser", "Mentorskap"] },
+  { Icon: TruckIcon, title: "Heltid", tag: "Fast anställning", body: "För dig som söker en fast, långsiktig tjänst.", points: ["Fasta tjänster", "Långsiktiga åkerier"] },
+  { Icon: ClockIcon, title: "Vikarie & deltid", tag: "Flexibelt", body: "Vikariat, extrapass och kortare behov.", points: ["Extrapass", "Kortare uppdrag"] },
+  { Icon: BuildingIcon, title: "Praktik", tag: "I början av karriären", body: "För dig som är elev eller ny i yrket.", points: ["Praktikplatser", "Mentorskap"] },
 ];
 
 const STEPS = [
@@ -31,8 +31,8 @@ const STEPS = [
 ];
 
 const FAQS = [
-  { q: "Måste jag vara yrkesförare?", a: "Ja, STP är specialbyggt för yrkesförare med körkort B, C, CE eller C1. Plattformen hanterar branschens termer, YKB och ADR direkt — du behöver aldrig förklara vad du menar." },
-  { q: "Kan jag vara anonym tills jag tar kontakt?", a: "Ja. Du styr helt vad som är synligt. Du kan söka jobb och se annonser utan att åkerier ser din profil. Aktiverar du synligheten kan åkerier hitta dig — och du kan stänga av den när som helst." },
+  { q: "Måste jag vara yrkesförare?", a: "Ja — STP är byggt för yrkesförare (B, C, CE, C1). YKB och ADR hanteras direkt." },
+  { q: "Kan jag vara anonym tills jag tar kontakt?", a: "Ja. Du styr din synlighet och kan stänga av den när som helst." },
   { q: "Tar STP betalt av förare?", a: "Nej. STP är alltid gratis för förare — skapa profil, söka jobb och bli kontaktad kostar aldrig något. Våra intäkter kommer från arbetsgivarsidan." },
   { q: "Vad skiljer STP från en vanlig jobbsajt?", a: "Profilen utgår från körkort, segment, tillgänglighet och certifikat — inte ett generiskt CV. Det gör det lätt för åkerier att förstå dig snabbt och för dig att hitta rätt jobb." },
   { q: "Vad händer om jag inte svarar ett åkeri?", a: "Ingenting — du är aldrig tvingad att svara. Du kan avvisa konversationer eller stänga av synligheten om du inte söker just nu." },

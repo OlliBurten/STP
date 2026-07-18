@@ -1598,7 +1598,7 @@ export default function Profile() {
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
                       <p style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-500)" }}>Privat matchningstext</p>
                     </div>
-                    <textarea value={current.privateMatchNotes || ""} onChange={(e) => updateDraft({ privateMatchNotes: e.target.value })} rows={3} placeholder="Skriv fritt vad du helst vill ha eller undvika. Exempel: vill helst köra distribution dagtid, undviker natt." style={{ ...inputStyle, resize: "none", lineHeight: 1.6 }} />
+                    <textarea value={current.privateMatchNotes || ""} onChange={(e) => updateDraft({ privateMatchNotes: e.target.value })} rows={3} placeholder="T.ex. helst distribution dagtid, undviker natt." style={{ ...inputStyle, resize: "none", lineHeight: 1.6 }} />
                     <p style={{ fontSize: "var(--text-2xs)", color: T.muted, marginTop: 6 }}>Visas inte publikt — används bara som matchningssignal.</p>
                   </div>
                 </>
