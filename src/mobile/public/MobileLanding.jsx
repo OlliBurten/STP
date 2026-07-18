@@ -239,7 +239,6 @@ export default function MobileLanding() {
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <BtnAmber full onClick={nav.jobs}>Se lediga jobb <Icon name="arrow" size={19} color="#1a1200" stroke={2.4} /></BtnAmber>
               <BtnGhost onDark onClick={() => nav.register("forare")}>Skapa konto — alltid gratis</BtnGhost>
-              <button onClick={() => nav.register("akeri")} className="press" style={{ background: "none", border: "none", color: "rgba(255,255,255,0.55)", fontSize: 14, fontWeight: 600, textDecoration: "underline", padding: "4px 0" }}>Är ni ett åkeri? Hitta förare här</button>
             </div>
           </div>
         </section>

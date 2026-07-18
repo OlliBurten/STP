@@ -48,10 +48,12 @@ function OAuthSection({ onSuccess, onError, onRolePickerVisible, requiredRole, f
 }
 
 /* ── Left brand panel ─────────────────────────────────────────────────────── */
-function BrandPanel() {
+function BrandPanel({ variant = "driver" }) {
+  const isCompany = variant === "company";
   return (
     <aside style={{
-      background: "var(--ink-900)",
+      // Åkeri-auth får väggrön panel — omedelbart särskiljbar från förar-flödets asfalt
+      background: isCompany ? "linear-gradient(165deg, #1E6B5B 0%, #134a3e 100%)" : "var(--ink-900)",
       color: "#fff",
       padding: "40px 40px 48px",
       display: "flex",
@@ -65,20 +67,29 @@ function BrandPanel() {
       {/* Headline */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", padding: "40px 0" }}>
         <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 12px", borderRadius: 999, background: "rgba(242,164,28,0.15)", border: "1px solid rgba(242,164,28,0.35)", color: "#f5c875", fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: 1.4, textTransform: "uppercase", alignSelf: "flex-start", marginBottom: 26 }}>
-          Alltid gratis för förare
+          {isCompany ? "För åkerier" : "Alltid gratis för förare"}
         </div>
         <h1 style={{ fontSize: "var(--text-5xl)", fontWeight: 900, letterSpacing: -1.5, lineHeight: 1.1, marginBottom: 18, color: "#fff" }}>
-          Branschens<br />egen plattform.
+          {isCompany ? <>Rätt förare.<br />Direkt.</> : <>Branschens<br />egen plattform.</>}
         </h1>
         <p style={{ fontSize: "var(--text-md)", lineHeight: 1.6, color: "rgba(255,255,255,0.65)", marginBottom: 32, margin: "0 0 32px" }}>
-          Direktmatchning mellan yrkesförare och åkerier. Inga mellanhänder, inga avgifter.
+          {isCompany
+            ? "Sök bland verifierade yrkesförare och kontakta dem direkt."
+            : "Direktmatchning mellan yrkesförare och åkerier. Inga mellanhänder, inga avgifter."}
         </p>
 
-        {[
-          { label: "Matchas på körkort & region" },
-          { label: "Verifierade åkerier" },
-          { label: "Kontakta direkt — inget CV" },
-        ].map(({ label }) => (
+        {(isCompany
+          ? [
+              { label: "Sök förare på körkort & region" },
+              { label: "Publicera jobb gratis" },
+              { label: "Ingen provision" },
+            ]
+          : [
+              { label: "Matchas på körkort & region" },
+              { label: "Verifierade åkerier" },
+              { label: "Kontakta direkt — inget CV" },
+            ]
+        ).map(({ label }) => (
           <div key={label} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
             <span style={{ width: 32, height: 32, borderRadius: 8, background: "rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--green-soft)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -502,7 +513,7 @@ export default function Login() {
           gridTemplateColumns: isMobile ? "1fr" : "440px 1fr",
           minHeight: "100vh",
         }}>
-          {!isMobile && <BrandPanel />}
+          {!isMobile && <BrandPanel variant={isDriver ? "driver" : "company"} />}
           <div style={formPanelStyle}>
             <CloseButton />
             <div style={transitionStyle}>

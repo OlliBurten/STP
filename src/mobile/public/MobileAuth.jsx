@@ -262,9 +262,14 @@ export default function MobileAuth() {
     body = (
       <div className="view-enter app-scroll" style={{ flex: 1, display: "flex", flexDirection: "column", overflowY: "auto" }}>
         <div style={{ padding: "24px 26px 30px" }}>
-          <h1 style={{ fontSize: 27, fontWeight: 800, letterSpacing: -0.6, color: "var(--ink-900)", marginBottom: 6 }}>Skapa ditt konto</h1>
-          <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.45, marginBottom: 24 }}>Tar en minut. Sen bygger vi din förarprofil.</p>
-          <Field label="Fullständigt namn" icon="user" value={name} onChange={setName} placeholder="För- och efternamn" autoComplete="name" error={err.name} />
+          {role === "akeri" && (
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 11px", borderRadius: 999, background: "var(--green-tint)", color: "var(--green-text)", fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 12 }}>
+              <Icon name="building" size={13} color="var(--green-text)" stroke={2.2} /> För åkerier
+            </span>
+          )}
+          <h1 style={{ fontSize: 27, fontWeight: 800, letterSpacing: -0.6, color: "var(--ink-900)", marginBottom: 6 }}>{role === "akeri" ? "Registrera åkeri" : "Skapa ditt konto"}</h1>
+          <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.45, marginBottom: 24 }}>{role === "akeri" ? "Hitta förare direkt. Gratis att komma igång." : "Tar en minut. Sen bygger vi din förarprofil."}</p>
+          <Field label={role === "akeri" ? "Kontaktperson" : "Fullständigt namn"} icon="user" value={name} onChange={setName} placeholder="För- och efternamn" autoComplete="name" error={err.name} />
           <Field label="E-post" type="email" icon="mail" value={email} onChange={setEmail} placeholder="namn@exempel.se" autoComplete="email" inputMode="email" error={err.email} />
           <Field label="Lösenord" type={showPw ? "text" : "password"} icon="lock" value={pw} onChange={setPw} placeholder="Minst 8 tecken" autoComplete="new-password" error={err.pw} right={pwToggle} onEnter={submitRegister} />
           <Strength pw={pw} />
@@ -273,7 +278,7 @@ export default function MobileAuth() {
             <span style={{ fontSize: 13, color: "var(--ink-500)", lineHeight: 1.45 }}>Jag godkänner STP:s <a onClick={(e) => { e.preventDefault(); navigate("/anvandarvillkor"); }} style={{ color: "var(--green)" }}>användarvillkor</a> och <a onClick={(e) => { e.preventDefault(); navigate("/integritet"); }} style={{ color: "var(--green)" }}>integritetspolicy</a>.</span>
           </button>
           {err.agree && <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 16 }}><Icon name="alert" size={13} color="var(--danger)" stroke={2.2} /><span style={{ fontSize: 12.5, color: "var(--danger)", fontWeight: 600 }}>{err.agree}</span></div>}
-          <Button variant="primary" full busy={busy} onClick={submitRegister}>Skapa konto</Button>
+          <Button variant="primary" full busy={busy} onClick={submitRegister}>{role === "akeri" ? "Skapa företagskonto" : "Skapa konto"}</Button>
           <div style={{ margin: "18px 0" }}><OrDivider /></div>
           {err.oauth && <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 12 }}><Icon name="alert" size={13} color="var(--danger)" stroke={2.2} /><span style={{ fontSize: 12.5, color: "var(--danger)", fontWeight: 600 }}>{err.oauth}</span></div>}
           <OAuthButtons onSuccess={onOAuth} onError={(m) => setErr((e) => ({ ...e, oauth: m || "" }))} authMode="register" requiredRole={role === "akeri" ? "company" : "driver"} />

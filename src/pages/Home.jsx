@@ -212,9 +212,7 @@ export default function Home() {
               Skapa konto — alltid gratis
             </Link>
           </div>
-          <Link to="/for-akerier" style={{ display: "inline-block", marginTop: isMobile ? 18 : -52, fontSize: "var(--text-sm)", fontWeight: 600, color: "rgba(255,255,255,0.55)", textDecoration: "underline" }}>
-            Är ni ett åkeri? Hitta förare här →
-          </Link>
+
         </div>
       </section>
 
