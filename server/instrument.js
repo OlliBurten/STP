@@ -13,30 +13,36 @@ Sentry.init({
 
   // Strip SQL query parameters and email addresses from Sentry breadcrumbs
   beforeSend(event) {
-    // EADDRINUSE is a Railway deployment race condition (old process hasn't released
-    // the port before the new one starts). It's already handled with process.exit —
-    // suppress it so it doesn't flood Sentry as a recurring fatal regression.
     const errValue = event.exception?.values?.[0]?.value ?? "";
-    if (errValue.includes("EADDRINUSE")) {
-      return null;
-    }
-    // Billing errors from the Anthropic API are operational (not bugs) — suppress
-    // to avoid flooding Sentry whenever API credits run out.
-    if (errValue.includes("credit balance is too low")) {
-      return null;
-    }
-    // Anthropic rate-limit/överlast likaså — junis felstorm åt upp hela månadens
-    // Sentry-kvot med exakt sådana här operationella fel (agenterna retryar själva).
-    if (errValue.includes("rate_limit_error") || errValue.includes("overloaded_error")) {
-      return null;
-    }
-    // Anthropic usage-limits (MAX-planens 429:or) — samma kvotflod-risk som juni,
-    // men med annan feltext än rate_limit_error. Operationellt, aldrig en bugg.
-    if (
-      errValue.includes("usage limit") ||
-      errValue.includes("usage_limit") ||
-      /anthropic|claude/i.test(errValue) && errValue.includes("429")
-    ) {
+
+    // Operationella fel vi medvetet INTE rapporterar till Sentry. Ordningen spelar
+    // ingen roll — första träffen vinner och namnger orsaken i loggen.
+    //
+    // - EADDRINUSE: Railway-deploykapplöpning (gamla processen har inte släppt porten
+    //   än när den nya startar). Hanteras redan med process.exit.
+    // - Anthropic-fel (kredit/rate limit/överlast/usage limit): operationellt, aldrig
+    //   en bugg. Agenterna retryar själva. Junis felstorm åt upp hela månadens
+    //   Sentry-kvot med exakt sådana här fel.
+    const SUPPRESSED = [
+      ["EADDRINUSE", (v) => v.includes("EADDRINUSE")],
+      ["anthropic_credit", (v) => v.includes("credit balance is too low")],
+      ["anthropic_rate_limit", (v) => v.includes("rate_limit_error") || v.includes("overloaded_error")],
+      [
+        "anthropic_usage_limit",
+        (v) =>
+          v.includes("usage limit") ||
+          v.includes("usage_limit") ||
+          (/anthropic|claude/i.test(v) && v.includes("429")),
+      ],
+    ];
+
+    const matched = SUPPRESSED.find(([, test]) => test(errValue));
+    if (matched) {
+      // Utan den här raden är undertryckta fel HELT osynliga: de når aldrig Sentry
+      // (client_discard/before_send) och lämnar inget spår. 2026-07-18 gick volymen
+      // från ~0 till ~42/dygn utan att någon kunde se vilken regel som träffade.
+      // Logga orsak + trunkerat meddelande så nästa triage kan läsa det i Railway.
+      console.warn(`[sentry:suppressed] ${matched[0]} — ${errValue.slice(0, 200)}`);
       return null;
     }
 
