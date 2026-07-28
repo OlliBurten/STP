@@ -526,6 +526,23 @@ app.post("/api/internal/ingest-jobs", internalLimiter, express.json(), async (re
   }
 });
 
+// Sentrys brusfilter (server/instrument.js) släpper aldrig igenom vissa operationella
+// fel. Det är avsiktligt, men gör dashboarden blind: "0 olösta fel" kan lika gärna
+// betyda "allt filtrerades bort" (juni-läxan). Räknarna nedan visar hur mycket varje
+// regel tystat sedan senaste omstart, utan att belasta Sentry-kvoten. Bara regelnamn
+// och antal exponeras — aldrig feltexter, eftersom /api/health är publik.
+function sentrySuppressionSummary() {
+  const s = globalThis.__stpSentrySuppressions;
+  if (!s) return { suppressionsTracked: false };
+  return {
+    suppressionsTracked: true,
+    suppressedSince: s.since,
+    suppressedTotal: s.total,
+    suppressedByRule: { ...s.byRule },
+    lastSuppressedAt: s.lastAt,
+  };
+}
+
 app.get("/api/health", async (_, res) => {
   let db = "unknown";
   let dbLatencyMs = null;
@@ -561,6 +578,7 @@ app.get("/api/health", async (_, res) => {
       allowedOrigins: corsOriginList,
     },
     statusCheckUrls,
+    sentry: sentrySuppressionSummary(),
     uptimeSec: Math.round(process.uptime()),
     service: "drivermatch-api",
     deployment: DEPLOYMENT,

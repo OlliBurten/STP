@@ -2,6 +2,17 @@ import * as Sentry from "@sentry/node";
 
 const IS_PRODUCTION = process.env.NODE_ENV === "production";
 
+// Räknare för bortfiltrerade fel. Ligger på globalThis i stället för att exporteras,
+// eftersom instrument.js laddas med `node --import ./instrument.js` — server.js får
+// INTE importera den (då skulle Sentry.init köras även i testerna, som inte laddar
+// den alls). server.js läser den här defensivt och exponerar den på /api/health.
+const suppressions = (globalThis.__stpSentrySuppressions = {
+  since: new Date().toISOString(),
+  total: 0,
+  byRule: Object.create(null),
+  lastAt: null,
+});
+
 Sentry.init({
   dsn: process.env.SENTRY_DSN || "https://9ec4e302d31f49901b572fb4b3646c69@o4511146144628736.ingest.de.sentry.io/4511146149609552",
   environment: process.env.DEPLOYMENT || process.env.NODE_ENV || "development",
@@ -39,6 +50,9 @@ Sentry.init({
         "anthropic-usagelimit");
 
     if (suppression) {
+      suppressions.total += 1;
+      suppressions.byRule[suppression] = (suppressions.byRule[suppression] || 0) + 1;
+      suppressions.lastAt = new Date().toISOString();
       console.warn(
         `[sentry-suppressed] regel=${suppression} fel=${errValue.slice(0, 200)}`,
       );
