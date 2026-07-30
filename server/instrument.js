@@ -1,15 +1,37 @@
 import * as Sentry from "@sentry/node";
 
-const IS_PRODUCTION = process.env.NODE_ENV === "production";
+// Identiteten på deployen är DEPLOYMENT — inte NODE_ENV. Railway sätter DEPLOYMENT
+// (production|demo|development) men inte nödvändigtvis NODE_ENV=production, så den
+// gamla NODE_ENV-grinden gav demo OCH lokal utveckling tracesSampleRate 1.0 mot
+// PRODUKTIONENS Sentry-projekt (samma hårdkodade DSN nedan). 2026-07-30 kom 98 %
+// av transaktionerna därifrån: demo 7 478, development 4 560, production 229.
+const DEPLOYMENT = process.env.DEPLOYMENT || process.env.NODE_ENV || "development";
+const IS_PRODUCTION = DEPLOYMENT === "production";
 
 Sentry.init({
   dsn: process.env.SENTRY_DSN || "https://9ec4e302d31f49901b572fb4b3646c69@o4511146144628736.ingest.de.sentry.io/4511146149609552",
-  environment: process.env.DEPLOYMENT || process.env.NODE_ENV || "development",
+  environment: DEPLOYMENT,
   sendDefaultPii: true,
 
   // Nästan ingen tracing i prod — transaktionsvolymen (botar, cron, health-pings)
   // rate-limitades ändå bort och riskerar att tränga ut felkvoten, som är det viktiga.
-  tracesSampleRate: IS_PRODUCTION ? 0.01 : 1.0,
+  // Övriga miljöer skickar ingen tracing alls till prod-projektet; sätt
+  // SENTRY_TRACES_SAMPLE_RATE lokalt när du faktiskt behöver spåra något.
+  tracesSampleRate: IS_PRODUCTION
+    ? 0.01
+    : Number(process.env.SENTRY_TRACES_SAMPLE_RATE) || 0,
+
+  // Prismas OTEL-instrumentering promotar varje DB-anrop UTAN aktiv HTTP-span till
+  // en egen root-transaktion (cron, bakgrundsjobb, uppstart). 2026-07-30 var 12 209
+  // av 12 267 transaktioner (99,5 %) `prisma:client:*` — de saknar request-kontext
+  // och säger inget vid felsökning, men volymen triggade `project_abuse_limit` hos
+  // Sentry (912 transaktioner + 8 208 spans avvisade/dygn) och `queue_overflow` i
+  // SDK:ns transport (1 582/dygn). Felen delar transport med transaktionerna, så
+  // överflödet riskerar att tysta riktiga fel — exakt juni-blindheten igen.
+  beforeSendTransaction(event) {
+    if (event.transaction?.startsWith("prisma:client:")) return null;
+    return event;
+  },
 
   // Strip SQL query parameters and email addresses from Sentry breadcrumbs
   beforeSend(event) {
