@@ -66,7 +66,13 @@ setTimeout(() => {
         // Chunk-laddningsfel uppstår när en användare har en gammal flik öppen
         // vid en ny deploy. Appen hanterar detta automatiskt med page reload —
         // rapportera dem inte till Sentry eftersom de inte kräver åtgärd.
-        const msg = hint?.originalException?.message || "";
+        // Injicerade skript saknar ofta ett riktigt Error-objekt i hint, så läs
+        // meddelandet från det parsade eventet också — annars blir msg tom och
+        // filtren nedan tittar på ingenting.
+        const msg =
+          hint?.originalException?.message ||
+          event?.exception?.values?.[0]?.value ||
+          "";
         if (
           msg.includes("Failed to fetch dynamically imported module") ||
           msg.includes("Load failed") ||
@@ -76,15 +82,26 @@ setTimeout(() => {
         ) {
           return null;
         }
-        // Skript injicerade av in-app-webbläsare (Facebook/Instagram på iOS
-        // pratar med window.webkit.messageHandlers) och tillägg — inte vår kod.
-        // FB är vår största trafikkanal, så det här bruset växer annars.
+        // Skript injicerade av in-app-webbläsare (Facebook/Instagram: iOS pratar
+        // med window.webkit.messageHandlers, Android med en JavascriptInterface-
+        // bro från namnrymden iabjs://) och tillägg — inte vår kod. FB är vår
+        // största trafikkanal, så det här bruset växer annars.
+        // Bron kollas på ALLA frames, inte bara den sista: STP-FRONTEND-V slank
+        // igenom trots culprit sendDataToNative(iabjs://...) eftersom bry-frame:n
+        // inte låg sist i stacken.
         const frames = event?.exception?.values?.[0]?.stacktrace?.frames || [];
-        const lastFn = frames[frames.length - 1]?.function || "";
+        const isInAppBrowserFrame = frames.some((f) => {
+          const where = `${f?.filename || ""} ${f?.abs_path || ""} ${f?.module || ""}`;
+          return f?.function === "sendDataToNative" || where.includes("iabjs://");
+        });
         if (
           msg.includes("webkit.messageHandlers") ||
-          lastFn === "sendDataToNative" ||
-          msg.includes("@webkit-masked-url")
+          isInAppBrowserFrame ||
+          msg.includes("@webkit-masked-url") ||
+          // Androids WebView river JavascriptInterface-objektet när användaren
+          // navigerar bort; bron försöker ändå posta. Kan aldrig komma från oss.
+          msg.includes("Java object is gone") ||
+          msg.includes("Error invoking postMessage")
         ) {
           return null;
         }
