@@ -8,15 +8,10 @@ import { useAuth } from "../../context/AuthContext";
 import { useProfile } from "../../context/ProfileContext";
 import MobileShell from "../MobileShell";
 import { Icon, Label, Button } from "../ui";
+import { searchPlaces, isKnownPlace } from "../../utils/placeSearch";
 
-const CITIES = [
-  ["Stockholm", "Stockholm"], ["Göteborg", "Västra Götaland"], ["Malmö", "Skåne"], ["Uppsala", "Uppsala"],
-  ["Västerås", "Västmanland"], ["Örebro", "Örebro"], ["Linköping", "Östergötland"], ["Helsingborg", "Skåne"],
-  ["Norrköping", "Östergötland"], ["Jönköping", "Jönköping"], ["Lund", "Skåne"], ["Umeå", "Västerbotten"],
-  ["Gävle", "Gävleborg"], ["Borås", "Västra Götaland"], ["Södertälje", "Stockholm"], ["Karlstad", "Värmland"],
-  ["Växjö", "Kronoberg"], ["Halmstad", "Halland"], ["Sundsvall", "Västernorrland"], ["Luleå", "Norrbotten"],
-  ["Trelleborg", "Skåne"], ["Kristianstad", "Skåne"], ["Varberg", "Halland"],
-];
+// Ortslistan låg tidigare här som 23 handskrivna städer. Den ersattes av hela
+// ortsregistret via placeSearch.js — se den filen för varför.
 const INTENT_TO_SEGMENT = { heltid: "FULLTIME", deltid: "FLEX", praktik: "INTERNSHIP" };
 
 export default function DriverOnboarding() {
@@ -92,8 +87,9 @@ export default function DriverOnboarding() {
   );
 
   const q = cityQ.trim().toLowerCase();
-  const sugg = q ? CITIES.filter(([n]) => !regions.some((r) => r.toLowerCase() === n.toLowerCase()) && n.toLowerCase().includes(q)).slice(0, 6) : [];
-  const exact = CITIES.some(([n]) => n.toLowerCase() === q) || regions.some((r) => r.toLowerCase() === q);
+  // Söker hela ortsregistret (1 823 orter + 21 län) och tål stavfel — se placeSearch.js.
+  const sugg = q ? searchPlaces(cityQ, { exclude: regions, limit: 6 }) : [];
+  const exact = isKnownPlace(cityQ) || regions.some((r) => r.toLowerCase() === q);
   const POP = ["Stockholm", "Göteborg", "Malmö", "Uppsala", "Örebro"];
 
   return (

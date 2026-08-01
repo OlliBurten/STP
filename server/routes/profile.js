@@ -11,6 +11,7 @@ import { notifyRecommendedDriverMatch } from "../lib/email.js";
 import { createNotification } from "../lib/notifications.js";
 import { analyzeSummary } from "../lib/analyzeSummary.js";
 import { computeProfileScore } from "../lib/profileScore.js";
+import { normalizePlace, normalizePlaceList } from "../lib/swedishPlaces.js";
 
 export const profileRouter = Router();
 
@@ -372,9 +373,14 @@ profileRouter.put("/", async (req, res, next) => {
           ? body.experience
           : []
         : undefined;
+    // Orter/län normaliseras vid skrivning — annars hamnar fritext som "Eskilstua"
+    // och "Västmanlands län" i databasen och gör läns-aggregeringen omöjlig.
+    // `undefined` betyder "fältet skickades inte med" och måste passera orört,
+    // annars nollställer en delvis uppdatering fält den inte rör.
+    const place = (v) => (v === undefined ? undefined : normalizePlace(v));
     const data = {
-      location: body.location,
-      region: body.region,
+      location: place(body.location),
+      region: place(body.region),
       email: body.email,
       phone: body.phone,
       summary: body.summary,
@@ -388,7 +394,7 @@ profileRouter.put("/", async (req, res, next) => {
       primarySegment: body.primarySegment,
       secondarySegments: body.secondarySegments,
       visibleToCompanies: body.visibleToCompanies,
-      regionsWilling: body.regionsWilling,
+      regionsWilling: body.regionsWilling === undefined ? undefined : normalizePlaceList(body.regionsWilling),
       showEmailToCompanies: body.showEmailToCompanies,
       showPhoneToCompanies: body.showPhoneToCompanies,
     };

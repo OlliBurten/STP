@@ -9,6 +9,7 @@ import { changePassword, deleteMyAccount } from "../../../api/auth";
 import { generateCoverLetter } from "../../../api/ai";
 import { exportMyData } from "../../../api/profile";
 import { apiBlob } from "../../../api/client";
+import { searchPlaces } from "../../../utils/placeSearch";
 
 const POPULAR_CITIES = ["Stockholm", "Göteborg", "Malmö", "Uppsala", "Helsingborg", "Lund", "Örebro", "Linköping"];
 
@@ -307,6 +308,10 @@ export function PrefsSheet({ ctx, close }) {
   const [err, setErr] = useState("");
   const add = (n) => { const v = (n || "").trim(); if (v && !cities.some((c) => c.toLowerCase() === v.toLowerCase())) setCities([...cities, v]); setQ(""); };
   const rm = (n) => setCities(cities.filter((c) => c !== n));
+  // Utan förslagslista blev det här fältet en ren fritextruta — så hamnade "Eskilstua"
+  // i databasen. Förslagen tål stavfel; backend normaliserar ändå vid skrivning.
+  const sugg = searchPlaces(q, { exclude: cities, limit: 6 });
+  const addBest = () => add(sugg.length ? sugg[0][0] : q);
   const savePrefs = async () => {
     setBusy(true); setErr("");
     try {
@@ -325,10 +330,23 @@ export function PrefsSheet({ ctx, close }) {
           {cities.map((c) => <span key={c} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 8px 8px 12px", borderRadius: 11, background: "var(--green-tint)", border: "1px solid var(--green)", color: "var(--green-text)", fontWeight: 700, fontSize: 14 }}><Icon name="pin" size={13} color="var(--green-text)" stroke={2.2} />{c}<button onClick={() => rm(c)} className="press" style={{ display: "flex", width: 20, height: 20, borderRadius: 10, alignItems: "center", justifyContent: "center", background: "rgba(15,63,60,0.1)" }}><Icon name="x" size={13} color="var(--green-text)" stroke={2.6} /></button></span>)}
         </div>
       )}
-      <div style={{ display: "flex", alignItems: "center", gap: 10, height: 52, padding: "0 15px", borderRadius: 13, border: `1px solid ${q ? "var(--green)" : "var(--line-2)"}`, background: "#fff", marginBottom: 16 }}>
-        <Icon name="search" size={19} color="var(--ink-400)" stroke={2} />
-        <input value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === "Enter" && add(q)} placeholder={cities.length ? "Lägg till fler orter…" : "Skriv en ort, t.ex. Stockholm"} style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontSize: 16, color: "var(--ink-900)" }} />
-        {q && <button onClick={() => add(q)} className="press" style={{ fontSize: 13, fontWeight: 800, color: "var(--green)" }}>Lägg till</button>}
+      <div style={{ position: "relative", marginBottom: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, height: 52, padding: "0 15px", borderRadius: 13, border: `1px solid ${q ? "var(--green)" : "var(--line-2)"}`, background: "#fff" }}>
+          <Icon name="search" size={19} color="var(--ink-400)" stroke={2} />
+          <input value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addBest()} placeholder={cities.length ? "Lägg till fler orter…" : "Skriv en ort, t.ex. Stockholm"} style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontSize: 16, color: "var(--ink-900)" }} />
+          {q && <button onClick={addBest} className="press" style={{ fontSize: 13, fontWeight: 800, color: "var(--green)" }}>Lägg till</button>}
+        </div>
+        {q && sugg.length > 0 && (
+          <div style={{ position: "absolute", top: 56, left: 0, right: 0, zIndex: 5, background: "#fff", borderRadius: 13, border: "1px solid var(--line-2)", boxShadow: "var(--sh-md)", overflow: "hidden" }}>
+            {sugg.map(([n, lan], i) => (
+              <button key={n} onClick={() => add(n)} className="press" style={{ display: "flex", alignItems: "center", gap: 11, width: "100%", padding: "12px 15px", borderBottom: i < sugg.length - 1 ? "1px solid var(--line)" : "none", textAlign: "left", background: "#fff" }}>
+                <Icon name="pin" size={17} color="var(--ink-400)" stroke={2} />
+                <span style={{ flex: 1, fontSize: 15, fontWeight: 600, color: "var(--ink-900)" }}>{n}</span>
+                <span style={{ fontSize: 12.5, color: "var(--ink-400)" }}>{lan}</span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
       {!q && (
         <div style={{ marginBottom: 20 }}>
