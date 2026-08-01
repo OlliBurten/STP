@@ -451,6 +451,71 @@ export async function renderJobsHubHtml() {
   return htmlShell({ title: p.title, description: p.description, canonical, jsonLd, body });
 }
 
+// ─── Startsida (/) — domänens rot och starkaste sida ──────────────────────────
+// Startsidan är den sida Google värderar högst och den enda alla externa länkar
+// pekar på. Renderades den som de andra statiska sidorna (h1 + tre stycken, noll
+// länkar) blev roten en återvändsgränd: crawlern kom in på den starkaste sidan och
+// hittade ingen väg vidare till annonserna eller landningssidorna. Därför är den
+// byggd som en hubb — samma länkgraf som /jobb, plus lön och guider.
+export async function renderHomeHtml() {
+  const p = STATIC_PAGES[""];
+  const canonical = `${SITE}/`;
+  const rows = await prisma.job.findMany({
+    where: { status: "ACTIVE" },
+    select: { id: true, title: true, company: true, location: true, source: true, claimed: true },
+    orderBy: { published: "desc" },
+    take: 60,
+  });
+  const jobs = dedupeAggregatedJobs(rows).slice(0, 20);
+
+  // Organization + WebSite hör hemma på roten, inte på undersidorna — det är den
+  // som kopplar varumärket till domänen hos Google.
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        name: "Sveriges Transportplattform",
+        alternateName: "STP",
+        url: SITE,
+        logo: { "@type": "ImageObject", url: `${SITE}/stp-icon-192.png` },
+        description: p.description,
+      },
+      {
+        "@type": "WebSite",
+        name: "Sveriges Transportplattform",
+        url: SITE,
+        inLanguage: "sv-SE",
+        potentialAction: {
+          "@type": "SearchAction",
+          target: { "@type": "EntryPoint", urlTemplate: `${SITE}/jobb?q={search_term_string}` },
+          "query-input": "required name=search_term_string",
+        },
+      },
+    ],
+  };
+
+  const body = `
+<main>
+  <h1>${esc(p.h1)}</h1>
+  ${p.paras.map(t => `<p>${esc(t)}</p>`).join("\n  ")}
+  <section><h2>Senaste lediga lastbilsjobben</h2>${jobsListHtml(jobs)}
+    <p><a href="${SITE}/jobb">Alla lediga lastbilsjobb i Sverige</a></p>
+  </section>
+  ${regionLinksHtml()}
+  ${cityLinksHtml()}
+  <nav><h2>Lastbilschaufför lön per län</h2><ul>${regionPages.map(r => `<li><a href="${SITE}/lon/${r.slug}">Lastbilschaufför lön i ${esc(r.name)}</a></li>`).join("")}</ul></nav>
+  <nav><h2>Guider för förare och åkerier</h2><ul>${blogArticles.map(a => `<li><a href="${SITE}/blogg/${a.slug}">${esc(a.title)}</a></li>`).join("")}</ul></nav>
+  <nav><h2>Om plattformen</h2><ul>
+    <li><a href="${SITE}/forare">För förare</a></li>
+    <li><a href="${SITE}/for-akerier">För åkerier</a></li>
+    <li><a href="${SITE}/om-oss">Om oss</a></li>
+    <li><a href="${SITE}/kontakt">Kontakt</a></li>
+  </ul></nav>
+</main>`;
+  return htmlShell({ title: p.title, description: p.description, canonical, jsonLd, body });
+}
+
 // ─── Blogg ────────────────────────────────────────────────────────────────────
 export function renderBlogArticleHtml(slug) {
   const a = blogArticles.find(x => x.slug === slug);
