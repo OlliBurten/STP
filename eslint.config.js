@@ -39,4 +39,10 @@ export default defineConfig([
       'react-hooks/incompatible-library': 'warn',
     },
   },
+  {
+    // Vercel Routing Middleware kör i Node på edge-nätverket, inte i webbläsaren.
+    files: ['middleware.js'],
+    languageOptions: { globals: globals.node },
+    rules: { 'react-refresh/only-export-components': 'off' },
+  },
 ])
