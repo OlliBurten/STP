@@ -31,23 +31,10 @@ export default function CookieBanner() {
     setVisible(false);
 
     if (choice === "accepted") {
-      // Initiera PostHog
+      // Startar både PostHog och Sentry — main.jsx lyssnar på eventet.
+      // Initiera dem INTE här: en egen Sentry.init i den här filen divergerade
+      // från den riktiga konfigurationen (10 % tracing, inga brusfilter).
       window.dispatchEvent(new CustomEvent("stp:cookie-consent"));
-      // Initiera Sentry nu om det inte redan skett
-      if (typeof window.__sentryInitialized === "undefined") {
-        window.__sentryInitialized = true;
-        const dsn = import.meta.env.VITE_SENTRY_DSN ||
-          "https://c1f2eba279f911f1d3211870fd6ef49c@o4511146144628736.ingest.de.sentry.io/4511146155704400";
-        import("@sentry/react").then((Sentry) => {
-          if (Sentry.getCurrentHub?.().getClient()) return; // redan initierat
-          Sentry.init({
-            dsn,
-            environment: import.meta.env.MODE,
-            sendDefaultPii: false,
-            tracesSampleRate: import.meta.env.PROD ? 0.1 : 0,
-          });
-        }).catch(() => {});
-      }
     }
   };
 
