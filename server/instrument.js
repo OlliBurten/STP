@@ -8,8 +8,22 @@ import * as Sentry from "@sentry/node";
 const DEPLOYMENT = process.env.DEPLOYMENT || process.env.NODE_ENV || "development";
 const IS_PRODUCTION = DEPLOYMENT === "production";
 
+// Fallback-DSN:en gäller ENBART production. Tidigare gällde den överallt, så varje
+// miljö utan egen SENTRY_DSN rapporterade in i PRODUKTIONENS projekt: demo står
+// 2026-08-05 för 2 172 av 2 183 transaktioner (99,5 %) där, och ett engångsskript i
+// en lokal scratchpad hann bli en olöst prod-issue (136953427). Fel och transaktioner
+// delar transport och kvot, så främmande miljöers volym kan tysta riktiga prod-fel —
+// det var precis juni-blindheten. Utan explicit SENTRY_DSN är SDK:n nu avstängd i
+// demo/dev i stället för att förorena prod; sätt SENTRY_DSN för ett eget projekt.
+const DSN =
+  process.env.SENTRY_DSN ||
+  (IS_PRODUCTION
+    ? "https://9ec4e302d31f49901b572fb4b3646c69@o4511146144628736.ingest.de.sentry.io/4511146149609552"
+    : "");
+
 Sentry.init({
-  dsn: process.env.SENTRY_DSN || "https://9ec4e302d31f49901b572fb4b3646c69@o4511146144628736.ingest.de.sentry.io/4511146149609552",
+  dsn: DSN,
+  enabled: Boolean(DSN),
   environment: DEPLOYMENT,
   sendDefaultPii: true,
 

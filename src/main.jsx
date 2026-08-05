@@ -48,7 +48,15 @@ setTimeout(() => {
   if (!hasCookieConsent()) return; // Vänta tills samtycke ges via CookieBanner
   if (window.__sentryInitialized) return;
   window.__sentryInitialized = true;
-  const dsn = import.meta.env.VITE_SENTRY_DSN || "https://c1f2eba279f911f1d3211870fd6ef49c@o4511146144628736.ingest.de.sentry.io/4511146155704400";
+  // Samma grind som server/instrument.js: fallback-DSN:en gäller enbart riktiga
+  // builds. Annars skickade `npm run dev` med tracesSampleRate 1.0 rakt in i
+  // PRODUKTIONENS frontend-projekt. Sätt VITE_SENTRY_DSN för att spåra lokalt.
+  const dsn =
+    import.meta.env.VITE_SENTRY_DSN ||
+    (import.meta.env.PROD
+      ? "https://c1f2eba279f911f1d3211870fd6ef49c@o4511146144628736.ingest.de.sentry.io/4511146155704400"
+      : "");
+  if (!dsn) return;
   import("@sentry/react").then((Sentry) => {
     Sentry.init({
       dsn,
