@@ -5,7 +5,7 @@
 
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
-import { authMiddleware, requireCompany } from "../middleware/auth.js";
+import { authMiddleware, requireCompany, requireVerifiedCompany } from "../middleware/auth.js";
 import { resolveEffectiveOrganization } from "../lib/organizations.js";
 
 export const statsRouter = Router();
@@ -76,7 +76,7 @@ statsRouter.get("/driver-market", authMiddleware, async (req, res, next) => {
 
 // ─── 2. Företag: förartillgänglighet i er region ─────────────────────────────
 
-statsRouter.get("/company-market", authMiddleware, requireCompany, async (req, res, next) => {
+statsRouter.get("/company-market", authMiddleware, requireCompany, requireVerifiedCompany, async (req, res, next) => {
   try {
     // Hitta företagets region
     let region = null;
