@@ -322,7 +322,7 @@ companiesRouter.get(
   async (req, res, next) => {
     try {
       const ownerId = req.companyOwnerId ?? req.userId;
-      const invites = await listInvites(ownerId);
+      const invites = await listInvites(ownerId, req.organizationId ?? null);
       res.json(invites);
     } catch (e) {
       next(e);
@@ -350,6 +350,7 @@ companiesRouter.post(
         email: req.body.email,
         companyOwnerId: ownerId,
         invitedById: req.userId,
+        organizationId: req.organizationId ?? null,
         companyName: owner?.companyName || owner?.name || "Företaget",
         frontendBaseUrl,
       });
@@ -371,7 +372,7 @@ companiesRouter.delete(
   async (req, res, next) => {
     try {
       const ownerId = req.companyOwnerId ?? req.userId;
-      await revokeInvite(req.params.id, ownerId);
+      await revokeInvite(req.params.id, ownerId, req.organizationId ?? null);
       res.status(204).send();
     } catch (e) {
       if (e.status) return res.status(e.status).json({ error: e?.message || String(e) });
