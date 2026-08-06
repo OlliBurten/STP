@@ -442,6 +442,29 @@ function mapJobToRecord(hit, systemUserId) {
   };
 }
 
+/**
+ * Slå ihop färsk feed-metadata med berikarens bokföring i enrichmentRaw.
+ *
+ * VIKTIGT: enrichmentRaw är ett delat JSON-fält. Ingestorn äger feed-nycklarna
+ * (must_have, nice_to_have, application_deadline …) medan jobEnricher.js äger
+ * ai-nycklarna (aiExtractedAt, aiAttempts, aiSkipped, ai). Skriver upserten över
+ * hela fältet försvinner berikarens minne av vad den redan gjort — då plockar den
+ * upp precis samma jobb vid nästa körning och betalar för dem igen, varannan
+ * timme i evighet. Det kostade ~600 Haiku-anrop/dygn istället för ~30 innan
+ * fixen (och gjorde MAX_ENRICH_ATTEMPTS verkningslös, eftersom räknaren nollades).
+ *
+ * @param {object} fresh - enrichmentRaw från mapJobToRecord (feed-nycklar)
+ * @param {object} existing - befintlig enrichmentRaw i databasen
+ */
+export function mergeEnrichmentRaw(fresh, existing) {
+  const preserved = {};
+  for (const [key, value] of Object.entries(existing || {})) {
+    // Allt berikaren skriver prefixas "ai" — bevara det, uppdatera resten.
+    if (key.startsWith("ai")) preserved[key] = value;
+  }
+  return { ...(fresh || {}), ...preserved };
+}
+
 // ─── Main ingestor ────────────────────────────────────────────────────────────
 
 export async function runIngestor({ dryRun = false, source = "jobsearch", since = null } = {}) {
@@ -490,12 +513,14 @@ export async function runIngestor({ dryRun = false, source = "jobsearch", since 
 
   // Vilka externalId fanns redan? Allt utanför denna mängd blir ett NYTT jobb →
   // kandidat för match-notis till förare. (Upsert säger inte själv ny vs ändrad.)
-  const existingExternalIds = new Set(
-    (await prisma.job.findMany({
-      where: { externalId: { in: filtered.map((h) => h.id) } },
-      select: { externalId: true },
-    })).map((j) => j.externalId)
-  );
+  // Vi hämtar även enrichmentRaw för att kunna bevara berikarens ai-nycklar
+  // genom upserten — se mergeEnrichmentRaw.
+  const existingRows = await prisma.job.findMany({
+    where: { externalId: { in: filtered.map((h) => h.id) } },
+    select: { externalId: true, enrichmentRaw: true },
+  });
+  const existingExternalIds = new Set(existingRows.map((j) => j.externalId));
+  const existingEnrichment = new Map(existingRows.map((j) => [j.externalId, j.enrichmentRaw]));
   const newExternalIds = [];
 
   // Upsert active jobs
@@ -520,7 +545,8 @@ export async function runIngestor({ dryRun = false, source = "jobsearch", since 
           applicationDeadline: record.applicationDeadline,
           sourceUrl: record.sourceUrl,
           sourceEmployerName: record.sourceEmployerName,
-          enrichmentRaw: record.enrichmentRaw,
+          // Bevara berikarens ai-nycklar — annars berikas jobbet om vid varje ingest.
+          enrichmentRaw: mergeEnrichmentRaw(record.enrichmentRaw, existingEnrichment.get(hit.id)),
           externalApplyUrl: record.externalApplyUrl,
           employerEmail: record.employerEmail,
           employerPhone: record.employerPhone,
