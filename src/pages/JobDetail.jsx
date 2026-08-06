@@ -13,6 +13,7 @@ import { useProfile } from "../context/ProfileContext";
 import { getDriverMatchHighlights, getMatchingDriversForJob, matchScore } from "../utils/matchUtils";
 import { fetchJob, fetchJobApplicants, fetchSavedJobs, saveJob, unsaveJob, trackJobView, fetchJobStats, registerGuestApplyClick } from "../api/jobs.js";
 import { submitApplication, checkApplication } from "../api/applications.js";
+import { resendVerification } from "../api/auth.js";
 import { fetchMatchExplanation, screenApplicant as screenApplicantApi } from "../api/ai.js";
 import { selectConversation, rejectConversation } from "../api/conversations.js";
 import { getCompanyReviewSummary } from "../api/reviews.js";
@@ -155,6 +156,11 @@ export default function JobDetail() {
   // Redan sökt? (ISO-datum eller null) — visar banner + stoppar dubbelregistrering
   const [alreadyApplied, setAlreadyApplied] = useState(null);
   const [jobLoading, setJobLoading] = useState(hasApi);
+  // Varför hämtningen misslyckades. Utan detta renderades ALLA fel som "404 —
+  // annonsen finns inte", vilket dolde både serverfel och kontospärrar och gjorde
+  // användarnas felrapporter missvisande.
+  const [jobError, setJobError] = useState(null);
+  const [resendState, setResendState] = useState("idle"); // idle | sending | sent | failed
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [reviewSummary, setReviewSummary] = useState(null);
   const [applicants, setApplicants] = useState([]);
@@ -177,9 +183,10 @@ export default function JobDetail() {
   useEffect(() => {
     if (!hasApi || !id) return;
     setJobLoading(true);
+    setJobError(null);
     fetchJob(id)
-      .then(setJob)
-      .catch(() => setJob(null))
+      .then((j) => { setJob(j); setJobError(null); })
+      .catch((e) => { setJob(null); setJobError(e); })
       .finally(() => setJobLoading(false));
   }, [hasApi, id]);
 
@@ -373,15 +380,57 @@ export default function JobDetail() {
     );
   }
   if (!job) {
+    // Skilj på VARFÖR annonsen inte kunde visas. Tidigare visades "404 — annonsen
+    // finns inte" även vid kontospärr och serverfel, vilket skickade både användare
+    // och felsökning åt fel håll.
+    const status = jobError?.status;
+    const notVerified = status === 403 && jobError?.code === "EMAIL_NOT_VERIFIED";
+    const blocked = status === 403 && !notVerified;
+    const unreachable = jobError && status !== 403 && status !== 404;
+
+    const resendLabel = { idle: "Skicka verifieringsmejlet igen", sending: "Skickar...", sent: "Mejl skickat ✓", failed: "Försök igen" }[resendState];
+    const onResend = async () => {
+      if (!user?.email || resendState === "sending") return;
+      setResendState("sending");
+      try {
+        await resendVerification(user.email, typeof window !== "undefined" ? window.location.origin : undefined);
+        setResendState("sent");
+      } catch { setResendState("failed"); }
+    };
+
+    const view = notVerified ? {
+      eyebrow: "E-post inte verifierad",
+      title: "Verifiera din e-post för att öppna annonsen",
+      body: `Vi skickade en länk till ${user?.email || "din e-postadress"}. Kolla skräpposten om den inte kommit fram.`,
+    } : blocked ? {
+      eyebrow: "Kontot är spärrat",
+      title: "Du kan inte öppna annonser just nu",
+      body: jobError?.message || "Kontakta support om du tror att detta är ett misstag.",
+    } : unreachable ? {
+      eyebrow: "Kunde inte hämta annonsen",
+      title: "Något gick fel på vår sida",
+      body: "Annonsen finns troligen kvar — vi lyckades bara inte hämta den. Försök igen om en stund.",
+    } : {
+      eyebrow: "Annons hittades ej · 404",
+      title: "Annonsen finns inte längre",
+      body: "Den här annonsen är antingen avpublicerad, tillsatt eller har upphört. Vi har hundratals CE-jobb i Sverige just nu.",
+    };
+
     return (
       <main style={{ background: "var(--paper)", minHeight: "100vh" }}>
         <div style={{ maxWidth: "var(--w-form)", margin: "0 auto", padding: "80px 24px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.5, color: "var(--ink-400)", textTransform: "uppercase", marginBottom: 24 }}>Annons hittades ej · 404</div>
+          <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.5, color: "var(--ink-400)", textTransform: "uppercase", marginBottom: 24 }}>{view.eyebrow}</div>
           <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="var(--line-2)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 20 }}><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-          <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, marginBottom: 10, letterSpacing: -0.5, color: "var(--ink-900)" }}>Annonsen finns inte längre</h1>
-          <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.6, marginBottom: 28, maxWidth: 340 }}>Den här annonsen är antingen avpublicerad, tillsatt eller har upphört. Vi har hundratals CE-jobb i Sverige just nu.</p>
+          <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, marginBottom: 10, letterSpacing: -0.5, color: "var(--ink-900)" }}>{view.title}</h1>
+          <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.6, marginBottom: 28, maxWidth: 340 }}>{view.body}</p>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
-            <Link to="/jobb" style={{ padding: "12px 22px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: "var(--text-sm)", textDecoration: "none" }}>Visa lediga jobb</Link>
+            {notVerified ? (
+              <button onClick={onResend} disabled={resendState === "sending" || resendState === "sent"} style={{ padding: "12px 22px", borderRadius: "var(--r-md)", background: "var(--green)", border: "none", color: "#fff", fontWeight: 800, fontSize: "var(--text-sm)", cursor: resendState === "sent" ? "default" : "pointer", opacity: resendState === "sending" ? 0.7 : 1, fontFamily: "inherit" }}>{resendLabel}</button>
+            ) : unreachable ? (
+              <button onClick={() => window.location.reload()} style={{ padding: "12px 22px", borderRadius: "var(--r-md)", background: "var(--green)", border: "none", color: "#fff", fontWeight: 800, fontSize: "var(--text-sm)", cursor: "pointer", fontFamily: "inherit" }}>Försök igen</button>
+            ) : (
+              <Link to="/jobb" style={{ padding: "12px 22px", borderRadius: "var(--r-md)", background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: "var(--text-sm)", textDecoration: "none" }}>Visa lediga jobb</Link>
+            )}
             <button onClick={() => window.history.back()} style={{ padding: "12px 22px", borderRadius: "var(--r-md)", background: "var(--card)", border: "1px solid var(--line-2)", color: "var(--ink-700)", fontWeight: 600, fontSize: "var(--text-sm)", cursor: "pointer" }}>Tillbaka</button>
           </div>
         </div>
