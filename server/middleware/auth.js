@@ -107,14 +107,23 @@ function verifyToken(req, res, next, token, optional = false) {
         }
       }
 
+      // Kontospärrar gäller bara skyddade rutter. På optional-rutter (publika sidor
+      // som råkar läsa inloggningen för extra kontext) måste vi falla tillbaka på
+      // anonym visning i stället för att svara 403 — annars blir en inloggad
+      // användare SÄMRE ställd än en utloggad besökare på sidor som är öppna för
+      // alla. En overifierad förare kunde t.ex. se jobblistan men fick 403 på varje
+      // enskild annons, vilket frontend visade som "Annons hittades ej · 404".
       if (user.suspendedAt) {
+        if (optional) return next();
         return res.status(403).json({
           error: "Kontot är tillfälligt avstängt. Kontakta support om du tror att detta är ett misstag.",
         });
       }
       if (!user.emailVerifiedAt) {
+        if (optional) return next();
         return res.status(403).json({
           error: "Verifiera din e-post innan du fortsätter.",
+          code: "EMAIL_NOT_VERIFIED",
         });
       }
       // Stoppa ett redan inloggat demokonto vid nästa API-anrop om det gått ut.
