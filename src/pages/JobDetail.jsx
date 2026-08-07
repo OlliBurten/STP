@@ -20,7 +20,7 @@ import { getCompanyReviewSummary } from "../api/reviews.js";
 import { getBranschLabel } from "../data/bransch.js";
 import { getCertificateLabel } from "../data/profileData";
 import { scheduleTypes } from "../data/mockJobs";
-import { isJobOlderThan30Days, formatJobTitle } from "../utils/jobUtils.js";
+import { isJobOlderThan30Days, formatJobTitle, salaryLabel, SALARY_UNKNOWN } from "../utils/jobUtils.js";
 import { HeartFilledIcon, HeartOutlineIcon, LocationIcon, CheckIcon, WarningIcon, StarFilledIcon } from "../components/Icons";
 import Breadcrumbs from "../components/Breadcrumbs";
 import LoadingBlock from "../components/LoadingBlock";
@@ -572,7 +572,7 @@ export default function JobDetail() {
     return (
       <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 14px", background: "var(--amber-tint)", borderRadius: "var(--r-md)", border: "1px solid var(--amber-tint-2)" }}>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-        <span style={{ fontSize: "var(--text-sm)", color: "var(--amber-text)", fontStyle: "italic" }}>Lön ej angiven — fråga vid kontakt</span>
+        <span style={{ fontSize: "var(--text-sm)", color: "var(--amber-text)", fontStyle: "italic" }}>{SALARY_UNKNOWN} — fråga vid kontakt</span>
       </div>
     );
   }
@@ -580,9 +580,7 @@ export default function JobDetail() {
   const empLabel = job.employment === "fast" ? "Fast anställning" : job.employment === "vikariat" ? "Vikariat" : "Timanställning";
   const scheduleLabel = job.schedule ? (scheduleTypes.find((s) => s.value === job.schedule)?.label ?? job.schedule) : null;
 
-  const salaryFactVal = job.salaryMin
-    ? `${job.salaryMin.toLocaleString("sv-SE")}${job.salaryMax ? `–${job.salaryMax.toLocaleString("sv-SE")}` : "+"} kr/mån`
-    : job.salary ? "Enl. lönebesked" : "Ej angiven";
+  const salaryFactVal = salaryLabel(job);
 
   // Arbetsgivarens kanal är PRIMÄR för importerade/oclaimade jobb (2026-07-09):
   // föraren ansöker där ansökan garanterat läses; STP loggar leaden i bakgrunden
@@ -640,9 +638,7 @@ export default function JobDetail() {
     const reqTotal = (job.license || []).length + (job.certificates || []).length;
 
     const mSecH = { fontSize: 16, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.3, marginBottom: 12 };
-    const factSalary = job.salaryMin
-      ? `${job.salaryMin.toLocaleString("sv-SE")}${job.salaryMax ? `–${job.salaryMax.toLocaleString("sv-SE")}` : "+"} kr/mån`
-      : job.salary || job.salaryNote || (job.kollektivavtal ? "Enligt kollektivavtal" : "Ej angiven");
+    const factSalary = salaryLabel(job);
     const handleShare = async () => {
       const url = `${window.location.origin}/jobb/${job.id}`;
       const title = formatJobTitle(job.title);
@@ -839,7 +835,7 @@ export default function JobDetail() {
               </>
             ) : (
               <div style={{ fontSize: 14, fontWeight: 600, color: "var(--ink-700)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {job.salary || job.salaryNote || (job.kollektivavtal ? "Enligt kollektivavtal" : "Lön ej angiven")}
+                {salaryLabel(job)}
               </div>
             )}
           </div>

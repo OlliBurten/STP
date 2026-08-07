@@ -2,6 +2,7 @@ import { jobTypes, employmentTypes, licenseTypes, regions } from "../data/mockJo
 import { segmentOptions } from "../data/segments";
 import { transportSegmentGroups, getBranschLabel } from "../data/bransch.js";
 import { ChevronDownIcon } from "./Icons";
+import { SALARY_FILTER_ENABLED } from "../utils/jobUtils";
 
 function SelectField({ id, label, value, onChange, children }) {
   return (
@@ -66,7 +67,7 @@ export default function JobFilters({ filters, setFilters }) {
       ? { key: "employment", label: employmentTypes.find((e) => e.value === filters.employment)?.label || filters.employment }
       : null,
     filters.bransch ? { key: "bransch", label: getBranschLabel(filters.bransch) } : null,
-    filters.minSalary
+    SALARY_FILTER_ENABLED && filters.minSalary
       ? { key: "minSalary", label: MIN_SALARY_OPTIONS.find((o) => o.value === filters.minSalary)?.label || filters.minSalary }
       : null,
   ].filter(Boolean);
@@ -176,16 +177,18 @@ export default function JobFilters({ filters, setFilters }) {
           ))}
         </SelectField>
 
-        <SelectField
-          id="minSalary"
-          label="Minimilön"
-          value={filters.minSalary}
-          onChange={(e) => handleChange("minSalary", e.target.value)}
-        >
-          {MIN_SALARY_OPTIONS.map((o) => (
-            <option key={o.value} value={o.value}>{o.label}</option>
-          ))}
-        </SelectField>
+        {SALARY_FILTER_ENABLED && (
+          <SelectField
+            id="minSalary"
+            label="Minimilön"
+            value={filters.minSalary}
+            onChange={(e) => handleChange("minSalary", e.target.value)}
+          >
+            {MIN_SALARY_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </SelectField>
+        )}
       </div>
 
       {/* Aktiva filter */}

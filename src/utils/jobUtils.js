@@ -68,3 +68,47 @@ export function isJobApproaching60Days(job) {
   const days = (Date.now() - ref.getTime()) / MS_PER_DAY;
   return days >= 55;
 }
+
+// ─── Lön ──────────────────────────────────────────────────────────────────────
+
+/**
+ * En enda källa för hur lön presenteras.
+ *
+ * Tidigare fanns fyra strängar för samma okända lön — "Lön ej angiven" (JobCard),
+ * "Ej specificerat" (mobil), "Ej angiven" och "Enl. lönebesked" (JobDetail) — och
+ * två av dem kunde synas samtidigt på samma jobb: annonshuvudet sa "Enligt
+ * överenskommelse" medan snabbfakta sa "Enl. lönebesked".
+ *
+ * Ordningen är medvetet siffror först: ett belopp säger mer än en etikett.
+ * Arbetsgivarens egen formulering går före våra generiska ord — "Enligt
+ * överenskommelse" är information, "Enl. lönebesked" var en etikett vi hittade på
+ * som dessutom dolde vad annonsen faktiskt sa.
+ */
+export const SALARY_UNKNOWN = "Lön ej angiven";
+
+export function salaryLabel(job) {
+  const fmt = (n) => Number(n).toLocaleString("sv-SE");
+  const min = job?.salaryMin;
+  const max = job?.salaryMax;
+  if (min && max) return `${fmt(min)} – ${fmt(max)} kr/mån`;
+  if (min) return `Från ${fmt(min)} kr/mån`;
+
+  const text = job?.salary && String(job.salary).trim();
+  if (text) return text;
+  const note = job?.salaryNote && String(job.salaryNote).trim();
+  if (note) return note;
+
+  if (job?.kollektivavtal === true) return "Enligt kollektivavtal";
+  return SALARY_UNKNOWN;
+}
+
+/** True när annonsen säger något alls om lön. */
+export function hasKnownSalary(job) {
+  return salaryLabel(job) !== SALARY_UNKNOWN;
+}
+
+// Lönefiltret är avstängt. Bara 1 av 384 aktiva annonser hade en löneuppgift i
+// siffror (salaryMin) — Platsbanken-annonser skriver "enligt kollektivavtal",
+// inte belopp. Varje vald nivå gav därför i praktiken noll träffar, vilket är
+// sämre än inget filter alls. Sätt till true igen när täckningen är meningsfull.
+export const SALARY_FILTER_ENABLED = false;

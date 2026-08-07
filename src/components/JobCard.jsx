@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useIsMobile } from "../hooks/useIsMobile";
-import { formatJobTitle } from "../utils/jobUtils";
+import { formatJobTitle, salaryLabel, hasKnownSalary } from "../utils/jobUtils";
 
 /* ── Icons (prototype-matched) ───────────────────────────────────────────── */
 const PinIcon = ({ size = 10, color = "var(--green-text)" }) => (
@@ -72,16 +72,8 @@ export default function JobCard({
     job.employment === "fast"     ? "Fast"     :
     job.employment === "vikariat" ? "Vikariat" : "Timjobb";
 
-  const hasSalary = !!(job.salaryMin || job.salaryMax || job.salary);
-  const salaryDisplay = hasSalary
-    ? job.salaryMin
-      ? job.salaryMax
-        ? `${job.salaryMin.toLocaleString("sv-SE")} – ${job.salaryMax.toLocaleString("sv-SE")} kr/mån`
-        : `Från ${job.salaryMin.toLocaleString("sv-SE")} kr/mån`
-      : job.salary
-    : job.kollektivavtal === true
-      ? "Enligt kollektivavtal"
-      : "Lön ej angiven";
+  const salaryDisplay = salaryLabel(job);
+  const hasSalary = hasKnownSalary(job);
 
   const isImported = job.source === "AGGREGATED" && !job.claimed;
 

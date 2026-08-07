@@ -1,6 +1,7 @@
 // Maps a real API Job object onto the field shape the ported prototype
 // screens/sheets expect (job.initials, job.match, job.pay, job.type, …).
 import { matchScore } from "../../utils/matchUtils";
+import { salaryLabel } from "../../utils/jobUtils";
 
 const EMPLOYMENT_LABEL = {
   fast: "Heltid",
@@ -35,15 +36,10 @@ export function timeAgo(iso) {
   return `${mo} mån sedan`;
 }
 
+// Delegerar till den delade lönelogiken — mobilen sa tidigare "Ej specificerat"
+// där desktop sa "Lön ej angiven" för exakt samma jobb.
 export function payLabel(job) {
-  if (job.salary && String(job.salary).trim()) return job.salary;
-  if (job.kollektivavtal) return "Enligt kollektivavtal";
-  const min = job.salaryMin;
-  const max = job.salaryMax;
-  const fmt = (n) => Number(n).toLocaleString("sv-SE");
-  if (min && max) return `${fmt(min)}–${fmt(max)} kr/mån`;
-  if (min) return `Från ${fmt(min)} kr/mån`;
-  return "Ej specificerat";
+  return salaryLabel(job);
 }
 
 export function employmentLabel(job) {
