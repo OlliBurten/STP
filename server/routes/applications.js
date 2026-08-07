@@ -158,6 +158,8 @@ applicationsRouter.get(
           // Driver "Fick du jobbet?"-prompten i Mina ansökningar behöver veta om
           // frågan redan är besvarad.
           outcome: a.outcome ?? null,
+          storyConsent: a.storyConsent === true,
+          storyQuote: a.storyQuote ?? null,
           job: {
             id: a.job.id,
             title: a.job.title,
@@ -231,6 +233,21 @@ applicationsRouter.post("/:id/outcome", authMiddleware, requireDriver, async (re
     const app = await recordOutcomeForDriver(req.params.id, req.userId, svar);
     if (!app) return res.status(404).json({ error: "Ansökan hittades inte" });
     res.json({ ok: true, outcome: app.outcome });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// ─── Samtycke att berätta om anställningen (och återkalla det) ────────────────
+applicationsRouter.post("/:id/story", authMiddleware, requireDriver, async (req, res, next) => {
+  try {
+    const { consent, quote } = req.body || {};
+    const { setStoryConsent } = await import("../lib/applicationFollowup.js");
+    const ok = await setStoryConsent(req.params.id, req.userId, consent === true, quote);
+    // Nekas också när ansökan inte har outcome GOT_JOB — en berättelse får inte
+    // finnas utan anställningen den beskriver.
+    if (!ok) return res.status(404).json({ error: "Ansökan hittades inte" });
+    res.json({ ok: true, storyConsent: consent === true });
   } catch (e) {
     next(e);
   }

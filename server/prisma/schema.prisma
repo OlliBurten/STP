@@ -256,6 +256,12 @@ model DriverProfile {
   secondarySegments    String[] @default([])
   experienceTypes      String[] @default([]) // körningar föraren HAR erfarenhet av (boostar matchning)
   visibleToCompanies   Boolean  @default(true)
+
+  // Varför föraren dolde sin profil eller slutade söka. Frågas i samma ögonblick
+  // som toggeln slås av — då är beslutet färskt och personen inloggad.
+  // "GOT_JOB_STP" | "GOT_JOB_ELSEWHERE" | "OTHER"
+  hiddenReason         String?
+  hiddenAt             DateTime?
   regionsWilling       String[] // ["Skåne", "Halland"]
   showEmailToCompanies Boolean  @default(false)
   showPhoneToCompanies Boolean  @default(false)
@@ -676,6 +682,16 @@ model Application {
   outcomeRequestedAt DateTime?
   outcome            String? // "GOT_JOB" | "NO_JOB" | "IN_PROCESS"
   outcomeAt          DateTime?
+
+  // Samtycke att berätta om anställningen publikt. Frågas direkt efter ett
+  // GOT_JOB — varje ja är den enda sortens bevis som säljer STP till ett åkeri.
+  // Publiceras som förnamn + region + "hittade jobbet via STP". ÅKERIETS NAMN
+  // INGÅR INTE: det företaget har inte samtyckt, och att använda deras namn i
+  // vår marknadsföring är ett dåligt första intryck hos den grupp vi vill vinna.
+  // Måste gå att återkalla — knappen finns i Mina ansökningar.
+  storyConsent       Boolean   @default(false)
+  storyConsentAt     DateTime?
+  storyQuote         String?
 
   @@unique([driverId, jobId])
   @@index([jobId])

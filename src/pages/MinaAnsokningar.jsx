@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { fetchConversations } from "../api/conversations.js";
-import { fetchMyApplications, setApplicationOutcome } from "../api/applications.js";
+import { fetchMyApplications, setApplicationOutcome, setStoryConsent } from "../api/applications.js";
 import { useAuth } from "../context/AuthContext";
 import LoadingBlock from "../components/LoadingBlock";
 import PageMeta from "../components/PageMeta";
@@ -354,6 +354,8 @@ export default function MinaAnsokningar() {
   const [externalApps, setExternalApps] = useState([]);
   const [savingOutcome, setSavingOutcome] = useState(null);
   const [outcomeError, setOutcomeError] = useState(null);
+  const [storyOpenId, setStoryOpenId] = useState(null);
+  const [storyDraft, setStoryDraft] = useState("");
   // Stabil tidsstämpel: Date.now() direkt i render är en oren funktion och gör
   // "äldre än 7 dagar" instabil mellan omritningar.
   const nowMs = useMemo(() => Date.now(), []);
@@ -416,11 +418,65 @@ export default function MinaAnsokningar() {
     }
   };
 
+  // Varje "jag fick jobbet" är det enda bevis som säljer STP till ett åkeri.
+  // Frågan ställs direkt efter bekräftelsen, medan känslan finns kvar.
+  // Åkeriets namn ingår INTE i det som publiceras — se schema.prisma.
+  const askStory = async (id, consent, quote) => {
+    setSavingOutcome(id);
+    try {
+      await setStoryConsent(id, consent, quote);
+      setExternalApps((list) => list.map((x) => (x.id === id ? { ...x, storyConsent: consent, storyQuote: consent ? quote || null : null } : x)));
+      setStoryDraft("");
+    } catch {
+      setOutcomeError(id);
+    } finally {
+      setSavingOutcome(null);
+    }
+  };
+
+  const StoryPrompt = ({ a }) => {
+    const saving = savingOutcome === a.id;
+    if (a.storyConsent) {
+      return (
+        <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          <span style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)" }}>Tack — vi får berätta om det här.</span>
+          <button disabled={saving} onClick={() => askStory(a.id, false)} style={{ background: "none", border: "none", padding: 0, color: "var(--ink-400)", fontSize: "var(--text-2xs)", textDecoration: "underline", cursor: "pointer", fontFamily: "inherit" }}>
+            Ta tillbaka
+          </button>
+        </div>
+      );
+    }
+    return (
+      <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid var(--line)" }}>
+        <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-900)", marginBottom: 3 }}>Får vi berätta om det?</div>
+        <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", lineHeight: 1.5, marginBottom: 8 }}>
+          Vi skriver ditt förnamn, din region och att du hittade jobbet via STP. Åkeriets namn nämns inte. Du kan ta tillbaka det när som helst.
+        </div>
+        <textarea
+          value={storyOpenId === a.id ? storyDraft : ""}
+          onFocus={() => setStoryOpenId(a.id)}
+          onChange={(e) => setStoryDraft(e.target.value.slice(0, 500))}
+          placeholder="Vill du säga något om hur det gick? (frivilligt)"
+          rows={2}
+          style={{ width: "100%", padding: "8px 10px", borderRadius: 10, border: "1px solid var(--line-2)", fontSize: "var(--text-sm)", fontFamily: "inherit", resize: "vertical", marginBottom: 8, background: "var(--card)", color: "var(--ink-900)" }}
+        />
+        <button disabled={saving} onClick={() => askStory(a.id, true, storyOpenId === a.id ? storyDraft : "")} style={{
+          padding: "7px 14px", borderRadius: 999, background: "var(--green)", color: "#fff",
+          border: "1px solid var(--green-deep)", fontSize: "var(--text-2xs)", fontWeight: 700,
+          cursor: saving ? "default" : "pointer", opacity: saving ? 0.5 : 1, fontFamily: "inherit",
+        }}>Ja, det går bra</button>
+      </div>
+    );
+  };
+
   const OutcomePrompt = ({ a }) => {
     if (a.outcome === "GOT_JOB") {
       return (
-        <div style={{ marginTop: 12, padding: "10px 14px", borderRadius: 10, background: "var(--green-tint)", fontSize: "var(--text-sm)", color: "var(--green-text)", fontWeight: 600 }}>
-          Du fick jobbet — grattis! Tack för att du berättade.
+        <div style={{ marginTop: 12 }}>
+          <div style={{ padding: "10px 14px", borderRadius: 10, background: "var(--green-tint)", fontSize: "var(--text-sm)", color: "var(--green-text)", fontWeight: 600 }}>
+            Du fick jobbet — grattis! Tack för att du berättade.
+          </div>
+          <StoryPrompt a={a} />
         </div>
       );
     }

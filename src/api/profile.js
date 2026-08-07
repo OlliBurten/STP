@@ -33,3 +33,11 @@ export async function fetchDriverActivity() {
 export async function exportMyData() {
   return apiGet("/api/profile/export");
 }
+
+/**
+ * Registrera varför föraren dolde sin profil / slutade söka.
+ * @param {"GOT_JOB_STP"|"GOT_JOB_ELSEWHERE"|"OTHER"} reason
+ */
+export function setHiddenReason(reason) {
+  return apiPost("/api/profile/hidden-reason", { reason });
+}

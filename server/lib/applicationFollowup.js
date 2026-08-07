@@ -122,6 +122,42 @@ export async function runApplicationFollowup() {
 
 const OUTCOME_MAP = { ja: "GOT_JOB", pagar: "IN_PROCESS", nej: "NO_JOB" };
 
+/** Giltiga skäl när en förare döljer sin profil eller slutar söka. */
+export const HIDDEN_REASONS = ["GOT_JOB_STP", "GOT_JOB_ELSEWHERE", "OTHER"];
+
+/**
+ * Samtycke att berätta om en anställning publikt — eller återkalla det.
+ * Samma ägarkontroll som utfallet: fel driverId uppdaterar noll rader.
+ *
+ * Samtycket kan bara sättas på en ansökan som faktiskt lett till jobb. Utan den
+ * spärren kan en berättelse existera utan anställningen den påstår sig beskriva.
+ */
+export function buildStoryConsentWhere(applicationId, driverId, consent) {
+  // consent=true kräver GOT_JOB: en berättelse får inte finnas utan anställningen
+  // den beskriver. Att ÅTERKALLA ska däremot alltid gå, även om utfallet hunnit
+  // ändras — annars kan ett samtycke låsas fast.
+  return consent
+    ? { id: applicationId, driverId, outcome: "GOT_JOB" }
+    : { id: applicationId, driverId };
+}
+
+export function buildStoryConsentData(consent, quote, now = new Date()) {
+  if (!consent) {
+    // Att ta tillbaka samtycket måste ta bort texten också.
+    return { storyConsent: false, storyConsentAt: null, storyQuote: null };
+  }
+  const trimmed = quote ? String(quote).trim().slice(0, 500) : "";
+  return { storyConsent: true, storyConsentAt: now, storyQuote: trimmed || null };
+}
+
+export async function setStoryConsent(applicationId, driverId, consent, quote) {
+  const { count } = await prisma.application.updateMany({
+    where: buildStoryConsentWhere(applicationId, driverId, consent),
+    data: buildStoryConsentData(consent, quote),
+  });
+  return count > 0;
+}
+
 /**
  * Samma utfall, men från en inloggad förare i produkten i stället för en
  * token-länk i ett mejl. Den som redan är inne svarar mycket hellre än den som
