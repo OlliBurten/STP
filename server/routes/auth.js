@@ -210,7 +210,8 @@ export async function issueEmailVerification(userId, email, baseUrlOverride) {
 
 authRouter.post("/register", validateBody(registerSchema), async (req, res, next) => {
   try {
-    const { email, password, role, name, companyName, companyOrgNumber, verificationBaseUrl, claimToken } = req.body;
+    const { email, password, role, name, companyName, companyOrgNumber, verificationBaseUrl, claimToken,
+            signupSource, signupMedium, signupCampaign } = req.body;
     const normalizedOrgNumber = normalizeOrgNumber(companyOrgNumber);
     if (role === "COMPANY" && normalizedOrgNumber) {
       const existingUser = await prisma.user.findFirst({
@@ -253,6 +254,10 @@ authRouter.post("/register", validateBody(registerSchema), async (req, res, next
         companyName: role === "COMPANY" ? companyName?.trim() : null,
         companyOrgNumber: role === "COMPANY" ? normalizedOrgNumber : null,
         companyStatus,
+        // First touch-attribution från utm_*-parametrar i landningslänken.
+        signupSource: signupSource || null,
+        signupMedium: signupMedium || null,
+        signupCampaign: signupCampaign || null,
       },
       select: {
         id: true,

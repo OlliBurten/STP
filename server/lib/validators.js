@@ -67,6 +67,11 @@ export const registerSchema = z
     companyName: z.string().max(200).optional(),
     companyOrgNumber: z.string().max(20).optional(),
     verificationBaseUrl: z.string().url().max(500).optional(),
+    // First touch-attribution. Frivilliga och alltid kapade — det är
+    // klientdata och ska aldrig kunna svälla en kolumn.
+    signupSource: z.string().max(100).optional(),
+    signupMedium: z.string().max(100).optional(),
+    signupCampaign: z.string().max(150).optional(),
   })
   .refine(
     (data) => {

@@ -17,8 +17,12 @@ export default defineConfig({
           // Sentry — loaded lazily in main.jsx via dynamic import, but
           // keeping it named here ensures consistent hashing across builds
           'vendor-sentry': ['@sentry/react'],
-          // MSAL — loaded lazily in OAuthProviders.jsx, named for cache stability
-          'vendor-msal': ['@azure/msal-browser', '@azure/msal-react'],
+          // MSAL har medvetet INGEN manualChunk. Att namnge den lyfte ut den i en
+          // egen chunk som blev ett beroende av entryn, så Vite la en
+          // modulepreload på den — 86 kB gzip hämtades på varje sidladdning trots
+          // att den bara importeras dynamiskt. Utan manualChunk hamnar den i den
+          // lazy-laddade chunk som faktiskt använder den (MicrosoftButton /
+          // OAuthProviders) och hämtas först när någon når inloggningen.
         },
         // Keep page chunks reasonably sized
         experimentalMinChunkSize: 10_000,

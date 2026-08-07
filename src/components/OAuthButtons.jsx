@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import { GoogleLogin } from "@react-oauth/google";
-import { useMsal } from "@azure/msal-react";
+
+// Lazy: håller MSAL utanför den ivriga bundlen — se MicrosoftButton.jsx.
+const MicrosoftButton = lazy(() => import("./MicrosoftButton.jsx"));
 import { apiPost, checkBackendHealth, getApiBaseUrl } from "../api/client.js";
 import { fetchOAuthStatus } from "../api/auth.js";
 import { TruckIcon, BuildingIcon } from "./Icons";
@@ -8,45 +10,6 @@ import { TruckIcon, BuildingIcon } from "./Icons";
 const API_URL = (import.meta.env.VITE_API_URL || "").trim().replace(/\/$/, "");
 const GOOGLE_CLIENT_ID = (import.meta.env.VITE_GOOGLE_CLIENT_ID || "").trim();
 const AZURE_CLIENT_ID = (import.meta.env.VITE_AZURE_CLIENT_ID || "").trim();
-
-function MicrosoftButton({ onSuccess, onError }) {
-  const { instance } = useMsal();
-
-  const handleClick = async () => {
-    try {
-      const result = await instance.loginPopup({ scopes: ["openid", "profile"] });
-      const idToken = result?.idToken;
-      if (!idToken) {
-        onError?.("Kunde inte hämta inloggning från Microsoft.");
-        return;
-      }
-      const data = await apiPost("/api/auth/microsoft", { credential: idToken });
-      onSuccess?.(data);
-    } catch (e) {
-      if (e.message?.includes("user_cancelled") || e.errorCode === "user_cancelled") {
-        onError?.("Microsoft-inloggningen avbröts.");
-      } else {
-        onError?.(e.message || "Inloggning med Microsoft misslyckades.");
-      }
-    }
-  };
-
-  return (
-    <button
-      type="button"
-      onClick={handleClick}
-      style={{ width: "100%", height: 48, borderRadius: 11, border: "1px solid var(--line-2)", background: "var(--card)", boxShadow: "var(--sh-sm)", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)", cursor: "pointer", fontFamily: "inherit" }}
-    >
-      <svg width="20" height="20" viewBox="0 0 24 24">
-        <path fill="#F25022" d="M1 1h10v10H1z" />
-        <path fill="#00A4EF" d="M1 13h10v10H1z" />
-        <path fill="#7FBA00" d="M13 1h10v10H13z" />
-        <path fill="#FFB900" d="M13 13h10v10H13z" />
-      </svg>
-      Fortsätt med Microsoft
-    </button>
-  );
-}
 
 function RolePicker({ oauthCompleteToken, onComplete, onError, onCancel, defaultRole }) {
   const [role, setRole] = useState(defaultRole === "company" ? "company" : "driver");
@@ -249,7 +212,9 @@ export default function OAuthButtons({
         </div>
       )}
       {showMicrosoft && (
-        <MicrosoftButton onSuccess={handleOAuthResult} onError={onError} />
+        <Suspense fallback={<div style={{ height: 48 }} />}>
+          <MicrosoftButton onSuccess={handleOAuthResult} onError={onError} />
+        </Suspense>
       )}
     </div>
   );

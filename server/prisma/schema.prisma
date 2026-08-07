@@ -8,6 +8,14 @@ datasource db {
 }
 
 model User {
+
+  // Var kom användaren ifrån vid registreringen (first touch). Kanalen som
+  // faktiskt ger förare är manuella inlägg i Facebook-grupper — utan det här
+  // går det inte att se vilken grupp, vilket inlägg eller vilken formulering
+  // som fungerade. utm.js märkte tidigare bara UTGÅENDE länkar till arbetsgivare.
+  signupSource    String?
+  signupMedium    String?
+  signupCampaign  String?
   id                             String    @id @default(cuid())
   email                          String    @unique
   passwordHash                   String? // null för OAuth-användare (Google, Microsoft)

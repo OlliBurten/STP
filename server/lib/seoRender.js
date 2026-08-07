@@ -42,10 +42,16 @@ function jsonLdScript(obj) {
   return `<script type="application/ld+json">${json}</script>`;
 }
 
-function htmlShell({ title, description, canonical, jsonLd, body, robots = "index,follow", image }) {
+function htmlShell({ title, description, canonical, jsonLd, body, robots = "index,follow", image, ogType = "website" }) {
   // OG-bild: per-sida om angiven (annars varumärkesbilden) — så delningar i FB-
   // grupper/LinkedIn visar ett snyggt kort i st f en naken länk.
-  const ogImage = image || `${SITE}/hero.png`;
+  //
+  // Pekade tidigare på hero.png, som är 2,5 MB. Facebooks skrapa hämtar bilden
+  // vid varje ny delning och hoppar över förhandsvisningen helt när den är för
+  // tung — vilket gjorde att delningar i förargrupper, den enda kanal som
+  // faktiskt ger registreringar, ibland renderade som en naken länk.
+  // og-default.jpg är samma motiv i 1200×630 och 128 kB.
+  const ogImage = image || `${SITE}/og-default.jpg`;
   return `<!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -55,7 +61,7 @@ function htmlShell({ title, description, canonical, jsonLd, body, robots = "inde
 <meta name="description" content="${esc(description)}">
 <meta name="robots" content="${robots}">
 <link rel="canonical" href="${esc(canonical)}">
-<meta property="og:type" content="website">
+<meta property="og:type" content="${esc(ogType)}">
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(description)}">
 <meta property="og:url" content="${esc(canonical)}">
@@ -205,7 +211,8 @@ export async function renderJobHtml(id) {
   ${isImported && job.applyEmail ? `<p><a href="mailto:${esc(job.applyEmail)}">Ansök via mejl</a></p>` : ""}
 </main>`;
 
-  return htmlShell({ title, description, canonical, jsonLd, body });
+  // article, inte website: en jobbannons är ett tidsbundet innehåll, inte en sajt.
+  return htmlShell({ title, description, canonical, jsonLd, body, ogType: "article" });
 }
 
 // ─── Åkeri / organisation ─────────────────────────────────────────────────────
@@ -535,7 +542,7 @@ export function renderBlogArticleHtml(slug) {
   };
   // bodyHtml är redan ren, säker HTML genererad från våra egna komponenter
   const body = `<main>${a.bodyHtml}</main>`;
-  return htmlShell({ title, description: a.desc || a.title, canonical, jsonLd, body });
+  return htmlShell({ title, description: a.desc || a.title, canonical, jsonLd, body, ogType: "article" });
 }
 
 export function renderBlogIndexHtml() {
