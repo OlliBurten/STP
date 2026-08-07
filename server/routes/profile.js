@@ -224,6 +224,7 @@ async function sendCompanyMatchAlertsForDriver(userId) {
         certificates: true,
         experience: true,
         contact: true,
+        source: true,
       },
     });
 
@@ -245,9 +246,13 @@ async function sendCompanyMatchAlertsForDriver(userId) {
       yearsExperience: driverYearsFromExperience(experience),
     };
 
+    // AGGREGATED = importerade Platsbanken-annonser. De ägs av systemkontot
+    // (system-aggregated@stp.internal) och har inget åkeri på STP bakom sig — det
+    // finns ingen att notifiera. Varje sådan notis hårdbouncade mot en domän som
+    // inte existerar och stod för 195 av veckans 260 bounces.
     const matchedJobs = jobs
       .map((job) => ({ job, score: matchScore(driver, job) }))
-      .filter((m) => m.score > 0 && m.job.contact);
+      .filter((m) => m.score > 0 && m.job.contact && m.job.source !== "AGGREGATED");
 
     const matchesByCompanyId = new Map();
     for (const match of matchedJobs) {

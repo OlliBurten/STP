@@ -1,4 +1,5 @@
 import { renderEmail } from "./emailRender.js";
+import { isUndeliverableEmail } from "./testAccounts.js";
 
 /** Splits plain-text body into paragraphs for the branded React Email layout. */
 function toParagraphs(text) {
@@ -18,6 +19,14 @@ export async function sendEmail({ to, subject, text, heading, html: htmlOverride
   const fromName = process.env.EMAIL_FROM_NAME || "Sveriges Transportplattform";
   const from = `${fromName} <${fromAddress}>`;
   const replyTo = replyToOverride || process.env.EMAIL_REPLY_TO;
+
+  // Sändspärr mot adresser som garanterat bouncar. Ett enda ställe, så att varje
+  // nuvarande och framtida utskicksväg täcks — bounces är inte gratis, de sänker
+  // domänens leveransrykte för alla riktiga mottagare.
+  if (isUndeliverableEmail(to)) {
+    console.warn("[Email:SKIPPED_UNDELIVERABLE]", { to, subject });
+    return false;
+  }
 
   if (apiKey) {
     const body = {
