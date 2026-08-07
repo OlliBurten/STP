@@ -125,7 +125,7 @@ export default function MobileGuestJobs() {
   // består av importerade Platsbanken-annonser från åkerier utan STP-konto — noll
   // av dem är verifierade, och annonssidan säger själv "ej anslutet åkeri" vid
   // nästa klick. Det som faktiskt är sant är strukturen, inte verifieringen.
-  let heading = "Lediga jobb", sub = "Alla lastbilsjobb i Sverige — strukturerade så du kan jämföra dem";
+  let heading = "Lediga jobb", sub = "Lastbilsjobb från hela landet — strukturerade så du kan jämföra dem";
   if (stad) { heading = `Förarjobb i ${stad}`; sub = `${list.length} lediga ${list.length === 1 ? "tjänst" : "tjänster"} i ${stad}`; }
   else if (filter.region.length === 1) { heading = `Förarjobb i ${filter.region[0]}`; sub = `${list.length} lediga tjänster`; }
   else if (initLic) { heading = `${initLic}-jobb i Sverige`; sub = `${list.length} lediga tjänster`; }

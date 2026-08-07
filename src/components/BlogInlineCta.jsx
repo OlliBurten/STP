@@ -11,7 +11,7 @@ const VARIANTS = {
   driver: {
     eyebrow: "För dig som kör yrkesmässigt",
     title: "Se vad åkerier betalar just nu",
-    body: "Skapa en gratis förarprofil så ser du lediga jobb och vad åkerier erbjuder — utan CV och utan mellanhänder.",
+    body: "Skapa en gratis förarprofil så ser du lediga jobb och vad åkerier erbjuder — matchat mot dina behörigheter.",
     buttonLabel: "Skapa gratis förarprofil",
     to: "/registrera",
   },
