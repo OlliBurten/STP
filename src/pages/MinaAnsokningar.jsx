@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { fetchConversations } from "../api/conversations.js";
-import { fetchMyApplications } from "../api/applications.js";
+import { fetchMyApplications, setApplicationOutcome } from "../api/applications.js";
 import { useAuth } from "../context/AuthContext";
 import LoadingBlock from "../components/LoadingBlock";
 import PageMeta from "../components/PageMeta";
@@ -352,6 +352,11 @@ export default function MinaAnsokningar() {
   const [error, setError] = useState(null);
   const [tab, setTab] = useState("all");
   const [externalApps, setExternalApps] = useState([]);
+  const [savingOutcome, setSavingOutcome] = useState(null);
+  const [outcomeError, setOutcomeError] = useState(null);
+  // Stabil tidsstämpel: Date.now() direkt i render är en oren funktion och gör
+  // "äldre än 7 dagar" instabil mellan omritningar.
+  const nowMs = useMemo(() => Date.now(), []);
 
   useEffect(() => {
     if (!hasApi) { setLoading(false); return; }
@@ -394,6 +399,61 @@ export default function MinaAnsokningar() {
     { k: "closed",   l: "Ej aktuell", c: counts.closed },
   ];
 
+  // ── "Fick du jobbet?" i produkten ────────────────────────────────────────
+  // Mejlslingan gav 3 svar på 24 utskick. Den som redan är inloggad svarar
+  // hellre — och utfallet är det enda måttet som visar att STP faktiskt hjälper
+  // någon till ett jobb, även när ansökan slutförs hos arbetsgivaren.
+  const answerOutcome = async (id, svar) => {
+    setSavingOutcome(id);
+    try {
+      await setApplicationOutcome(id, svar);
+      const outcome = svar === "ja" ? "GOT_JOB" : svar === "pagar" ? "IN_PROCESS" : "NO_JOB";
+      setExternalApps((list) => list.map((x) => (x.id === id ? { ...x, outcome } : x)));
+    } catch {
+      setOutcomeError(id);
+    } finally {
+      setSavingOutcome(null);
+    }
+  };
+
+  const OutcomePrompt = ({ a }) => {
+    if (a.outcome === "GOT_JOB") {
+      return (
+        <div style={{ marginTop: 12, padding: "10px 14px", borderRadius: 10, background: "var(--green-tint)", fontSize: "var(--text-sm)", color: "var(--green-text)", fontWeight: 600 }}>
+          Du fick jobbet — grattis! Tack för att du berättade.
+        </div>
+      );
+    }
+    if (a.outcome === "NO_JOB") return null;
+    // Fråga inte innan processen ens hunnit börja.
+    if (Math.floor((nowMs - new Date(a.createdAt).getTime()) / 864e5) < 7) return null;
+
+    const saving = savingOutcome === a.id;
+    const btn = (bg, color, border) => ({
+      padding: "7px 12px", borderRadius: 999, background: bg, color, border: `1px solid ${border}`,
+      fontSize: "var(--text-2xs)", fontWeight: 700, cursor: saving ? "default" : "pointer",
+      opacity: saving ? 0.5 : 1, fontFamily: "inherit",
+    });
+
+    return (
+      <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--line)" }}>
+        <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-700)", marginBottom: 8 }}>
+          {a.outcome === "IN_PROCESS" ? "Vet du mer nu?" : "Hur gick det?"}
+        </div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <button disabled={saving} onClick={() => answerOutcome(a.id, "ja")} style={btn("var(--green)", "#fff", "var(--green-deep)")}>Jag fick jobbet</button>
+          {a.outcome !== "IN_PROCESS" && (
+            <button disabled={saving} onClick={() => answerOutcome(a.id, "pagar")} style={btn("var(--card)", "var(--ink-700)", "var(--line-2)")}>Processen pågår</button>
+          )}
+          <button disabled={saving} onClick={() => answerOutcome(a.id, "nej")} style={btn("var(--card)", "var(--ink-500)", "var(--line-2)")}>Det blev inget</button>
+        </div>
+        {outcomeError === a.id && (
+          <div style={{ marginTop: 8, fontSize: "var(--text-2xs)", color: "var(--danger)" }}>Kunde inte spara — försök igen.</div>
+        )}
+      </div>
+    );
+  };
+
   const externalStatusLabel = (a) =>
     a.appliedVia === "af_external" ? "Sökt via arbetsgivarens kanal"
     : a.forwarded ? "Vidarebefordrad till åkeriet"
@@ -421,6 +481,7 @@ export default function MinaAnsokningar() {
                 <a href={a.job.originalPostingUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: "var(--green)", textDecoration: "underline" }}>Originalannonsen ↗</a>
               )}
             </div>
+            <OutcomePrompt a={a} />
           </div>
         ))}
       </div>

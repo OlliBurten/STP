@@ -155,6 +155,9 @@ applicationsRouter.get(
             ? emailedOrgs.has(a.job.organizationNumber)
             : false,
           createdAt: a.createdAt,
+          // Driver "Fick du jobbet?"-prompten i Mina ansökningar behöver veta om
+          // frågan redan är besvarad.
+          outcome: a.outcome ?? null,
           job: {
             id: a.job.id,
             title: a.job.title,
@@ -219,6 +222,19 @@ applicationsRouter.get(
     }
   }
 );
+
+// ─── "Fick du jobbet?" från inloggad förare i Mina ansökningar ────────────────
+applicationsRouter.post("/:id/outcome", authMiddleware, requireDriver, async (req, res, next) => {
+  try {
+    const { svar } = req.body || {};
+    const { recordOutcomeForDriver } = await import("../lib/applicationFollowup.js");
+    const app = await recordOutcomeForDriver(req.params.id, req.userId, svar);
+    if (!app) return res.status(404).json({ error: "Ansökan hittades inte" });
+    res.json({ ok: true, outcome: app.outcome });
+  } catch (e) {
+    next(e);
+  }
+});
 
 // ─── "Fick du jobbet?"-utfall — publik, token-baserad (länk i uppföljningsmejl) ─
 applicationsRouter.post("/outcome", async (req, res, next) => {

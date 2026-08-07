@@ -22,3 +22,12 @@ export function fetchMyApplications() {
 export function checkApplication(jobId) {
   return apiGet(`/api/applications/check/${jobId}`);
 }
+
+/**
+ * Registrera utfallet för en ansökan från inloggad förare.
+ * @param {string} applicationId
+ * @param {"ja"|"pagar"|"nej"} svar
+ */
+export function setApplicationOutcome(applicationId, svar) {
+  return apiPost(`/api/applications/${applicationId}/outcome`, { svar });
+}
