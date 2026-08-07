@@ -518,6 +518,31 @@ profileRouter.put("/", async (req, res, next) => {
 
 // PATCH /api/profile/notification-settings
 // AI-analys av profiltext — används i onboarding wizard steg 4
+// ─── Varför föraren slutade söka ──────────────────────────────────────────────
+// Frågas i samma ögonblick som synlighetstoggeln slås av. Det är det högsta
+// avsiktsläget vi någonsin kommer åt: personen är inloggad och har just fattat
+// beslutet. Ett mejl två dagar senare fångar en bråkdel.
+//
+// "GOT_JOB_STP" leder vidare till att föraren pekar ut vilken ansökan det gällde,
+// vilket sätter Application.outcome — samma fält som mejllänken och prompten i
+// Mina ansökningar skriver till. En enda definition av "anställning via STP".
+profileRouter.post("/hidden-reason", authMiddleware, requireDriver, async (req, res, next) => {
+  try {
+    const { HIDDEN_REASONS } = await import("../lib/applicationFollowup.js");
+    const { reason } = req.body || {};
+    if (!HIDDEN_REASONS.includes(reason)) {
+      return res.status(400).json({ error: "Ogiltigt skäl" });
+    }
+    await prisma.driverProfile.updateMany({
+      where: { userId: req.userId },
+      data: { hiddenReason: reason, hiddenAt: new Date() },
+    });
+    res.json({ ok: true });
+  } catch (e) {
+    next(e);
+  }
+});
+
 profileRouter.post("/analyze-summary", async (req, res, next) => {
   try {
     const text = String(req.body?.text || "").trim();

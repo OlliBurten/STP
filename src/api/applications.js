@@ -31,3 +31,14 @@ export function checkApplication(jobId) {
 export function setApplicationOutcome(applicationId, svar) {
   return apiPost(`/api/applications/${applicationId}/outcome`, { svar });
 }
+
+/**
+ * Samtycke att berätta om anställningen publikt — eller återkalla det.
+ * Kräver att ansökan har utfallet GOT_JOB.
+ * @param {string} applicationId
+ * @param {boolean} consent
+ * @param {string} [quote] frivillig kommentar från föraren
+ */
+export function setStoryConsent(applicationId, consent, quote) {
+  return apiPost(`/api/applications/${applicationId}/story`, { consent, quote });
+}

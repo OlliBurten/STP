@@ -36,6 +36,8 @@ import {
   isDriverMinimumProfileComplete,
   SUMMARY_MIN_LENGTH,
 } from "../utils/driverProfileRequirements";
+import { setHiddenReason } from "../api/profile";
+import { fetchMyApplications, setApplicationOutcome } from "../api/applications.js";
 import { calcYearsExperience } from "../utils/profileUtils";
 import { matchScore } from "../utils/matchUtils";
 
@@ -566,6 +568,46 @@ export default function Profile() {
 
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(profile);
+  // "Slutar du söka?" — visas när synligheten slås AV. Ögonblicket är på skärmen:
+  // föraren är inloggad och har just fattat beslutet. Ett mejl senare fångar en
+  // bråkdel. Svaret "fick jobb via STP" leder vidare till att peka ut vilken
+  // ansökan det gällde, vilket sätter samma Application.outcome som mejllänken.
+  const [leavingPrompt, setLeavingPrompt] = useState(false);
+  const [leavingApps, setLeavingApps] = useState(null);
+  const [leavingSaving, setLeavingSaving] = useState(false);
+
+  const answerLeaving = async (reason) => {
+    setLeavingSaving(true);
+    try {
+      await setHiddenReason(reason);
+      if (reason === "GOT_JOB_STP") {
+        // Steg 2: låt föraren peka ut vilken ansökan det gällde. Utan det blir
+        // "fick jobb via STP" en siffra utan koppling till ett jobb.
+        const apps = await fetchMyApplications().catch(() => []);
+        setLeavingApps((Array.isArray(apps) ? apps : []).filter((a) => a.outcome !== "GOT_JOB").slice(0, 8));
+        return;
+      }
+      setLeavingPrompt(false);
+    } catch {
+      setLeavingPrompt(false);
+    } finally {
+      setLeavingSaving(false);
+    }
+  };
+
+  const pickLeavingApp = async (id) => {
+    setLeavingSaving(true);
+    try {
+      if (id) await setApplicationOutcome(id, "ja");
+      toast.success("Grattis! Tack för att du berättade.");
+    } catch {
+      /* tyst — skälet är redan sparat, jobbkopplingen är en bonus */
+    } finally {
+      setLeavingSaving(false);
+      setLeavingPrompt(false);
+      setLeavingApps(null);
+    }
+  };
   const isMobile = useIsMobile();
   const [tab, setTab] = useState("profil");
   const [addingExp, setAddingExp] = useState(false);
@@ -1021,12 +1063,64 @@ export default function Profile() {
               <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)" }}>{current?.visibleToCompanies ? "Åkerier kan hitta dig och kontakta dig direkt" : "Din profil är dold för åkerier"}</div>
             </div>
             <button
-              onClick={() => updateProfile({ visibleToCompanies: !current?.visibleToCompanies }).catch(() => {})}
+              onClick={() => {
+                const turningOff = !!current?.visibleToCompanies;
+                updateProfile({ visibleToCompanies: !current?.visibleToCompanies })
+                  .then(() => { if (turningOff) setLeavingPrompt(true); })
+                  .catch(() => {});
+              }}
               style={{ width: 44, height: 26, borderRadius: 99, background: current?.visibleToCompanies ? "var(--success)" : "var(--ink-200)", border: "none", position: "relative", cursor: "pointer", flexShrink: 0, transition: "background .2s" }}
             >
               <div style={{ position: "absolute", top: 3, left: current?.visibleToCompanies ? 21 : 3, width: 20, height: 20, borderRadius: 99, background: "#fff", transition: "left .2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }}/>
             </button>
           </div>
+
+          {/* "Slutar du söka?" — enda tillfället då vi vet att något hänt. */}
+          {leavingPrompt && (
+            <div style={{ padding: "16px 18px", background: "var(--card)", border: "1px solid var(--line-2)", borderRadius: 13, boxShadow: "var(--sh-sm)" }}>
+              {!leavingApps ? (
+                <>
+                  <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-900)", marginBottom: 3 }}>Slutar du söka?</div>
+                  <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", marginBottom: 12 }}>Svaret hjälper oss veta om STP faktiskt fungerar. Du kan hoppa över.</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {[
+                      ["GOT_JOB_STP", "Jag fick jobb — via STP"],
+                      ["GOT_JOB_ELSEWHERE", "Jag fick jobb — på annat sätt"],
+                      ["OTHER", "Annat skäl"],
+                    ].map(([value, label]) => (
+                      <button key={value} disabled={leavingSaving} onClick={() => answerLeaving(value)} style={{
+                        textAlign: "left", padding: "10px 14px", borderRadius: 10, background: "var(--paper-2)",
+                        border: "1px solid var(--line)", color: "var(--ink-800)", fontSize: "var(--text-sm)",
+                        fontWeight: 600, cursor: leavingSaving ? "default" : "pointer", opacity: leavingSaving ? 0.5 : 1, fontFamily: "inherit",
+                      }}>{label}</button>
+                    ))}
+                  </div>
+                  <button onClick={() => setLeavingPrompt(false)} style={{ marginTop: 10, background: "none", border: "none", padding: 0, color: "var(--ink-400)", fontSize: "var(--text-2xs)", cursor: "pointer", fontFamily: "inherit" }}>Hoppa över</button>
+                </>
+              ) : (
+                <>
+                  <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-900)", marginBottom: 3 }}>Vilket jobb blev det?</div>
+                  <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", marginBottom: 12 }}>Så vet vi vilken annons som ledde hela vägen.</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {leavingApps.length === 0 && (
+                      <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)" }}>Du har inga öppna ansökningar hos oss — tack ändå!</div>
+                    )}
+                    {leavingApps.map((a) => (
+                      <button key={a.id} disabled={leavingSaving} onClick={() => pickLeavingApp(a.id)} style={{
+                        textAlign: "left", padding: "10px 14px", borderRadius: 10, background: "var(--paper-2)",
+                        border: "1px solid var(--line)", color: "var(--ink-800)", fontSize: "var(--text-sm)",
+                        cursor: leavingSaving ? "default" : "pointer", opacity: leavingSaving ? 0.5 : 1, fontFamily: "inherit",
+                      }}>
+                        <div style={{ fontWeight: 700 }}>{a.job?.title || "Jobb"}</div>
+                        <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)" }}>{a.job?.company}</div>
+                      </button>
+                    ))}
+                  </div>
+                  <button onClick={() => pickLeavingApp(null)} style={{ marginTop: 10, background: "none", border: "none", padding: 0, color: "var(--ink-400)", fontSize: "var(--text-2xs)", cursor: "pointer", fontFamily: "inherit" }}>Inget av dessa</button>
+                </>
+              )}
+            </div>
+          )}
 
           {/* Söker aktivt jobb (openToWork) */}
           {current?.visibleToCompanies && (

@@ -15,6 +15,13 @@ const columnMigrations = [
   `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "demoLabel" TEXT`,
   // Demokonto som kan växla mellan åkeri- och förarvyn (role BOTH)
   `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "demoBoth" BOOLEAN NOT NULL DEFAULT false`,
+  // Varför föraren dolde sin profil / slutade söka — frågas vid synlighetstoggeln.
+  `ALTER TABLE "DriverProfile" ADD COLUMN IF NOT EXISTS "hiddenReason" TEXT`,
+  `ALTER TABLE "DriverProfile" ADD COLUMN IF NOT EXISTS "hiddenAt" TIMESTAMP(3)`,
+  // Samtycke att berätta publikt om en anställning (förnamn + region, aldrig åkeriets namn).
+  `ALTER TABLE "Application" ADD COLUMN IF NOT EXISTS "storyConsent" BOOLEAN NOT NULL DEFAULT false`,
+  `ALTER TABLE "Application" ADD COLUMN IF NOT EXISTS "storyConsentAt" TIMESTAMP(3)`,
+  `ALTER TABLE "Application" ADD COLUMN IF NOT EXISTS "storyQuote" TEXT`,
 ];
 
 async function main() {
