@@ -4,6 +4,7 @@ import { fetchMe } from "../api/auth.js";
 import { startViewAs as apiStartViewAs, stopViewAs as apiStopViewAs } from "../api/admin.js";
 import { fetchMyOrganizations } from "../api/organizations.js";
 import { identifyUser, resetUser, track, groupCompany } from "../utils/posthog.js";
+import { getSignupUtm } from "../utils/utm.js";
 
 const AUTH_STORAGE_KEY = "drivermatch-auth";
 // Industristandard för konsumentplattform: ingen inaktivitetsutloggning,
@@ -235,10 +236,16 @@ export function AuthProvider({ children }) {
         companyOrgNumber: role === "company" ? companyOrgNumber : undefined,
         verificationBaseUrl,
         claimToken: claimToken || undefined,
+        // First touch: vilken länk förde hit personen från början. Se utm.js.
+        ...getSignupUtm(),
       });
       const u = normalizeUser(data.user);
       identifyUser(u);
-      track("user_registered", { role: u.rawRole || u.role, claimActivated: !!data.claimResult?.activated });
+      track("user_registered", {
+        role: u.rawRole || u.role,
+        claimActivated: !!data.claimResult?.activated,
+        ...getSignupUtm(),
+      });
       return {
         user: u,
         emailVerificationSent: data.emailVerificationSent === true,

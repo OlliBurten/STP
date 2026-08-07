@@ -22,6 +22,10 @@ const columnMigrations = [
   `ALTER TABLE "Application" ADD COLUMN IF NOT EXISTS "storyConsent" BOOLEAN NOT NULL DEFAULT false`,
   `ALTER TABLE "Application" ADD COLUMN IF NOT EXISTS "storyConsentAt" TIMESTAMP(3)`,
   `ALTER TABLE "Application" ADD COLUMN IF NOT EXISTS "storyQuote" TEXT`,
+  // Varifrån användaren kom vid registreringen (first touch).
+  `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "signupSource" TEXT`,
+  `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "signupMedium" TEXT`,
+  `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "signupCampaign" TEXT`,
 ];
 
 async function main() {
