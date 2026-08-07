@@ -352,7 +352,7 @@ export default function DriverOnboardingWizard() {
           Välkommen till STP
         </h1>
         <p style={{ fontSize: "var(--text-md)", color: "var(--ink-500)", lineHeight: 1.65, marginBottom: 28 }}>
-          Sveriges transportplattform kopplar ihop dig med seriösa åkerier — utan mellanhänder och utan CV. Det tar två minuter att komma igång.
+          Sveriges transportplattform samlar lastbilsjobb från hela landet och matchar dem mot dina behörigheter. Alltid gratis. Det tar två minuter att komma igång.
         </p>
         <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
           {[

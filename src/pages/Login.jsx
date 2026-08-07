@@ -85,14 +85,17 @@ function BrandPanel({ variant = "driver" }) {
               { label: "Ingen provision" },
             ]
           : [
-              // "Verifierade åkerier" och "Kontakta direkt — inget CV" stod här
-              // tidigare. Jobben kommer i dag från importerade annonser där åkeriet
-              // saknar STP-konto, och direktkontakten har ännu aldrig använts — båda
-              // löftena motbevisas direkt efter registreringen. Det som faktiskt
-              // levereras är strukturen, matchningen och gratis-löftet.
+              // Tidigare stod här "Verifierade åkerier" och "Kontakta direkt —
+              // inget CV". Båda motbevisas direkt efter registreringen: annonserna
+              // är importerade från åkerier utan STP-konto, och 37 av 44 ansökningar
+              // går vidare till arbetsgivarens egen kanal — där bestämmer
+              // arbetsgivaren om CV krävs, inte vi. Vi lovar bara det vi styr över.
+              //
+              // Inga totalitetsanspråk heller: annonserna kommer från Platsbanken,
+              // vilket är merparten men inte "alla" lastbilsjobb i landet.
               { label: "Matchas på körkort & region" },
-              { label: "Alla lastbilsjobb i Sverige på ett ställe" },
-              { label: "Alltid gratis — inget CV krävs" },
+              { label: "Lastbilsjobb från hela landet" },
+              { label: "Alltid gratis för förare" },
             ]
         ).map(({ label }) => (
           <div key={label} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
@@ -459,7 +462,7 @@ export default function Login() {
 
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 {[
-                  { key: "driver",  mode: "register_driver",  icon: "user",     title: "Jag är förare",    desc: "Hitta jobb hos seriösa åkerier — utan CV." },
+                  { key: "driver",  mode: "register_driver",  icon: "user",     title: "Jag är förare",    desc: "Hitta lastbilsjobb i hela landet. Alltid gratis." },
                   { key: "company", mode: "register_company", icon: "building", title: "Vi är ett åkeri",  desc: "Hitta rätt förare utan mellanhänder." },
                 ].map(({ key, mode: targetMode, icon, title, desc }) => (
                   <button
