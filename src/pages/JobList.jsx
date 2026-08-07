@@ -19,6 +19,7 @@ import { DRIVER_TOUR_STEPS } from "../data/tourSteps";
 import { getProfileCompletion, isDriverMinimumProfileComplete } from "../utils/driverProfileRequirements";
 import SwedenJobMap from "../components/SwedenJobMap";
 import { LAYOUT } from "../components/ui/layout.jsx";
+import { SALARY_FILTER_ENABLED } from "../utils/jobUtils";
 
 /* ── Filter-etiketter (alternativen härleds data-drivet ur jobben) ───────── */
 const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
@@ -839,7 +840,7 @@ export default function JobList() {
 
             {/* Ärlighetsvarning: minimilön filtrerar på ANGIVEN lön — bara ~1/3 av
                 annonserna anger siffror, resten ("enligt kollektivavtal") döljs. */}
-            {filters.minSalary && (
+            {SALARY_FILTER_ENABLED && filters.minSalary && (
               <div style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "12px 16px", background: "var(--amber-tint)", border: "1px solid rgba(242,164,28,0.25)", borderRadius: 12, marginBottom: 16 }}>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                 <span style={{ fontSize: "var(--text-sm)", color: "var(--amber-text)", lineHeight: 1.55 }}>

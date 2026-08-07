@@ -2,6 +2,7 @@ import { useEscapeKey } from "../hooks/useEscapeKey";
 import { segmentOptions } from "../data/segments";
 import { transportSegmentGroups } from "../data/bransch.js";
 import { CloseIcon } from "./Icons";
+import { SALARY_FILTER_ENABLED } from "../utils/jobUtils";
 
 const MIN_SALARY_OPTIONS = [
   { value: "", label: "Alla löner" },
@@ -142,11 +143,13 @@ export default function FilterDrawer({ open, filters, setFilters, onClose, facet
             </select>
           </Field>
 
-          <Field label="Minimilön">
-            <select value={filters.minSalary} onChange={(e) => handleChange("minSalary", e.target.value)} style={selectStyle}>
-              {MIN_SALARY_OPTIONS.map((o) => <option key={o.value} value={o.value} style={optStyle}>{o.label}</option>)}
-            </select>
-          </Field>
+          {SALARY_FILTER_ENABLED && (
+            <Field label="Minimilön">
+              <select value={filters.minSalary} onChange={(e) => handleChange("minSalary", e.target.value)} style={selectStyle}>
+                {MIN_SALARY_OPTIONS.map((o) => <option key={o.value} value={o.value} style={optStyle}>{o.label}</option>)}
+              </select>
+            </Field>
+          )}
         </div>
 
         <div style={{ marginTop: 32, display: "flex", gap: 10 }}>

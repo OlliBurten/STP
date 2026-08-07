@@ -85,9 +85,14 @@ function BrandPanel({ variant = "driver" }) {
               { label: "Ingen provision" },
             ]
           : [
+              // "Verifierade åkerier" och "Kontakta direkt — inget CV" stod här
+              // tidigare. Jobben kommer i dag från importerade annonser där åkeriet
+              // saknar STP-konto, och direktkontakten har ännu aldrig använts — båda
+              // löftena motbevisas direkt efter registreringen. Det som faktiskt
+              // levereras är strukturen, matchningen och gratis-löftet.
               { label: "Matchas på körkort & region" },
-              { label: "Verifierade åkerier" },
-              { label: "Kontakta direkt — inget CV" },
+              { label: "Alla lastbilsjobb i Sverige på ett ställe" },
+              { label: "Alltid gratis — inget CV krävs" },
             ]
         ).map(({ label }) => (
           <div key={label} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>

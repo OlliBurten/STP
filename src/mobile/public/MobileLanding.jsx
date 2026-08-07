@@ -56,7 +56,10 @@ const PROBLEMS = [
 ];
 const FEATURES = [
   ["user", "Smart matchning", "Matchas baserat på körkort, region, segment och tillgänglighet. Systemet rankar förare och jobb automatiskt."],
-  ["building", "Verifierade åkerier", "Åkerier verifieras mot Bolagsverket. Förare ser bara seriösa aktörer — inga ogrundade annonsörer."],
+  // Verifieringen gäller åkerier som skapar konto — inte annonserna i listan, som
+  // i dag är importerade från Platsbanken. Löftet "förare ser bara seriösa aktörer"
+  // var alltså osant för i princip allt en besökare faktiskt ser.
+  ["building", "Verifierade åkerier", "Åkerier som skapar konto verifieras mot Bolagsverket innan de får publicera egna annonser."],
   ["msg", "Direktkontakt", "Inga mellanhänder. Inga provisioner. Förare och åkeri pratar direkt — som det borde vara."],
   ["eye", "Du styr din synlighet", "Som förare bestämmer du om du är synlig, om du visar telefonnummer, och vem som ser din profil."],
 ];
@@ -167,7 +170,7 @@ const BenefitList = ({ items }) => (
 );
 
 const SUBPAGES = {
-  forforare: { title: "För förare", hero: ["För förare", "Ditt nästa körjobb — utan mellanhänder.", "Bygg en profil som visar dina behörigheter. Bli hittad av seriösa åkerier — eller sök själv. Alltid gratis för förare.", "linear-gradient(160deg,#3a4b40,#1B2421)"], benefits: [["star", "Alltid gratis för förare", "Inga avgifter, ingen provision."], ["user", "Du äger din profil", "Dela som digitalt CV — radera när du vill."], ["building", "Bara verifierade åkerier", "Alla kontrolleras mot Bolagsverket."], ["search", "Matchning på det som räknas", "Körkort, behörigheter, region, tillgänglighet."], ["msg", "Direktkontakt", "Prata direkt med åkeriet."], ["eye", "Du styr din synlighet", "Du bestämmer vem som ser din profil."]], cta: ["forare", "Skapa förarprofil"] },
+  forforare: { title: "För förare", hero: ["För förare", "Ditt nästa körjobb — utan mellanhänder.", "Bygg en profil som visar dina behörigheter. Bli hittad av seriösa åkerier — eller sök själv. Alltid gratis för förare.", "linear-gradient(160deg,#3a4b40,#1B2421)"], benefits: [["star", "Alltid gratis för förare", "Inga avgifter, ingen provision."], ["user", "Du äger din profil", "Dela som digitalt CV — radera när du vill."], ["building", "Verifierade åkerier", "Åkerier med konto kontrolleras mot Bolagsverket."], ["search", "Matchning på det som räknas", "Körkort, behörigheter, region, tillgänglighet."], ["msg", "Direktkontakt", "Prata direkt med åkeriet."], ["eye", "Du styr din synlighet", "Du bestämmer vem som ser din profil."]], cta: ["forare", "Skapa förarprofil"] },
   forakerier: { title: "För åkerier", hero: ["För åkerier", "Hitta rätt förare — verifierade och redo att köra.", "Sök proaktivt bland förare i er region eller publicera jobb. Ni når seriösa, kontaktbara förare direkt — ingen provision."], benefits: [["search", "Sök bland verifierade förare", "Filtrera på körkort, region och tillgänglighet."], ["doc", "Publicera jobb gratis", "Kom igång utan kostnad. Betala först för utökad räckvidd när ni vill nå fler förare."], ["msg", "Ingen provision", "Kontakt direkt mellan er och föraren."], ["building", "Tydlig pipeline", "Från intresse till anställning i ett flöde."], ["shield", "Bygg ert arbetsgivarvarumärke", "Verifierad profil med omdömen från förare."], ["user", "Team-konton", "Bjud in kollegor under samma åkeri."]], cta: ["akeri", "Registrera åkeri"] },
   praktik: { title: "Praktik & APL", hero: ["Praktik & APL", "För elever, skolor och blivande förare.", "STP kopplar ihop elever och praktikanter med seriösa åkerier som tar emot APL — arbetsplatsförlagt lärande.", "linear-gradient(160deg,#7a5418,#3a2a0c)"], benefits: [["cap", "För dig som studerar", "Söker du APL-plats eller ditt första jobb efter utbildningen? Skapa en profil och visa var du är på vägen."], ["building", "För åkerier som handleder", "Ta emot praktikanter och bygg upp framtidens förare. Hitta motiverade elever i er region."], ["star", "Seriösa aktörer", "Alla åkerier på STP är verifierade — trygg praktik för både elev och skola."]], cta: ["forare", "Skapa profil"] },
   omstp: { title: "Om STP", hero: ["Om STP", "Transportbranschen förtjänar en ärlig plattform.", "STP byggs för att förare och åkerier ska hitta varandra direkt — utan mellanhänder som tar en del av lönen."], benefits: [["heart", "Förarens sida", "Föraren ska aldrig betala för att bli sedd."], ["shield", "Kvalitet före kvantitet", "Vi släpper hellre in färre, verifierade åkerier än många oseriösa."], ["msg", "Transparens", "Direkt kontakt, tydliga villkor och inga dolda avgifter."]], cta: ["forare", "Hör av dig"] },
@@ -309,7 +312,7 @@ export default function MobileLanding() {
         <section style={{ background: "var(--night)", padding: "54px 22px 58px", color: "#fff" }}>
           <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: 1.6, textTransform: "uppercase", color: "#7fc0bb", marginBottom: 13 }}>I hela landet</div>
           <h2 style={{ fontSize: 34, fontWeight: 800, letterSpacing: -1.1, lineHeight: 1.06, marginBottom: 12, maxWidth: 300 }}>Förare behövs överallt</h2>
-          <p style={{ fontSize: 16.5, lineHeight: 1.5, color: "rgba(255,255,255,0.7)", marginBottom: 18, maxWidth: 310 }}>Från Skåne till Norrbotten dyker det upp nya uppdrag hos verifierade åkerier. Hitta jobben nära dig.</p>
+          <p style={{ fontSize: 16.5, lineHeight: 1.5, color: "rgba(255,255,255,0.7)", marginBottom: 18, maxWidth: 310 }}>Från Skåne till Norrbotten samlar vi landets lastbilsjobb på ett ställe. Hitta jobben nära dig.</p>
           <div style={{ display: "flex", justifyContent: "center", margin: "6px 0 26px" }}>
             <svg viewBox={`${SWE_VIEW.x} ${SWE_VIEW.y} ${SWE_VIEW.w} ${SWE_VIEW.h}`} preserveAspectRatio="xMidYMid meet" style={{ width: 232, height: "auto", overflow: "visible" }}>
               {Object.keys(SWE_LAN_PATHS).map((code) => (
