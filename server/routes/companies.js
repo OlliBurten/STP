@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
-import { authMiddleware, optionalAuthMiddleware, requireCompany, requireCompanyOwner, attachCompanyContext } from "../middleware/auth.js";
+import { authMiddleware, optionalAuthMiddleware, requireCompany, requireCompanyOwner, attachCompanyContext, requireVerifiedEmail } from "../middleware/auth.js";
 import { validateBody, validateQuery } from "../middleware/validate.js";
 import {
   companyProfileSchema,
@@ -332,6 +332,7 @@ companiesRouter.get(
 
 companiesRouter.post(
   "/me/invites",
+  requireVerifiedEmail,
   requireCompanyOwner,
   validateBody(inviteCreateSchema),
   async (req, res, next) => {

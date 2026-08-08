@@ -7,6 +7,7 @@ import {
   requireDriver,
   requireVerifiedCompany,
   attachCompanyContext,
+  requireVerifiedEmail,
 } from "../middleware/auth.js";
 import { matchScore, driverYearsFromExperience } from "../utils/matchScore.js";
 import { notifyRecommendedJobMatch } from "../lib/email.js";
@@ -773,7 +774,7 @@ jobsRouter.delete("/:id/save", authMiddleware, requireDriver, async (req, res, n
   }
 });
 
-jobsRouter.post("/", authMiddleware, requireCompany, attachCompanyContext, requireVerifiedCompany, validateBody(createJobSchema), async (req, res, next) => {
+jobsRouter.post("/", authMiddleware, requireVerifiedEmail, requireCompany, attachCompanyContext, requireVerifiedCompany, validateBody(createJobSchema), async (req, res, next) => {
   try {
     const body = req.body;
     const requirements = Array.isArray(body.requirements)

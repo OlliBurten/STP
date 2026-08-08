@@ -5,6 +5,7 @@ import {
   requireCompany,
   requireVerifiedCompany,
   attachCompanyContext,
+  requireVerifiedEmail,
 } from "../middleware/auth.js";
 import { notifyDriverSelected, notifyNewApplication, notifyNewMessage, notifyApplicationConfirmation } from "../lib/email.js";
 import { createNotification } from "../lib/notifications.js";
@@ -146,7 +147,7 @@ conversationsRouter.get("/:id", requireVerifiedIfCompany, async (req, res, next)
   }
 });
 
-conversationsRouter.post("/", requireVerifiedIfCompany, validateBody(createConversationSchema), async (req, res, next) => {
+conversationsRouter.post("/", requireVerifiedEmail, requireVerifiedIfCompany, validateBody(createConversationSchema), async (req, res, next) => {
   try {
     const { driverId, companyId, jobId, jobTitle, initialMessage } = req.body;
     const isDriver = req.role === "DRIVER";
@@ -361,7 +362,7 @@ conversationsRouter.patch("/:id/select", requireCompany, requireVerifiedCompany,
   }
 });
 
-conversationsRouter.post("/:id/messages", requireVerifiedIfCompany, validateBody(sendMessageSchema), async (req, res, next) => {
+conversationsRouter.post("/:id/messages", requireVerifiedEmail, requireVerifiedIfCompany, validateBody(sendMessageSchema), async (req, res, next) => {
   try {
     const conv = await prisma.conversation.findUnique({
       where: { id: req.params.id },

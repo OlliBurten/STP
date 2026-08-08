@@ -1,7 +1,7 @@
 import { Router } from "express";
 import PDFDocument from "pdfkit";
 import { prisma } from "../lib/prisma.js";
-import { authMiddleware, requireDriver, requireCompany } from "../middleware/auth.js";
+import { authMiddleware, requireDriver, requireCompany, requireVerifiedEmail } from "../middleware/auth.js";
 import { augmentCompanyMemberUser, formatClientAuthUser } from "./auth.js";
 import { generateCompanySuggestionsForUser } from "../lib/companyEnrichment.js";
 import { matchScore, driverYearsFromExperience } from "../utils/matchScore.js";
@@ -559,7 +559,8 @@ profileRouter.post("/analyze-summary", async (req, res, next) => {
   }
 });
 
-profileRouter.patch("/notification-settings", async (req, res, next) => {
+// Vi mejlar användaren utifrån de här inställningarna — kräver verifierad adress.
+profileRouter.patch("/notification-settings", requireVerifiedEmail, async (req, res, next) => {
   try {
     const allowed = ["profileReminder", "jobMatch", "messageReminder", "inactivity", "weekly"];
     const incoming = req.body || {};
