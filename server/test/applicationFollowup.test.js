@@ -50,3 +50,33 @@ test("fönstret ger som mest fyra utskick per ansökan", () => {
   for (let d = first; d <= stop; d += interval) asks.push(d);
   assert.deepEqual(asks, [7, 21, 35, 49]);
 });
+
+// ─── Ett mejl per förare ──────────────────────────────────────────────────────
+// 2026-08-08 fick en förare nio "Hur gick det med X?" samma morgon. Frågan var
+// rätt, mängden var fel: slingan skickade ett mejl per ANSÖKAN, och taket per
+// körning skyddade bara totalen — aldrig den enskilda inkorgen.
+
+test("nio ansökningar från samma förare blir en grupp, inte nio", async () => {
+  const { groupByDriver } = await import("../lib/applicationFollowup.js");
+  const apps = Array.from({ length: 9 }, (_, i) => ({ id: `a${i}`, driverId: "d1" }));
+  const grouped = groupByDriver(apps);
+  assert.equal(grouped.size, 1);
+  assert.equal(grouped.get("d1").length, 9);
+});
+
+test("olika förare hålls isär", async () => {
+  const { groupByDriver } = await import("../lib/applicationFollowup.js");
+  const grouped = groupByDriver([
+    { id: "a1", driverId: "d1" },
+    { id: "a2", driverId: "d2" },
+    { id: "a3", driverId: "d1" },
+  ]);
+  assert.equal(grouped.size, 2);
+  assert.deepEqual(grouped.get("d1").map((a) => a.id), ["a1", "a3"]);
+  assert.deepEqual(grouped.get("d2").map((a) => a.id), ["a2"]);
+});
+
+test("tom lista ger inga mejl", async () => {
+  const { groupByDriver } = await import("../lib/applicationFollowup.js");
+  assert.equal(groupByDriver([]).size, 0);
+});

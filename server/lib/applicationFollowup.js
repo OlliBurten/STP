@@ -13,6 +13,9 @@ import { sendEmail } from "./email.js";
 
 const SITE = (process.env.FRONTEND_URL || "https://transportplattformen.se").split(",")[0].trim();
 const MAX_PER_RUN = 100;
+// Tak per MEJL, inte per körning. Fler rader än så blir en vägg av länkar;
+// resten kommer nästa körning.
+const MAX_PER_EMAIL = 5;
 
 // Vi frågade tidigare EN gång, dag 7, och aldrig mer (filtret var
 // `outcomeRequestedAt: null`). Det mätte systematiskt vid fel tidpunkt: en
@@ -59,65 +62,119 @@ export function buildFollowupWhere(nowMs) {
   };
 }
 
+/**
+ * Gruppera ansökningar per förare — ETT mejl per person, inte ett per ansökan.
+ *
+ * Utan gruppering fick en förare med nio öppna ansökningar nio separata mejl
+ * samma morgon (hände 2026-08-08). MAX_PER_RUN skyddade bara totalen, aldrig
+ * den enskilda inkorgen, och en vägg av identiska mejl läser som spam oavsett
+ * hur relevant frågan är.
+ */
+export function groupByDriver(apps) {
+  const byDriver = new Map();
+  for (const a of apps) {
+    if (!byDriver.has(a.driverId)) byDriver.set(a.driverId, []);
+    byDriver.get(a.driverId).push(a);
+  }
+  return byDriver;
+}
+
+/** Rad per ansökan i ett samlingsmejl. */
+function applicationBlock(a, token, nowMs) {
+  const weeks = Math.max(1, Math.round((nowMs - new Date(a.createdAt).getTime()) / (7 * 864e5)));
+  const since = weeks === 1 ? "för en vecka sedan" : `för ${weeks} veckor sedan`;
+  const status = a.outcome === "IN_PROCESS" ? " (du sa att processen pågick)" : "";
+  return [
+    `• ${a.job.title} hos ${a.job.company} — sökt ${since}${status}`,
+    `   Fick jobbet: ${outcomeUrl(token, "ja")}`,
+    `   Processen pågår: ${outcomeUrl(token, "pagar")}`,
+    `   Det blev inget: ${outcomeUrl(token, "nej")}`,
+  ].join("\n");
+}
+
 export async function runApplicationFollowup() {
   const now = Date.now();
   const apps = await prisma.application.findMany({
     where: buildFollowupWhere(now),
     include: {
-      driver: { select: { email: true, name: true } },
+      driver: { select: { id: true, email: true, name: true } },
       job: { select: { title: true, company: true } },
     },
     orderBy: { createdAt: "asc" },
     take: MAX_PER_RUN,
   });
 
+  const byDriver = groupByDriver(apps);
+
   let sent = 0;
-  for (const a of apps) {
+  let mailed = 0;
+  for (const [, list] of byDriver) {
+    const driver = list[0].driver;
     try {
-      if (!a.driver?.email) {
-        await prisma.application.update({ where: { id: a.id }, data: { outcomeRequestedAt: new Date() } });
+      if (!driver?.email) {
+        await prisma.application.updateMany({
+          where: { id: { in: list.map((a) => a.id) } },
+          data: { outcomeRequestedAt: new Date() },
+        });
         continue;
       }
-      const token = a.outcomeToken ?? randomUUID();
-      const isReask = a.outcomeRequestedAt != null;
-      const weeks = Math.max(1, Math.round((now - new Date(a.createdAt).getTime()) / (7 * 864e5)));
-      const sinceText = weeks === 1 ? "För en vecka sedan" : `För ${weeks} veckor sedan`;
 
-      // Öppningen speglar vad vi redan vet. Att skicka "vi är nyfikna — hur gick
-      // det?" en tredje gång till någon som redan svarat "processen pågår" läser
-      // som ett utskick, inte som en fråga.
-      const opening = !isReask
-        ? `${sinceText} sökte du tjänsten "${a.job.title}" hos ${a.job.company}. Vi är nyfikna — hur gick det?`
-        : a.outcome === "IN_PROCESS"
-          ? `Du berättade att processen med ${a.job.company} pågick. Vet du mer nu?`
-          : `${sinceText} sökte du "${a.job.title}" hos ${a.job.company}. Vi hörde aldrig hur det gick — har du fått besked?`;
+      // Fler än så blir en vägg av länkar; resten kommer nästa körning.
+      const batch = list.slice(0, MAX_PER_EMAIL);
+      const tokens = batch.map((a) => a.outcomeToken ?? randomUUID());
+      const anyReask = batch.some((a) => a.outcomeRequestedAt != null);
+      const first = batch[0];
+      const many = batch.length > 1;
+
+      const subject = many
+        ? `Hur gick det med dina ${batch.length} ansökningar?`
+        : anyReask
+          ? `Blev det något med ${first.job.company}?`
+          : `Hur gick det med ${first.job.company}?`;
+
+      const opening = many
+        ? `Du har ${batch.length} ansökningar hos oss som vi inte vet utfallet på. Hur gick det?`
+        : anyReask
+          ? (first.outcome === "IN_PROCESS"
+              ? `Du berättade att processen med ${first.job.company} pågick. Vet du mer nu?`
+              : `Vi hörde aldrig hur det gick med ${first.job.company} — har du fått besked?`)
+          : `Du sökte "${first.job.title}" hos ${first.job.company}. Vi är nyfikna — hur gick det?`;
 
       await sendEmail({
-        to: a.driver.email,
-        subject: isReask ? `Blev det något med ${a.job.company}?` : `Hur gick det med ${a.job.company}?`,
+        to: driver.email,
+        subject,
         heading: "Hur gick det?",
         text: [
-          `Hej${a.driver.name ? ` ${a.driver.name.split(" ")[0]}` : ""}!`,
+          `Hej${driver.name ? ` ${driver.name.split(" ")[0]}` : ""}!`,
           "",
           opening,
           "",
-          `✅ Jag fick jobbet: ${outcomeUrl(token, "ja")}`,
-          `⏳ Processen pågår: ${outcomeUrl(token, "pagar")}`,
-          `❌ Det blev inget: ${outcomeUrl(token, "nej")}`,
+          ...batch.map((a, i) => applicationBlock(a, tokens[i], now)),
           "",
-          "Ett klick räcker. Svaret hjälper oss hålla jobben på STP färska och relevanta — och blev det inget den här gången finns fler jobb som väntar.",
+          "Ett klick per rad räcker. Svaret hjälper oss hålla jobben på STP färska och relevanta — och blev det inget den här gången finns fler jobb som väntar.",
         ].join("\n"),
         ctaUrl: `${SITE}/jobb`,
         ctaText: "Se nya jobb",
       });
-      await prisma.application.update({ where: { id: a.id }, data: { outcomeRequestedAt: new Date(), outcomeToken: token } });
-      sent++;
+
+      await Promise.all(
+        batch.map((a, i) =>
+          prisma.application.update({
+            where: { id: a.id },
+            data: { outcomeRequestedAt: new Date(), outcomeToken: tokens[i] },
+          })
+        )
+      );
+      sent += batch.length;
+      mailed++;
     } catch (e) {
-      console.error(`[Followup] Misslyckades för ${a.id}:`, e?.message);
+      console.error(`[Followup] Misslyckades för förare ${driver?.id}:`, e?.message);
     }
   }
-  if (apps.length) console.log(`[Followup] ${sent} av ${apps.length} uppföljningsmejl skickade.`);
-  return { checked: apps.length, sent };
+  if (apps.length) {
+    console.log(`[Followup] ${mailed} mejl till ${byDriver.size} förare (${sent} av ${apps.length} ansökningar).`);
+  }
+  return { checked: apps.length, sent, mailed };
 }
 
 const OUTCOME_MAP = { ja: "GOT_JOB", pagar: "IN_PROCESS", nej: "NO_JOB" };
