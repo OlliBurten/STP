@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
-import { authMiddleware } from "../middleware/auth.js";
+import { authMiddleware, requireVerifiedEmail } from "../middleware/auth.js";
 
 export const reviewsRouter = Router();
 
@@ -97,7 +97,8 @@ reviewsRouter.get("/conversation/:conversationId/mine", async (req, res, next) =
   }
 });
 
-reviewsRouter.post("/company", async (req, res, next) => {
+// Publikt omdöme knutet till en identitet — kräver verifierad adress.
+reviewsRouter.post("/company", requireVerifiedEmail, async (req, res, next) => {
   try {
     if (req.role !== "DRIVER") {
       return res.status(403).json({ error: "Endast förare kan lämna omdömen i denna version" });

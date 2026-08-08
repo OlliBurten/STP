@@ -119,13 +119,15 @@ function verifyToken(req, res, next, token, optional = false) {
           error: "Kontot är tillfälligt avstängt. Kontakta support om du tror att detta är ett misstag.",
         });
       }
-      if (!user.emailVerifiedAt) {
-        if (optional) return next();
-        return res.status(403).json({
-          error: "Verifiera din e-post innan du fortsätter.",
-          code: "EMAIL_NOT_VERIFIED",
-        });
-      }
+      // Overifierad e-post spärrar INTE hela inloggningen längre. Den generella
+      // spärren här gjorde att en förare som inte hittat verifieringsmejlet inte
+      // kunde se sin egen profil, spara ett jobb eller öppna sina ansökningar —
+      // hon mötte väggen med noll investerat i produkten, och 7 av 74 konton
+      // fastnade där. Nu får hon bygga profilen och spara jobb först, och möter
+      // kravet vid de handlingar där en fungerande adress faktiskt spelar roll:
+      // ansökan (profilen delas med en arbetsgivare), jobbvakt och notiser (de
+      // mejlar henne) och meddelanden. Se requireVerifiedEmail nedan.
+      req.emailVerified = Boolean(user.emailVerifiedAt);
       // Stoppa ett redan inloggat demokonto vid nästa API-anrop om det gått ut.
       if (user.isDemo && user.demoExpiresAt && new Date(user.demoExpiresAt) < new Date()) {
         if (optional) return next();
@@ -140,6 +142,27 @@ function verifyToken(req, res, next, token, optional = false) {
     } catch (e) {
       return next(e);
     }
+  });
+}
+
+/**
+ * Kräver verifierad e-post. Läggs på de handlingar där en fungerande adress
+ * faktiskt spelar roll — inte på hela inloggningen (se verifyToken ovan).
+ *
+ * Tre kategorier motiverar spärren:
+ *   1. Profilen delas med en arbetsgivare (ansökan) — mottagaren måste kunna
+ *      lita på att personen bakom adressen är den som säger sig söka.
+ *   2. Vi mejlar användaren (jobbvakt, notisinställningar) — utan verifierad
+ *      adress skickar vi till en brevlåda som kanske tillhör någon annan.
+ *   3. Meddelanden till en motpart.
+ *
+ * Måste ligga EFTER authMiddleware, som sätter req.emailVerified.
+ */
+export function requireVerifiedEmail(req, res, next) {
+  if (req.emailVerified === true) return next();
+  return res.status(403).json({
+    error: "Verifiera din e-post innan du fortsätter.",
+    code: "EMAIL_NOT_VERIFIED",
   });
 }
 

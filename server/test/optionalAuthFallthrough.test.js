@@ -63,12 +63,21 @@ describe("optionalAuthMiddleware — kontospärrar blockerar inte publika rutter
     assert.notStrictEqual(res.status, 403);
   });
 
-  it("skyddade rutter spärrar fortfarande overifierade konton", async () => {
-    const res = await request(app)
+  // Overifierad e-post spärrar inte längre hela inloggningen, bara handlingar där
+  // adressen spelar roll — se verifiedEmailGate.test.js. Att läsa sin egen profil
+  // är öppet; att skicka en ansökan är det inte.
+  it("overifierade konton spärras vid handlingar, inte vid inloggningen", async () => {
+    const openRes = await request(app)
       .get("/api/profile")
       .set("Authorization", `Bearer ${unverifiedToken}`);
-    assert.strictEqual(res.status, 403);
-    assert.strictEqual(res.body?.code, "EMAIL_NOT_VERIFIED");
+    assert.notStrictEqual(openRes.status, 403);
+
+    const gatedRes = await request(app)
+      .post("/api/applications")
+      .set("Authorization", `Bearer ${unverifiedToken}`)
+      .send({ jobId: "finns-inte", consentToShare: true });
+    assert.strictEqual(gatedRes.status, 403);
+    assert.strictEqual(gatedRes.body?.code, "EMAIL_NOT_VERIFIED");
   });
 
   it("skyddade rutter spärrar fortfarande avstängda konton", async () => {

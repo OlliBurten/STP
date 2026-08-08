@@ -5,6 +5,7 @@ import { useProfile } from "../context/ProfileContext";
 import { useChat } from "../context/ChatContext";
 import { CloseIcon, CheckIcon } from "./Icons";
 import { suggestMessage } from "../api/ai.js";
+import { resendVerification } from "../api/auth.js";
 import { useEscapeKey } from "../hooks/useEscapeKey";
 
 export default function ApplyModal({ job, onClose }) {
@@ -18,6 +19,18 @@ export default function ApplyModal({ job, onClose }) {
   const [sending, setSending] = useState(false);
   const [suggesting, setSuggesting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [needsVerification, setNeedsVerification] = useState(false);
+  const [resendState, setResendState] = useState("");
+
+  const handleResend = async () => {
+    setResendState("sending");
+    try {
+      await resendVerification(user?.email, window.location.origin);
+      setResendState("sent");
+    } catch {
+      setResendState("error");
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -40,7 +53,16 @@ export default function ApplyModal({ job, onClose }) {
       setConversationId(id);
       setSubmitted(true);
     } catch (err) {
-      setSubmitError(err?.message || "Kunde inte skicka ansökan. Försök igen.");
+      // Verifieringsspärren möts numera här, vid handlingen, i stället för vid
+      // inloggningen. Utan det här specialfallet ser föraren bara ett rått
+      // felmeddelande i det ögonblick hon är som mest motiverad — och det är
+      // just då hon faktiskt orkar leta i skräpposten.
+      if (err?.code === "EMAIL_NOT_VERIFIED") {
+        setNeedsVerification(true);
+        setSubmitError("");
+      } else {
+        setSubmitError(err?.message || "Kunde inte skicka ansökan. Försök igen.");
+      }
     } finally {
       setSending(false);
     }
@@ -140,6 +162,31 @@ export default function ApplyModal({ job, onClose }) {
 
           {submitError && (
             <p className="mb-4 text-sm text-red-600">{submitError}</p>
+          )}
+          {needsVerification && (
+            <div className="mb-4 rounded-xl border border-amber-300 bg-amber-50 p-4">
+              <p className="text-sm font-bold text-slate-900">Verifiera din e-post först</p>
+              <p className="mt-1 text-sm text-slate-700">
+                Vi delar din profil med {job.company}, så adressen behöver vara bekräftad.
+                Vi skickade en länk till {user?.email} när du skapade kontot — kolla
+                skräpposten, den brukar hamna där.
+              </p>
+              {resendState === "sent" ? (
+                <p className="mt-2 text-sm font-semibold text-green-700">Ny länk skickad. Klicka i mejlet och försök igen.</p>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  disabled={resendState === "sending"}
+                  className="mt-2 text-sm font-bold text-amber-800 underline disabled:opacity-50"
+                >
+                  {resendState === "sending" ? "Skickar…" : "Skicka en ny länk"}
+                </button>
+              )}
+              {resendState === "error" && (
+                <p className="mt-2 text-sm text-red-600">Kunde inte skicka just nu. Försök igen om en stund.</p>
+              )}
+            </div>
           )}
           <div className="flex gap-3">
             <button

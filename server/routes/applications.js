@@ -9,7 +9,7 @@
 
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
-import { authMiddleware, requireDriver } from "../middleware/auth.js";
+import { authMiddleware, requireDriver, requireVerifiedEmail } from "../middleware/auth.js";
 import { triggerOutreach } from "../lib/outreachEngine.js";
 
 export const applicationsRouter = Router();
@@ -20,6 +20,8 @@ applicationsRouter.post(
   "/",
   authMiddleware,
   requireDriver,
+  // Profilen delas med arbetsgivaren — mottagaren måste kunna lita på adressen.
+  requireVerifiedEmail,
   async (req, res, next) => {
     try {
       const { jobId, messageFromDriver, consentToShare, appliedVia } = req.body;
