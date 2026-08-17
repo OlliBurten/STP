@@ -381,7 +381,7 @@ export default function PartnerPresentation() {
               { icon: "✓", color: ACCENT, title: "Branschspecifikt", body: "Profiler med körkort, certifikat, regioner och tillgänglighet — inte generiska CV:n." },
               { icon: "✓", color: ACCENT, title: "Direkt och utan mellankraft", body: "Förare och åkeri kommunicerar direkt. Inga bemanningsavgifter, inga provisioner." },
               { icon: "✓", color: ACCENT, title: "Verifierade företag", body: "Alla åkerier kontrolleras mot Bolagsverket. Inga oseriösa aktörer på plattformen." },
-              { icon: "✓", color: ACCENT, title: "Gratis för individen", body: "Förare, elever och AF-deltagare betalar ingenting — alltid. Finansierat via företagsabonnemang." },
+              { icon: "✓", color: ACCENT, title: "Gratis för individen", body: "Förare, elever och AF-deltagare betalar ingenting — alltid." },
               { icon: "✓", color: ACCENT, title: "Hela karriärresan", body: "Praktik → vikariat → heltid — ett ekosystem som följer föraren hela vägen." },
             ].map((r) => (
               <div key={r.title} style={{ display: "flex", gap: 14, alignItems: "flex-start", background: CARD_BG, border: `1px solid ${BORDER}`, borderRadius: 10, padding: "14px 18px" }}>
