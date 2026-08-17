@@ -33,7 +33,7 @@ const STEPS = [
 const FAQS = [
   { q: "Måste jag vara yrkesförare?", a: "Ja — STP är byggt för yrkesförare (B, C, CE, C1). YKB och ADR hanteras direkt." },
   { q: "Kan jag vara anonym tills jag tar kontakt?", a: "Ja. Du styr din synlighet och kan stänga av den när som helst." },
-  { q: "Tar STP betalt av förare?", a: "Nej. STP är alltid gratis för förare — skapa profil, söka jobb och bli kontaktad kostar aldrig något. Våra intäkter kommer från arbetsgivarsidan." },
+  { q: "Tar STP betalt av förare?", a: "Nej. STP är alltid gratis för förare — skapa profil, söka jobb och bli kontaktad kostar aldrig något." },
   { q: "Vad skiljer STP från en vanlig jobbsajt?", a: "Profilen utgår från körkort, segment, tillgänglighet och certifikat — inte ett generiskt CV. Det gör det lätt för åkerier att förstå dig snabbt och för dig att hitta rätt jobb." },
   { q: "Vad händer om jag inte svarar ett åkeri?", a: "Ingenting — du är aldrig tvingad att svara. Du kan avvisa konversationer eller stänga av synligheten om du inte söker just nu." },
 ];

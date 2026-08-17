@@ -92,7 +92,7 @@ const FAQ = [
   },
   {
     q: "Hur finansieras plattformen?",
-    a: "Via företagsabonnemang — åkerier betalar för att annonsera och söka bland förare. Förare och utbildningspartners betalar ingenting.",
+    a: "STP drivs utan avgifter — varken förare, utbildningspartners eller åkerier betalar något för att använda plattformen.",
   },
   {
     q: "Kan vi länka direkt till STP från vår webbplats?",
