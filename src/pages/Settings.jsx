@@ -424,7 +424,7 @@ function SekretessSection({ profile: initialProfile }) {
               </div>
               <p style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", lineHeight: 1.55, margin: 0 }}>
                 {openToWork
-                  ? "En grön ring visas runt din profilbild — åkerier ser att du aktivt söker."
+                  ? "En grön ring visas runt din profilbild — den syns för åkerier som söker i STP."
                   : "Visa att du är öppen för erbjudanden."}
               </p>
             </div>

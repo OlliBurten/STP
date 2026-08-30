@@ -11,7 +11,7 @@ export const DRIVER_ITEMS = [
   { key: "licenses",          label: "Körkort",                 icon: "cap",   desc: "Avgör vilka jobb du matchas mot",     fn: (p) => Array.isArray(p.licenses) && p.licenses.length > 0 },
   { key: "availability",      label: "Tillgänglighet",          icon: "cal",   desc: "När du kan börja",                    fn: (p) => String(p.availability || "").trim().length > 0 },
   { key: "summary",           label: "Profiltext (20+ tecken)", icon: "edit",  desc: "Några rader om dig ökar svaren",      fn: (p) => String(p.summary || "").trim().length >= 20 },
-  { key: "visibleToCompanies", label: "Synlig för åkerier",     icon: "eye",   desc: "Slå på för att bli hittad",           fn: (p) => p.visibleToCompanies === true },
+  { key: "visibleToCompanies", label: "Synlig för åkerier",     icon: "eye",   desc: "Visa profilen i åkeriers sökning",    fn: (p) => p.visibleToCompanies === true },
   { key: "experience",        label: "Erfarenhet",              icon: "truck", desc: "Tidigare körningar och uppdrag",      fn: (p) => Array.isArray(p.experience) && p.experience.length > 0 },
   { key: "certificates",      label: "Certifikat (YKB/ADR)",    icon: "award", desc: "Ger tillgång till fler jobb",         fn: (p) => Array.isArray(p.certificates) && p.certificates.length > 0 },
   { key: "regionsWilling",    label: "Körregioner",             icon: "pin",   desc: "Var du är villig att köra",           fn: (p) => Array.isArray(p.regionsWilling) && p.regionsWilling.length > 0 },

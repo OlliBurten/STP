@@ -59,7 +59,7 @@ const WHY = [
   {
     icon: "⟷",
     title: "Strukturerad matchning",
-    body: "Elever visar program, skola och år. Åkerier ser exakt vem de pratar med — inte ett löst CV-mejl.",
+    body: "Elever visar program, skola och år — allt samlat, i stället för ett löst CV-mejl.",
   },
   {
     icon: "◎",

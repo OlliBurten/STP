@@ -80,7 +80,7 @@ export const DRIVER_TOUR_STEPS = [
     element: "[data-tour='user-menu']",
     title: "3. Fyll i din profil — viktigast av allt",
     description:
-      "Här fyller du i körkort, certifikat, region och presentation. Ju mer komplett din profil är, desto fler åkerier hittar dig och desto bättre matchningar får du.",
+      "Här fyller du i körkort, certifikat, region och presentation. Ju mer komplett din profil är, desto bättre matchar vi jobben mot dig.",
   },
   {
     element: "[data-tour='messages-link']",
@@ -97,6 +97,6 @@ export const DRIVER_TOUR_STEPS = [
   {
     title: "Du är redo! 🎉",
     description:
-      "Nästa steg: komplettera din profil — det tar några minuter och gör att åkerier kan hitta dig direkt. Lycka till!",
+      "Nästa steg: komplettera din profil — det tar några minuter och gör jobbförslagen träffsäkrare. Lycka till!",
   },
 ];

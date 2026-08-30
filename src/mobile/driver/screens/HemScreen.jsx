@@ -25,7 +25,7 @@ export default function HemScreen({ ctx }) {
   const [sy, setSy] = useState(0);
   const p = ctx.profile;
   const seekLine = ctx.seeking
-    ? `Du syns för åkerier${p.region ? ` i ${p.region}` : ""}`
+    ? `Söker jobb${p.region ? ` i ${p.region}` : ""}`
     : "Jobbsökning pausad";
   const topMatches = ctx.matchedJobs.filter((j) => j.match >= 70).slice(0, 6);
   const activity = (ctx.activity || []).slice(0, 6).map((a) => ({ ...a, time: timeAgo(a.createdAt) }));
@@ -49,7 +49,7 @@ export default function HemScreen({ ctx }) {
                 <div style={{ width: 38, height: 38, borderRadius: 11, background: ctx.seeking ? "var(--success-tint)" : "var(--amber-tint)", display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="truck" size={19} color={ctx.seeking ? "var(--success)" : "var(--amber-deep)"} stroke={1.9} /></div>
                 <div>
                   <div style={{ fontSize: 14.5, fontWeight: 700, color: "var(--ink-900)" }}>Söker aktivt jobb</div>
-                  <div style={{ fontSize: 12, color: "var(--ink-500)" }}>{ctx.seeking ? "Åkerier ser dig och kan höra av sig" : "Jobbsökning pausad"}</div>
+                  <div style={{ fontSize: 12, color: "var(--ink-500)" }}>{ctx.seeking ? "Vi matchar nya jobb mot din profil" : "Jobbsökning pausad"}</div>
                 </div>
               </div>
               <Switch on={ctx.seeking} onToggle={() => ctx.setSeeking((v) => !v)} label="Söker aktivt jobb" />
@@ -57,7 +57,7 @@ export default function HemScreen({ ctx }) {
             {!ctx.seeking && (
               <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 0 14px" }}>
                 <Icon name="alert" size={16} color="var(--amber-deep)" stroke={2} />
-                <span style={{ fontSize: 13, fontWeight: 700, color: "var(--amber-text)", lineHeight: 1.35 }}>Du syns inte för åkerier just nu</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "var(--amber-text)", lineHeight: 1.35 }}>Jobbsökningen är pausad — du får inga nya jobbförslag</span>
               </div>
             )}
           </Card>

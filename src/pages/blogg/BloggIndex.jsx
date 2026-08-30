@@ -215,7 +215,7 @@ export default function BloggIndex() {
           <div style={{ flex: 1, minWidth: 200 }}>
             <h3 style={{ fontSize: "var(--text-xl)", fontWeight: 800, color: "var(--ink-900)", margin: "0 0 6px" }}>Redo att hitta nästa steg?</h3>
             <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", margin: 0, lineHeight: 1.6 }}>
-              Bläddra bland lediga tjänster eller lägg upp din profil och bli synlig för hundratals åkerier.
+              Bläddra bland lediga tjänster — eller bygg din förarprofil och ansök snabbare.
             </p>
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
