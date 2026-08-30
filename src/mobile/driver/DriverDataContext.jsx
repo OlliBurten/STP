@@ -269,10 +269,16 @@ export function DriverDataProvider({ children }) {
   // ── Inhopp / vikariepool shifts (real) ───────────────────────────
   const [shifts, setShifts] = useState([]);
   const [acceptedShifts, setAcceptedShifts] = useState(() => new Set());
+  // Hämta ALLTID, oberoende av reglaget. Hemskärmen döljer hela inhopp-kortet
+  // när det inte finns några pass, och reglaget sitter inuti kortet — gatade vi
+  // hämtningen på reglaget skulle en förare som aldrig slagit på det aldrig se
+  // kortet, aldrig kunna slå på det, och kortet aldrig komma tillbaka. Reglaget
+  // styr fortfarande om passen LISTAS (se HemScreen), bara inte om vi vet att de
+  // finns. Serverns läsväg filtrerar ändå på behörighet och region.
   const refreshShifts = useCallback(() => {
-    if (!hasApi || !available) { setShifts([]); return; }
+    if (!hasApi) { setShifts([]); return; }
     fetchAvailableShifts().then((list) => { if (Array.isArray(list)) setShifts(list); }).catch(() => setShifts([]));
-  }, [hasApi, available]);
+  }, [hasApi]);
   useEffect(() => { refreshShifts(); }, [refreshShifts]);
   const acceptShift = useCallback(async (id) => {
     setAcceptedShifts((s) => new Set(s).add(id)); // optimistic
