@@ -1,0 +1,83 @@
+name: STP Prod bakom main — LARM om denna failar
+
+# Säger till när produktionen ligger kvar på gammal frontend-kod.
+#
+# Bakgrund: Vercels auto-deploy stängdes av 2026-08-30 (ägarbeslut, för att ha
+# EN väg till prod via scripts/deploy.sh). Följden är att en merge till main
+# deployar ingenting — och ingenting säger ifrån. Den här kontrollen är det som
+# säger ifrån.
+#
+# Hur den vet vad som är live: bygget stämplar in sin commit i index.html som
+# <meta name="stp-commit">. Ingen API-nyckel behövs, och måttet fungerar oavsett
+# om deployen skedde via CLI eller på annat sätt.
+#
+# Varför inte jämföra bundle-hashar: VITE_*-variabler bakas in vid bygget, så
+# ett CI-bygge får aldrig samma hash som Vercels. Commit-stämpeln är det enda
+# måttet som är jämförbart över den gränsen.
+
+on:
+  schedule:
+    - cron: "0 7 * * *"     # 07:00 UTC dagligen — en påminnelse på morgonen
+  workflow_dispatch: {}
+
+jobs:
+  prod-behind:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0     # hela historiken behövs för att lista commits emellan
+
+      - name: Jämför live-commit med origin/main
+        run: |
+          SITE="https://transportplattformen.se"
+          # Webbläsar-UA: middleware.js SSR:ar "/" för botar, och det svaret
+          # innehåller inte vår meta-tagg.
+          UA="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120 Safari/537.36"
+
+          HTML="$(curl -s --max-time 25 -H 'Cache-Control: no-cache' -A "$UA" "$SITE/?ci=$GITHUB_RUN_ID")" || {
+            echo "::warning::Kunde inte hämta $SITE — hoppar över (uptime-workflowen larmar om sajten är nere)."
+            exit 0
+          }
+
+          LIVE="$(printf '%s' "$HTML" | grep -oE '<meta name="stp-commit" content="[0-9a-f]+"' | grep -oE '[0-9a-f]{7,40}' | head -1)"
+          MAIN="$(git rev-parse origin/main)"
+
+          if [ -z "$LIVE" ]; then
+            echo "::warning::Sajten saknar stp-commit-taggen. Den kom med bygget 2026-08-30 — ligger prod före det är det i sig ett tecken på att den är långt efter."
+            exit 0
+          fi
+
+          echo "Live:        $LIVE"
+          echo "origin/main: $MAIN"
+
+          if [ "$LIVE" = "$MAIN" ]; then
+            echo "✅ Prod är i fas med main."
+            exit 0
+          fi
+
+          # Känner vi ens igen commiten? (t.ex. efter en force-push)
+          if ! git cat-file -e "$LIVE^{commit}" 2>/dev/null; then
+            echo "::error::Live-commiten $LIVE finns inte i repot. Kör: bash scripts/deploy.sh frontend"
+            exit 1
+          fi
+
+          # Bara ändringar som faktiskt hamnar i frontend-bygget ska larma.
+          # Utan det här filtret skriker jobbet på varje README-ändring, och ett
+          # larm man lär sig ignorera är värre än inget larm.
+          CHANGED="$(git diff --name-only "$LIVE" "$MAIN" -- src index.html vite.config.js middleware.js public package.json package-lock.json)"
+
+          if [ -z "$CHANGED" ]; then
+            echo "ℹ️  main har gått vidare $(git rev-list --count "$LIVE".."$MAIN") commit(s), men inget som påverkar frontend-bygget. Ingen deploy behövs."
+            exit 0
+          fi
+
+          echo
+          echo "Odeployade ändringar i frontend:"
+          echo "$CHANGED" | sed 's/^/  /'
+          echo
+          echo "Commits som saknas i prod:"
+          git log --oneline "$LIVE".."$MAIN" | sed 's/^/  /'
+          echo
+          echo "::error::Prod ligger $(git rev-list --count "$LIVE".."$MAIN") commit(s) efter main med ändringar som påverkar frontend. Kör: bash scripts/deploy.sh frontend"
+          exit 1
