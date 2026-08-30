@@ -207,6 +207,35 @@ export default function MobileGuestJobs() {
 
   const onScroll = (e) => { const el = e.target; setScrolled(el.scrollTop > 10); if (el.scrollHeight - el.scrollTop - el.clientHeight < 240 && remaining > 0) setLimit((l) => l + PAGE); };
 
+  // Fångsten (skapa konto + jobbevakning) låg bakom `remaining <= 0` och syntes
+  // alltså först när hela listan tagit slut. Med oändlig scroll (onScroll ovan
+  // laddar nästa sida så fort man närmar sig botten) flyttar sig botten undan i
+  // takt med att man scrollar — på en ofiltrerad lista med 449 jobb gick kortet i
+  // praktiken inte att nå. Därav en (1) skapad jobbevakning sedan start.
+  // Nu ligger det inne i listan, efter de första träffarna, där det passeras.
+  const PROMO_AFTER = 6;
+  const promoCard = (
+              <div style={{ marginTop: 14, background: "var(--night)", borderRadius: 20, padding: "24px 22px", color: "#fff" }}>
+                <h3 style={{ fontSize: 20, fontWeight: 800, letterSpacing: -0.5, lineHeight: 1.2, marginBottom: 8 }}>Få nya jobb först</h3>
+                <p style={{ fontSize: 14.5, lineHeight: 1.55, color: "rgba(255,255,255,0.7)", marginBottom: 18 }}>Skapa en gratis profil — då hittar du jobben som matchar dina behörigheter, och får en notis när nya dyker upp.</p>
+                <button onClick={() => navigate("/registrera?role=forare")} className="press" style={{ width: "100%", height: 52, borderRadius: 13, background: "var(--amber-bright)", color: "#1a1200", fontWeight: 800, fontSize: 15.5, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>Skapa förarprofil <Icon name="arrow" size={18} color="#1a1200" stroke={2.4} /></button>
+                <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid rgba(255,255,255,0.12)" }}>
+                  {alertStatus === "done" ? (
+                    <p style={{ fontSize: 13.5, lineHeight: 1.5, color: "rgba(255,255,255,0.85)", fontWeight: 600 }}>Kolla din inkorg — klicka på länken i mejlet så är bevakningen igång.</p>
+                  ) : (
+                    <>
+                      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", marginBottom: 10 }}>…eller få nya jobb via mejl, utan konto:</p>
+                      <form onSubmit={submitAlert} style={{ display: "flex", gap: 8 }}>
+                        <input type="email" required value={alertEmail} onChange={(e) => setAlertEmail(e.target.value)} placeholder="din@mejl.se" aria-label="E-postadress för jobbevakning" style={{ flex: 1, minWidth: 0, height: 46, padding: "0 13px", borderRadius: 12, border: "1px solid rgba(255,255,255,0.2)", background: "rgba(255,255,255,0.08)", color: "#fff", fontSize: 14.5, fontFamily: "inherit" }} />
+                        <button type="submit" disabled={alertStatus === "sending"} className="press" style={{ height: 46, padding: "0 16px", borderRadius: 12, background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", fontWeight: 700, fontSize: 14 }}>{alertStatus === "sending" ? "…" : "Bevaka"}</button>
+                      </form>
+                      {alertStatus === "error" && <p style={{ fontSize: 12, color: "var(--amber-bright)", marginTop: 8 }}>Något gick fel — försök igen.</p>}
+                    </>
+                  )}
+                </div>
+              </div>
+  );
+
   return (
     <MobileShell>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", flexShrink: 0, borderBottom: scrolled ? "1px solid var(--line)" : "1px solid transparent", background: "rgba(245,242,236,0.92)", backdropFilter: "blur(12px)" }}>
@@ -253,30 +282,17 @@ export default function MobileGuestJobs() {
               )}
             </div>
           )}
-          {shown.map((job, i) => <JobCard key={job.id} job={job} idx={i} saved={saved.has(job.id)} onOpen={() => openDetail(job)} onSave={() => toggleSave(job.id)} />)}
+          {shown.map((job, i) => (
+            <React.Fragment key={job.id}>
+              <JobCard job={job} idx={i} saved={saved.has(job.id)} onOpen={() => openDetail(job)} onSave={() => toggleSave(job.id)} />
+              {i === PROMO_AFTER - 1 && promoCard}
+            </React.Fragment>
+          ))}
+          {/* Kortare lista än PROMO_AFTER (eller noll träffar) — då hamnar kortet sist.
+              Noll träffar är dessutom det bästa läget att erbjuda en bevakning. */}
+          {!loading && !loadError && shown.length < PROMO_AFTER && promoCard}
           {remaining > 0 && (
             <button onClick={() => setLimit((l) => l + PAGE)} className="press" style={{ height: 50, borderRadius: 13, background: "var(--card)", border: "1px solid var(--line-2)", color: "var(--ink-700)", fontWeight: 700, fontSize: 14.5, marginTop: 2 }}>Visa fler · {remaining} kvar</button>
-          )}
-          {shown.length > 0 && remaining <= 0 && (
-            <div style={{ marginTop: 14, background: "var(--night)", borderRadius: 20, padding: "24px 22px", color: "#fff" }}>
-              <h3 style={{ fontSize: 20, fontWeight: 800, letterSpacing: -0.5, lineHeight: 1.2, marginBottom: 8 }}>Få nya jobb först</h3>
-              <p style={{ fontSize: 14.5, lineHeight: 1.55, color: "rgba(255,255,255,0.7)", marginBottom: 18 }}>Skapa en gratis profil så matchar vi dig med rätt åkerier och meddelar dig när nya tjänster dyker upp.</p>
-              <button onClick={() => navigate("/registrera?role=forare")} className="press" style={{ width: "100%", height: 52, borderRadius: 13, background: "var(--amber-bright)", color: "#1a1200", fontWeight: 800, fontSize: 15.5, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>Skapa förarprofil <Icon name="arrow" size={18} color="#1a1200" stroke={2.4} /></button>
-              <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid rgba(255,255,255,0.12)" }}>
-                {alertStatus === "done" ? (
-                  <p style={{ fontSize: 13.5, lineHeight: 1.5, color: "rgba(255,255,255,0.85)", fontWeight: 600 }}>Kolla din inkorg — klicka på länken i mejlet så är bevakningen igång.</p>
-                ) : (
-                  <>
-                    <p style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", marginBottom: 10 }}>…eller få nya jobb via mejl, utan konto:</p>
-                    <form onSubmit={submitAlert} style={{ display: "flex", gap: 8 }}>
-                      <input type="email" required value={alertEmail} onChange={(e) => setAlertEmail(e.target.value)} placeholder="din@mejl.se" aria-label="E-postadress för jobbevakning" style={{ flex: 1, minWidth: 0, height: 46, padding: "0 13px", borderRadius: 12, border: "1px solid rgba(255,255,255,0.2)", background: "rgba(255,255,255,0.08)", color: "#fff", fontSize: 14.5, fontFamily: "inherit" }} />
-                      <button type="submit" disabled={alertStatus === "sending"} className="press" style={{ height: 46, padding: "0 16px", borderRadius: 12, background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", fontWeight: 700, fontSize: 14 }}>{alertStatus === "sending" ? "…" : "Bevaka"}</button>
-                    </form>
-                    {alertStatus === "error" && <p style={{ fontSize: 12, color: "var(--amber-bright)", marginTop: 8 }}>Något gick fel — försök igen.</p>}
-                  </>
-                )}
-              </div>
-            </div>
           )}
         </div>
       </div>
