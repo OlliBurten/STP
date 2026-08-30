@@ -9,8 +9,8 @@ const STEPS = [
   },
   {
     n: "2",
-    title: "Bli synlig för åkerier",
-    body: "Åkerier söker aktivt efter förare med rätt utbildning — även de som precis klarat sin AMU. Slå på synlighet och låt dem komma till dig.",
+    title: "Samla dina behörigheter",
+    body: "Körkort, YKB och ADR på ett ställe — klart att skicka med varje ansökan, även utanför STP.",
   },
   {
     n: "3",

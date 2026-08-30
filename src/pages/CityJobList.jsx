@@ -205,7 +205,7 @@ export default function CityJobList() {
                 Sök utan bemanningsbolag
               </p>
               <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", lineHeight: 1.6, marginBottom: 16 }}>
-                Skapa en förarprofil på STP — verifierade åkerier i {city.name} hittar dig direkt. Alltid gratis för förare.
+                Skapa en förarprofil på STP — behörigheter och certifikat samlade på ett ställe. Alltid gratis för förare.
               </p>
               <Link to="/login" style={{
                 display: "block", textAlign: "center", padding: "11px 18px", borderRadius: 10,

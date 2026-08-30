@@ -35,11 +35,15 @@ export default function DriverOnboarding() {
   const removeCity = (c) => setRegions((s) => s.filter((x) => x !== c));
 
   const STEPS = 3;
+  // Telefonnumret är FRIVILLIGT. Det låg tidigare som spärr på steg 1, före
+  // föraren fått något alls tillbaka — och 91 % av ansökningarna går ändå vidare
+  // till arbetsgivarens egen kanal, där numret aldrig används. Fråga i stället
+  // när det behövs: vid en ansökan som faktiskt skickas via STP.
   const canNext = step === 0
-    ? name.trim().length > 1 && phone.replace(/\D/g, "").length >= 7
+    ? name.trim().length > 1
     : step === 1 ? lic.length > 0 : (regions.length > 0 && intent.length > 0);
   const nextHint = step === 0
-    ? "Fyll i namn och telefonnummer"
+    ? "Fyll i ditt namn"
     : step === 1 ? "Välj minst ett körkort" : "Välj minst en ort och vad du söker";
 
   const finish = async () => {
@@ -108,14 +112,14 @@ export default function DriverOnboarding() {
             <>
               <div style={{ width: 54, height: 54, borderRadius: 15, background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20, boxShadow: "inset 0 -3px 0 rgba(0,0,0,0.2)" }}><Icon name="truck" size={28} color="#fff" stroke={2} /></div>
               <h1 style={{ fontSize: 27, fontWeight: 800, letterSpacing: -0.7, color: "var(--ink-900)", lineHeight: 1.15, marginBottom: 8 }}>Välkommen till STP</h1>
-              <p style={{ fontSize: 15.5, color: "var(--ink-500)", lineHeight: 1.5, marginBottom: 26 }}>Sveriges plattform för yrkesförare. Vi behöver bara tre saker för att börja visa jobb som passar dig.</p>
+              <p style={{ fontSize: 15.5, color: "var(--ink-500)", lineHeight: 1.5, marginBottom: 26 }}>Sveriges plattform för yrkesförare. Vi behöver bara några få saker för att börja visa jobb som passar dig.</p>
               <Label style={{ marginBottom: 9 }}>Fullständigt namn</Label>
               <input value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" placeholder="För- och efternamn" style={{ width: "100%", height: 54, padding: "0 16px", borderRadius: 13, border: "1px solid var(--line-2)", background: "#fff", fontSize: 17, color: "var(--ink-900)", outline: "none", marginBottom: 18 }} />
-              <Label style={{ marginBottom: 9 }}>Ditt mobilnummer</Label>
+              <Label style={{ marginBottom: 9 }}>Ditt mobilnummer (frivilligt)</Label>
               <input value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" inputMode="tel" autoComplete="tel" placeholder="070-123 45 67" style={{ width: "100%", height: 54, padding: "0 16px", borderRadius: 13, border: "1px solid var(--line-2)", background: "#fff", fontSize: 17, color: "var(--ink-900)", outline: "none", marginBottom: 14 }} />
               <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "12px 14px", background: "var(--info-tint)", borderRadius: 12 }}>
                 <Icon name="info" size={17} color="var(--info)" stroke={2} style={{ flexShrink: 0 }} />
-                <span style={{ fontSize: 12.5, color: "var(--ink-700)", lineHeight: 1.4 }}>Ditt nummer visas aldrig publikt – det används bara så åkerier kan kontakta dig om ett jobb.</span>
+                <span style={{ fontSize: 12.5, color: "var(--ink-700)", lineHeight: 1.4 }}>Numret visas aldrig publikt. Du kan hoppa över det och fylla i det senare.</span>
               </div>
             </>
           )}

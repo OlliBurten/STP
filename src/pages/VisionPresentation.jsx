@@ -173,7 +173,7 @@ export default function VisionPresentation() {
             {[
               { title: "För förare", items: [
                 "Skapa en strukturerad profil med körkort, certifikat, region och tillgänglighet.",
-                "Bli hittad av verifierade åkerier utan att chansa i ostrukturerade grupper.",
+                "Hitta rätt jobb utan att chansa i ostrukturerade grupper.",
                 "Få direktkontakt via plattformens meddelandefunktion.",
                 "Gratis för förare — alltid.",
               ]},

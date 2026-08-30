@@ -420,7 +420,7 @@ export default function LoneKalkylator() {
           <Card>
             <p style={{ fontSize: "var(--text-base)", fontWeight: 700, color: T.text, marginBottom: 8 }}>Förhandla bättre lön</p>
             <p style={{ fontSize: "var(--text-sm)", color: T.sub, lineHeight: 1.6, marginBottom: 16 }}>
-              Med en komplett profil på STP kan åkerier hitta dig direkt — och du kan jämföra erbjudanden från flera håll.
+              Med en komplett profil på STP har du behörigheter och erfarenhet samlade — redo att följa med varje ansökan.
             </p>
             <Link to="/login" style={{
               display: "inline-block", padding: "10px 20px", borderRadius: 10,
