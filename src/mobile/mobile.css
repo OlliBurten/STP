@@ -67,7 +67,14 @@
 .stp-mobile .press:active { transform:scale(0.97); }
 
 /* Tangentbords-/switch-fokus: synlig ring på alla interaktiva element. Pekfokus
-   (mus/touch) visar inget tack vare :focus-visible. */
+   (mus/touch) visar inget tack vare :focus-visible.
+
+   !important behövs: en mängd fält sätter `outline: "none"` som inline-stil
+   (sökfältet i jobblistan, onboarding, profilsheetsen), och inline vinner alltid
+   över stilmallen. Regeln nedan fanns alltså redan men var verkningslös på just
+   de elementen — resultatet var fält helt utan fokusmarkering, tvärtemot
+   DESIGN.md §2 som förbjuder `outline: none` utan ersättande ring. Det här är
+   undantagsfallet där !important är rätt verktyg. */
 .stp-mobile button:focus-visible,
 .stp-mobile a:focus-visible,
 .stp-mobile input:focus-visible,
@@ -75,7 +82,7 @@
 .stp-mobile select:focus-visible,
 .stp-mobile [role="switch"]:focus-visible,
 .stp-mobile [tabindex]:focus-visible {
-  outline: 2px solid var(--green);
+  outline: 2px solid var(--green) !important;
   outline-offset: 2px;
   border-radius: 4px;
 }
