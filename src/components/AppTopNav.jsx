@@ -291,7 +291,8 @@ function UserMenu({ user, isCompany, isDemoBoth, onDemoSwitch, onClose, onLogout
 /* ─── Main component ──────────────────────────────────────────────────────── */
 export default function AppTopNav() {
   const { user, isCompany, isImpersonating, logout, stopViewAs, refreshUser } = useAuth();
-  const { unreadCount = 0, companyUnreadConversationCount = 0 } = useChat();
+  const { unreadCount = 0, companyUnreadConversationCount = 0, conversations = [] } = useChat();
+  const hasConversations = (conversations?.length || 0) > 0;
   const navigate = useNavigate();
   const location = useLocation();
   // På mobil sköts navigeringen av bottennaven (BottomNav / CompanyBottomNav).
@@ -369,10 +370,13 @@ export default function AppTopNav() {
   };
 
   // Nav items
+  // "Meddelanden" visas bara för förare som har en tråd — se DriverMobileApp
+  // för bakgrunden (0 konversationer sedan start). Sidan finns kvar och nås via
+  // notislänk; posten kommer tillbaka av sig själv när ett åkeri hör av sig.
   const driverNav = [
     { label: "Jobb",          path: "/jobb" },
     { label: "Åkerier",       path: "/akerier" },
-    { label: "Meddelanden",   path: "/meddelanden",       badge: unreadCount || 0 },
+    ...(hasConversations ? [{ label: "Meddelanden", path: "/meddelanden", badge: unreadCount || 0 }] : []),
     { label: "Sparat",        path: "/favoriter" },
   ];
   const companyNav = [

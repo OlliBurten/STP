@@ -64,13 +64,22 @@ function DriverShell() {
   };
 
   const unread = data.chat?.unreadCount || null;
+  // Inkorgen har aldrig innehållit något: 0 konversationer och 0 meddelanden
+  // sedan start. Den upptog ändå en av fem flikar i förarens huvudnavigation
+  // och lovade i tomvyn att ett åkeri skulle svara — vilket aldrig hänt.
+  // Fliken visas nu bara för den som faktiskt har en tråd. Funktionen är kvar:
+  // `tabForPath` känner fortfarande igen /meddelanden, så en notislänk öppnar
+  // inkorgen även när fliken är dold, och fliken dyker upp av sig själv första
+  // gången ett åkeri hör av sig.
+  const hasThreads = (data.threads?.length || 0) > 0;
+  const tabs = hasThreads ? DRIVER_TABS : DRIVER_TABS.filter((t) => t.id !== "meddelanden");
 
   return (
     <MobileShell>
       <div key={active} className="tab-enter" style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
         {screens[active]}
       </div>
-      <TabBar tabs={DRIVER_TABS} active={active} onTab={setTab} badges={{ meddelanden: unread }} />
+      <TabBar tabs={tabs} active={active} onTab={setTab} badges={{ meddelanden: unread }} />
       <SheetRouter ctx={ctx} />
       {chat && <ChatScreen ctx={ctx} />}
     </MobileShell>
