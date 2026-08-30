@@ -4,6 +4,8 @@ import { useAuth } from "../context/AuthContext";
 import { usePageTitle } from "../hooks/usePageTitle";
 import PageMeta from "../components/PageMeta";
 import { useIsMobile } from "../hooks/useIsMobile";
+import { fetchJobs } from "../api/jobs";
+import { salaryLabel } from "../utils/jobUtils";
 
 // ─── Hooks ────────────────────────────────────────────────────────────────────
 
@@ -75,6 +77,18 @@ export default function Home() {
 
   const [faqOpen, setFaqOpen] = useState(0);
   const [howTab, setHowTab] = useState("driver");
+
+  // Riktiga annonser direkt under hero — samma skäl som på mobilen: sidan
+  // innehöll noll jobb trots att det är dem besökaren kom för. Ingen mockdata
+  // som reserv; misslyckas hämtningen döljs sektionen.
+  const [jobs, setJobs] = useState(null); // null = laddar
+  useEffect(() => {
+    let alive = true;
+    fetchJobs()
+      .then((d) => { if (alive) setJobs(Array.isArray(d) ? d : []); })
+      .catch(() => { if (alive) setJobs([]); });
+    return () => { alive = false; };
+  }, []);
 
   useEffect(() => {
     const jsonLd = {
@@ -215,6 +229,35 @@ export default function Home() {
 
         </div>
       </section>
+
+      {/* ── LEDIGA JOBB ──────────────────────────────────────────────────── */}
+      {(jobs === null || jobs.length > 0) && (
+        <section style={{ background: "var(--paper-2)", padding: pad, borderBottom: "1px solid var(--line)" }}>
+          <div style={{ maxWidth: "var(--w-public)", margin: "0 auto" }}>
+            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 16, marginBottom: 28, flexWrap: "wrap" }}>
+              <h2 style={{ fontSize: "clamp(28px,3vw,40px)", fontWeight: 900, letterSpacing: -1.2, lineHeight: 1.1, margin: 0 }}>Lediga jobb just nu</h2>
+              <Link to="/jobb" style={{ fontSize: "var(--text-md)", fontWeight: 700, color: "var(--green)", whiteSpace: "nowrap" }}>Se alla {jobs?.length || ""} jobb →</Link>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: 16 }}>
+              {(jobs === null ? Array.from({ length: 6 }) : jobs.slice(0, 6)).map((job, i) => (
+                job === undefined ? (
+                  /* .stpm-skel är scopad till .stp-mobile och biter inte här */
+                  <div key={`s-${i}`} style={{ height: 150, borderRadius: 16, background: "var(--card-2)", border: "1px solid var(--line)" }} />
+                ) : (
+                  <Link key={job.id} to={`/jobb/${job.id}`} style={{ display: "block", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, padding: "20px 22px", textDecoration: "none", boxShadow: "var(--sh-sm)" }}>
+                    <div style={{ fontSize: "var(--text-lg)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.3, lineHeight: 1.3, marginBottom: 6 }}>{job.title}</div>
+                    <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", marginBottom: 14, lineHeight: 1.4 }}>{job.company} · {job.location}</div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
+                      {(job.license || []).map((l) => <span key={l} style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--green-text)", background: "var(--green-tint)", padding: "4px 10px", borderRadius: 7 }}>{l}</span>)}
+                      <span style={{ marginLeft: "auto", fontSize: "var(--text-xs)", color: "var(--ink-500)", fontWeight: 600 }}>{salaryLabel(job)}</span>
+                    </div>
+                  </Link>
+                )
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── PROBLEM ──────────────────────────────────────────────────────── */}
       <section
