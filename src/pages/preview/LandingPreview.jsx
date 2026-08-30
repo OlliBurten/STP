@@ -139,7 +139,7 @@ const Problem = () => (
 const HowItWorks = () => {
   const [tab, setTab] = useState("driver");
   const steps = {
-    driver: [{ n: 1, title: "Skapa konto", body: "Registrera dig som förare på 2 minuter. Välj körkort, region och vad du söker." }, { n: 2, title: "Bygg din profil", body: "Fyll i körkort, certifikat, erfarenhet och tillgänglighet. Välj om du är synlig för åkerier." }, { n: 3, title: "Bli matchad", body: "Åkerier hittar dig automatiskt. Du kan också söka jobb direkt." }],
+    driver: [{ n: 1, title: "Skapa konto", body: "Registrera dig som förare på 2 minuter. Välj körkort, region och vad du söker." }, { n: 2, title: "Bygg din profil", body: "Fyll i körkort, certifikat, erfarenhet och tillgänglighet. Välj om du är synlig för åkerier." }, { n: 3, title: "Sök jobben du vill ha", body: "Ansök direkt — hos arbetsgivaren eller via STP. Är profilen synlig kan åkerier också hitta dig." }],
     company: [{ n: 1, title: "Registrera åkeri", body: "Verifiera ditt företag mot Bolagsverket. Snabbt, säkert och gratis under beta." }, { n: 2, title: "Publicera eller sök", body: "Lägg upp en jobbannons eller bläddra bland förare med rätt behörigheter." }, { n: 3, title: "Kontakta direkt", body: "Ta kontakt utan mellanhänder. Ingen provision. Ingen avgift per kontakt." }],
   };
   return (

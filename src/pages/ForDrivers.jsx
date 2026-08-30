@@ -27,7 +27,7 @@ const SEGMENTS = [
 const STEPS = [
   { n: "01", title: "Skapa förarkonto", body: "Två minuter. Välj körkort, region och vad du söker — sen är du igång." },
   { n: "02", title: "Fyll i minimumprofilen", body: "Samma grund för alla förare. Det gör dig jämförbar och seriös direkt." },
-  { n: "03", title: "Bli hittad & sök", body: "Komplettera i din takt. Åkerier hittar dig automatiskt och du söker jobb direkt." },
+  { n: "03", title: "Sök jobben du vill ha", body: "Komplettera i din takt. Ansök direkt — och med synlig profil kan åkerier hitta dig när de rekryterar." },
 ];
 
 const FAQS = [
