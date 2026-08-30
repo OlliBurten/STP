@@ -35,6 +35,11 @@ function outcomeUrl(token, svar) {
   return `${SITE}/uppfoljning?token=${token}&svar=${svar}`;
 }
 
+// Förarnivå-svaret. Samma token — den identifierar redan just den här föraren.
+function driverUrl(token, svar) {
+  return `${SITE}/uppfoljning?token=${token}&scope=forare&svar=${svar}`;
+}
+
 /**
  * Prisma-where för vilka ansökningar som ska få en uppföljningsfråga nu.
  * Exporterad för att kunna testas utan databas — schemaläggningen är hela
@@ -151,6 +156,16 @@ export async function runApplicationFollowup() {
           "",
           opening,
           "",
+          // Förarnivå-frågan först. För den som sökt många jobb är det enda
+          // realistiska svaret ett enda klick — raderna nedanför är för den som
+          // vill vara exakt, inte priset för att svara alls.
+          ...(many
+            ? [
+                `[Jag söker fortfarande](${driverUrl(tokens[0], "soker")}) · [Jag har fått jobb](${driverUrl(tokens[0], "jobb")})`,
+                "",
+                "Vill du svara per ansökan i stället:",
+              ]
+            : []),
           ...batch.map((a, i) => applicationBlock(a, tokens[i], now)),
           "",
           "Ett klick räcker. Svaret hjälper oss hålla jobben på STP färska och relevanta — och blev det inget den här gången finns fler jobb som väntar.",
@@ -266,4 +281,97 @@ export async function recordApplicationOutcome(token, svar) {
     console.log(`[Followup] 🎉 FÖRARE FICK JOBB: "${updated.job.title}" hos ${updated.job.company}`);
   }
   return updated;
+}
+
+// ─── Fråga på förarnivå ───────────────────────────────────────────────────────
+//
+// Mejlet frågade tidigare en rad per ansökan. Mätt 2026-08-30 kollapsar
+// svarsfrekvensen med volym: förare med EN ansökan svarade i hälften av fallen,
+// medan de med 6, 7 och 14 ansökningar svarade för noll. Att få fjorton frågor
+// är inte fjorton gånger så bra som att få en — det är noll.
+//
+// Därför en enda fråga överst: söker du fortfarande? Den går att svara på med ett
+// klick oavsett hur många ansökningar som ligger öppna.
+//
+// Ingen ny vokabulär: "söker fortfarande" är exakt vad IN_PROCESS redan betyder,
+// och schemaläggningen behandlar det redan som "fråga igen om 14 dagar". Vi
+// hittar alltså inte på utfall — vi sätter det utfall föraren faktiskt uppgav,
+// på de ansökningar det gäller.
+
+/** Ansökningar vi ännu inte vet utfallet på för en förare. */
+export function openApplicationsWhere(driverId) {
+  return { driverId, OR: OPEN_OUTCOMES };
+}
+
+/**
+ * Slår upp föraren via en av hens ansökningstokens. Token är redan en hemlighet
+ * vi mejlat till just den adressen, så den duger som identitet — och det slipper
+ * en separat tokentabell som kan hamna ur synk.
+ */
+export async function driverFromOutcomeToken(token) {
+  if (!token || typeof token !== "string" || token.length > 100) return null;
+  const app = await prisma.application.findUnique({
+    where: { outcomeToken: token },
+    select: { driverId: true },
+  });
+  return app?.driverId ?? null;
+}
+
+/**
+ * "Jag söker fortfarande" — ett klick stänger hela omgången utan att påstå något
+ * om enskilda ansökningar. IN_PROCESS + färsk outcomeRequestedAt gör att nästa
+ * fråga kommer om 14 dagar i stället för direkt.
+ */
+export async function markDriverStillSearching(driverId) {
+  const now = new Date();
+  const { count } = await prisma.application.updateMany({
+    where: openApplicationsWhere(driverId),
+    data: { outcome: "IN_PROCESS", outcomeAt: now, outcomeRequestedAt: now },
+  });
+  return count;
+}
+
+/**
+ * "Jag har fått jobb" — föraren pekar ut vilken ansökan det gällde.
+ *
+ * Den utpekade blir GOT_JOB, resten NO_JOB: tog föraren ett annat jobb ledde de
+ * inte till anställningen, vilket är precis vad NO_JOB betyder för en enskild
+ * ansökan. Utan applicationId (jobbet kom från annat håll) blir alla NO_JOB och
+ * skälet noteras på profilen — samma fält som synlighetstoggeln skriver till, så
+ * "anställning via STP" har fortfarande en enda definition.
+ */
+export async function resolveDriverGotJob(driverId, applicationId) {
+  const now = new Date();
+  let hired = null;
+
+  if (applicationId) {
+    const { count } = await prisma.application.updateMany({
+      where: { id: applicationId, driverId },
+      data: { outcome: "GOT_JOB", outcomeAt: now },
+    });
+    if (count === 0) return null; // fel ägare eller okänd ansökan
+    hired = await prisma.application.findUnique({
+      where: { id: applicationId },
+      include: { job: { select: { title: true, company: true } } },
+    });
+    console.log(`[Followup] 🎉 FÖRARE FICK JOBB (förarfrågan): "${hired.job.title}" hos ${hired.job.company}`);
+  }
+
+  const { count: closed } = await prisma.application.updateMany({
+    where: {
+      ...openApplicationsWhere(driverId),
+      ...(applicationId ? { id: { not: applicationId } } : {}),
+    },
+    data: { outcome: "NO_JOB", outcomeAt: now },
+  });
+
+  await prisma.driverProfile.updateMany({
+    where: { userId: driverId },
+    data: {
+      hiddenReason: applicationId ? "GOT_JOB_STP" : "GOT_JOB_ELSEWHERE",
+      hiddenAt: now,
+    },
+  });
+
+  return { hired, closed };
 }

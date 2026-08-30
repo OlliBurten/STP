@@ -255,6 +255,61 @@ applicationsRouter.post("/:id/story", authMiddleware, requireDriver, async (req,
   }
 });
 
+// ─── Förarnivå-frågan — publik, token-baserad ────────────────────────────────
+//
+// Ett svar som stänger hela omgången. Mejlet frågade tidigare en rad per ansökan,
+// och svarsfrekvensen kollapsade med volym: förare med EN ansökan svarade i
+// hälften av fallen, de med 6, 7 och 14 svarade för noll.
+//
+// GET-liknande sidoeffekter undviks: sidan gör POST, precis som per-ansökan-
+// svaret, så att mejlklienters länkförhandsgranskning inte råkar svara åt föraren.
+applicationsRouter.post("/outcome/driver", async (req, res, next) => {
+  try {
+    const { token, svar, applicationId } = req.body || {};
+    const { driverFromOutcomeToken, markDriverStillSearching, resolveDriverGotJob, openApplicationsWhere } =
+      await import("../lib/applicationFollowup.js");
+
+    const driverId = await driverFromOutcomeToken(token);
+    if (!driverId) return res.status(404).json({ error: "Ogiltig eller förbrukad länk" });
+
+    if (svar === "soker") {
+      const count = await markDriverStillSearching(driverId);
+      return res.json({ ok: true, svar, updated: count });
+    }
+
+    if (svar === "jobb") {
+      // Utan applicationId listar vi bara vad som är öppet, så föraren kan peka
+      // ut vilket jobb det blev. Inget skrivs förrän hen svarat på det.
+      if (!applicationId) {
+        const open = await prisma.application.findMany({
+          where: openApplicationsWhere(driverId),
+          include: { job: { select: { title: true, company: true } } },
+          orderBy: { createdAt: "desc" },
+        });
+        return res.json({
+          ok: true,
+          svar,
+          needsPick: true,
+          applications: open.map((a) => ({ id: a.id, title: a.job.title, company: a.job.company })),
+        });
+      }
+      const result = await resolveDriverGotJob(driverId, applicationId === "annat" ? null : applicationId);
+      if (!result) return res.status(404).json({ error: "Okänd ansökan" });
+      return res.json({
+        ok: true,
+        svar,
+        closed: result.closed,
+        jobTitle: result.hired?.job?.title ?? null,
+        company: result.hired?.job?.company ?? null,
+      });
+    }
+
+    return res.status(400).json({ error: "Ogiltigt svar" });
+  } catch (e) {
+    next(e);
+  }
+});
+
 // ─── "Fick du jobbet?"-utfall — publik, token-baserad (länk i uppföljningsmejl) ─
 applicationsRouter.post("/outcome", async (req, res, next) => {
   try {
