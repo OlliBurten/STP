@@ -10,6 +10,7 @@ import { withUtm } from "../../utils/utm.js";
 import { mockJobs } from "../../data/mockJobs";
 import { useApi } from "../../api/client";
 import { toJobView } from "../driver/jobAdapter";
+import { useSheetDismiss } from "../../hooks/useSheetDismiss";
 import MobileShell from "../MobileShell";
 import { Icon, Pill, Card, SkeletonRow } from "../ui";
 
@@ -187,6 +188,13 @@ export default function MobileGuestJobs() {
   const activeCount = filter.region.length + filter.lic.length + filter.type.length + (filter.hideBemanning ? 1 : 0);
   const shown = list.slice(0, limit);
   const remaining = list.length - shown.length;
+
+  // Filtret och gaten gick bara att stänga med overlay-klick eller knapp. Bakåt
+  // lämnade sajten och Escape gjorde ingenting — samma fälla som jobbvyn hade
+  // före ?open=. Jobbvyn styrs av URL:en; de här två är rena overlays och får
+  // därför en historikpost var i stället.
+  useSheetDismiss(filterOpen, () => { setFilterOpen(false); setLimit(PAGE); });
+  useSheetDismiss(!!gate, () => setGate(null));
 
   // Rubriken sa tidigare "Alla verifierade åkerier på ett ställe". Listan under den
   // består av importerade Platsbanken-annonser från åkerier utan STP-konto — noll
