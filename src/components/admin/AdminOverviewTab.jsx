@@ -174,11 +174,17 @@ function TrafficPanel() {
   if (err || (data && !data.configured)) return null;
 
   const fmtDomain = (d) => d === "$direct" ? "Direkt" : d.replace(/^(www|m|lm|l)\./, "");
+  // Paneler som backend inte kunde hämta (t.ex. PostHog-timeout). De visas som
+  // "—", aldrig som 0 — en utebliven siffra är inte samma sak som noll trafik.
+  const missing = new Set((data && data.unavailable) || []);
+  const noData = <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", fontStyle: "italic", padding: "3px 0" }}>Kunde inte hämtas</div>;
   return (
     <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, overflow: "hidden" }}>
       <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <span style={{ fontSize: "var(--text-sm)", fontWeight: 800, letterSpacing: -0.2, color: "var(--ink-900)" }}>Trafik — 7 dagar</span>
-        <span style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", fontWeight: 600 }}>PostHog · exkl. ägarkonton</span>
+        <span style={{ fontSize: "var(--text-2xs)", color: missing.size ? "var(--amber-deep)" : "var(--ink-400)", fontWeight: 600 }}>
+          {missing.size ? `PostHog · ${missing.size} panel${missing.size > 1 ? "er" : ""} saknas` : "PostHog · exkl. ägarkonton"}
+        </span>
       </div>
       {!data ? (
         <div style={{ padding: "20px 18px", textAlign: "center", fontSize: "var(--text-xs)", color: "var(--ink-400)" }}>Laddar…</div>
@@ -186,13 +192,13 @@ function TrafficPanel() {
         <>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", borderBottom: "1px solid var(--line)" }}>
             {[
-              { l: "Besökare", v: data.visitors, c: "var(--green-text)" },
-              { l: "Sidvisningar", v: data.pageviews, c: "var(--ink-900)" },
-              { l: "Gäster", v: data.guests, c: "var(--info)" },
-              { l: "Inloggade", v: data.loggedIn, c: "var(--success)" },
+              { l: "Besökare", v: data.visitors, c: "var(--green-text)", miss: missing.has("overview") },
+              { l: "Sidvisningar", v: data.pageviews, c: "var(--ink-900)", miss: missing.has("overview") },
+              { l: "Gäster", v: data.guests, c: "var(--info)", miss: missing.has("split") },
+              { l: "Inloggade", v: data.loggedIn, c: "var(--success)", miss: missing.has("split") },
             ].map((c, i) => (
               <div key={c.l} style={{ padding: "12px 14px", borderRight: i < 3 ? "1px solid var(--line)" : "none" }}>
-                <div style={{ fontSize: "var(--text-xl)", fontWeight: 800, color: c.c, ...mono }}>{Number(c.v).toLocaleString()}</div>
+                <div style={{ fontSize: "var(--text-xl)", fontWeight: 800, color: c.miss ? "var(--ink-400)" : c.c, ...mono }}>{c.miss ? "—" : Number(c.v).toLocaleString()}</div>
                 <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", fontWeight: 600, marginTop: 2 }}>{c.l}</div>
               </div>
             ))}
@@ -200,6 +206,7 @@ function TrafficPanel() {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0 }}>
             <div style={{ borderRight: "1px solid var(--line)", padding: "10px 18px 12px" }}>
               <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 8 }}>Källor</div>
+              {missing.has("channels") && noData}
               {data.referrers.slice(0, 6).map((r) => (
                 <div key={r.domain} style={{ display: "flex", justifyContent: "space-between", fontSize: "var(--text-2xs)", color: "var(--ink-600)", padding: "3px 0" }}>
                   <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{fmtDomain(r.domain)}</span>
@@ -209,6 +216,7 @@ function TrafficPanel() {
             </div>
             <div style={{ padding: "10px 18px 12px" }}>
               <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 8 }}>Städer</div>
+              {missing.has("cities") && noData}
               {data.cities.filter((c) => c.city !== "Okänd").slice(0, 6).map((c) => (
                 <div key={c.city} style={{ display: "flex", justifyContent: "space-between", fontSize: "var(--text-2xs)", color: "var(--ink-600)", padding: "3px 0" }}>
                   <span>{c.city}</span>
@@ -217,9 +225,10 @@ function TrafficPanel() {
               ))}
             </div>
           </div>
-          {data.topClickedJobs.length > 0 && (
+          {(data.topClickedJobs.length > 0 || missing.has("topJobs")) && (
             <div style={{ borderTop: "1px solid var(--line)", padding: "10px 18px 12px" }}>
               <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 8 }}>Mest sökta jobb (klick · personer)</div>
+              {missing.has("topJobs") && noData}
               {data.topClickedJobs.slice(0, 5).map((j) => (
                 <div key={j.title} style={{ display: "flex", justifyContent: "space-between", gap: 10, fontSize: "var(--text-2xs)", color: "var(--ink-600)", padding: "3px 0" }}>
                   <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{j.title}</span>
