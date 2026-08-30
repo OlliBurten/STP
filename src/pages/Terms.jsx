@@ -33,8 +33,8 @@ export const DOCS = {
         p: ["STP ansvarar inte för innehållet i jobbannonser eller förarprofiler, för avtal som ingås mellan förare och företag, eller för direkta eller indirekta skador som uppstår till följd av användningen av tjänsten."],
       },
       {
-        id: "beta", h: "7. Beta-tjänst",
-        p: ["STP befinner sig i beta-fas. Det innebär att funktioner kan förändras, läggas till eller tas bort utan föregående varning. Tjänsten tillhandahålls kostnadsfritt under beta-perioden. Vi förbehåller oss rätten att introducera betalda funktioner i framtiden, med minst 30 dagars förvarning via e-post."],
+        id: "avgifter", h: "7. Ändringar i tjänsten och avgifter",
+        p: ["Funktioner i tjänsten kan förändras, läggas till eller tas bort. För förare är STP gratis. För åkerier är tjänsten gratis. Vi förbehåller oss rätten att introducera betalda funktioner för åkerier, med minst 30 dagars förvarning via e-post."],
       },
       {
         id: "radering", h: "8. Kontoavstängning och radering",
