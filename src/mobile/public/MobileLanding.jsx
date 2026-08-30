@@ -1,9 +1,11 @@
 // STP Mobile — public landing. Ported 1:1 from STP Mobil Landing, wired to real
 // routes. Hero photo (/hero.webp) + real Sweden map (swedenGeo + CITY_XY).
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import MobileShell from "../MobileShell";
-import { Icon } from "../ui";
+import { Icon, SkeletonRow } from "../ui";
+import { fetchJobs } from "../../api/jobs";
+import { toJobView } from "../driver/jobAdapter";
 import { SWE_LAN_PATHS, SWE_VIEW } from "../../data/swedenGeo";
 import { CITY_XY } from "../../data/swedenCityCoords";
 
@@ -36,6 +38,9 @@ function useNav() {
     register: (role) => navigate(`/registrera${role ? `?role=${role}` : ""}`),
     login: () => navigate("/login?start=login"),
     jobs: () => navigate("/jobb"),
+    // Öppnar annonsen i gästlistans sheet via samma ?open= som delade länkar
+    // använder, i stället för att skicka besökaren till en helt annan vy.
+    job: (id) => navigate(`/jobb?open=${encodeURIComponent(id)}`),
     jobsCity: (c) => navigate(`/jobb?stad=${encodeURIComponent(c)}`),
     jobsRegion: (r) => navigate(`/jobb?region=${encodeURIComponent(r)}`),
     privacy: () => navigate("/integritet"),
@@ -71,35 +76,45 @@ const SEGMENTS = [
 const FAQS = [
   ["Är STP ett bemanningsbolag?", "Nej. STP är inte ett bemanningsbolag. Vi möjliggör direktkontakt mellan förare och åkerier — utan mellanhänder som tar en del av lönen."],
   ["Kostar det något?", "För förare är STP alltid gratis. Åkerier kommer igång gratis och betalar först för utökade funktioner när de vill nå fler förare."],
-  ["Hur fungerar verifiering?", "Åkerier verifieras mot Bolagsverket med F-skattsedel och trafiktillstånd. Förare ser bara seriösa, kontrollerade arbetsgivare."],
+  // Svaret påstod tidigare dels dokumentgranskning (F-skattsedel, trafiktillstånd)
+  // som inte finns — verifieringen ÄR uppslaget mot Bolagsverket — dels att
+  // "förare ser bara seriösa, kontrollerade arbetsgivare". Det senare var osant
+  // för i princip allt en besökare ser: merparten av annonserna är importerade
+  // från Platsbanken och kommer från åkerier utan STP-konto. Samma rättelse som
+  // redan gjorts i FEATURES ovan.
+  ["Hur fungerar verifiering?", "Åkerier som skapar konto slås upp mot Bolagsverket på organisationsnummer innan de får publicera egna annonser. Merparten av annonserna i listan är importerade från Platsbanken och kommer från åkerier utan konto hos oss — de är märkta som importerade."],
   ["Vem äger min profil?", "Du. Din profil är din — du styr vad som visas, kan dela den som CV och ta bort den när du vill."],
   ["Vad skiljer STP från vanliga jobbsajter?", "STP är byggt enbart för transportbranschen. Matchning sker på körkort, behörigheter och region — inte en allmän annonstavla."],
 ];
 const STATS = [["Direkt", "Inga mellanhänder"], ["0 kr", "Ingen provision"], ["2 min", "Att komma igång"], ["Verifierat", "Mot Bolagsverket"]];
 const STEPS = {
-  forare: { label: "FÖR FÖRARE", tag: "Hitta ditt nästa jobb — utan att jaga annonser i grupper.", items: [["Skapa konto", "Registrera dig som förare på 2 minuter. Välj körkort, region och vad du söker."], ["Bygg din profil", "Fyll i körkort, certifikat, erfarenhet och tillgänglighet. Välj om du är synlig för åkerier."], ["Bli matchad", "Åkerier hittar dig automatiskt. Du kan också söka jobb direkt. All kontakt sker via plattformen."]] },
+  forare: { label: "FÖR FÖRARE", tag: "Hitta ditt nästa jobb — utan att jaga annonser i grupper.", items: [["Skapa konto", "Registrera dig som förare på 2 minuter. Välj körkort, region och vad du söker."], ["Bygg din profil", "Fyll i körkort, certifikat, erfarenhet och tillgänglighet. Välj om du är synlig för åkerier."], ["Sök jobben du vill ha", "Ansök direkt — hos arbetsgivaren eller via STP. Är profilen synlig kan åkerier också hitta dig när de rekryterar."]] },
   akeri: { label: "FÖR ÅKERIER", tag: "Hitta rätt förare — verifierade och redo att köra.", items: [["Registrera åkeri", "Koppla ert organisationsnummer — vi hämtar uppgifterna automatiskt från Bolagsverket."], ["Publicera & sök", "Lägg upp jobb eller sök proaktivt bland verifierade förare i er region."], ["Anställ", "Hantera ansökningar och kontakt i en tydlig pipeline. Inga mellanhänder, ingen provision."]] },
 };
 const MAP_CITIES = [["Stockholm", true], ["Göteborg", true], ["Malmö", true], ["Sundsvall", false], ["Umeå", false], ["Luleå", false], ["Örebro", false], ["Jönköping", false]];
 
-// "Visa, inte berätta" — matchnings-förhandsvisning
-const JobPreview = () => (
-  <div style={{ background: "var(--card)", borderRadius: 18, padding: "18px", boxShadow: "var(--sh-md)", border: "1px solid var(--line)" }}>
+// "Visa, inte berätta" — men med en riktig annons.
+//
+// Här satt tidigare ett påhittat kort: "Fjärrförare CE · Nordfrakt AB · Malmö"
+// med "94% MATCH". Företaget finns inte, och matchningssiffran kan inte räknas
+// fram för en utloggad besökare — den hade inget att matcha mot. Vi visade
+// alltså en uppdiktad produkt på sidan som flest ser först, samtidigt som 466
+// riktiga annonser låg ett klick bort utan att synas. Nu visas de i stället.
+const LandingJobCard = ({ job, onOpen }) => (
+  <button onClick={onOpen} className="press" style={{ width: "100%", textAlign: "left", background: "var(--card)", borderRadius: 18, padding: "16px 17px", boxShadow: "var(--sh-sm)", border: "1px solid var(--line)" }}>
     <div style={{ display: "flex", alignItems: "flex-start", gap: 13 }}>
-      <div style={{ width: 46, height: 46, borderRadius: 13, background: "var(--green-tint)", color: "var(--green-text)", fontWeight: 800, fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>NF</div>
+      <div style={{ width: 46, height: 46, borderRadius: 13, background: "var(--green-tint)", color: "var(--green-text)", fontWeight: 800, fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{job.initials}</div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 17, fontWeight: 800, letterSpacing: -0.3, color: "var(--ink-900)" }}>Fjärrförare CE</div>
-        <div style={{ fontSize: 13.5, color: "var(--ink-500)", marginTop: 2 }}>Nordfrakt AB · Malmö</div>
-      </div>
-      <div style={{ textAlign: "center", flexShrink: 0 }}>
-        <div style={{ fontSize: 20, fontWeight: 800, color: "var(--success)", letterSpacing: -0.5, lineHeight: 1 }}>94%</div>
-        <div style={{ fontSize: 10.5, fontWeight: 700, color: "var(--ink-400)", letterSpacing: 0.5, marginTop: 2 }}>MATCH</div>
+        <div style={{ fontSize: 16.5, fontWeight: 800, letterSpacing: -0.3, color: "var(--ink-900)", lineHeight: 1.25 }}>{job.title}</div>
+        <div style={{ fontSize: 13.5, color: "var(--ink-500)", marginTop: 3, lineHeight: 1.35 }}>{job.company} · {job.location}</div>
       </div>
     </div>
-    <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginTop: 14 }}>
-      {["CE", "Heltid", "ADR", "Fjärr"].map((t) => <span key={t} style={{ fontSize: 12.5, fontWeight: 700, color: "var(--ink-600)", background: "var(--paper-2)", padding: "5px 11px", borderRadius: 8 }}>{t}</span>)}
+    <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginTop: 13, alignItems: "center" }}>
+      {job.licenses.map((l) => <span key={l} style={{ fontSize: 12.5, fontWeight: 700, color: "var(--green-text)", background: "var(--green-tint)", padding: "5px 11px", borderRadius: 8 }}>{l}</span>)}
+      <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--ink-600)", background: "var(--paper-2)", padding: "5px 11px", borderRadius: 8 }}>{job.type}</span>
+      <span style={{ marginLeft: "auto", fontSize: 12, color: "var(--ink-400)" }}>{job.posted}</span>
     </div>
-  </div>
+  </button>
 );
 
 function Menu({ open, onClose, nav, openPage, toSteps }) {
@@ -216,6 +231,20 @@ export default function MobileLanding() {
   const [faq, setFaq] = useState(0);
   const stepsRef = useRef(null);
   const s = STEPS[who];
+
+  // Riktiga annonser till sektionen under hero. Ingen mockdata som reserv — en
+  // påhittad annons är värre än ingen alls (se PR #39). Går hämtningen fel
+  // döljs sektionen och hero-knappen "Se lediga jobb" står kvar.
+  const [rawJobs, setRawJobs] = useState(null); // null = laddar, [] = misslyckades/tomt
+  useEffect(() => {
+    let alive = true;
+    fetchJobs()
+      .then((d) => { if (alive) setRawJobs(Array.isArray(d) ? d : []); })
+      .catch(() => { if (alive) setRawJobs([]); });
+    return () => { alive = false; };
+  }, []);
+  const latestJobs = useMemo(() => (rawJobs || []).slice(0, 5).map(toJobView), [rawJobs]);
+  const jobCount = rawJobs?.length || 0;
   const toSteps = () => { setPage(null); setTimeout(() => stepsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 60); };
 
   return (
@@ -246,8 +275,32 @@ export default function MobileLanding() {
           </div>
         </section>
 
+        {/* JOBB — det besökaren faktiskt kom för.
+            Sidan innehöll tidigare noll annonser. En förare som googlat
+            "lastbilsjobb" möttes av en branschanalys i tre delar och fick klicka
+            vidare för att se ett enda jobb. Nu ligger de överst, före allt vi
+            själva vill berätta. */}
+        {(rawJobs === null || latestJobs.length > 0) && (
+          <section style={{ background: "var(--paper-2)", padding: "40px 22px 44px" }}>
+            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12, marginBottom: 18 }}>
+              <h2 style={{ fontSize: 28, fontWeight: 800, letterSpacing: -0.9, lineHeight: 1.1 }}>Lediga jobb just nu</h2>
+              {jobCount > 0 && <button onClick={nav.jobs} className="press" style={{ fontSize: 14.5, fontWeight: 700, color: "var(--green)", whiteSpace: "nowrap" }}>Se alla →</button>}
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {rawJobs === null
+                ? Array.from({ length: 3 }).map((_, i) => <SkeletonRow key={`s-${i}`} />)
+                : latestJobs.map((job) => <LandingJobCard key={job.id} job={job} onOpen={() => nav.job(job.id)} />)}
+            </div>
+            {jobCount > latestJobs.length && (
+              <button onClick={nav.jobs} className="press" style={{ width: "100%", height: 52, marginTop: 14, borderRadius: 14, background: "var(--card)", border: "1px solid var(--line-2)", color: "var(--ink-800)", fontWeight: 700, fontSize: 15 }}>
+                Visa alla {jobCount} jobb
+              </button>
+            )}
+          </section>
+        )}
+
         {/* PROBLEM */}
-        <section style={{ background: "var(--paper)", padding: "54px 22px 56px" }}>
+        <section style={{ background: "var(--paper)", padding: "54px 22px 56px", borderTop: "1px solid var(--line)" }}>
           <Eyebrow>Bakgrund</Eyebrow>
           <h2 style={{ fontSize: 36, fontWeight: 800, letterSpacing: -1.2, lineHeight: 1.05, margin: "18px 0 16px", textWrap: "balance" }}>Branschen förtjänar bättre.</h2>
           <p style={{ fontSize: 17, lineHeight: 1.55, color: "var(--ink-500)", marginBottom: 36 }}>Idag matchas förare och åkerier via Facebook-grupper, generiska jobbsajter och bemanningsbolag som tar en del av lönen. Det behöver inte vara så.</p>
@@ -271,8 +324,8 @@ export default function MobileLanding() {
             <BtnGreen full onClick={() => nav.register("forare")}>Skapa förarprofil <Icon name="arrow" size={19} color="#fff" stroke={2.4} /></BtnGreen>
             <BtnGhost onClick={() => nav.register("akeri")}>Registrera åkeri</BtnGhost>
           </div>
-          <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", color: "var(--green-text)", marginBottom: 11 }}>Så ser en matchning ut</div>
-          <div style={{ marginBottom: 36 }}><JobPreview /></div>
+          {/* "Så ser en matchning ut" med det påhittade kortet är borttaget —
+              riktiga annonser visas nu överst på sidan i stället. */}
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             {FEATURES.map(([ic, t, d]) => (
               <div key={t} style={{ background: "var(--card)", borderRadius: 20, padding: "22px 20px", boxShadow: "var(--sh-sm)", display: "flex", gap: 16 }}>
