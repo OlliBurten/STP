@@ -63,8 +63,15 @@ export function getDriverMinimumMissingKeys(profile) {
     .map((item) => item.key);
 }
 
+// Telefonnumret är frivilligt sedan 2026-08-31. Onboardingen slutade kräva det
+// (91 % av ansökningarna går vidare till arbetsgivarens egen kanal, där numret
+// aldrig används) — och den här gaten MÅSTE spegla exakt vad onboardingen tvingar
+// fram. Annars rensas aldrig needsDriverOnboarding och föraren studsar tillbaka
+// in i onboardingen vid nästa inloggning, trots att hen precis gått igenom den.
+const ONBOARDING_OPTIONAL_KEYS = new Set(["phone"]);
+
 export function isDriverMinimumProfileComplete(profile) {
-  return getDriverMinimumMissingKeys(profile).length === 0;
+  return getDriverMinimumMissingKeys(profile).every((key) => ONBOARDING_OPTIONAL_KEYS.has(key));
 }
 
 export { SUMMARY_MIN_LENGTH };

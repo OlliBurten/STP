@@ -200,7 +200,7 @@ function ScoreCard({ score, profile, onEdit }) {
       </div>
       {checks.every((c) => c.done) ? (
         <p style={{ fontSize: "var(--text-xs)", color: T.green, fontWeight: 600 }}>
-          Din profil är komplett — åkerier hittar dig enkelt.
+          Din profil är komplett — redo att dela med vilket åkeri som helst.
         </p>
       ) : onEdit && (
         <button onClick={onEdit} style={{
@@ -1060,7 +1060,7 @@ export default function Profile() {
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, marginBottom: 2, color: "var(--ink-900)" }}>Synlig för åkerier</div>
-              <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)" }}>{current?.visibleToCompanies ? "Åkerier kan hitta dig och kontakta dig direkt" : "Din profil är dold för åkerier"}</div>
+              <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)" }}>{current?.visibleToCompanies ? "Din profil kan visas när åkerier söker i STP" : "Din profil är dold för åkerier"}</div>
             </div>
             <button
               onClick={() => {
@@ -2105,7 +2105,7 @@ export default function Profile() {
                 📈 Din profil är ny — statistik byggs upp över tid
               </p>
               <p style={{ fontSize: "var(--text-sm)", color: T.sub, lineHeight: 1.6 }}>
-                Åkerier börjar hitta dig när din profil är komplett. Lägg till erfarenhet, certifikat och en kort presentation för att synas direkt i sökresultat.
+                En komplett profil blir ett CV du kan dela var du vill. Lägg till erfarenhet, certifikat och en kort presentation.
               </p>
             </div>
           </div>

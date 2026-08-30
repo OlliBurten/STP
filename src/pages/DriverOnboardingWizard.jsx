@@ -296,7 +296,7 @@ export default function DriverOnboardingWizard() {
                   {matchCount} jobb i {draft.region} matchar dig redan
                 </h1>
                 <p style={{ fontSize: "var(--text-md)", color: "var(--ink-500)", lineHeight: 1.6, marginBottom: 24 }}>
-                  Du är nu synlig för åkerier som rekryterar. Kolla jobben direkt — eller stärk profilen för att synas ännu mer.
+                  Profilen är skapad. Kolla lediga jobb direkt — eller fyll på med erfarenhet och certifikat.
                 </p>
               </>
             ) : (
@@ -305,13 +305,13 @@ export default function DriverOnboardingWizard() {
                   Din profil är klar, {draft.name.split(" ")[0] || "förare"}!
                 </h1>
                 <p style={{ fontSize: "var(--text-md)", color: "var(--ink-500)", lineHeight: 1.6, marginBottom: 24 }}>
-                  Du är nu synlig för åkerier som rekryterar i {draft.region}. Kolla lediga jobb eller stärk profilen vidare.
+                  Profilen är skapad. Vi visar jobb i {draft.region} först — kolla dem, eller fyll på profilen.
                 </p>
               </>
             )}
             <div style={{ textAlign: "left", display: "flex", flexDirection: "column", gap: 10, marginBottom: 28 }}>
               {[
-                { icon: Icons.msg,  title: "Åkerier kontaktar dig", text: "Via chatt direkt på plattformen — du slipper lägga ut ditt nummer publikt." },
+                { icon: Icons.msg,  title: "Ansök utan krångel", text: "Behörigheter och erfarenhet följer med — du slipper skriva om allt varje gång." },
                 { icon: Icons.bell, title: "Jobbrekommendationer", text: `När ett nytt jobb i ${draft.region} matchar dina körkort får du en notis.` },
                 { icon: Icons.user, title: "Stärk profilen vidare", text: "Lägg till erfarenhet och certifikatdatum för att synas ännu mer." },
               ].map((b) => (
@@ -357,7 +357,7 @@ export default function DriverOnboardingWizard() {
         <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
           {[
             { icon: Icons.search, title: "Automatisk matchning", text: "Vi matchar dig mot jobb baserat på körkort, region och vad du söker." },
-            { icon: Icons.eye,    title: "Synlig för åkerier",   text: "Du väljer om profilen är synlig — då kan åkerier hitta dig när de rekryterar." },
+            { icon: Icons.eye,    title: "Du styr synligheten",  text: "Du väljer själv om profilen ska visas när åkerier söker i STP." },
             { icon: Icons.msg,    title: "Ansök direkt",         text: "Du ansöker direkt hos arbetsgivaren eller via STP — utan mellanhand." },
           ].map((b) => (
             <div key={b.title} style={{ display: "flex", gap: 14, alignItems: "flex-start", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, padding: "16px 18px", boxShadow: "var(--sh-sm)" }}>

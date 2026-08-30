@@ -5,8 +5,8 @@ import Logo from "../components/Logo";
 const BENEFITS = [
   {
     icon: "🚛",
-    title: "Bli hittad av åkerier",
-    desc: "Skapa din profil en gång — behörigheter, erfarenhet, region och vad du söker. Åkerier hittar dig utan att du behöver jaga dem.",
+    title: "Allt om dig, samlat",
+    desc: "Skapa din profil en gång — behörigheter, erfarenhet, region och vad du söker. Sedan följer den med varje ansökan.",
   },
   {
     icon: "📋",
@@ -32,7 +32,7 @@ export default function DriverAcquisitionLanding() {
     <>
       <Helmet>
         <title>Hitta lastbilsjobb direkt — Sveriges Transportplattform</title>
-        <meta name="description" content="Skapa en gratis förarprofil och bli hittad av seriösa åkerier. Inga mellanhänder, inga avgifter." />
+        <meta name="description" content="Skapa en gratis förarprofil och sök lastbilsjobb i hela Sverige. Inga mellanhänder, inga avgifter." />
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
 
@@ -63,7 +63,7 @@ export default function DriverAcquisitionLanding() {
             <span style={{ color: "var(--green-text)" }}>utan bemanningsbolag</span>
           </h1>
           <p style={{ fontSize: "var(--text-xl)", color: "var(--ink-500)", lineHeight: 1.6, marginBottom: 36, maxWidth: 520 }}>
-            Skapa en gratis förarprofil. Bli hittad av åkerier. Söka jobb som matchar dina behörigheter och erfarenhet.
+            Skapa en gratis förarprofil. Sök jobb som matchar dina behörigheter och erfarenhet.
             Det är allt som krävs.
           </p>
 

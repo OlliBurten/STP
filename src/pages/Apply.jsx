@@ -133,15 +133,21 @@ function JobContextSidebar({ job }) {
 
 // ─── Submitted state ──────────────────────────────────────────────────────────
 function Submitted({ job, conversationId, isAggregatedUnclaimed }) {
+  // Vad som FAKTISKT händer med en importerad annons: ansökan sparas hos oss och
+  // åkeriet får ett mejl om att en förare sökt via STP, med en länk för att ta
+  // över annonsen. Profilen följer INTE med — den syns först om åkeriet ansluter.
+  // Se server/lib/outreachEngine.js. Lova därför aldrig svar eller svarstid här:
+  // inget åkeri har anslutit hittills, och de fem ansökningar som gick den här
+  // vägen i juni 2026 ligger fortfarande olästa.
   const aggregatedSteps = [
-    { n: 1, t: "Vi kontaktar åkeriet", s: `Vi skickar din intresseanmälan till ${job?.company} och ber dem ansluta till STP.` },
-    { n: 2, t: "Åkeriet ansluter", s: "När de registrerar sig kan de se din profil och svara." },
-    { n: 3, t: "Ni pratar direkt", s: "All kontakt sker sedan via plattformen — inga mellanhänder." },
+    { n: 1, t: "Ansökan är sparad", s: "Du hittar den under Mina ansökningar." },
+    { n: 2, t: "Vi hör av oss till åkeriet", s: `Vi meddelar ${job?.company} att en förare sökt via STP och bjuder in dem hit.` },
+    { n: 3, t: "Följ upp själv", s: "Åkeriet ser din profil först om de tackar ja — hör gärna av dig direkt till dem också." },
   ];
   const organicSteps = [
-    { n: 1, t: "Åkeriet ser din ansökan", s: "De får din fullständiga profil med körkort och certifikat." },
-    { n: 2, t: "De hör av sig", s: `${job?.company || "Åkeriet"} svarar oftast inom 1–2 dagar.` },
-    { n: 3, t: "Ni pratar direkt", s: "All kontakt sker via plattformen — inga mellanhänder." },
+    { n: 1, t: "Ansökan är sparad", s: "Du hittar den under Mina ansökningar." },
+    { n: 2, t: "Åkeriet ser din ansökan", s: "De får din profil med körkort och certifikat." },
+    { n: 3, t: "Följ upp själv", s: "Vi kan inte lova svarstider — hör gärna av dig direkt till åkeriet också." },
   ];
   const steps = isAggregatedUnclaimed ? aggregatedSteps : organicSteps;
 
@@ -157,7 +163,7 @@ function Submitted({ job, conversationId, isAggregatedUnclaimed }) {
         <p style={{ fontSize: "var(--text-md)", color: "var(--ink-500)", lineHeight: 1.6, marginBottom: 28 }}>
           {isAggregatedUnclaimed
             ? <>Vi har tagit emot din intresseanmälan för <strong style={{ color: "var(--ink-900)" }}>{job?.company}</strong> och kontaktar åkeriet å dina vägnar.</>
-            : <>Din profil och ditt meddelande har skickats till <strong style={{ color: "var(--ink-900)" }}>{job?.company}</strong>. Du får en notis så fort de svarar.</>
+            : <>Din ansökan är sparad och skickad till <strong style={{ color: "var(--ink-900)" }}>{job?.company}</strong>.</>
           }
         </p>
 

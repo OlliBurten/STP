@@ -27,7 +27,7 @@ const SEGMENTS = [
 const STEPS = [
   { n: "01", title: "Skapa förarkonto", body: "Två minuter. Välj körkort, region och vad du söker — sen är du igång." },
   { n: "02", title: "Fyll i minimumprofilen", body: "Samma grund för alla förare. Det gör dig jämförbar och seriös direkt." },
-  { n: "03", title: "Sök jobben du vill ha", body: "Komplettera i din takt. Ansök direkt — och med synlig profil kan åkerier hitta dig när de rekryterar." },
+  { n: "03", title: "Sök jobben du vill ha", body: "Komplettera i din takt. Ansök direkt hos arbetsgivaren — utan mellanhänder." },
 ];
 
 const FAQS = [
@@ -225,7 +225,7 @@ export default function ForDrivers() {
     <main style={{ background: "var(--paper)" }}>
       <PageMeta
         title="För yrkesförare – Hitta lastbilsjobb på STP"
-        description="Skapa en kostnadsfri förarprofil på Sveriges Transportplattform. Bli hittad av seriösa åkerier eller sök bland lastbilsjobb med CE, C och C1-körkort."
+        description="Skapa en kostnadsfri förarprofil på Sveriges Transportplattform. Sök bland lastbilsjobb med CE, C och C1-körkort."
         canonical="/forare"
       />
       <style>{`

@@ -519,7 +519,7 @@ export default function Home() {
             {(howTab === "driver" ? [
               { n: 1, title: "Skapa konto",     body: "Registrera dig på 2 minuter — körkort, region, vad du söker." },
               { n: 2, title: "Bygg din profil", body: "Certifikat, erfarenhet, tillgänglighet — du väljer synlighet." },
-              { n: 3, title: "Bli matchad",     body: "Åkerier hittar dig — eller sök jobb själv." },
+              { n: 3, title: "Ansök direkt",    body: "Ansökan går rakt till arbetsgivaren — utan mellanhänder." },
             ] : [
               { n: 1, title: "Registrera åkeri",    body: "Verifieras automatiskt på organisationsnumret. Gratis." },
               { n: 2, title: "Publicera eller sök", body: "Annonsera eller sök förare med rätt behörigheter." },
