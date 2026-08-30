@@ -84,11 +84,13 @@ function applicationBlock(a, token, nowMs) {
   const weeks = Math.max(1, Math.round((nowMs - new Date(a.createdAt).getTime()) / (7 * 864e5)));
   const since = weeks === 1 ? "för en vecka sedan" : `för ${weeks} veckor sedan`;
   const status = a.outcome === "IN_PROCESS" ? " (du sa att processen pågick)" : "";
+  // Etiketterade länkar, inte råa URL:er. Tidigare skrevs hela adressen ut i
+  // klartext — mallen renderar brödtext som text, så svarslänkarna blev
+  // oklickbara i HTML-mejlet. Tre 90 tecken långa URL:er per ansökan, upp till
+  // 15 stycken, som inte gick att trycka på.
   return [
     `• ${a.job.title} hos ${a.job.company} — sökt ${since}${status}`,
-    `   Fick jobbet: ${outcomeUrl(token, "ja")}`,
-    `   Processen pågår: ${outcomeUrl(token, "pagar")}`,
-    `   Det blev inget: ${outcomeUrl(token, "nej")}`,
+    `   [Jag fick jobbet](${outcomeUrl(token, "ja")}) · [Processen pågår](${outcomeUrl(token, "pagar")}) · [Det blev inget](${outcomeUrl(token, "nej")})`,
   ].join("\n");
 }
 
@@ -151,10 +153,16 @@ export async function runApplicationFollowup() {
           "",
           ...batch.map((a, i) => applicationBlock(a, tokens[i], now)),
           "",
-          "Ett klick per rad räcker. Svaret hjälper oss hålla jobben på STP färska och relevanta — och blev det inget den här gången finns fler jobb som väntar.",
+          "Ett klick räcker. Svaret hjälper oss hålla jobben på STP färska och relevanta — och blev det inget den här gången finns fler jobb som väntar.",
         ].join("\n"),
-        ctaUrl: `${SITE}/jobb`,
-        ctaText: "Se nya jobb",
+        // Ingen knapp. Den ledde tidigare till jobblistan och var mejlets enda
+        // riktiga länk — det mest klickbara i ett mejl som ber om ett svar tog
+        // alltså föraren därifrån utan att svara.
+        //
+        // Att i stället låta knappen vara ett av svaren vore värre: en stor grön
+        // "Jag fick jobbet" bredvid tre små textlänkar styr svaren uppåt, och
+        // det enda tal vi verkligen behöver kunna lita på är just andelen som
+        // fick jobb. Svarsalternativen ligger som likvärdiga länkar i raderna.
       });
 
       await Promise.all(

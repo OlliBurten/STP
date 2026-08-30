@@ -18,6 +18,30 @@ const C = {
 };
 const FONT = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
 
+// Inline-länkar i brödtexten: [etikett](https://…) blir ett riktigt <a>.
+//
+// Utan det här renderades varje URL som ren text. Uppföljningsmejlet
+// ("Fick du jobbet?") la ut upp till 15 råa uppfoljning-länkar som INTE gick
+// att klicka på — hela mejlets syfte satt i text som e-postklienten inte gjorde
+// något av, medan den enda riktiga knappen ledde bort till jobblistan.
+const LINK_RE = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+
+function renderInline(line, keyPrefix) {
+  const out = [];
+  let last = 0;
+  let m;
+  LINK_RE.lastIndex = 0;
+  while ((m = LINK_RE.exec(line)) !== null) {
+    if (m.index > last) out.push(line.slice(last, m.index));
+    out.push(
+      <Link key={`${keyPrefix}-l${m.index}`} href={m[2]} style={{ color: C.green, fontWeight: 700, textDecoration: "underline" }}>{m[1]}</Link>
+    );
+    last = m.index + m[0].length;
+  }
+  if (last < line.length) out.push(line.slice(last));
+  return out.length ? out : [line];
+}
+
 function StpEmail({ preview, heading, paragraphs = [], ctaUrl, ctaText, footNote }) {
   return (
     <Html lang="sv">
@@ -49,7 +73,7 @@ function StpEmail({ preview, heading, paragraphs = [], ctaUrl, ctaText, footNote
               {paragraphs.map((p, i) => (
                 <Text key={i} style={{ fontSize: "15px", lineHeight: "1.7", color: C.ink700, margin: "0 0 14px", fontFamily: FONT }}>
                   {String(p).split("\n").map((line, j) => (
-                    <React.Fragment key={j}>{j > 0 ? <br /> : null}{line}</React.Fragment>
+                    <React.Fragment key={j}>{j > 0 ? <br /> : null}{renderInline(line, `${i}-${j}`)}</React.Fragment>
                   ))}
                 </Text>
               ))}
