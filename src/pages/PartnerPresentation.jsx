@@ -126,6 +126,7 @@ export default function PartnerPresentation() {
       <PageMeta
         title="Partnerskap – STP Sveriges Transportplattform"
         description="Presentationsmaterial för partnerskap med STP."
+        robots="noindex"
       />
 
       {/* Print button */}
@@ -320,7 +321,7 @@ export default function PartnerPresentation() {
         <Slide>
           <Tag color={AMBER}>Partnerskap</Tag>
           <h2 style={{ fontSize: 32, fontWeight: 900, color: TEXT, margin: "0 0 10px", letterSpacing: "-0.5px" }}>
-            Vem samarbetar vi med?
+            Vilka vill vi samarbeta med?
           </h2>
           <p style={{ fontSize: "var(--text-md)", color: SUB, lineHeight: 1.7, margin: "0 0 36px", maxWidth: 580 }}>
             Vi söker organisationer som möter yrkesförare i olika faser — utbildning, omställning och karriär.
