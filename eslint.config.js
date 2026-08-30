@@ -45,4 +45,11 @@ export default defineConfig([
     languageOptions: { globals: globals.node },
     rules: { 'react-refresh/only-export-components': 'off' },
   },
+  {
+    // Byggkonfigurationen kör i Node, inte i webbläsaren. Utan den här raden gav
+    // commit-stämpeln i vite.config.js (#54) två no-undef på `process` — de gick
+    // igenom CI eftersom lint-steget inte failar på fel, bara rapporterar dem.
+    files: ['vite.config.js'],
+    languageOptions: { globals: globals.node },
+  },
 ])
