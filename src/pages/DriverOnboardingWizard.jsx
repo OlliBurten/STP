@@ -357,8 +357,8 @@ export default function DriverOnboardingWizard() {
         <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
           {[
             { icon: Icons.search, title: "Automatisk matchning", text: "Vi matchar dig mot jobb baserat på körkort, region och vad du söker." },
-            { icon: Icons.eye,    title: "Synlig för åkerier",   text: "Åkerier hittar din profil när de rekryterar i din region." },
-            { icon: Icons.msg,    title: "Bli kontaktad direkt", text: "Inget CV-skickande. Åkerier chattar med dig när de vill veta mer." },
+            { icon: Icons.eye,    title: "Synlig för åkerier",   text: "Du väljer om profilen är synlig — då kan åkerier hitta dig när de rekryterar." },
+            { icon: Icons.msg,    title: "Ansök direkt",         text: "Du ansöker direkt hos arbetsgivaren eller via STP — utan mellanhand." },
           ].map((b) => (
             <div key={b.title} style={{ display: "flex", gap: 14, alignItems: "flex-start", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, padding: "16px 18px", boxShadow: "var(--sh-sm)" }}>
               <span style={{ width: 40, height: 40, borderRadius: 10, background: "var(--green-tint)", color: "var(--green-text)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{b.icon}</span>
