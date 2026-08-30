@@ -1,7 +1,8 @@
 // Driver — Hem (dashboard). Ported from STP Mobil Förare HemScreen, wired to
 // real data via ctx. Honest deviations from the mock prototype:
-//   • "Tillgänglig för inhopp": toggle kept, but the shift list has no backend
-//     yet → shows an empty-state instead of fabricated shifts (flagged).
+//   • "Tillgänglig för inhopp": shifts HAR backend (server/routes/shifts.js) —
+//     den här noten sa länge motsatsen och stämmer inte. Kortet döljs i stället
+//     när det inte finns några pass; se kommentaren vid kortet.
 //   • Activity feed is derived from NotificationContext (empty-state if none).
 import React, { useState } from "react";
 import { Header, ScrollArea, Card, Pill, Dot, Avatar, Switch, Label, Icon, Empty, Button } from "../../ui";
@@ -62,7 +63,16 @@ export default function HemScreen({ ctx }) {
             )}
           </Card>
 
-          {/* Inhopp / vikariepool */}
+          {/* Inhopp / vikariepool — visas bara när det faktiskt finns pass.
+              Noll skift har någonsin lagts upp (inget åkeri använder plattformen
+              så långt), men kortet stod ändå på hemskärmen med en strömbrytare
+              och raden "Vi meddelar dig när ett åkeri behöver akut". Nio förare
+              slog på den och väntar på något som aldrig kommit. Backend finns och
+              fungerar (`server/routes/shifts.js`), så kortet — och reglaget —
+              kommer tillbaka av sig själv första gången ett åkeri lägger ut ett
+              pass. Läsvägen filtrerar på behörighet och region, inte på reglaget,
+              så att dölja det hindrar inga framtida pass. */}
+          {shifts.length > 0 && (
           <Card style={{ padding: "4px 16px", overflow: "hidden" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "15px 0", borderBottom: ctx.available ? "1px solid var(--line)" : "none" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
@@ -103,6 +113,7 @@ export default function HemScreen({ ctx }) {
               )
             )}
           </Card>
+          )}
 
           {/* Completion nudge */}
           {pct < 100 && (
