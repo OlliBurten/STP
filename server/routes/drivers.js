@@ -89,8 +89,6 @@ driversRouter.get("/", authMiddleware, requireCompany, requireVerifiedCompany, a
         showPhoneToCompanies: p.showPhoneToCompanies,
         isGymnasieelev: p.isGymnasieelev ?? false,
         schoolName: p.schoolName ?? null,
-        physicalWorkOk: p.physicalWorkOk ?? null,
-        soloWorkOk: p.soloWorkOk ?? null,
         profileScore: computeProfileScore(p, p.user).score,
         fastResponder: p.fastResponder ?? false,
         _lastLoginAt: p.user?.lastLoginAt,
@@ -398,8 +396,6 @@ driversRouter.get("/:id", authMiddleware, requireCompany, requireVerifiedCompany
       showPhoneToCompanies: profile.showPhoneToCompanies,
       isGymnasieelev: profile.isGymnasieelev ?? false,
       schoolName: profile.schoolName ?? null,
-      physicalWorkOk: profile.physicalWorkOk ?? null,
-      soloWorkOk: profile.soloWorkOk ?? null,
       profileScore: computeProfileScore(profile, profile.user).score,
       fastResponder: profile.fastResponder ?? false,
     });

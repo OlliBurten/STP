@@ -476,12 +476,6 @@ function SokprefSection({ profile: initialProfile }) {
     });
   };
 
-  const setBool = (field, val) => {
-    setLocalProfile((p) => ({ ...p, [field]: val }));
-    setSaving(true);
-    updateProfile({ [field]: val }).catch(() => {}).finally(() => setSaving(false));
-  };
-
   const licenses = Array.isArray(localProfile.licenses) ? localProfile.licenses : [];
   const segments = Array.isArray(localProfile.secondarySegments) ? localProfile.secondarySegments : [];
   const SEGMENTS = ["Fjärr", "Distribution", "Tank", "Bygg", "Skog", "Container", "Internationell", "Bemanning"];
@@ -509,19 +503,6 @@ function SokprefSection({ profile: initialProfile }) {
               <button key={s} type="button" onClick={() => toggle("secondarySegments", s)}
                 style={{ padding: "7px 14px", borderRadius: 99, background: on ? "var(--green-tint)" : "var(--paper-2)", border: `1px solid ${on ? "var(--green)" : "var(--line)"}`, fontSize: "var(--text-sm)", fontWeight: 600, color: on ? "var(--green-text)" : "var(--ink-500)", cursor: "pointer", fontFamily: "inherit" }}>
                 {s}
-              </button>
-            );
-          })}
-        </div>
-      </Field>
-      <Field label="Arbetsprofil">
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {[{ k: "physicalWorkOk", l: "Fysiskt tungt arbete ok" }, { k: "soloWorkOk", l: "Ensamarbete ok" }].map(({ k, l }) => {
-            const on = Boolean(localProfile[k]);
-            return (
-              <button key={k} type="button" onClick={() => setBool(k, !on)}
-                style={{ padding: "8px 16px", borderRadius: 99, background: on ? "var(--green-tint)" : "var(--paper-2)", border: `1px solid ${on ? "var(--green)" : "var(--line)"}`, fontSize: "var(--text-sm)", fontWeight: 600, color: on ? "var(--green-text)" : "var(--ink-500)", cursor: "pointer", fontFamily: "inherit" }}>
-                {on && "✓ "}{l}
               </button>
             );
           })}

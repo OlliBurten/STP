@@ -83,8 +83,6 @@ export function ProfileProvider({ children }) {
           experience: Array.isArray(data?.experience) ? data.experience : [],
           isGymnasieelev: Boolean(data?.isGymnasieelev),
           schoolName: data?.schoolName || "",
-          physicalWorkOk: data?.physicalWorkOk ?? null,
-          soloWorkOk: data?.soloWorkOk ?? null,
         });
         setProfileLoaded(true);
       })
@@ -121,8 +119,6 @@ export function ProfileProvider({ children }) {
       experience: Array.isArray(saved?.experience) ? saved.experience : prev.experience || [],
       isGymnasieelev: Boolean(saved?.isGymnasieelev),
       schoolName: saved?.schoolName || "",
-      physicalWorkOk: saved?.physicalWorkOk ?? null,
-      soloWorkOk: saved?.soloWorkOk ?? null,
     }));
   };
 

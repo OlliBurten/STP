@@ -1,7 +1,8 @@
 // Driver — Profil. Ported from STP Mobil Förare ProfilScreen, wired to the real
 // profile. Deviations from the mock (flagged for review):
-//   • Profile-view stats and driver reviews have no backend → those sections are
-//     omitted rather than faked.
+//   • Profile-view stats and driver reviews have backends now, men båda är i
+//     praktiken tomma (2 profilvisningar totalt, 0 omdömen) → statistiken visas
+//     bara när den har ett värde, omdömen bara när de finns.
 //   • "Dokument & intyg" lists the driver's real certificates (no expiry/renewal
 //     vault yet) — so no status dots / "Förnya".
 //   • "Verifierat av STP" is informational copy (kept as in the prototype).
@@ -61,6 +62,17 @@ export default function ProfilScreen({ ctx }) {
             </div>
           </div>
 
+          {/* dela CV */}
+          <Card style={{ padding: "18px", background: "linear-gradient(135deg,var(--green),var(--green-deep))", border: "none", color: "#fff" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 7 }}><Icon name="award" size={19} color="#fff" stroke={2} /><span style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", opacity: 0.8 }}>Din STP-profil</span></div>
+            <h2 style={{ fontSize: 18, fontWeight: 800, letterSpacing: -0.3, marginBottom: 6 }}>Ditt CV – alltid uppdaterat</h2>
+            <p style={{ fontSize: 13.5, lineHeight: 1.5, opacity: 0.85, marginBottom: 15 }}>Dela din STP-profil med vilket åkeri som helst – även utanför STP.</p>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button onClick={() => ctx.setSheet({ type: "share" })} className="press" style={{ flex: 1, height: 46, borderRadius: 12, background: "#fff", color: "var(--green-deep)", fontWeight: 800, fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}><Icon name="share" size={17} stroke={2.2} />Dela profil</button>
+              <button onClick={() => ctx.setSheet({ type: "share" })} className="press" style={{ width: 46, height: 46, borderRadius: 12, background: "rgba(255,255,255,0.16)", display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="download" size={19} color="#fff" stroke={2.2} /></button>
+            </div>
+          </Card>
+
           {/* completion */}
           {pct < 100 && (
             <Card onClick={() => ctx.setSheet({ type: "complete" })} className="press" style={{ padding: "15px 16px", background: "var(--amber-tint)", border: "1px solid var(--amber-tint-2)" }}>
@@ -73,7 +85,11 @@ export default function ProfilScreen({ ctx }) {
           )}
 
           {/* stats */}
-          {stats && (
+          {/* Två profilvisningar har någonsin skett på hela plattformen, så det här
+              kortet visar 0/0/0 för nästan alla. Tre nollor är inget mått — det är
+              ett meddelande om att ingen tittat. Visa kortet först när det finns
+              något att visa. */}
+          {stats && (stats.views30 || stats.views7 || stats.contacted) ? (
             <Card style={{ padding: "16px", display: "grid", gridTemplateColumns: "repeat(3,1fr)" }}>
               {[["Visningar 30d", stats.views30], ["Visningar 7d", stats.views7], ["Kontaktade dig", stats.contacted]].map(([l, v], i) => (
                 <div key={l} style={{ textAlign: "center", borderRight: i < 2 ? "1px solid var(--line)" : "none" }}>
@@ -82,7 +98,7 @@ export default function ProfilScreen({ ctx }) {
                 </div>
               ))}
             </Card>
-          )}
+          ) : null}
 
           {/* körkort */}
           <Card style={{ padding: "16px" }}>
@@ -127,17 +143,6 @@ export default function ProfilScreen({ ctx }) {
             )}
             <button onClick={() => ctx.setSheet({ type: "addDoc" })} className="press" style={{ marginTop: 10, width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "13px", fontSize: 14, fontWeight: 700, color: "var(--green)", background: "var(--card)", border: "1px dashed var(--line-2)", borderRadius: 13 }}><Icon name="plus" size={17} stroke={2.2} />Lägg till behörighet</button>
           </div>
-
-          {/* dela CV */}
-          <Card style={{ padding: "18px", background: "linear-gradient(135deg,var(--green),var(--green-deep))", border: "none", color: "#fff" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 7 }}><Icon name="award" size={19} color="#fff" stroke={2} /><span style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", opacity: 0.8 }}>Din STP-profil</span></div>
-            <h2 style={{ fontSize: 18, fontWeight: 800, letterSpacing: -0.3, marginBottom: 6 }}>Ditt CV – alltid uppdaterat</h2>
-            <p style={{ fontSize: 13.5, lineHeight: 1.5, opacity: 0.85, marginBottom: 15 }}>Dela din STP-profil med vilket åkeri som helst – även utanför STP.</p>
-            <div style={{ display: "flex", gap: 10 }}>
-              <button onClick={() => ctx.setSheet({ type: "share" })} className="press" style={{ flex: 1, height: 46, borderRadius: 12, background: "#fff", color: "var(--green-deep)", fontWeight: 800, fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}><Icon name="share" size={17} stroke={2.2} />Dela profil</button>
-              <button onClick={() => ctx.setSheet({ type: "share" })} className="press" style={{ width: 46, height: 46, borderRadius: 12, background: "rgba(255,255,255,0.16)", display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="download" size={19} color="#fff" stroke={2.2} /></button>
-            </div>
-          </Card>
 
           {/* tipsa en kollega — word-of-mouth */}
           <Card style={{ padding: "16px", display: "flex", alignItems: "center", gap: 13 }}>
