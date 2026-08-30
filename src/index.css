@@ -150,8 +150,11 @@ select {
 ::-webkit-scrollbar-thumb:hover { background: var(--ink-300); }
 
 /* ── Focus ring ────────────────────────────────────────────────────────────── */
+/* !important: flera fält sätter `outline: "none"` som inline-stil, och inline
+   vinner över stilmallen — regeln var därför verkningslös på just de element som
+   behövde den mest. Se motsvarande kommentar i mobile.css. */
 :focus-visible {
-  outline: 2px solid var(--green);
+  outline: 2px solid var(--green) !important;
   outline-offset: 2px;
   border-radius: 4px;
 }

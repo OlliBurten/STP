@@ -44,8 +44,14 @@ function JobCard({ job, idx = 0, saved, onOpen, onSave }) {
               <span key={popKey} style={{ display: "inline-block", animation: saved ? "stpm-pop .4s" : "none" }}><Icon name="bookmark" size={19} color={saved ? "var(--green)" : "var(--ink-300)"} stroke={2} style={{ fill: saved ? "var(--green)" : "none" }} /></span>
             </button>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--ink-500)", marginTop: 2, marginBottom: 9 }}>
-            <span>{job.company}</span>{job.verified && <Icon name="check2" size={14} color="var(--green)" stroke={2.2} />}<span>· {job.location}</span>
+          {/* Raden var en flexrad utan wrap, så ett långt företagsnamn tryckte ut
+              orten till en egen rad längst till höger — "· Upplands Väsby" hängde
+              löst i kanten och såg trasigt ut. Som löpande text radbryts den i
+              stället naturligt, precis som i förarens JobCard. */}
+          <div style={{ fontSize: 13, color: "var(--ink-500)", marginTop: 2, marginBottom: 9, lineHeight: 1.35 }}>
+            {job.company}
+            {job.verified && <Icon name="check2" size={14} color="var(--green)" stroke={2.2} style={{ display: "inline-block", verticalAlign: "-2px", margin: "0 3px" }} />}
+            {" · "}{job.location}
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
             {job.licenses.map((l) => <Pill key={l} tone="outline" size="sm">{l}</Pill>)}
