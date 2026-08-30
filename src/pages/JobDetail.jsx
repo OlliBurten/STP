@@ -675,7 +675,7 @@ export default function JobDetail() {
             borderBottom: mobileScrolled ? "1px solid var(--line)" : "1px solid transparent",
             transition: "all .2s",
           }}>
-            <Link to="/jobb" style={{ width: 38, height: 38, borderRadius: 999, background: "var(--card)", border: "1px solid var(--line)", boxShadow: "var(--sh-sm)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-900)", flexShrink: 0 }}>
+            <Link to="/jobb" style={{ width: 44, height: 44, borderRadius: 999, background: "var(--card)", border: "1px solid var(--line)", boxShadow: "var(--sh-sm)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-900)", flexShrink: 0 }}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
             </Link>
             {mobileScrolled && (
@@ -689,13 +689,13 @@ export default function JobDetail() {
                 onClick={handleToggleSave}
                 aria-label={isSaved ? "Ta bort från favoriter" : "Spara jobb"}
                 aria-pressed={isSaved}
-                style={{ width: 38, height: 38, borderRadius: 999, background: isSaved ? "var(--amber-tint)" : "var(--card)", border: `1px solid ${isSaved ? "rgba(199,122,14,0.3)" : "var(--line)"}`, boxShadow: "var(--sh-sm)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: isSaved ? "var(--amber-deep)" : "var(--ink-500)" }}
+                style={{ width: 44, height: 44, borderRadius: 999, background: isSaved ? "var(--amber-tint)" : "var(--card)", border: `1px solid ${isSaved ? "rgba(199,122,14,0.3)" : "var(--line)"}`, boxShadow: "var(--sh-sm)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: isSaved ? "var(--amber-deep)" : "var(--ink-500)" }}
               >
                 <svg viewBox="0 0 24 24" fill={isSaved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" width="15" height="15"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
               </button>
               )}
               <button onClick={handleShare} aria-label="Dela jobb"
-                style={{ width: 38, height: 38, borderRadius: 999, background: "var(--card)", border: "1px solid var(--line)", boxShadow: "var(--sh-sm)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-500)" }}
+                style={{ width: 44, height: 44, borderRadius: 999, background: "var(--card)", border: "1px solid var(--line)", boxShadow: "var(--sh-sm)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-500)" }}
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
               </button>
@@ -837,7 +837,10 @@ export default function JobDetail() {
         </div>
 
         {/* Sticky bottom apply bar */}
-        <div style={{ position: "sticky", bottom: 0, zIndex: 20, background: "var(--card)", borderTop: "1px solid var(--line)", padding: "12px 18px max(env(safe-area-inset-bottom, 16px), 16px)", display: "flex", alignItems: "center", gap: 12 }}>
+        {/* Annonssidan ligger utanför MobileShell, så bottenraden håller undan för
+            cookiebannern själv — annars låg samtycket över Ansök-knappen för en
+            förstagångsbesökare som kom hit direkt från Google. */}
+        <div style={{ position: "sticky", bottom: 0, zIndex: 20, background: "var(--card)", borderTop: "1px solid var(--line)", padding: "12px 18px calc(max(env(safe-area-inset-bottom, 16px), 16px) + var(--stp-cookie-h, 0px))", display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             {job.salaryMin ? (
               <>

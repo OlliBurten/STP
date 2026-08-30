@@ -6,10 +6,16 @@
  *
  * Nyckel i localStorage: "stp-cookie-consent" → "accepted" | "declined"
  */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 
 const CONSENT_KEY = "stp-cookie-consent";
+// Bannern ligger fixed över sidan. Utan att någon reserverar plats för den lade
+// den sig över det viktigaste på skärmen: hero-knappen "Se lediga jobb" vid
+// första besöket, "Försök igen" i felvyn och den klistrade Ansök-raden på
+// annonssidan. Höjden publiceras därför som CSS-variabel så mobilskalet och
+// annonssidans bottenrad kan hålla sig ovanför den så länge den syns.
+const HEIGHT_VAR = "--stp-cookie-h";
 
 export function getCookieConsent() {
   try { return localStorage.getItem(CONSENT_KEY); } catch { return null; }
@@ -21,10 +27,30 @@ export function hasCookieConsent() {
 
 export default function CookieBanner() {
   const [visible, setVisible] = useState(false);
+  const boxRef = useRef(null);
 
   useEffect(() => {
     if (!getCookieConsent()) setVisible(true);
   }, []);
+
+  // Mät faktisk höjd i stället för att gissa — texten radbryts olika på olika
+  // skärmbredder. Städas alltid bort, annars ligger utrymmet kvar efter valet.
+  useEffect(() => {
+    const root = document.documentElement;
+    const clear = () => root.style.removeProperty(HEIGHT_VAR);
+    if (!visible) { clear(); return clear; }
+    const el = boxRef.current;
+    if (!el) return clear;
+    const publish = () => {
+      // 16px = bannerens bottenmarginal, så innehållet får luft mot den.
+      root.style.setProperty(HEIGHT_VAR, `${Math.round(el.getBoundingClientRect().height) + 16}px`);
+    };
+    publish();
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(publish) : null;
+    ro?.observe(el);
+    window.addEventListener("resize", publish);
+    return () => { ro?.disconnect(); window.removeEventListener("resize", publish); clear(); };
+  }, [visible]);
 
   const respond = (choice) => {
     try { localStorage.setItem(CONSENT_KEY, choice); } catch {}
@@ -55,6 +81,7 @@ export default function CookieBanner() {
 
   return (
     <div
+      ref={boxRef}
       role="dialog"
       aria-label="Cookie-inställningar"
       style={{
@@ -64,31 +91,33 @@ export default function CookieBanner() {
         background: "var(--card)",
         border: "1px solid var(--line)",
         borderRadius: 16,
-        padding: "18px 20px",
+        padding: "14px 16px",
         boxShadow: "0 12px 40px rgba(15,33,32,0.16)",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 8 }}>
-        <span style={{ fontSize: "var(--text-base)" }} aria-hidden="true">🍪</span>
-        <span style={{ fontSize: "var(--text-sm)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.2 }}>Cookies på STP</span>
-      </div>
-      <p style={{ margin: "0 0 14px", fontSize: "var(--text-sm)", color: "var(--ink-600)", lineHeight: 1.55 }}>
-        Nödvändiga cookies används för inloggning och säkerhet. Godkänner du alla aktiverar vi
-        även felrapportering (Sentry) och produktanalys (PostHog) som hjälper oss förbättra
-        plattformen.{" "}
+      {/* Kortare text än tidigare: fyra rader på mobil blev en banner som täckte
+          halva skärmen. Kategorierna och leverantörerna står kvar — det är den
+          delen som gör samtycket informerat — men utan förklarande utfyllnad. */}
+      <p style={{ margin: "0 0 12px", fontSize: "var(--text-sm)", color: "var(--ink-600)", lineHeight: 1.5 }}>
+        <span aria-hidden="true">🍪</span>{" "}
+        <strong style={{ color: "var(--ink-900)", fontWeight: 800 }}>Cookies.</strong>{" "}
+        Nödvändiga krävs för inloggning. Godkänner du alla aktiveras även felrapportering
+        (Sentry) och produktanalys (PostHog).{" "}
         <Link to="/integritet" style={{ color: "var(--green-text)", textDecoration: "underline", whiteSpace: "nowrap" }}>
-          Läs vår integritetspolicy
+          Integritetspolicy
         </Link>
       </p>
 
-      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "flex-end" }}>
+      {/* Knapparna delar bredden på mobil — 38 px höga knappar i hörnet bröt mot
+          DESIGN.md §3 (44×44) på den yta som allra flest möter först. */}
+      <div style={{ display: "flex", gap: 10 }}>
         <button
           onClick={() => respond("declined")}
           style={{
-            padding: "10px 18px", borderRadius: 10,
+            flex: 1, minHeight: 44, padding: "0 14px", borderRadius: 10,
             background: "transparent", border: "1px solid var(--line-2)",
-            color: "var(--ink-600)", fontSize: "var(--text-sm)", fontWeight: 700,
-            cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap",
+            color: "var(--ink-700)", fontSize: "var(--text-sm)", fontWeight: 700,
+            cursor: "pointer", fontFamily: "inherit",
           }}
         >
           Endast nödvändiga
@@ -96,10 +125,10 @@ export default function CookieBanner() {
         <button
           onClick={() => respond("accepted")}
           style={{
-            padding: "10px 22px", borderRadius: 10,
+            flex: 1, minHeight: 44, padding: "0 14px", borderRadius: 10,
             background: "var(--green)", border: "none",
             color: "#fff", fontSize: "var(--text-sm)", fontWeight: 800,
-            cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap",
+            cursor: "pointer", fontFamily: "inherit",
             boxShadow: "var(--sh-sm)",
           }}
         >

@@ -49,7 +49,9 @@ export default function JobCard({ job, ctx, idx, onHide }) {
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
                 <h3 style={{ fontSize: 15.5, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.2, lineHeight: 1.25 }}>{job.title}</h3>
-                <button onClick={(e) => { e.stopPropagation(); ctx.toggleSave(job.id); if (!savedNow) setPopKey((k) => k + 1); }} style={{ flexShrink: 0, marginTop: -2 }} aria-label="Spara jobb">
+                {/* 44×44 träffyta enligt DESIGN.md §3 — se motsvarande knapp i
+                    MobileGuestJobs. Negativa marginaler bevarar kortets höjd. */}
+                <button onClick={(e) => { e.stopPropagation(); ctx.toggleSave(job.id); if (!savedNow) setPopKey((k) => k + 1); }} style={{ flexShrink: 0, width: 44, height: 44, margin: "-11px -12px -11px 0", display: "flex", alignItems: "center", justifyContent: "center" }} aria-label="Spara jobb">
                   <span key={popKey} style={{ display: "inline-block", animation: savedNow ? "stpm-pop .4s" : "none" }}><Icon name="bookmark" size={19} color={savedNow ? "var(--green)" : "var(--ink-300)"} stroke={2} style={{ fill: savedNow ? "var(--green)" : "none" }} /></span>
                 </button>
               </div>

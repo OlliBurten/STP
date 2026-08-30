@@ -37,7 +37,10 @@ function JobCard({ job, idx = 0, saved, onOpen, onSave }) {
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
             <h3 style={{ fontSize: 15.5, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.2, lineHeight: 1.25 }}>{job.title}</h3>
-            <button onClick={(e) => { e.stopPropagation(); onSave(); if (!saved) setPopKey((k) => k + 1); }} style={{ flexShrink: 0, marginTop: -2 }} aria-label="Spara jobb">
+            {/* 44×44 träffyta enligt DESIGN.md §3 — knappen var 19×26, mindre än
+                halva minimimåttet. Negativa marginaler håller ikonen kvar där den
+                satt så kortets höjd inte ändras. */}
+            <button onClick={(e) => { e.stopPropagation(); onSave(); if (!saved) setPopKey((k) => k + 1); }} style={{ flexShrink: 0, width: 44, height: 44, margin: "-11px -12px -11px 0", display: "flex", alignItems: "center", justifyContent: "center" }} aria-label="Spara jobb">
               <span key={popKey} style={{ display: "inline-block", animation: saved ? "stpm-pop .4s" : "none" }}><Icon name="bookmark" size={19} color={saved ? "var(--green)" : "var(--ink-300)"} stroke={2} style={{ fill: saved ? "var(--green)" : "none" }} /></span>
             </button>
           </div>
@@ -193,10 +196,10 @@ export default function MobileGuestJobs() {
   return (
     <MobileShell>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", flexShrink: 0, borderBottom: scrolled ? "1px solid var(--line)" : "1px solid transparent", background: "rgba(245,242,236,0.92)", backdropFilter: "blur(12px)" }}>
-        <button onClick={() => navigate("/")} className="press"><Logo /></button>
+        <button onClick={() => navigate("/")} className="press" aria-label="Till startsidan" style={{ height: 44, display: "flex", alignItems: "center" }}><Logo /></button>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <button onClick={() => navigate("/login?start=login")} className="press" style={{ height: 38, padding: "0 14px", borderRadius: 11, background: "var(--card)", border: "1px solid var(--line-2)", color: "var(--ink-800)", fontWeight: 700, fontSize: 14 }}>Logga in</button>
-          <button onClick={() => navigate("/registrera?role=forare")} className="press" style={{ height: 38, padding: "0 14px", borderRadius: 11, background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: 14 }}>Skapa konto</button>
+          <button onClick={() => navigate("/login?start=login")} className="press" style={{ height: 44, padding: "0 14px", borderRadius: 11, background: "var(--card)", border: "1px solid var(--line-2)", color: "var(--ink-800)", fontWeight: 700, fontSize: 14 }}>Logga in</button>
+          <button onClick={() => navigate("/registrera?role=forare")} className="press" style={{ height: 44, padding: "0 14px", borderRadius: 11, background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: 14 }}>Skapa konto</button>
         </div>
       </div>
       <div className="app-scroll" onScroll={onScroll} style={{ flex: 1, overflowY: "auto" }}>
@@ -207,8 +210,8 @@ export default function MobileGuestJobs() {
           <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
             <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 10, height: 50, padding: "0 15px", background: "var(--card)", border: "1px solid var(--line-2)", borderRadius: 14 }}>
               <Icon name="search" size={19} color="var(--ink-400)" stroke={2} />
-              <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Yrke, ort eller åkeri" style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontSize: 15, color: "var(--ink-900)" }} />
-              {q && <button onClick={() => setQ("")} className="press"><Icon name="x" size={17} color="var(--ink-400)" stroke={2.2} /></button>}
+              <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Yrke, ort eller åkeri" style={{ flex: 1, alignSelf: "stretch", minWidth: 0, border: "none", outline: "none", background: "transparent", fontSize: 15, color: "var(--ink-900)" }} />
+              {q && <button onClick={() => setQ("")} className="press" aria-label="Rensa sökning" style={{ width: 44, height: 44, margin: "0 -13px 0 0", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icon name="x" size={17} color="var(--ink-400)" stroke={2.2} /></button>}
             </div>
             <button onClick={() => setFilterOpen(true)} className="press" style={{ width: 50, height: 50, borderRadius: 14, background: activeCount ? "var(--green)" : "var(--card)", border: activeCount ? "none" : "1px solid var(--line-2)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
               <Icon name="sliders" size={20} color={activeCount ? "#fff" : "var(--ink-600)"} stroke={2} />
@@ -302,7 +305,7 @@ export default function MobileGuestJobs() {
           <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 16px", borderBottom: "1px solid var(--line)", background: "rgba(245,242,236,0.95)", backdropFilter: "blur(10px)", flexShrink: 0, paddingTop: "calc(13px + var(--stpm-safe-top))" }}>
             <button onClick={closeDetail} className="press" aria-label="Tillbaka till jobblistan" style={{ width: 44, height: 44, borderRadius: 11, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--card)", border: "1px solid var(--line-2)" }}><Icon name="arrowLeft" size={20} stroke={2} /></button>
             <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: -0.3, flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{detail.title}</span>
-            <button onClick={() => toggleSave(detail.id)} className="press" aria-label="Spara" style={{ width: 40, height: 40, borderRadius: 11, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--card)", border: "1px solid var(--line-2)" }}><Icon name="bookmark" size={19} color={saved.has(detail.id) ? "var(--green)" : "var(--ink-400)"} stroke={2} style={{ fill: saved.has(detail.id) ? "var(--green)" : "none" }} /></button>
+            <button onClick={() => toggleSave(detail.id)} className="press" aria-label="Spara jobb" style={{ width: 44, height: 44, borderRadius: 11, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--card)", border: "1px solid var(--line-2)" }}><Icon name="bookmark" size={19} color={saved.has(detail.id) ? "var(--green)" : "var(--ink-400)"} stroke={2} style={{ fill: saved.has(detail.id) ? "var(--green)" : "none" }} /></button>
           </div>
           <div className="app-scroll" style={{ flex: 1, overflowY: "auto", padding: "22px 20px 120px" }}>
             <div style={{ display: "flex", gap: 14, marginBottom: 18 }}>
