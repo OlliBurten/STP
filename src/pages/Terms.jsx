@@ -38,7 +38,7 @@ export const DOCS = {
       },
       {
         id: "radering", h: "8. Kontoavstängning och radering",
-        p: ["Du kan när som helst radera ditt konto via din profil, vilket raderar all din persondata omedelbart. Vi förbehåller oss rätten att stänga konton som bryter mot dessa villkor, utan föregående varning vid allvarliga överträdelser."],
+        p: ["Du kan när som helst radera ditt konto via din profil. All din persondata raderas då omedelbart ur tjänsten. En krypterad säkerhetskopia av databasen kan innehålla uppgifterna i upp till 14 dagar, varefter den raderas automatiskt — kopian används enbart för att kunna återställa tjänsten efter dataförlust. Vi förbehåller oss rätten att stänga konton som bryter mot dessa villkor, utan föregående varning vid allvarliga överträdelser."],
       },
       {
         id: "lag", h: "9. Tillämplig lag och tvist",
@@ -73,7 +73,7 @@ export const DOCS = {
       },
       {
         id: "lagring", h: "5. Lagring och radering",
-        p: ["Vi lagrar dina uppgifter så länge ditt konto är aktivt. Du kan när som helst radera ditt konto via inställningar — all persondata raderas då omedelbart och permanent.", "Meddelanden i konversationer bevaras i 12 månader efter kontots radering, varefter de raderas automatiskt."],
+        p: ["Vi lagrar dina uppgifter så länge ditt konto är aktivt. Du kan när som helst radera ditt konto via inställningar — all persondata raderas då omedelbart ur tjänsten.", "En krypterad säkerhetskopia av databasen tas dagligen och sparas i 14 dagar innan den raderas automatiskt. Uppgifter du raderat kan alltså finnas kvar i en säkerhetskopia under den tiden. Kopian förvaras inom EU, delas aldrig med någon och används enbart för att kunna återställa tjänsten efter dataförlust.", "Meddelanden i konversationer bevaras i 12 månader efter kontots radering, varefter de raderas automatiskt."],
       },
       {
         id: "rattigheter", h: "6. Dina rättigheter (GDPR)",

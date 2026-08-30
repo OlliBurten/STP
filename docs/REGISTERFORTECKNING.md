@@ -2,7 +2,7 @@
 
 **Personuppgiftsansvarig:** Sveriges Transportplattform (STP)
 **Kontakt:** dataskydd@transportplattformen.se
-**Senast uppdaterad:** 2026-06-07
+**Senast uppdaterad:** 2026-08-30
 
 > Detta är STP:s register över behandlingar enligt GDPR artikel 30. Det beskriver
 > vilka personuppgifter vi behandlar, varför, på vilken rättslig grund, var de
@@ -65,6 +65,19 @@
 | **Personuppgifter** | Namn, e-postadress, relevant kontext (jobbtitel m.m.) |
 | **Rättslig grund** | Avtal (art. 6.1.b). Inga marknadsföringsutskick utan samtycke. |
 
+### 1.7 Lokal säkerhetskopia av databasen
+| Fält | Värde |
+|---|---|
+| **Ändamål** | Kontinuitet och återställning vid dataförlust (art. 32.1.c – förmåga att återställa tillgängligheten). Railways egna volymbackuper är en betalfunktion och upphörde vid nedgraderingen till Hobby-planen 2026-08-17; utan denna rutin saknade produktionsdatabasen skyddsnät helt. |
+| **Kategorier av registrerade** | Samtliga – förare, kontaktpersoner hos åkerier |
+| **Personuppgifter** | Fullständig kopia av produktionsdatabasen, dvs. samtliga uppgifter i §1.1–1.6 |
+| **Rättslig grund** | Berättigat intresse (art. 6.1.f) – säkerställa driftskontinuitet och skydda mot dataförlust |
+| **Mottagare** | **Inga.** Kopian lämnar aldrig den personuppgiftsansvariges egen dator och synkas inte till någon molntjänst. |
+| **Plats** | Sverige – lokal disk hos personuppgiftsansvarig (`~/STP-backups`) |
+| **Lagringstid** | **14 dagar**, rullande. Äldre kopior raderas automatiskt vid varje körning. |
+| **Säkerhetsåtgärder** | Diskkryptering i vila (FileVault, verifierad aktiv 2026-08-30); katalogrättigheter `700`, filrättigheter `600`; anslutningsuppgifter hämtas vid körning och lagras aldrig i kod. |
+| **Teknisk rutin** | `scripts/backup-db.sh`, schemalagd 03:15 dagligen via launchd. Ofullständiga dumpar raderas; misslyckad körning larmar via e-post. |
+
 ---
 
 ## 2. Underleverantörer (personuppgiftsbiträden)
@@ -89,7 +102,7 @@
 |---|---|
 | Tillgång (art. 15) | Profilen visar all egen data; utdrag via dataskydd@transportplattformen.se |
 | Rättelse (art. 16) | Användaren rättar själv via sin profil |
-| Radering (art. 17) | **Självservice** – radera konto i inställningar → all data raderas omedelbart |
+| Radering (art. 17) | **Självservice** – radera konto i inställningar → all data raderas omedelbart ur den aktiva databasen. Uppgifterna kan finnas kvar i den lokala säkerhetskopian (§1.7) i **upp till 14 dagar**, varefter den kopian raderas automatiskt. Kopian används enbart för återställning och görs inte sökbar. |
 | Begränsning (art. 18) | Synlighet kan stängas av; begäran via kontakt |
 | Dataportabilitet (art. 20) | Utdrag av egna uppgifter via kontakt |
 | Invändning (art. 21) | Mot behandling på berättigat intresse, via kontakt |
@@ -105,3 +118,4 @@
 - Felövervakning (Sentry) och driftövervakning
 - Åtkomst till produktionsdata begränsad
 - Persondata i EU (Railway, Amsterdam)
+- Daglig säkerhetskopia av databasen på krypterad lokal disk i Sverige, 14 dagars rotation (§1.7)
