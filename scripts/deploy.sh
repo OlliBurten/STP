@@ -25,6 +25,7 @@ cd "$ROOT"
 TARGET="${1:-all}"
 HEALTH_API="https://nodejs-production-f3b9.up.railway.app/api/health"
 SITE="https://transportplattformen.se"
+VERCEL_PROJECT="drivermatch-20260212"
 
 red()  { printf '\033[31m%s\033[0m\n' "$*"; }
 grn()  { printf '\033[32m%s\033[0m\n' "$*"; }
@@ -72,8 +73,41 @@ if [ "$TARGET" = "all" ] || [ "$TARGET" = "frontend" ]; then
   grn "✓ Build OK."
 fi
 
+# Vilken huvudbundle serverar domänen just nu? Vites filnamn innehåller en hash
+# av innehållet, så ett nytt värde = ny kod live.
+#
+# UA:t spelar roll: middleware.js SSR:ar "/" för botar, och det svaret innehåller
+# inga <script src="/assets/…">. Med bot-UA får vi alltså alltid tom sträng.
+# Cache-buster mot CDN:en.
+site_asset() {
+  curl -s --max-time 15 -H 'Cache-Control: no-cache' \
+    -A 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120 Safari/537.36' \
+    "$SITE/?deploycheck=$$_$1" 2>/dev/null \
+    | grep -oE '/assets/index-[^"]*\.js' | head -1
+}
+
+# Översta produktionsdeployen hos Vercel. Används bara för att skilja
+# "identiskt bygge" från "deployen kom aldrig fram" när bundlen är oförändrad.
+vercel_top() {
+  vercel ls "$VERCEL_PROJECT" --prod 2>/dev/null \
+    | grep -oE 'https://[a-z0-9-]+\.vercel\.app' | head -1
+}
+
 # ── 4. Deploya ───────────────────────────────────────────────────────────────────
+PRE_ASSET=""
+PRE_VERCEL=""
 if [ "$TARGET" = "all" ] || [ "$TARGET" = "frontend" ]; then
+  # `vercel --prod` returnerar när bygget är klart, men domänen kan fortfarande
+  # peka på föregående deploy. Ett 200-svar från sajten bevisar därför ingenting
+  # om att den NYA koden är live — samma lucka som Railway-sidan hade.
+  PRE_ASSET="$(site_asset pre)"
+  PRE_VERCEL="$(vercel_top)"
+  if [ -n "$PRE_ASSET" ]; then
+    ylw "→ Sajten serverar nu ${PRE_ASSET#/assets/}. Väntar på att den byts ut."
+  else
+    ylw "→ Kunde inte läsa nuvarande bundle — verifierar bara att sajten svarar 200."
+  fi
+
   ylw "→ Deployar frontend (Vercel)..."
   vercel --cwd "$ROOT" --prod
   grn "✓ Frontend deployad."
@@ -109,13 +143,28 @@ ylw "→ Verifierar health (väntar in ev. omstart)..."
 # tidigare 30 × 8 s räckte inte ens till ett normalt bygge.
 TRIES=30
 [ -n "$PRE_UPTIME" ] && TRIES=90
+[ -n "$PRE_ASSET" ] && TRIES=90
 
 OK=0
 NEW_UPTIME=""
+NEW_ASSET=""
 for i in $(seq 1 $TRIES); do
   H="$(curl -s --max-time 10 "$HEALTH_API" || true)"
   CODE="$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "$SITE" || echo 000)"
   if echo "$H" | grep -q '"ok":true' && echo "$H" | grep -q '"db":"ok"' && [ "$CODE" = "200" ]; then
+
+    # Frontend: kräv att domänen faktiskt serverar en annan bundle än före
+    # deployen. Vites filnamnshash ändras när innehållet ändras.
+    if [ -n "$PRE_ASSET" ] && [ -z "$NEW_ASSET" ]; then
+      A="$(site_asset "$i")"
+      if [ -n "$A" ] && [ "$A" != "$PRE_ASSET" ]; then
+        NEW_ASSET="$A"
+      else
+        [ $((i % 5)) -eq 0 ] && ylw "   …domänen serverar fortfarande ${PRE_ASSET#/assets/}, väntar."
+        sleep 8; continue
+      fi
+    fi
+
     if [ -z "$PRE_UPTIME" ]; then
       OK=1; break
     fi
@@ -132,14 +181,33 @@ for i in $(seq 1 $TRIES); do
 done
 
 echo
-if [ "$OK" = "1" ]; then
-  if [ -n "$NEW_UPTIME" ]; then
-    grn "✅ DEPLOY KLAR ($DEPLOY_SHA). Ny backend-instans uppe (uptime ${NEW_UPTIME}s), sajt 200, databas ok."
-  else
-    grn "✅ DEPLOY KLAR ($DEPLOY_SHA). Sajt 200, API ok, databas ok."
+# Oförändrad bundle betyder inte nödvändigtvis misslyckad deploy: byggde vi exakt
+# samma kod som redan låg ute blir hashen densamma, och då finns inget att vänta
+# på. Vercel skapar däremot alltid en ny deploy. Skiljer vi inte på de här två
+# fallen får ett ofarligt "identiskt bygge" samma larm som en deploy som aldrig
+# nådde fram — och då slutar man lita på larmet.
+if [ "$OK" != "1" ] && [ -n "$PRE_ASSET" ] && [ -z "$NEW_ASSET" ]; then
+  POST_VERCEL="$(vercel_top)"
+  if [ -n "$POST_VERCEL" ] && [ -n "$PRE_VERCEL" ] && [ "$POST_VERCEL" != "$PRE_VERCEL" ]; then
+    ylw "→ Bundlen är oförändrad, men Vercel har en ny produktionsdeploy:"
+    ylw "  $POST_VERCEL"
+    ylw "  Bygget gav alltså byte-identisk utdata — inget nytt att servera."
+    NEW_ASSET="$PRE_ASSET"
+    [ -z "$PRE_UPTIME" ] && OK=1
+    [ -n "$PRE_UPTIME" ] && [ -n "$NEW_UPTIME" ] && OK=1
   fi
+fi
+
+if [ "$OK" = "1" ]; then
+  MSG="✅ DEPLOY KLAR ($DEPLOY_SHA)."
+  [ -n "$NEW_ASSET" ] && MSG="$MSG Sajten serverar ${NEW_ASSET#/assets/}."
+  [ -n "$NEW_UPTIME" ] && MSG="$MSG Ny backend-instans uppe (uptime ${NEW_UPTIME}s)."
+  grn "$MSG Databas ok."
 else
-  if [ -n "$PRE_UPTIME" ]; then
+  if [ -n "$PRE_ASSET" ] && [ -z "$NEW_ASSET" ]; then
+    red "⚠️  Deploy gjord ($DEPLOY_SHA) men domänen serverar fortfarande ${PRE_ASSET#/assets/}."
+    red "    Ingen ny produktionsdeploy hos Vercel heller — frontend-koden är INTE live."
+  elif [ -n "$PRE_UPTIME" ]; then
     red "⚠️  Deploy gjord ($DEPLOY_SHA) men den NYA backend-instansen kom aldrig upp inom tidsgränsen."
     red "    Gamla instansen svarar fortfarande — koden du just skickade är alltså INTE live."
   else
