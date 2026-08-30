@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { usePageTitle } from "../hooks/usePageTitle";
+import PageMeta from "../components/PageMeta";
 
 const LIVE_FEATURES = [
   "Förarprofiler med körkort, YKB/ADR-certifikat, region, tillgänglighet och erfarenhet",
@@ -83,6 +84,13 @@ export default function VisionPresentation() {
   usePageTitle("Vision & roadmap – Sveriges Transportplattform");
 
   return (
+    <>
+      {/* Internt presentationsmaterial — ska inte indexeras. Sidan låg utanför
+          sitemap:en men var fullt crawlbar och saknade metadata helt; det var
+          exakt den luckan som lät preview-sidornas overifierade påståenden nå
+          Google före #53. */}
+      {/* Titeln sätts redan av usePageTitle ovan — här bara robots-direktivet. */}
+      <PageMeta robots="noindex" />
     <main style={{ minHeight: "100vh", background: "var(--paper)" }}>
 
       {/* Hero */}
@@ -240,5 +248,6 @@ export default function VisionPresentation() {
 
       </div>
     </main>
+    </>
   );
 }

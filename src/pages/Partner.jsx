@@ -117,7 +117,7 @@ export default function Partner() {
     <main style={{ background: "var(--paper)", minHeight: "100vh" }}>
       <PageMeta
         title="Partnersida – STP Sveriges Transportplattform"
-        description="STP samarbetar med Arbetsförmedlingen, gymnasieskolor, YH-utbildningar och kommuner för att koppla ihop förare med åkerier. Läs om partnerskap och hör av dig."
+        description="STP söker samarbeten med utbildningsaktörer, skolor och kommuner för att koppla ihop förare med åkerier. Läs om partnerskap och hör av dig."
       />
 
       {/* Hero */}
@@ -191,7 +191,7 @@ export default function Partner() {
 
       {/* Partnertyper */}
       <section style={{ maxWidth: 800, margin: "0 auto", padding: "0 24px 72px" }}>
-        <h2 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 8, textAlign: "center" }}>Vem samarbetar vi med?</h2>
+        <h2 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 8, textAlign: "center" }}>Vilka vill vi samarbeta med?</h2>
         <p style={{ fontSize: "var(--text-md)", color: "var(--ink-500)", textAlign: "center", marginBottom: 32 }}>Vi söker organisationer som möter yrkesförare i olika faser — utbildning, omställning och karriär.</p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 14 }}>
           {PARTNER_TYPES.map((p) => (
