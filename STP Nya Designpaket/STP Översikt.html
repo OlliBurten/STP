@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>STP – Översikt (handoff)</title>
+
+<link rel="stylesheet" href="stp-light-tokens.css" />
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="stp-light-components.jsx"></script>
+
+<style>
+  .ov-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const GROUPS = [
+  { label: "Publikt & marknad", icon: "building", items: [
+    ["Landing Page", "STP Landing Page Ljust.html"],
+    ["Om / Blogg / Kontakt", "STP Innehållssidor Ljust.html"],
+    ["Villkor & Integritet", "STP Juridik Ljust.html"],
+  ]},
+  { label: "Auth & system", icon: "settings", items: [
+    ["Logga in / Registrera", "STP Auth Ljust.html"],
+    ["Felsidor (404/500/...)", "STP Felsidor Ljust.html"],
+    ["Empty & loading states", "STP States Ljust.html"],
+    ["Bekräftelsedialoger", "STP Dialoger Ljust.html"],
+    ["Notiser & globalt sök", "STP Notiser & Sök Ljust.html"],
+  ]},
+  { label: "Förare — desktop", icon: "user", items: [
+    ["Förarprofil", "STP Förarprofil Ljust.html"],
+    ["Lediga jobb (+ karta)", "STP Lediga Jobb Ljust.html"],
+    ["Jobbdetalj", "STP Jobbdetalj Ljust.html"],
+    ["Ansökan", "STP Ansökan Ljust.html"],
+    ["Mina ansökningar", "STP Mina Ansökningar Ljust.html"],
+    ["Inkorg", "STP Inkorg Ljust.html"],
+    ["Favoriter", "STP Favoriter Ljust.html"],
+    ["Åkerier (bläddra)", "STP Åkerier Ljust.html"],
+    ["Åkeriprofil", "STP Åkeriprofil Ljust.html"],
+    ["Inställningar", "STP Inställningar Ljust.html"],
+    ["Onboarding", "STP Onboarding Förare Ljust.html"],
+  ]},
+  { label: "Åkeri — desktop", icon: "truck", items: [
+    ["Dashboard", "STP Åkeri Dashboard Ljust.html"],
+    ["Hitta förare (talangkarta)", "STP Åkeri Hitta Förare Ljust.html"],
+    ["Annonser", "STP Åkeri Annonser Ljust.html"],
+    ["Skapa annons", "STP PostJob Ljust.html"],
+    ["Ansökningar (kanban)", "STP Jobbdetalj Åkeri-vy Ljust.html"],
+    ["Förarprofil (åkeri-vy)", "STP Åkeri Förarprofil Ljust.html"],
+    ["Företagsprofil", "STP Åkeri Företagsprofil Ljust.html"],
+    ["Verifiering", "STP Åkeri Verifiering Ljust.html"],
+    ["Inkorg", "STP Åkeri Inkorg Ljust.html"],
+    ["Onboarding", "STP Åkeri Onboarding Ljust.html"],
+  ]},
+  { label: "Admin", icon: "settings", items: [
+    ["Översikt", "STP Admin Dashboard Ljust.html"],
+    ["System & puls", "STP Admin System Ljust.html"],
+    ["Användare", "STP Admin Användare Ljust.html"],
+    ["Åkerier", "STP Admin Åkerier Ljust.html"],
+    ["Annonser", "STP Admin Annonser Ljust.html"],
+    ["Verifieringar", "STP Admin Verifieringar Ljust.html"],
+    ["Rapporter", "STP Admin Rapporter Ljust.html"],
+    ["Inställningar", "STP Admin Inställningar Ljust.html"],
+  ]},
+  { label: "Mobil — förare", icon: "user", items: [
+    ["Landing", "STP Mobil Landing Ljust.html"],
+    ["Onboarding", "STP Mobil Onboarding Ljust.html"],
+    ["Jobblista", "STP Mobil Jobblista Ljust.html"],
+    ["Jobbdetalj", "STP Mobil Jobbdetalj Ljust.html"],
+    ["Ansökan", "STP Mobil Ansökan Ljust.html"],
+    ["Mina ansökningar", "STP Mobil Mina Ansökningar Ljust.html"],
+    ["Inkorg", "STP Mobil Inkorg Ljust.html"],
+    ["Sparat", "STP Mobil Sparat Ljust.html"],
+    ["Förarprofil", "STP Mobil Förarprofil Ljust.html"],
+    ["Åkerier", "STP Mobil Åkerier Ljust.html"],
+    ["Åkeriprofil", "STP Mobil Åkeriprofil Ljust.html"],
+    ["Inställningar", "STP Mobil Inställningar Ljust.html"],
+  ]},
+  { label: "Mobil — åkeri", icon: "truck", items: [
+    ["Dashboard", "STP Mobil Åkeri Dashboard Ljust.html"],
+    ["Annonser", "STP Mobil Åkeri Annonser Ljust.html"],
+    ["Hitta förare", "STP Mobil Åkeri Hitta Förare Ljust.html"],
+    ["Förarprofil", "STP Mobil Åkeri Förarprofil Ljust.html"],
+    ["Inkorg", "STP Mobil Åkeri Inkorg Ljust.html"],
+    ["Onboarding", "STP Mobil Åkeri Onboarding Ljust.html"],
+  ]},
+];
+
+const TOTAL = GROUPS.reduce((s, g) => s + g.items.length, 0);
+
+const Tile = ([label, file]) => (
+  <a key={file} href={encodeURI(file)} style={{
+    display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10,
+    padding: "13px 15px", background: "var(--card)", border: "1px solid var(--line)",
+    borderRadius: 11, boxShadow: "var(--sh-sm)", color: "inherit",
+    transition: "border-color .15s, box-shadow .15s, transform .1s",
+  }}
+  onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--green)"; e.currentTarget.style.boxShadow = "var(--sh)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+  onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--line)"; e.currentTarget.style.boxShadow = "var(--sh-sm)"; e.currentTarget.style.transform = "translateY(0)"; }}>
+    <span style={{ fontSize: 13.5, fontWeight: 600, color: "var(--ink-900)" }}>{label}</span>
+    <Icon name="arrow" size={14} color="var(--ink-300)" stroke={2}/>
+  </a>
+);
+
+const App = () => (
+  <div style={{ minHeight: "100vh", background: "var(--paper)" }}>
+    {/* Hero */}
+    <div style={{ background: "var(--ink-900)", color: "#fff", padding: "44px 32px 40px" }}>
+      <div style={{ maxWidth: 1180, margin: "0 auto" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 28 }}>
+          <div style={{ width: 32, height: 32, borderRadius: 8, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 14 }}>S</div>
+          <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: 0.5 }}>STP</span>
+          <span style={{ fontSize: 11, fontWeight: 800, color: "var(--amber)", letterSpacing: 1.2, textTransform: "uppercase", paddingLeft: 10, marginLeft: 2, borderLeft: "1px solid rgba(255,255,255,0.2)" }}>Översikt</span>
+        </div>
+        <h1 style={{ fontSize: 38, fontWeight: 900, letterSpacing: -1.5, lineHeight: 1.05, marginBottom: 14, maxWidth: 640 }}>Sveriges Transportplattform — alla skärmar</h1>
+        <p style={{ fontSize: 16, color: "rgba(255,255,255,0.7)", lineHeight: 1.6, maxWidth: 600, marginBottom: 24 }}>{TOTAL} skärmar i ljust tema, byggda på ett enhetligt designsystem. Klicka för att öppna. Allt delar tokens och komponenter — ändra en token, allt uppdateras.</p>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <a href="HANDOFF.md" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 18px", borderRadius: 10, background: "var(--green)", color: "#fff", fontSize: 14, fontWeight: 700, border: "1px solid var(--green-deep)" }}>Läs handoff-guiden<Icon name="arrow" size={14} color="#fff" stroke={2.2}/></a>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 16px", borderRadius: 10, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", fontSize: 13, color: "rgba(255,255,255,0.7)" }}>Delade assets: tokens · komponenter · sverige-karta · admin-shell · mobil-shell</span>
+        </div>
+      </div>
+    </div>
+
+    {/* Groups */}
+    <div style={{ maxWidth: 1180, margin: "0 auto", padding: "36px 32px 80px", display: "flex", flexDirection: "column", gap: 34 }}>
+      {GROUPS.map(g => (
+        <section key={g.label}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+            <span style={{ width: 30, height: 30, borderRadius: 8, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name={g.icon} size={16} color="var(--green-text)" stroke={2}/></span>
+            <h2 style={{ fontSize: 17, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.3 }}>{g.label}</h2>
+            <span style={{ fontSize: 12.5, color: "var(--ink-400)", fontWeight: 600, fontFamily: "var(--mono)" }}>{g.items.length}</span>
+          </div>
+          <div className="ov-grid">{g.items.map(Tile)}</div>
+        </section>
+      ))}
+    </div>
+  </div>
+);
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

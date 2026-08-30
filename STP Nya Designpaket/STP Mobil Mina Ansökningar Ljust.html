@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>STP – Mina ansökningar (mobil)</title>
+
+<link rel="stylesheet" href="stp-light-tokens.css" />
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="stp-light-components.jsx"></script>
+<script type="text/babel" src="stp-mobile-shell.jsx"></script>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState } = React;
+
+const APPS = [
+  { id:1, title:"CE-chaufför fjärrkörning", company:"Nordic Transport AB", logo:"NT", stage:"selected", reached:["applied","seen","review","decision"], applied:"2 dgr sen", unread:1 },
+  { id:2, title:"C-chaufför distribution",  company:"Stockholm Logistik",  logo:"SL", stage:"seen",     reached:["applied","seen"], applied:"5 dgr sen", unread:0 },
+  { id:3, title:"Tankbilschaufför ADR",     company:"PetrolTrans Nordic",  logo:"PT", stage:"review",   reached:["applied","seen","review"], applied:"7 dgr sen", unread:0 },
+  { id:4, title:"Timjobb CE-chaufför",      company:"FlexiDriv",           logo:"FD", stage:"applied",  reached:["applied"], applied:"11 dgr sen", unread:0 },
+  { id:5, title:"Lokalchaufför C",          company:"Svensk Cementering",  logo:"SC", stage:"rejected", reached:["applied","seen","review","decision"], applied:"18 dgr sen", unread:0, rejected:true },
+];
+
+const STAGES = ["applied", "seen", "review", "decision"];
+const stageLabels = { applied:"Skickad", seen:"Sedd", review:"I urval", decision:"Beslut" };
+
+const statusPill = (a) => {
+  if (a.stage === "selected") return <Pill tone="success" size="sm" icon={<Dot tone="success" size={5}/>}>Utvald</Pill>;
+  if (a.stage === "rejected") return <Pill tone="danger" size="sm">Ej aktuell</Pill>;
+  if (a.stage === "review") return <Pill tone="amber" size="sm" icon={<Dot tone="amber" size={5}/>}>I urval</Pill>;
+  if (a.stage === "seen") return <Pill tone="info" size="sm">Sedd</Pill>;
+  return <Pill tone="neutral" size="sm">Skickad</Pill>;
+};
+
+const Tracker = ({ a }) => {
+  const activeColor = a.rejected ? "var(--danger)" : a.stage === "selected" ? "var(--success)" : "var(--amber)";
+  return (
+    <div style={{ display: "flex", alignItems: "center", marginTop: 12 }}>
+      {STAGES.map((s, i) => {
+        const done = a.reached.includes(s);
+        const isLast = i === STAGES.length - 1;
+        const color = !done ? "var(--ink-200)" : (s === "decision") ? activeColor : "var(--green)";
+        const label = s === "decision" ? (a.stage === "selected" ? "Utvald" : a.rejected ? "Nej" : "Beslut") : stageLabels[s];
+        return (
+          <div key={s} style={{ display: "flex", alignItems: "center", flex: isLast ? "0 0 auto" : 1 }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, flexShrink: 0 }}>
+              <span style={{ width: 16, height: 16, borderRadius: 8, background: done ? color : "var(--paper-2)", border: done ? "none" : "2px solid var(--line-2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                {done && (s === "decision" && a.rejected ? <Icon name="x" size={8} color="#fff" stroke={3}/> : <Icon name="check" size={8} color="#fff" stroke={3}/>)}
+              </span>
+              <span style={{ fontSize: 9.5, fontWeight: 600, color: done ? "var(--ink-600)" : "var(--ink-400)", whiteSpace: "nowrap" }}>{label}</span>
+            </div>
+            {!isLast && <div style={{ flex: 1, height: 2, margin: "0 4px", marginBottom: 16, background: a.reached.includes(STAGES[i+1]) ? "var(--green)" : "var(--line-2)" }}/>}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+const Header = () => (
+  <div style={{ background: "var(--paper)", padding: "6px 18px 12px" }}>
+    <h1 style={{ fontSize: 26, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1 }}>Mina ansökningar</h1>
+  </div>
+);
+
+const App = () => {
+  const [tab, setTab] = useState("ansokningar");
+  const [filter, setFilter] = useState("all");
+  const filters = [["all","Alla"],["active","Aktiva"],["selected","Utvald"],["rejected","Ej aktuell"]];
+  const list = APPS.filter(a => filter === "all" ? true : filter === "active" ? (a.stage !== "selected" && a.stage !== "rejected") : filter === "selected" ? a.stage === "selected" : a.stage === "rejected");
+
+  return (
+    <MobileShell tabs={DRIVER_TABS} active={tab} onTab={setTab} header={<Header/>}>
+      <div style={{ padding: "0 16px 24px" }}>
+        <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 14 }}>
+          {filters.map(([k, l]) => (
+            <button key={k} onClick={() => setFilter(k)} style={{ flexShrink: 0, padding: "7px 14px", borderRadius: 999, fontSize: 13, fontWeight: 600, background: filter === k ? "var(--green)" : "var(--card)", color: filter === k ? "#fff" : "var(--ink-700)", border: `1px solid ${filter === k ? "var(--green-deep)" : "var(--line-2)"}`, boxShadow: "var(--sh-sm)" }}>{l}</button>
+          ))}
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {list.map(a => (
+            <div key={a.id} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, padding: "16px", boxShadow: "var(--sh-sm)" }}>
+              <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                <div style={{ width: 42, height: 42, borderRadius: 10, background: "var(--paper-2)", border: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: "var(--ink-700)", flexShrink: 0 }}>{a.logo}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+                    <h3 style={{ fontSize: 14.5, fontWeight: 800, color: "var(--ink-900)", lineHeight: 1.3 }}>{a.title}</h3>
+                    {statusPill(a)}
+                  </div>
+                  <div style={{ fontSize: 12.5, color: "var(--ink-500)", marginTop: 2 }}>{a.company} · {a.applied}</div>
+                </div>
+              </div>
+              <Tracker a={a}/>
+              {a.unread > 0 && (
+                <button style={{ marginTop: 12, width: "100%", padding: "10px", borderRadius: 10, background: "var(--green)", color: "#fff", fontSize: 13.5, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
+                  <Icon name="msg" size={14} color="#fff" stroke={2}/> Nytt meddelande från {a.company.split(" ")[0]}
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </MobileShell>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

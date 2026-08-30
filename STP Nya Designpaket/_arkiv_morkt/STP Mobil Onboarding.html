@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STP Mobil – Onboarding</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',system-ui,sans-serif;background:#1a1a1a;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px 24px 60px;color:#f0faf9}
+button,input{font-family:inherit;color:inherit}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes bounceIn{0%{opacity:0;transform:scale(0.5)}60%{opacity:1;transform:scale(1.1)}100%{opacity:1;transform:scale(1)}}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(1.15)}}
+.fade{animation:fadeIn .35s cubic-bezier(.22,1,.36,1) both}
+.spin{animation:spin 1s linear infinite}
+.bounce{animation:bounceIn .55s cubic-bezier(.34,1.56,.64,1) both}
+.pulse{animation:pulse 1.5s infinite}
+.label{font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;text-align:center}
+</style>
+</head>
+<body>
+<script type="text/babel" src="ios-frame.jsx"></script>
+<div id="root"></div>
+<script type="text/babel">
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "step": "welcome"
+}/*EDITMODE-END*/;
+
+const IC = {
+  bankid:<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 4h6c2 0 4 2 4 4v8c0 2-2 4-4 4H9c-2 0-4-2-4-4V8c0-2 2-4 4-4zm3 4l-2 4h1.5v4h1v-4h1.5l-2-4z"/></svg>,
+  mail:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>,
+  back:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>,
+  arrow:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>,
+  pin:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
+  check:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
+  spark:<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L13.5 8.5 20 10l-6.5 1.5L12 18l-1.5-6.5L4 10l6.5-1.5z"/></svg>,
+  truck:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13" rx="1"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>,
+  shield:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
+};
+const Icon = ({ n, s=18, c="currentColor" }) => <span style={{ display:"inline-flex", width:s, height:s, color:c, flexShrink:0 }}>{IC[n]}</span>;
+
+// ─── 1. Welcome ────────────────────────────────────────────────────────────
+function Welcome({ next }) {
+  return (
+    <div className="fade" style={{ height:"100%", display:"flex", flexDirection:"column", background:"#060f0f", padding:"0 24px 32px" }}>
+      {/* Hero illustration area */}
+      <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", paddingTop:20 }}>
+        <div style={{ width:96, height:96, borderRadius:28, background:"linear-gradient(135deg,#F5A623,#d97706)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:28, boxShadow:"0 12px 40px rgba(245,166,35,0.3)" }}>
+          <Icon n="truck" s={42} c="#000"/>
+        </div>
+        <h1 style={{ fontSize:32, fontWeight:800, letterSpacing:-1.2, textAlign:"center", lineHeight:1.15, marginBottom:14, maxWidth:300 }}>
+          Hitta nästa jobb<br/>som chaufför
+        </h1>
+        <p style={{ fontSize:14, color:"rgba(255,255,255,0.55)", textAlign:"center", lineHeight:1.5, maxWidth:300 }}>
+          Sveriges plattform för förare. Skapa profil på 30 sekunder och se direkt vilka jobb som passar dig.
+        </p>
+      </div>
+
+      {/* Trust signals */}
+      <div style={{ display:"flex", justifyContent:"center", gap:20, marginBottom:24, flexWrap:"wrap" }}>
+        <Trust v="2 400+ förare"/>
+        <Trust v="320 åkerier"/>
+        <Trust v="100% gratis"/>
+      </div>
+
+      {/* CTAs */}
+      <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+        <button onClick={()=>next("bankid")} style={{ width:"100%", padding:"16px", borderRadius:14, background:"linear-gradient(135deg,#F5A623,#d97706)", border:"none", color:"#000", fontSize:15, fontWeight:800, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:9, boxShadow:"0 4px 20px rgba(245,166,35,0.3)", minHeight:54 }}>
+          <Icon n="bankid" s={20}/>
+          Kom igång med BankID
+        </button>
+        <button onClick={()=>next("email")} style={{ width:"100%", padding:"15px", borderRadius:14, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", color:"#fff", fontSize:14, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:8, minHeight:50 }}>
+          <Icon n="mail" s={15}/>
+          Använd e-post istället
+        </button>
+        <p style={{ fontSize:11.5, color:"rgba(255,255,255,0.4)", textAlign:"center", marginTop:8, lineHeight:1.5 }}>
+          Redan medlem? <a href="#" style={{ color:"#F5A623", textDecoration:"none", fontWeight:700 }}>Logga in</a>
+        </p>
+      </div>
+    </div>
+  );
+}
+const Trust = ({ v }) => (
+  <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:11.5, color:"rgba(255,255,255,0.5)" }}>
+    <div style={{ width:5, height:5, borderRadius:99, background:"#4ade80" }}/>
+    <span style={{ fontWeight:600 }}>{v}</span>
+  </div>
+);
+
+// ─── 2. BankID auth ────────────────────────────────────────────────────────
+function BankIDAuth({ next, back }) {
+  React.useEffect(() => {
+    const t = setTimeout(()=>next("location"), 2400);
+    return () => clearTimeout(t);
+  }, []);
+  return (
+    <div className="fade" style={{ height:"100%", display:"flex", flexDirection:"column", background:"#060f0f", padding:"0 24px 32px" }}>
+      <div style={{ padding:"4px 0 12px" }}>
+        <button onClick={back} style={{ width:42, height:42, borderRadius:99, background:"rgba(255,255,255,0.05)", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:"#fff" }}>
+          <Icon n="back" s={18}/>
+        </button>
+      </div>
+      <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center" }}>
+        <div className="pulse" style={{ width:120, height:120, borderRadius:28, background:"#1F5F5C", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:28 }}>
+          <Icon n="bankid" s={56} c="#fff"/>
+        </div>
+        <h1 style={{ fontSize:22, fontWeight:800, letterSpacing:-0.6, marginBottom:10, textAlign:"center" }}>Öppna BankID-appen</h1>
+        <p style={{ fontSize:14, color:"rgba(255,255,255,0.6)", textAlign:"center", lineHeight:1.5, marginBottom:36, maxWidth:280 }}>
+          Vänta tills BankID-appen öppnas på din enhet. Identifiera dig för att fortsätta.
+        </p>
+        <div style={{ display:"flex", alignItems:"center", gap:8, color:"rgba(255,255,255,0.45)", fontSize:12 }}>
+          <span className="spin" style={{ display:"inline-block", width:14, height:14, border:"2px solid rgba(255,255,255,0.2)", borderTopColor:"#F5A623", borderRadius:99 }}/>
+          Väntar på signering...
+        </div>
+      </div>
+      <button onClick={back} style={{ width:"100%", padding:"14px", borderRadius:14, background:"transparent", border:"1px solid rgba(255,255,255,0.1)", color:"rgba(255,255,255,0.75)", fontSize:13.5, fontWeight:700, cursor:"pointer" }}>Avbryt</button>
+    </div>
+  );
+}
+
+// ─── 3. Location ───────────────────────────────────────────────────────────
+function StepLocation({ next, back }) {
+  const [city, setCity] = React.useState("");
+  const cities = ["Malmö","Göteborg","Stockholm","Helsingborg","Lund","Uppsala","Linköping","Borås","Umeå","Sundsvall"];
+  return (
+    <StepShell back={back} progress={1}>
+      <div style={{ fontSize:11, fontWeight:800, letterSpacing:1.5, textTransform:"uppercase", color:"#F5A623", marginBottom:10 }}>Fråga 1 av 3</div>
+      <h1 style={{ fontSize:26, fontWeight:800, letterSpacing:-0.8, marginBottom:8, lineHeight:1.2 }}>Var bor du?</h1>
+      <p style={{ fontSize:13.5, color:"rgba(255,255,255,0.55)", marginBottom:24, lineHeight:1.5 }}>Vi använder din ort för att hitta jobb i närheten. Du kan ändra senare.</p>
+
+      <div style={{ position:"relative", marginBottom:14 }}>
+        <span style={{ position:"absolute", left:14, top:"50%", transform:"translateY(-50%)", color:"rgba(255,255,255,0.45)" }}><Icon n="pin" s={16}/></span>
+        <input value={city} onChange={e=>setCity(e.target.value)} placeholder="Sök ort..." style={{ width:"100%", padding:"15px 14px 15px 42px", borderRadius:13, background:"#0a1414", border:"1px solid rgba(255,255,255,0.08)", fontSize:15, outline:"none", color:"#fff", minHeight:52 }}/>
+      </div>
+
+      <div style={{ fontSize:11, fontWeight:700, letterSpacing:0.5, color:"rgba(255,255,255,0.35)", marginBottom:10, textTransform:"uppercase" }}>Populära orter</div>
+      <div style={{ display:"flex", flexWrap:"wrap", gap:7 }}>
+        {cities.map(c => {
+          const on = city === c;
+          return (
+            <button key={c} onClick={()=>setCity(c)} style={{ padding:"10px 14px", borderRadius:99, background: on ? "rgba(245,166,35,0.12)" : "#0a1414", border:`1px solid ${on ? "rgba(245,166,35,0.4)" : "rgba(255,255,255,0.08)"}`, color: on ? "#F5A623" : "rgba(255,255,255,0.7)", fontSize:13.5, fontWeight:700, cursor:"pointer", minHeight:40, display:"flex", alignItems:"center", gap:5 }}>{on && <Icon n="check" s={11}/>}{c}</button>
+          );
+        })}
+      </div>
+
+      <StepFooter onNext={()=>next("license")} canNext={!!city.trim()}/>
+    </StepShell>
+  );
+}
+
+// ─── 4. Körkort ────────────────────────────────────────────────────────────
+function StepLicense({ next, back }) {
+  const [licenses, setLicenses] = React.useState(["CE"]);
+  const toggle = (l) => setLicenses(prev => prev.includes(l) ? prev.filter(x=>x!==l) : [...prev, l]);
+  const opts = [
+    { v:"B", l:"B", d:"Personbil" },
+    { v:"C", l:"C", d:"Lastbil upp till 3,5 ton" },
+    { v:"CE", l:"CE", d:"Lastbil + släp" },
+    { v:"D", l:"D", d:"Buss" },
+  ];
+  return (
+    <StepShell back={back} progress={2}>
+      <div style={{ fontSize:11, fontWeight:800, letterSpacing:1.5, textTransform:"uppercase", color:"#F5A623", marginBottom:10 }}>Fråga 2 av 3</div>
+      <h1 style={{ fontSize:26, fontWeight:800, letterSpacing:-0.8, marginBottom:8, lineHeight:1.2 }}>Vilka körkort har du?</h1>
+      <p style={{ fontSize:13.5, color:"rgba(255,255,255,0.55)", marginBottom:24, lineHeight:1.5 }}>Välj alla du har. Det här är det viktigaste för matchningen.</p>
+
+      <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+        {opts.map(o => {
+          const on = licenses.includes(o.v);
+          return (
+            <button key={o.v} onClick={()=>toggle(o.v)} style={{ padding:"16px 18px", borderRadius:14, background: on ? "rgba(245,166,35,0.08)" : "#0a1414", border:`1px solid ${on ? "rgba(245,166,35,0.4)" : "rgba(255,255,255,0.08)"}`, cursor:"pointer", display:"flex", alignItems:"center", gap:14, minHeight:60, textAlign:"left" }}>
+              <div style={{ width:42, height:42, borderRadius:11, background: on ? "rgba(245,166,35,0.15)" : "rgba(255,255,255,0.04)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, fontWeight:800, color: on ? "#F5A623" : "rgba(255,255,255,0.6)", flexShrink:0 }}>{o.l}</div>
+              <div style={{ flex:1 }}>
+                <div style={{ fontSize:14.5, fontWeight:700, marginBottom:2, color:"#fff" }}>Körkort {o.l}</div>
+                <div style={{ fontSize:11.5, color:"rgba(255,255,255,0.55)" }}>{o.d}</div>
+              </div>
+              {on && <div style={{ width:24, height:24, borderRadius:99, background:"#F5A623", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}><Icon n="check" s={13} c="#000"/></div>}
+            </button>
+          );
+        })}
+      </div>
+
+      <p style={{ fontSize:12, color:"rgba(255,255,255,0.4)", marginTop:18, textAlign:"center" }}>
+        YKB och andra certifikat lägger du till senare när du behöver dem.
+      </p>
+
+      <StepFooter onNext={()=>next("looking")} canNext={licenses.length > 0}/>
+    </StepShell>
+  );
+}
+
+// ─── 5. Looking? ───────────────────────────────────────────────────────────
+function StepLooking({ next, back }) {
+  const [val, setVal] = React.useState(null);
+  const opts = [
+    { v:"active", l:"Ja, aktivt", d:"Jag vill hitta nytt jobb nu", e:"🔥" },
+    { v:"passive", l:"Jag spanar lite", d:"Öppen för rätt erbjudande", e:"👀" },
+    { v:"explore", l:"Bara nyfiken", d:"Vill se vad som finns", e:"🤔" },
+  ];
+  return (
+    <StepShell back={back} progress={3}>
+      <div style={{ fontSize:11, fontWeight:800, letterSpacing:1.5, textTransform:"uppercase", color:"#F5A623", marginBottom:10 }}>Fråga 3 av 3</div>
+      <h1 style={{ fontSize:26, fontWeight:800, letterSpacing:-0.8, marginBottom:8, lineHeight:1.2 }}>Söker du jobb just nu?</h1>
+      <p style={{ fontSize:13.5, color:"rgba(255,255,255,0.55)", marginBottom:24, lineHeight:1.5 }}>Åkerier ser detta för att veta hur snabbt du kan börja.</p>
+
+      <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+        {opts.map(o => {
+          const on = val === o.v;
+          return (
+            <button key={o.v} onClick={()=>setVal(o.v)} style={{ padding:"16px 18px", borderRadius:14, background: on ? "rgba(245,166,35,0.08)" : "#0a1414", border:`1px solid ${on ? "rgba(245,166,35,0.4)" : "rgba(255,255,255,0.08)"}`, cursor:"pointer", display:"flex", alignItems:"center", gap:14, minHeight:64, textAlign:"left" }}>
+              <div style={{ fontSize:26, flexShrink:0 }}>{o.e}</div>
+              <div style={{ flex:1 }}>
+                <div style={{ fontSize:14.5, fontWeight:700, marginBottom:2, color:"#fff" }}>{o.l}</div>
+                <div style={{ fontSize:11.5, color:"rgba(255,255,255,0.55)" }}>{o.d}</div>
+              </div>
+              {on && <div style={{ width:24, height:24, borderRadius:99, background:"#F5A623", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}><Icon n="check" s={13} c="#000"/></div>}
+            </button>
+          );
+        })}
+      </div>
+
+      <StepFooter onNext={()=>next("done")} canNext={!!val} nextLabel="Klar!"/>
+    </StepShell>
+  );
+}
+
+// ─── 6. Done — value first ─────────────────────────────────────────────────
+function StepDone({ next }) {
+  return (
+    <div className="fade" style={{ height:"100%", display:"flex", flexDirection:"column", background:"#060f0f", padding:"40px 24px 32px", overflowY:"auto" }}>
+      <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", textAlign:"center" }}>
+        <div className="bounce" style={{ width:80, height:80, borderRadius:99, background:"rgba(74,222,128,0.15)", border:"2px solid rgba(74,222,128,0.4)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:24 }}>
+          <Icon n="check" s={36} c="#4ade80"/>
+        </div>
+        <h1 style={{ fontSize:26, fontWeight:800, letterSpacing:-0.8, marginBottom:8 }}>Välkommen, Erik!</h1>
+        <p style={{ fontSize:14, color:"rgba(255,255,255,0.6)", lineHeight:1.55, marginBottom:32, maxWidth:280 }}>
+          Vi har redan hittat jobb som matchar din profil.
+        </p>
+
+        {/* Match preview */}
+        <div className="bounce" style={{ width:"100%", background:"linear-gradient(135deg, rgba(245,166,35,0.08), rgba(245,166,35,0.02))", border:"1px solid rgba(245,166,35,0.25)", borderRadius:16, padding:"22px 20px", marginBottom:14, textAlign:"left" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:9, marginBottom:14 }}>
+            <Icon n="spark" s={15} c="#F5A623"/>
+            <div style={{ fontSize:11, fontWeight:800, letterSpacing:1.2, textTransform:"uppercase", color:"#F5A623" }}>12 matchningar väntar</div>
+          </div>
+          <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+            {[
+              { c:"NT", bg:"#1F5F5C", t:"CE-chaufför fjärrkörning", l:"Malmö", m:94 },
+              { c:"PT", bg:"#3a2a1a", t:"Tankbilschaufför ADR", l:"Göteborg", m:88 },
+              { c:"+10", bg:"rgba(255,255,255,0.05)", t:"andra matchande jobb", l:"i hela Sverige", m:null, plus:true },
+            ].map((j, i) => (
+              <div key={i} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 0", borderTop: i > 0 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
+                <div style={{ width:36, height:36, borderRadius:10, background:j.bg, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:800, fontSize: j.plus ? 11 : 11.5, color:"#F5A623", flexShrink:0 }}>{j.c}</div>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ fontSize:12.5, fontWeight:700, color:"#fff", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{j.t}</div>
+                  <div style={{ fontSize:10.5, color:"rgba(255,255,255,0.5)" }}>{j.l}</div>
+                </div>
+                {j.m && <div style={{ padding:"3px 8px", borderRadius:6, background:"rgba(74,222,128,0.12)", color:"#4ade80", fontSize:11, fontWeight:800 }}>{j.m}%</div>}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Progress hint */}
+        <div style={{ width:"100%", padding:"14px 16px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.05)", borderRadius:13, display:"flex", alignItems:"center", gap:11, marginBottom:8, textAlign:"left" }}>
+          <Icon n="shield" s={14} c="rgba(255,255,255,0.5)"/>
+          <div style={{ flex:1 }}>
+            <div style={{ fontSize:12.5, fontWeight:700, marginBottom:2 }}>Profil 40% klar</div>
+            <div style={{ fontSize:11, color:"rgba(255,255,255,0.5)" }}>Fyll på senare för bättre matchningar</div>
+          </div>
+        </div>
+      </div>
+
+      <button onClick={()=>next("welcome")} style={{ width:"100%", padding:"16px", borderRadius:14, background:"linear-gradient(135deg,#F5A623,#d97706)", border:"none", color:"#000", fontSize:15, fontWeight:800, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:8, boxShadow:"0 4px 20px rgba(245,166,35,0.3)", minHeight:54, marginTop:14 }}>
+        Visa mina matchningar <Icon n="arrow" s={14}/>
+      </button>
+    </div>
+  );
+}
+
+// ─── Shells ────────────────────────────────────────────────────────────────
+function StepShell({ back, progress, children }) {
+  return (
+    <div className="fade" style={{ height:"100%", display:"flex", flexDirection:"column", background:"#060f0f" }}>
+      <div style={{ padding:"4px 24px 8px", display:"flex", alignItems:"center", gap:14 }}>
+        <button onClick={back} style={{ width:42, height:42, borderRadius:99, background:"rgba(255,255,255,0.05)", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:"#fff", flexShrink:0 }}>
+          <Icon n="back" s={18}/>
+        </button>
+        <div style={{ flex:1, height:4, background:"rgba(255,255,255,0.06)", borderRadius:99, overflow:"hidden" }}>
+          <div style={{ height:"100%", width:`${(progress/3)*100}%`, background:"linear-gradient(90deg,#F5A623,#d97706)", borderRadius:99, transition:"width .3s" }}/>
+        </div>
+      </div>
+      <div style={{ flex:1, overflowY:"auto", padding:"20px 24px 100px" }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function StepFooter({ onNext, canNext, nextLabel="Fortsätt" }) {
+  return (
+    <div style={{ position:"absolute", left:0, right:0, bottom:0, padding:"14px 24px 32px", background:"rgba(6,15,15,0.95)", backdropFilter:"blur(14px)", borderTop:"1px solid rgba(255,255,255,0.06)" }}>
+      <button onClick={onNext} disabled={!canNext} style={{ width:"100%", padding:"16px", borderRadius:14, background: canNext ? "linear-gradient(135deg,#F5A623,#d97706)" : "rgba(255,255,255,0.06)", border:"none", color: canNext ? "#000" : "rgba(255,255,255,0.3)", fontSize:15, fontWeight:800, cursor: canNext ? "pointer" : "default", display:"flex", alignItems:"center", justifyContent:"center", gap:8, boxShadow: canNext ? "0 4px 20px rgba(245,166,35,0.3)" : "none", minHeight:54 }}>
+        {nextLabel} <Icon n="arrow" s={14}/>
+      </button>
+    </div>
+  );
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────
+function MobileScreen() {
+  const [t, setT] = React.useState(TWEAK_DEFAULTS);
+  const setStep = (s) => { setT(p => ({...p, step:s})); window.parent.postMessage({type:"__edit_mode_set_keys", edits:{step:s}}, "*"); };
+
+  return (
+    <div style={{ background:"#060f0f", height:"100%", color:"#fff", position:"relative", overflow:"hidden" }}>
+      {t.step === "welcome" && <Welcome next={setStep}/>}
+      {t.step === "bankid" && <BankIDAuth next={setStep} back={()=>setStep("welcome")}/>}
+      {t.step === "email" && <Welcome next={setStep}/>}
+      {t.step === "location" && <StepLocation next={setStep} back={()=>setStep("bankid")}/>}
+      {t.step === "license" && <StepLicense next={setStep} back={()=>setStep("location")}/>}
+      {t.step === "looking" && <StepLooking next={setStep} back={()=>setStep("license")}/>}
+      {t.step === "done" && <StepDone next={setStep}/>}
+    </div>
+  );
+}
+
+function App() {
+  const [ready, setReady] = React.useState(typeof window.IOSDevice === "function");
+  React.useEffect(() => {
+    if (ready) return;
+    const id = setInterval(() => {
+      if (typeof window.IOSDevice === "function") { setReady(true); clearInterval(id); }
+    }, 30);
+    return () => clearInterval(id);
+  }, [ready]);
+  if (!ready) return <div style={{ color:"rgba(255,255,255,0.4)", fontSize:13 }}>Laddar…</div>;
+  return (
+    <div>
+      <div className="label">Mobil — Onboarding (förare)</div>
+      <window.IOSDevice width={390} height={844} dark={true}>
+        <MobileScreen/>
+      </window.IOSDevice>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>

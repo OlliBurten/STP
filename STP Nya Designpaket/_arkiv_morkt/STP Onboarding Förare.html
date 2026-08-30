@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>STP – Onboarding Förare</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;0,9..40,900&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: 'DM Sans', system-ui, sans-serif; }
+:root {
+  --bg:       #050e0e;
+  --bg2:      #0a1818;
+  --bg3:      #0d2b2b;
+  --primary:  #1F5F5C;
+  --p-light:  #2a7a76;
+  --p-glow:   rgba(31,95,92,0.3);
+  --p-dim:    rgba(31,95,92,0.15);
+  --amber:    #F5A623;
+  --amber-dim:rgba(245,166,35,0.12);
+  --text:     #f0faf9;
+  --sub:      rgba(240,250,249,0.55);
+  --muted:    rgba(240,250,249,0.3);
+  --border:   rgba(255,255,255,0.08);
+  --border2:  rgba(255,255,255,0.14);
+  --card:     rgba(255,255,255,0.04);
+  --font:     'DM Sans', system-ui, sans-serif;
+}
+body { background: var(--bg); color: var(--text); }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.6; }
+}
+.fade-up { animation: fadeUp .35s ease both; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+/* ─── Shared atoms ─── */
+const Tag = ({ c = "p", children }) => {
+  const map = {
+    p:     { bg: "rgba(31,95,92,0.18)",   color: "#7dd3c8", border: "rgba(31,95,92,0.4)" },
+    amber: { bg: "rgba(245,166,35,0.14)", color: "#F5A623", border: "rgba(245,166,35,0.35)" },
+    green: { bg: "rgba(74,222,128,0.1)",  color: "#4ade80", border: "rgba(74,222,128,0.25)" },
+    muted: { bg: "rgba(255,255,255,0.06)", color: "rgba(240,250,249,0.55)", border: "rgba(255,255,255,0.1)" },
+  };
+  const s = map[c] || map.p;
+  return (
+    <span style={{
+      display: "inline-flex", alignItems: "center",
+      padding: "2px 10px", borderRadius: 20,
+      fontSize: 11, fontWeight: 600,
+      background: s.bg, color: s.color,
+      border: `1px solid ${s.border}`,
+    }}>{children}</span>
+  );
+};
+
+const Btn = ({ children, v = "primary", onClick, style, disabled }) => {
+  const vs = {
+    primary: { bg: "var(--primary)", color: "#fff", border: "none" },
+    amber:   { bg: "var(--amber)", color: "#0a1010", border: "none" },
+    outline: { bg: "transparent", color: "var(--text)", border: "1.5px solid var(--border2)" },
+    dim:     { bg: "rgba(255,255,255,0.07)", color: "var(--sub)", border: "none" },
+  };
+  const s = vs[v] || vs.primary;
+  return (
+    <button onClick={onClick} disabled={disabled} style={{
+      display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7,
+      fontFamily: "var(--font)", fontWeight: 700, cursor: disabled ? "default" : "pointer",
+      border: s.border, borderRadius: 11, fontSize: 14, padding: "11px 24px",
+      minHeight: 44, background: s.bg, color: s.color, opacity: disabled ? 0.4 : 1,
+      transition: "all .15s", ...style,
+    }}>{children}</button>
+  );
+};
+
+/* ─── Nav ─── */
+const Nav = () => (
+  <div style={{
+    height: 56, display: "flex", alignItems: "center", justifyContent: "space-between",
+    padding: "0 40px", background: "rgba(5,14,14,0.9)",
+    borderBottom: "1px solid var(--border)", backdropFilter: "blur(12px)",
+    position: "sticky", top: 0, zIndex: 30,
+  }}>
+    <span style={{ fontWeight: 900, fontSize: 19, letterSpacing: "-0.5px" }}>STP</span>
+    <span style={{ fontSize: 12, color: "var(--muted)" }}>Logga ut</span>
+  </div>
+);
+
+/* ─── Step data ─── */
+const STEPS = [
+  { id: "welcome",    label: "Välkommen" },
+  { id: "segment",   label: "Vad söker du?" },
+  { id: "licenses",  label: "Körkort" },
+  { id: "region",    label: "Region" },
+  { id: "summary",   label: "Presentation" },
+  { id: "done",      label: "Klart!" },
+];
+
+/* ─── Live match counter ─── */
+function MatchCounter({ licenses, region, segment }) {
+  const base = licenses.includes("CE") ? 18 : licenses.includes("C") ? 11 : 5;
+  const certBonus = ["ADR","YKB","Truckkort","Krantillstånd"].filter(c => licenses.includes(c)).length * 4;
+  const regionBonus = region ? 3 : 0;
+  const count = base + certBonus + regionBonus;
+  const [displayed, setDisplayed] = React.useState(count);
+
+  React.useEffect(() => {
+    const diff = count - displayed;
+    if (diff === 0) return;
+    const step = diff > 0 ? 1 : -1;
+    const t = setInterval(() => {
+      setDisplayed(p => {
+        if (p === count) { clearInterval(t); return p; }
+        return p + step;
+      });
+    }, 40);
+    return () => clearInterval(t);
+  }, [count]);
+
+  if (licenses.length === 0) return null;
+
+  return (
+    <div style={{
+      padding: "16px 20px", borderRadius: 14,
+      background: "var(--amber-dim)", border: "1px solid rgba(245,166,35,0.25)",
+      display: "flex", alignItems: "center", gap: 16,
+    }}>
+      <div style={{ textAlign: "center", flexShrink: 0 }}>
+        <p style={{
+          fontSize: 36, fontWeight: 900, color: "var(--amber)",
+          lineHeight: 1, fontVariantNumeric: "tabular-nums",
+        }}>{displayed}</p>
+        <p style={{ fontSize: 10, color: "rgba(245,166,35,0.7)", marginTop: 2 }}>jobb matchar</p>
+      </div>
+      <div>
+        <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text)", marginBottom: 4 }}>
+          {displayed === 0 ? "Inga matchningar ännu" : displayed < 10 ? "Några matchningar hittade" : displayed < 20 ? "Bra matchning!" : "Stark matchning!"}
+        </p>
+        <p style={{ fontSize: 12, color: "var(--sub)", lineHeight: 1.5 }}>
+          {licenses.includes("CE") ? "CE ger tillgång till de flesta jobb. " : ""}
+          {region ? `${region} har aktiva åkerier just nu.` : "Lägg till region för fler matchningar."}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Profile preview card ─── */
+function ProfilePreview({ name, licenses, region, segment, summary }) {
+  const segLabel = segment === "FULLTIME" ? "Söker heltid" : segment === "FLEX" ? "Söker vikariat/extra" : segment === "INTERNSHIP" ? "Söker praktik" : null;
+  const completion = [
+    name?.trim().length > 0,
+    licenses.length > 0,
+    Boolean(region),
+    Boolean(segment),
+    summary?.trim().length >= 30,
+  ].filter(Boolean).length;
+  const pct = Math.round(completion / 5 * 100);
+
+  return (
+    <div style={{
+      background: "var(--bg2)", border: "1px solid var(--border)",
+      borderRadius: 16, overflow: "hidden",
+      position: "sticky", top: 72,
+    }}>
+      {/* Mini hero */}
+      <div style={{
+        background: "linear-gradient(135deg, var(--bg3) 0%, #061414 100%)",
+        padding: "20px 20px 16px",
+      }}>
+        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 12 }}>
+          Din profil
+        </p>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+          <div style={{
+            width: 44, height: 44, borderRadius: "50%",
+            background: "linear-gradient(135deg, var(--primary) 0%, var(--p-light) 100%)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 15, fontWeight: 700, color: "#fff",
+            border: "2px solid rgba(255,255,255,0.15)", flexShrink: 0,
+          }}>
+            {name?.trim() ? name.trim().split(" ").map(w => w[0]).slice(0,2).join("").toUpperCase() : "?"}
+          </div>
+          <div>
+            <p style={{ fontWeight: 700, fontSize: 14, color: "var(--text)" }}>
+              {name?.trim() || <span style={{ color: "var(--muted)" }}>Ditt namn</span>}
+            </p>
+            <p style={{ fontSize: 11, color: "var(--sub)" }}>
+              {region ? `📍 ${region}` : <span style={{ color: "var(--muted)" }}>📍 Region ej vald</span>}
+            </p>
+          </div>
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+          {licenses.slice(0,5).map(l => (
+            <Tag key={l} c={["CE","C","B","D"].includes(l) ? "p" : "amber"}>{l}</Tag>
+          ))}
+          {segLabel && <Tag c="muted">{segLabel}</Tag>}
+          {licenses.length === 0 && <span style={{ fontSize: 11, color: "var(--muted)" }}>Inga körkort valda ännu</span>}
+        </div>
+      </div>
+
+      {/* Progress */}
+      <div style={{ padding: "14px 20px", borderBottom: "1px solid var(--border)" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+          <span style={{ fontSize: 12, color: "var(--sub)" }}>Profilkompletion</span>
+          <span style={{ fontSize: 12, fontWeight: 700, color: pct >= 80 ? "#4ade80" : pct >= 60 ? "var(--amber)" : "var(--sub)" }}>{pct}%</span>
+        </div>
+        <div style={{ height: 5, borderRadius: 5, background: "rgba(255,255,255,0.08)" }}>
+          <div style={{
+            height: 5, borderRadius: 5, transition: "width .4s",
+            background: pct >= 80 ? "#4ade80" : pct >= 60 ? "var(--amber)" : "var(--primary)",
+            width: `${pct}%`,
+          }} />
+        </div>
+      </div>
+
+      {/* Checklist */}
+      <div style={{ padding: "14px 20px" }}>
+        {[
+          { label: "Namn", done: name?.trim().length > 0 },
+          { label: "Körkort valt", done: licenses.length > 0 },
+          { label: "Region vald", done: Boolean(region) },
+          { label: "Söker-typ vald", done: Boolean(segment) },
+          { label: "Kort presentation", done: summary?.trim().length >= 30 },
+        ].map(({ label, done }) => (
+          <div key={label} style={{
+            display: "flex", alignItems: "center", gap: 10,
+            padding: "6px 0", borderBottom: "1px solid rgba(255,255,255,0.04)",
+          }}>
+            <div style={{
+              width: 18, height: 18, borderRadius: "50%", flexShrink: 0,
+              background: done ? "rgba(74,222,128,0.15)" : "transparent",
+              border: `1.5px solid ${done ? "#4ade80" : "var(--border2)"}`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 10, color: "#4ade80",
+            }}>{done ? "✓" : ""}</div>
+            <span style={{ fontSize: 12, color: done ? "var(--text)" : "var(--muted)", fontWeight: done ? 500 : 400 }}>{label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Main onboarding ─── */
+function DriverOnboarding() {
+  const [step, setStep] = React.useState(0);
+  const [name, setName] = React.useState("Marcus Lindqvist");
+  const [segment, setSegment] = React.useState(null);
+  const [licenses, setLicenses] = React.useState([]);
+  const [region, setRegion] = React.useState("");
+  const [summary, setSummary] = React.useState("");
+  const [aiStatus, setAiStatus] = React.useState(null); // null | "checking" | "ok" | "warn"
+  const [aiMsg, setAiMsg] = React.useState("");
+
+  const toggleLic = (l) => setLicenses(p => p.includes(l) ? p.filter(x => x !== l) : [...p, l]);
+
+  // Simulate AI analysis of summary
+  React.useEffect(() => {
+    if (step !== 4) return;
+    if (summary.trim().length < 30) { setAiStatus(null); return; }
+    setAiStatus("checking");
+    const t = setTimeout(() => {
+      if (summary.toLowerCase().includes("kör") || summary.toLowerCase().includes("erfaren") || summary.toLowerCase().includes("söker")) {
+        setAiStatus("ok");
+        setAiMsg("Bra! Texten är tydlig och professionell.");
+      } else {
+        setAiStatus("warn");
+        setAiMsg("Tips: Nämn vad du har kört och vad du söker för att göra texten starkare.");
+      }
+    }, 900);
+    return () => clearTimeout(t);
+  }, [summary, step]);
+
+  const canNext = () => {
+    if (step === 0) return true;
+    if (step === 1) return Boolean(segment);
+    if (step === 2) return licenses.length > 0;
+    if (step === 3) return Boolean(region);
+    if (step === 4) return summary.trim().length >= 30 && aiStatus !== "checking";
+    return true;
+  };
+
+  const stepContent = () => {
+    /* ── Step 0: Welcome ── */
+    if (step === 0) return (
+      <div className="fade-up">
+        <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--amber)", marginBottom: 16 }}>
+          Välkommen till STP
+        </p>
+        <h1 style={{ fontSize: 40, fontWeight: 900, lineHeight: 1.1, marginBottom: 16 }}>
+          Hej {name.split(" ")[0]}!<br />
+          <span style={{ color: "#7dd3c8" }}>Sätt upp din profil.</span>
+        </h1>
+        <p style={{ fontSize: 16, color: "var(--sub)", lineHeight: 1.7, marginBottom: 36, maxWidth: 500 }}>
+          Det tar 3 minuter. Sedan är du synlig för åkerier som söker förare med din bakgrund — och kan bli kontaktad direkt.
+        </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 40, maxWidth: 500 }}>
+          {[
+            { icon: "🎯", title: "Automatisk matchning", text: "Vi matchar dig mot jobb baserat på dina körkort, region och vad du söker. Inga ansökningar." },
+            { icon: "👁", title: "Synlig för åkerier", text: "Åkerier söker bland förare på STP. Din profil visas för dem som rekryterar i din region." },
+            { icon: "💬", title: "Bli kontaktad direkt", text: "Inget CV-skickande. Åkerier chattar med dig när de vill veta mer." },
+          ].map(({ icon, title, text }) => (
+            <div key={title} style={{
+              display: "flex", gap: 16, padding: "16px 20px", borderRadius: 14,
+              background: "var(--card)", border: "1px solid var(--border)",
+            }}>
+              <span style={{ fontSize: 24, flexShrink: 0 }}>{icon}</span>
+              <div>
+                <p style={{ fontWeight: 700, fontSize: 14, color: "var(--text)", marginBottom: 4 }}>{title}</p>
+                <p style={{ fontSize: 13, color: "var(--sub)", lineHeight: 1.55 }}>{text}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{ maxWidth: 500 }}>
+          <p style={{ fontSize: 13, fontWeight: 600, color: "var(--sub)", marginBottom: 10 }}>Bekräfta ditt namn</p>
+          <input
+            value={name}
+            onChange={e => setName(e.target.value)}
+            style={{
+              width: "100%", padding: "12px 16px", borderRadius: 10,
+              background: "var(--card)", border: "1px solid var(--border2)",
+              color: "var(--text)", fontSize: 15, fontFamily: "var(--font)",
+              outline: "none",
+            }}
+          />
+        </div>
+      </div>
+    );
+
+    /* ── Step 1: Segment ── */
+    if (step === 1) return (
+      <div className="fade-up">
+        <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--amber)", marginBottom: 16 }}>
+          Steg 1 · Vad söker du?
+        </p>
+        <h2 style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.2, marginBottom: 12 }}>
+          Vi anpassar din matchning<br />
+          <span style={{ color: "#7dd3c8" }}>efter vad du söker.</span>
+        </h2>
+        <p style={{ fontSize: 15, color: "var(--sub)", marginBottom: 32, lineHeight: 1.65 }}>
+          Välj det som stämmer bäst. Du kan alltid ändra i din profil senare.
+        </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 520 }}>
+          {[
+            { val: "FULLTIME", icon: "🏢", label: "Fast heltid", desc: "Fast anställning på ett åkeri — heltid, trygghet, kollektivavtal." },
+            { val: "FLEX", icon: "📅", label: "Vikarie / Extra", desc: "Vikariat, extrapass, deltid eller pensionär som vill köra lite." },
+            { val: "INTERNSHIP", icon: "🎓", label: "Praktikplats", desc: "Gymnasieskola, Komvux eller Arbetsförmedlingens utbildning." },
+          ].map(({ val, icon, label, desc }) => (
+            <button key={val} onClick={() => setSegment(val)} style={{
+              display: "flex", alignItems: "center", gap: 18, padding: "18px 20px",
+              borderRadius: 14, cursor: "pointer", textAlign: "left", fontFamily: "var(--font)",
+              border: `2px solid ${segment === val ? "var(--primary)" : "var(--border)"}`,
+              background: segment === val ? "rgba(31,95,92,0.12)" : "var(--card)",
+              transition: "all .15s",
+            }}>
+              <span style={{ fontSize: 28, flexShrink: 0 }}>{icon}</span>
+              <div style={{ flex: 1 }}>
+                <p style={{ fontWeight: 700, fontSize: 15, color: "var(--text)", marginBottom: 4 }}>{label}</p>
+                <p style={{ fontSize: 13, color: "var(--sub)", lineHeight: 1.5 }}>{desc}</p>
+              </div>
+              <div style={{
+                width: 24, height: 24, borderRadius: "50%", flexShrink: 0,
+                border: `2px solid ${segment === val ? "var(--primary)" : "var(--border2)"}`,
+                background: segment === val ? "var(--primary)" : "transparent",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: "#fff", fontSize: 12, fontWeight: 800,
+              }}>{segment === val ? "✓" : ""}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+
+    /* ── Step 2: Licenses + live counter ── */
+    if (step === 2) return (
+      <div className="fade-up">
+        <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--amber)", marginBottom: 16 }}>
+          Steg 2 · Körkort & behörigheter
+        </p>
+        <h2 style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.2, marginBottom: 12 }}>
+          Fler körkort =<br />
+          <span style={{ color: "#7dd3c8" }}>fler matchningar.</span>
+        </h2>
+        <p style={{ fontSize: 15, color: "var(--sub)", marginBottom: 32, lineHeight: 1.65 }}>
+          Välj alla körkort och certifikat du har. Du kan lägga till certifikat med utgångsdatum på din profil efteråt.
+        </p>
+
+        <div style={{ maxWidth: 560 }}>
+          {/* License buttons */}
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 12 }}>Körkortsbehörighet</p>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 24 }}>
+            {["B", "C", "CE", "D"].map(l => (
+              <button key={l} onClick={() => toggleLic(l)} style={{
+                width: 68, height: 68, borderRadius: 14, cursor: "pointer",
+                border: `2px solid ${licenses.includes(l) ? "var(--primary)" : "var(--border)"}`,
+                background: licenses.includes(l) ? "var(--primary)" : "var(--card)",
+                color: licenses.includes(l) ? "#fff" : "var(--sub)",
+                fontWeight: 800, fontSize: 22, fontFamily: "var(--font)", transition: "all .15s",
+                boxShadow: licenses.includes(l) ? `0 0 24px var(--p-glow)` : "none",
+              }}>{l}</button>
+            ))}
+          </div>
+
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 12 }}>Certifikat & behörigheter</p>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 28 }}>
+            {[
+              { l: "YKB", desc: "Yrkeskompetensbevis" },
+              { l: "ADR", desc: "Farligt gods" },
+              { l: "Truckkort", desc: "Truckförarutbildning" },
+              { l: "Krantillstånd", desc: "Lastbilskran" },
+              { l: "APV", desc: "Arbete på väg" },
+            ].map(({ l, desc }) => (
+              <button key={l} onClick={() => toggleLic(l)}
+                title={desc}
+                style={{
+                  padding: "9px 18px", borderRadius: 10, cursor: "pointer",
+                  border: `1.5px solid ${licenses.includes(l) ? "var(--primary)" : "var(--border)"}`,
+                  background: licenses.includes(l) ? "var(--primary)" : "var(--card)",
+                  color: licenses.includes(l) ? "#fff" : "var(--sub)",
+                  fontWeight: 600, fontSize: 13, fontFamily: "var(--font)", transition: "all .15s",
+                }}>{l}</button>
+            ))}
+          </div>
+
+          {/* Live match counter */}
+          <MatchCounter licenses={licenses} region={region} segment={segment} />
+
+          {licenses.length === 0 && (
+            <p style={{ fontSize: 13, color: "var(--muted)", marginTop: 16 }}>
+              Välj minst ett körkort för att se hur många jobb du kan matchas mot.
+            </p>
+          )}
+        </div>
+      </div>
+    );
+
+    /* ── Step 3: Region ── */
+    if (step === 3) return (
+      <div className="fade-up">
+        <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--amber)", marginBottom: 16 }}>
+          Steg 3 · Region
+        </p>
+        <h2 style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.2, marginBottom: 12 }}>
+          Var bor du<br />
+          <span style={{ color: "#7dd3c8" }}>och kan jobba?</span>
+        </h2>
+        <p style={{ fontSize: 15, color: "var(--sub)", marginBottom: 32, lineHeight: 1.65 }}>
+          Åkerier söker förare i sin region. Ju tydligare du är, desto snabbare hittas du av rätt arbetsgivare.
+        </p>
+
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 28, maxWidth: 540 }}>
+          {[
+            "Stockholm", "Skåne", "Västra Götaland",
+            "Östergötland", "Norrbotten", "Uppsala",
+            "Dalarna", "Gävleborg", "Södermanland",
+            "Jönköping", "Örebro",
+          ].map(r => (
+            <button key={r} onClick={() => setRegion(r)} style={{
+              padding: "10px 18px", borderRadius: 10, cursor: "pointer",
+              border: `1.5px solid ${region === r ? "var(--primary)" : "var(--border)"}`,
+              background: region === r ? "var(--primary)" : "var(--card)",
+              color: region === r ? "#fff" : "var(--sub)",
+              fontWeight: region === r ? 700 : 500, fontSize: 13,
+              fontFamily: "var(--font)", transition: "all .15s",
+              boxShadow: region === r ? `0 0 20px var(--p-glow)` : "none",
+            }}>{r}</button>
+          ))}
+        </div>
+
+        {region && (
+          <div className="fade-up" style={{
+            padding: "18px 22px", borderRadius: 14, maxWidth: 540,
+            background: "var(--amber-dim)", border: "1px solid rgba(245,166,35,0.25)",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+              <span style={{ fontSize: 24 }}>📍</span>
+              <div>
+                <p style={{ fontWeight: 700, fontSize: 15, color: "var(--amber)", marginBottom: 3 }}>
+                  {licenses.length > 0
+                    ? `${licenses.length * 4 + 8} matchande jobb i ${region} just nu`
+                    : `Aktiva åkerier i ${region} söker förare just nu`}
+                </p>
+                <p style={{ fontSize: 13, color: "var(--sub)" }}>
+                  Du visas i sökresultat för åkerier som rekryterar i {region}.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+
+    /* ── Step 4: Summary / presentation ── */
+    if (step === 4) return (
+      <div className="fade-up">
+        <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--amber)", marginBottom: 16 }}>
+          Steg 4 · Presentation
+        </p>
+        <h2 style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.2, marginBottom: 12 }}>
+          10 sekunder är allt<br />
+          <span style={{ color: "#7dd3c8" }}>ett åkeri lägger på dig.</span>
+        </h2>
+        <p style={{ fontSize: 15, color: "var(--sub)", marginBottom: 32, lineHeight: 1.65 }}>
+          Skriv kort och konkret: vad du har kört, hur länge, och vad du söker nu. Visas publikt för åkerier.
+        </p>
+
+        <div style={{ maxWidth: 560 }}>
+          <div style={{ position: "relative", marginBottom: 16 }}>
+            <textarea
+              value={summary}
+              onChange={e => { if (e.target.value.length <= 400) { setSummary(e.target.value); setAiStatus(null); } }}
+              rows={5}
+              placeholder={`Exempel: CE-chaufför med 8 års erfarenhet av fjärrkörning och distribution. Har kört för PostNord och Nordic Logistics. Söker fast heltid i ${region || "Skåne"} med dagtider.`}
+              style={{
+                width: "100%", padding: "14px 16px", borderRadius: 12,
+                background: "var(--bg2)",
+                border: `1.5px solid ${aiStatus === "ok" ? "rgba(74,222,128,0.4)" : aiStatus === "warn" ? "rgba(245,166,35,0.4)" : "var(--border2)"}`,
+                color: "var(--text)", fontSize: 14, fontFamily: "var(--font)",
+                outline: "none", resize: "none", lineHeight: 1.6,
+                transition: "border-color .3s",
+              }}
+            />
+            <span style={{
+              position: "absolute", bottom: 10, right: 12,
+              fontSize: 11, color: summary.length > 360 ? "var(--amber)" : "var(--muted)",
+            }}>{summary.length}/400</span>
+          </div>
+
+          {/* AI feedback */}
+          {aiStatus === "checking" && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", borderRadius: 10, background: "var(--card)" }}>
+              <span style={{ fontSize: 14, animation: "pulse 1s infinite" }}>✦</span>
+              <span style={{ fontSize: 13, color: "var(--sub)" }}>Analyserar din text…</span>
+            </div>
+          )}
+          {aiStatus === "ok" && (
+            <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", borderRadius: 10, background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.2)" }}>
+              <span style={{ fontSize: 18 }}>✓</span>
+              <span style={{ fontSize: 13, color: "#4ade80", fontWeight: 600 }}>{aiMsg}</span>
+            </div>
+          )}
+          {aiStatus === "warn" && (
+            <div style={{ padding: "12px 16px", borderRadius: 10, background: "var(--amber-dim)", border: "1px solid rgba(245,166,35,0.25)" }}>
+              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--amber)", marginBottom: 4 }}>💡 {aiMsg}</p>
+              <p style={{ fontSize: 12, color: "var(--sub)" }}>
+                Exempel: "CE-förare med {region ? region.toLowerCase() : "Malmö"}-erfarenhet. Söker {segment === "FULLTIME" ? "fast heltid" : "vikariat"}."
+              </p>
+            </div>
+          )}
+
+          {summary.length < 30 && (
+            <p style={{ fontSize: 12, color: "var(--muted)", marginTop: 12 }}>
+              Minst 30 tecken · {Math.max(0, 30 - summary.length)} kvar
+            </p>
+          )}
+        </div>
+      </div>
+    );
+
+    /* ── Step 5: Done ── */
+    if (step === 5) return (
+      <div className="fade-up" style={{ maxWidth: 560 }}>
+        <div style={{
+          width: 72, height: 72, borderRadius: "50%",
+          background: "rgba(74,222,128,0.1)", border: "2px solid rgba(74,222,128,0.3)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 30, marginBottom: 24,
+        }}>✓</div>
+        <h1 style={{ fontSize: 38, fontWeight: 900, lineHeight: 1.15, marginBottom: 16 }}>
+          Du är live<br />
+          <span style={{ color: "#4ade80" }}>på STP!</span>
+        </h1>
+        <p style={{ fontSize: 16, color: "var(--sub)", lineHeight: 1.7, marginBottom: 32 }}>
+          Åkerier i {region || "din region"} kan nu hitta dig och ta kontakt direkt. Håll ögonen öppna för notifikationer.
+        </p>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 36 }}>
+          {[
+            { icon: "📬", title: "Åkerier kontaktar dig", text: "Via chatt direkt på plattformen — du slipper lägga ut ditt nummer publikt." },
+            { icon: "🔔", title: "Jobbrekommendationer", text: `När ett nytt jobb i ${region || "din region"} matchar dina körkort får du en notis.` },
+            { icon: "💪", title: "Stärk profilen vidare", text: "Lägg till erfarenhet och certifikatdatum för att synas ännu mer hos åkerier." },
+          ].map(({ icon, title, text }) => (
+            <div key={title} style={{
+              display: "flex", gap: 14, padding: "14px 18px", borderRadius: 12,
+              background: "var(--card)", border: "1px solid var(--border)",
+            }}>
+              <span style={{ fontSize: 22, flexShrink: 0 }}>{icon}</span>
+              <div>
+                <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 3 }}>{title}</p>
+                <p style={{ fontSize: 13, color: "var(--sub)", lineHeight: 1.5 }}>{text}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ display: "flex", gap: 12 }}>
+          <Btn v="amber" style={{ flex: 1, fontSize: 15 }}>Visa min profil →</Btn>
+          <Btn v="outline" style={{ flex: 1, fontSize: 15 }}>Se matchande jobb</Btn>
+        </div>
+
+        {/* WhatsApp share */}
+        <div style={{ marginTop: 24, padding: "14px 18px", borderRadius: 12, background: "var(--card)", border: "1px solid var(--border)", textAlign: "center" }}>
+          <p style={{ fontSize: 13, color: "var(--sub)", marginBottom: 10 }}>Känner du en kollega som söker jobb?</p>
+          <a
+            href={`https://wa.me/?text=${encodeURIComponent("Kolla in STP – gratis plattform för lastbilsförare att hitta jobb direkt hos åkerier: https://transportplattformen.se")}`}
+            target="_blank" rel="noopener noreferrer"
+            style={{
+              display: "inline-flex", alignItems: "center", gap: 8,
+              padding: "9px 20px", borderRadius: 10,
+              background: "#25D366", color: "#fff",
+              fontFamily: "var(--font)", fontWeight: 700, fontSize: 13,
+              textDecoration: "none",
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+              <path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.558 4.115 1.532 5.843L0 24l6.327-1.509A11.946 11.946 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.894a9.878 9.878 0 01-5.031-1.378l-.361-.214-3.741.982.999-3.648-.235-.374A9.859 9.859 0 012.106 12C2.106 6.58 6.58 2.106 12 2.106S21.894 6.58 21.894 12 17.42 21.894 12 21.894z"/>
+            </svg>
+            Bjud in via WhatsApp
+          </a>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div style={{ minHeight: "100vh", background: "var(--bg)", color: "var(--text)", fontFamily: "var(--font)" }}>
+      <Nav />
+
+      <div style={{ maxWidth: 1080, margin: "0 auto", padding: "48px 40px 80px", display: "grid", gridTemplateColumns: "1fr 300px", gap: 60, alignItems: "start" }}>
+
+        {/* LEFT — step content */}
+        <div>
+          {/* Step pill nav */}
+          {step > 0 && step < 5 && (
+            <div style={{ display: "flex", gap: 6, marginBottom: 48 }}>
+              {STEPS.slice(1, 5).map((s, i) => {
+                const idx = i + 1;
+                const done = idx < step;
+                const active = idx === step;
+                return (
+                  <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <div style={{
+                      display: "flex", alignItems: "center", gap: 7,
+                      padding: "5px 12px", borderRadius: 20,
+                      background: active ? "var(--p-dim)" : done ? "rgba(74,222,128,0.1)" : "transparent",
+                      border: `1px solid ${active ? "rgba(31,95,92,0.5)" : done ? "rgba(74,222,128,0.25)" : "var(--border)"}`,
+                      transition: "all .2s",
+                    }}>
+                      <div style={{
+                        width: 18, height: 18, borderRadius: "50%", flexShrink: 0,
+                        background: done ? "#4ade80" : active ? "var(--amber)" : "var(--border2)",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontSize: 9, fontWeight: 800, color: done ? "#052e16" : active ? "#0a1010" : "var(--muted)",
+                      }}>{done ? "✓" : idx}</div>
+                      <span style={{ fontSize: 12, fontWeight: active ? 700 : 400, color: active ? "var(--text)" : done ? "#4ade80" : "var(--muted)", whiteSpace: "nowrap" }}>{s.label}</span>
+                    </div>
+                    {i < 3 && <div style={{ width: 16, height: 1, background: done ? "rgba(74,222,128,0.3)" : "var(--border)" }} />}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {stepContent()}
+
+          {/* Navigation buttons */}
+          {step < 5 && (
+            <div style={{ marginTop: 40, display: "flex", gap: 12, maxWidth: 560 }}>
+              {step > 0 && (
+                <Btn v="dim" onClick={() => setStep(s => s - 1)}>
+                  ← Tillbaka
+                </Btn>
+              )}
+              <Btn
+                onClick={() => setStep(s => s + 1)}
+                style={{ flex: step > 0 ? 1 : undefined, minWidth: step === 0 ? 200 : undefined }}
+                disabled={!canNext()}
+              >
+                {step === 0 ? "Kom igång →" : step === 4 ? "Skapa min profil →" : "Nästa →"}
+              </Btn>
+            </div>
+          )}
+
+          {step === 0 && (
+            <p style={{ fontSize: 12, color: "var(--muted)", marginTop: 16 }}>
+              Gratis för förare · Alltid
+            </p>
+          )}
+        </div>
+
+        {/* RIGHT — sticky profile preview */}
+        {step < 5 && (
+          <ProfilePreview
+            name={name}
+            licenses={licenses}
+            region={region}
+            segment={segment}
+            summary={summary}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<DriverOnboarding />);
+</script>
+<template id="__bundler_thumbnail">
+<svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+  <rect width="120" height="80" fill="#050e0e"/>
+  <rect x="8" y="12" width="66" height="56" rx="4" fill="rgba(31,95,92,0.2)" stroke="rgba(31,95,92,0.4)" stroke-width="1"/>
+  <rect x="82" y="12" width="30" height="56" rx="4" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <rect x="14" y="20" width="40" height="6" rx="3" fill="rgba(245,166,35,0.6)"/>
+  <rect x="14" y="30" width="54" height="4" rx="2" fill="rgba(240,250,249,0.5)"/>
+  <rect x="14" y="37" width="48" height="3" rx="1.5" fill="rgba(240,250,249,0.25)"/>
+  <rect x="14" y="47" width="54" height="10" rx="4" fill="rgba(31,95,92,0.2)" stroke="rgba(31,95,92,0.3)" stroke-width="1"/>
+  <rect x="14" y="62" width="54" height="10" rx="4" fill="rgba(31,95,92,0.2)" stroke="rgba(31,95,92,0.3)" stroke-width="1"/>
+  <text x="6" y="9" fill="rgba(245,166,35,0.9)" font-size="6" font-weight="bold">STP</text>
+</svg>
+</template>
+</body>
+</html>

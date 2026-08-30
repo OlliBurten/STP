@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>STP – Sparat (mobil)</title>
+<link rel="stylesheet" href="stp-light-tokens.css" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="stp-light-components.jsx"></script>
+<script type="text/babel" src="stp-mobile-shell.jsx"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState } = React;
+
+const JOBS = [
+  { id:1, title:"CE-chaufför fjärrkörning", company:"Nordic Transport AB", logo:"NT", loc:"Malmö",       salary:"36 000–42 000 kr", license:"CE", match:94, saved:"2 dgr" },
+  { id:2, title:"CE-chaufför tempererat",   company:"Nordic Transport AB", logo:"NT", loc:"Helsingborg", salary:"35 000–39 000 kr", license:"CE", match:88, saved:"4 dgr" },
+  { id:3, title:"CE-chaufför tank",         company:"PetrolTrans Nordic",  logo:"PT", loc:"Göteborg",    salary:"Enligt koll. + OB",license:"CE", match:68, saved:"1 v." },
+];
+const COMPANIES = [
+  { id:1, name:"Nordic Transport AB", logo:"NT", loc:"Malmö, Skåne", rating:4.3, openJobs:3 },
+  { id:2, name:"Junosuando Åkeri",    logo:"JÅ", loc:"Norrbotten",   rating:4.6, openJobs:1 },
+];
+const matchColor = (m) => m >= 90 ? "var(--success)" : m >= 80 ? "var(--green)" : "var(--amber-deep)";
+
+const Header = ({ tab, setTab }) => (
+  <div style={{ background: "var(--paper)", padding: "6px 18px 0" }}>
+    <h1 style={{ fontSize: 26, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1, marginBottom: 14 }}>Sparat</h1>
+    <div style={{ display: "flex", gap: 0, borderBottom: "1px solid var(--line)" }}>
+      {[["jobs",`Jobb (${JOBS.length})`],["companies",`Åkerier (${COMPANIES.length})`]].map(([k, l]) => {
+        const on = tab === k;
+        return <button key={k} onClick={() => setTab(k)} style={{ flex: 1, padding: "11px 0 13px", position: "relative", fontSize: 14, fontWeight: on ? 700 : 500, color: on ? "var(--ink-900)" : "var(--ink-500)" }}>{l}{on && <span style={{ position: "absolute", left: "20%", right: "20%", bottom: -1, height: 3, background: "var(--green)", borderRadius: "3px 3px 0 0" }}/>}</button>;
+      })}
+    </div>
+  </div>
+);
+
+const App = () => {
+  const [tab, setTab] = useState("sparat");
+  const [sub, setSub] = useState("jobs");
+  return (
+    <MobileShell tabs={DRIVER_TABS} active={tab} onTab={setTab} header={<Header tab={sub} setTab={setSub}/>}>
+      <div style={{ padding: "16px 16px 24px", display: "flex", flexDirection: "column", gap: 12 }}>
+        {sub === "jobs" ? JOBS.map(j => (
+          <div key={j.id} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, padding: 16, boxShadow: "var(--sh-sm)" }}>
+            <div style={{ display: "flex", gap: 12, alignItems: "flex-start", marginBottom: 12 }}>
+              <div style={{ width: 42, height: 42, borderRadius: 10, background: "var(--paper-2)", border: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: "var(--ink-700)", flexShrink: 0 }}>{j.logo}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <h3 style={{ fontSize: 14.5, fontWeight: 800, color: "var(--ink-900)", lineHeight: 1.3 }}>{j.title}</h3>
+                <div style={{ fontSize: 12.5, color: "var(--ink-500)", marginTop: 2 }}>{j.company} · {j.loc}</div>
+              </div>
+              <button style={{ width: 32, height: 32, borderRadius: 8, background: "var(--amber-tint)", border: "1px solid rgba(199,122,14,0.3)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icon name="heart" size={14} color="var(--amber-deep)" stroke={0}/></button>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 12, borderTop: "1px solid var(--line)" }}>
+              <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--ink-900)", fontFamily: "var(--mono)" }}>{j.salary}</span>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <span style={{ fontSize: 13, fontWeight: 800, fontFamily: "var(--mono)", color: matchColor(j.match) }}>{j.match}%</span>
+                <Button variant="primary" size="sm">Ansök</Button>
+              </div>
+            </div>
+          </div>
+        )) : COMPANIES.map(c => (
+          <div key={c.id} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, padding: 16, boxShadow: "var(--sh-sm)", display: "flex", gap: 12, alignItems: "center" }}>
+            <div style={{ width: 48, height: 48, borderRadius: 12, background: "var(--paper-2)", border: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 800, color: "var(--ink-700)", flexShrink: 0 }}>{c.logo}</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <h3 style={{ fontSize: 15, fontWeight: 800, color: "var(--ink-900)" }}>{c.name}</h3>
+              <div style={{ fontSize: 12.5, color: "var(--ink-500)", marginTop: 2, display: "flex", alignItems: "center", gap: 6 }}>
+                <Icon name="star" size={11} color="var(--amber)" stroke={0}/>{c.rating} · {c.loc}
+              </div>
+            </div>
+            <div style={{ textAlign: "right" }}>
+              <div style={{ fontSize: 12.5, fontWeight: 700, color: c.openJobs > 0 ? "var(--green-text)" : "var(--ink-400)" }}>{c.openJobs} jobb</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </MobileShell>
+  );
+};
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

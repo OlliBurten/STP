@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8" />
+<title>STP Theme Lab</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; font-family: 'DM Sans', system-ui, sans-serif; background: #0a0a0a; color: #f0faf9; overflow: hidden; }
+
+  .app {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    height: 100vh;
+  }
+
+  /* ─── Top bar ─── */
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 10px 16px;
+    background: #0d0d0d;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding-right: 14px;
+    border-right: 1px solid rgba(255,255,255,0.1);
+  }
+  .brand-mark {
+    width: 26px; height: 26px; border-radius: 7px;
+    background: var(--lab-primary, #1F5F5C);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 11px; color: #fff;
+    transition: background .2s;
+  }
+  .brand-name { font-weight: 700; font-size: 13px; letter-spacing: 0.5px; }
+  .brand-sub { font-size: 11px; color: rgba(255,255,255,0.45); margin-left: 2px; }
+
+  .label {
+    font-size: 10px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    padding-right: 6px;
+  }
+
+  .pill-row { display: flex; gap: 5px; }
+  .pill {
+    padding: 7px 13px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 9px;
+    color: rgba(255,255,255,0.75);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .pill:hover { background: rgba(255,255,255,0.07); color: #fff; }
+  .pill.active {
+    background: var(--lab-primary, #1F5F5C);
+    border-color: var(--lab-primary, #1F5F5C);
+    color: #fff;
+  }
+  .pill .swatch {
+    width: 11px; height: 11px; border-radius: 3px;
+    border: 1px solid rgba(0,0,0,0.25);
+  }
+
+  select.pill {
+    appearance: none;
+    -webkit-appearance: none;
+    padding-right: 28px;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M3 5l3 3 3-3' stroke='%23ffffff80' stroke-width='1.5' fill='none' stroke-linecap='round'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 9px center;
+    min-width: 220px;
+    max-width: 320px;
+  }
+
+  .spacer { flex: 1; }
+
+  .iframe-wrap {
+    position: relative;
+    background: #050505;
+  }
+  iframe {
+    width: 100%; height: 100%;
+    border: none;
+    display: block;
+    background: #050e0e;
+  }
+
+  .empty {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(255,255,255,0.4);
+    font-size: 14px;
+  }
+
+  /* ─── Floating theme details panel ─── */
+  .details {
+    position: fixed;
+    right: 18px; bottom: 18px;
+    background: rgba(13,13,13,0.95);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 100;
+    min-width: 280px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  }
+  .details-title {
+    font-size: 11px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+  }
+  .details-name {
+    font-size: 16px; font-weight: 700;
+    margin-top: -4px;
+  }
+  .details-note {
+    font-size: 12px;
+    color: rgba(255,255,255,0.55);
+    line-height: 1.45;
+    text-wrap: pretty;
+  }
+  .swatch-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 2px;
+  }
+  .swatch-card {
+    flex: 1;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 8px 9px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .swatch-big {
+    height: 28px;
+    border-radius: 5px;
+  }
+  .swatch-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: rgba(255,255,255,0.55);
+    letter-spacing: 0.3px;
+  }
+  .swatch-role {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+  }
+  .details-close {
+    position: absolute; top: 10px; right: 12px;
+    background: none; border: none; color: rgba(255,255,255,0.4);
+    cursor: pointer; font-size: 16px; line-height: 1;
+  }
+  .details-close:hover { color: #fff; }
+
+  .details.collapsed { padding: 10px 14px; min-width: 0; }
+  .details.collapsed > *:not(.details-title):not(.details-toggle) { display: none; }
+  .details-toggle {
+    background: none; border: none; color: rgba(255,255,255,0.5);
+    cursor: pointer; font-size: 14px; padding: 0;
+  }
+
+  @media (max-width: 900px) {
+    .bar { gap: 10px; padding: 8px 10px; }
+    .pill { padding: 6px 10px; font-size: 11px; }
+    .label { display: none; }
+    .details { right: 10px; bottom: 10px; min-width: 0; max-width: calc(100vw - 20px); }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="bar">
+    <div class="brand">
+      <div class="brand-mark" id="brandMark">S</div>
+      <div>
+        <div class="brand-name">Theme Lab <span class="brand-sub">— STP</span></div>
+      </div>
+    </div>
+
+    <span class="label">Tema</span>
+    <div class="pill-row" id="themeRow"></div>
+
+    <span class="label" style="margin-left: 6px;">Skärm</span>
+    <select class="pill" id="screenSelect"></select>
+
+    <div class="spacer"></div>
+
+    <button class="pill" id="reloadBtn" title="Ladda om">↻</button>
+  </div>
+
+  <div class="iframe-wrap">
+    <iframe id="frame" src="about:blank" allow="autoplay"></iframe>
+    <div class="empty" id="empty">Välj en skärm för att börja</div>
+  </div>
+</div>
+
+<!-- Floating details -->
+<div class="details" id="details">
+  <div class="details-title" id="detailsTitleRow">
+    <span id="detailsTitle">Aktivt tema</span>
+    <button class="details-toggle" id="detailsToggle" style="float:right">–</button>
+  </div>
+  <div class="details-name" id="detailsName"></div>
+  <div class="details-note" id="detailsNote"></div>
+  <div class="swatch-row" id="swatchRow"></div>
+</div>
+
+<script>
+/* ═════════════════════════════════════════════
+   THEME DEFINITIONS
+═════════════════════════════════════════════ */
+
+// Each theme defines primary (vägrön/replacement) and amber (bärnsten/replacement).
+// Both are stored as hex; we generate the rgba variants at runtime.
+const THEMES = {
+  current: {
+    name: "Nuvarande",
+    sub: "Mörk · asfalt + bärnsten + vägrön",
+    mode: "dark",
+    primary: "#1F5F5C",
+    primaryLight: "#2a7a76",
+    primaryText: "#7dd3c8",
+    amber:   "#F5A623",
+    note: "Som det ser ut idag. Mörkt tema. Vägrön drar mot fintech/wellness på mörk bakgrund — bärnsten gör mer tunga lyftet än 60/30/10-regeln säger."
+  },
+  light: {
+    name: "Ljust",
+    sub: "Ljus · pappersgrå + vägrön + bärnsten",
+    mode: "light",
+    primary: "#1F5F5C",
+    primaryLight: "#2a7a76",
+    primaryText: "#0F3F3C",
+    amber:   "#C77A0E",
+    note: "Samma färger som idag men på ljus bakgrund. Vägrön slutar kännas wellness och börjar kännas trafikljus. Mer Skatteverket-trovärdigt, mindre Discord. Lättare i dagsljus och för äldre ögon."
+  },
+  motorvag: {
+    name: "Motorvägsgrön",
+    sub: "Skyltgrön + bärnsten",
+    primary: "#2E7D32",
+    primaryLight: "#43995a",
+    primaryText: "#86d68a",
+    amber:   "#F5A623",
+    note: "Grönt som på motorvägsskyltar — mer branschnativt, mindre wellness-app. Behåller energin men flyttar in den i transportvärlden."
+  },
+  asfaltblue: {
+    name: "Asfalt-blå",
+    sub: "Kall slate + bärnsten",
+    primary: "#2C5466",
+    primaryLight: "#3d6f86",
+    primaryText: "#7dc0d6",
+    amber:   "#F5A623",
+    note: "Vägrön ersätts av en dämpad asfalt-blå/slate. Bärnsten får andas. Känns mer 'verktyg', mindre 'startup'."
+  },
+  bara_barnsten: {
+    name: "Endast bärnsten",
+    sub: "Grafit + bärnsten",
+    primary: "#3B3D45",
+    primaryLight: "#54565f",
+    primaryText: "#a8aab2",
+    amber:   "#F5A623",
+    note: "Inget grönt alls. Bärnsten är ensam accentfärg. Mest 'industriellt verktyg' — risken är att det blir lite för stramt utan kontrastfärgen."
+  },
+  transport_blue: {
+    name: "Transport-blå",
+    sub: "Conservative + bärnsten",
+    primary: "#1E4D6B",
+    primaryLight: "#2f6a8e",
+    primaryText: "#7ebcd9",
+    amber:   "#F5A623",
+    note: "Stark djupblå. Tryggt, etablerat, lite 'logistikkonsult'. Säker väg men sticker ut mindre."
+  },
+  warm: {
+    name: "Varm jord",
+    sub: "Mörk · mossa + tegel",
+    mode: "dark",
+    primary: "#4A6B3E",
+    primaryLight: "#5f8350",
+    primaryText: "#a4c898",
+    amber:   "#D17A3A",
+    note: "Mossgrönt + brändare bärnsten. Mer hantverk, mindre tech. Funkar om STP ska kännas som 'någon i branschen byggde det'."
+  },
+  light_blue: {
+    name: "Ljust + transport-blå",
+    sub: "Ljus · paper + blå + bärnsten",
+    mode: "light",
+    primary: "#1E4D6B",
+    primaryLight: "#2f6a8e",
+    primaryText: "#143952",
+    amber:   "#C77A0E",
+    note: "Ljust tema men med transport-blå primärfärg istället för vägrön. Tryggast/mest konservativt — närmast en bank eller myndighet. Trovärdigt men sticker ut mindre."
+  }
+};
+
+// Backgrounds & foregrounds for light mode (applied on top of primary/amber swap)
+// Tightened contrast — darker text, stronger borders, slightly more saturated panels.
+const LIGHT_OVERRIDES = {
+  vars: {
+    "--bg":      "#fafaf7",
+    "--bg2":     "#eeeee8",
+    "--bg3":     "#e0e0d8",
+    "--text":    "#0a1a1a",
+    "--sub":     "rgba(10,26,26,0.72)",
+    "--muted":   "rgba(10,26,26,0.52)",
+    "--border":  "rgba(0,0,0,0.12)",
+    "--border2": "rgba(0,0,0,0.20)",
+    "--card":    "#ffffff",
+    "--card2":   "#f5f5f0",
+  },
+  // hex backgrounds → light equivalents
+  hexMap: {
+    "#050e0e": "#fafaf7",
+    "#0a1818": "#eeeee8",
+    "#0d2b2b": "#e0e0d8",
+    "#0a1414": "#ffffff",
+    "#080f1a": "#fafaf7",
+    "#1a1a1a": "#fafaf7",
+    "#f0faf9": "#0a1a1a",   // body text
+    "#fef9c3": "#fef3a3",   // pale yellow boosted
+  }
+};
+
+const SCREENS = [
+  { group: "Marknadsföring", items: [
+    "STP Landing Page.html",
+    "STP Mobil Landing System.html",
+    "STP Ad Campaign.html",
+    "Auth Flows.html",
+  ]},
+  { group: "Förare — desktop", items: [
+    "STP Förarprofil.html",
+    "STP Lediga Jobb.html",
+    "STP Jobbdetalj v3.html",
+    "STP Mina Ansökningar.html",
+    "STP Favoriter.html",
+    "STP Inkorg.html",
+    "STP Inställningar.html",
+    "STP Ansökan.html",
+    "STP Onboarding Förare.html",
+    "STP Åkerier.html",
+    "STP Åkeriprofil.html",
+  ]},
+  { group: "Åkeri — desktop", items: [
+    "STP Åkeri Dashboard v3.html",
+    "STP Åkeri Hitta Förare.html",
+    "STP Åkeri Förarprofil.html",
+    "STP Åkeri Annonser.html",
+    "STP PostJob.html",
+    "STP Jobbdetalj Åkeri-vy.html",
+    "STP Åkeri Verifiering.html",
+    "STP Åkeri Företagsprofil.html",
+    "STP Åkeri Inkorg.html",
+    "STP Åkeri Onboarding.html",
+  ]},
+  { group: "Admin", items: [
+    "STP Admin Dashboard.html",
+    "STP Admin Användare.html",
+  ]},
+  { group: "Mobil — förare", items: [
+    "STP Mobil Förarprofil.html",
+    "STP Mobil Jobblista.html",
+    "STP Mobil Jobbdetalj.html",
+    "STP Mobil Ansökan.html",
+    "STP Mobil Mina Ansökningar.html",
+    "STP Mobil Sparat.html",
+    "STP Mobil Inkorg.html",
+    "STP Mobil Inställningar.html",
+    "STP Mobil Onboarding.html",
+    "STP Mobilprototyp.html",
+  ]},
+  { group: "Mobil — åkeri", items: [
+    "STP Mobil Åkeri Dashboard.html",
+    "STP Mobil Åkeri Annonser.html",
+    "STP Mobil Åkeri Hitta Förare.html",
+    "STP Mobil Åkeri Förarprofil.html",
+    "STP Mobil Åkeri Inkorg.html",
+    "STP Mobil Åkeri Onboarding.html",
+    "STP Mobil Åkerier.html",
+    "STP Mobil Åkeriprofil.html",
+  ]},
+];
+
+/* ═════════════════════════════════════════════
+   COLOR HELPERS
+═════════════════════════════════════════════ */
+function hexToRgb(hex) {
+  const m = hex.replace("#","").match(/^([0-9a-f]{6})$/i);
+  if (!m) return { r:31, g:95, b:92 };
+  const n = parseInt(m[1], 16);
+  return { r:(n>>16)&255, g:(n>>8)&255, b:n&255 };
+}
+function rgbaStr({r,g,b}, a) { return `rgba(${r},${g},${b},${a})`; }
+
+// Build a replacement map: old hardcoded colors -> new hardcoded colors
+function buildReplacementMap(theme) {
+  const cur = THEMES.current;
+  const p = hexToRgb(theme.primary);
+  const a = hexToRgb(theme.amber);
+  const isLight = theme.mode === "light";
+
+  // In light mode, tints designed for dark bg need extra saturation to read.
+  const boostTint = (alpha) => {
+    const v = parseFloat(alpha);
+    if (!isLight) return alpha;
+    if (v >= 0.5) return alpha;   // already solid-ish, leave alone
+    return Math.min(v * 1.8, 0.42).toFixed(3);
+  };
+
+  // Replacements for inline-style strings & CSS text
+  const map = [
+    // primary hex
+    [/#1F5F5C/gi, theme.primary],
+    [/#2a7a76/gi, theme.primaryLight],
+    [/#7dd3c8/gi, theme.primaryText],
+    [/#6ee7e7/gi, theme.primaryText],
+    // rgba(31,95,92, X) — any alpha
+    [/rgba\(\s*31\s*,\s*95\s*,\s*92\s*,\s*([0-9.]+)\s*\)/gi,
+      (_, alpha) => rgbaStr(p, boostTint(alpha))],
+    // amber hex
+    [/#F5A623/gi, theme.amber],
+    [/rgba\(\s*245\s*,\s*166\s*,\s*35\s*,\s*([0-9.]+)\s*\)/gi,
+      (_, alpha) => rgbaStr(a, boostTint(alpha))],
+  ];
+
+  if (theme.mode === "light") {
+    // Dark hex backgrounds → light equivalents
+    Object.entries(LIGHT_OVERRIDES.hexMap).forEach(([from, to]) => {
+      const re = new RegExp(from.replace("#", "#"), "gi");
+      map.push([re, to]);
+    });
+    // Translucent dark backgrounds (rgba forms of the dark hexes) → light equivalents
+    // These are typically nav bars, sticky headers, overlays.
+    const darkBgRgbas = [
+      [/rgba\(\s*5\s*,\s*14\s*,\s*14\s*,\s*([0-9.]+)\s*\)/gi,   "250,250,248"],  // #050e0e
+      [/rgba\(\s*10\s*,\s*24\s*,\s*24\s*,\s*([0-9.]+)\s*\)/gi,  "243,243,240"],  // #0a1818
+      [/rgba\(\s*13\s*,\s*43\s*,\s*43\s*,\s*([0-9.]+)\s*\)/gi,  "232,232,227"],  // #0d2b2b
+      [/rgba\(\s*10\s*,\s*20\s*,\s*20\s*,\s*([0-9.]+)\s*\)/gi,  "255,255,255"],  // #0a1414
+      [/rgba\(\s*8\s*,\s*15\s*,\s*26\s*,\s*([0-9.]+)\s*\)/gi,   "250,250,248"],  // #080f1a
+      [/rgba\(\s*6\s*,\s*20\s*,\s*20\s*,\s*([0-9.]+)\s*\)/gi,   "243,243,240"],  // #061414
+      [/rgba\(\s*26\s*,\s*26\s*,\s*26\s*,\s*([0-9.]+)\s*\)/gi,  "250,250,248"],  // #1a1a1a
+    ];
+    darkBgRgbas.forEach(([re, rgb]) => {
+      map.push([re, (_, alpha) => `rgba(${rgb},${alpha})`]);
+    });
+    map.push([/#061414/gi, "#f3f3f0"]);
+    // Light-text-on-dark alpha pattern → dark-text-on-light
+    map.push([
+      /rgba\(\s*240\s*,\s*250\s*,\s*249\s*,\s*([0-9.]+)\s*\)/gi,
+      (_, alpha) => `rgba(13,31,31,${Math.min(parseFloat(alpha) * 1.1, 0.92).toFixed(3)})`
+    ]);
+    map.push([
+      /rgba\(\s*255\s*,\s*255\s*,\s*255\s*,\s*1\s*\)/gi,
+      () => `rgba(255,255,255,1)`   // keep solid white explicitly (button text etc)
+    ]);
+    // White tints (borders/cards on dark) → black tints (borders/cards on light)
+    // Bumped multiplier from 0.85 → 1.25 because dark-on-light reads weaker than white-on-dark.
+    map.push([
+      /rgba\(\s*255\s*,\s*255\s*,\s*255\s*,\s*(0\.[0-9]+)\s*\)/gi,
+      (_, alpha) => {
+        const v = parseFloat(alpha);
+        if (v >= 0.5) return `rgba(255,255,255,${alpha})`;   // keep — likely text
+        return `rgba(0,0,0,${Math.min(v * 1.25, 0.5).toFixed(3)})`;
+      }
+    ]);
+  }
+
+  return map;
+}
+
+function applyReplacements(str, map) {
+  if (!str) return str;
+  for (const [pat, repl] of map) str = str.replace(pat, repl);
+  return str;
+}
+
+/* ═════════════════════════════════════════════
+   INJECTION INTO IFRAME
+═════════════════════════════════════════════ */
+function buildOverrideCss(theme) {
+  const p = hexToRgb(theme.primary);
+  const a = hexToRgb(theme.amber);
+  let css = `:root {
+      --primary:    ${theme.primary} !important;
+      --p-light:    ${theme.primaryLight} !important;
+      --p-glow:     ${rgbaStr(p, theme.mode === "light" ? 0.18 : 0.3)} !important;
+      --p-dim:      ${rgbaStr(p, theme.mode === "light" ? 0.14 : 0.15)} !important;
+      --amber:      ${theme.amber} !important;
+      --amber-dim:  ${rgbaStr(a, theme.mode === "light" ? 0.16 : 0.12)} !important;
+      --amber-glow: ${rgbaStr(a, theme.mode === "light" ? 0.20 : 0.25)} !important;`;
+
+  if (theme.mode === "light") {
+    Object.entries(LIGHT_OVERRIDES.vars).forEach(([k, v]) => {
+      css += `\n      ${k}: ${v} !important;`;
+    });
+    css += `\n    }
+    html, body { background: #fafaf8 !important; color: #0d1f1f !important; }
+    /* Outer wrappers + body backgrounds on individual pages */
+    body > div { color: inherit; }
+    /* Soften glows that look harsh on light */
+    [style*="radial-gradient"] { opacity: 0.55; }
+    `;
+  } else {
+    css += `\n    }`;
+  }
+  return css;
+}
+
+function injectIntoFrame(frame, theme) {
+  const doc = frame.contentDocument;
+  if (!doc || !doc.documentElement) return;
+
+  // 1) inject / update <style> override
+  let styleEl = doc.getElementById("__stp_theme_lab_style");
+  if (!styleEl) {
+    styleEl = doc.createElement("style");
+    styleEl.id = "__stp_theme_lab_style";
+    doc.head.appendChild(styleEl);
+  }
+  styleEl.textContent = buildOverrideCss(theme);
+
+  // 2) rewrite hardcoded color values in inline styles + stylesheets
+  const map = buildReplacementMap(theme);
+
+  // Walk all elements once now
+  walkAndPatch(doc.documentElement, map);
+
+  // Patch <style> tags' textContent (excluding our override)
+  doc.querySelectorAll("style").forEach(s => {
+    if (s.id === "__stp_theme_lab_style") return;
+    const orig = s.dataset.stpOrig || s.textContent;
+    if (!s.dataset.stpOrig) s.dataset.stpOrig = orig;
+    const patched = applyReplacements(orig, map);
+    if (patched !== s.textContent) s.textContent = patched;
+  });
+
+  // 3) Set up a MutationObserver so React re-renders also get patched
+  if (!frame.__stpObserver) {
+    const observer = new MutationObserver(muts => {
+      for (const m of muts) {
+        if (m.type === "attributes" && m.attributeName === "style") {
+          patchEl(m.target, currentMap);
+        } else if (m.type === "childList") {
+          m.addedNodes.forEach(n => {
+            if (n.nodeType === 1) walkAndPatch(n, currentMap);
+          });
+        }
+      }
+    });
+    observer.observe(doc.documentElement, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+      attributeFilter: ["style", "fill", "stroke"],
+    });
+    frame.__stpObserver = observer;
+  }
+  currentMap = map;
+}
+
+let currentMap = [];
+
+function patchEl(el, map) {
+  if (!el || !el.getAttribute) return;
+  const style = el.getAttribute("style");
+  if (style) {
+    const patched = applyReplacements(style, map);
+    if (patched !== style) el.setAttribute("style", patched);
+  }
+  // SVG fill/stroke attrs
+  ["fill", "stroke"].forEach(attr => {
+    const v = el.getAttribute && el.getAttribute(attr);
+    if (v) {
+      const patched = applyReplacements(v, map);
+      if (patched !== v) el.setAttribute(attr, patched);
+    }
+  });
+}
+
+function walkAndPatch(root, map) {
+  patchEl(root, map);
+  if (!root.querySelectorAll) return;
+  root.querySelectorAll("*").forEach(el => patchEl(el, map));
+}
+
+/* ═════════════════════════════════════════════
+   UI WIRING
+═════════════════════════════════════════════ */
+const state = {
+  theme: localStorage.getItem("stp_theme_lab.theme") || "current",
+  screen: localStorage.getItem("stp_theme_lab.screen") || "",
+};
+
+const themeRow = document.getElementById("themeRow");
+const screenSelect = document.getElementById("screenSelect");
+const frame = document.getElementById("frame");
+const empty = document.getElementById("empty");
+const brandMark = document.getElementById("brandMark");
+const detailsName = document.getElementById("detailsName");
+const detailsNote = document.getElementById("detailsNote");
+const swatchRow = document.getElementById("swatchRow");
+const detailsTitle = document.getElementById("detailsTitle");
+const details = document.getElementById("details");
+const detailsToggle = document.getElementById("detailsToggle");
+
+// Build theme pills
+Object.entries(THEMES).forEach(([key, t]) => {
+  const btn = document.createElement("button");
+  btn.className = "pill" + (key === state.theme ? " active" : "");
+  btn.dataset.theme = key;
+  btn.innerHTML = `
+    <span class="swatch" style="background:${t.primary}"></span>
+    <span class="swatch" style="background:${t.amber}"></span>
+    <span>${t.name}</span>
+  `;
+  btn.addEventListener("click", () => setTheme(key));
+  themeRow.appendChild(btn);
+});
+
+// Build screen dropdown
+SCREENS.forEach(group => {
+  const og = document.createElement("optgroup");
+  og.label = group.group;
+  group.items.forEach(file => {
+    const opt = document.createElement("option");
+    opt.value = file;
+    opt.textContent = file.replace(/\.html$/, "").replace(/^STP /, "");
+    og.appendChild(opt);
+  });
+  screenSelect.appendChild(og);
+});
+
+if (state.screen) screenSelect.value = state.screen;
+else state.screen = SCREENS[1].items[0]; // default to Förarprofil
+screenSelect.value = state.screen;
+
+screenSelect.addEventListener("change", () => {
+  state.screen = screenSelect.value;
+  localStorage.setItem("stp_theme_lab.screen", state.screen);
+  loadScreen();
+});
+
+document.getElementById("reloadBtn").addEventListener("click", () => {
+  if (frame.__stpObserver) { frame.__stpObserver.disconnect(); delete frame.__stpObserver; }
+  loadScreen();
+});
+
+function setTheme(key) {
+  const prevTheme = THEMES[state.theme];
+  state.theme = key;
+  localStorage.setItem("stp_theme_lab.theme", key);
+  // Update active pill
+  themeRow.querySelectorAll(".pill").forEach(p => {
+    p.classList.toggle("active", p.dataset.theme === key);
+  });
+  // Brand mark colour
+  const t = THEMES[key];
+  brandMark.style.background = t.primary;
+  document.documentElement.style.setProperty("--lab-primary", t.primary);
+  // Update details panel
+  renderDetails(t);
+  // If we just toggled light/dark mode the safe move is to reload —
+  // the patches are one-way and can't be cleanly reverted.
+  const modeChanged = prevTheme && prevTheme.mode !== t.mode;
+  if (modeChanged) {
+    loadScreen();
+    return;
+  }
+  // Re-inject into iframe
+  if (frame.contentDocument && frame.contentDocument.readyState === "complete") {
+    injectIntoFrame(frame, t);
+  }
+}
+
+function renderDetails(t) {
+  detailsName.textContent = t.name + " — " + t.sub;
+  detailsNote.textContent = t.note;
+  const p = hexToRgb(t.primary);
+  const a = hexToRgb(t.amber);
+  swatchRow.innerHTML = `
+    <div class="swatch-card">
+      <div class="swatch-big" style="background:${t.primary}"></div>
+      <div class="swatch-role">Primär</div>
+      <div class="swatch-meta">${t.primary.toUpperCase()}</div>
+    </div>
+    <div class="swatch-card">
+      <div class="swatch-big" style="background:${t.amber}"></div>
+      <div class="swatch-role">Bärnsten</div>
+      <div class="swatch-meta">${t.amber.toUpperCase()}</div>
+    </div>
+  `;
+}
+
+function loadScreen() {
+  empty.style.display = "none";
+  if (frame.__stpObserver) { frame.__stpObserver.disconnect(); delete frame.__stpObserver; }
+  frame.src = encodeURI(state.screen);
+}
+
+frame.addEventListener("load", () => {
+  // Wait a tick for React to mount, then inject
+  const t = THEMES[state.theme];
+  setTimeout(() => injectIntoFrame(frame, t), 80);
+  // Re-inject a couple more times as React continues to mount
+  setTimeout(() => injectIntoFrame(frame, t), 400);
+  setTimeout(() => injectIntoFrame(frame, t), 1200);
+});
+
+// Collapse toggle
+let collapsed = false;
+detailsToggle.addEventListener("click", () => {
+  collapsed = !collapsed;
+  details.classList.toggle("collapsed", collapsed);
+  detailsToggle.textContent = collapsed ? "+" : "–";
+});
+
+// Init
+setTheme(state.theme);
+loadScreen();
+</script>
+</body>
+</html>

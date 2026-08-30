@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>STP – Logga in</title>
+
+<link rel="stylesheet" href="stp-light-tokens.css" />
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="stp-light-components.jsx"></script>
+
+<style>
+  .auth-grid { display: grid; grid-template-columns: 440px 1fr; min-height: 100vh; }
+  @media (max-width: 880px) { .auth-grid { grid-template-columns: 1fr; } .auth-brand { display: none; } }
+  .auth-form-wrap { display: flex; align-items: center; justify-content: center; padding: 40px 24px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState } = React;
+
+/* ── Inputs ── */
+const Field = ({ label, type = "text", placeholder, value, onChange, icon, right }) => (
+  <label style={{ display: "block", marginBottom: 16 }}>
+    <span style={{ fontSize: 13, fontWeight: 700, color: "var(--ink-700)", display: "flex", justifyContent: "space-between", marginBottom: 8 }}>{label}{right}</span>
+    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "0 14px", background: "var(--card)", border: "1px solid var(--line-2)", borderRadius: 11, height: 48, boxShadow: "var(--sh-sm)" }}>
+      {icon && <Icon name={icon} size={17} color="var(--ink-400)" stroke={1.9}/>}
+      <input type={type} placeholder={placeholder} value={value} onChange={onChange} style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontSize: 15, color: "var(--ink-900)", fontFamily: "var(--font)" }}/>
+    </div>
+  </label>
+);
+
+const Brand = () => (
+  <aside className="auth-brand" style={{ background: "var(--ink-900)", color: "#fff", padding: "40px 40px 48px", display: "flex", flexDirection: "column" }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      <div style={{ width: 30, height: 30, borderRadius: 7, background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 13 }}>S</div>
+      <span style={{ fontWeight: 800, fontSize: 17, letterSpacing: 0.5 }}>STP</span>
+    </div>
+    <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", padding: "40px 0" }}>
+      <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 12px", borderRadius: 999, background: "rgba(245,166,35,0.15)", border: "1px solid rgba(245,166,35,0.35)", color: "#f5c875", fontSize: 11, fontWeight: 700, letterSpacing: 1.4, textTransform: "uppercase", alignSelf: "flex-start", marginBottom: 26 }}>Beta · Gratis</div>
+      <h1 style={{ fontSize: 34, fontWeight: 900, letterSpacing: -1.5, lineHeight: 1.1, marginBottom: 18 }}>Branschens egen plattform.</h1>
+      <p style={{ fontSize: 15.5, lineHeight: 1.6, color: "rgba(255,255,255,0.7)", marginBottom: 32 }}>Direktmatchning mellan yrkesförare och åkerier. Inga mellanhänder, inga avgifter.</p>
+      {[["search","Matchas på körkort & region"],["check","Verifierade åkerier"],["msg","Kontakta direkt — inget CV"]].map(([ic,t]) => (
+        <div key={t} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+          <span style={{ width: 32, height: 32, borderRadius: 8, background: "rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icon name={ic} size={15} color="#7dd3c8" stroke={2}/></span>
+          <span style={{ fontSize: 14, color: "rgba(255,255,255,0.85)" }}>{t}</span>
+        </div>
+      ))}
+    </div>
+    <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.45)" }}>Välkomnat av Transportföretagen & Sveriges Åkeriföretag</div>
+  </aside>
+);
+
+const BankID = () => (
+  <button style={{ width: "100%", height: 48, borderRadius: 11, background: "var(--card)", border: "1px solid var(--line-2)", boxShadow: "var(--sh-sm)", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, fontSize: 14.5, fontWeight: 700, color: "var(--ink-900)", marginBottom: 12 }}>
+    <span style={{ width: 22, height: 22, borderRadius: 5, background: "var(--ink-900)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800 }}>ID</span>
+    Logga in med BankID
+  </button>
+);
+
+const Divider = () => (
+  <div style={{ display: "flex", alignItems: "center", gap: 14, margin: "20px 0" }}>
+    <div style={{ flex: 1, height: 1, background: "var(--line)" }}/>
+    <span style={{ fontSize: 12.5, color: "var(--ink-400)", fontWeight: 600 }}>eller</span>
+    <div style={{ flex: 1, height: 1, background: "var(--line)" }}/>
+  </div>
+);
+
+/* ════════════════════════════════════════════════
+   STATES
+════════════════════════════════════════════════ */
+const Login = ({ go }) => (
+  <div style={{ width: "100%", maxWidth: 380 }}>
+    <h1 style={{ fontSize: 28, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.8, marginBottom: 6 }}>Logga in</h1>
+    <p style={{ fontSize: 14.5, color: "var(--ink-500)", marginBottom: 28 }}>Välkommen tillbaka till STP.</p>
+    <BankID/>
+    <Divider/>
+    <Field label="E-post" type="email" placeholder="namn@email.se" icon="mail"/>
+    <Field label="Lösenord" type="password" placeholder="••••••••" icon="settings" right={<button onClick={() => go("forgot")} style={{ fontSize: 12.5, fontWeight: 700, color: "var(--green)" }}>Glömt?</button>}/>
+    <Button variant="primary" size="lg" full iconRight={<Icon name="arrow" size={15} stroke={2.2}/>} style={{ marginTop: 8 }}>Logga in</Button>
+    <p style={{ textAlign: "center", fontSize: 14, color: "var(--ink-500)", marginTop: 22 }}>Inget konto? <button onClick={() => go("choose")} style={{ color: "var(--green)", fontWeight: 700 }}>Skapa konto</button></p>
+  </div>
+);
+
+const Choose = ({ go }) => (
+  <div style={{ width: "100%", maxWidth: 420 }}>
+    <h1 style={{ fontSize: 28, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.8, marginBottom: 6 }}>Skapa konto</h1>
+    <p style={{ fontSize: 14.5, color: "var(--ink-500)", marginBottom: 28 }}>Vem är du? Det avgör hur vi matchar.</p>
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      {[["driver","user","Jag är förare","Hitta jobb hos seriösa åkerier — utan CV."],["company","building","Vi är ett åkeri","Hitta rätt förare utan mellanhänder."]].map(([k,ic,t,d]) => (
+        <button key={k} onClick={() => go("register", k)} style={{ display: "flex", gap: 16, alignItems: "center", padding: "20px 22px", borderRadius: 14, textAlign: "left", background: "var(--card)", border: "1px solid var(--line-2)", boxShadow: "var(--sh-sm)", transition: "border-color .15s, box-shadow .15s" }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--green)"; e.currentTarget.style.boxShadow = "var(--sh)"; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--line-2)"; e.currentTarget.style.boxShadow = "var(--sh-sm)"; }}>
+          <span style={{ width: 48, height: 48, borderRadius: 12, background: "var(--green-tint)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icon name={ic} size={22} color="var(--green-text)" stroke={2}/></span>
+          <div style={{ flex: 1 }}><div style={{ fontSize: 16, fontWeight: 700, color: "var(--ink-900)" }}>{t}</div><div style={{ fontSize: 13, color: "var(--ink-500)", marginTop: 2 }}>{d}</div></div>
+          <Icon name="chevRight" size={18} color="var(--ink-300)" stroke={2}/>
+        </button>
+      ))}
+    </div>
+    <p style={{ textAlign: "center", fontSize: 14, color: "var(--ink-500)", marginTop: 24 }}>Har du redan konto? <button onClick={() => go("login")} style={{ color: "var(--green)", fontWeight: 700 }}>Logga in</button></p>
+  </div>
+);
+
+const Register = ({ role, go }) => (
+  <div style={{ width: "100%", maxWidth: 380 }}>
+    <button onClick={() => go("choose")} style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 13, fontWeight: 600, color: "var(--ink-500)", marginBottom: 18 }}><Icon name="arrowLeft" size={14} stroke={2}/>Tillbaka</button>
+    <h1 style={{ fontSize: 28, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.8, marginBottom: 6 }}>{role === "driver" ? "Skapa förarkonto" : "Registrera åkeri"}</h1>
+    <p style={{ fontSize: 14.5, color: "var(--ink-500)", marginBottom: 28 }}>Gratis under beta. Inga avgifter.</p>
+    <BankID/>
+    <Divider/>
+    {role === "company" && <Field label="Organisationsnummer" placeholder="556677-8899" icon="building"/>}
+    <Field label={role === "driver" ? "Namn" : "Kontaktperson"} placeholder={role === "driver" ? "För- och efternamn" : "Namn"} icon="user"/>
+    <Field label="E-post" type="email" placeholder="namn@email.se" icon="mail"/>
+    <Field label="Lösenord" type="password" placeholder="Minst 8 tecken" icon="settings"/>
+    <Button variant="primary" size="lg" full onClick={() => go("verify")} iconRight={<Icon name="arrow" size={15} stroke={2.2}/>} style={{ marginTop: 8 }}>Skapa konto</Button>
+    <p style={{ fontSize: 12, color: "var(--ink-400)", lineHeight: 1.5, marginTop: 16, textAlign: "center" }}>Genom att fortsätta godkänner du STP:s <a href="#" style={{ color: "var(--green)", fontWeight: 600 }}>användarvillkor</a> och <a href="#" style={{ color: "var(--green)", fontWeight: 600 }}>integritetspolicy</a>.</p>
+  </div>
+);
+
+const Forgot = ({ go }) => (
+  <div style={{ width: "100%", maxWidth: 380 }}>
+    <button onClick={() => go("login")} style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 13, fontWeight: 600, color: "var(--ink-500)", marginBottom: 18 }}><Icon name="arrowLeft" size={14} stroke={2}/>Till inloggning</button>
+    <h1 style={{ fontSize: 28, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.8, marginBottom: 6 }}>Glömt lösenord?</h1>
+    <p style={{ fontSize: 14.5, color: "var(--ink-500)", marginBottom: 28 }}>Ange din e-post så skickar vi en återställningslänk.</p>
+    <Field label="E-post" type="email" placeholder="namn@email.se" icon="mail"/>
+    <Button variant="primary" size="lg" full onClick={() => go("sent")} iconRight={<Icon name="arrow" size={15} stroke={2.2}/>} style={{ marginTop: 8 }}>Skicka länk</Button>
+  </div>
+);
+
+const Confirm = ({ icon, title, body, primary, onPrimary, secondary, onSecondary }) => (
+  <div style={{ width: "100%", maxWidth: 400, textAlign: "center" }}>
+    <div style={{ width: 72, height: 72, borderRadius: 36, background: "var(--green-tint)", margin: "0 auto 22px", display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name={icon} size={32} color="var(--green-text)" stroke={2.4}/></div>
+    <h1 style={{ fontSize: 26, fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.6, marginBottom: 10 }}>{title}</h1>
+    <p style={{ fontSize: 15, color: "var(--ink-500)", lineHeight: 1.6, marginBottom: 28 }}>{body}</p>
+    {primary && <Button variant="primary" size="lg" full onClick={onPrimary} iconRight={<Icon name="arrow" size={15} stroke={2.2}/>}>{primary}</Button>}
+    {secondary && <button onClick={onSecondary} style={{ marginTop: 16, fontSize: 14, fontWeight: 700, color: "var(--green)" }}>{secondary}</button>}
+  </div>
+);
+
+/* ════════════════════════════════════════════════
+   APP
+════════════════════════════════════════════════ */
+const App = () => {
+  const [state, setState] = useState("login");
+  const [role, setRole] = useState("driver");
+  const go = (s, r) => { if (r) setRole(r); setState(s); };
+
+  return (
+    <div className="auth-grid">
+      <Brand/>
+      <div className="auth-form-wrap">
+        {state === "login"    && <Login go={go}/>}
+        {state === "choose"   && <Choose go={go}/>}
+        {state === "register" && <Register role={role} go={go}/>}
+        {state === "forgot"   && <Forgot go={go}/>}
+        {state === "sent"     && <Confirm icon="mail" title="Kolla din inkorg" body="Vi har skickat en återställningslänk till din e-post. Klicka på länken för att välja ett nytt lösenord." secondary="Tillbaka till inloggning" onSecondary={() => go("login")}/>}
+        {state === "verify"   && <Confirm icon="check" title="Bekräfta din e-post" body="Vi har skickat ett bekräftelsemejl. Klicka på länken för att aktivera ditt konto och komma igång." primary="Öppna e-post" onPrimary={() => {}} secondary="Skicka igen" onSecondary={() => {}}/>}
+      </div>
+
+      {/* Dev state switcher (handoff aid) */}
+      <div style={{ position: "fixed", bottom: 14, left: "50%", transform: "translateX(-50%)", display: "flex", gap: 4, background: "var(--ink-900)", padding: 5, borderRadius: 999, zIndex: 50, boxShadow: "var(--sh-md)" }}>
+        {[["login","Logga in"],["choose","Välj"],["register","Reg"],["forgot","Glömt"],["sent","Skickat"],["verify","Verifiera"]].map(([k,l]) => (
+          <button key={k} onClick={() => setState(k)} style={{ padding: "5px 11px", borderRadius: 999, fontSize: 11.5, fontWeight: 600, background: state === k ? "var(--green)" : "transparent", color: state === k ? "#fff" : "rgba(255,255,255,0.6)" }}>{l}</button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
