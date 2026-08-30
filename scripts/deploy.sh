@@ -79,7 +79,25 @@ if [ "$TARGET" = "all" ] || [ "$TARGET" = "frontend" ]; then
   grn "✓ Frontend deployad."
 fi
 
+# uptimeSec ur /api/health. Tom sträng om API:t inte svarar eller fältet saknas.
+health_uptime() {
+  curl -s --max-time 10 "$HEALTH_API" 2>/dev/null | sed -n 's/.*"uptimeSec":\([0-9]*\).*/\1/p' | head -1
+}
+
+PRE_UPTIME=""
 if [ "$TARGET" = "all" ] || [ "$TARGET" = "backend" ]; then
+  # Railway bygger asynkront: `railway up` returnerar när koden är uppladdad,
+  # inte när den kör. Health svarar hela tiden ok — från den GAMLA instansen.
+  # Utan det här måttet rapporterade skriptet "DEPLOY KLAR" mot en container som
+  # startats 22 dygn tidigare (2026-08-30). Vi noterar därför uptime före
+  # uppladdningen och väntar sedan tills den räknats om från noll.
+  PRE_UPTIME="$(health_uptime)"
+  if [ -n "$PRE_UPTIME" ]; then
+    ylw "→ Nuvarande backend-instans: uptime ${PRE_UPTIME}s. Väntar på att den byts ut."
+  else
+    ylw "→ Kunde inte läsa uptime före deploy — verifierar bara att health blir ok."
+  fi
+
   ylw "→ Deployar backend (Railway)..."
   ( cd "$ROOT/server" && railway up --service nodejs )
   grn "✓ Backend uppladdad (Railway bygger klart på sin sida)."
@@ -87,21 +105,46 @@ fi
 
 # ── 5. Verifiera ──────────────────────────────────────────────────────────────────
 ylw "→ Verifierar health (väntar in ev. omstart)..."
+# Railway-bygget tar oftast 2–5 minuter. 90 × 8 s ≈ 12 minuter innan vi ger upp;
+# tidigare 30 × 8 s räckte inte ens till ett normalt bygge.
+TRIES=30
+[ -n "$PRE_UPTIME" ] && TRIES=90
+
 OK=0
-for i in $(seq 1 30); do
+NEW_UPTIME=""
+for i in $(seq 1 $TRIES); do
   H="$(curl -s --max-time 10 "$HEALTH_API" || true)"
   CODE="$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "$SITE" || echo 000)"
   if echo "$H" | grep -q '"ok":true' && echo "$H" | grep -q '"db":"ok"' && [ "$CODE" = "200" ]; then
-    OK=1; break
+    if [ -z "$PRE_UPTIME" ]; then
+      OK=1; break
+    fi
+    # Backend: kräv att processen faktiskt startats om. Lägre uptime än före
+    # uppladdningen är det enda som skiljer den nya instansen från den gamla —
+    # health säger "ok" i båda fallen.
+    U="$(printf '%s' "$H" | sed -n 's/.*"uptimeSec":\([0-9]*\).*/\1/p' | head -1)"
+    if [ -n "$U" ] && [ "$U" -lt "$PRE_UPTIME" ]; then
+      NEW_UPTIME="$U"; OK=1; break
+    fi
+    [ $((i % 5)) -eq 0 ] && ylw "   …gamla instansen svarar fortfarande (uptime ${U:-?}s), väntar."
   fi
   sleep 8
 done
 
 echo
 if [ "$OK" = "1" ]; then
-  grn "✅ DEPLOY KLAR ($DEPLOY_SHA). Sajt 200, API ok, databas ok."
+  if [ -n "$NEW_UPTIME" ]; then
+    grn "✅ DEPLOY KLAR ($DEPLOY_SHA). Ny backend-instans uppe (uptime ${NEW_UPTIME}s), sajt 200, databas ok."
+  else
+    grn "✅ DEPLOY KLAR ($DEPLOY_SHA). Sajt 200, API ok, databas ok."
+  fi
 else
-  red "⚠️  Deploy gjord ($DEPLOY_SHA) men health verifierades INTE inom tidsgränsen."
+  if [ -n "$PRE_UPTIME" ]; then
+    red "⚠️  Deploy gjord ($DEPLOY_SHA) men den NYA backend-instansen kom aldrig upp inom tidsgränsen."
+    red "    Gamla instansen svarar fortfarande — koden du just skickade är alltså INTE live."
+  else
+    red "⚠️  Deploy gjord ($DEPLOY_SHA) men health verifierades INTE inom tidsgränsen."
+  fi
   red "    Kolla Railway/Vercel-loggar och $HEALTH_API manuellt."
   exit 1
 fi
