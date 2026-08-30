@@ -156,7 +156,7 @@ export default function HemScreen({ ctx }) {
             <Label style={{ padding: "2px 4px 10px" }}>Aktivitet</Label>
             <Card style={{ padding: activity.length ? "4px 16px" : 0 }}>
               {activity.length === 0 ? (
-                <div style={{ padding: "26px 20px", textAlign: "center", fontSize: 13.5, color: "var(--ink-500)" }}>Ingen aktivitet än. När åkerier tittar på din profil dyker det upp här.</div>
+                <div style={{ padding: "26px 20px", textAlign: "center", fontSize: 13.5, color: "var(--ink-500)" }}>Ingen aktivitet än. Här samlas det som händer med dina ansökningar.</div>
               ) : (
                 activity.map((a, i) => (
                   <div key={a.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 0", borderBottom: i < activity.length - 1 ? "1px solid var(--line)" : "none" }}>
