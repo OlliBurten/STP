@@ -90,43 +90,6 @@ const Admin                 = lazyRetry(() => import("./pages/Admin"));
 const Status                = lazyRetry(() => import("./pages/Status"));
 const NotFound              = lazyRetry(() => import("./pages/NotFound"));
 const Forbidden             = lazyRetry(() => import("./pages/Forbidden"));
-const PreviewIndex          = lazyRetry(() => import("./pages/preview/PreviewIndex"));
-const LandingPreview        = lazyRetry(() => import("./pages/preview/LandingPreview"));
-const FelsidorPreview       = lazyRetry(() => import("./pages/preview/FelsidorPreview"));
-const StatesPreview         = lazyRetry(() => import("./pages/preview/StatesPreview"));
-const DialogerPreview       = lazyRetry(() => import("./pages/preview/DialogerPreview"));
-const NotiserSokPreview     = lazyRetry(() => import("./pages/preview/NotiserSokPreview"));
-const JuridikPreview        = lazyRetry(() => import("./pages/preview/JuridikPreview"));
-const InnehallssidorPreview = lazyRetry(() => import("./pages/preview/InnehallssidorPreview"));
-const JobbdetaljPreview     = lazyRetry(() => import("./pages/preview/JobbdetaljPreview"));
-const LedigaJobbPreview     = lazyRetry(() => import("./pages/preview/LedigaJobbPreview"));
-const ForarprofilPreview    = lazyRetry(() => import("./pages/preview/ForarprofilPreview"));
-const AnsokanPreview        = lazyRetry(() => import("./pages/preview/AnsokanPreview"));
-const MinaAnsokningarPreview = lazyRetry(() => import("./pages/preview/MinaAnsokningarPreview"));
-const InkorgPreview         = lazyRetry(() => import("./pages/preview/InkorgPreview"));
-const AkeriDashboardPreview = lazyRetry(() => import("./pages/preview/akeri/DashboardPreview"));
-const AkeriAnnonserPreview  = lazyRetry(() => import("./pages/preview/akeri/AnnonserPreview"));
-const AkeriHittaForarePreview = lazyRetry(() => import("./pages/preview/akeri/HittaForarePreview"));
-const AkeriSkapaAnnonsPreview = lazyRetry(() => import("./pages/preview/akeri/SkapaAnnonsPreview"));
-const AkeriKanbanPreview    = lazyRetry(() => import("./pages/preview/akeri/KanbanPreview"));
-const AkeriForetagsprofilPreview = lazyRetry(() => import("./pages/preview/akeri/ForetagsprofilPreview"));
-const AkeriForarprofilPreview = lazyRetry(() => import("./pages/preview/akeri/ForarprofilAkeriPreview"));
-const AkeriVerifieringPreview = lazyRetry(() => import("./pages/preview/akeri/VerifieringPreview"));
-const AkeriInkorgPreview    = lazyRetry(() => import("./pages/preview/akeri/InkorgPreview"));
-const AkeriOnboardingPreview = lazyRetry(() => import("./pages/preview/akeri/OnboardingPreview"));
-const AdminOversiktPreview  = lazyRetry(() => import("./pages/preview/admin/OversiktPreview"));
-const AdminAnvandarePreview = lazyRetry(() => import("./pages/preview/admin/AnvandarePreview"));
-const AdminAkerierPreview   = lazyRetry(() => import("./pages/preview/admin/AkerierPreview"));
-const AdminVerifieringarPreview = lazyRetry(() => import("./pages/preview/admin/VerifieringarPreview"));
-const AdminSystemPreview    = lazyRetry(() => import("./pages/preview/admin/SystemPreview"));
-const AdminAnnonserPreview  = lazyRetry(() => import("./pages/preview/admin/AdminAnnonserPreview"));
-const AdminRapporterPreview = lazyRetry(() => import("./pages/preview/admin/RapporterPreview"));
-const AdminInstallningarPreview = lazyRetry(() => import("./pages/preview/admin/InstallningarPreview"));
-const FavoriterPreview      = lazyRetry(() => import("./pages/preview/FavoriterPreview"));
-const AkerierBrowsePreview  = lazyRetry(() => import("./pages/preview/AkerierPreview"));
-const AkeriprofilPreview    = lazyRetry(() => import("./pages/preview/AkeriprofilPreview"));
-const ForareInstallningarPreview = lazyRetry(() => import("./pages/preview/InstallningarPreview"));
-const OnboardingForarePreview = lazyRetry(() => import("./pages/preview/OnboardingForarePreview"));
 const SavedJobs             = lazyRetry(() => import("./pages/SavedJobs"));
 const CompanyProfile        = lazyRetry(() => import("./pages/CompanyProfile"));
 const CompanyPublicProfile  = lazyRetry(() => import("./pages/CompanyPublicProfile"));
@@ -328,8 +291,6 @@ function AppLayout() {
   // Onboarding wizards are full-screen standalone layouts — no top nav
   const isOnboardingPage = pathname.startsWith("/onboarding/");
 
-  // STP (4) design-preview screens render standalone (egen TopNav) — ingen global chrome
-  const isPreviewPage = pathname.startsWith("/preview/");
 
   // Mobil publik reskin (utloggad): Landing ("/") och guest-jobb ("/jobb") har
   // egen header/meny → dölj global chrome. (/jobb/:id hanteras separat.)
@@ -346,7 +307,7 @@ function AppLayout() {
   const isDriverMobileRoute = DRIVER_MOBILE_PREFIXES.some(
     (p) => pathname === p || pathname.startsWith(p + "/") || pathname.startsWith(p)
   );
-  if (isMobile && isDriver && isDriverMobileRoute && !isAuthPage && !isAdminPage && !isOnboardingPage && !isPreviewPage) {
+  if (isMobile && isDriver && isDriverMobileRoute && !isAuthPage && !isAdminPage && !isOnboardingPage) {
     return (
       <Suspense fallback={<div className="min-h-screen" />}>
         <DriverMobileApp />
@@ -358,7 +319,7 @@ function AppLayout() {
   // for the company dashboard routes (not /foretag/:id public profile or onboarding).
   const isCompanyMobileRoute = pathname === "/foretag"
     || ["/foretag/annonser", "/foretag/chaufforer", "/foretag/meddelanden", "/foretag/mer", "/foretag/profil"].some((p) => pathname === p || pathname.startsWith(p + "/"));
-  if (isMobile && isCompany && isCompanyMobileRoute && !isAuthPage && !isAdminPage && !isOnboardingPage && !isPreviewPage) {
+  if (isMobile && isCompany && isCompanyMobileRoute && !isAuthPage && !isAdminPage && !isOnboardingPage) {
     return (
       <Suspense fallback={<div className="min-h-screen" />}>
         <CompanyMobileApp />
@@ -368,12 +329,12 @@ function AppLayout() {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ overflowX: "clip" }}>
-      {!hideChromeOnMobile && !isMobilePublicScreen && !isMobileLegal && !isJobDetailMobile && !isAuthPage && !isAdminPage && !isOnboardingPage && !isPreviewPage && (
+      {!hideChromeOnMobile && !isMobilePublicScreen && !isMobileLegal && !isJobDetailMobile && !isAuthPage && !isAdminPage && !isOnboardingPage && (
         user ? <AppTopNav /> : <Header onboarding={onboarding} />
       )}
       {/* Profilbanner sitter tätt under headern (utanför pt-16-paddingen) */}
       <DriverCompletionNudge />
-      <div className={hideChromeOnMobile || isMobilePublicScreen || isMobileLegal || isJobDetailMobile || isAuthPage || isOnboardingPage || isPreviewPage ? "flex-1" : `flex-1 ${isImpersonating ? "pt-[104px]" : "pt-16"}`}>
+      <div className={hideChromeOnMobile || isMobilePublicScreen || isMobileLegal || isJobDetailMobile || isAuthPage || isOnboardingPage ? "flex-1" : `flex-1 ${isImpersonating ? "pt-[104px]" : "pt-16"}`}>
         <OnboardingGate>
         <Suspense fallback={<div className="min-h-[60vh]" />}>
         <Routes>
@@ -592,53 +553,16 @@ function AppLayout() {
                       </ProtectedRoute>
                     }
                   />
-                  <Route path="/preview" element={<PreviewIndex />} />
-                  <Route path="/preview/landing" element={<LandingPreview />} />
-                  <Route path="/preview/felsidor" element={<FelsidorPreview />} />
-                  <Route path="/preview/states" element={<StatesPreview />} />
-                  <Route path="/preview/dialoger" element={<DialogerPreview />} />
-                  <Route path="/preview/notiser-sok" element={<NotiserSokPreview />} />
-                  <Route path="/preview/juridik" element={<JuridikPreview />} />
-                  <Route path="/preview/innehallssidor" element={<InnehallssidorPreview />} />
-                  <Route path="/preview/jobbdetalj" element={<JobbdetaljPreview />} />
-                  <Route path="/preview/lediga-jobb" element={<LedigaJobbPreview />} />
-                  <Route path="/preview/forarprofil" element={<ForarprofilPreview />} />
-                  <Route path="/preview/ansokan" element={<AnsokanPreview />} />
-                  <Route path="/preview/mina-ansokningar" element={<MinaAnsokningarPreview />} />
-                  <Route path="/preview/inkorg" element={<InkorgPreview />} />
-                  <Route path="/preview/akeri/dashboard" element={<AkeriDashboardPreview />} />
-                  <Route path="/preview/akeri/annonser" element={<AkeriAnnonserPreview />} />
-                  <Route path="/preview/akeri/hitta-forare" element={<AkeriHittaForarePreview />} />
-                  <Route path="/preview/akeri/skapa-annons" element={<AkeriSkapaAnnonsPreview />} />
-                  <Route path="/preview/akeri/ansokningar" element={<AkeriKanbanPreview />} />
-                  <Route path="/preview/akeri/foretagsprofil" element={<AkeriForetagsprofilPreview />} />
-                  <Route path="/preview/akeri/forarprofil" element={<AkeriForarprofilPreview />} />
-                  <Route path="/preview/akeri/verifiering" element={<AkeriVerifieringPreview />} />
-                  <Route path="/preview/akeri/inkorg" element={<AkeriInkorgPreview />} />
-                  <Route path="/preview/akeri/onboarding" element={<AkeriOnboardingPreview />} />
-                  <Route path="/preview/admin/oversikt" element={<AdminOversiktPreview />} />
-                  <Route path="/preview/admin/anvandare" element={<AdminAnvandarePreview />} />
-                  <Route path="/preview/admin/akerier" element={<AdminAkerierPreview />} />
-                  <Route path="/preview/admin/verifieringar" element={<AdminVerifieringarPreview />} />
-                  <Route path="/preview/admin/system" element={<AdminSystemPreview />} />
-                  <Route path="/preview/admin/annonser" element={<AdminAnnonserPreview />} />
-                  <Route path="/preview/admin/rapporter" element={<AdminRapporterPreview />} />
-                  <Route path="/preview/admin/installningar" element={<AdminInstallningarPreview />} />
-                  <Route path="/preview/favoriter" element={<FavoriterPreview />} />
-                  <Route path="/preview/akerier" element={<AkerierBrowsePreview />} />
-                  <Route path="/preview/akeriprofil" element={<AkeriprofilPreview />} />
-                  <Route path="/preview/installningar" element={<ForareInstallningarPreview />} />
-                  <Route path="/preview/onboarding-forare" element={<OnboardingForarePreview />} />
                   <Route path="/ingen-atkomst" element={<Forbidden />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
         </Suspense>
         </OnboardingGate>
               </div>
-              {!hideChromeOnMobile && !isMobilePublicScreen && !isMobileLegal && !isJobDetailMobile && !isAuthPage && !isPreviewPage && <Footer />}
+              {!hideChromeOnMobile && !isMobilePublicScreen && !isMobileLegal && !isJobDetailMobile && !isAuthPage && <Footer />}
               {/* Flytande feedback-knapp bara på desktop — på mobil krockar den med
                   sticky-CTA:er (ansök/kontakta) och tar dyrbar skärmyta. */}
-              {!isMobile && !hideChromeOnMobile && !isAuthPage && !isPreviewPage && <FeedbackButton />}
+              {!isMobile && !hideChromeOnMobile && !isAuthPage && <FeedbackButton />}
               <InstallPrompt />
               <CookieBanner />
               {showBottomNav && <BottomNav />}
