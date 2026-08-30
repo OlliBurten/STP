@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>STP – Inställningar (mobil)</title>
+<link rel="stylesheet" href="stp-light-tokens.css" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="stp-light-components.jsx"></script>
+<script type="text/babel" src="stp-mobile-shell.jsx"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState } = React;
+
+const Switch = ({ on, onToggle }) => (
+  <button onClick={onToggle} style={{ width:44, height:26, borderRadius:13, position:"relative", background:on?"var(--green)":"var(--ink-200)", border:"1px solid", borderColor:on?"var(--green-deep)":"var(--line-2)", flexShrink:0 }}>
+    <span style={{ position:"absolute", top:2, left:on?20:2, width:20, height:20, borderRadius:10, background:"#fff", boxShadow:"0 1px 3px rgba(0,0,0,0.25)", transition:"left .2s" }}/>
+  </button>
+);
+
+const Group = ({ title, children }) => (
+  <div>
+    <div style={{ fontSize:11, fontWeight:800, letterSpacing:1.2, textTransform:"uppercase", color:"var(--ink-500)", padding:"0 4px 8px" }}>{title}</div>
+    <div style={{ background:"var(--card)", border:"1px solid var(--line)", borderRadius:16, overflow:"hidden", boxShadow:"var(--sh-sm)" }}>{children}</div>
+  </div>
+);
+
+const Row = ({ label, sub, right, onClick, last, danger }) => (
+  <div onClick={onClick} style={{ width:"100%", display:"flex", alignItems:"center", gap:12, padding:"15px 16px", textAlign:"left", borderBottom:last?"none":"1px solid var(--line)", background:"transparent", cursor:"pointer" }}>
+    <div style={{ flex:1, minWidth:0 }}>
+      <div style={{ fontSize:14.5, fontWeight:600, color:danger?"var(--danger)":"var(--ink-900)" }}>{label}</div>
+      {sub && <div style={{ fontSize:12.5, color:"var(--ink-500)", marginTop:2, lineHeight:1.4 }}>{sub}</div>}
+    </div>
+    {right || <Icon name="chevRight" size={16} color="var(--ink-300)" stroke={2}/>}
+  </div>
+);
+
+const App = () => {
+  const [tab, setTab] = useState("profil");
+  const [s, setS] = useState({ visible:true, phone:true, match:true, message:true, digest:false });
+  const t = k => setS(p => ({ ...p, [k]: !p[k] }));
+
+  return (
+    <MobileShell tabs={DRIVER_TABS} active={tab} onTab={setTab}
+      header={<div style={{ background:"var(--paper)", padding:"6px 18px 12px" }}><h1 style={{ fontSize:26, fontWeight:900, color:"var(--ink-900)", letterSpacing:-1 }}>Inställningar</h1></div>}>
+      <div style={{ padding:"4px 16px 24px", display:"flex", flexDirection:"column", gap:20 }}>
+        {/* Profile row */}
+        <div style={{ background:"var(--card)", border:"1px solid var(--line)", borderRadius:16, padding:"16px", boxShadow:"var(--sh-sm)", display:"flex", alignItems:"center", gap:14 }}>
+          <Avatar initials="OH" size={48}/>
+          <div style={{ flex:1 }}><div style={{ fontSize:16, fontWeight:800, color:"var(--ink-900)" }}>Oliver Harburt</div><div style={{ fontSize:13, color:"var(--ink-500)" }}>Förare · Malmö</div></div>
+          <Icon name="chevRight" size={18} color="var(--ink-300)" stroke={2}/>
+        </div>
+
+        <Group title="Synlighet">
+          <Row label="Synlig för åkerier" sub="Åkerier kan hitta din profil" right={<Switch on={s.visible} onToggle={() => t("visible")}/>}/>
+          <Row label="Visa telefonnummer" sub="Tillåt åkerier att ringa direkt" right={<Switch on={s.phone} onToggle={() => t("phone")}/>} last/>
+        </Group>
+
+        <Group title="Notiser">
+          <Row label="Matchande jobb" right={<Switch on={s.match} onToggle={() => t("match")}/>}/>
+          <Row label="Meddelanden" right={<Switch on={s.message} onToggle={() => t("message")}/>}/>
+          <Row label="Veckosammanfattning" right={<Switch on={s.digest} onToggle={() => t("digest")}/>} last/>
+        </Group>
+
+        <Group title="Konto">
+          <Row label="Redigera profil"/>
+          <Row label="Byt lösenord"/>
+          <Row label="Integritet & data" last/>
+        </Group>
+
+        <Group title="">
+          <Row label="Logga ut" danger last/>
+        </Group>
+
+        <div style={{ textAlign:"center", fontSize:12, color:"var(--ink-400)", paddingTop:4 }}>STP · v0.9.0</div>
+      </div>
+    </MobileShell>
+  );
+};
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

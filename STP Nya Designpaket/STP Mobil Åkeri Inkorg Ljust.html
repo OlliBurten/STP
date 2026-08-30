@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>STP – Åkeri Inkorg (mobil)</title>
+<link rel="stylesheet" href="stp-light-tokens.css" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="stp-light-components.jsx"></script>
+<script type="text/babel" src="stp-mobile-shell.jsx"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useRef, useEffect } = React;
+const matchColor = (m) => m >= 90 ? "var(--success)" : m >= 75 ? "var(--green)" : "var(--amber-deep)";
+const CONVOS = [
+  { id:0, name:"Erik Johansson", initials:"EJ", job:"CE-chaufför fjärr", loc:"Malmö", exp:8, stage:"new", match:94, unread:2, time:"4 min",
+    messages:[ { from:"driver", text:"Hej! Jag har 8 års erfarenhet av fjärr mot Tyskland. Finns det möjlighet att höras?", at:"4 min" } ]},
+  { id:1, name:"Karin Olsson", initials:"KO", job:"CE-chaufför fjärr", loc:"Malmö", exp:22, stage:"interviewing", match:91, unread:0, time:"2h",
+    messages:[ { from:"company", text:"Hej Karin, kan du på torsdag 14:00 för intervju?", at:"3h" }, { from:"driver", text:"Absolut, det passar bra!", at:"2h" } ]},
+  { id:2, name:"Sara Pettersson", initials:"SP", job:"Distribution", loc:"Helsingborg", exp:5, stage:"new", match:86, unread:1, time:"6h",
+    messages:[ { from:"driver", text:"Hej, jag har ansökt och ser fram emot att höra från er!", at:"6h" } ]},
+];
+const stMeta = { new:{label:"Ny",tone:"amber"}, interviewing:{label:"Intervju",tone:"amber"}, selected:{label:"Utvald",tone:"success"} };
+
+const List = ({ onOpen }) => (
+  <div>
+    <div style={{ background:"var(--paper)", padding:"6px 18px 12px" }}><h1 style={{ fontSize:24, fontWeight:900, color:"var(--ink-900)", letterSpacing:-0.8 }}>Inkorg</h1></div>
+    {CONVOS.map(c => {
+      const last = c.messages[c.messages.length-1]; const meta = stMeta[c.stage];
+      return (
+        <button key={c.id} onClick={() => onOpen(c.id)} style={{ width:"100%", textAlign:"left", display:"flex", gap:13, alignItems:"flex-start", padding:"14px 18px", borderBottom:"1px solid var(--line)", background:"transparent" }}>
+          <Avatar initials={c.initials} size={46}/>
+          <div style={{ flex:1, minWidth:0 }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", gap:8 }}>
+              <span style={{ fontSize:14.5, fontWeight:700, color:"var(--ink-900)" }}>{c.name}</span>
+              <span style={{ fontSize:11.5, color:"var(--ink-400)" }}>{c.time}</span>
+            </div>
+            <div style={{ fontSize:12, color:"var(--ink-500)", marginTop:1, marginBottom:5, display:"flex", alignItems:"center", gap:6 }}>{c.job}<span style={{ color:matchColor(c.match), fontWeight:700, fontFamily:"var(--mono)" }}>{c.match}%</span></div>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:8 }}>
+              <span style={{ fontSize:13, color:c.unread?"var(--ink-900)":"var(--ink-500)", fontWeight:c.unread?600:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", flex:1 }}>{last.from==="company"?"Du: ":""}{last.text}</span>
+              {c.unread > 0 && <span style={{ width:18, height:18, borderRadius:9, background:"var(--green)", color:"#fff", fontSize:11, fontWeight:800, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>{c.unread}</span>}
+            </div>
+            <div style={{ marginTop:7 }}><Pill tone={meta.tone} size="sm">{meta.label}</Pill></div>
+          </div>
+        </button>
+      );
+    })}
+  </div>
+);
+
+const Thread = ({ c, onBack }) => {
+  const ref = useRef(null);
+  useEffect(() => { if (ref.current) ref.current.scrollTop = ref.current.scrollHeight; }, []);
+  return (
+    <div style={{ display:"flex", flexDirection:"column", height:"100%" }}>
+      <div style={{ background:"var(--card)", borderBottom:"1px solid var(--line)", padding:"8px 12px", display:"flex", alignItems:"center", gap:12, flexShrink:0 }}>
+        <button onClick={onBack} style={{ width:36, height:36, borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center" }}><Icon name="arrowLeft" size={18} color="var(--ink-900)" stroke={2}/></button>
+        <Avatar initials={c.initials} size={38}/>
+        <div style={{ flex:1, minWidth:0 }}><div style={{ fontSize:14.5, fontWeight:700, color:"var(--ink-900)" }}>{c.name}</div><div style={{ fontSize:12, color:"var(--ink-500)" }}>{c.loc} · {c.exp} år · {c.match}% match</div></div>
+        <button style={{ padding:"7px 12px", borderRadius:9, background:"var(--green)", color:"#fff", fontSize:12.5, fontWeight:700 }}>Profil</button>
+      </div>
+      <div ref={ref} style={{ flex:1, overflowY:"auto", padding:16, display:"flex", flexDirection:"column", gap:12, background:"var(--paper)" }}>
+        {c.messages.map((m, i) => {
+          const mine = m.from === "company";
+          return <div key={i} style={{ display:"flex", justifyContent:mine?"flex-end":"flex-start" }}><div style={{ maxWidth:"80%", padding:"11px 14px", borderRadius:16, borderBottomRightRadius:mine?4:16, borderBottomLeftRadius:mine?16:4, background:mine?"var(--green)":"var(--card)", color:mine?"#fff":"var(--ink-900)", border:mine?"none":"1px solid var(--line)", fontSize:14, lineHeight:1.5 }}>{m.text}</div></div>;
+        })}
+      </div>
+      <div style={{ background:"var(--card)", borderTop:"1px solid var(--line)", padding:"10px 14px 24px", display:"flex", gap:10, alignItems:"center", flexShrink:0 }}>
+        <input placeholder="Skriv ett meddelande..." style={{ flex:1, padding:"11px 14px", borderRadius:999, background:"var(--card-2)", border:"1px solid var(--line-2)", fontSize:14, color:"var(--ink-900)", outline:"none", fontFamily:"var(--font)" }}/>
+        <button style={{ width:40, height:40, borderRadius:"50%", background:"var(--green)", border:"1px solid var(--green-deep)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}><Icon name="arrow" size={16} color="#fff" stroke={2.2}/></button>
+      </div>
+    </div>
+  );
+};
+
+const App = () => {
+  const [tab, setTab] = useState("inkorg");
+  const [openId, setOpenId] = useState(null);
+  const conv = CONVOS.find(c => c.id === openId);
+  if (conv) return <MobileShell noTabs><Thread c={conv} onBack={() => setOpenId(null)}/></MobileShell>;
+  return <MobileShell tabs={COMPANY_TABS} active={tab} onTab={setTab}><List onOpen={setOpenId}/></MobileShell>;
+};
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

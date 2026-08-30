@@ -1,0 +1,90 @@
+/* ════════════════════════════════════════════════════════════
+   STP — Ljust tema: design tokens
+   Importera först i alla ljus-skärmar:
+     <link rel="stylesheet" href="stp-light-tokens.css">
+════════════════════════════════════════════════════════════ */
+
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600&display=swap");
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: var(--font); -webkit-font-smoothing: antialiased; }
+
+:root {
+  /* ── Asfalt (mörk ink) — nav, primärtext, mörka knappar ── */
+  --ink-900: #0a1a1a;
+  --ink-800: #14282a;
+  --ink-700: #2a3a3c;
+  --ink-500: #5a6669;
+  --ink-400: #7d878a;
+  --ink-300: #b5bcbe;
+  --ink-200: #d8dcdd;
+
+  /* ── Paper (ljusa ytor) ── */
+  --paper:   #f5f2ec;       /* sid-bakgrund — varm off-white */
+  --paper-2: #ede9e1;       /* alternativ subtil bg */
+  --card:    #ffffff;       /* kort-ytor */
+  --card-2:  #fbfaf6;       /* nästat kort / lugnare ruta */
+
+  /* ── Linjer ── */
+  --line:        rgba(20,32,32,0.07);
+  --line-2:      rgba(20,32,32,0.13);
+  --line-strong: rgba(20,32,32,0.20);
+
+  /* ── Brand accenter ── */
+  --green:       #1F5F5C;   /* vägrön — primär varumärkesfärg */
+  --green-deep:  #154240;
+  --green-soft:  #4a8a87;
+  --green-tint:  #e7eeed;
+  --green-tint-2:#d6e1df;
+  --green-text:  #0F3F3C;   /* text på grön tint */
+
+  --amber:       #C77A0E;   /* bärnsten — desaturerad för ljus bakgrund */
+  --amber-deep:  #985a06;
+  --amber-tint:  #fbf0db;
+  --amber-tint-2:#f5e3bd;
+  --amber-text:  #7a4d08;   /* text på amber tint */
+
+  /* ── Status (utan att äta varumärkesfärgerna) ── */
+  --success:      #1f7a3a;
+  --success-tint: #e0efe4;
+  --danger:       #b91c3b;
+  --danger-tint:  #fbe4e8;
+  --info:         #1b5a8a;
+  --info-tint:    #e1ecf5;
+
+  /* ── Skuggor (lugna, inte dramatiska) ── */
+  --sh-sm:  0 1px 2px rgba(15,22,22,0.04), 0 1px 3px rgba(15,22,22,0.05);
+  --sh:     0 1px 2px rgba(15,22,22,0.04), 0 6px 20px rgba(15,22,22,0.05);
+  --sh-md:  0 2px 6px rgba(15,22,22,0.05), 0 10px 30px rgba(15,22,22,0.07);
+
+  /* ── Typografi & spacing ── */
+  --font: 'DM Sans', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* ── Radii ── */
+  --r-sm: 7px;
+  --r:    9px;
+  --r-md: 11px;
+  --r-lg: 14px;
+}
+
+body { background: var(--paper); color: var(--ink-900); }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--ink-200); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--ink-300); }
+
+@keyframes stp-fade-up { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+.stp-fade-up { animation: stp-fade-up .35s ease both; }
+
+/* Reset focus to brand color */
+:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+button, input, textarea, select { font-family: var(--font); }
+button { background: none; border: none; padding: 0; cursor: pointer; font: inherit; color: inherit; }
+a { color: var(--green); text-decoration: none; }
+a:hover { text-decoration: underline; }

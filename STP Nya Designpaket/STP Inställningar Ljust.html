@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>STP – Inställningar</title>
+
+<link rel="stylesheet" href="stp-light-tokens.css" />
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="stp-light-components.jsx"></script>
+
+<style>
+  .set-grid { display: grid; grid-template-columns: 220px 1fr; gap: 32px; align-items: start; }
+  @media (max-width: 860px) { .set-grid { grid-template-columns: 1fr; } .set-nav { flex-direction: row !important; overflow-x: auto; } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState } = React;
+
+const NAV_ITEMS = [
+  { id: "jobb",        label: "Jobb" },
+  { id: "ansokningar", label: "Mina ansökningar" },
+  { id: "meddelanden", label: "Meddelanden", badge: 1 },
+  { id: "favoriter",   label: "Favoriter" },
+];
+const ME = { initials: "OH", label: "Oliver Harburt" };
+
+const SECTIONS = [
+  { id: "konto",      label: "Konto",      icon: "user" },
+  { id: "synlighet",  label: "Synlighet",  icon: "eye" },
+  { id: "notiser",    label: "Notiser",    icon: "bell" },
+  { id: "integritet", label: "Integritet", icon: "settings" },
+];
+
+/* ── Reusable bits ── */
+const SettingRow = ({ label, sub, children, last }) => (
+  <div style={{
+    display: "flex", justifyContent: "space-between", alignItems: "center", gap: 20,
+    padding: "16px 0", borderBottom: last ? "none" : "1px solid var(--line)",
+  }}>
+    <div style={{ flex: 1, minWidth: 0 }}>
+      <div style={{ fontSize: 14.5, fontWeight: 600, color: "var(--ink-900)" }}>{label}</div>
+      {sub && <div style={{ fontSize: 13, color: "var(--ink-500)", marginTop: 3, lineHeight: 1.5 }}>{sub}</div>}
+    </div>
+    <div style={{ flexShrink: 0 }}>{children}</div>
+  </div>
+);
+
+const Switch = ({ on, onToggle }) => (
+  <button onClick={onToggle} style={{
+    width: 44, height: 26, borderRadius: 13, position: "relative",
+    background: on ? "var(--green)" : "var(--ink-200)",
+    border: "1px solid", borderColor: on ? "var(--green-deep)" : "var(--line-2)",
+    transition: "background .2s", flexShrink: 0,
+  }}>
+    <span style={{ position: "absolute", top: 2, left: on ? 20 : 2, width: 20, height: 20, borderRadius: 10, background: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,0.25)", transition: "left .2s" }}/>
+  </button>
+);
+
+const Input = ({ defaultValue, type = "text", placeholder }) => (
+  <input type={type} defaultValue={defaultValue} placeholder={placeholder} style={{
+    padding: "10px 14px", borderRadius: 10, background: "var(--card-2)",
+    border: "1px solid var(--line-2)", fontSize: 14, color: "var(--ink-900)",
+    outline: "none", fontFamily: "var(--font)", minWidth: 220, textAlign: "right",
+  }}/>
+);
+
+/* ── Sections ── */
+const KontoSection = () => (
+  <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+    <Card>
+      <SectionLabel>Profil</SectionLabel>
+      <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 8, paddingBottom: 16, borderBottom: "1px solid var(--line)" }}>
+        <Avatar initials={ME.initials} size={56}/>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 16, fontWeight: 800, color: "var(--ink-900)" }}>Oliver Harburt</div>
+          <div style={{ fontSize: 13, color: "var(--ink-500)", marginTop: 2 }}>Förare · Malmö</div>
+        </div>
+        <Button variant="secondary" size="sm">Byt bild</Button>
+      </div>
+      <SettingRow label="Namn"><Input defaultValue="Oliver Harburt"/></SettingRow>
+      <SettingRow label="E-post"><Input defaultValue="oliver@email.com" type="email"/></SettingRow>
+      <SettingRow label="Telefon"><Input defaultValue="0723 606 016" type="tel"/></SettingRow>
+      <SettingRow label="Ort" last><Input defaultValue="Malmö"/></SettingRow>
+    </Card>
+
+    <Card>
+      <SectionLabel>Lösenord</SectionLabel>
+      <SettingRow label="Lösenord" sub="Senast ändrat för 3 månader sen" last>
+        <Button variant="secondary" size="sm">Byt lösenord</Button>
+      </SettingRow>
+    </Card>
+
+    <Card style={{ borderColor: "rgba(185,28,59,0.2)" }}>
+      <SectionLabel>Radera konto</SectionLabel>
+      <SettingRow label="Radera ditt konto permanent" sub="All din data tas bort. Detta går inte att ångra." last>
+        <Button variant="danger" size="sm">Radera konto</Button>
+      </SettingRow>
+    </Card>
+  </div>
+);
+
+const SynlighetSection = () => {
+  const [visible, setVisible] = useState(true);
+  const [phone, setPhone] = useState(true);
+  const [photo, setPhoto] = useState(false);
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+      <Notice tone={visible ? "success" : "neutral"} title={visible ? "Din profil är synlig för åkerier" : "Din profil är dold"}>
+        {visible ? "Åkerier kan hitta dig i sök och bjuda in dig till tjänster." : "Du syns inte i åkeriernas sök. Du kan fortfarande söka jobb själv."}
+      </Notice>
+      <Card>
+        <SectionLabel>Synlighet</SectionLabel>
+        <SettingRow label="Var synlig för åkerier" sub="Tillåt verifierade åkerier att hitta din profil i sök.">
+          <Switch on={visible} onToggle={() => setVisible(v => !v)}/>
+        </SettingRow>
+        <SettingRow label="Visa telefonnummer" sub="Åkerier kan ringa dig direkt istället för bara via plattformen.">
+          <Switch on={phone} onToggle={() => setPhone(v => !v)}/>
+        </SettingRow>
+        <SettingRow label="Visa profilbild" sub="Annars visas dina initialer." last>
+          <Switch on={photo} onToggle={() => setPhoto(v => !v)}/>
+        </SettingRow>
+      </Card>
+    </div>
+  );
+};
+
+const NotiserSection = () => {
+  const [s, setS] = useState({ match: true, message: true, status: true, digest: false, marketing: false });
+  const t = k => setS(p => ({ ...p, [k]: !p[k] }));
+  return (
+    <Card>
+      <SectionLabel>Notiser</SectionLabel>
+      <SettingRow label="Nya matchande jobb" sub="När ett jobb matchar din profil.">
+        <Switch on={s.match} onToggle={() => t("match")}/>
+      </SettingRow>
+      <SettingRow label="Meddelanden" sub="När ett åkeri skickar ett meddelande.">
+        <Switch on={s.message} onToggle={() => t("message")}/>
+      </SettingRow>
+      <SettingRow label="Statusuppdateringar" sub="När status ändras på en ansökan.">
+        <Switch on={s.status} onToggle={() => t("status")}/>
+      </SettingRow>
+      <SettingRow label="Veckosammanfattning" sub="Ett mejl varje måndag med nya jobb i din region.">
+        <Switch on={s.digest} onToggle={() => t("digest")}/>
+      </SettingRow>
+      <SettingRow label="Tips och nyheter" sub="Enstaka mejl om STP och branschen." last>
+        <Switch on={s.marketing} onToggle={() => t("marketing")}/>
+      </SettingRow>
+    </Card>
+  );
+};
+
+const IntegritetSection = () => (
+  <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+    <Card>
+      <SectionLabel>Data och integritet</SectionLabel>
+      <SettingRow label="Ladda ner min data" sub="Få en kopia av all data vi har om dig.">
+        <Button variant="secondary" size="sm">Begär nedladdning</Button>
+      </SettingRow>
+      <SettingRow label="Vem får se min profil" sub="Endast verifierade åkerier.">
+        <Button variant="secondary" size="sm">Ändra</Button>
+      </SettingRow>
+      <SettingRow label="Blockerade åkerier" sub="2 åkerier blockerade" last>
+        <Button variant="secondary" size="sm">Hantera</Button>
+      </SettingRow>
+    </Card>
+    <Card style={{ background: "var(--card-2)" }}>
+      <div style={{ fontSize: 13, color: "var(--ink-500)", lineHeight: 1.6 }}>
+        STP följer GDPR. Läs mer i vår <a href="#" style={{ color: "var(--green)", fontWeight: 600 }}>integritetspolicy</a> och <a href="#" style={{ color: "var(--green)", fontWeight: 600 }}>användarvillkor</a>.
+      </div>
+    </Card>
+  </div>
+);
+
+const Page = () => {
+  const [nav, setNav] = useState("");
+  const [section, setSection] = useState("konto");
+
+  return (
+    <PageShell>
+      <TopNav items={NAV_ITEMS} active={nav} onActive={setNav} currentUser={ME}/>
+
+      <div style={{ background: "var(--paper)", borderBottom: "1px solid var(--line)", paddingTop: 32, paddingBottom: 24 }}>
+        <div style={{ maxWidth: 1040, margin: "0 auto", padding: "0 32px" }}>
+          <p style={{ fontSize: 11, fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 10 }}>Konto</p>
+          <h1 style={{ fontSize: 34, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.2, lineHeight: 1.15 }}>Inställningar</h1>
+        </div>
+      </div>
+
+      <main style={{ maxWidth: 1040, margin: "0 auto", padding: "28px 32px 80px" }}>
+        <div className="set-grid">
+          {/* Section nav */}
+          <nav className="set-nav" style={{ display: "flex", flexDirection: "column", gap: 4, position: "sticky", top: 28 }}>
+            {SECTIONS.map(s => {
+              const active = section === s.id;
+              return (
+                <button key={s.id} onClick={() => setSection(s.id)} style={{
+                  display: "inline-flex", alignItems: "center", gap: 11,
+                  padding: "11px 14px", borderRadius: 10, textAlign: "left",
+                  background: active ? "var(--green-tint)" : "transparent",
+                  color: active ? "var(--green-text)" : "var(--ink-700)",
+                  fontSize: 14, fontWeight: active ? 700 : 500, whiteSpace: "nowrap",
+                  transition: "background .12s",
+                }}
+                onMouseEnter={e => { if (!active) e.currentTarget.style.background = "var(--card-2)"; }}
+                onMouseLeave={e => { if (!active) e.currentTarget.style.background = "transparent"; }}>
+                  <Icon name={s.icon} size={17} color={active ? "var(--green-text)" : "var(--ink-500)"} stroke={2}/>
+                  {s.label}
+                </button>
+              );
+            })}
+          </nav>
+
+          {/* Section content */}
+          <div className="stp-fade-up" key={section}>
+            {section === "konto"      && <KontoSection/>}
+            {section === "synlighet"  && <SynlighetSection/>}
+            {section === "notiser"    && <NotiserSection/>}
+            {section === "integritet" && <IntegritetSection/>}
+          </div>
+        </div>
+      </main>
+    </PageShell>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById("root")).render(<Page />);
+</script>
+</body>
+</html>

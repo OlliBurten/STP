@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STP Mobil – Åkeri Hitta Förare</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',system-ui,sans-serif;background:#1a1a1a;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px 24px 60px;color:#f0faf9}
+button,input{font-family:inherit;color:inherit}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.fade{animation:fadeIn .25s ease both}
+.label{font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;text-align:center}
+</style>
+</head>
+<body>
+<script type="text/babel" src="ios-frame.jsx"></script>
+<div id="root"></div>
+<script type="text/babel">
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "matchAgainst":"job_1",
+  "filtersOpen":false,
+  "modalOpen":false
+}/*EDITMODE-END*/;
+
+const IC = {
+  bell:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>,
+  plus:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+  user:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+  msg:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
+  briefcase:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>,
+  search:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
+  filter:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="20" y2="12"/><line x1="12" y1="18" x2="20" y2="18"/><circle cx="4" cy="12" r="1.5"/><circle cx="16" cy="6" r="1.5"/><circle cx="8" cy="18" r="1.5"/></svg>,
+  pin:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
+  star:<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>,
+  starOutline:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>,
+  check:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
+  x:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+  chev:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>,
+  arrow:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>,
+};
+const Icon = ({ n, s=18, c="currentColor" }) => <span style={{ display:"inline-flex", width:s, height:s, color:c, flexShrink:0 }}>{IC[n]}</span>;
+
+const MY_JOBS = [
+  { id:"job_1", title:"CE-chaufför fjärrkörning", loc:"Malmö" },
+  { id:"job_2", title:"Distributionschaufför", loc:"Stockholm" },
+  { id:"job_3", title:"Tankbilschaufför ADR", loc:"Malmö" },
+];
+
+const DRIVERS = [
+  { id:0, name:"Erik Johansson", initials:"EJ", color:"#F5A623", loc:"Malmö", exp:8, segment:"Fjärr", available:"open", availLabel:"Söker aktivt", match:{job_1:94,job_2:62,job_3:88}, starred:true, summary:"8 år i fjärrtrafik mellan Sverige och Tyskland. Vana vid ADR." },
+  { id:1, name:"Karin Olsson", initials:"KO", color:"#7dd3c8", loc:"Malmö", exp:22, segment:"Fjärr", available:"open", availLabel:"Söker aktivt", match:{job_1:91,job_2:55,job_3:71}, summary:"22 års erfarenhet i fjärrtrafik. Stabil och pålitlig." },
+  { id:2, name:"Mikael Stenberg", initials:"MS", color:"#a78bfa", loc:"Lund", exp:15, segment:"Tank", available:"open", availLabel:"Öppen", match:{job_1:78,job_2:48,job_3:96}, summary:"Specialiserad på tanktransport. ADR Tank." },
+  { id:3, name:"Sara Pettersson", initials:"SP", color:"#60a5fa", loc:"Helsingborg", exp:5, segment:"Fjärr", available:"open", availLabel:"Söker aktivt", match:{job_1:86,job_2:70,job_3:64}, summary:"5 år i fjärrtrafik. Vill byta arbetsgivare." },
+  { id:4, name:"Tommy Karlsson", initials:"TK", color:"#fbbf24", loc:"Malmö", exp:10, segment:"Fjärr", available:"vikariat", availLabel:"Vikariat", match:{job_1:89,job_2:58,job_3:81}, summary:"Söker vikariat. Snabb att komma igång." },
+];
+
+function BottomNav({ active }) {
+  const tabs = [
+    { id:"home", l:"Översikt", n:"briefcase" },
+    { id:"jobs", l:"Annonser", n:"plus" },
+    { id:"drivers", l:"Förare", n:"user" },
+    { id:"inbox", l:"Inkorg", n:"msg", badge:3 },
+  ];
+  return (
+    <div style={{ position:"absolute", left:0, right:0, bottom:0, background:"rgba(6,15,15,0.92)", backdropFilter:"blur(20px)", borderTop:"1px solid rgba(255,255,255,0.06)", padding:"8px 8px 28px", display:"flex", justifyContent:"space-around" }}>
+      {tabs.map(t => {
+        const on = active === t.id;
+        return (
+          <button key={t.id} style={{ flex:1, padding:"8px 0", background:"transparent", border:"none", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:4, position:"relative" }}>
+            <div style={{ position:"relative" }}>
+              <Icon n={t.n} s={22} c={on ? "#F5A623" : "rgba(255,255,255,0.45)"}/>
+              {t.badge > 0 && <span style={{ position:"absolute", top:-4, right:-7, minWidth:16, height:16, padding:"0 4px", borderRadius:99, background:"#F5A623", color:"#000", fontSize:9.5, fontWeight:800, display:"flex", alignItems:"center", justifyContent:"center", border:"2px solid #060f0f" }}>{t.badge}</span>}
+            </div>
+            <span style={{ fontSize:10.5, fontWeight: on ? 800 : 600, color: on ? "#F5A623" : "rgba(255,255,255,0.5)" }}>{t.l}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function DriverRow({ d, matchVs, onClick }) {
+  const match = matchVs ? d.match[matchVs] : null;
+  const mc = match >= 85 ? "#4ade80" : match >= 70 ? "#F5A623" : "#60a5fa";
+  const ac = d.available === "open" ? "#4ade80" : "#F5A623";
+  return (
+    <div onClick={onClick} style={{ background:"#0a1414", border:"1px solid rgba(255,255,255,0.05)", borderRadius:14, padding:"14px 16px", cursor:"pointer", display:"flex", alignItems:"center", gap:13 }}>
+      <div style={{ position:"relative", flexShrink:0 }}>
+        <div style={{ width:44, height:44, borderRadius:99, background:d.color, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:800, fontSize:13, color:"#000" }}>{d.initials}</div>
+        <div style={{ position:"absolute", bottom:-1, right:-1, width:12, height:12, borderRadius:99, background:ac, border:"2.5px solid #0a1414" }}/>
+      </div>
+      <div style={{ flex:1, minWidth:0 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:3 }}>
+          <span style={{ fontSize:14, fontWeight:700 }}>{d.name}</span>
+          {d.starred && <Icon n="star" s={11} c="#F5A623"/>}
+        </div>
+        <div style={{ fontSize:11.5, color:"rgba(255,255,255,0.55)" }}>{d.loc} · {d.exp} år · {d.segment}</div>
+      </div>
+      {match !== null && (
+        <div style={{ textAlign:"center", minWidth:42, flexShrink:0 }}>
+          <div style={{ fontSize:18, fontWeight:800, color:mc, lineHeight:1 }}>{match}<span style={{ fontSize:11 }}>%</span></div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function FilterSheet({ open, onClose }) {
+  if (!open) return null;
+  return (
+    <>
+      <div onClick={onClose} style={{ position:"absolute", inset:0, background:"rgba(0,0,0,0.6)", zIndex:30 }}/>
+      <div className="fade" style={{ position:"absolute", left:0, right:0, bottom:0, background:"#0a1414", borderTopLeftRadius:24, borderTopRightRadius:24, padding:"8px 0 28px", zIndex:40, maxHeight:"80%", overflowY:"auto" }}>
+        <div style={{ display:"flex", justifyContent:"center", padding:"8px 0 14px" }}>
+          <div style={{ width:38, height:4, borderRadius:99, background:"rgba(255,255,255,0.15)" }}/>
+        </div>
+        <div style={{ padding:"0 20px" }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
+            <h3 style={{ fontSize:18, fontWeight:800, letterSpacing:-0.4 }}>Filter</h3>
+            <button onClick={onClose} style={{ width:36, height:36, borderRadius:99, background:"rgba(255,255,255,0.05)", border:"none", color:"#fff", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}><Icon n="x" s={16}/></button>
+          </div>
+          {[
+            { t:"Tillgänglighet", items:["Söker aktivt","Vikariat","Alla synliga"] },
+            { t:"Körkort", items:["B","C","CE","D"] },
+            { t:"Segment", items:["Fjärr","Distribution","Tank","Bygg","Skog"] },
+            { t:"Region", items:["Skåne","Stockholm","V. Götaland","Halland"] },
+            { t:"Minsta erfarenhet", items:["1+ år","3+ år","5+ år","10+ år"] },
+          ].map((s, i) => (
+            <div key={i} style={{ marginBottom:22 }}>
+              <div style={{ fontSize:11, fontWeight:800, letterSpacing:1.2, textTransform:"uppercase", color:"rgba(255,255,255,0.5)", marginBottom:10 }}>{s.t}</div>
+              <div style={{ display:"flex", flexWrap:"wrap", gap:7 }}>
+                {s.items.map(it => <button key={it} style={{ padding:"9px 14px", borderRadius:99, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.07)", color:"rgba(255,255,255,0.75)", fontSize:13, fontWeight:600, cursor:"pointer", minHeight:40 }}>{it}</button>)}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{ padding:"16px 20px 0", display:"flex", gap:10 }}>
+          <button style={{ flex:1, padding:"14px", borderRadius:99, background:"transparent", border:"1px solid rgba(255,255,255,0.1)", color:"rgba(255,255,255,0.75)", fontSize:14, fontWeight:700, cursor:"pointer" }}>Rensa</button>
+          <button onClick={onClose} style={{ flex:1.5, padding:"14px", borderRadius:99, background:"linear-gradient(135deg,#F5A623,#d97706)", border:"none", color:"#000", fontSize:14, fontWeight:800, cursor:"pointer" }}>Visa resultat</button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function DriverModal({ d, matchVs, onClose }) {
+  if (!d) return null;
+  const match = matchVs ? d.match[matchVs] : null;
+  const mc = match >= 85 ? "#4ade80" : match >= 70 ? "#F5A623" : "#60a5fa";
+  const ac = d.available === "open" ? "#4ade80" : "#F5A623";
+  const job = MY_JOBS.find(j => j.id === matchVs);
+  return (
+    <>
+      <div onClick={onClose} style={{ position:"absolute", inset:0, background:"rgba(0,0,0,0.6)", backdropFilter:"blur(4px)", zIndex:50 }}/>
+      <div className="fade" style={{ position:"absolute", left:16, right:16, top:"50%", transform:"translateY(-50%)", background:"#0a1414", border:"1px solid rgba(255,255,255,0.08)", borderRadius:18, zIndex:60, overflow:"hidden", maxHeight:"calc(100% - 80px)", overflowY:"auto" }}>
+        <div style={{ padding:"20px", borderBottom:"1px solid rgba(255,255,255,0.05)", position:"relative" }}>
+          <button onClick={onClose} style={{ position:"absolute", top:14, right:14, width:30, height:30, borderRadius:99, background:"rgba(255,255,255,0.05)", border:"none", color:"#fff", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}><Icon n="x" s={14}/></button>
+          <div style={{ display:"flex", gap:14, alignItems:"center" }}>
+            <div style={{ position:"relative" }}>
+              <div style={{ width:56, height:56, borderRadius:99, background:d.color, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:800, fontSize:16, color:"#000" }}>{d.initials}</div>
+              <div style={{ position:"absolute", bottom:0, right:0, width:15, height:15, borderRadius:99, background:ac, border:"3px solid #0a1414" }}/>
+            </div>
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ fontSize:17, fontWeight:800, marginBottom:3 }}>{d.name}</div>
+              <div style={{ fontSize:12, color:"rgba(255,255,255,0.6)" }}>{d.loc} · {d.exp} år · {d.segment}</div>
+              <div style={{ fontSize:11, color:ac, fontWeight:700, marginTop:3 }}>● {d.availLabel}</div>
+            </div>
+          </div>
+        </div>
+
+        {match !== null && job && (
+          <div style={{ padding:"16px 20px", borderBottom:"1px solid rgba(255,255,255,0.05)", display:"flex", alignItems:"center", gap:14 }}>
+            <div style={{ width:54, height:54, borderRadius:99, background:`${mc}1a`, border:`2px solid ${mc}55`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+              <div style={{ fontSize:17, fontWeight:800, color:mc }}>{match}<span style={{ fontSize:10 }}>%</span></div>
+            </div>
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ fontSize:13, fontWeight:800, marginBottom:2 }}>{match >= 85 ? "Stark match" : match >= 70 ? "God match" : "Möjlig match"}</div>
+              <div style={{ fontSize:11, color:"rgba(255,255,255,0.55)" }}>mot {job.title}</div>
+            </div>
+          </div>
+        )}
+
+        <div style={{ padding:"18px 20px" }}>
+          <div style={{ fontSize:10.5, fontWeight:800, letterSpacing:1.2, textTransform:"uppercase", color:"rgba(255,255,255,0.45)", marginBottom:7 }}>Om föraren</div>
+          <p style={{ fontSize:13, color:"rgba(255,255,255,0.8)", lineHeight:1.55 }}>{d.summary}</p>
+        </div>
+
+        <div style={{ padding:"0 20px 20px", display:"flex", gap:8 }}>
+          <button style={{ flex:1, padding:"12px", borderRadius:11, background:"linear-gradient(135deg,#F5A623,#d97706)", border:"none", color:"#000", fontSize:13, fontWeight:800, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
+            <Icon n="msg" s={13}/> Skicka meddelande
+          </button>
+          <button style={{ padding:"12px 16px", borderRadius:11, background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.08)", color:"#fff", fontSize:13, fontWeight:700, cursor:"pointer" }}>Hela profilen</button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function MobileScreen() {
+  const [t, setT] = React.useState(TWEAK_DEFAULTS);
+  const setMatchAgainst = (v) => { setT(p => ({...p, matchAgainst:v})); window.parent.postMessage({type:"__edit_mode_set_keys", edits:{matchAgainst:v}}, "*"); };
+  const setFiltersOpen = (v) => { setT(p => ({...p, filtersOpen:v})); window.parent.postMessage({type:"__edit_mode_set_keys", edits:{filtersOpen:v}}, "*"); };
+  const [selected, setSelected] = React.useState(null);
+
+  const sorted = t.matchAgainst ? [...DRIVERS].sort((a,b)=>(b.match[t.matchAgainst]||0)-(a.match[t.matchAgainst]||0)) : DRIVERS;
+  const job = MY_JOBS.find(j => j.id === t.matchAgainst);
+
+  return (
+    <div style={{ background:"#060f0f", height:"100%", color:"#fff", position:"relative", display:"flex", flexDirection:"column", overflow:"hidden" }}>
+      <div style={{ padding:"4px 18px 12px", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+        <div style={{ display:"flex", alignItems:"center", gap:9 }}>
+          <div style={{ width:32, height:32, borderRadius:9, background:"#1F5F5C", display:"flex", alignItems:"center", justifyContent:"center", fontWeight:800, fontSize:11, color:"#F5A623" }}>NT</div>
+          <div>
+            <div style={{ fontSize:13, fontWeight:800 }}>Nordic Transport AB</div>
+            <div style={{ fontSize:10.5, color:"rgba(255,255,255,0.5)" }}>✓ Verifierat</div>
+          </div>
+        </div>
+        <button style={{ width:40, height:40, borderRadius:99, background:"rgba(255,255,255,0.05)", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}><Icon n="bell" s={18} c="rgba(255,255,255,0.85)"/></button>
+      </div>
+
+      <div style={{ padding:"4px 20px 14px" }}>
+        <h1 style={{ fontSize:24, fontWeight:800, letterSpacing:-0.8, marginBottom:4 }}>Hitta förare</h1>
+        <div style={{ fontSize:12.5, color:"rgba(255,255,255,0.55)" }}>Sök förare som matchar era jobb</div>
+      </div>
+
+      {/* Match against — subtle chip */}
+      <div style={{ padding:"0 20px 12px", display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" }}>
+        <span style={{ fontSize:11, color:"rgba(255,255,255,0.5)" }}>Sortera på match mot:</span>
+        <div style={{ position:"relative" }}>
+          <select value={t.matchAgainst || ""} onChange={e=>setMatchAgainst(e.target.value || null)} style={{ padding:"6px 24px 6px 12px", borderRadius:99, background:"rgba(245,166,35,0.08)", border:"1px solid rgba(245,166,35,0.3)", color:"#F5A623", fontSize:12, fontWeight:700, cursor:"pointer", outline:"none", appearance:"none" }}>
+            <option value="" style={{ background:"#0a1414" }}>Ingen</option>
+            {MY_JOBS.map(j => <option key={j.id} value={j.id} style={{ background:"#0a1414" }}>{j.title}</option>)}
+          </select>
+          <div style={{ position:"absolute", right:9, top:"50%", transform:"translateY(-50%)", pointerEvents:"none", color:"#F5A623", fontSize:9 }}>▼</div>
+        </div>
+      </div>
+
+      {/* Search + filter */}
+      <div style={{ padding:"0 20px 14px", display:"flex", gap:8 }}>
+        <div style={{ flex:1, position:"relative" }}>
+          <span style={{ position:"absolute", left:14, top:"50%", transform:"translateY(-50%)", color:"rgba(255,255,255,0.45)" }}><Icon n="search" s={15}/></span>
+          <input placeholder="Sök namn eller ort" style={{ width:"100%", padding:"12px 14px 12px 40px", background:"#0a1414", border:"1px solid rgba(255,255,255,0.07)", borderRadius:12, fontSize:14, outline:"none", color:"#fff", minHeight:44 }}/>
+        </div>
+        <button onClick={()=>setFiltersOpen(true)} style={{ width:48, height:48, borderRadius:12, background:"#0a1414", border:"1px solid rgba(255,255,255,0.07)", color:"#fff", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}><Icon n="filter" s={17}/></button>
+      </div>
+
+      <div style={{ padding:"0 20px 10px", fontSize:11, color:"rgba(255,255,255,0.4)", fontWeight:600 }}>
+        {sorted.length} förare {t.matchAgainst ? "· sorterat på match" : ""}
+      </div>
+
+      <div style={{ flex:1, overflowY:"auto", padding:"4px 20px 100px", display:"flex", flexDirection:"column", gap:8 }}>
+        {sorted.map(d => <DriverRow key={d.id} d={d} matchVs={t.matchAgainst} onClick={()=>setSelected(d.id)}/>)}
+      </div>
+
+      <BottomNav active="drivers"/>
+
+      <FilterSheet open={t.filtersOpen} onClose={()=>setFiltersOpen(false)}/>
+      <DriverModal d={DRIVERS.find(x=>x.id===selected)} matchVs={t.matchAgainst} onClose={()=>setSelected(null)}/>
+    </div>
+  );
+}
+
+function App() {
+  const [ready, setReady] = React.useState(typeof window.IOSDevice === "function");
+  React.useEffect(() => {
+    if (ready) return;
+    const id = setInterval(() => { if (typeof window.IOSDevice === "function") { setReady(true); clearInterval(id); } }, 30);
+    return () => clearInterval(id);
+  }, [ready]);
+  if (!ready) return <div style={{ color:"rgba(255,255,255,0.4)", fontSize:13 }}>Laddar…</div>;
+  return (
+    <div>
+      <div className="label">Mobil — Åkeri Hitta Förare</div>
+      <window.IOSDevice width={390} height={844} dark={true}>
+        <MobileScreen/>
+      </window.IOSDevice>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>

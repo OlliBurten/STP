@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STP – Välkommen som åkeri</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',system-ui,sans-serif;background:#060f0f;color:#f0faf9;min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:3px}
+button,input,select,textarea{font-family:inherit;color:inherit}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.fade{animation:fadeIn .4s cubic-bezier(.22,1,.36,1) both}
+.spin{animation:spin 1s linear infinite}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "step": 4,
+  "orgFetched": true,
+  "hasData": true
+}/*EDITMODE-END*/;
+
+const IC = {
+  check:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
+  arrow:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>,
+  back:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>,
+  building:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>,
+  user:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+  truck:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13" rx="1"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>,
+  shield:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
+  spark:<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L13.5 8.5 20 10l-6.5 1.5L12 18l-1.5-6.5L4 10l6.5-1.5z"/></svg>,
+  search:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
+};
+const Icon = ({ n, s=18, c="currentColor" }) => <span style={{ display:"inline-flex", width:s, height:s, color:c, flexShrink:0 }}>{IC[n]}</span>;
+
+// ─── Data ──────────────────────────────────────────────────────────────────
+const SEGMENTS = [
+  { id:"fjarr", label:"Fjärrtransport", desc:"Nationellt & Norden" },
+  { id:"distribution", label:"Distribution", desc:"Lokala leveranser" },
+  { id:"tank", label:"Tank & ADR", desc:"Farligt gods & vätskor" },
+  { id:"bygg", label:"Bygg & schakt", desc:"Tippbil, kran, schakt" },
+  { id:"skog", label:"Skog & timmer", desc:"Skogstransport" },
+  { id:"specialtransport", label:"Specialtransport", desc:"Tunga & långa transporter" },
+];
+
+const REGIONS = ["Skåne","Stockholm","Västra Götaland","Halland","Östergötland","Norrbotten","Västerbotten","Uppsala","Värmland"];
+const SIZES = [
+  { v:"1-5", l:"1–5 förare" },
+  { v:"6-20", l:"6–20 förare" },
+  { v:"21-50", l:"21–50 förare" },
+  { v:"51-200", l:"51–200 förare" },
+  { v:"200+", l:"200+ förare" },
+];
+
+// ─── Header (minimal) ──────────────────────────────────────────────────────
+function Header() {
+  return (
+    <header style={{ height:64, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 32px", borderBottom:"1px solid rgba(255,255,255,0.04)" }}>
+      <div style={{ fontWeight:800, letterSpacing:-0.8, fontSize:21 }}>STP</div>
+      <a href="#" style={{ fontSize:13, color:"rgba(255,255,255,0.5)", textDecoration:"none", fontWeight:600 }}>Avbryt och logga ut</a>
+    </header>
+  );
+}
+
+// ─── Step indicator ────────────────────────────────────────────────────────
+function StepDots({ step, total }) {
+  return (
+    <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:7, marginBottom:32 }}>
+      {Array.from({ length:total }).map((_, i) => {
+        const num = i + 1;
+        const done = step > num;
+        const active = step === num;
+        return (
+          <React.Fragment key={i}>
+            <div style={{ width: active ? 28 : 8, height:8, borderRadius:99, background: done ? "#4ade80" : active ? "#F5A623" : "rgba(255,255,255,0.1)", transition:"all .3s" }}/>
+          </React.Fragment>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── Section heading ───────────────────────────────────────────────────────
+const Heading = ({ eyebrow, title, subtitle }) => (
+  <div style={{ marginBottom:28, textAlign:"center" }}>
+    <div style={{ fontSize:11, fontWeight:800, letterSpacing:1.5, textTransform:"uppercase", color:"#F5A623", marginBottom:10 }}>{eyebrow}</div>
+    <h1 style={{ fontSize:28, fontWeight:800, letterSpacing:-0.8, marginBottom:8, lineHeight:1.2 }}>{title}</h1>
+    {subtitle && <p style={{ fontSize:14, color:"rgba(255,255,255,0.6)", lineHeight:1.55, maxWidth:440, margin:"0 auto" }}>{subtitle}</p>}
+  </div>
+);
+
+const Field = ({ label, hint, children }) => (
+  <div style={{ marginBottom:16 }}>
+    <label style={{ fontSize:12, fontWeight:700, color:"rgba(255,255,255,0.7)", marginBottom:7, display:"block" }}>{label}</label>
+    {children}
+    {hint && <div style={{ fontSize:11.5, color:"rgba(255,255,255,0.45)", marginTop:6 }}>{hint}</div>}
+  </div>
+);
+
+const Input = (props) => (
+  <input {...props} style={{ width:"100%", padding:"12px 14px", borderRadius:11, background:"#0a1414", border:"1px solid rgba(255,255,255,0.08)", color:"#fff", fontSize:14, outline:"none", ...(props.style || {}) }}/>
+);
+
+const Select = ({ children, ...props }) => (
+  <div style={{ position:"relative" }}>
+    <select {...props} style={{ width:"100%", padding:"12px 40px 12px 14px", borderRadius:11, background:"#0a1414", border:"1px solid rgba(255,255,255,0.08)", color:"#fff", fontSize:14, outline:"none", appearance:"none", cursor:"pointer" }}>{children}</select>
+    <div style={{ position:"absolute", right:14, top:"50%", transform:"translateY(-50%)", pointerEvents:"none", color:"rgba(255,255,255,0.5)", fontSize:11 }}>▼</div>
+  </div>
+);
+
+// ─── STEP 1 — Company ─────────────────────────────────────────────────────
+function Step1({ data, set, orgFetched, setOrgFetched }) {
+  const [loading, setLoading] = React.useState(false);
+  const handleLookup = () => {
+    if (!data.orgnr || data.orgnr.length < 10) return;
+    setLoading(true);
+    setTimeout(() => {
+      setOrgFetched(true);
+      set({ companyName:"Nordic Transport AB", address:"Lundavägen 24", city:"Malmö", postalCode:"212 19" });
+      setLoading(false);
+    }, 1200);
+  };
+  return (
+    <div className="fade">
+      <Heading eyebrow="Steg 1 av 3" title="Hej! Vilket åkeri jobbar du på?" subtitle="Vi hämtar uppgifterna från Bolagsverket så slipper du fylla i allt manuellt."/>
+
+      <Field label="Organisationsnummer" hint="Format: 556677-8899">
+        <div style={{ display:"flex", gap:8 }}>
+          <Input value={data.orgnr || ""} onChange={e=>{ set({ orgnr:e.target.value }); if (orgFetched) setOrgFetched(false); }} placeholder="000000-0000" style={{ fontSize:16, letterSpacing:0.5 }}/>
+          <button onClick={handleLookup} disabled={loading || !data.orgnr} style={{ padding:"0 18px", borderRadius:11, background: loading ? "rgba(245,166,35,0.5)" : "#F5A623", border:"none", color:"#000", fontSize:13, fontWeight:800, cursor: loading ? "default" : "pointer", display:"flex", alignItems:"center", gap:7, whiteSpace:"nowrap" }}>
+            {loading ? <><span className="spin" style={{ display:"inline-block", width:13, height:13, border:"2px solid rgba(0,0,0,0.3)", borderTopColor:"#000", borderRadius:99 }}/> Hämtar...</> : <><Icon n="search" s={13}/> Hämta</>}
+          </button>
+        </div>
+      </Field>
+
+      {orgFetched && data.companyName && (
+        <div className="fade" style={{ padding:"18px 20px", background:"rgba(74,222,128,0.06)", border:"1px solid rgba(74,222,128,0.25)", borderRadius:13, marginTop:18 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:14 }}>
+            <div style={{ width:30, height:30, borderRadius:99, background:"rgba(74,222,128,0.15)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+              <Icon n="check" s={14} c="#4ade80"/>
+            </div>
+            <div style={{ fontSize:12.5, fontWeight:700, color:"#4ade80" }}>Hämtat från Bolagsverket</div>
+          </div>
+          <div style={{ fontSize:16, fontWeight:800, marginBottom:4 }}>{data.companyName}</div>
+          <div style={{ fontSize:12.5, color:"rgba(255,255,255,0.6)" }}>{data.address} · {data.postalCode} {data.city}</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── STEP 2 — Contact person ──────────────────────────────────────────────
+function Step2({ data, set }) {
+  return (
+    <div className="fade">
+      <Heading eyebrow="Steg 2 av 3" title="Vem är du i företaget?" subtitle="Du blir kontoadministratör. Du kan bjuda in kollegor senare."/>
+
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:16 }}>
+        <Field label="Förnamn">
+          <Input value={data.firstName || ""} onChange={e=>set({ firstName:e.target.value })} placeholder="t.ex. Anna"/>
+        </Field>
+        <Field label="Efternamn">
+          <Input value={data.lastName || ""} onChange={e=>set({ lastName:e.target.value })} placeholder="t.ex. Karlsson"/>
+        </Field>
+      </div>
+
+      <Field label="Din roll på företaget">
+        <Select value={data.role || ""} onChange={e=>set({ role:e.target.value })}>
+          <option value="" style={{ background:"#0a1414" }}>Välj roll...</option>
+          <option value="vd" style={{ background:"#0a1414" }}>VD / ägare</option>
+          <option value="trafikledare" style={{ background:"#0a1414" }}>Trafikledare</option>
+          <option value="hr" style={{ background:"#0a1414" }}>HR / rekrytering</option>
+          <option value="annat" style={{ background:"#0a1414" }}>Annan roll</option>
+        </Select>
+      </Field>
+
+      <Field label="Telefonnummer" hint="Används bara av STP — visas inte för förare">
+        <Input value={data.phone || ""} onChange={e=>set({ phone:e.target.value })} placeholder="070-123 45 67" type="tel"/>
+      </Field>
+
+      <div style={{ marginTop:24, padding:"14px 16px", background:"rgba(96,165,250,0.06)", border:"1px solid rgba(96,165,250,0.18)", borderRadius:12, display:"flex", alignItems:"flex-start", gap:11 }}>
+        <Icon n="shield" s={15} c="#60a5fa"/>
+        <div style={{ fontSize:12, color:"rgba(255,255,255,0.7)", lineHeight:1.5 }}>
+          Vi delar aldrig dina kontaktuppgifter med tredje part. Endast verifierade förare som söker dina jobb kan kontakta er.
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── STEP 3 — Operations ──────────────────────────────────────────────────
+function Step3({ data, set }) {
+  const toggleSegment = (id) => {
+    const cur = data.segments || [];
+    set({ segments: cur.includes(id) ? cur.filter(x=>x!==id) : [...cur, id] });
+  };
+  const toggleRegion = (r) => {
+    const cur = data.regions || [];
+    set({ regions: cur.includes(r) ? cur.filter(x=>x!==r) : [...cur, r] });
+  };
+  return (
+    <div className="fade">
+      <Heading eyebrow="Steg 3 av 3" title="Berätta om er verksamhet" subtitle="Vi använder detta för att matcha er med förare som söker rätt typ av jobb."/>
+
+      <Field label="Vilken typ av transport kör ni? Välj en eller flera">
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
+          {SEGMENTS.map(s => {
+            const on = (data.segments || []).includes(s.id);
+            return (
+              <button key={s.id} onClick={()=>toggleSegment(s.id)} style={{ padding:"12px 14px", borderRadius:11, background: on ? "rgba(245,166,35,0.08)" : "#0a1414", border: `1px solid ${on ? "rgba(245,166,35,0.35)" : "rgba(255,255,255,0.08)"}`, color: on ? "#F5A623" : "#fff", textAlign:"left", cursor:"pointer", transition:"all .15s" }}>
+                <div style={{ fontSize:13, fontWeight:700, marginBottom:3 }}>{s.label}</div>
+                <div style={{ fontSize:11, color: on ? "rgba(245,166,35,0.7)" : "rgba(255,255,255,0.5)" }}>{s.desc}</div>
+              </button>
+            );
+          })}
+        </div>
+      </Field>
+
+      <Field label="Hur stort är ert åkeri?">
+        <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+          {SIZES.map(s => {
+            const on = data.size === s.v;
+            return (
+              <button key={s.v} onClick={()=>set({ size:s.v })} style={{ padding:"9px 14px", borderRadius:99, background: on ? "rgba(245,166,35,0.12)" : "#0a1414", border: `1px solid ${on ? "rgba(245,166,35,0.4)" : "rgba(255,255,255,0.08)"}`, color: on ? "#F5A623" : "rgba(255,255,255,0.75)", fontSize:12.5, fontWeight:700, cursor:"pointer" }}>{s.l}</button>
+            );
+          })}
+        </div>
+      </Field>
+
+      <Field label="Vilka regioner kör ni i? Välj alla som gäller">
+        <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+          {REGIONS.map(r => {
+            const on = (data.regions || []).includes(r);
+            return (
+              <button key={r} onClick={()=>toggleRegion(r)} style={{ padding:"7px 13px", borderRadius:99, background: on ? "rgba(31,95,92,0.3)" : "#0a1414", border: `1px solid ${on ? "rgba(31,95,92,0.5)" : "rgba(255,255,255,0.08)"}`, color: on ? "#7dd3c8" : "rgba(255,255,255,0.7)", fontSize:12, fontWeight:600, cursor:"pointer", display:"inline-flex", alignItems:"center", gap:5 }}>
+                {on && <Icon n="check" s={10}/>} {r}
+              </button>
+            );
+          })}
+        </div>
+      </Field>
+    </div>
+  );
+}
+
+// ─── DONE — welcome state ──────────────────────────────────────────────────
+function StepDone({ data }) {
+  return (
+    <div className="fade" style={{ textAlign:"center" }}>
+      <div style={{ width:72, height:72, borderRadius:99, background:"rgba(74,222,128,0.12)", border:"2px solid rgba(74,222,128,0.3)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 20px" }}>
+        <Icon n="check" s={32} c="#4ade80"/>
+      </div>
+      <div style={{ fontSize:11, fontWeight:800, letterSpacing:1.5, textTransform:"uppercase", color:"#4ade80", marginBottom:10 }}>Klart!</div>
+      <h1 style={{ fontSize:32, fontWeight:800, letterSpacing:-1, marginBottom:10 }}>Välkommen till STP, {data.firstName || "Anna"}</h1>
+      <p style={{ fontSize:14, color:"rgba(255,255,255,0.65)", lineHeight:1.55, maxWidth:440, margin:"0 auto 32px" }}>
+        Ert konto är skapat. För att börja anställa behöver ni verifiera er och publicera er första annons. Det tar ca 5 minuter totalt.
+      </p>
+
+      <div style={{ background:"#0a1414", border:"1px solid rgba(255,255,255,0.06)", borderRadius:14, padding:6, textAlign:"left", marginBottom:24 }}>
+        {[
+          { icon:"shield", title:"Verifiera ert åkeri", desc:"Ladda upp F-skatt och trafiktillstånd · 4 min", href:"STP Åkeri Verifiering.html", primary:true },
+          { icon:"truck", title:"Publicera er första annons", desc:"Beskriv tjänsten — vi matchar förare automatiskt · 5 min", href:"STP PostJob.html" },
+          { icon:"user", title:"Komplettera företagsprofilen", desc:"Lägg till logo, om-text, lediga förmåner · 2 min", href:"#" },
+        ].map((item, i) => (
+          <a key={i} href={item.href} style={{ display:"flex", alignItems:"center", gap:14, padding:"14px 14px", borderRadius:11, background: item.primary ? "rgba(245,166,35,0.05)" : "transparent", textDecoration:"none", color:"#fff", transition:"background .15s", border: item.primary ? "1px solid rgba(245,166,35,0.2)" : "1px solid transparent", marginBottom: i < 2 ? 4 : 0 }}
+            onMouseEnter={e => !item.primary && (e.currentTarget.style.background = "rgba(255,255,255,0.03)")}
+            onMouseLeave={e => !item.primary && (e.currentTarget.style.background = "transparent")}>
+            <div style={{ width:38, height:38, borderRadius:10, background: item.primary ? "rgba(245,166,35,0.1)" : "rgba(255,255,255,0.04)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+              <Icon n={item.icon} s={16} c={item.primary ? "#F5A623" : "rgba(255,255,255,0.7)"}/>
+            </div>
+            <div style={{ flex:1, minWidth:0, textAlign:"left" }}>
+              <div style={{ fontSize:13.5, fontWeight:700, marginBottom:2 }}>{item.title}</div>
+              <div style={{ fontSize:11.5, color:"rgba(255,255,255,0.55)" }}>{item.desc}</div>
+            </div>
+            <Icon n="arrow" s={14} c="rgba(255,255,255,0.4)"/>
+          </a>
+        ))}
+      </div>
+
+      <a href="STP Åkeri Dashboard v3.html" style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"12px 22px", borderRadius:99, background:"linear-gradient(135deg,#F5A623,#d97706)", color:"#000", fontSize:13.5, fontWeight:800, textDecoration:"none", boxShadow:"0 4px 18px rgba(245,166,35,0.25)" }}>
+        Gå till översikten <Icon n="arrow" s={14}/>
+      </a>
+    </div>
+  );
+}
+
+// ─── Main App ──────────────────────────────────────────────────────────────
+function App() {
+  const [t, setT] = React.useState(TWEAK_DEFAULTS);
+  const [data, setData] = React.useState({
+    orgnr:"556677-8899",
+    companyName:"Nordic Transport AB",
+    address:"Lundavägen 24",
+    city:"Malmö",
+    postalCode:"212 19",
+    firstName:"",
+    lastName:"",
+    role:"",
+    phone:"",
+    segments:[],
+    size:"",
+    regions:[],
+  });
+
+  const setStep = (v) => { setT(p => ({...p, step:v})); window.parent.postMessage({type:"__edit_mode_set_keys", edits:{step:v}}, "*"); };
+  const setOrgFetched = (v) => { setT(p => ({...p, orgFetched:v})); window.parent.postMessage({type:"__edit_mode_set_keys", edits:{orgFetched:v}}, "*"); };
+  const update = (patch) => setData(d => ({...d, ...patch}));
+
+  const canContinue =
+    t.step === 1 ? t.orgFetched && data.companyName :
+    t.step === 2 ? data.firstName && data.lastName && data.role :
+    t.step === 3 ? (data.segments || []).length > 0 && data.size && (data.regions || []).length > 0 :
+    true;
+
+  const totalSteps = 3;
+  const isDone = t.step > totalSteps;
+
+  return (
+    <>
+      <Header/>
+      <main style={{ maxWidth:520, margin:"0 auto", padding:"40px 24px 80px" }}>
+        {!isDone && <StepDots step={t.step} total={totalSteps}/>}
+
+        {t.step === 1 && <Step1 data={data} set={update} orgFetched={t.orgFetched} setOrgFetched={setOrgFetched}/>}
+        {t.step === 2 && <Step2 data={data} set={update}/>}
+        {t.step === 3 && <Step3 data={data} set={update}/>}
+        {isDone && <StepDone data={data}/>}
+
+        {/* Nav buttons */}
+        {!isDone && (
+          <div style={{ display:"flex", gap:10, marginTop:32 }}>
+            {t.step > 1 && (
+              <button onClick={()=>setStep(t.step - 1)} style={{ padding:"13px 22px", borderRadius:99, background:"transparent", border:"1px solid rgba(255,255,255,0.1)", color:"rgba(255,255,255,0.75)", fontSize:13.5, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", gap:7 }}>
+                <Icon n="back" s={13}/> Tillbaka
+              </button>
+            )}
+            <button onClick={()=>setStep(t.step + 1)} disabled={!canContinue} style={{ flex:1, padding:"13px 22px", borderRadius:99, background: canContinue ? "linear-gradient(135deg,#F5A623,#d97706)" : "rgba(255,255,255,0.05)", border:"none", color: canContinue ? "#000" : "rgba(255,255,255,0.3)", fontSize:13.5, fontWeight:800, cursor: canContinue ? "pointer" : "default", display:"flex", alignItems:"center", justifyContent:"center", gap:8, boxShadow: canContinue ? "0 4px 18px rgba(245,166,35,0.25)" : "none", transition:"all .15s" }}>
+              {t.step === totalSteps ? "Skapa konto" : "Fortsätt"} <Icon n="arrow" s={14}/>
+            </button>
+          </div>
+        )}
+
+        {/* Helper text */}
+        {!isDone && (
+          <div style={{ marginTop:24, textAlign:"center", fontSize:11.5, color:"rgba(255,255,255,0.4)" }}>
+            Genom att fortsätta godkänner du STP:s <a href="#" style={{ color:"rgba(255,255,255,0.6)", textDecoration:"underline" }}>villkor</a> och <a href="#" style={{ color:"rgba(255,255,255,0.6)", textDecoration:"underline" }}>integritetspolicy</a>.
+          </div>
+        )}
+      </main>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>

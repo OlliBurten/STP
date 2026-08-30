@@ -40,19 +40,20 @@ Bolagsverket API/
 Handoff redesigns/
 STP (1)/
 STP LOGO/
-STP Jobbdetalj v3.html
-STP Lediga Jobb.html
-STP PostJob.html
+/STP Jobbdetalj v3.html
+/STP Lediga Jobb.html
+/STP PostJob.html
 STP Mobil Förare/
 STP Mobil/
 STP New Design Handoff/
 STP (4)/
 STP Admin/
-STP Nya Designpaket/
+# STP Nya Designpaket/ spåras sedan 2026-08-30 — det är UI:ts sanningskälla
+# och låg tidigare bara på en dator, utan historik eller backup.
 STP Nya Designpaket.zip
 connection-establishment-guide-for-vardefulla-datamangder-test-and-production.pdf
-design_handoff_auth_flows/
-design_handoff_stp_landing/
+/design_handoff_auth_flows/
+/design_handoff_stp_landing/
 document.yaml
 hero image.png
 /api/

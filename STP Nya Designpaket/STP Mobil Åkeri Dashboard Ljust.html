@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>STP – Åkeri (mobil)</title>
+<link rel="stylesheet" href="stp-light-tokens.css" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="stp-light-components.jsx"></script>
+<script type="text/babel" src="stp-mobile-shell.jsx"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState } = React;
+
+const ACTIVITY = [
+  { who:"Anna Lindberg", action:"väntar på svar i", target:"Distribution Sthlm", time:"18 min", type:"message" },
+  { who:"Erik Johansson", action:"sökte", target:"CE-chaufför fjärr", time:"12 min", type:"application", match:94 },
+  { who:"3 förare", action:"visade", target:"er profil", time:"3 tim", type:"view" },
+];
+const JOBS = [
+  { title:"CE-chaufför fjärr", loc:"Malmö", applicants:12, new:3, hot:true },
+  { title:"Distribution", loc:"Stockholm", applicants:8, new:2 },
+  { title:"Tankbil ADR", loc:"Malmö", applicants:6, new:2, hot:true },
+];
+
+const App = () => {
+  const [tab, setTab] = useState("oversikt");
+  const h = new Date().getHours();
+  const greet = h < 11 ? "God morgon" : h < 17 ? "God dag" : "God kväll";
+
+  return (
+    <MobileShell tabs={COMPANY_TABS} active={tab} onTab={setTab}
+      header={<div style={{ background:"var(--paper)", padding:"6px 18px 12px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+        <div><div style={{ fontSize:11, fontWeight:800, letterSpacing:1.2, textTransform:"uppercase", color:"var(--ink-500)" }}>{greet}</div><h1 style={{ fontSize:21, fontWeight:800, color:"var(--ink-900)", letterSpacing:-0.5 }}>Nordic Transport</h1></div>
+        <div style={{ width:38, height:38, borderRadius:10, background:"var(--ink-700)", color:"#fff", display:"flex", alignItems:"center", justifyContent:"center", fontWeight:800, fontSize:13 }}>NT</div>
+      </div>}>
+      <div style={{ padding:"4px 16px 24px", display:"flex", flexDirection:"column", gap:14 }}>
+        {/* Waiting alert */}
+        <div style={{ background:"var(--danger-tint)", border:"1px solid rgba(185,28,59,0.18)", borderRadius:14, padding:"14px 16px", display:"flex", alignItems:"center", gap:12 }}>
+          <span style={{ width:10, height:10, borderRadius:5, background:"var(--danger)", boxShadow:"0 0 0 4px rgba(185,28,59,0.16)", flexShrink:0 }}/>
+          <div style={{ flex:1 }}><div style={{ fontSize:14, fontWeight:700, color:"var(--ink-900)" }}>3 kandidater väntar på svar</div><div style={{ fontSize:12, color:"var(--ink-500)" }}>Snabbast: Anna, 18 min sen</div></div>
+          <Icon name="chevRight" size={18} color="var(--danger)" stroke={2}/>
+        </div>
+
+        {/* KPIs */}
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+          {[["7","Nya ansökningar","amber"],["3","Obesvarade","danger"],["4","Aktiva annonser","primary"],["284","Visningar","success"]].map(([v,l,t]) => (
+            <div key={l} style={{ background:"var(--card)", border:"1px solid var(--line)", borderRadius:14, padding:"14px 16px", boxShadow:"var(--sh-sm)" }}>
+              <div style={{ fontSize:26, fontWeight:800, color:t==="danger"?"var(--danger)":t==="amber"?"var(--amber-deep)":t==="success"?"var(--success)":"var(--green)", fontFamily:"var(--mono)", letterSpacing:-1, lineHeight:1 }}>{v}</div>
+              <div style={{ fontSize:12, color:"var(--ink-500)", marginTop:6, fontWeight:500 }}>{l}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Post job CTA */}
+        <Button variant="primary" size="lg" full icon={<Icon name="plus" size={15} stroke={2.4}/>}>Publicera annons</Button>
+
+        {/* Activity */}
+        <div style={{ background:"var(--card)", border:"1px solid var(--line)", borderRadius:16, padding:"16px", boxShadow:"var(--sh-sm)" }}>
+          <div style={{ fontSize:11, fontWeight:800, letterSpacing:1.2, textTransform:"uppercase", color:"var(--ink-500)", marginBottom:12 }}>Senaste aktivitet</div>
+          {ACTIVITY.map((a, i) => (
+            <div key={i} style={{ display:"flex", alignItems:"center", gap:11, padding:"10px 0", borderBottom:i<ACTIVITY.length-1?"1px solid var(--line)":"none" }}>
+              <Avatar initials={a.who.split(" ").map(x=>x[0]).slice(0,2).join("")} size={34}/>
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ fontSize:13, color:"var(--ink-900)", lineHeight:1.4 }}><strong>{a.who}</strong> {a.action} <strong>{a.target}</strong></div>
+                <div style={{ fontSize:11.5, color:"var(--ink-500)", marginTop:1 }}>{a.time} sedan{a.match ? ` · ${a.match}% match` : ""}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Jobs */}
+        <div style={{ background:"var(--card)", border:"1px solid var(--line)", borderRadius:16, padding:"16px", boxShadow:"var(--sh-sm)" }}>
+          <div style={{ fontSize:11, fontWeight:800, letterSpacing:1.2, textTransform:"uppercase", color:"var(--ink-500)", marginBottom:12 }}>Era annonser</div>
+          <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+            {JOBS.map(j => (
+              <div key={j.title} style={{ display:"flex", alignItems:"center", gap:10, padding:"11px 12px", background:"var(--card-2)", borderRadius:11 }}>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:6 }}><span style={{ fontSize:13.5, fontWeight:700, color:"var(--ink-900)" }}>{j.title}</span>{j.hot && <Pill tone="amberSolid" size="sm">HOT</Pill>}</div>
+                  <div style={{ fontSize:12, color:"var(--ink-500)", marginTop:1 }}>{j.loc} · {j.applicants} sökande</div>
+                </div>
+                {j.new > 0 && <Pill tone="danger" size="sm">{j.new} nya</Pill>}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </MobileShell>
+  );
+};
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
