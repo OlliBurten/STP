@@ -15,6 +15,11 @@ import { notifyRecommendedJobMatch } from "./email.js";
 
 const ENABLED = process.env.MATCH_ALERTS_ENABLED !== "false";
 const EMAIL_COOLDOWN_MS = 24 * 60 * 60 * 1000;
+// Samma tak för notisen i appen. Den saknade helt cooldown: ingesten kör var 2:a
+// timme (JOB_INGEST_JOBSTREAM_CRON), så varje synlig förare med minst en träff
+// fick upp till 12 notiser om dygnet. Utfallet mätt 2026-08-30: 7 931 skickade
+// MATCH_JOBS, 114 lästa — 1 %. Snitt 197 per förare, mest 323.
+const NOTIF_COOLDOWN_MS = 24 * 60 * 60 * 1000;
 const MAX_RECIPIENTS = 200;       // tak per körning (skydd mot massutskick)
 const MAX_PROFILES = 1000;        // hur många profiler vi poängsätter
 const MAX_JOBS_IN_MSG = 5;        // hur många jobb vi listar i notis/mejl
@@ -50,6 +55,17 @@ export async function notifyDriversOfNewJobs(jobIds) {
     include: { user: { select: { id: true, name: true, email: true, lastMatchJobEmailAt: true } } },
   });
 
+  // Vilka har redan fått en MATCH_JOBS-notis det senaste dygnet? Ett uppslag i
+  // stället för ett per förare. Ingen ny kolumn behövs — svaret finns redan i
+  // notishistoriken, och då kan den heller inte hamna ur synk.
+  const cooledDown = new Set(
+    (await prisma.notification.findMany({
+      where: { type: "MATCH_JOBS", createdAt: { gt: new Date(Date.now() - NOTIF_COOLDOWN_MS) } },
+      select: { userId: true },
+      distinct: ["userId"],
+    })).map((n) => n.userId)
+  );
+
   const now = new Date();
   let notified = 0;
   const emailQueue = [];
@@ -73,7 +89,21 @@ export async function notifyDriversOfNewJobs(jobIds) {
       yearsExperience: driverYearsFromExperience(exp),
     };
 
-    const matched = jobs.filter((j) => matchScore(driver, j) > 0);
+    // Regionen är en BONUS i matchScore, aldrig en diskvalificerare — körkort,
+    // certifikat och segment kan falla ut, men geografi kan det inte. Följden var
+    // att en genomsnittlig förare "matchade" 159 av 468 jobb och bara 14 % låg i
+    // en region hen sagt sig vilja jobba i; en förare i Värmland matchade alla
+    // 468, varav 2 var i närheten. "Nya jobb som matchar dig" betydde i praktiken
+    // "du har rätt körkort".
+    //
+    // Här filtreras det bort. Har föraren inte angett någon region alls skickas
+    // allt som förut — då har vi inget att filtrera på, och tystnad vore sämre än
+    // brus. Matchningsprocenten i appen rörs inte: där är regionen fortfarande en
+    // bonus, vilket är rimligt när föraren själv valt att titta på jobbet.
+    const wanted = (driver.regionsWilling?.length ? driver.regionsWilling : [driver.region]).filter(Boolean);
+    const matched = jobs
+      .filter((j) => matchScore(driver, j) > 0)
+      .filter((j) => wanted.length === 0 || !j.region || wanted.includes(j.region));
     if (matched.length === 0) continue;
 
     const top = matched.slice(0, MAX_JOBS_IN_MSG);
@@ -84,15 +114,20 @@ export async function notifyDriversOfNewJobs(jobIds) {
       ? `${top[0].company}: ${top[0].title}${top[0].region ? ` (${top[0].region})` : ""}`
       : top.slice(0, 3).map((j) => j.title).join(", ") + (count > 3 ? " m.fl." : "");
 
-    await createNotification({
-      userId: p.user.id,
-      type: "MATCH_JOBS",
-      title,
-      body,
-      link: single ? `/jobb/${top[0].id}` : "/jobb",
-      relatedJobId: single ? top[0].id : null,
-    }).catch((e) => console.error("[MatchAlerts] notis-fel:", e?.message || e));
-    notified++;
+    // Bara notisen är cooldownad här — mejlet har sin egen tidsstämpel
+    // (lastMatchJobEmailAt) och ska inte hoppas över för att notisen gjorde det.
+    if (!cooledDown.has(p.user.id)) {
+      await createNotification({
+        userId: p.user.id,
+        type: "MATCH_JOBS",
+        title,
+        body,
+        link: single ? `/jobb/${top[0].id}` : "/jobb",
+        relatedJobId: single ? top[0].id : null,
+      }).catch((e) => console.error("[MatchAlerts] notis-fel:", e?.message || e));
+      cooledDown.add(p.user.id); // skydd om samma förare dyker upp två gånger i körningen
+      notified++;
+    }
 
     const last = p.user.lastMatchJobEmailAt;
     if (!last || now.getTime() - new Date(last).getTime() > EMAIL_COOLDOWN_MS) {
