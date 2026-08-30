@@ -192,9 +192,6 @@ function formatProfileResponse(profile, user) {
     schoolName: profile.schoolName ?? null,
     studyProgram: profile.studyProgram ?? null,
     graduationYear: profile.graduationYear ?? null,
-    physicalWorkOk: profile.physicalWorkOk ?? null,
-    soloWorkOk: profile.soloWorkOk ?? null,
-    preferredEmployment: profile.preferredEmployment ?? [],
     openToWork: profile.openToWork ?? false,
     availableForShifts: profile.availableForShifts ?? false,
     photoUrl: profile.photoUrl ?? null,
@@ -409,9 +406,6 @@ profileRouter.put("/", async (req, res, next) => {
     if (body.schoolName !== undefined) data.schoolName = body.schoolName ? String(body.schoolName).trim() : null;
     if (body.studyProgram !== undefined) data.studyProgram = body.studyProgram ? String(body.studyProgram).trim() : null;
     if (body.graduationYear !== undefined) data.graduationYear = body.graduationYear ? parseInt(body.graduationYear, 10) : null;
-    if (body.physicalWorkOk !== undefined) data.physicalWorkOk = body.physicalWorkOk === true ? true : body.physicalWorkOk === false ? false : null;
-    if (body.soloWorkOk !== undefined) data.soloWorkOk = body.soloWorkOk === true ? true : body.soloWorkOk === false ? false : null;
-    if (Array.isArray(body.preferredEmployment)) data.preferredEmployment = body.preferredEmployment;
     if (Array.isArray(body.experienceTypes)) data.experienceTypes = body.experienceTypes;
     if (body.openToWork !== undefined) data.openToWork = Boolean(body.openToWork);
     if (body.availableForShifts !== undefined) data.availableForShifts = Boolean(body.availableForShifts);

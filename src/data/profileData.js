@@ -19,8 +19,6 @@ export const defaultProfile = {
   experience: [],
   isGymnasieelev: false,
   schoolName: "",
-  physicalWorkOk: null,
-  soloWorkOk: null,
 };
 
 // Re-export från competencies (YKB, ADR, APV, Truck, Kran, övriga)
