@@ -689,6 +689,9 @@ adminRouter.get("/posthog-activity", async (req, res, next) => {
   }
 });
 
+/** Panelnamnen i /traffic, i samma ordning som frågorna nedan. */
+const TRAFFIC_PANELS = ["overview", "channels", "cities", "split", "topJobs"];
+
 // ── Trafiköversikt (PostHog) — besökare, kanaler, geografi, gäst/inloggad,
 // mest klickade jobb. Samma ägar-/testfiltrering som posthog-activity.
 adminRouter.get("/traffic", async (req, res, next) => {
@@ -696,7 +699,10 @@ adminRouter.get("/traffic", async (req, res, next) => {
     const { posthogHogQL } = await import("../lib/stackOverview.js");
     const excluded = [...new Set([...OWNER_EMAILS, ...TEST_EMAIL_EXACT])].map((e) => `'${e}'`).join(",");
     const notOwner = `and (person.properties.email is null or lower(person.properties.email) not in (${excluded}))`;
-    const [overview, channels, cities, split, topJobs] = await Promise.all([
+    // allSettled, inte all: en enda långsam HogQL-fråga fällde tidigare hela
+    // fliken med 500 (Sentry STP-BACKEND-T, 2026-08-30). Panelerna är oberoende
+    // — en som faller bort ska inte ta med sig de andra.
+    const settled = await Promise.allSettled([
       posthogHogQL(
         `select count(distinct distinct_id), count() from events where event = '$pageview' and timestamp > now() - interval 7 day ${notOwner}`
       ),
@@ -713,11 +719,21 @@ adminRouter.get("/traffic", async (req, res, next) => {
         `select properties.jobTitle, count(), count(distinct distinct_id) from events where event = 'apply_initiated' and timestamp > now() - interval 7 day and properties.jobTitle is not null ${notOwner} group by 1 order by 2 desc limit 8`
       ),
     ]);
+    const [overview, channels, cities, split, topJobs] = settled.map((r) => (r.status === "fulfilled" ? r.value : undefined));
+    // Saknad PostHog-nyckel ger null (inte ett kast) från alla fem — inget konfigurerat.
     if (overview === null) return res.json({ configured: false });
+    const unavailable = TRAFFIC_PANELS.filter((_, i) => settled[i].status === "rejected");
+    for (const name of unavailable) {
+      const { reason } = settled[TRAFFIC_PANELS.indexOf(name)];
+      console.warn(`[admin/traffic] ${name} kunde inte hämtas:`, reason?.message || reason);
+    }
     const splitMap = Object.fromEntries((split || []).map((r) => [r[0], r[1]]));
     res.json({
       configured: true,
       windowDays: 7,
+      // Skiljer "hämtningen föll" från "värdet är 0". Utan den ser en timeout ut
+      // som noll trafik, vilket är värre än att säga att siffran saknas.
+      unavailable,
       visitors: overview?.[0]?.[0] ?? 0,
       pageviews: overview?.[0]?.[1] ?? 0,
       guests: splitMap["gäst"] ?? 0,
