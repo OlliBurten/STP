@@ -134,7 +134,7 @@ export default function JobCard({
             type="button"
             onClick={(e) => { e.preventDefault(); onToggleSave?.(job.id, !isSaved); }}
             style={{
-              width: 34, height: 34, borderRadius: 9, flexShrink: 0,
+              width: 44, height: 44, borderRadius: 9, flexShrink: 0,
               background: isSaved ? "var(--amber-tint)" : "var(--card-2)",
               border: `1px solid ${isSaved ? "rgba(199,122,14,0.3)" : "var(--line-2)"}`,
               display: "flex", alignItems: "center", justifyContent: "center",

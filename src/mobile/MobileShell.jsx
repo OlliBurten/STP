@@ -19,6 +19,11 @@ export default function MobileShell({ children, style }) {
         background: "var(--paper)",
         overflow: "hidden",
         paddingTop: "var(--stpm-safe-top)",
+        // Reserverar plats för cookiebannern så länge den syns. Skalet är
+        // positioneringskontext för bottensheetsen, och absolutpositionerade barn
+        // utgår från padding-boxen — därför lyfts även deras `bottom: 0`-rader
+        // (Ansök, Visa jobb) upp ovanför bannern i stället för att hamna under.
+        paddingBottom: "var(--stp-cookie-h, 0px)",
         ...style,
       }}
     >
