@@ -1,17 +1,17 @@
 // STP Mobile — public (logged-out) job list. Ported from STP Mobil Jobb,
 // wired to the real jobs API. Saving/applying opens a sign-up gate.
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { fetchJobs } from "../../api/jobs";
 import { createJobAlert } from "../../api/jobAlerts";
-import { registerGuestApplyClick } from "../../api/jobs";
+import { registerGuestApplyClick, trackJobView } from "../../api/jobs";
 import { track } from "../../utils/posthog.js";
 import { withUtm } from "../../utils/utm.js";
 import { mockJobs } from "../../data/mockJobs";
 import { useApi } from "../../api/client";
 import { toJobView } from "../driver/jobAdapter";
 import MobileShell from "../MobileShell";
-import { Icon, Pill, Card } from "../ui";
+import { Icon, Pill, Card, SkeletonRow } from "../ui";
 
 const LICENSES = ["C1", "C1E", "C", "CE"];
 const TYPES = ["Heltid", "Deltid", "Praktik"];
@@ -61,18 +61,23 @@ function JobCard({ job, idx = 0, saved, onOpen, onSave }) {
 
 export default function MobileGuestJobs() {
   const navigate = useNavigate();
-  const [params] = useSearchParams();
+  const [params, setParams] = useSearchParams();
   const hasApi = useApi();
   const stad = params.get("stad") || "";
   const initRegion = params.get("region") || "";
   const initLic = params.get("lic") || "";
 
   const [rawJobs, setRawJobs] = useState([]);
+  // Laddning och fel var tidigare osynliga tillstånd: listan startade som [] och
+  // tom-vyn ("Inga jobb matchar") renderades medan hämtningen pågick. Den första
+  // sekunden av varje kallt besök påstod alltså att sajten saknar jobb.
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   const [scrolled, setScrolled] = useState(false);
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState({ region: initRegion ? [initRegion] : [], lic: initLic ? [initLic] : [], type: [], hideBemanning: false });
   const [filterOpen, setFilterOpen] = useState(false);
-  const [detail, setDetail] = useState(null);
   const [gate, setGate] = useState(null);
   // Guests can't actually save, so bookmarks always render unfilled (honest —
   // no fake fill). Kept as an empty Set so the saved.has(...) call sites work.
@@ -99,15 +104,68 @@ export default function MobileGuestJobs() {
 
   useEffect(() => {
     let alive = true;
+    setLoading(true);
+    setLoadError(false);
     (async () => {
-      try { const d = hasApi ? await fetchJobs() : mockJobs; if (alive) setRawJobs(Array.isArray(d) && d.length ? d : mockJobs); }
-      catch { if (alive) setRawJobs(mockJobs); }
+      // Utan konfigurerad API-URL (lokal utveckling utan backend) visas demodata.
+      // I produktion är VITE_API_URL alltid satt, så en riktig besökare når
+      // aldrig hit.
+      if (!hasApi) { if (alive) { setRawJobs(mockJobs); setLoading(false); } return; }
+      try {
+        const d = await fetchJobs();
+        if (alive) setRawJobs(Array.isArray(d) ? d : []);
+      } catch {
+        // Föll tidigare tillbaka på mockJobs — påhittade annonser med riktiga
+        // företagsnamn, omöjliga för besökaren att skilja från äkta. En förare
+        // kunde försöka söka ett jobb som inte finns. Hellre ett ärligt fel.
+        if (alive) { setRawJobs([]); setLoadError(true); }
+      } finally {
+        if (alive) setLoading(false);
+      }
     })();
     return () => { alive = false; };
-  }, [hasApi]);
+  }, [hasApi, reloadKey]);
 
   const jobs = useMemo(() => rawJobs.map((j) => { const v = toJobView(j); return { ...v, type: protoType(v.type) }; }), [rawJobs]);
   const regions = useMemo(() => [...new Set(jobs.map((j) => j.region).filter(Boolean))], [jobs]);
+
+  // Jobbdetaljen låg tidigare i lokalt state utan adress. Följderna: mobilens
+  // bakåtgest lämnade sajten i stället för att stänga vyn, ett jobb gick inte
+  // att dela, och besöket registrerades aldrig på annonsen. Nu styr ?open=<id>
+  // vyn — samma parameter som inloggnings-gaten redan skickade tillbaka till
+  // (`/jobb?open=…`), en returlänk som fram tills nu inte gjorde någonting.
+  const openId = params.get("open");
+  const detail = useMemo(
+    () => (openId ? jobs.find((j) => String(j.id) === String(openId)) || null : null),
+    [openId, jobs]
+  );
+  // Öppning lägger till ett historiksteg; stängning ska konsumera just det.
+  // En delad länk öppnas utan eget steg — då tas parametern bort i stället, så
+  // att bakåt inte kastar ut besökaren till där länken kom ifrån.
+  const [pushedDetail, setPushedDetail] = useState(false);
+  useEffect(() => { if (!openId) setPushedDetail(false); }, [openId]);
+
+  const openDetail = (job) => {
+    const next = new URLSearchParams(params);
+    next.set("open", job.id);
+    setParams(next);
+    setPushedDetail(true);
+  };
+  const closeDetail = () => {
+    if (pushedDetail) { navigate(-1); return; }
+    const next = new URLSearchParams(params);
+    next.delete("open");
+    setParams(next, { replace: true });
+  };
+
+  // Visningen räknas en gång per jobb och besök, som på den routade annonssidan.
+  const viewed = useRef(new Set());
+  useEffect(() => {
+    if (!detail || viewed.current.has(detail.id)) return;
+    viewed.current.add(detail.id);
+    trackJobView(detail.id);
+    track("job_viewed", { jobId: detail.id, jobTitle: detail.title, source: "guest_mobile_sheet" });
+  }, [detail]);
 
   let list = jobs;
   if (stad) list = list.filter((j) => (j.location || "").toLowerCase() === stad.toLowerCase());
@@ -159,7 +217,16 @@ export default function MobileGuestJobs() {
           </div>
         </div>
         <div style={{ padding: "0 20px 30px", display: "flex", flexDirection: "column", gap: 12 }}>
-          {shown.length === 0 && (
+          {loading && Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={`skel-${i}`} />)}
+          {!loading && loadError && (
+            <div style={{ textAlign: "center", padding: "48px 20px" }}>
+              <div style={{ width: 60, height: 60, borderRadius: 16, background: "var(--paper-2)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}><Icon name="info" size={26} color="var(--ink-300)" stroke={1.8} /></div>
+              <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>Kunde inte hämta jobben</h3>
+              <p style={{ fontSize: 14.5, color: "var(--ink-500)", lineHeight: 1.5, marginBottom: 18 }}>Annonserna finns kvar — det är kontakten med servern som inte gick fram.</p>
+              <button onClick={() => setReloadKey((k) => k + 1)} className="press" style={{ display: "inline-flex", alignItems: "center", gap: 7, height: 46, padding: "0 20px", borderRadius: 13, background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: 14.5 }}><Icon name="arrow" size={16} color="#fff" stroke={2.4} />Försök igen</button>
+            </div>
+          )}
+          {!loading && !loadError && shown.length === 0 && (
             <div style={{ textAlign: "center", padding: "48px 20px" }}>
               <div style={{ width: 60, height: 60, borderRadius: 16, background: "var(--paper-2)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}><Icon name="search" size={26} color="var(--ink-300)" stroke={1.8} /></div>
               <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>Inga jobb matchar</h3>
@@ -169,7 +236,7 @@ export default function MobileGuestJobs() {
               )}
             </div>
           )}
-          {shown.map((job, i) => <JobCard key={job.id} job={job} idx={i} saved={saved.has(job.id)} onOpen={() => setDetail(job)} onSave={() => toggleSave(job.id)} />)}
+          {shown.map((job, i) => <JobCard key={job.id} job={job} idx={i} saved={saved.has(job.id)} onOpen={() => openDetail(job)} onSave={() => toggleSave(job.id)} />)}
           {remaining > 0 && (
             <button onClick={() => setLimit((l) => l + PAGE)} className="press" style={{ height: 50, borderRadius: 13, background: "var(--card)", border: "1px solid var(--line-2)", color: "var(--ink-700)", fontWeight: 700, fontSize: 14.5, marginTop: 2 }}>Visa fler · {remaining} kvar</button>
           )}
@@ -233,7 +300,7 @@ export default function MobileGuestJobs() {
       {detail && (
         <div style={{ position: "absolute", inset: 0, zIndex: 60, background: "var(--paper)", display: "flex", flexDirection: "column", animation: "stpm-sheet-in .3s cubic-bezier(.32,.72,0,1)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 16px", borderBottom: "1px solid var(--line)", background: "rgba(245,242,236,0.95)", backdropFilter: "blur(10px)", flexShrink: 0, paddingTop: "calc(13px + var(--stpm-safe-top))" }}>
-            <button onClick={() => setDetail(null)} className="press" style={{ width: 40, height: 40, borderRadius: 11, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--card)", border: "1px solid var(--line-2)" }}><Icon name="arrowLeft" size={20} stroke={2} /></button>
+            <button onClick={closeDetail} className="press" aria-label="Tillbaka till jobblistan" style={{ width: 44, height: 44, borderRadius: 11, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--card)", border: "1px solid var(--line-2)" }}><Icon name="arrowLeft" size={20} stroke={2} /></button>
             <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: -0.3, flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{detail.title}</span>
             <button onClick={() => toggleSave(detail.id)} className="press" aria-label="Spara" style={{ width: 40, height: 40, borderRadius: 11, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--card)", border: "1px solid var(--line-2)" }}><Icon name="bookmark" size={19} color={saved.has(detail.id) ? "var(--green)" : "var(--ink-400)"} stroke={2} style={{ fill: saved.has(detail.id) ? "var(--green)" : "none" }} /></button>
           </div>
