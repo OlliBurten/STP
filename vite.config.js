@@ -1,9 +1,41 @@
+import { execSync } from 'node:child_process'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
+// Vilken commit är det som faktiskt ligger ute?
+//
+// Sedan Vercels auto-deploy stängdes av (2026-08-30) deployar en merge till main
+// ingenting — prod ligger kvar på gammal kod tills någon kör deploy.sh, och
+// ingenting säger ifrån. Bygget stämplar därför in sin commit i index.html så att
+// vem som helst (inkl. CI, utan API-nyckel) kan läsa av vad som är live.
+//
+// Vercel sätter VERCEL_GIT_COMMIT_SHA även för CLI-deployer, eftersom CLI:t
+// skickar med git-metadatan från katalogen. GITHUB_SHA täcker CI-byggen, och
+// git-anropet lokala byggen.
+function commitSha() {
+  const fromEnv = process.env.VERCEL_GIT_COMMIT_SHA || process.env.GITHUB_SHA;
+  if (fromEnv) return fromEnv.trim();
+  try {
+    return execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim();
+  } catch {
+    return 'unknown';
+  }
+}
+
+const stampCommit = () => ({
+  name: 'stp-stamp-commit',
+  transformIndexHtml() {
+    return [{
+      tag: 'meta',
+      attrs: { name: 'stp-commit', content: commitSha() },
+      injectTo: 'head',
+    }];
+  },
+});
+
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), stampCommit()],
   build: {
     // Warn on chunks over 500 kB (Vite default is 500, but we want to stay below 300)
     chunkSizeWarningLimit: 500, // vendor-sentry + vendor-msal are lazy-loaded, large is OK
