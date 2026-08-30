@@ -150,7 +150,10 @@ ${url ? `URL: ${url}` : ""}`;
     console.log(`[SentryAgent] ${severity} alert skickat: ${errorTitle}`);
 
     // Försök auto-fixa ENDAST vid CRITICAL (Sonnet × hela källfiler är dyrt — spara budget).
-    if (process.env.GITHUB_TOKEN && process.env.GITHUB_REPO && severity === "CRITICAL") {
+    // Grinden krävde tidigare GITHUB_TOKEN. Repot är publikt och agenten läser
+    // bara filinnehåll, så en token behövs inte — och kravet gjorde att hela
+    // fixförslaget tystnade när den skrivbehöriga PAT:en togs bort 2026-08-30.
+    if (process.env.GITHUB_REPO && severity === "CRITICAL") {
       attemptBugFix(payload).then((result) => {
         if (result.fixed) {
           console.log(`[SentryAgent] Auto-fix deployed: ${result.file}`);

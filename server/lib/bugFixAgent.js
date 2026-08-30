@@ -46,11 +46,21 @@ function getAdminEmails() {
     .split(",").map((e) => e.trim()).filter(Boolean);
 }
 
+// Token är FRIVILLIG. OlliBurten/STP är publikt, och den enda GitHub-anrop som
+// finns kvar här är githubGet — en läsning av filinnehåll, som fungerar utan
+// autentisering. Kravet på GITHUB_TOKEN är kvar sedan agenten också skrev kod
+// (githubCommit, borttagen — se noten nedan), och det gjorde att en
+// skrivbehörig PAT låg kvar i backendens miljö utan att behövas. Den togs bort
+// 2026-08-30.
+//
+// Utan token gäller GitHubs oautentiserade tak på 60 anrop/timme per IP. Agenten
+// läser någon enstaka fil per CRITICAL-händelse, så det räcker med marginal — och
+// slår taket ändå i gör githubGet ingen skada: den returnerar null och agenten
+// hoppar över fixförslaget.
 function getGitHub() {
-  const token = process.env.GITHUB_TOKEN;
   const repo = process.env.GITHUB_REPO;
-  if (!token || !repo) throw new Error("GITHUB_TOKEN eller GITHUB_REPO saknas");
-  return { token, repo };
+  if (!repo) throw new Error("GITHUB_REPO saknas");
+  return { token: process.env.GITHUB_TOKEN || null, repo };
 }
 
 function getSentry() {
@@ -65,7 +75,9 @@ async function githubGet(path) {
   const { token, repo } = getGitHub();
   const resp = await fetch(`https://api.github.com/repos/${repo}/contents/${path}`, {
     headers: {
-      Authorization: `Bearer ${token}`,
+      // Skickas bara om den finns — en tom Authorization-header ger 401 i stället
+      // för det oautentiserade anrop vi vill ha.
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       Accept: "application/vnd.github+json",
       "X-GitHub-Api-Version": "2022-11-28",
     },
