@@ -301,6 +301,17 @@ export default function JobDetail() {
   })();
   const jobMerits = job?.qualifications?.niceToHave || [];
 
+  // Körkort och certifikat är egna strukturerade fält och ingår därför medvetet
+  // INTE i berikarens requirements — dess prompt säger "krav utöver körkort".
+  // Behörigheterna renderades bara i "Din matchning", som kräver inloggad förare.
+  // En utloggad besökare — 92 % av trafiken — fick alltså en kravlista där YKB,
+  // ADR och digitalt förarkort saknades, trots att de stod i annonsen och låg
+  // korrekt extraherade i databasen.
+  const jobCredentials = [
+    ...(job?.license || []).map((l) => `${l}-behörighet`),
+    ...(job?.certificates || []).map((c) => getCertificateLabel(c)),
+  ];
+
   const [apiDrivers, setApiDrivers] = useState([]);
   useEffect(() => {
     if (!isCompany || !hasApi) return;
@@ -726,6 +737,8 @@ export default function JobDetail() {
             {/* Pills */}
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
               {(job.license || []).map((l) => <Pill key={l} tone="primary">{l}</Pill>)}
+              {/* Certifikatspillren fanns bara i desktopvyn — mobilen visade körkort men inte YKB/ADR. */}
+              {(job.certificates || []).map((c) => <Pill key={c} tone="neutral">{getCertificateLabel(c)}</Pill>)}
               <Pill tone="soft">{empLabel}</Pill>
               {scheduleLabel && <Pill tone="neutral">{scheduleLabel}</Pill>}
               {job.kollektivavtal === true && <Pill tone="info">Kollektivavtal</Pill>}
@@ -778,10 +791,10 @@ export default function JobDetail() {
                 <BulletList items={jobOffers} accent="success" />
               </div>
             )}
-            {jobRequirements.length > 0 && (
+            {(jobCredentials.length > 0 || jobRequirements.length > 0) && (
               <div style={{ marginTop: 24 }}>
                 <h2 style={mSecH}>Krav på dig</h2>
-                <BulletList items={jobRequirements} />
+                <BulletList items={[...jobCredentials, ...jobRequirements]} />
               </div>
             )}
             {jobMerits.length > 0 && (
@@ -999,8 +1012,8 @@ export default function JobDetail() {
           <BulletList items={jobTasks} fallback="Arbetsuppgifter specificeras vid intervju — kontakta företaget för mer information." />
 
           <SectionHeading>Vi söker dig som</SectionHeading>
-          {jobRequirements.length > 0
-            ? <BulletList items={jobRequirements} />
+          {(jobCredentials.length > 0 || jobRequirements.length > 0)
+            ? <BulletList items={[...jobCredentials, ...jobRequirements]} />
             : job.experience
               ? <BulletList items={[`Min. erfarenhet: ${job.experience === "0-1" ? "0–1 år" : job.experience === "1-2" ? "1–2 år" : job.experience === "2-5" ? "2–5 år" : job.experience === "5-10" ? "5–10 år" : "10+ år"}`]} />
               : <p style={{ fontSize: "var(--text-md)", color: "var(--ink-400)", lineHeight: 1.8, fontStyle: "italic", margin: 0 }}>Krav specificeras vid kontakt.</p>

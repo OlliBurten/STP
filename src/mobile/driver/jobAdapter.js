@@ -2,6 +2,7 @@
 // screens/sheets expect (job.initials, job.match, job.pay, job.type, …).
 import { matchScore } from "../../utils/matchUtils";
 import { salaryLabel } from "../../utils/jobUtils";
+import { getCertificateLabel } from "../../data/profileData";
 
 const EMPLOYMENT_LABEL = {
   fast: "Heltid",
@@ -73,6 +74,14 @@ export function toJobView(job, profile) {
     verified: Boolean(job.companyVerified),
     desc: job.description || "",
     reqs: Array.isArray(job.requirements) ? job.requirements : [],
+    // Behörigheterna ligger i egna fält (license/certificates) och ingår därför
+    // inte i requirements — berikarens prompt säger uttryckligen "krav utöver
+    // körkort". Utan den här listan visade kravsektionen bara de mjuka kraven,
+    // så YKB, ADR och digitalt förarkort syntes aldrig i mobilens jobbvyer.
+    credentials: [
+      ...licenses.map((l) => `${l}-behörighet`),
+      ...(Array.isArray(job.certificates) ? job.certificates : []).map(getCertificateLabel),
+    ],
     match,
   };
 }

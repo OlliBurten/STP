@@ -88,11 +88,11 @@ export default function DetailSheet({ job, ctx, close: _close }) {
             {showRaw && <div style={{ marginTop: 10, padding: "14px", background: "var(--card-2)", border: "1px solid var(--line)", borderRadius: 12, fontSize: 13, color: "var(--ink-500)", lineHeight: 1.55, whiteSpace: "pre-wrap" }}>{job.rawDesc}</div>}
           </div>
         )}
-        {job.reqs.length > 0 && (
+        {[...(job.credentials || []), ...job.reqs].length > 0 && (
           <>
             <Label style={{ marginBottom: 10 }}>Krav</Label>
             <div style={{ display: "flex", flexDirection: "column", gap: 9, marginBottom: 20 }}>
-              {job.reqs.map((r, i) => (
+              {[...(job.credentials || []), ...job.reqs].map((r, i) => (
                 <div key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <div style={{ width: 22, height: 22, borderRadius: 7, background: "var(--success-tint)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icon name="check" size={13} color="var(--success)" stroke={3} /></div>
                   <span style={{ fontSize: 14, color: "var(--ink-800)" }}>{r}</span>
