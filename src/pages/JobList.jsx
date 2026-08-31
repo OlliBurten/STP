@@ -16,7 +16,7 @@ import PageMeta from "../components/PageMeta";
 import { useIsMobile } from "../hooks/useIsMobile";
 import ProductTour from "../components/ProductTour";
 import { DRIVER_TOUR_STEPS } from "../data/tourSteps";
-import { getProfileCompletion, isDriverMinimumProfileComplete } from "../utils/driverProfileRequirements";
+import { getProfileCompletion, isDriverOnboardingComplete } from "../utils/driverProfileRequirements";
 import SwedenJobMap from "../components/SwedenJobMap";
 import { LAYOUT } from "../components/ui/layout.jsx";
 import { SALARY_FILTER_ENABLED } from "../utils/jobUtils";
@@ -339,7 +339,7 @@ export default function JobList() {
     Boolean(user) &&
     !jobsLoading &&
     profileLoaded &&
-    isDriverMinimumProfileComplete(profile);
+    isDriverOnboardingComplete(profile);
 
   // Återställ till sida 1 när filter/flik/sökning ändras
   useEffect(() => { setPage(1); }, [tab, filters, mobileFilters]);

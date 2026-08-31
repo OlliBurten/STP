@@ -23,7 +23,7 @@ import { trackDriverOnboardingComplete } from "../utils/segmentMetrics";
 import {
   SUMMARY_MIN_LENGTH,
   SUMMARY_MAX_LENGTH,
-  isDriverMinimumProfileComplete,
+  isDriverOnboardingComplete,
 } from "../utils/driverProfileRequirements";
 
 // ── Steps ──────────────────────────────────────────────────────────────────────
@@ -167,7 +167,7 @@ export default function DriverOnboardingWizard() {
 
   // Redirect if profile already complete (skip if we're showing the done screen).
   // Kom de från ett jobb (för att söka) → skicka tillbaka dit, annars profilen.
-  if (!done && profileLoaded && isDriverMinimumProfileComplete(profile)) {
+  if (!done && profileLoaded && isDriverOnboardingComplete(profile)) {
     return <Navigate to={returningToJob ? returnTo : "/profil"} replace />;
   }
 
