@@ -139,11 +139,15 @@ fi
 
 # ── 5. Verifiera ──────────────────────────────────────────────────────────────────
 ylw "→ Verifierar health (väntar in ev. omstart)..."
-# Railway-bygget tar oftast 2–5 minuter. 90 × 8 s ≈ 12 minuter innan vi ger upp;
-# tidigare 30 × 8 s räckte inte ens till ett normalt bygge.
-TRIES=30
-[ -n "$PRE_UPTIME" ] && TRIES=90
-[ -n "$PRE_ASSET" ] && TRIES=90
+# Railway-bygget tar oftast 2–5 minuter, men 2026-08-31 (#66) tog det längre än
+# takets 12 minuter: skriptet gav upp och larmade, och den nya instansen kom upp
+# strax därefter. Larmet var alltså korrekt formulerat men för otåligt — och ett
+# larm som ropar varg gör att man slutar lyssna. 150 × 8 s = 20 minuter.
+# Höj hellre taket än att sänka kravet: kontrollen (uptime måste ha räknats om)
+# är det enda som skiljer en riktig deploy från en gammal instans som svarar ok.
+TRIES=60
+[ -n "$PRE_UPTIME" ] && TRIES=150
+[ -n "$PRE_ASSET" ] && TRIES=150
 
 OK=0
 NEW_UPTIME=""
@@ -175,7 +179,7 @@ for i in $(seq 1 $TRIES); do
     if [ -n "$U" ] && [ "$U" -lt "$PRE_UPTIME" ]; then
       NEW_UPTIME="$U"; OK=1; break
     fi
-    [ $((i % 5)) -eq 0 ] && ylw "   …gamla instansen svarar fortfarande (uptime ${U:-?}s), väntar."
+    [ $((i % 5)) -eq 0 ] && ylw "   …gamla instansen svarar fortfarande (uptime ${U:-?}s), väntar. [$((i * 8 / 60)) av $((TRIES * 8 / 60)) min]"
   fi
   sleep 8
 done
@@ -214,5 +218,10 @@ else
     red "⚠️  Deploy gjord ($DEPLOY_SHA) men health verifierades INTE inom tidsgränsen."
   fi
   red "    Kolla Railway/Vercel-loggar och $HEALTH_API manuellt."
+  # OBS för den som kör skriptet genom en pipe (`deploy.sh | tail`): exitkoden
+  # nedan går förlorad — en pipeline returnerar sista kommandots status. Kör
+  # skriptet utan pipe, eller sätt `set -o pipefail` i anropet. Raden nedan gör
+  # felet läsbart även när exitkoden svalts.
+  red "    DEPLOY MISSLYCKADES — exitkod 1."
   exit 1
 fi
