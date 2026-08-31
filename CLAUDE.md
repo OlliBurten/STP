@@ -49,6 +49,13 @@ frontend (Vercel) + backend (Railway) och verifierar `/api/health`. Detta är de
 enda säkra vägen — manuella CLI-deployer nedan kringgår synk-gaten och kan skeppa
 gammal kod. `bash scripts/deploy.sh frontend|backend` för bara en tjänst.
 
+> ⚠️ **Kör deploy.sh UTAN pipe.** Grinden signalerar misslyckad deploy med exitkod 1,
+> men en pipeline returnerar sista kommandots status — `deploy.sh | tail` rapporterar
+> alltid 0 och döljer felet helt. Kör skriptet rakt, eller `set -o pipefail` först.
+> Skriptet skriver dessutom raden `DEPLOY MISSLYCKADES — exitkod 1` så felet går att
+> se även när exitkoden svalts. (Upptäckt 2026-08-31: hela dagens deployer kördes
+> genom `| tail` — en verklig deploy-miss hade sett likadan ut som en lyckad.)
+
 > ⚠️ **GitHub = sanningskälla. Synka före deploy.** Automatiska agenter
 > (daglig-sentry-triage m.fl.) pushar till `origin/main`; deploy sker via CLI från
 > en lokal kopia. Om den lokala kopian ligger efter `origin/main` skeppar en
