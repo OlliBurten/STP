@@ -655,6 +655,9 @@ adminRouter.get("/exposure-outcomes", async (req, res, next) => {
   }
 });
 
+/** Panelnamnen i /posthog-activity, i samma ordning som frågorna nedan. */
+const ACTIVITY_PANELS = ["counts", "recent"];
+
 adminRouter.get("/posthog-activity", async (req, res, next) => {
   try {
     const { posthogHogQL } = await import("../lib/stackOverview.js");
@@ -662,7 +665,10 @@ adminRouter.get("/posthog-activity", async (req, res, next) => {
     // ägaren kan inte särskiljas server-side — klienten opt:ar ut vid inlogg).
     const excluded = [...new Set([...OWNER_EMAILS, ...TEST_EMAIL_EXACT])].map((e) => `'${e}'`).join(",");
     const excludeOwnersHogQL = `and (person.properties.email is null or lower(person.properties.email) not in (${excluded}))`;
-    const [counts, recent] = await Promise.all([
+    // allSettled, inte all: samma skäl som i /traffic nedan — en trög HogQL-fråga
+    // ska inte fälla hela panelen med 500 (Sentry STP-BACKEND-T). De två frågorna
+    // är oberoende: siffrorna överlever att händelselistan uteblir, och tvärtom.
+    const settled = await Promise.allSettled([
       posthogHogQL(
         `select event, count() from events where event in ('apply_initiated','job_alert_created','user_registered','job_viewed') and timestamp > now() - interval 7 day ${excludeOwnersHogQL} group by event`
       ),
@@ -670,10 +676,19 @@ adminRouter.get("/posthog-activity", async (req, res, next) => {
         `select event, timestamp, properties.jobTitle, properties.source, properties.region from events where event in ('apply_initiated','job_alert_created','user_registered') and timestamp > now() - interval 7 day ${excludeOwnersHogQL} order by timestamp desc limit 40`
       ),
     ]);
+    const [counts, recent] = settled.map((r) => (r.status === "fulfilled" ? r.value : undefined));
+    // Saknad PostHog-nyckel ger null (inte ett kast) från båda — inget konfigurerat.
     if (counts === null) return res.json({ configured: false });
+    const unavailable = ACTIVITY_PANELS.filter((_, i) => settled[i].status === "rejected");
+    for (const name of unavailable) {
+      const { reason } = settled[ACTIVITY_PANELS.indexOf(name)];
+      console.warn(`[admin/posthog-activity] ${name} kunde inte hämtas:`, reason?.message || reason);
+    }
     const countByEvent = Object.fromEntries((counts || []).map((r) => [r[0], r[1]]));
     res.json({
       configured: true,
+      // Som i /traffic: skiljer "hämtningen föll" från "värdet är 0".
+      unavailable,
       counts7d: {
         applyClicks: countByEvent.apply_initiated ?? 0,
         jobAlerts: countByEvent.job_alert_created ?? 0,

@@ -5,6 +5,9 @@ import { getApplicationStats, getPosthogActivity, getExposureOutcomes, getAdminT
 
 const mono = { fontFamily: "'JetBrains Mono',monospace", fontFeatureSettings: '"tnum"' };
 
+// Visas i stället för siffror/listor som backend inte kunde hämta (t.ex. PostHog-timeout).
+const noData = <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", fontStyle: "italic", padding: "3px 0" }}>Kunde inte hämtas</div>;
+
 // ─── Ansökningsstatistik ────────────────────────────────────────────────────────
 function ApplicationStats() {
   const [data, setData] = React.useState(null);
@@ -114,6 +117,9 @@ function PosthogActivity() {
     job_alert_created: { t: "Ny bevakning", c: "var(--info)" },
     user_registered: { t: "Registrering", c: "var(--amber-text)" },
   };
+  // Paneler som backend inte kunde hämta. De visas som "—", aldrig som 0 —
+  // en utebliven siffra är inte samma sak som noll aktivitet.
+  const missing = new Set((data && data.unavailable) || []);
   const counts = data ? [
     { l: "Ansökningsklick", v: data.counts7d.applyClicks, c: "var(--success)" },
     { l: "Bevakningar", v: data.counts7d.jobAlerts, c: "var(--info)" },
@@ -124,7 +130,9 @@ function PosthogActivity() {
     <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, overflow: "hidden" }}>
       <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <span style={{ fontSize: "var(--text-sm)", fontWeight: 800, letterSpacing: -0.2, color: "var(--ink-900)" }}>Aktivitet — 7 dagar</span>
-        <span style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", fontWeight: 600 }}>PostHog · inkl. gäster</span>
+        <span style={{ fontSize: "var(--text-2xs)", color: missing.size ? "var(--amber-deep)" : "var(--ink-400)", fontWeight: 600 }}>
+          {missing.size ? `PostHog · ${missing.size} panel${missing.size > 1 ? "er" : ""} saknas` : "PostHog · inkl. gäster"}
+        </span>
       </div>
       {!data ? (
         <div style={{ padding: "20px 18px", textAlign: "center", fontSize: "var(--text-xs)", color: "var(--ink-400)" }}>Laddar…</div>
@@ -133,13 +141,15 @@ function PosthogActivity() {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", borderBottom: "1px solid var(--line)" }}>
             {counts.map((c, i) => (
               <div key={c.l} style={{ padding: "12px 14px", borderRight: i < 2 ? "1px solid var(--line)" : "none" }}>
-                <div style={{ fontSize: "var(--text-xl)", fontWeight: 800, color: c.c, ...mono }}>{Number(c.v).toLocaleString()}</div>
+                <div style={{ fontSize: "var(--text-xl)", fontWeight: 800, color: missing.has("counts") ? "var(--ink-400)" : c.c, ...mono }}>{missing.has("counts") ? "—" : Number(c.v).toLocaleString()}</div>
                 <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", fontWeight: 600, marginTop: 2 }}>{c.l}</div>
               </div>
             ))}
           </div>
           <div style={{ maxHeight: 280, overflowY: "auto", paddingBottom: 6 }}>
-            {data.recent.length === 0 ? (
+            {missing.has("recent") ? (
+              <div style={{ padding: "12px 18px" }}>{noData}</div>
+            ) : data.recent.length === 0 ? (
               <div style={{ padding: "12px 18px", fontSize: "var(--text-xs)", color: "var(--ink-400)" }}>Inga händelser senaste veckan.</div>
             ) : data.recent.map((e, i) => {
               const lab = EVENT_LABEL[e.event] || { t: e.event, c: "var(--ink-500)" };
@@ -177,7 +187,6 @@ function TrafficPanel() {
   // Paneler som backend inte kunde hämta (t.ex. PostHog-timeout). De visas som
   // "—", aldrig som 0 — en utebliven siffra är inte samma sak som noll trafik.
   const missing = new Set((data && data.unavailable) || []);
-  const noData = <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", fontStyle: "italic", padding: "3px 0" }}>Kunde inte hämtas</div>;
   return (
     <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, overflow: "hidden" }}>
       <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
