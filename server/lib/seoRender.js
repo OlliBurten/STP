@@ -188,6 +188,32 @@ export async function renderJobHtml(id) {
   const deadlineFmt = job.applicationDeadline
     ? new Date(job.applicationDeadline).toLocaleDateString("sv-SE", { day: "numeric", month: "long", year: "numeric" })
     : null;
+
+  // Intern länkgraf. Utan det här är annonssidan en återvändsgränd: crawlern
+  // kommer in via sitemap:en, hittar en mailto och en länk till sidan själv, och
+  // vänder. 447 aktiva annonser är den överlägset största sidtypen och den näst
+  // största landningssidan från Google — länkkraften rann in och stannade.
+  // Samma sjukdom som /jobb hade i juli; den fixen tog GSC 146 → 316 indexerade.
+  // Annonser försvinner dessutom (404 vid avpublicering), så en annons som inte
+  // länkar vidare tar med sig allt Google lagt på den.
+  const regionPage = job.region ? regionPages.find(r => r.name === job.region) : null;
+  const loc = String(job.location || "").toLowerCase();
+  const cityPage = cityPages.find(c => loc === c.name.toLowerCase())
+    || (loc ? cityPages.find(c => loc.includes(c.name.toLowerCase())) : null);
+  const related = job.region
+    ? (await activeJobsInRegion(job.region, 9)).filter(j => j.id !== job.id).slice(0, 8)
+    : [];
+  const navLinks = [
+    regionPage ? `<li><a href="${SITE}/lastbilsjobb/${regionPage.slug}">Alla lastbilsjobb i ${esc(regionPage.name)}</a></li>` : "",
+    cityPage ? `<li><a href="${SITE}/ce-jobb/${cityPage.slug}">CE-jobb i ${esc(cityPage.name)}</a></li>` : "",
+    `<li><a href="${SITE}/jobb">Alla lediga lastbilsjobb i Sverige</a></li>`,
+  ].filter(Boolean).join("");
+  const navHtml = `
+  <nav>
+    <h2>Fler lastbilsjobb</h2>
+    <ul>${navLinks}</ul>
+  </nav>
+  ${related.length ? `<section><h2>Liknande jobb i ${esc(job.region)}</h2>${jobsListHtml(related)}</section>` : ""}`;
   const body = `
 <main>
   <h1>${esc(job.title)}</h1>
@@ -209,6 +235,7 @@ export async function renderJobHtml(id) {
   ${niceToHave.length ? `<section><h2>Meriterande</h2><ul>${niceToHave.map(q => `<li>${esc(q)}</li>`).join("")}</ul></section>` : ""}
   ${isImported && (job.contactName || job.contactPhone) ? `<section><h2>Kontakt</h2><p>${esc([job.contactName, job.contactPhone].filter(Boolean).join(" · "))}</p></section>` : ""}
   ${isImported && job.applyEmail ? `<p><a href="mailto:${esc(job.applyEmail)}">Ansök via mejl</a></p>` : ""}
+  ${navHtml}
 </main>`;
 
   // article, inte website: en jobbannons är ett tidsbundet innehåll, inte en sajt.
@@ -259,7 +286,7 @@ async function activeJobsInRegion(region, take = 40) {
 }
 
 function jobsListHtml(jobs) {
-  if (!jobs.length) return "<p>Inga aktiva annonser just nu — skapa en profil så hör åkerier av sig.</p>";
+  if (!jobs.length) return "<p>Inga aktiva annonser just nu. Nya annonser hämtas löpande.</p>";
   return `<ul>${jobs.map(j => `<li><a href="${SITE}/jobb/${j.id}">${esc(j.title)}</a> – ${esc(j.company)}${j.location ? `, ${esc(j.location)}` : ""}</li>`).join("")}</ul>`;
 }
 
@@ -334,10 +361,10 @@ const STATIC_PAGES = {
   },
   "forare": {
     path: "forare", title: "För förare – Hitta lastbilsjobb | Transportplattformen",
-    description: "Hitta CE- och C-jobb i hela Sverige. Skapa en gratis förarprofil och bli kontaktad direkt av åkerier som söker chaufförer.",
+    description: "Hitta CE- och C-jobb i hela Sverige. Skapa en gratis förarprofil — dina behörigheter samlade, redo att följa med varje ansökan.",
     h1: "För förare", paras: [
       "Bläddra bland lediga lastbilsjobb i hela Sverige — fjärrkörning, distribution, lokalt och timjobb.",
-      "Skapa en profil med dina körkort (CE, C), YKB och ADR — så hör åkerier av sig direkt när de söker.",
+      "Skapa en profil med dina körkort (CE, C), YKB och ADR — så slipper du fylla i samma uppgifter för varje ansökan.",
     ],
   },
   "for-akerier": {
