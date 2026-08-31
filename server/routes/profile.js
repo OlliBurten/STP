@@ -5,7 +5,7 @@ import { authMiddleware, requireDriver, requireCompany, requireVerifiedEmail } f
 import { augmentCompanyMemberUser, formatClientAuthUser } from "./auth.js";
 import { generateCompanySuggestionsForUser } from "../lib/companyEnrichment.js";
 import { matchScore, driverYearsFromExperience } from "../utils/matchScore.js";
-import { isDriverMinimumProfileComplete } from "../utils/driverProfileRequirements.js";
+import { isDriverOnboardingComplete } from "../utils/driverProfileRequirements.js";
 import { isFullName, normalizeFullName, FULL_NAME_ERROR } from "../lib/nameUtils.js";
 import { notifyRecommendedDriverMatch } from "../lib/email.js";
 import { createNotification } from "../lib/notifications.js";
@@ -162,7 +162,7 @@ function formatProfileResponse(profile, user) {
     : typeof profile.experience === "string"
       ? parseExpSafe(profile.experience)
       : [];
-  const minimumProfileComplete = isDriverMinimumProfileComplete(
+  const minimumProfileComplete = isDriverOnboardingComplete(
     normalizeProfileForMinimumCheck(profile, user?.name || profile.email || "")
   );
   return {
@@ -450,7 +450,7 @@ profileRouter.put("/", async (req, res, next) => {
     });
     const effectiveName = body.name !== undefined ? String(body.name || "") : currentUser?.name || "";
     const normalizedProfile = normalizeProfileForMinimumCheck(profile, effectiveName);
-    const minimumComplete = isDriverMinimumProfileComplete(normalizedProfile);
+    const minimumComplete = isDriverOnboardingComplete(normalizedProfile);
     if (body.name !== undefined) {
       await prisma.user.update({
         where: { id: req.userId },

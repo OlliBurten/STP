@@ -1,5 +1,25 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// DELAD REGEL — MÅSTE VARA TECKEN FÖR TECKEN IDENTISK I BÅDA FILERNA:
+//   src/utils/driverProfileRequirements.js      (frontend)
+//   server/utils/driverProfileRequirements.js   (backend)
+// server/test/profileRulesInSync.test.js failer om de glider isär.
+//
+// Varför två filer: servern deployas med server/ som rot (/app), så src/ finns
+// inte där. Varför en delad regel: de HAR glidit isär, och det kostade. Filerna
+// exporterade samma namn med olika innebörd — frontend krävde fyra fält, servern
+// åtta — och eftersom servern äger `needsDriverOnboarding` medan OnboardingGate
+// läser frontend-kopian gick föraren igenom onboardingen, släpptes in, och
+// studsade tillbaka vid nästa inloggning. Se #59.
+//
+// TVÅ FRÅGOR, TVÅ NAMN. Sammanblandningen var själva felet:
+//   isDriverOnboardingComplete — "har föraren tagit sig igenom onboardingen?"
+//       Speglar exakt wizardens canNext. Styr needsDriverOnboarding och alla
+//       gates som annars kan loopa.
+//   isDriverProfileComplete — "är profilen ifylld nog att sluta tjata om?"
+//       Bredare. Driver påminnelsemejl och profilsidans checklista.
+// ─────────────────────────────────────────────────────────────────────────────
+
 const SUMMARY_MIN_LENGTH = 20;
-const SUMMARY_MAX_LENGTH = 600;
 
 function trimmed(value) {
   return String(value || "").trim();
@@ -64,11 +84,15 @@ export function getDriverMinimumMissingKeys(profile) {
     .map((item) => item.key);
 }
 
-export function isDriverMinimumProfileComplete(profile) {
-  // Måste matcha EXAKT vad onboarding-wizardens canNext tvingar fram (steg 1–3),
-  // annars studsar OnboardingGate tillbaka användaren i en loop.
-  // Onboarding kräver: segment, namn, körkort, region. Telefon/ort/tillgänglighet
-  // OCH presentation (summary) är "valfritt" i onboarding → gaten kräver dem INTE.
+/**
+ * Har föraren tagit sig igenom onboardingen?
+ *
+ * Speglar EXAKT vad wizardens canNext tvingar fram (namn, körkort, ort+avsikt).
+ * Telefon är frivilligt sedan 2026-08-31; ort, tillgänglighet och profiltext
+ * härleds av onboardingen och får inte krävas här — allt som krävs utöver vad
+ * onboardingen faktiskt frågar om blir en loop.
+ */
+export function isDriverOnboardingComplete(profile) {
   return (
     hasDriverMinimumName(profile) &&
     hasDriverMinimumSegment(profile) &&
@@ -76,6 +100,20 @@ export function isDriverMinimumProfileComplete(profile) {
     hasDriverMinimumRegion(profile)
   );
 }
+
+/**
+ * Är profilen ifylld nog att sluta tjata om? Bredare än onboardingen.
+ * Telefon räknas inte — det är frivilligt och ska inte utlösa påminnelser.
+ * Använd ALDRIG den här som gate för onboardingen; den kan aldrig uppfyllas
+ * av enbart onboardingen och skulle därför loopa.
+ */
+export function isDriverProfileComplete(profile) {
+  return getDriverMinimumMissingKeys(profile).every((key) => key === "phone");
+}
+
+// ───────────────────────────── SLUT DELAD REGEL ──────────────────────────────
+
+const SUMMARY_MAX_LENGTH = 600;
 
 // Returns { pct: number, colorClass: string, items: [{ key, label, ok }] } for use in admin UI.
 // user must include driverProfile (for drivers) or company fields (for companies).

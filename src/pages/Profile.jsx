@@ -33,7 +33,7 @@ import { segmentOptions } from "../data/segments";
 import { useToast } from "../context/ToastContext";
 import {
   getDriverMinimumChecklist,
-  isDriverMinimumProfileComplete,
+  isDriverOnboardingComplete,
   SUMMARY_MIN_LENGTH,
 } from "../utils/driverProfileRequirements";
 import { setHiddenReason } from "../api/profile";
@@ -759,7 +759,7 @@ export default function Profile() {
     return Math.round(checks.filter(Boolean).length / checks.length * 100);
   }, [current]);
 
-  if (hasApi && profileLoaded && profile.id === user?.id && !isAdmin && !isDriverMinimumProfileComplete(profile)) {
+  if (hasApi && profileLoaded && profile.id === user?.id && !isAdmin && !isDriverOnboardingComplete(profile)) {
     return <Navigate to="/onboarding/forare" replace />;
   }
   const displayScore = editing ? localScore : (backendScore != null ? backendScore : localScore);

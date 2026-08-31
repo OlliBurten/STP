@@ -1,7 +1,7 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useProfile } from "../context/ProfileContext";
-import { isDriverMinimumProfileComplete } from "../utils/driverProfileRequirements";
+import { isDriverOnboardingComplete } from "../utils/driverProfileRequirements";
 
 /** Returnerar true om användaren är inloggad men inte slutfört onboarding. */
 export function useOnboardingRequired() {
@@ -11,7 +11,7 @@ export function useOnboardingRequired() {
   if (!user) return false;
   if (isAdmin) return false;
   if (user.isDemo) return false; // demokonton landar direkt i den fyllda vyn
-  if (isDriver) return profileLoaded && !isDriverMinimumProfileComplete(profile);
+  if (isDriver) return profileLoaded && !isDriverOnboardingComplete(profile);
   if (isCompany) return false; // companies use dashboard empty state instead
   return false;
 }
@@ -54,7 +54,7 @@ export default function OnboardingGate({ children }) {
 
   if (isDriver) {
     if (!profileLoaded) return children;
-    if (!isDriverMinimumProfileComplete(profile) && path !== "/onboarding/forare" && pathNeedsOnboarding) {
+    if (!isDriverOnboardingComplete(profile) && path !== "/onboarding/forare" && pathNeedsOnboarding) {
       return <Navigate to="/onboarding/forare" state={{ from: path }} replace />;
     }
   }

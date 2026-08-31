@@ -14,7 +14,7 @@
 import { prisma } from "./prisma.js";
 import { sendEmail, notifyJobTips, notifyJobExpiring, notifyJobAutoArchived } from "./email.js";
 import { issueEmailVerification } from "../routes/auth.js";
-import { isDriverMinimumProfileComplete } from "../utils/driverProfileRequirements.js";
+import { isDriverOnboardingComplete, isDriverProfileComplete } from "../utils/driverProfileRequirements.js";
 import { companyProfileChecklist, mergeCompanyProfile } from "./companyProfileChecklist.js";
 
 const FRONTEND_URL = (process.env.FRONTEND_URL || "https://transportplattformen.se")
@@ -188,7 +188,9 @@ export async function runProfileReminders() {
 
     if (u.role === "DRIVER") {
       const check = normalizeForMinimumCheck(u.driverProfile, u.name);
-      incomplete = !isDriverMinimumProfileComplete(check);
+      // Bredare frågan: påminnelsen tjatar om ort, tillgänglighet och
+      // profiltext, som onboardingen inte kräver.
+      incomplete = !isDriverProfileComplete(check);
       if (!incomplete) continue;
       if (!u.driverProfile?.phone) missingItems.push("telefonnummer");
       if (!u.driverProfile?.region) missingItems.push("region");
@@ -386,7 +388,8 @@ export async function runJobMatchReminders() {
     if (!isEnabled(u, "jobMatch")) continue;
     const p = u.driverProfile;
     if (!p) continue;
-    if (!isDriverMinimumProfileComplete(normalizeForMinimumCheck(p, u.name))) continue;
+    // Matchmejlen behöver bara det onboardingen ger: körkort, region, segment.
+    if (!isDriverOnboardingComplete(normalizeForMinimumCheck(p, u.name))) continue;
 
     const sinceDate = u.lastMatchJobEmailAt || daysAgo(14);
     const driverRegions = [p.region, ...(p.regionsWilling || [])].filter(Boolean);
