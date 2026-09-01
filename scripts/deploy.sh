@@ -139,12 +139,21 @@ fi
 
 # ── 5. Verifiera ──────────────────────────────────────────────────────────────────
 ylw "→ Verifierar health (väntar in ev. omstart)..."
-# Railway-bygget tar oftast 2–5 minuter, men 2026-08-31 (#66) tog det längre än
-# takets 12 minuter: skriptet gav upp och larmade, och den nya instansen kom upp
-# strax därefter. Larmet var alltså korrekt formulerat men för otåligt — och ett
-# larm som ropar varg gör att man slutar lyssna. 150 × 8 s = 20 minuter.
-# Höj hellre taket än att sänka kravet: kontrollen (uptime måste ha räknats om)
-# är det enda som skiljer en riktig deploy från en gammal instans som svarar ok.
+# Railway-bygget tar oftast 2–5 minuter. Taket är 150 × 8 s = 20 minuter.
+#
+# Historik värd att inte upprepa: 2026-08-31 rapporterade grinden "backend kom
+# aldrig upp" två gånger (#66, #67) trots att instansen startat om precis som
+# den skulle. Jag trodde först att Railway var långsamt och HÖJDE taket. Fel
+# diagnos. Orsaken var att frontend-kollen nedan gjorde `continue` på varje varv
+# när bundlen var oförändrad — alltså vid varje deploy som inte rör frontend —
+# så backend-kollen längre ned aldrig kördes och NEW_UPTIME förblev tom. Ett
+# byte-identiskt bygge gav därmed ALLTID backend-larm. Nu kortsluts det fallet i
+# loopen i stället, och backend-kollen nås.
+#
+# Taket ligger kvar på 20 min: det kostar inget nu när identiska bygg avslutas
+# på ~1 minut, och ger marginal åt genuint långsamma Railway-bygg. Sänk aldrig
+# KRAVET i stället (uptime måste ha räknats om) — det är det enda som skiljer en
+# ny instans från en gammal som svarar "ok":true.
 TRIES=60
 [ -n "$PRE_UPTIME" ] && TRIES=150
 [ -n "$PRE_ASSET" ] && TRIES=150
@@ -152,6 +161,7 @@ TRIES=60
 OK=0
 NEW_UPTIME=""
 NEW_ASSET=""
+IDENTICAL_BUILD=0
 for i in $(seq 1 $TRIES); do
   H="$(curl -s --max-time 10 "$HEALTH_API" || true)"
   CODE="$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "$SITE" || echo 000)"
@@ -163,8 +173,17 @@ for i in $(seq 1 $TRIES); do
       A="$(site_asset "$i")"
       if [ -n "$A" ] && [ "$A" != "$PRE_ASSET" ]; then
         NEW_ASSET="$A"
+      # Byte-identiskt bygge: ändrar deployen inget i frontend blir hashen
+      # densamma och vi kan vänta hur länge som helst utan att den byts ut.
+      # Vercel skapar däremot alltid en ny produktionsdeploy — dyker en sådan
+      # upp har frontend nått fram, och det finns inget mer att invänta.
+      # Grace på 8 försök (~1 min) så en ÄKTA ny bundle hinner nå CDN:en först.
+      elif [ "$i" -ge 8 ] && [ -n "$PRE_VERCEL" ] && [ "$(vercel_top)" != "$PRE_VERCEL" ]; then
+        ylw "   → Bundlen är oförändrad men Vercel har en ny produktionsdeploy — bygget gav byte-identisk utdata."
+        NEW_ASSET="$PRE_ASSET"
+        IDENTICAL_BUILD=1
       else
-        [ $((i % 5)) -eq 0 ] && ylw "   …domänen serverar fortfarande ${PRE_ASSET#/assets/}, väntar."
+        [ $((i % 5)) -eq 0 ] && ylw "   …domänen serverar fortfarande ${PRE_ASSET#/assets/}, väntar. [$((i * 8 / 60)) av $((TRIES * 8 / 60)) min]"
         sleep 8; continue
       fi
     fi
@@ -204,7 +223,8 @@ fi
 
 if [ "$OK" = "1" ]; then
   MSG="✅ DEPLOY KLAR ($DEPLOY_SHA)."
-  [ -n "$NEW_ASSET" ] && MSG="$MSG Sajten serverar ${NEW_ASSET#/assets/}."
+  [ -n "$NEW_ASSET" ] && [ "$IDENTICAL_BUILD" = "1" ] && MSG="$MSG Frontend oförändrad (byte-identiskt bygge)."
+  [ -n "$NEW_ASSET" ] && [ "$IDENTICAL_BUILD" != "1" ] && MSG="$MSG Sajten serverar ${NEW_ASSET#/assets/}."
   [ -n "$NEW_UPTIME" ] && MSG="$MSG Ny backend-instans uppe (uptime ${NEW_UPTIME}s)."
   grn "$MSG Databas ok."
 else
