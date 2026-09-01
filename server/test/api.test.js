@@ -5,6 +5,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert";
 import request from "supertest";
+import { isCompanyRole } from "../middleware/auth.js";
 
 process.env.APP_LISTEN = "false";
 const { app } = await import("../server.js");
@@ -69,5 +70,13 @@ describe("X-Request-Id", () => {
   it("returns X-Request-Id header", async () => {
     const res = await request(app).get("/api/health");
     assert.ok(res.headers["x-request-id"]);
+  });
+});
+
+describe("company role helpers", () => {
+  it("treats recruiters as company users for protected company flows", () => {
+    assert.strictEqual(isCompanyRole("COMPANY"), true);
+    assert.strictEqual(isCompanyRole("RECRUITER"), true);
+    assert.strictEqual(isCompanyRole("DRIVER"), false);
   });
 });
