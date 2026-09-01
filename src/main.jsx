@@ -85,12 +85,21 @@ setTimeout(() => {
         // Skript injicerade av in-app-webbläsare (Facebook/Instagram på iOS
         // pratar med window.webkit.messageHandlers) och tillägg — inte vår kod.
         // FB är vår största trafikkanal, så det här bruset växer annars.
+        //
+        // "Java object is gone" är Android-motsvarigheten: sidan körs i en
+        // in-app-webbläsare och JS↔native-bryggan skräpsamlas när användaren
+        // stänger eller bakgrundar appen medan JS fortfarande kör. Vi har ingen
+        // Java-kod och inget messaging-lager — det finns inget hos oss att laga.
+        // (Larmmejlet 2026-08-31 tolkade det som ett minneshanteringsfel i vår
+        // kod och rekommenderade att granska "Java-objektreferenser". Fel spår.)
         const frames = event?.exception?.values?.[0]?.stacktrace?.frames || [];
         const lastFn = frames[frames.length - 1]?.function || "";
         if (
           msg.includes("webkit.messageHandlers") ||
           lastFn === "sendDataToNative" ||
-          msg.includes("@webkit-masked-url")
+          msg.includes("@webkit-masked-url") ||
+          msg.includes("Java object is gone") ||
+          msg.includes("Java bridge method")
         ) {
           return null;
         }
