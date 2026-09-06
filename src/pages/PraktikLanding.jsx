@@ -69,7 +69,7 @@ const WHY = [
   {
     icon: "→",
     title: "Direkt kontakt",
-    body: "Inga mellanhänder, inga bemanningsbolag. Elev och åkeri pratar direkt — och hittar varandra snabbare.",
+    body: "Elev och åkeri pratar direkt — och hittar varandra snabbare.",
   },
 ];
 

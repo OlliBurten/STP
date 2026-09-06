@@ -34,7 +34,7 @@ function useInView() {
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
 const FAQ_ITEMS = [
-  { q: "Är STP ett bemanningsbolag?", a: "Nej. STP är inte ett bemanningsbolag. Vi möjliggör direktkontakt mellan förare och åkerier — utan mellanhänder som tar en del av lönen." },
+  { q: "Är STP ett bemanningsbolag?", a: "Nej. STP är en jobbplattform. Du söker jobb direkt hos arbetsgivaren, och om du vill kan vi presentera dig för företag som söker din kompetens — alltid med ditt godkännande." },
   { q: "Kostar det något?", a: "STP är gratis — för förare kostar det aldrig något, och åkerier kommer igång och annonserar gratis." },
   { q: "Hur fungerar verifiering?", a: "Åkerier verifieras mot Bolagsverket. Förares körkort och certifikat anger föraren själv i profilen." },
   { q: "Vem äger min profil?", a: "Du äger din profil och styr vad som är synligt. Du kan stänga av synligheten, uppdatera uppgifter eller radera kontot när som helst." },
@@ -286,8 +286,8 @@ export default function Home() {
               Branschen förtjänar bättre.
             </h2>
             <p style={{ fontSize: "var(--text-xl)", lineHeight: 1.7, color: "var(--ink-500)", fontWeight: 500 }}>
-              Idag matchas förare och åkerier via Facebook-grupper, generiska
-              jobbsajter och bemanningsbolag som tar en del av lönen.
+              Idag matchas förare och åkerier via Facebook-grupper och generiska
+              jobbsajter. Ingen vet vem som söker, eller vem som är ledig.
               Det behöver inte vara så.
             </p>
           </div>
@@ -295,7 +295,7 @@ export default function Home() {
           <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: 18 }}>
             {[
               { no: "01", title: "Ingen struktur",          body: "Körkort och erfarenhet begravs i fritext och kommentarsfält." },
-              { no: "02", title: "Mellanhänder äter lönen", body: "Bemanningsbolag tar en stor del av lönen." },
+              { no: "02", title: "Ingen vet vem som är ledig", body: "Åkerier vet inte vilka förare som söker. Förare vet inte vilka åkerier som behöver dem." },
               { no: "03", title: "Bra kandidater försvinner", body: "En annons lever 24 timmar på sociala medier — rätt förare ser den aldrig." },
             ].map((p) => (
               <div key={p.no} style={{

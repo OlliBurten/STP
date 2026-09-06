@@ -16,7 +16,7 @@ const BENEFITS = [
   {
     icon: "🤝",
     title: "Ingen mellankompis",
-    desc: "Ingen bemanningsfirma, ingen avgift. Kontakten går direkt mellan dig och åkeriet. Du äger relationen.",
+    desc: "Ingen avgift för dig, någonsin. Kontakten går direkt mellan dig och arbetsgivaren. Du äger relationen.",
   },
 ];
 
@@ -60,7 +60,7 @@ export default function DriverAcquisitionLanding() {
             letterSpacing: "-0.02em", marginBottom: 20, color: "var(--ink-900)",
           }}>
             Hitta lastbilsjobb direkt —{" "}
-            <span style={{ color: "var(--green-text)" }}>utan bemanningsbolag</span>
+            <span style={{ color: "var(--green-text)" }}>hos arbetsgivaren</span>
           </h1>
           <p style={{ fontSize: "var(--text-xl)", color: "var(--ink-500)", lineHeight: 1.6, marginBottom: 36, maxWidth: 520 }}>
             Skapa en gratis förarprofil. Sök jobb som matchar dina behörigheter och erfarenhet.

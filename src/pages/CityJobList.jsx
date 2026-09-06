@@ -33,7 +33,7 @@ export default function CityJobList() {
     city
       ? {
           title: `CE-jobb ${city.name} 2025 — lediga lastbilsjobb`,
-          description: `${city.desc} Sök direkt mot verifierade åkerier — utan bemanningsbolag.`,
+          description: `${city.desc} Sök direkt hos arbetsgivaren.`,
           canonical: `/ce-jobb/${citySlug}`,
           type: "website",
         }
@@ -202,7 +202,7 @@ export default function CityJobList() {
               background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, padding: "22px",
             }}>
               <p style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)", marginBottom: 6 }}>
-                Sök utan bemanningsbolag
+                Sök direkt hos arbetsgivaren
               </p>
               <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", lineHeight: 1.6, marginBottom: 16 }}>
                 Skapa en förarprofil på STP — behörigheter och certifikat samlade på ett ställe. Alltid gratis för förare.

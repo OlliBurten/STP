@@ -10,8 +10,8 @@ const VALUES = [
     text: "Du bestämmer vad som är synligt och för vem. Ingen data säljs vidare och inga mellanhänder tjänar pengar på din rörlighet.",
   },
   {
-    title: "Direktkontakt utan bemanningsbolag",
-    text: "STP är inte ett bemanningsbolag. Vi möjliggör direktkontakt mellan förare och åkerier. Det är snabbare, billigare och mer ärligt för alla.",
+    title: "Direktkontakt med arbetsgivaren",
+    text: "STP är inte ett bemanningsbolag. Du söker direkt hos arbetsgivaren, eller blir presenterad för företag som söker din kompetens — alltid med ditt godkännande.",
   },
   {
     title: "Seriösa aktörer sticker ut",
@@ -55,7 +55,7 @@ export default function About() {
 
   return (
     <main style={{ background: "var(--paper)", minHeight: "100vh" }}>
-      <PageMeta title="Om STP – Sveriges Transportplattform" description="Lär dig mer om Sveriges Transportplattform – en direktkanal mellan yrkesförare och åkerier. Inga bemanningsbolag, full kontroll för föraren." canonical="/om-oss" />
+      <PageMeta title="Om STP – Sveriges Transportplattform" description="Lär dig mer om Sveriges Transportplattform – en direktkanal mellan yrkesförare och arbetsgivare, med full kontroll för föraren." canonical="/om-oss" />
 
       {/* Hero */}
       <div style={{ background: "var(--paper)", padding: isMobile ? "24px 0 36px" : "72px 0 48px" }}>

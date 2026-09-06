@@ -286,6 +286,12 @@ model DriverProfile {
   openToWork           Boolean  @default(false) // styr "SÖKER JOBB"-ringen på profilen
   availableForShifts   Boolean  @default(false) // "Tillgänglig för inhopp" (vikariepool)
   photoUrl             String?  @db.Text // profilbild (data-URL eller extern URL)
+  // Presentationssamtycke (2026-09-06): föraren har godkänt att STP presenterar
+  // profilen för arbetsgivare och bemanningsföretag som söker hens kompetens.
+  // Sätts via inloggad toggle eller engångslänken i samtyckesmejlet (token).
+  presentationConsentAt         DateTime?
+  presentationConsentDeclinedAt DateTime?
+  presentationConsentToken      String?  @unique
   slug                 String?  @unique // t.ex. "oliver-harburt-abc123" för publik URL
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt

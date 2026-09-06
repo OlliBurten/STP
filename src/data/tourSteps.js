@@ -62,7 +62,7 @@ export const DRIVER_TOUR_STEPS = [
   {
     title: "Välkommen till Sveriges Transportplattform! 👋",
     description:
-      "Plattformen där du hittar jobb som CE- eller C-förare och blir kontaktad direkt av åkerier — utan bemanning. En snabb rundtur på under en minut.",
+      "Plattformen där du hittar jobb som CE- eller C-förare och blir kontaktad direkt av arbetsgivare som söker din kompetens. En snabb rundtur på under en minut.",
   },
   {
     element: "[data-tour='jobs-link']",

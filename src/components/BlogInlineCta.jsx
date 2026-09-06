@@ -18,7 +18,7 @@ const VARIANTS = {
   company: {
     eyebrow: "För er som rekryterar",
     title: "Hitta rätt förare direkt",
-    body: "Registrera ert åkeri gratis och kontakta yrkesförare direkt — inga bemanningsbolag, inga avgifter.",
+    body: "Registrera ert företag gratis och kontakta yrkesförare direkt — inga avgifter.",
     buttonLabel: "Registrera åkeri",
     to: "/registrera",
   },

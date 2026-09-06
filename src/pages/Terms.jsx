@@ -5,11 +5,11 @@ import { usePageTitle } from "../hooks/usePageTitle";
 export const DOCS = {
   terms: {
     title: "Användarvillkor",
-    updated: "Senast uppdaterad 16 maj 2026",
+    updated: "Senast uppdaterad 6 september 2026",
     sections: [
       {
         id: "om", h: "1. Om tjänsten",
-        p: ['Sveriges Transportplattform ("STP", "vi", "tjänsten") är en digital plattform som kopplar yrkesförare och transportföretag i Sverige. Genom att registrera dig eller använda tjänsten godkänner du dessa villkor i sin helhet.', "STP är inte ett bemanningsföretag eller arbetsgivare. Vi tillhandahåller verktyg för att söka jobb, publicera annonser, hantera profiler och kommunicera — ansvaret för anställningsavtal och uppdrag ligger helt på parterna."],
+        p: ['Sveriges Transportplattform ("STP", "vi", "tjänsten") är en digital plattform som kopplar yrkesförare och transportföretag i Sverige. Genom att registrera dig eller använda tjänsten godkänner du dessa villkor i sin helhet.', "STP är inte ett bemanningsföretag eller arbetsgivare. Vi tillhandahåller verktyg för att söka jobb, publicera annonser, hantera profiler och kommunicera — ansvaret för anställningsavtal och uppdrag ligger helt på parterna.", "Om du som förare har gett ditt samtycke kan STP presentera din profil för arbetsgivare och bemanningsföretag som söker din kompetens. Du väljer själv om du vill bli presenterad, och kan när som helst ta tillbaka samtycket i din profil."],
       },
       {
         id: "konton", h: "2. Konton och registrering",
@@ -65,11 +65,11 @@ export const DOCS = {
       },
       {
         id: "andamal", h: "3. Ändamål och rättslig grund",
-        p: ["Tillhandahålla tjänsten (avtal) — matchning, meddelanden, profiler och jobbpublicering.", "Säkerhet och förbättring (berättigat intresse) — felövervakning, skydd mot missbruk och förbättring av plattformen.", "Kommunikation (avtal) — notiser om nya meddelanden, ansökningar och kontouppgifter. Vi skickar inte marknadsföringsmail utan ditt samtycke."],
+        p: ["Tillhandahålla tjänsten (avtal) — matchning, meddelanden, profiler och jobbpublicering.", "Säkerhet och förbättring (berättigat intresse) — felövervakning, skydd mot missbruk och förbättring av plattformen.", "Kommunikation (avtal) — notiser om nya meddelanden, ansökningar och kontouppgifter. Vi skickar inte marknadsföringsmail utan ditt samtycke.", "Presentation för arbetsgivare (samtycke) — att på din begäran skicka din profil till arbetsgivare och bemanningsföretag som söker din kompetens. Kan återkallas när som helst."],
       },
       {
         id: "delning", h: "4. Delning av uppgifter",
-        p: ["Din profildata delas enligt dina egna inställningar — t.ex. syns din förarprofil för företag bara om du aktiverat synligheten. Vi delar aldrig dina uppgifter med tredje part för marknadsföring.", "Din persondata lagras inom EU — databasen finns i Amsterdam (Nederländerna). Vi använder följande underleverantörer: Railway (hosting och databas, EU), Vercel (frontend), Resend (e-post), Sentry (felövervakning) och PostHog (produktanalys, EU — endast efter samtycke). Vi har ingått databehandlaravtal med samtliga i enlighet med GDPR artikel 28, och eventuell överföring utanför EU sker med giltiga skyddsmekanismer (standardavtalsklausuler/DPF)."],
+        p: ["Din profildata delas enligt dina egna inställningar — t.ex. syns din förarprofil för företag bara om du aktiverat synligheten. Har du gett ditt presentationssamtycke kan vi skicka din profil (namn, ort, behörigheter, erfarenhet och de kontaktuppgifter du valt att visa) till en arbetsgivare eller ett bemanningsföretag som söker just din kompetens. Vi säljer aldrig dina uppgifter, och vi lämnar dem aldrig vidare för någon annans marknadsföring.", "Din persondata lagras inom EU — databasen finns i Amsterdam (Nederländerna). Vi använder följande underleverantörer: Railway (hosting och databas, EU), Vercel (frontend), Resend (e-post), Sentry (felövervakning) och PostHog (produktanalys, EU — endast efter samtycke). Vi har ingått databehandlaravtal med samtliga i enlighet med GDPR artikel 28, och eventuell överföring utanför EU sker med giltiga skyddsmekanismer (standardavtalsklausuler/DPF)."],
       },
       {
         id: "lagring", h: "5. Lagring och radering",

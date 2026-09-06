@@ -56,7 +56,7 @@ const REGIONS = ["Stockholm", "Skåne", "Västra Götaland", "Halland", "Österg
 
 const PROBLEMS = [
   ["01", "Ingen struktur", "Körkort, erfarenhet och tillgänglighet begrävs i fritext och kommentarsfält. Ingen vet vem som är seriös."],
-  ["02", "Mellanhänder äter lönen", "Bemanningsbolag tar en stor del av lönen. Föraren förlorar. Åkeriet betalar mer. Ingen vinner."],
+  ["02", "Ingen vet vem som är ledig", "Åkerier vet inte vilka förare som söker. Förare vet inte vilka åkerier som behöver dem. Alla väntar."],
   ["03", "Bra kandidater försvinner", "En jobbannons lever 24 timmar på sociala medier. Rätt förare ser den aldrig. Åkeriet upprepar processen."],
 ];
 const FEATURES = [
@@ -74,7 +74,7 @@ const SEGMENTS = [
   ["star", "UTBILDNING", "Praktik", "Elever, nybörjare och de i start av karriären som söker seriösa aktörer."],
 ];
 const FAQS = [
-  ["Är STP ett bemanningsbolag?", "Nej. STP är inte ett bemanningsbolag. Vi möjliggör direktkontakt mellan förare och åkerier — utan mellanhänder som tar en del av lönen."],
+  ["Är STP ett bemanningsbolag?", "Nej. STP är en jobbplattform. Du söker jobb direkt hos arbetsgivaren, och om du vill kan vi presentera dig för företag som söker din kompetens — alltid med ditt godkännande."],
   ["Kostar det något?", "För förare är STP alltid gratis. Åkerier kommer igång gratis och betalar först för utökade funktioner när de vill nå fler förare."],
   // Svaret påstod tidigare dels dokumentgranskning (F-skattsedel, trafiktillstånd)
   // som inte finns — verifieringen ÄR uppslaget mot Bolagsverket — dels att
@@ -303,7 +303,7 @@ export default function MobileLanding() {
         <section style={{ background: "var(--paper)", padding: "54px 22px 56px", borderTop: "1px solid var(--line)" }}>
           <Eyebrow>Bakgrund</Eyebrow>
           <h2 style={{ fontSize: 36, fontWeight: 800, letterSpacing: -1.2, lineHeight: 1.05, margin: "18px 0 16px", textWrap: "balance" }}>Branschen förtjänar bättre.</h2>
-          <p style={{ fontSize: 17, lineHeight: 1.55, color: "var(--ink-500)", marginBottom: 36 }}>Idag matchas förare och åkerier via Facebook-grupper, generiska jobbsajter och bemanningsbolag som tar en del av lönen. Det behöver inte vara så.</p>
+          <p style={{ fontSize: 17, lineHeight: 1.55, color: "var(--ink-500)", marginBottom: 36 }}>Idag matchas förare och åkerier via Facebook-grupper och generiska jobbsajter. Ingen vet vem som söker, eller vem som är ledig. Det behöver inte vara så.</p>
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             {PROBLEMS.map(([n, t, d]) => (
               <div key={n} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 20, padding: "26px 22px", boxShadow: "var(--sh-sm)" }}>
