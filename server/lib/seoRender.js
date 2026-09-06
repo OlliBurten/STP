@@ -352,7 +352,7 @@ export async function renderRegionHtml(slug) {
 const STATIC_PAGES = {
   "": {
     path: "", title: "Sveriges Transportplattform – Jobb & rekrytering av lastbilsförare",
-    description: "Sveriges plattform för lastbilsförare och åkerier. Hitta CE- och C-jobb, eller rekrytera yrkesförare direkt — utan bemanningsavgift.",
+    description: "Sveriges plattform för lastbilsförare och åkerier. Hitta CE- och C-jobb, eller rekrytera yrkesförare direkt.",
     h1: "Sveriges Transportplattform", paras: [
       "Plattformen som kopplar samman lastbilsförare med åkerier i hela Sverige.",
       "Förare: bläddra bland lediga CE- och C-jobb, skapa en profil och bli kontaktad direkt av åkerier.",
@@ -369,10 +369,10 @@ const STATIC_PAGES = {
   },
   "for-akerier": {
     path: "for-akerier", title: "För åkerier – Rekrytera lastbilsförare | Transportplattformen",
-    description: "Rekrytera CE- och C-förare direkt, utan bemanningsavgift. Posta jobb gratis och nå yrkesförare i hela Sverige.",
+    description: "Rekrytera CE- och C-förare direkt. Posta jobb gratis och nå yrkesförare i hela Sverige.",
     h1: "För åkerier", paras: [
       "Posta lediga tjänster gratis och nå kvalificerade lastbilsförare i hela Sverige.",
-      "Kontakta förare direkt — ingen bemanning, ingen rekryteringsavgift.",
+      "Kontakta förare direkt i plattformen.",
     ],
   },
   "jobb": {
@@ -386,7 +386,7 @@ const STATIC_PAGES = {
     path: "om-oss", title: "Om oss – Sveriges Transportplattform",
     description: "Sveriges Transportplattform kopplar samman lastbilsförare och åkerier direkt — utan mellanhänder.",
     h1: "Om Sveriges Transportplattform", paras: [
-      "Vi bygger Sveriges marknadsplats för yrkesförare och åkerier — en direktkanal utan bemanningsbolag.",
+      "Vi bygger Sveriges marknadsplats för yrkesförare och åkerier — en direktkanal mellan förare och arbetsgivare.",
     ],
   },
   "kontakt": {

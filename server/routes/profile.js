@@ -181,6 +181,8 @@ function formatProfileResponse(profile, user) {
     secondarySegments: profile.secondarySegments,
     experienceTypes: profile.experienceTypes ?? [],
     visibleToCompanies: profile.visibleToCompanies,
+    presentationConsentAt: profile.presentationConsentAt ?? null,
+    presentationConsentDeclinedAt: profile.presentationConsentDeclinedAt ?? null,
     searchableByCompanies: Boolean(profile.visibleToCompanies && minimumProfileComplete),
     minimumProfileComplete,
     regionsWilling: profile.regionsWilling,
@@ -520,6 +522,50 @@ profileRouter.put("/", async (req, res, next) => {
 // "GOT_JOB_STP" leder vidare till att föraren pekar ut vilken ansökan det gällde,
 // vilket sätter Application.outcome — samma fält som mejllänken och prompten i
 // Mina ansökningar skriver till. En enda definition av "anställning via STP".
+// ─── Presentationssamtycke ─────────────────────────────────────────────────
+// Föraren godkänner (eller avböjer) att STP presenterar profilen för
+// arbetsgivare och bemanningsföretag som söker hens kompetens. Två vägar:
+// inloggad toggle, eller engångslänken i samtyckesmejlet (token, ingen login —
+// samma mönster som /uppfoljning). Bara ETT av fälten är satt åt gången.
+function consentData(consent) {
+  return consent
+    ? { presentationConsentAt: new Date(), presentationConsentDeclinedAt: null }
+    : { presentationConsentAt: null, presentationConsentDeclinedAt: new Date() };
+}
+
+profileRouter.post("/presentation-consent", authMiddleware, requireDriver, async (req, res, next) => {
+  try {
+    const consent = req.body?.consent === true;
+    const profile = await prisma.driverProfile.update({
+      where: { userId: req.userId },
+      data: consentData(consent),
+      select: { presentationConsentAt: true, presentationConsentDeclinedAt: true },
+    });
+    res.json({ ok: true, ...profile });
+  } catch (e) {
+    next(e);
+  }
+});
+
+profileRouter.post("/presentation-consent/token", async (req, res, next) => {
+  try {
+    const token = String(req.body?.token || "").trim();
+    const svar = req.body?.svar;
+    if (!token || token.length < 16) return res.status(400).json({ error: "Ogiltig länk" });
+    if (svar !== "ja" && svar !== "nej") return res.status(400).json({ error: "Ogiltigt svar" });
+    const existing = await prisma.driverProfile.findUnique({
+      where: { presentationConsentToken: token },
+      select: { userId: true, user: { select: { name: true } } },
+    });
+    if (!existing) return res.status(404).json({ error: "Ogiltig eller förbrukad länk" });
+    // Länken förbrukas INTE — föraren ska kunna ångra sig från samma mejl.
+    await prisma.driverProfile.update({ where: { userId: existing.userId }, data: consentData(svar === "ja") });
+    res.json({ ok: true, svar, name: existing.user?.name?.split(" ")[0] || null });
+  } catch (e) {
+    next(e);
+  }
+});
+
 profileRouter.post("/hidden-reason", authMiddleware, requireDriver, async (req, res, next) => {
   try {
     const { HIDDEN_REASONS } = await import("../lib/applicationFollowup.js");

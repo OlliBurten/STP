@@ -20,7 +20,7 @@ export default function RegionJobList() {
     region
       ? {
           title: `Lastbilsjobb i ${region.name} — lediga tjänster 2025`,
-          description: `${jobs.length > 0 ? `${jobs.length} lediga lastbilsjobb i ${region.name}.` : `Lediga lastbilsjobb i ${region.name}.`} CE, C, YKB — sök direkt utan bemanningsbolag.`,
+          description: `${jobs.length > 0 ? `${jobs.length} lediga lastbilsjobb i ${region.name}.` : `Lediga lastbilsjobb i ${region.name}.`} CE, C, YKB — sök direkt hos arbetsgivaren.`,
           canonical: `/lastbilsjobb/${regionSlug}`,
           type: "website",
         }
@@ -110,7 +110,7 @@ export default function RegionJobList() {
           <div style={{ flex: 1 }}>
             <h3 style={{ fontSize: "var(--text-lg)", fontWeight: 700, color: "var(--ink-900)", margin: "0 0 4px" }}>Åkeri i {region.name}?</h3>
             <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", margin: 0 }}>
-              Nå chaufförer som aktivt söker jobb i din region — utan bemanningsbolag.
+              Nå chaufförer som aktivt söker jobb i din region.
             </p>
           </div>
           <Link
