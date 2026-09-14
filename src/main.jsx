@@ -92,14 +92,30 @@ setTimeout(() => {
         // Java-kod och inget messaging-lager — det finns inget hos oss att laga.
         // (Larmmejlet 2026-08-31 tolkade det som ett minneshanteringsfel i vår
         // kod och rekommenderade att granska "Java-objektreferenser". Fel spår.)
+        //
+        // STP-FRONTEND-Y läckte igenom trots filtret ovan: window.onerror ger
+        // inget riktigt Error-objekt för fel som kastas i det injicerade
+        // iabjs://-skriptet, så hint.originalException.message var tom — och
+        // filtret läste bara SISTA framet med strikt likhet, som råkade peka
+        // fel håll för den här eventordningen. event.exception.values[0].value
+        // är meddelandet Sentry faktiskt sparat (alltid populerat), och
+        // iabjs://-schemat i filnamnet identifierar bryggkoden oavsett
+        // frame-ordning — mer robust än att lita på hint eller ett enskilt index.
+        const eventMsg = event?.exception?.values?.[0]?.value || "";
         const frames = event?.exception?.values?.[0]?.stacktrace?.frames || [];
-        const lastFn = frames[frames.length - 1]?.function || "";
+        const fromNativeBridge = frames.some(
+          (f) => f?.function === "sendDataToNative" || f?.filename?.startsWith("iabjs://")
+        );
         if (
           msg.includes("webkit.messageHandlers") ||
-          lastFn === "sendDataToNative" ||
+          eventMsg.includes("webkit.messageHandlers") ||
+          fromNativeBridge ||
           msg.includes("@webkit-masked-url") ||
+          eventMsg.includes("@webkit-masked-url") ||
           msg.includes("Java object is gone") ||
-          msg.includes("Java bridge method")
+          eventMsg.includes("Java object is gone") ||
+          msg.includes("Java bridge method") ||
+          eventMsg.includes("Java bridge method")
         ) {
           return null;
         }
