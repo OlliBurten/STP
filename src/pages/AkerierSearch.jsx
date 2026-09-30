@@ -120,7 +120,7 @@ function CompanyGridCard({ c, user, saved, onToggleSave }) {
         <Stars rating={c.rating} size={11} />
         <span style={{ fontSize: "var(--text-xs)", color: "var(--ink-700)", fontWeight: 600 }}>{c.rating?.toFixed(1) ?? "—"}</span>
         {c.reviewCount > 0 && <span style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)" }}>({c.reviewCount})</span>}
-        {c.isVerified && (
+        {c.verified && (
           <span style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 4 }}>
             <Icon n="check" s={11} c="var(--success)" />
             <span style={{ fontSize: "var(--text-2xs)", color: "var(--success)", fontWeight: 700 }}>Verifierat</span>
@@ -130,7 +130,7 @@ function CompanyGridCard({ c, user, saved, onToggleSave }) {
 
       {/* Segment pills + employees */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 16 }}>
-        {c.hasCollectiveAgreement && (
+        {c.kollektivavtal && (
           <span style={{ padding: "3px 9px", borderRadius: 99, background: "var(--info-tint)", border: "1px solid var(--info)", fontSize: "var(--text-2xs)", fontWeight: 700, color: "var(--info)" }}>Kollektivavtal</span>
         )}
         {c.bransch?.slice(0, 2).map((b) => (
@@ -209,7 +209,7 @@ function CompanyListRow({ c, user, saved, onToggleSave }) {
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3, flexWrap: "wrap" }}>
           <span style={{ fontSize: "var(--text-md)", fontWeight: 800, color: "var(--ink-900)" }}>{c.name}</span>
-          {c.isVerified && <Icon n="check" s={13} c="var(--success)" />}
+          {c.verified && <Icon n="check" s={13} c="var(--success)" />}
           {c.acceptsPraktik && (
             <span style={{ padding: "2px 7px", borderRadius: 99, background: "var(--green-tint)", border: "1px solid var(--green-tint-2)", fontSize: "var(--text-2xs)", fontWeight: 700, color: "var(--green-text)" }}>🎓 Praktik</span>
           )}
@@ -367,9 +367,9 @@ export default function AkerierSearch() {
   if (isMobile) {
     const mobileFilters = [
       { v: "all",      l: "Alla",          c: list.length },
-      { v: "verified", l: "Verifierade",   c: list.filter((c) => c.isVerified).length },
+      { v: "verified", l: "Verifierade",   c: list.filter((c) => c.verified).length },
       { v: "hiring",   l: "Anställer",     c: list.filter((c) => c.activeJobCount > 0).length },
-      { v: "ka",       l: "Kollektivavtal", c: list.filter((c) => c.hasCollectiveAgreement).length },
+      { v: "ka",       l: "Kollektivavtal", c: list.filter((c) => c.kollektivavtal).length },
     ];
 
     const mobileListed = (() => {
@@ -379,9 +379,9 @@ export default function AkerierSearch() {
             c.location?.toLowerCase().includes(search.toLowerCase())
           )
         : list;
-      if (mobileFilter === "verified") return base.filter((c) => c.isVerified);
+      if (mobileFilter === "verified") return base.filter((c) => c.verified);
       if (mobileFilter === "hiring")   return base.filter((c) => c.activeJobCount > 0);
-      if (mobileFilter === "ka")       return base.filter((c) => c.hasCollectiveAgreement);
+      if (mobileFilter === "ka")       return base.filter((c) => c.kollektivavtal);
       return base;
     })();
 
@@ -448,7 +448,7 @@ export default function AkerierSearch() {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 3 }}>
                       <span style={{ fontSize: "var(--text-base)", fontWeight: 800, color: "var(--ink-900)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>{company.name}</span>
-                      {company.isVerified && <svg viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" width="12" height="12"><polyline points="20 6 9 17 4 12"/></svg>}
+                      {company.verified && <svg viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" width="12" height="12"><polyline points="20 6 9 17 4 12"/></svg>}
                     </div>
                     <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", display: "flex", alignItems: "center", gap: 4 }}>
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="10" height="10"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -478,7 +478,7 @@ export default function AkerierSearch() {
 
                 {/* Tags */}
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
-                  {company.hasCollectiveAgreement && (
+                  {company.kollektivavtal && (
                     <span style={{ padding: "3px 8px", borderRadius: 99, background: "var(--info-tint)", border: "1px solid var(--info)", fontSize: "var(--text-2xs)", fontWeight: 700, color: "var(--info)" }}>Kollektivavtal</span>
                   )}
                   {company.bransch?.slice(0, 2).map((b) => (
