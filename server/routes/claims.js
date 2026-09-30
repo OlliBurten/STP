@@ -7,6 +7,7 @@
 
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
+import { syncOwnerCompanyStatus } from "../lib/organizations.js";
 import { authMiddleware, requireCompany } from "../middleware/auth.js";
 
 export const claimsRouter = Router();
@@ -136,6 +137,7 @@ claimsRouter.post("/:token/activate", authMiddleware, requireCompany, async (req
       create: { userId, organizationId: org.id, role: "OWNER" },
       update: { role: "OWNER" },
     });
+    await syncOwnerCompanyStatus(userId);
 
     // Claim all AGGREGATED jobs for this org number
     const updateResult = await prisma.job.updateMany({

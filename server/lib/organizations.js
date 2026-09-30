@@ -78,3 +78,25 @@ export async function getUserOrganizations(userId) {
     role: r.role,
   }));
 }
+
+/**
+ * Lyft ägarens user.companyStatus till VERIFIED när hen äger en verifierad organisation.
+ *
+ * Organisationen är sanningskällan för åkeristatus, men user.companyStatus läses
+ * fortfarande rått på flera ställen (adminens statusfilter, nyckeltal, PI-agenten).
+ * Admin-verifieringen synkar redan fältet; att lägga till ett åkeri som
+ * Bolagsverket auto-verifierar gjorde det inte — ägaren stod kvar som PENDING.
+ * Sänker aldrig: en ny PENDING-organisation tar inte bort en befintlig verifiering.
+ * @param {string} userId
+ */
+export async function syncOwnerCompanyStatus(userId) {
+  const ownsVerified = await prisma.userOrganization.findFirst({
+    where: { userId, role: "OWNER", organization: { status: "VERIFIED" } },
+    select: { id: true },
+  });
+  if (!ownsVerified) return;
+  await prisma.user.updateMany({
+    where: { id: userId, companyStatus: { not: "VERIFIED" } },
+    data: { companyStatus: "VERIFIED" },
+  });
+}

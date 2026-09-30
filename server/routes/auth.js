@@ -3,6 +3,7 @@ import crypto from "node:crypto";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { prisma } from "../lib/prisma.js";
+import { syncOwnerCompanyStatus } from "../lib/organizations.js";
 import { normalizeFullName } from "../lib/nameUtils.js";
 import { sendEmail, notifyAdminNewRegistration, sendWelcomeEmail, notifyPasswordChanged } from "../lib/email.js";
 import { validateBody } from "../middleware/validate.js";
@@ -338,6 +339,7 @@ authRouter.post("/register", validateBody(registerSchema), async (req, res, next
             create: { userId: user.id, organizationId: org.id, role: "OWNER" },
             update: { role: "OWNER" },
           });
+          await syncOwnerCompanyStatus(user.id);
           const updated = await prisma.job.updateMany({
             where: { organizationNumber: orgNumber, source: "AGGREGATED", status: { not: "REMOVED" } },
             data: { claimed: true, organizationId: org.id },

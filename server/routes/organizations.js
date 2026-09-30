@@ -7,7 +7,7 @@ import { prisma } from "../lib/prisma.js";
 import { authMiddleware, requireCompany } from "../middleware/auth.js";
 import { validateBody } from "../middleware/validate.js";
 import { createOrganizationSchema } from "../lib/validators.js";
-import { getUserOrganizations, resolveEffectiveOrganization } from "../lib/organizations.js";
+import { getUserOrganizations, resolveEffectiveOrganization, syncOwnerCompanyStatus } from "../lib/organizations.js";
 import { lookupBolagsverket } from "../lib/bolagsverket.js";
 
 export const organizationsRouter = Router();
@@ -95,6 +95,7 @@ organizationsRouter.post("/", validateBody(createOrganizationSchema), async (req
       where: { id: req.userId },
       data: { needsRecruiterOnboarding: false },
     });
+    await syncOwnerCompanyStatus(req.userId);
 
     res.status(201).json({
       id: org.id,
