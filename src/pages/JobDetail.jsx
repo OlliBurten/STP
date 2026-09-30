@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { track } from "../utils/posthog.js";
@@ -24,6 +24,8 @@ import { isJobOlderThan30Days, formatJobTitle, salaryLabel, SALARY_UNKNOWN } fro
 import { HeartFilledIcon, HeartOutlineIcon, LocationIcon, CheckIcon, WarningIcon, StarFilledIcon } from "../components/Icons";
 import Breadcrumbs from "../components/Breadcrumbs";
 import LoadingBlock from "../components/LoadingBlock";
+import JobAlertSignup from "../components/JobAlertSignup";
+import JobAlertPrompt from "../components/JobAlertPrompt";
 import { useToast } from "../context/ToastContext";
 import { useConfirm } from "../components/ConfirmDialog";
 
@@ -324,6 +326,26 @@ export default function JobDetail() {
     () => isCompany ? getMatchingDriversForJob(job, driverList, 1, 5) : [],
     [isCompany, job, driverList]
   );
+
+  // Gäst som klickat "Ansök" (ny flik/mejlapp) får ett jobbevakningsblad när hen
+  // kommer tillbaka till annonsen — en gång per session.
+  const awaitingReturnRef = useRef(false);
+  const [alertPromptOpen, setAlertPromptOpen] = useState(false);
+  useEffect(() => {
+    if (user) return;
+    const onVisible = () => {
+      if (document.visibilityState !== "visible" || !awaitingReturnRef.current) return;
+      awaitingReturnRef.current = false;
+      try {
+        if (sessionStorage.getItem("stp-alert-prompt-shown")) return;
+        sessionStorage.setItem("stp-alert-prompt-shown", "1");
+      } catch { /* privat läge — visa ändå */ }
+      setAlertPromptOpen(true);
+      track("job_alert_prompt_shown", { source: "after_apply" });
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, [user]);
 
   // ── Handlers ───────────────────────────────────────────────────────────────
   const handleMarkSelected = async (conversationId) => {
@@ -626,6 +648,7 @@ export default function JobDetail() {
     } else if ((isEmployerChannel || applyEmailChannel) && !user) {
       // Gäst: anonym lead → claim-mejl till arbetsgivaren
       registerGuestApplyClick(job.id);
+      awaitingReturnRef.current = true;
     }
   };
 
@@ -820,6 +843,9 @@ export default function JobDetail() {
                 </div>
               </div>
             )}
+            {!user && (
+              <JobAlertSignup region={job.region || null} licenses={job.license || []} source="job_page" style={{ marginTop: 24 }} />
+            )}
             <div style={{ marginTop: 24 }}>
               <h2 style={mSecH}>Om företaget</h2>
               {job.companyDescriptionShort
@@ -878,6 +904,9 @@ export default function JobDetail() {
             >Logga in för att ansöka</Link>
           )}
         </div>
+        {alertPromptOpen && (
+          <JobAlertPrompt region={job.region || null} licenses={job.license || []} onClose={() => setAlertPromptOpen(false)} />
+        )}
       </div>
     );
   }
@@ -1090,6 +1119,10 @@ export default function JobDetail() {
               )
             ) : null}
           </div>
+
+          {!user && (
+            <JobAlertSignup region={job.region || null} licenses={job.license || []} source="job_page" style={{ marginTop: 18 }} />
+          )}
 
           {/* ── Stats (company owner only) ── */}
           {isMyJob && jobStats && (
@@ -1362,6 +1395,9 @@ export default function JobDetail() {
 
       {showApplyModal && (
         <ApplyModal job={job} onClose={() => setShowApplyModal(false)} onSuccess={() => setShowApplyModal(false)} />
+      )}
+      {alertPromptOpen && (
+        <JobAlertPrompt region={job.region || null} licenses={job.license || []} onClose={() => setAlertPromptOpen(false)} />
       )}
     </main>
   );

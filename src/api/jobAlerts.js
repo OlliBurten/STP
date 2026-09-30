@@ -1,9 +1,9 @@
 import { apiGet, apiPost } from "./client.js";
 import { track } from "../utils/posthog.js";
 
-export async function createJobAlert({ email, region = null, licenses = [] }) {
+export async function createJobAlert({ email, region = null, licenses = [], source = null }) {
   const result = await apiPost("/api/job-alerts", { email, region: region || null, licenses });
-  track("job_alert_created", { region: region || null });
+  track("job_alert_created", { region: region || null, source });
   return result;
 }
 
