@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { createJobAlert } from "../api/jobAlerts";
 
-export default function JobAlertSignup({ region = null, licenses = [], style }) {
+// `source` skiljer placeringarna åt i PostHog (t.ex. job_page, after_apply).
+export default function JobAlertSignup({ region = null, licenses = [], source = null, heading = null, subheading, onDone, style }) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState("idle"); // idle | sending | done | error
 
@@ -12,8 +13,9 @@ export default function JobAlertSignup({ region = null, licenses = [], style }) 
     if (!email.trim() || status === "sending") return;
     setStatus("sending");
     try {
-      await createJobAlert({ email, region, licenses });
+      await createJobAlert({ email, region, licenses, source });
       setStatus("done");
+      onDone?.();
     } catch {
       setStatus("error");
     }
@@ -37,12 +39,14 @@ export default function JobAlertSignup({ region = null, licenses = [], style }) 
 
   return (
     <div style={card}>
-      <h3 style={{ fontSize: "var(--text-lg)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 4 }}>
-        Bevaka nya {licenses.length ? `${licenses.join("/")}-jobb` : "jobb"}{region ? ` i ${region}` : ""}
+      <h3 style={{ fontSize: "var(--text-lg)", fontWeight: 800, color: "var(--ink-900)", marginBottom: subheading === null ? 14 : 4 }}>
+        {heading || <>Bevaka nya {licenses.length ? `${licenses.join("/")}-jobb` : "jobb"}{region ? ` i ${region}` : ""}</>}
       </h3>
-      <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-600)", lineHeight: 1.6, marginBottom: 14 }}>
-        Få ett mejl när nya lastbilsjobb läggs upp — inget konto behövs.
-      </p>
+      {subheading !== null && (
+        <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-600)", lineHeight: 1.6, marginBottom: 14 }}>
+          {subheading ?? "Få ett mejl när nya lastbilsjobb läggs upp — inget konto behövs."}
+        </p>
+      )}
       <form onSubmit={submit} style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         <input
           type="email"
