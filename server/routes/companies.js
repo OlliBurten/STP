@@ -8,6 +8,7 @@ import {
   inviteCreateSchema,
 } from "../lib/validators.js";
 import { createInvite, listInvites, revokeInvite, resolveCompanyOwner } from "../lib/invites.js";
+import { excludeTestAndDemoAccountsWhere } from "../lib/testAccounts.js";
 export const companiesRouter = Router();
 
 function resolveSegment(segment, employment) {
@@ -15,6 +16,32 @@ function resolveSegment(segment, employment) {
   if (segment === "FLEX") return "FLEX";
   if (employment === "vikariat" || employment === "tim") return "FLEX";
   return "FULLTIME";
+}
+
+const ORG_PROFILE_SELECT = {
+  name: true,
+  description: true,
+  website: true,
+  location: true,
+  region: true,
+  bransch: true,
+  status: true,
+  fleet: true,
+  employeeCount: true,
+  foundedYear: true,
+  acceptsPraktik: true,
+};
+
+/** Legacy-åkerier har profilen på User, org-baserade på Organization — User vinner när den är ifylld. */
+function companyProfileFields(user, org) {
+  return {
+    name: user.companyName || org?.name || user.name || "",
+    description: user.companyDescription || org?.description || "",
+    website: user.companyWebsite || org?.website || "",
+    location: user.companyLocation || org?.location || "",
+    region: user.companyRegion || org?.region || "",
+    bransch: user.companyBransch?.length ? user.companyBransch : (org?.bransch ?? []),
+  };
 }
 
 /** Public: sök åkerier på bransch och/eller region (gula sidorna). */
@@ -28,40 +55,61 @@ companiesRouter.get("/search", optionalAuthMiddleware, validateQuery(companiesSe
     const praktik = req.query.praktik === "true";
 
     // ── Minimum synlighetskrav ────────────────────────────────────────────────
-    // Ett åkeri visas i söken om det är verifierat OCH har fyllt i:
-    //   • companyName   — företagsnamn
-    //   • companyDescription — minst 30 tecken om sig själva
-    //   • companyRegion — var de verkar
-    // Detta skyddar mot test/tomma konton och gör databasen meningsfull.
-    // ── Minimum synlighetskrav ────────────────────────────────────────────────
+    // Ett åkeri visas i söken om det är verifierat OCH har namn, beskrivning och
+    // en plats. Detta skyddar mot test/tomma konton och gör databasen meningsfull.
+    //
+    // Två sorters åkerier: legacy har uppgifterna på User; alla nya har dem på
+    // sin Organization (User-fälten är tomma). Söken filtrerade bara på User, så
+    // inget åkeri som registrerat sig via en organisation kunde någonsin synas.
+    // Organisationens plats får vara region ELLER ort — Bolagsverket ger ort men
+    // sällan län, och "var de verkar" är uppfyllt av båda.
     // gt: "" filtrerar bort både null och tomma strängar (PostgreSQL: NULL > '' = NULL = falsy)
-    const where = {
-      role: "COMPANY",
+    const legacyVisible = {
       companyStatus: "VERIFIED",
       companyName: { gt: "" },
       companyRegion: { gt: "" },
       companyDescription: { gt: "" },
     };
+    const orgVisible = {
+      userOrganizations: {
+        some: {
+          role: "OWNER",
+          organization: {
+            status: "VERIFIED",
+            name: { gt: "" },
+            description: { gt: "" },
+            OR: [{ region: { gt: "" } }, { location: { gt: "" } }],
+          },
+        },
+      },
+    };
+    const ownsOrgWith = (organization) => ({
+      userOrganizations: { some: { role: "OWNER", organization } },
+    });
+
+    const and = [{ OR: [legacyVisible, orgVisible] }, excludeTestAndDemoAccountsWhere];
     if (bransch) {
-      where.companyBransch = { has: bransch };
+      and.push({ OR: [{ companyBransch: { has: bransch } }, ownsOrgWith({ bransch: { has: bransch } })] });
     }
     if (region) {
-      where.OR = [
-        { companyRegion: region },
-        { jobs: { some: { status: "ACTIVE", region } } },
-      ];
+      and.push({
+        OR: [
+          { companyRegion: region },
+          ownsOrgWith({ region }),
+          { jobs: { some: { status: "ACTIVE", region } } },
+        ],
+      });
     }
     if (segment === "INTERNSHIP" || praktik) {
-      where.AND = [
-        {
-          OR: [
-            { companySegmentDefaults: { has: "INTERNSHIP" } },
-            { jobs: { some: { status: "ACTIVE", segment: "INTERNSHIP" } } },
-            { userOrganizations: { some: { organization: { acceptsPraktik: true } } } },
-          ],
-        },
-      ];
+      and.push({
+        OR: [
+          { companySegmentDefaults: { has: "INTERNSHIP" } },
+          { jobs: { some: { status: "ACTIVE", segment: "INTERNSHIP" } } },
+          { userOrganizations: { some: { organization: { acceptsPraktik: true } } } },
+        ],
+      });
     }
+    const where = { role: "COMPANY", AND: and };
 
     const companies = await prisma.user.findMany({
       where,
@@ -79,14 +127,9 @@ companiesRouter.get("/search", optionalAuthMiddleware, validateQuery(companiesSe
         userOrganizations: {
           take: 1,
           where: { role: "OWNER" },
-          select: {
-            organization: {
-              select: { fleet: true, employeeCount: true, foundedYear: true, acceptsPraktik: true },
-            },
-          },
+          select: { organization: { select: ORG_PROFILE_SELECT } },
         },
       },
-      orderBy: { companyName: "asc" },
     });
 
     const ids = companies.map((c) => c.id);
@@ -99,26 +142,29 @@ companiesRouter.get("/search", optionalAuthMiddleware, validateQuery(companiesSe
       : [];
     const countByUserId = new Map(jobCounts.map((j) => [j.userId, j._count._all]));
 
-    const list = companies.map((c) => {
-      const org = c.userOrganizations?.[0]?.organization ?? null;
-      return {
-        id: c.id,
-        name: c.companyName || c.name,
-        description: (c.companyDescription || "").slice(0, 200),
-        location: c.companyLocation || "",
-        region: c.companyRegion || "",
-        website: c.companyWebsite || "",
-        bransch: c.companyBransch || [],
-        activeJobCount: countByUserId.get(c.id) || 0,
-        fleet: org?.fleet ?? null,
-        employeeCount: org?.employeeCount ?? null,
-        foundedYear: org?.foundedYear ?? null,
-        acceptsPraktik: org?.acceptsPraktik ?? false,
-        contactPerson: isAuthenticated ? (c.name || null) : null,
-        contactEmail: isAuthenticated ? (c.companyContactEmail || null) : null,
-        contactPhone: isAuthenticated ? (c.companyContactPhone || null) : null,
-      };
-    });
+    const list = companies
+      .map((c) => {
+        const org = c.userOrganizations?.[0]?.organization ?? null;
+        const profile = companyProfileFields(c, org);
+        return {
+          id: c.id,
+          name: profile.name,
+          description: profile.description.slice(0, 200),
+          location: profile.location,
+          region: profile.region,
+          website: profile.website,
+          bransch: profile.bransch,
+          activeJobCount: countByUserId.get(c.id) || 0,
+          fleet: org?.fleet ?? null,
+          employeeCount: org?.employeeCount ?? null,
+          foundedYear: org?.foundedYear ?? null,
+          acceptsPraktik: org?.acceptsPraktik ?? false,
+          contactPerson: isAuthenticated ? (c.name || null) : null,
+          contactEmail: isAuthenticated ? (c.companyContactEmail || null) : null,
+          contactPhone: isAuthenticated ? (c.companyContactPhone || null) : null,
+        };
+      })
+      .sort((a, b) => a.name.localeCompare(b.name, "sv"));
     res.json(list);
   } catch (e) {
     next(e);
@@ -151,11 +197,7 @@ companiesRouter.get("/:id/public", optionalAuthMiddleware, async (req, res, next
         userOrganizations: {
           take: 1,
           where: { role: "OWNER" },
-          select: {
-            organization: {
-              select: { fleet: true, employeeCount: true, foundedYear: true, acceptsPraktik: true },
-            },
-          },
+          select: { organization: { select: ORG_PROFILE_SELECT } },
         },
       },
     });
@@ -178,7 +220,6 @@ companiesRouter.get("/:id/public", optionalAuthMiddleware, async (req, res, next
         salaryMin: true,
         salaryMax: true,
         license: true,
-        kollektivavtal: true,
       },
     });
 
@@ -189,15 +230,16 @@ companiesRouter.get("/:id/public", optionalAuthMiddleware, async (req, res, next
     });
 
     const org = company.userOrganizations?.[0]?.organization ?? null;
+    const profile = companyProfileFields(company, org);
     res.json({
       id: company.id,
-      name: company.companyName || company.name,
-      description: company.companyDescription || "",
-      website: company.companyWebsite || "",
-      location: company.companyLocation || "",
-      bransch: company.companyBransch || [],
-      region: company.companyRegion || "",
-      verified: company.companyStatus === "VERIFIED",
+      name: profile.name,
+      description: profile.description,
+      website: profile.website,
+      location: profile.location,
+      bransch: profile.bransch,
+      region: profile.region,
+      verified: (org?.status ?? company.companyStatus) === "VERIFIED",
       fSkattsedel: company.fSkattsedel || false,
       kollektivavtal: jobs.some(j => j.kollektivavtal === true),
       industryOrgMember: company.industryOrgMember || false,
