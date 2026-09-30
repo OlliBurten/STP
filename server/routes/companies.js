@@ -141,6 +141,15 @@ companiesRouter.get("/search", optionalAuthMiddleware, validateQuery(companiesSe
         })
       : [];
     const countByUserId = new Map(jobCounts.map((j) => [j.userId, j._count._all]));
+    // Samma härledning som den publika profilen: kollektivavtal = någon aktiv annons har det.
+    const withAgreement = ids.length
+      ? await prisma.job.findMany({
+          where: { userId: { in: ids }, status: "ACTIVE", kollektivavtal: true },
+          distinct: ["userId"],
+          select: { userId: true },
+        })
+      : [];
+    const agreementUserIds = new Set(withAgreement.map((j) => j.userId));
 
     const list = companies
       .map((c) => {
@@ -155,6 +164,9 @@ companiesRouter.get("/search", optionalAuthMiddleware, validateQuery(companiesSe
           website: profile.website,
           bransch: profile.bransch,
           activeJobCount: countByUserId.get(c.id) || 0,
+          // Synlighetskravet släpper bara igenom verifierade åkerier.
+          verified: true,
+          kollektivavtal: agreementUserIds.has(c.id),
           fleet: org?.fleet ?? null,
           employeeCount: org?.employeeCount ?? null,
           foundedYear: org?.foundedYear ?? null,

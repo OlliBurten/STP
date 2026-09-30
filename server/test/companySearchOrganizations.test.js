@@ -79,6 +79,9 @@ describe("GET /api/companies/search", () => {
     assert.strictEqual(c.name, `Region Åkeri ${TAG}`);
     assert.strictEqual(c.region, "Skåne");
     assert.deepStrictEqual(c.bransch, ["fjärr"]);
+    // Sidan räknar "Verifierade"/"Kollektivavtal" på dessa fält — saknades de visade filtren 0.
+    assert.strictEqual(c.verified, true);
+    assert.strictEqual(c.kollektivavtal, false);
   });
 
   it("räknar ort som plats när Bolagsverket inte gav något län", async () => {
