@@ -26,7 +26,7 @@ import { matchScore, getMatchCriteria } from "../utils/matchUtils";
 import { availabilityTypes } from "../data/profileData";
 import ReachOutModal from "./ReachOutModal";
 import { track } from "../utils/posthog";
-import { submitDriverReview } from "../api/drivers.js";
+import { ReferencesSection, ReferenceModal } from "./DriverReferences.jsx";
 
 /* ── cert expiry helper (same logic as Profile.jsx) ── */
 function expiryStatus(dateStr) {
@@ -98,15 +98,6 @@ const SparkIcon = () => (
   </svg>
 );
 
-/* ── Review stars ── */
-function Stars({ rating }) {
-  return (
-    <span style={{ display: "inline-flex", gap: 2 }}>
-      {[1,2,3,4,5].map((i) => i <= rating ? <StarFilled key={i} /> : <StarEmpty key={i} />)}
-    </span>
-  );
-}
-
 /* ── Profile strength score ── */
 function calcProfileStrength(profile) {
   let score = 0;
@@ -139,135 +130,6 @@ const EXP_JOB_TYPES = [
   { value: "lokalt", label: "Lokalkörning" }, { value: "tim", label: "Timkörning" },
   { value: "natt", label: "Nattransport" },
 ];
-
-/* ── Reviews section ── */
-function ReviewsSection({ reviews }) {
-  if (!reviews || reviews.length === 0) {
-    return (
-      <div style={{ padding: "18px 20px", border: "1.5px dashed var(--line-2)", borderRadius: 12, textAlign: "center", color: "var(--ink-400)", fontSize: "var(--text-sm)", lineHeight: 1.6 }}>
-        Inga omdömen ännu — åkerier du jobbat hos kan lämna ett omdöme.
-      </div>
-    );
-  }
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      {reviews.map((r) => (
-        <div key={r.id} style={{ background: "var(--card-2)", border: "1px solid var(--line)", borderRadius: 12, padding: "16px 18px" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8, flexWrap: "wrap", gap: 8 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <Stars rating={r.rating} />
-              <span style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-900)" }}>{r.authorName}</span>
-              {r.isVerified && (
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 8px", borderRadius: 99, background: "var(--success-tint)", color: "var(--success)", fontSize: "var(--text-2xs)", fontWeight: 700, border: "1px solid var(--success)" }}>
-                  <CheckIcon /> Verifierat åkeri
-                </span>
-              )}
-            </div>
-            <span style={{ fontSize: "var(--text-xs)", color: "var(--ink-400)" }}>
-              {new Date(r.createdAt).toLocaleDateString("sv-SE", { year: "numeric", month: "long" })}
-            </span>
-          </div>
-          {r.comment && <p style={{ fontSize: "var(--text-base)", color: "var(--ink-700)", lineHeight: 1.65, margin: 0 }}>{r.comment}</p>}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/* ── Review modal — åkeri recenserar förare ── */
-function ReviewModal({ driverId, driverName, onClose, onSubmitted }) {
-  const [rating, setRating] = useState(0);
-  const [hover, setHover] = useState(0);
-  const [comment, setComment] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [done, setDone] = useState(false);
-
-  async function handleSubmit() {
-    if (!rating) { setError("Välj ett betyg för att fortsätta."); return; }
-    setLoading(true); setError("");
-    try {
-      const review = await submitDriverReview(driverId, { rating, comment: comment.trim() || null });
-      setDone(true);
-      onSubmitted?.(review);
-    } catch (e) {
-      setError(e.message || "Något gick fel. Försök igen.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 9000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-      {/* Backdrop */}
-      <div onClick={onClose} style={{ position: "absolute", inset: 0, background: "rgba(15,26,25,0.55)", backdropFilter: "blur(4px)" }} />
-      <div style={{ position: "relative", width: "100%", maxWidth: 440, background: "var(--card)", borderRadius: 18, padding: "32px 32px 28px", boxShadow: "0 20px 60px rgba(0,0,0,0.25)", border: "1px solid var(--line)" }}>
-        {/* Close */}
-        <button onClick={onClose} aria-label="Stäng" style={{ position: "absolute", top: 16, right: 16, width: 32, height: 32, borderRadius: 9, border: "1px solid var(--line-2)", background: "var(--paper-2)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--ink-500)" }}>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
-
-        {done ? (
-          <div style={{ textAlign: "center", padding: "12px 0 8px" }}>
-            <div style={{ width: 52, height: 52, borderRadius: "50%", background: "var(--success-tint)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            </div>
-            <h3 style={{ fontSize: "var(--text-xl)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 8 }}>Tack för ditt omdöme!</h3>
-            <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.6 }}>Ditt omdöme om {driverName} har sparats och visas på hens profil.</p>
-            <button onClick={onClose} style={{ marginTop: 20, padding: "10px 24px", borderRadius: 10, background: "var(--green)", color: "#fff", border: "none", fontSize: "var(--text-base)", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>Stäng</button>
-          </div>
-        ) : (
-          <>
-            <h3 style={{ fontSize: "var(--text-xl)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 6 }}>Lämna omdöme</h3>
-            <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.5, marginBottom: 24 }}>
-              Betygsätt {driverName} baserat på er samarbetserfarenhet. Omdömet visas på hens profil med verifierings-märke.
-            </p>
-
-            {/* Star picker */}
-            <p style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-700)", marginBottom: 10 }}>Betyg</p>
-            <div style={{ display: "flex", gap: 6, marginBottom: 22 }}>
-              {[1,2,3,4,5].map((n) => (
-                <button key={n} type="button"
-                  onMouseEnter={() => setHover(n)} onMouseLeave={() => setHover(0)}
-                  onClick={() => setRating(n)}
-                  style={{ width: 44, height: 44, borderRadius: 10, border: `2px solid ${(hover || rating) >= n ? "var(--amber)" : "var(--line-2)"}`, background: (hover || rating) >= n ? "var(--amber-tint)" : "var(--paper-2)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "all .12s" }}
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill={(hover || rating) >= n ? "var(--amber)" : "none"} stroke={(hover || rating) >= n ? "var(--amber)" : "var(--ink-300)"} strokeWidth="1.8">
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/>
-                  </svg>
-                </button>
-              ))}
-              {rating > 0 && (
-                <span style={{ alignSelf: "center", fontSize: "var(--text-sm)", color: "var(--ink-500)", marginLeft: 8 }}>
-                  {["","Dålig","Under medel","Okej","Bra","Utmärkt"][rating]}
-                </span>
-              )}
-            </div>
-
-            {/* Comment */}
-            <p style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-700)", marginBottom: 8 }}>Kommentar <span style={{ fontWeight: 400, color: "var(--ink-400)" }}>(valfri)</span></p>
-            <textarea
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="Berätta om er erfarenhet av föraren — punktlighet, hantering av fordon, kommunikation..."
-              rows={4}
-              style={{ width: "100%", padding: "12px 14px", borderRadius: 10, border: "1px solid var(--line-2)", background: "var(--paper-2)", fontSize: "var(--text-base)", color: "var(--ink-900)", outline: "none", fontFamily: "inherit", lineHeight: 1.55, resize: "vertical", boxSizing: "border-box" }}
-            />
-
-            {error && <p style={{ color: "var(--danger)", fontSize: "var(--text-sm)", marginTop: 8, fontWeight: 600 }}>{error}</p>}
-
-            <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
-              <button onClick={onClose} style={{ flex: 1, padding: "11px", borderRadius: 10, border: "1px solid var(--line-2)", background: "transparent", color: "var(--ink-700)", fontSize: "var(--text-base)", fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Avbryt</button>
-              <button onClick={handleSubmit} disabled={loading || !rating} style={{ flex: 2, padding: "11px", borderRadius: 10, background: rating ? "var(--green)" : "var(--ink-200)", color: rating ? "#fff" : "var(--ink-400)", border: "none", fontSize: "var(--text-base)", fontWeight: 800, cursor: rating ? "pointer" : "not-allowed", fontFamily: "inherit", transition: "all .15s" }}>
-                {loading ? "Skickar…" : "Skicka omdöme"}
-              </button>
-            </div>
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
 
 /* ── Market panel (sidebar) ── */
 function MarketPanel({ driverMarket, region }) {
@@ -427,8 +289,9 @@ export default function DriverProfileView({
 }) {
   const [tab, setTab] = useState("profil");
   const [showReachOut, setShowReachOut] = useState(false);
-  const [showReviewModal, setShowReviewModal] = useState(false);
-  const [localReviews, setLocalReviews] = useState(null); // override after submission
+  // Referenser (åkerier om föraren) — bara i company-läget. editingReference: null = stängd, {} = ny, objekt = ändra.
+  const [editingReference, setEditingReference] = useState(null);
+  const [localReviews, setLocalReviews] = useState(null); // override efter sparande
   const [starred, setStarred] = useState(false);
   const [matchJobId, setMatchJobId] = useState(() => apiJobs[0]?.id || null);
   const [shared, setShared] = useState(false);
@@ -688,19 +551,20 @@ export default function DriverProfileView({
                 </div>
               )}
 
-              {/* Omdömen */}
+              {/* Referenser från åkerier — bara för verifierade åkerier (inte publikt, inte föraren) */}
+              {mode === "company" && (
               <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, padding: "20px 24px", boxShadow: "var(--sh-sm)" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-                  <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)" }}>Omdömen</div>
-                  {mode === "company" && (
-                    <button onClick={() => setShowReviewModal(true)} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, border: "1px solid var(--line-2)", background: "var(--paper-2)", color: "var(--ink-700)", fontSize: "var(--text-xs)", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>
-                      Lämna omdöme
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, gap: 10 }}>
+                  <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)" }}>Referenser från åkerier</div>
+                  {!(displayedReviews || []).some((r) => r.isMine) && (
+                    <button onClick={() => setEditingReference({})} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, border: "1px solid var(--line-2)", background: "var(--paper-2)", color: "var(--ink-700)", fontSize: "var(--text-xs)", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+                      Lämna referens
                     </button>
                   )}
                 </div>
-                <ReviewsSection reviews={displayedReviews} />
+                <ReferencesSection references={displayedReviews} onEditMine={(r) => setEditingReference(r)} />
               </div>
+              )}
             </>
           )}
 
@@ -817,15 +681,19 @@ export default function DriverProfileView({
         />
       )}
 
-      {/* ReviewModal — company lämnar omdöme om förare */}
-      {showReviewModal && (
-        <ReviewModal
+      {editingReference && (
+        <ReferenceModal
           driverId={owner?.id || profileId}
           driverName={name.split(" ")[0]}
-          onClose={() => setShowReviewModal(false)}
-          onSubmitted={(newReview) => {
-            setLocalReviews([newReview, ...(displayedReviews || [])]);
-            setShowReviewModal(false);
+          existing={editingReference.id ? editingReference : null}
+          onClose={() => setEditingReference(null)}
+          onSaved={(saved) => {
+            setLocalReviews([saved, ...(displayedReviews || []).filter((r) => r.id !== saved.id)]);
+            setEditingReference(null);
+          }}
+          onDeleted={() => {
+            setLocalReviews((displayedReviews || []).filter((r) => !r.isMine));
+            setEditingReference(null);
           }}
         />
       )}

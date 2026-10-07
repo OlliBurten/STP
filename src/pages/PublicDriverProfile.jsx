@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { fetchPublicDriver, trackDriverProfileView, fetchPublicDriverReviews } from "../api/drivers.js";
+import { fetchPublicDriver, trackDriverProfileView } from "../api/drivers.js";
 import { LocationIcon } from "../components/Icons";
 import PageMeta from "../components/PageMeta";
 import DriverProfileView from "../components/DriverProfileView.jsx";
@@ -45,7 +45,6 @@ export default function PublicDriverProfile() {
   const [driver, setDriver] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [driverReviews, setDriverReviews] = useState([]);
 
   useEffect(() => {
     if (!id) return;
@@ -54,7 +53,6 @@ export default function PublicDriverProfile() {
       .then(setDriver)
       .catch(() => setError(true))
       .finally(() => setLoading(false));
-    fetchPublicDriverReviews(id).then(setDriverReviews).catch(() => setDriverReviews([]));
   }, [id]);
 
   useEffect(() => {
@@ -112,7 +110,6 @@ export default function PublicDriverProfile() {
         profile={driver}
         owner={{ name: driver.name, id: driver.id }}
         mode="public"
-        reviews={driverReviews}
       />
 
       {/* Print footer */}
