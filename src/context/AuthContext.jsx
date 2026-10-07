@@ -310,6 +310,16 @@ export function AuthProvider({ children }) {
     }
   }, [token]);
 
+  // Den sparade användaren lever i localStorage i upp till 7 dagar. Ändras något på
+  // servern under tiden (t.ex. ett åkeri som verifieras) syntes det aldrig förrän
+  // nästa inloggning — hämta färskt läge en gång när appen startar.
+  const refreshedOnLoadRef = useRef(false);
+  useEffect(() => {
+    if (refreshedOnLoadRef.current || !token) return;
+    refreshedOnLoadRef.current = true;
+    refreshUser();
+  }, [token, refreshUser]);
+
   const startViewAs = useCallback(async (userId) => {
     const data = await apiStartViewAs(userId);
     const normalized = normalizeUser(data.user);

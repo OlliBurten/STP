@@ -262,7 +262,10 @@ export async function createInvite({ email, companyOwnerId, invitedById, company
 
   const { emailSent, inviteLink } = await sendInviteEmail({
     to: normalizedEmail,
-    companyName: companyName || scope.companyName || "Företaget",
+    // Org-åkerier har inget companyName på ägarens User — rutten skickade då ägarens
+    // personnamn, och inbjudan löd "bjudit in dig till Almin Zahirovic". Organisationens
+    // namn är det rätta när det finns.
+    companyName: (scope.type === "organization" ? scope.companyName : companyName) || "Företaget",
     inviteToken: token,
     frontendBaseUrl,
   });

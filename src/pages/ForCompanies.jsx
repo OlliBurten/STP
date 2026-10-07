@@ -498,7 +498,9 @@ export default function ForCompanies() {
       .finally(() => setLoading(false));
   }, []);
 
-  const isVerified = profile?.status === "VERIFIED";
+  // Profil-API:t svarar med companyStatus (ingen `status`) — tidigare visades
+  // "Verifiering pågår" för varje åkeri, även verifierade.
+  const isVerified = (profile?.companyStatus ?? user?.companyStatus) === "VERIFIED";
   const companyName = profile?.name || user?.name || "Ert åkeri";
   // Kort visningsnamn: hoppa över inledande ettbokstavsord (t.ex. "E Gustavsson AB" → "Gustavsson")
   const companyShort = (() => {
