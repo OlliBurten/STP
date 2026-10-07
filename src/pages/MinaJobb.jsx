@@ -5,6 +5,7 @@ import { fetchMyJobs, updateJob } from "../api/jobs.js";
 import { useChat } from "../context/ChatContext";
 import { useIsMobile } from "../hooks/useIsMobile";
 import CompanyBottomNav from "../components/CompanyBottomNav";
+import { candidateStage } from "../utils/candidateStage";
 
 const SEGMENT_LABEL = { FULLTIME: "Heltid", FLEX: "Vikarie / deltid", INTERNSHIP: "Praktik" };
 
@@ -23,24 +24,23 @@ function Icon({ n, size = 18, color = "currentColor" }) {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+// Samma steg som Kandidater-sidan och annonsens tavla.
+const STAGE_KEY = { new: "new", reviewing: "contacted", interview: "interviewed", hired: "hired", rejected: "rejected" };
 function getStage(conv) {
-  if (conv.rejectedByCompanyAt) return "rejected";
-  if (conv.selectedByCompanyAt) return "interviewed";
-  if (conv.readByCompanyAt) return "contacted";
-  return "new";
+  return STAGE_KEY[candidateStage(conv)];
 }
 
 function deadlineLabel(job) {
-  if (!job.expiresAt) return null;
-  const days = Math.ceil((new Date(job.expiresAt).getTime() - Date.now()) / 86400000);
+  if (!job.applicationDeadline) return null;
+  const days = Math.ceil((new Date(job.applicationDeadline).getTime() - Date.now()) / 86400000);
   if (days < 0) return "Utgången";
   if (days === 0) return "Sista dag";
   return `${days} dgr kvar`;
 }
 
 function daysActive(job) {
-  if (!job.publishedAt) return 0;
-  return Math.floor((Date.now() - new Date(job.publishedAt).getTime()) / 86400000);
+  if (!job.published) return 0;
+  return Math.floor((Date.now() - new Date(job.published).getTime()) / 86400000);
 }
 
 function normalizeStatus(status) {
@@ -53,8 +53,8 @@ function normalizeStatus(status) {
 // ─── Mini Funnel ──────────────────────────────────────────────────────────────
 function Funnel({ pipeline }) {
   const stages = [
-    { label: "Sökande",    value: pipeline.total },
-    { label: "Kontaktade", value: pipeline.contacted },
+    { label: "Kandidater", value: pipeline.total },
+    { label: "Granskar",   value: pipeline.contacted },
     { label: "Intervju",   value: pipeline.interviewed },
     { label: "Anställda",  value: pipeline.hired },
   ];
@@ -281,7 +281,7 @@ export default function MinaJobb() {
   }, [jobs, tab]);
 
   const totalApplicants = conversations.length;
-  const totalNew = conversations.filter((c) => !c.readByCompanyAt).length;
+  const totalNew = conversations.filter((c) => candidateStage(c) === "new").length;
 
   async function handlePause(jobId, targetStatus) {
     const status = targetStatus || (jobs.find((j) => j.id === jobId)?.status === "ACTIVE" ? "HIDDEN" : "ACTIVE");
@@ -397,7 +397,7 @@ export default function MinaJobb() {
               <p style={{ fontSize: "var(--text-2xs)", fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 10 }}>För åkerier</p>
               <h1 style={{ fontSize: "var(--text-5xl)", fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.2, lineHeight: 1.15, marginBottom: 6 }}>Annonser</h1>
               <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", fontWeight: 500 }}>
-                {totalApplicants} sökande totalt
+                {totalApplicants} kandidater totalt
                 {totalNew > 0 && <> · <span style={{ color: "var(--amber-deep)", fontWeight: 700 }}>{totalNew} nya att granska</span></>}
               </p>
             </div>

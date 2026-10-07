@@ -112,7 +112,7 @@ function WaitingAlert({ unreadCount, conversations }) {
   if (unreadCount === 0) return null;
   const oldest = [...conversations]
     .filter(c => !c.readByCompanyAt)
-    .sort((a, b) => new Date(a.lastMessageAt || a.createdAt) - new Date(b.lastMessageAt || b.createdAt))[0];
+    .sort((a, b) => new Date(lastActivity(a)) - new Date(lastActivity(b)))[0];
   const name = oldest ? (oldest.driverName || oldest.driverEmail?.split("@")[0] || "Förare") : "";
   return (
     <div style={{
@@ -128,7 +128,7 @@ function WaitingAlert({ unreadCount, conversations }) {
         </div>
         {name && oldest && (
           <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)" }}>
-            Snabbast: <strong style={{ color: "var(--ink-900)", fontWeight: 600 }}>{name}</strong> · {daysAgo(oldest.lastMessageAt || oldest.createdAt)}
+            Längst väntat: <strong style={{ color: "var(--ink-900)", fontWeight: 600 }}>{name}</strong> · {daysAgo(lastActivity(oldest))}
           </div>
         )}
       </div>
@@ -235,22 +235,27 @@ function PerformanceChart({ weeks, total }) {
   );
 }
 
+// Föraren sökte (första meddelandet från föraren) eller åkeriet tog kontakt.
+const isApplication = (c) => c.messages?.[0]?.sender !== "company";
+const lastActivity = (c) => c.messages?.[c.messages.length - 1]?.timestamp || c.createdAt;
+const isToday = (iso) => iso && new Date(iso).toDateString() === new Date().toDateString();
+
 // ─── ActivityFeed ─────────────────────────────────────────────────────────────
 function ActivityFeed({ conversations, jobs }) {
   const navigate = useNavigate();
+  const { isConversationUnread } = useChat();
   const activities = conversations.slice(0, 5).map((c) => {
     const job = jobs.find((j) => j.id === c.jobId);
-    const isNew = !c.readByCompanyAt;
     const name = c.driverName || c.driverEmail?.split("@")[0] || "Förare";
+    const unread = isConversationUnread(c);
     return {
-      type: isNew ? "application" : "message",
+      type: unread ? "application" : "message",
       who: name,
-      action: isNew ? "sökte" : "svarade i",
-      target: job?.title || "en annons",
-      time: daysAgo(c.lastMessageAt || c.createdAt),
-      match: c.matchScore || null,
+      action: isApplication(c) ? "sökte" : "kontaktades om",
+      target: job?.title || c.jobTitle || "en annons",
+      time: daysAgo(lastActivity(c)),
       avatar: name.slice(0, 2).toUpperCase(),
-      jobId: c.jobId,
+      conversationId: c.id,
     };
   });
 
@@ -279,26 +284,14 @@ function ActivityFeed({ conversations, jobs }) {
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 3 }}>
                   <span style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)" }}>{a.time}</span>
-                  {a.match && (
-                    <>
-                      <span style={{ fontSize: "var(--text-2xs)", color: "var(--ink-200)" }}>·</span>
-                      <span style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: a.match >= 85 ? "var(--success)" : "var(--amber-text)" }}>{a.match}% match</span>
-                    </>
-                  )}
                 </div>
               </div>
-              {a.type === "application" && (
-                <button onClick={() => navigate(`/foretag/annonser/${a.jobId}`)}
-                  style={{ padding: "6px 14px", borderRadius: 99, background: "var(--amber-tint)", border: "1px solid var(--amber)", color: "var(--amber-text)", fontSize: "var(--text-2xs)", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>
-                  Granska
-                </button>
-              )}
-              {a.type === "message" && (
-                <button onClick={() => navigate("/foretag/meddelanden")}
-                  style={{ padding: "6px 14px", borderRadius: 99, background: "var(--success-tint)", border: "1px solid var(--success)", color: "var(--success)", fontSize: "var(--text-2xs)", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>
-                  Svara
-                </button>
-              )}
+              <button onClick={() => navigate(`/foretag/meddelanden/${a.conversationId}`)}
+                style={a.type === "application"
+                  ? { padding: "6px 14px", borderRadius: 99, background: "var(--amber-tint)", border: "1px solid var(--amber)", color: "var(--amber-text)", fontSize: "var(--text-2xs)", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }
+                  : { padding: "6px 14px", borderRadius: 99, background: "var(--paper-2)", border: "1px solid var(--line-2)", color: "var(--ink-700)", fontSize: "var(--text-2xs)", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>
+                {a.type === "application" ? "Svara" : "Öppna"}
+              </button>
             </div>
           ))}
         </div>
@@ -311,9 +304,10 @@ function ActivityFeed({ conversations, jobs }) {
 function ActiveJobsSidebar({ jobs, conversations }) {
   const convByJob = {};
   conversations.forEach((c) => {
+    if (!isApplication(c)) return;
     if (!convByJob[c.jobId]) convByJob[c.jobId] = { total: 0, new: 0 };
     convByJob[c.jobId].total++;
-    if (!c.readByCompanyAt) convByJob[c.jobId].new++;
+    if (candidateStage(c) === "new") convByJob[c.jobId].new++;
   });
   const active = jobs.filter((j) => j.status === "ACTIVE").slice(0, 4);
 
@@ -334,7 +328,7 @@ function ActiveJobsSidebar({ jobs, conversations }) {
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {active.map((j) => {
             const stats = convByJob[j.id] || { total: 0, new: 0 };
-            const days = j.publishedAt ? Math.floor((Date.now() - new Date(j.publishedAt).getTime()) / 86400000) : 0;
+            const days = j.published ? Math.floor((Date.now() - new Date(j.published).getTime()) / 86400000) : 0;
             const hot = stats.new >= 2;
             return (
               <Link key={j.id} to={`/foretag/annonser/${j.id}`}
@@ -508,7 +502,10 @@ export default function ForCompanies() {
     return first.length <= 2 ? words.slice(0, 2).join(" ") : first;
   })();
   const activeJobs = jobs.filter((j) => j.status === "ACTIVE");
-  const newApplications = conversations.filter((c) => !c.readByCompanyAt).length;
+  // Nya ansökningar = förare som sökt och ännu inte hanterats (egna kontakter räknas inte).
+  const newApps = conversations.filter((c) => isApplication(c) && candidateStage(c) === "new");
+  const newApplications = newApps.length;
+  const newToday = newApps.filter((c) => isToday(c.createdAt)).length;
 
   // Inget företag kopplat ännu — visa empty state
   if (!loading && !profile) {
@@ -565,146 +562,13 @@ export default function ForCompanies() {
   }
 
   const kpis = [
-    { label: "Nya ansökningar",        value: newApplications,               delta: newApplications > 0 ? `+${newApplications} idag` : "Inga nya",              tone: "amber",   icon: "user",      to: "/foretag/annonser" },
+    { label: "Nya ansökningar",        value: newApplications,               delta: newToday > 0 ? `+${newToday} idag` : newApplications > 0 ? "Väntar på er" : "Inga nya", tone: "amber",   icon: "user",      to: "/foretag/kandidater" },
     { label: "Obesvarade meddelanden", value: companyUnreadConversationCount, delta: companyUnreadConversationCount > 0 ? "Kräver svar" : "Alla besvarade",      tone: "danger",  icon: "msg",       to: "/foretag/meddelanden" },
     { label: "Aktiva annonser",        value: activeJobs.length,             delta: jobs.length > 0 ? `av ${jobs.length} publicerade` : "Publicera ett jobb",   tone: "primary", icon: "briefcase", to: "/foretag/annonser" },
-    { label: "Profilvisningar",        value: jobViewStats.total || "—",     delta: (jobViewStats.weeks?.[11] || 0) > 0 ? `+${jobViewStats.weeks[11]} denna vecka` : "Inga denna vecka", tone: "success", icon: "eye" },
+    { label: "Annonsvisningar",        value: jobViewStats.total || 0,       delta: (jobViewStats.weeks?.[11] || 0) > 0 ? `+${jobViewStats.weeks[11]} denna vecka` : "Inga denna vecka", tone: "success", icon: "eye" },
   ];
 
-  if (isMobile) {
-    const companyInitials = companyName.trim().split(/\s+/).map(w => w[0]).join("").slice(0, 2).toUpperCase();
-    const mobileKpis = [
-      { label: "Nya ansökningar", value: newApplications, sub: newApplications > 0 ? "+idag" : "Inga nya", color: "var(--amber)", icon: "user", to: "/foretag/annonser" },
-      { label: "Olästa meddelanden", value: companyUnreadConversationCount, sub: companyUnreadConversationCount > 0 ? "Kräver svar" : "Alla klara", color: "var(--danger)", icon: "msg", to: "/foretag/meddelanden" },
-      { label: "Aktiva annonser", value: activeJobs.length, sub: `av ${jobs.length} totalt`, color: "var(--success)", icon: "briefcase", to: "/foretag/annonser" },
-      { label: "Profilvisningar", value: "—", sub: "Senaste 30 dgr", color: "var(--info)", icon: "eye" },
-    ];
-    return (
-      <div style={{ minHeight: "100vh", background: "var(--paper)", color: "var(--ink-900)" }}>
-        {/* Mobile header */}
-        <div style={{ padding: "52px 20px 12px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 34, height: 34, borderRadius: 9, background: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "var(--text-2xs)", color: "#fff", flexShrink: 0 }}>{companyInitials}</div>
-            <div>
-              <div style={{ fontSize: "var(--text-sm)", fontWeight: 800, lineHeight: 1.2, color: "var(--ink-900)" }}>{companyName.length > 22 ? companyName.slice(0, 22) + "…" : companyName}</div>
-              <div style={{ fontSize: "var(--text-2xs)", color: isVerified ? "var(--success)" : "var(--ink-400)" }}>{isVerified ? "✓ Verifierat" : "Verifiering pågår"}</div>
-            </div>
-          </div>
-          <button style={{ width: 40, height: 40, borderRadius: 99, background: "var(--paper-2)", border: "1px solid var(--line)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
-            <Icon n="bell" size={18} color="var(--ink-700)" />
-            {(newApplications + companyUnreadConversationCount) > 0 && (
-              <span style={{ position: "absolute", top: 7, right: 8, width: 8, height: 8, borderRadius: 99, background: "var(--amber)", border: "2px solid var(--paper)" }} />
-            )}
-          </button>
-        </div>
-
-        <div style={{ overflowY: "auto", paddingBottom: 100 }}>
-          {/* Greeting */}
-          <div style={{ padding: "4px 20px 20px" }}>
-            <div style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--amber-text)", letterSpacing: 1.3, textTransform: "uppercase", marginBottom: 6 }}>{timeGreeting()}, {companyShort}</div>
-            <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, letterSpacing: -0.8, lineHeight: 1.2, color: "var(--ink-900)" }}>
-              {newApplications > 0 ? <>Du har <span style={{ color: "var(--amber-text)" }}>{newApplications} {newApplications === 1 ? "ny kandidat" : "nya kandidater"}</span> att granska.</> : <>Välkommen tillbaka, <span style={{ color: "var(--amber-text)" }}>{companyShort}</span>.</>}
-            </h1>
-          </div>
-
-          {/* Verification gate */}
-          {!loading && !isVerified && (
-            <div style={{ margin: "0 20px 20px", padding: 16, background: "var(--amber-tint)", border: "1px solid var(--amber)", borderRadius: 13 }}>
-              <div style={{ display: "flex", alignItems: "flex-start", gap: 11, marginBottom: 12 }}>
-                <div style={{ width: 32, height: 32, borderRadius: 99, background: "var(--amber-tint)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <Icon n="shield" size={16} color="var(--amber)" />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: "var(--text-sm)", fontWeight: 800, marginBottom: 2, color: "var(--ink-900)" }}>Slutför verifiering</div>
-                  <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", lineHeight: 1.45 }}>2 av 4 steg klara. Tar ~1 arbetsdag.</div>
-                </div>
-              </div>
-              <Link to="/installningar?section=verifiering" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, width: "100%", padding: 11, borderRadius: 11, background: "var(--green)", border: "none", color: "#fff", fontSize: "var(--text-sm)", fontWeight: 800, textDecoration: "none", minHeight: 42 }}>
-                Fortsätt verifiering <Icon n="chev" size={13} color="#fff" />
-              </Link>
-            </div>
-          )}
-
-          {/* KPI grid */}
-          <div style={{ padding: "0 20px 18px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-            {mobileKpis.map((k, i) => {
-              const card = (
-                <div key={i} style={{ padding: "14px", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 13, boxShadow: "var(--sh-sm)" }}>
-                  <div style={{ width: 30, height: 30, borderRadius: 9, background: `${k.color}1a`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 10 }}>
-                    <Icon n={k.icon} size={14} color={k.color} />
-                  </div>
-                  <div style={{ fontSize: "var(--text-3xl)", fontWeight: 800, letterSpacing: -0.8, lineHeight: 1, marginBottom: 4, color: "var(--ink-900)" }}>{k.value}</div>
-                  <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", fontWeight: 600 }}>{k.label}</div>
-                  {k.sub && <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", marginTop: 3 }}>{k.sub}</div>}
-                </div>
-              );
-              return k.to ? <Link key={i} to={k.to} style={{ textDecoration: "none", color: "inherit" }}>{card}</Link> : card;
-            })}
-          </div>
-
-          {/* Quick actions */}
-          <div style={{ padding: "0 20px 24px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-            <Link to="/foretag/annonsera" style={{ padding: "14px 16px", borderRadius: 13, background: "var(--green)", color: "#fff", fontSize: "var(--text-sm)", fontWeight: 800, textDecoration: "none", display: "flex", alignItems: "center", gap: 9, boxShadow: "var(--sh)" }}>
-              <Icon n="plus" size={15} color="#fff" /> Publicera jobb
-            </Link>
-            <Link to="/foretag/chaufforer" style={{ padding: "14px 16px", borderRadius: 13, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-900)", fontSize: "var(--text-sm)", fontWeight: 700, textDecoration: "none", display: "flex", alignItems: "center", gap: 9 }}>
-              <Icon n="user" size={14} /> Hitta förare
-            </Link>
-          </div>
-
-          {/* Activity feed */}
-          <div style={{ padding: "0 20px 20px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-              <h3 style={{ fontSize: "var(--text-base)", fontWeight: 800, letterSpacing: -0.3, color: "var(--ink-900)" }}>Senaste aktivitet</h3>
-              <Link to="/foretag/meddelanden" style={{ fontSize: "var(--text-2xs)", color: "var(--green-text)", textDecoration: "none", fontWeight: 700 }}>Se alla →</Link>
-            </div>
-            <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 13, overflow: "hidden", boxShadow: "var(--sh-sm)" }}>
-              {conversations.slice(0, 4).length === 0 ? (
-                <div style={{ padding: "24px 16px", textAlign: "center", fontSize: "var(--text-sm)", color: "var(--ink-400)" }}>Ingen aktivitet ännu.</div>
-              ) : conversations.slice(0, 4).map((c, i) => {
-                const job = jobs.find(j => j.id === c.jobId);
-                const name = c.driverName || c.driverEmail?.split("@")[0] || "Förare";
-                const isNew = !c.readByCompanyAt;
-                const avatar = name.slice(0, 2).toUpperCase();
-                const color = isNew ? "var(--amber)" : "var(--success)";
-                return (
-                  <div key={c.id || i} style={{ display: "flex", alignItems: "center", gap: 11, padding: "12px 14px", borderTop: i > 0 ? "1px solid var(--line)" : "none" }}>
-                    <div style={{ width: 36, height: 36, borderRadius: 99, background: color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "var(--text-2xs)", fontWeight: 800, color: "#000", flexShrink: 0 }}>{avatar}</div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-900)", lineHeight: 1.35 }}>
-                        <strong style={{ fontWeight: 700 }}>{name}</strong> <span style={{ color: "var(--ink-500)" }}>{isNew ? "sökte" : "svarade i"}</span> <strong style={{ fontWeight: 700 }}>{job?.title || "en annons"}</strong>
-                      </div>
-                      <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", marginTop: 2 }}>{daysAgo(c.lastMessageAt || c.createdAt)}</div>
-                    </div>
-                    <Icon n="chev" size={13} color="var(--ink-300)" />
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Suggested drivers */}
-          {matchingDrivers.length > 0 && (
-            <div style={{ padding: "0 20px 20px" }}>
-              <div style={{ background: "var(--amber-tint)", border: "1px solid var(--amber)", borderRadius: 13, padding: 16 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                  <Icon n="spark" size={14} color="var(--amber)" />
-                  <span style={{ fontSize: "var(--text-sm)", fontWeight: 800, color: "var(--ink-900)" }}>{matchingDrivers.length} förare matchar era jobb</span>
-                </div>
-                <p style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", marginBottom: 14, lineHeight: 1.5 }}>Baserat på era öppna annonser och förare som söker aktivt i området.</p>
-                <Link to="/foretag/chaufforer" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, width: "100%", padding: 11, borderRadius: 11, background: "var(--amber-tint)", border: "1px solid var(--amber)", color: "var(--amber-text)", fontSize: "var(--text-xs)", fontWeight: 800, textDecoration: "none", minHeight: 40 }}>
-                  Visa matchande förare <Icon n="chev" size={12} color="var(--amber-text)" />
-                </Link>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <CompanyBottomNav unreadCount={companyUnreadConversationCount} />
-      </div>
-    );
-  }
-
+  // Mobil: åkerier får CompanyMobileApp (App.jsx) — den här sidan visas bara på desktop.
   return (
     <div style={{ minHeight: "100vh", background: "var(--paper)", color: "var(--ink-900)" }}>
       <ProductTour steps={COMPANY_TOUR_STEPS} storageKey="stp_company_tour_done" enabled={tourReady} />

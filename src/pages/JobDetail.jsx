@@ -1040,8 +1040,13 @@ export default function JobDetail() {
             : <p style={{ fontSize: "var(--text-md)", color: "var(--ink-400)", lineHeight: 1.8, fontStyle: "italic", margin: 0 }}>Mer information om tjänsten ges vid kontakt med företaget.</p>
           }
 
-          <SectionHeading>Arbetsuppgifter</SectionHeading>
-          <BulletList items={jobTasks} fallback="Arbetsuppgifter specificeras vid intervju — kontakta företaget för mer information." />
+          {/* Tomma avsnitt döljs — vi skriver inte text i åkeriets namn. */}
+          {jobTasks.length > 0 && (
+            <>
+              <SectionHeading>Arbetsuppgifter</SectionHeading>
+              <BulletList items={jobTasks} />
+            </>
+          )}
 
           <SectionHeading>Vi söker dig som</SectionHeading>
           {(jobCredentials.length > 0 || jobRequirements.length > 0)
@@ -1058,8 +1063,12 @@ export default function JobDetail() {
             </>
           )}
 
-          <SectionHeading>Vi erbjuder</SectionHeading>
-          <BulletList items={jobOffers} accent="success" fallback="Mer om vad vi erbjuder berättar vi gärna vid en intervju." />
+          {jobOffers.length > 0 && (
+            <>
+              <SectionHeading>Vi erbjuder</SectionHeading>
+              <BulletList items={jobOffers} accent="success" />
+            </>
+          )}
 
           {/* Redan sökt-banner (desktop saknade helt denna state — fixat 2026-07-18) */}
           {alreadyApplied && (

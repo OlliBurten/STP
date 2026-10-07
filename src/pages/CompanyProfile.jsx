@@ -133,6 +133,21 @@ function GrundInfo({ draft, setDraft, isMobile, sug }) {
         </Field>
       </div>
 
+      {/* Storlek — visas för förare på den publika profilen (bara åkerier med organisation). */}
+      {draft && "companyFleet" in draft && (
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr 1fr", gap: 14 }}>
+          <Field label="Antal anställda">
+            <input style={inp} value={draft.companyEmployeeCount || ""} onChange={(e) => setDraft((p) => ({ ...p, companyEmployeeCount: e.target.value }))} placeholder="t.ex. 210" maxLength={20} />
+          </Field>
+          <Field label="Antal fordon">
+            <input style={inp} inputMode="numeric" value={draft.companyFleet ?? ""} onChange={(e) => { const v = e.target.value.replace(/\D/g, ""); setDraft((p) => ({ ...p, companyFleet: v === "" ? null : Number(v) })); }} placeholder="t.ex. 120" />
+          </Field>
+          <Field label="Grundat år">
+            <input style={inp} inputMode="numeric" value={draft.companyFoundedYear ?? ""} onChange={(e) => { const v = e.target.value.replace(/\D/g, "").slice(0, 4); setDraft((p) => ({ ...p, companyFoundedYear: v === "" ? null : Number(v) })); }} placeholder="t.ex. 1985" />
+          </Field>
+        </div>
+      )}
+
       <Field label="Webbplats" hintText="Visas på er profil">
         <input style={inp} value={draft?.companyWebsite || ""} onChange={(e) => setDraft((p) => ({ ...p, companyWebsite: e.target.value }))} placeholder="https://..." />
         {sug?.companyWebsite && <SuggestionHint text={sug.companyWebsite} onUse={() => applySug("companyWebsite")} />}
@@ -587,6 +602,12 @@ export default function CompanyProfile() {
         policyAgreedAt: draft.policyAgreedAt || null,
         companyContactEmail: draft.companyContactEmail || null,
         companyContactPhone: draft.companyContactPhone || null,
+        ...("companyFleet" in draft && {
+          companyEmployeeCount: draft.companyEmployeeCount || null,
+          companyFleet: draft.companyFleet ?? null,
+          // Ofullständigt årtal (t.ex. "19") sparas inte i stället för att ge fel.
+          companyFoundedYear: draft.companyFoundedYear >= 1800 && draft.companyFoundedYear <= 2100 ? draft.companyFoundedYear : null,
+        }),
       });
       setProfile(updated);
       setDraft(updated);

@@ -173,6 +173,8 @@ export const createJobSchema = z.object({
   salaryMin: z.number().int().min(0).max(500000).optional().nullable(),
   salaryMax: z.number().int().min(0).max(500000).optional().nullable(),
   externalApplyUrl: z.string().url("Ogiltig URL").max(500).optional().nullable(),
+  start: z.string().trim().max(120).optional().nullable(),
+  rolling: z.boolean().optional(),
   requirements: z.array(z.string()).optional(),
   extraRequirements: z.string().max(2000).optional().nullable(),
   bransch: z
@@ -217,6 +219,8 @@ export const patchJobSchema = z.object({
   salaryMax: z.number().int().min(0).max(500000).optional().nullable(),
   contact: z.string().email("Ogiltig kontakt e-post").max(255).optional(),
   externalApplyUrl: z.string().url("Ogiltig URL").max(500).optional().nullable(),
+  start: z.string().trim().max(120).optional().nullable(),
+  rolling: z.boolean().optional(),
 });
 
 export const createOrganizationSchema = z
@@ -259,6 +263,10 @@ export const companyProfileSchema = z.object({
   industryOrgMember: z.boolean().optional(),
   industryOrgName: z.string().max(200).optional().nullable(),
   policyAgreedAt: z.string().datetime().optional().nullable(),
+  acceptsPraktik: z.boolean().optional(),
+  companyEmployeeCount: z.string().trim().max(20).optional().nullable(),
+  companyFleet: z.number().int().min(0).max(100000).optional().nullable(),
+  companyFoundedYear: z.number().int().min(1800).max(2100).optional().nullable(),
 });
 
 export const createConversationSchema = z.object({
