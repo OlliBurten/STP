@@ -123,7 +123,7 @@ function WaitingAlert({ unreadCount, conversations }) {
       <span style={{ width: 10, height: 10, borderRadius: 5, background: "var(--danger)", boxShadow: "0 0 0 4px rgba(185,28,59,0.16)", flexShrink: 0 }} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: "var(--text-md)", fontWeight: 700, color: "var(--ink-900)", marginBottom: 2 }}>
-          {unreadCount} kandidater väntar på svar
+          {unreadCount} {unreadCount === 1 ? "kandidat väntar" : "kandidater väntar"} på svar
         </div>
         {name && oldest && (
           <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)" }}>
@@ -604,7 +604,7 @@ export default function ForCompanies() {
           <div style={{ padding: "4px 20px 20px" }}>
             <div style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--amber-text)", letterSpacing: 1.3, textTransform: "uppercase", marginBottom: 6 }}>{timeGreeting()}, {companyShort}</div>
             <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, letterSpacing: -0.8, lineHeight: 1.2, color: "var(--ink-900)" }}>
-              {newApplications > 0 ? <>Du har <span style={{ color: "var(--amber-text)" }}>{newApplications} nya kandidater</span> att granska.</> : <>Välkommen tillbaka, <span style={{ color: "var(--amber-text)" }}>{companyShort}</span>.</>}
+              {newApplications > 0 ? <>Du har <span style={{ color: "var(--amber-text)" }}>{newApplications} {newApplications === 1 ? "ny kandidat" : "nya kandidater"}</span> att granska.</> : <>Välkommen tillbaka, <span style={{ color: "var(--amber-text)" }}>{companyShort}</span>.</>}
             </h1>
           </div>
 
@@ -719,7 +719,7 @@ export default function ForCompanies() {
             </p>
             <h1 style={{ fontSize: "var(--text-5xl)", fontWeight: 900, lineHeight: 1.15, letterSpacing: -1.2, color: "var(--ink-900)", maxWidth: 720, margin: 0 }}>
               {newApplications > 0 ? (
-                <>Du har <span style={{ color: "var(--amber-deep)" }}>{newApplications} nya kandidater</span> som väntar.</>
+                <>Du har <span style={{ color: "var(--amber-deep)" }}>{newApplications} {newApplications === 1 ? "ny kandidat" : "nya kandidater"}</span> som väntar.</>
               ) : (
                 <>Välkommen tillbaka, <span style={{ color: "var(--amber-deep)" }}>{companyShort}</span>.</>
               )}

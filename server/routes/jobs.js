@@ -9,7 +9,7 @@ import {
   attachCompanyContext,
   requireVerifiedEmail,
 } from "../middleware/auth.js";
-import { matchScore, driverYearsFromExperience } from "../utils/matchScore.js";
+import { matchScore, matchPercent, driverYearsFromExperience } from "../utils/matchScore.js";
 import { notifyRecommendedJobMatch } from "../lib/email.js";
 import { createNotification } from "../lib/notifications.js";
 import { validateBody, validateQuery } from "../middleware/validate.js";
@@ -398,7 +398,7 @@ jobsRouter.get("/:id/applicants", authMiddleware, requireCompany, attachCompanyC
         privateMatchNotes: p?.privateMatchNotes || "",
         yearsExperience,
       };
-      const score = matchScore(driver, job);
+      const score = matchPercent(driver, job);
       return {
         conversationId: c.id,
         driverId: c.driverId,
@@ -603,6 +603,9 @@ jobsRouter.get("/:id", optionalAuthMiddleware, attachCompanyContext, async (req,
     });
     res.json({
       id: job.id,
+      // Åkeriets kandidatvy läser status — utan fältet visades varje annons som "Pausad"
+      // och pausa/stäng-knappen (som bara visas för aktiva) syntes aldrig.
+      status: job.status,
       title: job.title,
       company: job.company,
       location: job.location,
@@ -875,6 +878,20 @@ jobsRouter.patch("/:id", authMiddleware, requireCompany, attachCompanyContext, r
     if (body.filledAt !== undefined) data.filledAt = body.filledAt;
     if (body.kollektivavtal !== undefined) data.kollektivavtal = body.kollektivavtal;
     if (body.status === "HIDDEN" && !body.filledAt && !job.filledAt) data.filledAt = new Date();
+    // Återaktivering: annonsen är öppen igen, så den är inte längre tillsatt.
+    if (body.status === "ACTIVE" && body.filledAt === undefined) data.filledAt = null;
+    // Innehåll — speglar mappningen i POST /.
+    for (const k of ["title", "company", "tasks", "offers", "location", "region", "license", "certificates", "jobType", "employment", "schedule", "experience", "salary", "salaryMin", "salaryMax", "contact", "externalApplyUrl"]) {
+      if (body[k] !== undefined) data[k] = body[k];
+    }
+    if (body.aboutJob !== undefined) {
+      data.aboutJob = body.aboutJob;
+      data.description = body.aboutJob;
+    }
+    if (body.requirements !== undefined) data.requirements = JSON.stringify(body.requirements);
+    if (body.segment !== undefined || body.employment !== undefined) {
+      data.segment = resolveSegment(body.segment, body.employment ?? job.employment);
+    }
     const updated = await prisma.job.update({
       where: { id: job.id },
       data,

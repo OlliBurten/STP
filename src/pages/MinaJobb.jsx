@@ -6,6 +6,8 @@ import { useChat } from "../context/ChatContext";
 import { useIsMobile } from "../hooks/useIsMobile";
 import CompanyBottomNav from "../components/CompanyBottomNav";
 
+const SEGMENT_LABEL = { FULLTIME: "Heltid", FLEX: "Vikarie / deltid", INTERNSHIP: "Praktik" };
+
 // ─── Icons ───────────────────────────────────────────────────────────────────
 function Icon({ n, size = 18, color = "currentColor" }) {
   const icons = {
@@ -122,7 +124,7 @@ function AdCard({ job, pipeline, onPause, onClose }) {
                 <Icon n="pin" size={12} color="var(--ink-500)" />{job.region || job.location}
               </span>
             )}
-            {job.segment && <span>· {job.segment}</span>}
+            {job.segment && <span>· {SEGMENT_LABEL[job.segment] || job.segment}</span>}
             {job.salary && <span>· <span style={{ fontFamily: "var(--mono)", fontWeight: 600 }}>{job.salary} kr</span></span>}
             {dl && <span>· {dl}</span>}
           </div>

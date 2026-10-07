@@ -152,17 +152,19 @@ export const oauthCompleteSchema = z.object({
 export const createJobSchema = z.object({
   title: z.string().min(1, "Jobbtitel krävs").max(300),
   company: z.string().min(1, "Företagsnamn krävs").max(200),
-  description: z.string().min(1, "Beskrivning krävs").max(20_000),
+  // Desktopformuläret skickar beskrivningen som aboutJob (+ tasks/offers som listor).
+  // Schemat krävde description och strök okända fält, så formuläret fick alltid 400
+  // och uppgifter/förmåner sparades aldrig. Någon av description/aboutJob krävs.
+  description: z.string().max(20_000).optional().nullable(),
+  aboutJob: z.string().max(20_000).optional().nullable(),
+  tasks: z.array(z.string().max(500)).max(40).optional(),
+  offers: z.array(z.string().max(500)).max(40).optional(),
   location: z.string().min(1, "Ort krävs").max(200),
   region: z.string().min(1, "Region krävs").max(100),
   license: z.array(z.string().max(20)).optional().default([]),
   certificates: z.array(z.string().max(50)).optional().default([]),
-  jobType: z.enum(["fjärrkörning", "lokalt", "distribution", "timjobb"], {
-    errorMap: () => ({ message: "Ogiltig jobbtyp" }),
-  }),
-  employment: z.enum(["fast", "vikariat", "tim"], {
-    errorMap: () => ({ message: "Ogiltig anställningstyp" }),
-  }),
+  jobType: z.enum(["fjärrkörning", "lokalt", "distribution", "timjobb"], { error: "Välj jobbtyp" }),
+  employment: z.enum(["fast", "vikariat", "tim"], { error: "Välj anställningsform" }),
   segment: z.string().max(50).optional(),
   contact: z.string().min(1, "Kontakt e-post krävs").email("Ogiltig kontakt e-post").max(255),
   schedule: z.string().max(50).optional().nullable(),
@@ -183,13 +185,38 @@ export const createJobSchema = z.object({
   physicalWorkRequired: z.boolean().optional().nullable(),
   soloWorkOk: z.boolean().optional().nullable(),
   kollektivavtal: z.boolean().optional().nullable(),
+}).refine((d) => Boolean((d.aboutJob || d.description || "").trim()), {
+  message: "Beskrivning krävs",
+  path: ["description"],
 });
 
 /** Company can close job (set filled) or update limited fields */
+// Innehållsfälten (titel, text, villkor …) — samma regler som vid skapande. Utan dem
+// gick en publicerad annons inte att redigera alls ("Redigera annons" ledde till 404).
 export const patchJobSchema = z.object({
   status: z.enum(["ACTIVE", "HIDDEN", "REMOVED"]).optional(),
   filledAt: z.string().datetime().optional().nullable().transform((v) => (v ? new Date(v) : null)),
   kollektivavtal: z.boolean().optional().nullable(),
+  title: z.string().min(1, "Jobbtitel krävs").max(300).optional(),
+  company: z.string().min(1, "Företagsnamn krävs").max(200).optional(),
+  aboutJob: z.string().min(1, "Beskrivning krävs").max(20_000).optional(),
+  tasks: z.array(z.string().max(500)).max(40).optional(),
+  offers: z.array(z.string().max(500)).max(40).optional(),
+  requirements: z.array(z.string().max(500)).max(40).optional(),
+  location: z.string().min(1, "Ort krävs").max(200).optional(),
+  region: z.string().min(1, "Region krävs").max(100).optional(),
+  license: z.array(z.string().max(20)).optional(),
+  certificates: z.array(z.string().max(50)).optional(),
+  jobType: z.enum(["fjärrkörning", "lokalt", "distribution", "timjobb"], { error: "Välj jobbtyp" }).optional(),
+  employment: z.enum(["fast", "vikariat", "tim"], { error: "Välj anställningsform" }).optional(),
+  segment: z.string().max(50).optional(),
+  schedule: z.string().max(50).optional().nullable(),
+  experience: z.string().max(20).optional().nullable(),
+  salary: z.string().max(100).optional().nullable(),
+  salaryMin: z.number().int().min(0).max(500000).optional().nullable(),
+  salaryMax: z.number().int().min(0).max(500000).optional().nullable(),
+  contact: z.string().email("Ogiltig kontakt e-post").max(255).optional(),
+  externalApplyUrl: z.string().url("Ogiltig URL").max(500).optional().nullable(),
 });
 
 export const createOrganizationSchema = z

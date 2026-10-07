@@ -616,7 +616,7 @@ export default function Messages() {
       {/* Banners */}
       {!isDriver && companyUnreadConversationCount > 0 && (
         <div style={{ padding: "10px 24px", background: "var(--amber-tint)", borderBottom: "1px solid rgba(242,164,28,0.2)", fontSize: "var(--text-sm)", color: "var(--amber-text)", flexShrink: 0 }}>
-          Ni har <strong>{companyUnreadConversationCount}</strong> nya ansökningar att granska. Svarar ni inom 24h ökar chansen att hitta rätt kandidat.
+          Ni har <strong>{companyUnreadConversationCount}</strong> {companyUnreadConversationCount === 1 ? "ny ansökan" : "nya ansökningar"} att granska. Svarar ni inom 24h ökar chansen att hitta rätt kandidat.
         </div>
       )}
       {isDriver && selectedCount > 0 && (
@@ -801,7 +801,7 @@ export default function Messages() {
                       <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--green-text)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
                     </div>
                     <h2 style={{ fontSize: "var(--text-2xl)", fontWeight: 900, color: "var(--ink-900)", letterSpacing: -0.5, marginBottom: 4 }}>Välj en konversation</h2>
-                    <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", maxWidth: 340, lineHeight: 1.6 }}>Här samlas alla dina ansökningar och meddelanden från åkerier på ett ställe.</p>
+                    <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", maxWidth: 340, lineHeight: 1.6 }}>{isDriver ? "Här samlas alla dina ansökningar och meddelanden från åkerier på ett ställe." : "Här samlas ansökningar och meddelanden från förare."}</p>
                   </>
                 ) : isDriver ? (
                   <>
