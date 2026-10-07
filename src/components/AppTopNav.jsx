@@ -135,7 +135,7 @@ export function NotifPanel({ notifs, unreadCount, onClose, onClickItem, onMarkAl
 }
 
 /* ─── Search modal (⌘K) ───────────────────────────────────────────────────── */
-export function SearchModal({ onClose, isCompany }) {
+function SearchModal({ onClose, isCompany }) {
   const [q, setQ] = useState("");
   const inputRef = useRef(null);
   const navigate = useNavigate();

@@ -1,15 +1,15 @@
 /**
  * Åkeriportalen — sidomeny för åkerier på desktop (samma upplägg som adminvyn).
  * Ersätter toppmenyn för åkerier på desktop. Visar bara det STP erbjuder åkerier i dag;
- * sidorna är desamma som i toppmenyn. Notiser och ⌘K delas med AppTopNav.
+ * sidorna är desamma som i toppmenyn. Notiserna delas med AppTopNav.
  */
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useChat } from "../../context/ChatContext";
 import Logo from "../Logo";
 import { PortalContext } from "./portal";
-import { NotifPanel, SearchModal } from "../AppTopNav";
+import { NotifPanel } from "../AppTopNav";
 import { useNotifications } from "../../hooks/useNotifications";
 
 const NAV = [
@@ -62,20 +62,11 @@ export default function PortalShell({ children }) {
   const navigate = useNavigate();
   const badges = { unread: companyUnreadConversationCount };
   const [notifOpen, setNotifOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
   const { notifs, markRead, markAll } = useNotifications(user, notifOpen);
   // Åkerier utan organisation (äldre konton) har ingen activeOrg — de är ägare av sitt konto.
   const orgName = activeOrg?.name || user?.companyName || user?.name;
   const isOwner = activeOrg ? activeOrg.role === "OWNER" : true;
   const verified = (activeOrg?.status || user?.companyStatus) === "VERIFIED";
-
-  useEffect(() => {
-    const fn = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") { e.preventDefault(); setSearchOpen((v) => !v); }
-    };
-    window.addEventListener("keydown", fn);
-    return () => window.removeEventListener("keydown", fn);
-  }, []);
 
   const handleNotifClick = (item) => {
     markRead(item);
@@ -102,10 +93,7 @@ export default function PortalShell({ children }) {
           <div style={{ padding: "18px 20px", borderBottom: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", gap: 10 }}>
             <NavLink to="/foretag" aria-label="Översikt"><Logo height={24} variant="light" /></NavLink>
             <span style={{ fontSize: 10, fontWeight: 800, color: "var(--amber)", letterSpacing: 1, textTransform: "uppercase", paddingLeft: 10, borderLeft: "1px solid rgba(255,255,255,0.15)" }}>Åkeri</span>
-            <div style={{ marginLeft: "auto", display: "flex", gap: 2 }}>
-              <button onClick={() => setSearchOpen(true)} title="Snabbnavigering (⌘K)" aria-label="Snabbnavigering" style={iconBtn(false)}>
-                <Ico n="search" size={15} color="rgba(255,255,255,0.6)" />
-              </button>
+            <div style={{ marginLeft: "auto", display: "flex" }}>
               <button data-tour="notifications" onClick={() => setNotifOpen((v) => !v)} title="Notiser" aria-label="Notiser" style={iconBtn(notifOpen)}>
                 <Ico n="bell" size={15} color="rgba(255,255,255,0.6)" />
                 {notifs.unreadCount > 0 && <span style={{ position: "absolute", top: 4, right: 4, width: 7, height: 7, borderRadius: 4, background: "var(--amber)", border: "1.5px solid var(--ink-900)" }} />}
@@ -182,7 +170,6 @@ export default function PortalShell({ children }) {
           <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
         </div>
       </div>
-      {searchOpen && <SearchModal isCompany onClose={() => setSearchOpen(false)} />}
       {notifOpen && (
         <NotifPanel
           notifs={notifs.list}
