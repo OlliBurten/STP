@@ -10,6 +10,7 @@ import LoadingBlock from "../components/LoadingBlock";
 import { useToast } from "../context/ToastContext";
 import { useIsMobile } from "../hooks/useIsMobile";
 import CompanyBottomNav from "../components/CompanyBottomNav";
+import { useInPortal } from "../components/company/portal";
 
 // ─── Quick replies ────────────────────────────────────────────────────────────
 const DRIVER_QUICK = [
@@ -483,6 +484,7 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
 export default function Messages() {
   usePageTitle("Meddelanden");
   const isMobile = useIsMobile();
+  const inPortal = useInPortal();
   const { id } = useParams();
   const { user, hasApi } = useAuth();
   const { profile } = useProfile();
@@ -611,7 +613,8 @@ export default function Messages() {
   // bakgrund når ända upp till navbaren (annars blir det ett vitt glapp).
   // Rubrikens luft sätts i sidopanelens egen paddingTop nedan.
   return (
-    <main style={{ background: "var(--paper)", height: isMobile ? "100dvh" : "calc(100vh - 64px)", marginTop: isMobile ? 0 : -64, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+    // I åkeriportalen finns ingen toppmeny/padding att kompensera för.
+    <main style={{ background: "var(--paper)", height: isMobile ? "100dvh" : inPortal ? "100vh" : "calc(100vh - 64px)", marginTop: isMobile || inPortal ? 0 : -64, display: "flex", flexDirection: "column", overflow: "hidden" }}>
 
       {/* Banners */}
       {!isDriver && companyUnreadConversationCount > 0 && (

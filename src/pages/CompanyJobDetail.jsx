@@ -32,8 +32,12 @@ function avatarColor(name) {
   return colors[Math.abs(h) % colors.length];
 }
 
+// Steg som satts uttryckligen (Kandidater-sidan / appen) går före tidsstämplarna.
+const PIPELINE_TO_STAGE = { ny: "new", kontaktad: "reviewing", intervjuad: "interview", anstalld: "hired", avslag: "rejected" };
+
 function getStage(a, readMap, stageOverrides) {
   if (stageOverrides?.[a.conversationId]) return stageOverrides[a.conversationId];
+  if (PIPELINE_TO_STAGE[a.pipelineStage]) return PIPELINE_TO_STAGE[a.pipelineStage];
   if (a.rejectedByCompanyAt) return "rejected";
   if (a.selectedByCompanyAt) return "interview";
   if (readMap?.[a.conversationId]) return "reviewing";

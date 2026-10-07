@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
-import { authMiddleware, optionalAuthMiddleware, requireCompany, requireCompanyOwner, attachCompanyContext, requireVerifiedEmail } from "../middleware/auth.js";
+import { authMiddleware, optionalAuthMiddleware, requireCompany, requireCompanyOwner, attachCompanyContext, requireVerifiedEmail, requireVerifiedCompany } from "../middleware/auth.js";
+import { matchPercent, driverYearsFromExperience } from "../utils/matchScore.js";
 import { validateBody, validateQuery } from "../middleware/validate.js";
 import {
   companyProfileSchema,
@@ -280,6 +281,82 @@ companiesRouter.get("/:id/public", optionalAuthMiddleware, async (req, res, next
 });
 
 companiesRouter.use(authMiddleware, requireCompany, attachCompanyContext);
+
+/**
+ * Alla kandidater (konversationer) för åkeriet i en lista — portalens Kandidater-sida.
+ * Steget härleds på ett ställe: pipelineStage om det satts, annars tidsstämplarna
+ * (samma ordning som annonsens kandidattavla).
+ */
+const PIPELINE_TO_STAGE = { ny: "new", kontaktad: "reviewing", intervjuad: "interview", anstalld: "hired", avslag: "rejected" };
+export function candidateStage(c) {
+  if (c.pipelineStage && PIPELINE_TO_STAGE[c.pipelineStage]) return PIPELINE_TO_STAGE[c.pipelineStage];
+  if (c.rejectedByCompanyAt) return "rejected";
+  if (c.selectedByCompanyAt) return "interview";
+  if (c.readByCompanyAt || c.reviewedByCompanyAt) return "reviewing";
+  return "new";
+}
+
+companiesRouter.get("/me/candidates", requireVerifiedCompany, async (req, res, next) => {
+  try {
+    const where = req.organizationId
+      ? { organizationId: req.organizationId }
+      : { companyId: req.companyOwnerId ?? req.userId, organizationId: null };
+    const convos = await prisma.conversation.findMany({
+      where,
+      orderBy: { updatedAt: "desc" },
+      take: 500,
+      include: {
+        job: { select: { id: true, title: true, location: true, region: true, license: true, certificates: true, segment: true, employment: true, experience: true, requirements: true } },
+        driver: {
+          select: {
+            id: true, name: true,
+            driverProfile: { select: { id: true, licenses: true, certificates: true, region: true, location: true, regionsWilling: true, availability: true, experience: true, privateMatchNotes: true } },
+          },
+        },
+        messages: { orderBy: { createdAt: "asc" }, select: { senderRole: true, createdAt: true } },
+      },
+    });
+    const profileIds = convos.map((c) => c.driver?.driverProfile?.id).filter(Boolean);
+    const refCounts = profileIds.length
+      ? await prisma.driverReview.groupBy({ by: ["driverId"], where: { driverId: { in: profileIds } }, _count: { _all: true } })
+      : [];
+    const refByProfile = new Map(refCounts.map((r) => [r.driverId, r._count._all]));
+
+    res.json(convos.map((c) => {
+      const p = c.driver?.driverProfile;
+      const exp = Array.isArray(p?.experience) ? p.experience : (() => { try { return JSON.parse(p?.experience || "[]"); } catch { return []; } })();
+      const driver = {
+        licenses: p?.licenses || [], certificates: p?.certificates || [], region: p?.region,
+        regionsWilling: p?.regionsWilling || [], availability: p?.availability,
+        privateMatchNotes: p?.privateMatchNotes || "", yearsExperience: driverYearsFromExperience(exp),
+      };
+      const first = c.messages[0];
+      const last = c.messages[c.messages.length - 1];
+      return {
+        conversationId: c.id,
+        driverId: c.driverId,
+        driverName: c.driver?.name || "Förare",
+        jobId: c.jobId,
+        jobTitle: c.job?.title || c.jobTitle || null,
+        jobLocation: c.job?.location || null,
+        stage: candidateStage(c),
+        matchPercent: c.job ? matchPercent(driver, c.job) : null,
+        initiatedBy: first?.senderRole === "company" ? "company" : "driver",
+        lastSender: last?.senderRole || null,
+        appliedAt: c.createdAt,
+        lastActivityAt: last?.createdAt || c.updatedAt,
+        unread: !c.readByCompanyAt && last?.senderRole === "driver",
+        licenses: driver.licenses,
+        certificates: driver.certificates,
+        location: p?.location || p?.region || null,
+        yearsExperience: driver.yearsExperience,
+        referenceCount: p ? refByProfile.get(p.id) || 0 : 0,
+      };
+    }));
+  } catch (e) {
+    next(e);
+  }
+});
 
 companiesRouter.get("/me/profile", async (req, res, next) => {
   try {

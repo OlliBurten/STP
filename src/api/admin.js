@@ -151,3 +151,13 @@ export function sendDemoInvite({ email, role, label, days }) {
 export function revokeDemoInvite(id) {
   return apiDelete(`/api/admin/demo-invites/${id}`);
 }
+
+// ─── Åkeriportalen ───────────────────────────────────────────────────────────
+// Nya portalen (sidomeny) slås på per åkeri medan den rullas ut.
+export function listPortalOrganizations() {
+  return apiGet("/api/admin/organizations/portal");
+}
+
+export function setOrganizationPortal(id, enabled) {
+  return apiPatch(`/api/admin/organizations/${id}/portal`, { enabled });
+}

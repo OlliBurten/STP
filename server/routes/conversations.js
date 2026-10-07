@@ -99,6 +99,7 @@ function toConversation(c) {
     readByCompanyAt: c.readByCompanyAt?.toISOString() ?? null,
     readByDriverAt: c.readByDriverAt?.toISOString() ?? null,
     rejectedByCompanyAt: c.rejectedByCompanyAt?.toISOString() ?? null,
+    pipelineStage: c.pipelineStage ?? null,
     messages: (c.messages || []).map((m) => ({
       id: m.id,
       sender: m.senderRole,
