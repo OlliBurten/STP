@@ -1,25 +1,28 @@
 /**
  * Åkeriportalen — sidomeny för åkerier på desktop (samma upplägg som adminvyn).
- * Slås på per åkeri (Organization.portalEnabled) medan den rullas ut.
- * Visar bara det STP erbjuder åkerier i dag; sidorna är desamma som i toppmenyn.
+ * Ersätter toppmenyn för åkerier på desktop. Visar bara det STP erbjuder åkerier i dag;
+ * sidorna är desamma som i toppmenyn. Notiser och ⌘K delas med AppTopNav.
  */
-import { NavLink, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useChat } from "../../context/ChatContext";
 import Logo from "../Logo";
 import { PortalContext } from "./portal";
+import { NotifPanel, SearchModal } from "../AppTopNav";
+import { useNotifications } from "../../hooks/useNotifications";
 
 const NAV = [
   { group: "Rekrytering", items: [
     { label: "Översikt",     to: "/foretag",             icon: "home",   exact: true },
     { label: "Kandidater",   to: "/foretag/kandidater",  icon: "users" },
-    { label: "Annonser",     to: "/foretag/annonser",    icon: "doc",    also: ["/foretag/annonsera", "/foretag/mina-jobb"] },
+    { label: "Annonser",     to: "/foretag/annonser",    icon: "doc",    also: ["/foretag/annonsera", "/foretag/mina-jobb"], tour: "company-jobs" },
     { label: "Meddelanden",  to: "/foretag/meddelanden", icon: "msg",    badge: "unread" },
     { label: "Hitta förare", to: "/foretag/chaufforer",  icon: "search" },
   ] },
   { group: "Åkeriet", items: [
     { label: "Team",           to: "/foretag/team",    icon: "user" },
-    { label: "Företagsprofil", to: "/foretag/profil",  icon: "building", also: ["/foretag/lagg-till-akeri"] },
+    { label: "Företagsprofil", to: "/foretag/profil",  icon: "building", also: ["/foretag/lagg-till-akeri"], tour: "user-menu" },
     { label: "Inställningar",  to: "/installningar",   icon: "settings" },
   ] },
 ];
@@ -33,7 +36,8 @@ function Ico({ n, size = 16, color = "currentColor" }) {
     search: <><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></>,
     user:   <><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></>,
     building: <><path d="M3 21h18"/><path d="M5 21V5a2 2 0 012-2h10a2 2 0 012 2v16"/><path d="M9 8h2M9 12h2M9 16h2M13 8h2M13 12h2M13 16h2"/></>,
-    settings: <><circle cx="12" cy="12" r="3"/><path d="M12 1v3M12 20v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M1 12h3M20 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></>,
+    settings: <><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82V9a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></>,
+    bell:   <><path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21a2 2 0 004 0"/></>,
     logout: <><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>,
     check:  <polyline points="4 12 10 18 20 6"/>,
   };
@@ -55,7 +59,34 @@ export default function PortalShell({ children }) {
   const { user, activeOrg, userOrgs = [], switchOrg, logout, isImpersonating, stopViewAs } = useAuth();
   const { companyUnreadConversationCount = 0 } = useChat();
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const badges = { unread: companyUnreadConversationCount };
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const { notifs, markRead, markAll } = useNotifications(user, notifOpen);
+  // Åkerier utan organisation (äldre konton) har ingen activeOrg — de är ägare av sitt konto.
+  const orgName = activeOrg?.name || user?.companyName || user?.name;
+  const isOwner = activeOrg ? activeOrg.role === "OWNER" : true;
+  const verified = (activeOrg?.status || user?.companyStatus) === "VERIFIED";
+
+  useEffect(() => {
+    const fn = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") { e.preventDefault(); setSearchOpen((v) => !v); }
+    };
+    window.addEventListener("keydown", fn);
+    return () => window.removeEventListener("keydown", fn);
+  }, []);
+
+  const handleNotifClick = (item) => {
+    markRead(item);
+    setNotifOpen(false);
+    if (item.link) navigate(item.link);
+  };
+
+  const iconBtn = (active) => ({
+    width: 30, height: 30, borderRadius: 7, position: "relative", border: "none", cursor: "pointer",
+    background: active ? "rgba(255,255,255,0.1)" : "transparent", display: "inline-flex", alignItems: "center", justifyContent: "center",
+  });
 
   const isActive = (it) =>
     it.exact ? pathname === it.to : [it.to, ...(it.also || [])].some((p) => pathname === p || pathname.startsWith(p + "/"));
@@ -71,6 +102,15 @@ export default function PortalShell({ children }) {
           <div style={{ padding: "18px 20px", borderBottom: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", gap: 10 }}>
             <NavLink to="/foretag" aria-label="Översikt"><Logo height={24} variant="light" /></NavLink>
             <span style={{ fontSize: 10, fontWeight: 800, color: "var(--amber)", letterSpacing: 1, textTransform: "uppercase", paddingLeft: 10, borderLeft: "1px solid rgba(255,255,255,0.15)" }}>Åkeri</span>
+            <div style={{ marginLeft: "auto", display: "flex", gap: 2 }}>
+              <button onClick={() => setSearchOpen(true)} title="Snabbnavigering (⌘K)" aria-label="Snabbnavigering" style={iconBtn(false)}>
+                <Ico n="search" size={15} color="rgba(255,255,255,0.6)" />
+              </button>
+              <button data-tour="notifications" onClick={() => setNotifOpen((v) => !v)} title="Notiser" aria-label="Notiser" style={iconBtn(notifOpen)}>
+                <Ico n="bell" size={15} color="rgba(255,255,255,0.6)" />
+                {notifs.unreadCount > 0 && <span style={{ position: "absolute", top: 4, right: 4, width: 7, height: 7, borderRadius: 4, background: "var(--amber)", border: "1.5px solid var(--ink-900)" }} />}
+              </button>
+            </div>
           </div>
 
           <div style={{ padding: "14px 20px 4px" }}>
@@ -85,8 +125,8 @@ export default function PortalShell({ children }) {
               </select>
             ) : (
               <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{activeOrg?.name}</span>
-                {activeOrg?.status === "VERIFIED" && <span title="Verifierat åkeri" style={{ display: "inline-flex" }}><Ico n="check" size={13} color="var(--success)" /></span>}
+                <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{orgName}</span>
+                {verified && <span title="Verifierat åkeri" style={{ display: "inline-flex" }}><Ico n="check" size={13} color="var(--success)" /></span>}
               </div>
             )}
           </div>
@@ -103,6 +143,7 @@ export default function PortalShell({ children }) {
                       key={it.to}
                       to={it.to}
                       aria-current={on ? "page" : undefined}
+                      data-tour={it.tour}
                       style={{ display: "flex", alignItems: "center", gap: 11, padding: "9px 10px", borderRadius: 8, marginBottom: 2, background: on ? "rgba(255,255,255,0.10)" : "transparent", color: on ? "#fff" : "rgba(255,255,255,0.65)", fontSize: 13.5, fontWeight: on ? 700 : 500, textDecoration: "none" }}
                     >
                       <Ico n={it.icon} color={on ? "var(--amber)" : "rgba(255,255,255,0.5)"} />
@@ -121,7 +162,7 @@ export default function PortalShell({ children }) {
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 12.5, fontWeight: 700, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user?.name || user?.email}</div>
-              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)" }}>{activeOrg?.role === "OWNER" ? "Ägare" : "Kollega"}</div>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)" }}>{isOwner ? "Ägare" : "Kollega"}</div>
             </div>
             <button onClick={logout} title="Logga ut" aria-label="Logga ut" style={{ background: "transparent", border: "none", padding: 6, borderRadius: 6, cursor: "pointer", display: "inline-flex" }}>
               <Ico n="logout" size={15} color="rgba(255,255,255,0.5)" />
@@ -141,6 +182,18 @@ export default function PortalShell({ children }) {
           <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
         </div>
       </div>
+      {searchOpen && <SearchModal isCompany onClose={() => setSearchOpen(false)} />}
+      {notifOpen && (
+        <NotifPanel
+          notifs={notifs.list}
+          unreadCount={notifs.unreadCount}
+          onClose={() => setNotifOpen(false)}
+          onClickItem={handleNotifClick}
+          onMarkAll={markAll}
+          isCompany
+          panelStyle={{ top: 12, left: 244, right: "auto" }}
+        />
+      )}
     </PortalContext.Provider>
   );
 }

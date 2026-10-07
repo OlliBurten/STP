@@ -9,7 +9,7 @@ import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useChat } from "../context/ChatContext";
 import { useIsMobile } from "../hooks/useIsMobile";
-import { fetchNotifications, markNotificationRead, markAllNotificationsRead } from "../api/notifications.js";
+import { useNotifications } from "../hooks/useNotifications";
 import { demoSwitchRole } from "../api/profile.js";
 
 
@@ -65,13 +65,14 @@ function Ico({ n, size = 16, color = "currentColor", sw = 1.8 }) {
 }
 
 /* ─── Notification panel ─────────────────────────────────────────────────── */
-function NotifPanel({ notifs, unreadCount, onClose, onClickItem, onMarkAll }) {
+export function NotifPanel({ notifs, unreadCount, onClose, onClickItem, onMarkAll, isCompany, panelStyle }) {
   return (
     <>
       <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 60 }} />
       <div style={{
         position: "fixed", top: 64, right: "max(20px, calc((100vw - var(--w-app)) / 2 + 32px))",
         width: 380, maxWidth: "calc(100vw - 40px)", maxHeight: "calc(100vh - 80px)",
+        ...panelStyle,
         background: "var(--card)", border: "1px solid var(--line)",
         borderRadius: 16, boxShadow: "0 24px 60px rgba(15,22,22,0.22)",
         zIndex: 61, display: "flex", flexDirection: "column", overflow: "hidden",
@@ -124,7 +125,7 @@ function NotifPanel({ notifs, unreadCount, onClose, onClickItem, onMarkAll }) {
           })}
         </div>
         <div style={{ padding: "10px 12px", borderTop: "1px solid var(--line)" }}>
-          <NavLink to="/meddelanden" onClick={onClose} style={{ display: "block", width: "100%", padding: "9px", borderRadius: 9, border: "1px solid var(--line-2)", background: "transparent", color: "var(--ink-900)", fontSize: "var(--text-sm)", fontWeight: 600, textAlign: "center", textDecoration: "none", cursor: "pointer" }}>
+          <NavLink to={isCompany ? "/foretag/meddelanden" : "/meddelanden"} onClick={onClose} style={{ display: "block", width: "100%", padding: "9px", borderRadius: 9, border: "1px solid var(--line-2)", background: "transparent", color: "var(--ink-900)", fontSize: "var(--text-sm)", fontWeight: 600, textAlign: "center", textDecoration: "none", cursor: "pointer" }}>
             Visa alla meddelanden
           </NavLink>
         </div>
@@ -134,7 +135,7 @@ function NotifPanel({ notifs, unreadCount, onClose, onClickItem, onMarkAll }) {
 }
 
 /* ─── Search modal (⌘K) ───────────────────────────────────────────────────── */
-function SearchModal({ onClose }) {
+export function SearchModal({ onClose, isCompany }) {
   const [q, setQ] = useState("");
   const inputRef = useRef(null);
   const navigate = useNavigate();
@@ -148,7 +149,17 @@ function SearchModal({ onClose }) {
 
   const go = (path) => { navigate(path); onClose(); };
 
-  const shortcuts = [
+  const shortcuts = isCompany ? [
+    { label: "Översikt",        path: "/foretag",             hint: "Ö" },
+    { label: "Kandidater",      path: "/foretag/kandidater",  hint: "K" },
+    { label: "Annonser",        path: "/foretag/annonser",    hint: "A" },
+    { label: "Publicera annons", path: "/foretag/annonsera",  hint: "P" },
+    { label: "Meddelanden",     path: "/foretag/meddelanden", hint: "M" },
+    { label: "Hitta förare",    path: "/foretag/chaufforer",  hint: "H" },
+    { label: "Team",            path: "/foretag/team",        hint: "T" },
+    { label: "Företagsprofil",  path: "/foretag/profil",      hint: "F" },
+    { label: "Inställningar",   path: "/installningar",       hint: "I" },
+  ] : [
     { label: "Lediga jobb",     path: "/jobb",             hint: "J" },
     { label: "Åkerier",         path: "/akerier",           hint: "Å" },
     { label: "Meddelanden",     path: "/meddelanden",       hint: "M" },
@@ -302,7 +313,6 @@ export default function AppTopNav() {
   const [searchOpen,  setSearchOpen]  = useState(false);
   const [notifOpen,   setNotifOpen]   = useState(false);
   const [userMenuOpen,setUserMenuOpen]= useState(false);
-  const [notifs,      setNotifs]      = useState({ list: [], unreadCount: 0 });
 
   // ⌘K keyboard shortcut
   useEffect(() => {
@@ -316,41 +326,12 @@ export default function AppTopNav() {
     return () => window.removeEventListener("keydown", fn);
   }, []);
 
-  // Fetch notifications count on mount
-  useEffect(() => {
-    if (!user) return;
-    fetchNotifications()
-      .then(data => setNotifs({ list: data.list || [], unreadCount: data.unreadCount ?? 0 }))
-      .catch(() => {});
-  }, [user]);
-
-  // Refetch when panel opens
-  useEffect(() => {
-    if (!notifOpen || !user) return;
-    fetchNotifications()
-      .then(data => setNotifs({ list: data.list || [], unreadCount: data.unreadCount ?? 0 }))
-      .catch(() => {});
-  }, [notifOpen, user]);
+  const { notifs, markRead, markAll: handleMarkAll } = useNotifications(user, notifOpen);
 
   const handleNotifClick = (item) => {
-    if (!item.readAt) {
-      markNotificationRead(item.id).catch(() => {});
-      setNotifs(prev => ({
-        list: prev.list.map(n => n.id === item.id ? { ...n, readAt: new Date().toISOString() } : n),
-        unreadCount: Math.max(0, prev.unreadCount - 1),
-      }));
-    }
+    markRead(item);
     setNotifOpen(false);
     if (item.link) navigate(item.link);
-  };
-
-  const handleMarkAll = () => {
-    markAllNotificationsRead()
-      .then(() => setNotifs(prev => ({
-        unreadCount: 0,
-        list: prev.list.map(n => ({ ...n, readAt: n.readAt || new Date().toISOString() })),
-      })))
-      .catch(() => {});
   };
 
   const handleLogout = () => { setUserMenuOpen(false); logout(); };
@@ -515,7 +496,7 @@ export default function AppTopNav() {
       </nav>
 
       {/* Overlays */}
-      {searchOpen  && <SearchModal onClose={() => setSearchOpen(false)} />}
+      {searchOpen  && <SearchModal isCompany={isCompany} onClose={() => setSearchOpen(false)} />}
       {notifOpen   && (
         <NotifPanel
           notifs={notifs.list}
@@ -523,6 +504,7 @@ export default function AppTopNav() {
           onClose={() => setNotifOpen(false)}
           onClickItem={handleNotifClick}
           onMarkAll={handleMarkAll}
+          isCompany={isCompany}
         />
       )}
       {userMenuOpen && (
