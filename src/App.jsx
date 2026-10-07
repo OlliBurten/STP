@@ -262,7 +262,7 @@ const BOTTOM_NAV_PATHS = [
 ];
 
 function AppLayout() {
-  const { user, isCompany, isDriver, isImpersonating, activeOrg } = useAuth();
+  const { user, isCompany, isDriver, isImpersonating } = useAuth();
   const onboarding = useOnboardingRequired();
   const isMobile = useIsMobile();
   const { pathname } = useLocation();
@@ -574,8 +574,8 @@ function AppLayout() {
         </OnboardingGate>
   );
 
-  // Åkeriportalen (desktop, per åkeri): sidomeny ersätter toppmeny + footer.
-  if (!isMobile && isCompany && activeOrg?.portalEnabled && isPortalPath(pathname)) {
+  // Åkeriportalen (desktop): sidomeny ersätter toppmeny + footer på åkerisidorna.
+  if (!isMobile && isCompany && isPortalPath(pathname)) {
     return (
       <>
         <PortalShell>{pageContent}</PortalShell>

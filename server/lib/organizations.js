@@ -76,7 +76,6 @@ export async function getUserOrganizations(userId) {
     orgNumber: r.organization.orgNumber,
     status: r.organization.status,
     notifyAllMembers: r.organization.notifyAllMembers,
-    portalEnabled: r.organization.portalEnabled,
     role: r.role,
   }));
 }

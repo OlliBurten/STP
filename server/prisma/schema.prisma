@@ -190,8 +190,6 @@ model Organization {
   acceptsPraktik  Boolean  @default(false) // öppen för praktikanter
   // Mejla hela teamet om nya ansökningar/meddelanden (annars bara annonsens kontakt/den som startade konversationen)
   notifyAllMembers Boolean @default(false)
-  // Nya åkeriportalen (sidomeny) — slås på per åkeri av admin medan den rullas ut
-  portalEnabled    Boolean @default(false)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 

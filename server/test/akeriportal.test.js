@@ -1,10 +1,9 @@
 /**
- * Åkeriportalen (okt 2026): kandidatlistan och admin-spärren per åkeri.
+ * Åkeriportalen (okt 2026): kandidatlistan.
  *
  * - /api/companies/me/candidates samlar åkeriets konversationer med steg och matchning,
  *   avgränsat till åkeriet (en kollega ser dem, ett annat åkeri gör det inte)
  * - steget som sätts via /stage syns i listan
- * - bara admin kan slå på portalen, och flaggan når klienten via /organizations/me
  *
  * Run with: APP_LISTEN=false node --test test/akeriportal.test.js
  */
@@ -17,8 +16,6 @@ import { JWT_SECRET } from "../lib/config.js";
 
 process.env.APP_LISTEN = "false";
 const TAG = `portal-${process.pid}`;
-const ADMIN_EMAIL = `${TAG}-admin@example.com`;
-process.env.ADMIN_EMAILS = [process.env.ADMIN_EMAILS, ADMIN_EMAIL].filter(Boolean).join(",");
 const { app } = await import("../server.js");
 
 const prisma = new PrismaClient();
@@ -48,9 +45,6 @@ before(async () => {
     data: { email: `${TAG}-driver@example.com`, name: "Portal Förare", role: "DRIVER", emailVerifiedAt: new Date(),
       driverProfile: { create: { location: "Värnamo", region: "Jönköping", licenses: ["CE"], certificates: ["YKB"], visibleToCompanies: true } } },
   });
-  const admin = await prisma.user.create({
-    data: { email: ADMIN_EMAIL, name: "Admin", role: "COMPANY", emailVerifiedAt: new Date() },
-  });
   const job = await prisma.job.create({
     data: {
       title: "CE-chaufför Värnamo", company: ORG_NAME, description: "Fjärrkörning med bas i Värnamo.", location: "Värnamo", region: "Jönköping",
@@ -58,8 +52,8 @@ before(async () => {
       userId: owner.id, organizationId: org.id, status: "ACTIVE",
     },
   });
-  ids.users.push(member.id, driver.id, admin.id);
-  Object.assign(ids, { owner: owner.id, otherOwner: otherOwner.id, org: org.id, member: member.id, driver: driver.id, admin: admin.id, job: job.id });
+  ids.users.push(member.id, driver.id);
+  Object.assign(ids, { owner: owner.id, otherOwner: otherOwner.id, org: org.id, member: member.id, driver: driver.id, job: job.id });
 
   const apply = await request(app).post("/api/conversations").set("Authorization", tok(driver.id))
     .send({ driverId: driver.id, companyId: owner.id, jobId: job.id, initialMessage: "Hej, jag söker tjänsten." });
@@ -68,7 +62,6 @@ before(async () => {
 });
 
 after(async () => {
-  await prisma.adminAuditLog.deleteMany({ where: { adminUserId: ids.admin } });
   await prisma.message.deleteMany({ where: { conversation: { organizationId: { in: ids.orgs } } } });
   await prisma.conversation.deleteMany({ where: { organizationId: { in: ids.orgs } } });
   await prisma.job.deleteMany({ where: { organizationId: { in: ids.orgs } } });
@@ -104,30 +97,5 @@ describe("åkeriportalen", () => {
     assert.strictEqual(set.status, 200, JSON.stringify(set.body));
     const res = await request(app).get("/api/companies/me/candidates").set("Authorization", tok(ids.owner));
     assert.strictEqual(res.body.find((x) => x.conversationId === ids.conversation)?.stage, "interview");
-  });
-
-  it("bara admin kan slå på portalen", async () => {
-    const asOwner = await request(app).patch(`/api/admin/organizations/${ids.org}/portal`).set("Authorization", tok(ids.owner)).send({ enabled: true });
-    assert.strictEqual(asOwner.status, 403);
-    const asAdmin = await request(app).patch(`/api/admin/organizations/${ids.org}/portal`).set("Authorization", tok(ids.admin)).send({ enabled: true });
-    assert.strictEqual(asAdmin.status, 200, JSON.stringify(asAdmin.body));
-    assert.strictEqual(asAdmin.body.portalEnabled, true);
-    const log = await prisma.adminAuditLog.findFirst({ where: { adminUserId: ids.admin, action: "PORTAL_ENABLED" } });
-    assert.ok(log, "ändringen borde loggas");
-  });
-
-  it("flaggan når åkeriets klient och syns i adminlistan", async () => {
-    const mine = await request(app).get("/api/organizations/me").set("Authorization", tok(ids.member));
-    assert.strictEqual(mine.body.find((o) => o.id === ids.org)?.portalEnabled, true);
-    const list = await request(app).get("/api/admin/organizations/portal").set("Authorization", tok(ids.admin));
-    assert.strictEqual(list.status, 200);
-    const row = list.body.find((o) => o.id === ids.org);
-    assert.strictEqual(row?.portalEnabled, true);
-    assert.strictEqual(row?.members, 2);
-  });
-
-  it("okänt åkeri ger 404", async () => {
-    const res = await request(app).patch("/api/admin/organizations/finns-inte/portal").set("Authorization", tok(ids.admin)).send({ enabled: true });
-    assert.strictEqual(res.status, 404);
   });
 });
