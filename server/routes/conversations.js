@@ -45,6 +45,20 @@ function effectiveConversationWhere(req) {
     : { companyId: effectiveCompanyId(req), organizationId: null };
 }
 
+/**
+ * Mejladresser för "mejla hela teamet" (Organization.notifyAllMembers). Tom lista när
+ * inställningen är av — då mejlas bara annonsens kontakt / den som startade konversationen.
+ */
+async function teamEmailsIfEnabled(organizationId) {
+  if (!organizationId) return [];
+  const org = await prisma.organization.findUnique({
+    where: { id: organizationId },
+    select: { notifyAllMembers: true, userOrganizations: { select: { user: { select: { email: true } } } } },
+  });
+  if (!org?.notifyAllMembers) return [];
+  return org.userOrganizations.map((uo) => uo.user?.email).filter(Boolean);
+}
+
 async function listCompanyRecipientIds({ companyId, organizationId }) {
   if (organizationId) {
     const members = await prisma.userOrganization.findMany({
@@ -219,13 +233,19 @@ conversationsRouter.post("/", requireVerifiedEmail, requireVerifiedIfCompany, va
           select: { name: true, email: true },
         });
         const fb = (process.env.FRONTEND_URL || "").split(",")[0]?.trim().replace(/\/$/, "");
-        if (job?.contact && driver?.name) {
-          await notifyNewApplication({
-            companyEmail: job.contact,
-            driverName: driver.name,
-            jobTitle,
-            conversationUrl: fb ? `${fb}/foretag/meddelanden/${conv.id}` : null,
-          });
+        if (driver?.name) {
+          const teamEmails = await teamEmailsIfEnabled(job?.organizationId || actualOrganizationId);
+          const toEmails = [...new Set([job?.contact, ...teamEmails].filter(Boolean).map((e) => e.toLowerCase()))];
+          await Promise.all(
+            toEmails.map((companyEmail) =>
+              notifyNewApplication({
+                companyEmail,
+                driverName: driver.name,
+                jobTitle,
+                conversationUrl: fb ? `${fb}/foretag/meddelanden/${conv.id}` : null,
+              })
+            )
+          );
         }
         if (driver?.email) {
           const companyUser = await prisma.user.findUnique({
@@ -422,8 +442,13 @@ conversationsRouter.post("/:id/messages", requireVerifiedEmail, requireVerifiedI
     const messagesPath = req.role === "DRIVER" ? "/foretag/meddelanden" : "/meddelanden";
     const frontendBase = (process.env.FRONTEND_URL || "").split(",")[0]?.trim().replace(/\/$/, "");
     const conversationUrl = frontendBase ? `${frontendBase}${messagesPath}/${conv.id}` : null;
-    if (recipientEmail && preview && shouldSendMessageEmail(conv.id, recipientEmail)) {
-      notifyNewMessage({ toEmail: recipientEmail, fromName, preview, conversationUrl }).catch((e) =>
+    const emailRecipients =
+      req.role === "DRIVER"
+        ? [...new Set([recipientEmail, ...(await teamEmailsIfEnabled(conv.organizationId))].filter(Boolean).map((e) => e.toLowerCase()))]
+        : [recipientEmail].filter(Boolean);
+    for (const toEmail of emailRecipients) {
+      if (!preview || !shouldSendMessageEmail(conv.id, toEmail)) continue;
+      notifyNewMessage({ toEmail, fromName, preview, conversationUrl }).catch((e) =>
         console.error("Notify new message:", e)
       );
     }

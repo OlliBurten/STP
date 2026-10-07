@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { fetchOrgMembers, removeOrgMember } from "../api/organizations.js";
+import { fetchOrgMembers, removeOrgMember, updateOrganization } from "../api/organizations.js";
 import { listCompanyInvites, createCompanyInvite, revokeCompanyInvite } from "../api/invites.js";
 import { usePageTitle } from "../hooks/usePageTitle";
 
@@ -139,7 +139,7 @@ function InviteRow({ invite, isOwner, onRevoke, revoking }) {
 
 export default function CompanyTeam() {
   usePageTitle("Team");
-  const { activeOrg, userOrgs } = useAuth();
+  const { activeOrg, userOrgs, refreshOrgs } = useAuth();
   const orgId = activeOrg?.id;
   const myRole = userOrgs.find((o) => o.id === orgId)?.role ?? null;
   const isOwner = myRole === "OWNER";
@@ -155,6 +155,24 @@ export default function CompanyTeam() {
 
   const [removing, setRemoving] = useState(null);
   const [revoking, setRevoking] = useState(null);
+
+  // Mejla hela teamet om nya ansökningar/meddelanden — annars bara den som lagt upp annonsen.
+  const [notifyAll, setNotifyAll] = useState(Boolean(activeOrg?.notifyAllMembers));
+  const [savingNotify, setSavingNotify] = useState(false);
+  useEffect(() => { setNotifyAll(Boolean(activeOrg?.notifyAllMembers)); }, [activeOrg?.notifyAllMembers]);
+  const toggleNotifyAll = async () => {
+    const next = !notifyAll;
+    setNotifyAll(next);
+    setSavingNotify(true);
+    try {
+      await updateOrganization(orgId, { notifyAllMembers: next });
+      refreshOrgs?.();
+    } catch {
+      setNotifyAll(!next);
+    } finally {
+      setSavingNotify(false);
+    }
+  };
 
   const load = useCallback(async () => {
     if (!orgId) return;
@@ -264,6 +282,17 @@ export default function CompanyTeam() {
           <div style={{ padding: "12px 16px", borderRadius: 10, background: "var(--danger-tint)", border: "1px solid rgba(239,68,68,0.2)", marginBottom: 24, fontSize: "var(--text-sm)", color: "var(--danger)" }}>
             {error}
           </div>
+        )}
+
+        {/* E-postnotiser — ägaren väljer om hela teamet ska få mejl */}
+        {isOwner && (
+          <label style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 32, padding: "14px 16px", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12, cursor: savingNotify ? "wait" : "pointer" }}>
+            <input type="checkbox" checked={notifyAll} onChange={toggleNotifyAll} disabled={savingNotify} style={{ marginTop: 3, width: 16, height: 16, accentColor: "var(--green)" }} />
+            <span>
+              <span style={{ display: "block", fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-900)" }}>Mejla hela teamet om nya ansökningar och meddelanden</span>
+              <span style={{ display: "block", fontSize: "var(--text-xs)", color: "var(--ink-500)", marginTop: 2 }}>Annars får bara den som lagt upp annonsen mejl. Alla ser allt i inkorgen.</span>
+            </span>
+          </label>
         )}
 
         {/* Invite form — owner only */}

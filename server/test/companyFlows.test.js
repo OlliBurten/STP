@@ -64,8 +64,12 @@ before(async () => {
     data: { email: `${TAG}-driver@example.com`, name: "Flödes Förare", role: "DRIVER", emailVerifiedAt: new Date(),
       driverProfile: { create: { location: "Växjö", region: "Kronoberg", licenses: ["CE"], certificates: ["YKB"], visibleToCompanies: true } } },
   });
-  Object.assign(ids, { owner: owner.id, org: org.id, driver: driver.id });
-  ids.users.push(owner.id, driver.id);
+  const member = await prisma.user.create({
+    data: { email: `${TAG}-member@example.com`, name: "Kollega Medlem", role: "COMPANY", companyStatus: "VERIFIED", emailVerifiedAt: new Date() },
+  });
+  await prisma.userOrganization.create({ data: { userId: member.id, organizationId: org.id, role: "MEMBER" } });
+  Object.assign(ids, { owner: owner.id, org: org.id, driver: driver.id, member: member.id });
+  ids.users.push(owner.id, driver.id, member.id);
 });
 
 after(async () => {
@@ -73,6 +77,7 @@ after(async () => {
   await prisma.conversation.deleteMany({ where: { organizationId: ids.org } });
   await prisma.job.deleteMany({ where: { organizationId: ids.org } });
   await prisma.organizationInvite.deleteMany({ where: { organizationId: ids.org } });
+  await prisma.driverReview.deleteMany({ where: { authorId: { in: ids.users } } });
   await prisma.userOrganization.deleteMany({ where: { organizationId: ids.org } });
   await prisma.notification.deleteMany({ where: { userId: { in: ids.users } } });
   await prisma.organization.deleteMany({ where: { id: ids.org } });
@@ -136,5 +141,34 @@ describe("åkeriets kärnflöden", () => {
     assert.ok(acc.body.user.emailVerifiedAt, "kollegans e-post borde vara verifierad");
     const post = await request(app).post("/api/jobs").set("Authorization", tok(acc.body.user.id)).send({ ...formPayload, title: "Distributionsförare" });
     assert.strictEqual(post.status, 201, JSON.stringify(post.body));
+  });
+  it("en kollega kan redigera, pausa och återaktivera åkeriets annonser", async () => {
+    const edit = await request(app).patch(`/api/jobs/${ids.job}`).set("Authorization", tok(ids.member)).send({ salaryMax: 42000 });
+    assert.strictEqual(edit.status, 200, JSON.stringify(edit.body));
+    const pause = await request(app).patch(`/api/jobs/${ids.job}`).set("Authorization", tok(ids.member)).send({ status: "HIDDEN" });
+    assert.strictEqual(pause.status, 200);
+    const back = await request(app).patch(`/api/jobs/${ids.job}`).set("Authorization", tok(ids.member)).send({ status: "ACTIVE" });
+    assert.strictEqual(back.status, 200);
+    const job = await prisma.job.findUnique({ where: { id: ids.job } });
+    assert.strictEqual(job.salaryMax, 42000);
+    assert.strictEqual(job.status, "ACTIVE");
+  });
+
+  it("en kollega kan lämna en referens — visas med åkeriets namn", async () => {
+    const res = await request(app).post(`/api/drivers/${ids.driver}/reviews`).set("Authorization", tok(ids.member)).send({
+      employedFrom: "2024-01", wouldHireAgain: true, punctuality: 5, vehicleCare: 4, teamwork: 4, attested: true,
+    });
+    assert.strictEqual(res.status, 201, JSON.stringify(res.body));
+    assert.strictEqual(res.body.authorName, ORG_NAME);
+  });
+
+  it("bara ägaren kan slå på 'mejla hela teamet'", async () => {
+    const asMember = await request(app).put(`/api/organizations/${ids.org}`).set("Authorization", tok(ids.member)).send({ notifyAllMembers: true });
+    assert.strictEqual(asMember.status, 403);
+    const asOwner = await request(app).put(`/api/organizations/${ids.org}`).set("Authorization", tok(ids.owner)).send({ notifyAllMembers: true });
+    assert.strictEqual(asOwner.status, 200, JSON.stringify(asOwner.body));
+    assert.strictEqual(asOwner.body.notifyAllMembers, true);
+    const mine = await request(app).get("/api/organizations/me").set("Authorization", tok(ids.member));
+    assert.strictEqual(mine.body.find((o) => o.id === ids.org)?.notifyAllMembers, true);
   });
 });
