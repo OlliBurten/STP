@@ -40,29 +40,32 @@ export function CompanyDataProvider({ children }) {
 
   // ── Company profile ──────────────────────────────────────────────
   const company = useMemo(() => {
+    // /api/companies/me/profile svarar med company*-fält (companyStatus, companyLocation …).
+    // Kortnamnen (status, location …) fanns aldrig i svaret — därför läste mobilen
+    // verifierade åkerier som overifierade och visade tom ort/beskrivning.
     const c = apiCompany || {};
     const name = c.name || c.companyName || user?.companyName || "Ditt åkeri";
     return {
       name,
       initials: initialsFor(name),
-      orgnr: c.orgNumber || c.orgnr || user?.companyOrgNumber || "",
-      city: c.location || c.city || "",
-      region: c.region || "",
-      industry: (Array.isArray(c.bransch) ? c.bransch.join(", ") : c.bransch) || c.industry || "Transport",
-      verified: (c.status || user?.companyStatus) === "VERIFIED",
+      orgnr: c.companyOrgNumber || c.orgNumber || c.orgnr || user?.companyOrgNumber || "",
+      city: c.companyLocation || c.location || c.city || "",
+      region: c.companyRegion || c.region || "",
+      industry: (Array.isArray(c.companyBransch) && c.companyBransch.length ? c.companyBransch.join(", ") : null) || (Array.isArray(c.bransch) ? c.bransch.join(", ") : c.bransch) || c.industry || "Transport",
+      verified: (c.companyStatus || c.status || user?.companyStatus) === "VERIFIED",
       founded: c.foundedYear || c.founded || null,
       employees: c.employeeCount || c.employees || null,
       fleet: c.fleet || null,
       rating: c.rating ?? null,
       reviewCount: c.reviewCount || 0,
-      segments: Array.isArray(c.segmentDefaults) && c.segmentDefaults.length ? c.segmentDefaults.map((s) => String(s).toLowerCase()) : (Array.isArray(c.segments) ? c.segments : ["heltid"]),
+      segments: (() => { const seg = c.companySegmentDefaults?.length ? c.companySegmentDefaults : c.segmentDefaults; return Array.isArray(seg) && seg.length ? seg.map((s) => String(s).toLowerCase()) : (Array.isArray(c.segments) ? c.segments : ["heltid"]); })(),
       plan: c.plan || "Bas",
-      about: c.description || c.about || "",
+      about: c.companyDescription || c.description || c.about || "",
       perks: Array.isArray(c.perks) ? c.perks : [],
       contact: c.contact || { name: user?.name || "", email: user?.email || "" },
       myRole: c.myRole || "Admin",
       members: Array.isArray(c.members) ? c.members : [],
-      website: c.website || "",
+      website: c.companyWebsite || c.website || "",
     };
   }, [apiCompany, user]);
 

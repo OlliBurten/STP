@@ -763,7 +763,7 @@ function PraktikToggleCard() {
 
 // ─── Company Verifiering ──────────────────────────────────────────────────────
 function CompanyVerifieringSection({ user }) {
-  const isVerified = user?.status === "VERIFIED";
+  const isVerified = user?.companyStatus === "VERIFIED";
 
   return (
     <Card title="Företagsverifiering" sub="Verifierade åkerier får 3× fler ansökningar i snitt.">
