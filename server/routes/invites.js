@@ -9,6 +9,7 @@ import jwt from "jsonwebtoken";
 import { validateBody, validateQuery } from "../middleware/validate.js";
 import { inviteAcceptSchema, inviteValidateQuerySchema } from "../lib/validators.js";
 import { validateInviteToken, acceptInvite } from "../lib/invites.js";
+import { prisma } from "../lib/prisma.js";
 import { isAdminEmail } from "../lib/adminAccess.js";
 
 export const invitesRouter = Router();
@@ -22,10 +23,18 @@ invitesRouter.get("/validate", validateQuery(inviteValidateQuerySchema), async (
     if (!validated) {
       return res.status(400).json({ error: "Inbjudan är ogiltig eller har gått ut.", valid: false });
     }
+    // Talar om för sidan om adressen redan har ett konto: nästan alla inbjudna är nya,
+    // men sidan öppnade alltid i "Logga in" — de fick själva hitta "Registrera här".
+    // Tokenet bevisar redan inbjudan, så det här läcker inget till utomstående.
+    const existing = await prisma.user.findUnique({
+      where: { email: validated.invite.email },
+      select: { id: true },
+    });
     res.json({
       valid: true,
       company: validated.company,
       email: validated.invite.email,
+      hasAccount: Boolean(existing),
     });
   } catch (e) {
     next(e);

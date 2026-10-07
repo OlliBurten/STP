@@ -37,6 +37,7 @@ export default function InviteAccept() {
           setCompanyName(data.company.name || "Företaget");
           setInviteEmail(data.email || "");
           setEmail(data.email || "");
+          setMode(data.hasAccount ? "login" : "register");
         } else {
           setStatus("invalid");
         }

@@ -145,6 +145,25 @@ export function matchScore(driver, job) {
   return Math.max(0, score);
 }
 
+/**
+ * matchScore som procent (0–100). matchScore ger råpoäng (ca 0–11) och kandidattavlan
+ * visade dem som procent — en förare som uppfyllde alla krav fick "6 %".
+ * Maxpoängen räknas med samma viktning som matchScore.
+ */
+export function matchPercent(driver, job) {
+  const raw = matchScore(driver, job);
+  if (raw <= 0) return 0;
+  const certs = (job.certificates || []).length;
+  const max =
+    (job.segment ? 2 : 0) +
+    ((job.license || []).length > 0 ? 2 : 0) +
+    (certs || 1) +
+    2 + // region
+    1 + // erfarenhet
+    1; // tillgänglighet
+  return Math.max(0, Math.min(100, Math.round((raw / max) * 100)));
+}
+
 export function driverYearsFromExperience(experience) {
   const list = Array.isArray(experience) ? experience : [];
   if (list.length === 0) return 0;

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { fetchOrgMembers, removeOrgMember } from "../api/organizations.js";
 import { listCompanyInvites, createCompanyInvite, revokeCompanyInvite } from "../api/invites.js";
+import { usePageTitle } from "../hooks/usePageTitle";
 
 const ROLE_LABEL = { OWNER: "Ägare", ADMIN: "Admin", MEMBER: "Teammedlem" };
 const ROLE_COLOR = {
@@ -137,6 +138,7 @@ function InviteRow({ invite, isOwner, onRevoke, revoking }) {
 }
 
 export default function CompanyTeam() {
+  usePageTitle("Team");
   const { activeOrg, userOrgs } = useAuth();
   const orgId = activeOrg?.id;
   const myRole = userOrgs.find((o) => o.id === orgId)?.role ?? null;
@@ -358,7 +360,7 @@ export default function CompanyTeam() {
             {[
               { role: "OWNER", desc: "Skapade åkeriet. Kan bjuda in, ta bort och hantera allt." },
               { role: "ADMIN", desc: "Kan hantera jobb och förare. Kan inte bjuda in." },
-              { role: "MEMBER", desc: "Kan se och svara på meddelanden. Begränsad åtkomst." },
+              { role: "MEMBER", desc: "Kan publicera annonser, kontakta förare och svara på meddelanden. Kan inte ändra profilen eller bjuda in." },
             ].map(({ role, desc }) => (
               <div key={role} style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
                 <span style={{

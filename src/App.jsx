@@ -499,6 +499,14 @@ function AppLayout() {
                     }
                   />
                   <Route
+                    path="/foretag/annonsera/:id/edit"
+                    element={
+                      <ProtectedRoute requiredRole="company">
+                        <PostJob />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
                     path="/foretag/chaufforer"
                     element={
                       <ProtectedRoute requiredRole="company">

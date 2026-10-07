@@ -216,9 +216,12 @@ export function ChatProvider({ children }) {
     [list]
   );
 
+  // Med API:t är listan redan avgränsad till åkeriet (organisationen) på servern.
+  // Att filtrera på företagsnamn gav en tom inkorg för alla org-åkerier: namnet på
+  // konversationen och på den inloggade användaren kom från olika källor.
   const getCompanyConversations = useCallback(
-    (companyName) => list.filter((c) => c.companyName === companyName),
-    [list]
+    (companyName) => (hasApi ? list : list.filter((c) => c.companyName === companyName)),
+    [list, hasApi]
   );
 
   const getConversation = useCallback(

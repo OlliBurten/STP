@@ -15,6 +15,7 @@ import { regions } from "../data/mockJobs";
 import { availabilityTypes } from "../data/profileData";
 import { mockDrivers } from "../data/mockDrivers";
 import { mockJobs } from "../data/mockJobs";
+import { usePageTitle } from "../hooks/usePageTitle";
 
 /* ── Helpers ── */
 function initials(name) {
@@ -450,6 +451,7 @@ function ContactModal({ driver, jobs, onClose, onSent }) {
 const EMPTY_FILTERS = { search: "", region: "", license: "", certificate: "", segment: "", availability: "", experience: "" };
 
 export default function DriverSearch() {
+  usePageTitle("Hitta förare");
   const isMobile = useIsMobile();
   const { hasApi } = useAuth();
   const { profile } = useProfile();

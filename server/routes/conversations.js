@@ -74,7 +74,10 @@ function toConversation(c) {
     driverName: c.driver?.name ?? null,
     companyId: c.companyId,
     organizationId: c.organizationId ?? null,
-    companyName: c.company?.companyName || c.company?.name || null,
+    // Åkeriets namn: organisationen i första hand. Org-åkerier har inget companyName på
+    // ägarens User, så tidigare visades personens namn — och åkeriets inkorg (som
+    // filtrerade på företagsnamnet) blev alltid tom.
+    companyName: c.organization?.name || c.company?.companyName || c.company?.name || null,
     jobId: c.jobId,
     jobTitle: c.jobTitle,
     selectedByCompanyAt: c.selectedByCompanyAt?.toISOString() ?? null,
@@ -101,6 +104,7 @@ conversationsRouter.get("/", requireVerifiedIfCompany, async (req, res, next) =>
       include: {
         driver: { select: { name: true } },
         company: { select: { name: true, companyName: true } },
+        organization: { select: { name: true } },
         messages: { orderBy: { createdAt: "asc" } },
       },
     });
@@ -117,6 +121,7 @@ conversationsRouter.get("/:id", requireVerifiedIfCompany, async (req, res, next)
       include: {
         driver: { select: { name: true } },
         company: { select: { name: true, companyName: true } },
+        organization: { select: { name: true } },
         messages: { orderBy: { createdAt: "asc" } },
       },
     });
@@ -149,7 +154,8 @@ conversationsRouter.get("/:id", requireVerifiedIfCompany, async (req, res, next)
 
 conversationsRouter.post("/", requireVerifiedEmail, requireVerifiedIfCompany, validateBody(createConversationSchema), async (req, res, next) => {
   try {
-    const { driverId, companyId, jobId, jobTitle, initialMessage } = req.body;
+    const { driverId, companyId, jobId, initialMessage } = req.body;
+    let { jobTitle } = req.body;
     const isDriver = req.role === "DRIVER";
     const actualDriverId = isDriver ? req.userId : driverId;
     let actualCompanyId = isDriver ? companyId : effectiveCompanyId(req);
@@ -167,6 +173,12 @@ conversationsRouter.post("/", requireVerifiedEmail, requireVerifiedIfCompany, va
       }
       actualCompanyId = job.userId;
       actualOrganizationId = job.organizationId ?? null;
+    }
+    // Åkeriets "Skicka meddelande" skickar bara jobId — titeln saknades då i
+    // konversationen och föraren såg inte vilket jobb det gällde.
+    if (jobId && !jobTitle) {
+      const titled = await prisma.job.findUnique({ where: { id: jobId }, select: { title: true } });
+      jobTitle = titled?.title ?? null;
     }
     let conv = await prisma.conversation.findFirst({
       where: {
@@ -220,11 +232,14 @@ conversationsRouter.post("/", requireVerifiedEmail, requireVerifiedIfCompany, va
             where: { id: job?.userId || actualCompanyId },
             select: { companyName: true, name: true },
           });
+          const companyOrg = actualOrganizationId
+            ? await prisma.organization.findUnique({ where: { id: actualOrganizationId }, select: { name: true } })
+            : null;
           await notifyApplicationConfirmation({
             driverEmail: driver.email,
             driverName: driver.name,
             jobTitle,
-            companyName: companyUser?.companyName || companyUser?.name || "företaget",
+            companyName: companyOrg?.name || companyUser?.companyName || companyUser?.name || "företaget",
             conversationUrl: fb ? `${fb}/meddelanden/${conv.id}` : null,
           });
         }
@@ -255,6 +270,7 @@ conversationsRouter.post("/", requireVerifiedEmail, requireVerifiedIfCompany, va
       include: {
         driver: { select: { name: true } },
         company: { select: { name: true, companyName: true } },
+        organization: { select: { name: true } },
         messages: { orderBy: { createdAt: "asc" } },
       },
     });
@@ -294,7 +310,7 @@ conversationsRouter.patch("/:id/reject", requireCompany, requireVerifiedCompany,
   try {
     const conv = await prisma.conversation.findUnique({
       where: { id: req.params.id },
-      include: { driver: { select: { name: true } }, company: { select: { companyName: true, name: true } } },
+      include: { driver: { select: { name: true } }, company: { select: { companyName: true, name: true } }, organization: { select: { name: true } } },
     });
     if (!conv) return res.status(404).json({ error: "Konversation hittades inte" });
     const hasCompanyAccess = req.organizationId
@@ -308,6 +324,7 @@ conversationsRouter.patch("/:id/reject", requireCompany, requireVerifiedCompany,
       include: {
         driver: { select: { name: true } },
         company: { select: { name: true, companyName: true } },
+        organization: { select: { name: true } },
         messages: { orderBy: { createdAt: "asc" } },
       },
     });
@@ -333,6 +350,7 @@ conversationsRouter.patch("/:id/select", requireCompany, requireVerifiedCompany,
       include: {
         driver: { select: { name: true, email: true } },
         company: { select: { name: true, companyName: true } },
+        organization: { select: { name: true } },
         messages: { orderBy: { createdAt: "asc" } },
       },
     });
@@ -340,7 +358,7 @@ conversationsRouter.patch("/:id/select", requireCompany, requireVerifiedCompany,
       const fb = (process.env.FRONTEND_URL || "").split(",")[0]?.trim().replace(/\/$/, "");
       notifyDriverSelected({
         driverEmail: updated.driver.email,
-        companyName: updated.company?.companyName || updated.company?.name || "Ett företag",
+        companyName: updated.organization?.name || updated.company?.companyName || updated.company?.name || "Ett företag",
         jobTitle: updated.jobTitle || "jobb",
         conversationUrl: fb ? `${fb}/meddelanden/${updated.id}` : null,
       }).catch((e) => console.error("Notify selected driver:", e));
@@ -350,10 +368,10 @@ conversationsRouter.patch("/:id/select", requireCompany, requireVerifiedCompany,
         userId: updated.driverId,
         type: "SELECTED",
         title: "Du är utvald",
-        body: `${updated.company?.companyName || updated.company?.name || "Företag"} har markerat dig som utvald för "${updated.jobTitle || "jobb"}".`,
+        body: `${updated.organization?.name || updated.company?.companyName || updated.company?.name || "Företag"} har markerat dig som utvald för "${updated.jobTitle || "jobb"}".`,
         link: `/meddelanden/${updated.id}`,
         relatedConversationId: updated.id,
-        actorName: updated.company?.companyName || updated.company?.name || null,
+        actorName: updated.organization?.name || updated.company?.companyName || updated.company?.name || null,
       }).catch((e) => console.error("Create notification selected:", e));
     }
     res.json(toConversation(updated));
@@ -369,6 +387,7 @@ conversationsRouter.post("/:id/messages", requireVerifiedEmail, requireVerifiedI
       include: {
         driver: { select: { email: true, name: true } },
         company: { select: { email: true, name: true, companyName: true } },
+        organization: { select: { name: true } },
       },
     });
     if (!conv) return res.status(404).json({ error: "Konversation hittades inte" });
@@ -391,7 +410,7 @@ conversationsRouter.post("/:id/messages", requireVerifiedEmail, requireVerifiedI
     const fromName =
       req.role === "DRIVER"
         ? conv.driver?.name || "Chaufför"
-        : conv.company?.companyName || conv.company?.name || "Företag";
+        : conv.organization?.name || conv.company?.companyName || conv.company?.name || "Företag";
     const recipientEmail = req.role === "DRIVER" ? conv.company?.email : conv.driver?.email;
     const recipientIds =
       req.role === "DRIVER"

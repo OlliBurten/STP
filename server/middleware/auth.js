@@ -204,7 +204,7 @@ export async function requireCompanyOwner(req, res, next) {
     const requestedOrgId = req.headers["x-active-org"] || null;
     const resolved = await resolveCompanyOwner(req.userId, requestedOrgId);
     if (!resolved?.isOwner) {
-      return res.status(403).json({ error: "Endast företagets ägare kan bjuda in teammedlemmar." });
+      return res.status(403).json({ error: "Bara åkeriets ägare kan göra den här ändringen." });
     }
     req.companyOwnerId = resolved.ownerId;
     if (resolved.organizationId) req.organizationId = resolved.organizationId;

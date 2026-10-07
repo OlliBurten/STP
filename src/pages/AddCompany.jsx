@@ -5,6 +5,7 @@ import { createOrganization } from "../api/organizations.js";
 import { useAuth } from "../context/AuthContext";
 import { segmentOptions } from "../data/segments";
 import { apiGet } from "../api/client.js";
+import { usePageTitle } from "../hooks/usePageTitle";
 
 const DUPLICATE_ORG_MSG = "Organisationsnumret används redan av ett annat åkeri.";
 
@@ -16,6 +17,7 @@ const inputStyle = {
 };
 
 export default function AddCompany() {
+  usePageTitle("Lägg till åkeri");
   const { refreshOrgs, switchOrg } = useAuth();
   const isMobile = useIsMobile();
   const navigate = useNavigate();

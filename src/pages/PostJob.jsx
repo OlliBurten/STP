@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { licenseTypes, regions } from "../data/mockJobs";
 import { certificateTypesForUI } from "../data/profileData";
 import { useAuth } from "../context/AuthContext";
-import { createJob } from "../api/jobs.js";
+import { createJob, fetchJob, updateJob } from "../api/jobs.js";
 import { fetchMyCompanyProfile } from "../api/companies.js";
 import { mapEmploymentToSegment } from "../data/segments";
 import { trackJobPosted } from "../utils/segmentMetrics";
@@ -514,7 +514,7 @@ function StepTerms({ form, setForm }) {
 }
 
 // ─── Step 4: Preview & Publish ────────────────────────────────────────────────
-function StepPreview({ form, onPublish, publishing, publishError }) {
+function StepPreview({ form, onPublish, publishing, publishError, isEdit = false }) {
   const checks = [
     { label: "Titel ifylld",              done: !!form.title },
     { label: "Företag ifyllt",            done: !!form.company },
@@ -558,7 +558,7 @@ function StepPreview({ form, onPublish, publishing, publishError }) {
           color: ready ? "#fff" : "var(--ink-300)",
           opacity: ready ? 1 : 0.7,
         }}>
-          {publishing ? "Publicerar..." : ready ? "Publicera annons →" : "Fyll i alla obligatoriska fält för att publicera"}
+          {publishing ? (isEdit ? "Sparar..." : "Publicerar...") : ready ? (isEdit ? "Spara ändringar →" : "Publicera annons →") : "Fyll i alla obligatoriska fält för att publicera"}
         </button>
         <p style={{ fontSize: "var(--text-xs)", color: "var(--ink-300)", textAlign: "center", marginTop: 10 }}>
           Annonsen granskas automatiskt och publiceras direkt om inga varningssignaler hittas.
@@ -608,6 +608,45 @@ export default function PostJob() {
     segment: "",
   });
 
+  // ── Redigeringsläge (/foretag/annonsera/:id/edit) ─────────────────────────
+  // "Redigera annons" i annonslistan länkade hit, men rutten och läget saknades.
+  const { id: editId } = useParams();
+  const isEdit = Boolean(editId);
+  const [editLoadError, setEditLoadError] = useState("");
+  useEffect(() => {
+    if (!isEdit || !hasApi) return;
+    fetchJob(editId)
+      .then((j) => {
+        const expLabel = Object.keys(EXP_VALUE).find((k) => EXP_VALUE[k] === (j.experience || "")) || "";
+        setForm((prev) => ({
+          ...prev,
+          title: j.title || "",
+          company: j.company || "",
+          location: j.location || "",
+          region: j.region || "",
+          license: Array.isArray(j.license) ? j.license : [],
+          certificates: Array.isArray(j.certificates) ? j.certificates : [],
+          experienceLabel: expLabel,
+          experience: j.experience || "",
+          jobType: j.jobType || "",
+          employment: j.employment || "",
+          schedule: j.schedule || "",
+          aboutJob: j.aboutJob || j.description || "",
+          tasks: Array.isArray(j.tasks) ? j.tasks : [],
+          requirements: Array.isArray(j.requirements) ? j.requirements : [],
+          offers: Array.isArray(j.offers) ? j.offers : [],
+          kollektivavtal: j.kollektivavtal ?? null,
+          salaryMin: j.salaryMin != null ? String(j.salaryMin) : "",
+          salaryMax: j.salaryMax != null ? String(j.salaryMax) : "",
+          salaryNote: j.salary || "",
+          contact: j.contact || prev.contact,
+          externalApplyUrl: j.externalApplyUrl || "",
+          segment: j.segment || "",
+        }));
+      })
+      .catch(() => setEditLoadError("Kunde inte hämta annonsen."));
+  }, [isEdit, editId, hasApi]);
+
   // Prefill company data
   useEffect(() => {
     if (!hasApi || !isCompany) return;
@@ -623,6 +662,24 @@ export default function PostJob() {
       })
       .catch(() => {});
   }, [hasApi, isCompany, user?.email]);
+
+  // Vad som saknas för att gå vidare — knappen var bara grå utan förklaring.
+  const missingForNext = () => {
+    if (step === 0) {
+      const miss = [
+        !form.title && "jobbtitel", !form.company && "företagsnamn", !form.location && "ort",
+        !form.region && "region", !form.license.length && "körkort", !form.jobType && "jobbtyp",
+        !form.employment && "anställningsform", !form.schedule && "arbetstider",
+      ].filter(Boolean);
+      return miss.length ? `Fyll i ${miss.join(", ")}.` : "";
+    }
+    if (step === 1) {
+      if (form.aboutJob.trim().length < 60) return `Beskriv jobbet med minst 60 tecken (${form.aboutJob.trim().length}/60).`;
+      if (form.requirements.length < 1) return "Lägg till minst ett krav under \"Vi söker dig som\".";
+    }
+    if (step === 2 && !form.contact) return "Ange en kontaktadress.";
+    return "";
+  };
 
   const canNext = () => {
     if (step === 0) return form.title && form.company && form.location && form.region && form.license.length > 0 && form.jobType && form.employment && form.schedule;
@@ -650,6 +707,33 @@ export default function PostJob() {
     setPublishing(true);
     if (hasApi) {
       try {
+        if (isEdit) {
+          await updateJob(editId, {
+            title: form.title,
+            company: form.company,
+            aboutJob: form.aboutJob,
+            tasks: form.tasks,
+            offers: form.offers,
+            location: form.location,
+            region: form.region,
+            license: form.license,
+            certificates: form.certificates,
+            jobType: form.jobType,
+            employment: form.employment,
+            segment: form.segment || mapEmploymentToSegment(form.employment) || "FULLTIME",
+            schedule: form.schedule || null,
+            experience: form.experience || null,
+            requirements: form.requirements,
+            salary: form.salaryNote || null,
+            salaryMin: form.salaryMin ? parseInt(form.salaryMin, 10) : null,
+            salaryMax: form.salaryMax ? parseInt(form.salaryMax, 10) : null,
+            kollektivavtal: form.kollektivavtal === true ? true : form.kollektivavtal === false ? false : null,
+            contact: form.contact,
+            externalApplyUrl: form.externalApplyUrl.trim() || null,
+          });
+          setSubmitted(true);
+          return;
+        }
         await createJob({
           title: form.title,
           company: form.company,
@@ -708,19 +792,19 @@ export default function PostJob() {
   if (submitted) {
     return (
       <main style={{ background: "var(--paper)", minHeight: "100vh", paddingTop: 32, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <PageMeta title="Annons publicerad – STP" />
+        <PageMeta title={isEdit ? "Annons sparad – STP" : "Annons publicerad – STP"} />
         <div style={{ maxWidth: 520, padding: "0 24px", textAlign: "center" }}>
           <div style={{ padding: "40px 36px", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 24, textAlign: "center", boxShadow: "var(--sh-md)" }}>
-            <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.5, color: "var(--amber-text)", textTransform: "uppercase", marginBottom: 24 }}>Annons publicerad · Åkeri</div>
+            <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.5, color: "var(--amber-text)", textTransform: "uppercase", marginBottom: 24 }}>{isEdit ? "Annons sparad · Åkeri" : "Annons publicerad · Åkeri"}</div>
             <div style={{ width: 80, height: 80, borderRadius: 99, background: "var(--green-tint)", border: "2px solid var(--green-tint-2)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
               <svg width="36" height="36" viewBox="0 0 24 24" fill="var(--green)"><path d="M12 2l2.4 7.6H22l-6.2 4.5 2.4 7.6L12 17.2l-6.2 4.5 2.4-7.6L2 9.6h7.6z"/></svg>
             </div>
-            <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, letterSpacing: -0.5, marginBottom: 10, color: "var(--ink-900)" }}>Annonsen är publicerad!</h1>
+            <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, letterSpacing: -0.5, marginBottom: 10, color: "var(--ink-900)" }}>{isEdit ? "Ändringarna är sparade" : "Annonsen är publicerad!"}</h1>
             <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.6, marginBottom: 28 }}>
-              {hasApi ? "Vi har redan börjat matcha mot förare med rätt profil. Du får e-post när första ansökan kommer in." : "Demo — inget jobb sparades (backend används inte)."}
+              {isEdit ? "Annonsen visas nu med de nya uppgifterna." : hasApi ? "Vi har redan börjat matcha mot förare med rätt profil. Du får e-post när första ansökan kommer in." : "Demo — inget jobb sparades (backend används inte)."}
             </p>
             <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
-              <Link to="/foretag/annonser" style={{ padding: "12px 22px", borderRadius: 11, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: "var(--text-sm)", textDecoration: "none" }}>Se din annons</Link>
+              <Link to={isEdit ? `/foretag/annonser/${editId}` : "/foretag/annonser"} style={{ padding: "12px 22px", borderRadius: 11, background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: "var(--text-sm)", textDecoration: "none" }}>{isEdit ? "Till annonsen" : "Se din annons"}</Link>
               <Link to="/foretag" style={{ padding: "12px 22px", borderRadius: 11, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-700)", fontWeight: 600, fontSize: "var(--text-sm)", textDecoration: "none" }}>Mina jobb</Link>
             </div>
           </div>
@@ -764,7 +848,8 @@ export default function PostJob() {
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
           Tillbaka till annonser
         </Link>
-        <h1 style={{ fontSize: isMobile ? 24 : 34, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.2, marginBottom: 18 }}>Skapa annons</h1>
+        <h1 style={{ fontSize: isMobile ? 24 : 34, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.2, marginBottom: 18 }}>{isEdit ? "Redigera annons" : "Skapa annons"}</h1>
+        {editLoadError && <p style={{ color: "var(--danger)", fontSize: "var(--text-sm)", marginBottom: 12 }}>{editLoadError}</p>}
       </div>
 
       <div style={{ maxWidth: "var(--w-read)", margin: "0 auto", padding: isMobile ? "0 20px 80px" : "0 32px 80px" }}>
@@ -778,7 +863,7 @@ export default function PostJob() {
           {step === 0 && <StepBasics form={form} setForm={setForm} isMobile={isMobile} />}
           {step === 1 && <StepContent form={form} setForm={setForm} aiGenerating={aiGenerating} aiError={aiError} onGenerate={handleGenerate} hasApi={hasApi} />}
           {step === 2 && <StepTerms form={form} setForm={setForm} />}
-          {step === 3 && <StepPreview form={form} onPublish={handlePublish} publishing={publishing} publishError={publishError} />}
+          {step === 3 && <StepPreview form={form} onPublish={handlePublish} publishing={publishing} publishError={publishError} isEdit={isEdit} />}
 
           {step < 3 && (
             <div style={{ display: "flex", justifyContent: "space-between", marginTop: 40, paddingTop: 28, borderTop: "1px solid var(--line)" }}>
@@ -789,6 +874,9 @@ export default function PostJob() {
                 Nästa steg →
               </button>
             </div>
+          )}
+          {step < 3 && !canNext() && (
+            <p style={{ textAlign: "right", fontSize: "var(--text-sm)", color: "var(--ink-500)", marginTop: 10 }}>{missingForNext()}</p>
           )}
         </div>
 

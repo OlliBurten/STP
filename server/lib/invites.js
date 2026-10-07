@@ -6,7 +6,6 @@
 import crypto from "crypto";
 import { prisma } from "./prisma.js";
 import { sendInviteEmail, sendEmail } from "./email.js";
-import { issueEmailVerification } from "../routes/auth.js";
 import { createNotification } from "./notifications.js";
 
 const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
@@ -377,7 +376,7 @@ export async function revokeInvite(inviteId, companyOwnerId) {
  * @param {string} [params.name]
  * @param {string} [params.verificationBaseUrl]
  */
-export async function acceptInvite({ token, action, email, password, name, verificationBaseUrl }) {
+export async function acceptInvite({ token, action, email, password, name }) {
   const validated = await validateInviteToken(token);
   if (!validated) {
     const err = new Error("Inbjudan är ogiltig eller har gått ut.");
@@ -448,6 +447,10 @@ export async function acceptInvite({ token, action, email, password, name, verif
         companyOrgNumber: null,
         companyStatus: "VERIFIED",
         companySegmentDefaults: [],
+        // Inbjudan kan bara accepteras med adressen den skickades till, och länken
+        // kom via mejl dit — adressen är därmed bevisad. Utan detta kunde en nyinbjuden
+        // kollega varken publicera annonser eller skriva till förare (EMAIL_NOT_VERIFIED).
+        emailVerifiedAt: new Date(),
       },
       select: {
         id: true,
@@ -457,7 +460,14 @@ export async function acceptInvite({ token, action, email, password, name, verif
         emailVerifiedAt: true,
       },
     });
-    await issueEmailVerification(user.id, normalizedEmail, verificationBaseUrl);
+  }
+  if (!user.emailVerifiedAt) {
+    // Befintligt konto som loggar in via inbjudningslänken: samma bevis gäller.
+    user = await prisma.user.update({
+      where: { id: user.id },
+      data: { emailVerifiedAt: new Date() },
+      select: { id: true, email: true, role: true, name: true, emailVerifiedAt: true },
+    });
   }
 
   // Ensure not already member

@@ -591,8 +591,10 @@ export default function CompanyProfile() {
       setProfile(updated);
       setDraft(updated);
       toast.success("Företagsprofilen är sparad!");
-    } catch {
-      toast.error("Kunde inte spara profilen. Försök igen.");
+    } catch (err) {
+      // Visa serverns skäl — t.ex. att bara ägaren får ändra profilen. "Försök igen"
+      // var vilseledande när ett nytt försök aldrig kan lyckas.
+      toast.error(err?.message || "Kunde inte spara profilen. Försök igen.");
     } finally {
       setSaving(false);
     }
@@ -667,12 +669,16 @@ export default function CompanyProfile() {
         )}
 
         {/* Varning */}
-        {draft && (!Array.isArray(draft.companyBransch) || draft.companyBransch.length === 0 || !draft.companyRegion) && (
+        {/* Samma krav som åkerisöken (GET /api/companies/search): beskrivning + ort eller region.
+            Tidigare krävde varningen bransch, som söken inte kräver. */}
+        {draft && (!(draft.companyDescription || "").trim() || !(draft.companyRegion || draft.companyLocation)) && (
           <div style={{ marginBottom: 20, padding: "14px 18px", borderRadius: 14, background: "var(--amber-tint)", border: "1px solid rgba(242,164,28,0.25)", display: "flex", gap: 12, alignItems: "flex-start" }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
             <div>
               <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--amber-text)", marginBottom: 3 }}>Syns inte i Hitta åkerier ännu</div>
-              <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-700)", lineHeight: 1.5 }}>Fyll i <strong>bransch</strong> och <strong>region</strong> så att förare kan hitta er.</div>
+              <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-700)", lineHeight: 1.5 }}>
+                Fyll i {[!(draft.companyDescription || "").trim() && <strong key="d">en beskrivning under Om oss</strong>, !(draft.companyRegion || draft.companyLocation) && <strong key="r">ort eller region</strong>].filter(Boolean).reduce((acc, el, i) => (i ? [...acc, " och ", el] : [el]), [])} så att förare kan hitta er.
+              </div>
             </div>
           </div>
         )}

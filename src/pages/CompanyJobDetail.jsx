@@ -274,7 +274,7 @@ export default function CompanyJobDetail() {
                       onClick={handlePause}
                       style={{ padding: "10px 16px", borderRadius: 10, background: "var(--card)", border: "1px solid var(--line-2)", color: "var(--ink-700)", fontSize: "var(--text-sm)", fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 6 }}
                     >
-                      <Icon name="pause" size={14} /> Hantera
+                      <Icon name="pause" size={14} /> Pausa annons
                     </button>
                   )}
                 </div>
