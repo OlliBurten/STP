@@ -203,6 +203,7 @@ organizationsRouter.put("/:id", async (req, res, next) => {
         ...(body.region !== undefined && { region: body.region?.trim() || null }),
         ...(Array.isArray(body.segmentDefaults) && { segmentDefaults: body.segmentDefaults }),
         ...(Array.isArray(body.bransch) && { bransch: body.bransch }),
+        ...(typeof body.notifyAllMembers === "boolean" && { notifyAllMembers: body.notifyAllMembers }),
       },
     });
     res.json({
@@ -216,6 +217,7 @@ organizationsRouter.put("/:id", async (req, res, next) => {
       segmentDefaults: updated.segmentDefaults,
       bransch: updated.bransch,
       status: updated.status,
+      notifyAllMembers: updated.notifyAllMembers,
     });
   } catch (e) {
     next(e);

@@ -75,6 +75,7 @@ export async function getUserOrganizations(userId) {
     name: r.organization.name,
     orgNumber: r.organization.orgNumber,
     status: r.organization.status,
+    notifyAllMembers: r.organization.notifyAllMembers,
     role: r.role,
   }));
 }
