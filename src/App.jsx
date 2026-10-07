@@ -14,6 +14,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import OnboardingGate, { useOnboardingRequired } from "./components/OnboardingGate";
 import Header from "./components/Header";
 import AppTopNav from "./components/AppTopNav";
+import PortalShell from "./components/company/PortalShell";
+import { isPortalPath } from "./components/company/portal";
 import Footer from "./components/Footer";
 import BottomNav from "./components/BottomNav";
 import { NotificationProvider } from "./context/NotificationContext";
@@ -98,6 +100,7 @@ const DriverOnboardingWizard   = lazyRetry(() => import("./pages/DriverOnboardin
 // const CompanyVerification   = lazyRetry(() => import("./pages/CompanyVerification")); // Disabled until F-skatt/trafiktillstånd APIs are integrated
 const AddCompany            = lazyRetry(() => import("./pages/AddCompany"));
 const CompanyTeam           = lazyRetry(() => import("./pages/CompanyTeam"));
+const CompanyCandidates     = lazyRetry(() => import("./pages/CompanyCandidates"));
 const InviteAccept          = lazyRetry(() => import("./pages/InviteAccept"));
 const AkerierSearch         = lazyRetry(() => import("./pages/AkerierSearch"));
 const PublicDriverProfile   = lazyRetry(() => import("./pages/PublicDriverProfile"));
@@ -259,7 +262,7 @@ const BOTTOM_NAV_PATHS = [
 ];
 
 function AppLayout() {
-  const { user, isCompany, isDriver, isImpersonating } = useAuth();
+  const { user, isCompany, isDriver, isImpersonating, activeOrg } = useAuth();
   const onboarding = useOnboardingRequired();
   const isMobile = useIsMobile();
   const { pathname } = useLocation();
@@ -328,14 +331,7 @@ function AppLayout() {
     );
   }
 
-  return (
-    <div className="min-h-screen flex flex-col" style={{ overflowX: "clip" }}>
-      {!hideChromeOnMobile && !isMobilePublicScreen && !isMobileLegal && !isJobDetailMobile && !isAuthPage && !isAdminPage && !isOnboardingPage && (
-        user ? <AppTopNav /> : <Header onboarding={onboarding} />
-      )}
-      {/* Profilbanner sitter tätt under headern (utanför pt-16-paddingen) */}
-      <DriverCompletionNudge />
-      <div className={hideChromeOnMobile || isMobilePublicScreen || isMobileLegal || isJobDetailMobile || isAuthPage || isOnboardingPage ? "flex-1" : `flex-1 ${isImpersonating ? "pt-[104px]" : "pt-16"}`}>
+  const pageContent = (
         <OnboardingGate>
         <Suspense fallback={<div className="min-h-[60vh]" />}>
         <Routes>
@@ -540,6 +536,14 @@ function AppLayout() {
                     }
                   />
                   <Route
+                    path="/foretag/kandidater"
+                    element={
+                      <ProtectedRoute requiredRole="company">
+                        <CompanyCandidates />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
                     path="/foretag/team"
                     element={
                       <ProtectedRoute requiredRole="company">
@@ -568,6 +572,28 @@ function AppLayout() {
                 </Routes>
         </Suspense>
         </OnboardingGate>
+  );
+
+  // Åkeriportalen (desktop, per åkeri): sidomeny ersätter toppmeny + footer.
+  if (!isMobile && isCompany && activeOrg?.portalEnabled && isPortalPath(pathname)) {
+    return (
+      <>
+        <PortalShell>{pageContent}</PortalShell>
+        <FeedbackButton />
+        <CookieBanner />
+      </>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col" style={{ overflowX: "clip" }}>
+      {!hideChromeOnMobile && !isMobilePublicScreen && !isMobileLegal && !isJobDetailMobile && !isAuthPage && !isAdminPage && !isOnboardingPage && (
+        user ? <AppTopNav /> : <Header onboarding={onboarding} />
+      )}
+      {/* Profilbanner sitter tätt under headern (utanför pt-16-paddingen) */}
+      <DriverCompletionNudge />
+      <div className={hideChromeOnMobile || isMobilePublicScreen || isMobileLegal || isJobDetailMobile || isAuthPage || isOnboardingPage ? "flex-1" : `flex-1 ${isImpersonating ? "pt-[104px]" : "pt-16"}`}>
+        {pageContent}
               </div>
               {!hideChromeOnMobile && !isMobilePublicScreen && !isMobileLegal && !isJobDetailMobile && !isAuthPage && <Footer />}
               {/* Flytande feedback-knapp bara på desktop — på mobil krockar den med

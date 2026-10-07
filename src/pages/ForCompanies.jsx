@@ -9,6 +9,7 @@ import { usePageTitle } from "../hooks/usePageTitle.js";
 import ProductTour from "../components/ProductTour";
 import { COMPANY_TOUR_STEPS } from "../data/tourSteps";
 import CompanyBottomNav from "../components/CompanyBottomNav";
+import { candidateStage } from "../utils/candidateStage";
 
 // ─── Icons ───────────────────────────────────────────────────────────────────
 function Icon({ n, size = 18, color = "currentColor" }) {
@@ -140,15 +141,13 @@ function WaitingAlert({ unreadCount, conversations }) {
 
 // ─── Pipeline ─────────────────────────────────────────────────────────────────
 function Pipeline({ conversations }) {
-  const total = conversations.length;
-  const nya = conversations.filter(c => !c.readByCompanyAt).length;
-  const granskade = total - nya;
-  const kontaktade = Math.max(0, Math.floor(granskade * 0.6));
+  // Riktiga steg per kandidat (samma som Kandidater-sidan och annonsernas tavla).
+  const count = (id) => conversations.filter((c) => candidateStage(c) === id).length;
   const stages = [
-    { stage: "Nya",        value: nya,         sub: nya > 0 ? `+${nya} idag` : "Inga nya",                 tone: "amber" },
-    { stage: "Granskade",  value: granskade,   sub: total > 0 ? `${Math.round((granskade/Math.max(total,1))*100)} % av nya` : "0 %",  tone: "primary" },
-    { stage: "Kontaktade", value: kontaktade,  sub: granskade > 0 ? `${Math.round((kontaktade/Math.max(granskade,1))*100)} % vidare` : "0 %", tone: "primary" },
-    { stage: "Anställda",  value: 0,           sub: "denna månad",                                          tone: "success" },
+    { stage: "Nya",       value: count("new"),       sub: "väntar på er",   tone: "amber" },
+    { stage: "Granskar",  value: count("reviewing"), sub: "under granskning", tone: "primary" },
+    { stage: "Intervju",  value: count("interview"), sub: "på intervju",    tone: "primary" },
+    { stage: "Anställda", value: count("hired"),     sub: "via STP",        tone: "success" },
   ];
   const tones = {
     amber:   { color: "var(--amber-deep)", bar: "var(--amber)" },
@@ -161,9 +160,9 @@ function Pipeline({ conversations }) {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
         <div>
           <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, color: "var(--ink-500)", letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 4 }}>Rekryteringspipeline</div>
-          <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-400)" }}>Alla annonser · denna månad</div>
+          <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-400)" }}>Alla annonser</div>
         </div>
-        <Link to="/foretag/annonser" style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--green)", textDecoration: "none" }}>Per annons →</Link>
+        <Link to="/foretag/kandidater" style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--green)", textDecoration: "none" }}>Alla kandidater →</Link>
       </div>
       <div className="dash-pipeline">
         {stages.map((p, i) => {

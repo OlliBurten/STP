@@ -52,3 +52,8 @@ export function createInvite(email) {
 export function revokeInvite(id) {
   return apiDelete(`/api/companies/me/invites/${id}`);
 }
+
+/** Alla kandidater (konversationer) för åkeriet, med steg och matchning. */
+export function fetchCompanyCandidates() {
+  return apiGet("/api/companies/me/candidates");
+}

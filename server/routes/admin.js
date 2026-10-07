@@ -21,6 +21,37 @@ const IMPERSONATION_TTL_SECONDS = 60 * 60 * 2;
 
 adminRouter.use(authMiddleware, requireAdmin);
 
+/** Slå på/av nya åkeriportalen för ett åkeri (rullas ut per åkeri). */
+adminRouter.patch("/organizations/:id/portal", async (req, res, next) => {
+  try {
+    const enabled = req.body?.enabled === true;
+    const org = await prisma.organization.update({
+      where: { id: req.params.id },
+      data: { portalEnabled: enabled },
+      select: { id: true, name: true, portalEnabled: true },
+    });
+    await createAdminAuditLog({ req, action: enabled ? "PORTAL_ENABLED" : "PORTAL_DISABLED", targetType: "ORGANIZATION", metadata: { organizationId: org.id, name: org.name } });
+    res.json(org);
+  } catch (e) {
+    if (e.code === "P2025") return res.status(404).json({ error: "Åkeriet hittades inte" });
+    next(e);
+  }
+});
+
+/** Åkerier (organisationer) med portalstatus — för reglaget i admin. */
+adminRouter.get("/organizations/portal", async (req, res, next) => {
+  try {
+    const orgs = await prisma.organization.findMany({
+      where: { status: "VERIFIED" },
+      orderBy: { createdAt: "desc" },
+      select: { id: true, name: true, location: true, portalEnabled: true, _count: { select: { userOrganizations: true, jobs: true } } },
+    });
+    res.json(orgs.map((o) => ({ id: o.id, name: o.name, location: o.location, portalEnabled: o.portalEnabled, members: o._count.userOrganizations, jobs: o._count.jobs })));
+  } catch (e) {
+    next(e);
+  }
+});
+
 function toIso(value) {
   return value ? new Date(value).toISOString() : null;
 }

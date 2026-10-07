@@ -31,6 +31,7 @@ import AdminOverviewTab from "../components/admin/AdminOverviewTab";
 import AdminUsersTab from "../components/admin/AdminUsersTab";
 import AdminOutreachTab from "../components/admin/AdminOutreachTab";
 import AdminDemoTab from "../components/admin/AdminDemoTab";
+import AdminPortalCard from "../components/admin/AdminPortalCard";
 import { AdminSidebar, AdminTopBar, AdminCmdK } from "../components/admin/AdminShell";
 
 
@@ -1427,6 +1428,7 @@ export default function Admin() {
         {/* ── Inställningar ── */}
         {activeTab === "settings" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <AdminPortalCard setError={setError} setSuccess={setSuccess} />
             <SectionCard>
               <p style={{ fontSize: "var(--text-lg)", fontWeight: 700, color: T.text, marginBottom: 6 }}>Plattformskonfiguration</p>
               <p style={{ fontSize: "var(--text-sm)", color: T.muted, marginBottom: 20 }}>Aktuell driftmiljö (skrivskyddad — ändras via Railway/Vercel).</p>
