@@ -649,16 +649,29 @@ model Insight {
   @@index([weekOf])
 }
 
+// Referens från ett åkeri om en förare (2026-10-07, på VGT:s begäran). Syns bara för
+// verifierade åkerier — inte publikt och inte i förarens egen vy. Föraren notifieras
+// när en referens skapas (GDPR art. 14) och får ut innehållet via dataexporten (art. 15).
+// Strukturerad i stället för fritext: svårare att skriva något kränkande, lättare att jämföra.
 model DriverReview {
-  id            String        @id @default(cuid())
-  driverId      String
-  driverProfile DriverProfile @relation(fields: [driverId], references: [id], onDelete: Cascade)
-  authorId      String
-  author        User          @relation("DriverReviewAuthor", fields: [authorId], references: [id], onDelete: Cascade)
-  rating        Int // 1–5
-  comment       String?
-  isVerified    Boolean       @default(true) // "Riktigt åkeri föraren jobbat hos"
-  createdAt     DateTime      @default(now())
+  id             String        @id @default(cuid())
+  driverId       String
+  driverProfile  DriverProfile @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  authorId       String
+  author         User          @relation("DriverReviewAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  organizationId String? // författarens åkeri när referensen skrevs (för visningsnamnet)
+  rating         Int? // äldre fritt betyg 1–5 — används inte för nya referenser
+  comment        String? // max 200 tecken
+  isVerified     Boolean       @default(true) // åkeriet har intygat att föraren arbetat hos dem
+  position       String? // t.ex. "CE-förare"
+  employedFrom   DateTime?
+  employedTo     DateTime? // null = pågår
+  wouldHireAgain Boolean?
+  punctuality    Int? // 1–5: passar tider
+  vehicleCare    Int? // 1–5: tar hand om fordonet
+  teamwork       Int? // 1–5: samarbete
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @default(now()) @updatedAt
 
   @@unique([driverId, authorId]) // one review per company per driver
   @@index([driverId])

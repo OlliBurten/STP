@@ -15,7 +15,7 @@ import { useChat } from "../../context/ChatContext";
 import { useNotifications } from "../../context/NotificationContext";
 import { fetchJobs, fetchSavedJobs, saveJob, unsaveJob, fetchSavedCompanies, saveCompany, unsaveCompany } from "../../api/jobs";
 import { fetchCompaniesSearch } from "../../api/companies";
-import { fetchDriverProfileStats, fetchDriverReviews } from "../../api/drivers";
+import { fetchDriverProfileStats } from "../../api/drivers";
 import { submitApplication, fetchMyApplications } from "../../api/applications";
 import { updateNotificationSettings, fetchDriverActivity } from "../../api/profile";
 import { fetchAvailableShifts, acceptShift as apiAcceptShift } from "../../api/shifts";
@@ -248,12 +248,13 @@ export function DriverDataProvider({ children }) {
 
   // ── Stats + reviews (real endpoints) ─────────────────────────────
   const [stats, setStats] = useState(null);
-  const [reviews, setReviews] = useState([]);
+  const reviews = useMemo(() => [], []); // se kommentar nedan — referenser visas inte för föraren
   useEffect(() => {
     if (!hasApi) return;
     let alive = true;
     fetchDriverProfileStats().then((s) => { if (alive && s) setStats({ views30: s.views30, views7: s.views7, contacted: s.conversationCount }); }).catch(() => {});
-    if (user?.id) fetchDriverReviews(user.id).then((r) => { if (alive && Array.isArray(r)) setReviews(r); }).catch(() => {});
+    // Referenser från åkerier visas inte i förarens egen vy (okt 2026) — föraren
+    // notifieras när en finns och får ut innehållet via dataexporten.
     return () => { alive = false; };
   }, [hasApi, user?.id]);
   const rating = reviews.length ? (reviews.reduce((s, r) => s + (r.rating || 0), 0) / reviews.length) : null;

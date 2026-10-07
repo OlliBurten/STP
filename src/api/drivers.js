@@ -1,4 +1,4 @@
-import { apiGet, apiPost } from "./client.js";
+import { apiGet, apiPost, apiDelete } from "./client.js";
 
 export async function fetchDrivers(params = {}) {
   // Strippa tomma värden — annars blir undefined till strängen "undefined" i
@@ -30,17 +30,17 @@ export async function fetchPublicDriver(id) {
   return apiGet(`/api/drivers/public/${id}`);
 }
 
-/** Omdömen för publik förarprofil — ingen inloggning */
-export async function fetchPublicDriverReviews(id) {
-  return apiGet(`/api/drivers/public/${id}/reviews`);
-}
-
-/** Omdömen för förare — för inloggade företag */
+/** Referenser om en förare — bara verifierade åkerier (inte publika, inte föraren själv). */
 export async function fetchDriverReviews(id) {
   return apiGet(`/api/drivers/${id}/reviews`);
 }
 
-/** Skicka omdöme om en förare (företag) */
-export async function submitDriverReview(driverId, { rating, comment }) {
-  return apiPost(`/api/drivers/${driverId}/reviews`, { rating, comment });
+/** Lämna eller uppdatera åkeriets referens om en förare. */
+export async function submitDriverReference(driverId, payload) {
+  return apiPost(`/api/drivers/${driverId}/reviews`, payload);
+}
+
+/** Ta bort åkeriets egen referens. */
+export async function deleteDriverReference(driverId) {
+  return apiDelete(`/api/drivers/${driverId}/reviews`);
 }

@@ -2,6 +2,10 @@ import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
 import { authMiddleware, requireCompany, requireDriver, requireVerifiedCompany } from "../middleware/auth.js";
 import { computeProfileScore } from "../lib/profileScore.js";
+import { validateBody } from "../middleware/validate.js";
+import { driverReferenceSchema } from "../lib/validators.js";
+import { createNotification } from "../lib/notifications.js";
+import { sendEmail } from "../lib/email.js";
 
 export const driversRouter = Router();
 
@@ -239,116 +243,160 @@ driversRouter.get("/public/:id", async (req, res, next) => {
   }
 });
 
-/** Omdömen för publik förarprofil — ingen auth krävs */
-driversRouter.get("/public/:id/reviews", async (req, res, next) => {
-  try {
-    const isCuid = /^c[a-z0-9]{20,}$/i.test(req.params.id);
-    const where = isCuid
-      ? { userId: req.params.id, visibleToCompanies: true }
-      : { slug: req.params.id, visibleToCompanies: true };
-    const profile = await prisma.driverProfile.findFirst({
-      where,
-      select: { id: true },
-    });
-    if (!profile) return res.status(404).json({ error: "Föraren hittades inte" });
-    const reviews = await prisma.driverReview.findMany({
-      where: { driverId: profile.id },
-      include: {
-        author: { select: { name: true, companyName: true } },
-      },
-      orderBy: { createdAt: "desc" },
-    });
-    res.json(reviews.map((r) => ({
-      id: r.id,
-      rating: r.rating,
-      comment: r.comment,
-      isVerified: r.isVerified,
-      createdAt: r.createdAt,
-      authorName: r.author?.companyName || r.author?.name || "Okänt åkeri",
-    })));
-  } catch (e) {
-    next(e);
-  }
+/**
+ * Referenser är INTE publika (2026-10-07). Rutten finns kvar så att äldre klienter
+ * inte får fel — den svarar alltid med en tom lista.
+ */
+driversRouter.get("/public/:id/reviews", (req, res) => {
+  res.json([]);
 });
 
-/** Omdömen för förare — för inloggade företag */
+/** Visningsnamn för åkeriet som skrev referensen — organisationen, inte personen. */
+async function referenceAuthorNames(reviews) {
+  const orgIds = [...new Set(reviews.map((r) => r.organizationId).filter(Boolean))];
+  const orgs = orgIds.length
+    ? await prisma.organization.findMany({ where: { id: { in: orgIds } }, select: { id: true, name: true } })
+    : [];
+  const orgName = new Map(orgs.map((o) => [o.id, o.name]));
+  return (r) => orgName.get(r.organizationId) || r.author?.companyName || r.author?.name || "Okänt åkeri";
+}
+
+const monthOf = (d) => (d ? d.toISOString().slice(0, 7) : null);
+const monthToDate = (m) => (m ? new Date(`${m}-01T00:00:00.000Z`) : null);
+
+function serializeReference(r, nameOf, viewerId) {
+  return {
+    id: r.id,
+    authorName: nameOf(r),
+    isMine: r.authorId === viewerId,
+    isVerified: r.isVerified,
+    position: r.position,
+    employedFrom: monthOf(r.employedFrom),
+    employedTo: monthOf(r.employedTo),
+    wouldHireAgain: r.wouldHireAgain,
+    punctuality: r.punctuality,
+    vehicleCare: r.vehicleCare,
+    teamwork: r.teamwork,
+    rating: r.rating,
+    comment: r.comment,
+    createdAt: r.createdAt,
+    updatedAt: r.updatedAt,
+  };
+}
+
+/** Referenser om en förare — bara verifierade åkerier. */
 driversRouter.get("/:id/reviews", authMiddleware, requireCompany, requireVerifiedCompany, async (req, res, next) => {
   try {
     const profile = await prisma.driverProfile.findFirst({
-      where: { userId: req.params.id, visibleToCompanies: true },
+      where: { userId: req.params.id },
       select: { id: true },
     });
     if (!profile) return res.status(404).json({ error: "Chaufför hittades inte" });
     const reviews = await prisma.driverReview.findMany({
       where: { driverId: profile.id },
-      include: {
-        author: { select: { name: true, companyName: true } },
-      },
-      orderBy: { createdAt: "desc" },
-    });
-    res.json(reviews.map((r) => ({
-      id: r.id,
-      rating: r.rating,
-      comment: r.comment,
-      isVerified: r.isVerified,
-      createdAt: r.createdAt,
-      authorName: r.author?.companyName || r.author?.name || "Okänt åkeri",
-    })));
-  } catch (e) {
-    next(e);
-  }
-});
-
-/** Skicka omdöme om en förare — företag måste ha konversation med föraren */
-driversRouter.post("/:id/reviews", authMiddleware, requireCompany, requireVerifiedCompany, async (req, res, next) => {
-  try {
-    const { rating, comment } = req.body;
-    if (!rating || rating < 1 || rating > 5) {
-      return res.status(400).json({ error: "Betyg måste vara 1–5." });
-    }
-
-    const profile = await prisma.driverProfile.findFirst({
-      where: { userId: req.params.id },
-      select: { id: true },
-    });
-    if (!profile) return res.status(404).json({ error: "Föraren hittades inte." });
-
-    // Kräv att företaget har haft en konversation med föraren
-    const convo = await prisma.conversation.findFirst({
-      where: { companyId: req.userId, driverId: req.params.id },
-    });
-    if (!convo) {
-      return res.status(403).json({ error: "Du kan bara recensera förare du haft kontakt med." });
-    }
-
-    const review = await prisma.driverReview.upsert({
-      where: { driverId_authorId: { driverId: profile.id, authorId: req.userId } },
-      create: {
-        driverId: profile.id,
-        authorId: req.userId,
-        rating: Math.round(rating),
-        comment: comment?.trim() || null,
-        isVerified: true,
-      },
-      update: {
-        rating: Math.round(rating),
-        comment: comment?.trim() || null,
-      },
       include: { author: { select: { name: true, companyName: true } } },
+      orderBy: { updatedAt: "desc" },
     });
-
-    res.json({
-      id: review.id,
-      rating: review.rating,
-      comment: review.comment,
-      isVerified: review.isVerified,
-      createdAt: review.createdAt,
-      authorName: review.author?.companyName || review.author?.name || "Okänt åkeri",
-    });
+    const nameOf = await referenceAuthorNames(reviews);
+    res.json(reviews.map((r) => serializeReference(r, nameOf, req.userId)));
   } catch (e) {
     next(e);
   }
 });
+
+/**
+ * Lämna eller uppdatera en referens. Åkeriet intygar att föraren arbetat hos dem —
+ * kravet på en konversation i STP togs bort, det hade stoppat varje referens
+ * (0 konversationer i plattformen okt 2026). Föraren notifieras vid ny referens.
+ */
+driversRouter.post(
+  "/:id/reviews",
+  authMiddleware,
+  requireCompany,
+  requireVerifiedCompany,
+  validateBody(driverReferenceSchema),
+  async (req, res, next) => {
+    try {
+      const driverUser = await prisma.user.findUnique({
+        where: { id: req.params.id },
+        select: { id: true, email: true, name: true, role: true, driverProfile: { select: { id: true } } },
+      });
+      if (!driverUser?.driverProfile || driverUser.role !== "DRIVER") {
+        return res.status(404).json({ error: "Föraren hittades inte." });
+      }
+      const membership = await prisma.userOrganization.findFirst({
+        where: { userId: req.userId },
+        orderBy: { joinedAt: "asc" },
+        select: { organizationId: true },
+      });
+      const b = req.body;
+      const data = {
+        organizationId: membership?.organizationId ?? null,
+        position: b.position || null,
+        employedFrom: monthToDate(b.employedFrom),
+        employedTo: monthToDate(b.employedTo),
+        wouldHireAgain: b.wouldHireAgain,
+        punctuality: b.punctuality,
+        vehicleCare: b.vehicleCare,
+        teamwork: b.teamwork,
+        comment: b.comment || null,
+        isVerified: true,
+      };
+      const key = { driverId_authorId: { driverId: driverUser.driverProfile.id, authorId: req.userId } };
+      const existed = await prisma.driverReview.findUnique({ where: key, select: { id: true } });
+      const review = await prisma.driverReview.upsert({
+        where: key,
+        create: { driverId: driverUser.driverProfile.id, authorId: req.userId, ...data },
+        update: data,
+        include: { author: { select: { name: true, companyName: true } } },
+      });
+      const nameOf = await referenceAuthorNames([review]);
+
+      if (!existed) {
+        await notifyDriverOfReference(driverUser, nameOf(review)).catch((err) =>
+          console.error("Notify driver of reference failed:", err)
+        );
+      }
+      res.status(existed ? 200 : 201).json(serializeReference(review, nameOf, req.userId));
+    } catch (e) {
+      next(e);
+    }
+  }
+);
+
+/** Ta bort sin egen referens. */
+driversRouter.delete("/:id/reviews", authMiddleware, requireCompany, requireVerifiedCompany, async (req, res, next) => {
+  try {
+    const profile = await prisma.driverProfile.findFirst({ where: { userId: req.params.id }, select: { id: true } });
+    if (!profile) return res.status(404).json({ error: "Föraren hittades inte." });
+    await prisma.driverReview.deleteMany({ where: { driverId: profile.id, authorId: req.userId } });
+    res.status(204).send();
+  } catch (e) {
+    next(e);
+  }
+});
+
+/**
+ * GDPR art. 14: den registrerade ska informeras när uppgifter om hen samlas in från
+ * någon annan. Innehållet visas inte i förarens vy men lämnas ut på begäran (art. 15)
+ * och ingår i dataexporten.
+ */
+async function notifyDriverOfReference(driverUser, companyName) {
+  const title = `${companyName} har lämnat en referens om dig`;
+  const body =
+    "Referensen syns bara för verifierade åkerier. Du kan få ut innehållet, begära rättelse eller invända via dataskydd@transportplattformen.se.";
+  await createNotification({ userId: driverUser.id, type: "REFERENCE", title, body, actorName: companyName });
+  await sendEmail({
+    to: driverUser.email,
+    subject: title,
+    heading: "Du har fått en referens",
+    text:
+      `${companyName} har lämnat en referens om dig på Sveriges Transportplattform.\n\n` +
+      "Referenser syns bara för verifierade åkerier som rekryterar — inte publikt och inte i din egen profil.\n\n" +
+      "Du har rätt att få ut innehållet, begära att felaktiga uppgifter rättas och invända mot behandlingen. " +
+      "Mejla dataskydd@transportplattformen.se så hjälper vi dig.",
+  });
+}
 
 driversRouter.get("/:id", authMiddleware, requireCompany, requireVerifiedCompany, async (req, res, next) => {
   try {

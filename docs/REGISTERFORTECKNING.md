@@ -42,6 +42,18 @@
 | **Rättslig grund** | Avtal (art. 6.1.b) |
 | **Lagringstid** | Bevaras i **12 månader efter kontots radering**, raderas därefter automatiskt |
 
+### 1.3b Referenser om förare från åkerier (infört 2026-10-07)
+| Fält | Värde |
+|---|---|
+| **Ändamål** | Hjälpa åkerier att rekrytera tryggt genom sakliga referenser från tidigare arbetsgivare |
+| **Personuppgifter** | Anställningsperiod, roll, "skulle anställa igen" (ja/nej), bedömning 1–5 av punktlighet, fordonsvård och samarbete, kommentar (max 200 tecken), vilket åkeri som lämnat referensen |
+| **Kategorier** | Förare (den registrerade), åkeri som lämnar referensen (avsändare) |
+| **Mottagare** | Endast verifierade åkerier på plattformen — inte publikt, inte förarens egen vy |
+| **Rättslig grund** | Berättigat intresse (art. 6.1.f) — intresseavvägning: rekryteringstrygghet för åkerier mot förarens integritet; begränsas av saklig mall, intygande, endast verifierade mottagare och information till föraren |
+| **Information till den registrerade** | Föraren notifieras (in-app + mejl) när en referens lämnas (art. 14). Innehållet lämnas ut på begäran och ingår i dataexporten (art. 15). Rättelse/invändning via dataskydd@transportplattformen.se (art. 16, 21) |
+| **Lagringstid** | Så länge förarens konto finns, eller tills åkeriet tar bort referensen. Raderas med förarkontot |
+| **Öppen fråga** | Intresseavvägningen bör granskas av jurist |
+
 ### 1.4 Tekniska uppgifter & säkerhet
 | Fält | Värde |
 |---|---|

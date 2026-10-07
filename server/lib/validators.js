@@ -292,3 +292,23 @@ export const inviteAcceptSchema = z
     },
     { message: "E-post, lösenord och (vid registrering) namn krävs", path: ["email"] }
   );
+
+// Referens från ett åkeri om en förare. Månader skickas som "YYYY-MM".
+const monthString = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, "Ange månad som ÅÅÅÅ-MM");
+const score = z.number({ error: "Betygsätt alla tre områden (1–5)" }).int().min(1, "Välj 1–5").max(5, "Välj 1–5");
+export const driverReferenceSchema = z
+  .object({
+    position: z.string().trim().max(60).optional().nullable(),
+    employedFrom: monthString,
+    employedTo: monthString.optional().nullable(),
+    wouldHireAgain: z.boolean({ error: "Svara på om ni skulle anställa igen" }),
+    punctuality: score,
+    vehicleCare: score,
+    teamwork: score,
+    comment: z.string().trim().max(200, "Max 200 tecken").optional().nullable(),
+    attested: z.literal(true, { error: "Intyga att föraren har arbetat hos er" }),
+  })
+  .refine((d) => !d.employedTo || d.employedTo >= d.employedFrom, {
+    message: "Slutmånaden kan inte vara före startmånaden",
+    path: ["employedTo"],
+  });

@@ -5,7 +5,7 @@ import { usePageTitle } from "../hooks/usePageTitle";
 export const DOCS = {
   terms: {
     title: "Användarvillkor",
-    updated: "Senast uppdaterad 6 september 2026",
+    updated: "Senast uppdaterad 7 oktober 2026",
     sections: [
       {
         id: "om", h: "1. Om tjänsten",
@@ -21,7 +21,7 @@ export const DOCS = {
       },
       {
         id: "foretag", h: "4. Företags ansvar",
-        p: ["Som företag ansvarar du för att jobbannonser är korrekta, lagliga och inte vilseledande. Angivna uppgifter om kollektivavtal, anställningsvillkor och lön är ditt ansvar — STP verifierar inte dessa. Du förbinder dig att följa tillämplig arbetsrätt och diskrimineringslagstiftning."],
+        p: ["Som företag ansvarar du för att jobbannonser är korrekta, lagliga och inte vilseledande. Angivna uppgifter om kollektivavtal, anställningsvillkor och lön är ditt ansvar — STP verifierar inte dessa. Du förbinder dig att följa tillämplig arbetsrätt och diskrimineringslagstiftning.", "Verifierade företag kan lämna referenser om förare som arbetat hos dem. Du får bara lämna en referens om en förare som faktiskt arbetat hos eller för er, och uppgifterna ska vara sakliga och korrekta. Referenser syns endast för andra verifierade företag. Föraren informeras om att en referens finns och kan begära att få ta del av den, få felaktiga uppgifter rättade eller invända."],
       },
       {
         id: "forbjudet", h: "5. Förbjudet innehåll",
@@ -52,7 +52,7 @@ export const DOCS = {
   },
   privacy: {
     title: "Integritetspolicy",
-    updated: "Senast uppdaterad 16 maj 2026",
+    updated: "Senast uppdaterad 7 oktober 2026",
     sections: [
       {
         id: "ansvarig", h: "1. Personuppgiftsansvarig",
@@ -61,15 +61,15 @@ export const DOCS = {
       {
         id: "insamling", h: "2. Vilka uppgifter vi samlar in",
         p: ["Vi behandlar uppgifter du anger vid registrering och i din profil:"],
-        li: ["Namn och e-postadress", "Telefonnummer (frivilligt)", "Region och bostadsort", "Körkortsbehörigheter och certifikat (för förare)", "Arbetslivserfarenhet och profilinformation (för förare)", "Företagsnamn och organisationsnummer (för företag)", "Meddelanden som skickas via plattformen", "Tekniska uppgifter: IP-adress (för anonym statistik), inloggningstidpunkt"],
+        li: ["Namn och e-postadress", "Telefonnummer (frivilligt)", "Region och bostadsort", "Körkortsbehörigheter och certifikat (för förare)", "Arbetslivserfarenhet och profilinformation (för förare)", "Referenser om förare från verifierade åkerier: anställningsperiod, roll, om de skulle anställa igen, bedömning av punktlighet, fordonsvård och samarbete samt en kort kommentar", "Företagsnamn och organisationsnummer (för företag)", "Meddelanden som skickas via plattformen", "Tekniska uppgifter: IP-adress (för anonym statistik), inloggningstidpunkt"],
       },
       {
         id: "andamal", h: "3. Ändamål och rättslig grund",
-        p: ["Tillhandahålla tjänsten (avtal) — matchning, meddelanden, profiler och jobbpublicering.", "Säkerhet och förbättring (berättigat intresse) — felövervakning, skydd mot missbruk och förbättring av plattformen.", "Kommunikation (avtal) — notiser om nya meddelanden, ansökningar och kontouppgifter. Vi skickar inte marknadsföringsmail utan ditt samtycke.", "Presentation för arbetsgivare (samtycke) — att på din begäran skicka din profil till arbetsgivare och bemanningsföretag som söker din kompetens. Kan återkallas när som helst."],
+        p: ["Tillhandahålla tjänsten (avtal) — matchning, meddelanden, profiler och jobbpublicering.", "Säkerhet och förbättring (berättigat intresse) — felövervakning, skydd mot missbruk och förbättring av plattformen.", "Kommunikation (avtal) — notiser om nya meddelanden, ansökningar och kontouppgifter. Vi skickar inte marknadsföringsmail utan ditt samtycke.", "Presentation för arbetsgivare (samtycke) — att på din begäran skicka din profil till arbetsgivare och bemanningsföretag som söker din kompetens. Kan återkallas när som helst.", "Referenser från åkerier (berättigat intresse) — att hjälpa åkerier att rekrytera tryggt genom sakliga referenser från tidigare arbetsgivare. Referenserna syns bara för verifierade åkerier. Du informeras när en referens lämnas om dig, och kan få ut innehållet, begära rättelse eller invända via dataskydd@transportplattformen.se."],
       },
       {
         id: "delning", h: "4. Delning av uppgifter",
-        p: ["Din profildata delas enligt dina egna inställningar — t.ex. syns din förarprofil för företag bara om du aktiverat synligheten. Har du gett ditt presentationssamtycke kan vi skicka din profil (namn, ort, behörigheter, erfarenhet och de kontaktuppgifter du valt att visa) till en arbetsgivare eller ett bemanningsföretag som söker just din kompetens. Vi säljer aldrig dina uppgifter, och vi lämnar dem aldrig vidare för någon annans marknadsföring.", "Din persondata lagras inom EU — databasen finns i Amsterdam (Nederländerna). Vi använder följande underleverantörer: Railway (hosting och databas, EU), Vercel (frontend), Resend (e-post), Sentry (felövervakning) och PostHog (produktanalys, EU — endast efter samtycke). Vi har ingått databehandlaravtal med samtliga i enlighet med GDPR artikel 28, och eventuell överföring utanför EU sker med giltiga skyddsmekanismer (standardavtalsklausuler/DPF)."],
+        p: ["Din profildata delas enligt dina egna inställningar — t.ex. syns din förarprofil för företag bara om du aktiverat synligheten. Har du gett ditt presentationssamtycke kan vi skicka din profil (namn, ort, behörigheter, erfarenhet och de kontaktuppgifter du valt att visa) till en arbetsgivare eller ett bemanningsföretag som söker just din kompetens. Referenser som åkerier lämnat om dig visas bara för andra verifierade åkerier — aldrig publikt. Vi säljer aldrig dina uppgifter, och vi lämnar dem aldrig vidare för någon annans marknadsföring.", "Din persondata lagras inom EU — databasen finns i Amsterdam (Nederländerna). Vi använder följande underleverantörer: Railway (hosting och databas, EU), Vercel (frontend), Resend (e-post), Sentry (felövervakning) och PostHog (produktanalys, EU — endast efter samtycke). Vi har ingått databehandlaravtal med samtliga i enlighet med GDPR artikel 28, och eventuell överföring utanför EU sker med giltiga skyddsmekanismer (standardavtalsklausuler/DPF)."],
       },
       {
         id: "lagring", h: "5. Lagring och radering",
