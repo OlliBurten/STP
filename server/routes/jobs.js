@@ -171,6 +171,12 @@ async function sendDriverMatchAlertsForJob(job) {
   }
 }
 
+/** Stabil sortering: egna/claimade annonser före importer, inbördes ordning bevaras. */
+export function sortDirectJobsFirst(jobs) {
+  const isDirect = (j) => j.source !== "AGGREGATED" || Boolean(j.claimed);
+  return [...jobs.filter(isDirect), ...jobs.filter((j) => !isDirect(j))];
+}
+
 jobsRouter.get("/mine", authMiddleware, requireCompany, attachCompanyContext, requireVerifiedCompany, async (req, res, next) => {
   try {
     const filter = effectiveJobFilter(req);
@@ -220,7 +226,10 @@ jobsRouter.get("/", validateQuery(jobsListQuerySchema), async (req, res, next) =
         organization: { select: { status: true } },
       },
     });
-    const visibleJobs = dedupeAggregatedJobs(jobs);
+    // Åkeriernas egna annonser (och claimade importer) först, nyast först inom varje
+    // grupp. Annars trycks en egen annons ner av ~20 nya Platsbanken-importer om dagen
+    // och försvinner ur sikte inom ett par dygn.
+    const visibleJobs = sortDirectJobsFirst(dedupeAggregatedJobs(jobs));
     const companyIds = [...new Set(visibleJobs.map((j) => j.userId))];
     const reviewAggregates = companyIds.length
       ? await prisma.companyReview.groupBy({

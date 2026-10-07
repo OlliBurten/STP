@@ -123,9 +123,13 @@ export default function JobCard({
                 <span style={{ color: "var(--ink-300)", flexShrink: 0 }}>·</span>
                 <span style={{ fontSize: 12, color: "var(--ink-400)", fontWeight: 500, flexShrink: 0 }}>Importerad annons</span>
               </>
-            ) : job.companyVerified ? (
-              <span style={{ display: "inline-flex", flexShrink: 0 }}><CheckIcon /></span>
-            ) : null}
+            ) : (
+              <>
+                {job.companyVerified && <span style={{ display: "inline-flex", flexShrink: 0 }}><CheckIcon /></span>}
+                <span style={{ color: "var(--ink-300)", flexShrink: 0 }}>·</span>
+                <span style={{ fontSize: 12, color: "var(--green-text)", fontWeight: 700, flexShrink: 0 }}>Direkt från åkeriet</span>
+              </>
+            )}
           </div>
         </div>
 

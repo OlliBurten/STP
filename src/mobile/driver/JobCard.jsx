@@ -60,7 +60,7 @@ export default function JobCard({ job, ctx, idx, onHide }) {
                 {job.match != null && <Pill tone={matchTone(job.match)} size="sm" icon={<Dot tone={job.match >= 90 ? "success" : "primary"} size={5} />}>{job.match}% match</Pill>}
                 {job.licenses.map((l) => <Pill key={l} tone="outline" size="sm">{l}</Pill>)}
                 <Pill tone="neutral" size="sm">{job.type}</Pill>
-                {job.imported && <Pill tone="info" size="sm">Importerad</Pill>}
+                {job.imported ? <Pill tone="info" size="sm">Importerad</Pill> : <Pill tone="success" size="sm">Direkt från åkeriet</Pill>}
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 11, paddingTop: 11, borderTop: "1px solid var(--line)" }}>
                 <span style={{ fontSize: 13, fontWeight: 700, color: "var(--ink-800)" }}>{job.pay}</span>

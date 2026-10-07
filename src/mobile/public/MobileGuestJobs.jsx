@@ -58,6 +58,7 @@ function JobCard({ job, idx = 0, saved, onOpen, onSave }) {
             {job.licenses.map((l) => <Pill key={l} tone="outline" size="sm">{l}</Pill>)}
             <Pill tone="neutral" size="sm">{job.type}</Pill>
             {job.bemanning && <Pill tone="amber" size="sm">Bemanning</Pill>}
+            {!job.imported && <Pill tone="success" size="sm">Direkt från åkeriet</Pill>}
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 11, paddingTop: 11, borderTop: "1px solid var(--line)" }}>
             <span style={{ fontSize: 13, fontWeight: 700, color: "var(--ink-800)" }}>{job.pay}</span>
