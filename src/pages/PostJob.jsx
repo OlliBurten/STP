@@ -435,7 +435,7 @@ function StepContent({ form, setForm, aiGenerating, aiError, onGenerate, hasApi 
         <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--green)" style={{ flexShrink: 0, marginTop: 1 }}><path d="M12 2l2.4 7.6H22l-6.2 4.5 2.4 7.6L12 17.2l-6.2 4.5 2.4-7.6L2 9.6h7.6z"/></svg>
         <div>
           <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--green-text)", marginBottom: 4 }}>Tips för bättre matchning</div>
-          <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", lineHeight: 1.7, margin: 0 }}>Annonser med minst 3 arbetsuppgifter och 2 saker under "Vi erbjuder" får i snitt 40% fler ansökningar. Var konkret — "Nya Volvo FH 2024" slår "modern lastbil".</p>
+          <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", lineHeight: 1.7, margin: 0 }}>Fyll i arbetsuppgifter och vad ni erbjuder. Var konkret — "Nya Volvo FH 2024" slår "modern lastbil".</p>
         </div>
       </div>
     </div>
@@ -463,7 +463,7 @@ function StepTerms({ form, setForm }) {
         <p style={hintStyle}>Förare filtrerar aktivt på kollektivavtal.</p>
       </Field>
 
-      <Field label="Löneintervall (kr/mån)" hint="Syns enbart för inloggade förare. Annonser med lön synlig får fler ansökningar.">
+      <Field label="Löneintervall (kr/mån)" hint="Syns enbart för inloggade förare.">
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           <div>
             <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", marginBottom: 6 }}>Från (kr/mån)</div>
@@ -488,7 +488,7 @@ function StepTerms({ form, setForm }) {
         <input value={form.salaryNote} onChange={(e) => setForm((f) => ({ ...f, salaryNote: e.target.value }))} placeholder="t.ex. Lön enligt kollektivavtal med Transport" style={inputStyle} />
       </Field>
 
-      <Field label="Kontakt-e-post" required hint="Används ej publikt — enbart om förare frågar via meddelanden.">
+      <Field label="Kontakt-e-post" required hint="Hit mejlar vi nya ansökningar. Visas inte på annonsen.">
         <input type="email" value={form.contact} onChange={(e) => setForm((f) => ({ ...f, contact: e.target.value }))} placeholder="rekrytering@ert-akeri.se" style={inputStyle} />
       </Field>
 
@@ -641,6 +641,8 @@ export default function PostJob() {
           salaryNote: j.salary || "",
           contact: j.contact || prev.contact,
           externalApplyUrl: j.externalApplyUrl || "",
+          start: j.start || "",
+          rolling: j.rolling === true,
           segment: j.segment || "",
         }));
       })
@@ -730,6 +732,8 @@ export default function PostJob() {
             kollektivavtal: form.kollektivavtal === true ? true : form.kollektivavtal === false ? false : null,
             contact: form.contact,
             externalApplyUrl: form.externalApplyUrl.trim() || null,
+            start: form.start.trim() || null,
+            rolling: form.rolling === true,
           });
           setSubmitted(true);
           return;
@@ -756,6 +760,8 @@ export default function PostJob() {
           kollektivavtal: form.kollektivavtal === true ? true : form.kollektivavtal === false ? false : null,
           contact: form.contact,
           externalApplyUrl: form.externalApplyUrl.trim() || null,
+          start: form.start.trim() || null,
+          rolling: form.rolling === true,
           physicalWorkRequired: null,
           soloWorkOk: null,
         });

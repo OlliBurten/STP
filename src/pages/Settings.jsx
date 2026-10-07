@@ -266,7 +266,7 @@ function DriverVerifieringSection({ profile }) {
 
   return (
     <>
-      <Card title="Verifiering" sub="Verifierade förare får svar 2× snabbare och syns högre i sökresultat.">
+      <Card title="Verifiering">
         <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", background: verifiedCount > 0 ? "var(--success-tint)" : "var(--amber-tint)", border: `1px solid ${verifiedCount > 0 ? "rgba(31,122,58,0.2)" : "rgba(242,164,28,0.2)"}`, borderRadius: 11 }}>
           <div style={{ width: 36, height: 36, borderRadius: 99, background: verifiedCount > 0 ? "rgba(31,122,58,0.15)" : "rgba(242,164,28,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <Icon n={verifiedCount > 0 ? "check" : "shield"} s={17} c={verifiedCount > 0 ? "var(--success)" : "var(--amber)"} />
@@ -323,11 +323,11 @@ const DRIVER_NOTIF = [
   { key: "statusChanges",   label: "Statusändringar på dina ansökningar", sub: "När åkeri ser, väljer ut, eller går vidare." },
   { key: "newsletter",      label: "Nyhetsbrev",                         sub: "Branschnyheter, lönerapporter, max 1 gång/månad." },
 ];
+// Bara val som servern faktiskt respekterar (lib/reminders.js). Mejl om nya ansökningar
+// skickas alltid — vem som får dem styrs under Team.
 const COMPANY_NOTIF = [
-  { key: "applicationAlert", label: "Nya ansökningar",         sub: "Direkt när någon söker en av era annonser." },
-  { key: "messageReminder",  label: "Meddelanden från förare", sub: "Påminnelse när en konversation väntar." },
-  { key: "weekly",           label: "Veckorapport",            sub: "Sammanfattning av visningar och ansökningar — varje måndag." },
-  { key: "tips",             label: "Tips för bättre annonser", sub: "När en annons presterar dåligt skickar vi förbättringsförslag." },
+  { key: "messageReminder", label: "Påminnelse om obesvarade meddelanden", sub: "När en förare väntat på svar i två dygn." },
+  { key: "profileReminder", label: "Påminnelse om företagsprofilen",       sub: "Om profilen saknar uppgifter som förare letar efter." },
 ];
 
 function NotifSection({ isDriver, initialSettings, onToggle }) {
@@ -766,7 +766,7 @@ function CompanyVerifieringSection({ user }) {
   const isVerified = user?.companyStatus === "VERIFIED";
 
   return (
-    <Card title="Företagsverifiering" sub="Verifierade åkerier får 3× fler ansökningar i snitt.">
+    <Card title="Företagsverifiering">
       <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", background: isVerified ? "var(--success-tint)" : "var(--amber-tint)", border: `1px solid ${isVerified ? "rgba(31,122,58,0.2)" : "rgba(242,164,28,0.2)"}`, borderRadius: 11, marginBottom: 18 }}>
         <div style={{ width: 36, height: 36, borderRadius: 99, background: isVerified ? "rgba(31,122,58,0.15)" : "rgba(242,164,28,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <Icon n={isVerified ? "check" : "shield"} s={17} c={isVerified ? "var(--success)" : "var(--amber)"} />

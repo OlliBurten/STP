@@ -98,4 +98,20 @@ describe("åkeriportalen", () => {
     const res = await request(app).get("/api/companies/me/candidates").set("Authorization", tok(ids.owner));
     assert.strictEqual(res.body.find((x) => x.conversationId === ids.conversation)?.stage, "interview");
   });
+
+  it("en förare som åkeriet själv kontaktar räknas inte som ny ansökan", async () => {
+    const other = await prisma.user.create({
+      data: { email: `${TAG}-driver2@example.com`, name: "Kontaktad Förare", role: "DRIVER", emailVerifiedAt: new Date(),
+        driverProfile: { create: { location: "Växjö", region: "Kronoberg", licenses: ["C"], certificates: [], visibleToCompanies: true } } },
+    });
+    ids.users.push(other.id);
+    const c = await request(app).post("/api/conversations").set("Authorization", tok(ids.member))
+      .send({ driverId: other.id, companyId: ids.owner, initialMessage: "Hej, vi har ett jobb som kan passa dig." });
+    assert.strictEqual(c.status, 201, JSON.stringify(c.body));
+    assert.ok(c.body.readByCompanyAt, "åkeriets egen kontakt borde vara läst");
+    const res = await request(app).get("/api/companies/me/candidates").set("Authorization", tok(ids.owner));
+    const row = res.body.find((x) => x.conversationId === c.body.id);
+    assert.strictEqual(row.initiatedBy, "company");
+    assert.strictEqual(row.stage, "reviewing");
+  });
 });

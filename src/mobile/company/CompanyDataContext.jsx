@@ -100,19 +100,20 @@ export function CompanyDataProvider({ children }) {
     for (const { jobId, applicants } of apps) {
       const stages = { ...EMPTY_STAGES };
       for (const a of applicants) {
-        const stage = a.pipelineStage || (a.rejectedByCompanyAt ? "avslag" : a.selectedByCompanyAt ? "anstalld" : a.reviewedByCompanyAt ? "intervjuad" : a.readByCompanyAt ? "kontaktad" : "ny");
+        // Samma regler som webben/servern (candidateStage).
+        const stage = a.pipelineStage || (a.rejectedByCompanyAt ? "avslag" : a.selectedByCompanyAt ? "intervjuad" : (a.readByCompanyAt || a.reviewedByCompanyAt) ? "kontaktad" : "ny");
         stages[stage] = (stages[stage] || 0) + 1;
         cands.push({
           id: a.conversationId || a.id || `${jobId}-${cands.length}`,
           name: a.driverName || a.name || "Förare",
           initials: initialsFor(a.driverName || a.name),
           jobId, stage,
-          match: a.matchPct ?? a.match ?? null,
+          match: a.matchScore ?? null,
           licenses: a.licenses || [], certs: a.certificates || a.certs || [],
           exp: a.yearsExperience ?? a.exp ?? null,
-          location: a.location || "",
-          when: a.createdAt ? "Ny" : "",
-          new: !a.readByCompanyAt,
+          location: a.region || "",
+          when: a.appliedAt ? timeAgo(a.appliedAt) : "",
+          new: stage === "ny",
           note: a.coverLetter || a.note || a.message || a.firstMessage || "",
           conv: { id: a.conversationId || a.id },
         });
@@ -127,7 +128,7 @@ export function CompanyDataProvider({ children }) {
       newApps: cands.filter((c) => c.new).length,
       unread: chat.companyUnreadConversationCount || 0,
       activeJobs,
-      views: stats?.totalViews ?? stats?.views ?? 0,
+      views: stats?.total ?? 0,
     });
     if (Array.isArray(drv)) {
       setDrivers(drv.map((d) => ({
@@ -148,7 +149,7 @@ export function CompanyDataProvider({ children }) {
   const jobs = useMemo(() => rawJobs.map((j) => ({
     id: j.id, title: j.title, segment: (j.segment || "FULLTIME").toLowerCase().includes("flex") ? "vikariepool" : (j.segment === "INTERNSHIP" ? "praktik" : "heltid"),
     location: j.location, type: j.employment === "vikariat" ? "Vikariat" : j.employment === "tim" ? "Timanställd" : "Heltid",
-    posted: j.status === "DRAFT" ? "Utkast" : "", status: STATUS_MAP[j.status] || "aktiv", views: j.views || 0,
+    posted: j.status === "DRAFT" ? "Utkast" : "", status: STATUS_MAP[j.status] || "aktiv", views: j.viewCount || 0,
     stages: j._stages || { ...EMPTY_STAGES }, raw: j,
   })), [rawJobs]);
 

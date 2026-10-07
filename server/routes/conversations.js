@@ -211,6 +211,9 @@ conversationsRouter.post("/", requireVerifiedEmail, requireVerifiedIfCompany, va
           organizationId: actualOrganizationId,
           jobId: jobId || null,
           jobTitle: jobTitle || null,
+          // Åkeriet som själv kontaktar en förare har läst tråden — annars räknades
+          // kontakten som en ny, oläst ansökan på översikten och i kandidatlistan.
+          ...(isDriver ? {} : { readByCompanyAt: new Date() }),
         },
       });
     }

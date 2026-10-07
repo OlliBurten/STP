@@ -52,6 +52,8 @@ const formPayload = {
   externalApplyUrl: null,
   physicalWorkRequired: null,
   soloWorkOk: null,
+  start: "1 november 2026",
+  rolling: true,
 };
 
 before(async () => {
@@ -99,6 +101,17 @@ describe("åkeriets kärnflöden", () => {
   it("jobbets detaljsvar innehåller status", async () => {
     const res = await request(app).get(`/api/jobs/${ids.job}`).set("Authorization", tok(ids.owner));
     assert.strictEqual(res.body.status, "ACTIVE");
+  });
+
+  it("tillträde och löpande rekrytering sparas och syns för förare", async () => {
+    const res = await request(app).get(`/api/jobs/${ids.job}`).set("Authorization", tok(ids.driver));
+    assert.strictEqual(res.body.start, "1 november 2026");
+    assert.strictEqual(res.body.rolling, true);
+    const edit = await request(app).patch(`/api/jobs/${ids.job}`).set("Authorization", tok(ids.owner)).send({ start: "Enligt överenskommelse", rolling: false });
+    assert.strictEqual(edit.status, 200, JSON.stringify(edit.body));
+    const job = await prisma.job.findUnique({ where: { id: ids.job } });
+    assert.strictEqual(job.start, "Enligt överenskommelse");
+    assert.strictEqual(job.rolling, false);
   });
 
   it("en publicerad annons kan redigeras", async () => {
@@ -170,5 +183,14 @@ describe("åkeriets kärnflöden", () => {
     assert.strictEqual(asOwner.body.notifyAllMembers, true);
     const mine = await request(app).get("/api/organizations/me").set("Authorization", tok(ids.member));
     assert.strictEqual(mine.body.find((o) => o.id === ids.org)?.notifyAllMembers, true);
+  });
+
+  it("förare ser åkeriet — även via en kollegas annons — med alla åkeriets annonser", async () => {
+    const res = await request(app).get(`/api/companies/${ids.member}/public`);
+    assert.strictEqual(res.status, 200, JSON.stringify(res.body));
+    assert.strictEqual(res.body.name, ORG_NAME);
+    assert.strictEqual(res.body.id, ids.owner);
+    const titles = res.body.jobs.map((j) => j.title);
+    assert.ok(titles.includes("Distributionsförare"), "kollegans annons saknas: " + titles.join(", "));
   });
 });

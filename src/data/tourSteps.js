@@ -31,7 +31,7 @@ export const COMPANY_TOUR_STEPS = [
     element: "[data-tour='company-drivers']",
     title: "Hitta förare proaktivt",
     description:
-      "Vänta inte på ansökningar — sök bland hundratals förare och filtrera på körkort, certifikat och region. Kontakta direkt de som passar.",
+      "Vänta inte på ansökningar — sök bland förarna och filtrera på körkort, certifikat och region. Kontakta direkt de som passar.",
   },
   {
     element: "[data-tour='company-jobs']",

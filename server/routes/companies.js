@@ -33,15 +33,19 @@ const ORG_PROFILE_SELECT = {
   acceptsPraktik: true,
 };
 
-/** Legacy-åkerier har profilen på User, org-baserade på Organization — User vinner när den är ifylld. */
+/**
+ * Legacy-åkerier har profilen på User, org-baserade på Organization. Finns en organisation
+ * är den sanningskällan (Företagsprofil sparar dit) — User-fälten är bara reserv för tomma fält.
+ * Tidigare vann User, så ett åkeri kunde ändra sin profil utan att förarna såg ändringen.
+ */
 function companyProfileFields(user, org) {
   return {
-    name: user.companyName || org?.name || user.name || "",
-    description: user.companyDescription || org?.description || "",
-    website: user.companyWebsite || org?.website || "",
-    location: user.companyLocation || org?.location || "",
-    region: user.companyRegion || org?.region || "",
-    bransch: user.companyBransch?.length ? user.companyBransch : (org?.bransch ?? []),
+    name: org?.name || user.companyName || user.name || "",
+    description: org?.description || user.companyDescription || "",
+    website: org?.website || user.companyWebsite || "",
+    location: org?.location || user.companyLocation || "",
+    region: org?.region || user.companyRegion || "",
+    bransch: org?.bransch?.length ? org.bransch : (user.companyBransch ?? []),
   };
 }
 
@@ -187,39 +191,50 @@ companiesRouter.get("/search", optionalAuthMiddleware, validateQuery(companiesSe
 companiesRouter.get("/:id/public", optionalAuthMiddleware, async (req, res, next) => {
   try {
     const isAuthenticated = Boolean(req.userId);
-    const company = await prisma.user.findUnique({
-      where: { id: req.params.id },
-      select: {
-        id: true,
-        role: true,
-        companyStatus: true,
-        companyName: true,
-        name: true,
-        companyDescription: true,
-        companyWebsite: true,
-        companyLocation: true,
-        companyBransch: true,
-        companyRegion: true,
-        fSkattsedel: true,
-        industryOrgMember: true,
-        industryOrgName: true,
-        policyAgreedAt: true,
-        companyContactEmail: true,
-        companyContactPhone: true,
-        createdAt: true,
-        userOrganizations: {
-          take: 1,
-          where: { role: "OWNER" },
-          select: { organization: { select: ORG_PROFILE_SELECT } },
-        },
+    const publicSelect = {
+      id: true,
+      role: true,
+      companyStatus: true,
+      companyName: true,
+      name: true,
+      companyDescription: true,
+      companyWebsite: true,
+      companyLocation: true,
+      companyBransch: true,
+      companyRegion: true,
+      fSkattsedel: true,
+      industryOrgMember: true,
+      industryOrgName: true,
+      policyAgreedAt: true,
+      companyContactEmail: true,
+      companyContactPhone: true,
+      createdAt: true,
+      userOrganizations: {
+        take: 1,
+        orderBy: { joinedAt: "asc" },
+        select: { role: true, organizationId: true, organization: { select: ORG_PROFILE_SELECT } },
       },
-    });
+    };
+    let company = await prisma.user.findUnique({ where: { id: req.params.id }, select: publicSelect });
     if (!company || company.role !== "COMPANY") {
       return res.status(404).json({ error: "Företaget hittades inte" });
     }
+    // En kollegas annons länkar till kollegans konto — visa åkeriet (ägarens profil) i stället.
+    const membership = company.userOrganizations?.[0] ?? null;
+    if (membership && membership.role !== "OWNER") {
+      const ownerLink = await prisma.userOrganization.findFirst({
+        where: { organizationId: membership.organizationId, role: "OWNER" },
+        select: { userId: true },
+      });
+      const owner = ownerLink ? await prisma.user.findUnique({ where: { id: ownerLink.userId }, select: publicSelect }) : null;
+      if (owner) company = owner;
+    }
 
+    // Hela åkeriets annonser, även kollegors.
     const jobs = await prisma.job.findMany({
-      where: { userId: company.id, status: "ACTIVE" },
+      where: membership
+        ? { status: "ACTIVE", OR: [{ organizationId: membership.organizationId }, { userId: company.id }] }
+        : { userId: company.id, status: "ACTIVE" },
       orderBy: { published: "desc" },
       select: {
         id: true,
@@ -242,7 +257,7 @@ companiesRouter.get("/:id/public", optionalAuthMiddleware, async (req, res, next
       _count: { _all: true },
     });
 
-    const org = company.userOrganizations?.[0]?.organization ?? null;
+    const org = membership?.organization ?? null;
     const profile = companyProfileFields(company, org);
     res.json({
       id: company.id,
@@ -287,6 +302,12 @@ companiesRouter.use(authMiddleware, requireCompany, attachCompanyContext);
  * Steget härleds på ett ställe: pipelineStage om det satts, annars tidsstämplarna
  * (samma ordning som annonsens kandidattavla).
  */
+// Åkeriets annonser — hela organisationens (även kollegors), som /api/jobs/mine.
+function companyJobsWhere(req) {
+  const cid = req.companyOwnerId ?? req.userId;
+  return req.organizationId ? { OR: [{ organizationId: req.organizationId }, { userId: cid }] } : { userId: cid };
+}
+
 const PIPELINE_TO_STAGE = { ny: "new", kontaktad: "reviewing", intervjuad: "interview", anstalld: "hired", avslag: "rejected" };
 export function candidateStage(c) {
   if (c.pipelineStage && PIPELINE_TO_STAGE[c.pipelineStage]) return PIPELINE_TO_STAGE[c.pipelineStage];
@@ -378,6 +399,9 @@ companiesRouter.get("/me/profile", async (req, res, next) => {
           region: true,
           status: true,
           acceptsPraktik: true,
+          employeeCount: true,
+          fleet: true,
+          foundedYear: true,
         },
       });
       if (!org) return res.status(404).json({ error: "Företaget hittades inte" });
@@ -406,6 +430,9 @@ companiesRouter.get("/me/profile", async (req, res, next) => {
         companyRegion: org.region,
         companyStatus: org.status,
         acceptsPraktik: org.acceptsPraktik ?? false,
+        companyEmployeeCount: org.employeeCount ?? null,
+        companyFleet: org.fleet ?? null,
+        companyFoundedYear: org.foundedYear ?? null,
         emailNotificationSettings: owner?.emailNotificationSettings || {},
         fSkattsedel: owner?.fSkattsedel || false,
         industryOrgMember: owner?.industryOrgMember || false,
@@ -530,6 +557,9 @@ companiesRouter.put("/me/profile", requireCompanyOwner, validateBody(companyProf
           bransch: Array.isArray(body.companyBransch) ? body.companyBransch : undefined,
           region: body.companyRegion !== undefined ? body.companyRegion : undefined,
           ...(body.acceptsPraktik !== undefined && { acceptsPraktik: Boolean(body.acceptsPraktik) }),
+          ...(body.companyEmployeeCount !== undefined && { employeeCount: body.companyEmployeeCount || null }),
+          ...(body.companyFleet !== undefined && { fleet: body.companyFleet }),
+          ...(body.companyFoundedYear !== undefined && { foundedYear: body.companyFoundedYear }),
         },
         select: {
           id: true,
@@ -543,6 +573,9 @@ companiesRouter.put("/me/profile", requireCompanyOwner, validateBody(companyProf
           region: true,
           status: true,
           acceptsPraktik: true,
+          employeeCount: true,
+          fleet: true,
+          foundedYear: true,
         },
       });
       // Trust fields always live on the owner User
@@ -558,13 +591,11 @@ companiesRouter.put("/me/profile", requireCompanyOwner, validateBody(companyProf
       if (Array.isArray(updated.segmentDefaults) && updated.segmentDefaults.length > 0) {
         ownerUpdates.needsRecruiterOnboarding = false;
       }
+      // Svara alltid med ägarens fält — annars tömdes kontaktuppgifterna i formuläret efter sparning.
+      const ownerSelect = { fSkattsedel: true, industryOrgMember: true, industryOrgName: true, policyAgreedAt: true, companyContactEmail: true, companyContactPhone: true, emailNotificationSettings: true };
       const ownerUser = Object.keys(ownerUpdates).length > 0
-        ? await prisma.user.update({
-            where: { id: ownerId },
-            data: ownerUpdates,
-            select: { fSkattsedel: true, industryOrgMember: true, industryOrgName: true, policyAgreedAt: true },
-          })
-        : null;
+        ? await prisma.user.update({ where: { id: ownerId }, data: ownerUpdates, select: ownerSelect })
+        : await prisma.user.findUnique({ where: { id: ownerId }, select: ownerSelect });
       return res.json({
         id: updated.id,
         name: updated.name,
@@ -578,10 +609,16 @@ companiesRouter.put("/me/profile", requireCompanyOwner, validateBody(companyProf
         companyRegion: updated.region,
         companyStatus: updated.status,
         acceptsPraktik: updated.acceptsPraktik ?? false,
+        companyEmployeeCount: updated.employeeCount ?? null,
+        companyFleet: updated.fleet ?? null,
+        companyFoundedYear: updated.foundedYear ?? null,
         fSkattsedel: ownerUser?.fSkattsedel ?? false,
         industryOrgMember: ownerUser?.industryOrgMember ?? false,
         industryOrgName: ownerUser?.industryOrgName ?? null,
         policyAgreedAt: ownerUser?.policyAgreedAt ?? null,
+        companyContactEmail: ownerUser?.companyContactEmail ?? null,
+        companyContactPhone: ownerUser?.companyContactPhone ?? null,
+        emailNotificationSettings: ownerUser?.emailNotificationSettings || {},
       });
     }
 
@@ -643,11 +680,8 @@ companiesRouter.put("/me/profile", requireCompanyOwner, validateBody(companyProf
 // GET /api/companies/stats/job-views — jobbvisningar per vecka senaste 12 veckorna
 companiesRouter.get("/stats/job-views", async (req, res, next) => {
   try {
-    const resolved = await resolveCompanyOwner(req.userId);
-    if (!resolved) return res.status(404).json({ error: "Företaget hittades inte" });
-
     const jobs = await prisma.job.findMany({
-      where: { userId: resolved.ownerId },
+      where: companyJobsWhere(req),
       select: { id: true },
     });
     const jobIds = jobs.map((j) => j.id);
@@ -716,11 +750,8 @@ function availabilityMatches(availability, employment) {
 // GET /api/companies/stats/matching-drivers — top 3 förare som matchar aktiva annonser
 companiesRouter.get("/stats/matching-drivers", async (req, res, next) => {
   try {
-    const resolved = await resolveCompanyOwner(req.userId);
-    if (!resolved) return res.status(404).json({ error: "Företaget hittades inte" });
-
     const activeJobs = await prisma.job.findMany({
-      where: { userId: resolved.ownerId, status: "ACTIVE" },
+      where: { AND: [companyJobsWhere(req), { status: "ACTIVE" }] },
       select: {
         id: true, license: true, certificates: true, region: true,
         employment: true, experience: true, segment: true,

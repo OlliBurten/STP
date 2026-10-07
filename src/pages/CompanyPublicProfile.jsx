@@ -450,10 +450,9 @@ export default function CompanyPublicProfile() {
   }
 
   const benefitItems = [
-    company.fSkattsedel ? { icon: "shield", title: "F-skattsedel", desc: "Seriös arbetsgivare med F-skattsedel och trygg anställning." } : null,
+    company.fSkattsedel ? { icon: "shield", title: "F-skattsedel", desc: "Registrerad för F-skatt." } : null,
     company.acceptsPraktik ? { icon: "users", title: "Tar emot praktikanter", desc: "Tar emot gymnasieelever och praktikanter på plats." } : null,
-    (company.industryOrgMember && company.industryOrgName) ? { icon: "building", title: `Branschmedlem – ${company.industryOrgName}`, desc: "Ansluten till branschorganisation med gemensamma kvalitetskrav." } : null,
-    company.fleet ? { icon: "truck", title: `${company.fleet} fordon i flotta`, desc: "Modern och välskött fordonspark." } : null,
+    (company.industryOrgMember && company.industryOrgName) ? { icon: "building", title: `Branschmedlem – ${company.industryOrgName}`, desc: "Medlem i branschorganisation." } : null,
   ].filter(Boolean);
 
   return (
@@ -547,10 +546,10 @@ export default function CompanyPublicProfile() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 0, marginTop: 24, paddingTop: 22, borderTop: "1px solid var(--line)" }}>
             {[
               { v: company.jobs.length, l: "Lediga jobb", accent: true },
-              { v: "—", l: "Svarsfrekvens" },
-              { v: company.employeeCount ?? "—", l: "Anställda" },
-              { v: company.fleet ?? "—", l: "Fordon" },
-            ].map((s, i) => (
+              company.employeeCount ? { v: company.employeeCount, l: "Anställda" } : null,
+              company.fleet ? { v: company.fleet, l: "Fordon" } : null,
+              company.foundedYear ? { v: company.foundedYear, l: "Grundat" } : null,
+            ].filter(Boolean).map((s, i) => (
               <div key={s.l} style={{ paddingLeft: i ? 24 : 0, borderLeft: i ? "1px solid var(--line)" : "none" }}>
                 <div style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: s.accent ? "var(--green)" : "var(--ink-900)", letterSpacing: -0.6, fontFamily: "var(--mono)" }}>{s.v}</div>
                 <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", marginTop: 4, fontWeight: 600, letterSpacing: 0.3, textTransform: "uppercase" }}>{s.l}</div>
@@ -746,20 +745,6 @@ export default function CompanyPublicProfile() {
               </div>
             </div>
 
-            {/* Svarar ofta */}
-            <div style={{ background: "var(--card-2)", border: "1px solid var(--line)", borderRadius: 12, padding: "20px 24px", boxShadow: "var(--sh-sm)" }}>
-              <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "var(--ink-400)", marginBottom: 14 }}>Svarar ofta</div>
-              <div style={{ display: "flex", gap: 20 }}>
-                <div>
-                  <div style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--green)", fontFamily: "var(--mono)", lineHeight: 1 }}>—</div>
-                  <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", marginTop: 4 }}>svarsfrekvens</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--ink-900)", fontFamily: "var(--mono)", lineHeight: 1 }}>—</div>
-                  <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-500)", marginTop: 4 }}>svarstid</div>
-                </div>
-              </div>
-            </div>
           </aside>
         </div>
       </div>

@@ -266,6 +266,8 @@ jobsRouter.get("/", validateQuery(jobsListQuerySchema), async (req, res, next) =
       // Exponera AF:s ansöknings-URL för importerade jobb → garanterad väg att
       // ansöka (säkerhetsnät: vidarebefordran via mejl når inte alla företag).
       externalApplyUrl: j.externalApplyUrl ?? j.sourceUrl ?? null,
+      start: j.start ?? null,
+      rolling: j.rolling ?? false,
       // Har det importerade jobbet en kontaktmejl? → STP kan vidarebefordra
       // ansökan (claim-länk till företaget). Saknas mejl visar mobilen bara
       // AF-länken. Exponerar bara JA/NEJ, aldrig själva adressen.
@@ -585,6 +587,10 @@ jobsRouter.get("/:id", optionalAuthMiddleware, attachCompanyContext, async (req,
       },
     });
     if (!job) return res.status(404).json({ error: "Jobbet hittades inte" });
+    const isOwnJob = Boolean(req.userId) && (
+      job.userId === req.userId || job.userId === effectiveCompanyId(req) ||
+      (Boolean(req.organizationId) && job.organizationId === req.organizationId)
+    );
     const companySource = job.organization ?? job.user;
     const rawDesc = companySource?.description && typeof companySource.description === "string"
       ? companySource.description.trim()
@@ -622,6 +628,8 @@ jobsRouter.get("/:id", optionalAuthMiddleware, attachCompanyContext, async (req,
       salaryMin: job.salaryMin ?? null,
       salaryMax: job.salaryMax ?? null,
       externalApplyUrl: job.source === "AGGREGATED" ? null : (job.externalApplyUrl ?? null),
+      start: job.start ?? null,
+      rolling: job.rolling ?? false,
       description: job.description,
       aboutJob: job.aboutJob ?? null,
       tasks: job.tasks ?? [],
@@ -633,7 +641,9 @@ jobsRouter.get("/:id", optionalAuthMiddleware, attachCompanyContext, async (req,
       bemanning: !!job.isStaffing,
       ...serializeAfParity(job),
       updatedAt: job.updatedAt.toISOString(),
-      contact: job.contact,
+      // Kontaktmejlen är dit ansökningar skickas — den visas inte för förare på åkeriernas
+      // egna annonser (bara för åkeriet själv, t.ex. i redigeringsläget).
+      contact: job.source === "AGGREGATED" || isOwnJob ? job.contact : null,
       userId: job.userId,
       organizationId: job.organizationId ?? null,
       physicalWorkRequired: job.physicalWorkRequired ?? null,
@@ -716,8 +726,9 @@ jobsRouter.get("/:id/stats", authMiddleware, requireCompany, attachCompanyContex
       ? Math.floor((Date.now() - new Date(job.published).getTime()) / 86400000)
       : 0;
 
-    if (!job.salary) {
-      recommendations.push({ type: "tip", text: "Lägg till löneinformation – annonser med lön får fler ansökningar." });
+    // Lön kan anges som intervall (salaryMin/Max) eller fritext (salary).
+    if (!job.salary && job.salaryMin == null && job.salaryMax == null) {
+      recommendations.push({ type: "tip", text: "Lägg till lön i annonsen." });
     }
     if (!job.schedule) {
       recommendations.push({ type: "tip", text: "Specificera arbetstider (dag/kväll/natt) för bättre matchning." });
@@ -816,6 +827,8 @@ jobsRouter.post("/", authMiddleware, requireVerifiedEmail, requireCompany, attac
         salaryMin: body.salaryMin ?? null,
         salaryMax: body.salaryMax ?? null,
         externalApplyUrl: body.externalApplyUrl ?? null,
+        start: body.start || null,
+        rolling: body.rolling === true,
         requirements,
         extraRequirements: body.extraRequirements || null,
         contact: body.contact,
@@ -881,7 +894,7 @@ jobsRouter.patch("/:id", authMiddleware, requireCompany, attachCompanyContext, r
     // Återaktivering: annonsen är öppen igen, så den är inte längre tillsatt.
     if (body.status === "ACTIVE" && body.filledAt === undefined) data.filledAt = null;
     // Innehåll — speglar mappningen i POST /.
-    for (const k of ["title", "company", "tasks", "offers", "location", "region", "license", "certificates", "jobType", "employment", "schedule", "experience", "salary", "salaryMin", "salaryMax", "contact", "externalApplyUrl"]) {
+    for (const k of ["title", "company", "tasks", "offers", "location", "region", "license", "certificates", "jobType", "employment", "schedule", "experience", "salary", "salaryMin", "salaryMax", "contact", "externalApplyUrl", "start", "rolling"]) {
       if (body[k] !== undefined) data[k] = body[k];
     }
     if (body.aboutJob !== undefined) {
