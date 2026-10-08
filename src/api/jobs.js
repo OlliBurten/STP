@@ -1,4 +1,4 @@
-import { apiDelete, apiGet, apiPatch, apiPost } from "./client.js";
+import { apiDelete, apiGet, apiPatch, apiPost, apiPut } from "./client.js";
 import { track } from "../utils/posthog.js";
 
 export function fetchJobs(params = {}) {
@@ -87,4 +87,21 @@ export async function saveCompany(companyId) {
 
 export async function unsaveCompany(companyId) {
   return apiDelete(`/api/jobs/saved-companies/${companyId}`);
+}
+
+// ─── Utkast (påbörjade annonser, delas med teamet) ─────────────────────────
+export function listJobDrafts() {
+  return apiGet("/api/jobs/drafts");
+}
+export function fetchJobDraft(id) {
+  return apiGet(`/api/jobs/drafts/${id}`);
+}
+export function createJobDraft(data) {
+  return apiPost("/api/jobs/drafts", { data });
+}
+export function updateJobDraft(id, data) {
+  return apiPut(`/api/jobs/drafts/${id}`, { data });
+}
+export function deleteJobDraft(id) {
+  return apiDelete(`/api/jobs/drafts/${id}`);
 }

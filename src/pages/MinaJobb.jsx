@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { usePageTitle } from "../hooks/usePageTitle";
-import { fetchMyJobs, updateJob } from "../api/jobs.js";
+import { fetchMyJobs, updateJob, listJobDrafts, deleteJobDraft } from "../api/jobs.js";
 import { useChat } from "../context/ChatContext";
 import { useIsMobile } from "../hooks/useIsMobile";
 import CompanyBottomNav from "../components/CompanyBottomNav";
@@ -259,6 +259,20 @@ export default function MinaJobb() {
       .finally(() => setLoading(false));
   }, []);
 
+  // Påbörjade annonser (sparas automatiskt i formuläret, delas med teamet).
+  const [drafts, setDrafts] = useState([]);
+  useEffect(() => {
+    if (!canManage) return;
+    listJobDrafts().then((d) => setDrafts(Array.isArray(d) ? d : [])).catch(() => {});
+  }, [canManage]);
+  async function handleDeleteDraft(id) {
+    if (!window.confirm("Ta bort utkastet? Det går inte att ångra.")) return;
+    try {
+      await deleteJobDraft(id);
+      setDrafts((prev) => prev.filter((d) => d.id !== id));
+    } catch (_) {}
+  }
+
   const pipelineByJob = useMemo(() => {
     const map = {};
     conversations.forEach((c) => {
@@ -307,9 +321,32 @@ export default function MinaJobb() {
     { k: "paused", l: "Pausade", c: counts.paused },
     { k: "closed", l: "Stängda", c: counts.closed },
     { k: "all",    l: "Alla",    c: counts.all },
+    ...(canManage && drafts.length > 0 ? [{ k: "drafts", l: "Utkast", c: drafts.length }] : []),
   ];
 
-  const jobList = loading ? (
+  const draftList = (
+    <div className="stp-fade-up" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      {drafts.map((d) => (
+        <div key={d.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "16px 20px", background: "var(--card)", border: "1px dashed var(--line-2)", borderRadius: 14 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)" }}>{d.title || "Namnlös annons"}</div>
+            <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", marginTop: 3 }}>
+              Utkast · ändrat {new Date(d.updatedAt).toLocaleString("sv-SE", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+              {d.authorName && !d.isMine ? ` av ${d.authorName}` : ""}
+            </div>
+          </div>
+          <Link to={`/foretag/annonsera?utkast=${d.id}`} style={{ padding: "8px 16px", borderRadius: 9, background: "var(--green)", color: "#fff", fontSize: "var(--text-xs)", fontWeight: 700, textDecoration: "none" }}>
+            Fortsätt
+          </Link>
+          <button type="button" onClick={() => handleDeleteDraft(d.id)} style={{ padding: "8px 12px", borderRadius: 9, background: "none", border: "1px solid var(--line-2)", color: "var(--ink-500)", fontSize: "var(--text-xs)", fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+            Ta bort
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+
+  const jobList = tab === "drafts" ? draftList : loading ? (
     <div style={{ textAlign: "center", padding: "60px 0", color: "var(--ink-400)" }}>Laddar annonser…</div>
   ) : filtered.length === 0 ? (
     <div style={{ padding: "56px 32px", textAlign: "center", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14 }}>

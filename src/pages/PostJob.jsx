@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { companyCan } from "../utils/companyPermissions";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { licenseTypes, regions } from "../data/mockJobs";
 import { certificateTypesForUI } from "../data/profileData";
 import { useAuth } from "../context/AuthContext";
-import { createJob, fetchJob, updateJob } from "../api/jobs.js";
+import { createJob, fetchJob, updateJob, fetchJobDraft, createJobDraft, updateJobDraft, deleteJobDraft } from "../api/jobs.js";
 import { fetchMyCompanyProfile } from "../api/companies.js";
 import { mapEmploymentToSegment } from "../data/segments";
 import { trackJobPosted } from "../utils/segmentMetrics";
@@ -666,6 +666,70 @@ export default function PostJob() {
       .catch(() => {});
   }, [hasApi, isCompany, user?.email]);
 
+  // ── Utkast ────────────────────────────────────────────────────────────────
+  // En påbörjad annons sparas automatiskt (som ett mejlutkast) och kan återupptas
+  // från Annonser → Utkast, även av en kollega. ?utkast=<id> öppnar ett utkast.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const draftIdRef = useRef(searchParams.get("utkast"));
+  const lastSavedRef = useRef(null);
+  const savingRef = useRef(false);
+  const [draftState, setDraftState] = useState({ status: "idle", at: null });
+  const canDraft = hasApi && isCompany && !isEdit && companyCan(activeOrg, "manageJobs");
+
+  useEffect(() => {
+    const id = searchParams.get("utkast");
+    if (!canDraft || !id) return;
+    fetchJobDraft(id)
+      .then((d) => {
+        const saved = d?.data || {};
+        setForm((prev) => ({ ...prev, ...(saved.form || {}) }));
+        setStep(Number.isInteger(saved.step) ? Math.min(Math.max(saved.step, 0), 2) : 0);
+        lastSavedRef.current = JSON.stringify({ form: { ...form, ...(saved.form || {}) }, step: saved.step });
+        setDraftState({ status: "saved", at: d.updatedAt });
+      })
+      .catch(() => { draftIdRef.current = null; });
+    // Läs bara in en gång per utkast-id.
+  }, [canDraft]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const hasContent = Boolean(
+    form.title || form.location || form.region || form.license.length || form.jobType || form.employment ||
+    form.schedule || form.aboutJob.trim() || form.tasks.length || form.requirements.length || form.offers.length ||
+    form.salaryMin || form.salaryMax || form.start
+  );
+
+  const saveDraft = useCallback(async () => {
+    if (!canDraft || submitted || !hasContent || savingRef.current) return;
+    const payload = { form, step };
+    const json = JSON.stringify(payload);
+    if (json === lastSavedRef.current) return;
+    savingRef.current = true;
+    setDraftState((d) => ({ ...d, status: "saving" }));
+    try {
+      const d = draftIdRef.current
+        ? await updateJobDraft(draftIdRef.current, payload)
+        : await createJobDraft(payload);
+      if (!draftIdRef.current) {
+        draftIdRef.current = d.id;
+        setSearchParams({ utkast: d.id }, { replace: true });
+      }
+      lastSavedRef.current = json;
+      setDraftState({ status: "saved", at: d.updatedAt });
+    } catch {
+      setDraftState((d) => ({ ...d, status: "error" }));
+    } finally {
+      savingRef.current = false;
+    }
+  }, [canDraft, submitted, hasContent, form, step, setSearchParams]);
+
+  // Spara en stund efter senaste ändringen, och direkt när man lämnar sidan.
+  useEffect(() => {
+    const t = setTimeout(saveDraft, 1200);
+    return () => clearTimeout(t);
+  }, [saveDraft]);
+  const saveDraftRef = useRef(saveDraft);
+  useEffect(() => { saveDraftRef.current = saveDraft; }, [saveDraft]);
+  useEffect(() => () => { saveDraftRef.current?.(); }, []);
+
   // Vad som saknas för att gå vidare — knappen var bara grå utan förklaring.
   const missingForNext = () => {
     if (step === 0) {
@@ -767,6 +831,10 @@ export default function PostJob() {
           soloWorkOk: null,
         });
         trackJobPosted(form.segment || mapEmploymentToSegment(form.employment) || "FULLTIME");
+        if (draftIdRef.current) {
+          deleteJobDraft(draftIdRef.current).catch(() => {});
+          draftIdRef.current = null;
+        }
         setSubmitted(true);
       } catch (err) {
         setPublishError(err.message || "Kunde inte publicera annonsen.");
@@ -870,7 +938,15 @@ export default function PostJob() {
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
           Tillbaka till annonser
         </Link>
-        <h1 style={{ fontSize: isMobile ? 24 : 34, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.2, marginBottom: 18 }}>{isEdit ? "Redigera annons" : "Skapa annons"}</h1>
+        <h1 style={{ fontSize: isMobile ? 24 : 34, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.2, marginBottom: canDraft ? 6 : 18 }}>{isEdit ? "Redigera annons" : "Skapa annons"}</h1>
+        {canDraft && (
+          <p style={{ fontSize: "var(--text-xs)", color: draftState.status === "error" ? "var(--danger)" : "var(--ink-400)", margin: "0 0 18px" }}>
+            {draftState.status === "saving" ? "Sparar utkast…"
+              : draftState.status === "error" ? "Kunde inte spara utkastet — försöker igen när du ändrar något."
+              : draftState.status === "saved" && draftState.at ? `Utkast sparat ${new Date(draftState.at).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" })}`
+              : "Sparas automatiskt som utkast."}
+          </p>
+        )}
         {editLoadError && <p style={{ color: "var(--danger)", fontSize: "var(--text-sm)", marginBottom: 12 }}>{editLoadError}</p>}
       </div>
 

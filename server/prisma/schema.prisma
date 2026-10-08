@@ -119,6 +119,7 @@ model User {
   // Vikariepool / inhopp (extra-pass)
   shiftsCreated  Shift[] @relation("ShiftCompany")
   shiftsAccepted Shift[] @relation("ShiftDriver")
+  jobDrafts                  JobDraft[]
 }
 
 model PushSubscription {
@@ -204,6 +205,7 @@ model Organization {
   reviews           CompanyReview[]      @relation("ReviewOrganization")
   invites           OrganizationInvite[]
   shifts            Shift[]
+  jobDrafts         JobDraft[]
 }
 
 model UserOrganization {
@@ -784,4 +786,20 @@ model JobAlert {
 
   @@index([email])
   @@index([confirmedAt, unsubscribedAt])
+}
+
+/// Påbörjade annonser — sparas automatiskt i formuläret och delas med åkeriets team.
+model JobDraft {
+  id             String        @id @default(cuid())
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  authorId       String
+  author         User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  title          String?
+  data           Json // formulärets fält + steg
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([organizationId])
+  @@index([authorId])
 }
