@@ -491,13 +491,37 @@ export async function runMessageReminders() {
           },
         },
       },
+      // Äldre åkerier utan organisation: trådar direkt på kontot.
       conversationsAsCompany: {
+        where: { organizationId: null },
         select: {
           id: true,
           messages: {
             orderBy: { createdAt: "desc" },
             take: 1,
             select: { senderId: true, createdAt: true, senderRole: true },
+          },
+        },
+      },
+      // Åkerier med organisation: ägaren påminns alltid, kollegor när ägaren valt
+      // "Mejla hela teamet" (samma inställning som för nya ansökningar).
+      userOrganizations: {
+        select: {
+          role: true,
+          organization: {
+            select: {
+              notifyAllMembers: true,
+              conversations: {
+                select: {
+                  id: true,
+                  messages: {
+                    orderBy: { createdAt: "desc" },
+                    take: 1,
+                    select: { senderId: true, createdAt: true, senderRole: true },
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -508,9 +532,13 @@ export async function runMessageReminders() {
   for (const u of users) {
     if (!isEnabled(u, "messageReminder")) continue;
 
+    const orgConvs = (u.userOrganizations || [])
+      .filter((uo) => uo.role === "OWNER" || uo.organization?.notifyAllMembers)
+      .flatMap((uo) => uo.organization?.conversations || []);
     const allConvs = [
       ...u.conversationsAsDriver.map((c) => ({ ...c, myRole: "driver" })),
       ...u.conversationsAsCompany.map((c) => ({ ...c, myRole: "company" })),
+      ...orgConvs.map((c) => ({ ...c, myRole: "company" })),
     ];
 
     const pendingConvs = allConvs.filter((c) => {
@@ -519,8 +547,8 @@ export async function runMessageReminders() {
       const age = new Date(last.createdAt);
       if (age >= unreadCutoff) return false; // too recent
       if (age < tooOldCutoff) return false;  // too old
-      // The last message was sent by the other party
-      return last.senderId !== u.id;
+      // Motparten skrev sist (roll, inte person — en kollegas svar räknas som åkeriets).
+      return c.myRole === "company" ? last.senderRole === "driver" : last.senderRole === "company";
     });
 
     if (pendingConvs.length === 0) continue;
@@ -535,7 +563,7 @@ export async function runMessageReminders() {
       `Du har ${pendingConvs.length === 1 ? "ett meddelande" : `${pendingConvs.length} meddelanden`} som väntar på svar.`,
       "",
       "Svara här:",
-      `${FRONTEND_URL}/meddelanden`,
+      `${FRONTEND_URL}${u.role === "DRIVER" ? "/meddelanden" : "/foretag/meddelanden"}`,
       "",
       "Med vänliga hälsningar,",
       "Sveriges Transportplattform",

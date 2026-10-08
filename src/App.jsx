@@ -96,6 +96,7 @@ const Forbidden             = lazyRetry(() => import("./pages/Forbidden"));
 const SavedJobs             = lazyRetry(() => import("./pages/SavedJobs"));
 const CompanyProfile        = lazyRetry(() => import("./pages/CompanyProfile"));
 const CompanyPublicProfile  = lazyRetry(() => import("./pages/CompanyPublicProfile"));
+const CompanyPublicPreview  = lazyRetry(() => import("./pages/CompanyPublicPreview"));
 const DriverOnboardingWizard   = lazyRetry(() => import("./pages/DriverOnboardingWizard"));
 // const CompanyVerification   = lazyRetry(() => import("./pages/CompanyVerification")); // Disabled until F-skatt/trafiktillstånd APIs are integrated
 const AddCompany            = lazyRetry(() => import("./pages/AddCompany"));
@@ -348,6 +349,9 @@ function AppLayout() {
                   <Route path="/akerier" element={<AkerierSearch />} />
                   <Route path="/foretag" element={isCompany ? <ForCompanies /> : <ForCompaniesLanding />} />
                   <Route path="/foretag/:id" element={<CompanyPublicProfile />} />
+                  {/* Enkel publik adress per åkeri — öppen för alla, även besökare */}
+                  <Route path="/akerier/:id" element={<CompanyPublicProfile />} />
+                  <Route path="/foretag/offentlig-profil" element={<ProtectedRoute requiredRole="company"><CompanyPublicPreview /></ProtectedRoute>} />
                   <Route path="/om-oss" element={<About />} />
                   <Route path="/branschinsikter" element={<Branschinsikter />} />
                   <Route path="/branschinsikter/kompetenslaget-2025" element={<Kompetenslaget2025 />} />

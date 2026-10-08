@@ -23,6 +23,7 @@ const NAV = [
   { group: "Åkeriet", items: [
     { label: "Team",           to: "/foretag/team",    icon: "user" },
     { label: "Företagsprofil", to: "/foretag/profil",  icon: "building", also: ["/foretag/lagg-till-akeri"], tour: "user-menu" },
+    { label: "Offentlig profil", to: "/foretag/offentlig-profil", icon: "eye" },
     { label: "Inställningar",  to: "/installningar",   icon: "settings" },
   ] },
 ];
@@ -40,6 +41,7 @@ function Ico({ n, size = 16, color = "currentColor" }) {
     bell:   <><path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21a2 2 0 004 0"/></>,
     logout: <><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>,
     check:  <polyline points="4 12 10 18 20 6"/>,
+    eye:    <><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></>,
   };
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

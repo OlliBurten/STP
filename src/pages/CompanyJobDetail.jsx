@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { companyCan } from "../utils/companyPermissions";
 import { Link, useParams } from "react-router-dom";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { useAuth } from "../context/AuthContext";
@@ -150,7 +151,8 @@ function KanbanCard({ a }) {
 export default function CompanyJobDetail() {
   const { id } = useParams();
   const confirm = useConfirm();
-  const { hasApi } = useAuth();
+  const { hasApi, activeOrg } = useAuth();
+  const canManage = companyCan(activeOrg, "manageJobs");
   const { conversations = [] } = useChat();
 
   const [job, setJob]               = useState(null);
@@ -273,7 +275,7 @@ export default function CompanyJobDetail() {
                   >
                     <Icon name="eye" size={14} /> Visa annons
                   </Link>
-                  {isActive && (
+                  {isActive && canManage && (
                     <button
                       onClick={handlePause}
                       style={{ padding: "10px 16px", borderRadius: 10, background: "var(--card)", border: "1px solid var(--line-2)", color: "var(--ink-700)", fontSize: "var(--text-sm)", fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 6 }}

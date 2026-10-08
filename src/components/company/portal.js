@@ -8,7 +8,7 @@ export const useInPortal = () => useContext(PortalContext);
 const PORTAL_PATHS = [
   "/foretag/kandidater", "/foretag/annonser", "/foretag/annonsera", "/foretag/mina-jobb",
   "/foretag/chaufforer", "/foretag/meddelanden", "/foretag/profil", "/foretag/team",
-  "/foretag/lagg-till-akeri", "/installningar",
+  "/foretag/lagg-till-akeri", "/foretag/offentlig-profil", "/installningar",
 ];
 export function isPortalPath(pathname) {
   return pathname === "/foretag" || PORTAL_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"));

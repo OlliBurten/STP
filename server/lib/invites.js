@@ -41,6 +41,16 @@ function normalizeEmail(email) {
  * @param {string} userId
  * @returns {Promise<{ownerId: string, isOwner: boolean, organizationId?: string} | null>}
  */
+/** Vad användaren får göra i åkeriet. Ägaren får allt; kollegor enligt ägarens inställningar. */
+export function companyPermissions(isOwner, org) {
+  if (isOwner) return { manageJobs: true, editProfile: true, invite: true };
+  return {
+    manageJobs: org ? org.membersCanManageJobs !== false : true,
+    editProfile: Boolean(org?.membersCanEditProfile),
+    invite: Boolean(org?.membersCanInvite),
+  };
+}
+
 export async function resolveCompanyOwner(userId, requestedOrgId = null) {
   const { resolveEffectiveOrganization } = await import("./organizations.js");
   const orgRes = await resolveEffectiveOrganization(userId, requestedOrgId);
@@ -49,10 +59,12 @@ export async function resolveCompanyOwner(userId, requestedOrgId = null) {
       where: { organizationId: orgRes.organizationId, role: "OWNER" },
       select: { userId: true },
     });
+    const org = orgRes.organization;
     return {
       ownerId: ownerUo?.userId ?? userId,
       isOwner: orgRes.isOwner,
       organizationId: orgRes.organizationId,
+      permissions: companyPermissions(orgRes.isOwner, org),
     };
   }
   const membership = await prisma.companyMember.findUnique({
@@ -60,7 +72,7 @@ export async function resolveCompanyOwner(userId, requestedOrgId = null) {
     select: { companyOwnerId: true },
   });
   if (membership) {
-    return { ownerId: membership.companyOwnerId, isOwner: false };
+    return { ownerId: membership.companyOwnerId, isOwner: false, permissions: companyPermissions(false, null) };
   }
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -68,7 +80,7 @@ export async function resolveCompanyOwner(userId, requestedOrgId = null) {
   });
   if (!user || !isCompanyRole(user.role)) return null;
   if (user.companyOrgNumber) {
-    return { ownerId: user.id, isOwner: true };
+    return { ownerId: user.id, isOwner: true, permissions: companyPermissions(true, null) };
   }
   return null;
 }

@@ -8,6 +8,7 @@ import {
   requireVerifiedCompany,
   attachCompanyContext,
   requireVerifiedEmail,
+  requireCompanyPermission,
 } from "../middleware/auth.js";
 import { matchScore, matchPercent, driverYearsFromExperience } from "../utils/matchScore.js";
 import { notifyRecommendedJobMatch } from "../lib/email.js";
@@ -797,7 +798,7 @@ jobsRouter.delete("/:id/save", authMiddleware, requireDriver, async (req, res, n
   }
 });
 
-jobsRouter.post("/", authMiddleware, requireVerifiedEmail, requireCompany, attachCompanyContext, requireVerifiedCompany, validateBody(createJobSchema), async (req, res, next) => {
+jobsRouter.post("/", authMiddleware, requireVerifiedEmail, requireCompany, attachCompanyContext, requireVerifiedCompany, requireCompanyPermission("manageJobs"), validateBody(createJobSchema), async (req, res, next) => {
   try {
     const body = req.body;
     const requirements = Array.isArray(body.requirements)
@@ -850,7 +851,7 @@ jobsRouter.post("/", authMiddleware, requireVerifiedEmail, requireCompany, attac
   }
 });
 
-jobsRouter.post("/:id/renew", authMiddleware, requireCompany, attachCompanyContext, requireVerifiedCompany, async (req, res, next) => {
+jobsRouter.post("/:id/renew", authMiddleware, requireCompany, attachCompanyContext, requireVerifiedCompany, requireCompanyPermission("manageJobs"), async (req, res, next) => {
   try {
     const job = await prisma.job.findUnique({ where: { id: req.params.id } });
     if (!job) return res.status(404).json({ error: "Jobbet hittades inte" });
@@ -875,7 +876,7 @@ jobsRouter.post("/:id/renew", authMiddleware, requireCompany, attachCompanyConte
   }
 });
 
-jobsRouter.patch("/:id", authMiddleware, requireCompany, attachCompanyContext, requireVerifiedCompany, validateBody(patchJobSchema), async (req, res, next) => {
+jobsRouter.patch("/:id", authMiddleware, requireCompany, attachCompanyContext, requireVerifiedCompany, requireCompanyPermission("manageJobs"), validateBody(patchJobSchema), async (req, res, next) => {
   try {
     const job = await prisma.job.findUnique({
       where: { id: req.params.id },

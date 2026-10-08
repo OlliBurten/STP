@@ -214,6 +214,32 @@ export async function requireCompanyOwner(req, res, next) {
   }
 }
 
+const PERMISSION_DENIED = {
+  manageJobs: "Ägaren har inte gett kollegor rätt att publicera eller ändra annonser.",
+  editProfile: "Ägaren har inte gett kollegor rätt att ändra företagsprofilen.",
+  invite: "Ägaren har inte gett kollegor rätt att bjuda in nya kollegor.",
+};
+
+/** Kräver en rättighet i åkeriet (ägaren har alla; kollegor enligt ägarens val under Team). */
+export function requireCompanyPermission(permission) {
+  return async (req, res, next) => {
+    try {
+      const { resolveCompanyOwner } = await import("../lib/invites.js");
+      const requestedOrgId = req.headers["x-active-org"] || null;
+      const resolved = await resolveCompanyOwner(req.userId, requestedOrgId);
+      if (!resolved) return res.status(403).json({ error: "Endast för företag" });
+      if (!resolved.permissions?.[permission]) {
+        return res.status(403).json({ error: PERMISSION_DENIED[permission] || "Ingen behörighet" });
+      }
+      req.companyOwnerId = resolved.ownerId;
+      if (resolved.organizationId) req.organizationId = resolved.organizationId;
+      next();
+    } catch (e) {
+      next(e);
+    }
+  };
+}
+
 export async function requireVerifiedCompany(req, res, next) {
   if (!isCompanyRole(req.role)) {
     return res.status(403).json({ error: "Endast för företag" });
