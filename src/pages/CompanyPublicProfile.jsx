@@ -102,9 +102,11 @@ function Fact({ icon, label, value, highlight, link }) {
 
 // ── Main ─────────────────────────────────────────────────────────────────────
 
-export default function CompanyPublicProfile() {
+// Nås via /akerier/<slug>, /foretag/<id> eller som förhandsvisning i åkeriportalen (companyId-prop).
+export default function CompanyPublicProfile({ companyId: idProp }) {
   const isMobile = useIsMobile();
-  const { id } = useParams();
+  const params = useParams();
+  const routeId = idProp || params.id;
   const navigate = useNavigate();
   const { user, isDriver } = useAuth();
   const { createConversation } = useChat();
@@ -120,26 +122,32 @@ export default function CompanyPublicProfile() {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    if (!id) return;
+    if (!routeId) return;
     setLoading(true);
-    fetchCompanyPublicProfile(id)
+    fetchCompanyPublicProfile(routeId)
       .then(setCompany)
       .catch(() => setCompany(null))
       .finally(() => setLoading(false));
+  }, [routeId, user]);
+
+  // Adressen kan vara en slug — allt annat använder åkeriets id från svaret.
+  const id = company?.id;
+  useEffect(() => {
+    if (!id) return;
     getCompanyReviewSummary(id)
       .then(setReviewSummary)
       .catch(() => setReviewSummary(null));
-  }, [id, user]);
+  }, [id]);
 
   useEffect(() => {
-    if (!user || !id) return;
+    if (!isDriver || !id) return;
     fetchSavedCompanies()
       .then((list) => setSaved((list || []).some((c) => c.id === id)))
       .catch(() => {});
-  }, [user, id]);
+  }, [isDriver, id]);
 
   const handleToggleSave = async () => {
-    if (!user) return;
+    if (!isDriver || !id) return;
     setSaving(true);
     try {
       if (saved) await unsaveCompany(id);
@@ -232,7 +240,7 @@ export default function CompanyPublicProfile() {
         <PageMeta
           title={`${company.name} – STP`}
           description={metaDescription}
-          canonical={`/foretag/${company.id}`}
+          canonical={company.slug ? `/akerier/${company.slug}` : `/foretag/${company.id}`}
           jsonLd={jsonLd}
         />
         <div
@@ -258,7 +266,7 @@ export default function CompanyPublicProfile() {
                 </div>
               )}
               <div style={{ display: "flex", gap: 7 }}>
-                {user && (
+                {isDriver && (
                   <button onClick={handleToggleSave} disabled={saving} style={{ width: 40, height: 40, borderRadius: 99, background: "rgba(0,0,0,0.4)", backdropFilter: "blur(10px)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: saved ? "var(--amber-text)" : "#fff" }}>
                     <Icon n="heart" s={16} filled={saved} c={saved ? "var(--amber-text)" : "#fff"} />
                   </button>
@@ -301,13 +309,13 @@ export default function CompanyPublicProfile() {
 
             {/* CTAs */}
             <div style={{ display: "flex", gap: 8, marginBottom: 18 }}>
-              {user && (
+              {isDriver && (
                 <button onClick={handleToggleSave} disabled={saving} style={{ flex: 1, padding: "13px", borderRadius: 12, background: saved ? "var(--amber-tint)" : "var(--paper-2)", border: `1px solid ${saved ? "var(--amber)" : "var(--line)"}`, color: saved ? "var(--amber-text)" : "var(--ink-700)", fontSize: "var(--text-sm)", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, minHeight: 46, fontFamily: "inherit" }}>
                   <Icon n="heart" s={13} filled={saved} c={saved ? "var(--amber-text)" : "var(--ink-700)"} />{saved ? "Följer" : "Följ"}
                 </button>
               )}
               {!user && (
-                <Link to="/login" state={{ from: `/foretag/${company.id}` }} style={{ flex: 1, padding: "13px", borderRadius: 12, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-700)", fontSize: "var(--text-sm)", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, minHeight: 46, textDecoration: "none" }}>
+                <Link to="/login" state={{ from: company.slug ? `/akerier/${company.slug}` : `/foretag/${company.id}`, initialMode: "register", requiredRole: "driver" }} style={{ flex: 1, padding: "13px", borderRadius: 12, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-700)", fontSize: "var(--text-sm)", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, minHeight: 46, textDecoration: "none" }}>
                   Logga in för kontakt
                 </Link>
               )}
@@ -460,7 +468,7 @@ export default function CompanyPublicProfile() {
       <PageMeta
         title={`${company.name} – STP`}
         description={metaDescription}
-        canonical={`/foretag/${company.id}`}
+        canonical={company.slug ? `/akerier/${company.slug}` : `/foretag/${company.id}`}
         jsonLd={jsonLd}
       />
 
@@ -523,7 +531,7 @@ export default function CompanyPublicProfile() {
 
             {/* Action buttons */}
             <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-              {user && (
+              {isDriver && (
                 <button type="button" onClick={handleToggleSave} disabled={saving} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 16px", borderRadius: 10, background: saved ? "var(--amber-tint)" : "var(--paper-2)", border: `1px solid ${saved ? "var(--amber)" : "var(--line-2)"}`, color: saved ? "var(--amber-text)" : "var(--ink-700)", fontSize: "var(--text-sm)", fontWeight: 700, cursor: "pointer", fontFamily: "inherit", transition: "all .15s" }}>
                   <Icon n="heart" s={14} filled={saved} c={saved ? "var(--amber-deep)" : "var(--ink-700)"} />
                   {saved ? "Sparat" : "Spara"}
@@ -535,7 +543,7 @@ export default function CompanyPublicProfile() {
                 </button>
               )}
               {!user && (
-                <Link to="/login" state={{ from: `/foretag/${company.id}` }} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 10, background: "var(--green)", color: "#fff", fontSize: "var(--text-sm)", fontWeight: 700, textDecoration: "none", boxShadow: "var(--sh-sm)" }}>
+                <Link to="/login" state={{ from: company.slug ? `/akerier/${company.slug}` : `/foretag/${company.id}`, initialMode: "register", requiredRole: "driver" }} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 10, background: "var(--green)", color: "#fff", fontSize: "var(--text-sm)", fontWeight: 700, textDecoration: "none", boxShadow: "var(--sh-sm)" }}>
                   <Icon n="msg" s={14} c="#fff" /> Kontakta
                 </Link>
               )}

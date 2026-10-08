@@ -6,6 +6,8 @@ import { useChat } from "../context/ChatContext";
 import { useIsMobile } from "../hooks/useIsMobile";
 import CompanyBottomNav from "../components/CompanyBottomNav";
 import { candidateStage } from "../utils/candidateStage";
+import { companyCan } from "../utils/companyPermissions";
+import { useAuth } from "../context/AuthContext";
 
 const SEGMENT_LABEL = { FULLTIME: "Heltid", FLEX: "Vikarie / deltid", INTERNSHIP: "Praktik" };
 
@@ -80,7 +82,7 @@ function Funnel({ pipeline }) {
 }
 
 // ─── AdCard ───────────────────────────────────────────────────────────────────
-function AdCard({ job, pipeline, onPause, onClose }) {
+function AdCard({ job, pipeline, onPause, onClose, canManage = true }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const status = normalizeStatus(job.status);
   const statusMeta = {
@@ -144,7 +146,7 @@ function AdCard({ job, pipeline, onPause, onClose }) {
           >
             Hantera
           </Link>
-          <div style={{ position: "relative" }}>
+          {canManage && <div style={{ position: "relative" }}>
             <button
               onClick={(e) => { e.stopPropagation(); setMenuOpen((o) => !o); }}
               style={{ width: 34, height: 34, borderRadius: 99, background: "var(--paper-2)", border: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontFamily: "inherit" }}
@@ -176,7 +178,7 @@ function AdCard({ job, pipeline, onPause, onClose }) {
                 </button>
               </div>
             )}
-          </div>
+          </div>}
         </div>
       </div>
 
@@ -243,6 +245,8 @@ export default function MinaJobb() {
   usePageTitle("Annonser");
   const navigate = useNavigate();
   const { conversations } = useChat();
+  const { activeOrg } = useAuth();
+  const canManage = companyCan(activeOrg, "manageJobs");
   const isMobile = useIsMobile();
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -334,6 +338,7 @@ export default function MinaJobb() {
             pipeline={pipelineByJob[j.id] || { total: 0, new: 0, contacted: 0, interviewed: 0, hired: 0, rejected: 0 }}
             onPause={handlePause}
             onClose={handleClose}
+            canManage={canManage}
           />
         )
       ))}

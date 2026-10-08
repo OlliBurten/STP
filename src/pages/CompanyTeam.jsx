@@ -4,6 +4,13 @@ import { useAuth } from "../context/AuthContext";
 import { fetchOrgMembers, removeOrgMember, updateOrganization } from "../api/organizations.js";
 import { listCompanyInvites, createCompanyInvite, revokeCompanyInvite } from "../api/invites.js";
 import { usePageTitle } from "../hooks/usePageTitle";
+import { companyCan } from "../utils/companyPermissions";
+
+const MEMBER_PERMISSIONS = [
+  { key: "membersCanManageJobs",  label: "Publicera och ändra annonser" },
+  { key: "membersCanEditProfile", label: "Ändra företagsprofilen" },
+  { key: "membersCanInvite",      label: "Bjuda in nya kollegor" },
+];
 
 const ROLE_LABEL = { OWNER: "Ägare", ADMIN: "Admin", MEMBER: "Teammedlem" };
 const ROLE_COLOR = {
@@ -143,6 +150,7 @@ export default function CompanyTeam() {
   const orgId = activeOrg?.id;
   const myRole = userOrgs.find((o) => o.id === orgId)?.role ?? null;
   const isOwner = myRole === "OWNER";
+  const canInvite = companyCan(activeOrg, "invite");
 
   const [members, setMembers]   = useState([]);
   const [invites, setInvites]   = useState([]);
@@ -160,6 +168,26 @@ export default function CompanyTeam() {
   const [notifyAll, setNotifyAll] = useState(Boolean(activeOrg?.notifyAllMembers));
   const [savingNotify, setSavingNotify] = useState(false);
   useEffect(() => { setNotifyAll(Boolean(activeOrg?.notifyAllMembers)); }, [activeOrg?.notifyAllMembers]);
+  // Kollegornas rättigheter — bara ägaren ändrar.
+  const [perms, setPerms] = useState({});
+  useEffect(() => {
+    setPerms({
+      membersCanManageJobs: activeOrg?.membersCanManageJobs !== false,
+      membersCanEditProfile: Boolean(activeOrg?.membersCanEditProfile),
+      membersCanInvite: Boolean(activeOrg?.membersCanInvite),
+    });
+  }, [activeOrg]);
+  const togglePerm = async (key) => {
+    const next = !perms[key];
+    setPerms((p) => ({ ...p, [key]: next }));
+    try {
+      await updateOrganization(orgId, { [key]: next });
+      refreshOrgs?.();
+    } catch {
+      setPerms((p) => ({ ...p, [key]: !next }));
+    }
+  };
+
   const toggleNotifyAll = async () => {
     const next = !notifyAll;
     setNotifyAll(next);
@@ -180,7 +208,7 @@ export default function CompanyTeam() {
     try {
       const [m, i] = await Promise.all([
         fetchOrgMembers(orgId),
-        isOwner ? listCompanyInvites() : Promise.resolve([]),
+        canInvite ? listCompanyInvites() : Promise.resolve([]),
       ]);
       setMembers(m);
       setInvites(i);
@@ -189,7 +217,7 @@ export default function CompanyTeam() {
     } finally {
       setLoading(false);
     }
-  }, [orgId, isOwner]);
+  }, [orgId, canInvite]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -290,13 +318,31 @@ export default function CompanyTeam() {
             <input type="checkbox" checked={notifyAll} onChange={toggleNotifyAll} disabled={savingNotify} style={{ marginTop: 3, width: 16, height: 16, accentColor: "var(--green)" }} />
             <span>
               <span style={{ display: "block", fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-900)" }}>Mejla hela teamet om nya ansökningar och meddelanden</span>
-              <span style={{ display: "block", fontSize: "var(--text-xs)", color: "var(--ink-500)", marginTop: 2 }}>Annars får bara den som lagt upp annonsen mejl. Alla ser allt i inkorgen.</span>
+              <span style={{ display: "block", fontSize: "var(--text-xs)", color: "var(--ink-500)", marginTop: 2 }}>Gäller även påminnelser om obesvarade meddelanden. Annars mejlas den som lagt upp annonsen, och påminnelser går till dig.</span>
             </span>
           </label>
         )}
 
-        {/* Invite form — owner only */}
-        {isOwner && (
+        {/* Kollegornas rättigheter */}
+        {isOwner ? (
+          <div style={{ marginBottom: 32, padding: "14px 16px", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 12 }}>
+            <p style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-900)", margin: "0 0 10px" }}>Kollegor får</p>
+            {MEMBER_PERMISSIONS.map(({ key, label }) => (
+              <label key={key} style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 0", cursor: "pointer", fontSize: "var(--text-sm)", color: "var(--ink-700)" }}>
+                <input type="checkbox" checked={Boolean(perms[key])} onChange={() => togglePerm(key)} style={{ width: 16, height: 16, accentColor: "var(--green)" }} />
+                {label}
+              </label>
+            ))}
+            <p style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", margin: "6px 0 0" }}>Alla i teamet ser kandidater och kan svara på meddelanden.</p>
+          </div>
+        ) : (
+          <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", margin: "0 0 32px" }}>
+            Du kan {[companyCan(activeOrg, "manageJobs") && "publicera och ändra annonser", companyCan(activeOrg, "editProfile") && "ändra företagsprofilen", companyCan(activeOrg, "invite") && "bjuda in kollegor"].filter(Boolean).concat("hantera kandidater och meddelanden").join(", ").replace(/, ([^,]*)$/, " och $1")}. Ägaren styr rättigheterna.
+          </p>
+        )}
+
+        {/* Invite form — ägaren, eller kollegor om ägaren tillåter */}
+        {canInvite && (
           <div style={{ marginBottom: 40 }}>
             <p style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)", marginBottom: 14 }}>Bjud in en kollega</p>
             <form onSubmit={handleInvite} style={{ display: "flex", gap: 10 }}>
@@ -363,17 +409,17 @@ export default function CompanyTeam() {
         </div>
 
         {/* Pending invites */}
-        {isOwner && (pendingInvites.length > 0 || otherInvites.length > 0) && (
+        {canInvite && (pendingInvites.length > 0 || otherInvites.length > 0) && (
           <div>
             <p style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)", marginBottom: 12 }}>
               Inbjudningar
             </p>
             <div style={{ borderRadius: 14, border: "1px solid var(--line-2)", overflow: "hidden", background: "var(--card)" }}>
               {pendingInvites.map((i) => (
-                <InviteRow key={i.id} invite={i} isOwner={isOwner} onRevoke={handleRevoke} revoking={revoking} />
+                <InviteRow key={i.id} invite={i} isOwner={canInvite} onRevoke={handleRevoke} revoking={revoking} />
               ))}
               {otherInvites.map((i) => (
-                <InviteRow key={i.id} invite={i} isOwner={isOwner} onRevoke={handleRevoke} revoking={revoking} />
+                <InviteRow key={i.id} invite={i} isOwner={canInvite} onRevoke={handleRevoke} revoking={revoking} />
               ))}
             </div>
           </div>

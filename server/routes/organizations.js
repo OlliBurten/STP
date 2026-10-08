@@ -204,6 +204,9 @@ organizationsRouter.put("/:id", async (req, res, next) => {
         ...(Array.isArray(body.segmentDefaults) && { segmentDefaults: body.segmentDefaults }),
         ...(Array.isArray(body.bransch) && { bransch: body.bransch }),
         ...(typeof body.notifyAllMembers === "boolean" && { notifyAllMembers: body.notifyAllMembers }),
+        ...(typeof body.membersCanManageJobs === "boolean" && { membersCanManageJobs: body.membersCanManageJobs }),
+        ...(typeof body.membersCanEditProfile === "boolean" && { membersCanEditProfile: body.membersCanEditProfile }),
+        ...(typeof body.membersCanInvite === "boolean" && { membersCanInvite: body.membersCanInvite }),
       },
     });
     res.json({
@@ -218,6 +221,9 @@ organizationsRouter.put("/:id", async (req, res, next) => {
       bransch: updated.bransch,
       status: updated.status,
       notifyAllMembers: updated.notifyAllMembers,
+      membersCanManageJobs: updated.membersCanManageJobs,
+      membersCanEditProfile: updated.membersCanEditProfile,
+      membersCanInvite: updated.membersCanInvite,
     });
   } catch (e) {
     next(e);

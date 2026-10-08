@@ -1,7 +1,8 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
-import { authMiddleware, optionalAuthMiddleware, requireCompany, requireCompanyOwner, attachCompanyContext, requireVerifiedEmail, requireVerifiedCompany } from "../middleware/auth.js";
+import { authMiddleware, optionalAuthMiddleware, requireCompany, requireCompanyPermission, attachCompanyContext, requireVerifiedEmail, requireVerifiedCompany } from "../middleware/auth.js";
 import { matchPercent, driverYearsFromExperience } from "../utils/matchScore.js";
+import { ensureOrgSlug } from "../lib/organizations.js";
 import { validateBody, validateQuery } from "../middleware/validate.js";
 import {
   companyProfileSchema,
@@ -20,6 +21,8 @@ function resolveSegment(segment, employment) {
 }
 
 const ORG_PROFILE_SELECT = {
+  id: true,
+  slug: true,
   name: true,
   description: true,
   website: true,
@@ -216,6 +219,15 @@ companiesRouter.get("/:id/public", optionalAuthMiddleware, async (req, res, next
       },
     };
     let company = await prisma.user.findUnique({ where: { id: req.params.id }, select: publicSelect });
+    // Enkel adress: /akerier/<slug> → åkeriets ägare.
+    if (!company) {
+      const bySlug = await prisma.organization.findUnique({
+        where: { slug: req.params.id.toLowerCase() },
+        select: { userOrganizations: { where: { role: "OWNER" }, take: 1, select: { userId: true } } },
+      });
+      const ownerId = bySlug?.userOrganizations?.[0]?.userId;
+      if (ownerId) company = await prisma.user.findUnique({ where: { id: ownerId }, select: publicSelect });
+    }
     if (!company || company.role !== "COMPANY") {
       return res.status(404).json({ error: "Företaget hittades inte" });
     }
@@ -258,9 +270,11 @@ companiesRouter.get("/:id/public", optionalAuthMiddleware, async (req, res, next
     });
 
     const org = membership?.organization ?? null;
+    if (org && !org.slug) org.slug = await ensureOrgSlug(org);
     const profile = companyProfileFields(company, org);
     res.json({
       id: company.id,
+      slug: org?.slug ?? null,
       name: profile.name,
       description: profile.description,
       website: profile.website,
@@ -476,7 +490,7 @@ companiesRouter.get("/me/profile", async (req, res, next) => {
 /** Team invites – endast ägare */
 companiesRouter.get(
   "/me/invites",
-  requireCompanyOwner,
+  requireCompanyPermission("invite"),
   async (req, res, next) => {
     try {
       const ownerId = req.companyOwnerId ?? req.userId;
@@ -491,7 +505,7 @@ companiesRouter.get(
 companiesRouter.post(
   "/me/invites",
   requireVerifiedEmail,
-  requireCompanyOwner,
+  requireCompanyPermission("invite"),
   validateBody(inviteCreateSchema),
   async (req, res, next) => {
     try {
@@ -526,7 +540,7 @@ companiesRouter.post(
 
 companiesRouter.delete(
   "/me/invites/:id",
-  requireCompanyOwner,
+  requireCompanyPermission("invite"),
   async (req, res, next) => {
     try {
       const ownerId = req.companyOwnerId ?? req.userId;
@@ -539,7 +553,7 @@ companiesRouter.delete(
   }
 );
 
-companiesRouter.put("/me/profile", requireCompanyOwner, validateBody(companyProfileSchema), async (req, res, next) => {
+companiesRouter.put("/me/profile", requireCompanyPermission("editProfile"), validateBody(companyProfileSchema), async (req, res, next) => {
   try {
     const body = req.body;
 

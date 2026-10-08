@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { fetchMyCompanyProfile, updateMyCompanyProfile, updateCompanyNotificationSettings, fetchCompanyProfileSuggestions } from "../api/companies.js";
-import { listCompanyInvites, createCompanyInvite, revokeCompanyInvite } from "../api/invites.js";
+import { companyCan } from "../utils/companyPermissions";
+import { fetchMyCompanyProfile, updateMyCompanyProfile, fetchCompanyProfileSuggestions } from "../api/companies.js";
 import { changePassword } from "../api/auth.js";
 import { useAuth } from "../context/AuthContext";
 import { useIsMobile } from "../hooks/useIsMobile";
@@ -350,102 +350,6 @@ function Verifiering({ draft, setDraft }) {
   );
 }
 
-function TeamTab({ isOwner, invites, setInvites, toast }) {
-  const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteLoading, setInviteLoading] = useState(false);
-  const [inviteError, setInviteError] = useState("");
-  const [lastDevInviteLink, setLastDevInviteLink] = useState("");
-
-  if (!isOwner) {
-    return (
-      <div style={{ padding: "40px 0", textAlign: "center", color: "var(--ink-400)", fontSize: "var(--text-base)" }}>
-        Endast ägaren kan hantera teammedlemmar.
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <h2 style={{ fontSize: "var(--text-xl)", fontWeight: 800, marginBottom: 6, letterSpacing: -0.3, color: "var(--ink-900)" }}>Team</h2>
-      <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", marginBottom: 24 }}>Kollegor som har åtkomst till kontot. Visas inte publikt.</p>
-
-      {invites.length > 0 && (
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: "var(--text-2xs)", fontWeight: 700, color: "var(--ink-400)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>Skickade inbjudningar</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {invites.map((inv) => (
-              <div key={inv.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderRadius: 11, background: "var(--paper-2)", border: "1px solid var(--line)" }}>
-                <div>
-                  <span style={{ fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--ink-900)" }}>{inv.email}</span>
-                  <span style={{ marginLeft: 10, fontSize: "var(--text-2xs)", color: inv.status === "ACCEPTED" ? "var(--success)" : "var(--ink-400)" }}>
-                    {inv.status === "PENDING" ? "Väntar" : inv.status === "ACCEPTED" ? "Accepterad" : "Återkallad"}
-                  </span>
-                </div>
-                {inv.status === "PENDING" && (
-                  <button type="button"
-                    onClick={async () => {
-                      try { await revokeCompanyInvite(inv.id); setInvites(await listCompanyInvites()); }
-                      catch (err) { setInviteError(err.message); }
-                    }}
-                    style={{ fontSize: "var(--text-xs)", fontWeight: 600, color: "var(--danger)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
-                    Återkalla
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div style={{ marginBottom: 6, fontSize: "var(--text-2xs)", fontWeight: 700, color: "var(--ink-400)", textTransform: "uppercase", letterSpacing: 1 }}>Bjud in kollega</div>
-      <form onSubmit={async (e) => {
-        e.preventDefault();
-        if (!inviteEmail.trim()) return;
-        setInviteError("");
-        setInviteLoading(true);
-        try {
-          const result = await createCompanyInvite(inviteEmail.trim());
-          setInviteEmail("");
-          setInvites(await listCompanyInvites());
-          setLastDevInviteLink(result.devInviteLink || "");
-          toast.success(result.emailSent ? "Inbjudan skickad!" : "Inbjudan skapad — kopiera länken nedan.");
-        } catch (err) {
-          setInviteError(err.message || "Kunde inte skicka inbjudan");
-        } finally {
-          setInviteLoading(false);
-        }
-      }}>
-        <div style={{ display: "flex", gap: 10 }}>
-          <input style={{ ...inp, flex: 1 }} type="email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="kollega@foretag.se" disabled={inviteLoading} />
-          <button type="submit" disabled={inviteLoading || !inviteEmail.trim()}
-            style={{ padding: "11px 22px", borderRadius: 11, background: "var(--green)", color: "#fff", fontSize: "var(--text-sm)", fontWeight: 800, border: "none", cursor: inviteLoading || !inviteEmail.trim() ? "not-allowed" : "pointer", opacity: inviteLoading || !inviteEmail.trim() ? 0.5 : 1, whiteSpace: "nowrap", fontFamily: "inherit" }}>
-            {inviteLoading ? "Skickar..." : "Bjud in"}
-          </button>
-        </div>
-      </form>
-
-      {inviteError && <div style={{ marginTop: 10, padding: "10px 14px", borderRadius: 10, background: "rgba(220,38,38,0.06)", border: "1px solid rgba(220,38,38,0.15)", color: "var(--danger)", fontSize: "var(--text-sm)" }}>{inviteError}</div>}
-
-      {lastDevInviteLink && (
-        <div style={{ marginTop: 12, padding: "14px 16px", borderRadius: 12, background: "var(--amber-tint)", border: "1px solid rgba(242,164,28,0.2)" }}>
-          <div style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--amber-text)", marginBottom: 8 }}>Länk att dela manuellt</div>
-          <code style={{ display: "block", fontSize: "var(--text-2xs)", color: "var(--ink-700)", wordBreak: "break-all", lineHeight: 1.6 }}>{lastDevInviteLink}</code>
-          <button type="button" onClick={() => navigator.clipboard.writeText(lastDevInviteLink).then(() => toast.success("Kopierad"), () => {})}
-            style={{ marginTop: 8, fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--amber-text)", background: "none", border: "none", cursor: "pointer", padding: 0, fontFamily: "inherit" }}>
-            Kopiera länk
-          </button>
-        </div>
-      )}
-
-      {/* Lösenord + notiser under team */}
-      <div style={{ marginTop: 32, paddingTop: 28, borderTop: "1px solid var(--line)" }}>
-        <div style={{ fontSize: "var(--text-lg)", fontWeight: 800, letterSpacing: -0.3, marginBottom: 20, color: "var(--ink-900)" }}>Kontoinställningar</div>
-        <PasswordSection />
-      </div>
-    </div>
-  );
-}
-
 function PasswordSection() {
   const [pwForm, setPwForm] = useState({ current: "", next: "", confirm: "" });
   const [pwError, setPwError] = useState("");
@@ -506,29 +410,24 @@ function PasswordSection() {
 const TABS = [
   { id: "basic", label: "Grundinfo" },
   { id: "about", label: "Om oss" },
-  { id: "team", label: "Team" },
   // "benefits" tab disabled — no backend field yet
   // "verification" tab disabled — waiting for Skatteverket/Transportstyrelsen APIs
 ];
 
 export default function CompanyProfile() {
   const isMobile = useIsMobile();
-  const { hasApi, user } = useAuth();
+  const { hasApi, activeOrg } = useAuth();
   const toast = useToast();
   const [tab, setTab] = useState("basic");
-  const tabTitles = { basic: "Företagsprofil", about: "Om oss", team: "Team" };
+  const tabTitles = { basic: "Företagsprofil", about: "Om oss" };
   usePageTitle(tabTitles[tab] || "Företagsprofil");
   const [profile, setProfile] = useState(null);
   const [draft, setDraft] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [suggestions, setSuggestions] = useState(null);
-  const isOwner = !user?.companyOwnerId;
-
-  const [invites, setInvites] = useState([]);
-
-  const [notifSettings, setNotifSettings] = useState(null);
-  const [notifSaving, setNotifSaving] = useState(false);
+  // Ägaren får alltid ändra; kollegor om ägaren tillåtit det under Team.
+  const canEdit = companyCan(activeOrg, "editProfile");
 
   useEffect(() => {
     if (!hasApi) { setLoading(false); return; }
@@ -536,16 +435,10 @@ export default function CompanyProfile() {
       .then((data) => {
         setProfile(data);
         setDraft(data);
-        if (data?.emailNotificationSettings) setNotifSettings(data.emailNotificationSettings);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [hasApi]);
-
-  useEffect(() => {
-    if (!hasApi || !isOwner) return;
-    listCompanyInvites().then(setInvites).catch(() => setInvites([]));
-  }, [hasApi, isOwner]);
 
   // Auto-genererade profilförslag (visas bara under TOMMA fält, sparas aldrig automatiskt)
   useEffect(() => {
@@ -640,7 +533,7 @@ export default function CompanyProfile() {
   return (
     <main style={{ background: "var(--paper)", minHeight: "100vh", color: "var(--ink-900)" }}>
       {/* Floating save bar */}
-      {changed && (
+      {changed && canEdit && (
         <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 50, background: "var(--card)", borderTop: "1px solid var(--amber)", padding: isMobile ? "14px 20px 18px" : "14px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, boxShadow: "var(--sh-md)" }}>
           <span style={{ fontSize: "var(--text-sm)", color: "var(--amber-text)", fontWeight: 600 }}>Osparade ändringar</span>
           <button type="button" onClick={save} disabled={saving}
@@ -658,16 +551,21 @@ export default function CompanyProfile() {
             <h1 style={{ fontSize: "var(--text-5xl)", fontWeight: 900, color: "var(--ink-900)", letterSpacing: -1.2, lineHeight: 1.15 }}>Företagsprofil</h1>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
-            <Link to={`/foretag/${user?.companyOwnerId || user?.id}`}
+            <Link to="/foretag/offentlig-profil"
               style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "9px 16px", borderRadius: 10, background: "var(--card)", border: "1px solid var(--line-2)", color: "var(--ink-700)", fontSize: "var(--text-sm)", fontWeight: 600, textDecoration: "none", boxShadow: "var(--sh-sm)" }}>
               <EyeExtIcon /> Förhandsgranska
             </Link>
-            <button type="button" onClick={save} disabled={saving || !changed}
+            {canEdit && <button type="button" onClick={save} disabled={saving || !changed}
               style={{ padding: "9px 18px", borderRadius: 10, background: changed ? "var(--green)" : "var(--paper-2)", border: changed ? "none" : "1px solid var(--line)", color: changed ? "#fff" : "var(--ink-300)", fontSize: "var(--text-sm)", fontWeight: 700, cursor: changed ? "pointer" : "not-allowed", fontFamily: "inherit", boxShadow: changed ? "var(--sh-sm)" : "none" }}>
               {saving ? "Sparar..." : "Spara ändringar"}
-            </button>
+            </button>}
           </div>
         </div>
+        {!canEdit && (
+          <div style={{ maxWidth: "var(--w-read)", margin: "14px auto 0", padding: "0 32px", fontSize: "var(--text-sm)", color: "var(--ink-500)" }}>
+            Ägaren har inte gett kollegor rätt att ändra företagsprofilen.
+          </div>
+        )}
       </div>
 
       <div style={{ maxWidth: "var(--w-read)", margin: "0 auto", padding: isMobile ? "20px 20px 100px" : "28px 32px 80px" }}>
@@ -743,43 +641,12 @@ export default function CompanyProfile() {
           )}
 
           {/* Content */}
-          <div className="stp-fade-up" key={tab}>
+          <fieldset className="stp-fade-up" key={tab} disabled={!canEdit} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
             {tab === "basic" && (
-              <>
-                <GrundInfo draft={draft} setDraft={setDraft} isMobile={isMobile} sug={sug} />
-                <div style={{ marginTop: 24, padding: "20px 22px", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14 }}>
-                  <div style={{ fontSize: "var(--text-base)", fontWeight: 800, letterSpacing: -0.3, marginBottom: 4, color: "var(--ink-900)" }}>E-postnotiser</div>
-                  <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", marginBottom: 16 }}>Välj vilka påminnelser ni vill få via e-post.</div>
-                  {[
-                    { key: "profileReminder", label: "Profilpåminnelser", desc: "Påminnelse när er företagsprofil inte är komplett." },
-                    { key: "jobMatch", label: "Förarrekommendationer", desc: "När nya förare matchar era krav publiceras." },
-                    { key: "messageReminder", label: "Obesvarade meddelanden", desc: "Påminnelse när ett meddelande väntar på svar." },
-                    { key: "inactivity", label: "Inaktivitetspåminnelse", desc: "Om ni inte loggat in på 30 dagar." },
-                  ].map(({ key, label, desc }, i) => {
-                    const enabled = notifSettings ? notifSettings[key] !== false : true;
-                    return (
-                      <div key={key} style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", padding: "13px 0", borderTop: i === 0 ? "none" : "1px solid var(--line)", gap: 20 }}>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: "var(--text-base)", fontWeight: 600, color: "var(--ink-900)" }}>{label}</div>
-                          <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-400)", marginTop: 2 }}>{desc}</div>
-                        </div>
-                        <Toggle checked={enabled} disabled={notifSaving} onChange={async () => {
-                          const next = { ...(notifSettings || {}), [key]: !enabled };
-                          setNotifSettings(next);
-                          setNotifSaving(true);
-                          try { await updateCompanyNotificationSettings(next); }
-                          catch { setNotifSettings((prev) => ({ ...prev, [key]: enabled })); }
-                          finally { setNotifSaving(false); }
-                        }} />
-                      </div>
-                    );
-                  })}
-                </div>
-              </>
+              <GrundInfo draft={draft} setDraft={setDraft} isMobile={isMobile} sug={sug} />
             )}
             {tab === "about" && <OmOss draft={draft} setDraft={setDraft} sug={sug} />}
-            {tab === "team" && <TeamTab isOwner={isOwner} invites={invites} setInvites={setInvites} toast={toast} />}
-          </div>
+          </fieldset>
         </div>
       </div>
     </main>

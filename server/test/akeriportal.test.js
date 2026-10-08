@@ -13,6 +13,7 @@ import request from "supertest";
 import jwt from "jsonwebtoken";
 import { PrismaClient } from "@prisma/client";
 import { JWT_SECRET } from "../lib/config.js";
+import { runMessageReminders } from "../lib/reminders.js";
 
 process.env.APP_LISTEN = "false";
 const TAG = `portal-${process.pid}`;
@@ -113,5 +114,52 @@ describe("åkeriportalen", () => {
     const row = res.body.find((x) => x.conversationId === c.body.id);
     assert.strictEqual(row.initiatedBy, "company");
     assert.strictEqual(row.stage, "reviewing");
+  });
+
+  it("kollegor får hantera annonser som standard, men inte profil eller inbjudningar", async () => {
+    const mine = await request(app).get("/api/organizations/me").set("Authorization", tok(ids.member));
+    const org = mine.body.find((o) => o.id === ids.org);
+    assert.strictEqual(org.membersCanManageJobs, true);
+    assert.strictEqual(org.membersCanEditProfile, false);
+    assert.strictEqual(org.membersCanInvite, false);
+    const profile = await request(app).put("/api/companies/me/profile").set("Authorization", tok(ids.member)).send({ companyDescription: "Kollegan skriver" });
+    assert.strictEqual(profile.status, 403);
+    const invites = await request(app).get("/api/companies/me/invites").set("Authorization", tok(ids.member));
+    assert.strictEqual(invites.status, 403);
+  });
+
+  it("ägaren styr kollegornas rättigheter", async () => {
+    const asMember = await request(app).put(`/api/organizations/${ids.org}`).set("Authorization", tok(ids.member)).send({ membersCanEditProfile: true });
+    assert.strictEqual(asMember.status, 403);
+    const set = await request(app).put(`/api/organizations/${ids.org}`).set("Authorization", tok(ids.owner))
+      .send({ membersCanEditProfile: true, membersCanInvite: true, membersCanManageJobs: false });
+    assert.strictEqual(set.status, 200, JSON.stringify(set.body));
+    const profile = await request(app).put("/api/companies/me/profile").set("Authorization", tok(ids.member)).send({ companyDescription: "Kollegan skriver" });
+    assert.strictEqual(profile.status, 200, JSON.stringify(profile.body));
+    const invites = await request(app).get("/api/companies/me/invites").set("Authorization", tok(ids.member));
+    assert.strictEqual(invites.status, 200);
+    const edit = await request(app).patch(`/api/jobs/${ids.job}`).set("Authorization", tok(ids.member)).send({ status: "HIDDEN" });
+    assert.strictEqual(edit.status, 403);
+    const ownerEdit = await request(app).patch(`/api/jobs/${ids.job}`).set("Authorization", tok(ids.owner)).send({ salaryMin: 30000 });
+    assert.strictEqual(ownerEdit.status, 200, "ägaren påverkas aldrig");
+    await request(app).put(`/api/organizations/${ids.org}`).set("Authorization", tok(ids.owner)).send({ membersCanManageJobs: true });
+  });
+
+  it("påminnelse om obesvarat meddelande: ägaren alltid, kollegor när hela teamet mejlas", async () => {
+    const old = new Date(Date.now() - 3 * 24 * 3600 * 1000);
+    // Hela tråden är tre dygn gammal och föraren skrev sist.
+    await prisma.message.updateMany({ where: { conversationId: ids.conversation }, data: { createdAt: new Date(old.getTime() - 3600 * 1000) } });
+    await prisma.message.create({ data: { conversationId: ids.conversation, senderId: ids.driver, senderRole: "driver", content: "Hallå?", createdAt: old } });
+    await prisma.user.updateMany({ where: { id: { in: [ids.owner, ids.member] } }, data: { messageReminderSentAt: null } });
+    await runMessageReminders();
+    let [owner, member] = await Promise.all([ids.owner, ids.member].map((id) => prisma.user.findUnique({ where: { id }, select: { messageReminderSentAt: true } })));
+    assert.ok(owner.messageReminderSentAt, "ägaren borde påminnas");
+    assert.strictEqual(member.messageReminderSentAt, null, "kollegan ska inte påminnas utan teaminställningen");
+
+    await prisma.organization.update({ where: { id: ids.org }, data: { notifyAllMembers: true } });
+    await prisma.user.updateMany({ where: { id: { in: [ids.owner, ids.member] } }, data: { messageReminderSentAt: null } });
+    await runMessageReminders();
+    member = await prisma.user.findUnique({ where: { id: ids.member }, select: { messageReminderSentAt: true } });
+    assert.ok(member.messageReminderSentAt, "kollegan borde påminnas när hela teamet mejlas");
   });
 });

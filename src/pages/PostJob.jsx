@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { companyCan } from "../utils/companyPermissions";
 import { Link, useParams } from "react-router-dom";
 import { licenseTypes, regions } from "../data/mockJobs";
 import { certificateTypesForUI } from "../data/profileData";
@@ -571,7 +572,7 @@ function StepPreview({ form, onPublish, publishing, publishError, isEdit = false
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function PostJob() {
   const isMobile = useIsMobile();
-  const { hasApi, user, isCompany } = useAuth();
+  const { hasApi, user, isCompany, activeOrg } = useAuth();
   const isVerifiedCompany = !isCompany || user?.companyStatus === "VERIFIED";
 
   const [step, setStep] = useState(0);
@@ -775,6 +776,21 @@ export default function PostJob() {
     }
     setPublishing(false);
   };
+
+  // ── Kollega utan rätt att hantera annonser ───────────────────────────────
+  if (isCompany && !companyCan(activeOrg, "manageJobs")) {
+    return (
+      <main style={{ background: "var(--paper)", minHeight: "100vh", paddingTop: 32, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ maxWidth: 520, padding: "0 24px", textAlign: "center" }}>
+          <h1 style={{ fontSize: "var(--text-2xl)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 12 }}>Ingen behörighet</h1>
+          <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.7, margin: 0 }}>
+            Ägaren har inte gett kollegor rätt att publicera eller ändra annonser.
+          </p>
+          <Link to="/foretag/annonser" style={{ display: "inline-block", marginTop: 20, fontSize: "var(--text-base)", color: "var(--ink-400)", textDecoration: "none" }}>← Tillbaka till annonser</Link>
+        </div>
+      </main>
+    );
+  }
 
   // ── Unverified company ────────────────────────────────────────────────────
   if (isCompany && !isVerifiedCompany) {

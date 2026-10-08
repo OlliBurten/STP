@@ -70,12 +70,19 @@ export async function getUserOrganizations(userId) {
     include: { organization: true },
     orderBy: { joinedAt: "asc" },
   });
+  for (const r of rows) {
+    if (!r.organization.slug) r.organization.slug = await ensureOrgSlug(r.organization);
+  }
   return rows.map((r) => ({
     id: r.organizationId,
+    slug: r.organization.slug,
     name: r.organization.name,
     orgNumber: r.organization.orgNumber,
     status: r.organization.status,
     notifyAllMembers: r.organization.notifyAllMembers,
+    membersCanManageJobs: r.organization.membersCanManageJobs,
+    membersCanEditProfile: r.organization.membersCanEditProfile,
+    membersCanInvite: r.organization.membersCanInvite,
     role: r.role,
   }));
 }
@@ -100,4 +107,33 @@ export async function syncOwnerCompanyStatus(userId) {
     where: { id: userId, companyStatus: { not: "VERIFIED" } },
     data: { companyStatus: "VERIFIED" },
   });
+}
+
+/** "Värnamo Godstrafik AB" → "varnamo-godstrafik" (för /akerier/<slug>). */
+export function slugifyOrgName(name) {
+  return String(name || "")
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/\b(ab|hb|kb|aktiebolag|handelsbolag)\b/g, " ")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 60) || "akeri";
+}
+
+/** Ge organisationen en unik slug om den saknar en. Slugen ändras inte när namnet ändras (stabila länkar). */
+export async function ensureOrgSlug(org) {
+  if (!org || org.slug) return org?.slug ?? null;
+  const base = slugifyOrgName(org.name);
+  for (let n = 1; n < 50; n++) {
+    const candidate = n === 1 ? base : `${base}-${n}`;
+    const taken = await prisma.organization.findUnique({ where: { slug: candidate }, select: { id: true } });
+    if (taken && taken.id !== org.id) continue;
+    try {
+      await prisma.organization.update({ where: { id: org.id }, data: { slug: candidate } });
+      return candidate;
+    } catch (e) {
+      if (e.code !== "P2002") throw e; // krock i samma ögonblick — prova nästa
+    }
+  }
+  return null;
 }

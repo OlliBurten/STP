@@ -193,4 +193,15 @@ describe("åkeriets kärnflöden", () => {
     const titles = res.body.jobs.map((j) => j.title);
     assert.ok(titles.includes("Distributionsförare"), "kollegans annons saknas: " + titles.join(", "));
   });
+
+  it("åkeriet nås på en enkel adress (/akerier/<slug>) — även utan inloggning", async () => {
+    const mine = await request(app).get("/api/organizations/me").set("Authorization", tok(ids.owner));
+    const slug = mine.body.find((o) => o.id === ids.org)?.slug;
+    assert.match(slug || "", /^flodesakeri-flow-/);
+    const res = await request(app).get(`/api/companies/${slug}/public`);
+    assert.strictEqual(res.status, 200, JSON.stringify(res.body));
+    assert.strictEqual(res.body.name, ORG_NAME);
+    assert.strictEqual(res.body.slug, slug);
+    assert.strictEqual(res.body.contactEmail, null, "kontaktuppgifter visas inte för besökare");
+  });
 });
