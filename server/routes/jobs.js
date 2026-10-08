@@ -544,6 +544,94 @@ jobsRouter.post("/:id/guest-apply-click", async (req, res, next) => {
   }
 });
 
+// ─── Utkast ───────────────────────────────────────────────────────────────────
+// Påbörjade annonser sparas automatiskt i formuläret (som ett mejlutkast) och delas
+// med åkeriets team. Registreras före /:id så "drafts" inte tolkas som ett jobb-id.
+const draftAuth = [authMiddleware, requireCompany, attachCompanyContext, requireCompanyPermission("manageJobs")];
+const draftScope = (req) => (req.organizationId ? { organizationId: req.organizationId } : { authorId: req.userId, organizationId: null });
+const MAX_DRAFT_BYTES = 60_000;
+
+function draftPayload(body) {
+  const data = body?.data;
+  if (!data || typeof data !== "object" || Array.isArray(data)) return { error: "Ogiltigt utkast" };
+  if (JSON.stringify(data).length > MAX_DRAFT_BYTES) return { error: "Utkastet är för stort" };
+  const title = typeof data.form?.title === "string" ? data.form.title.trim().slice(0, 200) || null : null;
+  return { data, title };
+}
+
+const serializeDraft = (d) => ({
+  id: d.id,
+  title: d.title,
+  data: d.data,
+  authorName: d.author?.name ?? null,
+  createdAt: d.createdAt.toISOString(),
+  updatedAt: d.updatedAt.toISOString(),
+});
+
+jobsRouter.get("/drafts", ...draftAuth, async (req, res, next) => {
+  try {
+    const drafts = await prisma.jobDraft.findMany({
+      where: draftScope(req),
+      orderBy: { updatedAt: "desc" },
+      include: { author: { select: { name: true } } },
+    });
+    res.json(drafts.map((d) => ({ ...serializeDraft(d), data: undefined, isMine: d.authorId === req.userId })));
+  } catch (e) {
+    next(e);
+  }
+});
+
+jobsRouter.get("/drafts/:draftId", ...draftAuth, async (req, res, next) => {
+  try {
+    const d = await prisma.jobDraft.findFirst({ where: { id: req.params.draftId, ...draftScope(req) }, include: { author: { select: { name: true } } } });
+    if (!d) return res.status(404).json({ error: "Utkastet hittades inte" });
+    res.json({ ...serializeDraft(d), isMine: d.authorId === req.userId });
+  } catch (e) {
+    next(e);
+  }
+});
+
+jobsRouter.post("/drafts", ...draftAuth, async (req, res, next) => {
+  try {
+    const p = draftPayload(req.body);
+    if (p.error) return res.status(400).json({ error: p.error });
+    const d = await prisma.jobDraft.create({
+      data: { data: p.data, title: p.title, authorId: req.userId, organizationId: req.organizationId ?? null },
+      include: { author: { select: { name: true } } },
+    });
+    res.status(201).json({ ...serializeDraft(d), isMine: true });
+  } catch (e) {
+    next(e);
+  }
+});
+
+jobsRouter.put("/drafts/:draftId", ...draftAuth, async (req, res, next) => {
+  try {
+    const p = draftPayload(req.body);
+    if (p.error) return res.status(400).json({ error: p.error });
+    const existing = await prisma.jobDraft.findFirst({ where: { id: req.params.draftId, ...draftScope(req) }, select: { id: true } });
+    if (!existing) return res.status(404).json({ error: "Utkastet hittades inte" });
+    const d = await prisma.jobDraft.update({
+      where: { id: existing.id },
+      data: { data: p.data, title: p.title },
+      include: { author: { select: { name: true } } },
+    });
+    res.json({ ...serializeDraft(d), isMine: d.authorId === req.userId });
+  } catch (e) {
+    next(e);
+  }
+});
+
+jobsRouter.delete("/drafts/:draftId", ...draftAuth, async (req, res, next) => {
+  try {
+    const { count } = await prisma.jobDraft.deleteMany({ where: { id: req.params.draftId, ...draftScope(req) } });
+    if (!count) return res.status(404).json({ error: "Utkastet hittades inte" });
+    res.status(204).send();
+  } catch (e) {
+    next(e);
+  }
+});
+
 jobsRouter.get("/:id", optionalAuthMiddleware, attachCompanyContext, async (req, res, next) => {
   try {
     const job = await prisma.job.findFirst({

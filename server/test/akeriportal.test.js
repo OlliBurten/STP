@@ -63,6 +63,7 @@ before(async () => {
 });
 
 after(async () => {
+  await prisma.jobDraft.deleteMany({ where: { organizationId: { in: ids.orgs } } });
   await prisma.message.deleteMany({ where: { conversation: { organizationId: { in: ids.orgs } } } });
   await prisma.conversation.deleteMany({ where: { organizationId: { in: ids.orgs } } });
   await prisma.job.deleteMany({ where: { organizationId: { in: ids.orgs } } });
@@ -161,5 +162,29 @@ describe("åkeriportalen", () => {
     await runMessageReminders();
     member = await prisma.user.findUnique({ where: { id: ids.member }, select: { messageReminderSentAt: true } });
     assert.ok(member.messageReminderSentAt, "kollegan borde påminnas när hela teamet mejlas");
+  });
+
+  it("utkast sparas, delas med teamet och syns inte för andra åkerier", async () => {
+    const data = { step: 1, form: { title: "CE-chaufför natt", location: "Värnamo", license: ["CE"] } };
+    const created = await request(app).post("/api/jobs/drafts").set("Authorization", tok(ids.member)).send({ data });
+    assert.strictEqual(created.status, 201, JSON.stringify(created.body));
+    const id = created.body.id;
+    const upd = await request(app).put(`/api/jobs/drafts/${id}`).set("Authorization", tok(ids.member))
+      .send({ data: { ...data, form: { ...data.form, aboutJob: "Nattkörning mellan Värnamo och Göteborg." } } });
+    assert.strictEqual(upd.status, 200);
+    const list = await request(app).get("/api/jobs/drafts").set("Authorization", tok(ids.owner));
+    const row = list.body.find((d) => d.id === id);
+    assert.strictEqual(row?.title, "CE-chaufför natt");
+    assert.strictEqual(row.authorName, "Kollega");
+    const one = await request(app).get(`/api/jobs/drafts/${id}`).set("Authorization", tok(ids.owner));
+    assert.match(one.body.data.form.aboutJob, /Nattkörning/);
+    const other = await request(app).get(`/api/jobs/drafts/${id}`).set("Authorization", tok(ids.otherOwner));
+    assert.strictEqual(other.status, 404);
+    const otherList = await request(app).get("/api/jobs/drafts").set("Authorization", tok(ids.otherOwner));
+    assert.ok(!otherList.body.some((d) => d.id === id));
+    const publicJobs = await request(app).get("/api/jobs");
+    assert.ok(!JSON.stringify(publicJobs.body).includes("CE-chaufför natt"), "utkast får aldrig synas publikt");
+    const del = await request(app).delete(`/api/jobs/drafts/${id}`).set("Authorization", tok(ids.owner));
+    assert.strictEqual(del.status, 204);
   });
 });
