@@ -73,3 +73,16 @@ export function driverInJobRegion(driverRegions, jobRegion) {
   const job = normalizeRegion(jobRegion);
   return (driverRegions || []).map(normalizeRegion).some((r) => r === job || r === "*");
 }
+
+/** "VÄRNAMO" → "Värnamo", "SMÅLANDSSTENAR" → "Smålandsstenar". Bolagsverket ger versaler. */
+export function prettifyPlace(value) {
+  const v = String(value || "").trim();
+  if (!v || v !== v.toUpperCase()) return v || null;
+  return v.toLowerCase().replace(/(^|[\s-])(\p{L})/gu, (m, sep, ch) => sep + ch.toUpperCase());
+}
+
+/** Län från en ort när länet saknas (endast kända orter/län; annars null). */
+export function countyFromPlace(value) {
+  const n = normalizeRegion(value);
+  return n && n !== "*" && ADJACENT[n] ? n : null;
+}

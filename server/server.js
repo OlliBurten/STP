@@ -30,6 +30,7 @@ import { adminRouter } from "./routes/admin.js";
 import { reportsRouter } from "./routes/reports.js";
 import { reviewsRouter } from "./routes/reviews.js";
 import { companiesRouter } from "./routes/companies.js";
+import { excludeTestAndDemoAccountsWhere } from "./lib/testAccounts.js";
 import { insightsRouter } from "./routes/insights.js";
 import { organizationsRouter } from "./routes/organizations.js";
 import { invitesRouter } from "./routes/invites.js";
@@ -234,7 +235,7 @@ app.get("/api/sitemap-dynamic.xml", async (req, res) => {
         take: 2000,
       }),
       prisma.organization.findMany({
-        where: { status: "VERIFIED", slug: { not: null } },
+        where: { status: "VERIFIED", slug: { not: null }, userOrganizations: { some: { role: "OWNER", user: excludeTestAndDemoAccountsWhere } } },
         select: { slug: true, updatedAt: true },
         orderBy: { updatedAt: "desc" },
         take: 500,

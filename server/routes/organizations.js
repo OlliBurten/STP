@@ -9,6 +9,7 @@ import { validateBody } from "../middleware/validate.js";
 import { createOrganizationSchema } from "../lib/validators.js";
 import { getUserOrganizations, resolveEffectiveOrganization, syncOwnerCompanyStatus } from "../lib/organizations.js";
 import { lookupBolagsverket } from "../lib/bolagsverket.js";
+import { prettifyPlace, countyFromPlace } from "../utils/regions.js";
 
 export const organizationsRouter = Router();
 
@@ -74,10 +75,10 @@ organizationsRouter.post("/", validateBody(createOrganizationSchema), async (req
         orgNumber: orgNum,
         description: body.description?.trim() || bolag?.verksamhetsbeskrivning || null,
         website: body.website?.trim() || null,
-        location: bolag?.city || body.location?.trim() || null,
+        location: prettifyPlace(bolag?.city || body.location?.trim()) || null,
         segmentDefaults: Array.isArray(body.segmentDefaults) ? body.segmentDefaults : [],
         bransch: Array.isArray(body.bransch) ? body.bransch : [],
-        region: bolag?.region || body.region?.trim() || null,
+        region: bolag?.region || body.region?.trim() || countyFromPlace(bolag?.city || body.location) || null,
         foundedYear: bolag?.foundedYear ?? body.foundedYear ?? null,
         status,
       },

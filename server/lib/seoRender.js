@@ -95,6 +95,7 @@ export async function renderJobHtml(id) {
       applyEmail: true, applicationReference: true, contactName: true,
       contactPhone: true, workplaceAddress: true, salaryType: true,
       applicationDeadline: true, enrichmentRaw: true,
+      organization: { select: { slug: true, website: true } },
     },
   });
   if (!job || job.status !== "ACTIVE") return null;
@@ -161,7 +162,13 @@ export async function renderJobHtml(id) {
     validThrough,
     employmentType: EMPLOYMENT_TYPE_MAP[job.employment] || "FULL_TIME",
     url: canonical,
-    hiringOrganization: { "@type": "Organization", name: job.company, sameAs: SITE },
+    hiringOrganization: {
+      "@type": "Organization",
+      name: job.company,
+      // Anslutna åkerier har en egen sida — Google kopplar annonsen till åkeriet.
+      ...(job.organization?.slug ? { url: `${SITE}/akerier/${job.organization.slug}` } : {}),
+      sameAs: job.organization?.website ? (job.organization.website.startsWith("http") ? job.organization.website : `https://${job.organization.website}`) : SITE,
+    },
     // Gatuadress/postnummer från AF:s workplace_address när den finns (formatet
     // "gata, postnr ort" byggs av ingestorn) — annars locality+region+country.
     jobLocation: {
@@ -301,7 +308,10 @@ async function activeJobsInRegion(region, take = 40) {
     orderBy: { published: "desc" },
     take: take * 2, // hämta med marginal — dubbletter filtreras bort nedan
   });
-  return dedupeAggregatedJobs(rows).slice(0, take);
+  // Annonser direkt från anslutna åkerier först (samma som /jobb).
+  const isDirect = (j) => j.source !== "AGGREGATED" || Boolean(j.claimed);
+  const deduped = dedupeAggregatedJobs(rows);
+  return [...deduped.filter(isDirect), ...deduped.filter((j) => !isDirect(j))].slice(0, take);
 }
 
 function jobsListHtml(jobs) {

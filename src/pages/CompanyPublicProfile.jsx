@@ -213,7 +213,7 @@ export default function CompanyPublicProfile({ companyId: idProp }) {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: company.name,
-    url: `${BASE_URL}/foretag/${company.id}`,
+    url: company.slug ? `${BASE_URL}/akerier/${company.slug}` : `${BASE_URL}/foretag/${company.id}`,
     ...(company.description ? { description: company.description.replace(/\n+/g, " ").slice(0, 500) } : {}),
     ...(company.website ? { sameAs: [company.website] } : {}),
     ...(displayLocation ? { address: { "@type": "PostalAddress", addressLocality: company.location || undefined, addressRegion: company.region || undefined, addressCountry: "SE" } } : {}),

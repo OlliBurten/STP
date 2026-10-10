@@ -90,7 +90,7 @@ function CompanyGridCard({ c, user, saved, onToggleSave }) {
 
   return (
     <article
-      onClick={() => navigate(`/foretag/${c.id}`)}
+      onClick={() => navigate((c.slug ? `/akerier/${c.slug}` : `/foretag/${c.id}`))}
       style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "20px 22px", boxShadow: "var(--sh-sm)", transition: "box-shadow .15s, border-color .15s", cursor: "pointer", display: "flex", flexDirection: "column" }}
       onMouseEnter={e => { e.currentTarget.style.boxShadow = "var(--sh)"; e.currentTarget.style.borderColor = "var(--line-2)"; }}
       onMouseLeave={e => { e.currentTarget.style.boxShadow = "var(--sh-sm)"; e.currentTarget.style.borderColor = "var(--line)"; }}
@@ -151,7 +151,7 @@ function CompanyGridCard({ c, user, saved, onToggleSave }) {
           {c.activeJobCount > 0 ? `${c.activeJobCount} lediga jobb` : "Inga lediga jobb"}
         </span>
         <Link
-          to={`/foretag/${c.id}`}
+          to={(c.slug ? `/akerier/${c.slug}` : `/foretag/${c.id}`)}
           style={{ padding: "7px 14px", borderRadius: 9, background: c.activeJobCount > 0 ? "var(--green)" : "var(--paper-2)", color: c.activeJobCount > 0 ? "#fff" : "var(--ink-500)", fontWeight: 700, fontSize: "var(--text-xs)", display: "inline-flex", alignItems: "center", gap: 5, textDecoration: "none" }}
           onClick={e => e.stopPropagation()}
         >
@@ -266,7 +266,7 @@ function CompanyListRow({ c, user, saved, onToggleSave }) {
 
       {/* Se profil */}
       <Link
-        to={`/foretag/${c.id}`}
+        to={(c.slug ? `/akerier/${c.slug}` : `/foretag/${c.id}`)}
         style={{ padding: "8px 16px", borderRadius: 9, background: "var(--green)", color: "#fff", fontWeight: 700, fontSize: "var(--text-sm)", display: "flex", alignItems: "center", gap: 5, textDecoration: "none", flexShrink: 0 }}
       >
         Se profil <Icon n="arrow" s={12} c="#fff" />
@@ -442,7 +442,7 @@ export default function AkerierSearch() {
             const initials = companyInitials(company.name);
             const bg = avatarColor(company.name);
             return (
-              <Link key={company.id} to={`/foretag/${company.id}`} style={{ display: "block", textDecoration: "none", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "16px", position: "relative", overflow: "hidden", boxShadow: "var(--sh-sm)" }}>
+              <Link key={company.id} to={(company.slug ? `/akerier/${company.slug}` : `/foretag/${company.id}`)} style={{ display: "block", textDecoration: "none", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "16px", position: "relative", overflow: "hidden", boxShadow: "var(--sh-sm)" }}>
                 <div style={{ display: "flex", gap: 12, alignItems: "flex-start", marginBottom: 10 }}>
                   <div style={{ width: 48, height: 48, borderRadius: 12, background: bg, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "var(--text-base)", color: "#fff", flexShrink: 0 }}>{initials}</div>
                   <div style={{ flex: 1, minWidth: 0 }}>

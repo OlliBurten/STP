@@ -853,7 +853,7 @@ export default function JobDetail() {
                 : <p style={{ fontSize: 14.5, color: "var(--ink-400)", fontStyle: "italic", margin: "0 0 14px" }}>Ingen företagsbeskrivning tillagd ännu.</p>
               }
               {job.userId && (
-                <Link to={`/foretag/${job.userId}`} style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "var(--green)", fontSize: 14, fontWeight: 700, textDecoration: "none" }}>
+                <Link to={job.companySlug ? `/akerier/${job.companySlug}` : `/foretag/${job.userId}`} style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "var(--green)", fontSize: 14, fontWeight: 700, textDecoration: "none" }}>
                   Se hela företagsprofilen
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="13" height="13"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                 </Link>
@@ -942,7 +942,7 @@ export default function JobDetail() {
                 <h1 style={{ fontSize: "clamp(22px,3vw,30px)", fontWeight: 900, letterSpacing: -0.8, color: "var(--ink-900)", lineHeight: 1.1, margin: "0 0 8px" }}>{formatJobTitle(job.title)}</h1>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                   {job.userId
-                    ? <Link to={`/foretag/${job.userId}`} style={{ fontSize: "var(--text-md)", fontWeight: 700, color: "var(--ink-900)", textDecoration: "none" }}>{job.company}</Link>
+                    ? <Link to={job.companySlug ? `/akerier/${job.companySlug}` : `/foretag/${job.userId}`} style={{ fontSize: "var(--text-md)", fontWeight: 700, color: "var(--ink-900)", textDecoration: "none" }}>{job.company}</Link>
                     : <span style={{ fontSize: "var(--text-md)", fontWeight: 700, color: "var(--ink-900)" }}>{job.company}</span>
                   }
                   <span style={{ color: "var(--ink-300)" }}>·</span>
@@ -1016,7 +1016,7 @@ export default function JobDetail() {
                   </a>
                 )}
                 {job.userId && (
-                  <Link to={`/foretag/${job.userId}`} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--green)", textDecoration: "none" }}>
+                  <Link to={job.companySlug ? `/akerier/${job.companySlug}` : `/foretag/${job.userId}`} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--green)", textDecoration: "none" }}>
                     Hela företagsprofilen
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                   </Link>

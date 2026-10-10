@@ -165,6 +165,7 @@ companiesRouter.get("/search", optionalAuthMiddleware, validateQuery(companiesSe
         const profile = companyProfileFields(c, org);
         return {
           id: c.id,
+          slug: org?.slug ?? null,
           name: profile.name,
           description: profile.description.slice(0, 200),
           location: profile.location,
