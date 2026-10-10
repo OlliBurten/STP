@@ -464,7 +464,7 @@ function StepTerms({ form, setForm }) {
         <p style={hintStyle}>Förare filtrerar aktivt på kollektivavtal.</p>
       </Field>
 
-      <Field label="Löneintervall (kr/mån)" hint="Syns enbart för inloggade förare.">
+      <Field label="Löneintervall (kr/mån)" hint="Visas i annonsen för alla.">
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           <div>
             <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", marginBottom: 6 }}>Från (kr/mån)</div>
