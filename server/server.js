@@ -229,13 +229,13 @@ app.get("/api/sitemap-dynamic.xml", async (req, res) => {
     const [jobs, orgs, drivers] = await Promise.all([
       prisma.job.findMany({
         where: { status: "ACTIVE" },
-        select: { id: true, updatedAt: true },
+        select: { id: true, updatedAt: true, source: true, claimed: true },
         orderBy: { updatedAt: "desc" },
         take: 2000,
       }),
       prisma.organization.findMany({
-        where: { status: "VERIFIED" },
-        select: { id: true, updatedAt: true },
+        where: { status: "VERIFIED", slug: { not: null } },
+        select: { slug: true, updatedAt: true },
         orderBy: { updatedAt: "desc" },
         take: 500,
       }),
@@ -252,8 +252,10 @@ app.get("/api/sitemap-dynamic.xml", async (req, res) => {
       `  <url>\n    <loc>${esc(loc)}</loc>\n    <lastmod>${lastmod.toISOString().slice(0, 10)}</lastmod>\n    <priority>${priority}</priority>\n  </url>`;
 
     const entries = [
-      ...jobs.map((j) => urlEntry(`${FRONTEND}/jobb/${j.id}`, j.updatedAt, "0.8")),
-      ...orgs.map((o) => urlEntry(`${FRONTEND}/foretag/${o.id}`, o.updatedAt, "0.6")),
+      // Annonser direkt från anslutna åkerier väger tyngst.
+      ...jobs.map((j) => urlEntry(`${FRONTEND}/jobb/${j.id}`, j.updatedAt, j.source !== "AGGREGATED" || j.claimed ? "0.9" : "0.8")),
+      // Åkerier på sin enkla adress. Tidigare /foretag/<org-id>, som SPA:n inte kände igen.
+      ...orgs.map((o) => urlEntry(`${FRONTEND}/akerier/${o.slug}`, o.updatedAt, "0.7")),
       ...drivers.map((d) => urlEntry(`${FRONTEND}/forare/${d.userId}`, d.updatedAt, "0.5")),
     ];
 

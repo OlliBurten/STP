@@ -12,6 +12,7 @@
  */
 
 import { prisma } from "./prisma.js";
+import { driverNearJobRegion } from "../utils/regions.js";
 import { sendEmail, notifyJobTips, notifyJobExpiring, notifyJobAutoArchived } from "./email.js";
 import { issueEmailVerification } from "../routes/auth.js";
 import { isDriverOnboardingComplete, isDriverProfileComplete } from "../utils/driverProfileRequirements.js";
@@ -294,6 +295,7 @@ function buildJobDigestHtml({ name, jobs, totalCount, unsubscribeUrl }) {
           <p style="margin:0 0 8px;font-size:13px;color:#64748b">${locationLine}</p>
           <table cellpadding="0" cellspacing="0" style="margin-bottom:10px">
             <tr>
+              ${(j.source && j.source !== "AGGREGATED") || j.claimed ? `<td style="padding-right:8px"><span style="background:#F2A41C;color:#1B2421;font-size:11px;font-weight:700;padding:3px 8px;border-radius:4px">Direkt från åkeriet</span></td>` : ""}
               ${empTag ? `<td style="padding-right:8px"><span style="background:#f1f5f9;color:#475569;font-size:11px;font-weight:600;padding:3px 8px;border-radius:4px">${empTag}</span></td>` : ""}
               ${salaryLine ? `<td>${salaryLine}</td>` : ""}
             </tr>
@@ -380,8 +382,11 @@ export async function runJobMatchReminders() {
     select: {
       id: true, title: true, company: true, region: true, location: true,
       salary: true, segment: true, license: true, employment: true, published: true,
+      source: true, claimed: true,
     },
   });
+  // Annonser direkt från anslutna åkerier: når grannlän och står först i mejlet.
+  const isDirect = (j) => j.source !== "AGGREGATED" || Boolean(j.claimed);
 
   let sent = 0;
   for (const u of drivers) {
@@ -397,9 +402,9 @@ export async function runJobMatchReminders() {
     const driverLicenses = p.licenses || [];
 
     const matched = recentJobs.filter((j) => {
-      const regionMatch = !j.region || driverRegions.some(
-        (r) => r.toLowerCase() === j.region.toLowerCase()
-      );
+      const regionMatch = !j.region || (isDirect(j)
+        ? driverNearJobRegion(driverRegions, j.region)
+        : driverRegions.some((r) => r.toLowerCase() === j.region.toLowerCase()));
       const segmentMatch = !j.segment || driverSegments.includes(j.segment);
       const licenseMatch = !j.license?.length || j.license.some((l) => driverLicenses.includes(l));
       const isNew = new Date(j.published) > sinceDate;
@@ -407,6 +412,7 @@ export async function runJobMatchReminders() {
     });
 
     if (matched.length === 0) continue;
+    matched.sort((a, b) => Number(isDirect(b)) - Number(isDirect(a)) || new Date(b.published) - new Date(a.published));
 
     // Personalized subject — mention license + region if available
     const licenseHint = driverLicenses.includes("CE") ? "CE-" : driverLicenses.includes("C") ? "C-" : "";
@@ -424,7 +430,7 @@ export async function runJobMatchReminders() {
       "",
       `${matched.length === 1 ? "Ett nytt jobb matchar" : `${matched.length} nya jobb matchar`} din profil den här veckan:`,
       "",
-      ...top5.map((j) => `• ${j.title} — ${j.company} (${j.location || j.region})\n  ${FRONTEND_URL}/jobb/${j.id}`),
+      ...top5.map((j) => `• ${j.title} — ${j.company}${isDirect(j) ? " (direkt från åkeriet)" : ""} (${j.location || j.region})\n  ${FRONTEND_URL}/jobb/${j.id}`),
       matched.length > 5 ? `\n…och ${matched.length - 5} till: ${FRONTEND_URL}/jobb` : "",
       "",
       `Avprenumerera: ${unsubscribeUrl}`,

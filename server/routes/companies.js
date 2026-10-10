@@ -219,10 +219,11 @@ companiesRouter.get("/:id/public", optionalAuthMiddleware, async (req, res, next
       },
     };
     let company = await prisma.user.findUnique({ where: { id: req.params.id }, select: publicSelect });
-    // Enkel adress: /akerier/<slug> → åkeriets ägare.
+    // Enkel adress: /akerier/<slug> → åkeriets ägare. Tar även organisationens id
+    // (gamla sitemap-länkar /foretag/<org-id> som Google redan indexerat).
     if (!company) {
-      const bySlug = await prisma.organization.findUnique({
-        where: { slug: req.params.id.toLowerCase() },
+      const bySlug = await prisma.organization.findFirst({
+        where: { OR: [{ slug: req.params.id.toLowerCase() }, { id: req.params.id }] },
         select: { userOrganizations: { where: { role: "OWNER" }, take: 1, select: { userId: true } } },
       });
       const ownerId = bySlug?.userOrganizations?.[0]?.userId;
