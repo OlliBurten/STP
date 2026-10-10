@@ -52,6 +52,38 @@ function companyProfileFields(user, org) {
   };
 }
 
+/**
+ * Public: åkerier som anställer direkt just nu — verifierade, anslutna åkerier med
+ * minst en aktiv egen annons. Visas på startsidan. Teståkerier utesluts.
+ */
+export async function listHiringCompanies(limit = 6) {
+  const orgs = await prisma.organization.findMany({
+    where: {
+      status: "VERIFIED",
+      slug: { not: null },
+      userOrganizations: { some: { role: "OWNER", user: excludeTestAndDemoAccountsWhere } },
+      jobs: { some: { status: "ACTIVE" } },
+    },
+    select: {
+      slug: true, name: true, location: true, region: true,
+      jobs: { where: { status: "ACTIVE" }, orderBy: { published: "desc" }, select: { id: true, title: true, location: true } },
+    },
+  });
+  return orgs
+    .map((o) => ({ slug: o.slug, name: o.name, location: o.location, region: o.region, activeJobCount: o.jobs.length, jobs: o.jobs.slice(0, 3) }))
+    .sort((a, b) => b.activeJobCount - a.activeJobCount || a.name.localeCompare(b.name, "sv"))
+    .slice(0, limit);
+}
+
+companiesRouter.get("/hiring", async (req, res, next) => {
+  try {
+    res.set("Cache-Control", "public, max-age=300");
+    res.json(await listHiringCompanies());
+  } catch (e) {
+    next(e);
+  }
+});
+
 /** Public: sök åkerier på bransch och/eller region (gula sidorna). */
 companiesRouter.get("/search", optionalAuthMiddleware, validateQuery(companiesSearchQuerySchema), async (req, res, next) => {
   try {

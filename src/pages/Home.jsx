@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import HiringCompanies from "../components/HiringCompanies";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { usePageTitle } from "../hooks/usePageTitle";
@@ -230,6 +231,9 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── ÅKERIER SOM ANSTÄLLER DIREKT ─────────────────────────────────── */}
+      <HiringCompanies isMobile={isMobile} padding={pad} />
+
       {/* ── LEDIGA JOBB ──────────────────────────────────────────────────── */}
       {(jobs === null || jobs.length > 0) && (
         <section style={{ background: "var(--paper-2)", padding: pad, borderBottom: "1px solid var(--line)" }}>
@@ -247,6 +251,9 @@ export default function Home() {
                   <Link key={job.id} to={`/jobb/${job.id}`} style={{ display: "block", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, padding: "20px 22px", textDecoration: "none", boxShadow: "var(--sh-sm)" }}>
                     <div style={{ fontSize: "var(--text-lg)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.3, lineHeight: 1.3, marginBottom: 6 }}>{job.title}</div>
                     <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", marginBottom: 14, lineHeight: 1.4 }}>{job.company} · {job.location}</div>
+                    {(job.source !== "AGGREGATED" || job.claimed) && (
+                      <div style={{ display: "inline-block", fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--ink-900)", background: "var(--amber)", padding: "3px 9px", borderRadius: 7, marginBottom: 12 }}>Direkt från åkeriet</div>
+                    )}
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
                       {(job.license || []).map((l) => <span key={l} style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--green-text)", background: "var(--green-tint)", padding: "4px 10px", borderRadius: 7 }}>{l}</span>)}
                       <span style={{ marginLeft: "auto", fontSize: "var(--text-xs)", color: "var(--ink-500)", fontWeight: 600 }}>{salaryLabel(job)}</span>

@@ -1,6 +1,7 @@
 // STP Mobile — public landing. Ported 1:1 from STP Mobil Landing, wired to real
 // routes. Hero photo (/hero.webp) + real Sweden map (swedenGeo + CITY_XY).
 import React, { useState, useRef, useEffect, useMemo } from "react";
+import HiringCompanies from "../../components/HiringCompanies";
 import { useNavigate } from "react-router-dom";
 import MobileShell from "../MobileShell";
 import { Icon, SkeletonRow } from "../ui";
@@ -107,6 +108,7 @@ const LandingJobCard = ({ job, onOpen }) => (
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 16.5, fontWeight: 800, letterSpacing: -0.3, color: "var(--ink-900)", lineHeight: 1.25 }}>{job.title}</div>
         <div style={{ fontSize: 13.5, color: "var(--ink-500)", marginTop: 3, lineHeight: 1.35 }}>{job.company} · {job.location}</div>
+        {job.direct && <div style={{ display: "inline-block", marginTop: 7, fontSize: 12, fontWeight: 700, color: "var(--ink-900)", background: "var(--amber)", padding: "3px 9px", borderRadius: 7 }}>Direkt från åkeriet</div>}
       </div>
     </div>
     <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginTop: 13, alignItems: "center" }}>
@@ -280,6 +282,8 @@ export default function MobileLanding() {
             "lastbilsjobb" möttes av en branschanalys i tre delar och fick klicka
             vidare för att se ett enda jobb. Nu ligger de överst, före allt vi
             själva vill berätta. */}
+        <HiringCompanies isMobile padding="40px 22px 44px" />
+
         {(rawJobs === null || latestJobs.length > 0) && (
           <section style={{ background: "var(--paper-2)", padding: "40px 22px 44px" }}>
             <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12, marginBottom: 18 }}>

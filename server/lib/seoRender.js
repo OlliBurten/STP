@@ -529,7 +529,12 @@ export async function renderHomeHtml() {
     orderBy: { published: "desc" },
     take: 60,
   });
-  const jobs = dedupeAggregatedJobs(rows).slice(0, 20);
+  // Direktannonser från anslutna åkerier först, som på /jobb.
+  const isDirect = (j) => j.source !== "AGGREGATED" || Boolean(j.claimed);
+  const deduped = dedupeAggregatedJobs(rows);
+  const jobs = [...deduped.filter(isDirect), ...deduped.filter((j) => !isDirect(j))].slice(0, 20);
+  const { listHiringCompanies } = await import("../routes/companies.js");
+  const hiring = await listHiringCompanies().catch(() => []);
 
   // Organization + WebSite hör hemma på roten, inte på undersidorna — det är den
   // som kopplar varumärket till domänen hos Google.
@@ -562,6 +567,7 @@ export async function renderHomeHtml() {
 <main>
   <h1>${esc(p.h1)}</h1>
   ${p.paras.map(t => `<p>${esc(t)}</p>`).join("\n  ")}
+  ${hiring.length ? `<section><h2>Åkerier som anställer direkt</h2><ul>${hiring.map((c) => `<li><a href="${SITE}/akerier/${c.slug}">${esc(c.name)}</a>${c.location ? ` – ${esc(c.location)}` : ""}: ${c.jobs.map((j) => `<a href="${SITE}/jobb/${j.id}">${esc(j.title)}</a>`).join(", ")}</li>`).join("")}</ul></section>` : ""}
   <section><h2>Senaste lediga lastbilsjobben</h2>${jobsListHtml(jobs)}
     <p><a href="${SITE}/jobb">Alla lediga lastbilsjobb i Sverige</a></p>
   </section>

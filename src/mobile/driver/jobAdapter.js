@@ -64,6 +64,8 @@ export function toJobView(job, profile) {
     pay: payLabel(job),
     posted: timeAgo(job.published || job.createdAt),
     imported: job.source === "AGGREGATED",
+    // Direkt från ett anslutet åkeri (egen annons, eller importerad annons som åkeriet tagit över).
+    direct: job.source !== "AGGREGATED" || Boolean(job.claimed),
     // true = STP kan vidarebefordra ansökan (kontaktmejl finns). false = bara
     // AF-länken funkar. null för STP-egna jobb (alltid på plattformen).
     reachableViaStp: job.reachableViaStp ?? null,
