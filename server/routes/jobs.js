@@ -680,6 +680,7 @@ jobsRouter.get("/:id", optionalAuthMiddleware, attachCompanyContext, async (req,
         organization: {
           select: {
             id: true,
+            slug: true,
             status: true,
             name: true,
             description: true,
@@ -749,6 +750,8 @@ jobsRouter.get("/:id", optionalAuthMiddleware, attachCompanyContext, async (req,
       contact: job.source === "AGGREGATED" || isOwnJob ? job.contact : null,
       userId: job.userId,
       organizationId: job.organizationId ?? null,
+      // Åkeriets enkla adress (/akerier/<slug>) — en adress per åkeri för förare och Google.
+      companySlug: job.organization?.slug ?? null,
       physicalWorkRequired: job.physicalWorkRequired ?? null,
       soloWorkOk: job.soloWorkOk ?? null,
       kollektivavtal: job.kollektivavtal ?? null,

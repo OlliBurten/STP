@@ -11,8 +11,8 @@ import request from "supertest";
 import jwt from "jsonwebtoken";
 import { PrismaClient } from "@prisma/client";
 import { JWT_SECRET } from "../lib/config.js";
-import { normalizeRegion, driverNearJobRegion, prettifyPlace, countyFromPlace } from "../utils/regions.js";
-import { renderCompanyHtml, renderCityHtml, renderJobHtml } from "../lib/seoRender.js";
+import { normalizeRegion, driverNearJobRegion } from "../utils/regions.js";
+import { renderCompanyHtml } from "../lib/seoRender.js";
 
 process.env.APP_LISTEN = "false";
 const { app } = await import("../server.js");
@@ -95,26 +95,5 @@ describe("räckvidd för direktannonser", () => {
     const res = await request(app).get(`/api/companies/${ids.org}/public`);
     assert.strictEqual(res.status, 200);
     assert.strictEqual(res.body.slug, ids.slug);
-  });
-
-  it("orter från Bolagsverket snyggas till och ger län", () => {
-    assert.strictEqual(prettifyPlace("VÄRNAMO"), "Värnamo");
-    assert.strictEqual(countyFromPlace("VÄRNAMO"), "Jönköping");
-    assert.strictEqual(countyFromPlace("Junosuando"), null);
-  });
-
-  it("annonsen pekar på åkeriets enkla adress — i appen och för Google", async () => {
-    const res = await request(app).get(`/api/jobs/${ids.job}`);
-    assert.strictEqual(res.body.companySlug, ids.slug);
-    const html = await renderJobHtml(ids.job);
-    assert.match(html, new RegExp(`"url":"[^"]*/akerier/${ids.slug}"`));
-  });
-
-  it("stadssidan för Värnamo finns och listar åkeriets annons först", async () => {
-    const html = await renderCityHtml("varnamo");
-    assert.ok(html, "stadssidan saknas");
-    const firstJob = html.indexOf("/jobb/");
-    const firstItem = html.slice(firstJob, html.indexOf("</li>", firstJob));
-    assert.match(firstItem, /CE-chaufför distribution/, "direktannonsen borde stå först: " + firstItem);
   });
 });

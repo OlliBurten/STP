@@ -186,6 +186,16 @@ export const cityPages = [
     transport: "Växjö och Kronoberg är starkt präglade av IKEA-sfären och Smålands starka tillverkningsindustri. E4:an passerar genom regionen och skapar ett naturligt flöde av fjärrtransporter söderut mot Malmö och norrut mot Jönköping.",
     highlights: ["IKEA-logistik och möbeltransport", "E4 Malmö–Jönköping", "Småländsk tillverkningsindustri", "Distribution i Kronoberg"],
   },
+  {
+    slug: "varnamo",
+    name: "Värnamo",
+    region: "Jönköping",
+    regionSlug: "jonkoping",
+    tagline: "Där E4 möter riksväg 27",
+    desc: "CE-jobb och lastbilsjobb i Värnamo — E4, riksväg 27 och Gnosjöregionens industri.",
+    transport: "Värnamo ligger där E4 och riksväg 27 möts, mitt i Gnosjöregionen med sin täta tillverkningsindustri. Det ger både fjärrkörning längs E4 och regional distribution till industrin i Värnamo, Gislaved och Gnosjö.",
+    highlights: ["E4 Jönköping–Helsingborg", "Riksväg 27 mot Växjö och Göteborg", "Gnosjöregionens tillverkningsindustri", "Distribution i Jönköpings län"],
+  },
 ];
 
 /** Slå upp stad från URL-slug */
