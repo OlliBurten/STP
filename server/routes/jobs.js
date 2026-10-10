@@ -11,6 +11,7 @@ import {
   requireCompanyPermission,
 } from "../middleware/auth.js";
 import { matchScore, matchPercent, driverYearsFromExperience } from "../utils/matchScore.js";
+import { driverNearJobRegion, driverInJobRegion } from "../utils/regions.js";
 import { notifyRecommendedJobMatch } from "../lib/email.js";
 import { createNotification } from "../lib/notifications.js";
 import { validateBody, validateQuery } from "../middleware/validate.js";
@@ -91,18 +92,23 @@ export async function sendDriverMatchAlertsForJob(job) {
     // License is a hard disqualifier (score → 0), so filter it at DB level.
     // Segment and certificate checks are complex (optional fields, array overlap)
     // so they remain in the JS scoring step below.
+    // Tips om jobb är förarens sak — inte beroende av om profilen visas för åkerier.
     const jobLicenses = job.license || [];
     const profileWhere = {
-      visibleToCompanies: true,
+      user: { isDemo: false, suspendedAt: null, emailVerifiedAt: { not: null } },
       ...(jobLicenses.length > 0 && { licenses: { hasSome: jobLicenses } }),
     };
     const profiles = await prisma.driverProfile.findMany({
       where: profileWhere,
       take: 500, // Safety cap — score in JS, then pick top MATCH_ALERT_MAX_RECIPIENTS
       include: {
-        user: { select: { id: true, name: true, email: true, lastMatchJobEmailAt: true } },
+        user: { select: { id: true, name: true, email: true, lastMatchJobEmailAt: true, emailNotificationSettings: true } },
       },
     });
+    // Idempotent: den som redan fått tips om just den här annonsen får det inte igen.
+    const alreadyNotified = new Set(
+      (await prisma.notification.findMany({ where: { relatedJobId: job.id, type: "MATCH_JOBS" }, select: { userId: true } })).map((n) => n.userId)
+    );
     const matches = profiles
       .map((p) => {
         const experience = Array.isArray(p.experience)
@@ -129,13 +135,16 @@ export async function sendDriverMatchAlertsForJob(job) {
           name: p.user?.name || "förare",
           lastMatchJobEmailAt: p.user?.lastMatchJobEmailAt ?? null,
           wanted: (driver.regionsWilling.length ? driver.regionsWilling : [driver.region]).filter(Boolean),
+          wantsEmail: (p.user?.emailNotificationSettings || {}).jobMatch !== false,
         };
       })
-      .filter((m) => m.score > 0 && m.email && m.userId)
-      // Bara förare som vill jobba i annonsens region (eller inte angett någon) — samma
-      // regel som de dagliga jobbtipsen i lib/matchAlerts.js. Annars mejlas hela landet.
-      .filter((m) => m.wanted.length === 0 || !job.region || m.wanted.includes(job.region))
-      .sort((a, b) => b.score - a.score);
+      .filter((m) => m.score > 0 && m.email && m.userId && !alreadyNotified.has(m.userId))
+      // Direktannonser når förare i samma län och grannlän (Ljungby → Värnamo), inte hela
+      // landet. Samma län rankas först.
+      .filter((m) => driverNearJobRegion(m.wanted, job.region))
+      .sort((a, b) =>
+        Number(driverInJobRegion(b.wanted, job.region)) - Number(driverInJobRegion(a.wanted, job.region)) || b.score - a.score
+      );
     const uniqueByUserId = new Map();
     for (const m of matches) {
       if (!uniqueByUserId.has(m.userId)) uniqueByUserId.set(m.userId, m);
@@ -154,8 +163,8 @@ export async function sendDriverMatchAlertsForJob(job) {
     }
     const emailRecipients = allRecipients.filter(
       (r) =>
-        !r.lastMatchJobEmailAt ||
-        now.getTime() - new Date(r.lastMatchJobEmailAt).getTime() > MATCH_EMAIL_COOLDOWN_MS
+        r.wantsEmail && (!r.lastMatchJobEmailAt ||
+        now.getTime() - new Date(r.lastMatchJobEmailAt).getTime() > MATCH_EMAIL_COOLDOWN_MS)
     );
     await Promise.allSettled(
       emailRecipients.map((r) =>

@@ -243,16 +243,34 @@ export async function renderJobHtml(id) {
 }
 
 // ─── Åkeri / organisation ─────────────────────────────────────────────────────
-export async function renderCompanyHtml(id) {
-  const org = await prisma.organization.findUnique({
-    where: { id },
-    select: { id: true, name: true, description: true, location: true, region: true, website: true, status: true },
-  });
+/**
+ * Åkerisidan för sökmotorer. Nås som /akerier/<slug> (kanonisk), /foretag/<org-id>
+ * (gamla sitemapen) eller /foretag/<användar-id> (länkar från annonser).
+ */
+export async function renderCompanyHtml(idOrSlug) {
+  const select = { id: true, slug: true, name: true, description: true, location: true, region: true, website: true, status: true };
+  let org = await prisma.organization.findFirst({ where: { OR: [{ id: idOrSlug }, { slug: String(idOrSlug).toLowerCase() }] }, select });
+  if (!org) {
+    const uo = await prisma.userOrganization.findFirst({ where: { userId: idOrSlug }, orderBy: { joinedAt: "asc" }, select: { organization: { select } } });
+    org = uo?.organization ?? null;
+  }
   if (!org || org.status !== "VERIFIED") return null;
+  if (!org.slug) {
+    const { ensureOrgSlug } = await import("./organizations.js");
+    org.slug = await ensureOrgSlug(org);
+  }
 
-  const canonical = `${SITE}/foretag/${org.id}`;
-  const title = `${org.name} – Lediga jobb & åkeri | Transportplattformen`;
-  const description = [`${org.name}`, org.location ? `i ${org.location}` : null, org.description ? `– ${org.description.replace(/\s+/g, " ")}` : "söker lastbilsförare."].filter(Boolean).join(" ").slice(0, 160);
+  const canonical = org.slug ? `${SITE}/akerier/${org.slug}` : `${SITE}/foretag/${org.id}`;
+  const jobs = await prisma.job.findMany({
+    where: { organizationId: org.id, status: "ACTIVE" },
+    select: { id: true, title: true, location: true },
+    orderBy: { published: "desc" },
+    take: 50,
+  });
+  const title = jobs.length
+    ? `${org.name} söker förare – ${jobs.length} ${jobs.length === 1 ? "ledigt jobb" : "lediga jobb"} | Transportplattformen`
+    : `${org.name} – Lediga jobb & åkeri | Transportplattformen`;
+  const description = [`${org.name}`, org.location ? `i ${org.location}` : null, jobs.length ? `anställer direkt: ${jobs.map((j) => j.title).slice(0, 2).join(", ")}.` : (org.description ? `– ${org.description.replace(/\s+/g, " ")}` : "söker lastbilsförare.")].filter(Boolean).join(" ").slice(0, 160);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -267,6 +285,7 @@ export async function renderCompanyHtml(id) {
 <main>
   <h1>${esc(org.name)}</h1>
   ${org.location ? `<p>${esc(org.location)}${org.region ? `, ${esc(org.region)}` : ""}</p>` : ""}
+  ${jobs.length ? `<section><h2>Lediga jobb</h2><ul>${jobs.map((j) => `<li><a href="${SITE}/jobb/${j.id}">${esc(j.title)}</a>${j.location ? ` – ${esc(j.location)}` : ""}</li>`).join("")}</ul></section>` : ""}
   ${org.description ? `<section><h2>Om åkeriet</h2><p>${esc(org.description)}</p></section>` : ""}
 </main>`;
 

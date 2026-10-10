@@ -105,7 +105,10 @@ async function newJobsForAlert(alert, now) {
     orderBy: { published: "desc" },
     take: MAX_JOBS_PER_MAIL * 3,
   });
-  return dedupeAggregatedJobs(rows).slice(0, MAX_JOBS_PER_MAIL);
+  // Annonser direkt från anslutna åkerier först — de är skälet att bevaka STP.
+  const isDirect = (j) => j.source !== "AGGREGATED" || Boolean(j.claimed);
+  const deduped = dedupeAggregatedJobs(rows);
+  return [...deduped.filter(isDirect), ...deduped.filter((j) => !isDirect(j))].slice(0, MAX_JOBS_PER_MAIL);
 }
 
 /** Daglig digest till alla bekräftade bevakningar. Körs från reminderScheduler. */
