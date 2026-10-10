@@ -84,7 +84,7 @@ function serializeDeadline(j) {
   return Number.isNaN(d.getTime()) ? null : d.toISOString().slice(0, 10);
 }
 
-async function sendDriverMatchAlertsForJob(job) {
+export async function sendDriverMatchAlertsForJob(job) {
   if (!MATCH_ALERTS_ENABLED) return;
   try {
     // Pre-filter in the database to avoid loading every driver into memory.
@@ -128,9 +128,14 @@ async function sendDriverMatchAlertsForJob(job) {
           email: p.email || p.user?.email,
           name: p.user?.name || "förare",
           lastMatchJobEmailAt: p.user?.lastMatchJobEmailAt ?? null,
+          wanted: (driver.regionsWilling.length ? driver.regionsWilling : [driver.region]).filter(Boolean),
         };
       })
-      .filter((m) => m.score > 0 && m.email && m.userId);
+      .filter((m) => m.score > 0 && m.email && m.userId)
+      // Bara förare som vill jobba i annonsens region (eller inte angett någon) — samma
+      // regel som de dagliga jobbtipsen i lib/matchAlerts.js. Annars mejlas hela landet.
+      .filter((m) => m.wanted.length === 0 || !job.region || m.wanted.includes(job.region))
+      .sort((a, b) => b.score - a.score);
     const uniqueByUserId = new Map();
     for (const m of matches) {
       if (!uniqueByUserId.has(m.userId)) uniqueByUserId.set(m.userId, m);
