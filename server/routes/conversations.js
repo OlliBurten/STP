@@ -289,6 +289,38 @@ conversationsRouter.post("/", requireVerifiedEmail, requireVerifiedIfCompany, va
         console.error("Notify new application:", e);
       }
     }
+    // Åkeriet kontaktar en förare (Hitta förare / kandidat): föraren ska få mejl och notis.
+    // Tidigare aviserades bara förarens ansökan åt andra hållet — kontakterna nådde aldrig
+    // föraren (VGT skrev till fem förare 2026-10-05–09 utan att någon fick veta det).
+    if (!isDriver) {
+      try {
+        const [driver, org, companyUser] = await Promise.all([
+          prisma.user.findUnique({ where: { id: actualDriverId }, select: { email: true } }),
+          actualOrganizationId ? prisma.organization.findUnique({ where: { id: actualOrganizationId }, select: { name: true } }) : null,
+          prisma.user.findUnique({ where: { id: actualCompanyId }, select: { companyName: true, name: true } }),
+        ]);
+        const fromName = org?.name || companyUser?.companyName || companyUser?.name || "Ett åkeri";
+        const preview = String(initialMessage || "Hej.").slice(0, 140);
+        const frontendBase = (process.env.FRONTEND_URL || "").split(",")[0]?.trim().replace(/\/$/, "");
+        const conversationUrl = frontendBase ? `${frontendBase}/meddelanden/${conv.id}` : null;
+        if (driver?.email && shouldSendMessageEmail(conv.id, driver.email)) {
+          notifyNewMessage({ toEmail: driver.email, fromName, preview, conversationUrl }).catch((e) =>
+            console.error("Notify driver of company contact:", e)
+          );
+        }
+        await createNotification({
+          userId: actualDriverId,
+          type: "MESSAGE",
+          title: `${fromName} har skickat ett meddelande`,
+          body: preview,
+          link: `/meddelanden/${conv.id}`,
+          relatedConversationId: conv.id,
+          actorName: fromName,
+        }).catch((e) => console.error("Create notification company contact:", e));
+      } catch (e) {
+        console.error("Notify driver of company contact:", e);
+      }
+    }
     const updated = await prisma.conversation.findUnique({
       where: { id: conv.id },
       include: {
