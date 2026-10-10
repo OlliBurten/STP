@@ -111,6 +111,9 @@ describe("åkeriportalen", () => {
       .send({ driverId: other.id, companyId: ids.owner, initialMessage: "Hej, vi har ett jobb som kan passa dig." });
     assert.strictEqual(c.status, 201, JSON.stringify(c.body));
     assert.ok(c.body.readByCompanyAt, "åkeriets egen kontakt borde vara läst");
+    const note = await prisma.notification.findFirst({ where: { userId: other.id, relatedConversationId: c.body.id } });
+    assert.ok(note, "föraren borde få en notis när ett åkeri hör av sig");
+    assert.match(note.title, /Portalåkeri/);
     const res = await request(app).get("/api/companies/me/candidates").set("Authorization", tok(ids.owner));
     const row = res.body.find((x) => x.conversationId === c.body.id);
     assert.strictEqual(row.initiatedBy, "company");
