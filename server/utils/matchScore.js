@@ -122,12 +122,14 @@ export function matchScore(driver, job) {
   if (!hasLicense && jobLicenses.length > 0) return 0;
   if (hasLicense && jobLicenses.length > 0) score += 2;
 
+  // Intyg ger delpoäng (+1 per uppfyllt), inget underkännande — samma som webbappens
+  // matchUtils. Tidigare föll en förare som saknade ETT av annonsens intyg till 0, så en
+  // annons med fyra ikryssade intyg (VGT 2026-10-08) matchade ingen av 40 CE-förare och
+  // inga förare aviserades. Procenten visar fortfarande vad som saknas.
   const driverCerts = driver.certificates || [];
   const jobCerts = job.certificates || [];
-  const hasAllCerts = jobCerts.every((c) => driverCerts.includes(c));
-  if (jobCerts.length > 0 && !hasAllCerts) return 0;
-  if (hasAllCerts) score += jobCerts.length || 1;
-  else if (jobCerts.length === 0) score += 1;
+  if (jobCerts.length === 0) score += 1;
+  else score += jobCerts.filter((c) => driverCerts.includes(c)).length;
 
   const driverRegion = driver.region || "";
   const driverRegions = driver.regionsWilling || [driverRegion].filter(Boolean);
