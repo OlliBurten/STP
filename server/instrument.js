@@ -11,6 +11,10 @@ const IS_PRODUCTION = DEPLOYMENT === "production";
 Sentry.init({
   dsn: process.env.SENTRY_DSN || "https://9ec4e302d31f49901b572fb4b3646c69@o4511146144628736.ingest.de.sentry.io/4511146149609552",
   environment: DEPLOYMENT,
+  // Lokal utveckling skickar inget till prod-projektet: 2026-10-07 kom 10 av 12 olösta
+  // issues från en dev-server mitt i en schemaändring (kolumn saknades innan db push).
+  // Sätt SENTRY_DSN lokalt om du faktiskt vill rapportera därifrån.
+  enabled: DEPLOYMENT !== "development" || Boolean(process.env.SENTRY_DSN),
   sendDefaultPii: true,
 
   // Nästan ingen tracing i prod — transaktionsvolymen (botar, cron, health-pings)

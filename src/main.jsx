@@ -103,6 +103,12 @@ setTimeout(() => {
         ) {
           return null;
         }
+        // Inbäddade skript som webbläsaren själv lagt in i sidan (t.ex. Google-appen på
+        // iOS, 2026-09-26: rekursion på rad 190–226 i ett HTML-dokument som bara har ~60
+        // rader). Alla ramar pekar på dokumentet, ingen på vår bundle i /assets/.
+        if (frames.length > 0 && !frames.some((f) => (f.filename || "").includes("/assets/"))) {
+          return null;
+        }
         return event;
       },
     });
