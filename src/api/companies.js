@@ -57,3 +57,8 @@ export function revokeInvite(id) {
 export function fetchCompanyCandidates() {
   return apiGet("/api/companies/me/candidates");
 }
+
+/** Public: anslutna åkerier som anställer direkt just nu (startsidan). */
+export function fetchHiringCompanies() {
+  return apiGet("/api/companies/hiring");
+}

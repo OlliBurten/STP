@@ -117,4 +117,12 @@ describe("räckvidd för direktannonser", () => {
     const firstItem = html.slice(firstJob, html.indexOf("</li>", firstJob));
     assert.match(firstItem, /CE-chaufför distribution/, "direktannonsen borde stå först: " + firstItem);
   });
+
+  it("startsidans åkerilista är publik och utesluter teståkerier", async () => {
+    const res = await request(app).get("/api/companies/hiring");
+    assert.strictEqual(res.status, 200);
+    assert.ok(Array.isArray(res.body));
+    assert.ok(!res.body.some((c) => c.slug === ids.slug), "teståkerier (example.com) ska inte visas på startsidan");
+    for (const c of res.body) assert.ok(c.slug && c.activeJobCount > 0 && Array.isArray(c.jobs));
+  });
 });
