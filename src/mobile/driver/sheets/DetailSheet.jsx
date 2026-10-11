@@ -1,11 +1,19 @@
 // Driver — job detail bottom sheet. Ported from STP Mobil Förare DetailSheet.
 // Company-profile deep-link and raw-ad toggle render only when the data exists.
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { trackJobView } from "../../../api/jobs";
+import FormattedText from "../../../components/FormattedText";
 import { Icon, Pill, Dot, Label, Button } from "../../ui";
 
 const matchTone = (m) => (m >= 90 ? "success" : m >= 80 ? "soft" : "neutral");
 
 export default function DetailSheet({ job, ctx, close: _close }) {
+  // Räkna visningen — förarappen registrerade inga visningar alls, så annonsstatistiken
+  // (åkeriets och adminens) missade nästan all mobiltrafik från inloggade förare.
+  useEffect(() => {
+    if (job?.id) trackJobView(job.id).catch(() => {});
+  }, [job?.id]);
+
   const savedNow = ctx.saved.has(job.id);
   const appliedNow = ctx.applied.has(job.id);
   const [showRaw, setShowRaw] = useState(false);
@@ -75,7 +83,10 @@ export default function DetailSheet({ job, ctx, close: _close }) {
         {job.desc && (
           <>
             <Label style={{ marginBottom: 8 }}>Om tjänsten</Label>
-            <p style={{ fontSize: 14.5, color: "var(--ink-700)", lineHeight: 1.6, marginBottom: (longDesc || job.rawDesc) ? 8 : 18, whiteSpace: "pre-line", ...(longDesc && !showFull ? { display: "-webkit-box", WebkitLineClamp: 6, WebkitBoxOrient: "vertical", overflow: "hidden" } : {}) }}>{job.desc}</p>
+            {/* Formaterad text (fet, rubriker, listor); ihopfälld visar ~6 rader. */}
+            <div style={{ marginBottom: (longDesc || job.rawDesc) ? 8 : 18, ...(longDesc && !showFull ? { maxHeight: "9.6em", overflow: "hidden" } : {}) }}>
+              <FormattedText text={job.desc} fontSize={14.5} style={{ lineHeight: 1.6 }} />
+            </div>
             {longDesc && <button onClick={() => setShowFull((v) => !v)} className="press" style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 13.5, fontWeight: 700, color: "var(--green)", marginBottom: job.rawDesc ? 12 : 18 }}>{showFull ? "Visa mindre" : "Visa mer"}<Icon name="chevDown" size={15} stroke={2.2} style={{ transform: showFull ? "rotate(180deg)" : "none", transition: "transform .2s" }} /></button>}
           </>
         )}
