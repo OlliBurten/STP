@@ -820,11 +820,17 @@ jobsRouter.get("/:id/stats", authMiddleware, requireCompany, attachCompanyContex
       job.userId === effectiveCompanyId(req);
     if (!hasAccess) return res.status(403).json({ error: "Ingen åtkomst" });
 
-    const [viewCount, savedCount, conversationCount] = await Promise.all([
+    const [viewCount, savedCount, convs] = await Promise.all([
       prisma.jobView.count({ where: { jobId: job.id } }),
       prisma.savedJob.count({ where: { jobId: job.id } }),
-      prisma.conversation.count({ where: { jobId: job.id } }),
+      prisma.conversation.findMany({
+        where: { jobId: job.id },
+        select: { messages: { orderBy: { createdAt: "asc" }, take: 1, select: { senderRole: true } } },
+      }),
     ]);
+    // Ansökningar = förare som sökt. Konversationer som åkeriet själv startat är kontakter.
+    const conversationCount = convs.filter((c) => c.messages[0]?.senderRole !== "company").length;
+    const contactedCount = convs.length - conversationCount;
 
     // Rule-based recommendations
     const recommendations = [];
@@ -857,7 +863,7 @@ jobsRouter.get("/:id/stats", authMiddleware, requireCompany, attachCompanyContex
       recommendations.push({ type: "warning", text: "Annonsen har varit öppen över 30 dagar. Stäng den om tjänsten är tillsatt." });
     }
 
-    res.json({ viewCount, savedCount, conversationCount, recommendations });
+    res.json({ viewCount, savedCount, conversationCount, contactedCount, recommendations });
   } catch (e) {
     next(e);
   }

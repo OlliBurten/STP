@@ -52,6 +52,8 @@ before(async () => {
 
 after(async () => {
   await prisma.notification.deleteMany({ where: { userId: { in: ids.users } } });
+  await prisma.message.deleteMany({ where: { conversation: { organizationId: ids.org } } });
+  await prisma.conversation.deleteMany({ where: { organizationId: ids.org } });
   await prisma.job.deleteMany({ where: { organizationId: ids.org } });
   await prisma.userOrganization.deleteMany({ where: { organizationId: ids.org } });
   await prisma.organization.deleteMany({ where: { id: ids.org } });
@@ -124,5 +126,15 @@ describe("räckvidd för direktannonser", () => {
     assert.ok(Array.isArray(res.body));
     assert.ok(!res.body.some((c) => c.slug === ids.slug), "teståkerier (example.com) ska inte visas på startsidan");
     for (const c of res.body) assert.ok(c.slug && c.activeJobCount > 0 && Array.isArray(c.jobs));
+  });
+
+  it("annonsstatistiken räknar inte åkeriets egna kontakter som ansökningar", async () => {
+    const c = await request(app).post("/api/conversations").set("Authorization", tok(ids.owner))
+      .send({ driverId: ids.same, companyId: ids.owner, jobId: ids.job, initialMessage: "Hej, är du intresserad?" });
+    assert.strictEqual(c.status, 201, JSON.stringify(c.body));
+    const stats = await request(app).get(`/api/jobs/${ids.job}/stats`).set("Authorization", tok(ids.owner));
+    assert.strictEqual(stats.status, 200, JSON.stringify(stats.body));
+    assert.strictEqual(stats.body.conversationCount, 0);
+    assert.strictEqual(stats.body.contactedCount, 1);
   });
 });

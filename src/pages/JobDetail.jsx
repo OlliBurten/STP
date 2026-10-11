@@ -1138,11 +1138,12 @@ export default function JobDetail() {
           {isMyJob && jobStats && (
             <div style={{ marginTop: 36, paddingTop: 32, borderTop: "1px solid var(--line)" }}>
               <h2 style={{ fontSize: "var(--text-xl)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.3, margin: "0 0 18px" }}>Annonsstatistik</h2>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10, marginBottom: 16 }}>
+              <div style={{ display: "grid", gridTemplateColumns: `repeat(${jobStats.contactedCount ? 4 : 3},1fr)`, gap: 10, marginBottom: 16 }}>
                 {[
                   { value: jobStats.viewCount,         label: "Visningar"    },
                   { value: jobStats.savedCount,        label: "Sparade"      },
                   { value: jobStats.conversationCount, label: "Ansökningar"  },
+                  ...(jobStats.contactedCount ? [{ value: jobStats.contactedCount, label: "Kontaktade av er" }] : []),
                 ].map(({ value, label }) => (
                   <div key={label} style={{ borderRadius: "var(--r-md)", border: "1px solid var(--line)", background: "var(--card)", padding: "16px 12px", textAlign: "center", boxShadow: "var(--sh-sm)" }}>
                     <p style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--ink-900)", margin: "0 0 4px", fontFamily: "var(--mono)" }}>{value}</p>
