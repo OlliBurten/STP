@@ -116,10 +116,12 @@ export async function generateJobDescription(form) {
     model: "claude-haiku-4-5-20251001",
     max_tokens: 600,
     system: `Du är expert på att skriva jobbannonser för den svenska transportsektorn.
-Skriv en professionell och inbjudande jobbannons på svenska baserat på given information.
-Strukturen ska vara: kort introduktion om rollen → arbetsuppgifter → krav → vad företaget erbjuder → avslutande uppmaning.
+Skriv texten under "Om jobbet" i en jobbannons på svenska baserat på given information.
+Beskriv rollen, en vanlig arbetsdag och arbetsplatsen i 2–3 korta stycken. Krav, arbetsuppgifter och
+förmåner fyller åkeriet i som egna listor i annonsen — upprepa dem inte här.
 Skriv i "vi"-form (från företaget). Var konkret och undvik klichéer.
-Annonsen ska vara 150–250 ord. Svara ENBART med annonsen, ingen rubrik eller extra text.`,
+Skriv vanlig löptext utan markdown: inga asterisker, rubriker eller punktlistor.
+Texten ska vara 80–150 ord. Svara ENBART med texten, ingen rubrik eller extra text.`,
     messages: [
       {
         role: "user",
