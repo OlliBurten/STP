@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import FormattedText from "../components/FormattedText";
 import { companyCan } from "../utils/companyPermissions";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { licenseTypes, regions } from "../data/mockJobs";
@@ -113,9 +114,16 @@ function ToggleChip({ label, active, onClick, color = "teal" }) {
 
 function BulletEditor({ items, onChange, placeholder, color }) {
   const [draft, setDraft] = useState("");
+  // Flera meningar blir egna punkter: "Kollektivavtal. Modern vagnpark." → två punkter.
+  // (VGT skrev tre förmåner i en rad, och annonsen fick en enda lång punkt.)
   const add = () => {
-    const v = draft.trim();
-    if (v && !items.includes(v)) { onChange([...items, v]); setDraft(""); }
+    const parts = draft
+      .split(/\n+|(?<=[.!])\s+(?=[A-ZÅÄÖ0-9])/)
+      .map((t) => t.trim().replace(/\.$/, "").trim())
+      .filter(Boolean);
+    const fresh = parts.filter((p, i) => !items.includes(p) && parts.indexOf(p) === i);
+    if (fresh.length) onChange([...items, ...fresh]);
+    if (parts.length) setDraft("");
   };
   const remove = (i) => onChange(items.filter((_, j) => j !== i));
   const dotBg  = color === "green" ? "var(--success-tint)" : "var(--green-tint)";
@@ -224,7 +232,7 @@ function PreviewSection({ title, items, body, fallback, color }) {
       </div>
       {body !== undefined && (
         body.trim().length > 0
-          ? <p style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", lineHeight: 1.8, margin: 0 }}>{body}</p>
+          ? <FormattedText text={body} fontSize="var(--text-xs)" style={{ color: "var(--ink-500)", lineHeight: 1.8 }} />
           : <p style={{ fontSize: "var(--text-xs)", color: "var(--ink-300)", fontStyle: "italic", margin: 0 }}>{fallback}</p>
       )}
       {items !== undefined && (

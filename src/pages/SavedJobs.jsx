@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { salaryRange } from "../utils/jobUtils.js";
 import { Link } from "react-router-dom";
 import { usePageTitle } from "../hooks/usePageTitle";
 import LoadingBlock from "../components/LoadingBlock";
@@ -54,10 +55,7 @@ function FavJobCard({ job, matchData, onUnsave }) {
   const matchBg = pct == null ? null : pct >= 80 ? "var(--success-tint)" : "var(--green-tint)";
   const licenseStr = (job.licenseRequired || []).join(", ") || (job.license || "");
   const employmentLabel = job.employment === "fast" ? "Fast" : job.employment === "vikariat" ? "Vikariat" : job.employment === "tim" ? "Tim" : job.employment || "Fast";
-  const salaryDisplay = job.salaryMin
-    ? job.salaryMax
-      ? `${job.salaryMin.toLocaleString("sv-SE")} – ${job.salaryMax.toLocaleString("sv-SE")} kr/mån`
-      : `Från ${job.salaryMin.toLocaleString("sv-SE")} kr/mån`
+  const salaryDisplay = salaryRange(job) ? `${salaryRange(job)} kr/mån`
     : job.salary || null;
 
   return (
@@ -319,7 +317,7 @@ export default function SavedJobs() {
                 const expired = job.status !== "ACTIVE";
                 const initials = avatarInitials(job.company);
                 const bg = avatarBg(job.company);
-                const salaryDisplay = job.salaryMin ? (job.salaryMax ? `${job.salaryMin.toLocaleString("sv-SE")} – ${job.salaryMax.toLocaleString("sv-SE")} kr/mån` : `Från ${job.salaryMin.toLocaleString("sv-SE")} kr/mån`) : job.salary || null;
+                const salaryDisplay = salaryRange(job) ? `${salaryRange(job)} kr/mån` : job.salary || null;
                 return (
                   <Link key={job.id} to={`/jobb/${job.id}`} style={{ display: "block", textDecoration: "none", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "16px", opacity: expired ? 0.55 : 1, position: "relative", boxShadow: "var(--sh-sm)" }}>
                     {expired && <div style={{ position: "absolute", top: 14, right: 14, padding: "3px 8px", borderRadius: 5, background: "var(--paper-2)", color: "var(--ink-400)", fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 0.4 }}>AVSLUTAD</div>}

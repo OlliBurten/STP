@@ -86,12 +86,23 @@ export function isJobApproaching60Days(job) {
  */
 export const SALARY_UNKNOWN = "Lön ej angiven";
 
-export function salaryLabel(job) {
+/**
+ * Lönen i siffror: "32 000" eller "32 000–36 000". Null om annonsen saknar belopp.
+ * Ett ensamt belopp (eller samma min och max) visas som det är — VGT angav 32 000 och
+ * sidan visade "32 000–32 000" på ett ställe och "Från 32 000" på ett annat.
+ */
+export function salaryRange(job) {
   const fmt = (n) => Number(n).toLocaleString("sv-SE");
-  const min = job?.salaryMin;
-  const max = job?.salaryMax;
-  if (min && max) return `${fmt(min)} – ${fmt(max)} kr/mån`;
-  if (min) return `Från ${fmt(min)} kr/mån`;
+  const min = Number(job?.salaryMin) || null;
+  const max = Number(job?.salaryMax) || null;
+  if (min && max && max > min) return `${fmt(min)}–${fmt(max)}`;
+  if (min || max) return fmt(min || max);
+  return null;
+}
+
+export function salaryLabel(job) {
+  const range = salaryRange(job);
+  if (range) return `${range} kr/mån`;
 
   const text = job?.salary && String(job.salary).trim();
   if (text) return text;

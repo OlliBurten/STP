@@ -8,6 +8,7 @@
  */
 
 import { prisma } from "./prisma.js";
+import { formattedTextToHtml, stripFormatting } from "../utils/formatText.js";
 import { dedupeAggregatedJobs } from "./jobDedupe.js";
 import { cityPages } from "./seoCities.js";
 import { regionPages } from "./seoRegions.js";
@@ -106,7 +107,7 @@ export async function renderJobHtml(id) {
   const description = [
     `${job.title} hos ${job.company}`,
     job.location ? `i ${job.location}` : null,
-    about ? `– ${about.replace(/\s+/g, " ")}` : null,
+    about ? `– ${stripFormatting(about)}` : null,
   ].filter(Boolean).join(" ").slice(0, 160);
 
   const validThrough = job.filledAt
@@ -132,7 +133,7 @@ export async function renderJobHtml(id) {
   // Emitteras ALDRIG om löneuppgift saknas eller ser orimlig ut — hitta aldrig på löner.
   let baseSalary = null;
   if (job.salaryMin) {
-    baseSalary = { "@type": "MonetaryAmount", currency: "SEK", value: { "@type": "QuantitativeValue", minValue: job.salaryMin, ...(job.salaryMax ? { maxValue: job.salaryMax } : {}), unitText: "MONTH" } };
+    baseSalary = { "@type": "MonetaryAmount", currency: "SEK", value: { "@type": "QuantitativeValue", ...(job.salaryMax && job.salaryMax > job.salaryMin ? { minValue: job.salaryMin, maxValue: job.salaryMax } : { value: job.salaryMin }), unitText: "MONTH" } };
   } else if (job.salary) {
     const hour = parseSalaryRange(job.salary, "tim", 50, 2000);
     const month = hour ? null : parseSalaryRange(job.salary, "m[åa]n", 10000, 500000);
@@ -157,7 +158,7 @@ export async function renderJobHtml(id) {
     "@context": "https://schema.org",
     "@type": "JobPosting",
     title: job.title,
-    description: about || job.title,
+    description: about ? formattedTextToHtml(about) : job.title,
     datePosted: new Date(job.published || job.createdAt).toISOString(),
     validThrough,
     employmentType: EMPLOYMENT_TYPE_MAP[job.employment] || "FULL_TIME",
@@ -235,7 +236,7 @@ export async function renderJobHtml(id) {
     ${deadlineFmt ? `<li>Sista ansökningsdag: ${esc(deadlineFmt)}</li>` : ""}
     ${isImported && job.applicationReference ? `<li>Ange referens: ${esc(job.applicationReference)}</li>` : ""}
   </ul>
-  ${about ? `<section><h2>Om jobbet</h2><p>${esc(about).replace(/\n+/g, "</p><p>")}</p></section>` : ""}
+  ${about ? `<section><h2>Om jobbet</h2>${formattedTextToHtml(about)}</section>` : ""}
   ${(job.tasks || []).length ? `<section><h2>Arbetsuppgifter</h2><ul>${job.tasks.map(t => `<li>${esc(t)}</li>`).join("")}</ul></section>` : ""}
   ${(job.offers || []).length ? `<section><h2>Vi erbjuder</h2><ul>${job.offers.map(o => `<li>${esc(o)}</li>`).join("")}</ul></section>` : ""}
   ${mustHave.length ? `<section><h2>Arbetsgivarens krav</h2><ul>${mustHave.map(q => `<li>${esc(q)}</li>`).join("")}</ul></section>` : ""}

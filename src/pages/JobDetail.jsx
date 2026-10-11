@@ -1,4 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from "react";
+import FormattedText from "../components/FormattedText";
+import { stripFormatting } from "../utils/formatText";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { track } from "../utils/posthog.js";
@@ -20,7 +22,7 @@ import { getCompanyReviewSummary } from "../api/reviews.js";
 import { getBranschLabel } from "../data/bransch.js";
 import { getCertificateLabel } from "../data/profileData";
 import { scheduleTypes } from "../data/mockJobs";
-import { isJobOlderThan30Days, formatJobTitle, salaryLabel, SALARY_UNKNOWN } from "../utils/jobUtils.js";
+import { isJobOlderThan30Days, formatJobTitle, salaryLabel, salaryRange, SALARY_UNKNOWN } from "../utils/jobUtils.js";
 import { HeartFilledIcon, HeartOutlineIcon, LocationIcon, CheckIcon, WarningIcon, StarFilledIcon } from "../components/Icons";
 import Breadcrumbs from "../components/Breadcrumbs";
 import LoadingBlock from "../components/LoadingBlock";
@@ -480,7 +482,7 @@ export default function JobDetail() {
   const metaDescription = [
     `${job.title} hos ${job.company}`,
     job.location ? `i ${job.location}` : null,
-    jobAbout ? `– ${jobAbout.replace(/\n+/g, " ")}` : null,
+    jobAbout ? `– ${stripFormatting(jobAbout)}` : null,
   ].filter(Boolean).join(" ").slice(0, 160);
 
   const ldDescription = (() => {
@@ -495,7 +497,7 @@ export default function JobDetail() {
 
   const ldSalary = (() => {
     if (job.salaryMin) {
-      return { "@type": "MonetaryAmount", currency: "SEK", value: { "@type": "QuantitativeValue", minValue: job.salaryMin, ...(job.salaryMax ? { maxValue: job.salaryMax } : {}), unitText: "MONTH" } };
+      return { "@type": "MonetaryAmount", currency: "SEK", value: { "@type": "QuantitativeValue", ...(job.salaryMax && job.salaryMax > job.salaryMin ? { minValue: job.salaryMin, maxValue: job.salaryMax } : { value: job.salaryMin }), unitText: "MONTH" } };
     }
     if (job.salary) {
       // Klarar svenska decimalkomman och intervall ("182,8 - 190,79 kr/timme").
@@ -594,8 +596,7 @@ export default function JobDetail() {
       return (
         <div>
           <div style={{ fontSize: sidebar ? 20 : 22, fontWeight: 900, color: "var(--ink-900)", letterSpacing: -0.6, lineHeight: 1.2, fontFamily: "var(--mono)" }}>
-            {job.salaryMin.toLocaleString("sv-SE")}
-            {job.salaryMax ? ` – ${job.salaryMax.toLocaleString("sv-SE")}` : "+"} kr/mån
+            {salaryRange(job)} kr/mån
           </div>
           {job.salary && <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", marginTop: 4 }}>{job.salary}</div>}
         </div>
@@ -799,7 +800,7 @@ export default function JobDetail() {
             {jobAbout && (
               <div style={{ marginTop: 16 }}>
                 <h2 style={mSecH}>Om jobbet</h2>
-                <p style={{ fontSize: 14.5, lineHeight: 1.65, color: "var(--ink-700)", margin: 0, whiteSpace: "pre-line" }}>{jobAbout}</p>
+                <FormattedText text={jobAbout} fontSize={14.5} style={{ lineHeight: 1.65 }} />
               </div>
             )}
             {jobTasks.length > 0 && (
@@ -871,7 +872,7 @@ export default function JobDetail() {
             {job.salaryMin ? (
               <>
                 <div style={{ fontSize: 15, fontWeight: 800, color: "var(--ink-900)", fontFamily: "var(--mono)", lineHeight: 1, whiteSpace: "nowrap" }}>
-                  {job.salaryMin.toLocaleString("sv-SE")}{job.salaryMax ? `–${job.salaryMax.toLocaleString("sv-SE")}` : "+"}
+                  {salaryRange(job)}
                 </div>
                 <div style={{ fontSize: 11.5, color: "var(--ink-500)", marginTop: 2 }}>kr/mån</div>
               </>
@@ -1036,7 +1037,7 @@ export default function JobDetail() {
           {/* ── Content sections ── */}
           <SectionHeading>Om jobbet</SectionHeading>
           {jobAbout && jobAbout.trim().length >= 10
-            ? <p style={{ fontSize: "var(--text-md)", color: "var(--ink-700)", lineHeight: 1.75, whiteSpace: "pre-line", overflowWrap: "break-word", margin: 0 }}>{jobAbout}</p>
+            ? <FormattedText text={jobAbout} />
             : <p style={{ fontSize: "var(--text-md)", color: "var(--ink-400)", lineHeight: 1.8, fontStyle: "italic", margin: 0 }}>Mer information om tjänsten ges vid kontakt med företaget.</p>
           }
 
@@ -1272,7 +1273,7 @@ export default function JobDetail() {
               {job.salaryMin ? (
                 <>
                   <div style={{ fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--ink-900)", letterSpacing: -0.5, fontFamily: "var(--mono)", lineHeight: 1.1 }}>
-                    {job.salaryMin.toLocaleString("sv-SE")}–{(job.salaryMax || job.salaryMin).toLocaleString("sv-SE")} kr
+                    {salaryRange(job)} kr
                   </div>
                   {job.salaryNote && <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", marginTop: 4 }}>{job.salaryNote}</div>}
                 </>
@@ -1340,7 +1341,8 @@ export default function JobDetail() {
             {job.salaryNote && <FactRow label="Lönenotering" value={job.salaryNote} />}
             <FactRow label="Tillträde"    value={job.start || "Ej angiven"} missing={!job.start} />
             <FactRow label="Ort"          value={job.location || "—"} />
-            <FactRow label="Körkort"      value={[...(job.license || []), ...(job.certificates || []).map(getCertificateLabel)].join(", ") || "—"} />
+            <FactRow label="Körkort"      value={(job.license || []).join(", ") || "—"} />
+            {(job.certificates || []).length > 0 && <FactRow label="Intyg" value={(job.certificates || []).map(getCertificateLabel).join(", ")} />}
             {job.salaryType && <FactRow label="Lönetyp" value={job.salaryType} />}
             {job.workplaceAddress && <FactRow label="Arbetsplats" value={job.workplaceAddress} />}
             {job.applicationReference && <FactRow label="Referens" value={job.applicationReference} highlight />}

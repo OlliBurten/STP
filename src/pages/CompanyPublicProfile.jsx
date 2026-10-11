@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { salaryRange } from "../utils/jobUtils.js";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import PageMeta from "../components/PageMeta";
 import { fetchCompanyPublicProfile } from "../api/companies.js";
@@ -401,7 +402,7 @@ export default function CompanyPublicProfile({ companyId: idProp }) {
                           </span>
                         )}
                         {job.salaryMin && (
-                          <><span style={{ color: "var(--ink-300)" }}>·</span><span style={{ fontWeight: 700, color: "var(--ink-900)" }}>{job.salaryMin}–{job.salaryMax} kr/mån</span></>
+                          <><span style={{ color: "var(--ink-300)" }}>·</span><span style={{ fontWeight: 700, color: "var(--ink-900)" }}>{salaryRange(job)} kr/mån</span></>
                         )}
                       </div>
                     </Link>
@@ -648,7 +649,7 @@ export default function CompanyPublicProfile({ companyId: idProp }) {
                       <div style={{ textAlign: "right", flexShrink: 0 }}>
                         {job.salaryMin && (
                           <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-900)", fontFamily: "var(--mono)" }}>
-                            {job.salaryMin}–{job.salaryMax} kr/mån
+                            {salaryRange(job)} kr/mån
                           </div>
                         )}
                         {pct !== null && (

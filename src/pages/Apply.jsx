@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { salaryRange } from "../utils/jobUtils.js";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useProfile } from "../context/ProfileContext";
@@ -82,10 +83,7 @@ function Toggle({ on, setOn, label, sub }) {
 function JobContextSidebar({ job }) {
   if (!job) return null;
   const initials = (job.company || "?").split(" ").map((w) => w[0]).filter(Boolean).join("").slice(0, 2).toUpperCase();
-  const salaryDisplay = job.salaryMin
-    ? job.salaryMax
-      ? `${job.salaryMin.toLocaleString("sv-SE")} – ${job.salaryMax.toLocaleString("sv-SE")} kr/mån`
-      : `Från ${job.salaryMin.toLocaleString("sv-SE")} kr/mån`
+  const salaryDisplay = salaryRange(job) ? `${salaryRange(job)} kr/mån`
     : job.salary || null;
 
   return (
@@ -383,11 +381,7 @@ export default function Apply() {
   // ── Mobile layout ──────────────────────────────────────────────────────────
   if (isMobile) {
     const initials = (job?.company || "?").split(" ").map((w) => w[0]).filter(Boolean).join("").slice(0, 2).toUpperCase();
-    const salaryDisplay = job?.salaryMin
-      ? job?.salaryMax
-        ? `${job.salaryMin.toLocaleString("sv-SE")} – ${job.salaryMax.toLocaleString("sv-SE")} kr/mån`
-        : `Från ${job.salaryMin.toLocaleString("sv-SE")} kr/mån`
-      : job?.salary || null;
+    const salaryDisplay = salaryRange(job) ? `${salaryRange(job)} kr/mån` : job?.salary || null;
     const driverInitials = (profile?.name || user?.name || "?").split(" ").map((w) => w[0]).filter(Boolean).join("").slice(0, 2).toUpperCase();
     const licenses = profile?.licenses || [];
     const certsLabels = (profile?.certificates || []).map(getCertificateLabel).filter(Boolean);
