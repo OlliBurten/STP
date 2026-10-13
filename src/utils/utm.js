@@ -29,13 +29,36 @@ export function withUtm(url, medium = "jobb") {
 
 const UTM_STORAGE_KEY = "stp_signup_utm";
 
-/** Läs utm_*-parametrar ur URL:en och spara första besöket. Anropas vid appstart. */
+/**
+ * Källa utan UTM: länkar som delas i Facebook-grupper saknar oftast utm_*, så 13/10
+ * blev alla 7 nya förare "okänd" trots att trafiken kom från Facebook. Facebook lägger
+ * på fbclid; annars används hänvisande domän (referrer).
+ */
+function sourceWithoutUtm(p) {
+  if (p.get("fbclid")) return { signupSource: "facebook", signupMedium: "social" };
+  if (p.get("gclid")) return { signupSource: "google", signupMedium: "cpc" };
+  let host = "";
+  try { host = document.referrer ? new URL(document.referrer).hostname.replace(/^www\./, "") : ""; } catch { host = ""; }
+  if (!host || host.endsWith("transportplattformen.se")) return null;
+  if (/(^|\.)facebook\.com$|(^|\.)fb\.com$/.test(host)) return { signupSource: "facebook", signupMedium: "social" };
+  if (/(^|\.)instagram\.com$/.test(host)) return { signupSource: "instagram", signupMedium: "social" };
+  if (/(^|\.)google\./.test(host)) return { signupSource: "google", signupMedium: "organic" };
+  if (/(^|\.)bing\.com$/.test(host)) return { signupSource: "bing", signupMedium: "organic" };
+  if (/chatgpt\.com$|openai\.com$/.test(host)) return { signupSource: "chatgpt", signupMedium: "referral" };
+  return { signupSource: host.slice(0, 100), signupMedium: "referral" };
+}
+
+/** Läs utm_*-parametrar (eller hänvisande källa) och spara första besöket. Anropas vid appstart. */
 export function captureUtm() {
   try {
     const p = new URLSearchParams(window.location.search);
-    const source = p.get("utm_source");
-    if (!source) return;
     if (localStorage.getItem(UTM_STORAGE_KEY)) return; // first touch vinner
+    const source = p.get("utm_source");
+    if (!source) {
+      const fallback = sourceWithoutUtm(p);
+      if (fallback) localStorage.setItem(UTM_STORAGE_KEY, JSON.stringify(fallback));
+      return;
+    }
     localStorage.setItem(
       UTM_STORAGE_KEY,
       JSON.stringify({
