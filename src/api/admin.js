@@ -29,7 +29,7 @@ export function getApplicationStats() {
   return apiGet("/api/admin/application-stats");
 }
 
-/** Nyckeltal från externa tjänster (Sentry/Plausible/PostHog/Resend) — 5 min cache på servern. */
+/** Nyckeltal från externa tjänster (Sentry/PostHog/Resend) — 5 min cache på servern. */
 export function getPosthogActivity() {
   return apiGet("/api/admin/posthog-activity");
 }

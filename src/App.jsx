@@ -140,16 +140,6 @@ const LastbilschaufforUtbildning = lazy(() => import("./pages/blogg/Lastbilschau
 const ArbetstidChauffor     = lazy(() => import("./pages/blogg/ArbetstidChauffor"));
 const Fjarrkörning          = lazy(() => import("./pages/blogg/Fjarrkörning"));
 
-function PlausibleAnalytics() {
-  const location = useLocation();
-  useEffect(() => {
-    if (typeof window.plausible === "function") {
-      window.plausible("pageview");
-    }
-  }, [location.pathname]);
-  return null;
-}
-
 /** Fångar ?skola= på vilken sida som helst och sparar i sessionStorage. */
 function SchoolParamCapture() {
   const location = useLocation();
@@ -614,7 +604,6 @@ function App() {
   return (
     <BrowserRouter>
       <ScrollManager />
-      <PlausibleAnalytics />
       <SchoolParamCapture />
       <VercelAnalytics />
       <ThemeProvider>

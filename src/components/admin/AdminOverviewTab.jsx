@@ -686,7 +686,6 @@ function IntegrationsCard({ health }) {
   const integrations = [
     { l: "Resend",       ...integrationStatus(emailOk) },
     { l: "Bolagsverket", s: "available", c: "var(--ink-300)" },
-    { l: "Plausible",    s: "available", c: "var(--ink-300)" },
     { l: "Claude MCP",   s: "setup",     c: "var(--amber)" },
     { l: "Slack",        s: "available", c: "var(--ink-300)" },
     { l: "Zapier",       s: "available", c: "var(--ink-300)" },
