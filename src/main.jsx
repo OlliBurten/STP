@@ -72,7 +72,10 @@ setTimeout(() => {
         // Chunk-laddningsfel uppstår när en användare har en gammal flik öppen
         // vid en ny deploy. Appen hanterar detta automatiskt med page reload —
         // rapportera dem inte till Sentry eftersom de inte kräver åtgärd.
-        const msg = hint?.originalException?.message || "";
+        // Meddelandet kan saknas på hint (t.ex. när in-app-webbläsaren kastar en sträng) —
+        // läs även eventets egen text. 13/10 slank "Java object is gone" från Facebooks
+        // Android-webbläsare igenom filtret nedan av just det skälet.
+        const msg = hint?.originalException?.message || event?.exception?.values?.[0]?.value || event?.message || "";
         if (
           msg.includes("Failed to fetch dynamically imported module") ||
           msg.includes("Load failed") ||
@@ -94,7 +97,9 @@ setTimeout(() => {
         // kod och rekommenderade att granska "Java-objektreferenser". Fel spår.)
         const frames = event?.exception?.values?.[0]?.stacktrace?.frames || [];
         const lastFn = frames[frames.length - 1]?.function || "";
+        const fromInAppBridge = frames.some((f) => (f.filename || "").startsWith("iabjs://"));
         if (
+          fromInAppBridge ||
           msg.includes("webkit.messageHandlers") ||
           lastFn === "sendDataToNative" ||
           msg.includes("@webkit-masked-url") ||
