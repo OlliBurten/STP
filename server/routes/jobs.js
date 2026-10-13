@@ -171,7 +171,7 @@ export async function sendDriverMatchAlertsForJob(job) {
         notifyRecommendedJobMatch({
           driverEmail: r.email,
           driverName: r.name,
-          jobs: [{ title: job.title, company: job.company, region: job.region }],
+          jobs: [{ id: job.id, title: job.title, company: job.company, region: job.region }],
         })
       )
     );
@@ -779,17 +779,31 @@ jobsRouter.get("/:id", optionalAuthMiddleware, attachCompanyContext, async (req,
   }
 });
 
+// Källa och ort skickas av klienten (källa från sessionens ingång, ort från Vercels geo).
+// Allt är fritt att manipulera — det är statistik, inte säkerhet — men längderna begränsas.
+const clean = (v, max = 60) => (typeof v === "string" && v.trim() ? v.trim().slice(0, max) : null);
+
 jobsRouter.post("/:id/view", optionalAuthMiddleware, async (req, res, next) => {
   try {
     const jobId = req.params.id;
     const userId = req.userId ?? null;
     const ip = (req.headers["x-forwarded-for"]?.split(",")[0] ?? req.socket?.remoteAddress ?? "").trim() || null;
+    const ua = String(req.headers["user-agent"] || "");
+    const meta = {
+      source: clean(req.body?.source, 40),
+      city: clean(req.body?.city),
+      region: clean(req.body?.region),
+      device: /Mobi|Android|iPhone|iPad/i.test(ua) ? "mobil" : "dator",
+    };
     if (userId) {
+      // Inloggad förare: profilens ort/län är säkrare än IP-geo.
+      const profile = await prisma.driverProfile.findUnique({ where: { userId }, select: { location: true, region: true } });
+      if (profile?.region) { meta.region = profile.region; meta.city = profile.location || null; }
       // Authenticated: upsert so they count once per job
       await prisma.jobView.upsert({
         where: { userId_jobId: { userId, jobId } },
         update: {},
-        create: { jobId, userId, ipAddress: ip },
+        create: { jobId, userId, ipAddress: ip, ...meta },
       });
     } else {
       // Anonymous: check if same IP viewed today to avoid basic inflation
@@ -801,7 +815,7 @@ jobsRouter.post("/:id/view", optionalAuthMiddleware, async (req, res, next) => {
           select: { id: true },
         });
         if (!existing) {
-          await prisma.jobView.create({ data: { jobId, userId: null, ipAddress: ip } });
+          await prisma.jobView.create({ data: { jobId, userId: null, ipAddress: ip, ...meta } });
         }
       }
     }
@@ -820,17 +834,51 @@ jobsRouter.get("/:id/stats", authMiddleware, requireCompany, attachCompanyContex
       job.userId === effectiveCompanyId(req);
     if (!hasAccess) return res.status(403).json({ error: "Ingen åtkomst" });
 
-    const [viewCount, savedCount, convs] = await Promise.all([
-      prisma.jobView.count({ where: { jobId: job.id } }),
+    const [views, savedCount, convs] = await Promise.all([
+      prisma.jobView.findMany({ where: { jobId: job.id }, select: { createdAt: true, source: true, city: true, region: true, device: true } }),
       prisma.savedJob.count({ where: { jobId: job.id } }),
       prisma.conversation.findMany({
         where: { jobId: job.id },
-        select: { messages: { orderBy: { createdAt: "asc" }, take: 1, select: { senderRole: true } } },
+        select: {
+          createdAt: true,
+          messages: { orderBy: { createdAt: "asc" }, take: 1, select: { senderRole: true } },
+          driver: { select: { driverProfile: { select: { region: true, location: true } } } },
+        },
       }),
     ]);
+    const viewCount = views.length;
     // Ansökningar = förare som sökt. Konversationer som åkeriet själv startat är kontakter.
-    const conversationCount = convs.filter((c) => c.messages[0]?.senderRole !== "company").length;
+    const applications = convs.filter((c) => c.messages[0]?.senderRole !== "company");
+    const conversationCount = applications.length;
     const contactedCount = convs.length - conversationCount;
+
+    // ── Detaljerad statistik för åkeriet ──
+    const SOURCE_LABEL = { facebook: "Facebook", instagram: "Instagram", google: "Google", bing: "Bing", chatgpt: "ChatGPT", email: "Mejl från STP", stp: "STP (jobblistan, startsidan)", direkt: "Direkt / okänd" };
+    const tally = (items, keyFn, top = 8) => {
+      const m = new Map();
+      for (const it of items) { const k = keyFn(it); if (!k) continue; m.set(k, (m.get(k) || 0) + 1); }
+      return [...m.entries()].map(([label, count]) => ({ label, count })).sort((a, b) => b.count - a.count).slice(0, top);
+    };
+    const dayKey = (d) => new Date(d).toISOString().slice(0, 10);
+    const start = new Date(Math.max(new Date(job.published).getTime(), Date.now() - 29 * 864e5));
+    start.setUTCHours(0, 0, 0, 0);
+    const byDay = [];
+    for (let d = new Date(start); d <= new Date(); d = new Date(d.getTime() + 864e5)) byDay.push({ date: dayKey(d), views: 0, applications: 0 });
+    const dayIndex = new Map(byDay.map((d, i) => [d.date, i]));
+    for (const v of views) { const i = dayIndex.get(dayKey(v.createdAt)); if (i !== undefined) byDay[i].views++; }
+    for (const a of applications) { const i = dayIndex.get(dayKey(a.createdAt)); if (i !== undefined) byDay[i].applications++; }
+    const tracked = views.filter((v) => v.source || v.region || v.device);
+    const details = {
+      byDay,
+      // Källa/ort/enhet registreras från 2026-10-13 — äldre visningar saknar det.
+      trackedViews: tracked.length,
+      sources: tally(tracked, (v) => SOURCE_LABEL[v.source] || (v.source ? v.source : "Direkt / okänd")),
+      regions: tally(views, (v) => v.region),
+      cities: tally(views, (v) => v.city),
+      devices: tally(tracked, (v) => v.device),
+      applicantRegions: tally(applications, (a) => a.driver?.driverProfile?.region || a.driver?.driverProfile?.location),
+      conversion: viewCount ? Math.round((conversationCount / viewCount) * 1000) / 10 : null,
+    };
 
     // Rule-based recommendations
     const recommendations = [];
@@ -863,7 +911,7 @@ jobsRouter.get("/:id/stats", authMiddleware, requireCompany, attachCompanyContex
       recommendations.push({ type: "warning", text: "Annonsen har varit öppen över 30 dagar. Stäng den om tjänsten är tillsatt." });
     }
 
-    res.json({ viewCount, savedCount, conversationCount, contactedCount, recommendations });
+    res.json({ viewCount, savedCount, conversationCount, contactedCount, details, recommendations });
   } catch (e) {
     next(e);
   }
@@ -941,6 +989,7 @@ jobsRouter.post("/", authMiddleware, requireVerifiedEmail, requireCompany, attac
         externalApplyUrl: body.externalApplyUrl ?? null,
         start: body.start || null,
         rolling: body.rolling === true,
+        createdById: req.userId,
         requirements,
         extraRequirements: body.extraRequirements || null,
         contact: body.contact,

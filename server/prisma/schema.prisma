@@ -312,6 +312,7 @@ model Job {
   id                   String        @id @default(cuid())
   userId               String
   user                 User          @relation("JobOwner", fields: [userId], references: [id], onDelete: Cascade)
+  createdById          String? // den som faktiskt lade upp annonsen (ägare eller kollega) — får mejl vid ansökan
   organizationId       String?
   organization         Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
   title                String
@@ -450,6 +451,11 @@ model JobView {
   job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
   userId    String? // null for anonymous viewers
   ipAddress String?
+  // Statistik för åkeriet: varifrån besökaren kom och ungefär var hen finns.
+  source    String? // facebook | google | email | stp | direkt | instagram | chatgpt | annan domän
+  city      String? // ungefärlig ort (Vercel-geo) — för inloggade förare deras profilort
+  region    String? // län
+  device    String? // mobil | dator
   createdAt DateTime @default(now())
 
   @@unique([userId, jobId]) // logged-in users count once

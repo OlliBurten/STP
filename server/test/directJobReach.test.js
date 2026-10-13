@@ -54,6 +54,7 @@ after(async () => {
   await prisma.notification.deleteMany({ where: { userId: { in: ids.users } } });
   await prisma.message.deleteMany({ where: { conversation: { organizationId: ids.org } } });
   await prisma.conversation.deleteMany({ where: { organizationId: ids.org } });
+  await prisma.jobView.deleteMany({ where: { job: { organizationId: ids.org } } });
   await prisma.job.deleteMany({ where: { organizationId: ids.org } });
   await prisma.userOrganization.deleteMany({ where: { organizationId: ids.org } });
   await prisma.organization.deleteMany({ where: { id: ids.org } });
@@ -136,5 +137,21 @@ describe("räckvidd för direktannonser", () => {
     assert.strictEqual(stats.status, 200, JSON.stringify(stats.body));
     assert.strictEqual(stats.body.conversationCount, 0);
     assert.strictEqual(stats.body.contactedCount, 1);
+  });
+
+  it("visningar sparar källa, ort och enhet — och statistiken visar dem", async () => {
+    await request(app).post(`/api/jobs/${ids.job}/view`).set("User-Agent", "Mozilla/5.0 (iPhone)").set("X-Forwarded-For", "10.9.8.7")
+      .send({ source: "facebook", city: "Värnamo", region: "Jönköping" });
+    // Inloggad förare: profilens län går före det klienten skickar.
+    await request(app).post(`/api/jobs/${ids.job}/view`).set("Authorization", tok(ids.near)).send({ source: "google", region: "Stockholm" });
+    const stats = await request(app).get(`/api/jobs/${ids.job}/stats`).set("Authorization", tok(ids.owner));
+    assert.strictEqual(stats.status, 200);
+    const d = stats.body.details;
+    assert.ok(d.byDay.length >= 1 && d.byDay.at(-1).views >= 2, JSON.stringify(d.byDay.at(-1)));
+    assert.ok(d.sources.some((x) => x.label === "Facebook"));
+    assert.ok(d.regions.some((x) => x.label === "Jönköping"));
+    assert.ok(d.regions.some((x) => x.label === "Växjö"), "inloggad förares profilort ska användas: " + JSON.stringify(d.regions));
+    assert.ok(!d.regions.some((x) => x.label === "Stockholm"));
+    assert.ok(d.devices.some((x) => x.label === "mobil"));
   });
 });

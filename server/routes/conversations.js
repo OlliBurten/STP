@@ -230,8 +230,11 @@ conversationsRouter.post("/", requireVerifiedEmail, requireVerifiedIfCompany, va
       try {
         const job = await prisma.job.findUnique({
           where: { id: jobId },
-          select: { contact: true, userId: true, organizationId: true },
+          select: { contact: true, userId: true, organizationId: true, createdById: true },
         });
+        // Den som lade upp annonsen får alltid mejlet — inte bara annonsens kontaktadress,
+        // som ofta är en gemensam info@-låda. Äldre annonser saknar skapare → ägaren.
+        const creator = job ? await prisma.user.findUnique({ where: { id: job.createdById || job.userId }, select: { email: true } }) : null;
         const driver = await prisma.user.findUnique({
           where: { id: req.userId },
           select: { name: true, email: true },
@@ -239,7 +242,7 @@ conversationsRouter.post("/", requireVerifiedEmail, requireVerifiedIfCompany, va
         const fb = (process.env.FRONTEND_URL || "").split(",")[0]?.trim().replace(/\/$/, "");
         if (driver?.name) {
           const teamEmails = await teamEmailsIfEnabled(job?.organizationId || actualOrganizationId);
-          const toEmails = [...new Set([job?.contact, ...teamEmails].filter(Boolean).map((e) => e.toLowerCase()))];
+          const toEmails = [...new Set([job?.contact, creator?.email, ...teamEmails].filter(Boolean).map((e) => e.toLowerCase()))];
           await Promise.all(
             toEmails.map((companyEmail) =>
               notifyNewApplication({

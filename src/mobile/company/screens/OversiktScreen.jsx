@@ -1,6 +1,7 @@
 // Company — Översikt (dashboard). Ported from STP Mobil Åkeri OversiktScreen,
 // wired to ctx. Activity is derived from new candidates + unread threads.
 import React, { useState } from "react";
+import { PushBanner } from "../../../components/PushNotifications";
 import { Header, ScrollArea, Card, Label, Avatar, Button, Icon } from "../../ui";
 import { SegPill, MatchChip, LicRow, CompanyLoading, CompanyError } from "../ui";
 
@@ -51,6 +52,7 @@ export default function OversiktScreen({ ctx, go }) {
         </>} />
       <ScrollArea onScroll={(e) => setSy(e.target.scrollTop)} onRefresh={(done) => { ctx.refresh(); setTimeout(done, 700); }}>
         <div style={{ padding: "4px 20px 26px" }}>
+          <PushBanner />
           {!ctx.verified && (
             <Card style={{ padding: "16px", marginBottom: 16, border: "1px solid var(--amber-tint-2)", background: "var(--amber-tint)" }}>
               <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>

@@ -9,11 +9,13 @@ import { registerServiceWorker } from './utils/pushNotifications.js'
 import { hasCookieConsent } from './components/CookieBanner.jsx'
 import { initPostHog } from './utils/posthog.js'
 import { captureUtm } from './utils/utm.js'
+import { captureSessionSource } from './utils/visitContext.js'
 
 // Fånga utm_* redan vid första sidvisningen — innan någon router hinner städa
 // bort query-strängen. First touch, så länken som förde hit personen får äran
 // även om de registrerar sig först vid ett senare besök.
 captureUtm()
+captureSessionSource()
 
 // Always dark theme — light theme not optimized yet
 document.documentElement.setAttribute("data-theme", "dark");
