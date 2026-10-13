@@ -1,5 +1,6 @@
 import { apiDelete, apiGet, apiPatch, apiPost, apiPut } from "./client.js";
 import { track } from "../utils/posthog.js";
+import { getVisitContext } from "../utils/visitContext.js";
 
 export function fetchJobs(params = {}) {
   const q = new URLSearchParams();
@@ -52,9 +53,10 @@ export async function renewJob(jobId) {
   return apiPost(`/api/jobs/${jobId}/renew`, {});
 }
 
-/** Registrera en visning av ett jobb (fire-and-forget) */
-export function trackJobView(jobId) {
-  return apiPost(`/api/jobs/${jobId}/view`, {});
+/** Registrera en visning av ett jobb (fire-and-forget) — med källa och ungefärlig ort. */
+export async function trackJobView(jobId) {
+  const ctx = await getVisitContext().catch(() => ({}));
+  return apiPost(`/api/jobs/${jobId}/view`, ctx);
 }
 
 /**

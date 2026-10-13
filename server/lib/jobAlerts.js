@@ -124,7 +124,7 @@ export async function runJobAlertDispatch() {
     try {
       const jobs = await newJobsForAlert(alert, now);
       if (!jobs.length) continue;
-      const lines = jobs.map((j) => `• ${j.title} — ${j.company}${j.location ? `, ${j.location}` : ""}\n  ${SITE}/jobb/${j.id}`);
+      const lines = jobs.map((j) => `• ${j.title} — ${j.company}${j.location ? `, ${j.location}` : ""}\n  ${SITE}/jobb/${j.id}?utm_source=stp&utm_medium=email`);
       await sendEmail({
         to: alert.email,
         subject: `${jobs.length} nya ${describeAlert(alert)}`,

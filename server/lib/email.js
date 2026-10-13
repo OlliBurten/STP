@@ -114,8 +114,9 @@ export async function notifyRecommendedJobMatch({ driverEmail, driverName, jobs 
     subject: `Nya jobb som matchar din profil`,
     heading: "Nya jobb för dig",
     text: `Hej ${driverName || ""},\n\nVi hittade ${jobs.length} jobb som matchar din profil:\n\n${lines}\n\nLogga in för att se detaljer och ansöka.`,
-    ctaUrl: base ? `${base}/jobb` : undefined,
-    ctaText: base ? "Se jobben" : undefined,
+    // Ett enda jobb → rakt till annonsen. Märkt så att åkeriets statistik ser källan "Mejl från STP".
+    ctaUrl: base ? (jobs.length === 1 && jobs[0].id ? `${base}/jobb/${jobs[0].id}?utm_source=stp&utm_medium=email` : `${base}/jobb?utm_source=stp&utm_medium=email`) : undefined,
+    ctaText: base ? (jobs.length === 1 ? "Se jobbet" : "Se jobben") : undefined,
   });
 }
 

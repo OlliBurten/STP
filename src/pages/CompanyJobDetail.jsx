@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import AdStats from "../components/company/AdStats";
 import { companyCan } from "../utils/companyPermissions";
 import { Link, useParams } from "react-router-dom";
 import { usePageTitle } from "../hooks/usePageTitle";
@@ -161,6 +162,7 @@ export default function CompanyJobDetail() {
   const [loading, setLoading]       = useState(true);
   const [overrides] = useState({});
   const [showRejected, setShowRejected] = useState(false);
+  const [view, setView] = useState(() => (new URLSearchParams(window.location.search).get("vy") === "statistik" ? "stats" : "candidates"));
 
   usePageTitle(job?.title ? `Kandidater – ${job.title}` : "Kandidater");
 
@@ -289,7 +291,7 @@ export default function CompanyJobDetail() {
               {/* Stat strip */}
               <div style={{ display: "flex", gap: 28, marginTop: 20, paddingTop: 18, borderTop: "1px solid var(--line)" }}>
                 {[
-                  { v: counts.all,       l: "Sökande",        accent: false },
+                  { v: counts.all,       l: "Kandidater",     accent: false },
                   { v: counts.new,       l: "Nya att granska", accent: counts.new > 0 },
                   { v: counts.interview, l: "På intervju",     accent: false },
                   { v: counts.hired,     l: "Anställda",       accent: false },
@@ -307,7 +309,16 @@ export default function CompanyJobDetail() {
 
       {/* Kanban body */}
       <div style={{ maxWidth: "var(--w-app)", margin: "0 auto", padding: "24px 32px 80px" }}>
-        {applicants.length === 0 && !loading ? (
+        <div role="tablist" style={{ display: "flex", gap: 6, marginBottom: 20 }}>
+          {[["candidates", "Kandidater"], ["stats", "Statistik"]].map(([k, l]) => (
+            <button key={k} role="tab" aria-selected={view === k} onClick={() => setView(k)} style={{ padding: "8px 16px", borderRadius: 999, fontSize: "var(--text-sm)", fontWeight: 700, cursor: "pointer", fontFamily: "inherit", border: view === k ? "1px solid var(--ink-900)" : "1px solid var(--line-2)", background: view === k ? "var(--ink-900)" : "var(--card)", color: view === k ? "#fff" : "var(--ink-700)" }}>
+              {l}
+            </button>
+          ))}
+        </div>
+        {view === "stats" ? (
+          <AdStats stats={stats} />
+        ) : applicants.length === 0 && !loading ? (
           <div style={{ padding: "48px 32px", borderRadius: 14, background: "var(--card)", border: "1px solid var(--line)", textAlign: "center", boxShadow: "var(--sh-sm)" }}>
             <div style={{ fontSize: "var(--text-xl)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 8 }}>Inga ansökningar ännu</div>
             <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", marginBottom: 20 }}>Förare som söker det här jobbet dyker upp här. Du kan också kontakta förare aktivt via förarregistret.</p>

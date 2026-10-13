@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { PushBanner } from "../components/PushNotifications";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -608,6 +609,9 @@ export default function ForCompanies() {
             </div>
           )}
         </div>
+
+        {/* Direkta notiser vid ansökan — tills de är påslagna */}
+        <PushBanner />
 
         {/* Verifieringsgate */}
         {!loading && !isVerified && <VerificationGate isMobile={isMobile} />}

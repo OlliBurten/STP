@@ -190,6 +190,7 @@ function AdCard({ job, pipeline, onPause, onClose, canManage = true }) {
         <div style={{ display: "flex", gap: 18, fontSize: "var(--text-xs)", color: "var(--ink-500)" }}>
           <span><strong style={{ color: "var(--ink-900)", fontFamily: "var(--mono)" }}>{job.viewCount ?? 0}</strong> visningar</span>
           <span><strong style={{ color: "var(--ink-900)", fontFamily: "var(--mono)" }}>{days}</strong> dgr aktiv</span>
+          <Link to={`/foretag/annonser/${job.id}?vy=statistik`} style={{ color: "var(--green-text)", fontWeight: 700, textDecoration: "none" }}>Statistik</Link>
         </div>
         <Link
           to={`/foretag/annonser/${job.id}`}

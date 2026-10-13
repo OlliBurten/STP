@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { PushSetting } from "../components/PushNotifications";
 import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { useAuth } from "../context/AuthContext";
@@ -334,9 +335,10 @@ function NotifSection({ isDriver, initialSettings, onToggle }) {
   const keys = isDriver ? DRIVER_NOTIF : COMPANY_NOTIF;
   return (
     <Card title="Vad vill du få notiser om?" sub="Du har full kontroll. Stäng av allt om du vill — vi spammar aldrig.">
-      {keys.map(({ key, label, sub }, i) => {
+      <PushSetting />
+      {keys.map(({ key, label, sub }) => {
         const enabled = initialSettings?.[key] !== false;
-        return <ToggleRow key={key} label={label} sub={sub} on={enabled} onChange={() => onToggle(key, !enabled)} first={i === 0} />;
+        return <ToggleRow key={key} label={label} sub={sub} on={enabled} onChange={() => onToggle(key, !enabled)} first={false} />;
       })}
     </Card>
   );

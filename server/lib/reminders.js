@@ -300,7 +300,7 @@ function buildJobDigestHtml({ name, jobs, totalCount, unsubscribeUrl }) {
               ${salaryLine ? `<td>${salaryLine}</td>` : ""}
             </tr>
           </table>
-          <a href="${FRONTEND_URL}/jobb/${j.id}" style="display:inline-block;background:#0f766e;color:#ffffff;font-size:13px;font-weight:600;text-decoration:none;padding:8px 16px;border-radius:6px">Se jobbet &rarr;</a>
+          <a href="${FRONTEND_URL}/jobb/${j.id}?utm_source=stp&amp;utm_medium=email" style="display:inline-block;background:#0f766e;color:#ffffff;font-size:13px;font-weight:600;text-decoration:none;padding:8px 16px;border-radius:6px">Se jobbet &rarr;</a>
         </td>
       </tr>
     </table>`;
@@ -430,7 +430,7 @@ export async function runJobMatchReminders() {
       "",
       `${matched.length === 1 ? "Ett nytt jobb matchar" : `${matched.length} nya jobb matchar`} din profil den här veckan:`,
       "",
-      ...top5.map((j) => `• ${j.title} — ${j.company}${isDirect(j) ? " (direkt från åkeriet)" : ""} (${j.location || j.region})\n  ${FRONTEND_URL}/jobb/${j.id}`),
+      ...top5.map((j) => `• ${j.title} — ${j.company}${isDirect(j) ? " (direkt från åkeriet)" : ""} (${j.location || j.region})\n  ${FRONTEND_URL}/jobb/${j.id}?utm_source=stp&utm_medium=email`),
       matched.length > 5 ? `\n…och ${matched.length - 5} till: ${FRONTEND_URL}/jobb` : "",
       "",
       `Avprenumerera: ${unsubscribeUrl}`,
