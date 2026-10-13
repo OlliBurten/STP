@@ -1,5 +1,6 @@
 // STP Mobile — company (Åkeri) logged-in app shell. 5 URL-backed tabs + sheets.
 import React, { useState, useEffect } from "react";
+import { PushPrompt } from "../../components/PushNotifications";
 import { useLocation, useNavigate } from "react-router-dom";
 import MobileShell from "../MobileShell";
 import { TabBar, Icon, Button } from "../ui";
@@ -79,6 +80,7 @@ export default function CompanyMobileApp() {
   return (
     <CompanyDataProvider>
       <CompanyShell />
+      <PushPrompt />
     </CompanyDataProvider>
   );
 }

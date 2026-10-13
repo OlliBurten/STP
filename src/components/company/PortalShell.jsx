@@ -10,6 +10,7 @@ import { useChat } from "../../context/ChatContext";
 import Logo from "../Logo";
 import { PortalContext } from "./portal";
 import { NotifPanel } from "../AppTopNav";
+import { PushPrompt } from "../PushNotifications";
 import { useNotifications } from "../../hooks/useNotifications";
 
 const NAV = [
@@ -172,6 +173,7 @@ export default function PortalShell({ children }) {
           <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
         </div>
       </div>
+      <PushPrompt />
       {notifOpen && (
         <NotifPanel
           notifs={notifs.list}
