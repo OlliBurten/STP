@@ -1,5 +1,6 @@
 // Company — chat (full-screen pushed overlay). Sends as the company side.
 import React, { useState, useEffect, useRef } from "react";
+import { fetchConversation } from "../../../api/conversations";
 import { Icon } from "../../ui";
 import { initialsFor, timeAgo } from "../../driver/jobAdapter";
 
@@ -12,8 +13,14 @@ export default function CompanyChatScreen({ ctx }) {
   const endRef = useRef(null);
   const id = conv?.id;
 
-  useEffect(() => { if (id) ctx.chat?.markConversationSeen?.(id); }, [id]);
-  const messages = (conv?.messages || []).map((m) => ({ me: m.sender === "company", text: m.content, t: timeAgo(m.timestamp), ts: m.timestamp }));
+  // Läst för hela teamet (servern) och direkt lokalt.
+  useEffect(() => {
+    if (!id) return;
+    ctx.chat?.markConversationSeen?.(id);
+    fetchConversation(id).then(() => ctx.chat?.refreshConversations?.()).catch(() => {});
+  }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Vem i teamet som skrev visas internt (föraren ser bara åkeriets namn).
+  const messages = (conv?.messages || []).map((m) => ({ me: m.sender === "company", who: m.sender === "company" && m.senderName ? (m.isMine ? "Du" : m.senderName) : null, text: m.content, t: timeAgo(m.timestamp), ts: m.timestamp }));
   useEffect(() => { if (endRef.current) endRef.current.scrollTo(0, 99999); }, [messages.length]);
 
   if (!conv) return null;
@@ -70,7 +77,7 @@ export default function CompanyChatScreen({ ctx }) {
               <div style={{ display: "flex", justifyContent: m.me ? "flex-end" : "flex-start" }}>
                 <div style={{ maxWidth: "78%" }}>
                   <div title={m.ts ? absTimeFor(m.ts) : undefined} style={{ padding: "10px 14px", borderRadius: m.me ? "16px 16px 4px 16px" : "16px 16px 16px 4px", background: m.me ? "var(--green)" : "var(--card)", color: m.me ? "#fff" : "var(--ink-900)", fontSize: 14, lineHeight: 1.45, border: m.me ? "none" : "1px solid var(--line)", boxShadow: "var(--sh-sm)" }}>{m.text}</div>
-                  <div style={{ fontSize: 10.5, color: "var(--ink-400)", marginTop: 3, textAlign: m.me ? "right" : "left", padding: "0 4px" }}>{m.t}</div>
+                  <div style={{ fontSize: 10.5, color: "var(--ink-400)", marginTop: 3, textAlign: m.me ? "right" : "left", padding: "0 4px" }}>{m.who ? `${m.who} · ` : ""}{m.t}</div>
                 </div>
               </div>
             </React.Fragment>

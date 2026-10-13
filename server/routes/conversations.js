@@ -81,7 +81,12 @@ async function requireVerifiedIfCompany(req, res, next) {
   return requireVerifiedCompany(req, res, next);
 }
 
-function toConversation(c) {
+/**
+ * viewer: { role, userId } — åkeriets egna användare ser vem i teamet som skrev varje
+ * meddelande (förnamn); föraren ser bara åkeriets namn.
+ */
+function toConversation(c, viewer = null) {
+  const companyView = viewer && viewer.role !== "DRIVER";
   return {
     id: c.id,
     driverId: c.driverId,
@@ -105,6 +110,9 @@ function toConversation(c) {
       sender: m.senderRole,
       content: m.content,
       timestamp: m.createdAt.toISOString(),
+      ...(companyView && m.senderRole === "company"
+        ? { senderName: (m.sender?.name || "").trim().split(/\s+/)[0] || null, isMine: m.senderId === viewer.userId }
+        : {}),
     })),
     createdAt: c.createdAt.toISOString(),
   };
@@ -120,10 +128,10 @@ conversationsRouter.get("/", requireVerifiedIfCompany, async (req, res, next) =>
         driver: { select: { name: true } },
         company: { select: { name: true, companyName: true } },
         organization: { select: { name: true } },
-        messages: { orderBy: { createdAt: "asc" } },
+        messages: { orderBy: { createdAt: "asc" }, include: { sender: { select: { name: true } } } },
       },
     });
-    res.json(conversations.map(toConversation));
+    res.json(conversations.map((c) => toConversation(c, { role: req.role, userId: req.userId })));
   } catch (e) {
     next(e);
   }
@@ -137,7 +145,7 @@ conversationsRouter.get("/:id", requireVerifiedIfCompany, async (req, res, next)
         driver: { select: { name: true } },
         company: { select: { name: true, companyName: true } },
         organization: { select: { name: true } },
-        messages: { orderBy: { createdAt: "asc" } },
+        messages: { orderBy: { createdAt: "asc" }, include: { sender: { select: { name: true } } } },
       },
     });
     if (!c) return res.status(404).json({ error: "Konversation hittades inte" });
@@ -158,7 +166,7 @@ conversationsRouter.get("/:id", requireVerifiedIfCompany, async (req, res, next)
       await prisma.conversation.update({ where: { id: c.id }, data: { readByDriverAt: now } });
       c.readByDriverAt = now;
     }
-    res.json(toConversation(c));
+    res.json(toConversation(c, { role: req.role, userId: req.userId }));
   } catch (e) {
     next(e);
   }
@@ -327,11 +335,11 @@ conversationsRouter.post("/", requireVerifiedEmail, requireVerifiedIfCompany, va
         driver: { select: { name: true } },
         company: { select: { name: true, companyName: true } },
         organization: { select: { name: true } },
-        messages: { orderBy: { createdAt: "asc" } },
+        messages: { orderBy: { createdAt: "asc" }, include: { sender: { select: { name: true } } } },
       },
     });
     if (!updated) return res.status(500).json({ error: "Konversationen kunde inte hämtas" });
-    res.status(201).json(toConversation(updated));
+    res.status(201).json(toConversation(updated, { role: req.role, userId: req.userId }));
   } catch (e) {
     next(e);
   }
@@ -381,10 +389,10 @@ conversationsRouter.patch("/:id/reject", requireCompany, requireVerifiedCompany,
         driver: { select: { name: true } },
         company: { select: { name: true, companyName: true } },
         organization: { select: { name: true } },
-        messages: { orderBy: { createdAt: "asc" } },
+        messages: { orderBy: { createdAt: "asc" }, include: { sender: { select: { name: true } } } },
       },
     });
-    res.json(toConversation(updated));
+    res.json(toConversation(updated, { role: req.role, userId: req.userId }));
   } catch (e) {
     next(e);
   }
@@ -407,7 +415,7 @@ conversationsRouter.patch("/:id/select", requireCompany, requireVerifiedCompany,
         driver: { select: { name: true, email: true } },
         company: { select: { name: true, companyName: true } },
         organization: { select: { name: true } },
-        messages: { orderBy: { createdAt: "asc" } },
+        messages: { orderBy: { createdAt: "asc" }, include: { sender: { select: { name: true } } } },
       },
     });
     if (updated.driver?.email) {
@@ -430,7 +438,7 @@ conversationsRouter.patch("/:id/select", requireCompany, requireVerifiedCompany,
         actorName: updated.organization?.name || updated.company?.companyName || updated.company?.name || null,
       }).catch((e) => console.error("Create notification selected:", e));
     }
-    res.json(toConversation(updated));
+    res.json(toConversation(updated, { role: req.role, userId: req.userId }));
   } catch (e) {
     next(e);
   }

@@ -141,7 +141,7 @@ function ConvItem({ conv, isDriver, isActive, basePath, isMobile }) {
               <span style={{ padding: "2px 6px", borderRadius: 5, background: stageBg, color: stageColor, fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 0.3 }}>{stageLabel}</span>
               {typeof conv.matchScore === "number" && <span style={{ fontSize: "var(--text-2xs)", color: "var(--amber)", fontWeight: 700 }}>{conv.matchScore}%</span>}
               <span style={{ fontSize: "var(--text-xs)", color: "var(--ink-400)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
-                {lastMsg?.sender === "company" && <span style={{ color: "var(--ink-300)" }}>Du: </span>}
+                {lastMsg?.sender === "company" && <span style={{ color: "var(--ink-300)" }}>{lastMsg.isMine === false && lastMsg.senderName ? lastMsg.senderName : "Du"}: </span>}
                 {lastMsg?.content || "—"}
               </span>
             </div>
@@ -181,7 +181,7 @@ function ConvItem({ conv, isDriver, isActive, basePath, isMobile }) {
             </div>
           )}
           <div style={{ fontSize: "var(--text-xs)", color: unread ? "var(--ink-700)" : "var(--ink-400)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", lineHeight: 1.4 }}>
-            {lastMsg?.sender === (isDriver ? "driver" : "company") && <span style={{ color: "var(--ink-300)" }}>Du: </span>}
+            {lastMsg?.sender === (isDriver ? "driver" : "company") && <span style={{ color: "var(--ink-300)" }}>{!isDriver && lastMsg.isMine === false && lastMsg.senderName ? lastMsg.senderName : "Du"}: </span>}
             {lastMsg?.content || "—"}
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
@@ -409,6 +409,8 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
                         <p style={{ fontSize: "var(--text-base)", lineHeight: 1.5, margin: 0, whiteSpace: "pre-wrap" }}>{msg.content}</p>
                       </div>
                       <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", marginTop: 4, textAlign: isOwn ? "right" : "left", paddingLeft: isOwn ? 0 : 4, paddingRight: isOwn ? 4 : 0 }}>
+                        {/* Åkeriet internt: vem i teamet som skrev (föraren ser bara åkeriets namn). */}
+                        {!isDriver && isOwn && msg.senderName && <span style={{ marginRight: 5, fontWeight: 700, color: "var(--ink-500)" }}>{msg.isMine ? "Du" : msg.senderName} ·</span>}
                         {formatTime(msg.timestamp)}
                         {isOwn && <span style={{ marginLeft: 5 }}>· Levererat</span>}
                       </div>

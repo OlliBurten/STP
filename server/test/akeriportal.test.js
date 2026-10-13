@@ -105,7 +105,14 @@ describe("åkeriportalen", () => {
     assert.ok(note, "föraren borde få en notis om svaret");
     // Ägaren ser kollegans svar i samma tråd.
     const asOwner = await request(app).get(`/api/conversations/${ids.conversation}`).set("Authorization", tok(ids.owner));
-    assert.ok(asOwner.body.messages.some((m) => m.content.startsWith("Hej! Tack för din ansökan")));
+    const reply2 = asOwner.body.messages.find((m) => m.content.startsWith("Hej! Tack för din ansökan"));
+    assert.ok(reply2);
+    // Internt ser teamet vem som skrev; föraren ser bara åkeriet.
+    assert.strictEqual(reply2.senderName, "Kollega");
+    assert.strictEqual(reply2.isMine, false);
+    const asDriver = await request(app).get(`/api/conversations/${ids.conversation}`).set("Authorization", tok(ids.driver));
+    const seenByDriver = asDriver.body.messages.find((m) => m.content.startsWith("Hej! Tack för din ansökan"));
+    assert.strictEqual(seenByDriver.senderName, undefined, "föraren ska inte se vem i teamet som skrev");
   });
 
   it("ett annat åkeri ser inte kandidaterna", async () => {
