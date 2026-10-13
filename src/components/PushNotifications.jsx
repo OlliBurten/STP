@@ -102,3 +102,49 @@ const btn = (primary) => ({
   padding: "8px 14px", borderRadius: 9, fontWeight: 700, fontSize: "var(--text-sm)", cursor: "pointer", fontFamily: "inherit",
   border: primary ? "none" : "1px solid var(--line-2)", background: primary ? "var(--green)" : "var(--card)", color: primary ? "#fff" : "var(--ink-700)",
 });
+
+const PROMPT_KEY = "stp_push_prompt_until";
+
+/**
+ * Frågar åkeriet direkt (en gång per enhet, igen efter 14 dagar vid "Inte nu") om de vill
+ * få en notis när någon söker. Push kan inte vara påslaget som standard — webbläsaren
+ * kräver att användaren själv tackar ja — så frågan ska komma utan att man letar efter den.
+ */
+export function PushPrompt() {
+  const push = usePush();
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (!push.ready || !push.supported || push.subscribed || push.permission !== "default") return;
+    let until = 0;
+    try { until = Number(localStorage.getItem(PROMPT_KEY)) || 0; } catch { /* ignore */ }
+    if (Date.now() < until) return;
+    const t = setTimeout(() => setOpen(true), 1500);
+    return () => clearTimeout(t);
+  }, [push.ready, push.supported, push.subscribed, push.permission]);
+
+  if (!open) return null;
+  const later = () => {
+    try { localStorage.setItem(PROMPT_KEY, String(Date.now() + 14 * 864e5)); } catch { /* ignore */ }
+    setOpen(false);
+  };
+  const enable = async () => {
+    await push.enable();
+    try { localStorage.setItem(PROMPT_KEY, String(Date.now() + 365 * 864e5)); } catch { /* ignore */ }
+    setOpen(false);
+  };
+  return (
+    <div role="dialog" aria-modal="true" aria-label="Notiser" style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(27,36,33,0.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+      <div style={{ width: "100%", maxWidth: 400, background: "var(--card)", borderRadius: 18, padding: "26px 24px 22px", boxShadow: "0 24px 60px rgba(0,0,0,0.25)", textAlign: "center" }}>
+        <div aria-hidden="true" style={{ fontSize: 34, marginBottom: 8 }}>🔔</div>
+        <h2 style={{ fontSize: 20, fontWeight: 800, color: "var(--ink-900)", margin: "0 0 6px", letterSpacing: -0.3 }}>Få en notis direkt när någon söker</h2>
+        <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", margin: "0 0 20px", lineHeight: 1.5 }}>Då kan ni svara föraren innan någon annan gör det.</p>
+        <button type="button" onClick={enable} disabled={push.busy} style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "var(--green)", color: "#fff", fontWeight: 800, fontSize: "var(--text-base)", cursor: "pointer", fontFamily: "inherit" }}>
+          {push.busy ? "Slår på…" : "Slå på notiser"}
+        </button>
+        <button type="button" onClick={later} style={{ width: "100%", marginTop: 8, padding: "11px", borderRadius: 12, border: "none", background: "none", color: "var(--ink-500)", fontWeight: 600, fontSize: "var(--text-sm)", cursor: "pointer", fontFamily: "inherit" }}>
+          Inte nu
+        </button>
+      </div>
+    </div>
+  );
+}
