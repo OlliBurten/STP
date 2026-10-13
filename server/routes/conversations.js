@@ -147,19 +147,16 @@ conversationsRouter.get("/:id", requireVerifiedIfCompany, async (req, res, next)
     if (c.driverId !== req.userId && !hasCompanyAccess) {
       return res.status(403).json({ error: "Ingen åtkomst" });
     }
-    if (req.role === "COMPANY" && hasCompanyAccess && !c.readByCompanyAt) {
-      await prisma.conversation.update({
-        where: { id: c.id },
-        data: { readByCompanyAt: new Date() },
-      });
-      c.readByCompanyAt = new Date();
+    // Senast lästa — uppdateras varje gång tråden öppnas, så att ett senare svar från
+    // motparten syns som oläst igen (tidigare sattes tiden bara första gången).
+    const now = new Date();
+    if (req.role === "COMPANY" && hasCompanyAccess) {
+      await prisma.conversation.update({ where: { id: c.id }, data: { readByCompanyAt: now } });
+      c.readByCompanyAt = now;
     }
-    if (req.role === "DRIVER" && c.driverId === req.userId && !c.readByDriverAt) {
-      await prisma.conversation.update({
-        where: { id: c.id },
-        data: { readByDriverAt: new Date() },
-      });
-      c.readByDriverAt = new Date();
+    if (req.role === "DRIVER" && c.driverId === req.userId) {
+      await prisma.conversation.update({ where: { id: c.id }, data: { readByDriverAt: now } });
+      c.readByDriverAt = now;
     }
     res.json(toConversation(c));
   } catch (e) {

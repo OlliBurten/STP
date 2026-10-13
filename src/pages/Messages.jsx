@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { useProfile } from "../context/ProfileContext";
 import { useChat } from "../context/ChatContext";
 import { createReport } from "../api/reports.js";
+import { fetchConversation } from "../api/conversations.js";
 import { getMyConversationReview, submitCompanyReview } from "../api/reviews.js";
 import LoadingBlock from "../components/LoadingBlock";
 import { useToast } from "../context/ToastContext";
@@ -52,6 +53,7 @@ function avatarBg(name) {
 
 // ─── Conversation list item ───────────────────────────────────────────────────
 function ConvItem({ conv, isDriver, isActive, basePath, isMobile }) {
+  const { isConversationUnread } = useChat();
   const other = isDriver ? conv.companyName : conv.driverName;
   const lastMsg = conv.messages?.[conv.messages.length - 1];
   const relTime = lastMsg ? (() => {
@@ -64,9 +66,7 @@ function ConvItem({ conv, isDriver, isActive, basePath, isMobile }) {
     return new Date(lastMsg.timestamp).toLocaleDateString("sv-SE", { day: "numeric", month: "short" });
   })() : "";
   const stage = isDriver && conv.jobId ? getStage(conv) : null;
-  const unread = isDriver
-    ? (!conv.readByDriverAt && lastMsg?.sender !== "driver")
-    : (!conv.readByCompanyAt);
+  const unread = isConversationUnread(conv);
   const s = stage ? (STAGE[stage] ?? STAGE.applied) : null;
 
   // Mobile driver: row matching STP Mobil Inkorg-prototypen
@@ -496,6 +496,7 @@ export default function Messages() {
     markSelectedNotificationsSeen,
     refreshConversations,
     conversationsLoading,
+    isConversationUnread,
     companyUnreadConversationCount = 0,
   } = useChat();
 
@@ -518,12 +519,7 @@ export default function Messages() {
     ? getDriverConversations(driverId)
     : getCompanyConversations(companyNameForFilter);
 
-  const unreadCount = allConversations.filter((c) => {
-    const lastMsg = c.messages?.[c.messages.length - 1];
-    return isDriver
-      ? (!c.readByDriverAt && lastMsg?.sender !== "driver")
-      : (!c.readByCompanyAt);
-  }).length;
+  const unreadCount = allConversations.filter(isConversationUnread).length;
 
   const selectedCount = allConversations.filter((c) => c.selectedByCompanyAt).length;
 
@@ -574,8 +570,11 @@ export default function Messages() {
   }, [isDriver, markSelectedNotificationsSeen]);
 
   useEffect(() => {
-    if (conversation?.id && isDriver) markConversationSeen(conversation.id);
-  }, [conversation?.id, isDriver, markConversationSeen]);
+    if (!conversation?.id) return;
+    // Markera läst på servern (gäller hela teamet och alla enheter) och lokalt direkt.
+    markConversationSeen(conversation.id);
+    fetchConversation(conversation.id).then(() => refreshConversations?.()).catch(() => {});
+  }, [conversation?.id, markConversationSeen]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!hasApi) return;
@@ -639,7 +638,7 @@ export default function Messages() {
           >
             {/* OBS: paddingTop får inte vara undefined — React tolkar det som
                 "unset" och raderar toppen ur padding-shorthanden (desktop fick 0). */}
-            <div style={{ padding: isMobile ? "0 20px 12px" : "56px 18px 16px", paddingTop: isMobile ? "calc(env(safe-area-inset-top, 0px) + 20px)" : "56px", borderBottom: "1px solid var(--line)", flexShrink: 0 }}>
+            <div style={{ padding: isMobile ? "0 20px 12px" : "56px 18px 16px", paddingTop: isMobile ? "calc(env(safe-area-inset-top, 0px) + 20px)" : inPortal ? "28px" : "56px", borderBottom: "1px solid var(--line)", flexShrink: 0 }}>
               {isMobile ? (
                 <>
                   {/* Titel + filter-ikon (Messenger-stil — chips ersatta av en meny) */}
