@@ -5,7 +5,7 @@ import { initialsFor, timeAgo } from "./jobAdapter";
 
 export function stageOf(conv) {
   if (conv.selectedByCompanyAt) return { id: "selected", label: "Utvald", tone: "success", step: 3 };
-  if (conv.rejectedByCompanyAt) return { id: "rejected", label: "Avslag", tone: "danger", step: 0 };
+  if (conv.rejectedByCompanyAt) return { id: "rejected", label: "Ej aktuell", tone: "danger", step: 0 };
   if (conv.reviewedByCompanyAt) return { id: "review", label: "Granskas", tone: "info", step: 2 };
   if (conv.readByCompanyAt) return { id: "seen", label: "Läst", tone: "info", step: 2 };
   return { id: "applied", label: "Skickad", tone: "neutral", step: 1 };

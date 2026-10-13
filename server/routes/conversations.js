@@ -361,6 +361,10 @@ conversationsRouter.patch("/:id/stage", requireCompany, requireVerifiedCompany, 
     // Spegla i de befintliga tidsstämplarna så driver-vyn (Ansökt) hålls i synk.
     if (stage === "anstalld") data.selectedByCompanyAt = conv.selectedByCompanyAt || new Date();
     if (stage === "avslag") data.rejectedByCompanyAt = conv.rejectedByCompanyAt || new Date();
+    // Flyttas kandidaten tillbaka från "Avslagen" är avslaget ångrat. Beskedet till
+    // föraren skickas först efter ångra-fönstret (runRecruitmentNudges), så ett
+    // felklick hinner rättas innan föraren får veta något.
+    if (stage !== "avslag" && conv.rejectedByCompanyAt && !conv.rejectionNoticeSentAt) data.rejectedByCompanyAt = null;
     if (stage === "intervjuad") data.reviewedByCompanyAt = conv.reviewedByCompanyAt || new Date();
     if (stage === "kontaktad") data.readByCompanyAt = conv.readByCompanyAt || new Date();
     const updated = await prisma.conversation.update({ where: { id: conv.id }, data });
