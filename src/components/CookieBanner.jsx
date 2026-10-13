@@ -7,6 +7,7 @@
  * Nyckel i localStorage: "stp-cookie-consent" → "accepted" | "declined"
  */
 import { useState, useEffect, useRef } from "react";
+import { initSentry } from "../utils/sentry";
 import { Link } from "react-router-dom";
 
 const CONSENT_KEY = "stp-cookie-consent";
@@ -59,21 +60,8 @@ export default function CookieBanner() {
     if (choice === "accepted") {
       // Initiera PostHog
       window.dispatchEvent(new CustomEvent("stp:cookie-consent"));
-      // Initiera Sentry nu om det inte redan skett
-      if (typeof window.__sentryInitialized === "undefined") {
-        window.__sentryInitialized = true;
-        const dsn = import.meta.env.VITE_SENTRY_DSN ||
-          "https://c1f2eba279f911f1d3211870fd6ef49c@o4511146144628736.ingest.de.sentry.io/4511146155704400";
-        import("@sentry/react").then((Sentry) => {
-          if (Sentry.getCurrentHub?.().getClient()) return; // redan initierat
-          Sentry.init({
-            dsn,
-            environment: import.meta.env.MODE,
-            sendDefaultPii: false,
-            tracesSampleRate: import.meta.env.PROD ? 0.1 : 0,
-          });
-        }).catch(() => {});
-      }
+      // Initiera Sentry nu om det inte redan skett — samma konfiguration som vid appstart.
+      initSentry();
     }
   };
 
