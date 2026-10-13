@@ -70,10 +70,14 @@ export function ChatProvider({ children }) {
     }
     let active = true;
 
+    let loadedOnce = false;
     const refresh = () => {
-      setConversationsLoading(true);
+      // Laddningsläget bara första gången — bakgrundsuppdateringar (var 4–20 s) fick
+      // inkorgens lista att blinka till laddningsvyn varje gång.
+      if (!loadedOnce) setConversationsLoading(true);
       return fetchConversations()
         .then((data) => {
+          loadedOnce = true;
           if (active) { setApiConversations(Array.isArray(data) ? data : []); setConversationsError(false); }
         })
         .catch(() => {
