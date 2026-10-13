@@ -88,6 +88,22 @@ describe("åkeriportalen", () => {
     assert.strictEqual(typeof c.matchPercent, "number");
   });
 
+  it("en kollega ser annonsens sökande, öppnar ansökan och svarar föraren", async () => {
+    const applicants = await request(app).get(`/api/jobs/${ids.job}/applicants`).set("Authorization", tok(ids.member));
+    assert.strictEqual(applicants.status, 200, JSON.stringify(applicants.body));
+    assert.ok(applicants.body.some((a) => a.conversationId === ids.conversation));
+    const open = await request(app).get(`/api/conversations/${ids.conversation}`).set("Authorization", tok(ids.member));
+    assert.strictEqual(open.status, 200);
+    const reply = await request(app).post(`/api/conversations/${ids.conversation}/messages`).set("Authorization", tok(ids.member))
+      .send({ content: "Hej! Tack för din ansökan, kan du ringa oss i morgon?" });
+    assert.strictEqual(reply.status, 201, JSON.stringify(reply.body));
+    const note = await prisma.notification.findFirst({ where: { userId: ids.driver, relatedConversationId: ids.conversation, type: "MESSAGE" } });
+    assert.ok(note, "föraren borde få en notis om svaret");
+    // Ägaren ser kollegans svar i samma tråd.
+    const asOwner = await request(app).get(`/api/conversations/${ids.conversation}`).set("Authorization", tok(ids.owner));
+    assert.ok(asOwner.body.messages.some((m) => m.content.startsWith("Hej! Tack för din ansökan")));
+  });
+
   it("ett annat åkeri ser inte kandidaterna", async () => {
     const res = await request(app).get("/api/companies/me/candidates").set("Authorization", tok(ids.otherOwner));
     assert.strictEqual(res.status, 200);
