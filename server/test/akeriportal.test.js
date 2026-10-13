@@ -92,8 +92,12 @@ describe("åkeriportalen", () => {
     const applicants = await request(app).get(`/api/jobs/${ids.job}/applicants`).set("Authorization", tok(ids.member));
     assert.strictEqual(applicants.status, 200, JSON.stringify(applicants.body));
     assert.ok(applicants.body.some((a) => a.conversationId === ids.conversation));
+    const before = Date.now();
     const open = await request(app).get(`/api/conversations/${ids.conversation}`).set("Authorization", tok(ids.member));
     assert.strictEqual(open.status, 200);
+    // Att öppna tråden markerar den läst för hela åkeriet — varje gång, inte bara första.
+    const conv = await prisma.conversation.findUnique({ where: { id: ids.conversation }, select: { readByCompanyAt: true } });
+    assert.ok(conv.readByCompanyAt && conv.readByCompanyAt.getTime() >= before - 1000, "läst-tiden ska uppdateras när tråden öppnas");
     const reply = await request(app).post(`/api/conversations/${ids.conversation}/messages`).set("Authorization", tok(ids.member))
       .send({ content: "Hej! Tack för din ansökan, kan du ringa oss i morgon?" });
     assert.strictEqual(reply.status, 201, JSON.stringify(reply.body));

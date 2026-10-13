@@ -122,13 +122,15 @@ export function ChatProvider({ children }) {
   // Enad oläst-logik (samma för förare & åkeri): motparten skrev sist OCH det är
   // nyare än senast jag öppnade konversationen (convSeenMap, satt av
   // markConversationSeen). Gör att läsning faktiskt rensar oläst-markeringen.
+  // Läst-tid = den senaste av serverns (gäller alla enheter och hela teamet) och den lokala.
   const isConversationUnread = useCallback((c) => {
     const lastMsg = c?.messages?.[c.messages.length - 1];
     if (!lastMsg) return false;
     const fromOther = isCompany ? lastMsg.sender === "driver" : lastMsg.sender === "company";
     if (!fromOther) return false;
-    const lastSeen = convSeenMap[c.id];
-    return !lastSeen || new Date(lastMsg.timestamp) > new Date(lastSeen);
+    const serverRead = isCompany ? c.readByCompanyAt : c.readByDriverAt;
+    const seen = [convSeenMap[c.id], serverRead].filter(Boolean).map((t) => new Date(t).getTime());
+    return seen.length === 0 || new Date(lastMsg.timestamp).getTime() > Math.max(...seen);
   }, [convSeenMap, isCompany]);
 
   const companyUnreadConversationCount = isCompany
@@ -230,14 +232,7 @@ export function ChatProvider({ children }) {
   );
 
   // Driver unread: conversations where last message is from company and newer than last seen
-  const driverUnreadCount = isDriver
-    ? list.filter((c) => {
-        const lastMsg = c.messages?.[c.messages.length - 1];
-        if (!lastMsg || lastMsg.sender !== "company") return false;
-        const lastSeen = convSeenMap[c.id];
-        return !lastSeen || new Date(lastMsg.timestamp) > new Date(lastSeen);
-      }).length
-    : 0;
+  const driverUnreadCount = isDriver ? list.filter(isConversationUnread).length : 0;
 
   const unreadCount = isDriver ? driverUnreadCount : companyUnreadConversationCount;
 
