@@ -1,5 +1,5 @@
 /**
- * Stack-översikt — hämtar nyckeltal från externa tjänster (Sentry, Plausible,
+ * Stack-översikt — hämtar nyckeltal från externa tjänster (Sentry,
  * PostHog, Resend) så admin kan se allt på ett ställe i stället för att logga
  * in på varje plattform.
  *
@@ -10,7 +10,6 @@
  *
  * Env-nycklar (alla valfria):
  *   SENTRY_API_TOKEN           — sentry.io auth token (org stp-jb)
- *   PLAUSIBLE_API_KEY          — plausible.io Stats API-nyckel
  *   POSTHOG_PERSONAL_API_KEY   — PostHog personal API key (EU, projekt 185285)
  *   RESEND_API_KEY             — finns redan (mejlutskick)
  */
@@ -21,7 +20,6 @@ let _cache = null; // { at, data }
 const SENTRY_ORG = process.env.SENTRY_ORG || "stp-jb";
 const POSTHOG_HOST = process.env.POSTHOG_API_HOST || "https://eu.posthog.com";
 const POSTHOG_PROJECT_ID = process.env.POSTHOG_PROJECT_ID || "185285";
-const PLAUSIBLE_SITE_ID = process.env.PLAUSIBLE_SITE_ID || "transportplattformen.se";
 
 const fetchJson = async (url, opts = {}, timeoutMs = 6000) => {
   const res = await fetch(url, { ...opts, signal: AbortSignal.timeout(timeoutMs) });
@@ -59,42 +57,6 @@ async function fetchSentry() {
         lastSeen: i.lastSeen,
         link: i.permalink,
       })),
-    };
-  } catch (e) {
-    return { configured: true, error: e.message };
-  }
-}
-
-// ── Plausible: trafik (hela trafiken, cookiefri) ────────────────────────────
-async function plausibleQuery(key, body) {
-  return fetchJson("https://plausible.io/api/v2/query", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ site_id: PLAUSIBLE_SITE_ID, ...body }),
-  });
-}
-
-async function fetchPlausible() {
-  const key = process.env.PLAUSIBLE_API_KEY;
-  if (!key) return { configured: false };
-  try {
-    const [agg7, agg30, sources, pages] = await Promise.all([
-      plausibleQuery(key, { metrics: ["visitors", "pageviews"], date_range: "7d" }),
-      plausibleQuery(key, { metrics: ["visitors", "pageviews"], date_range: "30d" }),
-      plausibleQuery(key, { metrics: ["visitors"], date_range: "7d", dimensions: ["visit:source"] }),
-      plausibleQuery(key, { metrics: ["visitors"], date_range: "7d", dimensions: ["event:page"] }),
-    ]);
-    const agg = (r) => r?.results?.[0]?.metrics || [null, null];
-    const top = (r, n = 3) =>
-      (r?.results || []).slice(0, n).map((row) => ({ name: row.dimensions?.[0], visitors: row.metrics?.[0] }));
-    return {
-      configured: true,
-      visitors7d: agg(agg7)[0],
-      pageviews7d: agg(agg7)[1],
-      visitors30d: agg(agg30)[0],
-      pageviews30d: agg(agg30)[1],
-      topSources: top(sources),
-      topPages: top(pages),
     };
   } catch (e) {
     return { configured: true, error: e.message };
@@ -189,13 +151,12 @@ export async function getStackOverview({ force = false } = {}) {
   if (!force && _cache && Date.now() - _cache.at < CACHE_TTL_MS) {
     return { ..._cache.data, cached: true };
   }
-  const [sentry, plausible, posthog, resend] = await Promise.all([
+  const [sentry, posthog, resend] = await Promise.all([
     fetchSentry(),
-    fetchPlausible(),
     fetchPostHog(),
     fetchResend(),
   ]);
-  const data = { sentry, plausible, posthog, resend, fetchedAt: new Date().toISOString() };
+  const data = { sentry, posthog, resend, fetchedAt: new Date().toISOString() };
   _cache = { at: Date.now(), data };
   return { ...data, cached: false };
 }

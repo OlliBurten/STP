@@ -82,7 +82,7 @@ export const DOCS = {
       },
       {
         id: "cookies", h: "7. Cookies",
-        p: ["Nödvändiga cookies — krävs för att tjänsten ska fungera (inloggning, sessionshantering). Kräver inget samtycke.", "Samtyckesbaserade — aktiveras endast om du accepterar i cookie-bannern: Sentry (felövervakning) och PostHog (produktanalys och anonymiserade sessionsinspelningar där känsliga fält som lösenord alltid maskeras). Datan lagras inom EU.", "Cookiefri besöksstatistik (Plausible) används för aggregerad trafikmätning och kräver inget samtycke."],
+        p: ["Nödvändiga cookies — krävs för att tjänsten ska fungera (inloggning, sessionshantering). Kräver inget samtycke.", "Samtyckesbaserade — aktiveras endast om du accepterar i cookie-bannern: Sentry (felövervakning) och PostHog (produktanalys och anonymiserade sessionsinspelningar där känsliga fält som lösenord alltid maskeras). Datan lagras inom EU.", "Cookiefri besöksstatistik (Vercel Analytics) används för aggregerad trafikmätning och kräver inget samtycke."],
       },
       {
         id: "sakerhet", h: "8. Säkerhet",

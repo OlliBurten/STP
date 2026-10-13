@@ -1291,34 +1291,6 @@ export default function Admin() {
             </p>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px,1fr))", gap: 12 }}>
 
-              {/* Plausible — hela trafiken */}
-              <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 12, padding: "16px 18px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                  <span style={{ fontSize: "var(--text-base)", fontWeight: 800, color: T.text }}>Trafik · Plausible</span>
-                  <a href="https://plausible.io" target="_blank" rel="noreferrer" style={{ fontSize: "var(--text-2xs)", color: T.muted, textDecoration: "none" }}>Öppna ↗</a>
-                </div>
-                {!stack?.plausible?.configured ? (
-                  <p style={{ fontSize: "var(--text-xs)", color: T.muted, margin: 0 }}>
-                    API-nyckel saknas — skapa en på plausible.io (Settings → API Keys) och lägg <span style={{ fontFamily: "var(--mono)" }}>PLAUSIBLE_API_KEY</span> i Railway.
-                  </p>
-                ) : stack.plausible.error ? (
-                  <p style={{ fontSize: "var(--text-xs)", color: T.red, margin: 0 }}>Fel: {stack.plausible.error}</p>
-                ) : (
-                  <>
-                    <div style={{ display: "flex", gap: 18, marginBottom: 10 }}>
-                      <div><div style={{ fontSize: "var(--text-2xl)", fontWeight: 800, color: T.text, fontFamily: "var(--mono)" }}>{stack.plausible.visitors7d ?? "–"}</div><div style={{ fontSize: "var(--text-2xs)", color: T.muted }}>Besökare 7d</div></div>
-                      <div><div style={{ fontSize: "var(--text-2xl)", fontWeight: 800, color: T.text, fontFamily: "var(--mono)" }}>{stack.plausible.visitors30d ?? "–"}</div><div style={{ fontSize: "var(--text-2xs)", color: T.muted }}>Besökare 30d</div></div>
-                      <div><div style={{ fontSize: "var(--text-2xl)", fontWeight: 800, color: T.text, fontFamily: "var(--mono)" }}>{stack.plausible.pageviews7d ?? "–"}</div><div style={{ fontSize: "var(--text-2xs)", color: T.muted }}>Sidvisningar 7d</div></div>
-                    </div>
-                    {(stack.plausible.topSources || []).length > 0 && (
-                      <div style={{ fontSize: "var(--text-2xs)", color: T.muted }}>
-                        Toppkällor: {stack.plausible.topSources.map(s => `${s.name} (${s.visitors})`).join(" · ")}
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-
               {/* PostHog — produktanalys */}
               <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 12, padding: "16px 18px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>

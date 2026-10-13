@@ -8,7 +8,6 @@
  *   - Vår egen DB (starkaste signalerna)
  *   - Feedback-modellen (kategoriserad av AI)
  *   - Sentry API (valfri, kräver SENTRY_AUTH_TOKEN)
- *   - Plausible API (valfri, kräver PLAUSIBLE_API_KEY + PLAUSIBLE_SITE_ID)
  */
 
 import Anthropic from "@anthropic-ai/sdk";
@@ -143,25 +142,12 @@ async function collectSignals() {
     .slice(0, 5)
     .map(f => f.aiSummary || f.message?.slice(0, 120));
 
-  // Plausible data (optional)
-  let plausibleData = null;
-  if (process.env.PLAUSIBLE_API_KEY && process.env.PLAUSIBLE_SITE_ID) {
-    try {
-      const r = await fetch(
-        `https://plausible.io/api/v1/stats/breakdown?site_id=${process.env.PLAUSIBLE_SITE_ID}&period=7d&property=event:page&limit=20`,
-        { headers: { Authorization: `Bearer ${process.env.PLAUSIBLE_API_KEY}` }, signal: AbortSignal.timeout(8000) }
-      );
-      if (r.ok) plausibleData = await r.json();
-    } catch (_) {}
-  }
-
   return {
     growth: { newDrivers7d, newDrivers30d, totalDrivers, totalCompanies, verifiedCompanies, activationRate, visibleDrivers },
     jobs: { activeJobs, jobsNeverApplied, jobsWith0Conversations },
     conversations: { total: totalConversations, abandoned: conversationsAbandoned, last7d: applicationsLast7d, last30d: applicationsLast30d },
     profiles: { total: totalProfiles, fieldGaps },
     feedback: { total: recentFeedback.length, byCategory: feedbackByCategory, topHighPriority: topFeedback },
-    plausible: plausibleData,
   };
 }
 
@@ -202,7 +188,6 @@ ${Object.entries(signals.profiles.fieldGaps).map(([k, v]) => `- ${k}: ${v}%`).jo
 - Högt prioriterade synpunkter:
 ${signals.feedback.topHighPriority.map(f => `  • "${f}"`).join("\n") || "  (inga)"}
 
-${signals.plausible ? `### Plausible Analytics (topp-sidor 7 dagar)\n${JSON.stringify(signals.plausible, null, 2).slice(0, 1000)}` : ""}
 
 ## Instruktioner
 
