@@ -502,6 +502,8 @@ export async function runMessageReminders() {
         where: { organizationId: null },
         select: {
           id: true,
+          responseNudgeCount: true,
+          _count: { select: { messages: { where: { senderRole: "company" } } } },
           messages: {
             orderBy: { createdAt: "desc" },
             take: 1,
@@ -520,6 +522,8 @@ export async function runMessageReminders() {
               conversations: {
                 select: {
                   id: true,
+                  responseNudgeCount: true,
+                  _count: { select: { messages: { where: { senderRole: "company" } } } },
                   messages: {
                     orderBy: { createdAt: "desc" },
                     take: 1,
@@ -553,6 +557,9 @@ export async function runMessageReminders() {
       const age = new Date(last.createdAt);
       if (age >= unreadCutoff) return false; // too recent
       if (age < tooOldCutoff) return false;  // too old
+      // Ansökningar som ingen på åkeriet svarat på har en egen påminnelse
+      // (recruitmentNudges.js) — annars kom två mejl om samma ansökan.
+      if (c.myRole === "company" && c.responseNudgeCount > 0 && c._count?.messages === 0) return false;
       // Motparten skrev sist (roll, inte person — en kollegas svar räknas som åkeriets).
       return c.myRole === "company" ? last.senderRole === "driver" : last.senderRole === "company";
     });

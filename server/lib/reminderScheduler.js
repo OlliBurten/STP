@@ -9,6 +9,7 @@ import { runOnboardingDrip } from "./onboardingDrip.js";
 import { runProductIntelligenceAgent } from "./productIntelligenceAgent.js";
 import { runJobAlertDispatch } from "./jobAlerts.js";
 import { runApplicationFollowup } from "./applicationFollowup.js";
+import { runRecruitmentNudges } from "./recruitmentNudges.js";
 
 let started = false;
 
@@ -60,6 +61,18 @@ export function startReminderScheduler() {
         await runApplicationFollowup();
       } catch (e) {
         console.error("[Followup] Uncaught error:", e?.message);
+      }
+    }, { timezone: "Europe/Stockholm" });
+  }
+
+  // Varje timme 07–20 — svarspåminnelse till åkeriet (obesvarad ansökan 24 h / 72 h)
+  // och besked till föraren vid avslag. RECRUITMENT_NUDGES_ENABLED=false stänger av.
+  if (process.env.RECRUITMENT_NUDGES_ENABLED !== "false") {
+    cron.schedule("5 7-20 * * *", async () => {
+      try {
+        await runRecruitmentNudges();
+      } catch (e) {
+        console.error("[RecruitmentNudges] Uncaught error:", e?.message);
       }
     }, { timezone: "Europe/Stockholm" });
   }

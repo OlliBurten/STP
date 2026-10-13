@@ -37,7 +37,7 @@ const STAGE = {
   applied:  { label: "Skickad",  color: "var(--info)",    bg: "var(--info-tint)",    border: "rgba(37,99,235,0.2)"   },
   seen:     { label: "Sedd",     color: "var(--amber)",   bg: "var(--amber-tint)",   border: "rgba(242,164,28,0.2)"  },
   selected: { label: "Utvald",   color: "var(--success)", bg: "var(--success-tint)", border: "rgba(31,122,58,0.2)"   },
-  rejected: { label: "Avslutad", color: "var(--ink-400)", bg: "var(--paper-2)",      border: "var(--line)"           },
+  rejected: { label: "Ej aktuell", color: "var(--ink-400)", bg: "var(--paper-2)",      border: "var(--line)"           },
 };
 
 function avatarInitials(name) {
