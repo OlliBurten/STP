@@ -135,7 +135,7 @@ function KanbanCard({ a }) {
             <Icon name="message" size={13} />
           </Link>
           <Link
-            to={`/forare/${a.driverId}`}
+            to={`/foretag/chaufforer/${a.driverId}`}
             style={{ width: 28, height: 28, borderRadius: 7, background: "var(--green)", border: "1px solid var(--green-deep)", display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none" }}
             title="Visa profil"
           >

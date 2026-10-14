@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { useProfile } from "../context/ProfileContext";
 import { useChat } from "../context/ChatContext";
 import { createReport } from "../api/reports.js";
-import { fetchConversation } from "../api/conversations.js";
+import { fetchConversation, selectConversation, setConversationStage } from "../api/conversations.js";
 import { getMyConversationReview, submitCompanyReview } from "../api/reviews.js";
 import LoadingBlock from "../components/LoadingBlock";
 import { useToast } from "../context/ToastContext";
@@ -204,8 +204,9 @@ function ConvItem({ conv, isDriver, isActive, basePath, isMobile }) {
 
 // ─── Chat window ──────────────────────────────────────────────────────────────
 function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, reviewLabel, isMobile }) {
-  const { sendMessage } = useChat();
+  const { sendMessage, refreshConversations } = useChat();
   const [input, setInput] = useState("");
+  const [inviting, setInviting] = useState(false);
   const [showQuick, setShowQuick] = useState(false);
   const bottomRef = useRef(null);
   const textareaRef = useRef(null);
@@ -218,6 +219,23 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [conv.messages?.length]);
+
+  // "Boka intervju": markerar föraren som utvald (föraren får mejl + notis) och flyttar
+  // kandidaten till Intervju. Själva tiden bestäms i chatten.
+  const invited = Boolean(conv.selectedByCompanyAt) || conv.pipelineStage === "intervjuad";
+  const handleInvite = async () => {
+    if (invited || inviting) return;
+    setInviting(true);
+    try {
+      await selectConversation(conv.id);
+      await setConversationStage(conv.id, "intervjuad").catch(() => {});
+      await refreshConversations?.();
+    } catch {
+      /* knappen går att trycka igen */
+    } finally {
+      setInviting(false);
+    }
+  };
 
   const handleSend = () => {
     const text = input.trim();
@@ -317,16 +335,16 @@ function ChatWindow({ conv, isDriver, onBack, onReport, onReview, canReview, rev
           )}
           {!isDriver && !isMobile && conv.driverId && (
             <Link
-              to={`/foretag/forare/${conv.driverId}`}
+              to={`/foretag/chaufforer/${conv.driverId}`}
               style={{ padding: "7px 12px", borderRadius: 9, background: "var(--paper-2)", border: "1px solid var(--line-2)", color: "var(--ink-700)", fontSize: "var(--text-xs)", fontWeight: 700, textDecoration: "none", display: "flex", alignItems: "center", gap: 5, whiteSpace: "nowrap" }}
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
               Visa profil
             </Link>
           )}
-          {!isDriver && !isMobile && (
-            <button type="button" style={{ padding: "7px 14px", borderRadius: 9, background: "var(--green)", color: "#fff", fontSize: "var(--text-xs)", fontWeight: 700, border: "none", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
-              Boka intervju
+          {!isDriver && !isMobile && !isRejected && (
+            <button type="button" onClick={handleInvite} disabled={invited || inviting} style={{ padding: "7px 14px", borderRadius: 9, background: invited ? "var(--success-tint)" : "var(--green)", color: invited ? "var(--success)" : "#fff", fontSize: "var(--text-xs)", fontWeight: 700, border: "none", cursor: invited ? "default" : "pointer", fontFamily: "inherit", whiteSpace: "nowrap", opacity: inviting ? 0.7 : 1 }}>
+              {invited ? "Kallad till intervju ✓" : "Boka intervju"}
             </button>
           )}
           {isDriver && conv.jobId && !isMobile && (
