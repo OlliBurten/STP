@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
-import { authMiddleware, requireCompany, requireDriver, requireVerifiedCompany } from "../middleware/auth.js";
+import { attachCompanyContext, authMiddleware, requireCompany, requireDriver, requireVerifiedCompany } from "../middleware/auth.js";
 import { computeProfileScore } from "../lib/profileScore.js";
 import { validateBody } from "../middleware/validate.js";
 import { driverReferenceSchema } from "../lib/validators.js";
@@ -398,12 +398,22 @@ async function notifyDriverOfReference(driverUser, companyName) {
   });
 }
 
-driversRouter.get("/:id", authMiddleware, requireCompany, requireVerifiedCompany, async (req, res, next) => {
+driversRouter.get("/:id", authMiddleware, requireCompany, requireVerifiedCompany, attachCompanyContext, async (req, res, next) => {
   try {
+    // En förare som sökt hos åkeriet (eller som åkeriet redan pratar med) ska alltid
+    // kunna öppnas — även om föraren inte valt att synas i sökningen. Annars fick
+    // åkeriet "Chaufför hittades inte" när de ville se sökandens körkort och intyg.
+    const companyId = req.companyOwnerId || req.userId;
+    const hasConversation = await prisma.conversation.count({
+      where: {
+        driverId: req.params.id,
+        ...(req.organizationId ? { organizationId: req.organizationId } : { companyId, organizationId: null }),
+      },
+    });
     const profile = await prisma.driverProfile.findFirst({
       where: {
         userId: req.params.id,
-        visibleToCompanies: true,
+        ...(hasConversation ? {} : { visibleToCompanies: true }),
         user: {
           needsDriverOnboarding: false,
           suspendedAt: null,
