@@ -881,7 +881,7 @@ export default function Settings() {
 
   return (
     <main style={{ background: "var(--paper)", minHeight: "100vh" }}>
-      <PageMeta title="Inställningar – STP" />
+      <PageMeta title="Inställningar" />
 
       {/* Page header */}
       {!isMobile && (

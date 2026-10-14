@@ -93,7 +93,7 @@ function StepCard({ step, title, body, color }) {
 }
 
 export default function PraktikLanding() {
-  usePageTitle("Praktik & APL — STP Sveriges Transportplattform");
+  usePageTitle("Praktik & APL");
 
   return (
     <main style={{ minHeight: "100vh", background: "var(--paper)" }}>

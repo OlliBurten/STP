@@ -114,8 +114,16 @@ export default function MobileAuth() {
   const toast = useToast();
   const { loginWithApi, registerWithApi, loginWithOAuthResponse } = useAuth();
 
-  const [view, setView] = useState(params.get("start") === "login" ? "login" : "register");
-  const [flow, setFlow] = useState(params.get("start") === "login" ? "login" : "register");
+  // /login öppnar inloggning, /registrera (eller en länk som uttryckligen ber om det)
+  // öppnar registrering. Tidigare startade /login alltid i registrering — så "Logga in"
+  // i menyn, utloggning och utgången session landade i "Skapa ditt konto".
+  const startMode = params.get("start") === "login" ? "login"
+    : (location.pathname.startsWith("/registrera")
+      || params.get("start") === "register"
+      || params.get("mode") === "register"
+      || location.state?.initialMode === "register") ? "register" : "login";
+  const [view, setView] = useState(startMode);
+  const [flow, setFlow] = useState(startMode);
   // Roll från query (?role=) eller navigationsstate (requiredRole) — company/akeri ⇒ åkeri.
   const presetRole = (() => {
     const r = String(params.get("role") || location.state?.requiredRole || location.state?.role || "").toLowerCase();

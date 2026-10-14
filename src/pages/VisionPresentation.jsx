@@ -81,7 +81,7 @@ function ArrowIcon() {
 }
 
 export default function VisionPresentation() {
-  usePageTitle("Vision & roadmap – Sveriges Transportplattform");
+  usePageTitle("Vision & roadmap");
 
   return (
     <>

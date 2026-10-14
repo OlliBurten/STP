@@ -35,7 +35,7 @@ export default function OptOut() {
 
   return (
     <main style={{ minHeight: "100vh", background: "var(--paper)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
-      <PageMeta title="Avregistrering – STP" noindex />
+      <PageMeta title="Avregistrering" noindex />
       <div style={{ maxWidth: 480, width: "100%", textAlign: "center" }}>
         <Link to="/" style={{ display: "inline-flex", alignItems: "center", gap: 6, marginBottom: 32, textDecoration: "none" }}>
           <img src="/stp-logo.png" alt="STP – Sveriges Transportplattform" style={{ height: 24, width: "auto", display: "block" }} />

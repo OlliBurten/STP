@@ -19,7 +19,7 @@ export default function RegionJobList() {
   usePageMeta(
     region
       ? {
-          title: `Lastbilsjobb i ${region.name} — lediga tjänster 2025`,
+          title: `Lastbilsjobb i ${region.name} — lediga tjänster ${new Date().getFullYear()}`,
           description: `${jobs.length > 0 ? `${jobs.length} lediga lastbilsjobb i ${region.name}.` : `Lediga lastbilsjobb i ${region.name}.`} CE, C, YKB — sök direkt hos arbetsgivaren.`,
           canonical: `/lastbilsjobb/${regionSlug}`,
           type: "website",

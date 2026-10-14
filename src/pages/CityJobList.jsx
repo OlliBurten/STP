@@ -32,7 +32,7 @@ export default function CityJobList() {
   usePageMeta(
     city
       ? {
-          title: `CE-jobb ${city.name} 2025 — lediga lastbilsjobb`,
+          title: `CE-jobb ${city.name} ${new Date().getFullYear()} — lediga lastbilsjobb`,
           description: `${city.desc} Sök direkt hos arbetsgivaren.`,
           canonical: `/ce-jobb/${citySlug}`,
           type: "website",

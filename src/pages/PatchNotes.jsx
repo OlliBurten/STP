@@ -7,7 +7,7 @@ export default function PatchNotes() {
   return (
     <main style={{ background: "var(--paper)", minHeight: "100vh", paddingTop: 96 }}>
       <PageMeta
-        title="Nyheter & uppdateringar – STP"
+        title="Nyheter & uppdateringar"
         description="Följ de senaste uppdateringarna på Sveriges Transportplattform. Nya funktioner, förbättringar och buggfixar för förare och åkerier."
         canonical="/uppdateringar"
       />

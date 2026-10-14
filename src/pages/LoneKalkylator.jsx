@@ -217,7 +217,7 @@ export default function LoneKalkylator() {
   };
 
   return (
-    <main style={{ minHeight: "100vh", background: T.bg, paddingTop: 96 }}>
+    <main style={{ minHeight: "100vh", background: T.bg, paddingTop: "clamp(24px, 6.5vw, 96px)" }}>
       <PageMeta
         title="Lönekalkylatorn – vad borde en lastbilschaufför tjäna?"
         description={`Räkna ut vad du borde tjäna som lastbilschaufför i Sverige. Riktvärden baserade på Transportavtalet 2025–2027 och branschdata.`}
@@ -422,7 +422,7 @@ export default function LoneKalkylator() {
             <p style={{ fontSize: "var(--text-sm)", color: T.sub, lineHeight: 1.6, marginBottom: 16 }}>
               Med en komplett profil på STP har du behörigheter och erfarenhet samlade — redo att följa med varje ansökan.
             </p>
-            <Link to="/login" style={{
+            <Link to="/login" state={{ initialMode: "register", requiredRole: "driver" }} style={{
               display: "inline-block", padding: "10px 20px", borderRadius: 10,
               background: "var(--green)", color: "#fff", fontSize: "var(--text-sm)", fontWeight: 800, textDecoration: "none",
             }}>Skapa gratis profil →</Link>

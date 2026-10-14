@@ -262,7 +262,7 @@ export default function SavedJobs() {
 
     return (
       <div style={{ background: "var(--paper)", minHeight: "100vh", paddingBottom: 90, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
-        <PageMeta title="Sparat – STP" />
+        <PageMeta title="Sparat" />
 
         {/* Title */}
         <div style={{ padding: "0 20px 14px", paddingTop: "calc(env(safe-area-inset-top, 0px) + 20px)" }}>
@@ -391,7 +391,7 @@ export default function SavedJobs() {
 
   return (
     <main style={{ background: "var(--paper)", minHeight: "100vh" }}>
-      <PageMeta title="Sparat – STP" />
+      <PageMeta title="Sparat" />
 
       {/* Page header */}
       <div style={{ background: "var(--paper)", borderBottom: "1px solid var(--line)", paddingTop: 32, paddingBottom: 12 }}>

@@ -890,7 +890,7 @@ export default function PostJob() {
   if (submitted) {
     return (
       <main style={{ background: "var(--paper)", minHeight: "100vh", paddingTop: 32, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <PageMeta title={isEdit ? "Annons sparad – STP" : "Annons publicerad – STP"} />
+        <PageMeta title={isEdit ? "Annons sparad" : "Annons publicerad"} />
         <div style={{ maxWidth: 520, padding: "0 24px", textAlign: "center" }}>
           <div style={{ padding: "40px 36px", background: "var(--card)", border: "1px solid var(--line)", borderRadius: 24, textAlign: "center", boxShadow: "var(--sh-md)" }}>
             <div style={{ fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.5, color: "var(--amber-text)", textTransform: "uppercase", marginBottom: 24 }}>{isEdit ? "Annons sparad · Åkeri" : "Annons publicerad · Åkeri"}</div>
@@ -938,7 +938,7 @@ export default function PostJob() {
 
   return (
     <main style={{ background: "var(--paper)", minHeight: "100vh" }}>
-      <PageMeta title="Publicera jobb – STP" />
+      <PageMeta title="Publicera jobb" />
 
       {/* Page header */}
       <div style={{ maxWidth: "var(--w-read)", margin: "0 auto", padding: isMobile ? "16px 20px 0" : "28px 32px 0" }}>
