@@ -46,7 +46,7 @@ export default function HittaPraktik() {
   return (
     <main style={{ background: "var(--paper)", minHeight: "100vh" }}>
       <PageMeta
-        title="Hitta praktikplats inom transport och åkeri – STP"
+        title="Hitta praktikplats inom transport och åkeri"
         description="Söker du APL-plats eller praktik inom lastbil och transport? STP kopplar ihop gymnasieelever och YH-studerande med åkerier som är öppna för praktikanter. Gratis och direkt."
       />
 

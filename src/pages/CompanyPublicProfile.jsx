@@ -239,7 +239,7 @@ export default function CompanyPublicProfile({ companyId: idProp }) {
     return (
       <div style={{ position: "fixed", inset: 0, background: "var(--paper)", color: "var(--ink-900)", display: "flex", flexDirection: "column", zIndex: 1 }}>
         <PageMeta
-          title={`${company.name} – STP`}
+          title={`${company.name}`}
           description={metaDescription}
           canonical={company.slug ? `/akerier/${company.slug}` : `/foretag/${company.id}`}
           jsonLd={jsonLd}
@@ -467,7 +467,7 @@ export default function CompanyPublicProfile({ companyId: idProp }) {
   return (
     <main style={{ background: "var(--paper)", minHeight: "100vh", paddingBottom: 80 }}>
       <PageMeta
-        title={`${company.name} – STP`}
+        title={`${company.name}`}
         description={metaDescription}
         canonical={company.slug ? `/akerier/${company.slug}` : `/foretag/${company.id}`}
         jsonLd={jsonLd}

@@ -124,7 +124,7 @@ export default function PartnerPresentation() {
     <main style={{ background: "#0a1010", minHeight: "100vh", marginTop: "-64px", paddingTop: 80, paddingBottom: 60 }}>
       <style>{printCSS}</style>
       <PageMeta
-        title="Partnerskap – STP Sveriges Transportplattform"
+        title="Partnerskap"
         description="Presentationsmaterial för partnerskap med STP."
         robots="noindex"
       />

@@ -49,7 +49,7 @@ export default function PresentationConsent() {
 
   return (
     <main style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "48px 20px" }}>
-      <PageMeta title="Presentation för arbetsgivare – STP" robots="noindex" />
+      <PageMeta title="Presentation för arbetsgivare" robots="noindex" />
       <div style={{ maxWidth: 520, textAlign: "center" }}>
         {state === "working" && <p style={P}>Sparar ditt svar…</p>}
         {state === "error" && (

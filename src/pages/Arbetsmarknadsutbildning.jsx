@@ -46,7 +46,7 @@ export default function Arbetsmarknadsutbildning() {
   return (
     <main style={{ background: "var(--paper)", minHeight: "100vh" }}>
       <PageMeta
-        title="Jobb efter arbetsmarknadsutbildning lastbil – STP"
+        title="Jobb efter arbetsmarknadsutbildning lastbil"
         description="Klarat din AMU inom lastbil, CE-körkort eller YKB? STP kopplar ihop dig med åkerier som söker förare utan lång erfarenhet. Hitta ditt första jobb som lastbilschaufför."
       />
 

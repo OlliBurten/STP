@@ -256,7 +256,7 @@ export default function YkbTimer() {
                 <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", lineHeight: 1.6, marginBottom: 16 }}>
                   Lägg till ditt YKB-utgångsdatum i din STP-profil — då påminner vi dig automatiskt 90 och 30 dagar innan. Gratis.
                 </p>
-                <Link to="/login" style={{
+                <Link to="/login" state={{ initialMode: "register", requiredRole: "driver" }} style={{
                   display: "inline-block", padding: "10px 20px", borderRadius: 10,
                   background: "var(--green)", color: "#fff", fontSize: "var(--text-sm)", fontWeight: 800, textDecoration: "none",
                 }}>

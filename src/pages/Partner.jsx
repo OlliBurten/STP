@@ -116,7 +116,7 @@ export default function Partner() {
   return (
     <main style={{ background: "var(--paper)", minHeight: "100vh" }}>
       <PageMeta
-        title="Partnersida – STP Sveriges Transportplattform"
+        title="Partnersida"
         description="STP söker samarbeten med utbildningsaktörer, skolor och kommuner för att koppla ihop förare med åkerier. Läs om partnerskap och hör av dig."
       />
 

@@ -548,7 +548,7 @@ export default function MinaAnsokningar() {
   if (isMobile) {
     return (
       <div style={{ background: "var(--paper)", minHeight: "100vh", paddingBottom: 80 }}>
-        <PageMeta title="Mina ansökningar – STP" />
+        <PageMeta title="Mina ansökningar" />
 
         {/* Header + filter — matchar prototypen STP Mobil Mina Ansökningar.
             Topp-padding klarar den fixed:a MobileHeader (samma mönster som JobList). */}
@@ -595,7 +595,7 @@ export default function MinaAnsokningar() {
   // ── Desktop ──────────────────────────────────────────────────────────────
   return (
     <main style={{ background: "var(--paper)", minHeight: "100vh" }}>
-      <PageMeta title="Mina ansökningar – STP" />
+      <PageMeta title="Mina ansökningar" />
 
       {/* Page header */}
       <div style={{ background: "var(--paper)", borderBottom: "1px solid var(--line)", paddingTop: 32, paddingBottom: 0 }}>
