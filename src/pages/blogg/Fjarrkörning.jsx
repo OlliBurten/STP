@@ -11,11 +11,11 @@ export default function Fjarrkörning() {
 
   return (
     <BlogPost breadcrumb="Fjärrkörning">
-      <ArticleJsonLd headline={TITLE} description={DESC} datePublished="2025-04-20" url="/blogg/fjarrkörning" />
+      <ArticleJsonLd headline={TITLE} description={DESC} datePublished="2025-04-20" dateModified="2026-10-14" url="/blogg/fjarrkörning" />
 
 
       <h1 className="text-3xl font-bold text-slate-900 mb-4">{TITLE}</h1>
-      <p className="text-slate-500 text-sm mb-8">Publicerad 20 april 2025 · Källa: Svenska Transportarbetareförbundet, Transportstyrelsen</p>
+      <p className="text-slate-500 text-sm mb-8">Publicerad 20 april 2025 · Uppdaterad 14 oktober 2026 · Källa: Svenska Transportarbetareförbundet, Transportstyrelsen</p>
 
       <div className="space-y-6 text-slate-700 leading-relaxed">
         <p>
@@ -74,8 +74,10 @@ export default function Fjarrkörning() {
           <li>Övertidstillägg</li>
         </ul>
         <p>
-          En erfaren fjärrkörningschaufför med kollektivavtal kan tjäna 38 000–50 000 kr/månad
-          inklusive tillägg.
+          Grundlönen följer samma avtal som annan lastbilskörning (minst 31 807 kr med kollektivavtal
+          2026), men OB-tillägg, övertid och traktamente gör att fjärrkörning ofta ger klart mer i
+          plånboken än snittet på 34 600 kr (SCB 2025). Räkna på ditt fall i{" "}
+          <Link to="/lon-kalkylator" className="text-[var(--color-primary)] hover:underline">lönekalkylatorn</Link>.
         </p>
         <p className="text-sm text-slate-500 bg-slate-50 border border-slate-200 rounded-lg p-3">
           <strong>Obs:</strong> Löneuppskattningar varierar kraftigt beroende på arbetsgivare,

@@ -1,19 +1,14 @@
 // Programmatisk lönesida per län: /lon/:regionSlug
-// Ärlighetsprincip: riksnivå-siffrorna är samma granskade spann som i
-// löneartikeln (SCB/Medlingsinstitutet); den regionala delen bygger ENBART på
-// vad aktuella annonser i länet faktiskt anger — inga påhittade länssiffror.
+// Ärlighetsprincip: statistiken är SCB:s officiella (riksområde + riket) och
+// Transportavtalets lönegolv; annonsdelen bygger ENBART på vad aktuella annonser
+// i länet faktiskt anger — inga påhittade länssiffror.
 import { useEffect, useState } from "react";
 import { Link, useParams, Navigate } from "react-router-dom";
 import { fetchJobs } from "../api/jobs";
 import { usePageMeta } from "../hooks/usePageMeta";
 import { getRegionBySlug, regionPages } from "../data/regions";
 import JobAlertSignup from "../components/JobAlertSignup";
-
-const NATIONAL_ROWS = [
-  ["C (lastbil utan släp)", "28 000 kr", "24 000–32 000 kr"],
-  ["CE (dragbil + semi)", "33 000 kr", "28 000–42 000 kr"],
-  ["CE + ADR Tank", "36 000 kr", "30 000–45 000 kr"],
-];
+import { NATIONAL_SALARY, AGREEMENT_FLOOR, SALARY_YEAR, salaryAreaForRegion } from "../data/salaryStats";
 
 const fmt = (n) => n.toLocaleString("sv-SE");
 
@@ -24,7 +19,7 @@ export default function LonRegion() {
 
   usePageMeta({
     title: region ? `Lastbilschaufför lön i ${region.name} — aktuella siffror & lediga jobb` : "Lön",
-    description: region ? `Vad tjänar en lastbilschaufför i ${region.name}? Granskade lönespann för C/CE + vad aktuella annonser i länet faktiskt erbjuder.` : "",
+    description: region ? `Vad tjänar en lastbilschaufför i ${region.name}? SCB:s lönestatistik ${SALARY_YEAR}, kollektivavtalets lönegolv och vad aktuella annonser i länet erbjuder.` : "",
     canonical: `/lon/${regionSlug}`,
     type: "article",
   });
@@ -35,6 +30,14 @@ export default function LonRegion() {
   }, [regionSlug]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!region) return <Navigate to="/blogg/lon-lastbilschauffor" replace />;
+
+  const area = salaryAreaForRegion(region.slug);
+  const nationalRows = [
+    ["Medellön", NATIONAL_SALARY.mean],
+    ["Medianlön", NATIONAL_SALARY.median],
+    ["10 % tjänar mindre än", NATIONAL_SALARY.p10],
+    ["10 % tjänar mer än", NATIONAL_SALARY.p90],
+  ];
 
   const withSalary = (jobs || []).filter((j) => j.salaryMin);
   const mins = withSalary.map((j) => j.salaryMin);
@@ -59,27 +62,38 @@ export default function LonRegion() {
           Lastbilschaufför lön i {region.name}
         </h1>
         <p style={p}>
-          Vad tjänar en lastbilschaufför i {region.name}? Här är de granskade lönespannen på riksnivå —
+          Vad tjänar en lastbilschaufför i {region.name}? Här är SCB:s officiella lönestatistik —
           och vad arbetsgivarna i {region.name} faktiskt erbjuder i sina aktuella annonser just nu.
         </p>
 
-        <h2 style={h2}>Lön efter behörighet (riksnivå)</h2>
+        <h2 style={h2}>Lönestatistik från SCB ({SALARY_YEAR})</h2>
+        {area && (
+          <p style={p}>
+            I {area.name}, där {region.name} ingår, var medellönen för lastbilsförare{" "}
+            <strong>{fmt(area.mean)} kr</strong> i månaden (osäkerhet ±{fmt(area.ci)} kr).
+          </p>
+        )}
         <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr style={{ background: "var(--paper-2)" }}>
-                {["Behörighet", "Ungefärlig medellön", "Spann"].map((h) => <th key={h} style={{ ...td, textAlign: "left", fontWeight: 700 }}>{h}</th>)}
+                {["Hela Sverige", "Månadslön"].map((h) => <th key={h} style={{ ...td, textAlign: "left", fontWeight: 700 }}>{h}</th>)}
               </tr>
             </thead>
             <tbody>
-              {NATIONAL_ROWS.map((r) => (
-                <tr key={r[0]}>{r.map((c, i) => <td key={i} style={td}>{c}</td>)}</tr>
+              {nationalRows.map(([label, v]) => (
+                <tr key={label}><td style={td}>{label}</td><td style={td}>{fmt(v)} kr</td></tr>
               ))}
             </tbody>
           </table>
         </div>
+        <p style={p}>
+          Med kollektivavtal (Transportavtalet) är lönegolvet från 1 april {AGREEMENT_FLOOR.year}{" "}
+          {fmt(AGREEMENT_FLOOR.entry)} kr i ingångslön och {fmt(AGREEMENT_FLOOR.sixYears)} kr efter sex år.{" "}
+          <Link to="/lon-kalkylator" style={{ color: "var(--green-text)", fontWeight: 700 }}>Räkna på din lön →</Link>
+        </p>
         <p style={{ fontSize: "var(--text-xs)", color: "var(--ink-400)", marginTop: 8 }}>
-          Uppskattningar baserade på branschjämförelser. Källa: SCB lönestrukturstatistik, Medlingsinstitutet. Varierar per arbetsgivare.
+          Källa: SCB lönestrukturstatistik {SALARY_YEAR} (yrke 8332, lastbilsförare m.fl.). SCB redovisar per riksområde, inte per län.
         </p>
 
         <h2 style={h2}>Vad annonserna i {region.name} erbjuder just nu</h2>

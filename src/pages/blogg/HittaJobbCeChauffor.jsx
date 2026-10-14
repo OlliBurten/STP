@@ -14,19 +14,19 @@ export default function HittaJobbCeChauffor() {
       <ArticleJsonLd
         headline={TITLE}
         description={DESC}
-        datePublished="2025-04-01"
+        datePublished="2025-04-01" dateModified="2026-10-14"
         url="/blogg/hitta-jobb-ce-chauffor"
       />
 
 
       <h1 className="text-3xl font-bold text-slate-900 mb-4">{TITLE}</h1>
-      <p className="text-slate-500 text-sm mb-8">Publicerad 1 april 2025</p>
+      <p className="text-slate-500 text-sm mb-8">Publicerad 1 april 2025 · Uppdaterad 14 oktober 2026</p>
 
       <div className="space-y-6 text-slate-700 leading-relaxed">
         <p>
           Efterfrågan på CE-chaufförer är hög. Enligt{" "}
           <a
-            href="https://www.tya.se/trendindikator"
+            href="https://www.tya.se/branscher/akeri/projekt-pa-gang-hos-tya/trendindikator-anstallningsbehov-akeri/"
             target="_blank"
             rel="noopener noreferrer"
             className="text-[var(--color-primary)] hover:underline"
@@ -103,8 +103,8 @@ export default function HittaJobbCeChauffor() {
         <div className="mt-10 pt-6 border-t border-slate-100 text-xs text-slate-400 space-y-1">
           <p><strong>Källor:</strong></p>
           <ul className="space-y-1">
-            <li><a href="https://www.tya.se/trendindikator" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">TYA — Trendindikator Åkeri (kompetensläget)</a></li>
-            <li><a href="https://www.transportstyrelsen.se/sv/vagtrafik/yrkestrafik/ykb/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">Transportstyrelsen — YKB-krav</a></li>
+            <li><a href="https://www.tya.se/branscher/akeri/projekt-pa-gang-hos-tya/trendindikator-anstallningsbehov-akeri/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">TYA — Trendindikator Åkeri (kompetensläget)</a></li>
+            <li><a href="https://www.transportstyrelsen.se/sv/vagtrafik/yrkestrafik/yrkesforarkompetens/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">Transportstyrelsen — YKB-krav</a></li>
           </ul>
         </div>
       </div>

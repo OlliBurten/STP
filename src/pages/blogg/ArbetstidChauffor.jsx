@@ -4,25 +4,27 @@ import ArticleJsonLd from "../../components/ArticleJsonLd";
 import BlogPost from "../../components/BlogPost";
 
 const TITLE = "Arbetstidsregler för lastbilschaufförer — vad lagen säger";
-const DESC = "Körkortstider, veckovila, raster och kör-/vilotidsregler för lastbilschaufförer enligt EU-förordning 561/2006 och AETR. Förklarat på svenska.";
+const DESC = "Körtider, veckovila, raster och kör-/vilotidsregler för lastbilschaufförer enligt EU-förordning 561/2006 och AETR. Förklarat på svenska.";
 
 export default function ArbetstidChauffor() {
   usePageMeta({ title: TITLE, description: DESC, canonical: "/blogg/arbetstid-chauffor", type: "article" });
 
   return (
     <BlogPost breadcrumb="Arbetstidsregler">
-      <ArticleJsonLd headline={TITLE} description={DESC} datePublished="2025-04-20" url="/blogg/arbetstid-chauffor" />
+      <ArticleJsonLd headline={TITLE} description={DESC} datePublished="2025-04-20" dateModified="2026-10-14" url="/blogg/arbetstid-chauffor" />
 
 
       <h1 className="text-3xl font-bold text-slate-900 mb-4">{TITLE}</h1>
-      <p className="text-slate-500 text-sm mb-8">Publicerad 20 april 2025 · Källa: Transportstyrelsen, EU-förordning 561/2006</p>
+      <p className="text-slate-500 text-sm mb-8">Publicerad 20 april 2025 · Uppdaterad 14 oktober 2026 · Källa: Transportstyrelsen, EU-förordning 561/2006</p>
 
       <div className="space-y-6 text-slate-700 leading-relaxed">
         <p>
           Kör- och vilotidsreglerna för lastbilschaufförer i Sverige styrs primärt av{" "}
           <a href="https://www.transportstyrelsen.se/sv/vagtrafik/yrkestrafik/kor-och-vilotider/" target="_blank" rel="noopener noreferrer" className="text-[var(--color-primary)] hover:underline">EU-förordning 561/2006</a>.
           Reglerna gäller fordon över 3 500 kg i yrkestrafik och kontrolleras av Polisen
-          och Transportstyrelsen via färdskrivare (tacho).
+          och Transportstyrelsen via färdskrivare (tacho). Sedan 1 juli 2026 gäller de även lätta
+          lastbilar över 2 500 kg vid internationella transporter och cabotage — då krävs smart
+          färdskrivare version 2 och förarkort.
         </p>
 
         <h2 className="text-xl font-semibold text-slate-900 mt-8">Daglig körtid</h2>
@@ -67,7 +69,7 @@ export default function ArbetstidChauffor() {
           <li><strong>Normal daglig vilotid:</strong> Minst 11 sammanhängande timmar</li>
           <li>
             <strong>Förkortad daglig vilotid:</strong> Minst 9 timmar — tillåtet max
-            3 gånger mellan två veclovilor
+            3 gånger mellan två veckovilor
           </li>
           <li>
             <strong>Delad vilotid:</strong> 3 + 9 timmar (totalt 12 timmar) — tillåtet
@@ -94,10 +96,10 @@ export default function ArbetstidChauffor() {
 
         <h2 className="text-xl font-semibold text-slate-900 mt-8">Undantag</h2>
         <p>
-          Vissa körningar är undantagna 561/2006 — t.ex. fordon under 3 500 kg, fordon
-          som inte rör sig mer än 100 km från basen, och vissa jordbrukstransporter.
+          Vissa körningar är undantagna 561/2006 — t.ex. fordon under 3 500 kg i inrikes trafik
+          och vissa jordbruks- och specialtransporter. Undantagen är detaljerade och ändras.
           Kontrollera alltid med{" "}
-          <a href="https://www.transportstyrelsen.se/sv/vagtrafik/yrkestrafik/kör-och-vilotider/" target="_blank" rel="noopener noreferrer" className="text-[var(--color-primary)] hover:underline">Transportstyrelsen</a>{" "}
+          <a href="https://www.transportstyrelsen.se/sv/vagtrafik/yrkestrafik/kor-och-vilotider/" target="_blank" rel="noopener noreferrer" className="text-[var(--color-primary)] hover:underline">Transportstyrelsen</a>{" "}
           om din transport är undantagen.
         </p>
 
@@ -119,7 +121,7 @@ export default function ArbetstidChauffor() {
         <div className="mt-10 pt-6 border-t border-slate-100 text-xs text-slate-400 space-y-1">
           <p><strong>Källor:</strong></p>
           <ul className="space-y-1">
-            <li><a href="https://www.transportstyrelsen.se/sv/vagtrafik/yrkestrafik/kör-och-vilotider/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">Transportstyrelsen — Kör- och vilotider</a></li>
+            <li><a href="https://www.transportstyrelsen.se/sv/vagtrafik/yrkestrafik/kor-och-vilotider/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">Transportstyrelsen — Kör- och vilotider</a></li>
             <li><a href="https://eur-lex.europa.eu/legal-content/SV/TXT/?uri=CELEX:32006R0561" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">EU-förordning 561/2006 — Fulltext</a></li>
             <li><a href="https://www.transport.se" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">Svenska Transportarbetareförbundet</a></li>
           </ul>

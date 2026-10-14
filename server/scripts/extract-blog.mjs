@@ -59,12 +59,13 @@ for (const file of files) {
   const desc = strConst(src, "DESC");
   const canonical = attr(src, "canonical") || (src.match(/canonical:\s*"([^"]*)"/) || [])[1];
   const datePublished = attr(src, "datePublished");
+  const dateModified = attr(src, "dateModified");
   const slug = (canonical || "").replace("/blogg/", "");
   // Body = från <BlogPost till </BlogPost>
   const bodyMatch = src.match(/<BlogPost[\s\S]*?<\/BlogPost>/);
   const bodyHtml = bodyMatch ? jsxToHtml(bodyMatch[0], title, desc) : "";
   if (!slug || !title) { console.warn("HOPPAR ÖVER (saknar slug/title):", file); continue; }
-  articles.push({ slug, title, desc, datePublished, bodyHtml });
+  articles.push({ slug, title, desc, datePublished, ...(dateModified ? { dateModified } : {}), bodyHtml });
   console.log(`✓ ${slug} — ${bodyHtml.length} tecken`);
 }
 

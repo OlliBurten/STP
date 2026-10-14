@@ -14,13 +14,13 @@ export default function YkbGuide() {
       <ArticleJsonLd
         headline={TITLE}
         description={DESC}
-        datePublished="2025-03-08"
+        datePublished="2025-03-08" dateModified="2026-10-14"
         url="/blogg/ykb-yrkesforarkompetens"
       />
 
 
       <h1 className="text-3xl font-bold text-slate-900 mb-4">{TITLE}</h1>
-      <p className="text-slate-500 text-sm mb-8">Publicerad 8 mars 2025 · Källa: Transportstyrelsen, TYA</p>
+      <p className="text-slate-500 text-sm mb-8">Publicerad 8 mars 2025 · Uppdaterad 14 oktober 2026 · Källa: Transportstyrelsen, TYA</p>
 
       <div className="space-y-6 text-slate-700 leading-relaxed">
         <p>
@@ -28,12 +28,12 @@ export default function YkbGuide() {
           eller lastbil i yrkestrafik inom EU. Det räcker inte med körkort — utan YKB får du inte köra
           betalt yrkesmässigt, oavsett om du är anställd eller egenföretagare. Kravet följer av{" "}
           <a
-            href="https://eur-lex.europa.eu/legal-content/SV/TXT/?uri=CELEX%3A32003L0059"
+            href="https://eur-lex.europa.eu/legal-content/SV/TXT/?uri=CELEX%3A32022L2561"
             target="_blank"
             rel="noopener noreferrer"
             className="text-[var(--color-primary)] hover:underline"
           >
-            EU-direktiv 2003/59/EG
+            EU-direktiv 2022/2561 (som ersatte 2003/59/EG)
           </a>{" "}
           och är implementerat i svensk lag via yrkesförarkompetenslagen (2007:1157).
         </p>
@@ -53,7 +53,7 @@ export default function YkbGuide() {
         <p>
           Mer information om innehållet finns hos{" "}
           <a
-            href="https://www.transportstyrelsen.se/sv/vagtrafik/yrkestrafik/ykb/"
+            href="https://www.transportstyrelsen.se/sv/vagtrafik/yrkestrafik/yrkesforarkompetens/"
             target="_blank"
             rel="noopener noreferrer"
             className="text-[var(--color-primary)] hover:underline"
@@ -62,7 +62,7 @@ export default function YkbGuide() {
           </a>{" "}
           och branschorganisationen{" "}
           <a
-            href="https://www.tya.se/ykb"
+            href="https://www.tya.se/branscher/akeri/behorigheter-regelverk-tillstand/ykb/"
             target="_blank"
             rel="noopener noreferrer"
             className="text-[var(--color-primary)] hover:underline"
@@ -75,12 +75,14 @@ export default function YkbGuide() {
         <h2 className="text-xl font-semibold text-slate-900 mt-8">Grundutbildning och fortbildning</h2>
         <ul className="list-disc pl-6 space-y-2">
           <li>
-            <strong>Grundutbildning (280 timmar):</strong> Krävs om du aldrig haft YKB tidigare.
-            Kan kombineras med körkortsutbildningen.
+            <strong>Grundutbildning (280 eller 140 timmar):</strong> Krävs om du aldrig haft YKB
+            tidigare. Den längre (280 timmar) ger rätt att köra tung lastbil yrkesmässigt från 18 år,
+            den kortare (140 timmar) i regel från 21 år. Kan kombineras med körkortsutbildningen.
           </li>
           <li>
             <strong>Fortbildning (35 timmar var 5:e år):</strong> Måste genomföras av alla som redan
-            har YKB för att hålla det giltigt. Uppdelat i moduler om minst 7 timmar.
+            har YKB för att hålla det giltigt. Uppdelat i moduler om minst 7 timmar. Sedan 1 september
+            2026 får upp till 12 timmar ske på distans.
           </li>
         </ul>
 
@@ -104,7 +106,7 @@ export default function YkbGuide() {
         <p>
           Se fullständig undantagslista hos{" "}
           <a
-            href="https://www.transportstyrelsen.se/sv/vagtrafik/yrkestrafik/ykb/undantag/"
+            href="https://www.transportstyrelsen.se/sv/vagtrafik/yrkestrafik/yrkesforarkompetens/regler-for-yrkesforarkompetens/"
             target="_blank"
             rel="noopener noreferrer"
             className="text-[var(--color-primary)] hover:underline"
@@ -122,10 +124,10 @@ export default function YkbGuide() {
         </p>
         <p className="text-sm text-slate-500 bg-slate-50 border border-slate-200 rounded-lg p-3">
           <strong>Obs:</strong> Priser är uppskattningar baserade på branschjämförelser och varierar
-          kraftigt. Kontrollera aktuella priser direkt med godkända YKB-utbildare. TYA har en förteckning
-          över godkända utbildare på{" "}
+          kraftigt. Kontrollera aktuella priser direkt med godkända YKB-utbildare. Transportstyrelsen har en förteckning
+          över godkända utbildare — mer om det hos{" "}
           <a
-            href="https://www.tya.se/hitta-utbildare"
+            href="https://www.tya.se/branscher/akeri/behorigheter-regelverk-tillstand/ykb/"
             target="_blank"
             rel="noopener noreferrer"
             className="text-[var(--color-primary)] hover:underline"
@@ -152,9 +154,9 @@ export default function YkbGuide() {
         <div className="mt-10 pt-6 border-t border-slate-100 text-xs text-slate-400 space-y-1">
           <p><strong>Källor:</strong></p>
           <ul className="space-y-1">
-            <li><a href="https://www.transportstyrelsen.se/sv/vagtrafik/yrkestrafik/ykb/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">Transportstyrelsen — YKB</a></li>
-            <li><a href="https://www.tya.se/ykb" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">TYA — Yrkesförarkompetens</a></li>
-            <li><a href="https://eur-lex.europa.eu/legal-content/SV/TXT/?uri=CELEX%3A32003L0059" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">EU-direktiv 2003/59/EG</a></li>
+            <li><a href="https://www.transportstyrelsen.se/sv/vagtrafik/yrkestrafik/yrkesforarkompetens/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">Transportstyrelsen — YKB</a></li>
+            <li><a href="https://www.tya.se/branscher/akeri/behorigheter-regelverk-tillstand/ykb/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">TYA — Yrkesförarkompetens</a></li>
+            <li><a href="https://eur-lex.europa.eu/legal-content/SV/TXT/?uri=CELEX%3A32022L2561" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">EU-direktiv 2022/2561 (som ersatte 2003/59/EG)</a></li>
             <li><a href="https://www.riksdagen.se/sv/dokument-och-lagar/dokument/svensk-forfattningssamling/lag-20071157-om-yrkesforarkompetens_sfs-2007-1157/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">Yrkesförarkompetenslagen (SFS 2007:1157)</a></li>
           </ul>
         </div>

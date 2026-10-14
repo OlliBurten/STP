@@ -12,6 +12,7 @@ import { formattedTextToHtml, stripFormatting } from "../utils/formatText.js";
 import { dedupeAggregatedJobs } from "./jobDedupe.js";
 import { cityPages } from "./seoCities.js";
 import { regionPages } from "./seoRegions.js";
+import { NATIONAL_SALARY, AGREEMENT_FLOOR, SALARY_YEAR, salaryAreaForRegion } from "./seoSalaryStats.js";
 import { blogArticles } from "./seoBlog.js";
 
 const SITE = (process.env.FRONTEND_URL || "https://transportplattformen.se").split(",")[0].trim();
@@ -440,20 +441,15 @@ export function renderStaticHtml(key) {
 }
 
 // ─── Lön-per-län (/lon/:slug) — programmatisk lönesida ───────────────────────
-// Riksnivå = samma granskade spann som löneartikeln (SCB/Medlingsinstitutet);
-// regional del bygger enbart på vad aktuella annonser i länet faktiskt anger.
-const NATIONAL_SALARY_ROWS = [
-  ["C (lastbil utan släp)", "28 000 kr", "24 000–32 000 kr"],
-  ["CE (dragbil + semi)", "33 000 kr", "28 000–42 000 kr"],
-  ["CE + ADR Tank", "36 000 kr", "30 000–45 000 kr"],
-];
-
+// Officiell SCB-statistik (riksområde + riket) och Transportavtalets lönegolv;
+// regional annonsdel bygger enbart på vad aktuella annonser i länet faktiskt anger.
 export async function renderSalaryRegionHtml(slug) {
   const region = regionPages.find(r => r.slug === slug);
   if (!region) return null;
   const canonical = `${SITE}/lon/${region.slug}`;
   const title = `Lastbilschaufför lön i ${region.name} — aktuella siffror & lediga jobb | Transportplattformen`;
-  const description = `Vad tjänar en lastbilschaufför i ${region.name}? Granskade lönespann för C/CE + vad aktuella annonser i länet faktiskt erbjuder.`;
+  const area = salaryAreaForRegion(region.slug);
+  const description = `Vad tjänar en lastbilschaufför i ${region.name}? SCB:s lönestatistik ${SALARY_YEAR}, kollektivavtalets lönegolv och vad aktuella annonser i länet erbjuder.`;
   const rows = await prisma.job.findMany({
     where: { status: "ACTIVE", region: region.name },
     select: { id: true, title: true, company: true, location: true, source: true, claimed: true, salaryMin: true, salaryMax: true },
@@ -471,11 +467,16 @@ export async function renderSalaryRegionHtml(slug) {
   <h1>Lastbilschaufför lön i ${esc(region.name)}</h1>
   <p>${esc(description)}</p>
   <section>
-    <h2>Lön efter behörighet (riksnivå)</h2>
-    <table><tr><th>Behörighet</th><th>Ungefärlig medellön</th><th>Spann</th></tr>
-    ${NATIONAL_SALARY_ROWS.map(r => `<tr>${r.map(c => `<td>${esc(c)}</td>`).join("")}</tr>`).join("")}
+    <h2>Lönestatistik från SCB (${SALARY_YEAR})</h2>
+    ${area ? `<p>I ${esc(area.name)}, där ${esc(region.name)} ingår, var medellönen för lastbilsförare <strong>${fmtN(area.mean)} kr</strong> i månaden (osäkerhet ±${fmtN(area.ci)} kr).</p>` : ""}
+    <table><tr><th>Riket</th><th>Månadslön</th></tr>
+      <tr><td>Medellön</td><td>${fmtN(NATIONAL_SALARY.mean)} kr</td></tr>
+      <tr><td>Medianlön</td><td>${fmtN(NATIONAL_SALARY.median)} kr</td></tr>
+      <tr><td>10 % tjänar mindre än</td><td>${fmtN(NATIONAL_SALARY.p10)} kr</td></tr>
+      <tr><td>10 % tjänar mer än</td><td>${fmtN(NATIONAL_SALARY.p90)} kr</td></tr>
     </table>
-    <p><small>Uppskattningar baserade på branschjämförelser. Källa: SCB lönestrukturstatistik, Medlingsinstitutet.</small></p>
+    <p>Lönegolv i Transportavtalet från 1 april ${AGREEMENT_FLOOR.year}: ${fmtN(AGREEMENT_FLOOR.entry)} kr i ingångslön, ${fmtN(AGREEMENT_FLOOR.sixYears)} kr efter sex år.</p>
+    <p><small>Källa: SCB lönestrukturstatistik ${SALARY_YEAR} (yrke 8332, lastbilsförare m.fl.). SCB redovisar per riksområde, inte per län.</small></p>
   </section>
   <section>
     <h2>Vad annonserna i ${esc(region.name)} erbjuder just nu</h2>
@@ -598,6 +599,7 @@ export function renderBlogArticleHtml(slug) {
     headline: a.title,
     description: a.desc || a.title,
     ...(a.datePublished ? { datePublished: a.datePublished } : {}),
+    ...(a.dateModified || a.datePublished ? { dateModified: a.dateModified || a.datePublished } : {}),
     url: canonical,
     author: { "@type": "Organization", name: "Sveriges Transportplattform" },
     publisher: { "@type": "Organization", name: "Sveriges Transportplattform", logo: { "@type": "ImageObject", url: `${SITE}/stp-icon-192.png` } },

@@ -11,18 +11,20 @@ export default function KollektivavtalAkeri() {
 
   return (
     <BlogPost breadcrumb="Kollektivavtal åkeri">
-      <ArticleJsonLd headline={TITLE} description={DESC} datePublished="2025-04-20" url="/blogg/kollektivavtal-akeri" />
+      <ArticleJsonLd headline={TITLE} description={DESC} datePublished="2025-04-20" dateModified="2026-10-14" url="/blogg/kollektivavtal-akeri" />
 
 
       <h1 className="text-3xl font-bold text-slate-900 mb-4">{TITLE}</h1>
-      <p className="text-slate-500 text-sm mb-8">Publicerad 20 april 2025 · Källa: Svenska Transportarbetareförbundet</p>
+      <p className="text-slate-500 text-sm mb-8">Publicerad 20 april 2025 · Uppdaterad 14 oktober 2026 · Källa: Svenska Transportarbetareförbundet</p>
 
       <div className="space-y-6 text-slate-700 leading-relaxed">
         <p>
           Kollektivavtal är ett avtal mellan arbetsgivare och{" "}
           <a href="https://www.transport.se/lon-och-avtal/" target="_blank" rel="noopener noreferrer" className="text-[var(--color-primary)] hover:underline">Svenska Transportarbetareförbundet</a>.
-          Det reglerar miniminivåer för lön, arbetstid, övertid och anställningsvillkor. Ungefär
-          60–70% av åkerierna i Sverige är anslutna.
+          Det reglerar miniminivåer för lön, arbetstid, övertid och anställningsvillkor. Avtalet
+          för åkerier heter Transportavtalet och gäller 1 april 2025 – 31 mars 2027. Från 1 april 2026
+          är ingångslönen för lastbilsförare 31 807 kr och 33 198 kr efter sex år i yrket —{" "}
+          <Link to="/lon-kalkylator" className="text-[var(--color-primary)] hover:underline">räkna på din lön</Link>.
         </p>
 
         <h2 className="text-xl font-semibold text-slate-900 mt-8">Vad ingår i kollektivavtalet?</h2>
