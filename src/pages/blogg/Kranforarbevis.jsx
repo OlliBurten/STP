@@ -4,25 +4,27 @@ import ArticleJsonLd from "../../components/ArticleJsonLd";
 import BlogPost from "../../components/BlogPost";
 
 const TITLE = "Kranförarbevis — krav, utbildning och kostnad";
-const DESC = "Vad krävs för att köra kran i Sverige? Guide om kranförarbevis, HIAB-certifikat, utbildningslängd och vad det kostar 2025.";
+const DESC = "Vad krävs för att köra kran i Sverige? Guide om kranförarbevis, HIAB-certifikat, utbildningslängd och vad det kostar.";
 
 export default function Kranforarbevis() {
   usePageMeta({ title: TITLE, description: DESC, canonical: "/blogg/kranforarbevis", type: "article" });
 
   return (
     <BlogPost breadcrumb="Kranförarbevis">
-      <ArticleJsonLd headline={TITLE} description={DESC} datePublished="2025-04-20" url="/blogg/kranforarbevis" />
+      <ArticleJsonLd headline={TITLE} description={DESC} datePublished="2025-04-20" dateModified="2026-10-14" url="/blogg/kranforarbevis" />
 
 
       <h1 className="text-3xl font-bold text-slate-900 mb-4">{TITLE}</h1>
-      <p className="text-slate-500 text-sm mb-8">Publicerad 20 april 2025 · Källa: Arbetsmiljöverket, TYA</p>
+      <p className="text-slate-500 text-sm mb-8">Publicerad 20 april 2025 · Uppdaterad 14 oktober 2026 · Källa: Arbetsmiljöverket, TYA</p>
 
       <div className="space-y-6 text-slate-700 leading-relaxed">
         <p>
-          Kranförarbevis är ett krav för att yrkesmässigt hantera lyftanordningar som tornkran,
-          mobilkran och fordonsmonterad kran (HIAB). Det regleras av{" "}
-          <a href="https://www.av.se/produktion-industri-och-logistik/lyftanordningar-och-lyftredskap/" target="_blank" rel="noopener noreferrer" className="text-[var(--color-primary)] hover:underline">Arbetsmiljöverket</a>{" "}
-          via AFS 2006:6. Att ha kranförarbevis är ett stort mervärde som chaufför — det ger tillgång
+          För att arbeta med maskindrivna lyftanordningar — tornkran, mobilkran och fordonsmonterad
+          kran (HIAB) — krävs tillstånd från arbetsgivaren, och för att få det måste du ha dokumenterade
+          teoretiska och praktiska kunskaper. Kranförarbeviset är det vanliga sättet att visa dem. Det
+          regleras av{" "}
+          <a href="https://www.av.se/produktion-industri-och-logistik/anvandning-av-arbetsutrustning/lyftanordningar-och-lyftredskap/Kunskaper-och-tillstand/" target="_blank" rel="noopener noreferrer" className="text-[var(--color-primary)] hover:underline">Arbetsmiljöverket</a>{" "}
+          via AFS 2023:11 (som 2025 ersatte AFS 2006:6). Att ha kranförarbevis är ett stort mervärde som chaufför — det ger tillgång
           till fler och bättre betalda tjänster.
         </p>
 
@@ -66,7 +68,7 @@ export default function Kranforarbevis() {
 
         <h2 className="text-xl font-semibold text-slate-900 mt-8">Krav för att delta</h2>
         <ul className="list-disc pl-6 space-y-2">
-          <li>Minimiålder 18 år</li>
+          <li>Minimiålder 18 år (minderåriga får i regel inte köra maskindrivna lyftanordningar)</li>
           <li>Inga specifika förkunskapskrav för fordonsmonterad kran</li>
           <li>CE-körkort krävs för att köra själva fordonet (men inte för kranhantering isolerat)</li>
         </ul>
@@ -87,7 +89,7 @@ export default function Kranforarbevis() {
         <div className="mt-10 pt-6 border-t border-slate-100 text-xs text-slate-400 space-y-1">
           <p><strong>Källor:</strong></p>
           <ul className="space-y-1">
-            <li><a href="https://www.av.se/produktion-industri-och-logistik/lyftanordningar-och-lyftredskap/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">Arbetsmiljöverket — Lyftanordningar (AFS 2006:6)</a></li>
+            <li><a href="https://www.av.se/produktion-industri-och-logistik/anvandning-av-arbetsutrustning/lyftanordningar-och-lyftredskap/Kunskaper-och-tillstand/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">Arbetsmiljöverket — Lyftanordningar (AFS 2006:6)</a></li>
             <li><a href="https://www.tya.se" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">TYA — Utbildning transport och logistik</a></li>
           </ul>
         </div>

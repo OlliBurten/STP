@@ -4,18 +4,18 @@ import ArticleJsonLd from "../../components/ArticleJsonLd";
 import BlogPost from "../../components/BlogPost";
 
 const TITLE = "Bli lastbilschaufför — vägen från B-körkort till CE";
-const DESC = "Steg-för-steg: hur du tar CE-körkort, vad YKB kostar, hur lång utbildningen är och vad du kan tjäna som ny lastbilschaufför 2025.";
+const DESC = "Steg-för-steg: hur du tar CE-körkort, vad YKB kostar, hur lång utbildningen är och vad du kan tjäna som ny lastbilschaufför.";
 
 export default function LastbilschaufforUtbildning() {
   usePageMeta({ title: TITLE, description: DESC, canonical: "/blogg/lastbilschauffor-utbildning", type: "article" });
 
   return (
     <BlogPost breadcrumb="Bli lastbilschaufför">
-      <ArticleJsonLd headline={TITLE} description={DESC} datePublished="2025-04-20" url="/blogg/lastbilschauffor-utbildning" />
+      <ArticleJsonLd headline={TITLE} description={DESC} datePublished="2025-04-20" dateModified="2026-10-14" url="/blogg/lastbilschauffor-utbildning" />
 
 
       <h1 className="text-3xl font-bold text-slate-900 mb-4">{TITLE}</h1>
-      <p className="text-slate-500 text-sm mb-8">Publicerad 20 april 2025 · Källa: Transportstyrelsen, TYA</p>
+      <p className="text-slate-500 text-sm mb-8">Publicerad 20 april 2025 · Uppdaterad 14 oktober 2026 · Källa: Transportstyrelsen, TYA</p>
 
       <div className="space-y-6 text-slate-700 leading-relaxed">
         <p>
@@ -71,14 +71,13 @@ export default function LastbilschaufforUtbildning() {
         </p>
         <ul className="list-disc pl-6 space-y-2">
           <li>
-            <strong>Grundutbildning (280 timmar):</strong> Krävs om du inte tagit körkort
-            via YKB-integrerad väg. Tar 7–9 veckor på heltid. Ger dig rätten att köra
-            från 18 år (i stället för 21 för CE utan YKB).
+            <strong>Grundutbildning, 280 timmar:</strong> Tar 7–9 veckor på heltid och ger
+            rätt att köra tung lastbil yrkesmässigt från 18 år.
           </li>
           <li>
-            <strong>Snabbvägen (35 timmars prov):</strong> Om du tar körkort via{" "}
-            <a href="https://www.transportstyrelsen.se/sv/vagtrafik/yrkestrafik/ykb/" target="_blank" rel="noopener noreferrer" className="text-[var(--color-primary)] hover:underline">Transportstyrelsen</a>'s
-            provväg kan du klara YKB med ett prov istället för full grundutbildning.
+            <strong>Kortare grundutbildning, 140 timmar:</strong> Ger i regel rätt att köra från
+            21 år. Båda avslutas med prov hos Trafikverket. Läs mer hos{" "}
+            <a href="https://www.transportstyrelsen.se/sv/vagtrafik/yrkestrafik/yrkesforarkompetens/" target="_blank" rel="noopener noreferrer" className="text-[var(--color-primary)] hover:underline">Transportstyrelsen</a>.
           </li>
         </ul>
         <p>
@@ -100,9 +99,10 @@ export default function LastbilschaufforUtbildning() {
 
         <h2 className="text-xl font-semibold text-slate-900 mt-8">Vad kan du tjäna som ny chaufför?</h2>
         <p>
-          En nyutbildad CE-chaufför med YKB tjänar typiskt 28 000–32 000 kr/månad. Med
-          OB-tillägg, kollektivavtal och specialkompetenser (ADR, kran) kan lönen snabbt
-          stiga till 35 000–45 000 kr redan efter ett par år. Läs mer i vår guide om{" "}
+          Hos ett åkeri med kollektivavtal är ingångslönen för lastbilsförare minst 31 807 kr i
+          månaden (Transportavtalet, 2026). Snittet för alla lastbilsförare var 34 600 kr 2025 enligt
+          SCB. OB-tillägg och behörigheter som ADR och kran höjer lönen — räkna på din egen i{" "}
+          <Link to="/lon-kalkylator" className="text-[var(--color-primary)] hover:underline">lönekalkylatorn</Link>. Läs mer i vår guide om{" "}
           <Link to="/blogg/lon-lastbilschauffor" className="text-[var(--color-primary)] hover:underline">löner för lastbilschaufförer</Link>.
         </p>
 
@@ -119,7 +119,7 @@ export default function LastbilschaufforUtbildning() {
           <p><strong>Källor:</strong></p>
           <ul className="space-y-1">
             <li><a href="https://www.transportstyrelsen.se/sv/vagtrafik/korkort/ta-korkort/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">Transportstyrelsen — Ta körkort</a></li>
-            <li><a href="https://www.transportstyrelsen.se/sv/vagtrafik/yrkestrafik/ykb/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">Transportstyrelsen — YKB</a></li>
+            <li><a href="https://www.transportstyrelsen.se/sv/vagtrafik/yrkestrafik/yrkesforarkompetens/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">Transportstyrelsen — YKB</a></li>
             <li><a href="https://www.tya.se" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">TYA — Utbildning transport och logistik</a></li>
           </ul>
         </div>

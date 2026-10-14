@@ -11,11 +11,11 @@ export default function YkbFortbildning() {
 
   return (
     <BlogPost breadcrumb="YKB fortbildning">
-      <ArticleJsonLd headline={TITLE} description={DESC} datePublished="2025-04-20" url="/blogg/ykb-fortbildning" />
+      <ArticleJsonLd headline={TITLE} description={DESC} datePublished="2025-04-20" dateModified="2026-10-14" url="/blogg/ykb-fortbildning" />
 
 
       <h1 className="text-3xl font-bold text-slate-900 mb-4">{TITLE}</h1>
-      <p className="text-slate-500 text-sm mb-8">Publicerad 20 april 2025 · Källa: Transportstyrelsen, TYA</p>
+      <p className="text-slate-500 text-sm mb-8">Publicerad 20 april 2025 · Uppdaterad 14 oktober 2026 · Källa: Transportstyrelsen, TYA</p>
 
       <div className="space-y-6 text-slate-700 leading-relaxed">
         <p>
@@ -27,9 +27,9 @@ export default function YkbFortbildning() {
         <h2 className="text-xl font-semibold text-slate-900 mt-8">Vad är YKB-fortbildning?</h2>
         <p>
           Fortbildningen är 35 timmar uppdelat i moduler om minst 7 timmar vardera. Du behöver inte
-          ta alla 35 timmar på en gång — du kan sprida ut dem över 5-årsperioden. Varje genomförd
+          ta alla 35 timmar på en gång — du kan sprida ut dem över 5-årsperioden. Sedan 1 september 2026 får upp till 12 av de 35 timmarna ske på distans. Varje genomförd
           modul registreras hos{" "}
-          <a href="https://www.transportstyrelsen.se/sv/vagtrafik/yrkestrafik/ykb/" target="_blank" rel="noopener noreferrer" className="text-[var(--color-primary)] hover:underline">Transportstyrelsen</a>.
+          <a href="https://www.transportstyrelsen.se/sv/vagtrafik/yrkestrafik/yrkesforarkompetens/" target="_blank" rel="noopener noreferrer" className="text-[var(--color-primary)] hover:underline">Transportstyrelsen</a>.
         </p>
         <p>Typiska modulämnen:</p>
         <ul className="list-disc pl-6 space-y-2">
@@ -56,8 +56,8 @@ export default function YkbFortbildning() {
         <h2 className="text-xl font-semibold text-slate-900 mt-8">Var hittar du godkänd utbildare?</h2>
         <p>
           Fortbildningen måste ges av en utbildare som är godkänd av Transportstyrelsen.{" "}
-          <a href="https://www.tya.se/hitta-utbildare" target="_blank" rel="noopener noreferrer" className="text-[var(--color-primary)] hover:underline">TYA</a>{" "}
-          har en sökbar förteckning över godkända utbildare i hela Sverige.
+          <a href="https://www.tya.se/branscher/akeri/behorigheter-regelverk-tillstand/ykb/" target="_blank" rel="noopener noreferrer" className="text-[var(--color-primary)] hover:underline">TYA</a>{" "}
+          förklarar hur du hittar dem — Transportstyrelsen har förteckningen över godkända utbildare.
         </p>
 
         <h2 className="text-xl font-semibold text-slate-900 mt-8">Vad händer om du missar förnyelsen?</h2>
@@ -89,8 +89,8 @@ export default function YkbFortbildning() {
         <div className="mt-10 pt-6 border-t border-slate-100 text-xs text-slate-400 space-y-1">
           <p><strong>Källor:</strong></p>
           <ul className="space-y-1">
-            <li><a href="https://www.transportstyrelsen.se/sv/vagtrafik/yrkestrafik/ykb/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">Transportstyrelsen — YKB fortbildning</a></li>
-            <li><a href="https://www.tya.se/hitta-utbildare" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">TYA — Hitta godkänd YKB-utbildare</a></li>
+            <li><a href="https://www.transportstyrelsen.se/sv/vagtrafik/yrkestrafik/yrkesforarkompetens/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">Transportstyrelsen — YKB fortbildning</a></li>
+            <li><a href="https://www.tya.se/branscher/akeri/behorigheter-regelverk-tillstand/ykb/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">TYA — YKB och godkända utbildare</a></li>
           </ul>
         </div>
       </div>

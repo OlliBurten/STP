@@ -14,13 +14,13 @@ export default function AdrUtbildning() {
       <ArticleJsonLd
         headline={TITLE}
         description={DESC}
-        datePublished="2025-03-15"
+        datePublished="2025-03-15" dateModified="2026-10-14"
         url="/blogg/adr-utbildning-farligt-gods"
       />
 
 
       <h1 className="text-3xl font-bold text-slate-900 mb-4">{TITLE}</h1>
-      <p className="text-slate-500 text-sm mb-8">Publicerad 15 mars 2025 · Källa: MSB, Transportstyrelsen</p>
+      <p className="text-slate-500 text-sm mb-8">Publicerad 15 mars 2025 · Uppdaterad 14 oktober 2026 · Källa: Myndigheten för civilt försvar, Trafikverket</p>
 
       <div className="space-y-6 text-slate-700 leading-relaxed">
         <p>
@@ -28,14 +28,14 @@ export default function AdrUtbildning() {
           <em>Accord européen relatif au transport international des marchandises Dangereuses par Route</em>
           ). I Sverige regleras det av{" "}
           <a
-            href="https://www.msb.se/sv/amnesomraden/farliga-amnen/transport-av-farligt-gods/vag-adr/"
+            href="https://www.mcf.se/sv/amnesomraden/skydd-mot-olyckor-och-farliga-amnen/farligt-gods/"
             target="_blank"
             rel="noopener noreferrer"
             className="text-[var(--color-primary)] hover:underline"
           >
-            MSB (Myndigheten för samhällsskydd och beredskap)
+            Myndigheten för civilt försvar (MCF, tidigare MSB)
           </a>{" "}
-          via MSBFS 2023:2 (ADR-S). Om du kör fordon med farliga ämnen — som drivmedel, kemikalier
+          via föreskrifterna ADR-S (MSBFS 2024:10). Om du kör fordon med farliga ämnen — som drivmedel, kemikalier
           eller gaser — behöver du ADR-behörighet.
         </p>
 
@@ -53,12 +53,12 @@ export default function AdrUtbildning() {
         <p>
           Fullständig klassificering finns i{" "}
           <a
-            href="https://www.msb.se/sv/amnesomraden/farliga-amnen/transport-av-farligt-gods/vag-adr/adrs-regelverket/"
+            href="https://www.mcf.se/sv/amnesomraden/skydd-mot-olyckor-och-farliga-amnen/farligt-gods/"
             target="_blank"
             rel="noopener noreferrer"
             className="text-[var(--color-primary)] hover:underline"
           >
-            ADR-S-regelverket på MSB:s webbplats
+            ADR-S-regelverket hos Myndigheten för civilt försvar
           </a>
           .
         </p>
@@ -85,7 +85,7 @@ export default function AdrUtbildning() {
         <p>
           Grundkursen är normalt 3–4 dagar och avslutas med ett skriftligt prov hos{" "}
           <a
-            href="https://www.transportstyrelsen.se/sv/vagtrafik/yrkestrafik/adr/"
+            href="https://www.mcf.se/sv/amnesomraden/skydd-mot-olyckor-och-farliga-amnen/farligt-gods/adr-utbildning/examination-av-adr-forare/"
             target="_blank"
             rel="noopener noreferrer"
             className="text-[var(--color-primary)] hover:underline"
@@ -105,7 +105,7 @@ export default function AdrUtbildning() {
         <ul className="list-disc pl-6 space-y-2">
           <li><strong>ADR Grundkurs:</strong> 5 000–10 000 kr</li>
           <li><strong>ADR Tank-tillägg:</strong> 3 000–6 000 kr</li>
-          <li><strong>Prov hos Transportstyrelsen:</strong> ca 700 kr</li>
+          <li><strong>Prov hos Trafikverket:</strong> 425 kr (500 kr kvällar och helger)</li>
         </ul>
         <p className="text-sm text-slate-500 bg-slate-50 border border-slate-200 rounded-lg p-3">
           <strong>Obs:</strong> Priser är uppskattningar baserade på branschöversikter och varierar
@@ -117,12 +117,12 @@ export default function AdrUtbildning() {
           Transporter av farligt gods i begränsade eller undantagna mängder kräver inte alltid
           fullständig ADR-behörighet. Reglerna är komplexa — rådfråga alltid din arbetsgivare eller{" "}
           <a
-            href="https://www.msb.se/sv/amnesomraden/farliga-amnen/transport-av-farligt-gods/vag-adr/"
+            href="https://www.mcf.se/sv/amnesomraden/skydd-mot-olyckor-och-farliga-amnen/farligt-gods/"
             target="_blank"
             rel="noopener noreferrer"
             className="text-[var(--color-primary)] hover:underline"
           >
-            MSB
+            Myndigheten för civilt försvar
           </a>{" "}
           om du är osäker.
         </p>
@@ -139,9 +139,9 @@ export default function AdrUtbildning() {
         <div className="mt-10 pt-6 border-t border-slate-100 text-xs text-slate-400 space-y-1">
           <p><strong>Källor:</strong></p>
           <ul className="space-y-1">
-            <li><a href="https://www.msb.se/sv/amnesomraden/farliga-amnen/transport-av-farligt-gods/vag-adr/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">MSB — Transport av farligt gods, väg (ADR)</a></li>
-            <li><a href="https://www.transportstyrelsen.se/sv/vagtrafik/yrkestrafik/adr/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">Transportstyrelsen — ADR-kompetensbevis</a></li>
-            <li><a href="https://unece.org/transport/dangerous-goods/adr-2023-files-and-annexes" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">UNECE — ADR 2023 (internationellt regelverk)</a></li>
+            <li><a href="https://www.mcf.se/sv/amnesomraden/skydd-mot-olyckor-och-farliga-amnen/farligt-gods/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">Myndigheten för civilt försvar — Farligt gods</a></li>
+            <li><a href="https://www.mcf.se/sv/amnesomraden/skydd-mot-olyckor-och-farliga-amnen/farligt-gods/adr-utbildning/examination-av-adr-forare/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">Myndigheten för civilt försvar — Examination av ADR-förare</a></li>
+            <li><a href="https://www.trafikverket.se/korkort/priser" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">Trafikverket — Priser för prov</a></li>
           </ul>
         </div>
       </div>

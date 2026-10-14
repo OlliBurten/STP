@@ -4,7 +4,7 @@ import ArticleJsonLd from "../../components/ArticleJsonLd";
 import BlogPost from "../../components/BlogPost";
 
 const TITLE = "Hitta CE-chaufförer till ditt åkeri — komplett guide";
-const DESC = "Så rekryterar du CE-chaufförer effektivt 2025: var du annonserar, vad som lockar kandidater, vad kollektivavtal betyder och hur du behåller dem.";
+const DESC = "Så rekryterar du CE-chaufförer effektivt: var du annonserar, vad som lockar kandidater, vad kollektivavtal betyder och hur du behåller dem.";
 
 export default function HittaCeChauffor() {
   usePageMeta({ title: TITLE, description: DESC, canonical: "/blogg/hitta-ce-chauffor", type: "article" });
@@ -14,19 +14,19 @@ export default function HittaCeChauffor() {
       <ArticleJsonLd
         headline={TITLE}
         description={DESC}
-        datePublished="2025-04-08"
+        datePublished="2025-04-08" dateModified="2026-10-14"
         url="/blogg/hitta-ce-chauffor"
       />
 
 
       <h1 className="text-3xl font-bold text-slate-900 mb-4">{TITLE}</h1>
-      <p className="text-slate-500 text-sm mb-8">Publicerad 8 april 2025</p>
+      <p className="text-slate-500 text-sm mb-8">Publicerad 8 april 2025 · Uppdaterad 14 oktober 2026</p>
 
       <div className="space-y-6 text-slate-700 leading-relaxed">
         <p>
           Sverige har strukturell brist på CE-chaufförer. Enligt{" "}
           <a
-            href="https://www.tya.se/trendindikator"
+            href="https://www.tya.se/branscher/akeri/projekt-pa-gang-hos-tya/trendindikator-anstallningsbehov-akeri/"
             target="_blank"
             rel="noopener noreferrer"
             className="text-[var(--color-primary)] hover:underline"
@@ -133,8 +133,8 @@ export default function HittaCeChauffor() {
         <div className="mt-10 pt-6 border-t border-slate-100 text-xs text-slate-400 space-y-1">
           <p><strong>Källor:</strong></p>
           <ul className="space-y-1">
-            <li><a href="https://www.tya.se/trendindikator" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">TYA — Trendindikator Åkeri</a></li>
-            <li><a href="https://www.tya.se/rapporter" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">TYA — Rapporter om kompetensförsörjning</a></li>
+            <li><a href="https://www.tya.se/branscher/akeri/projekt-pa-gang-hos-tya/trendindikator-anstallningsbehov-akeri/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">TYA — Trendindikator Åkeri</a></li>
+            <li><a href="https://www.tya.se/branscher/akeri/kompetensforsorjning/trender-och-statistik/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">TYA — Rapporter om kompetensförsörjning</a></li>
           </ul>
         </div>
       </div>

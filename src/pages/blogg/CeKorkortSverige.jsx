@@ -4,7 +4,7 @@ import ArticleJsonLd from "../../components/ArticleJsonLd";
 import BlogPost from "../../components/BlogPost";
 
 const TITLE = "CE-körkort i Sverige — krav, utbildning och kostnad";
-const DESC = "Allt du behöver veta om att ta CE-körkort: vilka krav som gäller, hur lång utbildningen är och vad det kostar 2025.";
+const DESC = "Allt du behöver veta om att ta CE-körkort: vilka krav som gäller, hur lång utbildningen är och vad det kostar.";
 
 export default function CeKorkortSverige() {
   usePageMeta({ title: TITLE, description: DESC, canonical: "/blogg/ce-korkort-sverige", type: "article" });
@@ -14,12 +14,12 @@ export default function CeKorkortSverige() {
       <ArticleJsonLd
         headline={TITLE}
         description={DESC}
-        datePublished="2025-03-01"
+        datePublished="2025-03-01" dateModified="2026-10-14"
         url="/blogg/ce-korkort-sverige"
       />
 
       <h1 className="text-3xl font-bold text-slate-900 mb-4">{TITLE}</h1>
-      <p className="text-slate-500 text-sm mb-8">Publicerad 1 mars 2025 · Källa: Trafikverket</p>
+      <p className="text-slate-500 text-sm mb-8">Publicerad 1 mars 2025 · Uppdaterad 14 oktober 2026 · Källa: Trafikverket</p>
 
       <div className="space-y-6 text-slate-700 leading-relaxed">
         <p>
@@ -33,7 +33,7 @@ export default function CeKorkortSverige() {
         <p>
           Reglerna styrs av{" "}
           <a
-            href="https://www.transportstyrelsen.se/sv/vagtrafik/Korkort/ta-korkort/behorighetsklass/CE/"
+            href="https://www.transportstyrelsen.se/sv/vagtrafik/korkort/ta-korkort/valj-behorighet/tung-lastbil/"
             target="_blank"
             rel="noopener noreferrer"
             className="text-[var(--color-primary)] hover:underline"
@@ -41,7 +41,7 @@ export default function CeKorkortSverige() {
             Transportstyrelsen
           </a>{" "}
           och EU:s körkortsdirektiv. För att påbörja CE-utbildning krävs att du redan har ett giltigt
-          C-körkort. Åldersgränsen är 21 år, men med accelererad YKB-utbildning kan den sänkas till 18 år.
+          C-körkort. Åldersgränsen är 21 år, men med den längre YKB-grundutbildningen (280 timmar) kan du köra yrkesmässigt från 18 år.
         </p>
         <ul className="list-disc pl-6 space-y-2">
           <li>Giltigt C-körkort</li>
@@ -72,12 +72,12 @@ export default function CeKorkortSverige() {
         </p>
         <ul className="list-disc pl-6 space-y-2">
           <li><strong>Körskolepaket:</strong> 25 000–45 000 kr</li>
-          <li><strong>Kunskapsprov:</strong> ca 500 kr</li>
-          <li><strong>Körprov:</strong> ca 1 100 kr</li>
-          <li><strong>Körkortstillstånd:</strong> 280 kr</li>
+          <li><strong>Kunskapsprov hos Trafikverket:</strong> 420 kr (520 kr kvällar och helger)</li>
+          <li><strong>Körprov CE hos Trafikverket:</strong> 2 100 kr (2 940 kr kvällar och helger)</li>
+          <li><strong>Körkortstillstånd:</strong> kostar inget att ansöka om</li>
         </ul>
         <p className="text-sm text-slate-500 bg-slate-50 border border-slate-200 rounded-lg p-3">
-          <strong>Obs:</strong> Priser är uppskattningar baserade på branschöversikter 2024–2025 och
+          <strong>Obs:</strong> Priser är uppskattningar baserade på branschöversikter och
           varierar mellan trafikskolor. Kontrollera aktuella priser direkt med din trafikskola och
           Trafikverkets officiella avgifter på{" "}
           <a
@@ -123,7 +123,7 @@ export default function CeKorkortSverige() {
           <p><strong>Källor:</strong></p>
           <ul className="space-y-1">
             <li>
-              <a href="https://www.transportstyrelsen.se/sv/vagtrafik/Korkort/ta-korkort/behorighetsklass/CE/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">Transportstyrelsen — körkortsbehörighet CE</a>
+              <a href="https://www.transportstyrelsen.se/sv/vagtrafik/korkort/ta-korkort/valj-behorighet/tung-lastbil/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">Transportstyrelsen — körkortsbehörighet CE</a>
             </li>
             <li>
               <a href="https://www.trafikverket.se/korkort" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 underline">Trafikverket — körkort och prov</a>
