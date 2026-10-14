@@ -41,7 +41,7 @@ const COLS = [
 
 export default function Footer() {
   return (
-    <footer style={{ background: "#0a1818" }} className="mt-auto text-white">
+    <footer style={{ background: "var(--ink-900)" }} className="mt-auto text-white">
       <div className="max-w-[1280px] mx-auto px-5 sm:px-10 pt-20 pb-10">
 
         {/* Main grid */}
@@ -118,7 +118,7 @@ export default function Footer() {
             {[
               { to: "/integritet", label: "Integritetspolicy" },
               { to: "/anvandarvillkor", label: "Villkor" },
-              { to: "/uppdateringar", label: `v${CURRENT_VERSION}` },
+              { to: "/uppdateringar", label: CURRENT_VERSION },
             ].map((l) => (
               <Link key={l.label} to={l.to} style={{ fontSize: "var(--text-xs)", color: "rgba(255,255,255,0.3)", textDecoration: "none" }} className="hover:text-white/60 transition-colors">
                 {l.label}
