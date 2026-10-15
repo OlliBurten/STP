@@ -3,7 +3,9 @@ import FormattedText from "../components/FormattedText";
 import { companyCan } from "../utils/companyPermissions";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { truckLicenseTypes, regions } from "../data/mockJobs";
-import { certificateTypesForUI } from "../data/profileData";
+import { JOB_TYPES } from "../data/jobTypes";
+import { certificateGroups } from "../data/competencies";
+import SearchSelect from "../components/SearchSelect";
 import { useAuth } from "../context/AuthContext";
 import { createJob, fetchJob, updateJob, fetchJobDraft, createJobDraft, updateJobDraft, deleteJobDraft } from "../api/jobs.js";
 import { fetchMyCompanyProfile } from "../api/companies.js";
@@ -21,12 +23,6 @@ const STEPS = [
   { id: "preview", label: "Förhandsgranska" },
 ];
 
-const JOBTYPE_OPTS = [
-  { value: "fjärrkörning", label: "Fjärrkörning"  },
-  { value: "lokalt",       label: "Lokalkörning"  },
-  { value: "distribution", label: "Distribution"  },
-  { value: "timjobb",      label: "Timjobb"       },
-];
 
 const EMP_OPTS = [
   { value: "fast",     label: "Fast anställning" },
@@ -353,20 +349,29 @@ function StepBasics({ form, setForm, isMobile }) {
         </div>
       </Field>
 
-      <Field label="Certifikat (välj alla som krävs)">
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-          {certificateTypesForUI.map((c) => (
-            <ToggleChip key={c.value} label={c.label} active={form.certificates.includes(c.value)} onClick={() => toggle("certificates", c.value)} />
-          ))}
-        </div>
+      <Field label="Certifikat som krävs" hint="Sök eller välj i listan. Saknas något kan ni lägga till det som eget.">
+        <SearchSelect
+          groups={certificateGroups}
+          selected={form.certificates}
+          onToggle={(v) => toggle("certificates", v)}
+          others={form.certificatesOther}
+          onAddOther={(t) => setForm((f) => ({ ...f, certificatesOther: [...new Set([...f.certificatesOther, t])].slice(0, 10) }))}
+          onRemoveOther={(t) => setForm((f) => ({ ...f, certificatesOther: f.certificatesOther.filter((x) => x !== t) }))}
+          placeholder="Sök certifikat, t.ex. YKB, ADR, kran…"
+        />
       </Field>
 
       <Field label="Jobbtyp" required>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-          {JOBTYPE_OPTS.map((t) => (
-            <ToggleChip key={t.value} label={t.label} active={form.jobType === t.value} onClick={() => setForm((f) => ({ ...f, jobType: t.value }))} />
-          ))}
-        </div>
+        <SearchSelect
+          groups={[{ options: JOB_TYPES }]}
+          multiple={false}
+          selected={form.jobType ? [form.jobType] : []}
+          onToggle={(v) => setForm((f) => ({ ...f, jobType: f.jobType === v ? "" : v, jobTypeOther: "" }))}
+          others={form.jobType === "annat" && form.jobTypeOther ? [form.jobTypeOther] : []}
+          onAddOther={(t) => setForm((f) => ({ ...f, jobType: "annat", jobTypeOther: t }))}
+          onRemoveOther={() => setForm((f) => ({ ...f, jobType: "", jobTypeOther: "" }))}
+          placeholder="Sök jobbtyp, t.ex. distribution, tank, kran…"
+        />
       </Field>
 
       <Field label="Minsta erfarenhet">
@@ -597,9 +602,11 @@ export default function PostJob() {
     region: "",
     license: [],
     certificates: [],
+    certificatesOther: [],
     experienceLabel: "",
     experience: "",
     jobType: "",
+    jobTypeOther: "",
     employment: "",
     schedule: "",
     start: "",
@@ -635,9 +642,11 @@ export default function PostJob() {
           region: j.region || "",
           license: Array.isArray(j.license) ? j.license : [],
           certificates: Array.isArray(j.certificates) ? j.certificates : [],
+          certificatesOther: Array.isArray(j.certificatesOther) ? j.certificatesOther : [],
           experienceLabel: expLabel,
           experience: j.experience || "",
           jobType: j.jobType || "",
+          jobTypeOther: j.jobTypeOther || "",
           employment: j.employment || "",
           schedule: j.schedule || "",
           aboutJob: j.aboutJob || j.description || "",
@@ -793,7 +802,9 @@ export default function PostJob() {
             region: form.region,
             license: form.license,
             certificates: form.certificates,
+            certificatesOther: form.certificatesOther,
             jobType: form.jobType,
+            jobTypeOther: form.jobTypeOther || null,
             employment: form.employment,
             segment: form.segment || mapEmploymentToSegment(form.employment) || "FULLTIME",
             schedule: form.schedule || null,
@@ -821,7 +832,9 @@ export default function PostJob() {
           region: form.region,
           license: form.license,
           certificates: form.certificates,
+          certificatesOther: form.certificatesOther,
           jobType: form.jobType,
+          jobTypeOther: form.jobTypeOther || null,
           employment: form.employment,
           segment: form.segment || mapEmploymentToSegment(form.employment) || "FULLTIME",
           schedule: form.schedule || null,

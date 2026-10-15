@@ -314,6 +314,7 @@ export default function JobDetail() {
   const jobCredentials = [
     ...(job?.license || []).map((l) => `${l}-behörighet`),
     ...(job?.certificates || []).map((c) => getCertificateLabel(c)),
+    ...(job?.certificatesOther || []),
   ];
 
   const [apiDrivers, setApiDrivers] = useState([]);
@@ -763,6 +764,7 @@ export default function JobDetail() {
               {(job.license || []).map((l) => <Pill key={l} tone="primary">{l}</Pill>)}
               {/* Certifikatspillren fanns bara i desktopvyn — mobilen visade körkort men inte YKB/ADR. */}
               {(job.certificates || []).map((c) => <Pill key={c} tone="neutral">{getCertificateLabel(c)}</Pill>)}
+              {(job.certificatesOther || []).map((c) => <Pill key={`o-${c}`} tone="neutral">{c}</Pill>)}
               <Pill tone="soft">{empLabel}</Pill>
               {scheduleLabel && <Pill tone="neutral">{scheduleLabel}</Pill>}
               {job.kollektivavtal === true && <Pill tone="info">Kollektivavtal</Pill>}
@@ -988,6 +990,7 @@ export default function JobDetail() {
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 16 }}>
               {(job.license || []).map((lic) => <Pill key={lic} tone="primary">{lic}</Pill>)}
               {(job.certificates || []).map((c) => <Pill key={c} tone="neutral">{getCertificateLabel(c)}</Pill>)}
+              {(job.certificatesOther || []).map((c) => <Pill key={`o-${c}`} tone="neutral">{c}</Pill>)}
               <Pill tone="soft">{empLabel}</Pill>
               {scheduleLabel && <Pill tone="neutral">{scheduleLabel}</Pill>}
               {job.bransch && <Pill tone="neutral">{getBranschLabel(job.bransch)}</Pill>}
@@ -1343,7 +1346,7 @@ export default function JobDetail() {
             <FactRow label="Tillträde"    value={job.start || "Ej angiven"} missing={!job.start} />
             <FactRow label="Ort"          value={job.location || "—"} />
             <FactRow label="Körkort"      value={(job.license || []).join(", ") || "—"} />
-            {(job.certificates || []).length > 0 && <FactRow label="Intyg" value={(job.certificates || []).map(getCertificateLabel).join(", ")} />}
+            {((job.certificates || []).length > 0 || (job.certificatesOther || []).length > 0) && <FactRow label="Intyg" value={[...(job.certificates || []).map(getCertificateLabel), ...(job.certificatesOther || [])].join(", ")} />}
             {job.salaryType && <FactRow label="Lönetyp" value={job.salaryType} />}
             {job.workplaceAddress && <FactRow label="Arbetsplats" value={job.workplaceAddress} />}
             {job.applicationReference && <FactRow label="Referens" value={job.applicationReference} highlight />}

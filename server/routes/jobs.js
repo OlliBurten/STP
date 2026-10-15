@@ -11,7 +11,8 @@ import {
   requireCompanyPermission,
 } from "../middleware/auth.js";
 import { matchScore, matchPercent, driverYearsFromExperience } from "../utils/matchScore.js";
-import { driverNearJobRegion, driverInJobRegion } from "../utils/regions.js";
+import { driverNearJobRegion, driverInJobRegion, countyFromPlace } from "../utils/regions.js";
+import { inferJobType } from "../lib/jobIngestor.js";
 import { notifyRecommendedJobMatch } from "../lib/email.js";
 import { claimMatchEmailSlots } from "../lib/matchAlerts.js";
 import { recruitmentFunnel } from "../lib/recruitment.js";
@@ -269,6 +270,8 @@ jobsRouter.get("/", validateQuery(jobsListQuerySchema), async (req, res, next) =
       region: j.region,
       license: j.license,
       certificates: j.certificates,
+      certificatesOther: j.certificatesOther ?? [],
+      jobTypeOther: j.jobTypeOther ?? null,
       jobType: j.jobType,
       bransch: j.bransch ?? null,
       employment: j.employment,
@@ -740,6 +743,8 @@ jobsRouter.get("/:id", optionalAuthMiddleware, attachCompanyContext, async (req,
       offers: job.offers ?? [],
       requirements: parseRequirements(job.requirements),
       extraRequirements: job.extraRequirements,
+      jobTypeOther: job.jobTypeOther ?? null,
+      certificatesOther: job.certificatesOther ?? [],
       published: job.published.toISOString().slice(0, 10),
       applicationDeadline: serializeDeadline(job),
       bemanning: !!job.isStaffing,
@@ -970,6 +975,11 @@ jobsRouter.post("/", authMiddleware, requireVerifiedEmail, requireCompany, attac
     const requirements = Array.isArray(body.requirements)
       ? JSON.stringify(body.requirements)
       : "[]";
+    // Mobilappen skickar bara ort — länet räknas ut därifrån. Utan län ger annonsen
+    // inga länspoäng i matchningen och når inga förare med tips.
+    const region = (body.region || "").trim() || countyFromPlace(body.location) || "";
+    if (!region) return res.status(400).json({ error: "Ange ort eller län för annonsen." });
+    const jobType = body.jobType || inferJobType(body.title, body.aboutJob || body.description || "");
     const job = await prisma.job.create({
       data: {
         userId: effectiveCompanyId(req),
@@ -981,10 +991,12 @@ jobsRouter.post("/", authMiddleware, requireVerifiedEmail, requireCompany, attac
         tasks: Array.isArray(body.tasks) ? body.tasks : [],
         offers: Array.isArray(body.offers) ? body.offers : [],
         location: body.location,
-        region: body.region,
+        region,
         license: body.license || [],
         certificates: body.certificates || [],
-        jobType: body.jobType,
+        certificatesOther: body.certificatesOther || [],
+        jobType,
+        jobTypeOther: jobType === "annat" ? (body.jobTypeOther || "").trim() || null : null,
         employment: body.employment,
         segment: resolveSegment(body.segment, body.employment),
         bransch: body.bransch || null,
@@ -1062,7 +1074,7 @@ jobsRouter.patch("/:id", authMiddleware, requireCompany, attachCompanyContext, r
     // Återaktivering: annonsen är öppen igen, så den är inte längre tillsatt.
     if (body.status === "ACTIVE" && body.filledAt === undefined) data.filledAt = null;
     // Innehåll — speglar mappningen i POST /.
-    for (const k of ["title", "company", "tasks", "offers", "location", "region", "license", "certificates", "jobType", "employment", "schedule", "experience", "salary", "salaryMin", "salaryMax", "contact", "externalApplyUrl", "start", "rolling"]) {
+    for (const k of ["title", "company", "tasks", "offers", "location", "region", "license", "certificates", "certificatesOther", "jobType", "jobTypeOther", "employment", "schedule", "experience", "salary", "salaryMin", "salaryMax", "contact", "externalApplyUrl", "start", "rolling"]) {
       if (body[k] !== undefined) data[k] = body[k];
     }
     if (body.aboutJob !== undefined) {

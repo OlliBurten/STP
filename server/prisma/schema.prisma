@@ -339,6 +339,10 @@ model Job {
   soloWorkOk           Boolean? // ensamarbete ok för rollen
   requirements         String? // JSON or text
   extraRequirements    String?
+  // Åkeriets egna val när listan inte räcker ("Annat") — visas i annonsen, påverkar
+  // inte matchningen. Admin ser de vanligaste och lyfter in dem i listan.
+  jobTypeOther         String?
+  certificatesOther    String[]  @default([])
   aboutJob             String?       @db.Text // "Om jobbet" — fritext
   tasks                String[]      @default([]) // "Arbetsuppgifter" — punktlista
   offers               String[]      @default([]) // "Vi erbjuder" — punktlista

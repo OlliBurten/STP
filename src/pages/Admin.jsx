@@ -32,6 +32,7 @@ import AdminUsersTab from "../components/admin/AdminUsersTab";
 import AdminOutreachTab from "../components/admin/AdminOutreachTab";
 import AdminDemoTab from "../components/admin/AdminDemoTab";
 import AdminRecruitmentTab from "../components/admin/AdminRecruitmentTab";
+import AdminCustomEntries from "../components/admin/AdminCustomEntries";
 import { AdminSidebar, AdminTopBar, AdminCmdK } from "../components/admin/AdminShell";
 
 
@@ -520,6 +521,7 @@ export default function Admin() {
         {/* ════════════════════════════════════════
             JOBS TAB
         ════════════════════════════════════════ */}
+        {activeTab === "jobs" && <div style={{ marginBottom: 20 }}><AdminCustomEntries /></div>}
         {activeTab === "jobs" && (
           <SectionCard>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10, marginBottom: 20 }}>

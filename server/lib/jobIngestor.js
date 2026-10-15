@@ -118,20 +118,46 @@ function mapEmployment(label) {
 
 // ─── Job type inference ───────────────────────────────────────────────────────
 
-function inferJobType(title = "", description = "") {
+// Arbetsförmedlingens yrke (inom gruppen lastbilsförare) → STP:s jobbtyp.
+const AF_OCCUPATION_TO_JOBTYPE = {
+  "distributionsförare": "distribution",
+  "fjärrbilsförare": "fjärrkörning",
+  "renhållningsförare": "renhallning",
+  "kranbilsförare": "kranbil",
+  "bygg- och anläggningsförare": "bygg_anlaggning",
+  "sug- och spolbilsförare": "sug_spol",
+  "liftdumper- och lastväxlarförare": "lastvaxlare",
+  "tank- och bulkbilsförare": "tank_bulk",
+  "bärgarförare": "bargning",
+  "timmerbilsförare": "timmer",
+  "betongbilsförare": "betong",
+};
+
+/**
+ * Jobbtyp för en annons: AF:s yrke om det finns, annars från titel och text.
+ * Används även när ett åkeri publicerar utan att välja jobbtyp (mobilappen).
+ */
+export function inferJobType(title = "", description = "", afOccupationLabel = "") {
+  const fromAf = AF_OCCUPATION_TO_JOBTYPE[String(afOccupationLabel || "").trim().toLowerCase()];
+  if (fromAf) return fromAf;
+  const head = String(title).toLowerCase();
   const t = (title + " " + description).toLowerCase();
-  if (t.includes("fjärr") || t.includes("långkör") || t.includes("eur") || t.includes("internationell")) {
-    return "fjärrkörning";
-  }
-  if (t.includes("distribut") || t.includes("budbil") || t.includes("expressgods") || t.includes("last mile")) {
-    return "distribution";
-  }
-  if (t.includes("lokal") || t.includes("stadstrafik") || t.includes("regional")) {
-    return "lokalt";
-  }
-  if (t.includes("tim") || t.includes("behovsanst") || t.includes("vid behov")) {
-    return "timjobb";
-  }
+  // Titeln väger tyngst — beskrivningar nämner ofta flera körningstyper.
+  const rules = [
+    ["tank_bulk", /tankbil|bulkbil|tank-|tankchauff|\btank\b|bulk/],
+    ["kranbil", /kranbil|lastbilskran|hiab/],
+    ["timmer", /timmer|skogsbil|virke/],
+    ["renhallning", /renhållning|sopbil|avfall|återvinning|baklastare|sidlastare|miljöarbetare|sophämt/],
+    ["bargning", /bärgning|bärgare|bärgar/],
+    ["lastvaxlare", /lastväxlar|liftdumper|containerbil/],
+    ["sug_spol", /spolbil|sugbil|slambil|\bspol|\bsug/],
+    ["betong", /betongbil|betongpump/],
+    ["bygg_anlaggning", /grusbil|tippbil|anläggning|schakt|massor/],
+    ["fjärrkörning", /fjärr|långkör|internationell|europa/],
+    ["distribution", /distribut|styckegods|expressgods/],
+  ];
+  for (const [type, re] of rules) if (re.test(head)) return type;
+  for (const [type, re] of rules) if (re.test(t)) return type;
   return "lokalt";
 }
 
@@ -404,7 +430,7 @@ function mapJobToRecord(hit, systemUserId) {
       ? ["CE"]
       : ["C"];
   }
-  const jobType = inferJobType(title, description);
+  const jobType = inferJobType(title, description, hit.occupation?.label);
   const bransch = inferBransch(title, description);
   const applyUrl = hit.application_details?.url || hit.webpage_url || null;
 

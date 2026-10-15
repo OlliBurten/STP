@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { jobTypeLabel } from "../data/jobTypes";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { apiGet, apiPost } from "../api/client.js";
 import { useAuth } from "../context/AuthContext";
@@ -26,13 +27,6 @@ function empLabel(e) {
   return e || "";
 }
 
-function jobTypeLabel(t) {
-  if (t === "fjärrkörning") return "Fjärrkörning";
-  if (t === "distribution") return "Distribution";
-  if (t === "lokalt") return "Lokal körning";
-  if (t === "timjobb") return "Timanställning";
-  return t || "";
-}
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function ClaimLanding() {

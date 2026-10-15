@@ -159,3 +159,7 @@ export function getRecruitmentOverview() {
 export function recordRecruitmentEvent(conversationId, type, at) {
   return apiPost(`/api/admin/conversations/${conversationId}/recruitment`, { type, ...(at ? { at } : {}) });
 }
+
+export function getCustomEntries() {
+  return apiGet("/api/admin/custom-entries");
+}

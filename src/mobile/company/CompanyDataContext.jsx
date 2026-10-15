@@ -189,10 +189,12 @@ export function CompanyDataProvider({ children }) {
     // Låt fel bubbla upp till anroparen (PublishSheet) så den kan visa fel +
     // behålla wizard-inputen i st f att fejka "publicerad".
     await createJob({
-      title: d.title, location: d.location, region: "",
+      // Län och jobbtyp räknas ut på servern från ort och titel (mobilen frågar inte
+      // efter dem). Förr skickades region "" → servern avvisade annonsen.
+      title: d.title, location: d.location,
       segment: d.segment === "vikariepool" ? "FLEX" : d.segment === "praktik" ? "INTERNSHIP" : "FULLTIME",
       employment: d.type === "Vikariat" ? "vikariat" : d.type === "Timanställd" ? "tim" : "fast",
-      license: d.lic, certificates: d.certs, jobType: "fjärrkörning",
+      license: d.lic, certificates: d.certs,
       description: d.tasks || "", tasks: d.tasks ? [d.tasks] : [], offers: d.perks || [],
       experience: d.minExp ? `${d.minExp}+` : "0-1", contact: user?.email || "",
     });

@@ -2254,3 +2254,33 @@ adminRouter.post("/conversations/:id/recruitment", async (req, res, next) => {
     next(e);
   }
 });
+
+// ─── Åkeriernas egna val ("Annat") ─────────────────────────────────────────────
+// Vad åkerierna skrivit själva när listan för jobbtyp/certifikat inte räckte.
+// Admin lyfter in det vanligaste i listorna (src/data/competencies.js, jobTypes).
+adminRouter.get("/custom-entries", async (req, res, next) => {
+  try {
+    const jobs = await prisma.job.findMany({
+      where: { source: { not: "AGGREGATED" }, OR: [{ jobTypeOther: { not: null } }, { certificatesOther: { isEmpty: false } }] },
+      select: { jobTypeOther: true, certificatesOther: true, company: true },
+    });
+    const tally = (pairs) => {
+      const m = new Map();
+      for (const [raw, company] of pairs) {
+        const key = String(raw || "").trim();
+        if (!key) continue;
+        const k = key.toLowerCase();
+        const e = m.get(k) || { label: key, count: 0, companies: new Set() };
+        e.count++; e.companies.add(company);
+        m.set(k, e);
+      }
+      return [...m.values()].map((e) => ({ label: e.label, count: e.count, companies: [...e.companies].slice(0, 5) })).sort((a, b) => b.count - a.count);
+    };
+    res.json({
+      jobTypes: tally(jobs.filter((j) => j.jobTypeOther).map((j) => [j.jobTypeOther, j.company])),
+      certificates: tally(jobs.flatMap((j) => (j.certificatesOther || []).map((c) => [c, j.company]))),
+    });
+  } catch (e) {
+    next(e);
+  }
+});

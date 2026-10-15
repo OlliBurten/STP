@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { jobTypeLabel } from "../data/jobTypes";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { mockJobs } from "../data/mockJobs";
@@ -24,10 +25,8 @@ import { SALARY_FILTER_ENABLED } from "../utils/jobUtils";
 /* ── Filter-etiketter (alternativen härleds data-drivet ur jobben) ───────── */
 const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 const EMP_LABELS = { fast: "Fast", vikariat: "Vikariat", tim: "Tim", deltid: "Deltid" };
-const JOBTYPE_LABELS = { lokalt: "Lokalt", distribution: "Distribution", "fjärrkörning": "Fjärrkörning", timjobb: "Timjobb" };
 const CERT_LABELS = { YKB: "YKB", ADR: "ADR", ADR_Tank: "ADR Tank", Digitalt_fardskrivarkort: "Digitalt färdskrivarkort" };
 const empLabel = (v) => EMP_LABELS[v] || cap(v);
-const jobTypeLabel = (v) => JOBTYPE_LABELS[v] || cap(v);
 const certLabel = (v) => CERT_LABELS[v] || String(v).replace(/_/g, " ");
 
 /* Härled tillgängliga filter-alternativ ur de faktiska jobben (sorterat efter antal). */
