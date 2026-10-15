@@ -92,12 +92,7 @@ export const mockJobs = [
   },
 ];
 
-export const jobTypes = [
-  { value: "fjärrkörning", label: "Fjärrkörning" },
-  { value: "lokalt", label: "Lokalt" },
-  { value: "distribution", label: "Distribution" },
-  { value: "timjobb", label: "Timjobb" },
-];
+export { JOB_TYPES as jobTypes } from "./jobTypes.js";
 
 export const employmentTypes = [
   { value: "fast", label: "Fast anställning" },

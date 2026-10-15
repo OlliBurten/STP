@@ -160,10 +160,15 @@ export const createJobSchema = z.object({
   tasks: z.array(z.string().max(500)).max(40).optional(),
   offers: z.array(z.string().max(500)).max(40).optional(),
   location: z.string().min(1, "Ort krävs").max(200),
-  region: z.string().min(1, "Region krävs").max(100),
+  // Valfri: saknas den räknas länet ut från orten (mobilappen skickar bara ort).
+  region: z.string().max(100).optional().default(""),
   license: z.array(z.string().max(20)).optional().default([]),
   certificates: z.array(z.string().max(50)).optional().default([]),
-  jobType: z.enum(["fjärrkörning", "lokalt", "distribution", "timjobb"], { error: "Välj jobbtyp" }),
+  // Valfri: saknas den (mobilappen) räknas den ut från titeln. Listan följer
+  // Arbetsförmedlingens yrken för lastbilsförare; "timjobb" finns kvar för gamla annonser.
+  jobType: z.enum(["fjärrkörning", "distribution", "lokalt", "tank_bulk", "kranbil", "bygg_anlaggning", "timmer", "renhallning", "bargning", "lastvaxlare", "sug_spol", "betong", "annat", "timjobb"], { error: "Välj jobbtyp" }).optional(),
+  jobTypeOther: z.string().max(60).optional().nullable(),
+  certificatesOther: z.array(z.string().trim().min(1).max(60)).max(10).optional().default([]),
   employment: z.enum(["fast", "vikariat", "tim"], { error: "Välj anställningsform" }),
   segment: z.string().max(50).optional(),
   contact: z.string().min(1, "Kontakt e-post krävs").email("Ogiltig kontakt e-post").max(255),
@@ -209,7 +214,9 @@ export const patchJobSchema = z.object({
   region: z.string().min(1, "Region krävs").max(100).optional(),
   license: z.array(z.string().max(20)).optional(),
   certificates: z.array(z.string().max(50)).optional(),
-  jobType: z.enum(["fjärrkörning", "lokalt", "distribution", "timjobb"], { error: "Välj jobbtyp" }).optional(),
+  jobType: z.enum(["fjärrkörning", "distribution", "lokalt", "tank_bulk", "kranbil", "bygg_anlaggning", "timmer", "renhallning", "bargning", "lastvaxlare", "sug_spol", "betong", "annat", "timjobb"], { error: "Välj jobbtyp" }).optional(),
+  jobTypeOther: z.string().max(60).optional().nullable(),
+  certificatesOther: z.array(z.string().trim().min(1).max(60)).max(10).optional(),
   employment: z.enum(["fast", "vikariat", "tim"], { error: "Välj anställningsform" }).optional(),
   segment: z.string().max(50).optional(),
   schedule: z.string().max(50).optional().nullable(),
