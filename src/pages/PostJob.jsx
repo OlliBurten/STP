@@ -3,8 +3,9 @@ import FormattedText from "../components/FormattedText";
 import { companyCan } from "../utils/companyPermissions";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { truckLicenseTypes, regions } from "../data/mockJobs";
-import { JOB_TYPES } from "../data/jobTypes";
+import { JOB_TYPES, jobTypeLabel } from "../data/jobTypes";
 import { certificateGroups } from "../data/competencies";
+import { getCertificateLabel } from "../data/profileData";
 import SearchSelect from "../components/SearchSelect";
 import { useAuth } from "../context/AuthContext";
 import { createJob, fetchJob, updateJob, fetchJobDraft, createJobDraft, updateJobDraft, deleteJobDraft } from "../api/jobs.js";
@@ -85,26 +86,36 @@ function Field({ label, hint, required, children, noMargin }) {
   );
 }
 
-function ToggleChip({ label, active, onClick, color = "teal" }) {
-  const styles = {
-    teal:   { bg: "var(--green-tint)",  border: "var(--green-tint-2)", text: "var(--green-text)" },
-    orange: { bg: "var(--amber-tint)",  border: "var(--amber-tint-2)", text: "var(--amber-text)" },
-  };
-  const c = styles[color] || styles.teal;
+// Vald = fylld grön med vit text och bock. Förut var vald och ovald nästan samma ljusa
+// ton, och erfarenhet hade en egen gul färg utan anledning.
+function ToggleChip({ label, active, onClick }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={active}
       style={{
-        padding: "8px 14px", borderRadius: 99, fontSize: "var(--text-sm)", fontWeight: 600,
-        cursor: "pointer", transition: "all .15s", whiteSpace: "nowrap",
-        background: active ? c.bg : "var(--paper-2)",
-        border: `1px solid ${active ? c.border : "var(--line)"}`,
-        color: active ? c.text : "var(--ink-400)",
+        display: "inline-flex", alignItems: "center", gap: 6,
+        padding: "8px 14px", borderRadius: 99, fontSize: "var(--text-sm)", fontWeight: active ? 700 : 600,
+        cursor: "pointer", transition: "all .15s", whiteSpace: "nowrap", fontFamily: "inherit",
+        background: active ? "var(--green)" : "var(--card)",
+        border: `1px solid ${active ? "var(--green)" : "var(--line-2)"}`,
+        color: active ? "#fff" : "var(--ink-700)",
       }}
     >
+      {active && <span aria-hidden="true" style={{ fontSize: 12, lineHeight: 1 }}>✓</span>}
       {label}
     </button>
+  );
+}
+
+// Radioval (anställningsform, schema): vald = grön ram + ifylld prick.
+function ChoiceRow({ label, active, onClick }) {
+  return (
+    <label onClick={onClick} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 11, background: active ? "var(--green-tint)" : "var(--card)", border: `${active ? 2 : 1}px solid ${active ? "var(--green)" : "var(--line-2)"}`, margin: active ? 0 : 1, cursor: "pointer", transition: "all .15s" }}>
+      <span style={{ width: 18, height: 18, borderRadius: 99, border: `2px solid ${active ? "var(--green)" : "var(--line-2)"}`, background: active ? "var(--green)" : "transparent", boxShadow: active ? "inset 0 0 0 3px var(--card)" : "none", flexShrink: 0, transition: "all .15s" }} />
+      <span style={{ fontSize: "var(--text-sm)", fontWeight: active ? 700 : 600, color: active ? "var(--ink-900)" : "var(--ink-600)" }}>{label}</span>
+    </label>
   );
 }
 
@@ -377,7 +388,7 @@ function StepBasics({ form, setForm, isMobile }) {
       <Field label="Minsta erfarenhet">
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {EXP_DISPLAY.map((e) => (
-            <ToggleChip key={e} label={e} active={form.experienceLabel === e} onClick={() => setForm((f) => ({ ...f, experienceLabel: e, experience: EXP_VALUE[e] }))} color="orange" />
+            <ToggleChip key={e} label={e} active={form.experienceLabel === e} onClick={() => setForm((f) => ({ ...f, experienceLabel: e, experience: EXP_VALUE[e] }))} />
           ))}
         </div>
       </Field>
@@ -386,10 +397,7 @@ function StepBasics({ form, setForm, isMobile }) {
         <Field label="Anställningsform" required noMargin>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {EMP_OPTS.map((e) => (
-              <label key={e.value} onClick={() => setForm((f) => ({ ...f, employment: e.value, segment: mapEmploymentToSegment(e.value) || f.segment }))} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 11, background: form.employment === e.value ? "var(--amber-tint)" : "var(--paper-2)", border: `1px solid ${form.employment === e.value ? "var(--amber-tint-2)" : "var(--line)"}`, cursor: "pointer", transition: "all .15s" }}>
-                <span style={{ width: 18, height: 18, borderRadius: 99, border: `2px solid ${form.employment === e.value ? "var(--amber)" : "var(--line-2)"}`, background: form.employment === e.value ? "var(--amber)" : "transparent", flexShrink: 0, transition: "all .15s" }} />
-                <span style={{ fontSize: "var(--text-sm)", fontWeight: 600, color: form.employment === e.value ? "var(--amber-text)" : "var(--ink-500)" }}>{e.label}</span>
-              </label>
+              <ChoiceRow key={e.value} label={e.label} active={form.employment === e.value} onClick={() => setForm((f) => ({ ...f, employment: e.value, segment: mapEmploymentToSegment(e.value) || f.segment }))} />
             ))}
           </div>
         </Field>
@@ -397,10 +405,7 @@ function StepBasics({ form, setForm, isMobile }) {
         <Field label="Arbetstider / Schema" required noMargin>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {SCHEDULE_OPTS.map((s) => (
-              <label key={s.value} onClick={() => setForm((f) => ({ ...f, schedule: s.value }))} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 11, background: form.schedule === s.value ? "var(--green-tint)" : "var(--paper-2)", border: `1px solid ${form.schedule === s.value ? "var(--green-tint-2)" : "var(--line)"}`, cursor: "pointer", transition: "all .15s" }}>
-                <span style={{ width: 18, height: 18, borderRadius: 99, border: `2px solid ${form.schedule === s.value ? "var(--green)" : "var(--line-2)"}`, background: form.schedule === s.value ? "var(--green-tint-2)" : "transparent", flexShrink: 0, transition: "all .15s" }} />
-                <span style={{ fontSize: "var(--text-sm)", fontWeight: 600, color: form.schedule === s.value ? "var(--green-text)" : "var(--ink-500)" }}>{s.label}</span>
-              </label>
+              <ChoiceRow key={s.value} label={s.label} active={form.schedule === s.value} onClick={() => setForm((f) => ({ ...f, schedule: s.value }))} />
             ))}
           </div>
         </Field>
@@ -414,21 +419,25 @@ function StepBasics({ form, setForm, isMobile }) {
 }
 
 // ─── Step 2: Annonstext ───────────────────────────────────────────────────────
-function StepContent({ form, setForm, aiGenerating, aiError, onGenerate, hasApi }) {
+function StepContent({ form, setForm, aiGenerating, aiError, onGenerate, onUndo, hasApi }) {
+  const improve = form.aboutJob.trim().length >= 20;
   return (
     <div>
       <h2 style={{ fontSize: "var(--text-3xl)", fontWeight: 900, color: "var(--ink-900)", letterSpacing: -0.5, marginBottom: 6 }}>Annonstext</h2>
       <p style={{ fontSize: "var(--text-base)", color: "var(--ink-400)", marginBottom: 32, lineHeight: 1.7 }}>Dessa fyra sektioner visas alltid för föraren i exakt denna ordning. Förhandsvisningen uppdateras direkt.</p>
 
-      <Field label="Om jobbet" required hint="Beskriv verksamheten och rollen kortfattat. 2–4 meningar räcker.">
+      <Field label="Om jobbet" required hint="Skriv några rader — eller klistra in en gammal annons och tryck Förbättra texten, så delar vi upp den i punkterna nedan.">
         <textarea rows={4} value={form.aboutJob} onChange={(e) => setForm((f) => ({ ...f, aboutJob: e.target.value }))} placeholder="Vi söker en erfaren CE-chaufför till vår fjärrkörningsavdelning i Malmö. Du kör moderna lastbilar på rutter i Norden..." style={{ ...inputStyle, lineHeight: 1.7 }} />
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6, alignItems: "center" }}>
           <span style={hintStyle}>{form.aboutJob.length} tecken {form.aboutJob.length < 60 && "— minst 60 krävs"}</span>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             {aiError && <span style={{ fontSize: "var(--text-xs)", color: "var(--danger)" }}>{aiError}</span>}
             <button type="button" onClick={onGenerate} disabled={aiGenerating || !hasApi} style={{ padding: "6px 12px", borderRadius: 8, background: "var(--green-tint)", border: "1px solid var(--green-tint-2)", color: aiGenerating || !hasApi ? "var(--ink-300)" : "var(--green-text)", fontSize: "var(--text-xs)", fontWeight: 600, cursor: aiGenerating || !hasApi ? "not-allowed" : "pointer", transition: "all .15s" }}>
-              {aiGenerating ? "Genererar..." : "✦ Generera text"}
+              {aiGenerating ? (improve ? "Förbättrar…" : "Skriver…") : (improve ? "✦ Förbättra texten" : "✦ Skriv text åt mig")}
             </button>
+            {onUndo && !aiGenerating && (
+              <button type="button" onClick={onUndo} style={{ padding: "6px 10px", borderRadius: 8, background: "transparent", border: "1px solid var(--line-2)", color: "var(--ink-600)", fontSize: "var(--text-xs)", fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Ångra</button>
+            )}
           </div>
         </div>
       </Field>
@@ -515,9 +524,9 @@ function StepTerms({ form, setForm }) {
           {[[true, "Löpande rekrytering"], [false, "Standard"]].map(([v, l]) => (
             <button key={String(v)} type="button" onClick={() => setForm((f) => ({ ...f, rolling: v }))} style={{
               flex: 1, padding: "12px", borderRadius: 11, cursor: "pointer", fontSize: "var(--text-sm)", fontWeight: 600, transition: "all .15s",
-              background: form.rolling === v ? "var(--amber-tint)" : "var(--paper-2)",
-              border: `1px solid ${form.rolling === v ? "var(--amber-tint-2)" : "var(--line)"}`,
-              color: form.rolling === v ? "var(--amber-text)" : "var(--ink-400)",
+              background: form.rolling === v ? "var(--green)" : "var(--card)",
+              border: `1px solid ${form.rolling === v ? "var(--green)" : "var(--line-2)"}`,
+              color: form.rolling === v ? "#fff" : "var(--ink-700)", fontFamily: "inherit",
             }}>{l}</button>
           ))}
         </div>
@@ -772,18 +781,46 @@ export default function PostJob() {
     return true;
   };
 
+  // "Skriv text åt mig" (tomt fält) eller "Förbättra texten" (egen text / inklistrad
+  // gammal annons). Förbättring behåller fakta och flyttar ut arbetsuppgifter, krav och
+  // förmåner till listorna — befintliga punkter rörs inte. Förra texten går att ångra.
+  const [aiUndo, setAiUndo] = useState(null);
   const handleGenerate = async () => {
-    if (!form.title) { setAiError("Välj jobbtitel först."); return; }
+    if (!form.title) { setAiError("Fyll i jobbtitel först."); return; }
     setAiError("");
     setAiGenerating(true);
+    const improve = form.aboutJob.trim().length >= 20;
     try {
-      const data = await aiGenerateJobDescription({ ...form, description: form.aboutJob });
-      if (data?.description) setForm((f) => ({ ...f, aboutJob: data.description }));
+      const data = await aiGenerateJobDescription({
+        ...form,
+        mode: improve ? "improve" : "write",
+        jobTypeLabel: form.jobType === "annat" ? form.jobTypeOther : jobTypeLabel(form.jobType),
+        certificateLabels: [...form.certificates.map(getCertificateLabel), ...form.certificatesOther],
+      });
+      if (data?.description) {
+        setAiUndo({ aboutJob: form.aboutJob, tasks: form.tasks, requirements: form.requirements, offers: form.offers });
+        const merge = (have, add) => {
+          const seen = new Set(have.map((x) => x.trim().toLowerCase()));
+          return [...have, ...(add || []).filter((x) => !seen.has(x.trim().toLowerCase()))].slice(0, 10);
+        };
+        setForm((f) => ({
+          ...f,
+          aboutJob: data.description,
+          tasks: merge(f.tasks, data.tasks),
+          requirements: merge(f.requirements, data.requirements),
+          offers: merge(f.offers, data.offers),
+        }));
+      }
     } catch (e) {
-      setAiError(e.message || "Kunde inte generera beskrivning.");
+      setAiError(e.message || "Kunde inte skriva texten just nu.");
     } finally {
       setAiGenerating(false);
     }
+  };
+  const handleUndoAi = () => {
+    if (!aiUndo) return;
+    setForm((f) => ({ ...f, ...aiUndo }));
+    setAiUndo(null);
   };
 
   const handlePublish = async () => {
@@ -980,7 +1017,7 @@ export default function PostJob() {
           <CompletenessBar form={form} />
 
           {step === 0 && <StepBasics form={form} setForm={setForm} isMobile={isMobile} />}
-          {step === 1 && <StepContent form={form} setForm={setForm} aiGenerating={aiGenerating} aiError={aiError} onGenerate={handleGenerate} hasApi={hasApi} />}
+          {step === 1 && <StepContent form={form} setForm={setForm} aiGenerating={aiGenerating} aiError={aiError} onGenerate={handleGenerate} onUndo={aiUndo ? handleUndoAi : null} hasApi={hasApi} />}
           {step === 2 && <StepTerms form={form} setForm={setForm} />}
           {step === 3 && <StepPreview form={form} onPublish={handlePublish} publishing={publishing} publishError={publishError} isEdit={isEdit} />}
 

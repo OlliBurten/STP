@@ -115,21 +115,18 @@ aiRouter.post(
   requireAiKey,
   async (req, res, next) => {
     try {
-      const { title, company, location, region, license, certificates,
-              employment, jobType, bransch, schedule, experience,
-              salary, extraRequirements, physicalWorkRequired, soloWorkOk, kollektivavtal } = req.body;
-
-      if (!title) return res.status(400).json({ error: "Jobbtitel krävs" });
-
-      const description = await generateJobDescription({
-        title, company, location, region,
-        license: license || [],
-        certificates: certificates || [],
-        employment, jobType, bransch, schedule, experience,
-        salary, extraRequirements, physicalWorkRequired, soloWorkOk, kollektivavtal,
-      });
-
-      res.json({ description });
+      const b = req.body || {};
+      if (!b.title) return res.status(400).json({ error: "Jobbtitel krävs" });
+      const mode = b.mode === "improve" && String(b.aboutJob || "").trim().length >= 20 ? "improve" : "write";
+      const result = await generateJobDescription({
+        title: b.title, company: b.company, location: b.location, region: b.region,
+        license: b.license || [], certificateLabels: b.certificateLabels || b.certificates || [],
+        employment: b.employment, jobType: b.jobType, jobTypeLabel: b.jobTypeLabel,
+        schedule: b.schedule, experience: b.experience,
+        salary: b.salary, salaryMin: b.salaryMin, salaryMax: b.salaryMax, kollektivavtal: b.kollektivavtal,
+        tasks: b.tasks, requirements: b.requirements, offers: b.offers, aboutJob: b.aboutJob,
+      }, mode);
+      res.json({ mode, ...result });
     } catch (e) {
       next(e);
     }
