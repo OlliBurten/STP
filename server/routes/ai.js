@@ -128,6 +128,8 @@ aiRouter.post(
       }, mode);
       res.json({ mode, ...result });
     } catch (e) {
+      // Avvisad text / påhitt som inte gick att rätta → tydligt besked, inget 500.
+      if (e.status === 422) return res.status(422).json({ error: e.message });
       next(e);
     }
   }

@@ -872,6 +872,8 @@ adminRouter.get("/users", async (req, res, next) => {
             experience: true,
           },
         },
+        // Medlemskap där kontot inte är ägare — teammedlem i någon annans åkeri.
+        _count: { select: { userOrganizations: { where: { role: { not: "OWNER" } } } } },
         userOrganizations: {
           where: { role: "OWNER" },
           take: 1,
@@ -898,7 +900,7 @@ adminRouter.get("/users", async (req, res, next) => {
 
     res.json(
       users.map((u) => {
-        const { userOrganizations, ...rest } = u;
+        const { userOrganizations, _count, ...rest } = u;
         // Org-baserade åkerier har företagsuppgifter på Organization; legacy på User.
         const org = userOrganizations?.[0]?.organization || null;
         return {
@@ -913,6 +915,8 @@ adminRouter.get("/users", async (req, res, next) => {
           companyBransch: firstNonEmpty(u.companyBransch, org?.bransch),
           companySegmentDefaults: firstNonEmpty(u.companySegmentDefaults, org?.segmentDefaults),
           isAdmin: isAdminEmail(u.email),
+          // Teammedlem (inbjuden kollega) som inte äger något åkeri — inte ett eget åkeri.
+          teamMemberOnly: (userOrganizations?.length || 0) === 0 && (_count?.userOrganizations || 0) > 0,
           // Test-/utvecklarkonto enligt delad heuristik (server/lib/testAccounts.js).
           // Admin-UI:t döljer dessa som standard så att statistiken speglar riktiga användare.
           // Demokonton (isDemo) räknas som icke-riktiga på samma sätt som testkonton.

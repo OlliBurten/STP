@@ -516,7 +516,7 @@ export default function AdminUsersTab({
   const scopedUsers = audience === "drivers"
     ? allUsersRaw.filter(u => !isCompanyRole(u))
     : audience === "companies"
-      ? allUsersRaw.filter(u => isCompanyRole(u))
+      ? allUsersRaw.filter(u => isCompanyRole(u) && !u.teamMemberOnly) // kollegor i ett åkeri är inte egna åkerier
       : allUsersRaw;
   // Testkonton döljs som standard — alla flikräknare/rubriker räknar då exklusive dem.
   const testCount = scopedUsers.filter(isTestAccount).length;
