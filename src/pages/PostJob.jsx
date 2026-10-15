@@ -419,7 +419,7 @@ function StepBasics({ form, setForm, isMobile }) {
 }
 
 // ─── Step 2: Annonstext ───────────────────────────────────────────────────────
-function StepContent({ form, setForm, aiGenerating, aiError, onGenerate, onUndo, hasApi }) {
+function StepContent({ form, setForm, aiGenerating, aiError, onGenerate, onUndo, aiMissing = [], hasApi }) {
   const improve = form.aboutJob.trim().length >= 20;
   return (
     <div>
@@ -441,6 +441,15 @@ function StepContent({ form, setForm, aiGenerating, aiError, onGenerate, onUndo,
           </div>
         </div>
       </Field>
+
+      {aiMissing.length > 0 && (
+        <div style={{ margin: "-8px 0 24px", padding: "12px 16px", borderRadius: 12, background: "var(--amber-tint)", border: "1px solid var(--amber-tint-2)" }}>
+          <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--amber-text)", marginBottom: 4 }}>Förare brukar fråga efter — det saknas i annonsen:</div>
+          <ul style={{ margin: 0, paddingLeft: 18, fontSize: "var(--text-sm)", color: "var(--ink-700)", lineHeight: 1.6 }}>
+            {aiMissing.map((m) => <li key={m}>{m}</li>)}
+          </ul>
+        </div>
+      )}
 
       <Field label="Arbetsuppgifter" hint="Lägg till 2–5 konkreta punkter om vad chauffören faktiskt gör.">
         <BulletEditor items={form.tasks} onChange={(tasks) => setForm((f) => ({ ...f, tasks }))} placeholder="t.ex. Fjärrkörning inom Norden (SE/DK/NO)" />
@@ -785,9 +794,11 @@ export default function PostJob() {
   // gammal annons). Förbättring behåller fakta och flyttar ut arbetsuppgifter, krav och
   // förmåner till listorna — befintliga punkter rörs inte. Förra texten går att ångra.
   const [aiUndo, setAiUndo] = useState(null);
+  const [aiMissing, setAiMissing] = useState([]);
   const handleGenerate = async () => {
     if (!form.title) { setAiError("Fyll i jobbtitel först."); return; }
     setAiError("");
+    setAiMissing([]);
     setAiGenerating(true);
     const improve = form.aboutJob.trim().length >= 20;
     try {
@@ -797,6 +808,7 @@ export default function PostJob() {
         jobTypeLabel: form.jobType === "annat" ? form.jobTypeOther : jobTypeLabel(form.jobType),
         certificateLabels: [...form.certificates.map(getCertificateLabel), ...form.certificatesOther],
       });
+      setAiMissing(Array.isArray(data?.missing) ? data.missing : []);
       if (data?.description) {
         setAiUndo({ aboutJob: form.aboutJob, tasks: form.tasks, requirements: form.requirements, offers: form.offers });
         const merge = (have, add) => {
@@ -1017,7 +1029,7 @@ export default function PostJob() {
           <CompletenessBar form={form} />
 
           {step === 0 && <StepBasics form={form} setForm={setForm} isMobile={isMobile} />}
-          {step === 1 && <StepContent form={form} setForm={setForm} aiGenerating={aiGenerating} aiError={aiError} onGenerate={handleGenerate} onUndo={aiUndo ? handleUndoAi : null} hasApi={hasApi} />}
+          {step === 1 && <StepContent form={form} setForm={setForm} aiGenerating={aiGenerating} aiError={aiError} onGenerate={handleGenerate} onUndo={aiUndo ? handleUndoAi : null} aiMissing={aiMissing} hasApi={hasApi} />}
           {step === 2 && <StepTerms form={form} setForm={setForm} />}
           {step === 3 && <StepPreview form={form} onPublish={handlePublish} publishing={publishing} publishError={publishError} isEdit={isEdit} />}
 
