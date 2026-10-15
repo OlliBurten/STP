@@ -154,13 +154,24 @@ export async function suggestMessage(driver, job, senderRole) {
     driver.summary ? `Profiltext: "${driver.summary.slice(0, 200)}"` : null,
   ].filter(Boolean).join("\n");
 
+  const fmtKr = (n) => Number(n).toLocaleString("sv-SE");
+  const salaryText = job?.salaryMin
+    ? `${fmtKr(job.salaryMin)}${job.salaryMax && job.salaryMax !== job.salaryMin ? `–${fmtKr(job.salaryMax)}` : ""} kr/mån`
+    : job?.salary || null;
   const jobContext = job
-    ? `Jobb: ${job.title} på ${job.company}${job.region ? ` i ${job.region}` : ""}`
+    ? [
+        `Jobb: ${job.title} på ${job.company}${job.region ? ` i ${job.region}` : ""}`,
+        job.location ? `Ort: ${job.location}` : null,
+        job.jobType ? `Typ av körning: ${job.jobType}` : null,
+        job.employment ? `Anställning: ${job.employment}` : null,
+        job.schedule && job.schedule !== "blandat" ? `Arbetstider: ${({ dag: "dagtid mån–fre", skift: "skiftgång", natt: "nattskift", helgskift: "helgskift", flex: "flexibla tider", veckopendling: "veckopendling" })[job.schedule] || job.schedule}` : null,
+        salaryText ? `Lön: ${salaryText}` : null,
+      ].filter(Boolean).join("\n")
     : "Ingen specifik tjänst (generell förfrågan)";
 
   const roleInstruction = senderRole === "driver"
     ? "Föraren ska skriva till arbetsgivaren. Skriv i jag-form från förarens perspektiv. Nämn relevant bakgrund och visa genuint intresse för jobbet."
-    : "Åkeriet ska skriva till föraren. Skriv i vi-form från företagets perspektiv. Nämn varför föraren verkar passa och vad ni erbjuder.";
+    : "Åkeriet ska skriva till föraren. Skriv i vi-form från företagets perspektiv. Nämn varför föraren verkar passa och vad tjänsten konkret innebär — ort, typ av körning, arbetstider och lön om de finns i underlaget (förare som redan har jobb svarar oftare på konkreta erbjudanden). Hitta aldrig på uppgifter som inte står i underlaget. Avsluta med en enkel fråga föraren kan svara ja eller nej på.";
 
   const message = await withRetry(() => client.messages.create({
     model: "claude-haiku-4-5-20251001",

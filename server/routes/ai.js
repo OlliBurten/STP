@@ -244,7 +244,10 @@ aiRouter.post("/suggest-message", authMiddleware, requireAiKey, async (req, res,
           select: { name: true, driverProfile: { select: { licenses: true, certificates: true, region: true, primarySegment: true, summary: true } } },
         }),
         jobId
-          ? prisma.job.findUnique({ where: { id: jobId }, select: { title: true, company: true, region: true } })
+          ? prisma.job.findUnique({
+              where: { id: jobId },
+              select: { title: true, company: true, region: true, location: true, jobType: true, employment: true, schedule: true, salary: true, salaryMin: true, salaryMax: true },
+            })
           : Promise.resolve(null),
       ]);
       if (!driverUser) return res.status(404).json({ error: "Föraren hittades inte" });

@@ -13,6 +13,7 @@ import {
 import { matchScore, matchPercent, driverYearsFromExperience } from "../utils/matchScore.js";
 import { driverNearJobRegion, driverInJobRegion } from "../utils/regions.js";
 import { notifyRecommendedJobMatch } from "../lib/email.js";
+import { claimMatchEmailSlots } from "../lib/matchAlerts.js";
 import { createNotification } from "../lib/notifications.js";
 import { validateBody, validateQuery } from "../middleware/validate.js";
 import { createJobSchema, jobsListQuerySchema, patchJobSchema } from "../lib/validators.js";
@@ -161,11 +162,15 @@ export async function sendDriverMatchAlertsForJob(job) {
         relatedJobId: job.id,
       }).catch((e) => console.error("Create notification match job:", e));
     }
-    const emailRecipients = allRecipients.filter(
+    const candidates = allRecipients.filter(
       (r) =>
         r.wantsEmail && (!r.lastMatchJobEmailAt ||
         now.getTime() - new Date(r.lastMatchJobEmailAt).getTime() > MATCH_EMAIL_COOLDOWN_MS)
     );
+    // Reservera före utskick (se claimMatchEmailSlots) — annars kunde samma förare
+    // få tips från både den här vägen och ingesten inom samma dygn.
+    const claimed = await claimMatchEmailSlots(candidates.map((r) => r.userId), now, MATCH_EMAIL_COOLDOWN_MS);
+    const emailRecipients = candidates.filter((r) => claimed.has(r.userId));
     await Promise.allSettled(
       emailRecipients.map((r) =>
         notifyRecommendedJobMatch({
@@ -175,12 +180,6 @@ export async function sendDriverMatchAlertsForJob(job) {
         })
       )
     );
-    if (emailRecipients.length > 0) {
-      await prisma.user.updateMany({
-        where: { id: { in: emailRecipients.map((r) => r.userId) } },
-        data: { lastMatchJobEmailAt: now },
-      });
-    }
   } catch (e) {
     console.error("Notify matching drivers for job:", e);
   }

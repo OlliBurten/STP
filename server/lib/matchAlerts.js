@@ -140,18 +140,36 @@ export async function notifyDriversOfNewJobs(jobIds) {
     }
   }
 
+  const claimed = await claimMatchEmailSlots(emailQueue.map((r) => r.userId), now);
+  const toSend = emailQueue.filter((r) => claimed.has(r.userId));
   await Promise.allSettled(
-    emailQueue.map((r) =>
+    toSend.map((r) =>
       notifyRecommendedJobMatch({ driverEmail: r.email, driverName: r.name, jobs: r.jobs })
     )
   );
-  if (emailQueue.length > 0) {
-    await prisma.user.updateMany({
-      where: { id: { in: emailQueue.map((r) => r.userId) } },
+
+  console.log(`[MatchAlerts] ${jobs.length} nya jobb → ${notified} förare notifierade, ${toSend.length} mejlade`);
+  return { notified, emailed: toSend.length };
+}
+
+/**
+ * Reservera mejlplatsen INNAN mejlet skickas: bara förare vars lastMatchJobEmailAt är
+ * äldre än cooldownen (eller saknas) får sin tidsstämpel satt, och bara de mejlas.
+ *
+ * Tidigare sattes tidsstämpeln efter utskicket. Avbröts körningen däremellan, eller
+ * körde två flöden samtidigt (ingesten var 2:a timme + nya direktannonser + dagliga
+ * påminnelsen), gick cooldownen förlorad — 2026-10-14 fick minst fem förare två
+ * jobbtips med två timmars mellanrum. Hellre ett missat tips än dubbla.
+ */
+export async function claimMatchEmailSlots(userIds, now = new Date(), cooldownMs = EMAIL_COOLDOWN_MS) {
+  const claimed = new Set();
+  const cutoff = new Date(now.getTime() - cooldownMs);
+  for (const id of [...new Set(userIds)]) {
+    const r = await prisma.user.updateMany({
+      where: { id, OR: [{ lastMatchJobEmailAt: null }, { lastMatchJobEmailAt: { lt: cutoff } }] },
       data: { lastMatchJobEmailAt: now },
     });
+    if (r.count === 1) claimed.add(id);
   }
-
-  console.log(`[MatchAlerts] ${jobs.length} nya jobb → ${notified} förare notifierade, ${emailQueue.length} mejlade`);
-  return { notified, emailed: emailQueue.length };
+  return claimed;
 }

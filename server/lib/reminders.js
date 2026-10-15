@@ -13,6 +13,7 @@
 
 import { prisma } from "./prisma.js";
 import { driverNearJobRegion } from "../utils/regions.js";
+import { claimMatchEmailSlots } from "./matchAlerts.js";
 import { sendEmail, notifyJobTips, notifyJobExpiring, notifyJobAutoArchived } from "./email.js";
 import { issueEmailVerification } from "../routes/auth.js";
 import { isDriverOnboardingComplete, isDriverProfileComplete } from "../utils/driverProfileRequirements.js";
@@ -447,11 +448,11 @@ export async function runJobMatchReminders() {
     });
 
     try {
+      // Reservera före utskick — ingesten (var 2:a timme) kör samtidigt kl 08 och
+      // mejlar samma förare; den som tar platsen först skickar.
+      const claimed = await claimMatchEmailSlots([u.id], new Date(), COOLDOWN_DAYS * 864e5);
+      if (!claimed.has(u.id)) continue;
       await sendEmail({ to: u.email, subject, text, html });
-      await prisma.user.update({
-        where: { id: u.id },
-        data: { lastMatchJobEmailAt: new Date() },
-      });
       sent++;
     } catch (e) {
       console.error(`[Reminders:jobMatch] Failed for ${u.email}:`, e?.message);
