@@ -7,6 +7,7 @@
 import React, { useState } from "react";
 import { Header, ScrollArea, Card, Pill, Dot, Avatar, Switch, Label, Icon, Empty, Button } from "../../ui";
 import { timeAgo } from "../jobAdapter";
+import { SALARY_UNKNOWN } from "../../../utils/jobUtils";
 
 const matchTone = (m) => (m >= 90 ? "success" : m >= 80 ? "soft" : "neutral");
 const firstName = (n) => String(n || "").trim().split(/\s+/)[0] || "";
@@ -155,7 +156,7 @@ export default function HemScreen({ ctx }) {
                     </div>
                     <h3 style={{ fontSize: 14.5, fontWeight: 800, color: "var(--ink-900)", lineHeight: 1.25, marginBottom: 3 }}>{j.title}</h3>
                     <div style={{ fontSize: 12.5, color: "var(--ink-500)", marginBottom: 10 }}>{j.company} · {j.location}</div>
-                    <div style={{ fontSize: 12.5, fontWeight: 700, color: "var(--ink-800)" }}>{j.pay}</div>
+                    <div style={j.pay === SALARY_UNKNOWN ? { fontSize: 12.5, fontWeight: 500, color: "var(--ink-400)" } : { fontSize: 12.5, fontWeight: 700, color: "var(--ink-800)" }}>{j.pay}</div>
                   </Card>
                 ))}
               </div>
