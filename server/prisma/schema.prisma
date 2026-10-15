@@ -80,6 +80,7 @@ model User {
   lastMatchJobEmailAt        DateTime? // driver: last time we sent "matching jobs" email
   lastMatchDriverEmailAt     DateTime? // company: last time we sent "matching driver" email
   lastLoginAt                DateTime? // senaste inloggning (alla metoder)
+  lastActiveAt               DateTime? // senast använt STP (stämplas av authMiddleware, max 1 gång/timme)
   lastVerificationReminderAt DateTime? // senaste påminnelse om e-postverifiering
   needsDriverOnboarding      Boolean                 @default(false)
   needsRecruiterOnboarding   Boolean                 @default(false)

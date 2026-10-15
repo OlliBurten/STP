@@ -136,7 +136,7 @@ export function CompanyDataProvider({ children }) {
         licenses: d.licenses || [], certs: d.certificates || d.certs || [],
         exp: d.yearsExperience ?? d.exp ?? null, location: d.location || "", region: d.region || "",
         segment: (d.primarySegment || "heltid").toLowerCase().includes("flex") ? "vikariepool" : "heltid",
-        available: d.openToWork ?? d.available ?? false, match: d.matchPct ?? d.match ?? null,
+        available: d.openToWork ?? d.available ?? false, match: d.matchPct ?? d.match ?? null, activity: d.activityFactor ?? 1,
         lastActive: d.lastActive || "",
       })));
     }
