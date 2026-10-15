@@ -296,6 +296,23 @@ function AppLayout() {
   // ersätter desktop-tvåkolumnslayouten. Gäller oavsett inloggning.
   const isMobileLegal = isMobile && (pathname === "/anvandarvillkor" || pathname === "/integritet");
 
+  // ── Åkeriportalen är stängd mot resten av sajten ─────────────────────
+  // En inloggad åkeri ska bara se portalen — inte förarsidor, landningssidor eller
+  // åkerilistan för förare (hände via länkar 2026-10-16). Undantag: det som hör till
+  // kontot och sådant portalen själv länkar ut till (en enskild annons, den egna
+  // publika profilen), juridik och mejllänkar. Allt annat → /foretag.
+  if (isCompany && !isImpersonating) {
+    const allowed =
+      pathname.startsWith("/foretag") ||
+      pathname.startsWith("/admin") ||
+      pathname.startsWith("/onboarding") ||
+      !!matchPath("/jobb/:id", pathname) ||
+      !!matchPath("/akerier/:id", pathname) ||
+      ["/integritet", "/anvandarvillkor", "/kontakt", "/verifiera-email", "/aterstall-losenord", "/invite/accept", "/utfall", "/uppfoljning", "/ingen-atkomst"].includes(pathname) ||
+      pathname.startsWith("/anslut/") || pathname.startsWith("/avregistrera/") || pathname.startsWith("/bevakning/");
+    if (!allowed) return <Navigate to="/foretag" replace />;
+  }
+
   // ── NEW MOBILE (reskin) ──────────────────────────────────────────────
   // On mobile, a logged-in driver gets the fully rebuilt STP Mobil app
   // (own shell, tab bar, sheets). This wholly replaces the desktop chrome +

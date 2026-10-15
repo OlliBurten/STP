@@ -6,6 +6,7 @@ import { validateBody } from "../middleware/validate.js";
 import { driverReferenceSchema } from "../lib/validators.js";
 import { createNotification } from "../lib/notifications.js";
 import { sendEmail } from "../lib/email.js";
+import { excludeTestAndDemoAccountsWhere, isNonRealUser } from "../lib/testAccounts.js";
 
 export const driversRouter = Router();
 
@@ -14,12 +15,18 @@ function parseExpSafe(v) { try { return JSON.parse(v || "[]"); } catch { return 
 driversRouter.get("/", authMiddleware, requireCompany, requireVerifiedCompany, async (req, res, next) => {
   try {
     const { region, license, certificate, availability, experience, segment } = req.query;
+    // Testkonton och grundarens egna konton syns aldrig för riktiga åkerier
+    // ("Oliver Harburt" tre gånger i Hitta förare, 2026-10-16). Ett teståkeri ser
+    // dem fortfarande, så att flödet går att testa.
+    const viewer = await prisma.user.findUnique({ where: { id: req.userId }, select: { email: true, isDemo: true } });
+    const hideTestDrivers = !isNonRealUser(viewer);
     const profiles = await prisma.driverProfile.findMany({
       where: {
         visibleToCompanies: true,
         user: {
           needsDriverOnboarding: false,
           suspendedAt: null,
+          ...(hideTestDrivers ? excludeTestAndDemoAccountsWhere : {}),
         },
         ...(license && { licenses: { has: license } }),
         ...(certificate && { certificates: { has: certificate } }),

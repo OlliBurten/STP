@@ -22,6 +22,18 @@ const IMPERSONATION_TTL_SECONDS = 60 * 60 * 2;
 
 adminRouter.use(authMiddleware, requireAdmin);
 
+// Ett åkeri är ett åkerikonto som äger en organisation (eller ännu inte har någon).
+// Kollegor som bjudits in till ett åkeri är teammedlemmar, inte egna åkerier —
+// annars räknades VGT tre gånger (Almin, Sanel, Magnus).
+const notTeamMemberOnly = {
+  NOT: {
+    AND: [
+      { userOrganizations: { some: { role: { not: "OWNER" } } } },
+      { userOrganizations: { none: { role: "OWNER" } } },
+    ],
+  },
+};
+
 function toIso(value) {
   return value ? new Date(value).toISOString() : null;
 }
@@ -347,7 +359,7 @@ adminRouter.get("/summary", async (req, res, next) => {
       // Exkluderar test- OCH demokonton (delad heuristik i lib/testAccounts.js) så att
       // sidopanelens räknare matchar adminens användarlista med standardfiltret på.
       prisma.user.count({ where: { role: "DRIVER", ...excludeTestAndDemoAccountsWhere } }),
-      prisma.user.count({ where: { role: { in: ["COMPANY", "RECRUITER"] }, ...excludeTestAndDemoAccountsWhere } }),
+      prisma.user.count({ where: { AND: [{ role: { in: ["COMPANY", "RECRUITER"] } }, excludeTestAndDemoAccountsWhere, notTeamMemberOnly] } }),
       prisma.job.count(),
       prisma.job.count({ where: { status: "ACTIVE" } }),
       prisma.job.count({ where: { status: "HIDDEN" } }),
@@ -805,6 +817,7 @@ adminRouter.get("/users", async (req, res, next) => {
           }
         : {}),
       ...(role && ["DRIVER", "COMPANY", "RECRUITER"].includes(role) ? { role } : {}),
+      ...(role === "COMPANY" || role === "RECRUITER" ? notTeamMemberOnly : {}),
       ...(companyStatus && ["PENDING", "VERIFIED", "REJECTED"].includes(companyStatus)
         ? { companyStatus }
         : {}),
