@@ -13,6 +13,10 @@ export const licenseTypes = [
   { value: "BE",  label: "BE (personbil + släp)" },
 ];
 
+// Lastbilsbehörigheterna — det enda en annons på STP får kräva och det enda som
+// är meningsfullt att filtrera på. B/BE finns kvar i förarprofilen (de flesta har B).
+export const truckLicenseTypes = licenseTypes.filter((l) => l.value.startsWith("C"));
+
 // —— Certifikat: grupperade för UI, platt lista för val ——
 const certGroups = [
   {

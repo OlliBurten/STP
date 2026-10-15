@@ -1,4 +1,4 @@
-import { jobTypes, employmentTypes, licenseTypes, regions } from "../data/mockJobs";
+import { jobTypes, employmentTypes, truckLicenseTypes, regions } from "../data/mockJobs";
 import { segmentOptions } from "../data/segments";
 import { transportSegmentGroups, getBranschLabel } from "../data/bransch.js";
 import { ChevronDownIcon } from "./Icons";
@@ -120,7 +120,7 @@ export default function JobFilters({ filters, setFilters }) {
           onChange={(e) => handleChange("license", e.target.value)}
         >
           <option value="">Alla körkort</option>
-          {licenseTypes.map((l) => (
+          {truckLicenseTypes.map((l) => (
             <option key={l.value} value={l.value}>{l.label}</option>
           ))}
         </SelectField>

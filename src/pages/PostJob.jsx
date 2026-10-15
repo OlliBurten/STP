@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import FormattedText from "../components/FormattedText";
 import { companyCan } from "../utils/companyPermissions";
 import { Link, useParams, useSearchParams } from "react-router-dom";
-import { licenseTypes, regions } from "../data/mockJobs";
+import { truckLicenseTypes, regions } from "../data/mockJobs";
 import { certificateTypesForUI } from "../data/profileData";
 import { useAuth } from "../context/AuthContext";
 import { createJob, fetchJob, updateJob, fetchJobDraft, createJobDraft, updateJobDraft, deleteJobDraft } from "../api/jobs.js";
@@ -347,7 +347,7 @@ function StepBasics({ form, setForm, isMobile }) {
 
       <Field label="Körkort som krävs" required hint="Välj alla som gäller.">
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-          {licenseTypes.map((l) => (
+          {truckLicenseTypes.map((l) => (
             <ToggleChip key={l.value} label={l.value} active={form.license.includes(l.value)} onClick={() => toggle("license", l.value)} />
           ))}
         </div>
