@@ -243,8 +243,15 @@ const DRIVER_TITLE_RE = new RegExp([
 // Förare — men av fel fordon (kräver inte C/CE, eller är inte lastbil).
 const NON_TRUCK_VEHICLE_RE = /(buss|taxi|truckförare|gaffeltruck|motviktstruck|truckkort|budbil|paketbil|personbil|skåpbil|minibuss|traktor|tåg|lokförare|spårvagn|kranförare|maskinförare|maskinist|grävmaskin|hjullastare|dumperförare|båt|färja|flyg|drönare|moped|cykel)/i;
 
-export function isTruckDriverTitle(title = "") {
+// Bärgning och sophämtning: ibland kör man, ibland åker man bara med. De räknas
+// som lastbilsjobb bara när annonsen kräver C/CE-körkort (Olivers regel 2026-10-15).
+const C_REQUIRED_ROLE_RE = /(bärgare|bärgning|sophämt|sopbil|miljöarbetare|renhållning|baklastare|sidlastare)/;
+
+export function isTruckDriverTitle(title = "", licenses = []) {
   const t = String(title).toLowerCase();
+  const needsTruckLicense = (licenses || []).some((l) => TRUCK_LICENSES.has(String(l?.label ?? l).toUpperCase()));
+  // Säger titeln själv förare/chaufför ("Renhållningsförare", "Sopbilschaufför") gäller vanliga regeln.
+  if (C_REQUIRED_ROLE_RE.test(t) && !/(förare|chauff|driver)/.test(t)) return needsTruckLicense && !NON_TRUCK_VEHICLE_RE.test(t);
   // Uttryckligen lastbil/CE → alltid in, även om titeln också nämner annat
   // ("Lastbilschaufför, maskinförare", "Kranbilsförare", engelska "Truck Driver").
   if (/lastbil|kranbil|truck ?driver|\bce[- ]?(chauff|förare)|fjärrtransport/.test(t)) return true;
@@ -258,7 +265,7 @@ export function isTruckDriverTitle(title = "") {
 function passesQualityFilter(hit) {
   if (!hit.headline) return false;
   if (!hit.employer?.name) return false;
-  if (!isTruckDriverTitle(hit.headline)) return false;
+  if (!isTruckDriverTitle(hit.headline, hit.driving_license)) return false;
 
   const dls = (hit.driving_license || []).map(dl => (dl.label || "").toUpperCase());
   const hasTruckLicense = dls.some(l => TRUCK_LICENSES.has(l)); // explicit C eller CE
