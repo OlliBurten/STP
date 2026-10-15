@@ -108,7 +108,6 @@ companiesRouter.get("/search", optionalAuthMiddleware, validateQuery(companiesSe
       companyStatus: "VERIFIED",
       companyName: { gt: "" },
       companyRegion: { gt: "" },
-      companyDescription: { gt: "" },
     };
     const orgVisible = {
       userOrganizations: {
@@ -117,7 +116,8 @@ companiesRouter.get("/search", optionalAuthMiddleware, validateQuery(companiesSe
           organization: {
             status: "VERIFIED",
             name: { gt: "" },
-            description: { gt: "" },
+            // Beskrivning krävs inte längre — verifierat åkeri med ort räcker för att
+            // synas. (Krävdes förut, och då fylldes bolagsordningen i som "beskrivning".)
             OR: [{ region: { gt: "" } }, { location: { gt: "" } }],
           },
         },

@@ -467,7 +467,7 @@ function SuggestedDrivers({ drivers }) {
 export default function ForCompanies() {
   usePageTitle("Översikt");
   const isMobile = useIsMobile();
-  const { user } = useAuth();
+  const { user, activeOrg } = useAuth();
   const { conversations, companyUnreadConversationCount } = useChat();
   const [jobs, setJobs] = useState([]);
   const [profile, setProfile] = useState(null);
@@ -612,6 +612,15 @@ export default function ForCompanies() {
 
         {/* Direkta notiser vid ansökan — tills de är påslagna */}
         <PushBanner />
+
+        {/* Egen beskrivning saknas — förare läser den innan de söker. */}
+        {activeOrg && activeOrg.hasDescription === false && (
+          <Link to="/foretag/profil" style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 18px", marginBottom: 16, borderRadius: 14, background: "var(--card)", border: "1px solid var(--line)", textDecoration: "none", color: "var(--ink-900)" }}>
+            <span aria-hidden="true">✍️</span>
+            <span style={{ flex: 1, fontSize: "var(--text-sm)", fontWeight: 700 }}>Berätta om ert åkeri — förare läser det innan de söker</span>
+            <span style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--green-text)" }}>Skriv →</span>
+          </Link>
+        )}
 
         {/* Verifieringsgate */}
         {!loading && !isVerified && <VerificationGate isMobile={isMobile} />}

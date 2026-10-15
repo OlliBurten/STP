@@ -90,9 +90,11 @@ describe("GET /api/companies/search", () => {
     assert.strictEqual(c.location, "HELSINGBORG");
   });
 
-  it("döljer tomma profiler och overifierade organisationer", async () => {
+  it("visar verifierade åkerier utan beskrivning, döljer overifierade", async () => {
+    // Beskrivning krävs inte sedan 2026-10-16 — kravet gjorde att Bolagsverkets
+    // bolagsordning fylldes i som "beskrivning". Verifierat + ort räcker.
     const found = await search();
-    assert.ok(!found.has(ids.orgNoDescription), "åkeri utan beskrivning ska inte synas");
+    assert.ok(found.has(ids.orgNoDescription), "verifierat åkeri utan beskrivning ska synas");
     assert.ok(!found.has(ids.orgPending), "PENDING-organisation ska inte synas");
   });
 

@@ -103,6 +103,13 @@ export default function ProductTour({ steps, storageKey, enabled }) {
     setPopoverPos({ left: round(left), top: round(top), centered: false });
   }, [currentStep]);
 
+  // Andra dialoger (t.ex. notisfrågan) ska inte lägga sig ovanpå turen.
+  useEffect(() => {
+    if (!active) return;
+    document.documentElement.dataset.tourActive = "1";
+    return () => { delete document.documentElement.dataset.tourActive; };
+  }, [active]);
+
   // ── Auto-start (en gång, efter onboarding, desktop) ──────────────────────
   useEffect(() => {
     if (startedRef.current) return;

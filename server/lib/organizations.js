@@ -83,6 +83,8 @@ export async function getUserOrganizations(userId) {
     membersCanManageJobs: r.organization.membersCanManageJobs,
     membersCanEditProfile: r.organization.membersCanEditProfile,
     membersCanInvite: r.organization.membersCanInvite,
+    // Bara ja/nej — översikten påminner åkerier som saknar egen beskrivning.
+    hasDescription: Boolean(r.organization.description?.trim()),
     role: r.role,
   }));
 }
