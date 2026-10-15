@@ -313,7 +313,12 @@ export function DriverDataProvider({ children }) {
     return Array.isArray(list) ? list : [];
   }, [chat, user]);
   const threads = useMemo(() => convs.map(toThread), [convs]);
-  const convApplications = useMemo(() => convs.filter((c) => c.jobId).map(toApplication), [convs]);
+  // Bara trådar som föraren själv startade är ansökningar. När åkeriet hör av sig
+  // om ett jobb hamnar det i Inkorgen — inte som "Ansökan · Skickad" under Ansökt.
+  const convApplications = useMemo(
+    () => convs.filter((c) => c.jobId && (c.messages?.[0]?.sender ?? "driver") === "driver").map(toApplication),
+    [convs]
+  );
 
   // Aggregerade ansökningar → samma kort-shape som konversations-ansökningar.
   // Ärlig status per ansökan i st f generiskt "Skickad":
@@ -350,7 +355,9 @@ export function DriverDataProvider({ children }) {
   // applied = on-platform conversations + aggregated applications + optimistic
   const applied = useMemo(() => {
     const s = new Set(appliedLocal);
-    convs.forEach((c) => c.jobId && s.add(c.jobId));
+    // Bara egna ansökningar — att ett åkeri skrivit om jobbet betyder inte att föraren
+    // sökt det (då låstes knappen som "Ansökt" och föraren kunde inte söka).
+    convs.forEach((c) => c.jobId && (c.messages?.[0]?.sender ?? "driver") === "driver" && s.add(c.jobId));
     aggApplied.forEach((id) => s.add(id));
     return s;
   }, [appliedLocal, convs, aggApplied]);
