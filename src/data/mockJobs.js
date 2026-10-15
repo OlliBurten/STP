@@ -106,7 +106,7 @@ export const employmentTypes = [
 ];
 
 // Re-export från competencies (B, C, CE)
-export { licenseTypes, scheduleTypes, experienceLevels } from "./competencies.js";
+export { licenseTypes, truckLicenseTypes, scheduleTypes, experienceLevels } from "./competencies.js";
 
 export const regions = [
   "Stockholm",

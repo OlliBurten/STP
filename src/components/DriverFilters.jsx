@@ -1,4 +1,4 @@
-import { licenseTypes, regions, experienceLevels } from "../data/mockJobs";
+import { truckLicenseTypes, regions, experienceLevels } from "../data/mockJobs";
 import { availabilityTypes, certificateTypes } from "../data/profileData";
 import { segmentOptions } from "../data/segments";
 import { ChevronDownIcon } from "./Icons";
@@ -77,7 +77,7 @@ export default function DriverFilters({ filters, setFilters }) {
           onChange={(e) => handleChange("license", e.target.value)}
         >
           <option value="">Alla körkort</option>
-          {licenseTypes.map((l) => (
+          {truckLicenseTypes.map((l) => (
             <option key={l.value} value={l.value}>{l.label}</option>
           ))}
         </SelectField>
