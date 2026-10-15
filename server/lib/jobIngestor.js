@@ -226,9 +226,37 @@ const NON_TRUCK_KEYWORDS = [
   "golvläggare", "takläggare", "plattsättare", "ställningsbyggare", "städare", "kock",
 ];
 
+// ─── Endast lastbilsjobb (C/CE) ───────────────────────────────────────────────
+// Körkortskravet räcker inte: "Miljöarbetare", "Brandman", "Flyttkarl" och
+// "Biträdande platschef" kräver C-körkort men är inte förarjobb (låg som 89 %
+// match högst upp hos en CE-förare 2026-10-15). AF:s egen yrkesindelning räcker
+// inte heller — platschefen låg som "Fjärrbilsförare". Därför: titeln måste säga
+// att jobbet ÄR att köra lastbil, och får inte vara ett annat fordon.
+const DRIVER_TITLE_RE = new RegExp([
+  "chauff[öo]r",           // chaufför, lastbilschaufför, CE-chaufför
+  "förare", "forare",      // lastbilsförare, distributionsförare, fjärrbilsförare
+  "driver",
+  "lastbil",
+  "\\bce\\b",              // "CE till Göteborg"
+  "[a-zåäö]{3,}bil\\b",      // tankbil, kranbil, timmerbil, spannmålsbil, sopbil
+].join("|"), "i");
+// Förare — men av fel fordon (kräver inte C/CE, eller är inte lastbil).
+const NON_TRUCK_VEHICLE_RE = /(buss|taxi|truckförare|gaffeltruck|motviktstruck|truckkort|budbil|paketbil|personbil|skåpbil|minibuss|traktor|tåg|lokförare|spårvagn|kranförare|maskinförare|maskinist|grävmaskin|hjullastare|dumperförare|båt|färja|flyg|drönare|moped|cykel)/i;
+
+export function isTruckDriverTitle(title = "") {
+  const t = String(title).toLowerCase();
+  // Uttryckligen lastbil/CE → alltid in, även om titeln också nämner annat
+  // ("Lastbilschaufför, maskinförare", "Kranbilsförare", engelska "Truck Driver").
+  if (/lastbil|kranbil|truck ?driver|\bce[- ]?(chauff|förare)|fjärrtransport/.test(t)) return true;
+  // Ett annat yrke som bara kräver körkortet ("Miljöarbetare med CE-kort").
+  if (/(arbetare|rangerare|chef\b|ledare|operatör|tekniker|montör|mekaniker|säljare|vårdare|tvättare|lastare|sanerare)/.test(t)) return false;
+  return DRIVER_TITLE_RE.test(t) && !NON_TRUCK_VEHICLE_RE.test(t);
+}
+
 function passesQualityFilter(hit) {
   if (!hit.headline) return false;
   if (!hit.employer?.name) return false;
+  if (!isTruckDriverTitle(hit.headline)) return false;
 
   const dls = (hit.driving_license || []).map(dl => (dl.label || "").toUpperCase());
   const hasTruckLicense = dls.some(l => TRUCK_LICENSES.has(l)); // explicit C eller CE
