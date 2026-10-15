@@ -14,16 +14,10 @@ const RESULTS = [
   { initials: "KO", name: "Karin Olsson", loc: "Malmö, Skåne", exp: 22, license: ["CE"], certs: ["YKB"], segment: "Fjärr", avail: "Söker aktivt", match: 88 },
 ];
 
-const TALENT = [
-  { region: "Skåne", n: 47, m: 6 },
-  { region: "Stockholm", n: 38, m: 3 },
-  { region: "Västra Götaland", n: 31, m: 2 },
-  { region: "Östergötland", n: 14, m: 1 },
-];
 
 const COMPARE = {
   bemanning: ["Provision på varje timme föraren kör", "Föraren tillhör bemanningsbolaget", "Du ser sällan vem du får förrän de dyker upp", "Bindningstider och ramavtal"],
-  stp: ["Inga avgifter just nu", "Du äger relationen med föraren direkt", "Sök och se hela profilen innan kontakt", "Ingen bindningstid — säg upp när du vill"],
+  stp: ["Inga avgifter, ingen provision", "Du äger relationen med föraren direkt", "Sök och se hela profilen innan kontakt", "Ingen bindningstid — säg upp när du vill"],
 };
 
 const STEPS = [
@@ -93,7 +87,7 @@ const SearchPreview = () => (
         ))}
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 11 }}>
-        <span style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--ink-500)", textTransform: "uppercase", letterSpacing: 0.8 }}>6 matchande förare</span>
+        <span style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--ink-500)", textTransform: "uppercase", letterSpacing: 0.8 }}>Exempel på sökresultat</span>
         <span style={{ fontSize: "var(--text-xs)", color: "var(--green-text)", fontWeight: 700 }}>Sortera: Match</span>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -235,7 +229,7 @@ export default function ForCompaniesLanding() {
                 <Button variant="secondary" size="lg" onClick={() => scrollTo("sa-funkar")}>Se hur det funkar</Button>
               </div>
               <div style={{ display: "flex", gap: 26, flexWrap: "wrap" }}>
-                {[["36 %", "saknar förare"], ["Auto", "verifiering"], ["0 kr", "just nu"]].map(([b, s]) => (
+                {[["36 %", "av åkerierna har svårt att rekrytera (TYA)"], ["Auto", "verifiering"], ["0 kr", "ingen provision"]].map(([b, s]) => (
                   <div key={s} style={{ display: "flex", flexDirection: "column" }}>
                     <span style={{ fontSize: "var(--text-2xl)", fontWeight: 900, color: "var(--ink-900)", fontFamily: "var(--mono)", letterSpacing: -0.5 }}>{b}</span>
                     <span style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", fontWeight: 600 }}>{s}</span>
@@ -244,39 +238,6 @@ export default function ForCompaniesLanding() {
               </div>
             </div>
             <SearchPreview />
-          </div>
-        </div>
-      </section>
-
-      {/* ───────── TALANGÖVERSIKT ───────── */}
-      <section style={{ background: "var(--card)", borderTop: "1px solid var(--line)", borderBottom: "1px solid var(--line)", padding: "88px 0" }}>
-        <div style={S.container}>
-          <div className="talent-grid">
-            <div>
-              <span style={S.sectionEyebrow}>Var förarna finns</span>
-              <h2 style={{ ...S.sectionTitle, marginBottom: 18 }}>Se talangen län för län.</h2>
-              <p style={{ ...S.lead, marginBottom: 24 }}>
-                Talangkartan visar tillgängliga förare per län och hur många som matchar just era annonser — så ni vet var ni har bäst läge att rekrytera.
-              </p>
-              <Button variant="secondary" iconRight={<Icon name="arrow" size={14} stroke={2.2} />} onClick={goRegister}>Öppna talangkartan</Button>
-            </div>
-            <Card padding="28px 30px">
-              <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-                {TALENT.map((t) => (
-                  <div key={t.region}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 7 }}>
-                      <span style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)" }}>{t.region}</span>
-                      <span style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", fontWeight: 600 }}>
-                        <span style={{ fontFamily: "var(--mono)", color: "var(--ink-900)", fontWeight: 700 }}>{t.n}</span> förare · <span style={{ color: "var(--green-text)", fontWeight: 700 }}>{t.m} matchar er</span>
-                      </span>
-                    </div>
-                    <div style={{ height: 9, borderRadius: 999, background: "var(--paper-2)", overflow: "hidden", position: "relative" }}>
-                      <div style={{ width: (t.n / 47) * 100 + "%", height: "100%", borderRadius: 999, background: "linear-gradient(90deg, var(--green), #36857f)" }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Card>
           </div>
         </div>
       </section>
@@ -392,7 +353,7 @@ export default function ForCompaniesLanding() {
         lead="Skapa ett företagskonto, gå igenom onboardingen och lägg till ert åkeri. När grunden finns kan ni börja med Hitta förare direkt och publicera jobb vid behov."
         primaryLabel="Skapa företagskonto"
         secondaryLabel="Läs mer om STP"
-        stats={[["Gratis", "Just nu"], ["0 kr", "Aldrig provision"], ["Auto", "Verifiering"], ["Direkt", "Äg relationen"]]}
+        stats={[["Gratis", "För åkerier"], ["0 kr", "Aldrig provision"], ["Auto", "Verifiering"], ["Direkt", "Äg relationen"]]}
         onPrimary={goRegister}
         onSecondary={() => navigate("/om-oss")}
       />

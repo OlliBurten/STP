@@ -245,7 +245,12 @@ export default function MobileLanding() {
       .catch(() => { if (alive) setRawJobs([]); });
     return () => { alive = false; };
   }, []);
-  const latestJobs = useMemo(() => (rawJobs || []).slice(0, 5).map(toJobView), [rawJobs]);
+  // Samma skyltfönster som desktop: inga bemanningsföretag, åkeriernas egna annonser först.
+  const latestJobs = useMemo(() => {
+    const pool = (rawJobs || []).filter((j) => !j.bemanning);
+    const direct = (j) => j.source !== "AGGREGATED" || j.claimed;
+    return [...pool.filter(direct), ...pool.filter((j) => !direct(j))].slice(0, 5).map(toJobView);
+  }, [rawJobs]);
   const jobCount = rawJobs?.length || 0;
   const toSteps = () => { setPage(null); setTimeout(() => stepsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 60); };
 
