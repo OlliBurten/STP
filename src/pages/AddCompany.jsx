@@ -25,7 +25,7 @@ export default function AddCompany() {
   const [error, setError]     = useState("");
   const [duplicate, setDuplicate] = useState(false);
   const [form, setForm]       = useState({
-    name: "", orgNumber: "", location: "", region: "", foundedYear: null,
+    name: "", orgNumber: "", location: "", region: "", foundedYear: null, description: "",
     segmentDefaults: segmentOptions.map(s => s.value),
   });
   const [orgLookup, setOrgLookup] = useState({
@@ -99,6 +99,7 @@ export default function AddCompany() {
         region:          form.region     || undefined,
         foundedYear:     form.foundedYear || undefined,
         segmentDefaults: form.segmentDefaults,
+        description:     form.description.trim() || undefined,
       });
       await refreshOrgs();
       switchOrg(org.id);
@@ -258,6 +259,24 @@ export default function AddCompany() {
                 Be den som äger kontot bjuda in dig via <em>Headern → Team</em>.
               </li>
             </ul>
+          </div>
+        )}
+
+        {/* Beskrivning — valfri. Förr fylldes Bolagsverkets bolagsordning i automatiskt
+            ("Bolaget skall bedriva…"), och då skrev ingen en egen. */}
+        {orgLookup.valid === true && orgLookup.isTransport !== false && (
+          <div style={{ marginBottom: 24 }}>
+            <p style={{ fontSize: "var(--text-xs)", fontWeight: 600, color: "var(--ink-500)", marginBottom: 8 }}>
+              Beskriv ert åkeri <span style={{ fontWeight: 500, color: "var(--ink-400)" }}>— valfritt, kan fyllas i senare</span>
+            </p>
+            <textarea
+              value={form.description}
+              onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
+              placeholder="Vad kör ni, var och hur är det att jobba hos er?"
+              rows={3}
+              style={{ ...inputStyle, resize: "vertical", lineHeight: 1.5 }}
+            />
+            <p style={{ marginTop: 6, fontSize: "var(--text-xs)", color: "var(--ink-400)" }}>Visas för förarna på er profil.</p>
           </div>
         )}
 

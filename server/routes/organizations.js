@@ -73,7 +73,10 @@ organizationsRouter.post("/", validateBody(createOrganizationSchema), async (req
       data: {
         name: (bolag?.companyName || body.name || "").trim(),
         orgNumber: orgNum,
-        description: body.description?.trim() || bolag?.verksamhetsbeskrivning || null,
+        // Ingen reserv från Bolagsverket: bolagsordningens "Bolaget skall bedriva…" är
+        // ingen beskrivning en förare vill läsa, och en ifylld ruta gjorde att åkeriet
+        // aldrig skrev en egen. Tomt → profilsidan och påminnelserna ber om en.
+        description: body.description?.trim() || null,
         website: body.website?.trim() || null,
         location: prettifyPlace(bolag?.city || body.location?.trim()) || null,
         segmentDefaults: Array.isArray(body.segmentDefaults) ? body.segmentDefaults : [],

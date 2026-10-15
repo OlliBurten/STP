@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { companyCan } from "../utils/companyPermissions";
 import { fetchMyCompanyProfile, updateMyCompanyProfile, fetchCompanyProfileSuggestions } from "../api/companies.js";
@@ -195,17 +195,6 @@ function GrundInfo({ draft, setDraft, isMobile, sug }) {
 
 function OmOss({ draft, setDraft, sug }) {
   const about = draft?.companyDescription || "";
-  const [bvHint, setBvHint] = useState(null);
-  const fetched = useRef(false);
-
-  useEffect(() => {
-    if (fetched.current || about.trim() || !draft?.companyOrgNumber) return;
-    fetched.current = true;
-    fetch(`/api/utils/company-lookup?orgnr=${encodeURIComponent(draft.companyOrgNumber)}`)
-      .then((r) => { if (!r.ok) throw new Error('HTTP error'); return r.json(); })
-      .then((d) => { if (d.verksamhetsbeskrivning) setBvHint(d.verksamhetsbeskrivning); })
-      .catch(() => {});
-  }, [about, draft?.companyOrgNumber]);
 
   return (
     <div>
@@ -224,11 +213,6 @@ function OmOss({ draft, setDraft, sug }) {
           onChange={(e) => setDraft((p) => ({ ...p, companyDescription: e.target.value }))}
           placeholder="Berätta er historia, värderingar, varför förare trivs hos er..."
         />
-        {bvHint && !about.trim() && (
-          <div style={{ marginTop: 10, padding: "10px 14px", background: "var(--paper-2)", border: "1px solid var(--line)", borderRadius: 10, fontSize: "var(--text-xs)", color: "var(--ink-400)", lineHeight: 1.5 }}>
-            <span style={{ fontWeight: 700, color: "var(--ink-400)" }}>Från Bolagsverket: </span>{bvHint}
-          </div>
-        )}
         {sug?.companyDescription && (
           <SuggestionHint text={sug.companyDescription} onUse={() => setDraft((p) => ({ ...p, companyDescription: sug.companyDescription }))} />
         )}
@@ -588,17 +572,18 @@ export default function CompanyProfile() {
         )}
 
         {/* Varning */}
-        {/* Samma krav som åkerisöken (GET /api/companies/search): beskrivning + ort eller region.
-            Tidigare krävde varningen bransch, som söken inte kräver. */}
-        {draft && (!(draft.companyDescription || "").trim() || !(draft.companyRegion || draft.companyLocation)) && (
-          <div style={{ marginBottom: 20, padding: "14px 18px", borderRadius: 14, background: "var(--amber-tint)", border: "1px solid rgba(242,164,28,0.25)", display: "flex", gap: 12, alignItems: "flex-start" }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
-            <div>
-              <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--amber-text)", marginBottom: 3 }}>Syns inte i Hitta åkerier ännu</div>
-              <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-700)", lineHeight: 1.5 }}>
-                Fyll i {[!(draft.companyDescription || "").trim() && <strong key="d">en beskrivning under Om oss</strong>, !(draft.companyRegion || draft.companyLocation) && <strong key="r">ort eller region</strong>].filter(Boolean).reduce((acc, el, i) => (i ? [...acc, " och ", el] : [el]), [])} så att förare kan hitta er.
-              </div>
-            </div>
+        {/* Samma krav som åkerisöken (GET /api/companies/search): ort eller region.
+            Beskrivning krävs inte längre för att synas — men förare läser den. */}
+        {draft && !(draft.companyRegion || draft.companyLocation) && (
+          <div style={{ marginBottom: 20, padding: "14px 18px", borderRadius: 14, background: "var(--amber-tint)", border: "1px solid rgba(242,164,28,0.25)" }}>
+            <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--amber-text)", marginBottom: 3 }}>Syns inte i Hitta åkerier ännu</div>
+            <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-700)", lineHeight: 1.5 }}>Fyll i <strong>ort eller region</strong> så att förare kan hitta er.</div>
+          </div>
+        )}
+        {draft && (draft.companyRegion || draft.companyLocation) && !(draft.companyDescription || "").trim() && (
+          <div style={{ marginBottom: 20, padding: "14px 18px", borderRadius: 14, background: "var(--green-tint)", border: "1px solid var(--green-tint-2)" }}>
+            <div style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--green-text)", marginBottom: 3 }}>Berätta om ert åkeri</div>
+            <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-700)", lineHeight: 1.5 }}>Förare läser beskrivningen innan de söker — vad ni kör, var och hur det är att jobba hos er. Skriv den under <strong>Om oss</strong>.</div>
           </div>
         )}
 

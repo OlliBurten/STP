@@ -118,7 +118,14 @@ export function PushPrompt() {
     let until = 0;
     try { until = Number(localStorage.getItem(PROMPT_KEY)) || 0; } catch { /* ignore */ }
     if (Date.now() < until) return;
-    const t = setTimeout(() => setOpen(true), 1500);
+    // Vänta tills en pågående produktvisning är klar — annars låg båda dialogerna
+    // ovanpå varandra på åkeriets översikt. Turen startar 600 ms efter laddning.
+    let t;
+    const tryOpen = () => {
+      if (document.documentElement.dataset.tourActive) { t = setTimeout(tryOpen, 1500); return; }
+      setOpen(true);
+    };
+    t = setTimeout(tryOpen, 1500);
     return () => clearTimeout(t);
   }, [push.ready, push.supported, push.subscribed, push.permission]);
 
