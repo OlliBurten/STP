@@ -90,47 +90,82 @@ Svara ENBART med de 2–3 meningarna, ingen rubrik eller inledning.`,
  *                        physicalWorkRequired, soloWorkOk, kollektivavtal
  * @returns {Promise<string>} Ready-to-use Swedish job description (3–5 paragraphs)
  */
-export async function generateJobDescription(form) {
+/**
+ * Annonstext. Två lägen:
+ *  - write:   tomt fält → skriv "Om jobbet" från uppgifterna och punktlistorna
+ *             (utan att upprepa punkterna).
+ *  - improve: det finns text (egen eller en inklistrad gammal annons) → förbättra den
+ *             utan att tappa eller hitta på fakta, och plocka ut arbetsuppgifter, krav
+ *             och förmåner som står i texten men saknas i punktlistorna.
+ * @returns {Promise<{ description: string, tasks: string[], requirements: string[], offers: string[] }>}
+ */
+export async function generateJobDescription(form, mode = "write") {
   const client = getClient();
-
+  const list = (a) => (Array.isArray(a) ? a.filter(Boolean) : []);
   const context = [
     `Jobbtitel: ${form.title}`,
     `Företag: ${form.company || "ej angivet"}`,
     `Ort/bas: ${form.location || "ej angivet"}`,
-    `Region: ${form.region || "ej angivet"}`,
-    `Körkortskrav: ${(form.license || []).join(", ") || "ej angivet"}`,
-    (form.certificates || []).length ? `Certifikat: ${form.certificates.join(", ")}` : null,
-    `Anställningstyp: ${form.employment || "ej angivet"}`,
-    `Jobbtyp: ${form.jobType || "ej angivet"}`,
-    form.bransch ? `Bransch: ${form.bransch}` : null,
+    `Län: ${form.region || "ej angivet"}`,
+    `Körkortskrav: ${list(form.license).join(", ") || "ej angivet"}`,
+    list(form.certificateLabels).length ? `Certifikat: ${form.certificateLabels.join(", ")}` : null,
+    `Anställning: ${form.employment || "ej angivet"}`,
+    `Typ av körning: ${form.jobTypeLabel || form.jobType || "ej angivet"}`,
     form.schedule ? `Arbetstider: ${form.schedule}` : null,
     form.experience ? `Erfarenhetskrav: ${form.experience} år` : null,
-    form.salary ? `Lön/ersättning: ${form.salary}` : null,
-    form.kollektivavtal ? `Kollektivavtal: ja` : null,
-    form.physicalWorkRequired ? `Fysiskt krävande arbete: ja` : null,
-    form.soloWorkOk ? `Ensamarbete: ok` : null,
-    form.extraRequirements ? `Övriga krav: ${form.extraRequirements}` : null,
+    form.salary || form.salaryMin ? `Lön: ${form.salary || `${form.salaryMin}${form.salaryMax ? `–${form.salaryMax}` : ""} kr/mån`}` : null,
+    form.kollektivavtal ? "Kollektivavtal: ja" : null,
+    list(form.tasks).length ? `Arbetsuppgifter (egen lista): ${form.tasks.join("; ")}` : null,
+    list(form.requirements).length ? `Vi söker dig som (egen lista): ${form.requirements.join("; ")}` : null,
+    list(form.offers).length ? `Vi erbjuder (egen lista): ${form.offers.join("; ")}` : null,
   ].filter(Boolean).join("\n");
+
+  const rules = `Skriv på svenska i "vi"-form från åkeriet. Konkret, inga klichéer ("dynamisk", "drivande").
+Vanlig löptext: inga asterisker, rubriker eller punktlistor i texten. 80–150 ord.
+Hitta ALDRIG på fakta som inte står i underlaget — ingen lön, inga förmåner, inga fordon,
+inga orter. Hellre kortare än påhittat.`;
+
+  if (mode !== "improve") {
+    const message = await withRetry(() => client.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 600,
+      system: `Du skriver texten under "Om jobbet" i en jobbannons för lastbilsförare.
+Beskriv rollen, en vanlig arbetsdag och arbetsplatsen i 2–3 korta stycken. Åkeriets egna listor
+(arbetsuppgifter, krav, förmåner) samt körkort och certifikat visas separat i annonsen — använd dem
+som underlag men räkna inte upp dem igen. Nämn inte körkort, YKB eller andra certifikat.
+${rules}
+Svara ENBART med texten.`,
+      messages: [{ role: "user", content: `Underlag:\n${context}` }],
+    }));
+    return { description: message.content?.[0]?.text?.trim() || "", tasks: [], requirements: [], offers: [] };
+  }
 
   const message = await withRetry(() => client.messages.create({
     model: "claude-haiku-4-5-20251001",
-    max_tokens: 600,
-    system: `Du är expert på att skriva jobbannonser för den svenska transportsektorn.
-Skriv texten under "Om jobbet" i en jobbannons på svenska baserat på given information.
-Beskriv rollen, en vanlig arbetsdag och arbetsplatsen i 2–3 korta stycken. Krav, arbetsuppgifter och
-förmåner fyller åkeriet i som egna listor i annonsen — upprepa dem inte här.
-Skriv i "vi"-form (från företaget). Var konkret och undvik klichéer.
-Skriv vanlig löptext utan markdown: inga asterisker, rubriker eller punktlistor.
-Texten ska vara 80–150 ord. Svara ENBART med texten, ingen rubrik eller extra text.`,
-    messages: [
-      {
-        role: "user",
-        content: `Skriv en jobbannons baserat på:\n${context}`,
-      },
-    ],
-  }));
+    max_tokens: 1200,
+    system: `Du förbättrar en jobbannons för lastbilsförare. Åkeriet har skrivit en text, eller klistrat in
+en gammal annons. Gör den tydligare och mer lockande för förare — men behåll ALLA fakta i den
+(lön, orter, tider, fordon, krav, förmåner) och lägg inte till några nya.
 
-  return message.content?.[0]?.text?.trim() || "";
+Annonsen har fyra delar: "Om jobbet" (löptext) och tre listor: arbetsuppgifter, "vi söker dig som"
+(krav) och "vi erbjuder" (förmåner). Står det arbetsuppgifter, krav eller förmåner i texten som
+saknas i åkeriets egna listor: flytta ut dem till rätt lista (korta punkter, 2–8 ord) och låt
+"Om jobbet" handla om rollen och arbetsplatsen. Upprepa inte punkter som redan finns i listorna.
+${rules}
+
+Svara med ENBART giltig JSON:
+{"description":"...","tasks":["..."],"requirements":["..."],"offers":["..."]}`,
+    messages: [{ role: "user", content: `Underlag:\n${context}\n\nÅkeriets text:\n${String(form.aboutJob || "").slice(0, 6000)}` }],
+  }));
+  const raw = message.content?.[0]?.text?.trim() || "";
+  try {
+    const p = JSON.parse(raw.slice(raw.indexOf("{"), raw.lastIndexOf("}") + 1));
+    const clean = (a) => list(a).map((x) => String(x).trim()).filter((x) => x && x.length <= 120).slice(0, 8);
+    return { description: String(p.description || "").trim(), tasks: clean(p.tasks), requirements: clean(p.requirements), offers: clean(p.offers) };
+  } catch {
+    // Kunde inte tolka JSON — hellre ingen ändring än en trasig text.
+    throw new Error("Kunde inte förbättra texten just nu. Försök igen.");
+  }
 }
 
 // ─── 4. Suggest first message — personligt förslag på öppningsmeddelande ──────

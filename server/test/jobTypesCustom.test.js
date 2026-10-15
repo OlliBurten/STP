@@ -41,10 +41,10 @@ const base = { company: "Typåkeri AB", aboutJob: "Körning i regionen, dagtid m
 
 describe("jobbtyper och egna val", () => {
   it("som från mobilappen: bara ort, ingen jobbtyp → län och jobbtyp räknas ut", async () => {
-    const r = await request(app).post("/api/jobs").set("Authorization", tok(ids.owner)).send({ ...base, title: `Tankbilschaufför ${TAG}`, location: "Nässjö" });
+    const r = await request(app).post("/api/jobs").set("Authorization", tok(ids.owner)).send({ ...base, title: `Tankbilschaufför ${TAG}`, location: "Kiruna" });
     assert.strictEqual(r.status, 201, JSON.stringify(r.body));
     const job = await prisma.job.findUnique({ where: { id: r.body.id } });
-    assert.strictEqual(job.region, "Jönköping");
+    assert.strictEqual(job.region, "Norrbotten");
     assert.strictEqual(job.jobType, "tank_bulk");
   });
 
@@ -55,7 +55,7 @@ describe("jobbtyper och egna val", () => {
 
   it("'Annat' sparas, visas i annonsen och syns i adminöversikten", async () => {
     const r = await request(app).post("/api/jobs").set("Authorization", tok(ids.owner)).send({
-      ...base, title: "Specialförare", location: "Nässjö", region: "Jönköping",
+      ...base, title: "Specialförare", location: "Kiruna", region: "Norrbotten",
       jobType: "annat", jobTypeOther: "Biltransporter", certificatesOther: ["Kylcertifikat"],
     });
     assert.strictEqual(r.status, 201, JSON.stringify(r.body));
