@@ -6,6 +6,9 @@ import { initialsFor, timeAgo } from "./jobAdapter";
 export function stageOf(conv) {
   if (conv.selectedByCompanyAt) return { id: "selected", label: "Utvald", tone: "success", step: 3 };
   if (conv.rejectedByCompanyAt) return { id: "rejected", label: "Ej aktuell", tone: "danger", step: 0 };
+  // Åkeriet har skrivit i tråden = föraren har fått svar. Tidigare räknades bara
+  // tidsstämplarna, så "Svar" nåddes aldrig trots att åkeriet svarat i chatten.
+  if ((conv.messages || []).some((m) => m.sender === "company")) return { id: "replied", label: "Svar", tone: "success", step: 3 };
   if (conv.reviewedByCompanyAt) return { id: "review", label: "Granskas", tone: "info", step: 2 };
   if (conv.readByCompanyAt) return { id: "seen", label: "Läst", tone: "info", step: 2 };
   return { id: "applied", label: "Skickad", tone: "neutral", step: 1 };
@@ -47,6 +50,7 @@ export function toApplication(conv) {
   const st = stageOf(conv);
   let note = null;
   if (st.id === "selected") note = `${conv.companyName} vill gå vidare med dig`;
+  else if (st.id === "replied") note = `${conv.companyName} har svarat dig`;
   else if (st.id === "review") note = `${conv.companyName} granskar din ansökan`;
   return {
     id: conv.id,

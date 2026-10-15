@@ -369,7 +369,8 @@ export default function MinaAnsokningar() {
       fetchMyApplications().catch(() => []), // registrerade ansökningar (importjobb) — får inte fälla sidan
     ])
       .then(([convs, apps]) => {
-        setApplications(convs.filter((c) => c.jobId));
+        // Bara trådar föraren själv startade — åkeriets kontakter hör hemma i Meddelanden.
+        setApplications(convs.filter((c) => c.jobId && (c.messages?.[0]?.sender ?? "driver") === "driver"));
         // Ansökningar utan konversation = sökta via arbetsgivarens kanal (importjobb).
         // Desktop visade aldrig dessa trots löftet "syns under Ansökt" (fixat 2026-07-18).
         const convJobIds = new Set(convs.map((c) => c.jobId).filter(Boolean));

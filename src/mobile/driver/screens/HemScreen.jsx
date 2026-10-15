@@ -27,7 +27,7 @@ export default function HemScreen({ ctx }) {
   const p = ctx.profile;
   const seekLine = ctx.seeking
     ? `Söker jobb${p.region ? ` i ${p.region}` : ""}`
-    : "Jobbsökning pausad";
+    : null; // pausad visas redan i kortet nedan — inte tre gånger på samma skärm
   const topMatches = ctx.matchedJobs.filter((j) => j.match >= 70).slice(0, 6);
   const activity = (ctx.activity || []).slice(0, 6).map((a) => ({ ...a, time: timeAgo(a.createdAt) }));
   const shifts = ctx.shifts || [];
@@ -50,7 +50,7 @@ export default function HemScreen({ ctx }) {
                 <div style={{ width: 38, height: 38, borderRadius: 11, background: ctx.seeking ? "var(--success-tint)" : "var(--amber-tint)", display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="truck" size={19} color={ctx.seeking ? "var(--success)" : "var(--amber-deep)"} stroke={1.9} /></div>
                 <div>
                   <div style={{ fontSize: 14.5, fontWeight: 700, color: "var(--ink-900)" }}>Söker aktivt jobb</div>
-                  <div style={{ fontSize: 12, color: "var(--ink-500)" }}>{ctx.seeking ? "Vi matchar nya jobb mot din profil" : "Jobbsökning pausad"}</div>
+                  <div style={{ fontSize: 12, color: "var(--ink-500)" }}>{ctx.seeking ? "Vi matchar nya jobb mot din profil" : "Av — slå på för att få jobbförslag"}</div>
                 </div>
               </div>
               <Switch on={ctx.seeking} onToggle={() => ctx.setSeeking((v) => !v)} label="Söker aktivt jobb" />

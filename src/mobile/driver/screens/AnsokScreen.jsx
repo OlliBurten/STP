@@ -16,7 +16,7 @@ export default function AnsokScreen({ ctx }) {
   useEffect(() => { if (apps.length > 0 && !hasAnimated) setHasAnimated(true); }, [apps.length, hasAnimated]);
   const animate = !hasAnimated;
   // Subtitle reflects the active segment so the count matches the visible list.
-  const answered = apps.filter((a) => a.stage.id === "selected").length;
+  const answered = apps.filter((a) => a.stage.id === "selected" || a.stage.id === "replied").length;
   const sub = seg === "aktiva"
     ? `${apps.length} aktiva · ${answered} svar`
     : `${all.length} totalt · ${answered} svar`;
