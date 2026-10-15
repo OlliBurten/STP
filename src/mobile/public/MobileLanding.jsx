@@ -65,14 +65,13 @@ const FEATURES = [
   // Verifieringen gäller åkerier som skapar konto — inte annonserna i listan, som
   // i dag är importerade från Platsbanken. Löftet "förare ser bara seriösa aktörer"
   // var alltså osant för i princip allt en besökare faktiskt ser.
-  ["building", "Verifierade åkerier", "Åkerier som skapar konto verifieras mot Bolagsverket innan de får publicera egna annonser."],
+  ["building", "Verifierade åkerier", "Åkerier som skapar konto verifieras innan de får publicera egna annonser."],
   ["msg", "Direktkontakt", "Inga mellanhänder. Inga provisioner. Förare och åkeri pratar direkt — som det borde vara."],
   ["eye", "Du styr din synlighet", "Som förare bestämmer du om du är synlig, om du visar telefonnummer, och vem som ser din profil."],
 ];
 const SEGMENTS = [
   ["building", "FAST ANSTÄLLNING", "Heltid", "Långsiktig roll. Visa erfarenhet, behörigheter och vad du söker."],
   ["cal", "FLEXIBELT", "Vikariat / Deltid", "Hoppa in snabbt — extrapass, deltid eller kortare uppdrag."],
-  ["star", "UTBILDNING", "Praktik", "Elever, nybörjare och de i start av karriären som söker seriösa aktörer."],
 ];
 const FAQS = [
   ["Är STP ett bemanningsbolag?", "Nej. STP är en jobbplattform. Du söker jobb direkt hos arbetsgivaren, och om du vill kan vi presentera dig för företag som söker din kompetens — alltid med ditt godkännande."],
@@ -83,14 +82,14 @@ const FAQS = [
   // för i princip allt en besökare ser: merparten av annonserna är importerade
   // från Platsbanken och kommer från åkerier utan STP-konto. Samma rättelse som
   // redan gjorts i FEATURES ovan.
-  ["Hur fungerar verifiering?", "Åkerier som skapar konto slås upp mot Bolagsverket på organisationsnummer innan de får publicera egna annonser. Merparten av annonserna i listan är importerade från Platsbanken och kommer från åkerier utan konto hos oss — de är märkta som importerade."],
+  ["Hur fungerar verifiering?", "Åkerier som skapar konto verifieras innan de får publicera egna annonser. Merparten av annonserna i listan är importerade från Platsbanken och kommer från åkerier utan konto hos oss — de är märkta som importerade."],
   ["Vem äger min profil?", "Du. Din profil är din — du styr vad som visas, kan dela den som CV och ta bort den när du vill."],
   ["Vad skiljer STP från vanliga jobbsajter?", "STP är byggt enbart för transportbranschen. Matchning sker på körkort, behörigheter och region — inte en allmän annonstavla."],
 ];
-const STATS = [["Direkt", "Inga mellanhänder"], ["0 kr", "Ingen provision"], ["2 min", "Att komma igång"], ["Verifierat", "Mot Bolagsverket"]];
+const STATS = [["Direkt", "Inga mellanhänder"], ["0 kr", "Ingen provision"], ["2 min", "Att komma igång"], ["Verifierat", "Åkerier med konto"]];
 const STEPS = {
   forare: { label: "FÖR FÖRARE", tag: "Hitta ditt nästa jobb — utan att jaga annonser i grupper.", items: [["Skapa konto", "Registrera dig som förare på 2 minuter. Välj körkort, region och vad du söker."], ["Bygg din profil", "Fyll i körkort, certifikat, erfarenhet och tillgänglighet. Välj om du är synlig för åkerier."], ["Sök jobben du vill ha", "Ansök direkt — hos arbetsgivaren eller via STP. Är profilen synlig kan åkerier också hitta dig när de rekryterar."]] },
-  akeri: { label: "FÖR ÅKERIER", tag: "Hitta rätt förare — verifierade och redo att köra.", items: [["Registrera åkeri", "Koppla ert organisationsnummer — vi hämtar uppgifterna automatiskt från Bolagsverket."], ["Publicera & sök", "Lägg upp jobb eller sök proaktivt bland verifierade förare i er region."], ["Anställ", "Hantera ansökningar och kontakt i en tydlig pipeline. Inga mellanhänder, ingen provision."]] },
+  akeri: { label: "FÖR ÅKERIER", tag: "Hitta rätt förare — verifierade och redo att köra.", items: [["Registrera åkeri", "Ange ert organisationsnummer — vi fyller i uppgifterna och verifierar kontot automatiskt."], ["Publicera & sök", "Lägg upp jobb eller sök proaktivt bland verifierade förare i er region."], ["Anställ", "Hantera ansökningar och kontakt i en tydlig pipeline. Inga mellanhänder, ingen provision."]] },
 };
 const MAP_CITIES = [["Stockholm", true], ["Göteborg", true], ["Malmö", true], ["Sundsvall", false], ["Umeå", false], ["Luleå", false], ["Örebro", false], ["Jönköping", false]];
 
@@ -187,7 +186,7 @@ const BenefitList = ({ items }) => (
 );
 
 const SUBPAGES = {
-  forforare: { title: "För förare", hero: ["För förare", "Ditt nästa körjobb — utan mellanhänder.", "Bygg en profil som visar dina behörigheter. Sök jobb i hela Sverige. Alltid gratis för förare.", "linear-gradient(160deg,#3a4b40,#1B2421)"], benefits: [["star", "Alltid gratis för förare", "Inga avgifter, ingen provision."], ["user", "Du äger din profil", "Dela som digitalt CV — radera när du vill."], ["building", "Verifierade åkerier", "Åkerier med konto kontrolleras mot Bolagsverket."], ["search", "Matchning på det som räknas", "Körkort, behörigheter, region, tillgänglighet."], ["msg", "Direktkontakt", "Prata direkt med åkeriet."], ["eye", "Du styr din synlighet", "Du bestämmer vem som ser din profil."]], cta: ["forare", "Skapa förarprofil"] },
+  forforare: { title: "För förare", hero: ["För förare", "Ditt nästa körjobb — utan mellanhänder.", "Bygg en profil som visar dina behörigheter. Sök jobb i hela Sverige. Alltid gratis för förare.", "linear-gradient(160deg,#3a4b40,#1B2421)"], benefits: [["star", "Alltid gratis för förare", "Inga avgifter, ingen provision."], ["user", "Du äger din profil", "Dela som digitalt CV — radera när du vill."], ["building", "Verifierade åkerier", "Åkerier med konto är verifierade."], ["search", "Matchning på det som räknas", "Körkort, behörigheter, region, tillgänglighet."], ["msg", "Direktkontakt", "Prata direkt med åkeriet."], ["eye", "Du styr din synlighet", "Du bestämmer vem som ser din profil."]], cta: ["forare", "Skapa förarprofil"] },
   forakerier: { title: "För åkerier", hero: ["För åkerier", "Hitta rätt förare — verifierade och redo att köra.", "Sök proaktivt bland förare i er region eller publicera jobb. Ni når seriösa, kontaktbara förare direkt — ingen provision."], benefits: [["search", "Sök bland verifierade förare", "Filtrera på körkort, region och tillgänglighet."], ["doc", "Publicera jobb gratis", "Kom igång utan kostnad. Betala först för utökad räckvidd när ni vill nå fler förare."], ["msg", "Ingen provision", "Kontakt direkt mellan er och föraren."], ["building", "Tydlig pipeline", "Från intresse till anställning i ett flöde."], ["shield", "Bygg ert arbetsgivarvarumärke", "Verifierad profil med omdömen från förare."], ["user", "Team-konton", "Bjud in kollegor under samma åkeri."]], cta: ["akeri", "Registrera åkeri"] },
   praktik: { title: "Praktik & APL", hero: ["Praktik & APL", "För elever, skolor och blivande förare.", "STP kopplar ihop elever och praktikanter med seriösa åkerier som tar emot APL — arbetsplatsförlagt lärande.", "linear-gradient(160deg,#7a5418,#3a2a0c)"], benefits: [["cap", "För dig som studerar", "Söker du APL-plats eller ditt första jobb efter utbildningen? Skapa en profil och visa var du är på vägen."], ["building", "För åkerier som handleder", "Ta emot praktikanter och bygg upp framtidens förare. Hitta motiverade elever i er region."], ["star", "Seriösa aktörer", "Alla åkerier på STP är verifierade — trygg praktik för både elev och skola."]], cta: ["forare", "Skapa profil"] },
   omstp: { title: "Om STP", hero: ["Om STP", "Transportbranschen förtjänar en ärlig plattform.", "STP byggs för att förare och åkerier ska hitta varandra direkt — utan mellanhänder som tar en del av lönen."], benefits: [["heart", "Förarens sida", "Föraren ska aldrig betala för att bli sedd."], ["shield", "Kvalitet före kvantitet", "Vi släpper hellre in färre, verifierade åkerier än många oseriösa."], ["msg", "Transparens", "Direkt kontakt, tydliga villkor och inga dolda avgifter."]], cta: ["forare", "Hör av dig"] },
@@ -263,18 +262,18 @@ export default function MobileLanding() {
 
       <div className="app-scroll" onScroll={(e) => setScrolled(e.target.scrollTop > 30)} style={{ flex: 1, overflowY: "auto", overflowX: "hidden" }}>
         {/* HERO */}
-        <section style={{ position: "relative", minHeight: 660, display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "0 22px 40px", overflow: "hidden", background: "linear-gradient(160deg,#2a3a37 0%,var(--asphalt) 45%,var(--night) 100%)" }}>
+        <section style={{ position: "relative", /* Skärmhöjden minus cookierutan — med fast 660 px hamnade "Se lediga jobb" under rutan på iPhone 13/SE vid första besöket. */ minHeight: "clamp(470px, calc(100svh - 170px), 660px)", display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "96px 22px 28px", overflow: "hidden", background: "linear-gradient(160deg,#2a3a37 0%,var(--asphalt) 45%,var(--night) 100%)" }}>
           <img src="/hero-mobile.webp" alt="Lastbil på svensk landsväg" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 35%" }} onError={(e) => { e.currentTarget.src = "/hero.webp"; }} />
           <div style={{ position: "absolute", inset: 0, background: "rgba(15,21,19,0.15)" }} />
           <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(15,21,19,0.94) 0%,rgba(15,21,19,0.45) 42%,rgba(15,21,19,0.25) 70%,rgba(15,21,19,0.5) 100%)" }} />
           <div style={{ position: "absolute", inset: 0, background: "radial-gradient(120% 70% at 80% 12%,rgba(242,164,28,0.18) 0%,transparent 55%)" }} />
           <div style={{ position: "relative" }}>
-            <h1 style={{ fontSize: 54, fontWeight: 800, letterSpacing: -2, lineHeight: 1.02, marginBottom: 22, textShadow: "0 2px 30px rgba(0,0,0,0.4)" }}>
+            <h1 style={{ fontSize: "clamp(42px, 13vw, 54px)", fontWeight: 800, letterSpacing: -2, lineHeight: 1.02, marginBottom: 18, textShadow: "0 2px 30px rgba(0,0,0,0.4)" }}>
               <span style={{ color: "#fff", display: "block" }}>Ditt nästa</span>
               <span style={{ color: AMBER, display: "block" }}>lastbilsjobb.</span>
               <span style={{ color: "rgba(255,255,255,0.6)", display: "block" }}>Utan krångel.</span>
             </h1>
-            <p style={{ fontSize: 18, lineHeight: 1.5, color: "rgba(255,255,255,0.85)", marginBottom: 28, maxWidth: 330, textShadow: "0 1px 12px rgba(0,0,0,0.5)" }}>Sök C- och CE-jobb direkt — utan konto, alltid gratis.</p>
+            <p style={{ fontSize: 18, lineHeight: 1.5, color: "rgba(255,255,255,0.85)", marginBottom: 22, maxWidth: 330, textShadow: "0 1px 12px rgba(0,0,0,0.5)" }}>Sök C- och CE-jobb direkt — utan konto, alltid gratis.</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <BtnAmber full onClick={nav.jobs}>Se lediga jobb <Icon name="arrow" size={19} color="#1a1200" stroke={2.4} /></BtnAmber>
               <BtnGhost onDark onClick={() => nav.register("forare")}>Skapa konto — alltid gratis</BtnGhost>
@@ -411,9 +410,9 @@ export default function MobileLanding() {
 
         {/* SEGMENTS */}
         <section style={{ background: "var(--paper-2)", padding: "54px 22px 56px", borderTop: "1px solid var(--line)" }}>
-          <Eyebrow>Tre vägar in</Eyebrow>
+          <Eyebrow>Fast eller flex</Eyebrow>
           <h2 style={{ fontSize: 36, fontWeight: 800, letterSpacing: -1.2, lineHeight: 1.05, margin: "18px 0 16px", textWrap: "balance" }}>Alla förare söker inte samma sak.</h2>
-          <p style={{ fontSize: 17, lineHeight: 1.55, color: "var(--ink-600)", marginBottom: 32 }}>STP är byggt runt tre tydliga segment som gör det lättare att matcha rätt behov med rätt profil.</p>
+          <p style={{ fontSize: 17, lineHeight: 1.55, color: "var(--ink-600)", marginBottom: 32 }}>Fast tjänst eller extrapass — välj vad du söker så matchas du mot rätt jobb.</p>
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             {SEGMENTS.map(([ic, tag, t, d]) => (
               <div key={t} style={{ background: "var(--card)", borderRadius: 20, padding: "24px 22px", boxShadow: "var(--sh-sm)" }}>
@@ -426,6 +425,7 @@ export default function MobileLanding() {
               </div>
             ))}
           </div>
+          <button onClick={() => setPage("praktik")} className="press" style={{ marginTop: 18, fontSize: 15.5, fontWeight: 700, color: "var(--green)", background: "none", padding: "10px 0" }}>Elev eller ny i yrket? Hitta praktik →</button>
         </section>
 
         {/* FAQ */}

@@ -43,7 +43,7 @@ function showcaseJobs(jobs) {
 const FAQ_ITEMS = [
   { q: "Är STP ett bemanningsbolag?", a: "Nej. STP är en jobbplattform. Du söker jobb direkt hos arbetsgivaren, och om du vill kan vi presentera dig för företag som söker din kompetens — alltid med ditt godkännande." },
   { q: "Kostar det något?", a: "STP är gratis — för förare kostar det aldrig något, och åkerier kommer igång och annonserar gratis." },
-  { q: "Hur fungerar verifiering?", a: "Åkerier verifieras mot Bolagsverket. Förares körkort och certifikat anger föraren själv i profilen." },
+  { q: "Hur fungerar verifiering?", a: "Åkerier som skapar konto verifieras innan de kan publicera egna annonser, och märks som verifierade. Förares körkort och certifikat anger föraren själv i profilen." },
   { q: "Vem äger min profil?", a: "Du äger din profil och styr vad som är synligt. Du kan stänga av synligheten, uppdatera uppgifter eller radera kontot när som helst." },
   { q: "Vad skiljer STP från vanliga jobbsajter?", a: "STP är byggt specifikt för transportbranschen. Profilen utgår från körkort, segment och tillgänglighet — inte ett generiskt CV." },
 ];
@@ -406,7 +406,7 @@ export default function Home() {
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               {[
                 { icon: "user",     title: "Smart matchning",       body: "Matchas på körkort, region och tillgänglighet." },
-                { icon: "building", title: "Verifierade åkerier",   body: "Åkerier som skapar konto verifieras mot Bolagsverket." },
+                { icon: "building", title: "Verifierade åkerier",   body: "Åkerier med konto märks som verifierade." },
                 { icon: "msg",      title: "Direktkontakt",         body: "Förare och åkeri pratar direkt. Ingen provision." },
                 { icon: "eye",      title: "Du styr din synlighet", body: "Du bestämmer vem som ser din profil." },
               ].map((f) => (
@@ -603,7 +603,7 @@ export default function Home() {
                 background: "var(--green-tint)", color: "var(--green-text)",
                 fontSize: "var(--text-2xs)", fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
                 marginBottom: 18,
-              }}>Tre vägar in</div>
+              }}>Fast eller flex</div>
               <h2 style={{
                 fontSize: "clamp(34px,4vw,54px)", fontWeight: 900,
                 letterSpacing: -1.8, lineHeight: 1.05,
@@ -612,16 +612,16 @@ export default function Home() {
                 Alla förare söker inte samma sak.
               </h2>
               <p style={{ fontSize: "var(--text-xl)", lineHeight: 1.7, color: "var(--ink-500)", fontWeight: 500 }}>
-                STP är byggt runt tre tydliga segment som gör det lättare att
-                matcha rätt behov med rätt profil.
+                Fast tjänst eller extrapass — välj vad du söker så matchas du
+                mot rätt jobb.
               </p>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: 14 }}>
+            <div>
+            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(2, 1fr)", gap: 14 }}>
               {[
                 { tag: "Fast anställning", title: "Heltid",           desc: "Långsiktig roll. Visa erfarenhet, behörigheter och vad du söker.",                         icon: "building" },
                 { tag: "Flexibelt",        title: "Vikariat / Deltid", desc: "Hoppa in snabbt — extrapass, deltid eller kortare uppdrag.",                             icon: "cal" },
-                { tag: "Utbildning",       title: "Praktik",           desc: "Elever, nybörjare och de i start av karriären som söker seriösa aktörer.",               icon: "star" },
               ].map((s) => (
                 <div key={s.title} style={{
                   background: "var(--card)", border: "1px solid var(--line)",
@@ -653,6 +653,10 @@ export default function Home() {
                   }}>{s.desc}</p>
                 </div>
               ))}
+            </div>
+            <Link to="/hitta-praktik" style={{ display: "inline-block", marginTop: 16, fontSize: "var(--text-base)", fontWeight: 700, color: "var(--green-text)" }}>
+              Elev eller ny i yrket? Hitta praktik →
+            </Link>
             </div>
           </div>
         </div>
@@ -833,7 +837,7 @@ export default function Home() {
               ["Direkt",      "Inga mellanhänder"],
               ["0 kr",        "Ingen provision"],
               ["2 min",       "Att komma igång"],
-              ["Verifierat",  "Mot Bolagsverket"],
+              ["Verifierat",  "Åkerier med konto"],
             ].map(([big, sub]) => (
               <div key={big} style={{
                 background: "rgba(255,255,255,0.08)",

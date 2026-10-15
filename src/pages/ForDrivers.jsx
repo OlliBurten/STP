@@ -23,7 +23,6 @@ function demandFromJobs(jobs) {
 const SEGMENTS = [
   { Icon: TruckIcon, title: "Heltid", tag: "Fast anställning", body: "För dig som söker en fast, långsiktig tjänst.", points: ["Fasta tjänster", "Långsiktiga åkerier"] },
   { Icon: ClockIcon, title: "Vikarie & deltid", tag: "Flexibelt", body: "Vikariat, extrapass och kortare behov.", points: ["Extrapass", "Kortare uppdrag"] },
-  { Icon: BuildingIcon, title: "Praktik", tag: "I början av karriären", body: "För dig som är elev eller ny i yrket.", points: ["Praktikplatser", "Mentorskap"] },
 ];
 
 const STEPS = [
@@ -241,7 +240,7 @@ export default function ForDrivers() {
       />
       <style>{`
         .ff-grid{display:grid;grid-template-columns:1.02fr 0.98fr;gap:64px;align-items:center}
-        .seg-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+        .seg-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
         .vis-grid{display:grid;grid-template-columns:0.9fr 1.1fr;gap:56px;align-items:center}
         .demand-grid{display:grid;grid-template-columns:0.8fr 1.2fr;gap:56px;align-items:center}
         .ff-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:0}
@@ -363,9 +362,9 @@ export default function ForDrivers() {
       <section style={{ background: "var(--paper-2)", padding: "88px 0" }}>
         <div style={S.container}>
           <div style={{ maxWidth: "var(--w-form)", marginBottom: 44 }}>
-            <span style={S.sectionEyebrow}>Tre vägar in</span>
+            <span style={S.sectionEyebrow}>Fast eller flex</span>
             <h2 style={{ ...S.sectionTitle, marginBottom: 16 }}>Vad söker du just nu?</h2>
-            <p style={S.lead}>STP är byggt runt tre tydliga segment — välj ditt så matchas du mot rätt behov.</p>
+            <p style={S.lead}>Välj vad du söker så matchas du mot rätt jobb.</p>
           </div>
           <div className="seg-grid">
             {SEGMENTS.map((s) => (
@@ -390,6 +389,9 @@ export default function ForDrivers() {
               </Card>
             ))}
           </div>
+          <a href="/hitta-praktik" style={{ display: "inline-block", marginTop: 18, fontSize: "var(--text-base)", fontWeight: 700, color: "var(--green-text)", textDecoration: "none" }}>
+            Elev eller ny i yrket? Hitta praktik →
+          </a>
         </div>
       </section>
 

@@ -22,7 +22,7 @@ const BENEFITS = [
 
 const TRUST = [
   { label: "Alltid 100% gratis för förare" },
-  { label: "Åkerier verifieras mot Bolagsverket" },
+  { label: "Verifierade åkerier" },
   { label: "Inga avgifter, inga dolda villkor" },
   { label: "Byggs i Sverige, för svenska förare" },
 ];

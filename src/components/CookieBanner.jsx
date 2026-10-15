@@ -79,18 +79,18 @@ export default function CookieBanner() {
         background: "var(--card)",
         border: "1px solid var(--line)",
         borderRadius: 16,
-        padding: "14px 16px",
+        padding: "12px 14px",
         boxShadow: "0 12px 40px rgba(15,33,32,0.16)",
       }}
     >
       {/* Kortare text än tidigare: fyra rader på mobil blev en banner som täckte
           halva skärmen. Kategorierna och leverantörerna står kvar — det är den
           delen som gör samtycket informerat — men utan förklarande utfyllnad. */}
-      <p style={{ margin: "0 0 12px", fontSize: "var(--text-sm)", color: "var(--ink-600)", lineHeight: 1.5 }}>
-        <span aria-hidden="true">🍪</span>{" "}
-        <strong style={{ color: "var(--ink-900)", fontWeight: 800 }}>Cookies.</strong>{" "}
-        Nödvändiga krävs för inloggning. Godkänner du alla aktiveras även felrapportering
-        (Sentry) och produktanalys (PostHog).{" "}
+      {/* Ännu kortare 2026-10-16: rutan täckte ~40 % av mobilskärmen ovanpå hjältens
+          knappar. Leverantörerna står kvar (informerat samtycke), utfyllnaden inte. */}
+      <p style={{ margin: "0 0 10px", fontSize: "var(--text-sm)", color: "var(--ink-600)", lineHeight: 1.45 }}>
+        <strong style={{ color: "var(--ink-900)", fontWeight: 800 }}>Cookies</strong> för inloggning — och om du godkänner,
+        felrapportering och statistik (Sentry, PostHog).{" "}
         <Link to="/integritet" style={{ color: "var(--green-text)", textDecoration: "underline", whiteSpace: "nowrap" }}>
           Integritetspolicy
         </Link>

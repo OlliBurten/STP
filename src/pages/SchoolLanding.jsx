@@ -168,7 +168,7 @@ export default function SchoolLanding() {
           gap: 12, marginBottom: 64,
         }}>
           {[
-            { icon: "✓", title: "Verifierade åkerier", body: "Alla företag på STP verifieras mot Bolagsverket. Inga falska aktörer." },
+            { icon: "✓", title: "Verifierade åkerier", body: "Företag med konto på STP är verifierade. Inga falska aktörer." },
             { icon: "🎓", title: "Anpassat för elever", body: "Din profil visar skola, program och examensår — precis vad åkerier vill veta." },
             { icon: "→", title: "Direkt kontakt", body: "Inga mellanhänder. Du och åkeriet pratar direkt på plattformen." },
             { icon: "◎", title: "Hela Sverige", body: "Åkerier i alla regioner. Filtrera på din hemort och hitta APL nära dig." },

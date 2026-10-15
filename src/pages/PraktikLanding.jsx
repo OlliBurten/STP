@@ -54,7 +54,7 @@ const WHY = [
   {
     icon: "✓",
     title: "Verifierade åkerier",
-    body: "Alla företag på STP verifieras mot Bolagsverket innan de kan publicera. Elever möter inga falska aktörer.",
+    body: "Företag med konto på STP verifieras innan de kan publicera. Elever möter inga falska aktörer.",
   },
   {
     icon: "⟷",

@@ -21,9 +21,9 @@ const COMPARE = {
 };
 
 const STEPS = [
-  { n: "01", title: "Registrera företagskonto", body: "Ange organisationsnummer — verifiering sker automatiskt mot Bolagsverket." },
+  { n: "01", title: "Registrera företagskonto", body: "Ange organisationsnummer — kontot verifieras automatiskt." },
   { n: "02", title: "Gå igenom onboarding", body: "Lägg till ert åkeri, bjud in teamet och fyll i profilen. Klart på minuter." },
-  { n: "03", title: "Hitta förare & publicera", body: "Sök bland synliga förare direkt — och publicera jobb när ni vill bredda inflödet." },
+  { n: "03", title: "Publicera & kontakta", body: "Er annons når förare i närheten — och ni skriver direkt till förare som passar." },
 ];
 
 const FAQS = [
@@ -100,7 +100,7 @@ const SearchPreview = () => (
       </div>
       <div>
         <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", fontWeight: 600, whiteSpace: "nowrap" }}>Verifierat åkeri</div>
-        <div style={{ fontSize: "var(--text-sm)", fontWeight: 800, color: "var(--ink-900)", whiteSpace: "nowrap" }}>Bolagsverket</div>
+        <div style={{ fontSize: "var(--text-sm)", fontWeight: 800, color: "var(--ink-900)", whiteSpace: "nowrap" }}>Märkt för förarna</div>
       </div>
     </div>
   </div>
@@ -193,7 +193,7 @@ export default function ForCompaniesLanding() {
     <main style={{ background: "var(--paper)" }}>
       <PageMeta
         title="För åkerier – Hitta lastbilsförare på STP"
-        description="STP är åkeriets talangdatabas: sök bland verifierade lastbilsförare, filtrera på körkort, region och certifikat, och kontakta dem direkt — utan mellanhänder eller provision."
+        description="Hitta lastbilsförare med C- och CE-körkort: er annons når förare i närheten, och ni kan söka bland förarna och kontakta dem direkt — utan mellanhänder eller provision."
         canonical="/for-akerier"
       />
       <style>{`
@@ -219,10 +219,10 @@ export default function ForCompaniesLanding() {
             <div>
               <div style={{ marginBottom: 24 }}><span style={S.eyebrow}>För åkerier · Gratis</span></div>
               <h1 style={{ fontSize: "clamp(38px,4.8vw,60px)", fontWeight: 900, letterSpacing: -2.4, lineHeight: 1.04, color: "var(--ink-900)", margin: "0 0 22px", textWrap: "balance" }}>
-                En <span style={{ color: "var(--amber)" }}>talangdatabas</span> — inte en annonstavla.
+                Hitta förare. <span style={{ color: "var(--amber)" }}>Kontakta dem direkt.</span>
               </h1>
               <p style={{ ...S.lead, maxWidth: 480, marginBottom: 32 }}>
-                Sök bland riktiga förare, filtrera på körkort och region, och se hela profilen innan ni tar kontakt. Direkt — utan mellanhänder, provision eller bindningstid.
+                Er annons når förare med rätt körkort i ert län och grannlänen. Och ni kan själva söka bland förarna och skriva till dem — utan mellanhänder, provision eller bindningstid.
               </p>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 34 }}>
                 <Button variant="primary" size="lg" iconRight={<Icon name="arrow" size={15} stroke={2.2} />} onClick={goRegister}>Skapa företagskonto</Button>
@@ -295,9 +295,9 @@ export default function ForCompaniesLanding() {
               </div>
               <h3 style={{ fontSize: "var(--text-2xl)", fontWeight: 800, color: "var(--ink-900)", marginBottom: 10, letterSpacing: -0.3 }}>Automatisk verifiering</h3>
               <p style={{ fontSize: "var(--text-base)", color: "var(--ink-500)", lineHeight: 1.65, marginBottom: 16, textWrap: "pretty" }}>
-                Ange organisationsnummer vid registreringen — kontot verifieras automatiskt mot Bolagsverket. Verifierade åkerier får en tydlig märkning som förare litar på.
+                Ange organisationsnummer vid registreringen — kontot verifieras automatiskt. Verifierade åkerier får en tydlig märkning som förare litar på.
               </p>
-              <Pill tone="success" size="sm" icon={<Icon name="check" size={11} stroke={2.6} />}>Verifierad via Bolagsverket</Pill>
+              <Pill tone="success" size="sm" icon={<Icon name="check" size={11} stroke={2.6} />}>Verifierat åkeri</Pill>
             </Card>
             <Card padding="30px 32px">
               <div style={{ width: 48, height: 48, borderRadius: 12, background: "var(--amber-tint)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
