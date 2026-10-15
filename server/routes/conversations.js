@@ -9,6 +9,7 @@ import {
 } from "../middleware/auth.js";
 import { notifyDriverSelected, notifyNewApplication, notifyNewMessage, notifyApplicationConfirmation } from "../lib/email.js";
 import { createNotification } from "../lib/notifications.js";
+import { logRecruitmentEvent, logFirstReplyIfAny, setHireOutcome } from "../lib/recruitment.js";
 import { validateBody } from "../middleware/validate.js";
 import { createConversationSchema, sendMessageSchema } from "../lib/validators.js";
 
@@ -200,6 +201,7 @@ conversationsRouter.post("/", requireVerifiedEmail, requireVerifiedIfCompany, va
       const titled = await prisma.job.findUnique({ where: { id: jobId }, select: { title: true } });
       jobTitle = titled?.title ?? null;
     }
+    let createdNow = false;
     let conv = await prisma.conversation.findFirst({
       where: {
         driverId: actualDriverId,
@@ -221,6 +223,7 @@ conversationsRouter.post("/", requireVerifiedEmail, requireVerifiedIfCompany, va
           ...(isDriver ? {} : { readByCompanyAt: new Date() }),
         },
       });
+      createdNow = true;
     }
     const senderRole = isDriver ? "driver" : "company";
     await prisma.message.create({
@@ -231,6 +234,11 @@ conversationsRouter.post("/", requireVerifiedEmail, requireVerifiedIfCompany, va
         content: initialMessage || "Hej.",
       },
     });
+    if (createdNow) {
+      await logRecruitmentEvent(conv, isDriver ? "APPLIED" : "CONTACTED", { actorRole: senderRole, actorId: req.userId, source: "chat" });
+    } else {
+      await logFirstReplyIfAny(conv, senderRole, req.userId);
+    }
     if (isDriver && jobId && jobTitle) {
       try {
         const job = await prisma.job.findUnique({
@@ -368,6 +376,18 @@ conversationsRouter.patch("/:id/stage", requireCompany, requireVerifiedCompany, 
     if (stage === "intervjuad") data.reviewedByCompanyAt = conv.reviewedByCompanyAt || new Date();
     if (stage === "kontaktad") data.readByCompanyAt = conv.readByCompanyAt || new Date();
     const updated = await prisma.conversation.update({ where: { id: conv.id }, data });
+    if (stage !== conv.pipelineStage) {
+      if (stage === "anstalld") {
+        await setHireOutcome(conv.id, "HIRED", { reportedBy: "company", actorId: req.userId, source: "stage" });
+      } else {
+        const type = stage === "intervjuad" ? "INTERVIEW" : stage === "avslag" ? "REJECTED" : null;
+        if (type) await logRecruitmentEvent(conv, type, { actorRole: "company", actorId: req.userId, source: "stage" });
+        // Flyttas en anställd tillbaka var markeringen fel — utfallet nollställs.
+        if (conv.hireOutcome === "HIRED") {
+          await prisma.conversation.update({ where: { id: conv.id }, data: { hireOutcome: null, hireOutcomeAt: null, hireReportedBy: null } });
+        }
+      }
+    }
     res.json({ id: updated.id, pipelineStage: updated.pipelineStage });
   } catch (e) {
     next(e);
@@ -396,6 +416,7 @@ conversationsRouter.patch("/:id/reject", requireCompany, requireVerifiedCompany,
         messages: { orderBy: { createdAt: "asc" }, include: { sender: { select: { name: true } } } },
       },
     });
+    await logRecruitmentEvent(conv, "REJECTED", { actorRole: "company", actorId: req.userId, source: "button" });
     res.json(toConversation(updated, { role: req.role, userId: req.userId }));
   } catch (e) {
     next(e);
@@ -442,6 +463,7 @@ conversationsRouter.patch("/:id/select", requireCompany, requireVerifiedCompany,
         actorName: updated.organization?.name || updated.company?.companyName || updated.company?.name || null,
       }).catch((e) => console.error("Create notification selected:", e));
     }
+    await logRecruitmentEvent(conv, "INTERVIEW", { actorRole: "company", actorId: req.userId, source: "button" });
     res.json(toConversation(updated, { role: req.role, userId: req.userId }));
   } catch (e) {
     next(e);
@@ -474,6 +496,7 @@ conversationsRouter.post("/:id/messages", requireVerifiedEmail, requireVerifiedI
         content: req.body.content,
       },
     });
+    await logFirstReplyIfAny(conv, senderRole, req.userId);
     const preview = String(message.content || "").slice(0, 140);
     const fromName =
       req.role === "DRIVER"

@@ -31,6 +31,7 @@ import AdminOverviewTab from "../components/admin/AdminOverviewTab";
 import AdminUsersTab from "../components/admin/AdminUsersTab";
 import AdminOutreachTab from "../components/admin/AdminOutreachTab";
 import AdminDemoTab from "../components/admin/AdminDemoTab";
+import AdminRecruitmentTab from "../components/admin/AdminRecruitmentTab";
 import { AdminSidebar, AdminTopBar, AdminCmdK } from "../components/admin/AdminShell";
 
 
@@ -1392,6 +1393,9 @@ export default function Admin() {
         )}
 
         {/* ── Demokonton ── */}
+        {activeTab === "recruitment" && (
+          <AdminRecruitmentTab setError={setError} setSuccess={setSuccess} />
+        )}
         {activeTab === "demo" && (
           <AdminDemoTab health={health} setError={setError} setSuccess={setSuccess} />
         )}

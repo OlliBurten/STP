@@ -14,6 +14,7 @@ import { matchScore, matchPercent, driverYearsFromExperience } from "../utils/ma
 import { driverNearJobRegion, driverInJobRegion } from "../utils/regions.js";
 import { notifyRecommendedJobMatch } from "../lib/email.js";
 import { claimMatchEmailSlots } from "../lib/matchAlerts.js";
+import { recruitmentFunnel } from "../lib/recruitment.js";
 import { createNotification } from "../lib/notifications.js";
 import { validateBody, validateQuery } from "../middleware/validate.js";
 import { createJobSchema, jobsListQuerySchema, patchJobSchema } from "../lib/validators.js";
@@ -839,12 +840,17 @@ jobsRouter.get("/:id/stats", authMiddleware, requireCompany, attachCompanyContex
       prisma.conversation.findMany({
         where: { jobId: job.id },
         select: {
+          id: true,
           createdAt: true,
-          messages: { orderBy: { createdAt: "asc" }, take: 1, select: { senderRole: true } },
+          pipelineStage: true, selectedByCompanyAt: true, rejectedByCompanyAt: true, hireOutcome: true,
+          messages: { orderBy: { createdAt: "asc" }, select: { senderRole: true, createdAt: true } },
           driver: { select: { driverProfile: { select: { region: true, location: true } } } },
         },
       }),
     ]);
+    const recruitmentEvents = convs.length
+      ? await prisma.recruitmentEvent.findMany({ where: { conversationId: { in: convs.map((c) => c.id) } }, select: { conversationId: true, type: true, createdAt: true } })
+      : [];
     const viewCount = views.length;
     // Ansökningar = förare som sökt. Konversationer som åkeriet själv startat är kontakter.
     const applications = convs.filter((c) => c.messages[0]?.senderRole !== "company");
@@ -877,6 +883,8 @@ jobsRouter.get("/:id/stats", authMiddleware, requireCompany, attachCompanyContex
       devices: tally(tracked, (v) => v.device),
       applicantRegions: tally(applications, (a) => a.driver?.driverProfile?.region || a.driver?.driverProfile?.location),
       conversion: viewCount ? Math.round((conversationCount / viewCount) * 1000) / 10 : null,
+      // Vad kontakterna ledde till: svar, intervjuer, anställningar, svarstid.
+      recruitment: recruitmentFunnel(convs, recruitmentEvents),
     };
 
     // Rule-based recommendations

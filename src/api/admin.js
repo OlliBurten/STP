@@ -151,3 +151,11 @@ export function sendDemoInvite({ email, role, label, days }) {
 export function revokeDemoInvite(id) {
   return apiDelete(`/api/admin/demo-invites/${id}`);
 }
+
+export function getRecruitmentOverview() {
+  return apiGet("/api/admin/recruitment");
+}
+
+export function recordRecruitmentEvent(conversationId, type, at) {
+  return apiPost(`/api/admin/conversations/${conversationId}/recruitment`, { type, ...(at ? { at } : {}) });
+}

@@ -25,6 +25,7 @@ import { authRouter } from "./routes/auth.js";
 import { jobsRouter } from "./routes/jobs.js";
 import { profileRouter } from "./routes/profile.js";
 import { driversRouter } from "./routes/drivers.js";
+import { recruitmentRouter } from "./routes/recruitment.js";
 import { conversationsRouter } from "./routes/conversations.js";
 import { adminRouter } from "./routes/admin.js";
 import { reportsRouter } from "./routes/reports.js";
@@ -188,6 +189,7 @@ app.use("/api/profile", profileRouter);
 // anrop (me/stats m.fl.) ligger gott under det.
 app.use("/api/drivers", apiPublicLimiter, driversRouter);
 app.use("/api/conversations", apiWriteLimiter, conversationsRouter);
+app.use("/api/recruitment", apiWriteLimiter, recruitmentRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/reports", reportsRouter);
 app.use("/api/reviews", reviewsRouter);
