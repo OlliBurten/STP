@@ -10,13 +10,15 @@ import { TruckIcon, ClockIcon, BuildingIcon } from "../components/Icons";
 /* ════════════════════════════════════════════════
    DATA
 ════════════════════════════════════════════════ */
-const DEMAND = [
-  { region: "Skåne", n: 47, pct: 100 },
-  { region: "Stockholm", n: 38, pct: 81 },
-  { region: "Västra Götaland", n: 31, pct: 66 },
-  { region: "Östergötland", n: 14, pct: 30 },
-  { region: "Halland", n: 12, pct: 26 },
-];
+// Riktiga siffror från jobblistan — tidigare hårdkodat ("Skåne 47 tjänster",
+// "4 080 lediga tjänster" som egentligen var TYA:s rekryteringsbehov på 12 mån).
+function demandFromJobs(jobs) {
+  const by = new Map();
+  for (const j of jobs) if (j.region) by.set(j.region, (by.get(j.region) || 0) + 1);
+  const top = [...by.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
+  const max = top[0]?.[1] || 1;
+  return top.map(([region, n]) => ({ region, n, pct: Math.round((n / max) * 100) }));
+}
 
 const SEGMENTS = [
   { Icon: TruckIcon, title: "Heltid", tag: "Fast anställning", body: "För dig som söker en fast, långsiktig tjänst.", points: ["Fasta tjänster", "Långsiktiga åkerier"] },
@@ -31,7 +33,7 @@ const STEPS = [
 ];
 
 const FAQS = [
-  { q: "Måste jag vara yrkesförare?", a: "Ja — STP är byggt för yrkesförare (B, C, CE, C1). YKB och ADR hanteras direkt." },
+  { q: "Måste jag ha C- eller CE-körkort?", a: "Ja — STP är byggt för lastbilsförare med C- eller CE-körkort. YKB, ADR och andra behörigheter visas direkt i profilen." },
   { q: "Kan jag vara anonym tills jag tar kontakt?", a: "Ja. Du styr din synlighet och kan stänga av den när som helst." },
   { q: "Tar STP betalt av förare?", a: "Nej. STP är alltid gratis för förare — skapa profil, söka jobb och bli kontaktad kostar aldrig något." },
   { q: "Vad skiljer STP från en vanlig jobbsajt?", a: "Profilen utgår från körkort, segment, tillgänglighet och certifikat — inte ett generiskt CV. Det gör det lätt för åkerier att förstå dig snabbt och för dig att hitta rätt jobb." },
@@ -58,7 +60,7 @@ const ProfilePreview = () => (
         <div style={{ position: "absolute", right: -28, top: -52, width: 158, height: 158, borderRadius: "50%", background: "rgba(255,255,255,0.07)" }} />
         <div style={{ position: "absolute", right: 76, top: 20, width: 72, height: 72, borderRadius: "50%", background: "rgba(255,255,255,0.05)" }} />
         <div style={{ position: "absolute", left: 22, top: 18, display: "inline-flex", alignItems: "center", gap: 6, fontSize: "var(--text-2xs)", fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: "rgba(255,255,255,0.82)" }}>
-          <Icon name="truck" size={14} color="rgba(255,255,255,0.82)" stroke={2} /> Förarprofil
+          <Icon name="truck" size={14} color="rgba(255,255,255,0.82)" stroke={2} /> Exempel på förarprofil
         </div>
       </div>
 
@@ -202,6 +204,15 @@ export default function ForDrivers() {
   const { user, isDriver, isCompany } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const [liveJobs, setLiveJobs] = useState(null);
+  useEffect(() => {
+    let alive = true;
+    import("../api/jobs.js").then(({ fetchJobs }) => fetchJobs())
+      .then((d) => { if (alive) setLiveJobs(Array.isArray(d) ? d : []); })
+      .catch(() => { if (alive) setLiveJobs([]); });
+    return () => { alive = false; };
+  }, []);
+  const demand = liveJobs ? demandFromJobs(liveJobs) : [];
 
   useEffect(() => {
     const jsonLd = { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: FAQS.map((item) => ({ "@type": "Question", name: item.q, acceptedAnswer: { "@type": "Answer", text: item.a } })) };
@@ -261,7 +272,7 @@ export default function ForDrivers() {
                 <Button variant="secondary" size="lg" onClick={goJobs}>Se lediga jobb</Button>
               </div>
               <div style={{ display: "flex", gap: 26, flexWrap: "wrap" }}>
-                {[["4 080", "lediga tjänster"], ["Gratis", "för föraren"], ["2 min", "att komma igång"]].map(([b, s]) => (
+                {[[liveJobs?.length ? String(liveJobs.length) : "—", "lediga lastbilsjobb"], ["Gratis", "för föraren"], ["2 min", "att komma igång"]].map(([b, s]) => (
                   <div key={s} style={{ display: "flex", flexDirection: "column" }}>
                     <span style={{ fontSize: "var(--text-2xl)", fontWeight: 900, color: "var(--ink-900)", fontFamily: "var(--mono)", letterSpacing: -0.5 }}>{b}</span>
                     <span style={{ fontSize: "var(--text-xs)", color: "var(--ink-500)", fontWeight: 600 }}>{s}</span>
@@ -282,17 +293,17 @@ export default function ForDrivers() {
               <span style={S.sectionEyebrow}>Var jobben finns</span>
               <h2 style={{ ...S.sectionTitle, marginBottom: 18 }}>Efterfrågan på förare är rekordhög.</h2>
               <p style={{ ...S.lead, marginBottom: 24 }}>
-                36 % av åkerierna saknar förare just nu. Välj de regioner du kan jobba i — så matchas du mot behoven där.
+                36 % av åkerierna har svårt att rekrytera förare (TYA 2025/2026). Välj de regioner du kan jobba i — så matchas du mot jobben där.
               </p>
               <Button variant="secondary" iconRight={<Icon name="arrow" size={14} stroke={2.2} />} onClick={goJobs}>Se alla regioner</Button>
             </div>
             <Card padding="28px 30px">
               <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-                {DEMAND.map((d) => (
+                {demand.map((d) => (
                   <div key={d.region}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 7 }}>
                       <span style={{ fontSize: "var(--text-base)", fontWeight: 700, color: "var(--ink-900)" }}>{d.region}</span>
-                      <span style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-500)", fontFamily: "var(--mono)" }}>{d.n} tjänster</span>
+                      <span style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink-500)", fontFamily: "var(--mono)" }}>{d.n} jobb</span>
                     </div>
                     <div style={{ height: 9, borderRadius: 999, background: "var(--paper-2)", overflow: "hidden" }}>
                       <div style={{ width: d.pct + "%", height: "100%", borderRadius: 999, background: d.pct === 100 ? "linear-gradient(90deg, var(--amber), #d98b1f)" : "linear-gradient(90deg, var(--green), #36857f)" }} />

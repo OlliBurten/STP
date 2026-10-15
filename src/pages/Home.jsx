@@ -34,6 +34,12 @@ function useInView() {
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
+const isDirectJob = (j) => j.source !== "AGGREGATED" || j.claimed;
+function showcaseJobs(jobs) {
+  const pool = jobs.filter((j) => !j.bemanning);
+  return [...pool.filter(isDirectJob), ...pool.filter((j) => !isDirectJob(j))].slice(0, 6);
+}
+
 const FAQ_ITEMS = [
   { q: "Är STP ett bemanningsbolag?", a: "Nej. STP är en jobbplattform. Du söker jobb direkt hos arbetsgivaren, och om du vill kan vi presentera dig för företag som söker din kompetens — alltid med ditt godkännande." },
   { q: "Kostar det något?", a: "STP är gratis — för förare kostar det aldrig något, och åkerier kommer igång och annonserar gratis." },
@@ -243,7 +249,10 @@ export default function Home() {
               <Link to="/jobb" style={{ fontSize: "var(--text-md)", fontWeight: 700, color: "var(--green)", whiteSpace: "nowrap" }}>Se alla {jobs?.length || ""} jobb →</Link>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: 16 }}>
-              {(jobs === null ? Array.from({ length: 6 }) : jobs.slice(0, 6)).map((job, i) => (
+              {/* Skyltfönstret visar inte bemanningsföretag — rubriken ovan lovar
+                  "Inga bemanningsföretag emellan" och hälften av korten var Simplex Bemanning.
+                  Annonser direkt från åkerier först. De finns kvar i hela jobblistan. */}
+              {(jobs === null ? Array.from({ length: 6 }) : showcaseJobs(jobs)).map((job, i) => (
                 job === undefined ? (
                   /* .stpm-skel är scopad till .stp-mobile och biter inte här */
                   <div key={`s-${i}`} style={{ height: 150, borderRadius: 16, background: "var(--card-2)", border: "1px solid var(--line)" }} />
@@ -397,7 +406,7 @@ export default function Home() {
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               {[
                 { icon: "user",     title: "Smart matchning",       body: "Matchas på körkort, region och tillgänglighet." },
-                { icon: "building", title: "Verifierade åkerier",   body: "Alla åkerier verifieras mot Bolagsverket." },
+                { icon: "building", title: "Verifierade åkerier",   body: "Åkerier som skapar konto verifieras mot Bolagsverket." },
                 { icon: "msg",      title: "Direktkontakt",         body: "Förare och åkeri pratar direkt. Ingen provision." },
                 { icon: "eye",      title: "Du styr din synlighet", body: "Du bestämmer vem som ser din profil." },
               ].map((f) => (
