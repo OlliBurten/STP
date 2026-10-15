@@ -195,7 +195,7 @@ describe("åkeriportalen", () => {
   });
 
   it("utkast sparas, delas med teamet och syns inte för andra åkerier", async () => {
-    const data = { step: 1, form: { title: "CE-chaufför natt", location: "Värnamo", license: ["CE"] } };
+    const data = { step: 1, form: { title: `CE-chaufför natt ${TAG}`, location: "Värnamo", license: ["CE"] } };
     const created = await request(app).post("/api/jobs/drafts").set("Authorization", tok(ids.member)).send({ data });
     assert.strictEqual(created.status, 201, JSON.stringify(created.body));
     const id = created.body.id;
@@ -204,7 +204,7 @@ describe("åkeriportalen", () => {
     assert.strictEqual(upd.status, 200);
     const list = await request(app).get("/api/jobs/drafts").set("Authorization", tok(ids.owner));
     const row = list.body.find((d) => d.id === id);
-    assert.strictEqual(row?.title, "CE-chaufför natt");
+    assert.strictEqual(row?.title, `CE-chaufför natt ${TAG}`);
     assert.strictEqual(row.authorName, "Kollega");
     const one = await request(app).get(`/api/jobs/drafts/${id}`).set("Authorization", tok(ids.owner));
     assert.match(one.body.data.form.aboutJob, /Nattkörning/);
@@ -213,7 +213,7 @@ describe("åkeriportalen", () => {
     const otherList = await request(app).get("/api/jobs/drafts").set("Authorization", tok(ids.otherOwner));
     assert.ok(!otherList.body.some((d) => d.id === id));
     const publicJobs = await request(app).get("/api/jobs");
-    assert.ok(!JSON.stringify(publicJobs.body).includes("CE-chaufför natt"), "utkast får aldrig synas publikt");
+    assert.ok(!JSON.stringify(publicJobs.body).includes(`CE-chaufför natt ${TAG}`), "utkast får aldrig synas publikt");
     const del = await request(app).delete(`/api/jobs/drafts/${id}`).set("Authorization", tok(ids.owner));
     assert.strictEqual(del.status, 204);
   });
