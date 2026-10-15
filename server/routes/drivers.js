@@ -7,6 +7,7 @@ import { driverReferenceSchema } from "../lib/validators.js";
 import { createNotification } from "../lib/notifications.js";
 import { sendEmail } from "../lib/email.js";
 import { excludeTestAndDemoAccountsWhere, isNonRealUser } from "../lib/testAccounts.js";
+import { driverActivityFactor } from "../utils/matchCore.js";
 
 export const driversRouter = Router();
 
@@ -51,19 +52,9 @@ driversRouter.get("/", authMiddleware, requireCompany, requireVerifiedCompany, a
         }),
       },
       include: {
-        user: { select: { id: true, name: true, email: true, lastLoginAt: true } },
+        user: { select: { id: true, name: true, email: true, lastLoginAt: true, lastActiveAt: true } },
       },
     });
-    const now = Date.now();
-
-    // Recency multiplier — drivers inactive > 30d are ranked lower
-    function recencyMultiplier(lastLoginAt) {
-      if (!lastLoginAt) return 0.55;
-      const daysSince = (now - new Date(lastLoginAt).getTime()) / 86_400_000;
-      if (daysSince < 30) return 1.0;
-      if (daysSince < 60) return 0.80;
-      return 0.55;
-    }
 
     let list = profiles.map((p) => {
       const exp = (p.experience && typeof p.experience === "object")
@@ -102,17 +93,13 @@ driversRouter.get("/", authMiddleware, requireCompany, requireVerifiedCompany, a
         schoolName: p.schoolName ?? null,
         profileScore: computeProfileScore(p, p.user).score,
         fastResponder: p.fastResponder ?? false,
-        _lastLoginAt: p.user?.lastLoginAt,
+        // Hur aktiv föraren är (0.4–1) — klienterna rangordnar på match × aktivitet.
+        activityFactor: driverActivityFactor({ availability: p.availability, lastActiveAt: p.user?.lastActiveAt, lastLoginAt: p.user?.lastLoginAt, fastResponder: p.fastResponder }),
+        lastActiveAt: (p.user?.lastActiveAt || p.user?.lastLoginAt)?.toISOString?.() ?? null,
       };
     });
-    // Sortera: profilstyrka × recency-multiplikator (inaktiva profiler sjunker)
-    list.sort((a, b) => {
-      const ea = a.profileScore * recencyMultiplier(a._lastLoginAt);
-      const eb = b.profileScore * recencyMultiplier(b._lastLoginAt);
-      return eb - ea;
-    });
-    // Strippa interna sorteringsfält
-    list = list.map(({ _lastLoginAt, ...rest }) => rest);
+    // Utan vald annons: profilstyrka × aktivitet (inaktiva profiler sjunker).
+    list.sort((a, b) => b.profileScore * b.activityFactor - a.profileScore * a.activityFactor);
     const experienceStr = Array.isArray(experience) ? experience[0] : experience;
     if (experienceStr) {
       const [min, max] =

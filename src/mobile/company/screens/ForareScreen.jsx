@@ -43,7 +43,8 @@ export default function ForareScreen({ ctx }) {
   if (f.lic.length) list = list.filter((d) => f.lic.some((l) => ownedLicenses(d.licenses).has(l)));
   if (f.onlyAvail) list = list.filter((d) => d.available);
   if (q.trim()) { const s = q.trim().toLowerCase(); list = list.filter((d) => d.name.toLowerCase().includes(s) || (d.location || "").toLowerCase().includes(s)); }
-  list.sort((a, b) => (b.match ?? 0) - (a.match ?? 0));
+  // Match × aktivitet; utan match behålls serverns ordning (profilstyrka × aktivitet).
+  list.sort((a, b) => (b.match ?? 0) * (b.activity ?? 1) - (a.match ?? 0) * (a.activity ?? 1));
   const activeFilters = (f.seg !== "alla" ? 1 : 0) + (f.lic.length ? 1 : 0) + (f.onlyAvail ? 1 : 0);
   const isFiltered = activeFilters > 0 || !!q.trim();
   const remaining = list.length - shown;

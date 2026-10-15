@@ -11,6 +11,7 @@ import {
 } from "../lib/validators.js";
 import { createInvite, listInvites, revokeInvite, resolveCompanyOwner } from "../lib/invites.js";
 import { excludeTestAndDemoAccountsWhere, isNonRealUser } from "../lib/testAccounts.js";
+import { scoreMatch, driverActivityFactor } from "../utils/matchCore.js";
 export const companiesRouter = Router();
 
 function resolveSegment(segment, employment) {
@@ -759,42 +760,6 @@ companiesRouter.get("/stats/job-views", async (req, res, next) => {
   }
 });
 
-// Körkortshierarki: högre behörighet medför lägre (Transportstyrelsen).
-// Speglar src/utils/matchUtils.js — håll i synk.
-const LICENSE_IMPLIES = {
-  CE:  ["CE", "C", "C1", "C1E", "BE", "B"],
-  C1E: ["C1E", "C1", "BE", "B"],
-  C:   ["C", "C1", "B"],
-  C1:  ["C1", "B"],
-  BE:  ["BE", "B"],
-  B:   ["B"],
-};
-function expandLicenses(licenses) {
-  const set = new Set();
-  for (const l of licenses || []) {
-    set.add(l);
-    for (const imp of LICENSE_IMPLIES[l] || []) set.add(imp);
-  }
-  return [...set];
-}
-
-// Job.experience är en sträng ("0-1", "1-2", "2-5", "5-10", "10+") → minsta antal år.
-function minYearsFromJob(job) {
-  const exp = job.experience;
-  if (!exp) return 0;
-  const map = { "0-1": 0, "1-2": 1, "1-3": 1, "2-5": 2, "3-5": 3, "5-10": 5, "5+": 5, "10+": 10 };
-  if (exp in map) return map[exp];
-  const n = parseInt(exp, 10);
-  return Number.isFinite(n) ? n : 0;
-}
-
-// DriverProfile.availability: open | vikariat | tim | fast | inactive.
-function availabilityMatches(availability, employment) {
-  if (!availability || availability === "open") return true;
-  if (availability === "inactive") return false;
-  return availability === employment;
-}
-
 // GET /api/companies/stats/matching-drivers — top 3 förare som matchar aktiva annonser
 companiesRouter.get("/stats/matching-drivers", async (req, res, next) => {
   try {
@@ -815,7 +780,7 @@ companiesRouter.get("/stats/matching-drivers", async (req, res, next) => {
         visibleToCompanies: true,
         user: { needsDriverOnboarding: false, suspendedAt: null, ...(isNonRealUser(viewer) ? {} : excludeTestAndDemoAccountsWhere) },
       },
-      include: { user: { select: { id: true, name: true, lastLoginAt: true } } },
+      include: { user: { select: { id: true, name: true, lastLoginAt: true, lastActiveAt: true } } },
     });
 
     function yearsExp(profile) {
@@ -832,62 +797,20 @@ companiesRouter.get("/stats/matching-drivers", async (req, res, next) => {
       }, 0);
     }
 
-    // Speglar poängsättningen i src/utils/matchUtils.js (matchScore + matchMaxScore).
-    function matchPct(driver, job) {
-      // License — hårt krav: högre behörighet täcker lägre (CE⇒C⇒B osv).
-      const driverLicenses = expandLicenses(driver.licenses);
-      const jobLicenses = job.license || [];
-      const hasLicense = jobLicenses.length === 0 || jobLicenses.some((l) => driverLicenses.includes(l));
-      if (!hasLicense && jobLicenses.length > 0) return 0;
-
-      const driverCerts = driver.certificates || [];
-      const jobCerts = job.certificates || [];
-      const matchedCerts = jobCerts.filter((c) => driverCerts.includes(c));
-
-      let score = 0;
-
-      // Segment
-      const driverSegs = [driver.primarySegment, ...(driver.secondarySegments || [])].filter(Boolean);
-      if (job.segment && driverSegs.includes(job.segment)) score += 2;
-
-      // License
-      if (hasLicense && jobLicenses.length > 0) score += 2;
-
-      // Certs: +1 per matchat cert (delpoäng), +1 om inga krävs
-      score += jobCerts.length === 0 ? 1 : matchedCerts.length;
-
-      // Region
-      const driverRegion = driver.region || "";
-      const willing = (driver.regionsWilling || []).length > 0 ? driver.regionsWilling : [driverRegion].filter(Boolean);
-      const jobRegion = job.region || "";
-      if (!jobRegion || driverRegion === jobRegion || willing.includes(jobRegion)) score += 2;
-
-      // Experience: job.experience är en sträng ("2-5" etc) — jämför mot förarens år
-      if (yearsExp(driver) >= minYearsFromJob(job)) score += 1;
-
-      // Availability: open/vikariat/tim/fast/inactive mot jobbets anställningsform
-      if (availabilityMatches(driver.availability, job.employment)) score += 1;
-
-      // Normalisera mot jobbets faktiska max (samma som matchMaxScore i matchUtils)
-      const max =
-        (job.segment ? 2 : 0) +
-        (jobLicenses.length > 0 ? 2 : 0) +
-        Math.max(jobCerts.length, 1) +
-        2 + // region
-        1 + // experience
-        1;  // availability
-      return max > 0 ? Math.min(100, Math.round((score / max) * 100)) : 0;
-    }
+    // Samma matchning som överallt annars (utils/matchCore.js).
+    const toDriver = (d) => ({ ...d, yearsExperience: yearsExp(d) });
 
     // Bästa match mot vilket som helst av företagets aktiva jobb
     const scored = drivers.map((d) => {
-      const best = Math.max(...activeJobs.map((j) => matchPct(d, j)));
-      return { driver: d, match: best };
+      const best = Math.max(...activeJobs.map((j) => scoreMatch(toDriver(d), j).pct));
+      const activity = driverActivityFactor({ availability: d.availability, lastActiveAt: d.user?.lastActiveAt, lastLoginAt: d.user?.lastLoginAt, fastResponder: d.fastResponder });
+      return { driver: d, match: best, rank: best * activity };
     });
 
+    // Match × aktivitet: en aktiv förare före en lika bra som inte varit inne på länge.
     const top3 = scored
       .filter((s) => s.match > 0)
-      .sort((a, b) => b.match - a.match)
+      .sort((a, b) => b.rank - a.rank)
       .slice(0, 3)
       .map(({ driver: d, match }) => ({
         id: d.userId,

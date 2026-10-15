@@ -9,6 +9,17 @@ function isCompanyRole(role) {
 }
 
 /** Sätter req.userId/req.role om giltig token, annars 401 */
+// "Senast aktiv" — lastLoginAt uppdateras bara vid ny inloggning, och en session
+// håller i en vecka. För att åkerier ska se vilka förare som faktiskt är aktiva
+// stämplas användningen här, högst en gång i timmen per användare (minnescache).
+const lastTouch = new Map();
+function touchLastActive(userId) {
+  const now = Date.now();
+  if ((lastTouch.get(userId) || 0) > now - 36e5) return;
+  lastTouch.set(userId, now);
+  prisma.user.update({ where: { id: userId }, data: { lastActiveAt: new Date(now) } }).catch(() => {});
+}
+
 export function authMiddleware(req, res, next) {
   const authHeader = req.headers.authorization;
   const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
@@ -138,6 +149,7 @@ function verifyToken(req, res, next, token, optional = false) {
       }
       req.userId = user.id;
       req.role = user.role;
+      if (!req.isImpersonating) touchLastActive(user.id);
       return next();
     } catch (e) {
       return next(e);

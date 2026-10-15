@@ -1,169 +1,20 @@
 /**
- * Match score driver–job (mirrors frontend matchUtils for applicants list).
+ * Serverns matchning — tunt omslag runt matchCore.js (identisk med src/utils/matchCore.js,
+ * se test/matchCore.test.js). Servern kräver rätt anställningsform (strictSegment):
+ * aviseringar och tips ska inte gå ut om vikariat till den som bara söker heltid.
  */
-function minYearsFromJob(job) {
-  const exp = job.experience;
-  if (!exp) return 0;
-  const map = { "0-1": 0, "1-2": 1, "2-5": 2, "5-10": 5, "10+": 10 };
-  return map[exp] ?? 0;
-}
+import { scoreMatch, driverActivityFactor } from "./matchCore.js";
 
-function availabilityMatches(availability, employment) {
-  if (!availability || availability === "open") return true;
-  if (availability === "inactive") return false;
-  if (availability === employment) return true;
-  if (availability === "fast" && employment === "fast") return true;
-  if (availability === "vikariat" && employment === "vikariat") return true;
-  if (availability === "tim" && employment === "tim") return true;
-  return false;
-}
+export { driverActivityFactor };
 
-function normalizeDriverSegments(driver) {
-  const list = [
-    driver.primarySegment,
-    ...(Array.isArray(driver.secondarySegments) ? driver.secondarySegments : []),
-  ].filter(Boolean);
-  return [...new Set(list)];
-}
-
-const PRIVATE_NOTE_STOPWORDS = new Set([
-  "och",
-  "att",
-  "som",
-  "med",
-  "för",
-  "vill",
-  "helst",
-  "gillar",
-  "soker",
-  "söker",
-  "jobb",
-  "arbete",
-  "tjanst",
-  "tjänst",
-  "kora",
-  "köra",
-  "kan",
-  "inte",
-  "ej",
-  "men",
-  "eller",
-  "jag",
-  "mig",
-  "min",
-  "mitt",
-  "mina",
-  "har",
-  "fran",
-  "från",
-  "inom",
-  "mest",
-  "bara",
-]);
-
-function normalizeText(value) {
-  return String(value || "")
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
-}
-
-function uniqueTokens(value) {
-  return [...new Set(
-    normalizeText(value)
-      .split(/[^a-z0-9]+/i)
-      .map((token) => token.trim())
-      .filter((token) => token.length >= 4 && !PRIVATE_NOTE_STOPWORDS.has(token))
-  )];
-}
-
-function privateMatchNotesAdjustment(notes, job) {
-  const normalizedNotes = normalizeText(notes);
-  if (!normalizedNotes) return 0;
-
-  const haystack = normalizeText([
-    job.title,
-    job.company,
-    job.description,
-    job.region,
-    job.jobType,
-    job.bransch,
-    job.schedule,
-    job.employment,
-    job.requirements,
-    job.extraRequirements,
-  ].filter(Boolean).join(" "));
-
-  if (!haystack) return 0;
-
-  const negativeMatches = [...normalizedNotes.matchAll(/\b(?:inte|ej|undvik|undvika|slippa)\s+([a-z0-9]+)/g)]
-    .map((match) => match[1])
-    .filter((token) => token.length >= 4 && haystack.includes(token));
-
-  const positiveMatches = uniqueTokens(normalizedNotes)
-    .filter((token) => !negativeMatches.includes(token))
-    .filter((token) => haystack.includes(token));
-
-  const boost = Math.min(2, positiveMatches.length);
-  const penalty = negativeMatches.length > 0 ? 2 : 0;
-  return boost - penalty;
-}
-
+/** Råpoäng (0 = ingen match). */
 export function matchScore(driver, job) {
-  let score = 0;
-  const driverSegments = normalizeDriverSegments(driver);
-  if (job.segment) {
-    if (driverSegments.length > 0 && !driverSegments.includes(job.segment)) return 0;
-    if (driverSegments.includes(job.segment)) score += 2;
-  }
-  const driverLicenses = driver.licenses || [];
-  const jobLicenses = job.license || [];
-  const hasLicense = jobLicenses.length === 0 || jobLicenses.some((l) => driverLicenses.includes(l));
-  if (!hasLicense && jobLicenses.length > 0) return 0;
-  if (hasLicense && jobLicenses.length > 0) score += 2;
-
-  // Intyg ger delpoäng (+1 per uppfyllt), inget underkännande — samma som webbappens
-  // matchUtils. Tidigare föll en förare som saknade ETT av annonsens intyg till 0, så en
-  // annons med fyra ikryssade intyg (VGT 2026-10-08) matchade ingen av 40 CE-förare och
-  // inga förare aviserades. Procenten visar fortfarande vad som saknas.
-  const driverCerts = driver.certificates || [];
-  const jobCerts = job.certificates || [];
-  if (jobCerts.length === 0) score += 1;
-  else score += jobCerts.filter((c) => driverCerts.includes(c)).length;
-
-  const driverRegion = driver.region || "";
-  const driverRegions = driver.regionsWilling || [driverRegion].filter(Boolean);
-  const jobRegion = job.region || "";
-  const inRegion = jobRegion && (driverRegion === jobRegion || driverRegions.includes(jobRegion));
-  if (inRegion) score += 2;
-
-  const driverYears = driver.yearsExperience ?? 0;
-  const jobMinYears = minYearsFromJob(job);
-  if (driverYears >= jobMinYears) score += 1;
-
-  if (availabilityMatches(driver.availability, job.employment)) score += 1;
-
-  score += privateMatchNotesAdjustment(driver.privateMatchNotes, job);
-  return Math.max(0, score);
+  return scoreMatch(driver, job, { strictSegment: true }).score;
 }
 
-/**
- * matchScore som procent (0–100). matchScore ger råpoäng (ca 0–11) och kandidattavlan
- * visade dem som procent — en förare som uppfyllde alla krav fick "6 %".
- * Maxpoängen räknas med samma viktning som matchScore.
- */
+/** Samma som procent (0–100). */
 export function matchPercent(driver, job) {
-  const raw = matchScore(driver, job);
-  if (raw <= 0) return 0;
-  const certs = (job.certificates || []).length;
-  const max =
-    (job.segment ? 2 : 0) +
-    ((job.license || []).length > 0 ? 2 : 0) +
-    (certs || 1) +
-    2 + // region
-    1 + // erfarenhet
-    1; // tillgänglighet
-  return Math.max(0, Math.min(100, Math.round((raw / max) * 100)));
+  return scoreMatch(driver, job, { strictSegment: true }).pct;
 }
 
 export function driverYearsFromExperience(experience) {
