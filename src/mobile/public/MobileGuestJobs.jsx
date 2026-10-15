@@ -348,7 +348,7 @@ export default function MobileGuestJobs() {
             </div>
             {detail.verified && (
               <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "11px 14px", borderRadius: 12, background: "var(--green-tint)", marginBottom: 18 }}>
-                <Icon name="shield" size={19} color="var(--green)" stroke={1.9} /><span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--green-text)" }}>Verifierat åkeri · org.nr kontrollerat mot Bolagsverket</span>
+                <Icon name="shield" size={19} color="var(--green)" stroke={1.9} /><span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--green-text)" }}>Verifierat åkeri</span>
               </div>
             )}
             {detail.bemanning && (

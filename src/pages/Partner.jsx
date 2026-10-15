@@ -52,7 +52,7 @@ const HOW_IT_WORKS = [
   {
     n: "2",
     title: "Åkerier verifieras och publicerar jobb",
-    body: "Alla företagskonton valideras mot Bolagsverket. Inga anonyma aktörer. Jobbannonser har krav, lön och anställningsform tydligt angivna.",
+    body: "Alla företagskonton verifieras. Inga anonyma aktörer. Jobbannonser har krav, lön och anställningsform tydligt angivna.",
   },
   {
     n: "3",
@@ -215,7 +215,7 @@ export default function Partner() {
               { icon: "→", text: "Branschspecifik — transport och logistik, inte ett generellt jobbbolag." },
               { icon: "→", text: "Ingen mellankraft — direktkontakt mellan förare och arbetsgivare. Inga bemanningsavgifter." },
               { icon: "→", text: "Strukturerat — profiler med krav, certifikat och tillgänglighet gör matchning snabbare." },
-              { icon: "→", text: "Verifierat — alla företag kontrolleras mot Bolagsverket. Inga oseriösa aktörer." },
+              { icon: "→", text: "Verifierat — alla företagskonton kontrolleras. Inga oseriösa aktörer." },
               { icon: "→", text: "Gratis för individen — förare och elever betalar ingenting, alltid." },
             ].map((r, i) => (
               <div key={i} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>

@@ -117,7 +117,7 @@ export default function HittaPraktik() {
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             {[
               { text: "Du ser direkt vilka åkerier som är öppna för praktikanter — filtrera på region och segment." },
-              { text: "Alla åkerier är verifierade mot Bolagsverket. Inga falska aktörer." },
+              { text: "Åkerier med konto är verifierade. Inga falska aktörer." },
               { text: "Direktkontakt via plattformen — åkeriet ser din profil, skola och examensår." },
               { text: "Du kan söka jobb och praktik på samma ställe — en profil räcker." },
             ].map((r) => (

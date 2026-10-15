@@ -246,7 +246,7 @@ export default function PartnerPresentation() {
               {
                 n: "2",
                 title: "Åkeriet verifieras och publicerar jobb",
-                body: "Alla företag valideras mot Bolagsverket. Jobbannonser har krav, lön och anställningsform tydligt angivna.",
+                body: "Alla företagskonton verifieras. Jobbannonser har krav, lön och anställningsform tydligt angivna.",
               },
               {
                 n: "3",
@@ -381,7 +381,7 @@ export default function PartnerPresentation() {
             {[
               { icon: "✓", color: ACCENT, title: "Branschspecifikt", body: "Profiler med körkort, certifikat, regioner och tillgänglighet — inte generiska CV:n." },
               { icon: "✓", color: ACCENT, title: "Direkt och utan mellankraft", body: "Förare och åkeri kommunicerar direkt. Inga bemanningsavgifter, inga provisioner." },
-              { icon: "✓", color: ACCENT, title: "Verifierade företag", body: "Alla åkerier kontrolleras mot Bolagsverket. Inga oseriösa aktörer på plattformen." },
+              { icon: "✓", color: ACCENT, title: "Verifierade företag", body: "Alla åkerier med konto kontrolleras. Inga oseriösa aktörer på plattformen." },
               { icon: "✓", color: ACCENT, title: "Gratis för individen", body: "Förare, elever och AF-deltagare betalar ingenting — alltid." },
               { icon: "✓", color: ACCENT, title: "Hela karriärresan", body: "Praktik → vikariat → heltid — ett ekosystem som följer föraren hela vägen." },
             ].map((r) => (
