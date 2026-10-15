@@ -281,68 +281,6 @@ export async function runProfileReminders() {
 
 const EMP_LABEL = { fast: "Fast anställning", vikariat: "Vikariat", tim: "Timanställning" };
 
-function buildJobDigestHtml({ name, jobs, totalCount, unsubscribeUrl }) {
-  const jobCards = jobs.map((j) => {
-    const empTag = EMP_LABEL[j.employment] || j.employment || "";
-    const locationLine = [j.company, j.location || j.region].filter(Boolean).join(" &bull; ");
-    const salaryLine = j.salary
-      ? `<span style="font-size:12px;color:#0f766e;font-weight:600">${j.salary}</span>`
-      : "";
-    return `
-    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden">
-      <tr>
-        <td style="padding:16px 18px">
-          <p style="margin:0 0 3px;font-size:15px;font-weight:700;color:#1e293b">${j.title}</p>
-          <p style="margin:0 0 8px;font-size:13px;color:#64748b">${locationLine}</p>
-          <table cellpadding="0" cellspacing="0" style="margin-bottom:10px">
-            <tr>
-              ${(j.source && j.source !== "AGGREGATED") || j.claimed ? `<td style="padding-right:8px"><span style="background:#F2A41C;color:#1B2421;font-size:11px;font-weight:700;padding:3px 8px;border-radius:4px">Direkt från åkeriet</span></td>` : ""}
-              ${empTag ? `<td style="padding-right:8px"><span style="background:#f1f5f9;color:#475569;font-size:11px;font-weight:600;padding:3px 8px;border-radius:4px">${empTag}</span></td>` : ""}
-              ${salaryLine ? `<td>${salaryLine}</td>` : ""}
-            </tr>
-          </table>
-          <a href="${FRONTEND_URL}/jobb/${j.id}?utm_source=stp&amp;utm_medium=email" style="display:inline-block;background:#0f766e;color:#ffffff;font-size:13px;font-weight:600;text-decoration:none;padding:8px 16px;border-radius:6px">Se jobbet &rarr;</a>
-        </td>
-      </tr>
-    </table>`;
-  }).join("");
-
-  const overflowNote = totalCount > jobs.length
-    ? `<p style="font-size:13px;color:#64748b;margin:4px 0 20px">…och ${totalCount - jobs.length} till. <a href="${FRONTEND_URL}/jobb" style="color:#0f766e;text-decoration:none;font-weight:600">Se alla matchande jobb</a></p>`
-    : `<p style="margin:0 0 20px"><a href="${FRONTEND_URL}/jobb" style="font-size:13px;color:#0f766e;text-decoration:none;font-weight:600">Se alla jobb på STP &rarr;</a></p>`;
-
-  return `<!DOCTYPE html>
-<html lang="sv">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f8fafc;font-family:system-ui,-apple-system,sans-serif">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;padding:32px 0">
-    <tr><td align="center">
-      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden">
-        <tr><td style="background:#0f766e;padding:20px 32px">
-          <span style="color:#ffffff;font-size:18px;font-weight:700;letter-spacing:-0.3px">Sveriges Transportplattform</span>
-        </td></tr>
-        <tr><td style="padding:28px 28px 8px;color:#1e293b;font-size:15px;line-height:1.7">
-          <p style="margin:0 0 6px;font-size:15px;color:#1e293b">Hej ${name || ""},</p>
-          <p style="margin:0 0 20px;font-size:15px;color:#475569">
-            ${totalCount === 1 ? "Ett nytt jobb matchar din profil den här veckan:" : `${totalCount} nya jobb matchar din profil den här veckan:`}
-          </p>
-          ${jobCards}
-          ${overflowNote}
-        </td></tr>
-        <tr><td style="padding:16px 28px 24px;border-top:1px solid #f1f5f9">
-          <p style="margin:0;font-size:12px;color:#94a3b8">
-            Sveriges Transportplattform &mdash;
-            <a href="https://transportplattformen.se" style="color:#64748b;text-decoration:none">transportplattformen.se</a>
-            &nbsp;&bull;&nbsp;
-            <a href="${unsubscribeUrl}" style="color:#64748b;text-decoration:none">Avprenumerera från jobbtips</a>
-          </p>
-        </td></tr>
-      </table>
-    </td></tr>
-  </table>
-</body>
-</html>`;
-}
 
 export async function runJobMatchReminders() {
   const COOLDOWN_DAYS = 7;
@@ -440,19 +378,33 @@ export async function runJobMatchReminders() {
       "Sveriges Transportplattform",
     ].filter((l) => l !== undefined).join("\n");
 
-    const html = buildJobDigestHtml({
-      name: u.name,
-      jobs: top5,
-      totalCount: matched.length,
-      unsubscribeUrl,
-    });
+    const htmlBody = [
+      `Hej ${u.name || ""},`,
+      `${matched.length === 1 ? "Ett nytt jobb matchar" : `${matched.length} nya jobb matchar`} din profil den här veckan:`,
+    ].join("\n\n");
+    const items = top5.map((j) => ({
+      title: j.title,
+      meta: [j.company, j.location || j.region].filter(Boolean).join(" · "),
+      tags: [
+        ...(isDirect(j) ? [{ label: "Direkt från åkeriet", tone: "amber" }] : []),
+        ...(EMP_LABEL[j.employment] ? [{ label: EMP_LABEL[j.employment] }] : []),
+        ...(j.salary ? [{ label: j.salary }] : []),
+      ],
+      href: `${FRONTEND_URL}/jobb/${j.id}?utm_source=stp&utm_medium=email`,
+    }));
 
     try {
       // Reservera före utskick — ingesten (var 2:a timme) kör samtidigt kl 08 och
       // mejlar samma förare; den som tar platsen först skickar.
       const claimed = await claimMatchEmailSlots([u.id], new Date(), COOLDOWN_DAYS * 864e5);
       if (!claimed.has(u.id)) continue;
-      await sendEmail({ to: u.email, subject, text, html });
+      await sendEmail({
+        to: u.email, subject, text, htmlBody, items,
+        ctaUrl: `${FRONTEND_URL}/jobb`,
+        ctaText: matched.length > top5.length ? `Se alla ${matched.length} jobb` : "Se alla jobb på STP",
+        unsubscribeUrl,
+        footNote: "Du får det här mejlet eftersom du har en förarprofil på STP.",
+      });
       sent++;
     } catch (e) {
       console.error(`[Reminders:jobMatch] Failed for ${u.email}:`, e?.message);

@@ -10,10 +10,11 @@ function toParagraphs(text) {
  * Email notifications.
  * - Uses Resend when RESEND_API_KEY exists.
  * - Falls back to console logging when provider is not configured.
+ * @param {string} [params.htmlBody] – Brödtext för HTML-versionen när den skiljer sig från text (t.ex. när länkarna blir knappar via actions).
  * @param {string} [params.devInviteUrl] – Om satt och e-post inte skickas: loggas hela URL:en (för teaminbjudan i dev).
  * @returns {Promise<boolean>} true if email was sent via provider, false if only logged (not sent).
  */
-export async function sendEmail({ to, subject, text, heading, html: htmlOverride, ctaUrl, ctaText, devInviteUrl, replyTo: replyToOverride }) {
+export async function sendEmail({ to, subject, text, heading, html: htmlOverride, ctaUrl, ctaText, actions, items, footNote, unsubscribeUrl, htmlBody, devInviteUrl, replyTo: replyToOverride }) {
   const apiKey = process.env.RESEND_API_KEY;
   const fromAddress = process.env.EMAIL_FROM || "noreply@transportplattformen.se";
   const fromName = process.env.EMAIL_FROM_NAME || "Sveriges Transportplattform";
@@ -34,7 +35,7 @@ export async function sendEmail({ to, subject, text, heading, html: htmlOverride
       to: [to],
       subject,
       text,
-      html: htmlOverride || (await renderEmail({ preview: subject, heading, paragraphs: toParagraphs(text), ctaUrl, ctaText })),
+      html: htmlOverride || (await renderEmail({ preview: subject, heading, paragraphs: toParagraphs(htmlBody ?? text), ctaUrl, ctaText, actions, items, footNote, unsubscribeUrl })),
       ...(replyTo && { reply_to: replyTo }),
     };
     const res = await fetch("https://api.resend.com/emails", {

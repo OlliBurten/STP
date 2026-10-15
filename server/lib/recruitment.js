@@ -7,8 +7,9 @@
  *     som "inom en vecka från första annonsen hade VGT två intervjuer".
  *  2. Utfall per konversation (Conversation.hireOutcome): sätts av åkeriet (steget
  *     Anställd eller mejllänk), föraren (mejllänk) eller admin (hört via telefon).
- *     Uppföljningsfrågan mejlas båda parter 7 dagar efter att dialogen startade,
- *     sedan var 14:e dag, högst tre gånger. RECRUITMENT_FOLLOWUP_ENABLED=false stänger av.
+ *     Uppföljningsfrågan mejlas åkeriet 7 dagar efter att dialogen startade, sedan var
+ *     14:e dag, högst tre gånger. Föraren frågas bara om åkeriet inte svarat på förra
+ *     frågan. RECRUITMENT_FOLLOWUP_ENABLED=false stänger av.
  *
  * Gäller STP:s egna annonser och åkeriernas egna kontakter. AF-importerade jobb har
  * sin egen uppföljning (applicationFollowup.js) eftersom föraren söker utanför STP.
@@ -163,59 +164,46 @@ export async function runRecruitmentFollowups(nowMs = Date.now()) {
     const jobPart = c.jobTitle ? ` (${c.jobTitle})` : "";
 
     const cl = outcomeLinks(companyToken, "akeri");
+    const companyIntro = `Ni har haft kontakt med ${c.driver?.name || "en förare"} via STP${jobPart}. Hur gick det?`;
     for (const to of await companyRecipientEmails(c)) {
       await sendEmail({
         to,
         subject: `Hur gick det med ${driverFirst}?`,
         heading: `Hur gick det med ${driverFirst}?`,
-        text: `Hej,\n\nNi har haft kontakt med ${c.driver?.name || "en förare"} via STP${jobPart}. Hur gick det?\n\nAnställd: ${cl.yes}\nPågår fortfarande: ${cl.pending}\nInte aktuellt: ${cl.no}\n\nEtt klick räcker — svaret syns i er statistik.`,
-        html: outcomeEmailHtml({
-          heading: `Hur gick det med ${driverFirst}?`,
-          intro: `Ni har haft kontakt med ${escapeHtml(c.driver?.name || "en förare")} via STP${escapeHtml(jobPart)}. Hur gick det?`,
-          links: [["Anställd", cl.yes, true], ["Pågår fortfarande", cl.pending], ["Inte aktuellt", cl.no]],
-          footer: "Ett klick räcker — svaret syns i er statistik på STP.",
-        }),
+        text: `Hej,\n\n${companyIntro}\n\nAnställd: ${cl.yes}\nPågår fortfarande: ${cl.pending}\nInte aktuellt: ${cl.no}\n\nEtt klick räcker — svaret syns i er statistik.`,
+        htmlBody: `Hej,\n\n${companyIntro}`,
+        actions: [
+          { label: "Anställd", href: cl.yes, primary: true },
+          { label: "Pågår fortfarande", href: cl.pending },
+          { label: "Inte aktuellt", href: cl.no },
+        ],
+        footNote: "Ett klick räcker — svaret syns i er rekryteringsstatistik på STP.",
       }).catch((e) => console.error("[Recruitment] mejl åkeri", e?.message));
     }
 
-    if (c.driver?.email) {
+    // Föraren är reserv: det är åkeriet som följer sina anställningar, och den som
+    // just fått jobb glömmer oss snabbt. Föraren frågas bara om åkeriet inte svarat
+    // på den förra frågan.
+    if (c.driver?.email && c.outcomeAskCount >= 1 && !c.hireOutcome) {
       const dl = outcomeLinks(driverToken, "forare");
+      const driverIntro = `Du har haft kontakt med ${companyName} via STP${jobPart}. Hur gick det?`;
       await sendEmail({
         to: c.driver.email,
         subject: `Fick du jobbet hos ${companyName}?`,
         heading: `Fick du jobbet hos ${companyName}?`,
-        text: `Hej ${driverFirst},\n\nDu har haft kontakt med ${companyName} via STP${jobPart}. Hur gick det?\n\nJa, jag fick jobbet: ${dl.yes}\nDet pågår fortfarande: ${dl.pending}\nNej: ${dl.no}`,
-        html: outcomeEmailHtml({
-          heading: `Fick du jobbet hos ${escapeHtml(companyName)}?`,
-          intro: `Hej ${escapeHtml(driverFirst)}, du har haft kontakt med ${escapeHtml(companyName)} via STP${escapeHtml(jobPart)}. Hur gick det?`,
-          links: [["Ja, jag fick jobbet", dl.yes, true], ["Det pågår fortfarande", dl.pending], ["Nej", dl.no]],
-          footer: "Ett klick räcker.",
-        }),
+        text: `Hej ${driverFirst},\n\n${driverIntro}\n\nJa, jag fick jobbet: ${dl.yes}\nDet pågår fortfarande: ${dl.pending}\nNej: ${dl.no}`,
+        htmlBody: `Hej ${driverFirst},\n\n${driverIntro}`,
+        actions: [
+          { label: "Ja, jag fick jobbet", href: dl.yes, primary: true },
+          { label: "Det pågår fortfarande", href: dl.pending },
+          { label: "Nej", href: dl.no },
+        ],
       }).catch((e) => console.error("[Recruitment] mejl förare", e?.message));
     }
     asked++;
   }
   console.log(`[Recruitment] Uppföljningsfrågor: ${asked}`);
   return { asked };
-}
-
-function escapeHtml(s) {
-  return String(s ?? "").replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch]);
-}
-
-function outcomeEmailHtml({ heading, intro, links, footer }) {
-  const btn = ([label, href, primary]) =>
-    `<a href="${href}" style="display:block;margin:0 0 10px;padding:13px 18px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;text-align:center;${primary ? "background:#1E6B5B;color:#ffffff;" : "background:#F5F7F3;color:#1B2421;border:1px solid #d9ded8;"}">${label}</a>`;
-  return `<!doctype html><html><body style="margin:0;background:#F5F7F3;font-family:Arial,Helvetica,sans-serif;color:#1B2421">
-<div style="max-width:520px;margin:0 auto;padding:28px 20px">
-<div style="background:#ffffff;border-radius:14px;padding:28px 24px">
-<h1 style="font-size:21px;margin:0 0 12px">${heading}</h1>
-<p style="font-size:15px;line-height:1.55;margin:0 0 20px;color:#3d4a45">${intro}</p>
-${links.map(btn).join("")}
-<p style="font-size:13px;color:#7a8580;margin:16px 0 0">${footer}</p>
-</div>
-<p style="font-size:12px;color:#9aa39f;text-align:center;margin:16px 0 0">Sveriges Transportplattform</p>
-</div></body></html>`;
 }
 
 /** Mejllänken: token + svar → utfall. Returnerar vad sidan behöver visa. */
