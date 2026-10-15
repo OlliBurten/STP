@@ -2,6 +2,7 @@
 // Swipe left = save, swipe right = hide(unsave); tap = open detail sheet.
 import React, { useState, useRef } from "react";
 import { Card, Pill, Dot, Icon } from "../ui";
+import { SALARY_UNKNOWN } from "../../utils/jobUtils";
 
 const matchTone = (m) => (m >= 90 ? "success" : m >= 80 ? "soft" : "neutral");
 
@@ -63,7 +64,7 @@ export default function JobCard({ job, ctx, idx, onHide }) {
                 {job.imported ? <Pill tone="info" size="sm">Importerad</Pill> : <Pill tone="success" size="sm">Direkt från åkeriet</Pill>}
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 11, paddingTop: 11, borderTop: "1px solid var(--line)" }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: "var(--ink-800)" }}>{job.pay}</span>
+                <span style={job.pay === SALARY_UNKNOWN ? { fontSize: 13, fontWeight: 500, color: "var(--ink-400)" } : { fontSize: 13, fontWeight: 700, color: "var(--ink-800)" }}>{job.pay}</span>
                 <span style={{ fontSize: 11.5, color: "var(--ink-400)" }}>{job.posted}</span>
               </div>
             </div>

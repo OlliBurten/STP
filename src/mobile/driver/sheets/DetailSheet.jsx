@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { trackJobView } from "../../../api/jobs";
 import FormattedText from "../../../components/FormattedText";
 import { Icon, Pill, Dot, Label, Button } from "../../ui";
+import { SALARY_UNKNOWN } from "../../../utils/jobUtils";
 
 const matchTone = (m) => (m >= 90 ? "success" : m >= 80 ? "soft" : "neutral");
 
@@ -61,7 +62,7 @@ export default function DetailSheet({ job, ctx, close: _close }) {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, margin: "16px 0" }}>
           <div style={{ padding: "12px 14px", background: "var(--card-2)", borderRadius: 12, border: "1px solid var(--line)" }}>
             <div style={{ fontSize: 11, color: "var(--ink-500)", fontWeight: 600, marginBottom: 3 }}>Lön</div>
-            <div style={{ fontSize: 14, fontWeight: 800, color: "var(--ink-900)" }}>{job.pay}</div>
+            <div style={job.pay === SALARY_UNKNOWN ? { fontSize: 14, fontWeight: 500, color: "var(--ink-400)" } : { fontSize: 14, fontWeight: 800, color: "var(--ink-900)" }}>{job.pay}</div>
           </div>
           <div style={{ padding: "12px 14px", background: "var(--card-2)", borderRadius: 12, border: "1px solid var(--line)" }}>
             <div style={{ fontSize: 11, color: "var(--ink-500)", fontWeight: 600, marginBottom: 3 }}>Publicerad</div>
