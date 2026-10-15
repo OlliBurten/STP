@@ -8,6 +8,7 @@ const KEEP = [
   "Kranbilsförare", "Renhållningsförare med C-kort till SSAM i Växjö!", "Slambilsförare till Markaryd!",
   "Liftdumper och lastväxlarförare – Rosersberg", "Lastbilschaufför, maskinförare", "CE förare sökes",
   "Har du C/CE-körkort och erfarenhet? Vi söker dig!", "Fjärrtransport", "Betongbilsförare sökes i Jönköping– Heltid",
+  "C-Chaufför Baklastare södra Stockholm", "Kombinerad tjänst Utlastare/chaufför", "C-chaufför med YKB / mark och anläggningsarbetare",
 ];
 const DROP = [
   "Miljöarbetare Rosersberg", "Miljöarbetare med CE-kort", "Biträdande platschef i Jönköping", "Vikarierande Brandman",

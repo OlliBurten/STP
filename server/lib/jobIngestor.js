@@ -249,7 +249,9 @@ export function isTruckDriverTitle(title = "") {
   // ("Lastbilschaufför, maskinförare", "Kranbilsförare", engelska "Truck Driver").
   if (/lastbil|kranbil|truck ?driver|\bce[- ]?(chauff|förare)|fjärrtransport/.test(t)) return true;
   // Ett annat yrke som bara kräver körkortet ("Miljöarbetare med CE-kort").
-  if (/(arbetare|rangerare|chef\b|ledare|operatör|tekniker|montör|mekaniker|säljare|vårdare|tvättare|lastare|sanerare)/.test(t)) return false;
+  // Står det uttryckligen "chaufför" är det ett körjobb ("C-Chaufför Baklastare",
+  // "Utlastare/chaufför", "Miljöarbetare (c-korts chaufför)") — bara fel fordon stoppar.
+  if (!/chauff/.test(t) && /(arbetare|rangerare|chef\b|ledare|operatör|tekniker|montör|mekaniker|säljare|vårdare|tvättare|lastare|sanerare)/.test(t)) return false;
   return DRIVER_TITLE_RE.test(t) && !NON_TRUCK_VEHICLE_RE.test(t);
 }
 
