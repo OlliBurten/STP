@@ -15,6 +15,7 @@ import { useChat } from "../../context/ChatContext";
 import { useNotifications } from "../../context/NotificationContext";
 import { fetchJobs, fetchSavedJobs, saveJob, unsaveJob, fetchSavedCompanies, saveCompany, unsaveCompany } from "../../api/jobs";
 import { fetchCompaniesSearch } from "../../api/companies";
+import { fetchConversation } from "../../api/conversations";
 import { fetchDriverProfileStats } from "../../api/drivers";
 import { submitApplication, fetchMyApplications } from "../../api/applications";
 import { updateNotificationSettings, fetchDriverActivity } from "../../api/profile";
@@ -389,7 +390,12 @@ export function DriverDataProvider({ children }) {
   }, [hasApi, refreshApplications]);
 
   const sendMessage = useCallback((convId, text) => chat.sendMessage?.(convId, text, "driver"), [chat]);
-  const markChatSeen = useCallback((convId) => chat.markConversationSeen?.(convId), [chat]);
+  // Läst även på servern (readByDriverAt) — annars såg åkeriet aldrig "Läst" när
+  // föraren öppnade tråden i mobilen (bara webben skickade det).
+  const markChatSeen = useCallback((convId) => {
+    chat.markConversationSeen?.(convId);
+    fetchConversation(convId).then(() => chat.refreshConversations?.()).catch(() => {});
+  }, [chat]);
   const getConversation = useCallback((id) => chat.getConversation?.(id) || convs.find((c) => c.id === id) || null, [chat, convs]);
 
   const value = {
