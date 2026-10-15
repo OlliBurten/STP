@@ -10,7 +10,7 @@ import {
   inviteCreateSchema,
 } from "../lib/validators.js";
 import { createInvite, listInvites, revokeInvite, resolveCompanyOwner } from "../lib/invites.js";
-import { excludeTestAndDemoAccountsWhere } from "../lib/testAccounts.js";
+import { excludeTestAndDemoAccountsWhere, isNonRealUser } from "../lib/testAccounts.js";
 export const companiesRouter = Router();
 
 function resolveSegment(segment, employment) {
@@ -808,10 +808,12 @@ companiesRouter.get("/stats/matching-drivers", async (req, res, next) => {
 
     if (activeJobs.length === 0) return res.json([]);
 
+    // Testkonton syns aldrig för riktiga åkerier (samma regel som Hitta förare).
+    const viewer = await prisma.user.findUnique({ where: { id: req.userId }, select: { email: true, isDemo: true } });
     const drivers = await prisma.driverProfile.findMany({
       where: {
         visibleToCompanies: true,
-        user: { needsDriverOnboarding: false, suspendedAt: null },
+        user: { needsDriverOnboarding: false, suspendedAt: null, ...(isNonRealUser(viewer) ? {} : excludeTestAndDemoAccountsWhere) },
       },
       include: { user: { select: { id: true, name: true, lastLoginAt: true } } },
     });
