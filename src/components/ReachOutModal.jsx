@@ -193,7 +193,7 @@ export default function ReachOutModal({ driver, jobs, onClose, onSuccess }) {
               <textarea
                 rows={4}
                 required
-                placeholder={mode === "invite" ? "Skriv ett kort meddelande till föraren om jobbet..." : "Skriv vad du vill diskutera..."}
+                placeholder={mode === "invite" ? "Nämn ort, arbetstider och lön — förare svarar oftare på konkreta erbjudanden." : "Skriv vad du vill diskutera..."}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 style={{ width: "100%", padding: "12px 16px", borderRadius: 11, background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink-900)", fontSize: "var(--text-base)", outline: "none", resize: "none", lineHeight: 1.55, boxSizing: "border-box" }}
@@ -319,7 +319,7 @@ export default function ReachOutModal({ driver, jobs, onClose, onSuccess }) {
               required
               placeholder={
                 mode === "invite"
-                  ? "Skriv ett kort meddelande till föraren om jobbet..."
+                  ? "Nämn ort, arbetstider och lön — förare svarar oftare på konkreta erbjudanden."
                   : "Skriv vad du vill diskutera..."
               }
               value={message}

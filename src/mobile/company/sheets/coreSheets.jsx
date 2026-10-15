@@ -232,7 +232,18 @@ export function ContactDriverSheet({ ctx, id, close }) {
   const aiGen = () => {
     const first = String(d.name).split(" ")[0];
     const job = ctx.jobs.find((j) => j.id === jobId);
-    setMsg(`Hej ${first}!\n\nVi på ${ctx.company.name} har ${job?.title ? `en tjänst som ${job.title}` : "en ledig tjänst"} som vi tror skulle passa dig bra utifrån din profil och erfarenhet. Hör gärna av dig om du är intresserad så berättar vi mer.\n\nVänliga hälsningar,\n${ctx.company.name}`);
+    // Konkreta uppgifter ur annonsen — förare som redan har jobb svarar oftare på
+    // ett tydligt erbjudande än på "din profil verkar passa".
+    const r = job?.raw || {};
+    const fmtKr = (n) => Number(n).toLocaleString("sv-SE");
+    const SCHEDULE = { dag: "dagtid mån–fre", skift: "skiftgång", natt: "nattskift", helgskift: "helgskift", flex: "flexibla tider", veckopendling: "veckopendling" };
+    const facts = [
+      job?.location ? `i ${job.location}` : null,
+      r.schedule && SCHEDULE[r.schedule] ? SCHEDULE[r.schedule] : null,
+      r.salaryMin ? `${fmtKr(r.salaryMin)}${r.salaryMax && r.salaryMax !== r.salaryMin ? `–${fmtKr(r.salaryMax)}` : ""} kr/mån` : null,
+    ].filter(Boolean);
+    const role = job?.title ? `en tjänst som ${job.title}` : "en ledig tjänst";
+    setMsg(`Hej ${first}!\n\nVi på ${ctx.company.name} har ${role}${facts.length ? ` — ${facts.join(", ")}` : ""}. Utifrån din profil tror vi att den kan passa dig.\n\nÄr du intresserad av att höra mer?\n\nVänliga hälsningar,\n${ctx.company.name}`);
   };
   return (
     <div style={{ padding: "4px 22px 26px" }}>
@@ -253,7 +264,7 @@ export function ContactDriverSheet({ ctx, id, close }) {
         <Label style={{ marginBottom: 0 }}>Meddelande</Label>
         <button onClick={aiGen} className="press" style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12.5, fontWeight: 700, color: "var(--green)" }}><Icon name="spark" size={14} color="var(--green)" stroke={0} style={{ fill: "var(--green)" }} />Skapa utkast</button>
       </div>
-      <textarea id="contact-driver-msg" aria-label="Meddelande" value={msg} onChange={(e) => setMsg(e.target.value)} placeholder="Skriv ett personligt meddelande…" rows={4} style={{ width: "100%", padding: "13px 15px", borderRadius: 13, border: "1px solid var(--line-2)", background: "var(--card-2)", fontSize: 15, color: "var(--ink-900)", outline: "none", resize: "none", lineHeight: 1.5, marginBottom: 16, fontFamily: "var(--font)" }} />
+      <textarea id="contact-driver-msg" aria-label="Meddelande" value={msg} onChange={(e) => setMsg(e.target.value)} placeholder="Nämn ort, arbetstider och lön — förare svarar oftare på konkreta erbjudanden." rows={4} style={{ width: "100%", padding: "13px 15px", borderRadius: 13, border: "1px solid var(--line-2)", background: "var(--card-2)", fontSize: 15, color: "var(--ink-900)", outline: "none", resize: "none", lineHeight: 1.5, marginBottom: 16, fontFamily: "var(--font)" }} />
       {err && <div role="alert" style={{ display: "flex", alignItems: "flex-start", gap: 9, padding: "11px 14px", background: "var(--danger-tint)", borderRadius: 12, marginBottom: 16 }}>
         <Icon name="alert" size={16} color="var(--danger)" stroke={2.2} style={{ flexShrink: 0, marginTop: 1 }} />
         <span style={{ fontSize: 13, color: "var(--danger)", lineHeight: 1.4 }}>{err}</span>
