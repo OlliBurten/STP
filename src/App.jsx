@@ -71,6 +71,7 @@ const ForCompaniesLanding   = lazyRetry(() => import("./pages/ForCompaniesLandin
 const JobList               = lazyRetry(() => import("./pages/JobList"));
 const JobAlertAction        = lazyRetry(() => import("./pages/JobAlertAction"));
 const FollowupOutcome       = lazyRetry(() => import("./pages/FollowupOutcome"));
+const RecruitmentOutcome    = lazyRetry(() => import("./pages/RecruitmentOutcome"));
 const PresentationConsent   = lazyRetry(() => import("./pages/PresentationConsent"));
 const JobDetail             = lazyRetry(() => import("./pages/JobDetail"));
 const Apply                 = lazyRetry(() => import("./pages/Apply"));
@@ -334,6 +335,7 @@ function AppLayout() {
                   <Route path="/jobb/:id" element={<JobDetail />} />
                   <Route path="/bevakning/:action" element={<JobAlertAction />} />
                   <Route path="/uppfoljning" element={<FollowupOutcome />} />
+                  <Route path="/utfall" element={<RecruitmentOutcome />} />
                   <Route path="/presentation" element={<PresentationConsent />} />
                   <Route path="/jobb/:id/ansok" element={<Apply />} />
                   <Route path="/akerier" element={<AkerierSearch />} />

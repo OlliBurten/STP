@@ -1,6 +1,7 @@
 /**
  * Annonsstatistik för åkeriet: visningar över tid, källor, var besökarna finns,
- * var de sökande bor, enheter och konvertering. Data från GET /api/jobs/:id/stats.
+ * var de sökande bor, enheter och konvertering — och vad kontakterna ledde till
+ * (svar, intervjuer, anställningar). Data från GET /api/jobs/:id/stats.
  */
 const card = { background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "18px 20px", boxShadow: "var(--sh-sm)" };
 const h3 = { fontSize: "var(--text-base)", fontWeight: 800, color: "var(--ink-900)", margin: "0 0 12px" };
@@ -31,6 +32,43 @@ function BarList({ rows, empty }) {
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+function fmtHours(h) {
+  if (h == null) return null;
+  if (h < 1) return "under en timme";
+  if (h < 48) return `${Math.round(h)} tim`;
+  return `${Math.round(h / 24)} dagar`;
+}
+
+// Kontakt → svar → intervju → anställd. Visas när annonsen har minst en kontakt.
+function RecruitmentFunnel({ r }) {
+  if (!r || r.applications + r.contacted === 0) return null;
+  const steps = [
+    { label: "Kontakter", value: r.applications + r.contacted, sub: `${r.applications} ansökningar · ${r.contacted} av er` },
+    { label: "Dialog", value: r.dialogs, sub: "båda har skrivit" },
+    { label: "Intervju", value: r.interviews },
+    { label: "Anställda", value: r.hired },
+  ];
+  return (
+    <div style={card}>
+      <h3 style={h3}>Rekrytering</h3>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 10 }}>
+        {steps.map((st, i) => (
+          <div key={st.label} style={{ padding: "12px 14px", borderRadius: 11, background: i === steps.length - 1 && st.value > 0 ? "var(--success-tint)" : "var(--paper-2)" }}>
+            <div style={{ fontSize: "var(--text-2xl)", fontWeight: 800, color: "var(--ink-900)", fontFamily: "var(--mono)", lineHeight: 1 }}>{st.value}</div>
+            <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-700)", fontWeight: 700, marginTop: 6 }}>{st.label}</div>
+            {st.sub && <div style={{ fontSize: "var(--text-2xs)", color: "var(--ink-400)", marginTop: 2 }}>{st.sub}</div>}
+          </div>
+        ))}
+      </div>
+      {r.medianFirstResponseHours != null && (
+        <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-500)", margin: "12px 0 0" }}>
+          Ni svarar sökande på <strong style={{ color: "var(--ink-900)" }}>{fmtHours(r.medianFirstResponseHours)}</strong> (median).
+        </p>
+      )}
     </div>
   );
 }
@@ -72,6 +110,8 @@ export default function AdStats({ stats }) {
         <Kpi value={stats.savedCount ?? 0} label="Sparad av förare" />
         {stats.contactedCount > 0 && <Kpi value={stats.contactedCount} label="Kontaktade av er" />}
       </div>
+
+      <RecruitmentFunnel r={d.recruitment} />
 
       <div style={card}>
         <h3 style={h3}>Visningar per dag</h3>

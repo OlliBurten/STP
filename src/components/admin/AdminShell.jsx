@@ -59,6 +59,7 @@ const NAV_GROUPS = [
     { id: "users",      l: "Förare",    n: "users" },
     { id: "companies",  l: "Åkerier",   n: "building" },
     { id: "jobs",       l: "Jobb",      n: "briefcase" },
+    { id: "recruitment", l: "Rekrytering", n: "pulse" },
     { id: "moderation", l: "Moderering",n: "shield" },
     { id: "reviews",    l: "Omdömen",   n: "star" },
     { id: "schools",    l: "Skolor",    n: "school" },
@@ -288,7 +289,7 @@ export function AdminCmdK({ open, onClose, onChange, onAction }) {
   const act = (a) => { onAction?.(a); onClose(); };
   const sections = [
     { id: "overview", l: "Översikt" }, { id: "users", l: "Förare" },
-    { id: "companies", l: "Åkerier" }, { id: "jobs", l: "Jobb" },
+    { id: "companies", l: "Åkerier" }, { id: "jobs", l: "Jobb" }, { id: "recruitment", l: "Rekrytering" },
     { id: "moderation", l: "Moderering" }, { id: "insights", l: "AI-insikter" },
   ];
   const noHits = !searching && results.users.length === 0 && results.jobs.length === 0;

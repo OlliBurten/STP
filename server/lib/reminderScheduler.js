@@ -10,6 +10,7 @@ import { runProductIntelligenceAgent } from "./productIntelligenceAgent.js";
 import { runJobAlertDispatch } from "./jobAlerts.js";
 import { runApplicationFollowup } from "./applicationFollowup.js";
 import { runRecruitmentNudges } from "./recruitmentNudges.js";
+import { runRecruitmentFollowups } from "./recruitment.js";
 
 let started = false;
 
@@ -76,6 +77,16 @@ export function startReminderScheduler() {
       }
     }, { timezone: "Europe/Stockholm" });
   }
+
+  // Dagligen 10:30 — "Hur gick det?" till åkeri och förare 7 dagar efter att en
+  // dialog startat (recruitment.js). RECRUITMENT_FOLLOWUP_ENABLED=false stänger av.
+  cron.schedule("30 10 * * *", async () => {
+    try {
+      await runRecruitmentFollowups();
+    } catch (e) {
+      console.error("[RecruitmentFollowup] Uncaught error:", e?.message);
+    }
+  }, { timezone: "Europe/Stockholm" });
 
   // Every day at 10:00 Stockholm time — onboarding drip (dag 1/3/7)
   cron.schedule("0 10 * * *", async () => {

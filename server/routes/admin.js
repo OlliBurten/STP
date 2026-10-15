@@ -8,6 +8,7 @@ import { runVerificationReminders } from "../lib/verificationReminders.js";
 import { createAdminAuditLog, getAdminActorId, isAdminEmail } from "../lib/adminAccess.js";
 import { isNonRealUser, excludeTestAndDemoAccountsWhere, OWNER_EMAILS, TEST_EMAIL_EXACT } from "../lib/testAccounts.js";
 import { JWT_SECRET } from "../lib/config.js";
+import { recruitmentFunnel, setHireOutcome, logRecruitmentEvent, OUTCOMES } from "../lib/recruitment.js";
 import {
   isDemoConfigured,
   buildDemoWelcomeUrl,
@@ -2125,6 +2126,118 @@ adminRouter.delete("/demo-invites/:id", async (req, res, next) => {
     res.json({ ok: true });
   } catch (e) {
     if (e?.status) return res.status(e.status).json({ error: e.message });
+    next(e);
+  }
+});
+
+// ─── Rekryteringsutfall ───────────────────────────────────────────────────────
+// Vad händer efter kontakt på STP? Tratt totalt + per åkeri + varje dialog med
+// tidslinje. Underlag för säljsiffror ("inom en vecka från första annonsen…").
+
+adminRouter.get("/recruitment", async (req, res, next) => {
+  try {
+    const convs = await prisma.conversation.findMany({
+      where: { driver: excludeTestAndDemoAccountsWhere, company: excludeTestAndDemoAccountsWhere },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true, createdAt: true, jobId: true, jobTitle: true, organizationId: true, companyId: true,
+        pipelineStage: true, selectedByCompanyAt: true, rejectedByCompanyAt: true,
+        hireOutcome: true, hireOutcomeAt: true, hireReportedBy: true, outcomeAskCount: true,
+        driver: { select: { id: true, name: true } },
+        organization: { select: { id: true, name: true } },
+        company: { select: { companyName: true, name: true } },
+        messages: { orderBy: { createdAt: "asc" }, select: { senderRole: true, createdAt: true } },
+      },
+    });
+    const ids = convs.map((c) => c.id);
+    const events = ids.length
+      ? await prisma.recruitmentEvent.findMany({ where: { conversationId: { in: ids } }, orderBy: { createdAt: "asc" } })
+      : [];
+    const evByConv = new Map();
+    for (const e of events) {
+      if (!evByConv.has(e.conversationId)) evByConv.set(e.conversationId, []);
+      evByConv.get(e.conversationId).push({ type: e.type, at: e.createdAt, by: e.actorRole, source: e.source });
+    }
+
+    // Per åkeri: första annonsen hos STP är startpunkten för "inom X dagar".
+    const orgKey = (c) => c.organizationId || `u:${c.companyId}`;
+    const groups = new Map();
+    for (const c of convs) {
+      const k = orgKey(c);
+      if (!groups.has(k)) groups.set(k, { key: k, name: c.organization?.name || c.company?.companyName || c.company?.name || "Okänt åkeri", organizationId: c.organizationId, companyId: c.companyId, convs: [] });
+      groups.get(k).convs.push(c);
+    }
+    const companies = [];
+    for (const g of groups.values()) {
+      const firstJob = await prisma.job.findFirst({
+        where: g.organizationId ? { organizationId: g.organizationId } : { userId: g.companyId, source: { not: "AGGREGATED" } },
+        orderBy: { published: "asc" },
+        select: { published: true, title: true },
+      });
+      const gEvents = events.filter((e) => g.convs.some((c) => c.id === e.conversationId));
+      const funnel = recruitmentFunnel(g.convs, gEvents);
+      const start = firstJob?.published ? new Date(firstJob.published) : null;
+      const daysFromStart = (d) => (start && d ? Math.round(((new Date(d) - start) / 864e5) * 10) / 10 : null);
+      const firstOf = (type) => gEvents.filter((e) => e.type === type).map((e) => e.createdAt).sort((a, b) => a - b)[0] || null;
+      companies.push({
+        name: g.name,
+        firstJobPublishedAt: start,
+        funnel,
+        daysToFirstInterview: daysFromStart(firstOf("INTERVIEW")),
+        daysToFirstHire: daysFromStart(firstOf("HIRED")),
+      });
+    }
+    companies.sort((a, b) => b.funnel.dialogs - a.funnel.dialogs || b.funnel.applications - a.funnel.applications);
+
+    res.json({
+      total: recruitmentFunnel(convs, events),
+      companies,
+      conversations: convs.map((c) => ({
+        id: c.id,
+        createdAt: c.createdAt,
+        company: c.organization?.name || c.company?.companyName || c.company?.name || "Okänt åkeri",
+        driver: c.driver?.name || "Förare",
+        jobTitle: c.jobTitle,
+        startedBy: c.messages[0]?.senderRole === "company" ? "company" : "driver",
+        messages: c.messages.length,
+        dialog: new Set(c.messages.map((m) => m.senderRole)).size > 1,
+        stage: c.pipelineStage,
+        rejected: Boolean(c.rejectedByCompanyAt),
+        hireOutcome: c.hireOutcome,
+        hireOutcomeAt: c.hireOutcomeAt,
+        hireReportedBy: c.hireReportedBy,
+        outcomeAskCount: c.outcomeAskCount,
+        events: evByConv.get(c.id) || [],
+      })),
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// Admin registrerar det hen fått veta utanför plattformen (t.ex. i telefon med åkeriet).
+adminRouter.post("/conversations/:id/recruitment", async (req, res, next) => {
+  try {
+    const { type, at } = req.body || {};
+    const conv = await prisma.conversation.findUnique({ where: { id: req.params.id } });
+    if (!conv) return res.status(404).json({ error: "Konversation hittades inte" });
+    const when = at ? new Date(at) : null;
+    if (when && Number.isNaN(when.getTime())) return res.status(400).json({ error: "Ogiltigt datum" });
+    if (type === "INTERVIEW") {
+      await logRecruitmentEvent(conv, "INTERVIEW", { actorRole: "admin", actorId: getAdminActorId(req), source: "admin", at: when });
+    } else if (OUTCOMES.includes(type)) {
+      await setHireOutcome(conv.id, type, { reportedBy: "admin", actorId: getAdminActorId(req), source: "admin" });
+      if (when) {
+        await prisma.conversation.update({ where: { id: conv.id }, data: { hireOutcomeAt: when } });
+        const ev = await prisma.recruitmentEvent.findFirst({ where: { conversationId: conv.id, type }, orderBy: { createdAt: "desc" } });
+        if (ev) await prisma.recruitmentEvent.update({ where: { id: ev.id }, data: { createdAt: when } });
+      }
+    } else {
+      return res.status(400).json({ error: "Ogiltig typ" });
+    }
+    await createAdminAuditLog({ req, action: "RECRUITMENT_OUTCOME", targetType: "conversation", metadata: { conversationId: conv.id, type, at: when } });
+    res.json({ ok: true });
+  } catch (e) {
     next(e);
   }
 });

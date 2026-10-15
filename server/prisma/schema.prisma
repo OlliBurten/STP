@@ -491,6 +491,15 @@ model Conversation {
   rejectReason        String? // frivillig text vid avvisning
   rejectionNoticeSentAt DateTime? // föraren fick besked om avslaget (skickas först efter ångra-fönstret)
   responseNudgeCount  Int           @default(0) // påminnelser till åkeriet om obesvarad ansökan (0, 1 efter 24 h, 2 efter 72 h)
+  // Rekryteringsutfall — "ledde kontakten till en anställning?" Sätts av åkeriet (steg
+  // Anställd / mejllänk), föraren (mejllänk) eller admin (hört via telefon).
+  hireOutcome         String? // HIRED | NOT_HIRED | IN_PROCESS
+  hireOutcomeAt       DateTime?
+  hireReportedBy      String? // company | driver | admin
+  companyOutcomeToken String?       @unique
+  driverOutcomeToken  String?       @unique
+  outcomeAskCount     Int           @default(0)
+  outcomeAskedAt      DateTime?
   pipelineStage       String? // rekryteringssteg: ny|kontaktad|intervjuad|anstalld|avslag (åkeri-pipeline)
   startDate           String? // "now" | "month" | ISO-datum — förare anger tillträde
   allowSimilarContact Boolean       @default(false) // förare tillåter kontakt om liknande jobb
@@ -811,3 +820,26 @@ model JobDraft {
   @@index([organizationId])
   @@index([authorId])
 }
+
+// Händelselogg för rekrytering — en rad per steg (ansökan, kontakt, första svar,
+// intervju, avslag, anställning). Utan relationer: loggen ska överleva att en
+// konversation eller annons tas bort, och den läses bara för statistik.
+model RecruitmentEvent {
+  id             String   @id @default(cuid())
+  createdAt      DateTime @default(now())
+  type           String // APPLIED | CONTACTED | COMPANY_REPLIED | DRIVER_REPLIED | INTERVIEW | REJECTED | HIRED | NOT_HIRED | IN_PROCESS
+  conversationId String?
+  jobId          String?
+  organizationId String?
+  companyId      String?
+  driverId       String?
+  actorRole      String? // driver | company | admin | system
+  actorId        String?
+  source         String? // chat | stage | button | email | admin | backfill
+  detail         String?
+
+  @@index([conversationId])
+  @@index([organizationId, type])
+  @@index([type, createdAt])
+}
+
